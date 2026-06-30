@@ -326,12 +326,6 @@
       }
     },
     {
-      "name": "assetTimeline",
-      "title": "Move to timeline",
-      "description": "Change visibility to timeline",
-      "types": ["AssetV1"]
-    },
-    {
       "name": "assetVisibility",
       "title": "Update visibility",
       "description": "Change visibility to selected option",
@@ -393,100 +387,38 @@
       }
     },
     {
-      "name": "noop1",
-      "title": "DEV: Nested properties",
-      "description": "Example configuration with nested properties",
+      "name": "webhook",
+      "title": "Trigger Webhook",
+      "description": "POST/PUT event data to any URL",
       "types": ["AssetV1"],
+      "hostFunctions": true,
+      "allowedHosts": ["*"],
       "schema": {
         "type": "object",
         "properties": {
-          "number1": {
-            "type": "number",
-            "title": "Number 1",
-            "description": "Basic number"
-          },
-          "number2": {
-            "type": "number",
-            "title": "Number 2",
-            "array": true,
-            "description": "List of numbers"
-          },
-          "string1": {
+          "url": {
             "type": "string",
-            "title": "String 1",
-            "description": "Basic string"
+            "title": "URL",
+            "description": "Event data will be PUT/POSTed to this URL as a JSON object"
           },
-          "string2": {
+          "headerName": {
             "type": "string",
-            "title": "String 2",
-            "array": true,
-            "description": "List of strings"
+            "title": "Header name",
+            "description": "The name of an additional header to include with the request (e.g. authentication)"
           },
-          "string3": {
+          "headerValue": {
             "type": "string",
-            "title": "String 3",
-            "enum": ["choice-1", "choice-2"],
-            "description": "Select from a list"
+            "title": "Header value",
+            "description": "The value of the additional header"
           },
-          "nested": {
-            "type": "object",
-            "title": "Nested",
-            "description": "Nested properties for nesting",
-            "properties": {
-              "nested1": {
-                "type": "string",
-                "title": "Nested 1",
-                "description": "Nested string"
-              },
-              "nested2": {
-                "type": "number",
-                "title": "Nested 2",
-                "description": "Nested number"
-              },
-              "nested3": {
-                "type": "object",
-                "title": "Nested 3",
-                "description": "Nested again",
-                "properties": {
-                  "nested4": {
-                    "type": "boolean",
-                    "title": "Nested 4",
-                    "description": "Nested, nested boolean"
-                  }
-                }
-              }
-            }
+          "method": {
+            "type": "string",
+            "title": "Method",
+            "description": "The HTTP method to use in the request",
+            "enum": ["POST", "PUT"]
           }
-        }
-      }
-    },
-    {
-      "name": "noop2",
-      "title": "DEV: Album pickers",
-      "description": "Example configuration with album pickers",
-      "types": ["AssetV1"],
-      "schema": {
-        "properties": {
-          "albumId": {
-            "type": "string",
-            "title": "Album ID",
-            "description": "Target album ID",
-            "uiHint": {
-              "type": "AlbumId",
-              "order": 1
-            }
-          },
-          "albumIds": {
-            "type": "string",
-            "title": "Album IDs",
-            "description": "Target album IDs",
-            "array": true,
-            "uiHint": {
-              "type": "AlbumId",
-              "order": 2
-            }
-          }
-        }
+        },
+        "required": ["url"]
       }
     }
   ]
