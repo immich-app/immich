@@ -73,7 +73,13 @@
   let dragSourceId: string | undefined;
 
   const workflowSummary = $derived({ name, description, trigger, steps });
-  const workflowJsonContent = $derived<WorkflowJsonContent>({ name, description, enabled, trigger, steps });
+  const workflowJsonContent = $derived<WorkflowJsonContent>({
+    name,
+    description,
+    enabled,
+    trigger,
+    steps: steps.map(({ id: _, ...step }) => step),
+  });
 
   const hasChanges = $derived(
     enabled !== savedWorkflow.enabled ||

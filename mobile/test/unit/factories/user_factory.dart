@@ -23,4 +23,23 @@ class UserFactory {
       avatarColor: avatarColor ?? .primary,
     );
   }
+
+  static UserDto createDto({
+    String? id,
+    String? name,
+    String? email,
+    DateTime? profileChangedAt,
+    bool? hasProfileImage,
+    AvatarColor? avatarColor,
+  }) {
+    id = TestUtils.uuid(id);
+    return UserDto(
+      id: id,
+      name: name ?? 'user_$id',
+      email: email ?? '$id@test.com',
+      profileChangedAt: TestUtils.date(profileChangedAt),
+      hasProfileImage: hasProfileImage ?? false,
+      avatarColor: avatarColor ?? .primary,
+    );
+  }
 }

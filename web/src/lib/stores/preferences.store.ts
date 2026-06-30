@@ -1,13 +1,12 @@
-import type { DateTime } from 'luxon';
 import { persisted } from 'svelte-persisted-store';
 import { browser } from '$app/environment';
 import { defaultLang } from '$lib/constants';
-import { getPreferredLocale } from '$lib/utils/i18n';
+import { convertBCP47, getPreferredLocale } from '$lib/utils/i18n';
 
 // Locale to use for formatting dates, numbers, etc.
 export const locale = persisted('locale', 'default', {
   serializer: {
-    parse: (text) => text || 'default',
+    parse: (text) => convertBCP47(text) || 'default',
     stringify: (object) => object ?? '',
   },
 });
@@ -15,7 +14,7 @@ export const locale = persisted('locale', 'default', {
 const preferredLocale = browser ? getPreferredLocale() : undefined;
 export const lang = persisted<string>('lang', preferredLocale || defaultLang.code, {
   serializer: {
-    parse: (text) => text,
+    parse: (text) => convertBCP47(text),
     stringify: (object) => object ?? '',
   },
 });
@@ -27,8 +26,8 @@ export interface MapSettings {
   withPartners: boolean;
   withSharedAlbums: boolean;
   relativeDate: string;
-  dateAfter?: DateTime<true>;
-  dateBefore?: DateTime<true>;
+  dateAfter?: string;
+  dateBefore?: string;
 }
 
 const defaultMapSettings = {
