@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:immich_mobile/domain/models/feature_message.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/settings/advanced_settings.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_settings.dart';
@@ -91,8 +92,8 @@ class _MobileLayout extends StatelessWidget {
     settings.add(
       SettingsCard(
         icon: Icons.auto_awesome_outlined,
-        title: 'whats_new'.tr(),
-        subtitle: 'whats_new_settings_subtitle'.tr(namedArgs: {'version': featureMessageRelease.toString()}),
+        title: context.t.whats_new,
+        subtitle: context.t.whats_new_settings_subtitle,
         settingRoute: const WhatsNewRoute(),
       ),
     );
