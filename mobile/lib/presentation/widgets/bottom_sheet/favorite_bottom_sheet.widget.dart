@@ -52,10 +52,18 @@ class FavoriteBottomSheet extends ConsumerWidget {
         );
       }
 
-      if (addedCount != remoteAssets.length) {
+      final existingCount = remoteAssets.length - addedCount;
+      if (addedCount == 0) {
         ImmichToast.show(
           context: context,
           msg: 'add_to_album_bottom_sheet_already_exists'.t(args: {"album": album.name}),
+        );
+      } else if (existingCount > 0) {
+        ImmichToast.show(
+          context: context,
+          msg: 'add_to_album_bottom_sheet_partial_added'.t(
+            args: {"added": addedCount.toString(), "album": album.name, "existing": existingCount.toString()},
+          ),
         );
       } else {
         ImmichToast.show(

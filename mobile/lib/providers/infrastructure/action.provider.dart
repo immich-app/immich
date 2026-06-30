@@ -34,14 +34,15 @@ final actionProvider = NotifierProvider<ActionNotifier, void>(ActionNotifier.new
 
 class ActionResult {
   final int count;
+  final int existing;
   final bool success;
   final String? error;
   final List<String> remoteAssetIds;
 
-  const ActionResult({required this.count, required this.success, this.error, this.remoteAssetIds = const []});
+  const ActionResult({required this.count, required this.success, this.existing = 0, this.error, this.remoteAssetIds = const []});
 
   @override
-  String toString() => 'ActionResult(count: $count, success: $success, error: $error, remoteAssetIds: $remoteAssetIds)';
+  String toString() => 'ActionResult(count: $count, existing: $existing, success: $success, error: $error, remoteAssetIds: $remoteAssetIds)';
 }
 
 class ActionNotifier extends Notifier<void> {
@@ -409,7 +410,7 @@ class ActionNotifier extends Notifier<void> {
     }
 
     if (localAssets.isEmpty) {
-      return ActionResult(count: addedRemote, success: true);
+      return ActionResult(count: addedRemote, existing: remoteIds.length - addedRemote, success: true);
     }
 
     final uploadResult = await upload(
