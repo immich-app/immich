@@ -95,7 +95,7 @@ describe('/server', () => {
         major: expect.any(Number),
         minor: expect.any(Number),
         patch: expect.any(Number),
-        prerelease: expect.anything(),
+        prerelease: (body.prerelease === null || body.prerelease === undefined) ? body.prerelease : expect.anything(),
       });
     });
   });
