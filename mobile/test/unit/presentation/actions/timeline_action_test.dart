@@ -7,7 +7,7 @@ import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 import '../../factories/remote_asset_factory.dart';
-import '../../presentation_context.dart';
+import '../presentation_context.dart';
 
 class _FakeAction extends BaseAction {
   _FakeAction({this.visible = true, this.error});
@@ -48,8 +48,7 @@ void main() {
     context.dispose();
   });
 
-  List<Override> seededOverrides() => [
-    ...context.overrides,
+  List<Override> overrides() => [
     multiSelectProvider.overrideWith(
       () => MultiSelectNotifier(
         MultiSelectState(selectedAssets: {RemoteAssetFactory.create()}, lockedSelectionAssets: const {}),
@@ -61,6 +60,7 @@ void main() {
     late ActionScope scope;
     late ProviderContainer container;
     await tester.pumpTestWidget(
+      context,
       Consumer(
         builder: (innerContext, ref, _) {
           scope = ActionScope(context: innerContext, ref: ref, authUser: context.currentUser);
@@ -68,7 +68,7 @@ void main() {
           return const SizedBox.shrink();
         },
       ),
-      overrides: seededOverrides(),
+      overrides: overrides(),
     );
     return (scope, container);
   }
@@ -97,8 +97,8 @@ void main() {
 
     testWidgets('delegates visibility to the wrapped action', (tester) async {
       await tester.pumpTestWidget(
+        context,
         ActionIconButtonWidget(action: TimelineAction(action: _FakeAction(visible: false))),
-        overrides: context.overrides,
       );
 
       expect(find.byType(ActionIconButtonWidget), findsOneWidget);

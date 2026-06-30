@@ -12,7 +12,9 @@ import android.provider.MediaStore.Images
 import android.provider.MediaStore.Video
 import android.util.Size
 import androidx.annotation.RequiresApi
+import androidx.exifinterface.media.ExifInterface
 import app.alextran.immich.NativeBuffer
+import app.alextran.immich.NativeImage
 import kotlin.math.*
 import java.io.IOException
 import java.util.concurrent.Executors
@@ -181,34 +183,87 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     val id = assetId.toLong()
 
     signal.throwIfCanceled()
-    val bitmap = if (isVideo) {
-      decodeVideoThumbnail(id, size, signal)
-    } else {
-      decodeImage(id, size, signal)
-    }
-
     try {
-      signal.throwIfCanceled()
-      val res = bitmap.toNativeBuffer()
-      signal.throwIfCanceled()
+      val res = if (isVideo) {
+        decodeVideoThumbnail(id, size, signal).toNativeBuffer()
+      } else {
+        val (bitmap, orientation) = decodeImage(id, size, signal)
+        signal.throwIfCanceled()
+        if (orientation == ExifInterface.ORIENTATION_NORMAL || orientation == ExifInterface.ORIENTATION_UNDEFINED) {
+          bitmap.toNativeBuffer()
+        } else {
+          rotateToNativeBuffer(bitmap, orientation, signal)
+        }
+      }
+      // Don't re-check cancellation here: res owns a malloc'd buffer, and bailing to CANCELLED would
+      // orphan it. Deliver it; Dart frees the buffer itself if the request was cancelled meanwhile.
       callback(Result.success(res))
     } catch (e: Exception) {
       callback(if (e is OperationCanceledException) CANCELLED else Result.failure(e))
     }
   }
 
-  private fun decodeImage(id: Long, size: Size, signal: CancellationSignal): Bitmap {
+  // Returns the decoded bitmap plus the EXIF orientation that still needs applying. Only Q+ raw
+  // decodes come back unrotated (ImageDecoder / loadThumbnail skip EXIF for raw like DNG); every
+  // other path already orients itself, so it reports ORIENTATION_NORMAL.
+  private fun decodeImage(id: Long, size: Size, signal: CancellationSignal): Pair<Bitmap, Int> {
     signal.throwIfCanceled()
     val uri = ContentUris.withAppendedId(Images.Media.EXTERNAL_CONTENT_URI, id)
+    val handleRaw = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && isRawMime(uri)
+    val orientation = if (handleRaw) rawOrientation(uri) else ExifInterface.ORIENTATION_NORMAL
+
     if (size.width <= 0 || size.height <= 0 || size.width > 768 || size.height > 768) {
-      return decodeSource(uri, size, signal)
+      // A "load original" request is unsized -> a full-res decode (a sized > 768 just samples to target).
+      return decodeSource(uri, size, signal) to orientation
     }
 
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       resolver.loadThumbnail(uri, size, signal)
     } else {
       signal.setOnCancelListener { Images.Thumbnails.cancelThumbnailRequest(resolver, id) }
       Images.Thumbnails.getThumbnail(resolver, id, Images.Thumbnails.MINI_KIND, OPTIONS)
+    }
+    return bitmap to orientation
+  }
+
+  private fun isRawMime(uri: Uri): Boolean {
+    val mime = resolver.getType(uri) ?: return false
+    return mime.startsWith("image/x-") || mime == "image/dng"
+  }
+
+  private fun rawOrientation(uri: Uri): Int {
+    return resolver.openInputStream(uri)?.use {
+      ExifInterface(it).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+    } ?: ExifInterface.ORIENTATION_NORMAL
+  }
+
+  // ImageDecoder / loadThumbnail skip EXIF orientation for raw (e.g. DNG) on Q+, so the decoded
+  // bitmap comes back unrotated. Rotate it into the output buffer in native code (one pass, no
+  // intermediate rotated bitmap).
+  private fun rotateToNativeBuffer(bitmap: Bitmap, orientation: Int, signal: CancellationSignal): Map<String, Long> {
+    signal.throwIfCanceled()
+    // Force ARGB_8888: the native rotate needs a lockable 8888 buffer, and toNativeBuffer() below
+    // allocates width*height*4 (an F16/HDR decode would otherwise under-allocate). No-op for the
+    // common already-8888 case.
+    val src = if (bitmap.config != Bitmap.Config.ARGB_8888) {
+      val converted = bitmap.copy(Bitmap.Config.ARGB_8888, false)
+      bitmap.recycle()
+      converted ?: throw IOException("could not convert bitmap to ARGB_8888")
+    } else {
+      bitmap
+    }
+    try {
+      val info = IntArray(3)
+      val pointer = NativeImage.rotate(src, orientation, info)
+      if (pointer == 0L) throw IOException("native rotate failed for orientation $orientation")
+      return mapOf(
+        "pointer" to pointer,
+        "width" to info[0].toLong(),
+        "height" to info[1].toLong(),
+        "rowBytes" to info[2].toLong()
+      )
+    } finally {
+      if (!src.isRecycled) src.recycle()
     }
   }
 
