@@ -3,8 +3,8 @@ name: Prepare new release
 on:
   workflow_dispatch:
     inputs:
-      serverBump:
-        description: 'Bump server version'
+      releaseType:
+        description: 'Release type'
         required: true
         default: 'false'
         type: choice
@@ -77,9 +77,9 @@ jobs:
 
       - name: Bump version
         env:
-          SERVER_BUMP: ${{ inputs.serverBump }}
+          RELEASE_TYPE: ${{ inputs.releaseType }}
           MOBILE_BUMP: ${{ inputs.mobileBump }}
-        run: pnpm --silent release -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
+        run: mise //:release --type "${RELEASE_TYPE}" --mobile "${MOBILE_BUMP}"
 
       - id: output
         run: |

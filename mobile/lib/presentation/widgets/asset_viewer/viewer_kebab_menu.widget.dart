@@ -13,6 +13,7 @@ import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class ViewerKebabMenu extends ConsumerWidget {
   const ViewerKebabMenu({super.key, this.originalTheme});
@@ -52,9 +53,9 @@ class ViewerKebabMenu extends ConsumerWidget {
       isWaitingForTrashApproval: isWaitingForTrashApproval,
     );
 
-    final menuChildren = ActionButtonBuilder.buildViewerKebabMenu(actionContext, context, ref);
+    final menuChildren = ActionButtonBuilder.buildViewerKebabMenu(actionContext, context);
 
-    return MenuAnchor(
+    return ImmichMenu(
       consumeOutsideTap: true,
       style: MenuStyle(
         backgroundColor: WidgetStatePropertyAll(context.themeData.scaffoldBackgroundColor),
@@ -65,7 +66,7 @@ class ViewerKebabMenu extends ConsumerWidget {
         ),
         padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 6)),
       ),
-      menuChildren: [
+      children: [
         ConstrainedBox(
           constraints: const BoxConstraints(minWidth: 150),
           child: Theme(

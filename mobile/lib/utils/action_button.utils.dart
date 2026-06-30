@@ -1,14 +1,14 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/advanced_info_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/cast_action_button.widget.dart';
@@ -195,18 +195,14 @@ enum ActionButtonType {
     };
   }
 
-  ConsumerWidget buildButton(
+  Widget buildButton(
     ActionButtonContext context, [
     BuildContext? buildContext,
     bool iconOnly = false,
     bool menuItem = false,
   ]) {
     return switch (this) {
-      ActionButtonType.advancedInfo => AdvancedInfoActionButton(
-        source: context.source,
-        iconOnly: iconOnly,
-        menuItem: menuItem,
-      ),
+      ActionButtonType.advancedInfo => ActionMenuItemWidget(action: AssetDebugAction(assets: [context.asset])),
       ActionButtonType.share => ShareActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.shareLink => ShareLinkActionButton(
         source: context.source,
@@ -344,7 +340,7 @@ class ActionButtonBuilder {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
 
-  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext) {
     final visibleButtons = defaultViewerKebabMenuOrder
         .where((type) => !defaultViewerBottomBarButtons.contains(type) && type.shouldShow(context))
         .toList();
@@ -360,7 +356,7 @@ class ActionButtonBuilder {
       if (lastGroup != null && type.kebabMenuGroup != lastGroup) {
         result.add(const Divider(height: 1));
       }
-      result.add(type.buildButton(context, buildContext, false, true).build(buildContext, ref));
+      result.add(type.buildButton(context, buildContext, false, true));
       lastGroup = type.kebabMenuGroup;
     }
 

@@ -5,6 +5,7 @@ import 'package:immich_mobile/infrastructure/repositories/remote_asset.repositor
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/asset_api.repository.dart';
 
 final localAssetRepository = Provider<DriftLocalAssetRepository>(
   (ref) => DriftLocalAssetRepository(ref.watch(driftProvider)),
@@ -20,8 +21,9 @@ final trashedLocalAssetRepository = Provider<DriftTrashedLocalAssetRepository>(
 
 final assetServiceProvider = Provider(
   (ref) => AssetService(
-    remoteAssetRepository: ref.watch(remoteAssetRepositoryProvider),
-    localAssetRepository: ref.watch(localAssetRepository),
+    remoteRepository: ref.watch(remoteAssetRepositoryProvider),
+    localRepository: ref.watch(localAssetRepository),
+    apiRepository: ref.watch(assetApiRepositoryProvider),
   ),
 );
 

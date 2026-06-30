@@ -80,7 +80,8 @@ select
           "plugin_method"."pluginId" as "pluginId",
           "plugin_method"."name" as "methodName",
           "plugin_method"."types" as "types",
-          "plugin_method"."hostFunctions"
+          "plugin_method"."hostFunctions",
+          "plugin_method"."allowedHosts"
         from
           "workflow_step"
           inner join "plugin_method" on "plugin_method"."id" = "workflow_step"."pluginMethodId"
