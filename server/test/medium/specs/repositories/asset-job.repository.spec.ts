@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetFileType } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
@@ -112,6 +112,50 @@ describe(AssetJobRepository.name, () => {
       const stream = sut.streamForThumbnailJob({ force: false, fullsizeEnabled: true });
       await expect(consume(stream)).resolves.not.toEqual(
         expect.arrayContaining([expect.objectContaining({ id: asset.id })]),
+      );
+    });
+  });
+
+  describe('streamForVideoConversion', () => {
+    it('should queue a video asset', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+
+      const stream = sut.streamForVideoConversion(false);
+      await expect(consume(stream)).resolves.toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: asset.id })]),
+      );
+    });
+
+    it('should skip a hidden video that is not a Live Photo motion video', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({
+        ownerId: user.id,
+        type: AssetType.Video,
+        visibility: AssetVisibility.Hidden,
+      });
+
+      const stream = sut.streamForVideoConversion(false);
+      await expect(consume(stream)).resolves.not.toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: asset.id })]),
+      );
+    });
+
+    it('should queue a hidden Live Photo motion video', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset: motionAsset } = await ctx.newAsset({
+        ownerId: user.id,
+        type: AssetType.Video,
+        visibility: AssetVisibility.Hidden,
+      });
+      await ctx.newAsset({ ownerId: user.id, livePhotoVideoId: motionAsset.id });
+
+      const stream = sut.streamForVideoConversion(false);
+      await expect(consume(stream)).resolves.toEqual(
+        expect.arrayContaining([expect.objectContaining({ id: motionAsset.id })]),
       );
     });
   });

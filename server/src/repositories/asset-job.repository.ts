@@ -329,7 +329,19 @@ export class AssetJobRepository {
               ),
             ),
           )
-          .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
+          // Exclude hidden assets, except Live Photo motion videos (hidden by design but
+          // still in need of transcoding) — see #22985.
+          .where((eb) =>
+            eb.or([
+              eb('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
+              eb.exists(
+                eb
+                  .selectFrom('asset as motionParent')
+                  .select('motionParent.id')
+                  .whereRef('motionParent.livePhotoVideoId', '=', 'asset.id'),
+              ),
+            ]),
+          ),
       )
       .where('asset.deletedAt', 'is', null)
       .stream();
