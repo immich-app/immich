@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/utils/semver.dart';
 
 class FeatureHighlight {
   /// Asset path of the feature screenshot, or null to show a placeholder.
@@ -17,9 +18,9 @@ class FeatureHighlight {
   bool get isVisibleOnCurrentPlatform => platform.contains(defaultTargetPlatform);
 }
 
-const int featureMessageHighlightVersion = 1;
-
-const String featureMessageReleaseLabel = '3.0.0';
+/// The release this batch of highlights was authored for. Content-defined:
+/// bump it only when publishing a new batch, never from the running app version.
+const featureMessageRelease = SemVer(major: 3, minor: 0, patch: 0);
 
 /// Highlights relevant to the current platform.
 List<FeatureHighlight> get visibleFeatureMessageHighlights =>

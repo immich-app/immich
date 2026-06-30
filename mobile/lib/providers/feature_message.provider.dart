@@ -5,5 +5,3 @@ import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 final featureMessageServiceProvider = Provider<FeatureMessageService>(
   (ref) => FeatureMessageService(ref.read(settingsProvider)),
 );
-
-final featureMessageCheckedProvider = StateProvider<bool>((ref) => false);

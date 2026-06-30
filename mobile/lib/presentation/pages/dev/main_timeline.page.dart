@@ -19,16 +19,21 @@ class _MainTimelinePageState extends ConsumerState<MainTimelinePage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || ref.read(featureMessageCheckedProvider)) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) {
         return;
       }
-      ref.read(featureMessageCheckedProvider.notifier).state = true;
-
       final service = ref.read(featureMessageServiceProvider);
-      // if (service.shouldShow()) {
-      showFeatureMessageDialog(context).then((_) => service.markSeen());
-      // }
+      if (!service.shouldShow()) {
+        return;
+      }
+
+      await service.markSeen();
+      if (!mounted) {
+        return;
+      }
+
+      await showFeatureMessageDialog(context);
     });
   }
 

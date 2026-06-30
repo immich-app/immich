@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/feature_message.model.dart';
 import 'package:immich_mobile/presentation/widgets/feature_message/feature_message_placeholder.widget.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 
 Future<void> showFeatureMessageDialog(BuildContext context) {
@@ -13,7 +14,7 @@ Future<void> showFeatureMessageDialog(BuildContext context) {
     context: context,
     useRootNavigator: true,
     barrierDismissible: true,
-    barrierLabel: 'whats_new'.tr(),
+    barrierLabel: context.t.whats_new,
     barrierColor: Colors.black.withValues(alpha: 0.55),
     transitionDuration: const Duration(milliseconds: 280),
     pageBuilder: (_, __, ___) => const _FeatureMessageDialog(),
@@ -100,10 +101,10 @@ class _FeatureMessageDialogState extends State<_FeatureMessageDialog> with Singl
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('whats_new'.tr(), style: context.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+                    Text(context.t.whats_new, style: context.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
                     const SizedBox(height: 2),
                     Text(
-                      'whats_new_version'.tr(namedArgs: {'version': featureMessageReleaseLabel}),
+                      context.t.whats_new_version(version: featureMessageRelease.toString()),
                       style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                     ),
                   ],
@@ -128,7 +129,7 @@ class _FeatureMessageDialogState extends State<_FeatureMessageDialog> with Singl
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14)),
-                      child: Text('skip'.tr()),
+                      child: Text(context.t.skip),
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -163,7 +164,7 @@ class _FeatureMessageDialogState extends State<_FeatureMessageDialog> with Singl
                           ),
                           child: AnimatedSwitcher(
                             duration: const Duration(milliseconds: 200),
-                            child: Text(_isLast ? 'ok'.tr() : 'next'.tr(), key: ValueKey(_isLast)),
+                            child: Text(_isLast ? context.t.ok : context.t.next, key: ValueKey(_isLast)),
                           ),
                         ),
                       ),

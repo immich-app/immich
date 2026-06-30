@@ -1,6 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 /// Immich "brand splat" palette — the five semantic colors.
 class _SplatColors {
@@ -81,7 +81,7 @@ class FeatureMessagePlaceholder extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Text(
-            'new_feature'.tr(),
+            context.t.new_feature,
             style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: inkColor),
           ),
         ],

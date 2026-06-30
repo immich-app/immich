@@ -8,10 +8,9 @@ class FeatureMessageService {
   const FeatureMessageService(this._settingsRepository);
 
   bool shouldShow() {
-    final seen = _settingsRepository.appConfig.read(SettingsKey.featureMessageSeenVersion);
-    return featureMessageHighlights.isNotEmpty && featureMessageHighlightVersion > seen;
+    final seen = _settingsRepository.appConfig.featureMessage.seenRelease;
+    return featureMessageHighlights.isNotEmpty && featureMessageRelease > seen;
   }
 
-  Future<void> markSeen() =>
-      _settingsRepository.write(SettingsKey.featureMessageSeenVersion, featureMessageHighlightVersion);
+  Future<void> markSeen() => _settingsRepository.write(SettingsKey.featureMessageSeenRelease, featureMessageRelease);
 }

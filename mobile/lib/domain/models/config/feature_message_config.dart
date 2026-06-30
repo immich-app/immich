@@ -1,18 +1,20 @@
+import 'package:immich_mobile/utils/semver.dart';
+
 class FeatureMessageConfig {
-  final int seenVersion;
+  final SemVer seenRelease;
 
-  const FeatureMessageConfig({this.seenVersion = 0});
+  const FeatureMessageConfig({this.seenRelease = const SemVer(major: 0, minor: 0, patch: 0)});
 
-  FeatureMessageConfig copyWith({int? seenVersion}) =>
-      FeatureMessageConfig(seenVersion: seenVersion ?? this.seenVersion);
+  FeatureMessageConfig copyWith({SemVer? seenRelease}) =>
+      FeatureMessageConfig(seenRelease: seenRelease ?? this.seenRelease);
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || (other is FeatureMessageConfig && other.seenVersion == seenVersion);
+      identical(this, other) || (other is FeatureMessageConfig && other.seenRelease == seenRelease);
 
   @override
-  int get hashCode => seenVersion.hashCode;
+  int get hashCode => seenRelease.hashCode;
 
   @override
-  String toString() => 'FeatureMessageConfig(seenVersion: $seenVersion)';
+  String toString() => 'FeatureMessageConfig(seenRelease: $seenRelease)';
 }
