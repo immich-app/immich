@@ -1,10 +1,9 @@
-import { AssetVisibility, deleteAssets as deleteBulk, restoreAssets } from '@immich/sdk';
+import { AssetVisibility, deleteAssets as deleteBulk, restoreAssets, type StackResponseDto } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import type { StackResponse } from '$lib/utils/asset-utils';
 import { handleError } from './handle-error';
 
 export type OnDelete = (assetIds: string[]) => void;
@@ -15,8 +14,6 @@ export type OnUnlink = (assets: { still: TimelineAsset; motion: TimelineAsset })
 export type OnAddToAlbum = (ids: string[], albumId: string) => void;
 export type OnArchive = (ids: string[], visibility: AssetVisibility) => void;
 export type OnFavorite = (ids: string[], favorite: boolean) => void;
-export type OnStack = (result: StackResponse) => void;
-export type OnUnstack = (assets: TimelineAsset[]) => void;
 export type OnSetVisibility = (ids: string[]) => void;
 
 export const deleteAssets = async (
@@ -62,43 +59,18 @@ const undoDeleteAssets = async (onUndoDelete: OnUndoDelete, assets: TimelineAsse
 /**
  * Update the asset stack state in the asset store based on the provided stack response.
  * This function updates the stack information so that the icon is shown for the primary asset
- * and removes any assets from the timeline that are marked for deletion.
- *
- * @param {TimelineManager} timelineManager - The timeline manager to update.
- * @param {StackResponse} stackResponse - The stack response containing the stack and assets to delete.
+ * and removes the non-primary assets from the timeline.
  */
-export function updateStackedAssetInTimeline(timelineManager: TimelineManager, { stack, toDeleteIds }: StackResponse) {
-  if (stack != undefined) {
-    timelineManager.update(
-      [stack.primaryAssetId],
-      (asset) =>
-        (asset.stack = {
-          id: stack.id,
-          primaryAssetId: stack.primaryAssetId,
-          assetCount: stack.assets.length,
-        }),
-    );
+export function updateStackedAssetInTimeline(timelineManager: TimelineManager, stack: StackResponseDto) {
+  timelineManager.update([stack.primaryAssetId], (asset) => {
+    asset.stack = {
+      id: stack.id,
+      primaryAssetId: stack.primaryAssetId,
+      assetCount: stack.assets.length,
+    };
+  });
 
-    timelineManager.removeAssets(toDeleteIds);
-  }
-}
-
-/**
- * Update the timeline manager to reflect the unstacked state of assets.
- * This function updates the stack property of each asset to undefined, effectively unstacking them.
- * It also adds the unstacked assets back to the timeline manager.
- *
- * @param timelineManager - The timeline manager to update.
- * @param assets - The array of asset response DTOs to update in the timeline manager.
- */
-export function updateUnstackedAssetInTimeline(timelineManager: TimelineManager, assets: TimelineAsset[]) {
-  timelineManager.update(
-    assets.map((asset) => asset.id),
-    (asset) => {
-      asset.stack = null;
-      return { remove: false };
-    },
+  timelineManager.removeAssets(
+    stack.assets.filter((asset) => asset.id !== stack.primaryAssetId).map((asset) => asset.id),
   );
-
-  timelineManager.upsertAssets(assets);
 }

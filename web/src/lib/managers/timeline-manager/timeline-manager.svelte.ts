@@ -17,6 +17,7 @@ import {
   retrieveRange as retrieveRangeUtil,
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
+import { updateStackedAssetInTimeline } from '$lib/utils/actions';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { PersistedLocalStorage } from '$lib/utils/persisted';
 import {
@@ -115,6 +116,23 @@ export class TimelineManager extends VirtualScrollManager {
     this.#unsubscribes.push(
       eventManager.on({
         AssetUpdate: (asset: AssetResponseDto) => this.#updateAssets([toTimelineAsset(asset)]),
+        StackCreate: (stack) => updateStackedAssetInTimeline(this, stack),
+        StackDelete: ({ assets }) => {
+          this.update(
+            assets.map((asset) => asset.id),
+            (asset) => (asset.stack = null),
+          );
+          this.upsertAssets(assets.map((asset) => toTimelineAsset(asset)));
+        },
+        StackUpdate: (stack) => {
+          // unstack and re-stack
+          this.update(
+            stack.assets.map((asset) => asset.id),
+            (asset) => (asset.stack = null),
+          );
+          this.upsertAssets(stack.assets.map((asset) => toTimelineAsset(asset)));
+          updateStackedAssetInTimeline(this, stack);
+        },
       }),
     );
   }
