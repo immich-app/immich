@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/feature_message.model.dart';
+import 'package:immich_mobile/presentation/widgets/feature_message/feature_message_placeholder.widget.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 
@@ -240,11 +241,11 @@ class _FeaturePage extends StatelessWidget {
                   width: double.infinity,
                   height: 256,
                   child: highlight.image == null
-                      ? const _ImagePlaceholder()
+                      ? const FeatureMessagePlaceholder()
                       : Image.asset(
                           highlight.image!,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, _, __) => const _ImagePlaceholder(),
+                          errorBuilder: (context, _, __) => const FeatureMessagePlaceholder(),
                         ),
                 ),
               ),
@@ -268,26 +269,6 @@ class _FeaturePage extends StatelessWidget {
               ],
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Shown in place of a feature screenshot when no image asset is provided.
-class _ImagePlaceholder extends StatelessWidget {
-  const _ImagePlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = context.colorScheme;
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.local_fire_department_rounded, color: context.colorScheme.primary, size: 84),
-          const SizedBox(height: 12),
-          Text('new_feature'.tr(), style: context.textTheme.titleMedium?.copyWith(color: scheme.onSurfaceVariant)),
         ],
       ),
     );

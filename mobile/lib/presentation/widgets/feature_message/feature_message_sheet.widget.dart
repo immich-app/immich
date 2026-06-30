@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/feature_message.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/presentation/widgets/feature_message/feature_message_placeholder.widget.dart';
 
 Future<void> showFeatureMessageSheet(BuildContext context) {
   return showModalBottomSheet(
@@ -66,11 +67,6 @@ class _HighlightCard extends StatelessWidget {
 
   const _HighlightCard({required this.highlight});
 
-  Widget _placeholder(BuildContext context) => ColoredBox(
-    color: context.colorScheme.surfaceContainerHigh,
-    child: Center(child: Icon(Icons.local_fire_department_rounded, color: context.colorScheme.primary, size: 48)),
-  );
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -83,11 +79,11 @@ class _HighlightCard extends StatelessWidget {
             child: AspectRatio(
               aspectRatio: 16 / 9,
               child: highlight.image == null
-                  ? _placeholder(context)
+                  ? const FeatureMessagePlaceholder()
                   : Image.asset(
                       highlight.image!,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, _, __) => _placeholder(context),
+                      errorBuilder: (context, _, __) => const FeatureMessagePlaceholder(),
                     ),
             ),
           ),
