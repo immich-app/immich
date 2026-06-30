@@ -101,7 +101,10 @@ class _FeatureMessageDialogState extends State<_FeatureMessageDialog> with Singl
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(context.t.whats_new, style: context.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+                    Text(
+                      context.t.whats_new,
+                      style: context.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                    ),
                     const SizedBox(height: 2),
                     Text(
                       context.t.whats_new_version(version: featureMessageRelease.toString()),

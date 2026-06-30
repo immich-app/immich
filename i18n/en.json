@@ -2169,7 +2169,7 @@
   "upload_status_errors": "Errors",
   "upload_status_uploaded": "Uploaded",
   "upload_success": "Upload success, refresh the page to see new upload assets.",
-  "upload_to_album_body": "Add photos directly into an album as you upload them.",
+  "upload_to_album_body": "For users that don't utilize the manual upload feature, you can now choose to add local photos directly into an album as you upload them, no need to upload then add to an album later anymore.",
   "upload_to_album_title": "Upload straight to an album",
   "upload_to_immich": "Upload to Immich ({count})",
   "uploading": "Uploading",

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/widgets/common/immich_logo.dart';
 
-/// Immich "brand splat" palette — the five semantic colors.
 class _SplatColors {
   static const primary = Color(0xFF4250AF);
   static const info = Color(0xFF3B82F6);
@@ -11,8 +11,6 @@ class _SplatColors {
   static const danger = Color(0xFFE5484D);
 }
 
-/// A deliberate placeholder for a "What's new" slide that ships without a
-/// screenshot. Pure shapes + one icon — zero image assets. Fills its parent.
 class FeatureMessagePlaceholder extends StatelessWidget {
   const FeatureMessagePlaceholder({super.key});
 
@@ -23,13 +21,14 @@ class FeatureMessagePlaceholder extends StatelessWidget {
     final cardColor = dark ? const Color(0xFF232228) : const Color(0xFFEEEDF4);
     final tileColor = dark ? const Color(0xFF2B2A32) : const Color(0xFFFBFAFE);
     final inkColor = dark ? const Color(0xFFE7E7EC) : const Color(0xFF1A1A1E);
-    final accent = dark ? const Color(0xFF9AA6DA) : _SplatColors.primary;
 
     return Container(
       width: double.infinity,
       height: double.infinity,
       clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(color: cardColor, borderRadius: const BorderRadius.all(Radius.circular(24))),
+      // Fill a plain rectangle — the parent's ClipRRect handles the corner rounding,
+      // so the placeholder doesn't round its own corners inside that clip.
+      decoration: BoxDecoration(color: cardColor),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -70,7 +69,7 @@ class FeatureMessagePlaceholder extends StatelessWidget {
                         alignment: Alignment.center,
                         children: [
                           Positioned(left: 12, top: 12, child: _dot(12, _SplatColors.warning)),
-                          Icon(Icons.auto_awesome, size: 34, color: accent),
+                          const ImmichLogo(size: 40),
                         ],
                       ),
                     ),
@@ -89,8 +88,11 @@ class FeatureMessagePlaceholder extends StatelessWidget {
     );
   }
 
-  static Widget _dot(double d, Color c) =>
-      Container(width: d, height: d, decoration: BoxDecoration(color: c, shape: BoxShape.circle));
+  static Widget _dot(double d, Color c) => Container(
+    width: d,
+    height: d,
+    decoration: BoxDecoration(color: c, shape: BoxShape.circle),
+  );
 
   static Widget _bar(double w, double h, double angle, Color c) => Transform.rotate(
     angle: angle,
