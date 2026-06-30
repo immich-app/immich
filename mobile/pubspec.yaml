@@ -48,7 +48,7 @@ dependencies:
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player
-      ref: '6d6ad3919d6d862dfb3320129ffdcc2caa14d604'
+      ref: '8b8184d71f2d1ccc32fe153152b2615c0c718b3e'
   network_info_plus: ^6.1.4
   octo_image: ^2.1.0
   openapi:
