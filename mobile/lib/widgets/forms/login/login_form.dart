@@ -91,7 +91,7 @@ class LoginForm extends HookConsumerWidget {
         final packageInfo = await PackageInfo.fromPlatform();
         final appSemVer = SemVer.fromString(packageInfo.version);
         final serverSemVer = serverInfo.serverVersion;
-        warningMessage.value = getVersionCompatibilityMessage(appSemVer, serverSemVer);
+        warningMessage.value = getVersionCompatibilityMessage(serverVersion: serverSemVer, appVersion: appSemVer);
       } catch (error) {
         warningMessage.value = 'Error checking version compatibility';
       }
@@ -377,11 +377,21 @@ class LoginForm extends HookConsumerWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: context.isDarkTheme ? Colors.red.shade700 : Colors.red.shade100,
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
-            border: Border.all(color: context.isDarkTheme ? Colors.red.shade900 : Colors.red[200]!),
+            color: context.isDarkTheme ? Colors.amber.shade700 : Colors.amber.shade100,
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            border: Border.all(color: context.isDarkTheme ? Colors.amber.shade800 : Colors.amber[200]!, width: 2),
           ),
-          child: Text(warningMessage.value!, textAlign: TextAlign.center),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.amber.shade800),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Padding(padding: const EdgeInsets.only(top: 2), child: Text(warningMessage.value!)),
+              ),
+            ],
+          ),
         ),
       );
     }
