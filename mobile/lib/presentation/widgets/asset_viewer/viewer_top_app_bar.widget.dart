@@ -3,7 +3,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
@@ -14,8 +13,6 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/timezone.dart';
@@ -48,11 +45,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     final originalTheme = context.themeData;
     final assetForAction = [asset];
 
-    // todo use isWaitingForSyncApproval in ActionIconButtonWidget
-    // final isWaitingForSyncApproval =
-    //     ref.read(timelineServiceProvider).origin == TimelineOrigin.syncTrash ||
-    //     ref.watch(isWaitingForTrashApprovalProvider(asset.checksum)).value == true;
-
     final actions = <Widget>[
       if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
       if (album != null && album.isActivityEnabled && album.isShared)
@@ -70,11 +62,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         ),
 
       ActionIconButtonWidget(action: FavoriteAction(assets: assetForAction)),
-      // todo use isWaitingForSyncApproval in ActionIconButtonWidget
-      // if (asset.hasRemote && isOwner && !asset.isFavorite && !isWaitingForSyncApproval)
-      //   const FavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
-      // if (asset.hasRemote && isOwner && asset.isFavorite && !isWaitingForSyncApproval)
-      //   const UnFavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
 
       ViewerKebabMenu(originalTheme: originalTheme),
     ];

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_ui/immich_ui.dart';
 
 class FavoriteAction extends AssetAction<RemoteAsset> {
@@ -17,11 +19,15 @@ class FavoriteAction extends AssetAction<RemoteAsset> {
   String label(ActionScope scope) => shouldFavorite ? scope.context.t.favorite : scope.context.t.unfavorite;
 
   @override
-  Iterable<RemoteAsset> filter(ActionScope scope) => assets
-      .where(
-        (asset) => asset is RemoteAsset && asset.ownerId == scope.authUser.id && asset.isFavorite == !shouldFavorite,
-      )
-      .cast<RemoteAsset>();
+  Iterable<RemoteAsset> filter(ActionScope scope) {
+    if (scope.ref.read(timelineServiceProvider).origin == TimelineOrigin.syncTrash) {
+      return const Iterable.empty();
+    }
+
+    return assets.whereType<RemoteAsset>().where(
+      (asset) => asset.ownerId == scope.authUser.id && asset.isFavorite == !shouldFavorite,
+    );
+  }
 
   @override
   bool isVisible(ActionScope scope) => filter(scope).isNotEmpty;
