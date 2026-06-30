@@ -1,26 +1,20 @@
-import 'dart:io';
-
-enum FeaturePlatform { all, android, ios }
+import 'package:flutter/foundation.dart';
 
 class FeatureHighlight {
   /// Asset path of the feature screenshot, or null to show a placeholder.
   final String? image;
   final String titleKey;
   final String bodyKey;
-  final FeaturePlatform platform;
+  final List<TargetPlatform> platform;
 
   const FeatureHighlight({
     this.image,
     required this.titleKey,
     required this.bodyKey,
-    this.platform = FeaturePlatform.all,
+    this.platform = const [.iOS, .android],
   });
 
-  bool get isVisibleOnCurrentPlatform => switch (platform) {
-    FeaturePlatform.all => true,
-    FeaturePlatform.android => Platform.isAndroid,
-    FeaturePlatform.ios => Platform.isIOS,
-  };
+  bool get isVisibleOnCurrentPlatform => platform.contains(defaultTargetPlatform);
 }
 
 const int featureMessageHighlightVersion = 1;
@@ -49,6 +43,11 @@ const List<FeatureHighlight> featureMessageHighlights = [
   ),
 
   FeatureHighlight(image: 'assets/feature_message/ocr.webp', titleKey: 'ocr_title', bodyKey: 'ocr_body'),
-  FeatureHighlight(titleKey: 'open_in_immich_title', bodyKey: 'open_in_immich_body', platform: FeaturePlatform.android),
+  FeatureHighlight(
+    image: 'assets/feature_message/open_in_immich.webp',
+    titleKey: 'open_in_immich_title',
+    bodyKey: 'open_in_immich_body',
+    platform: [.android],
+  ),
   FeatureHighlight(titleKey: 'upload_to_album_title', bodyKey: 'upload_to_album_body'),
 ];
