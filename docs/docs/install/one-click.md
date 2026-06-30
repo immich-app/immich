@@ -17,6 +17,12 @@ Go to the provider's marketplace and choose Immich, then follow the provided ins
 
 ## One-Click Immich marketplace providers
 
+### Zenith Hosting
+
+[![Deploy with Zenith](https://cdn.zenith.hosting/buttons/deploy-with-zenith.svg)](https://zenith.hosting/host/immich?ref=gh)
+
+Zenith Hosting offers Immich as a one-click deployment option on the platform. They handle storage, backups, SMTP and more.
+
 ### DigitalOcean
 
 https://marketplace.digitalocean.com/apps/immich
