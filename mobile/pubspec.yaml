@@ -119,6 +119,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/feature_message/
   fonts:
     - family: GoogleSans
       fonts:

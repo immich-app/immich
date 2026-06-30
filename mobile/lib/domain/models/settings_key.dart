@@ -6,6 +6,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/utils/semver.dart';
 
 enum SettingsKey<T> {
   // Theme
@@ -73,7 +74,10 @@ enum SettingsKey<T> {
   slideshowRepeat<bool>(),
   slideshowDuration<int>(),
   slideshowLook<SlideshowLook>(codec: _EnumCodec(SlideshowLook.values)),
-  slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values));
+  slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values)),
+
+  // Feature message
+  featureMessageSeenRelease<SemVer>(codec: _SemVerCodec());
 
   final _SettingsCodec<T>? _codecOverride;
 
@@ -137,6 +141,16 @@ final class _DateTimeCodec extends _SettingsCodec<DateTime> {
 
   @override
   DateTime decode(String raw) => DateTime.parse(raw);
+}
+
+final class _SemVerCodec extends _SettingsCodec<SemVer> {
+  const _SemVerCodec();
+
+  @override
+  String encode(SemVer value) => value.toString();
+
+  @override
+  SemVer decode(String raw) => SemVer.fromString(raw);
 }
 
 final class _MapCodec<K extends Object, V extends Object> extends _SettingsCodec<Map<K, V>> {
