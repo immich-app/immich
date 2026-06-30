@@ -69,6 +69,7 @@
         await goto(Route.photos());
         break;
       }
+      // no default
     }
   };
 </script>

@@ -3,11 +3,14 @@ import 'package:drift/native.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
@@ -214,8 +217,8 @@ class MediumRepositoryContext {
   }
 
   Future<AssetFaceEntityData> newFace({String? assetId, String? personId, int? imageWidth, int? imageHeight}) {
-    imageWidth ??= TestUtils.randInt(999) + 1;
-    imageHeight ??= TestUtils.randInt(999) + 1;
+    imageWidth ??= TestUtils.randInt(999) + 2;
+    imageHeight ??= TestUtils.randInt(999) + 2;
 
     final x1 = TestUtils.randInt(imageWidth - 1);
     final y1 = TestUtils.randInt(imageHeight - 1);
@@ -309,4 +312,37 @@ class MediumRepositoryContext {
   Future<void> newLocalAlbumAsset({required String albumId, required String assetId}) => db
       .into(db.localAlbumAssetEntity)
       .insert(LocalAlbumAssetEntityCompanion(albumId: .new(albumId), assetId: .new(assetId)));
+
+  Future<MemoryEntityData> newMemory({
+    String? id,
+    String? ownerId,
+    MemoryTypeEnum? type,
+    int? year,
+    DateTime? memoryAt,
+    DateTime? showAt,
+    DateTime? hideAt,
+    DateTime? deletedAt,
+    bool? isSaved,
+  }) async {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.memoryEntity)
+        .insertReturning(
+          MemoryEntityCompanion(
+            id: .new(id),
+            ownerId: .new(TestUtils.uuid(ownerId)),
+            type: .new(type ?? MemoryTypeEnum.onThisDay),
+            data: .new(MemoryData(year: year ?? 2020).toJson()),
+            isSaved: .new(isSaved ?? false),
+            memoryAt: .new(TestUtils.date(memoryAt)),
+            showAt: .new(showAt),
+            hideAt: .new(hideAt),
+            deletedAt: .new(deletedAt),
+          ),
+        );
+  }
+
+  Future<void> newMemoryAsset({required String memoryId, required String assetId}) => db
+      .into(db.memoryAssetEntity)
+      .insert(MemoryAssetEntityCompanion(memoryId: .new(memoryId), assetId: .new(assetId)));
 }

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import type { SearchOptions } from '$lib/utils/dipatch';
   import { IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiClose, mdiMagnify } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -9,7 +8,7 @@
     roundedBottom?: boolean;
     showLoadingSpinner: boolean;
     placeholder: string;
-    onSearch?: (options: SearchOptions) => void;
+    onSearch?: (options: { force?: boolean }) => void;
     onReset?: () => void;
   }
 

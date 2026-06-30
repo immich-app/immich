@@ -1,7 +1,8 @@
 <script lang="ts">
   import { locale } from '$lib/stores/preferences.store';
   import type { CalendarHeatmapResponseDto } from '@immich/sdk';
-  import { DateTime } from 'luxon';
+  import { Text } from '@immich/ui';
+  import { DateTime, Info } from 'luxon';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -12,20 +13,8 @@
 
   const { data, itemLabel, totalLabel }: Props = $props();
 
-  const { rows } = $derived.by(() => {
-    const weeks = Array.from({ length: Math.ceil(data.series.length / 7) }, (_, index) =>
-      data.series.slice(index * 7, index * 7 + 7),
-    );
-
-    const rows = Array.from({ length: 7 }, (_, dayIndex) => weeks.map((week) => week[dayIndex]).filter(Boolean));
-    const endDate = DateTime.fromISO(data.to, { zone: 'utc' });
-
-    const months = Array.from({ length: 4 }, (_, index) =>
-      endDate.minus({ months: 11 - index * 4 }).toLocaleString({ month: 'short' }, { locale: $locale }),
-    );
-
-    return { rows, months };
-  });
+  const startDate = $derived(DateTime.fromISO(data.from, { zone: 'utc' }));
+  const padding = $derived(startDate.diff(startDate.startOf('week', { useLocaleWeeks: true })).as('days'));
 
   const maxCount = $derived(Math.max(...data.series.map((item) => item.count), 0));
 
@@ -49,45 +38,47 @@
     return 'bg-immich-primary';
   };
 
-  // const dayLabels = $derived([
-  //   '',
-  //   dayOfWeek('monday', { locale: $locale, style: 'short' }),
-  //   '',
-  //   dayOfWeek('wednesday', { locale: $locale, style: 'short' }),
-  //   '',
-  //   dayOfWeek('friday', { locale: $locale, style: 'short' }),
-  //   '',
-  // ]);
+  const weekdays = $derived([
+    Info.weekdays('short', { locale: $locale })[0],
+    Info.weekdays('short', { locale: $locale })[2],
+    Info.weekdays('short', { locale: $locale })[4],
+    Info.weekdays('short', { locale: $locale })[6],
+  ]);
 </script>
 
 <div class="mt-4 w-full">
   <div class="relative w-full">
     <!-- TODO -->
-    <!-- <div class="absolute top-4 left-0 flex flex-col gap-0.5">
-      {#each dayLabels as dayLabel, i (i)}
-        <div class="relative flex h-3 w-6 items-center text-xs text-gray-500 dark:text-gray-400">
-          {dayLabel}
-        </div>
-      {/each}
-    </div> -->
-
     <!-- <div class="mb-1 flex justify-between text-xs text-gray-500 dark:text-gray-400">
       {#each getUploadActivityMonths() as month (month)}
         <div>{month}</div>
       {/each}
     </div> -->
 
-    <div class="grid grid-rows-7 gap-0.5">
-      {#each rows as row, dayIndex (dayIndex)}
-        <div class="grid grid-cols-52 gap-0.5">
-          {#each row as day (day.date)}
-            <div
-              class="aspect-square w-full min-w-0 rounded-sm {itemColors(day.count)}"
-              title={itemLabel({ date: day.date, count: day.count })}
-              aria-label={itemLabel({ date: day.date, count: day.count })}
-            ></div>
-          {/each}
-        </div>
+    <div class="grid grid-flow-col grid-rows-7 gap-0.5">
+      <div class="row-span-7 grid grid-rows-subgrid">
+        {#if Info.getStartOfWeek({ locale: $locale }) === 7}
+          <div></div>
+        {/if}
+        <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[0]}</Text></div>
+        <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[1]}</Text></div>
+        <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[2]}</Text></div>
+        {#if Info.getStartOfWeek({ locale: $locale }) === 1}
+          <div class="-my-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[3]}</Text></div>
+        {/if}
+      </div>
+
+      {#each data.series as day, idx (day.date)}
+        {@const date = DateTime.fromISO(day.date, { zone: 'utc' }).toLocaleString(
+          { month: 'short', day: 'numeric' },
+          { locale: $locale },
+        )}
+        <div
+          class="aspect-square size-full rounded-sm {itemColors(day.count)} row-start-(--heatmap-row-start)"
+          style:--heatmap-row-start={idx === 0 ? padding + 1 : undefined}
+          title={itemLabel({ date, count: day.count })}
+          aria-label={itemLabel({ date, count: day.count })}
+        ></div>
       {/each}
     </div>
 

@@ -31,7 +31,7 @@ class AssetBulkUploadCheckResult {
   ///
   Optional<String?> assetId;
 
-  /// Asset ID
+  /// Client-side identifier echoed from the request to match results to inputs
   String id;
 
   /// Whether existing asset is trashed

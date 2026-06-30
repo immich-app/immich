@@ -100,21 +100,21 @@ const AlbumUserResponseSchema = z
 
 const ContributorCountResponseSchema = z
   .object({
-    userId: z.string().describe('User ID'),
+    userId: z.uuidv4().describe('User ID'),
     assetCount: z.int().min(0).describe('Number of assets contributed'),
   })
   .meta({ id: 'ContributorCountResponseDto' });
 
 export const AlbumResponseSchema = z
   .object({
-    id: z.string().describe('Album ID'),
+    id: z.uuidv4().describe('Album ID'),
     albumName: z.string().describe('Album name'),
     description: z.string().describe('Album description'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     updatedAt: z.string().meta({ format: 'date-time' }).describe('Last update date'),
-    albumThumbnailAssetId: z.string().nullable().describe('Thumbnail asset ID'),
+    albumThumbnailAssetId: z.uuidv4().nullable().describe('Thumbnail asset ID'),
     shared: z.boolean().describe('Is shared album'),
     albumUsers: z
       .array(AlbumUserResponseSchema)
