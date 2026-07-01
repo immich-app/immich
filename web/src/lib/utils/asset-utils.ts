@@ -17,7 +17,7 @@ import {
   type StackResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
-import { toastManager, type ToastShow } from '@immich/ui';
+import { toastManager } from '@immich/ui';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
@@ -417,7 +417,7 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
 
 const showUndoArchiveToast = (description: string, assets: TimelineAsset[]) => {
   const $t = get(t);
-  const toast: ToastShow & { onClose?: () => void } = {
+  toastManager.primary({
     description,
     button: (close) => ({
       label: $t('undo'),
@@ -426,8 +426,7 @@ const showUndoArchiveToast = (description: string, assets: TimelineAsset[]) => {
         void undoArchiveAssets(assets);
       },
     }),
-  };
-  toastManager.primary(toast);
+  });
 };
 
 const undoArchiveAssets = async (assets: TimelineAsset[]) => {
