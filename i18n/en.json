@@ -1087,6 +1087,8 @@
   "exif_bottom_sheet_description": "Add Description...",
   "exif_bottom_sheet_description_error": "Error updating description",
   "exif_bottom_sheet_no_description": "No description",
+  "exif_bottom_sheet_people": "PEOPLE",
+  "exif_bottom_sheet_person_add_person": "Add name",
   "exit_slideshow": "Exit Slideshow",
   "expand": "Expand",
   "expand_all": "Expand all",
@@ -1144,9 +1146,11 @@
   "free_up_space_settings_subtitle": "Free up device storage",
   "full_path": "Full path: {path}",
   "full_path_or_folder": "Full path or folder",
+  "fullscreen": "Fullscreen",
   "gcast_enabled": "Google Cast",
   "gcast_enabled_description": "This feature loads external resources from Google in order to work.",
   "general": "General",
+  "geolocate": "Geolocate",
   "geolocation_instruction_location": "Click on an asset with GPS coordinates to use its location, or select a location directly from the map",
   "get_help": "Get Help",
   "get_people_error": "Error getting people",
@@ -2066,6 +2070,8 @@
   "support_third_party_description": "Your Immich installation was packaged by a third-party. Issues you experience may be caused by that package, so please raise issues with them in the first instance using the links below.",
   "supporter": "Supporter",
   "swap_merge_direction": "Swap merge direction",
+  "switch_to_flat_map": "Switch to flat map",
+  "switch_to_globe_map": "Switch to globe map",
   "sync": "Sync",
   "sync_albums": "Sync albums",
   "sync_local": "Sync Local",
@@ -2281,5 +2287,7 @@
   "you_dont_have_any_shared_links": "You don't have any shared links",
   "your_wifi_name": "Your Wi-Fi name",
   "zero_to_clear_rating": "press 0 to clear asset rating",
-  "zoom_image": "Zoom Image"
+  "zoom_image": "Zoom Image",
+  "zoom_in": "Zoom in",
+  "zoom_out": "Zoom out"
 }
