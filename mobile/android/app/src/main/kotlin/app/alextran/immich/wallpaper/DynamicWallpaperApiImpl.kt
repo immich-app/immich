@@ -66,6 +66,51 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
     }
   }
 
+  override fun updateSelection(
+    assets: List<DynamicWallpaperAssetRef>,
+    forcePrepareIds: List<String>,
+    prepareMissing: Boolean,
+    callback: (Result<Unit>) -> Unit,
+  ) {
+    scope.launch {
+      try {
+        val normalizedAssets = if (prepareMissing) {
+          DynamicWallpaperRotation.deduplicateRefsPreservingOrder(assets)
+        } else {
+          DynamicWallpaperConfigStore.refsPreservingSourceMetadata(context, assets)
+        }
+
+        DynamicWallpaperConfigStore.writeSelectionPreservingActiveAsset(context, normalizedAssets)
+
+        val forcePrepareIdSet = forcePrepareIds.toSet()
+        if (prepareMissing || forcePrepareIdSet.isNotEmpty()) {
+          preparer.prepare(
+            normalizedAssets,
+            force = false,
+            forcePrepareIds = forcePrepareIdSet,
+            prepareMissing = prepareMissing,
+          )
+        }
+
+        ImmichWallpaperService.refreshActiveWallpapers()
+        callback(Result.success(Unit))
+      } catch (error: Throwable) {
+        callback(Result.failure(error))
+      }
+    }
+  }
+
+  override fun disable(callback: (Result<Unit>) -> Unit) {
+    try {
+      val wallpaperManager = WallpaperManager.getInstance(context)
+      wallpaperManager.clear(WallpaperManager.FLAG_SYSTEM)
+      wallpaperManager.clear(WallpaperManager.FLAG_LOCK)
+      callback(Result.success(Unit))
+    } catch (error: Throwable) {
+      callback(Result.failure(error))
+    }
+  }
+
   override fun getStatus(callback: (Result<DynamicWallpaperStatus>) -> Unit) {
     try {
       callback(Result.success(DynamicWallpaperConfigStore.status(context)))

@@ -196,7 +196,8 @@ class FlutterError (
 data class DynamicWallpaperAssetRef (
   val remoteId: String,
   val localId: String? = null,
-  val isEdited: Boolean
+  val isEdited: Boolean,
+  val layout: DynamicWallpaperAssetLayout? = null
 )
  {
   companion object {
@@ -204,7 +205,8 @@ data class DynamicWallpaperAssetRef (
       val remoteId = pigeonVar_list[0] as String
       val localId = pigeonVar_list[1] as String?
       val isEdited = pigeonVar_list[2] as Boolean
-      return DynamicWallpaperAssetRef(remoteId, localId, isEdited)
+      val layout = pigeonVar_list[3] as DynamicWallpaperAssetLayout?
+      return DynamicWallpaperAssetRef(remoteId, localId, isEdited, layout)
     }
   }
   fun toList(): List<Any?> {
@@ -212,6 +214,7 @@ data class DynamicWallpaperAssetRef (
       remoteId,
       localId,
       isEdited,
+      layout,
     )
   }
   override fun equals(other: Any?): Boolean {
@@ -222,7 +225,7 @@ data class DynamicWallpaperAssetRef (
       return true
     }
     val other = other as DynamicWallpaperAssetRef
-    return DynamicWallpaperPigeonUtils.deepEquals(this.remoteId, other.remoteId) && DynamicWallpaperPigeonUtils.deepEquals(this.localId, other.localId) && DynamicWallpaperPigeonUtils.deepEquals(this.isEdited, other.isEdited)
+    return DynamicWallpaperPigeonUtils.deepEquals(this.remoteId, other.remoteId) && DynamicWallpaperPigeonUtils.deepEquals(this.localId, other.localId) && DynamicWallpaperPigeonUtils.deepEquals(this.isEdited, other.isEdited) && DynamicWallpaperPigeonUtils.deepEquals(this.layout, other.layout)
   }
 
   override fun hashCode(): Int {
@@ -230,6 +233,57 @@ data class DynamicWallpaperAssetRef (
     result = 31 * result + DynamicWallpaperPigeonUtils.deepHash(this.remoteId)
     result = 31 * result + DynamicWallpaperPigeonUtils.deepHash(this.localId)
     result = 31 * result + DynamicWallpaperPigeonUtils.deepHash(this.isEdited)
+    result = 31 * result + DynamicWallpaperPigeonUtils.deepHash(this.layout)
+    return result
+  }
+}
+
+/** Generated class from Pigeon that represents data sent in messages. */
+data class DynamicWallpaperAssetLayout (
+  val rotationDegrees: Long,
+  val cropLeft: Double,
+  val cropTop: Double,
+  val cropRight: Double,
+  val cropBottom: Double
+)
+ {
+  companion object {
+    fun fromList(pigeonVar_list: List<Any?>): DynamicWallpaperAssetLayout {
+      val rotationDegrees = pigeonVar_list[0] as Long
+      val cropLeft = pigeonVar_list[1] as Double
+      val cropTop = pigeonVar_list[2] as Double
+      val cropRight = pigeonVar_list[3] as Double
+      val cropBottom = pigeonVar_list[4] as Double
+      return DynamicWallpaperAssetLayout(rotationDegrees, cropLeft, cropTop, cropRight, cropBottom)
+    }
+  }
+  fun toList(): List<Any?> {
+    return listOf(
+      rotationDegrees,
+      cropLeft,
+      cropTop,
+      cropRight,
+      cropBottom,
+    )
+  }
+  override fun equals(other: Any?): Boolean {
+    if (other == null || other.javaClass != javaClass) {
+      return false
+    }
+    if (this === other) {
+      return true
+    }
+    val other = other as DynamicWallpaperAssetLayout
+    return DynamicWallpaperPigeonUtils.deepEquals(this.rotationDegrees, other.rotationDegrees) && DynamicWallpaperPigeonUtils.deepEquals(this.cropLeft, other.cropLeft) && DynamicWallpaperPigeonUtils.deepEquals(this.cropTop, other.cropTop) && DynamicWallpaperPigeonUtils.deepEquals(this.cropRight, other.cropRight) && DynamicWallpaperPigeonUtils.deepEquals(this.cropBottom, other.cropBottom)
+  }
+
+  override fun hashCode(): Int {
+    var result = javaClass.hashCode()
+    result = 31 * result + DynamicWallpaperPigeonUtils.deepHash(this.rotationDegrees)
+    result = 31 * result + DynamicWallpaperPigeonUtils.deepHash(this.cropLeft)
+    result = 31 * result + DynamicWallpaperPigeonUtils.deepHash(this.cropTop)
+    result = 31 * result + DynamicWallpaperPigeonUtils.deepHash(this.cropRight)
+    result = 31 * result + DynamicWallpaperPigeonUtils.deepHash(this.cropBottom)
     return result
   }
 }
@@ -297,6 +351,11 @@ private open class DynamicWallpaperPigeonCodec : StandardMessageCodec() {
       }
       130.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
+          DynamicWallpaperAssetLayout.fromList(it)
+        }
+      }
+      131.toByte() -> {
+        return (readValue(buffer) as? List<Any?>)?.let {
           DynamicWallpaperStatus.fromList(it)
         }
       }
@@ -309,8 +368,12 @@ private open class DynamicWallpaperPigeonCodec : StandardMessageCodec() {
         stream.write(129)
         writeValue(stream, value.toList())
       }
-      is DynamicWallpaperStatus -> {
+      is DynamicWallpaperAssetLayout -> {
         stream.write(130)
+        writeValue(stream, value.toList())
+      }
+      is DynamicWallpaperStatus -> {
+        stream.write(131)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -324,6 +387,8 @@ interface DynamicWallpaperApi {
   fun configure(assets: List<DynamicWallpaperAssetRef>, callback: (Result<Unit>) -> Unit)
   fun openLiveWallpaperPicker(callback: (Result<Unit>) -> Unit)
   fun refresh(assets: List<DynamicWallpaperAssetRef>, callback: (Result<Unit>) -> Unit)
+  fun updateSelection(assets: List<DynamicWallpaperAssetRef>, forcePrepareIds: List<String>, prepareMissing: Boolean, callback: (Result<Unit>) -> Unit)
+  fun disable(callback: (Result<Unit>) -> Unit)
   fun getStatus(callback: (Result<DynamicWallpaperStatus>) -> Unit)
 
   companion object {
@@ -378,6 +443,44 @@ interface DynamicWallpaperApi {
             val args = message as List<Any?>
             val assetsArg = args[0] as List<DynamicWallpaperAssetRef>
             api.refresh(assetsArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(DynamicWallpaperPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(DynamicWallpaperPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.updateSelection$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val assetsArg = args[0] as List<DynamicWallpaperAssetRef>
+            val forcePrepareIdsArg = args[1] as List<String>
+            val prepareMissingArg = args[2] as Boolean
+            api.updateSelection(assetsArg, forcePrepareIdsArg, prepareMissingArg) { result: Result<Unit> ->
+              val error = result.exceptionOrNull()
+              if (error != null) {
+                reply.reply(DynamicWallpaperPigeonUtils.wrapError(error))
+              } else {
+                reply.reply(DynamicWallpaperPigeonUtils.wrapResult(null))
+              }
+            }
+          }
+        } else {
+          channel.setMessageHandler(null)
+        }
+      }
+      run {
+        val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.DynamicWallpaperApi.disable$separatedMessageChannelSuffix", codec)
+        if (api != null) {
+          channel.setMessageHandler { _, reply ->
+            api.disable{ result: Result<Unit> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(DynamicWallpaperPigeonUtils.wrapError(error))

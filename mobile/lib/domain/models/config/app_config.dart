@@ -100,22 +100,21 @@ class AppConfig {
           other.dynamicWallpaper == dynamicWallpaper);
 
   @override
-  int get hashCode =>
-      Object.hash(
-        logLevel,
-        theme,
-        cleanup,
-        map,
-        timeline,
-        image,
-        viewer,
-        slideshow,
-        album,
-        backup,
-        network,
-        share,
-        dynamicWallpaper,
-      );
+  int get hashCode => Object.hash(
+    logLevel,
+    theme,
+    cleanup,
+    map,
+    timeline,
+    image,
+    viewer,
+    slideshow,
+    album,
+    backup,
+    network,
+    share,
+    dynamicWallpaper,
+  );
 
   @override
   String toString() =>
@@ -167,6 +166,7 @@ class AppConfig {
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
             .dynamicWallpaperAssetIds => dynamicWallpaper.assetIds,
+            .dynamicWallpaperAssetLayouts => dynamicWallpaper.assetLayouts,
           })
           as T;
 
@@ -222,6 +222,9 @@ class AppConfig {
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
       .dynamicWallpaperAssetIds => copyWith(
         dynamicWallpaper: dynamicWallpaper.copyWith(assetIds: value as List<String>),
+      ),
+      .dynamicWallpaperAssetLayouts => copyWith(
+        dynamicWallpaper: dynamicWallpaper.copyWith(assetLayouts: value as Map<String, DynamicWallpaperAssetLayout>),
       ),
     };
   }

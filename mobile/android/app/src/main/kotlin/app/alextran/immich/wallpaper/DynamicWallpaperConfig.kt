@@ -1,7 +1,10 @@
 package app.alextran.immich.wallpaper
 
+import android.app.WallpaperManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.SharedPreferences
+import android.os.Build
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.File
@@ -33,6 +36,15 @@ private data class StoredDynamicWallpaperAssetRef(
   val remoteId: String = "",
   val localId: String? = null,
   val isEdited: Boolean = false,
+  val layout: StoredDynamicWallpaperAssetLayout? = null,
+)
+
+private data class StoredDynamicWallpaperAssetLayout(
+  val rotationDegrees: Long = 0,
+  val cropLeft: Double = 0.0,
+  val cropTop: Double = 0.0,
+  val cropRight: Double = 1.0,
+  val cropBottom: Double = 1.0,
 )
 
 object DynamicWallpaperRotation {
@@ -55,6 +67,7 @@ object DynamicWallpaperRotation {
             remoteId = remoteId,
             localId = assetRef.localId?.takeIf { it.isNotBlank() },
             isEdited = assetRef.isEdited,
+            layout = assetRef.layout?.normalized(),
           )
         )
       }
@@ -163,6 +176,41 @@ object DynamicWallpaperConfigStore {
       .apply()
   }
 
+  fun writeSelectionPreservingActiveAsset(context: Context, assetRefs: List<DynamicWallpaperAssetRef>) {
+    val current = read(context)
+    val activeAssetId = current.assetIds.getOrNull(current.activeIndex)
+    val normalizedAssetRefs = DynamicWallpaperRotation.deduplicateRefsPreservingOrder(assetRefs)
+    val activeIndex = activeAssetId
+      ?.let { normalizedAssetRefs.indexOfFirst { assetRef -> assetRef.remoteId == it } }
+      ?.takeIf { it >= 0 }
+      ?: DynamicWallpaperRotation.normalizeActiveIndex(current.activeIndex, normalizedAssetRefs.size)
+
+    prefs(context).edit()
+      .putBoolean(kEnabled, normalizedAssetRefs.isNotEmpty())
+      .putString(kAssetRefs, gson.toJson(normalizedAssetRefs.map { it.toStored() }))
+      .putString(kAssetIds, gson.toJson(normalizedAssetRefs.map { it.remoteId }))
+      .putInt(kActiveIndex, activeIndex)
+      .putInt(kConfigVersion, kDynamicWallpaperConfigVersion)
+      .apply()
+  }
+
+  fun refsPreservingSourceMetadata(context: Context, assetRefs: List<DynamicWallpaperAssetRef>): List<DynamicWallpaperAssetRef> {
+    val existingByRemoteId = read(context).assetRefs.associateBy { it.remoteId }
+    return DynamicWallpaperRotation.deduplicateRefsPreservingOrder(assetRefs).map { assetRef ->
+      val existing = existingByRemoteId[assetRef.remoteId]
+      if (existing == null) {
+        assetRef
+      } else {
+        DynamicWallpaperAssetRef(
+          remoteId = assetRef.remoteId,
+          localId = existing.localId,
+          isEdited = existing.isEdited,
+          layout = assetRef.layout ?: existing.layout,
+        )
+      }
+    }
+  }
+
   fun writeActiveIndex(context: Context, activeIndex: Int) {
     prefs(context).edit()
       .putInt(kActiveIndex, activeIndex.coerceAtLeast(0))
@@ -207,13 +255,40 @@ object DynamicWallpaperConfigStore {
     val preparedCount = config.assetIds.count { hasPreparedFile(context, it) }
 
     return DynamicWallpaperStatus(
-      enabled = config.enabled,
+      enabled = isImmichLiveWallpaperEnabled(context),
       selectedCount = config.assetIds.size.toLong(),
       preparedCount = preparedCount.toLong(),
       missingCount = (config.assetIds.size - preparedCount).coerceAtLeast(0).toLong(),
       failedCount = errors.size.toLong(),
       lastError = readLastPreparationError(context),
     )
+  }
+
+  fun isImmichLiveWallpaperEnabled(context: Context): Boolean {
+    val wallpaperManager = WallpaperManager.getInstance(context)
+    val activeComponents = mutableListOf<ComponentName?>()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      listOf(WallpaperManager.FLAG_SYSTEM, WallpaperManager.FLAG_LOCK).forEach { which ->
+        activeComponents.add(
+          runCatching {
+            wallpaperManager.getWallpaperInfo(which)?.component
+          }.getOrNull()
+        )
+      }
+    }
+
+    activeComponents.add(
+      runCatching {
+        wallpaperManager.wallpaperInfo?.component
+      }.getOrNull()
+    )
+
+    return isImmichLiveWallpaperEnabled(context, activeComponents)
+  }
+
+  fun isImmichLiveWallpaperEnabled(context: Context, activeComponents: Iterable<ComponentName?>): Boolean {
+    val componentName = ComponentName(context, ImmichWallpaperService::class.java)
+    return activeComponents.any { it == componentName }
   }
 
   private fun prefs(context: Context): SharedPreferences {
@@ -244,15 +319,80 @@ object DynamicWallpaperConfigStore {
   }
 
   private fun DynamicWallpaperAssetRef.toStored(): StoredDynamicWallpaperAssetRef {
-    return StoredDynamicWallpaperAssetRef(remoteId = remoteId, localId = localId, isEdited = isEdited)
+    return StoredDynamicWallpaperAssetRef(
+      remoteId = remoteId,
+      localId = localId,
+      isEdited = isEdited,
+      layout = layout?.normalized()?.toStored()?.takeUnless { it.isIdentity() },
+    )
   }
 
   private fun StoredDynamicWallpaperAssetRef.toRef(): DynamicWallpaperAssetRef {
-    return DynamicWallpaperAssetRef(remoteId = remoteId, localId = localId, isEdited = isEdited)
+    return DynamicWallpaperAssetRef(remoteId = remoteId, localId = localId, isEdited = isEdited, layout = layout?.toLayout())
   }
 
   private fun stableFileStem(assetId: String): String {
     val bytes = MessageDigest.getInstance("SHA-256").digest(assetId.toByteArray(Charsets.UTF_8))
     return bytes.joinToString("") { "%02x".format(it) }
   }
+}
+
+fun DynamicWallpaperAssetLayout.normalized(): DynamicWallpaperAssetLayout {
+  val left = cropLeft.coerceIn(0.0, 1.0)
+  val top = cropTop.coerceIn(0.0, 1.0)
+  val right = cropRight.coerceIn(0.0, 1.0)
+  val bottom = cropBottom.coerceIn(0.0, 1.0)
+  return DynamicWallpaperAssetLayout(
+    rotationDegrees = normalizeRotation(rotationDegrees),
+    cropLeft = if (left < right) left else 0.0,
+    cropTop = if (top < bottom) top else 0.0,
+    cropRight = if (left < right) right else 1.0,
+    cropBottom = if (top < bottom) bottom else 1.0,
+  )
+}
+
+fun DynamicWallpaperAssetLayout.isIdentity(): Boolean {
+  val normalized = normalized()
+  return normalized.rotationDegrees == 0L &&
+    normalized.cropLeft == 0.0 &&
+    normalized.cropTop == 0.0 &&
+    normalized.cropRight == 1.0 &&
+    normalized.cropBottom == 1.0
+}
+
+fun DynamicWallpaperAssetRef.normalizedLayoutOrDefault(): DynamicWallpaperAssetLayout {
+  return layout?.normalized() ?: DynamicWallpaperAssetLayout(
+    rotationDegrees = 0L,
+    cropLeft = 0.0,
+    cropTop = 0.0,
+    cropRight = 1.0,
+    cropBottom = 1.0,
+  )
+}
+
+private fun StoredDynamicWallpaperAssetLayout.toLayout(): DynamicWallpaperAssetLayout {
+  return DynamicWallpaperAssetLayout(
+    rotationDegrees = rotationDegrees,
+    cropLeft = cropLeft,
+    cropTop = cropTop,
+    cropRight = cropRight,
+    cropBottom = cropBottom,
+  ).normalized()
+}
+
+private fun DynamicWallpaperAssetLayout.toStored(): StoredDynamicWallpaperAssetLayout {
+  val normalized = normalized()
+  return StoredDynamicWallpaperAssetLayout(
+    rotationDegrees = normalized.rotationDegrees,
+    cropLeft = normalized.cropLeft,
+    cropTop = normalized.cropTop,
+    cropRight = normalized.cropRight,
+    cropBottom = normalized.cropBottom,
+  )
+}
+
+private fun StoredDynamicWallpaperAssetLayout.isIdentity(): Boolean = toLayout().isIdentity()
+
+private fun normalizeRotation(rotationDegrees: Long): Long {
+  return (((rotationDegrees % 360) + 360) % 360) / 90 * 90
 }

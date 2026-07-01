@@ -2,6 +2,7 @@ package app.alextran.immich.wallpaper
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -101,6 +102,54 @@ class DynamicWallpaperPreparerTest {
     assertEquals(1, remoteCalls)
     assertEquals(1, status.preparedCount)
     assertTrue(DynamicWallpaperConfigStore.hasPreparedFile(context, "remote-a"))
+  }
+
+  @Test
+  fun `applies rotation and crop to prepared bitmap`() = runBlocking {
+    val asset = DynamicWallpaperAssetRef(
+      remoteId = "remote-a",
+      localId = null,
+      isEdited = false,
+      layout = DynamicWallpaperAssetLayout(
+        rotationDegrees = 90L,
+        cropLeft = 0.0,
+        cropTop = 0.0,
+        cropRight = 1.0,
+        cropBottom = 0.5,
+      ),
+    )
+    val preparer = DynamicWallpaperPreparer(
+      context,
+      remoteBitmapLoader = { _, _, _ -> Bitmap.createBitmap(4, 2, Bitmap.Config.ARGB_8888) },
+    )
+    DynamicWallpaperConfigStore.writeSelection(context, listOf(asset))
+
+    preparer.prepare(listOf(asset), force = true)
+
+    val prepared = BitmapFactory.decodeFile(DynamicWallpaperConfigStore.preparedFile(context, "remote-a").absolutePath)
+    assertEquals(2, prepared.width)
+    assertEquals(2, prepared.height)
+    prepared.recycle()
+  }
+
+  @Test
+  fun `prepares only forced asset when missing preparation is disabled`() = runBlocking {
+    val assetA = DynamicWallpaperAssetRef(remoteId = "remote-a", localId = null, isEdited = false)
+    val assetB = DynamicWallpaperAssetRef(remoteId = "remote-b", localId = null, isEdited = false)
+    val prepared = mutableListOf<String>()
+    val preparer = DynamicWallpaperPreparer(
+      context,
+      remoteBitmapLoader = { remoteId, _, _ ->
+        prepared.add(remoteId)
+        bitmap()
+      },
+    )
+    DynamicWallpaperConfigStore.writeSelection(context, listOf(assetA, assetB))
+
+    preparer.prepare(listOf(assetA, assetB), force = false, forcePrepareIds = setOf("remote-b"), prepareMissing = false)
+
+    assertEquals(listOf("remote-b"), prepared)
+    assertTrue(DynamicWallpaperConfigStore.hasPreparedFile(context, "remote-b"))
   }
 
   private fun bitmap(): Bitmap {

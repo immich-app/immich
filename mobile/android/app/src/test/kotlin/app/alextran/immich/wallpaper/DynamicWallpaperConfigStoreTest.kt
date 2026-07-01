@@ -1,5 +1,6 @@
 package app.alextran.immich.wallpaper
 
+import android.content.ComponentName
 import android.content.Context
 import com.google.gson.Gson
 import org.junit.After
@@ -46,6 +47,36 @@ class DynamicWallpaperConfigStoreTest {
     assertTrue(config.assetRefs[1].isEdited)
     assertEquals(1, config.activeIndex)
     assertEquals(kDynamicWallpaperConfigVersion, config.configVersion)
+  }
+
+  @Test
+  fun `reads old refs with default layout and stores custom layout fields`() {
+    context.getSharedPreferences(kDynamicWallpaperPrefsName, Context.MODE_PRIVATE)
+      .edit()
+      .putString("assetRefs", Gson().toJson(listOf(mapOf("remoteId" to "old-a"))))
+      .putString("assetIds", Gson().toJson(listOf("old-a")))
+      .putInt("configVersion", kDynamicWallpaperConfigVersion)
+      .commit()
+
+    val oldConfig = DynamicWallpaperConfigStore.read(context)
+
+    assertEquals(null, oldConfig.assetRefs[0].layout)
+
+    val layout = DynamicWallpaperAssetLayout(
+      rotationDegrees = 90L,
+      cropLeft = 0.1,
+      cropTop = 0.2,
+      cropRight = 0.8,
+      cropBottom = 0.9,
+    )
+    DynamicWallpaperConfigStore.writeSelection(
+      context,
+      listOf(DynamicWallpaperAssetRef(remoteId = "new-a", localId = null, isEdited = false, layout = layout)),
+    )
+
+    val config = DynamicWallpaperConfigStore.read(context)
+
+    assertEquals(layout, config.assetRefs[0].layout)
   }
 
   @Test
@@ -110,15 +141,52 @@ class DynamicWallpaperConfigStoreTest {
   }
 
   @Test
+  fun `preserves active asset while reordering selection`() {
+    DynamicWallpaperConfigStore.writeSelection(context, DynamicWallpaperRotation.refsFromAssetIds(listOf("a", "b", "c")))
+    DynamicWallpaperConfigStore.writeActiveIndex(context, 2)
+
+    DynamicWallpaperConfigStore.writeSelectionPreservingActiveAsset(
+      context,
+      DynamicWallpaperRotation.refsFromAssetIds(listOf("c", "a", "b")),
+    )
+
+    val config = DynamicWallpaperConfigStore.read(context)
+
+    assertEquals(listOf("c", "a", "b"), config.assetIds)
+    assertEquals(0, config.activeIndex)
+  }
+
+  @Test
   fun `reports missing and available local files`() {
     DynamicWallpaperConfigStore.writeSelection(context, DynamicWallpaperRotation.refsFromAssetIds(listOf("a", "b")))
     DynamicWallpaperConfigStore.preparedFile(context, "a").writeText("prepared")
 
     val status = DynamicWallpaperConfigStore.status(context)
 
+    assertFalse(status.enabled)
     assertEquals(2, status.selectedCount)
     assertEquals(1, status.preparedCount)
     assertEquals(1, status.missingCount)
     assertFalse(DynamicWallpaperConfigStore.hasPreparedFile(context, "b"))
+  }
+
+  @Test
+  fun `reports enabled only when Immich live wallpaper is active`() {
+    DynamicWallpaperConfigStore.writeSelection(context, DynamicWallpaperRotation.refsFromAssetIds(listOf("a")))
+
+    assertFalse(DynamicWallpaperConfigStore.status(context).enabled)
+    assertFalse(
+      DynamicWallpaperConfigStore.isImmichLiveWallpaperEnabled(
+        context,
+        listOf(ComponentName(context.packageName, "OtherWallpaperService")),
+      )
+    )
+
+    assertTrue(
+      DynamicWallpaperConfigStore.isImmichLiveWallpaperEnabled(
+        context,
+        listOf(ComponentName(context, ImmichWallpaperService::class.java)),
+      )
+    )
   }
 }

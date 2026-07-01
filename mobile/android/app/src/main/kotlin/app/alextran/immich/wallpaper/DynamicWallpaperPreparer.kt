@@ -4,6 +4,7 @@ import android.content.ContentUris
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
 import android.provider.MediaStore.Images
@@ -22,7 +23,12 @@ class DynamicWallpaperPreparer(
   private val remoteBitmapLoader: (suspend (String, Int, Int) -> Bitmap)? = null,
   private val localBitmapLoader: (suspend (String, Int, Int) -> Bitmap)? = null,
 ) {
-  suspend fun prepare(assetRefs: List<DynamicWallpaperAssetRef>, force: Boolean): DynamicWallpaperStatus = withContext(Dispatchers.IO) {
+  suspend fun prepare(
+    assetRefs: List<DynamicWallpaperAssetRef>,
+    force: Boolean,
+    forcePrepareIds: Set<String> = emptySet(),
+    prepareMissing: Boolean = true,
+  ): DynamicWallpaperStatus = withContext(Dispatchers.IO) {
     val normalizedAssetRefs = DynamicWallpaperRotation.deduplicateRefsPreservingOrder(assetRefs)
     if (normalizedAssetRefs.isEmpty()) {
       DynamicWallpaperConfigStore.writePreparationErrors(context, emptyMap(), null)
@@ -36,18 +42,23 @@ class DynamicWallpaperPreparer(
 
     normalizedAssetRefs.forEach { assetRef ->
       val destination = DynamicWallpaperConfigStore.preparedFile(context, assetRef.remoteId)
-      if (!force && destination.isFile) {
+      val shouldPrepare = force || assetRef.remoteId in forcePrepareIds || (prepareMissing && !destination.isFile)
+      if (!shouldPrepare) {
         return@forEach
       }
 
       runCatching {
         val bitmap = loadSourceBitmap(assetRef, targetWidth, targetHeight)
-        val prepared = resizeForDisplay(bitmap, targetWidth, targetHeight)
+        val transformed = transformForDisplay(bitmap, assetRef.normalizedLayoutOrDefault())
+        val prepared = resizeForDisplay(transformed, targetWidth, targetHeight)
         try {
           writeBitmapAtomically(prepared, destination)
         } finally {
-          if (prepared !== bitmap) {
+          if (prepared !== transformed) {
             prepared.recycle()
+          }
+          if (transformed !== bitmap) {
+            transformed.recycle()
           }
           bitmap.recycle()
         }
@@ -138,6 +149,54 @@ class DynamicWallpaperPreparer(
     } finally {
       tmp.delete()
     }
+  }
+
+  private fun transformForDisplay(bitmap: Bitmap, layout: DynamicWallpaperAssetLayout): Bitmap {
+    var current = bitmap
+
+    val rotated = rotateBitmap(current, layout.rotationDegrees)
+    if (rotated !== current) {
+      current = rotated
+    }
+
+    val cropped = cropBitmap(current, layout)
+    if (cropped !== current) {
+      if (current !== bitmap) {
+        current.recycle()
+      }
+      current = cropped
+    }
+
+    return current
+  }
+
+  private fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Long): Bitmap {
+    val normalizedRotation = (((rotationDegrees % 360) + 360) % 360)
+    if (normalizedRotation == 0L) {
+      return bitmap
+    }
+
+    val matrix = Matrix().apply { postRotate(normalizedRotation.toFloat()) }
+    return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+  }
+
+  private fun cropBitmap(bitmap: Bitmap, layout: DynamicWallpaperAssetLayout): Bitmap {
+    val normalized = layout.normalized()
+    if (
+      normalized.cropLeft == 0.0 &&
+      normalized.cropTop == 0.0 &&
+      normalized.cropRight == 1.0 &&
+      normalized.cropBottom == 1.0
+    ) {
+      return bitmap
+    }
+
+    val left = (normalized.cropLeft * bitmap.width).toInt().coerceIn(0, bitmap.width - 1)
+    val top = (normalized.cropTop * bitmap.height).toInt().coerceIn(0, bitmap.height - 1)
+    val right = (normalized.cropRight * bitmap.width).toInt().coerceIn(left + 1, bitmap.width)
+    val bottom = (normalized.cropBottom * bitmap.height).toInt().coerceIn(top + 1, bitmap.height)
+
+    return Bitmap.createBitmap(bitmap, left, top, right - left, bottom - top)
   }
 
   private fun deleteObsoleteFiles(assetRefs: List<DynamicWallpaperAssetRef>) {

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/config/dynamic_wallpaper_config.dart' as config_model;
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
@@ -99,6 +100,17 @@ class DynamicWallpaperService {
     return nextAssetIds;
   }
 
+  static Map<String, config_model.DynamicWallpaperAssetLayout> pruneAssetLayouts(
+    Map<String, config_model.DynamicWallpaperAssetLayout> currentLayouts,
+    Iterable<String> assetIds,
+  ) {
+    final retainedIds = assetIds.toSet();
+    return {
+      for (final entry in currentLayouts.entries)
+        if (retainedIds.contains(entry.key) && !entry.value.isIdentity) entry.key: entry.value.normalized(),
+    };
+  }
+
   List<String> remoteImageIdsFromAssets(Iterable<BaseAsset> assets) => remoteImageIdsFrom(assets);
 
   Future<DynamicWallpaperSelectionUpdate> addSelection(Iterable<BaseAsset> assets) async {
@@ -128,27 +140,68 @@ class DynamicWallpaperService {
   }
 
   Future<void> removeSelection(Iterable<String> assetIds) {
-    final nextAssetIds = removeAssetIds(_settingsRepository.appConfig.dynamicWallpaper.assetIds, assetIds);
-    return configure(assetIds: nextAssetIds);
+    final current = _settingsRepository.appConfig.dynamicWallpaper;
+    final nextAssetIds = removeAssetIds(current.assetIds, assetIds);
+    return configure(assetIds: nextAssetIds, assetLayouts: pruneAssetLayouts(current.assetLayouts, nextAssetIds));
   }
 
-  Future<void> reorderSelection(int oldIndex, int newIndex) {
-    final nextAssetIds = reorderAssetIds(_settingsRepository.appConfig.dynamicWallpaper.assetIds, oldIndex, newIndex);
-    return configure(assetIds: nextAssetIds);
+  Future<void> reorderSelection(int oldIndex, int newIndex) async {
+    final current = _settingsRepository.appConfig.dynamicWallpaper;
+    final previousAssetIds = current.assetIds;
+    final nextAssetIds = reorderAssetIds(previousAssetIds, oldIndex, newIndex);
+
+    await _settingsRepository.write(SettingsKey.dynamicWallpaperAssetIds, nextAssetIds);
+
+    try {
+      if (_isAndroid) {
+        await _api.updateSelection(await _assetRefsFor(nextAssetIds, resolveAssets: false), const [], false);
+      }
+    } catch (_) {
+      await _settingsRepository.write(SettingsKey.dynamicWallpaperAssetIds, previousAssetIds);
+      rethrow;
+    }
   }
 
-  Future<void> configure({List<String>? assetIds}) async {
+  Future<void> configure({
+    List<String>? assetIds,
+    Map<String, config_model.DynamicWallpaperAssetLayout>? assetLayouts,
+  }) async {
     final current = _settingsRepository.appConfig.dynamicWallpaper;
     final nextAssetIds = deduplicatePreservingOrder(assetIds ?? current.assetIds);
+    final nextAssetLayouts = pruneAssetLayouts(assetLayouts ?? current.assetLayouts, nextAssetIds);
 
     if (_isAndroid) {
-      await _api.configure(await _assetRefsFor(nextAssetIds));
+      await _api.configure(await _assetRefsFor(nextAssetIds, layouts: nextAssetLayouts));
     }
 
     await _settingsRepository.write(SettingsKey.dynamicWallpaperAssetIds, nextAssetIds);
+    if (!_layoutMapsEqual(current.assetLayouts, nextAssetLayouts)) {
+      await _settingsRepository.write(SettingsKey.dynamicWallpaperAssetLayouts, nextAssetLayouts);
+    }
   }
 
   Future<void> clearSelection() => configure(assetIds: []);
+
+  Future<void> updateLayout(String assetId, config_model.DynamicWallpaperAssetLayout layout) async {
+    final current = _settingsRepository.appConfig.dynamicWallpaper;
+    if (!current.assetIds.contains(assetId)) {
+      return;
+    }
+
+    final normalizedLayout = layout.normalized();
+    final nextLayouts = {...current.assetLayouts, assetId: normalizedLayout};
+
+    if (normalizedLayout.isIdentity) {
+      nextLayouts.remove(assetId);
+    }
+
+    final prunedLayouts = pruneAssetLayouts(nextLayouts, current.assetIds);
+    if (_isAndroid) {
+      await _api.updateSelection(await _assetRefsFor(current.assetIds, layouts: prunedLayouts), [assetId], false);
+    }
+
+    await _settingsRepository.write(SettingsKey.dynamicWallpaperAssetLayouts, prunedLayouts);
+  }
 
   Future<void> openPicker() async {
     if (_isAndroid) {
@@ -160,6 +213,12 @@ class DynamicWallpaperService {
     if (_isAndroid) {
       final currentAssetIds = _settingsRepository.appConfig.dynamicWallpaper.assetIds;
       await _api.refresh(await _assetRefsFor(currentAssetIds));
+    }
+  }
+
+  Future<void> disable() async {
+    if (_isAndroid) {
+      await _api.disable();
     }
   }
 
@@ -178,10 +237,21 @@ class DynamicWallpaperService {
     );
   }
 
-  Future<List<DynamicWallpaperAssetRef>> _assetRefsFor(List<String> assetIds) async {
+  Future<List<DynamicWallpaperAssetRef>> _assetRefsFor(
+    List<String> assetIds, {
+    bool resolveAssets = true,
+    Map<String, config_model.DynamicWallpaperAssetLayout>? layouts,
+  }) async {
+    final assetLayouts = layouts ?? _settingsRepository.appConfig.dynamicWallpaper.assetLayouts;
     final assetService = this.assetService;
-    if (assetService == null || assetIds.isEmpty) {
-      return assetIds.map((assetId) => DynamicWallpaperAssetRef(remoteId: assetId, isEdited: false)).toList();
+    if (!resolveAssets || assetService == null || assetIds.isEmpty) {
+      return assetIds.map((assetId) {
+        return DynamicWallpaperAssetRef(
+          remoteId: assetId,
+          isEdited: false,
+          layout: _apiLayoutFrom(assetLayouts[assetId]),
+        );
+      }).toList();
     }
 
     final assets = await assetService.getRemoteAssets(assetIds);
@@ -189,7 +259,44 @@ class DynamicWallpaperService {
 
     return assetIds.map((assetId) {
       final asset = assetById[assetId];
-      return DynamicWallpaperAssetRef(remoteId: assetId, localId: asset?.localId, isEdited: asset?.isEdited ?? false);
+      return DynamicWallpaperAssetRef(
+        remoteId: assetId,
+        localId: asset?.localId,
+        isEdited: asset?.isEdited ?? false,
+        layout: _apiLayoutFrom(assetLayouts[assetId]),
+      );
     }).toList();
   }
+
+  DynamicWallpaperAssetLayout? _apiLayoutFrom(config_model.DynamicWallpaperAssetLayout? layout) {
+    final normalized = layout?.normalized();
+    if (normalized == null || normalized.isIdentity) {
+      return null;
+    }
+
+    return DynamicWallpaperAssetLayout(
+      rotationDegrees: normalized.rotationDegrees,
+      cropLeft: normalized.cropLeft,
+      cropTop: normalized.cropTop,
+      cropRight: normalized.cropRight,
+      cropBottom: normalized.cropBottom,
+    );
+  }
+}
+
+bool _layoutMapsEqual(
+  Map<String, config_model.DynamicWallpaperAssetLayout> a,
+  Map<String, config_model.DynamicWallpaperAssetLayout> b,
+) {
+  if (a.length != b.length) {
+    return false;
+  }
+
+  for (final entry in a.entries) {
+    if (b[entry.key] != entry.value) {
+      return false;
+    }
+  }
+
+  return true;
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/config/dynamic_wallpaper_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
@@ -76,7 +77,8 @@ enum SettingsKey<T> {
   slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values)),
 
   // Dynamic Wallpaper
-  dynamicWallpaperAssetIds<List<String>>(codec: _ListCodec(_PrimitiveCodec.string));
+  dynamicWallpaperAssetIds<List<String>>(codec: _ListCodec(_PrimitiveCodec.string)),
+  dynamicWallpaperAssetLayouts<Map<String, DynamicWallpaperAssetLayout>>(codec: _DynamicWallpaperLayoutMapCodec());
 
   final _SettingsCodec<T>? _codecOverride;
 
@@ -172,6 +174,46 @@ final class _MapCodec<K extends Object, V extends Object> extends _SettingsCodec
         final k = _keyCodec.decode(rawKey);
         final v = _valueCodec.decode(rawValue);
         result[k] = v;
+      }
+      return result;
+    } on FormatException {
+      return {};
+    }
+  }
+}
+
+final class _DynamicWallpaperLayoutMapCodec extends _SettingsCodec<Map<String, DynamicWallpaperAssetLayout>> {
+  const _DynamicWallpaperLayoutMapCodec();
+
+  @override
+  String encode(Map<String, DynamicWallpaperAssetLayout> value) {
+    final entries = <String, Map<String, dynamic>>{};
+    value.forEach((assetId, layout) {
+      if (assetId.isNotEmpty && !layout.isIdentity) {
+        entries[assetId] = layout.normalized().toJson();
+      }
+    });
+    return jsonEncode(entries);
+  }
+
+  @override
+  Map<String, DynamicWallpaperAssetLayout> decode(String raw) {
+    try {
+      final decoded = jsonDecode(raw);
+      if (decoded is! Map) {
+        return {};
+      }
+
+      final result = <String, DynamicWallpaperAssetLayout>{};
+      for (final entry in decoded.entries) {
+        if (entry.key is! String || entry.value is! Map) {
+          return {};
+        }
+
+        final layout = DynamicWallpaperAssetLayout.fromJson(Map<String, dynamic>.from(entry.value as Map));
+        if (!layout.isIdentity) {
+          result[entry.key as String] = layout;
+        }
       }
       return result;
     } on FormatException {

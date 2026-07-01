@@ -21,6 +21,12 @@ abstract class DynamicWallpaperApi {
   void refresh(List<DynamicWallpaperAssetRef> assets);
 
   @async
+  void updateSelection(List<DynamicWallpaperAssetRef> assets, List<String> forcePrepareIds, bool prepareMissing);
+
+  @async
+  void disable();
+
+  @async
   DynamicWallpaperStatus getStatus();
 }
 
@@ -28,8 +34,25 @@ class DynamicWallpaperAssetRef {
   final String remoteId;
   final String? localId;
   final bool isEdited;
+  final DynamicWallpaperAssetLayout? layout;
 
-  const DynamicWallpaperAssetRef({required this.remoteId, this.localId, required this.isEdited});
+  const DynamicWallpaperAssetRef({required this.remoteId, this.localId, required this.isEdited, this.layout});
+}
+
+class DynamicWallpaperAssetLayout {
+  final int rotationDegrees;
+  final double cropLeft;
+  final double cropTop;
+  final double cropRight;
+  final double cropBottom;
+
+  const DynamicWallpaperAssetLayout({
+    required this.rotationDegrees,
+    required this.cropLeft,
+    required this.cropTop,
+    required this.cropRight,
+    required this.cropBottom,
+  });
 }
 
 class DynamicWallpaperStatus {
