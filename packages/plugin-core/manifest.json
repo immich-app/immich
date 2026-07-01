@@ -168,7 +168,7 @@
                 "description": "GPS latitude of a coordinate which the asset must be close to",
                 "minimum": -90,
                 "maximum": 90,
-                "precision": 0.00001
+                "precision": 0.000001
               },
               "longitude": {
                 "type": "number",
@@ -176,7 +176,7 @@
                 "description": "GPS longitude of a coordinate which the asset must be close to",
                 "minimum": -180,
                 "maximum": 180,
-                "precision": 0.00001
+                "precision": 0.000001
               },
               "radius": {
                 "type": "number",
