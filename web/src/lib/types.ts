@@ -84,7 +84,7 @@ export type SearchFilter = {
   rating?: number | null;
 };
 
-export type JSONSchemaType = 'string' | 'number' | 'boolean' | 'object';
+export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';
 
 export type JSONSchemaProperty = {
   type: JSONSchemaType;

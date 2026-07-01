@@ -1,7 +1,9 @@
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 
-export const JsonSchemaTypeSchema = z.enum(['string', 'number', 'boolean', 'object']).meta({ id: 'JsonSchemaType' });
+export const JsonSchemaTypeSchema = z
+  .enum(['string', 'number', 'integer', 'boolean', 'object'])
+  .meta({ id: 'JsonSchemaType' });
 
 const JsonSchemaPropertySchema = z
   .object({

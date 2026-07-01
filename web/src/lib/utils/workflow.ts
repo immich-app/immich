@@ -61,6 +61,7 @@ export const getWorkflowDefaultConfig = (schema: JSONSchemaProperty) => {
         break;
       }
 
+      case 'integer':
       case 'number': {
         config[key] = 0;
         break;
