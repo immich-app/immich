@@ -314,6 +314,11 @@ export class AssetService extends BaseService {
       return JobStatus.Failed;
     }
 
+    const fileDeletionStatus = await this.deleteAssetFiles(id, this.getFilesForDeletion(asset, deleteOnDisk));
+    if (fileDeletionStatus === JobStatus.Failed) {
+      return JobStatus.Failed;
+    }
+
     // replace the parent of the stack children with a new asset
     if (asset.stack?.primaryAssetId === id) {
       // this only includes timeline visible assets and excludes the primary asset
@@ -347,6 +352,13 @@ export class AssetService extends BaseService {
       }
     }
 
+    return JobStatus.Success;
+  }
+
+  private getFilesForDeletion(
+    asset: { files: AssetFile[]; originalPath: string; isOffline: boolean },
+    deleteOnDisk: boolean,
+  ): string[] {
     const assetFiles = getAssetFiles(asset.files ?? []);
     const files = [
       assetFiles.thumbnailFile?.path,
@@ -362,7 +374,18 @@ export class AssetService extends BaseService {
       files.push(assetFiles.sidecarFile?.path, asset.originalPath);
     }
 
-    await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: files.filter(Boolean) } });
+    return files.filter((file): file is string => file !== undefined);
+  }
+
+  private async deleteAssetFiles(assetId: string, files: string[]): Promise<JobStatus> {
+    for (const file of files) {
+      try {
+        await this.storageRepository.unlink(file);
+      } catch (error) {
+        this.logger.warn(`Unable to remove asset file for asset ${assetId}: ${file}`, error);
+        return JobStatus.Failed;
+      }
+    }
 
     return JobStatus.Success;
   }
