@@ -20,14 +20,8 @@ class ArchiveAction extends AssetAction<RemoteAsset> {
   String label(ActionScope scope) => archive ? scope.context.t.archive : scope.context.t.unarchive;
 
   @override
-  Iterable<RemoteAsset> filter(ActionScope scope) {
-    final owned = AssetFilter(assets).owned(scope.authUser.id);
-    if (archive) {
-      return owned.visibility(.timeline);
-    } else {
-      return owned.visibility(.archive);
-    }
-  }
+  AssetFilter<RemoteAsset> filter(ActionScope scope) =>
+      .new(assets).owned(scope.authUser.id).archived(isArchived: !archive);
 
   @override
   bool isVisible(ActionScope scope) => !scope.ref.watch(inLockedViewProvider) && filter(scope).isNotEmpty;

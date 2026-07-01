@@ -16,7 +16,7 @@ class RestoreAction extends AssetAction<RemoteAsset> {
   String label(ActionScope scope) => scope.context.t.restore;
 
   @override
-  Iterable<RemoteAsset> filter(ActionScope scope) => AssetFilter(assets).owned(scope.authUser.id).trashed();
+  AssetFilter<RemoteAsset> filter(ActionScope scope) => .new(assets).owned(scope.authUser.id).trashed();
 
   @override
   bool isVisible(ActionScope scope) => filter(scope).isNotEmpty;
