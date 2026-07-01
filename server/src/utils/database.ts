@@ -11,17 +11,42 @@ import {
   SelectQueryBuilder,
   ShallowDehydrateObject,
   sql,
+  SqlBool,
 } from 'kysely';
 import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { Notice, PostgresError } from 'postgres';
 import { columns, lockableProperties, LockableProperty, Person } from 'src/database';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetOrderBy, AssetVisibility, DatabaseExtension, ExifOrientation } from 'src/enum';
-import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
+import {
+  DateFilter,
+  DateFilterNullable,
+  IdFilter,
+  IdFilterNullable,
+  IdsFilter,
+  NumberFilter,
+  NumberFilterNullable,
+  SearchFilter,
+  SearchFilterBranch,
+  StringFilter,
+  StringFilterNullable,
+  StringPatternFilter,
+} from 'src/dtos/search.dto';
+import {
+  AssetFileType,
+  AssetOrder,
+  AssetOrderBy,
+  AssetType,
+  AssetVisibility,
+  DatabaseExtension,
+  ExifOrientation,
+  SearchOrderField,
+} from 'src/enum';
+import { AssetSearchBuilderOptions, AssetSearchBuilderV3Options } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types';
+import { fromChecksum } from 'src/utils/request';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
   return {
@@ -371,7 +396,7 @@ export function withEdits(eb: ExpressionBuilder<DB, 'asset'>): AliasedEditAction
 const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 /** TODO: This should only be used for search-related queries, not as a general purpose query builder */
 
-export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
+export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
 
   return kysely
@@ -489,6 +514,448 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.withExif, withExifInner)
     .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
     .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null));
+}
+
+const EXIF_FILTER_FIELDS = new Set<keyof SearchFilterBranch>([
+  'city',
+  'state',
+  'country',
+  'make',
+  'model',
+  'lensModel',
+  'description',
+  'rating',
+  'fileSizeInBytes',
+]);
+
+const EXIF_ORDER_FIELDS = new Set<SearchOrderField>([SearchOrderField.FileSizeInBytes, SearchOrderField.Rating]);
+
+function branchNeedsExifJoin(branch: SearchFilterBranch): boolean {
+  for (const key of Object.keys(branch) as (keyof SearchFilterBranch)[]) {
+    if (EXIF_FILTER_FIELDS.has(key)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function exifJoinRequired(filter: SearchFilter, orderField: SearchOrderField): boolean {
+  return (
+    EXIF_ORDER_FIELDS.has(orderField) ||
+    branchNeedsExifJoin(filter) ||
+    (filter.or?.some((branch) => branchNeedsExifJoin(branch)) ?? false)
+  );
+}
+
+type AssetExpressionBuilder = ExpressionBuilder<DB, 'asset' | 'asset_exif'>;
+
+function existsAlbumLink(eb: AssetExpressionBuilder, present: boolean) {
+  const expression = eb.exists((eb) => eb.selectFrom('album_asset').whereRef('album_asset.assetId', '=', 'asset.id'));
+  return present ? expression : eb.not(expression);
+}
+
+function existsPersonLink(eb: AssetExpressionBuilder, present: boolean) {
+  const expression = eb.exists((eb) =>
+    eb
+      .selectFrom('asset_face')
+      .whereRef('asset_face.assetId', '=', 'asset.id')
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', '=', true),
+  );
+  return present ? expression : eb.not(expression);
+}
+
+function existsTagLink(eb: AssetExpressionBuilder, present: boolean) {
+  const expression = eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('tag_asset.assetId', '=', 'asset.id'));
+  return present ? expression : eb.not(expression);
+}
+
+function existsEncodedVideo(eb: AssetExpressionBuilder, present: boolean) {
+  const expression = eb.exists((eb) =>
+    eb
+      .selectFrom('asset_file')
+      .whereRef('asset_file.assetId', '=', 'asset.id')
+      .where('asset_file.type', '=', AssetFileType.EncodedVideo),
+  );
+  return present ? expression : eb.not(expression);
+}
+
+function existsOcrMatch(eb: AssetExpressionBuilder, matches: string) {
+  const tokens = tokenizeForSearch(matches).join(' ');
+  return eb.exists((eb) =>
+    eb
+      .selectFrom('ocr_search')
+      .whereRef('ocr_search.assetId', '=', 'asset.id')
+      .where(sql<SqlBool>`f_unaccent(ocr_search.text) %>> f_unaccent(${tokens})`),
+  );
+}
+
+const encodedVideoFileBase = (eb: ExpressionBuilder<DB, 'asset' | 'asset_exif'>) =>
+  eb
+    .selectFrom('asset_file')
+    .whereRef('asset_file.assetId', '=', 'asset.id')
+    .where('asset_file.type', '=', AssetFileType.EncodedVideo)
+    .where('asset_file.isEdited', '=', false);
+
+function existsEncodedVideoPath(eb: AssetExpressionBuilder, f: StringFilter) {
+  const ops = [
+    ['=', f.eq],
+    ['<>', f.ne],
+    ['in', f.in],
+    ['not in', f.notIn],
+  ] as const;
+  return ops.flatMap(([op, v]) =>
+    v === undefined ? [] : [eb.exists((eb2) => encodedVideoFileBase(eb2).where('asset_file.path', op, v))],
+  );
+}
+
+type Membership = 'album' | 'person' | 'tag';
+
+function idsAnyExists(eb: AssetExpressionBuilder, membership: Membership, ids: string[]) {
+  switch (membership) {
+    case 'album': {
+      return eb.exists((eb) =>
+        eb
+          .selectFrom('album_asset')
+          .whereRef('album_asset.assetId', '=', 'asset.id')
+          .where('album_asset.albumId', '=', anyUuid(ids)),
+      );
+    }
+    case 'person': {
+      return eb.exists((eb) =>
+        eb
+          .selectFrom('asset_face')
+          .whereRef('asset_face.assetId', '=', 'asset.id')
+          .where('asset_face.personId', '=', anyUuid(ids))
+          .where('asset_face.deletedAt', 'is', null)
+          .where('asset_face.isVisible', '=', true),
+      );
+    }
+    case 'tag': {
+      return eb.exists((eb) =>
+        eb
+          .selectFrom('tag_asset')
+          .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
+          .whereRef('tag_asset.assetId', '=', 'asset.id')
+          .where('tag_closure.id_ancestor', '=', anyUuid(ids)),
+      );
+    }
+  }
+}
+
+function idsAllExists(eb: AssetExpressionBuilder, membership: Membership, ids: string[]) {
+  switch (membership) {
+    case 'album': {
+      return eb.exists((eb) =>
+        eb
+          .selectFrom('album_asset')
+          .select('album_asset.assetId')
+          .whereRef('album_asset.assetId', '=', 'asset.id')
+          .where('album_asset.albumId', '=', anyUuid(ids))
+          .groupBy('album_asset.assetId')
+          .having((eb) => eb.fn.count('album_asset.albumId').distinct(), '=', ids.length),
+      );
+    }
+    case 'person': {
+      return eb.exists((eb) =>
+        eb
+          .selectFrom('asset_face')
+          .select('asset_face.assetId')
+          .whereRef('asset_face.assetId', '=', 'asset.id')
+          .where('asset_face.personId', '=', anyUuid(ids))
+          .where('asset_face.deletedAt', 'is', null)
+          .where('asset_face.isVisible', '=', true)
+          .groupBy('asset_face.assetId')
+          .having((eb) => eb.fn.count('asset_face.personId').distinct(), '=', ids.length),
+      );
+    }
+    case 'tag': {
+      return eb.exists((eb) =>
+        eb
+          .selectFrom('tag_asset')
+          .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
+          .select('tag_asset.assetId')
+          .whereRef('tag_asset.assetId', '=', 'asset.id')
+          .where('tag_closure.id_ancestor', '=', anyUuid(ids))
+          .groupBy('tag_asset.assetId')
+          .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '>=', ids.length),
+      );
+    }
+  }
+}
+
+function idsPredicates(eb: AssetExpressionBuilder, membership: Membership, filter: IdsFilter = {}) {
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.any) {
+    predicates.push(idsAnyExists(eb, membership, filter.any));
+  }
+  if (filter.all) {
+    predicates.push(
+      filter.all.length === 1 ? idsAnyExists(eb, membership, filter.all) : idsAllExists(eb, membership, filter.all),
+    );
+  }
+  if (filter.none) {
+    predicates.push(eb.not(idsAnyExists(eb, membership, filter.none)));
+  }
+  return predicates;
+}
+
+function idPredicates(
+  eb: AssetExpressionBuilder,
+  column: 'asset.id' | 'asset.libraryId',
+  filter: IdFilter | IdFilterNullable = {},
+) {
+  const ops = [
+    [filter.eq, '=', 'is'],
+    [filter.ne, '<>', 'is not'],
+  ] as const;
+  return ops.flatMap(([v, op, nullOp]) => {
+    if (v === undefined) {
+      return [];
+    }
+    return v === null ? [eb(column, nullOp, null)] : [eb(column, op, asUuid(v))];
+  });
+}
+
+type EnumColumn = {
+  'asset.type': AssetType;
+  'asset.visibility': AssetVisibility;
+};
+
+function enumPredicates<C extends keyof EnumColumn>(
+  eb: AssetExpressionBuilder,
+  column: C,
+  filter: { eq?: EnumColumn[C]; ne?: EnumColumn[C]; in?: EnumColumn[C][]; notIn?: EnumColumn[C][] } = {},
+) {
+  // cast: kysely's `eb` doesn't distribute its column-value narrowing through the generic
+  const ops = [
+    ['=', filter.eq],
+    ['<>', filter.ne],
+    ['in', filter.in],
+    ['not in', filter.notIn],
+  ] as const;
+  return ops.flatMap(([op, v]) => (v === undefined ? [] : [eb(column, op, v as never)]));
+}
+
+type StringColumn =
+  | 'asset_exif.city'
+  | 'asset_exif.state'
+  | 'asset_exif.country'
+  | 'asset_exif.make'
+  | 'asset_exif.model'
+  | 'asset_exif.lensModel'
+  | 'asset_exif.description'
+  | 'asset.originalFileName'
+  | 'asset.originalPath';
+
+function stringEqNeInPredicates(
+  eb: AssetExpressionBuilder,
+  column: StringColumn,
+  filter: StringFilterNullable | StringPatternFilter = {},
+) {
+  const nullableOps = [
+    [filter.eq, '=', 'is'],
+    [filter.ne, '<>', 'is not'],
+  ] as const;
+  const arrayOps = [
+    ['in', filter.in],
+    ['not in', filter.notIn],
+  ] as const;
+  return [
+    ...nullableOps.flatMap(([v, op, nullOp]) => {
+      if (v === undefined) {
+        return [];
+      }
+      return v === null ? [eb(column, nullOp, null)] : [eb(column, op, v)];
+    }),
+    ...arrayOps.flatMap(([op, v]) => (v === undefined ? [] : [eb(column, op, v)])),
+  ];
+}
+
+function stringPatternPredicates(eb: AssetExpressionBuilder, column: StringColumn, filter: StringPatternFilter = {}) {
+  const ref = sql.ref(column);
+  return [
+    ...stringEqNeInPredicates(eb, column, filter),
+    ...(filter.like === undefined
+      ? []
+      : [sql<SqlBool>`f_unaccent(${ref}) ilike ('%' || f_unaccent(${filter.like}) || '%')`]),
+    ...(filter.notLike === undefined
+      ? []
+      : [sql<SqlBool>`f_unaccent(${ref}) not ilike ('%' || f_unaccent(${filter.notLike}) || '%')`]),
+    ...(filter.startsWith === undefined
+      ? []
+      : [sql<SqlBool>`f_unaccent(${ref}) ilike (f_unaccent(${filter.startsWith}) || '%')`]),
+    ...(filter.endsWith === undefined
+      ? []
+      : [sql<SqlBool>`f_unaccent(${ref}) ilike ('%' || f_unaccent(${filter.endsWith}))`]),
+  ];
+}
+
+type NumberColumn = 'asset_exif.rating' | 'asset_exif.fileSizeInByte';
+
+function numberPredicates(
+  eb: AssetExpressionBuilder,
+  column: NumberColumn,
+  filter: NumberFilter | NumberFilterNullable = {},
+) {
+  const nullableOps = [
+    [filter.eq, '=', 'is'],
+    [filter.ne, '<>', 'is not'],
+  ] as const;
+  const plainOps = [
+    ['<', filter.lt],
+    ['<=', filter.lte],
+    ['>', filter.gt],
+    ['>=', filter.gte],
+    ['in', filter.in],
+    ['not in', filter.notIn],
+  ] as const;
+  return [
+    ...nullableOps.flatMap(([v, op, nullOp]) => {
+      if (v === undefined) {
+        return [];
+      }
+      return v === null ? [eb(column, nullOp, null)] : [eb(column, op, v)];
+    }),
+    ...plainOps.flatMap(([op, v]) => (v === undefined ? [] : [eb(column, op, v)])),
+  ];
+}
+
+type DateColumn = 'asset.fileCreatedAt' | 'asset.createdAt' | 'asset.updatedAt' | 'asset.deletedAt';
+
+function datePredicates(eb: AssetExpressionBuilder, column: DateColumn, filter: DateFilter | DateFilterNullable = {}) {
+  const nullableOps = [
+    [filter.eq, '=', 'is'],
+    [filter.ne, '<>', 'is not'],
+  ] as const;
+  const plainOps = [
+    ['>', filter.gt],
+    ['>=', filter.gte],
+    ['<', filter.lt],
+    ['<=', filter.lte],
+  ] as const;
+  return [
+    ...nullableOps.flatMap(([v, op, nullOp]) => {
+      if (v === undefined) {
+        return [];
+      }
+      return v === null ? [eb(column, nullOp, null)] : [eb(column, op, v)];
+    }),
+    ...plainOps.flatMap(([op, v]) => (v === undefined ? [] : [eb(column, op, v)])),
+  ];
+}
+
+function checksumPredicates(eb: AssetExpressionBuilder, filter: StringFilter = {}) {
+  const scalarOps = [
+    ['=', filter.eq],
+    ['<>', filter.ne],
+  ] as const;
+  const arrayOps = [
+    ['in', filter.in],
+    ['not in', filter.notIn],
+  ] as const;
+  return [
+    ...scalarOps.flatMap(([op, v]) => (v === undefined ? [] : [eb('asset.checksum', op, fromChecksum(v))])),
+    ...arrayOps.flatMap(([op, v]) =>
+      v === undefined
+        ? []
+        : [
+            eb(
+              'asset.checksum',
+              op,
+              v.map((c) => fromChecksum(c)),
+            ),
+          ],
+    ),
+  ];
+}
+
+function buildBranchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch) {
+  return [
+    ...idPredicates(eb, 'asset.id', branch.id),
+    ...idPredicates(eb, 'asset.libraryId', branch.libraryId),
+    ...enumPredicates(eb, 'asset.type', branch.type),
+    ...enumPredicates(eb, 'asset.visibility', branch.visibility),
+    ...(branch.isFavorite ? [eb('asset.isFavorite', '=', branch.isFavorite.eq)] : []),
+    ...(branch.isOffline ? [eb('asset.isOffline', '=', branch.isOffline.eq)] : []),
+    ...(branch.isMotion ? [eb('asset.livePhotoVideoId', branch.isMotion.eq ? 'is not' : 'is', null)] : []),
+    ...(branch.isEncoded ? [existsEncodedVideo(eb, branch.isEncoded.eq)] : []),
+    ...(branch.hasAlbums ? [existsAlbumLink(eb, branch.hasAlbums.eq)] : []),
+    ...(branch.hasPeople ? [existsPersonLink(eb, branch.hasPeople.eq)] : []),
+    ...(branch.hasTags ? [existsTagLink(eb, branch.hasTags.eq)] : []),
+    ...stringEqNeInPredicates(eb, 'asset_exif.city', branch.city),
+    ...stringEqNeInPredicates(eb, 'asset_exif.state', branch.state),
+    ...stringEqNeInPredicates(eb, 'asset_exif.country', branch.country),
+    ...stringEqNeInPredicates(eb, 'asset_exif.make', branch.make),
+    ...stringEqNeInPredicates(eb, 'asset_exif.model', branch.model),
+    ...stringEqNeInPredicates(eb, 'asset_exif.lensModel', branch.lensModel),
+    ...stringPatternPredicates(eb, 'asset_exif.description', branch.description),
+    ...stringPatternPredicates(eb, 'asset.originalFileName', branch.originalFileName),
+    ...stringPatternPredicates(eb, 'asset.originalPath', branch.originalPath),
+    ...(branch.ocr ? [existsOcrMatch(eb, branch.ocr.matches)] : []),
+    ...numberPredicates(eb, 'asset_exif.rating', branch.rating),
+    ...numberPredicates(eb, 'asset_exif.fileSizeInByte', branch.fileSizeInBytes),
+    ...datePredicates(eb, 'asset.fileCreatedAt', branch.takenAt),
+    ...datePredicates(eb, 'asset.createdAt', branch.createdAt),
+    ...datePredicates(eb, 'asset.updatedAt', branch.updatedAt),
+    ...datePredicates(eb, 'asset.deletedAt', branch.trashedAt),
+    ...idsPredicates(eb, 'album', branch.albumIds),
+    ...idsPredicates(eb, 'person', branch.personIds),
+    ...idsPredicates(eb, 'tag', branch.tagIds),
+    ...checksumPredicates(eb, branch.checksum),
+    ...(branch.encodedVideoPath ? existsEncodedVideoPath(eb, branch.encodedVideoPath) : []),
+  ];
+}
+
+function applySearchOrder<O>(
+  qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', O>,
+  field: SearchOrderField,
+  direction: AssetOrder,
+) {
+  switch (field) {
+    case SearchOrderField.FileCreatedAt: {
+      return qb.orderBy('asset.fileCreatedAt', direction);
+    }
+    case SearchOrderField.LocalDateTime: {
+      return qb.orderBy('asset.localDateTime', direction);
+    }
+    case SearchOrderField.FileSizeInBytes: {
+      return qb.orderBy('asset_exif.fileSizeInByte', direction);
+    }
+    case SearchOrderField.Rating: {
+      return qb.orderBy('asset_exif.rating', direction);
+    }
+  }
+}
+
+export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderV3Options) {
+  const filter = options.filter ?? {};
+  const orderField = options.order?.field ?? SearchOrderField.FileCreatedAt;
+  const orderDirection = options.order?.direction ?? AssetOrder.Desc;
+  const needsExifJoin = exifJoinRequired(filter, orderField);
+
+  return kysely
+    .withPlugin(joinDeduplicationPlugin)
+    .selectFrom('asset')
+    .$if(needsExifJoin && !options.withExif, (qb) => qb.innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId'))
+    .$if(!!options.withExif && needsExifJoin, withExifInner)
+    .$if(!!options.withExif && !needsExifJoin, withExif)
+    .$if(!!options.userIds && options.userIds.length > 0, (qb) =>
+      qb.where('asset.ownerId', '=', anyUuid(options.userIds!)),
+    )
+    .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
+    .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
+    .where((eb) => {
+      const top = buildBranchPredicates(eb, filter);
+      if (filter.or && filter.or.length > 0) {
+        top.push(eb.or(filter.or.map((branch) => eb.and(buildBranchPredicates(eb, branch)))));
+      }
+      return top.length > 0 ? eb.and(top) : eb.val(true);
+    })
+    .$call((qb) =>
+      // cast: `.$if(needsExifJoin, ...)` doesn't carry the join into the type; `exifJoinRequired` guarantees it at runtime.
+      applySearchOrder(qb as SelectQueryBuilder<DB, 'asset' | 'asset_exif', unknown>, orderField, orderDirection),
+    );
 }
 
 export type ReindexVectorIndexOptions = { indexName: string; lists?: number };
