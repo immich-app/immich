@@ -40,7 +40,7 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
-import { getDimensions } from 'src/utils/asset.util';
+import { getAssetFiles, getDimensions } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -305,8 +305,13 @@ export class PersonService extends BaseService {
     }
 
     const asset = await this.assetJobRepository.getForDetectFacesJob(id);
-    const previewFile = asset?.files[0];
-    if (!asset || asset.files.length !== 1 || !previewFile) {
+    if (!asset) {
+      return JobStatus.Failed;
+    }
+
+    const files = getAssetFiles(asset.files as any);
+    const previewFile = files.editedPreviewFile || files.previewFile;
+    if (!previewFile) {
       return JobStatus.Failed;
     }
 
@@ -330,14 +335,37 @@ export class PersonService extends BaseService {
       }
     }
 
-    const heightScale = imageHeight / (asset.faces[0]?.imageHeight || 1);
-    const widthScale = imageWidth / (asset.faces[0]?.imageWidth || 1);
+    const edits = (await this.assetEditRepository.getAll(id)) || [];
+    let uneditedDimensions = { width: imageWidth, height: imageHeight };
+    if (previewFile.isEdited && files.previewFile) {
+      uneditedDimensions = await this.mediaRepository.getImageMetadata(files.previewFile.path);
+    }
+
+    const heightScale = uneditedDimensions.height / (asset.faces[0]?.imageHeight || 1);
+    const widthScale = uneditedDimensions.width / (asset.faces[0]?.imageWidth || 1);
     for (const { boundingBox, embedding } of faces) {
+      let originalBox = boundingBox;
+      if (previewFile.isEdited && edits.length > 0) {
+        const points = [
+          { x: boundingBox.x1, y: boundingBox.y1 },
+          { x: boundingBox.x2, y: boundingBox.y2 },
+        ];
+        const {
+          points: [p1, p2],
+        } = transformPoints(points, edits as any, { width: imageWidth, height: imageHeight }, { inverse: true });
+        originalBox = {
+          x1: Math.trunc(Math.min(p1.x, p2.x)),
+          y1: Math.trunc(Math.min(p1.y, p2.y)),
+          x2: Math.trunc(Math.max(p1.x, p2.x)),
+          y2: Math.trunc(Math.max(p1.y, p2.y)),
+        };
+      }
+
       const scaledBox = {
-        x1: boundingBox.x1 * widthScale,
-        y1: boundingBox.y1 * heightScale,
-        x2: boundingBox.x2 * widthScale,
-        y2: boundingBox.y2 * heightScale,
+        x1: originalBox.x1 * widthScale,
+        y1: originalBox.y1 * heightScale,
+        x2: originalBox.x2 * widthScale,
+        y2: originalBox.y2 * heightScale,
       };
       const match = asset.faces.find((face) => this.iou(face, scaledBox) > 0.5);
 
@@ -348,12 +376,12 @@ export class PersonService extends BaseService {
         facesToAdd.push({
           id: faceId,
           assetId: asset.id,
-          imageHeight,
-          imageWidth,
-          boundingBoxX1: boundingBox.x1,
-          boundingBoxY1: boundingBox.y1,
-          boundingBoxX2: boundingBox.x2,
-          boundingBoxY2: boundingBox.y2,
+          imageHeight: uneditedDimensions.height,
+          imageWidth: uneditedDimensions.width,
+          boundingBoxX1: originalBox.x1,
+          boundingBoxY1: originalBox.y1,
+          boundingBoxX2: originalBox.x2,
+          boundingBoxY2: originalBox.y2,
         });
         embeddings.push({ faceId, embedding });
       }
