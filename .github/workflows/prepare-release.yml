@@ -106,6 +106,8 @@ jobs:
       contents: read
       pull-requests: write
     secrets:
+      PUSH_O_MATIC_APP_CLIENT_ID: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+      PUSH_O_MATIC_APP_KEY: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
       KEY_JKS: ${{ secrets.KEY_JKS }}
       ALIAS: ${{ secrets.ALIAS }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
