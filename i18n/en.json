@@ -2066,6 +2066,7 @@
   "support_third_party_description": "Your Immich installation was packaged by a third-party. Issues you experience may be caused by that package, so please raise issues with them in the first instance using the links below.",
   "supporter": "Supporter",
   "swap_merge_direction": "Swap merge direction",
+  "switch_sort_order": "Switch sort order from {from, select, asc {ascending} desc {descending} other {unknown}} to {to, select, asc {ascending} desc {descending} other {unknown}}",
   "sync": "Sync",
   "sync_albums": "Sync albums",
   "sync_local": "Sync Local",
