@@ -27,7 +27,7 @@ const authFactory = ({
   user,
 }: {
   apiKey?: Partial<AuthApiKey>;
-  session?: { id: string };
+  session?: { id?: string; hasElevatedPermission?: boolean };
   user?: Omit<
     Partial<UserAdmin>,
     'createdAt' | 'updatedAt' | 'deletedAt' | 'fileCreatedAt' | 'fileModifiedAt' | 'localDateTime' | 'profileChangedAt'
@@ -46,8 +46,8 @@ const authFactory = ({
 
   if (session) {
     auth.session = {
-      id: session.id,
-      hasElevatedPermission: false,
+      id: session.id ?? newUuid(),
+      hasElevatedPermission: session.hasElevatedPermission ?? false,
     };
   }
 

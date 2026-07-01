@@ -15,7 +15,12 @@ const JsonSchemaPropertySchema = z
     precision: z.number().default(1).optional().describe('Smallest interval (granularity) for number types'),
     array: z.boolean().optional().describe('Type is an array type'),
     required: z.array(z.string()).optional().describe('A list of required properties'),
-    uiHint: z.string().optional(),
+    uiHint: z
+      .object({
+        type: z.string().optional(),
+        order: z.int().optional(),
+      })
+      .optional(),
     get properties() {
       return z.record(z.string(), JsonSchemaPropertySchema).optional();
     },

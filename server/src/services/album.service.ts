@@ -290,7 +290,7 @@ export class AlbumService extends BaseService {
 
       const exists = album.albumUsers.find(({ user: { id } }) => id === userId);
       if (exists) {
-        throw new BadRequestException('User already added');
+        continue;
       }
 
       const user = await this.userRepository.get(userId, {});

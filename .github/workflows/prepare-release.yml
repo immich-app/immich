@@ -3,8 +3,8 @@ name: Prepare new release
 on:
   workflow_dispatch:
     inputs:
-      serverBump:
-        description: 'Bump server version'
+      releaseType:
+        description: 'Release type'
         required: true
         default: 'false'
         type: choice
@@ -50,6 +50,7 @@ jobs:
     outputs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
       version: ${{ steps.output.outputs.version }}
+      rc: ${{ steps.output.outputs.rc }}
     permissions: {} # No job-level permissions are needed because it uses the app-token
     steps:
       - id: token
@@ -66,7 +67,7 @@ jobs:
           ref: main
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@7b8610a904d57da241e4ddba17fa62b62b15aed4 # use-mise-action-v2.0.2
+        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -76,12 +77,18 @@ jobs:
 
       - name: Bump version
         env:
-          SERVER_BUMP: ${{ inputs.serverBump }}
+          RELEASE_TYPE: ${{ inputs.releaseType }}
           MOBILE_BUMP: ${{ inputs.mobileBump }}
-        run: pnpm --silent release -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
+        run: mise //:release --type "${RELEASE_TYPE}" --mobile "${MOBILE_BUMP}"
 
       - id: output
-        run: echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
+        run: |
+          echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
+          if [[ "$IMMICH_VERSION" =~ -rc\.[0-9]+$ ]]; then
+            echo "rc=true" >> $GITHUB_OUTPUT
+          else
+            echo "rc=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Commit and tag
         id: push-tag
@@ -97,6 +104,7 @@ jobs:
     needs: bump_version
     permissions:
       contents: read
+      pull-requests: write
     secrets:
       KEY_JKS: ${{ secrets.KEY_JKS }}
       ALIAS: ${{ secrets.ALIAS }}
@@ -144,6 +152,7 @@ jobs:
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
         with:
           draft: true
+          prerelease: ${{ needs.bump_version.outputs.rc }}
           tag_name: ${{ needs.bump_version.outputs.version }}
           token: ${{ steps.generate-token.outputs.token }}
           generate_release_notes: true

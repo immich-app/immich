@@ -5,38 +5,38 @@ version = "3.11.15"
 backend = "core:python"
 
 [tools.python."platforms.linux-arm64"]
-checksum = "sha256:243f794278eff6adba96ed3677ec6877175df84c25f140e17f09f9be82d0f12a"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260510/cpython-3.11.15+20260510-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:cbce0660e88cd9c56be7aaf2a2df92bea51f359388a521838b6b01817d728df0"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260610/cpython-3.11.15+20260610-aarch64-unknown-linux-gnu-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.linux-arm64-musl"]
-checksum = "sha256:52b4c52094ff8b383a45c694acf4c5c0e883152be6d5229a35a8186ce907c6eb"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260510/cpython-3.11.15+20260510-aarch64-unknown-linux-musl-install_only_stripped.tar.gz"
+checksum = "sha256:a55ea44225ee3741d4157c383f3d5c3e8eee5f9665e2ea069233486b4275d928"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260610/cpython-3.11.15+20260610-aarch64-unknown-linux-musl-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.linux-x64"]
-checksum = "sha256:171dffd8c0f66e8a0725364a7428015b22fc18dd298b24f541392e17dd0e561f"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260510/cpython-3.11.15+20260510-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
+checksum = "sha256:67a5b22f796e96f4d7fa628f95866d5fd1d524d0588f74e4601facd82b66792b"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260610/cpython-3.11.15+20260610-x86_64-unknown-linux-gnu-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.linux-x64-musl"]
-checksum = "sha256:2ac90fef8917ebd14826a6d667593a06cf0ae5f745ba9b1147dc086dd35f5284"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260510/cpython-3.11.15+20260510-x86_64-unknown-linux-musl-install_only_stripped.tar.gz"
+checksum = "sha256:5a8544aa4303da3ca4b7505c98dd8453b671157039d25cd551e55abea0f83a60"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260610/cpython-3.11.15+20260610-x86_64-unknown-linux-musl-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.macos-arm64"]
-checksum = "sha256:fdfc363b538662eb7441a14e06f72c4a992c56af7f401f5730ea5081f8f8ad6e"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260510/cpython-3.11.15+20260510-aarch64-apple-darwin-install_only_stripped.tar.gz"
+checksum = "sha256:8c56f1f59142e0f9f8861ad897bdfd97fd84403afa7b3d8b0f33b208ec471355"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260610/cpython-3.11.15+20260610-aarch64-apple-darwin-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.macos-x64"]
-checksum = "sha256:5f1eb247cbca2c0ad5ccbf6d299a4f54b31b5c63b492d74c3531dc4344a42f88"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260510/cpython-3.11.15+20260510-x86_64-apple-darwin-install_only_stripped.tar.gz"
+checksum = "sha256:8cd3878c656ba1698314cbcb65f78df4c37b7c8eabff958558115c6db11adb3d"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260610/cpython-3.11.15+20260610-x86_64-apple-darwin-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [tools.python."platforms.windows-x64"]
-checksum = "sha256:756d7f148498b8822f6aedf44a020613576f09983161f346ad36dcef6238cdc3"
-url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260510/cpython-3.11.15+20260510-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
+checksum = "sha256:f081a733b4e7ba0e5e5e12d533b3c795dbef3ecbebf92f0b4202e5329bf7c8ab"
+url = "https://github.com/astral-sh/python-build-standalone/releases/download/20260610/cpython-3.11.15+20260610-x86_64-pc-windows-msvc-install_only_stripped.tar.gz"
 provenance = "github-attestations"
 
 [[tools.uv]]

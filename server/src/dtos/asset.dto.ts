@@ -41,7 +41,7 @@ const UpdateAssetBaseSchema = z
 const AssetBulkUpdateBaseSchema = UpdateAssetBaseSchema.extend({
   ids: z.array(z.uuidv4()).describe('Asset IDs to update'),
   duplicateId: z.string().nullish().describe('Duplicate ID'),
-  dateTimeRelative: z.int().optional().describe('Relative time offset in seconds'),
+  dateTimeRelative: z.int().optional().describe('Relative time offset in minutes'),
   timeZone: z.string().optional().describe('Time zone (IANA timezone)'),
 });
 
@@ -148,7 +148,7 @@ const AssetMetadataResponseSchema = z
   .meta({ id: 'AssetMetadataResponseDto' });
 
 const AssetMetadataBulkResponseSchema = AssetMetadataResponseSchema.extend({
-  assetId: z.string().describe('Asset ID'),
+  assetId: z.uuidv4().describe('Asset ID'),
 }).meta({ id: 'AssetMetadataBulkResponseDto' });
 
 const AssetCopySchema = z
