@@ -47,11 +47,6 @@ class FakePageRouteInfo extends Fake implements PageRouteInfo<dynamic> {}
 
 class FakeTimelineService extends Fake implements TimelineService {}
 
-class FakeAssetService extends Fake implements AssetService {
-  @override
-  Stream<BaseAsset?> watchAsset(BaseAsset asset) => const Stream.empty();
-}
-
 class TestViewIntentService extends ViewIntentService {
   ViewIntentPayload? consumedAttachment;
   int cleanupStaleTempFilesCalls = 0;
@@ -135,6 +130,7 @@ void main() {
     when(() => router.replaceAll(any())).thenAnswer((_) async {});
     when(() => router.replace(any())).thenAnswer((_) async => null);
     when(() => router.push<Object?>(any())).thenAnswer((_) async => null);
+    when(() => assetService.watchAsset(any())).thenAnswer((_) => const Stream.empty());
 
     container = ProviderContainer(
       overrides: [
@@ -146,7 +142,6 @@ void main() {
           authNotifier = TestAuthNotifier(ref, _authState(isAuthenticated: true));
           return authNotifier;
         }),
-        assetServiceProvider.overrideWithValue(FakeAssetService()),
       ],
     );
 
