@@ -77,4 +77,13 @@ class AssetService {
     await _apiRepository.updateFavorite(remoteIds, isFavorite);
     await _remoteRepository.updateFavorite(remoteIds, isFavorite);
   }
+
+  Future<void> restoreTrash(List<String> remoteIds) async {
+    if (remoteIds.isEmpty) {
+      return;
+    }
+
+    await _apiRepository.restoreTrash(remoteIds);
+    await _remoteRepository.restoreTrash(remoteIds);
+  }
 }
