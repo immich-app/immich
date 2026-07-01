@@ -135,6 +135,7 @@ export interface VideoFormat {
   formatLongName?: string;
   duration: number;
   bitrate: number;
+  tags?: Record<string, string>;
 }
 
 export interface ImageDimensions {
