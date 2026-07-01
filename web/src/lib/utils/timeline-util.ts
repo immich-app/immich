@@ -3,6 +3,7 @@ import { DateTime, type LocaleOptions } from 'luxon';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
 import type { AssetDescriptor, TimelineAsset, ViewportTopMonth } from '$lib/managers/timeline-manager/types';
+import { getModernOffsetForZoneAndDate } from '$lib/modals/timezone-utils';
 import { locale } from '$lib/stores/preferences.store';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 
@@ -167,6 +168,10 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   const localDateTime = fromISODateTimeUTCToObject(assetResponse.localDateTime);
   const fileCreatedAt = fromISODateTimeToObject(assetResponse.fileCreatedAt, assetResponse.exifInfo?.timeZone ?? 'UTC');
   const createdAt = fromISODateTimeUTCToObject(assetResponse.createdAt);
+  const { offsetMinutes } = getModernOffsetForZoneAndDate(
+    assetResponse.exifInfo?.timeZone ?? 'UTC',
+    assetResponse.localDateTime,
+  );
 
   return {
     id: assetResponse.id,
@@ -175,6 +180,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     ratio,
     thumbhash: assetResponse.thumbhash,
     localDateTime,
+    localOffsetHours: offsetMinutes ? offsetMinutes / 60 : 0,
     createdAt,
     fileCreatedAt,
     isFavorite: assetResponse.isFavorite,
