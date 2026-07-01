@@ -190,7 +190,7 @@ export class MediaRepository {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
       failOn: options.processInvalidImages ? 'none' : 'error',
-      limitInputPixels: false,
+      limitInputPixels: 1000000000,
       raw: options.raw,
       unlimited: true,
     })
@@ -387,7 +387,7 @@ export class MediaRepository {
   }
 
   async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
-    const { width = 0, height = 0, hasAlpha = false } = await sharp(input).metadata();
+    const { width = 0, height = 0, hasAlpha = false } = await sharp(input, {limitInputPixels: 1000000000}).metadata();
     return { width, height, isTransparent: hasAlpha };
   }
 
