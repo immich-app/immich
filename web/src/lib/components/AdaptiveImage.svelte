@@ -74,6 +74,8 @@
     onError?: () => void;
     ref?: HTMLDivElement;
     imgRef?: HTMLImageElement;
+    imgNaturalSize?: Size;
+    imgScaledSize?: Size;
     backdrop?: Snippet;
     overlays?: Snippet;
   };
@@ -82,6 +84,10 @@
     ref = $bindable(),
     // eslint-disable-next-line no-useless-assignment
     imgRef = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
+    imgNaturalSize = $bindable(),
+    // eslint-disable-next-line no-useless-assignment
+    imgScaledSize = $bindable(),
     asset,
     sharedLink,
     objectFit = 'contain',
@@ -149,10 +155,22 @@
     return { width: 1, height: 1 };
   });
 
+  $effect(() => {
+    imgNaturalSize = imageDimensions;
+  });
+
+  const scaledDimensions = $derived.by(() => {
+    const scaleFn = objectFit === 'cover' ? scaleToCover : scaleToFit;
+    return scaleFn(imageDimensions, container);
+  });
+
+  $effect(() => {
+    imgScaledSize = scaledDimensions;
+  });
+
   const { insetInlineStart, top, displayWidth, displayHeight, rasterWidth, rasterHeight, rasterScale } = $derived.by(
     () => {
-      const scaleFn = objectFit === 'cover' ? scaleToCover : scaleToFit;
-      const { width, height } = scaleFn(imageDimensions, container);
+      const { width, height } = scaledDimensions;
       if (maxRasterPixels === 0) {
         return {
           insetInlineStart: (container.width - width) / 2 + 'px',
