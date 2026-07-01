@@ -545,6 +545,8 @@ Class | Method | HTTP request | Description
  - [RatingsUpdate](doc//RatingsUpdate.md)
  - [ReactionLevel](doc//ReactionLevel.md)
  - [ReactionType](doc//ReactionType.md)
+ - [RecentlyAddedResponse](doc//RecentlyAddedResponse.md)
+ - [RecentlyAddedUpdate](doc//RecentlyAddedUpdate.md)
  - [ReleaseChannel](doc//ReleaseChannel.md)
  - [ReleaseEventV1](doc//ReleaseEventV1.md)
  - [ReleaseType](doc//ReleaseType.md)
