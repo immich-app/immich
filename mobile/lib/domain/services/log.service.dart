@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:isolate';
 
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
@@ -66,15 +67,16 @@ class LogService {
   }
 
   void _handleLogRecord(LogRecord r) {
+    final int isolateHash = Isolate.current.hashCode;
     dPrint(
       () =>
-          '[${r.level.name}] [${r.time}] [${r.loggerName}] ${r.message}'
+          '[${r.level.name}] [${r.time}] [${r.loggerName}] [$isolateHash] ${r.message}'
           '${r.error == null ? '' : '\nError: ${r.error}'}'
           '${r.stackTrace == null ? '' : '\nStack: ${r.stackTrace}'}',
     );
 
     final record = LogMessage(
-      message: r.message,
+      message: '[$isolateHash] ${r.message}',
       level: r.level.toLogLevel(),
       createdAt: r.time,
       logger: r.loggerName,

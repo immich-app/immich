@@ -101,8 +101,20 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     }
   }
 
+  Future<void> _cancelSync() async {
+    final backgroundManager = _ref.read(backgroundSyncProvider);
+    final nativeSync = _ref.read(nativeSyncApiProvider);
+    await Future.wait([
+      nativeSync.cancelSync(),
+      nativeSync.cancelHashing(),
+      backgroundManager.cancel(),
+    ]).timeout(const Duration(seconds: 5), onTimeout: () => const <void>[]);
+  }
+
   Future<void> _handleBetaTimelineResume() async {
     unawaited(_ref.read(backgroundWorkerLockServiceProvider).lock());
+    _log.info("Handling beta timeline resume");
+    await _cancelSync();
 
     // Give isolates time to complete any ongoing database transactions
     await Future.delayed(const Duration(milliseconds: 500));
@@ -196,6 +208,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   Future<void> _performPause() {
     if (_ref.read(authProvider).isAuthenticated) {
       _ref.read(driftBackupProvider.notifier).stopForegroundBackup();
+      unawaited(_cancelSync());
 
       _ref.read(websocketProvider.notifier).disconnect();
     }

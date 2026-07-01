@@ -7,6 +7,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/fixed/segment_builde
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:logging/logging.dart';
 
 class TimelineArgs {
   final double maxWidth;
@@ -71,12 +72,25 @@ class TimelineState {
 }
 
 class TimelineStateNotifier extends Notifier<TimelineState> {
+  static final Logger _log = Logger('TimelineState');
+
   void setScrubbing(bool isScrubbing) {
+    if (state.isScrubbing != isScrubbing) {
+      _log.info('isScrubbing ${state.isScrubbing} -> $isScrubbing  (from ${_callSite()})');
+    }
     state = state.copyWith(isScrubbing: isScrubbing);
   }
 
   void setScrolling(bool isScrolling) {
+    if (state.isScrolling != isScrolling) {
+      _log.info('isScrolling ${state.isScrolling} -> $isScrolling  (from ${_callSite()})');
+    }
     state = state.copyWith(isScrolling: isScrolling);
+  }
+
+  static String _callSite() {
+    final frames = StackTrace.current.toString().split('\n');
+    return frames.length > 2 ? frames[2].trim() : 'unknown';
   }
 
   @override
@@ -96,6 +110,11 @@ final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>((ref) 
 
   final timelineService = ref.watch(timelineServiceProvider);
   yield* timelineService.watchBuckets().map((buckets) {
+    final layoutTotal = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
+    Logger('TimelineService').info(
+      '[${timelineService.origin}] segment layout: '
+      '${buckets.length} buckets / $layoutTotal assets (service.totalAssets=${timelineService.totalAssets})',
+    );
     return FixedSegmentBuilder(
       buckets: buckets,
       tileHeight: tileExtent,

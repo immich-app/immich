@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
+import 'package:logging/logging.dart';
 
 typedef TimelineAssetSource = Future<List<BaseAsset>> Function(int index, int count);
 
@@ -90,6 +91,7 @@ class TimelineFactory {
 }
 
 class TimelineService {
+  static final Logger _log = Logger('TimelineService');
   final TimelineAssetSource _assetSource;
   final TimelineBucketSource _bucketSource;
   final TimelineOrigin origin;
@@ -105,34 +107,49 @@ class TimelineService {
     : this._(assetSource: query.assetSource, bucketSource: query.bucketSource, origin: query.origin);
 
   TimelineService._({required this._assetSource, required this._bucketSource, required this.origin}) {
-    _bucketSubscription = _bucketSource().listen((buckets) {
-      _mutex.run(() async {
-        final totalAssets = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
+    _bucketSubscription = _bucketSource().listen(
+      (buckets) {
+        _mutex.run(() async {
+          try {
+            final totalAssets = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
 
-        if (totalAssets == 0) {
-          _bufferOffset = 0;
-          _buffer = [];
-        } else {
-          final int offset;
-          final int count;
-          // When the buffer is empty or the old bufferOffset is greater than the new total assets,
-          // we need to reset the buffer and load the first batch of assets.
-          if (_bufferOffset >= totalAssets || _buffer.isEmpty) {
-            offset = 0;
-            count = kTimelineAssetLoadBatchSize;
-          } else {
-            offset = _bufferOffset;
-            count = math.min(_buffer.length, totalAssets - _bufferOffset);
+            _log.info(
+              '[$origin] bucket emission: ${buckets.length} buckets / $totalAssets assets '
+              '(current _totalAssets=$_totalAssets, _bufferOffset=$_bufferOffset, _buffer=${_buffer.length})',
+            );
+
+            if (totalAssets == 0) {
+              _bufferOffset = 0;
+              _buffer = [];
+            } else {
+              final int offset;
+              final int count;
+              // When the buffer is empty or the old bufferOffset is greater than the new total assets,
+              // we need to reset the buffer and load the first batch of assets.
+              if (_bufferOffset >= totalAssets || _buffer.isEmpty) {
+                offset = 0;
+                count = kTimelineAssetLoadBatchSize;
+              } else {
+                offset = _bufferOffset;
+                count = math.min(_buffer.length, totalAssets - _bufferOffset);
+              }
+              _buffer = await _assetSource(offset, count);
+              _bufferOffset = offset;
+              _log.info('[$origin] buffer reloaded: offset=$offset requested=$count got=${_buffer.length}');
+            }
+
+            _totalAssets = totalAssets;
+            EventStream.shared.emit(const TimelineReloadEvent());
+          } catch (error, stack) {
+            _log.severe('[$origin] bucket reload FAILED — _totalAssets stuck at $_totalAssets', error, stack);
+            rethrow;
           }
-          _buffer = await _assetSource(offset, count);
-          _bufferOffset = offset;
-        }
-
-        // change the state's total assets count only after the buffer is reloaded
-        _totalAssets = totalAssets;
-        EventStream.shared.emit(const TimelineReloadEvent());
-      });
-    });
+        });
+      },
+      onError: (Object error, StackTrace stack) {
+        _log.severe('[$origin] bucket stream errored', error, stack);
+      },
+    );
   }
 
   Stream<List<Bucket>> Function() get watchBuckets => _bucketSource;
@@ -163,6 +180,13 @@ class TimelineService {
 
     _buffer = await _assetSource(start, len);
     _bufferOffset = start;
+
+    if (!hasRange(index, count)) {
+      _log.warning(
+        '[$origin] _loadAssets($index, $count): buffer loaded (offset=$start, got=${_buffer.length}) but still '
+        'out of range — _totalAssets=$_totalAssets. getAssets is about to throw RangeError.',
+      );
+    }
 
     return getAssets(index, count);
   }
