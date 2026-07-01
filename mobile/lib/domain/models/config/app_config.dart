@@ -4,6 +4,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/config/album_config.dart';
 import 'package:immich_mobile/domain/models/config/backup_config.dart';
 import 'package:immich_mobile/domain/models/config/cleanup_config.dart';
+import 'package:immich_mobile/domain/models/config/feature_message_config.dart';
 import 'package:immich_mobile/domain/models/config/image_config.dart';
 import 'package:immich_mobile/domain/models/config/map_config.dart';
 import 'package:immich_mobile/domain/models/config/network_config.dart';
@@ -18,6 +19,7 @@ import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/utils/semver.dart';
 
 const defaultConfig = AppConfig();
 
@@ -34,6 +36,7 @@ class AppConfig {
   final BackupConfig backup;
   final NetworkConfig network;
   final ShareConfig share;
+  final FeatureMessageConfig featureMessage;
   final TrashSyncConfig trashSync;
 
   const AppConfig({
@@ -49,6 +52,7 @@ class AppConfig {
     this.backup = const .new(),
     this.network = const .new(),
     this.share = const .new(),
+    this.featureMessage = const .new(),
     this.trashSync = const .new(),
   });
 
@@ -65,6 +69,7 @@ class AppConfig {
     BackupConfig? backup,
     NetworkConfig? network,
     ShareConfig? share,
+    FeatureMessageConfig? featureMessage,
     TrashSyncConfig? trashSync,
   }) => .new(
     logLevel: logLevel ?? this.logLevel,
@@ -79,6 +84,7 @@ class AppConfig {
     backup: backup ?? this.backup,
     network: network ?? this.network,
     share: share ?? this.share,
+    featureMessage: featureMessage ?? this.featureMessage,
     trashSync: trashSync ?? this.trashSync,
   );
 
@@ -98,15 +104,30 @@ class AppConfig {
           other.backup == backup &&
           other.network == network &&
           other.share == share &&
+          other.featureMessage == featureMessage &&
           other.trashSync == trashSync);
 
   @override
-  int get hashCode =>
-      Object.hash(logLevel, theme, cleanup, map, timeline, image, viewer, slideshow, album, backup, network, share, trashSync);
+  int get hashCode => Object.hash(
+    logLevel,
+    theme,
+    cleanup,
+    map,
+    timeline,
+    image,
+    viewer,
+    slideshow,
+    album,
+    backup,
+    network,
+    share,
+    featureMessage,
+    trashSync,
+  );
 
   @override
   String toString() =>
-      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, trashSync: $trashSync)';
+      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, featureMessage: $featureMessage, trashSync: $trashSync)';
 
   T read<T>(SettingsKey<T> key) =>
       (switch (key) {
@@ -153,6 +174,7 @@ class AppConfig {
             .slideshowDuration => slideshow.duration,
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
+            .featureMessageSeenRelease => featureMessage.seenRelease,
             .trashSyncMode => trashSync.mode,
           })
           as T;
@@ -207,6 +229,7 @@ class AppConfig {
       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
+      .featureMessageSeenRelease => copyWith(featureMessage: featureMessage.copyWith(seenRelease: value as SemVer)),
       .trashSyncMode => copyWith(trashSync: trashSync.copyWith(mode: value as TrashSyncMode)),
     };
   }
