@@ -256,12 +256,12 @@ export class JobRepository {
     switch (item.name) {
       case JobName.NotifyAlbumUpdate: {
         return {
-          jobId: `${item.data.id}/${item.data.recipientId}`,
+          deduplication: { id: `${item.data.id}/${item.data.recipientId}`, replace: true },
           delay: item.data?.delay,
         };
       }
       case JobName.StorageTemplateMigrationSingle: {
-        return { jobId: item.data.id };
+        return { deduplication: { id: item.data.id } };
       }
       case JobName.PersonGenerateThumbnail: {
         return { priority: 1 };
@@ -283,14 +283,5 @@ export class JobRepository {
 
   private getQueue(queue: QueueName): Queue {
     return this.moduleRef.get<Queue>(getQueueToken(queue), { strict: false });
-  }
-
-  /** @deprecated */
-  // todo: remove this when asset notifications no longer need it.
-  public async removeJob(name: JobName, jobID: string): Promise<void> {
-    const existingJob = await this.getQueue(this.getQueueName(name)).getJob(jobID);
-    if (existingJob) {
-      await existingJob.remove();
-    }
   }
 }

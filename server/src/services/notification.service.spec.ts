@@ -523,7 +523,6 @@ describe(NotificationService.name, () => {
 
     it('should add new recipients for new images if job is already queued', async () => {
       await sut.onAlbumUpdate({ id: '1', recipientId: '2' } as INotifyAlbumUpdateJob);
-      expect(mocks.job.removeJob).toHaveBeenCalledWith(JobName.NotifyAlbumUpdate, '1/2');
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.NotifyAlbumUpdate,
         data: {

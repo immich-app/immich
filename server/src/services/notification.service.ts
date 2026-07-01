@@ -218,7 +218,6 @@ export class NotificationService extends BaseService {
 
   @OnEvent({ name: 'AlbumUpdate' })
   async onAlbumUpdate({ id, recipientId }: ArgOf<'AlbumUpdate'>) {
-    await this.jobRepository.removeJob(JobName.NotifyAlbumUpdate, `${id}/${recipientId}`);
     await this.jobRepository.queue({
       name: JobName.NotifyAlbumUpdate,
       data: { id, recipientId, delay: NotificationService.albumUpdateEmailDelayMs },
