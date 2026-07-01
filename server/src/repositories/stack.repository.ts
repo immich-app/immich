@@ -6,7 +6,7 @@ import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
 import { StackTable } from 'src/schema/tables/stack.table';
-import { asUuid, withDefaultVisibility } from 'src/utils/database';
+import { asUuid, withDefaultVisibility, withFacesAndPeople } from 'src/utils/database';
 
 export interface StackSearch {
   ownerId: string;
@@ -27,6 +27,7 @@ const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
             .as('exifInfo'),
         (join) => join.onTrue(),
       )
+      .select(withFacesAndPeople)
       .$if(withTags, (eb) =>
         eb.select((eb) =>
           jsonArrayFrom(
