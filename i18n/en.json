@@ -441,7 +441,7 @@
     "transcoding_temporal_aq": "Temporal AQ",
     "transcoding_temporal_aq_description": "Applies only to NVENC. Temporal Adaptive Quantization increases quality of high-detail, low-motion scenes. May not be compatible with older devices.",
     "transcoding_threads": "Threads",
-    "transcoding_threads_description": "Higher values lead to faster encoding, but leave less room for the server to process other tasks while active. This value should not be more than the number of CPU cores. Maximizes utilization if set to 0.",
+    "transcoding_threads_description": "Higher values lead to faster encoding, but leave less room for the server to process other tasks while active. This value should not be more than the number of CPU cores. Maximizes utilization if set to 0.{av1, select, true { The AV1 encoder uses a number between 1–6 describing the amount of parallelism, instead of limiting to a specific number of threads.} other {}}",
     "transcoding_tone_mapping": "Tone-mapping",
     "transcoding_tone_mapping_description": "Attempts to preserve the appearance of HDR videos when converted to SDR. Each algorithm makes different tradeoffs for color, detail and brightness. Hable preserves detail, Mobius preserves color, and Reinhard preserves brightness.",
     "transcoding_transcode_policy": "Transcode policy",
