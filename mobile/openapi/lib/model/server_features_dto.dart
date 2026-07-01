@@ -13,6 +13,7 @@ part of openapi.api;
 class ServerFeaturesDto {
   /// Returns a new [ServerFeaturesDto] instance.
   ServerFeaturesDto({
+    required this.backups,
     required this.configFile,
     required this.duplicateDetection,
     required this.email,
@@ -30,6 +31,9 @@ class ServerFeaturesDto {
     required this.smartSearch,
     required this.trash,
   });
+
+  /// Whether the backups feature is enabled
+  bool backups;
 
   /// Whether config file is available
   bool configFile;
@@ -81,6 +85,7 @@ class ServerFeaturesDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ServerFeaturesDto &&
+    other.backups == backups &&
     other.configFile == configFile &&
     other.duplicateDetection == duplicateDetection &&
     other.email == email &&
@@ -101,6 +106,7 @@ class ServerFeaturesDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (backups.hashCode) +
     (configFile.hashCode) +
     (duplicateDetection.hashCode) +
     (email.hashCode) +
@@ -119,10 +125,11 @@ class ServerFeaturesDto {
     (trash.hashCode);
 
   @override
-  String toString() => 'ServerFeaturesDto[configFile=$configFile, duplicateDetection=$duplicateDetection, email=$email, facialRecognition=$facialRecognition, importFaces=$importFaces, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, ocr=$ocr, passwordLogin=$passwordLogin, realtimeTranscoding=$realtimeTranscoding, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
+  String toString() => 'ServerFeaturesDto[backups=$backups, configFile=$configFile, duplicateDetection=$duplicateDetection, email=$email, facialRecognition=$facialRecognition, importFaces=$importFaces, map=$map, oauth=$oauth, oauthAutoLaunch=$oauthAutoLaunch, ocr=$ocr, passwordLogin=$passwordLogin, realtimeTranscoding=$realtimeTranscoding, reverseGeocoding=$reverseGeocoding, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, trash=$trash]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'backups'] = this.backups;
       json[r'configFile'] = this.configFile;
       json[r'duplicateDetection'] = this.duplicateDetection;
       json[r'email'] = this.email;
@@ -151,6 +158,7 @@ class ServerFeaturesDto {
       final json = value.cast<String, dynamic>();
 
       return ServerFeaturesDto(
+        backups: mapValueOfType<bool>(json, r'backups')!,
         configFile: mapValueOfType<bool>(json, r'configFile')!,
         duplicateDetection: mapValueOfType<bool>(json, r'duplicateDetection')!,
         email: mapValueOfType<bool>(json, r'email')!,
@@ -214,6 +222,7 @@ class ServerFeaturesDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'backups',
     'configFile',
     'duplicateDetection',
     'email',

@@ -95,6 +95,7 @@ test.describe('Database Backups', () => {
       await page.waitForURL('/maintenance**');
     }
 
+    await page.getByRole('button', { name: 'Database Backup' }).click();
     await page.getByRole('button', { name: 'Next' }).click();
     await page.getByRole('button', { name: 'Restore', exact: true }).click();
     await page.getByRole('dialog').getByRole('button', { name: 'Restore' }).click();

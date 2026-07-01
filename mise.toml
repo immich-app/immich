@@ -16,13 +16,14 @@ config_roots = [
 
 [tools]
 node = "24.15.0"
-pnpm = "11.6.0"
+pnpm = "11.5.2"
 terragrunt = "1.0.3"
 opentofu = "1.11.6"
 "npm:oazapfts" = "7.5.0"
 "github:extism/cli" = "1.6.3"
 "github:webassembly/binaryen" = "version_124"
 "github:extism/js-pdk" = "1.6.0"
+restic = "0.19.0"
 java = "21.0.2"
 
 [tools."github:jellyfin/jellyfin-ffmpeg"]

@@ -87,7 +87,9 @@ const SystemConfigIntegrityChecksSchema = z
   .describe('Integrity checks config')
   .meta({ id: 'SystemConfigIntegrityChecks' });
 
-const SystemConfigBackupsSchema = z.object({ database: DatabaseBackupSchema }).meta({ id: 'SystemConfigBackupsDto' });
+const SystemConfigBackupsSchema = z
+  .object({ beta: configBool.describe('Whether the backups feature is enabled'), database: DatabaseBackupSchema })
+  .meta({ id: 'SystemConfigBackupsDto' });
 
 const SystemConfigFFmpegSchema = z
   .object({

@@ -86,8 +86,13 @@ export class AuthGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<AuthRequest>();
+
     const targets = [context.getHandler()];
-    const options = this.reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, targets);
+    const options = request.path.startsWith('/api/yucca')
+      ? { admin: true, permission: undefined }
+      : this.reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, targets);
+
     if (!options) {
       return true;
     }
@@ -97,7 +102,6 @@ export class AuthGuard implements CanActivate {
       sharedLink: sharedLinkRoute,
       permission,
     } = { sharedLink: false, admin: false, ...options };
-    const request = context.switchToHttp().getRequest<AuthRequest>();
 
     request.user = await this.authService.authenticate({
       headers: request.headers,

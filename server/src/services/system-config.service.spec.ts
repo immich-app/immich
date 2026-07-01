@@ -46,6 +46,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.Editor]: { concurrency: 2 },
   },
   backup: {
+    beta: false,
     database: {
       enabled: true,
       cronExpression: '0 02 * * *',

@@ -122,6 +122,7 @@ Class | Method | HTTP request | Description
 *AssetsApi* | [**updateBulkAssetMetadata**](doc//AssetsApi.md#updatebulkassetmetadata) | **PUT** /assets/metadata | Upsert asset metadata
 *AssetsApi* | [**uploadAsset**](doc//AssetsApi.md#uploadasset) | **POST** /assets | Upload asset
 *AssetsApi* | [**viewAsset**](doc//AssetsApi.md#viewasset) | **GET** /assets/{id}/thumbnail | View asset thumbnail
+*AuthApi* | [**oidcDeviceFlow**](doc//AuthApi.md#oidcdeviceflow) | **GET** /yucca/auth/oidc/device | 
 *AuthenticationApi* | [**changePassword**](doc//AuthenticationApi.md#changepassword) | **POST** /auth/change-password | Change password
 *AuthenticationApi* | [**changePinCode**](doc//AuthenticationApi.md#changepincode) | **PUT** /auth/pin-code | Change pin code
 *AuthenticationApi* | [**finishOAuth**](doc//AuthenticationApi.md#finishoauth) | **POST** /oauth/callback | Finish OAuth
@@ -140,6 +141,8 @@ Class | Method | HTTP request | Description
 *AuthenticationApi* | [**unlockAuthSession**](doc//AuthenticationApi.md#unlockauthsession) | **POST** /auth/session/unlock | Unlock auth session
 *AuthenticationApi* | [**validateAccessToken**](doc//AuthenticationApi.md#validateaccesstoken) | **POST** /auth/validateToken | Validate access token
 *AuthenticationAdminApi* | [**unlinkAllOAuthAccountsAdmin**](doc//AuthenticationAdminApi.md#unlinkalloauthaccountsadmin) | **POST** /admin/auth/unlink-all | Unlink all OAuth accounts
+*BackendApi* | [**createLocalBackend**](doc//BackendApi.md#createlocalbackend) | **POST** /yucca/backend/local | 
+*BackendApi* | [**getBackends**](doc//BackendApi.md#getbackends) | **GET** /yucca/backend | 
 *DatabaseBackupsAdminApi* | [**deleteDatabaseBackup**](doc//DatabaseBackupsAdminApi.md#deletedatabasebackup) | **DELETE** /admin/database-backups | Delete database backup
 *DatabaseBackupsAdminApi* | [**downloadDatabaseBackup**](doc//DatabaseBackupsAdminApi.md#downloaddatabasebackup) | **GET** /admin/database-backups/{filename} | Download database backup
 *DatabaseBackupsAdminApi* | [**listDatabaseBackups**](doc//DatabaseBackupsAdminApi.md#listdatabasebackups) | **GET** /admin/database-backups | List database backups
@@ -162,6 +165,7 @@ Class | Method | HTTP request | Description
 *DeprecatedApi* | [**updateUserAdmin**](doc//DeprecatedApi.md#updateuseradmin) | **PUT** /admin/users/{id} | Update a user
 *DeprecatedApi* | [**updateUserPreferencesAdmin**](doc//DeprecatedApi.md#updateuserpreferencesadmin) | **PUT** /admin/users/{id}/preferences | Update user preferences
 *DeprecatedApi* | [**updateWorkflow**](doc//DeprecatedApi.md#updateworkflow) | **PUT** /workflows/{id} | Update a workflow
+*DevelopmentApi* | [**resetOrchestrator**](doc//DevelopmentApi.md#resetorchestrator) | **POST** /yucca/debug/reset | 
 *DownloadApi* | [**downloadArchive**](doc//DownloadApi.md#downloadarchive) | **POST** /download/archive | Download asset archive
 *DownloadApi* | [**getDownloadInfo**](doc//DownloadApi.md#getdownloadinfo) | **POST** /download/info | Retrieve download information
 *DuplicatesApi* | [**deleteDuplicate**](doc//DuplicatesApi.md#deleteduplicate) | **DELETE** /duplicates/{id} | Dismiss a duplicate group
@@ -172,6 +176,9 @@ Class | Method | HTTP request | Description
 *FacesApi* | [**deleteFace**](doc//FacesApi.md#deleteface) | **DELETE** /faces/{id} | Delete a face
 *FacesApi* | [**getFaces**](doc//FacesApi.md#getfaces) | **GET** /faces | Retrieve faces for asset
 *FacesApi* | [**reassignFacesById**](doc//FacesApi.md#reassignfacesbyid) | **PUT** /faces/{id} | Re-assign a face to another person
+*FilesystemApi* | [**getFileListing**](doc//FilesystemApi.md#getfilelisting) | **GET** /yucca/fs | 
+*IntegrationsApi* | [**configureImmichIntegration**](doc//IntegrationsApi.md#configureimmichintegration) | **POST** /yucca/integrations/immich | 
+*IntegrationsApi* | [**getIntegrations**](doc//IntegrationsApi.md#getintegrations) | **GET** /yucca/integrations | 
 *JobsApi* | [**createJob**](doc//JobsApi.md#createjob) | **POST** /jobs | Create a manual job
 *JobsApi* | [**getQueuesLegacy**](doc//JobsApi.md#getqueueslegacy) | **GET** /jobs | Retrieve queue counts and status
 *JobsApi* | [**runQueueCommandLegacy**](doc//JobsApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
@@ -211,6 +218,13 @@ Class | Method | HTTP request | Description
 *NotificationsAdminApi* | [**createNotification**](doc//NotificationsAdminApi.md#createnotification) | **POST** /admin/notifications | Create a notification
 *NotificationsAdminApi* | [**getNotificationTemplateAdmin**](doc//NotificationsAdminApi.md#getnotificationtemplateadmin) | **POST** /admin/notifications/templates/{name} | Render email template
 *NotificationsAdminApi* | [**sendTestEmailAdmin**](doc//NotificationsAdminApi.md#sendtestemailadmin) | **POST** /admin/notifications/test-email | Send test email
+*OnboardingApi* | [**confirmRecoveryKey**](doc//OnboardingApi.md#confirmrecoverykey) | **POST** /yucca/onboarding/recovery-key | 
+*OnboardingApi* | [**currentRecoveryKey**](doc//OnboardingApi.md#currentrecoverykey) | **GET** /yucca/onboarding/recovery-key | 
+*OnboardingApi* | [**enableTelemetry**](doc//OnboardingApi.md#enabletelemetry) | **POST** /yucca/onboarding/telemetry | 
+*OnboardingApi* | [**importRecoveryKey**](doc//OnboardingApi.md#importrecoverykey) | **PUT** /yucca/onboarding/recovery-key | 
+*OnboardingApi* | [**onboardingStatus**](doc//OnboardingApi.md#onboardingstatus) | **GET** /yucca/onboarding | 
+*OnboardingApi* | [**reportError**](doc//OnboardingApi.md#reporterror) | **POST** /yucca/onboarding/report-error | 
+*OnboardingApi* | [**skipOnboardingExtraConfig**](doc//OnboardingApi.md#skiponboardingextraconfig) | **POST** /yucca/onboarding/skip | 
 *PartnersApi* | [**createPartner**](doc//PartnersApi.md#createpartner) | **POST** /partners | Create a partner
 *PartnersApi* | [**createPartnerDeprecated**](doc//PartnersApi.md#createpartnerdeprecated) | **POST** /partners/{id} | Create a partner
 *PartnersApi* | [**getPartners**](doc//PartnersApi.md#getpartners) | **GET** /partners | Retrieve partners
@@ -236,6 +250,30 @@ Class | Method | HTTP request | Description
 *QueuesApi* | [**getQueueJobs**](doc//QueuesApi.md#getqueuejobs) | **GET** /queues/{name}/jobs | Retrieve queue jobs
 *QueuesApi* | [**getQueues**](doc//QueuesApi.md#getqueues) | **GET** /queues | List all queues
 *QueuesApi* | [**updateQueue**](doc//QueuesApi.md#updatequeue) | **PUT** /queues/{name} | Update a queue
+*RepositoryApi* | [**checkImportRepository**](doc//RepositoryApi.md#checkimportrepository) | **GET** /yucca/repository/{id}/import | 
+*RepositoryApi* | [**createBackup**](doc//RepositoryApi.md#createbackup) | **POST** /yucca/repository/{id} | 
+*RepositoryApi* | [**createRepository**](doc//RepositoryApi.md#createrepository) | **POST** /yucca/repository | 
+*RepositoryApi* | [**deleteRepository**](doc//RepositoryApi.md#deleterepository) | **DELETE** /yucca/repository/{id} | 
+*RepositoryApi* | [**forgetSnapshot**](doc//RepositoryApi.md#forgetsnapshot) | **DELETE** /yucca/repository/{id}/snapshots/{snapshot} | 
+*RepositoryApi* | [**getRepositories**](doc//RepositoryApi.md#getrepositories) | **GET** /yucca/repository | 
+*RepositoryApi* | [**getRunHistory**](doc//RepositoryApi.md#getrunhistory) | **GET** /yucca/repository/{id}/runs | 
+*RepositoryApi* | [**getSnapshotListing**](doc//RepositoryApi.md#getsnapshotlisting) | **GET** /yucca/repository/{id}/snapshots/{snapshot}/listing | 
+*RepositoryApi* | [**getSnapshots**](doc//RepositoryApi.md#getsnapshots) | **GET** /yucca/repository/{id}/snapshots | 
+*RepositoryApi* | [**importRepository**](doc//RepositoryApi.md#importrepository) | **POST** /yucca/repository/{id}/import | 
+*RepositoryApi* | [**inspectRepositories**](doc//RepositoryApi.md#inspectrepositories) | **GET** /yucca/repository/inspect | 
+*RepositoryApi* | [**pruneRepository**](doc//RepositoryApi.md#prunerepository) | **POST** /yucca/repository/{id}/snapshots/prune | 
+*RepositoryApi* | [**reconfigureRepositoryPrimaryBackend**](doc//RepositoryApi.md#reconfigurerepositoryprimarybackend) | **PUT** /yucca/repository/{id}/backend | 
+*RepositoryApi* | [**restoreFromPoint**](doc//RepositoryApi.md#restorefrompoint) | **POST** /yucca/repository/{id}/snapshots/{snapshot}/restore-from-point | 
+*RepositoryApi* | [**restoreSnapshot**](doc//RepositoryApi.md#restoresnapshot) | **POST** /yucca/repository/{id}/snapshots/{snapshot} | 
+*RepositoryApi* | [**updateRepository**](doc//RepositoryApi.md#updaterepository) | **PATCH** /yucca/repository/{id} | 
+*RunHistoryApi* | [**getRun**](doc//RunHistoryApi.md#getrun) | **GET** /yucca/logs/{id} | 
+*RunHistoryApi* | [**logStreamSse**](doc//RunHistoryApi.md#logstreamsse) | **GET** /yucca/logs/{id}/stream | 
+*RunningTasksApi* | [**cancelTask**](doc//RunningTasksApi.md#canceltask) | **POST** /yucca/tasks/{parentId}/cancel | 
+*RunningTasksApi* | [**getRunningTasks**](doc//RunningTasksApi.md#getrunningtasks) | **GET** /yucca/tasks | 
+*ScheduleApi* | [**createSchedule**](doc//ScheduleApi.md#createschedule) | **POST** /yucca/schedule | 
+*ScheduleApi* | [**getSchedules**](doc//ScheduleApi.md#getschedules) | **GET** /yucca/schedule | 
+*ScheduleApi* | [**removeSchedule**](doc//ScheduleApi.md#removeschedule) | **DELETE** /yucca/schedule/{id} | 
+*ScheduleApi* | [**updateSchedule**](doc//ScheduleApi.md#updateschedule) | **PATCH** /yucca/schedule/{id} | 
 *SearchApi* | [**getAssetsByCity**](doc//SearchApi.md#getassetsbycity) | **GET** /search/cities | Retrieve assets by city
 *SearchApi* | [**getExploreData**](doc//SearchApi.md#getexploredata) | **GET** /search/explore | Retrieve explore data
 *SearchApi* | [**getSearchSuggestions**](doc//SearchApi.md#getsearchsuggestions) | **GET** /search/suggestions | Retrieve search suggestions
@@ -348,6 +386,7 @@ Class | Method | HTTP request | Description
 
 ## Documentation For Models
 
+ - [ActiveScheduleItemDto](doc//ActiveScheduleItemDto.md)
  - [ActivityCreateDto](doc//ActivityCreateDto.md)
  - [ActivityResponseDto](doc//ActivityResponseDto.md)
  - [ActivityStatisticsResponseDto](doc//ActivityStatisticsResponseDto.md)
@@ -414,6 +453,11 @@ Class | Method | HTTP request | Description
  - [AudioCodec](doc//AudioCodec.md)
  - [AuthStatusResponseDto](doc//AuthStatusResponseDto.md)
  - [AvatarUpdate](doc//AvatarUpdate.md)
+ - [BackendDto](doc//BackendDto.md)
+ - [BackendResponseDto](doc//BackendResponseDto.md)
+ - [BackendType](doc//BackendType.md)
+ - [BackendsResponseDto](doc//BackendsResponseDto.md)
+ - [BootstrapStatus](doc//BootstrapStatus.md)
  - [BulkIdErrorReason](doc//BulkIdErrorReason.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)
@@ -426,15 +470,20 @@ Class | Method | HTTP request | Description
  - [CastUpdate](doc//CastUpdate.md)
  - [ChangePasswordDto](doc//ChangePasswordDto.md)
  - [Colorspace](doc//Colorspace.md)
+ - [ConfigureImmichIntegrationRequestDto](doc//ConfigureImmichIntegrationRequestDto.md)
+ - [ConfigureImmichIntegrationRequestDtoLibraries](doc//ConfigureImmichIntegrationRequestDtoLibraries.md)
  - [ContributorCountResponseDto](doc//ContributorCountResponseDto.md)
  - [CreateAlbumDto](doc//CreateAlbumDto.md)
  - [CreateLibraryDto](doc//CreateLibraryDto.md)
+ - [CreateLocalBackendRequestDto](doc//CreateLocalBackendRequestDto.md)
  - [CreateProfileImageResponseDto](doc//CreateProfileImageResponseDto.md)
  - [CropParameters](doc//CropParameters.md)
+ - [CurrentRecoveryKeyResponse](doc//CurrentRecoveryKeyResponse.md)
  - [DatabaseBackupConfig](doc//DatabaseBackupConfig.md)
  - [DatabaseBackupDeleteDto](doc//DatabaseBackupDeleteDto.md)
  - [DatabaseBackupDto](doc//DatabaseBackupDto.md)
  - [DatabaseBackupListResponseDto](doc//DatabaseBackupListResponseDto.md)
+ - [DeviceFlowResponseDto](doc//DeviceFlowResponseDto.md)
  - [DownloadArchiveDto](doc//DownloadArchiveDto.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
@@ -450,9 +499,18 @@ Class | Method | HTTP request | Description
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [FaceDto](doc//FaceDto.md)
  - [FacialRecognitionConfig](doc//FacialRecognitionConfig.md)
+ - [FilesystemListingItemDto](doc//FilesystemListingItemDto.md)
+ - [FilesystemListingResponseDto](doc//FilesystemListingResponseDto.md)
  - [FoldersResponse](doc//FoldersResponse.md)
  - [FoldersUpdate](doc//FoldersUpdate.md)
  - [ImageFormat](doc//ImageFormat.md)
+ - [ImmichIntegrationConfigurationDto](doc//ImmichIntegrationConfigurationDto.md)
+ - [ImmichIntegrationDto](doc//ImmichIntegrationDto.md)
+ - [ImmichLibraryDto](doc//ImmichLibraryDto.md)
+ - [ImmichStateDto](doc//ImmichStateDto.md)
+ - [ImportRecoveryKeyRequest](doc//ImportRecoveryKeyRequest.md)
+ - [InspectedLocalRepositoryDto](doc//InspectedLocalRepositoryDto.md)
+ - [IntegrationsResponseDto](doc//IntegrationsResponseDto.md)
  - [IntegrityReport](doc//IntegrityReport.md)
  - [IntegrityReportResponseDto](doc//IntegrityReportResponseDto.md)
  - [IntegrityReportResponseDtoItemsInner](doc//IntegrityReportResponseDtoItemsInner.md)
@@ -463,7 +521,10 @@ Class | Method | HTTP request | Description
  - [LibraryResponseDto](doc//LibraryResponseDto.md)
  - [LibraryStatsResponseDto](doc//LibraryStatsResponseDto.md)
  - [LicenseKeyDto](doc//LicenseKeyDto.md)
+ - [ListSnapshotsResponseDto](doc//ListSnapshotsResponseDto.md)
+ - [LocalRepositoryDto](doc//LocalRepositoryDto.md)
  - [LogLevel](doc//LogLevel.md)
+ - [LogResponseDto](doc//LogResponseDto.md)
  - [LoginCredentialDto](doc//LoginCredentialDto.md)
  - [LoginResponseDto](doc//LoginResponseDto.md)
  - [LogoutResponseDto](doc//LogoutResponseDto.md)
@@ -504,6 +565,7 @@ Class | Method | HTTP request | Description
  - [OnThisDayDto](doc//OnThisDayDto.md)
  - [OnboardingDto](doc//OnboardingDto.md)
  - [OnboardingResponseDto](doc//OnboardingResponseDto.md)
+ - [OnboardingStatusResponseDto](doc//OnboardingStatusResponseDto.md)
  - [PartnerCreateDto](doc//PartnerCreateDto.md)
  - [PartnerDirection](doc//PartnerDirection.md)
  - [PartnerResponseDto](doc//PartnerResponseDto.md)
@@ -548,8 +610,37 @@ Class | Method | HTTP request | Description
  - [ReleaseChannel](doc//ReleaseChannel.md)
  - [ReleaseEventV1](doc//ReleaseEventV1.md)
  - [ReleaseType](doc//ReleaseType.md)
+ - [RepositoryBackendDto](doc//RepositoryBackendDto.md)
+ - [RepositoryBackendsDto](doc//RepositoryBackendsDto.md)
+ - [RepositoryCheckImportResponseDto](doc//RepositoryCheckImportResponseDto.md)
+ - [RepositoryConfigurationDto](doc//RepositoryConfigurationDto.md)
+ - [RepositoryCreateRequestDto](doc//RepositoryCreateRequestDto.md)
+ - [RepositoryCreateResponseDto](doc//RepositoryCreateResponseDto.md)
+ - [RepositoryInspectResponseDto](doc//RepositoryInspectResponseDto.md)
+ - [RepositoryListResponseDto](doc//RepositoryListResponseDto.md)
+ - [RepositoryMeterDto](doc//RepositoryMeterDto.md)
+ - [RepositoryMetricsDto](doc//RepositoryMetricsDto.md)
+ - [RepositoryPrimaryBackendReconfigureRequestDto](doc//RepositoryPrimaryBackendReconfigureRequestDto.md)
+ - [RepositorySnapshotRestoreFromPointRequestDto](doc//RepositorySnapshotRestoreFromPointRequestDto.md)
+ - [RepositorySnapshotRestoreRequestDto](doc//RepositorySnapshotRestoreRequestDto.md)
+ - [RepositoryUpdateRequestDto](doc//RepositoryUpdateRequestDto.md)
+ - [RepositoryUpdateResponseDto](doc//RepositoryUpdateResponseDto.md)
+ - [RetentionPolicyDto](doc//RetentionPolicyDto.md)
  - [ReverseGeocodingStateResponseDto](doc//ReverseGeocodingStateResponseDto.md)
  - [RotateParameters](doc//RotateParameters.md)
+ - [RunDto](doc//RunDto.md)
+ - [RunHistoryResponseDto](doc//RunHistoryResponseDto.md)
+ - [RunResponseDto](doc//RunResponseDto.md)
+ - [RunStatus](doc//RunStatus.md)
+ - [RunType](doc//RunType.md)
+ - [RunningTaskDto](doc//RunningTaskDto.md)
+ - [RunningTaskListResponse](doc//RunningTaskListResponse.md)
+ - [ScheduleCreateRequestDto](doc//ScheduleCreateRequestDto.md)
+ - [ScheduleCreateResponseDto](doc//ScheduleCreateResponseDto.md)
+ - [ScheduleDto](doc//ScheduleDto.md)
+ - [ScheduleListResponseDto](doc//ScheduleListResponseDto.md)
+ - [ScheduleUpdateRequestDto](doc//ScheduleUpdateRequestDto.md)
+ - [ScheduleUpdateResponseDto](doc//ScheduleUpdateResponseDto.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)
  - [SearchAssetResponseDto](doc//SearchAssetResponseDto.md)
  - [SearchExploreItem](doc//SearchExploreItem.md)
@@ -584,6 +675,8 @@ Class | Method | HTTP request | Description
  - [SharedLinksUpdate](doc//SharedLinksUpdate.md)
  - [SignUpDto](doc//SignUpDto.md)
  - [SmartSearchDto](doc//SmartSearchDto.md)
+ - [SnapshotDto](doc//SnapshotDto.md)
+ - [SnapshotSummaryDto](doc//SnapshotSummaryDto.md)
  - [SourceType](doc//SourceType.md)
  - [StackCreateDto](doc//StackCreateDto.md)
  - [StackResponseDto](doc//StackResponseDto.md)
@@ -674,6 +767,9 @@ Class | Method | HTTP request | Description
  - [TagUpsertDto](doc//TagUpsertDto.md)
  - [TagsResponse](doc//TagsResponse.md)
  - [TagsUpdate](doc//TagsUpdate.md)
+ - [TaskStatus](doc//TaskStatus.md)
+ - [TaskType](doc//TaskType.md)
+ - [TelemetryLevel](doc//TelemetryLevel.md)
  - [TemplateDto](doc//TemplateDto.md)
  - [TemplateResponseDto](doc//TemplateResponseDto.md)
  - [TestEmailResponseDto](doc//TestEmailResponseDto.md)

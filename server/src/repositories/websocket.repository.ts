@@ -19,6 +19,7 @@ import { handlePromiseError } from 'src/utils/misc';
 export const serverEvents = [
   'ConfigUpdate',
   'AppRestart',
+  'YuccaEvent',
   'HlsSegmentRequest',
   'HlsSegmentResult',
   'HlsHeartbeat',
