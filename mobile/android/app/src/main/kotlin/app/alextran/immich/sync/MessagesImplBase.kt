@@ -4,7 +4,7 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
-import androidx.exifinterface.media.ExifInterface
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.ext.SdkExtensions
@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.File
+import java.io.InputStream
 import java.security.MessageDigest
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -52,6 +53,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
     private val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
     private const val HASHING_CANCELLED_CODE = "HASH_CANCELLED"
+    private const val HASH_ORIGINAL_UNAVAILABLE_CODE = "HASH_ORIGINAL_UNAVAILABLE"
     private const val SYNC_CANCELLED_CODE = "SYNC_CANCELLED"
 
     // MediaStore.Files.FileColumns.SPECIAL_FORMAT — S Extensions 21+
@@ -275,7 +277,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
       } catch (e: Exception) {
         Log.w(TAG, "Failed to parse image header for asset $assetId", e)
       }
-      // if mimeType is webp but not animated, its just an image.
+      // if mimeType is webp but not animated, it's just an image.
       return PlatformAssetPlaybackStyle.IMAGE
     }
 
@@ -377,7 +379,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
     )?.use { cursor -> cursor.count.toLong() } ?: 0L
 
 
-  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?, callback: (Result<List<PlatformAsset>>) -> Unit) {
+  fun getAssetsForAlbum(
+    albumId: String,
+    updatedTimeCond: Long?,
+    callback: (Result<List<PlatformAsset>>) -> Unit
+  ) {
     runSync(callback) { getAssetsForAlbum(albumId, updatedTimeCond) }
   }
 
@@ -419,7 +425,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
         }.awaitAll()
 
         completeWhenActive(callback, Result.success(results))
-      } catch (e: CancellationException) {
+      } catch (_: CancellationException) {
         completeWhenActive(
           callback, Result.failure(
             FlutterError(
@@ -436,30 +442,62 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
   }
 
   private suspend fun hashAsset(assetId: String): HashResult {
+    val digest = MessageDigest.getInstance("SHA-1")
+    openOriginalStream(assetId).use { inputStream ->
+      var bytesRead: Int
+      val buffer = ByteArray(HASH_BUFFER_SIZE)
+      while (inputStream.read(buffer).also { bytesRead = it } > 0) {
+        currentCoroutineContext().ensureActive()
+        digest.update(buffer, 0, bytesRead)
+      }
+    }
+
+    val hashString = Base64.encodeToString(digest.digest(), Base64.NO_WRAP)
+    return HashResult(assetId, null, hashString)
+  }
+
+  private fun openOriginalStream(assetId: String): InputStream {
+    val id = assetId.toLong()
+    val collection = when (getMediaType(id)) {
+      MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+      else -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+    }
+    var uri: Uri = ContentUris.withAppendedId(collection, id)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      uri = MediaStore.setRequireOriginal(uri)
+    }
+
     return try {
-      val assetUri = ContentUris.withAppendedId(
-        MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
-        assetId.toLong()
-      )
-
-      val digest = MessageDigest.getInstance("SHA-1")
-      ctx.contentResolver.openInputStream(assetUri)?.use { inputStream ->
-        var bytesRead: Int
-        val buffer = ByteArray(HASH_BUFFER_SIZE)
-        while (inputStream.read(buffer).also { bytesRead = it } > 0) {
-          currentCoroutineContext().ensureActive()
-          digest.update(buffer, 0, bytesRead)
-        }
-      } ?: return HashResult(assetId, "Cannot open input stream for asset", null)
-
-      val hashString = Base64.encodeToString(digest.digest(), Base64.NO_WRAP)
-      HashResult(assetId, null, hashString)
-    } catch (e: SecurityException) {
-      HashResult(assetId, "Permission denied accessing asset: ${e.message}", null)
+      ctx.contentResolver.openInputStream(uri)
+        ?: throw FlutterError(
+          HASH_ORIGINAL_UNAVAILABLE_CODE,
+          "Cannot open original stream for asset $assetId",
+          null
+        )
+    } catch (e: FlutterError) {
+      throw e
     } catch (e: Exception) {
-      HashResult(assetId, "Failed to hash asset: ${e.message}", null)
+      throw FlutterError(
+        HASH_ORIGINAL_UNAVAILABLE_CODE,
+        "Failed to open original stream for asset $assetId: ${e.message}",
+        e.stackTraceToString()
+      )
     }
   }
+
+  private fun getMediaType(id: Long): Int =
+    getCursor(
+      MediaStore.VOLUME_EXTERNAL,
+      "${MediaStore.MediaColumns._ID} = ?",
+      arrayOf(id.toString()),
+      arrayOf(MediaStore.Files.FileColumns.MEDIA_TYPE)
+    )?.use { cursor ->
+      if (cursor.moveToFirst()) {
+        cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE))
+      } else {
+        MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+      }
+    } ?: MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
 
   fun cancelHashing() {
     hashTask?.cancel()
@@ -476,8 +514,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
     syncJob = CoroutineScope(Dispatchers.IO).launch {
       try {
         completeWhenActive(callback, Result.success(work()))
-      } catch (e: CancellationException) {
-        completeWhenActive(callback, Result.failure(FlutterError(SYNC_CANCELLED_CODE, "Sync cancelled", null)))
+      } catch (_: CancellationException) {
+        completeWhenActive(
+          callback,
+          Result.failure(FlutterError(SYNC_CANCELLED_CODE, "Sync cancelled", null))
+        )
       } catch (e: Exception) {
         completeWhenActive(callback, Result.failure(e))
       }
