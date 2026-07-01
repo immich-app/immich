@@ -897,8 +897,13 @@ class _QuickLinkList extends StatelessWidget {
           _QuickLink(
             title: 'favorites'.t(context: context),
             icon: Icons.favorite_border_rounded,
-            isBottom: true,
             onTap: () => context.pushRoute(const DriftFavoriteRoute()),
+          ),
+          _QuickLink(
+            title: 'remote_only_assets'.t(context: context),
+            icon: Icons.cloud_outlined,
+            isBottom: true,
+            onTap: () => context.pushRoute(const DriftRemoteOnlyRoute()),
           ),
         ],
       ),
