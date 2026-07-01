@@ -156,28 +156,6 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> archive(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    try {
-      await _service.archive(ids);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to archive assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> unArchive(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    try {
-      await _service.unArchive(ids);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to unarchive assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
   Future<ActionResult> moveToLockFolder(ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
     final localIds = _getLocalIdsForSource(source, ignoreLocalOnly: true);
