@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/utils/asset_filter.dart';
 
 class ActionScope {
   final BuildContext context;
@@ -28,5 +29,5 @@ abstract class AssetAction<T extends BaseAsset> extends BaseAction {
 
   const AssetAction({required this.assets});
 
-  Iterable<T> filter(ActionScope scope) => assets.whereType<T>();
+  AssetFilter<T> filter(ActionScope scope) => .new(assets.whereType<T>());
 }

@@ -18,7 +18,7 @@ class StackAction extends AssetAction<RemoteAsset> {
   String label(ActionScope scope) => stack ? scope.context.t.stack : scope.context.t.unstack;
 
   @override
-  Iterable<RemoteAsset> filter(ActionScope scope) => AssetFilter(assets).owned(scope.authUser.id);
+  AssetFilter<RemoteAsset> filter(ActionScope scope) => .new(assets).owned(scope.authUser.id);
 
   @override
   bool isVisible(ActionScope scope) => stack ? filter(scope).length > 1 : filter(scope).isNotEmpty;

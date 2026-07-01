@@ -18,8 +18,8 @@ class FavoriteAction extends AssetAction<RemoteAsset> {
   String label(ActionScope scope) => favorite ? scope.context.t.favorite : scope.context.t.unfavorite;
 
   @override
-  Iterable<RemoteAsset> filter(ActionScope scope) =>
-      AssetFilter(assets).owned(scope.authUser.id).favorite(isFavorite: !favorite);
+  AssetFilter<RemoteAsset> filter(ActionScope scope) =>
+      .new(assets).owned(scope.authUser.id).favorite(isFavorite: !favorite);
 
   @override
   bool isVisible(ActionScope scope) => filter(scope).isNotEmpty;
