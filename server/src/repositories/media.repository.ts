@@ -36,6 +36,7 @@ import {
   VideoInfo,
   VideoPacketInfo,
 } from 'src/types';
+import { getEffectiveStraightenRotation, getStraightenExtractRectangle, splitRotation } from 'src/utils/editor';
 import { handlePromiseError } from 'src/utils/misc';
 import { createAffineMatrix } from 'src/utils/transform';
 
@@ -148,35 +149,83 @@ export class MediaRepository {
     }
   }
 
-  decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
-    return this.getImageDecodingPipeline(input, options).raw().toBuffer({ resolveWithObject: true });
+  async decodeImage(input: string | Buffer, options: DecodeToBufferOptions) {
+    const pipeline = await this.getImageDecodingPipeline(input, options);
+    return pipeline.raw().toBuffer({ resolveWithObject: true });
   }
 
-  private applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): sharp.Sharp {
-    const crop = edits.find((edit) => edit.action === 'crop');
-    if (crop) {
-      pipeline = pipeline.extract({
-        left: Math.round(crop.parameters.x),
-        top: Math.round(crop.parameters.y),
-        width: Math.round(crop.parameters.width),
-        height: Math.round(crop.parameters.height),
-      });
-    }
+  private applyEdits(
+    pipeline: sharp.Sharp,
+    edits: AssetEditActionItem[],
+    dimensions?: { width: number; height: number },
+    analysis = this.analyzeEdits(edits),
+  ): sharp.Sharp {
+    const { crop, rotateEdit, straightenActive } = analysis;
 
-    const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
-    if (affineEditOperations.length > 0) {
-      const { a, b, c, d } = createAffineMatrix(affineEditOperations);
-      pipeline = pipeline.affine([
-        [a, b],
-        [c, d],
-      ]);
+    if (straightenActive && rotateEdit) {
+      const mirrorEdits = edits.filter((edit) => edit.action === 'mirror');
+      const effectiveRotation = getEffectiveStraightenRotation(rotateEdit.parameters.angle, mirrorEdits);
+
+      pipeline = pipeline.rotate(effectiveRotation);
+
+      for (const mirror of mirrorEdits) {
+        if (mirror.parameters.axis === 'horizontal') {
+          pipeline = pipeline.flop();
+        } else if (mirror.parameters.axis === 'vertical') {
+          pipeline = pipeline.flip();
+        }
+      }
+
+      if (crop) {
+        if (!dimensions?.width || !dimensions.height) {
+          throw new Error('Image dimensions are required for straighten edits');
+        }
+
+        pipeline = pipeline.extract(
+          getStraightenExtractRectangle(crop.parameters, dimensions, rotateEdit.parameters.angle, edits),
+        );
+      }
+    } else {
+      if (crop) {
+        pipeline = pipeline.extract({
+          left: Math.round(crop.parameters.x),
+          top: Math.round(crop.parameters.y),
+          width: Math.round(crop.parameters.width),
+          height: Math.round(crop.parameters.height),
+        });
+      }
+
+      const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
+      if (affineEditOperations.length > 0) {
+        const { a, b, c, d } = createAffineMatrix(affineEditOperations);
+        pipeline = pipeline.affine([
+          [a, b],
+          [c, d],
+        ]);
+      }
     }
 
     return pipeline;
   }
 
+  private analyzeEdits(edits: AssetEditActionItem[]) {
+    const crop = edits.find((edit) => edit.action === 'crop');
+    const rotateEdit = edits.find((edit) => edit.action === 'rotate');
+    const { straightenAngle } = rotateEdit ? splitRotation(rotateEdit.parameters.angle) : { straightenAngle: 0 };
+    const straightenActive = Boolean(rotateEdit) && straightenAngle !== 0;
+
+    return {
+      crop,
+      rotateEdit,
+      straightenAngle,
+      straightenActive,
+      needsDimensions: straightenActive && Boolean(crop),
+    };
+  }
+
   async generateThumbnail(input: string | Buffer, options: GenerateThumbnailOptions, output: string): Promise<void> {
-    await this.getImageDecodingPipeline(input, options)
+    const pipeline = await this.getImageDecodingPipeline(input, options);
+    await pipeline
       .toFormat(options.format, {
         quality: options.quality,
         // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
@@ -186,7 +235,31 @@ export class MediaRepository {
       .toFile(output);
   }
 
-  private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
+  private async getDecodedDimensions(
+    input: string | Buffer,
+    options: DecodeToBufferOptions,
+  ): Promise<ImageDimensions | undefined> {
+    if (options.raw) {
+      return options.raw;
+    }
+
+    const metadata = await sharp(input, {
+      failOn: options.processInvalidImages ? 'none' : 'error',
+      limitInputPixels: false,
+      unlimited: true,
+    }).metadata();
+
+    if (!metadata.width || !metadata.height) {
+      return;
+    }
+
+    const { angle } = options.orientation ? ORIENTATION_TO_SHARP_ROTATION[options.orientation] : {};
+    return angle === 90 || angle === 270
+      ? { width: metadata.height, height: metadata.width }
+      : { width: metadata.width, height: metadata.height };
+  }
+
+  private async getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {
     let pipeline = sharp(input, {
       // some invalid images can still be processed by sharp, but we want to fail on them by default to avoid crashes
       failOn: options.processInvalidImages ? 'none' : 'error',
@@ -210,7 +283,9 @@ export class MediaRepository {
     }
 
     if (options.edits && options.edits.length > 0) {
-      pipeline = this.applyEdits(pipeline, options.edits);
+      const analysis = this.analyzeEdits(options.edits);
+      const dimensions = analysis.needsDimensions ? await this.getDecodedDimensions(input, options) : options.raw;
+      pipeline = this.applyEdits(pipeline, options.edits, dimensions, analysis);
     }
 
     if (options.size !== undefined) {
@@ -222,12 +297,13 @@ export class MediaRepository {
   async generateThumbhash(input: string | Buffer, options: GenerateThumbhashOptions): Promise<Buffer> {
     const { rgbaToThumbHash } = await import('thumbhash');
 
-    const { data, info } = await this.getImageDecodingPipeline(input, {
+    const pipeline = await this.getImageDecodingPipeline(input, {
       colorspace: options.colorspace,
       processInvalidImages: options.processInvalidImages,
       raw: options.raw,
       edits: options.edits,
-    })
+    });
+    const { data, info } = await pipeline
       .resize(100, 100, { fit: 'inside', withoutEnlargement: true })
       .raw()
       .ensureAlpha()

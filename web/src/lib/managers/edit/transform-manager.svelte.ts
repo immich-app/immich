@@ -4,8 +4,9 @@ import { tick } from 'svelte';
 import { type EditActions, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
 import { getAssetMediaUrl } from '$lib/utils';
 import { getDimensions } from '$lib/utils/asset-utils';
-import { normalizeTransformEdits } from '$lib/utils/editor';
+import { normalizeTransformEdits, splitRotation } from '$lib/utils/editor';
 import { handleError } from '$lib/utils/handle-error';
+import { calculateLargestInscribedRect, calculateStraightenScale } from '$lib/utils/straighten';
 
 export type CropAspectRatio =
   | '1:1'
@@ -38,6 +39,9 @@ type RegionConvertParams = {
   to: ImageDimensions;
 };
 
+const CROP_INTERSECTION_STEPS = 8;
+const CROP_RESIZE_INTERSECTION_STEPS = 16;
+
 export enum ResizeBoundary {
   None = 'none',
   TopLeft = 'top-left',
@@ -51,6 +55,9 @@ export enum ResizeBoundary {
 }
 
 class TransformManager implements EditToolManager {
+  private handleWindowMouseMove = (event: MouseEvent) => this.handleMouseMove(event);
+  private loadToken = 0;
+
   canReset: boolean = $derived.by(() => this.checkEdits());
   hasChanges: boolean = $state(false);
 
@@ -58,14 +65,28 @@ class TransformManager implements EditToolManager {
   isDragging = $state(false);
   animationFrame = $state<ReturnType<typeof requestAnimationFrame> | null>(null);
   dragAnchor = $state({ x: 0, y: 0 });
+  dragStartRegion = $state({ x: 0, y: 0, width: 0, height: 0 });
+  offsetX = $derived.by(() => {
+    const W = this.previewImageSize.width;
+    const cx = W / 2;
+    const cropCenterX = this.region.x + this.region.width / 2;
+    return cx - cropCenterX;
+  });
+  offsetY = $derived.by(() => {
+    const H = this.previewImageSize.height;
+    const cy = H / 2;
+    const cropCenterY = this.region.y + this.region.height / 2;
+    return cy - cropCenterY;
+  });
   resizeSide = $state(ResizeBoundary.None);
   imgElement = $state<HTMLImageElement | null>(null);
   cropAreaEl = $state<HTMLElement | null>(null);
-  overlayEl = $state<HTMLElement | null>(null);
   cropFrame = $state<HTMLElement | null>(null);
   cropImageSize = $state<ImageDimensions>({ width: 1000, height: 1000 });
   cropImageScale = $state(1);
   cropAspectRatio = $state('free');
+  // Initial edit import waits for the preview image to load; later resizes reuse the current region.
+  pendingInitialEdits = $state<EditActions | null>(null);
   originalImageSize = $state<ImageDimensions>({ width: 1000, height: 1000 });
   region = $state({ x: 0, y: 0, width: 100, height: 100 });
   previewImageSize = $derived({
@@ -74,6 +95,18 @@ class TransformManager implements EditToolManager {
   });
 
   imageRotation = $state(0);
+  straightenAngle = $state(0);
+  getStraightenScaleFor(): number {
+    if (this.previewImageSize.width === 0 || this.previewImageSize.height === 0) {
+      return 1;
+    }
+
+    return calculateStraightenScale(this.previewImageSize, this.straightenAngle);
+  }
+
+  straightenScale = $derived.by(() => {
+    return this.getStraightenScaleFor();
+  });
   mirrorHorizontal = $state(false);
   mirrorVertical = $state(false);
   normalizedRotation = $derived.by(() => {
@@ -104,7 +137,8 @@ class TransformManager implements EditToolManager {
       Math.abs(this.previewImageSize.height - this.region.height) > 2 ||
       this.mirrorHorizontal ||
       this.mirrorVertical ||
-      this.normalizedRotation !== 0
+      this.normalizedRotation !== 0 ||
+      this.straightenAngle !== 0
     );
   }
 
@@ -118,24 +152,26 @@ class TransformManager implements EditToolManager {
   getEdits(): EditActions {
     const edits: EditActions = [];
 
-    if (this.checkCropEdits()) {
-      // Convert from display coordinates to loaded preview image coordinates
-      let cropRegion = this.getRegionInPreviewCoords(this.region);
+    if (this.checkCropEdits() || this.straightenAngle !== 0) {
+      // Convert from display coordinates to preview image coordinates
+      let cropRegionPreview = this.getRegionInPreviewCoords(this.region);
 
       // Transform crop coordinates to account for mirroring
       // The preview shows the mirrored image, but crop is applied before mirror on the server
       // So we need to "unmirror" the crop coordinates
-      cropRegion = this.applyMirrorToCoords(cropRegion, this.cropImageSize);
+      cropRegionPreview = this.applyMirrorToCoords(cropRegionPreview, this.cropImageSize);
 
       // Convert from preview image coordinates to original image coordinates
-      cropRegion = this.convertRegion({
-        region: cropRegion,
+      let cropRegion = this.convertRegion({
+        region: cropRegionPreview,
         from: this.cropImageSize,
         to: this.originalImageSize,
       });
 
-      // Constrain to original image bounds (fixes possible rounding errors)
-      cropRegion = this.constrainToBounds(cropRegion, this.originalImageSize);
+      if (this.straightenAngle === 0) {
+        // Constrain non-straighten crops to the original image bounds to absorb rounding error.
+        cropRegion = this.constrainToBounds(cropRegion, this.originalImageSize);
+      }
 
       edits.push({
         action: AssetEditAction.Crop,
@@ -163,11 +199,12 @@ class TransformManager implements EditToolManager {
       });
     }
 
-    if (this.normalizedRotation !== 0) {
+    const totalRotation = this.normalizedRotation + this.straightenAngle;
+    if (totalRotation !== 0) {
       edits.push({
         action: AssetEditAction.Rotate,
         parameters: {
-          angle: this.normalizedRotation,
+          angle: totalRotation,
         },
       });
     }
@@ -177,6 +214,7 @@ class TransformManager implements EditToolManager {
 
   async resetAllChanges() {
     this.imageRotation = 0;
+    this.straightenAngle = 0;
     this.mirrorHorizontal = false;
     this.mirrorVertical = false;
     await tick();
@@ -197,20 +235,34 @@ class TransformManager implements EditToolManager {
       size: AssetMediaSize.Preview,
     });
 
-    this.imgElement.src = imageURL;
-    this.imgElement.addEventListener('load', () => transformManager.onImageLoad(edits), { passive: true });
-    this.imgElement.addEventListener('error', (error) => handleError(error, 'ErrorLoadingImage'), {
+    this.pendingInitialEdits = edits;
+    const imgElement = this.imgElement;
+    const loadToken = ++this.loadToken;
+    imgElement.addEventListener(
+      'load',
+      () => {
+        if (this.loadToken === loadToken) {
+          this.onImageLoad(this.pendingInitialEdits);
+        }
+      },
+      { passive: true },
+    );
+    imgElement.addEventListener('error', (error) => handleError(error, 'ErrorLoadingImage'), {
       passive: true,
     });
+    imgElement.src = imageURL;
 
-    globalThis.addEventListener('mousemove', (e: MouseEvent) => transformManager.handleMouseMove(e), { passive: true });
+    globalThis.addEventListener('mousemove', this.handleWindowMouseMove, { passive: true });
 
     const transformEdits = edits.filter((e) => e.action === 'rotate' || e.action === 'mirror');
-
-    // Normalize rotation and mirror edits to single rotation and mirror state
+    // Normalize rotation and mirror edits into a quarter-turn rotation, straighten angle, and mirror state
     // This allows edits to be imported in any order and still produce correct state
     const normalizedTransformation = normalizeTransformEdits(transformEdits);
-    this.imageRotation = normalizedTransformation.rotation;
+    const rawRotation = normalizedTransformation.rotation;
+
+    const { quarterTurn, straightenAngle } = splitRotation(rawRotation);
+    this.imageRotation = quarterTurn;
+    this.straightenAngle = straightenAngle;
     this.mirrorHorizontal = normalizedTransformation.mirrorHorizontal;
     this.mirrorVertical = normalizedTransformation.mirrorVertical;
 
@@ -220,7 +272,7 @@ class TransformManager implements EditToolManager {
   }
 
   onDeactivate() {
-    globalThis.removeEventListener('mousemove', transformManager.handleMouseMove);
+    globalThis.removeEventListener('mousemove', this.handleWindowMouseMove);
 
     this.reset();
   }
@@ -233,8 +285,8 @@ class TransformManager implements EditToolManager {
     this.imgElement = null;
     this.cropAreaEl = null;
     this.isDragging = false;
-    this.overlayEl = null;
     this.imageRotation = 0;
+    this.straightenAngle = 0;
     this.mirrorHorizontal = false;
     this.mirrorVertical = false;
     this.region = { x: 0, y: 0, width: 100, height: 100 };
@@ -242,6 +294,7 @@ class TransformManager implements EditToolManager {
     this.originalImageSize = { width: 1000, height: 1000 };
     this.cropImageScale = 1;
     this.cropAspectRatio = 'free';
+    this.pendingInitialEdits = null;
     this.hasChanges = false;
   }
 
@@ -254,9 +307,23 @@ class TransformManager implements EditToolManager {
 
     if (axis === 'horizontal') {
       this.mirrorHorizontal = !this.mirrorHorizontal;
+      if (this.straightenAngle !== 0) {
+        const W = this.previewImageSize.width;
+        if (W > 0) {
+          this.region.x = W - this.region.x - this.region.width;
+        }
+      }
     } else {
       this.mirrorVertical = !this.mirrorVertical;
+      if (this.straightenAngle !== 0) {
+        const H = this.previewImageSize.height;
+        if (H > 0) {
+          this.region.y = H - this.region.y - this.region.height;
+        }
+      }
     }
+
+    this.draw();
   }
 
   async rotate(angle: number) {
@@ -267,13 +334,71 @@ class TransformManager implements EditToolManager {
     this.onImageLoad();
   }
 
+  ensureCropInsideImageAfterRotation() {
+    if (this.straightenAngle === 0) {
+      const bounds = {
+        width: this.cropImageSize.width * this.cropImageScale,
+        height: this.cropImageSize.height * this.cropImageScale,
+      };
+      this.region = this.constrainToBounds(this.region, bounds);
+      return;
+    }
+
+    const W = this.cropImageSize.width * this.cropImageScale;
+    const H = this.cropImageSize.height * this.cropImageScale;
+
+    const targetX = W / 2 - this.region.width / 2;
+    const targetY = H / 2 - this.region.height / 2;
+
+    const centerRegion = { ...this.region, x: targetX, y: targetY };
+    this.region = this.getIntersectingStep(centerRegion, this.region);
+  }
+
+  setStraightenAngle(angle: number) {
+    this.hasChanges = true;
+    this.straightenAngle = angle;
+
+    this.resizeCanvas();
+
+    const newCrop = this.recalculateCrop(this.cropAspectRatio);
+    if (newCrop) {
+      this.region = newCrop;
+    }
+
+    this.ensureCropInsideImageAfterRotation();
+    this.draw();
+  }
+
   recalculateCrop(aspectRatio: string = this.cropAspectRatio): Region {
     if (!this.cropAreaEl) {
       return this.region;
     }
 
-    const canvasW = this.cropAreaEl.clientWidth;
-    const canvasH = this.cropAreaEl.clientHeight;
+    if (this.straightenAngle !== 0) {
+      const scale = this.straightenScale;
+      const displaySize = {
+        width: this.cropImageSize.width * this.cropImageScale * scale,
+        height: this.cropImageSize.height * this.cropImageScale * scale,
+      };
+
+      let targetRatio = aspectRatio;
+      if (aspectRatio === 'free' || aspectRatio === 'reset') {
+        targetRatio = `${this.region.width}:${this.region.height}`;
+      }
+
+      const inscribed = calculateLargestInscribedRect(displaySize, this.straightenAngle, targetRatio);
+      const W = this.cropImageSize.width * this.cropImageScale;
+      const H = this.cropImageSize.height * this.cropImageScale;
+      return {
+        x: W / 2 - inscribed.width / 2,
+        y: H / 2 - inscribed.height / 2,
+        width: inscribed.width,
+        height: inscribed.height,
+      };
+    }
+
+    const canvasW = this.previewImageSize.width;
+    const canvasH = this.previewImageSize.height;
 
     // Calculate new dimensions with aspect ratio
     const { newWidth: w, newHeight: h } = this.keepAspectRatio(this.region.width, this.region.height, aspectRatio);
@@ -396,34 +521,104 @@ class TransformManager implements EditToolManager {
     return { newWidth: w, newHeight: h };
   }
 
+  getTransformedOverlayPoint(x: number, y: number, W: number, H: number, S: number): { x: number; y: number } {
+    let px = x;
+    let py = y;
+
+    if (this.mirrorHorizontal) {
+      px = W - px;
+    }
+    if (this.mirrorVertical) {
+      py = H - py;
+    }
+
+    if (this.straightenAngle !== 0) {
+      const angle = -this.straightenAngle;
+      const rad = (angle * Math.PI) / 180;
+      const cos = Math.cos(rad);
+      const sin = Math.sin(rad);
+
+      const cx = W / 2;
+      const cy = H / 2;
+
+      const xRel = px - cx;
+      const yRel = py - cy;
+
+      const rx = (xRel * cos - yRel * sin) / S;
+      const ry = (xRel * sin + yRel * cos) / S;
+
+      px = rx + cx;
+      py = ry + cy;
+    }
+
+    return { x: px, y: py };
+  }
+
+  isCropInsideImage(crop: Region): boolean {
+    const width = this.cropImageSize.width * this.cropImageScale;
+    const height = this.cropImageSize.height * this.cropImageScale;
+    const straightenScale = this.getStraightenScaleFor();
+
+    const corners = [
+      { x: crop.x, y: crop.y },
+      { x: crop.x + crop.width, y: crop.y },
+      { x: crop.x + crop.width, y: crop.y + crop.height },
+      { x: crop.x, y: crop.y + crop.height },
+    ];
+
+    for (const corner of corners) {
+      const pLocal = this.getTransformedOverlayPoint(corner.x, corner.y, width, height, straightenScale);
+      if (pLocal.x < 0 || pLocal.x > width || pLocal.y < 0 || pLocal.y > height) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  getIntersectingStep(startRegion: Region, targetRegion: Region, steps = CROP_INTERSECTION_STEPS): Region {
+    let low = 0;
+    let high = 1;
+    for (let i = 0; i < steps; i++) {
+      const mid = (low + high) / 2;
+      const testRegion = {
+        x: startRegion.x + (targetRegion.x - startRegion.x) * mid,
+        y: startRegion.y + (targetRegion.y - startRegion.y) * mid,
+        width: startRegion.width + (targetRegion.width - startRegion.width) * mid,
+        height: startRegion.height + (targetRegion.height - startRegion.height) * mid,
+      };
+      if (this.isCropInsideImage(testRegion)) {
+        low = mid;
+      } else {
+        high = mid;
+      }
+    }
+    return {
+      x: startRegion.x + (targetRegion.x - startRegion.x) * low,
+      y: startRegion.y + (targetRegion.y - startRegion.y) * low,
+      width: startRegion.width + (targetRegion.width - startRegion.width) * low,
+      height: startRegion.height + (targetRegion.height - startRegion.height) * low,
+    };
+  }
+
   draw(crop: Region = this.region) {
     if (!this.cropFrame) {
       return;
     }
 
-    this.cropFrame.style.left = `${crop.x}px`;
-    this.cropFrame.style.top = `${crop.y}px`;
+    if (this.straightenAngle === 0) {
+      this.cropFrame.style.left = `${crop.x}px`;
+      this.cropFrame.style.top = `${crop.y}px`;
+    } else {
+      const W = this.cropImageSize.width * this.cropImageScale;
+      const H = this.cropImageSize.height * this.cropImageScale;
+
+      // The crop frame selection viewport stays stationary and visually centered in the crop area
+      this.cropFrame.style.left = `${W / 2 - crop.width / 2}px`;
+      this.cropFrame.style.top = `${H / 2 - crop.height / 2}px`;
+    }
     this.cropFrame.style.width = `${crop.width}px`;
     this.cropFrame.style.height = `${crop.height}px`;
-
-    if (!this.overlayEl) {
-      return;
-    }
-
-    this.overlayEl.style.clipPath = `
-    polygon(
-      0% 0%,
-      0% 100%,
-      100% 100%,
-      100% 0%,
-      0% 0%,
-      ${crop.x}px ${crop.y}px,
-      ${crop.x + crop.width}px ${crop.y}px,
-      ${crop.x + crop.width}px ${crop.y + crop.height}px,
-      ${crop.x}px ${crop.y + crop.height}px,
-      ${crop.x}px ${crop.y}px
-    )
-  `;
   }
 
   onImageLoad(edits: EditActions | null = null) {
@@ -431,17 +626,32 @@ class TransformManager implements EditToolManager {
     if (!this.cropAreaEl || !img) {
       return;
     }
+    if (!img.naturalWidth || !img.naturalHeight) {
+      return;
+    }
 
-    this.cropImageSize = { width: img.width, height: img.height };
+    this.cropImageSize = { width: img.naturalWidth, height: img.naturalHeight };
     const scale = this.calculateScale();
+    const oldScale = this.cropImageScale;
+
+    let nextRegion;
 
     if (edits === null) {
-      const cropFrameEl = this.cropFrame;
-      cropFrameEl?.classList.add('transition');
-      this.region = this.normalizeCropArea(scale);
-      cropFrameEl?.addEventListener('transitionend', () => cropFrameEl?.classList.remove('transition'), {
-        passive: true,
-      });
+      const scaleRatio = scale / oldScale;
+      const scaledRegion = {
+        x: this.region.x * scaleRatio,
+        y: this.region.y * scaleRatio,
+        width: this.region.width * scaleRatio,
+        height: this.region.height * scaleRatio,
+      };
+
+      nextRegion =
+        this.straightenAngle === 0
+          ? this.constrainToBounds(scaledRegion, {
+              width: img.naturalWidth * scale,
+              height: img.naturalHeight * scale,
+            })
+          : scaledRegion;
     } else {
       const cropEdit = edits.find((e) => e.action === AssetEditAction.Crop);
 
@@ -456,36 +666,44 @@ class TransformManager implements EditToolManager {
           to: this.cropImageSize,
         });
 
-        // Transform crop coordinates to account for mirroring
-        // The stored coordinates are for the original image, but we display mirrored
-        // So we need to mirror the crop coordinates to match the preview
         if (this.mirrorHorizontal) {
-          x = img.width - x - width;
+          x = img.naturalWidth - x - width;
         }
         if (this.mirrorVertical) {
-          y = img.height - y - height;
+          y = img.naturalHeight - y - height;
         }
 
-        // Convert from absolute pixel coordinates to display coordinates
-        this.region = {
+        nextRegion = {
           x: x * scale,
           y: y * scale,
           width: width * scale,
           height: height * scale,
         };
       } else {
-        this.region = {
+        nextRegion = {
           x: 0,
           y: 0,
-          width: img.width * scale,
-          height: img.height * scale,
+          width: img.naturalWidth * scale,
+          height: img.naturalHeight * scale,
         };
       }
     }
     this.cropImageScale = scale;
+    this.region = nextRegion;
+    if (edits !== null) {
+      this.pendingInitialEdits = null;
+    }
 
-    img.style.width = `${img.width * scale}px`;
-    img.style.height = `${img.height * scale}px`;
+    img.style.width = `${img.naturalWidth * scale}px`;
+    img.style.height = `${img.naturalHeight * scale}px`;
+
+    if (edits === null) {
+      const cropFrameEl = this.cropFrame;
+      cropFrameEl?.classList.add('transition');
+      cropFrameEl?.addEventListener('transitionend', () => cropFrameEl?.classList.remove('transition'), {
+        passive: true,
+      });
+    }
 
     this.draw();
   }
@@ -498,37 +716,33 @@ class TransformManager implements EditToolManager {
       return 1;
     }
 
-    const containerWidth = cropArea.clientWidth;
-    const containerHeight = cropArea.clientHeight;
+    const container = cropArea.parentElement;
+    if (!container) {
+      return 1;
+    }
+
+    const style = getComputedStyle(container);
+    const paddingX = Number.parseFloat(style.paddingLeft) + Number.parseFloat(style.paddingRight);
+    const paddingY = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom);
+
+    const containerWidth = container.clientWidth - paddingX;
+    const containerHeight = container.clientHeight - paddingY;
+
+    const isQuarterTurn = this.normalizedRotation === 90 || this.normalizedRotation === 270;
+    const fitWidth = isQuarterTurn ? img.naturalHeight : img.naturalWidth;
+    const fitHeight = isQuarterTurn ? img.naturalWidth : img.naturalHeight;
 
     // Fit image to container while maintaining aspect ratio
-    let scale = containerWidth / img.width;
-    if (img.height * scale > containerHeight) {
-      scale = containerHeight / img.height;
+    let scale = containerWidth / fitWidth;
+    if (fitHeight * scale > containerHeight) {
+      scale = containerHeight / fitHeight;
+    }
+
+    if (this.straightenAngle !== 0) {
+      scale /= this.straightenScale;
     }
 
     return scale;
-  }
-
-  normalizeCropArea(scale: number) {
-    const img = this.imgElement;
-    if (!img) {
-      return this.region;
-    }
-
-    const scaleRatio = scale / this.cropImageScale;
-    const scaledRegion = {
-      x: this.region.x * scaleRatio,
-      y: this.region.y * scaleRatio,
-      width: this.region.width * scaleRatio,
-      height: this.region.height * scaleRatio,
-    };
-
-    // Constrain to scaled image bounds
-    return this.constrainToBounds(scaledRegion, {
-      width: img.width * scale,
-      height: img.height * scale,
-    });
   }
 
   resizeCanvas() {
@@ -538,13 +752,39 @@ class TransformManager implements EditToolManager {
     if (!cropArea || !img) {
       return;
     }
+    if (!img.naturalWidth || !img.naturalHeight) {
+      return;
+    }
+    if (this.pendingInitialEdits !== null) {
+      this.onImageLoad(this.pendingInitialEdits);
+      return;
+    }
 
     const scale = this.calculateScale();
-    this.region = this.normalizeCropArea(scale);
-    this.cropImageScale = scale;
+    const oldScale = this.cropImageScale;
 
-    img.style.width = `${img.width * scale}px`;
-    img.style.height = `${img.height * scale}px`;
+    const scaleRatio = scale / oldScale;
+    const scaledRegion = {
+      x: this.region.x * scaleRatio,
+      y: this.region.y * scaleRatio,
+      width: this.region.width * scaleRatio,
+      height: this.region.height * scaleRatio,
+    };
+
+    // Constrain to scaled image bounds
+    const nextRegion =
+      this.straightenAngle === 0
+        ? this.constrainToBounds(scaledRegion, {
+            width: img.naturalWidth * scale,
+            height: img.naturalHeight * scale,
+          })
+        : scaledRegion;
+
+    this.cropImageScale = scale;
+    this.region = nextRegion;
+
+    img.style.width = `${img.naturalWidth * scale}px`;
+    img.style.height = `${img.naturalHeight * scale}px`;
 
     this.draw();
   }
@@ -556,14 +796,27 @@ class TransformManager implements EditToolManager {
 
     this.isInteracting = true;
     this.resizeSide = resizeBoundary;
+
+    const { mouseX, mouseY } = this.getMousePosition(e);
+    this.dragStartRegion = {
+      x: this.region.x,
+      y: this.region.y,
+      width: this.region.width,
+      height: this.region.height,
+    };
+
     if (resizeBoundary === ResizeBoundary.None) {
       this.isDragging = true;
-      const { mouseX, mouseY } = this.getMousePosition(e);
-      this.dragAnchor = { x: mouseX - this.region.x, y: mouseY - this.region.y };
+      this.dragAnchor =
+        this.straightenAngle === 0
+          ? { x: mouseX - this.region.x, y: mouseY - this.region.y }
+          : { x: mouseX, y: mouseY };
+    } else {
+      this.dragAnchor = { x: mouseX, y: mouseY };
     }
 
     document.body.style.userSelect = 'none';
-    globalThis.addEventListener('mouseup', () => this.handleMouseUp(), { passive: true });
+    globalThis.addEventListener('mouseup', () => this.handleMouseUp(), { passive: true, once: true });
   }
 
   handleMouseMove(e: MouseEvent) {
@@ -581,7 +834,6 @@ class TransformManager implements EditToolManager {
   }
 
   handleMouseUp() {
-    globalThis.removeEventListener('mouseup', this.handleMouseUp);
     document.body.style.userSelect = '';
 
     this.isInteracting = false;
@@ -631,99 +883,145 @@ class TransformManager implements EditToolManager {
     }
 
     this.hasChanges = true;
-    this.region.x = clamp(mouseX - this.dragAnchor.x, 0, cropArea.clientWidth - this.region.width);
-    this.region.y = clamp(mouseY - this.dragAnchor.y, 0, cropArea.clientHeight - this.region.height);
+
+    if (this.straightenAngle === 0) {
+      this.region.x = clamp(mouseX - this.dragAnchor.x, 0, cropArea.clientWidth - this.region.width);
+      this.region.y = clamp(mouseY - this.dragAnchor.y, 0, cropArea.clientHeight - this.region.height);
+    } else {
+      const deltaX = mouseX - this.dragAnchor.x;
+      const deltaY = mouseY - this.dragAnchor.y;
+      const newX = this.dragStartRegion.x - deltaX;
+      const newY = this.dragStartRegion.y - deltaY;
+      const targetRegion = { ...this.region, x: newX, y: newY };
+      if (this.isCropInsideImage(targetRegion)) {
+        this.region = targetRegion;
+      } else {
+        const horizRegion = { ...this.region, x: newX };
+        this.region = this.getIntersectingStep(this.region, horizRegion);
+
+        const vertRegion = { ...this.region, y: newY };
+        this.region = this.getIntersectingStep(this.region, vertRegion);
+      }
+    }
 
     this.draw();
   }
 
   resizeCrop(mouseX: number, mouseY: number) {
     const canvas = this.cropAreaEl;
-    const currentCrop = this.region;
     if (!canvas) {
       return;
     }
     this.isInteracting = true;
-
     this.hasChanges = true;
-    const { x, y, width, height } = currentCrop;
+
+    const canvasWidth = this.previewImageSize.width;
+    const canvasHeight = this.previewImageSize.height;
+
+    const deltaX = mouseX - this.dragAnchor.x;
+    const deltaY = mouseY - this.dragAnchor.y;
+
+    const startX = this.dragStartRegion.x;
+    const startY = this.dragStartRegion.y;
+    const startW = this.dragStartRegion.width;
+    const startH = this.dragStartRegion.height;
+
     const minSize = 50;
-    let newRegion = { ...currentCrop };
+    let newRegion = { ...this.region };
 
-    let desiredWidth = width;
-    let desiredHeight = height;
+    const maxW = this.straightenAngle === 0 ? canvasWidth : canvasWidth * this.straightenScale;
+    const maxH = this.straightenAngle === 0 ? canvasHeight : canvasHeight * this.straightenScale;
+    const leftLimit = this.straightenAngle === 0 ? Math.min(maxW, startX + startW) : maxW;
+    const rightLimit = this.straightenAngle === 0 ? Math.min(maxW, canvasWidth - startX) : maxW;
+    const topLimit = this.straightenAngle === 0 ? Math.min(maxH, startY + startH) : maxH;
+    const bottomLimit = this.straightenAngle === 0 ? Math.min(maxH, canvasHeight - startY) : maxH;
 
-    // Width
+    let desiredWidth = startW;
+    let desiredHeight = startH;
+
     switch (this.resizeSide) {
       case ResizeBoundary.Left:
       case ResizeBoundary.TopLeft:
       case ResizeBoundary.BottomLeft: {
-        desiredWidth = Math.max(minSize, width + (x - Math.max(mouseX, 0)));
+        desiredWidth = clamp(startW - deltaX, minSize, maxW);
         break;
       }
       case ResizeBoundary.Right:
       case ResizeBoundary.TopRight:
       case ResizeBoundary.BottomRight: {
-        desiredWidth = Math.max(minSize, Math.max(mouseX, 0) - x);
+        desiredWidth = clamp(startW + deltaX, minSize, maxW);
         break;
       }
       // no default
     }
 
-    // Height
     switch (this.resizeSide) {
       case ResizeBoundary.Top:
       case ResizeBoundary.TopLeft:
       case ResizeBoundary.TopRight: {
-        desiredHeight = Math.max(minSize, height + (y - Math.max(mouseY, 0)));
+        desiredHeight = clamp(startH - deltaY, minSize, maxH);
         break;
       }
       case ResizeBoundary.Bottom:
       case ResizeBoundary.BottomLeft:
       case ResizeBoundary.BottomRight: {
-        desiredHeight = Math.max(minSize, Math.max(mouseY, 0) - y);
+        desiredHeight = clamp(startH + deltaY, minSize, maxH);
         break;
       }
       // no default
     }
 
-    // Old
     switch (this.resizeSide) {
       case ResizeBoundary.None: {
         break;
       }
       case ResizeBoundary.Left: {
-        const { newWidth: w, newHeight: h } = this.keepAspectRatio(desiredWidth, height);
-        const finalWidth = clamp(w, minSize, canvas.clientWidth);
+        const { newWidth: w, newHeight: h } = this.adjustDimensions(
+          desiredWidth,
+          startH,
+          this.cropAspectRatio,
+          leftLimit,
+          maxH,
+          minSize,
+        );
         newRegion = {
-          x: Math.max(0, x + width - finalWidth),
-          y,
-          width: finalWidth,
-          height: clamp(h, minSize, canvas.clientHeight),
+          x: startX + startW - w,
+          y: startY + (startH - h) / 2,
+          width: w,
+          height: h,
         };
         break;
       }
       case ResizeBoundary.Right: {
-        const { newWidth: w, newHeight: h } = this.keepAspectRatio(desiredWidth, height);
+        const { newWidth: w, newHeight: h } = this.adjustDimensions(
+          desiredWidth,
+          startH,
+          this.cropAspectRatio,
+          rightLimit,
+          maxH,
+          minSize,
+        );
         newRegion = {
           ...newRegion,
-          width: clamp(w, minSize, canvas.clientWidth - x),
-          height: clamp(h, minSize, canvas.clientHeight),
+          x: startX,
+          y: startY + (startH - h) / 2,
+          width: w,
+          height: h,
         };
         break;
       }
       case ResizeBoundary.Top: {
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
-          desiredWidth,
+          startW,
           desiredHeight,
           this.cropAspectRatio,
-          canvas.clientWidth,
-          canvas.clientHeight,
+          maxW,
+          topLimit,
           minSize,
         );
         newRegion = {
-          x,
-          y: Math.max(0, y + height - h),
+          x: startX + (startW - w) / 2,
+          y: startY + startH - h,
           width: w,
           height: h,
         };
@@ -731,15 +1029,16 @@ class TransformManager implements EditToolManager {
       }
       case ResizeBoundary.Bottom: {
         const { newWidth: w, newHeight: h } = this.adjustDimensions(
-          desiredWidth,
+          startW,
           desiredHeight,
           this.cropAspectRatio,
-          canvas.clientWidth,
-          canvas.clientHeight - y,
+          maxW,
+          bottomLimit,
           minSize,
         );
         newRegion = {
           ...newRegion,
+          x: startX + (startW - w) / 2,
           width: w,
           height: h,
         };
@@ -750,13 +1049,13 @@ class TransformManager implements EditToolManager {
           desiredWidth,
           desiredHeight,
           this.cropAspectRatio,
-          canvas.clientWidth,
-          canvas.clientHeight,
+          leftLimit,
+          topLimit,
           minSize,
         );
         newRegion = {
-          x: Math.max(0, x + width - w),
-          y: Math.max(0, y + height - h),
+          x: startX + startW - w,
+          y: startY + startH - h,
           width: w,
           height: h,
         };
@@ -767,13 +1066,13 @@ class TransformManager implements EditToolManager {
           desiredWidth,
           desiredHeight,
           this.cropAspectRatio,
-          canvas.clientWidth - x,
-          y + height,
+          rightLimit,
+          topLimit,
           minSize,
         );
         newRegion = {
-          x,
-          y: Math.max(0, y + height - h),
+          x: startX,
+          y: startY + startH - h,
           width: w,
           height: h,
         };
@@ -784,13 +1083,13 @@ class TransformManager implements EditToolManager {
           desiredWidth,
           desiredHeight,
           this.cropAspectRatio,
-          canvas.clientWidth,
-          canvas.clientHeight - y,
+          leftLimit,
+          bottomLimit,
           minSize,
         );
         newRegion = {
-          x: Math.max(0, x + width - w),
-          y,
+          x: startX + startW - w,
+          y: startY,
           width: w,
           height: h,
         };
@@ -801,8 +1100,8 @@ class TransformManager implements EditToolManager {
           desiredWidth,
           desiredHeight,
           this.cropAspectRatio,
-          canvas.clientWidth - x,
-          canvas.clientHeight - y,
+          rightLimit,
+          bottomLimit,
           minSize,
         );
         newRegion = {
@@ -815,23 +1114,43 @@ class TransformManager implements EditToolManager {
     }
 
     // Constrain the region to canvas bounds
-    this.region = {
-      ...newRegion,
-      x: Math.max(0, Math.min(newRegion.x, canvas.clientWidth - newRegion.width)),
-      y: Math.max(0, Math.min(newRegion.y, canvas.clientHeight - newRegion.height)),
-    };
+    this.region =
+      this.straightenAngle === 0
+        ? {
+            ...newRegion,
+            x: Math.max(0, Math.min(newRegion.x, canvasWidth - newRegion.width)),
+            y: Math.max(0, Math.min(newRegion.y, canvasHeight - newRegion.height)),
+          }
+        : this.getIntersectingStep(this.dragStartRegion, newRegion, CROP_RESIZE_INTERSECTION_STEPS);
 
     this.draw();
   }
 
   resetCrop() {
     this.cropAspectRatio = 'free';
-    this.region = {
-      x: 0,
-      y: 0,
-      width: this.cropImageSize.width * this.cropImageScale - 1,
-      height: this.cropImageSize.height * this.cropImageScale - 1,
-    };
+    if (this.straightenAngle === 0) {
+      this.region = {
+        x: 0,
+        y: 0,
+        width: this.cropImageSize.width * this.cropImageScale - 1,
+        height: this.cropImageSize.height * this.cropImageScale - 1,
+      };
+    } else {
+      const scale = this.straightenScale;
+      const displaySize = {
+        width: this.cropImageSize.width * this.cropImageScale * scale,
+        height: this.cropImageSize.height * this.cropImageScale * scale,
+      };
+      const inscribed = calculateLargestInscribedRect(displaySize, this.straightenAngle, 'free');
+      const W = this.cropImageSize.width * this.cropImageScale;
+      const H = this.cropImageSize.height * this.cropImageScale;
+      this.region = {
+        x: W / 2 - inscribed.width / 2,
+        y: H / 2 - inscribed.height / 2,
+        width: inscribed.width,
+        height: inscribed.height,
+      };
+    }
   }
 
   rotateAspectRatio() {

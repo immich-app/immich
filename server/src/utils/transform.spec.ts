@@ -1,7 +1,32 @@
 import { AssetEditAction, AssetEditActionItem, MirrorAxis } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { transformFaceBoundingBox, transformOcrBoundingBox } from 'src/utils/transform';
+import { getOutputDimensions, transformFaceBoundingBox, transformOcrBoundingBox } from 'src/utils/transform';
 import { describe, expect, it } from 'vitest';
+
+describe('getOutputDimensions', () => {
+  it('swaps crop dimensions for a quarter-turn crop without applying straighten scale', () => {
+    const edits: AssetEditActionItem[] = [
+      { action: AssetEditAction.Crop, parameters: { x: 200, y: 250, width: 600, height: 450 } },
+      { action: AssetEditAction.Rotate, parameters: { angle: 90 } },
+    ];
+
+    const dimensions = getOutputDimensions(edits, { width: 1000, height: 800 });
+
+    expect(dimensions).toEqual({ width: 450, height: 600 });
+  });
+
+  it('should swap crop dimensions for a quarter-turn straighten edit', () => {
+    const edits: AssetEditActionItem[] = [
+      { action: AssetEditAction.Crop, parameters: { x: 200, y: 250, width: 600, height: 450 } },
+      { action: AssetEditAction.Rotate, parameters: { angle: 100 } },
+    ];
+
+    const dimensions = getOutputDimensions(edits, { width: 1000, height: 800 });
+
+    expect(dimensions.width).toBeLessThan(dimensions.height);
+    expect(dimensions.width / dimensions.height).toBeCloseTo(450 / 600, 1);
+  });
+});
 
 describe('transformFaceBoundingBox', () => {
   const baseFace = {
@@ -269,6 +294,20 @@ describe('transformOcrBoundingBox', () => {
 
       expect(result.id).toBe(baseOcr.id);
       expect(result.text).toBe(baseOcr.text);
+      expect(result.x1).toBeCloseTo(0.1, 5);
+      expect(result.y1).toBeCloseTo(0.8, 5);
+      expect(result.x2).toBeCloseTo(0.2, 5);
+      expect(result.y2).toBeCloseTo(0.8, 5);
+      expect(result.x3).toBeCloseTo(0.2, 5);
+      expect(result.y3).toBeCloseTo(0.9, 5);
+      expect(result.x4).toBeCloseTo(0.1, 5);
+      expect(result.y4).toBeCloseTo(0.9, 5);
+    });
+
+    it('should rotate -90 degrees as a 270 degree turn and reorder points', () => {
+      const edits: AssetEditActionItem[] = [{ action: AssetEditAction.Rotate, parameters: { angle: -90 } }];
+      const result = transformOcrBoundingBox(baseOcr, edits, baseDimensions);
+
       expect(result.x1).toBeCloseTo(0.1, 5);
       expect(result.y1).toBeCloseTo(0.8, 5);
       expect(result.x2).toBeCloseTo(0.2, 5);

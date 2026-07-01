@@ -18505,15 +18505,15 @@
             "type": "integer"
           },
           "x": {
-            "description": "Top-Left X coordinate of crop",
+            "description": "Top-Left X coordinate of crop. Can be negative for straightened crops before bounds validation",
             "maximum": 9007199254740991,
-            "minimum": 0,
+            "minimum": -9007199254740991,
             "type": "integer"
           },
           "y": {
-            "description": "Top-Left Y coordinate of crop",
+            "description": "Top-Left Y coordinate of crop. Can be negative for straightened crops before bounds validation",
             "maximum": 9007199254740991,
-            "minimum": 0,
+            "minimum": -9007199254740991,
             "type": "integer"
           }
         },
@@ -22065,6 +22065,8 @@
         "properties": {
           "angle": {
             "description": "Rotation angle in degrees",
+            "maximum": 360,
+            "minimum": -360,
             "type": "number"
           }
         },
