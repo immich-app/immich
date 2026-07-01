@@ -1,5 +1,7 @@
 import {
   AfterDeleteTrigger,
+  AfterInsertTrigger,
+  AfterUpdateTrigger,
   Column,
   DeleteDateColumn,
   ForeignKeyColumn,
@@ -13,7 +15,12 @@ import {
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { SourceType } from 'src/enum';
 import { asset_face_source_type } from 'src/schema/enums';
-import { asset_face_audit } from 'src/schema/functions';
+import {
+  asset_face_audit,
+  person_decrement_asset_count,
+  person_increment_asset_count,
+  person_update_asset_count,
+} from 'src/schema/functions';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 
@@ -24,6 +31,21 @@ import { PersonTable } from 'src/schema/tables/person.table';
   function: asset_face_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
+})
+@AfterInsertTrigger({
+  name: 'asset_face_insert_increment_person_asset_count_trigger',
+  scope: 'row',
+  function: person_increment_asset_count,
+})
+@AfterUpdateTrigger({
+  name: 'asset_face_update_increment_person_asset_count_trigger',
+  scope: 'row',
+  function: person_update_asset_count,
+})
+@AfterDeleteTrigger({
+  name: 'asset_face_delete_decrement_person_asset_count_trigger',
+  scope: 'row',
+  function: person_decrement_asset_count,
 })
 // schemaFromDatabase does not preserve column order
 @Index({ name: 'asset_face_assetId_personId_idx', columns: ['assetId', 'personId'] })
