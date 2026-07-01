@@ -150,7 +150,7 @@ const methods = wrapper<Manifest>({
     changes: { asset: { visibility: config.visibility as AssetVisibility } },
   }),
 
-  webhook: ({ config, data, functions }) => {
+  webhook: ({ config, data, functions, type, trigger }) => {
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     };
@@ -161,7 +161,11 @@ const methods = wrapper<Manifest>({
 
     functions.httpRequest(config.url, {
       method: config.method ?? 'POST',
-      body: JSON.stringify(data.asset),
+      body: JSON.stringify({
+        type,
+        trigger,
+        data,
+      }),
       headers,
     });
 
