@@ -93,7 +93,7 @@ export class MemoryService extends BaseService {
     const assetIds = dto.assetIds || [];
     const allowedAssetIds = await this.checkAccess({
       auth,
-      permission: Permission.AssetShare,
+      permission: Permission.AssetUpdate,
       ids: assetIds,
     });
     const memory = await this.memoryRepository.create(
@@ -134,7 +134,11 @@ export class MemoryService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.MemoryRead, ids: [id] });
 
     const repos = { access: this.accessRepository, bulk: this.memoryRepository };
-    const results = await addAssets(auth, repos, { parentId: id, assetIds: dto.ids });
+    const results = await addAssets(auth, repos, {
+      parentId: id,
+      assetIds: dto.ids,
+      permission: Permission.AssetUpdate,
+    });
 
     const hasSuccess = results.find(({ success }) => success);
     if (hasSuccess) {
