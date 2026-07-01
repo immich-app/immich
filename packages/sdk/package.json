@@ -1,6 +1,6 @@
 {
   "name": "@immich/sdk",
-  "version": "3.0.0-rc.4",
+  "version": "3.0.0",
   "description": "Auto-generated TypeScript SDK for the Immich API",
   "repository": {
     "type": "git",
