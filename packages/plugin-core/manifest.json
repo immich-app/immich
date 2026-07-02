@@ -163,19 +163,26 @@
             "description": "Filter by distance to a coordinate",
             "properties": {
               "latitude": {
-                "type": "string",
+                "type": "number",
                 "title": "Latitude",
-                "description": "GPS latitude of a coordinate which the asset must be close to"
+                "description": "GPS latitude of a coordinate which the asset must be close to",
+                "minimum": -90,
+                "maximum": 90,
+                "precision": 0.000001
               },
               "longitude": {
-                "type": "string",
+                "type": "number",
                 "title": "Longitude",
-                "description": "GPS longitude of a coordinate which the asset must be close to"
+                "description": "GPS longitude of a coordinate which the asset must be close to",
+                "minimum": -180,
+                "maximum": 180,
+                "precision": 0.000001
               },
               "radius": {
                 "type": "number",
                 "title": "Maximum distance",
-                "description": "How close in kilometres the asset must be to the given point"
+                "description": "How close in kilometres the asset must be to the given point",
+                "minimum": 0
               }
             }
           }
