@@ -68,7 +68,7 @@ class TimelineState {
   @override
   int get hashCode => isScrolling.hashCode ^ recommendDeferredLoading.hashCode;
 
-  TimelineState copyWith({bool? isScrubbing, bool? isScrolling, bool? recommendDeferredLoading}) {
+  TimelineState copyWith({bool? isScrolling, bool? recommendDeferredLoading}) {
     return TimelineState(
       isScrolling: isScrolling ?? this.isScrolling,
       recommendDeferredLoading: recommendDeferredLoading ?? this.recommendDeferredLoading,

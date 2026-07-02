@@ -25,6 +25,7 @@ import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.da
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
@@ -150,8 +151,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   double _baseScaleFactor = 3.0;
   int? _restoreAssetIndex;
 
-  static const _fastScrollDebounceDuration = Duration(milliseconds: 100);
-  Timer? _fastScrollDebounceTimer;
+  final Debouncer _fastScrollDebouncer = Debouncer(interval: const Duration(milliseconds: 100));
 
   @override
   void initState() {
@@ -245,7 +245,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   @override
   void dispose() {
-    _fastScrollDebounceTimer?.cancel();
+    _fastScrollDebouncer.dispose();
     _scrollController.dispose();
     _eventSubscription?.cancel();
     super.dispose();
@@ -264,12 +264,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
       // We cannot rely on scroll end events, as the timeline scrubber jumps from position
       // to position, resulting in large spikes in velocity followed by low velocity
-      // Instead, cancel fast scrolling after a timeout
-      _fastScrollDebounceTimer?.cancel();
-      _fastScrollDebounceTimer = Timer(
-        _fastScrollDebounceDuration,
-        () => ref.read(timelineStateProvider.notifier).setRecommendDeferredLoading(false),
-      );
+      _fastScrollDebouncer.run(() => ref.read(timelineStateProvider.notifier).setRecommendDeferredLoading(false));
     }
     return false;
   }
