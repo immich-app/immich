@@ -11,10 +11,12 @@
   import { systemConfigManager } from '$lib/managers/system-config-manager.svelte';
   import { Route } from '$lib/route';
   import { handleSystemConfigSave } from '$lib/services/system-config.service';
-  import { getStorageTemplateOptions, type SystemConfigTemplateStorageOptionDto } from '@immich/sdk';
+  import {
+    getStorageTemplateOptions,
+    renderStorageTemplate,
+    type SystemConfigTemplateStorageOptionDto,
+  } from '@immich/sdk';
   import { Heading, Link, LoadingSpinner, Text } from '@immich/ui';
-  import handlebar from 'handlebars';
-  import * as luxon from 'luxon';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import { createBubbler, preventDefault } from 'svelte/legacy';
@@ -35,6 +37,8 @@
   const bubble = createBubbler();
   let templateOptions: SystemConfigTemplateStorageOptionDto | undefined = $state();
   let selectedPreset = $state('');
+  let renderedPreview = $state('');
+  let renderTimeout: ReturnType<typeof setTimeout> | undefined;
 
   const getTemplateOptions = async () => {
     templateOptions = await getStorageTemplateOptions();
@@ -43,63 +47,35 @@
 
   const getSupportDateTimeFormat = () => getStorageTemplateOptions();
 
-  const renderTemplate = (templateString: string) => {
-    if (!templateOptions) {
-      return '';
-    }
-
-    const template = handlebar.compile(templateString, {
-      knownHelpers: undefined,
-    });
-
-    const substitutions: Record<string, string> = {
-      filename: 'IMAGE_56437',
-      ext: 'jpg',
-      filetype: 'IMG',
-      filetypefull: 'IMAGE',
-      assetId: 'a8312960-e277-447d-b4ea-56717ccba856',
-      assetIdShort: '56717ccba856',
-      album: $t('album_name'),
-      make: 'FUJIFILM',
-      model: 'X-T50',
-      lensModel: 'XF27mm F2.8 R WR',
-    };
-
-    const dt = luxon.DateTime.fromISO(new Date('2022-02-03T04:56:05.250').toISOString());
-    const albumStartTime = luxon.DateTime.fromISO(new Date('2021-12-31T05:32:41.750').toISOString());
-    const albumEndTime = luxon.DateTime.fromISO(new Date('2023-05-06T09:15:17.100').toISOString());
-
-    const dateTokens = [
-      ...templateOptions.yearOptions,
-      ...templateOptions.monthOptions,
-      ...templateOptions.weekOptions,
-      ...templateOptions.dayOptions,
-      ...templateOptions.hourOptions,
-      ...templateOptions.minuteOptions,
-      ...templateOptions.secondOptions,
-    ];
-
-    for (const token of dateTokens) {
-      substitutions[token] = dt.toFormat(token);
-      substitutions['album-startDate-' + token] = albumStartTime.toFormat(token);
-      substitutions['album-endDate-' + token] = albumEndTime.toFormat(token);
-    }
-
-    return template(substitutions);
-  };
-
   const handlePresetSelection = () => {
     configToEdit.storageTemplate.template = selectedPreset;
   };
-  let parsedTemplate = $derived(() => {
-    try {
-      return renderTemplate(configToEdit.storageTemplate.template);
-    } catch {
-      return 'error';
+
+  $effect(() => {
+    selectedPreset = templateOptions?.presetOptions?.includes(configToEdit.storageTemplate.template)
+      ? configToEdit.storageTemplate.template
+      : '';
+  });
+
+  $effect(() => {
+    clearTimeout(renderTimeout);
+    const template = configToEdit.storageTemplate.template;
+    if (!template) {
+      renderedPreview = '';
+      return;
     }
+    renderTimeout = setTimeout(async () => {
+      try {
+        const { rendered } = await renderStorageTemplate({ renderStorageTemplateDto: { template } });
+        renderedPreview = rendered;
+      } catch {
+        renderedPreview = 'error';
+      }
+    }, 300);
   });
 
   onDestroy(async () => {
+    clearTimeout(renderTimeout);
     if (saveOnClose) {
       await handleSystemConfigSave({ storageTemplate: configToEdit.storageTemplate });
     }
@@ -178,7 +154,7 @@
             <FormatMessage
               key="admin.storage_template_path_length"
               values={{
-                length: parsedTemplate().length + authManager.user.id.length + 'UPLOAD_LOCATION'.length,
+                length: renderedPreview.length + authManager.user.id.length + 'UPLOAD_LOCATION'.length,
                 limit: 260,
               }}
             >
@@ -202,7 +178,7 @@
           <p class="mt-2 rounded-lg bg-gray-200 p-4 py-2 text-xs dark:bg-gray-700 dark:text-immich-dark-fg">
             <span class="text-immich-fg/25 dark:text-immich-dark-fg/50"
               >UPLOAD_LOCATION/library/{authManager.user.storageLabel || authManager.user.id}</span
-            >/{parsedTemplate()}.jpg
+            >/{renderedPreview}.jpg
           </p>
 
           <form autocomplete="off" class="flex flex-col" onsubmit={preventDefault(bubble('submit'))}>
@@ -219,8 +195,8 @@
                   bind:value={selectedPreset}
                   onchange={handlePresetSelection}
                 >
-                  {#each templateOptions.presetOptions as preset (preset)}
-                    <option value={preset}>{renderTemplate(preset)}</option>
+                  {#each templateOptions.presetOptions as preset, i (preset)}
+                    <option value={preset}>{templateOptions.renderedPresetOptions[i]}</option>
                   {/each}
                 </select>
               {/if}

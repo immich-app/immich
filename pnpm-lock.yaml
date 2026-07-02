@@ -836,9 +836,6 @@ importers:
       geojson:
         specifier: ^0.5.0
         version: 0.5.0
-      handlebars:
-        specifier: ^4.7.8
-        version: 4.7.9
       happy-dom:
         specifier: ^20.0.0
         version: 20.10.3

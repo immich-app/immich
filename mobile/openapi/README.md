@@ -289,6 +289,7 @@ Class | Method | HTTP request | Description
 *SystemConfigApi* | [**getConfig**](doc//SystemConfigApi.md#getconfig) | **GET** /system-config | Get system configuration
 *SystemConfigApi* | [**getConfigDefaults**](doc//SystemConfigApi.md#getconfigdefaults) | **GET** /system-config/defaults | Get system configuration defaults
 *SystemConfigApi* | [**getStorageTemplateOptions**](doc//SystemConfigApi.md#getstoragetemplateoptions) | **GET** /system-config/storage-template-options | Get storage template options
+*SystemConfigApi* | [**renderStorageTemplate**](doc//SystemConfigApi.md#renderstoragetemplate) | **POST** /system-config/storage-template-render | Render storage template preview
 *SystemConfigApi* | [**updateConfig**](doc//SystemConfigApi.md#updateconfig) | **PUT** /system-config | Update system configuration
 *SystemMetadataApi* | [**getAdminOnboarding**](doc//SystemMetadataApi.md#getadminonboarding) | **GET** /system-metadata/admin-onboarding | Retrieve admin onboarding
 *SystemMetadataApi* | [**getReverseGeocodingState**](doc//SystemMetadataApi.md#getreversegeocodingstate) | **GET** /system-metadata/reverse-geocoding-state | Retrieve reverse geocoding state
@@ -550,6 +551,8 @@ Class | Method | HTTP request | Description
  - [ReleaseChannel](doc//ReleaseChannel.md)
  - [ReleaseEventV1](doc//ReleaseEventV1.md)
  - [ReleaseType](doc//ReleaseType.md)
+ - [RenderStorageTemplateDto](doc//RenderStorageTemplateDto.md)
+ - [RenderStorageTemplateResponseDto](doc//RenderStorageTemplateResponseDto.md)
  - [ReverseGeocodingStateResponseDto](doc//ReverseGeocodingStateResponseDto.md)
  - [RotateParameters](doc//RotateParameters.md)
  - [SearchAlbumResponseDto](doc//SearchAlbumResponseDto.md)

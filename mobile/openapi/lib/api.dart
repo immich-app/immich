@@ -271,6 +271,8 @@ part 'model/recently_added_update.dart';
 part 'model/release_channel.dart';
 part 'model/release_event_v1.dart';
 part 'model/release_type.dart';
+part 'model/render_storage_template_dto.dart';
+part 'model/render_storage_template_response_dto.dart';
 part 'model/reverse_geocoding_state_response_dto.dart';
 part 'model/rotate_parameters.dart';
 part 'model/search_album_response_dto.dart';
