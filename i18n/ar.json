@@ -1304,7 +1304,7 @@
   "login_form_handshake_exception": "كان هناك استثناء مصافحة مع الخادم.تمكين دعم الشهادة الموقعة ذاتيا في الإعدادات إذا كنت تستخدم شهادة موقعة ذاتيا.",
   "login_form_password_hint": "كلمة المرور",
   "login_form_server_empty": "أدخل عنوان URL الخادم.",
-  "login_form_server_error": "لا يمكن الاتصال بالخادم.",
+  "login_form_server_error": "تعذر الاتصال بالخادم.",
   "login_has_been_disabled": "تم تعطيل تسجيل الدخول.",
   "login_password_changed_error": "كان هناك خطأ في تحديث كلمة المرور الخاصة بك",
   "login_password_changed_success": "تم تحديث كلمة السر بنجاح",
