@@ -1,0 +1,17 @@
+[package]
+name = "immich_core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = ["hashing", "image"]
+hashing = ["dep:sha1", "dep:memmap2"]
+image = [] # pure pixel math, no deps
+
+[dependencies]
+sha1 = { workspace = true, optional = true }
+memmap2 = { workspace = true, optional = true }
+
+[lints]
+workspace = true

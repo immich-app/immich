@@ -1,0 +1,19 @@
+[package]
+name = "immich_core_napi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+immich_core = { path = "../immich_core", default-features = false, features = ["hashing"] }
+napi = { workspace = true, features = ["napi4", "dyn-symbols"] }
+napi-derive = { workspace = true }
+
+[build-dependencies]
+napi-build = { workspace = true }
+
+[lints]
+workspace = true
