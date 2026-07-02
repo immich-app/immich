@@ -39,6 +39,14 @@ experimental = true
 pin = true
 lockfile = true
 
+[tasks.release]
+run = [
+  "pnpm --filter @immich/scripts install --frozen-lockfile",
+  "pnpm --filter @immich/scripts build",
+  "pnpm --filter @immich/scripts cli release {{arg(name='args', var=true)}}",
+  { task = "//:open-api" },
+]
+
 [tasks.plugins]
 run = [
   "pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter @immich/plugin-core install --frozen-lockfile",

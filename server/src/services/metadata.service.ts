@@ -854,6 +854,13 @@ export class MetadataService extends BaseService {
     // update area coordinates and dimensions in RegionList assuming "normalized" unit as per MWG guidelines
     const adjustedRegionList = regionInfo.RegionList.map((region) => {
       let { X, Y, W, H } = region.Area;
+
+      // EXIF floats with >16 decimals are serialized as strings. Ensure they are numbers.
+      X = Number(X);
+      Y = Number(Y);
+      W = Number(W);
+      H = Number(H);
+
       switch (orientation) {
         case ExifOrientation.MirrorHorizontal: {
           X = 1 - X;
@@ -926,16 +933,21 @@ export class MetadataService extends BaseService {
       const loweredName = region.Name.toLowerCase();
       const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
 
+      const X = Number(region.Area.X);
+      const Y = Number(region.Area.Y);
+      const W = Number(region.Area.W);
+      const H = Number(region.Area.H);
+
       const face = {
         id: this.cryptoRepository.randomUUID(),
         personId,
         assetId: asset.id,
         imageWidth,
         imageHeight,
-        boundingBoxX1: Math.floor((region.Area.X - region.Area.W / 2) * imageWidth),
-        boundingBoxY1: Math.floor((region.Area.Y - region.Area.H / 2) * imageHeight),
-        boundingBoxX2: Math.floor((region.Area.X + region.Area.W / 2) * imageWidth),
-        boundingBoxY2: Math.floor((region.Area.Y + region.Area.H / 2) * imageHeight),
+        boundingBoxX1: Math.floor((X - W / 2) * imageWidth),
+        boundingBoxY1: Math.floor((Y - H / 2) * imageHeight),
+        boundingBoxX2: Math.floor((X + W / 2) * imageWidth),
+        boundingBoxY2: Math.floor((Y + H / 2) * imageHeight),
         sourceType: SourceType.Exif,
       };
 
