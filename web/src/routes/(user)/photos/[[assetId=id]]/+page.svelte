@@ -33,12 +33,14 @@
     type OnLink,
     type OnUnlink,
   } from '$lib/utils/actions';
+  import { asLocalTimeISO } from '$lib/utils/date-time';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { AssetVisibility } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, ImageCarousel } from '@immich/ui';
   import { mdiDotsVertical } from '@mdi/js';
+  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
@@ -90,6 +92,10 @@
       src: getAssetMediaUrl({ id: memory.assets[0].id }),
     })),
   );
+
+  if (memoryManager.filters === undefined || memoryManager.filters.$for !== asLocalTimeISO(DateTime.now())) {
+    memoryManager.filters = { $for: asLocalTimeISO(DateTime.now()) };
+  }
 </script>
 
 <UserPageLayout hideNavbar={assetMultiSelectManager.selectionActive} scrollbar={false}>

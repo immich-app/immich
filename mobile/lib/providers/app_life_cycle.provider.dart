@@ -116,7 +116,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
         _safeRun(backgroundManager.syncLocal(full: CurrentPlatform.isAndroid ? true : false), "syncLocal"),
         _safeRun(backgroundManager.syncRemote().then((success) => syncSuccess = success), "syncRemote"),
       ]);
-      _ref.invalidate(driftMemoryFutureProvider);
+      _ref.invalidate(driftAllMemoriesProvider);
       if (syncSuccess) {
         await Future.wait([
           _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {

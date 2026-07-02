@@ -20,12 +20,13 @@ import {
   type UserResponseDto,
 } from '@immich/sdk';
 import { toastManager, type ActionItem, type IfLike } from '@immich/ui';
+import { DateTime } from 'luxon';
 import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 import { defaultLang, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
-import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
+import { alwaysLoadOriginalFile, lang, locale } from '$lib/stores/preferences.store';
 import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import { convertBCP47, langs } from '$lib/utils/i18n';
@@ -366,9 +367,13 @@ export const handlePromiseError = <T>(promise: Promise<T>): void => {
 
 export const memoryLaneTitle = derived(t, ($t) => {
   return (memory: MemoryResponseDto) => {
-    const now = new Date();
     if (memory.type === MemoryType.OnThisDay) {
-      return $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } });
+      const now = new Date();
+      const memoryDate = new Date(memory.memoryAt);
+
+      return memoryDate.getUTCDate() === now.getDate() && memoryDate.getUTCMonth() === now.getMonth()
+        ? $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } })
+        : DateTime.fromJSDate(memoryDate).toLocaleString(DateTime.DATE_MED, { locale: get(locale) });
     }
 
     return $t('unknown');

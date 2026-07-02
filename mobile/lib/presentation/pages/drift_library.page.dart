@@ -7,9 +7,11 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.widget.dart';
+import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/people/partner_user_avatar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -134,7 +136,12 @@ class _CollectionCards extends StatelessWidget {
         child: Wrap(
           spacing: 8,
           runSpacing: 8,
-          children: [_PeopleCollectionCard(), _PlacesCollectionCard(), _LocalAlbumsCollectionCard()],
+          children: [
+            _PeopleCollectionCard(),
+            _PlacesCollectionCard(),
+            _LocalAlbumsCollectionCard(),
+            _MemoriesCollectionCard(),
+          ],
         ),
       ),
     );
@@ -314,6 +321,76 @@ class _LocalAlbumsCollectionCard extends ConsumerWidget {
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
                   'on_this_device'.t(context: context),
+                  style: context.textTheme.titleSmall?.copyWith(
+                    color: context.colorScheme.onSurface,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _MemoriesCollectionCard extends ConsumerWidget {
+  const _MemoriesCollectionCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final memories = ref.watch(driftAllMemoriesProvider);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isTablet = constraints.maxWidth > 600;
+        final widthFactor = isTablet ? 0.25 : 0.5;
+        final size = context.width * widthFactor - 20.0;
+
+        return GestureDetector(
+          onTap: () => context.pushRoute(const DriftMemoryListRoute()),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: size,
+                width: size,
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(20)),
+                  gradient: LinearGradient(
+                    colors: [context.colorScheme.primary.withAlpha(30), context.colorScheme.primary.withAlpha(25)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: memories.widgetWhen(
+                  onLoading: () => const Center(child: CircularProgressIndicator()),
+                  onData: (memories) {
+                    return GridView.count(
+                      crossAxisCount: 2,
+                      padding: const EdgeInsets.all(12),
+                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 8,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: memories.take(4).map((memory) {
+                        return ClipRRect(
+                          borderRadius: const BorderRadius.all(Radius.circular(10)),
+                          child: Thumbnail.remote(
+                            remoteId: memory.assets[0].id,
+                            thumbhash: memory.assets[0].thumbHash ?? "",
+                            fit: BoxFit.cover,
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'memories'.t(context: context),
                   style: context.textTheme.titleSmall?.copyWith(
                     color: context.colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
