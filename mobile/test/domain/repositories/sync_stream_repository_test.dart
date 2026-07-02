@@ -28,6 +28,7 @@ SyncAssetV1 _createAsset({
   String ownerId = 'user-1',
   int? width,
   int? height,
+  String? libraryId,
 }) {
   return SyncAssetV1(
     id: id,
@@ -45,7 +46,38 @@ SyncAssetV1 _createAsset({
     height: height,
     deletedAt: null,
     duration: null,
-    libraryId: null,
+    libraryId: libraryId,
+    livePhotoVideoId: null,
+    stackId: null,
+    thumbhash: null,
+    isEdited: false,
+  );
+}
+
+SyncAssetV2 _createAssetV2({
+  required String id,
+  required String checksum,
+  required String fileName,
+  String ownerId = 'user-1',
+  String? libraryId,
+}) {
+  return SyncAssetV2(
+    id: id,
+    checksum: checksum,
+    originalFileName: fileName,
+    type: AssetTypeEnum.IMAGE,
+    ownerId: ownerId,
+    isFavorite: false,
+    fileCreatedAt: DateTime(2024, 1, 1),
+    fileModifiedAt: DateTime(2024, 1, 1),
+    createdAt: DateTime(2024, 1, 1),
+    localDateTime: DateTime(2024, 1, 1),
+    visibility: AssetVisibility.timeline,
+    width: null,
+    height: null,
+    deletedAt: null,
+    duration: 0,
+    libraryId: libraryId,
     livePhotoVideoId: null,
     stackId: null,
     thumbhash: null,
@@ -238,6 +270,84 @@ void main() {
       expect(after.linkedRemoteAlbumId, isNull);
       expect(after.name, equals('Camera'));
       expect(after.backupSelection, equals(BackupSelection.none));
+    });
+  });
+
+  group('SyncStreamRepository - updateAssetsV1 dedupe (#22522 #27186)', () {
+    test('replaces stale row when new id arrives with same (ownerId, checksum) and library is null', () async {
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateAssetsV1([_createAsset(id: 'old-id', checksum: 'AAA', fileName: 'photo.jpg')]);
+
+      // Server re-issues a new id for the same content (replace-with-upload, immich-go, etc.)
+      await sut.updateAssetsV1([_createAsset(id: 'new-id', checksum: 'AAA', fileName: 'photo.jpg')]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows, hasLength(1));
+      expect(rows.single.id, equals('new-id'));
+      expect(rows.single.checksum, equals('AAA'));
+    });
+
+    test('replaces stale row by (ownerId, libraryId, checksum) when library is not null', () async {
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateAssetsV1([
+        _createAsset(id: 'old-id', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1'),
+      ]);
+
+      await sut.updateAssetsV1([
+        _createAsset(id: 'new-id', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1'),
+      ]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows, hasLength(1));
+      expect(rows.single.id, equals('new-id'));
+      expect(rows.single.libraryId, equals('lib-1'));
+    });
+
+    test('library and non-library rows with same (ownerId, checksum) coexist', () async {
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateAssetsV1([
+        _createAsset(id: 'lib-row', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1'),
+        _createAsset(id: 'main-row', checksum: 'AAA', fileName: 'photo.jpg'),
+      ]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows, hasLength(2), reason: 'library NULL and NOT NULL match different partial indexes');
+      expect(rows.map((r) => r.id).toSet(), equals({'lib-row', 'main-row'}));
+    });
+
+    test('different owners with same checksum coexist', () async {
+      await sut.updateUsersV1([_createUser(id: 'user-1')]);
+      await sut.updateUsersV1([_createUser(id: 'user-2')]);
+      await sut.updateAssetsV1([
+        _createAsset(id: 'a-id', checksum: 'AAA', fileName: 'photo.jpg', ownerId: 'user-1'),
+        _createAsset(id: 'b-id', checksum: 'AAA', fileName: 'photo.jpg', ownerId: 'user-2'),
+      ]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows, hasLength(2));
+    });
+
+    test('same id arriving again updates in place (no self-delete)', () async {
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateAssetsV1([_createAsset(id: 'same-id', checksum: 'AAA', fileName: 'photo.jpg')]);
+
+      await sut.updateAssetsV1([_createAsset(id: 'same-id', checksum: 'AAA', fileName: 'renamed.jpg')]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows, hasLength(1));
+      expect(rows.single.id, equals('same-id'));
+      expect(rows.single.name, equals('renamed.jpg'), reason: 'ON CONFLICT(id) DO UPDATE path still works');
+    });
+
+    test('updateAssetsV2 dedupes the same way', () async {
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateAssetsV2([_createAssetV2(id: 'old-id', checksum: 'AAA', fileName: 'photo.jpg')]);
+
+      await sut.updateAssetsV2([_createAssetV2(id: 'new-id', checksum: 'AAA', fileName: 'photo.jpg')]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows, hasLength(1));
+      expect(rows.single.id, equals('new-id'));
     });
   });
 }
