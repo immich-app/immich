@@ -203,7 +203,13 @@ class ImmichAPI {
 
   func fetchMemory(for date: Date) async throws -> [MemoryResult] {
     // get URL
-    let memoryParams = [URLQueryItem(name: "for", value: date.ISO8601Format())]
+    // server buckets memories by UTC day, so send noon UTC of the device's local day
+    var utcCalendar = Calendar(identifier: .gregorian)
+    utcCalendar.timeZone = TimeZone(identifier: "UTC")!
+    var components = Calendar.current.dateComponents([.year, .month, .day], from: date)
+    components.hour = 12
+    let localDay = utcCalendar.date(from: components) ?? date
+    let memoryParams = [URLQueryItem(name: "for", value: localDay.ISO8601Format())]
     guard
       let searchURL = buildRequestURL(
         serverConfig: serverConfig,
