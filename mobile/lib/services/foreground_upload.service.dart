@@ -289,7 +289,7 @@ class ForegroundUploadService {
 
         // For live photos, get the motion video file
         if (entity.isLivePhoto) {
-          livePhotoFile = await _storageRepository.getMotionFileForAsset(asset);
+          livePhotoFile = await _storageRepository.getMotionFileForAsset(asset.id);
           if (livePhotoFile == null) {
             _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
             callbacks.onError?.call(

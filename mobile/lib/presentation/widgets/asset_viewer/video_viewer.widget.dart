@@ -122,9 +122,11 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
         );
       }
 
-      if (videoAsset.hasLocal && videoAsset.livePhotoVideoId == null) {
-        final id = videoAsset is LocalAsset ? videoAsset.id : (videoAsset as RemoteAsset).localId!;
-        final file = await StorageRepository().getFileForAsset(id);
+      if (videoAsset.hasLocal) {
+        final localId = videoAsset is LocalAsset ? videoAsset.id : (videoAsset as RemoteAsset).localId!;
+        final file = videoAsset.isMotionPhoto
+            ? await StorageRepository().getMotionFileForAsset(localId)
+            : await StorageRepository().getFileForAsset(localId);
         if (!mounted) {
           return null;
         }
@@ -141,14 +143,13 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
         );
       }
 
-      final remoteId = (videoAsset as RemoteAsset).id;
+      final remoteAsset = videoAsset as RemoteAsset;
 
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
       final isOriginalVideo = ref.read(appConfigProvider).viewer.loadOriginalVideo;
       final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
-      final String videoUrl = videoAsset.livePhotoVideoId != null
-          ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
-          : '$serverEndpoint/assets/$remoteId/$postfixUrl';
+      final String assetId = remoteAsset.livePhotoVideoId != null ? remoteAsset.livePhotoVideoId! : remoteAsset.id;
+      final String videoUrl = '$serverEndpoint/assets/$assetId/$postfixUrl';
 
       return VideoSource.init(path: videoUrl, type: VideoSourceType.network, headers: ApiService.getRequestHeaders());
     } catch (error) {

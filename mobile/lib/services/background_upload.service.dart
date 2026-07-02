@@ -279,7 +279,7 @@ class BackgroundUploadService {
     /// be touched, as the video file is already uploaded.
 
     if (entity.isLivePhoto) {
-      file = await _storageRepository.getMotionFileForAsset(asset);
+      file = await _storageRepository.getMotionFileForAsset(asset.id);
     } else {
       file = await _storageRepository.getFileForAsset(asset.id);
     }
