@@ -131,9 +131,17 @@ export const AlbumResponseSchema = z
       .optional()
       .describe('Last modified asset timestamp'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    startDate: z.string().meta({ format: 'date-time' }).optional().describe('Start date (earliest asset)'),
+    startDate: z
+      .string()
+      .meta({ format: 'date-time' })
+      .optional()
+      .describe('UTC representation of (local) start date (earliest asset)'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
-    endDate: z.string().meta({ format: 'date-time' }).optional().describe('End date (latest asset)'),
+    endDate: z
+      .string()
+      .meta({ format: 'date-time' })
+      .optional()
+      .describe('UTC representation of (local) end date (latest asset)'),
     isActivityEnabled: z.boolean().describe('Activity feed enabled'),
     order: AssetOrderSchema.optional(),
     contributorCounts: z.array(ContributorCountResponseSchema).optional(),
