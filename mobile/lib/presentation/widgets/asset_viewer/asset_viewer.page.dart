@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -209,6 +210,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         _onTimelineReloadEvent();
       case ViewerReloadAssetEvent():
         _onViewerReloadEvent();
+      case ViewerStackAssetDeletedEvent event:
+        _onViewerStackAssetDeletedEvent(event);
       default:
     }
   }
@@ -222,6 +225,33 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final target = index >= _totalAssets - 1 ? index - 1 : index + 1;
     _pageController.animateToPage(target, duration: Durations.medium1, curve: Curves.easeInOut);
     _onAssetChanged(target);
+  }
+
+  Future<void> _onViewerStackAssetDeletedEvent(ViewerStackAssetDeletedEvent event) async {
+    final timelineAsset = ref.read(timelineServiceProvider).getAssetSafe(_currentPage);
+    if (timelineAsset == null) {
+      _onViewerReloadEvent();
+      return;
+    }
+
+    final stackProvider = stackChildrenNotifier(timelineAsset);
+
+    ref.invalidate(stackProvider);
+    final stack = await ref.read(stackProvider.future);
+
+    if (!mounted) {
+      return;
+    }
+
+    if (stack.isEmpty) {
+      _onViewerReloadEvent();
+      return;
+    }
+
+    final targetIndex = math.min(event.stackIndex, stack.length - 1);
+    ref.read(assetViewerProvider.notifier)
+      ..setAsset(stack[targetIndex])
+      ..setStackIndex(targetIndex);
   }
 
   void _onTimelineReloadEvent() {
@@ -240,6 +270,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     if (index != _currentPage) {
       _pageController.jumpToPage(index);
       _onAssetChanged(index);
+    } else if (currentAsset is RemoteAsset && currentAsset.stackId != null && assetIndex == null) {
+      final timelineAsset = timelineService.getAssetSafe(index);
+      if (timelineAsset is! RemoteAsset || currentAsset.stackId != timelineAsset.stackId) {
+        _onAssetChanged(index);
+      }
     } else if (currentAsset != null && assetIndex == null) {
       _onAssetChanged(index);
     }
