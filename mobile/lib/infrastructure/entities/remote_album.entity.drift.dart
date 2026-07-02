@@ -52,14 +52,7 @@ final class $$RemoteAlbumEntityTableReferences
   ) => i6.ReadDatabaseContainer(db)
       .resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity')
       .createAlias(
-        i0.$_aliasNameGenerator(
-          i6.ReadDatabaseContainer(db)
-              .resultSet<i1.$RemoteAlbumEntityTable>('remote_album_entity')
-              .thumbnailAssetId,
-          i6.ReadDatabaseContainer(
-            db,
-          ).resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity').id,
-        ),
+        'remote_album_entity__thumbnail_asset_id__remote_asset_entity__id',
       );
 
   i5.$$RemoteAssetEntityTableProcessedTableManager? get thumbnailAssetId {
