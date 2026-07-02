@@ -9,7 +9,6 @@ import { AssetOrderWithRandom, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { MemoryTable } from 'src/schema/tables/memory.table';
 import { IBulkAsset } from 'src/types';
-import { paginationHelper } from 'src/utils/pagination';
 
 @Injectable()
 export class MemoryRepository implements IBulkAsset {
