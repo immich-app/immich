@@ -30,7 +30,7 @@ import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 import 'package:logging/logging.dart';
 
-class Timeline extends StatelessWidget {
+class Timeline extends StatefulWidget {
   const Timeline({
     super.key,
     this.topSliverWidget,
@@ -46,6 +46,7 @@ class Timeline extends StatelessWidget {
     this.readOnly = false,
     this.persistentBottomBar = false,
     this.loadingWidget,
+    this.onRefresh,
   });
 
   final Widget? topSliverWidget;
@@ -61,35 +62,56 @@ class Timeline extends StatelessWidget {
   final bool readOnly;
   final bool persistentBottomBar;
   final Widget? loadingWidget;
+  final VoidCallback? onRefresh;
+
+  @override
+  State<Timeline> createState() => _TimelineState();
+}
+
+class _TimelineState extends State<Timeline> {
+  bool _rebuildTrigger = false;
+
+  Future<void> _handleRefresh() async {
+    if (widget.onRefresh == null) {
+      return;
+    }
+
+    widget.onRefresh?.call();
+    if (mounted) {
+      setState(() => _rebuildTrigger = !_rebuildTrigger);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (_, constraints) => ProviderScope(
+        key: ValueKey(_rebuildTrigger),
         overrides: [
           timelineArgsProvider.overrideWith(
             (ref) => TimelineArgs(
               maxWidth: constraints.maxWidth,
               maxHeight: constraints.maxHeight,
               columnCount: ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow)),
-              showStorageIndicator: showStorageIndicator,
-              withStack: withStack,
-              groupBy: groupBy,
+              showStorageIndicator: widget.showStorageIndicator,
+              withStack: widget.withStack,
+              groupBy: widget.groupBy,
             ),
           ),
-          if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
+          if (widget.readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
         ],
         child: _SliverTimeline(
-          topSliverWidget: topSliverWidget,
-          topSliverWidgetHeight: topSliverWidgetHeight,
-          bottomSliverWidget: bottomSliverWidget,
-          appBar: appBar,
-          bottomSheet: bottomSheet,
-          withScrubber: withScrubber,
-          persistentBottomBar: persistentBottomBar,
-          snapToMonth: snapToMonth,
+          topSliverWidget: widget.topSliverWidget,
+          topSliverWidgetHeight: widget.topSliverWidgetHeight,
+          bottomSliverWidget: widget.bottomSliverWidget,
+          appBar: widget.appBar,
+          bottomSheet: widget.bottomSheet,
+          withScrubber: widget.withScrubber,
+          persistentBottomBar: widget.persistentBottomBar,
+          snapToMonth: widget.snapToMonth,
           maxWidth: constraints.maxWidth,
-          loadingWidget: loadingWidget,
+          loadingWidget: widget.loadingWidget,
+          onRefresh: widget.onRefresh == null ? null : _handleRefresh,
         ),
       ),
     );
@@ -119,6 +141,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
     this.snapToMonth = true,
     this.maxWidth,
     this.loadingWidget,
+    this.onRefresh,
   });
 
   final Widget? topSliverWidget;
@@ -131,6 +154,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   final bool snapToMonth;
   final double? maxWidth;
   final Widget? loadingWidget;
+  final Future<void> Function()? onRefresh;
 
   @override
   ConsumerState createState() => _SliverTimelineState();
@@ -437,7 +461,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                 ],
               );
 
-              final Widget timeline;
+              Widget timeline;
               if (widget.withScrubber) {
                 timeline = Scrubber(
                   snapToMonth: widget.snapToMonth,
@@ -451,6 +475,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                 );
               } else {
                 timeline = grid;
+              }
+              if (widget.onRefresh != null) {
+                timeline = RefreshIndicator(onRefresh: widget.onRefresh!, child: timeline);
               }
 
               return RawGestureDetector(

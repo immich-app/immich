@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_lane.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
+import 'package:logging/logging.dart';
 
 @RoutePage()
 class MainTimelinePage extends ConsumerWidget {
@@ -16,6 +17,9 @@ class MainTimelinePage extends ConsumerWidget {
       topSliverWidget: const SliverToBoxAdapter(child: DriftMemoryLane()),
       topSliverWidgetHeight: hasMemories ? 200 : 0,
       showStorageIndicator: true,
+      onRefresh: () {
+        Logger('MainTimelinePage').info('Pull-to-refresh triggered');
+      },
     );
   }
 }
