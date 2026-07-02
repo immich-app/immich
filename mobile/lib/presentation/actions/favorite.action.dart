@@ -6,33 +6,58 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
 
-class FavoriteAction extends AssetAction<RemoteAsset> {
-  final bool favorite;
+class FavoriteAction extends BaseAction {
+  final Iterable<BaseAsset> assets;
 
-  FavoriteAction({required super.assets}) : favorite = assets.any((asset) => !asset.isFavorite);
-
-  @override
-  IconData get icon => favorite ? Icons.favorite_border_rounded : Icons.favorite_rounded;
+  const FavoriteAction({required this.assets});
 
   @override
-  String label(ActionScope scope) => favorite ? scope.context.t.favorite : scope.context.t.unfavorite;
+  AssetActionView<RemoteAsset> resolve(ActionScope scope) {
+    final hasNonFavorite = AssetFilter(assets).owned(scope.authUser.id).any((asset) => !asset.isFavorite);
+    return hasNonFavorite ? FavoriteView(assets: assets, scope: scope) : UnfavoriteView(assets: assets, scope: scope);
+  }
+}
+
+@visibleForTesting
+class FavoriteView extends AssetActionView<RemoteAsset> {
+  const FavoriteView({required super.assets, required super.scope});
 
   @override
-  AssetFilter<RemoteAsset> filter(ActionScope scope) =>
-      .new(assets).owned(scope.authUser.id).favorite(isFavorite: !favorite);
+  IconData get icon => Icons.favorite_border_rounded;
 
   @override
-  bool isVisible(ActionScope scope) => filter(scope).isNotEmpty;
+  String get label => scope.context.t.favorite;
 
   @override
-  Future<void> onAction(ActionScope scope) async {
+  AssetFilter<RemoteAsset> get filter => .new(assets).owned(scope.authUser.id).favorite(isFavorite: false);
+
+  @override
+  Future<void> onAction() async {
     final ActionScope(:ref, :context) = scope;
-    final assets = filter(scope).map((asset) => asset.id).toList(growable: false);
+    final ids = filter.map((asset) => asset.id).toList(growable: false);
+    await ref.read(assetServiceProvider).updateFavorite(ids, true);
+    ref.read(toastRepositoryProvider).success(context.t.favorite_action_prompt(count: ids.length));
+  }
+}
 
-    await ref.read(assetServiceProvider).updateFavorite(assets, favorite);
-    final message = favorite
-        ? context.t.favorite_action_prompt(count: assets.length)
-        : context.t.unfavorite_action_prompt(count: assets.length);
-    ref.read(toastRepositoryProvider).success(message);
+@visibleForTesting
+class UnfavoriteView extends AssetActionView<RemoteAsset> {
+  const UnfavoriteView({required super.assets, required super.scope});
+
+  @override
+  IconData get icon => Icons.favorite_rounded;
+
+  @override
+  String get label => scope.context.t.unfavorite;
+
+  @override
+  AssetFilter<RemoteAsset> get filter => .new(assets).owned(scope.authUser.id).favorite();
+
+  @override
+  Future<void> onAction() async {
+    final ActionScope(:ref, :context) = scope;
+    final ids = filter.map((asset) => asset.id).toList(growable: false);
+    await ref.read(assetServiceProvider).updateFavorite(ids, false);
+    ref.read(toastRepositoryProvider).success(context.t.unfavorite_action_prompt(count: ids.length));
   }
 }

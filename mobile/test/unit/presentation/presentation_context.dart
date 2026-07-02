@@ -98,14 +98,25 @@ extension PumpPresentationWidget on WidgetTester {
     await pumpAndSettle();
   }
 
-  Future<void> pumpTestAction(
+  Future<ActionView> pumpTestAction(
     PresentationContext context,
     BaseAction action, {
     List<Override> overrides = const [],
   }) async {
-    await pumpTestWidget(context, ActionIconButtonWidget(action: action), overrides: overrides);
+    late ActionView view;
+    await pumpTestWidget(
+      context,
+      Consumer(
+        builder: (innerContext, ref, _) {
+          view = action.resolve(ActionScope(context: innerContext, ref: ref, authUser: context.currentUser));
+          return ActionIconButtonWidget(action: action);
+        },
+      ),
+      overrides: overrides,
+    );
     await tap(find.byType(ImmichIconButton));
     await pump();
+    return view;
   }
 
   Future<void> pumpUntilFound(Finder finder, {int maxFrames = 10}) async {

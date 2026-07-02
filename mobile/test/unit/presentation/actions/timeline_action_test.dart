@@ -19,20 +19,29 @@ class _FakeAction extends BaseAction {
   bool? selectionDuringOnAction;
 
   @override
+  ActionView resolve(ActionScope scope) => _FakeActionView(this, scope);
+}
+
+class _FakeActionView extends ActionView {
+  final _FakeAction action;
+
+  _FakeActionView(this.action, ActionScope scope) : super(scope: scope);
+
+  @override
   IconData get icon => Icons.bolt;
 
   @override
-  String label(ActionScope scope) => 'fake';
+  String get label => 'fake';
 
   @override
-  bool isVisible(ActionScope scope) => visible;
+  bool get isVisible => action.visible;
 
   @override
-  Future<void> onAction(ActionScope scope) async {
-    ran = true;
-    selectionDuringOnAction = scope.ref.read(multiSelectProvider).isEnabled;
-    if (error != null) {
-      throw error!;
+  Future<void> onAction() async {
+    action.ran = true;
+    action.selectionDuringOnAction = scope.ref.read(multiSelectProvider).isEnabled;
+    if (action.error != null) {
+      throw action.error!;
     }
   }
 }
@@ -77,7 +86,7 @@ void main() {
     testWidgets('runs the wrapped action and then clears the selection', (tester) async {
       final inner = _FakeAction();
       final (scope, container) = await pumpScope(tester);
-      await TimelineAction(action: inner).onAction(scope);
+      await TimelineAction(action: inner).resolve(scope).onAction();
 
       expect(inner.ran, isTrue);
       expect(inner.selectionDuringOnAction, isTrue, reason: 'reset must run after the inner action, not before');
@@ -89,7 +98,7 @@ void main() {
       final inner = _FakeAction(error: error);
       final (scope, container) = await pumpScope(tester);
 
-      await expectLater(TimelineAction(action: inner).onAction(scope), throwsA(same(error)));
+      await expectLater(TimelineAction(action: inner).resolve(scope).onAction(), throwsA(same(error)));
 
       expect(inner.ran, isTrue);
       expect(container.read(multiSelectProvider).isEnabled, isTrue);

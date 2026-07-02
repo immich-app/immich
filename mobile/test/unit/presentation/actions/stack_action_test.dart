@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -27,30 +28,40 @@ void main() {
     testWidgets('stacks the eligible owned assets', (tester) async {
       final first = owned();
       final second = owned();
+      final view = await tester.pumpTestAction(context, StackAction(assets: [first, second]));
 
-      await tester.pumpTestAction(context, StackAction(assets: [first, second]));
+      expect(view, isA<StackView>());
+      expect(view.icon, Icons.filter_none_rounded);
+      expect(view.label, StaticTranslations.instance.stack);
 
+      await view.onAction();
       verify(() => assetService.stack(context.currentUser.id, [first.id, second.id])).called(1);
     });
 
     testWidgets('unstacks the eligible owned assets', (tester) async {
       final asset = owned(stackId: 'stack');
+      final view = await tester.pumpTestAction(context, StackAction(assets: [asset]));
 
-      await tester.pumpTestAction(context, StackAction(assets: [asset]));
+      expect(view, isA<UnstackView>());
+      expect(view.icon, Icons.layers_clear_outlined);
+      expect(view.label, StaticTranslations.instance.unstack);
 
+      await view.onAction();
       verify(() => assetService.unstack(['stack'])).called(1);
     });
 
-    testWidgets('prioritizes stack when mixed state', (tester) async {
+    testWidgets('prioritizes stack when the owned selection is mixed', (tester) async {
       final first = owned();
       final second = owned(stackId: 'stack');
+      final view = await tester.pumpTestAction(context, StackAction(assets: [first, second]));
 
-      await tester.pumpTestAction(context, StackAction(assets: [first, second]));
+      expect(view, isA<StackView>());
 
+      await view.onAction();
       verify(() => assetService.stack(context.currentUser.id, [first.id, second.id])).called(1);
     });
 
-    testWidgets('ignores assets owned by someone else', (tester) async {
+    testWidgets('dispatches on owned state, ignoring assets owned by others', (tester) async {
       final mine = owned();
       final other = owned();
       final theirs = RemoteAssetFactory.create();

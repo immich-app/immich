@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -15,13 +17,7 @@ class ActionScope {
 abstract class BaseAction {
   const BaseAction();
 
-  IconData get icon;
-
-  String label(ActionScope scope);
-
-  bool isVisible(ActionScope scope) => true;
-
-  Future<void> onAction(ActionScope scope);
+  ActionView resolve(ActionScope scope);
 }
 
 abstract class AssetAction<T extends BaseAsset> extends BaseAction {
@@ -29,5 +25,31 @@ abstract class AssetAction<T extends BaseAsset> extends BaseAction {
 
   const AssetAction({required this.assets});
 
-  AssetFilter<T> filter(ActionScope scope) => .new(assets.whereType<T>());
+  @override
+  AssetActionView resolve(ActionScope scope);
+}
+
+abstract class ActionView {
+  final ActionScope scope;
+
+  const ActionView({required this.scope});
+
+  IconData get icon;
+
+  String get label;
+
+  bool get isVisible => true;
+
+  FutureOr<void> onAction();
+}
+
+abstract class AssetActionView<T extends BaseAsset> extends ActionView {
+  final Iterable<BaseAsset> assets;
+
+  const AssetActionView({required this.assets, required super.scope});
+
+  AssetFilter<T> get filter => .new(assets.whereType<T>());
+
+  @override
+  bool get isVisible => filter.isNotEmpty;
 }

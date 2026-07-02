@@ -42,7 +42,7 @@ void main() {
       verify(() => assetService.restoreTrash([mine.id])).called(1);
     });
 
-    testWidgets('skips owned assets that are not trashed', (tester) async {
+    testWidgets('restores only the owned assets that are trashed', (tester) async {
       final trashed = owned();
       final live = owned(trashed: false);
 
@@ -62,6 +62,7 @@ void main() {
 
     testWidgets('reports success through the toast repository with the restored count', (tester) async {
       final toast = context.repository.toast;
+
       await tester.pumpTestAction(context, RestoreAction(assets: [owned(), owned()]));
 
       final message = verify(() => toast.success(captureAny())).captured.single as String;

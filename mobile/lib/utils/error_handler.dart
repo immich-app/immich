@@ -8,7 +8,7 @@ import 'package:openapi/api.dart';
 // ignore: depend_on_referenced_packages
 import 'package:stack_trace/stack_trace.dart';
 
-void handleError(BuildContext context, Object error, {StackTrace? stack, String? description}) {
+void handleError(Object error, {StackTrace? stack, String? description}) {
   String? stackTrace;
   if (stack != null) {
     final trace = Trace.from(stack);
@@ -23,17 +23,13 @@ void handleError(BuildContext context, Object error, {StackTrace? stack, String?
     () => 'Error${description != null ? ' ($description)' : ''}: $error${stackTrace != null ? '\n$stackTrace' : ''}',
   );
 
-  if (!context.mounted) {
-    return;
-  }
-
   final String message;
   if (serverErrorMessage(error) case String serverMessage) {
     message = serverMessage;
   } else if (isConnectionError(error)) {
-    message = context.t.login_form_server_error;
+    message = StaticTranslations.instance.login_form_server_error;
   } else {
-    message = context.t.scaffold_body_error_occurred;
+    message = StaticTranslations.instance.scaffold_body_error_occurred;
   }
 
   snackbar.error(message);

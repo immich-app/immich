@@ -8,17 +8,27 @@ class TimelineAction extends BaseAction {
   const TimelineAction({required this.action});
 
   @override
-  IconData get icon => action.icon;
+  TimelineActionView resolve(ActionScope scope) => .new(view: action.resolve(scope), scope: scope);
+}
+
+@visibleForTesting
+class TimelineActionView extends ActionView {
+  final ActionView view;
+
+  const TimelineActionView({required this.view, required super.scope});
 
   @override
-  String label(ActionScope scope) => action.label(scope);
+  IconData get icon => view.icon;
 
   @override
-  bool isVisible(ActionScope scope) => action.isVisible(scope);
+  String get label => view.label;
 
   @override
-  Future<void> onAction(ActionScope scope) async {
-    await action.onAction(scope);
+  bool get isVisible => view.isVisible;
+
+  @override
+  Future<void> onAction() async {
+    await view.onAction();
     scope.ref.read(multiSelectProvider.notifier).reset();
   }
 }

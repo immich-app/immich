@@ -12,16 +12,22 @@ class AssetDebugAction extends AssetAction<BaseAsset> {
   const AssetDebugAction({required super.assets});
 
   @override
+  AssetDebugActionView resolve(ActionScope scope) => .new(assets: assets, scope: scope);
+}
+
+@visibleForTesting
+class AssetDebugActionView extends AssetActionView<BaseAsset> {
+  const AssetDebugActionView({required super.assets, required super.scope});
+
+  @override
   IconData get icon => Icons.help_outline_rounded;
 
   @override
-  String label(ActionScope scope) => scope.context.t.troubleshoot;
+  String get label => scope.context.t.troubleshoot;
 
   @override
-  bool isVisible(ActionScope scope) =>
-      assets.length == 1 && scope.ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting);
+  bool get isVisible => scope.ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting) && assets.length == 1;
 
   @override
-  Future<void> onAction(ActionScope scope) async =>
-      unawaited(scope.context.pushRoute(AssetTroubleshootRoute(asset: assets.first)));
+  Future<void> onAction() async => unawaited(scope.context.pushRoute(AssetTroubleshootRoute(asset: assets.first)));
 }

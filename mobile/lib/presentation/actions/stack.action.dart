@@ -7,37 +7,59 @@ import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
 
 class StackAction extends AssetAction<RemoteAsset> {
-  final bool stack;
-
-  StackAction({required super.assets}) : stack = assets.any((asset) => asset is RemoteAsset && asset.stackId == null);
+  const StackAction({required super.assets});
 
   @override
-  IconData get icon => stack ? Icons.filter_none_rounded : Icons.layers_clear_outlined;
+  AssetActionView<RemoteAsset> resolve(ActionScope scope) {
+    final unstacked = AssetFilter(assets).owned(scope.authUser.id).any((asset) => asset.stackId == null);
+    return unstacked ? StackView(assets: assets, scope: scope) : UnstackView(assets: assets, scope: scope);
+  }
+}
+
+@visibleForTesting
+class StackView extends AssetActionView<RemoteAsset> {
+  const StackView({required super.assets, required super.scope});
 
   @override
-  String label(ActionScope scope) => stack ? scope.context.t.stack : scope.context.t.unstack;
+  IconData get icon => Icons.filter_none_rounded;
 
   @override
-  AssetFilter<RemoteAsset> filter(ActionScope scope) => .new(assets).owned(scope.authUser.id);
+  String get label => scope.context.t.stack;
 
   @override
-  bool isVisible(ActionScope scope) => stack ? filter(scope).length > 1 : filter(scope).isNotEmpty;
+  AssetFilter<RemoteAsset> get filter => .new(assets).owned(scope.authUser.id);
 
   @override
-  Future<void> onAction(ActionScope scope) async {
+  bool get isVisible => filter.length > 1;
+
+  @override
+  Future<void> onAction() async {
     final ActionScope(:ref, :context) = scope;
-    final assets = filter(scope).toList(growable: false);
-    final service = ref.read(assetServiceProvider);
+    final ids = filter.map((asset) => asset.id).toList(growable: false);
+    await ref.read(assetServiceProvider).stack(scope.authUser.id, ids);
+    ref.read(toastRepositoryProvider).success(context.t.stacked_assets_count(count: ids.length));
+  }
+}
 
-    if (stack) {
-      await service.stack(scope.authUser.id, assets.map((asset) => asset.id).toList(growable: false));
-    } else {
-      await service.unstack(assets.map((asset) => asset.stackId).nonNulls.toList(growable: false));
-    }
+@visibleForTesting
+class UnstackView extends AssetActionView<RemoteAsset> {
+  const UnstackView({required super.assets, required super.scope});
 
-    final message = stack
-        ? context.t.stacked_assets_count(count: assets.length)
-        : context.t.unstacked_assets_count(count: assets.length);
-    ref.read(toastRepositoryProvider).success(message);
+  @override
+  IconData get icon => Icons.layers_clear_outlined;
+
+  @override
+  String get label => scope.context.t.unstack;
+
+  @override
+  AssetFilter<RemoteAsset> get filter => .new(assets).owned(scope.authUser.id);
+
+  @override
+  Future<void> onAction() async {
+    final ActionScope(:ref, :context) = scope;
+    final assets = filter.toList(growable: false);
+    final stackIds = assets.map((asset) => asset.stackId).nonNulls.toList(growable: false);
+    await ref.read(assetServiceProvider).unstack(stackIds);
+    ref.read(toastRepositoryProvider).success(context.t.unstacked_assets_count(count: assets.length));
   }
 }

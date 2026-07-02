@@ -8,33 +8,61 @@ import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
 
 class ArchiveAction extends AssetAction<RemoteAsset> {
-  final bool archive;
-
-  ArchiveAction({required super.assets})
-    : archive = assets.any((asset) => asset is RemoteAsset && asset.visibility != .archive);
+  const ArchiveAction({required super.assets});
 
   @override
-  IconData get icon => archive ? Icons.archive_outlined : Icons.unarchive_outlined;
+  AssetActionView<RemoteAsset> resolve(ActionScope scope) {
+    final hasNonArchived = AssetFilter(assets).owned(scope.authUser.id).any((asset) => asset.visibility != .archive);
+    return hasNonArchived ? ArchiveView(assets: assets, scope: scope) : UnarchiveView(assets: assets, scope: scope);
+  }
+}
+
+@visibleForTesting
+class ArchiveView extends AssetActionView<RemoteAsset> {
+  const ArchiveView({required super.assets, required super.scope});
 
   @override
-  String label(ActionScope scope) => archive ? scope.context.t.archive : scope.context.t.unarchive;
+  IconData get icon => Icons.archive_outlined;
 
   @override
-  AssetFilter<RemoteAsset> filter(ActionScope scope) =>
-      .new(assets).owned(scope.authUser.id).archived(isArchived: !archive);
+  String get label => scope.context.t.archive;
 
   @override
-  bool isVisible(ActionScope scope) => !scope.ref.watch(inLockedViewProvider) && filter(scope).isNotEmpty;
+  AssetFilter<RemoteAsset> get filter => .new(assets).owned(scope.authUser.id).archived(isArchived: false);
 
   @override
-  Future<void> onAction(ActionScope scope) async {
+  bool get isVisible => !scope.ref.watch(inLockedViewProvider) && filter.isNotEmpty;
+
+  @override
+  Future<void> onAction() async {
     final ActionScope(:ref, :context) = scope;
-    final assets = filter(scope).map((asset) => asset.id).toList(growable: false);
+    final ids = filter.map((asset) => asset.id).toList(growable: false);
+    await ref.read(assetServiceProvider).updateVisibility(ids, .archive);
+    ref.read(toastRepositoryProvider).success(context.t.archive_action_prompt(count: ids.length));
+  }
+}
 
-    await ref.read(assetServiceProvider).updateVisibility(assets, archive ? .archive : .timeline);
-    final message = archive
-        ? context.t.archive_action_prompt(count: assets.length)
-        : context.t.unarchive_action_prompt(count: assets.length);
-    ref.read(toastRepositoryProvider).success(message);
+@visibleForTesting
+class UnarchiveView extends AssetActionView<RemoteAsset> {
+  const UnarchiveView({required super.assets, required super.scope});
+
+  @override
+  IconData get icon => Icons.unarchive_outlined;
+
+  @override
+  String get label => scope.context.t.unarchive;
+
+  @override
+  AssetFilter<RemoteAsset> get filter => .new(assets).owned(scope.authUser.id).archived();
+
+  @override
+  bool get isVisible => !scope.ref.watch(inLockedViewProvider) && filter.isNotEmpty;
+
+  @override
+  Future<void> onAction() async {
+    final ActionScope(:ref, :context) = scope;
+    final ids = filter.map((asset) => asset.id).toList(growable: false);
+    await ref.read(assetServiceProvider).updateVisibility(ids, .timeline);
+    ref.read(toastRepositoryProvider).success(context.t.unarchive_action_prompt(count: ids.length));
   }
 }

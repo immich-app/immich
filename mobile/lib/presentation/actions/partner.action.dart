@@ -12,13 +12,21 @@ class PartnerAddAction extends BaseAction {
   const PartnerAddAction();
 
   @override
+  PartnerAddActionView resolve(ActionScope scope) => .new(scope: scope);
+}
+
+@visibleForTesting
+class PartnerAddActionView extends ActionView {
+  const PartnerAddActionView({required super.scope});
+
+  @override
   IconData get icon => Icons.person_add_rounded;
 
   @override
-  String label(ActionScope scope) => scope.context.t.add_partner;
+  String get label => scope.context.t.add_partner;
 
   @override
-  Future<void> onAction(ActionScope scope) async {
+  Future<void> onAction() async {
     final ActionScope(:context, :ref, :authUser) = scope;
     final selected = await showDialog<User>(context: context, builder: (_) => const PartnerSelectionDialog());
     if (selected == null) {
@@ -36,13 +44,25 @@ class PartnerRemoveAction extends BaseAction {
   final String partnerName;
 
   @override
+  PartnerRemoveActionView resolve(ActionScope scope) =>
+      .new(sharedWithId: sharedWithId, partnerName: partnerName, scope: scope);
+}
+
+@visibleForTesting
+class PartnerRemoveActionView extends ActionView {
+  final String sharedWithId;
+  final String partnerName;
+
+  const PartnerRemoveActionView({required this.sharedWithId, required this.partnerName, required super.scope});
+
+  @override
   IconData get icon => Icons.person_remove_rounded;
 
   @override
-  String label(ActionScope scope) => scope.context.t.remove;
+  String get label => scope.context.t.remove;
 
   @override
-  Future<void> onAction(ActionScope scope) async {
+  Future<void> onAction() async {
     final ActionScope(:context, :ref, :authUser) = scope;
 
     final confirmed = await showDialog<bool>(

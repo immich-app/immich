@@ -10,21 +10,26 @@ class RestoreAction extends AssetAction<RemoteAsset> {
   const RestoreAction({required super.assets});
 
   @override
+  RestoreActionView resolve(ActionScope scope) => .new(assets: assets, scope: scope);
+}
+
+@visibleForTesting
+class RestoreActionView extends AssetActionView<RemoteAsset> {
+  const RestoreActionView({required super.assets, required super.scope});
+
+  @override
   IconData get icon => Icons.history_rounded;
 
   @override
-  String label(ActionScope scope) => scope.context.t.restore;
+  String get label => scope.context.t.restore;
 
   @override
-  AssetFilter<RemoteAsset> filter(ActionScope scope) => .new(assets).owned(scope.authUser.id).trashed();
+  AssetFilter<RemoteAsset> get filter => .new(assets).owned(scope.authUser.id).trashed();
 
   @override
-  bool isVisible(ActionScope scope) => filter(scope).isNotEmpty;
-
-  @override
-  Future<void> onAction(ActionScope scope) async {
+  Future<void> onAction() async {
     final ActionScope(:ref, :context) = scope;
-    final ids = filter(scope).map((asset) => asset.id).toList(growable: false);
+    final ids = filter.map((asset) => asset.id).toList(growable: false);
     await ref.read(assetServiceProvider).restoreTrash(ids);
     ref.read(toastRepositoryProvider).success(context.t.assets_restored_count(count: ids.length));
   }

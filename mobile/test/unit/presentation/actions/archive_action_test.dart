@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -27,27 +28,36 @@ void main() {
   group('ArchiveAction', () {
     testWidgets('archives the eligible owned assets', (tester) async {
       final asset = owned();
+      final view = await tester.pumpTestAction(context, ArchiveAction(assets: [asset]));
 
-      await tester.pumpTestAction(context, ArchiveAction(assets: [asset]));
+      expect(view, isA<ArchiveView>());
+      expect(view.icon, Icons.archive_outlined);
+      expect(view.label, StaticTranslations.instance.archive);
 
-      verify(() => assetService.updateVisibility([asset.id], AssetVisibility.archive)).called(1);
+      await view.onAction();
+      verify(() => assetService.updateVisibility([asset.id], .archive)).called(1);
     });
 
     testWidgets('unarchive the eligible owned assets', (tester) async {
-      final asset = owned(visibility: AssetVisibility.archive);
+      final asset = owned(visibility: .archive);
+      final view = await tester.pumpTestAction(context, ArchiveAction(assets: [asset]));
 
-      await tester.pumpTestAction(context, ArchiveAction(assets: [asset]));
+      expect(view, isA<UnarchiveView>());
+      expect(view.icon, Icons.unarchive_outlined);
+      expect(view.label, StaticTranslations.instance.unarchive);
 
-      verify(() => assetService.updateVisibility([asset.id], AssetVisibility.timeline)).called(1);
+      await view.onAction();
+      verify(() => assetService.updateVisibility([asset.id], .timeline)).called(1);
     });
 
-    testWidgets('ignores assets owned by someone else', (tester) async {
-      final mine = owned();
+    testWidgets('dispatches on owned state, ignoring assets owned by others', (tester) async {
+      final mine = owned(visibility: .archive);
       final theirs = RemoteAssetFactory.create();
+      final view = await tester.pumpTestAction(context, ArchiveAction(assets: [mine, theirs]));
+      expect(view, isA<UnarchiveView>());
 
-      await tester.pumpTestAction(context, ArchiveAction(assets: [mine, theirs]));
-
-      verify(() => assetService.updateVisibility([mine.id], AssetVisibility.archive)).called(1);
+      await view.onAction();
+      verify(() => assetService.updateVisibility([mine.id], .timeline)).called(1);
     });
 
     testWidgets('batches every eligible owned asset into a single call', (tester) async {
@@ -56,16 +66,16 @@ void main() {
 
       await tester.pumpTestAction(context, ArchiveAction(assets: [first, second]));
 
-      verify(() => assetService.updateVisibility([first.id, second.id], AssetVisibility.archive)).called(1);
+      verify(() => assetService.updateVisibility([first.id, second.id], .archive)).called(1);
     });
 
-    testWidgets('skips owned assets already in the target state', (tester) async {
+    testWidgets('archives only the owned assets not already archived', (tester) async {
       final stale = owned();
-      final alreadyArchived = owned(visibility: AssetVisibility.archive);
+      final alreadyArchived = owned(visibility: .archive);
 
       await tester.pumpTestAction(context, ArchiveAction(assets: [stale, alreadyArchived]));
 
-      verify(() => assetService.updateVisibility([stale.id], AssetVisibility.archive)).called(1);
+      verify(() => assetService.updateVisibility([stale.id], .archive)).called(1);
     });
 
     testWidgets('reports the archived count through the toast repository', (tester) async {
@@ -84,8 +94,8 @@ void main() {
         context,
         ArchiveAction(
           assets: [
-            owned(visibility: AssetVisibility.archive),
-            owned(visibility: AssetVisibility.archive),
+            owned(visibility: .archive),
+            owned(visibility: .archive),
           ],
         ),
       );
