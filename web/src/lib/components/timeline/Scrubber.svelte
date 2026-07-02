@@ -589,12 +589,16 @@
     >
       {#if !usingMobileDevice}
         {#if segment.hasLabel}
-          <div class="absolute inset-e-5 bottom-0 font-mono text-[13px] dark:text-immich-dark-fg">
+          <div
+            class="absolute inset-e-6 bottom-0 z-10 origin-right -translate-y-1/2 scale-90 text-[11px] font-bold tracking-wider whitespace-nowrap text-gray-400 uppercase transition-all hover:scale-100 hover:text-gray-700 dark:text-gray-500 dark:hover:text-gray-200"
+          >
             {segment.year}
           </div>
         {/if}
         {#if segment.hasDot}
-          <div class="absolute inset-e-3 bottom-0 size-1 rounded-full bg-gray-300"></div>
+          <div
+            class="absolute inset-e-3 bottom-0 size-1.5 rounded-full bg-gray-200 transition-colors hover:bg-immich-primary dark:bg-gray-800 dark:hover:bg-immich-dark-primary"
+          ></div>
         {/if}
       {/if}
     </div>
