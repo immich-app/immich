@@ -9,6 +9,7 @@ import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.d
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/utils/album_toast.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
@@ -154,17 +155,10 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       return;
     }
 
-    if (result.count == 0) {
-      ImmichToast.show(
-        context: context,
-        msg: 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {'album': album.name}),
-      );
-    } else {
-      ImmichToast.show(
-        context: context,
-        msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
-      );
+    final (msg, toastType) = resolveAlbumAddToast(result, album.name, context);
+    ImmichToast.show(context: context, msg: msg, toastType: toastType);
 
+    if (result.count > 0) {
       // Refresh the "Appears in" list on the asset's info panel.
       ref.invalidate(albumsContainingAssetProvider(latest.remoteId!));
     }

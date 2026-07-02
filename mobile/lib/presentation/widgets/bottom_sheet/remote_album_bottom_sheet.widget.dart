@@ -24,6 +24,7 @@ import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.d
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/utils/album_toast.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -73,12 +74,8 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
         return;
       }
 
-      ImmichToast.show(
-        context: context,
-        msg: result.count == 0
-            ? 'add_to_album_bottom_sheet_already_exists'.t(context: context, args: {"album": album.name})
-            : 'add_to_album_bottom_sheet_added'.t(context: context, args: {"album": album.name}),
-      );
+      final (msg, toastType) = resolveAlbumAddToast(result, album.name, context);
+      ImmichToast.show(context: context, msg: msg, toastType: toastType);
     }
 
     Future<void> onKeyboardExpand() {
