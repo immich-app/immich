@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
@@ -14,6 +15,7 @@ class TrashBottomBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assets = ref.watch(multiSelectProvider.select((s) => s.selectedAssets)).toList(growable: false);
+    final scope = ActionScope.from(context, ref);
 
     return Align(
       alignment: Alignment.bottomCenter,
@@ -27,7 +29,9 @@ class TrashBottomBar extends ConsumerWidget {
             children: [
               const DeleteTrashActionButton(source: ActionSource.timeline),
               ActionColumnButtonWidget(
-                action: TimelineAction(action: RestoreAction(assets: assets)),
+                action: TimelineAction(
+                  action: RestoreAction(assets: assets, scope: scope),
+                ),
               ),
             ],
           ),

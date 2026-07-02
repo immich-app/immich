@@ -6,33 +6,42 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
 
-class FavoriteAction extends AssetAction<RemoteAsset> {
+class FavoriteAction extends BaseAction {
+  final List<String> assetIds;
   final bool favorite;
 
-  FavoriteAction({required super.assets}) : favorite = assets.any((asset) => !asset.isFavorite);
+  const FavoriteAction._({
+    required this.assetIds,
+    required this.favorite,
+    required super.scope,
+    required super.icon,
+    required super.label,
+    super.isVisible,
+  });
+
+  factory FavoriteAction({required Iterable<BaseAsset> assets, required ActionScope scope}) {
+    final ownedAssets = AssetFilter(assets).owned(scope.authUser.id);
+    final favorite = ownedAssets.favorite(isFavorite: false).isNotEmpty;
+    final assetIds = ownedAssets.favorite(isFavorite: !favorite).map((asset) => asset.id).toList(growable: false);
+
+    return FavoriteAction._(
+      assetIds: assetIds,
+      favorite: favorite,
+      scope: scope,
+      icon: favorite ? Icons.favorite_border_rounded : Icons.favorite_rounded,
+      label: favorite ? scope.context.t.favorite : scope.context.t.unfavorite,
+      isVisible: assetIds.isNotEmpty,
+    );
+  }
 
   @override
-  IconData get icon => favorite ? Icons.favorite_border_rounded : Icons.favorite_rounded;
-
-  @override
-  String label(ActionScope scope) => favorite ? scope.context.t.favorite : scope.context.t.unfavorite;
-
-  @override
-  AssetFilter<RemoteAsset> filter(ActionScope scope) =>
-      .new(assets).owned(scope.authUser.id).favorite(isFavorite: !favorite);
-
-  @override
-  bool isVisible(ActionScope scope) => filter(scope).isNotEmpty;
-
-  @override
-  Future<void> onAction(ActionScope scope) async {
+  Future<void> onAction() async {
     final ActionScope(:ref, :context) = scope;
-    final assets = filter(scope).map((asset) => asset.id).toList(growable: false);
 
-    await ref.read(assetServiceProvider).updateFavorite(assets, favorite);
+    await ref.read(assetServiceProvider).update(assetIds, isFavorite: .some(favorite));
     final message = favorite
-        ? context.t.favorite_action_prompt(count: assets.length)
-        : context.t.unfavorite_action_prompt(count: assets.length);
+        ? context.t.favorite_action_prompt(count: assetIds.length)
+        : context.t.unfavorite_action_prompt(count: assetIds.length);
     ref.read(toastRepositoryProvider).success(message);
   }
 }

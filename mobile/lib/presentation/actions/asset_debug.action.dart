@@ -8,20 +8,18 @@ import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
-class AssetDebugAction extends AssetAction<BaseAsset> {
-  const AssetDebugAction({required super.assets});
+class AssetDebugAction extends BaseAction {
+  final List<BaseAsset> asset;
+
+  AssetDebugAction._({this.asset = const [], required super.scope, super.isVisible})
+    : super(icon: Icons.help_outline_rounded, label: scope.context.t.troubleshoot);
+
+  factory AssetDebugAction({required Iterable<BaseAsset> assets, required ActionScope scope}) => AssetDebugAction._(
+    asset: assets.toList(growable: false),
+    scope: scope,
+    isVisible: scope.ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting) && assets.length == 1,
+  );
 
   @override
-  IconData get icon => Icons.help_outline_rounded;
-
-  @override
-  String label(ActionScope scope) => scope.context.t.troubleshoot;
-
-  @override
-  bool isVisible(ActionScope scope) =>
-      assets.length == 1 && scope.ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting);
-
-  @override
-  Future<void> onAction(ActionScope scope) async =>
-      unawaited(scope.context.pushRoute(AssetTroubleshootRoute(asset: assets.first)));
+  Future<void> onAction() async => unawaited(scope.context.pushRoute(AssetTroubleshootRoute(asset: asset.first)));
 }

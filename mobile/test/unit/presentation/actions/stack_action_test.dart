@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -27,35 +28,46 @@ void main() {
     testWidgets('stacks the eligible owned assets', (tester) async {
       final first = owned();
       final second = owned();
+      final action = await tester.pumpTestAction(
+        context,
+        (scope) => StackAction(assets: [first, second], scope: scope),
+      );
 
-      await tester.pumpTestAction(context, StackAction(assets: [first, second]));
+      expect(action.icon, Icons.filter_none_rounded);
+      expect(action.label, StaticTranslations.instance.stack);
 
       verify(() => assetService.stack(context.currentUser.id, [first.id, second.id])).called(1);
     });
 
     testWidgets('unstacks the eligible owned assets', (tester) async {
       final asset = owned(stackId: 'stack');
+      final action = await tester.pumpTestAction(context, (scope) => StackAction(assets: [asset], scope: scope));
 
-      await tester.pumpTestAction(context, StackAction(assets: [asset]));
+      expect(action.icon, Icons.layers_clear_outlined);
+      expect(action.label, StaticTranslations.instance.unstack);
 
       verify(() => assetService.unstack(['stack'])).called(1);
     });
 
-    testWidgets('prioritizes stack when mixed state', (tester) async {
+    testWidgets('prioritizes stack when the owned selection is mixed', (tester) async {
       final first = owned();
       final second = owned(stackId: 'stack');
+      final action = await tester.pumpTestAction(
+        context,
+        (scope) => StackAction(assets: [first, second], scope: scope),
+      );
 
-      await tester.pumpTestAction(context, StackAction(assets: [first, second]));
+      expect(action.label, StaticTranslations.instance.stack);
 
       verify(() => assetService.stack(context.currentUser.id, [first.id, second.id])).called(1);
     });
 
-    testWidgets('ignores assets owned by someone else', (tester) async {
+    testWidgets('dispatches on owned state, ignoring assets owned by others', (tester) async {
       final mine = owned();
       final other = owned();
       final theirs = RemoteAssetFactory.create();
 
-      await tester.pumpTestAction(context, StackAction(assets: [mine, other, theirs]));
+      await tester.pumpTestAction(context, (scope) => StackAction(assets: [mine, other, theirs], scope: scope));
 
       verify(() => assetService.stack(context.currentUser.id, [mine.id, other.id])).called(1);
     });
@@ -64,7 +76,7 @@ void main() {
       final first = owned(stackId: 'stack-1');
       final second = owned(stackId: 'stack-2');
 
-      await tester.pumpTestAction(context, StackAction(assets: [first, second]));
+      await tester.pumpTestAction(context, (scope) => StackAction(assets: [first, second], scope: scope));
 
       verify(() => assetService.unstack(['stack-1', 'stack-2'])).called(1);
     });
@@ -72,7 +84,7 @@ void main() {
     testWidgets('reports the stacked count through the toast repository', (tester) async {
       final toast = context.repository.toast;
 
-      await tester.pumpTestAction(context, StackAction(assets: [owned(), owned()]));
+      await tester.pumpTestAction(context, (scope) => StackAction(assets: [owned(), owned()], scope: scope));
 
       final message = verify(() => toast.success(captureAny())).captured.single as String;
       expect(message, StaticTranslations.instance.stacked_assets_count(count: 2));
@@ -83,11 +95,12 @@ void main() {
 
       await tester.pumpTestAction(
         context,
-        StackAction(
+        (scope) => StackAction(
           assets: [
             owned(stackId: 'stack-1'),
             owned(stackId: 'stack-2'),
           ],
+          scope: scope,
         ),
       );
 

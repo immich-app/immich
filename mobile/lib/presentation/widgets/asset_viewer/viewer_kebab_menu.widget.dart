@@ -50,7 +50,7 @@ class ViewerKebabMenu extends ConsumerWidget {
       timelineOrigin: timelineOrigin,
     );
 
-    final menuChildren = ActionButtonBuilder.buildViewerKebabMenu(actionContext, context);
+    final menuChildren = ActionButtonBuilder.buildViewerKebabMenu(actionContext, context, ref);
 
     return ImmichMenu(
       consumeOutsideTap: true,

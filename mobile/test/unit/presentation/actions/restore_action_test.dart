@@ -28,7 +28,7 @@ void main() {
     testWidgets('restores the eligible owned trashed assets', (tester) async {
       final asset = owned();
 
-      await tester.pumpTestAction(context, RestoreAction(assets: [asset]));
+      await tester.pumpTestAction(context, (scope) => RestoreAction(assets: [asset], scope: scope));
 
       verify(() => assetService.restoreTrash([asset.id])).called(1);
     });
@@ -37,16 +37,16 @@ void main() {
       final mine = owned();
       final theirs = RemoteAssetFactory.create(deletedAt: DateTime(2020));
 
-      await tester.pumpTestAction(context, RestoreAction(assets: [mine, theirs]));
+      await tester.pumpTestAction(context, (scope) => RestoreAction(assets: [mine, theirs], scope: scope));
 
       verify(() => assetService.restoreTrash([mine.id])).called(1);
     });
 
-    testWidgets('skips owned assets that are not trashed', (tester) async {
+    testWidgets('restores only the owned assets that are trashed', (tester) async {
       final trashed = owned();
       final live = owned(trashed: false);
 
-      await tester.pumpTestAction(context, RestoreAction(assets: [trashed, live]));
+      await tester.pumpTestAction(context, (scope) => RestoreAction(assets: [trashed, live], scope: scope));
 
       verify(() => assetService.restoreTrash([trashed.id])).called(1);
     });
@@ -55,14 +55,15 @@ void main() {
       final first = owned();
       final second = owned();
 
-      await tester.pumpTestAction(context, RestoreAction(assets: [first, second]));
+      await tester.pumpTestAction(context, (scope) => RestoreAction(assets: [first, second], scope: scope));
 
       verify(() => assetService.restoreTrash([first.id, second.id])).called(1);
     });
 
     testWidgets('reports success through the toast repository with the restored count', (tester) async {
       final toast = context.repository.toast;
-      await tester.pumpTestAction(context, RestoreAction(assets: [owned(), owned()]));
+
+      await tester.pumpTestAction(context, (scope) => RestoreAction(assets: [owned(), owned()], scope: scope));
 
       final message = verify(() => toast.success(captureAny())).captured.single as String;
       expect(message, StaticTranslations.instance.assets_restored_count(count: 2));

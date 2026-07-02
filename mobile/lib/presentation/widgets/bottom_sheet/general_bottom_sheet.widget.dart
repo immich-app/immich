@@ -3,11 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
-import 'package:immich_mobile/presentation/actions/archive.action.dart';
-import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
-import 'package:immich_mobile/presentation/actions/favorite.action.dart';
-import 'package:immich_mobile/presentation/actions/stack.action.dart';
+import 'package:immich_mobile/presentation/actions/asset_actions.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/bulk_tag_assets_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
@@ -82,13 +80,8 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
       return sheetController.animateTo(0.85, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
     }
 
-    final assets = multiselect.selectedAssets.toList(growable: false);
-    final actions = [
-      AssetDebugAction(assets: assets),
-      FavoriteAction(assets: assets),
-      ArchiveAction(assets: assets),
-      StackAction(assets: assets),
-    ];
+    final scope = ActionScope.from(context, ref);
+    final actions = AssetActions.from(scope, multiselect.selectedAssets.toList(growable: false));
 
     return BaseBottomSheet(
       controller: sheetController,
@@ -97,7 +90,12 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
       actions: [
-        ...actions.map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
+        ...[
+          actions.debug,
+          actions.favorite,
+          actions.archive,
+          actions.stack,
+        ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
         const ShareActionButton(source: ActionSource.timeline),
         if (multiselect.hasRemote) ...[
           const ShareLinkActionButton(source: ActionSource.timeline),

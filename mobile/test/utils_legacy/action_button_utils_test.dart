@@ -1,10 +1,13 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
+
+import '../unit/presentation/presentation_context.dart';
 
 LocalAsset createLocalAsset({
   String? remoteId,
@@ -76,6 +79,23 @@ RemoteAlbum createRemoteAlbum({
     ownerName: 'Test Owner',
   );
 }
+
+ActionButtonContext _buttonContext({
+  required BaseAsset asset,
+  RemoteAlbum? currentAlbum,
+  bool isArchived = false,
+  bool isStacked = false,
+}) => ActionButtonContext(
+  asset: asset,
+  isOwner: true,
+  isArchived: isArchived,
+  isTrashEnabled: true,
+  isInLockedView: false,
+  currentAlbum: currentAlbum,
+  advancedTroubleshooting: false,
+  isStacked: isStacked,
+  source: ActionSource.timeline,
+);
 
 void main() {
   group('ActionButtonContext', () {
@@ -1054,188 +1074,101 @@ void main() {
   });
 
   group('ActionButtonType.buildButton', () {
+    late PresentationContext presentation;
     late BaseAsset asset;
-    late ActionButtonContext context;
 
-    setUp(() {
+    setUp(() async {
+      presentation = await PresentationContext.create();
       asset = createLocalAsset(remoteId: 'remote-id');
-      context = ActionButtonContext(
-        asset: asset,
-        isOwner: true,
-        isArchived: false,
-        isTrashEnabled: true,
-        isInLockedView: false,
-        currentAlbum: null,
-        advancedTroubleshooting: false,
-        isStacked: false,
-        source: ActionSource.timeline,
-      );
     });
 
-    test('should build correct widget for each button type', () {
-      for (final buttonType in ActionButtonType.values) {
-        var buttonContext = context;
+    tearDown(() {
+      presentation.dispose();
+    });
 
-        if (buttonType == ActionButtonType.removeFromAlbum) {
-          final album = createRemoteAlbum();
-          final contextWithAlbum = ActionButtonContext(
-            asset: asset,
-            isOwner: true,
-            isArchived: false,
-            isTrashEnabled: true,
-            isInLockedView: false,
-            currentAlbum: album,
-            advancedTroubleshooting: false,
-            isStacked: false,
-            source: ActionSource.timeline,
-          );
-          final widget = buttonType.buildButton(contextWithAlbum);
-          expect(widget, isA<Widget>());
-        } else if (buttonType == ActionButtonType.similarPhotos) {
-          final contextWithAlbum = ActionButtonContext(
-            asset: createRemoteAsset(),
-            isOwner: true,
-            isArchived: false,
-            isTrashEnabled: true,
-            isInLockedView: false,
-            currentAlbum: null,
-            advancedTroubleshooting: false,
-            isStacked: false,
-            source: ActionSource.timeline,
-          );
-          final widget = buttonType.buildButton(contextWithAlbum);
-          expect(widget, isA<Widget>());
-        } else if (buttonType == ActionButtonType.setAlbumCover) {
-          final album = createRemoteAlbum();
-          final contextWithAlbum = ActionButtonContext(
-            asset: asset,
-            isOwner: true,
-            isArchived: false,
-            isTrashEnabled: true,
-            isInLockedView: false,
-            currentAlbum: album,
-            advancedTroubleshooting: false,
-            isStacked: false,
-            source: ActionSource.timeline,
-          );
-          final widget = buttonType.buildButton(contextWithAlbum);
-          expect(widget, isA<Widget>());
-        } else if (buttonType == ActionButtonType.unstack) {
-          final album = createRemoteAlbum();
-          final contextWithAlbum = ActionButtonContext(
-            asset: asset,
-            isOwner: true,
-            isArchived: false,
-            isTrashEnabled: true,
-            isInLockedView: false,
-            currentAlbum: album,
-            advancedTroubleshooting: false,
-            isStacked: true,
-            source: ActionSource.timeline,
-          );
-          final widget = buttonType.buildButton(contextWithAlbum);
-          expect(widget, isA<Widget>());
-        } else {
-          final widget = buttonType.buildButton(buttonContext);
-          expect(widget, isA<Widget>());
-        }
-      }
+    testWidgets('builds a widget for every button type', (tester) async {
+      final built = <Widget>[];
+      await tester.pumpTestWidget(
+        presentation,
+        Consumer(
+          builder: (buildContext, ref, _) {
+            for (final buttonType in ActionButtonType.values) {
+              final buttonContext = switch (buttonType) {
+                ActionButtonType.similarPhotos => _buttonContext(asset: createRemoteAsset()),
+                ActionButtonType.removeFromAlbum ||
+                ActionButtonType.setAlbumCover => _buttonContext(asset: asset, currentAlbum: createRemoteAlbum()),
+                ActionButtonType.unstack => _buttonContext(
+                  asset: asset,
+                  currentAlbum: createRemoteAlbum(),
+                  isStacked: true,
+                ),
+                _ => _buttonContext(asset: asset),
+              };
+              built.add(buttonType.buildButton(buttonContext, buildContext, ref));
+            }
+            return const SizedBox.shrink();
+          },
+        ),
+      );
+
+      expect(built, hasLength(ActionButtonType.values.length));
+      expect(built, everyElement(isA<Widget>()));
     });
   });
 
   group('ActionButtonBuilder', () {
-    test('should return buttons that should show', () {
-      final remoteAsset = createRemoteAsset();
-      final context = ActionButtonContext(
-        asset: remoteAsset,
-        isOwner: true,
-        isArchived: false,
-        isTrashEnabled: true,
-        isInLockedView: false,
-        currentAlbum: null,
-        advancedTroubleshooting: false,
-        isStacked: false,
-        source: ActionSource.timeline,
-      );
+    late PresentationContext presentation;
 
-      final widgets = ActionButtonBuilder.build(context);
-
-      expect(widgets, isNotEmpty);
-      expect(widgets.length, greaterThan(0));
+    setUp(() async {
+      presentation = await PresentationContext.create();
     });
 
-    test('should include album-specific buttons when album is present', () {
-      final remoteAsset = createRemoteAsset();
-      final album = createRemoteAlbum(isActivityEnabled: true, isShared: true);
-      final context = ActionButtonContext(
-        asset: remoteAsset,
-        isOwner: true,
-        isArchived: false,
-        isTrashEnabled: true,
-        isInLockedView: false,
-        currentAlbum: album,
-        advancedTroubleshooting: false,
-        isStacked: false,
-        source: ActionSource.timeline,
+    tearDown(() {
+      presentation.dispose();
+    });
+
+    Future<List<Widget>> buildButtons(WidgetTester tester, ActionButtonContext context) async {
+      late List<Widget> widgets;
+      await tester.pumpTestWidget(
+        presentation,
+        Consumer(
+          builder: (buildContext, ref, _) {
+            widgets = ActionButtonBuilder.build(context, buildContext, ref);
+            return const SizedBox.shrink();
+          },
+        ),
       );
+      return widgets;
+    }
 
-      final widgets = ActionButtonBuilder.build(context);
-
+    testWidgets('returns buttons that should show', (tester) async {
+      final widgets = await buildButtons(tester, _buttonContext(asset: createRemoteAsset()));
       expect(widgets, isNotEmpty);
     });
 
-    test('should only include local buttons for local assets', () {
-      final localAsset = createLocalAsset();
-      final context = ActionButtonContext(
-        asset: localAsset,
-        isOwner: true,
-        isArchived: false,
-        isTrashEnabled: true,
-        isInLockedView: false,
-        currentAlbum: null,
-        advancedTroubleshooting: false,
-        isStacked: false,
-        source: ActionSource.timeline,
+    testWidgets('includes album-specific buttons when album is present', (tester) async {
+      final widgets = await buildButtons(
+        tester,
+        _buttonContext(
+          asset: createRemoteAsset(),
+          currentAlbum: createRemoteAlbum(isActivityEnabled: true, isShared: true),
+        ),
       );
-
-      final widgets = ActionButtonBuilder.build(context);
-
       expect(widgets, isNotEmpty);
     });
 
-    test('should respect archived state', () {
+    testWidgets('includes local buttons for local assets', (tester) async {
+      final widgets = await buildButtons(tester, _buttonContext(asset: createLocalAsset()));
+      expect(widgets, isNotEmpty);
+    });
+
+    testWidgets('respects archived state', (tester) async {
       final remoteAsset = createRemoteAsset();
+      final archived = await buildButtons(tester, _buttonContext(asset: remoteAsset, isArchived: true));
+      final nonArchived = await buildButtons(tester, _buttonContext(asset: remoteAsset, isArchived: false));
 
-      final archivedContext = ActionButtonContext(
-        asset: remoteAsset,
-        isOwner: true,
-        isArchived: true,
-        isTrashEnabled: true,
-        isInLockedView: false,
-        currentAlbum: null,
-        advancedTroubleshooting: false,
-        isStacked: false,
-        source: ActionSource.timeline,
-      );
-
-      final archivedWidgets = ActionButtonBuilder.build(archivedContext);
-
-      final nonArchivedContext = ActionButtonContext(
-        asset: remoteAsset,
-        isOwner: true,
-        isArchived: false,
-        isTrashEnabled: true,
-        isInLockedView: false,
-        currentAlbum: null,
-        advancedTroubleshooting: false,
-        isStacked: false,
-        source: ActionSource.timeline,
-      );
-
-      final nonArchivedWidgets = ActionButtonBuilder.build(nonArchivedContext);
-
-      expect(archivedWidgets, isNotEmpty);
-      expect(nonArchivedWidgets, isNotEmpty);
+      expect(archived, isNotEmpty);
+      expect(nonArchived, isNotEmpty);
     });
   });
 }

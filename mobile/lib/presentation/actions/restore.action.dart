@@ -6,26 +6,24 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
 
-class RestoreAction extends AssetAction<RemoteAsset> {
-  const RestoreAction({required super.assets});
+class RestoreAction extends BaseAction {
+  final List<String> assetIds;
+
+  RestoreAction._({required super.scope, required this.assetIds, super.isVisible})
+    : super(icon: Icons.history_rounded, label: scope.context.t.restore);
+
+  factory RestoreAction({required Iterable<BaseAsset> assets, required ActionScope scope}) {
+    final assetIds = AssetFilter(
+      assets,
+    ).owned(scope.authUser.id).trashed().map((asset) => asset.id).toList(growable: false);
+
+    return RestoreAction._(assetIds: assetIds, scope: scope, isVisible: assetIds.isNotEmpty);
+  }
 
   @override
-  IconData get icon => Icons.history_rounded;
-
-  @override
-  String label(ActionScope scope) => scope.context.t.restore;
-
-  @override
-  AssetFilter<RemoteAsset> filter(ActionScope scope) => .new(assets).owned(scope.authUser.id).trashed();
-
-  @override
-  bool isVisible(ActionScope scope) => filter(scope).isNotEmpty;
-
-  @override
-  Future<void> onAction(ActionScope scope) async {
+  Future<void> onAction() async {
     final ActionScope(:ref, :context) = scope;
-    final ids = filter(scope).map((asset) => asset.id).toList(growable: false);
-    await ref.read(assetServiceProvider).restoreTrash(ids);
-    ref.read(toastRepositoryProvider).success(context.t.assets_restored_count(count: ids.length));
+    await ref.read(assetServiceProvider).restoreTrash(assetIds);
+    ref.read(toastRepositoryProvider).success(context.t.assets_restored_count(count: assetIds.length));
   }
 }

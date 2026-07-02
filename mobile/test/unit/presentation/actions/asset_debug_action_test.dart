@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
-import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_ui/immich_ui.dart';
 
@@ -22,20 +21,18 @@ void main() {
 
   group('AssetDebugAction', () {
     testWidgets('visible for a single asset when advanced troubleshooting is on', (tester) async {
-      await tester.pumpTestWidget(
+      await tester.pumpActionButton(
         context,
-        ActionIconButtonWidget(action: AssetDebugAction(assets: [RemoteAssetFactory.create()])),
+        (scope) => AssetDebugAction(assets: [RemoteAssetFactory.create()], scope: scope),
       );
 
       expect(find.byType(ImmichIconButton), findsOneWidget);
     });
 
     testWidgets('hidden for multiple assets', (tester) async {
-      await tester.pumpTestWidget(
+      await tester.pumpActionButton(
         context,
-        ActionIconButtonWidget(
-          action: AssetDebugAction(assets: [RemoteAssetFactory.create(), RemoteAssetFactory.create()]),
-        ),
+        (scope) => AssetDebugAction(assets: [RemoteAssetFactory.create(), RemoteAssetFactory.create()], scope: scope),
       );
 
       expect(find.byType(ImmichIconButton), findsNothing);
@@ -43,9 +40,9 @@ void main() {
 
     testWidgets('hidden when advanced troubleshooting is off', (tester) async {
       await StoreService.I.put(StoreKey.advancedTroubleshooting, false);
-      await tester.pumpTestWidget(
+      await tester.pumpActionButton(
         context,
-        ActionIconButtonWidget(action: AssetDebugAction(assets: [RemoteAssetFactory.create()])),
+        (scope) => AssetDebugAction(assets: [RemoteAssetFactory.create()], scope: scope),
       );
 
       expect(find.byType(ImmichIconButton), findsNothing);

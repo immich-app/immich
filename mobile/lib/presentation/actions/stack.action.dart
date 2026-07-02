@@ -6,38 +6,51 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
 
-class StackAction extends AssetAction<RemoteAsset> {
+class StackAction extends BaseAction {
+  final List<String> assetIds;
+  final List<String> stackIds;
   final bool stack;
 
-  StackAction({required super.assets}) : stack = assets.any((asset) => asset is RemoteAsset && asset.stackId == null);
+  const StackAction._({
+    required this.assetIds,
+    required this.stackIds,
+    required this.stack,
+    required super.scope,
+    required super.icon,
+    required super.label,
+    super.isVisible,
+  });
+
+  factory StackAction({required Iterable<BaseAsset> assets, required ActionScope scope}) {
+    final ownedAssets = AssetFilter(assets).owned(scope.authUser.id);
+    // Stack when any owned asset is not yet stacked; otherwise unstack them all.
+    final stack = ownedAssets.stacked(isStacked: false).isNotEmpty;
+    final assetIds = ownedAssets.map((asset) => asset.id).toList(growable: false);
+    final stackIds = ownedAssets.map((asset) => asset.stackId).nonNulls.toList(growable: false);
+
+    return StackAction._(
+      assetIds: assetIds,
+      stackIds: stackIds,
+      stack: stack,
+      scope: scope,
+      icon: stack ? Icons.filter_none_rounded : Icons.layers_clear_outlined,
+      label: stack ? scope.context.t.stack : scope.context.t.unstack,
+      isVisible: stack ? assetIds.length > 1 : stackIds.isNotEmpty,
+    );
+  }
 
   @override
-  IconData get icon => stack ? Icons.filter_none_rounded : Icons.layers_clear_outlined;
-
-  @override
-  String label(ActionScope scope) => stack ? scope.context.t.stack : scope.context.t.unstack;
-
-  @override
-  AssetFilter<RemoteAsset> filter(ActionScope scope) => .new(assets).owned(scope.authUser.id);
-
-  @override
-  bool isVisible(ActionScope scope) => stack ? filter(scope).length > 1 : filter(scope).isNotEmpty;
-
-  @override
-  Future<void> onAction(ActionScope scope) async {
+  Future<void> onAction() async {
     final ActionScope(:ref, :context) = scope;
-    final assets = filter(scope).toList(growable: false);
-    final service = ref.read(assetServiceProvider);
-
     if (stack) {
-      await service.stack(scope.authUser.id, assets.map((asset) => asset.id).toList(growable: false));
+      await ref.read(assetServiceProvider).stack(scope.authUser.id, assetIds);
     } else {
-      await service.unstack(assets.map((asset) => asset.stackId).nonNulls.toList(growable: false));
+      await ref.read(assetServiceProvider).unstack(stackIds);
     }
 
     final message = stack
-        ? context.t.stacked_assets_count(count: assets.length)
-        : context.t.unstacked_assets_count(count: assets.length);
+        ? context.t.stacked_assets_count(count: assetIds.length)
+        : context.t.unstacked_assets_count(count: assetIds.length);
     ref.read(toastRepositoryProvider).success(message);
   }
 }
