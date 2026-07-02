@@ -159,8 +159,8 @@ class RemoteAlbumService {
     return updatedAlbum;
   }
 
-  FutureOr<(DateTime, DateTime)> getDateRange(String albumId) {
-    return _repository.getDateRange(albumId);
+  Stream<(DateTime, DateTime)> watchDateRange(String albumId) {
+    return _repository.watchDateRange(albumId);
   }
 
   Future<List<UserDto>> getSharedUsers(String albumId) {

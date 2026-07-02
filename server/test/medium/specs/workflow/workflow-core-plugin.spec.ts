@@ -9,6 +9,7 @@ import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PluginRepository } from 'src/repositories/plugin.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -39,7 +40,7 @@ class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
         UserRepository,
         WorkflowRepository,
       ],
-      mock: [ConfigRepository],
+      mock: [ConfigRepository, EventRepository],
     });
   }
 
@@ -52,6 +53,7 @@ class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
     mockData.resourcePaths.corePlugin = '../packages/plugin-core';
     mockData.plugins.external.allow = false;
     this.getMock(ConfigRepository).getEnv.mockReturnValue(mockData);
+    this.getMock(EventRepository).emit.mockResolvedValue();
     this.get(LoggingRepository).setLogLevel(LogLevel.Verbose);
 
     await this.sut.onPluginSync();
