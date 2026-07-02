@@ -15,7 +15,7 @@
   import type { LatLng } from '$lib/types';
   import { setQueryValue } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
-  import { AssetVisibility, getAssetInfo, updateAssets } from '@immich/sdk';
+  import { AssetVisibility, getAssetInfo, reverseGeocode, updateAssets } from '@immich/sdk';
   import { Button, LoadingSpinner, modalManager, Text } from '@immich/ui';
   import { mdiMapMarkerMultipleOutline, mdiPencilOutline, mdiSelectRemove } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -30,14 +30,29 @@
   let isLoading = $state(false);
   let point = $state<LatLng>();
   let locationUpdated = $state(false);
+  let selectedCity = $state<string>();
+  let selectedCountry = $state<string>();
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
-  const options = {
+  let showOnlyWithoutGps = $state(true);
+  const options = $derived({
     visibility: AssetVisibility.Timeline,
     withStacked: true,
     withPartners: true,
     withCoordinates: true,
-  };
+    hasCoordinates: showOnlyWithoutGps ? false : undefined,
+  });
+
+  const hasCityOrCountry = $derived(!!(selectedCity || selectedCountry));
+  const selectedLocationName = $derived.by(() => {
+    if (!point) {
+      return undefined;
+    }
+    if (selectedCity && selectedCountry) {
+      return `${selectedCity}, ${selectedCountry}`;
+    }
+    return selectedCity ?? selectedCountry ?? `${point.lat.toFixed(3)}, ${point.lng.toFixed(3)}`;
+  });
 
   const isOwnAsset = (asset: TimelineAsset) => asset.ownerId === authManager.user.id;
 
@@ -96,6 +111,15 @@
     }
 
     point = selected;
+    try {
+      const places = await reverseGeocode({ lat: selected.lat, lon: selected.lng });
+      selectedCity = places?.[0]?.city ?? undefined;
+      selectedCountry = places?.[0]?.country ?? undefined;
+    } catch (error) {
+      console.error('Failed to reverse geocode:', error);
+      selectedCity = undefined;
+      selectedCountry = undefined;
+    }
   };
   const handleEscape = () => {
     if (assetMultiSelectManager.selectionActive) {
@@ -128,6 +152,8 @@
         locationUpdated = false;
       }, 1500);
       point = { lat: asset.latitude, lng: asset.longitude };
+      selectedCity = asset.city ?? undefined;
+      selectedCountry = asset.country ?? undefined;
       void setQueryValue('at', asset.id);
     } else if (isOwnAsset(asset)) {
       onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
@@ -140,19 +166,39 @@
 <UserPageLayout title={data.meta.title} scrollbar={true}>
   {#snippet buttons()}
     <div class="flex place-items-center justify-end gap-2">
+      <div class="flex overflow-hidden rounded-full bg-gray-200 p-1 text-sm font-medium dark:bg-gray-700">
+        <Button
+          size="small"
+          variant={showOnlyWithoutGps ? 'ghost' : 'filled'}
+          color={showOnlyWithoutGps ? 'secondary' : 'primary'}
+          onclick={() => (showOnlyWithoutGps = false)}
+        >
+          {$t('all')}
+        </Button>
+        <Button
+          size="small"
+          variant={showOnlyWithoutGps ? 'filled' : 'ghost'}
+          color={showOnlyWithoutGps ? 'primary' : 'secondary'}
+          onclick={() => (showOnlyWithoutGps = true)}
+        >
+          {$t('no_gps')}
+        </Button>
+      </div>
       <Text class="mr-4 hidden md:block" size="tiny" color="muted">{$t('geolocation_instruction_location')}</Text>
       <div class="flex place-content-center place-items-center rounded-2xl border bg-primary/10 px-2 py-1">
         <Text class="mr-5 ml-2 hidden font-mono md:inline-block" color="muted" size="tiny">
-          {$t('selected_gps_coordinates')}
+          {$t('selected_gps_location')}
         </Text>
         <Text
-          title="latitude, longitude"
+          title={hasCityOrCountry && point
+            ? `${point.lat.toFixed(3)}, ${point.lng.toFixed(3)}`
+            : $t('latitude_longitude')}
           class="rounded-3xl px-2 py-1 font-mono text-sm text-primary transition-all duration-100 ease-in-out {locationUpdated
             ? 'scale-105 bg-primary/90 font-semibold text-light'
             : ''}"
         >
           {#if point}
-            {point.lat.toFixed(3)}, {point.lng.toFixed(3)}
+            {selectedLocationName}
           {:else}
             {$t('none')}
           {/if}
@@ -209,7 +255,15 @@
       {/if}
       {#if hasGps(asset)}
         <div class="absolute inset-e-3 bottom-1 rounded-xl bg-success px-4 py-1 text-xs text-black transition-colors">
-          {asset.city || $t('gps')}
+          {#if asset.city && asset.country}
+            {asset.city}, {asset.country}
+          {:else if asset.city}
+            {asset.city}
+          {:else if asset.country}
+            {asset.country}
+          {:else}
+            {$t('gps')}
+          {/if}
         </div>
       {:else}
         <div class="absolute inset-e-3 bottom-1 rounded-xl bg-danger px-4 py-1 text-xs text-light transition-colors">
