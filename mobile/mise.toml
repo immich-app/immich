@@ -1,9 +1,9 @@
 [tools]
-"aqua:flutter/flutter" = "3.44.1"
-java = "21.0.2"
+"aqua:flutter/flutter" = "3.44.4"
+java = "21.0.11+10.0.LTS"
 
 [tools."github:CQLabs/homebrew-dcm"]
-version = "1.37.0"
+version = "1.38.1"
 bin = "dcm"
 postinstall = "chmod +x \"$MISE_TOOL_INSTALL_PATH/dcm\" || true"
 
