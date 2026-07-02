@@ -1,12 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
@@ -19,6 +21,7 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   final Ref _ref;
   final ViewIntentService _viewIntentService;
   final ViewIntentAssetResolver _viewIntentAssetResolver;
+  final AssetService _assetService;
   final AppRouter _router;
   static final Logger _logger = Logger('ViewIntentHandler');
 
@@ -26,6 +29,7 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
     : _ref = ref,
       _viewIntentService = ref.read(viewIntentServiceProvider),
       _viewIntentAssetResolver = ref.read(viewIntentAssetResolverProvider),
+      _assetService = ref.read(assetServiceProvider),
       _router = ref.watch(appRouterProvider);
 
   @override
@@ -74,18 +78,74 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
     final resolvedAsset = await _viewIntentAssetResolver.resolve(attachment);
     _logger.fine('resolved view intent asset: ${resolvedAsset.asset}');
     await _openAssetViewer(
-      resolvedAsset.asset,
-      resolvedAsset.timelineService,
+      asset: resolvedAsset.asset,
+      timelineService: resolvedAsset.timelineService,
+      attachment: attachment,
       viewIntentFilePath: resolvedAsset.viewIntentFilePath,
     );
   }
 
-  Future<void> _openAssetViewer(BaseAsset asset, TimelineService timelineService, {String? viewIntentFilePath}) async {
+  @override
+  Future<void> refreshCurrentAfterUpload({
+    required String remoteAssetId,
+    required ViewIntentPayload attachment,
+    Duration timeout = const Duration(seconds: 15),
+  }) async {
+    bool isCurrentAttachment() => _ref.read(viewIntentCurrentProvider) == attachment;
+
+    if (!isCurrentAttachment()) {
+      _logger.fine('refreshCurrentAfterUpload skipped: view intent changed');
+      return;
+    }
+
+    final uploadedAsset = await _waitForUploadedAsset(remoteAssetId: remoteAssetId, timeout: timeout);
+    if (uploadedAsset == null) {
+      _logger.warning('refreshCurrentAfterUpload timed out, remoteAssetId=$remoteAssetId');
+      return;
+    }
+    if (!isCurrentAttachment()) {
+      _logger.fine('refreshCurrentAfterUpload skipped: view intent changed');
+      return;
+    }
+
+    final viewerAsset = uploadedAsset.copyWith(localId: uploadedAsset.localId ?? attachment.localAssetId);
+    await _openAssetViewer(
+      asset: viewerAsset,
+      timelineService: _viewIntentAssetResolver.timelineFor(viewerAsset),
+      attachment: attachment,
+    );
+  }
+
+  Future<RemoteAsset?> _waitForUploadedAsset({required String remoteAssetId, required Duration timeout}) async {
+    RemoteAsset uploadedAsset;
+    try {
+      uploadedAsset = await _assetService
+          .watchRemoteAsset(remoteAssetId)
+          .where((asset) => asset != null)
+          .cast<RemoteAsset>()
+          .first
+          .timeout(timeout);
+    } on TimeoutException {
+      final asset = await _assetService.getRemoteAsset(remoteAssetId);
+      _logger.warning('watchRemoteAsset timed out for $remoteAssetId; direct get result: $asset');
+      return asset;
+    }
+
+    return uploadedAsset;
+  }
+
+  Future<void> _openAssetViewer({
+    required BaseAsset asset,
+    required TimelineService timelineService,
+    required ViewIntentPayload attachment,
+    String? viewIntentFilePath,
+  }) async {
     final notifier = _ref.read(assetViewerProvider.notifier);
     notifier.reset();
     if (asset.isVideo) {
       notifier.setControls(false);
     }
+    _ref.read(viewIntentCurrentProvider.notifier).setPayload(attachment);
     notifier.setAsset(asset);
 
     if (viewIntentFilePath != null) {
@@ -96,9 +156,7 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       unawaited(_viewIntentService.cleanupManagedTempFile());
     }
 
-    await _router.replaceAll([
-      const TabShellRoute(),
-      AssetViewerRoute(key: UniqueKey(), initialIndex: 0, timelineService: timelineService),
-    ]);
+    _router.popUntilRoot();
+    await _router.push(AssetViewerRoute(initialIndex: 0, timelineService: timelineService));
   }
 }

@@ -12,6 +12,12 @@ abstract class ViewIntentHandler {
   Future<void> flushDeferredViewIntent();
 
   Future<void> handle(ViewIntentPayload attachment);
+
+  Future<void> refreshCurrentAfterUpload({
+    required String remoteAssetId,
+    required ViewIntentPayload attachment,
+    Duration timeout = const Duration(seconds: 15),
+  });
 }
 
 final viewIntentHandlerProvider = Provider<ViewIntentHandler>((ref) {

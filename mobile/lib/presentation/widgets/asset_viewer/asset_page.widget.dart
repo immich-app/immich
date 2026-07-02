@@ -395,20 +395,21 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentHeroTag = ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
+    final currentViewerAsset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
+    final currentHeroTag = currentViewerAsset?.heroTag;
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
     final timelineOrigin = ref.read(timelineServiceProvider).origin;
     final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
-    final asset = _asset;
+    final asset = timelineOrigin.isDeepLink && currentViewerAsset != null ? currentViewerAsset : _asset;
     if (asset == null) {
       return const Center(child: ImmichLoadingIndicator());
     }
 
     BaseAsset displayAsset = asset;
-    final showAssetStack = ref.watch(timelineServiceProvider.select((s) => s.origin != TimelineOrigin.trash));
+    final showAssetStack = ref.watch(timelineServiceProvider.select((s) => !s.origin.isTrash));
     final stackChildren = showAssetStack ? ref.watch(stackChildrenNotifier(asset)).valueOrNull : null;
     if (stackChildren != null && stackChildren.isNotEmpty) {
       displayAsset = stackChildren.elementAt(stackIndex);
@@ -429,7 +430,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       _scrollController.snapPosition.snapOffset = _snapOffset;
     }
 
-    final viewIntentFilePath = timelineOrigin == TimelineOrigin.deepLink ? ref.watch(viewIntentFilePathProvider) : null;
+    final viewIntentFilePath = timelineOrigin.isDeepLink ? ref.watch(viewIntentFilePathProvider) : null;
 
     return Stack(
       children: [

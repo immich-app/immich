@@ -117,16 +117,16 @@ enum ActionButtonType {
             !context.isInLockedView && //
             context.asset.hasRemote && //
             context.isTrashEnabled && //
-            context.timelineOrigin != TimelineOrigin.trash,
+            !context.timelineOrigin.isTrash,
       ActionButtonType.restoreTrash =>
         context.isOwner && //
             !context.isInLockedView && //
             context.asset.hasRemote && //
-            context.timelineOrigin == TimelineOrigin.trash,
+            context.timelineOrigin.isTrash,
       ActionButtonType.deletePermanent =>
         context.isOwner && //
             context.asset.hasRemote && //
-            (!context.isTrashEnabled || context.timelineOrigin == TimelineOrigin.trash || context.isInLockedView),
+            (!context.isTrashEnabled || context.timelineOrigin.isTrash || context.isInLockedView),
       ActionButtonType.delete =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -155,12 +155,13 @@ enum ActionButtonType {
             context.selectedCount == 1,
       ActionButtonType.unstack =>
         context.isOwner && //
-            context.timelineOrigin != TimelineOrigin.trash &&
+            !context.timelineOrigin.isTrash &&
             !context.isInLockedView && //
             context.isStacked,
       ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView,
       ActionButtonType.likeActivity =>
         !context.isInLockedView &&
+            !context.timelineOrigin.isDeepLink &&
             context.currentAlbum != null &&
             context.currentAlbum!.isActivityEnabled &&
             context.currentAlbum!.isShared,
@@ -174,8 +175,8 @@ enum ActionButtonType {
       ActionButtonType.openInfo => true,
       ActionButtonType.viewInTimeline =>
         context.timelineOrigin != TimelineOrigin.main &&
-            context.timelineOrigin != TimelineOrigin.deepLink &&
-            context.timelineOrigin != TimelineOrigin.trash &&
+            !context.timelineOrigin.isDeepLink &&
+            !context.timelineOrigin.isTrash &&
             context.timelineOrigin != TimelineOrigin.lockedFolder &&
             context.timelineOrigin != TimelineOrigin.archive &&
             context.timelineOrigin != TimelineOrigin.localAlbum &&

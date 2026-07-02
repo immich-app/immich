@@ -32,9 +32,16 @@ enum TimelineOrigin {
   map,
   search,
   deepLink,
+  deepLinkTrash,
   albumActivities,
   folder,
   recentlyAdded,
+}
+
+extension TimelineOriginX on TimelineOrigin {
+  bool get isDeepLink => this == TimelineOrigin.deepLink || this == TimelineOrigin.deepLinkTrash;
+
+  bool get isTrash => this == TimelineOrigin.trash || this == TimelineOrigin.deepLinkTrash;
 }
 
 class TimelineFactory {
