@@ -106,7 +106,7 @@ class _FixedSegmentRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final shouldDeferAssetLoading = ref.watch(timelineStateProvider.select((s) => s.isFastScrolling));
+    final recommendDeferredLoading = ref.watch(timelineStateProvider.select((s) => s.recommendDeferredLoading));
     final timelineService = ref.read(timelineServiceProvider);
     final isDynamicLayout = columnCount <= (context.isMobile ? 2 : 3);
 
@@ -119,7 +119,7 @@ class _FixedSegmentRow extends ConsumerWidget {
       );
     }
 
-    if (shouldDeferAssetLoading) {
+    if (recommendDeferredLoading) {
       return _buildPlaceholder(context);
     }
 

@@ -150,9 +150,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   double _baseScaleFactor = 3.0;
   int? _restoreAssetIndex;
 
-  final Stopwatch _scrollClock = Stopwatch()..start();
-  double _lastScrollPixelOffset = 0;
-  Duration? _lastScrollTimestamp;
+  static const _fastScrollDebounceDuration = Duration(milliseconds: 100);
+  Timer? _fastScrollDebounceTimer;
 
   @override
   void initState() {
@@ -246,65 +245,32 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   @override
   void dispose() {
+    _fastScrollDebounceTimer?.cancel();
     _scrollController.dispose();
     _eventSubscription?.cancel();
     super.dispose();
   }
 
-  /// Calculate the velocity of a timeline scroll event and track if it exceeds some threshold
+  /// Track whether the timeline is moving fast enough to defer per-row asset loading
   bool _onScrollVelocityNotification(ScrollNotification notification) {
-    // Only consider the primary timeline ScrollView (no nested views)
-    if (notification.depth != 0) {
+    // Only consider the primary timeline ScrollView (no nested views) and update events
+    if (notification.depth != 0 || notification is! ScrollUpdateNotification) {
       return false;
     }
 
-    if (notification is ScrollStartNotification) {
-      _lastScrollTimestamp = null;
+    // Use Flutter's built in fast velocity tracking
+    if (_scrollController.position.recommendDeferredLoading(context)) {
+      ref.read(timelineStateProvider.notifier).setRecommendDeferredLoading(true);
 
-      return false;
-    } else if (notification is ScrollEndNotification) {
-      _lastScrollTimestamp = null;
-      ref.read(timelineStateProvider.notifier).setFastScrolling(false);
-
-      return false;
-    } else if (notification is! ScrollUpdateNotification) {
-      // Assert we have a `ScrollUpdateNotification`
-      return false;
+      // We cannot rely on scroll end events, as the timeline scrubber jumps from position
+      // to position, resulting in large spikes in velocity followed by low velocity
+      // Instead, cancel fast scrolling after a timeout
+      _fastScrollDebounceTimer?.cancel();
+      _fastScrollDebounceTimer = Timer(
+        _fastScrollDebounceDuration,
+        () => ref.read(timelineStateProvider.notifier).setRecommendDeferredLoading(false),
+      );
     }
-
-    final now = _scrollClock.elapsed;
-    final lastTimestamp = _lastScrollTimestamp;
-    final lastPixelOffset = _lastScrollPixelOffset;
-
-    _lastScrollTimestamp = now;
-    _lastScrollPixelOffset = notification.metrics.pixels;
-
-    if (lastTimestamp == null) {
-      // First tick of scroll
-      return false;
-    }
-
-    final deltaSeconds = (now - lastTimestamp).inMicroseconds / Duration.microsecondsPerSecond;
-    if (deltaSeconds <= 0) {
-      return false;
-    }
-
-    final velocity = (_lastScrollPixelOffset - lastPixelOffset).abs() / deltaSeconds;
-
-    // Use same threshold calculation as Flutter's `ScrollPhysics.recommendDeferredLoading`, adding hysteresis
-    // Pixels per second must exceed the length of the longest view dimension to start fast scrolling
-    // and it must drop below 50% of that dimension to stop fast scrolling
-    final enterThreshold = View.of(context).physicalSize.longestSide;
-
-    final notifier = ref.read(timelineStateProvider.notifier);
-    final isFastScrolling = ref.read(timelineStateProvider).isFastScrolling;
-
-    if (!isFastScrolling && velocity > enterThreshold) {
-      notifier.setFastScrolling(true);
-    } else if (isFastScrolling && velocity < enterThreshold / 2) {
-      notifier.setFastScrolling(false);
-    }
-
     return false;
   }
 
