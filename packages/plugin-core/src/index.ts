@@ -124,6 +124,27 @@ const methods = wrapper<Manifest>({
     return { workflow: { continue: earthDiameter * delta <= (config.coordinate?.radius ?? 0) } };
   },
 
+  assetDateFilter: ({ config, data }) => {
+    const assetDate = new Date(data.asset.localDateTime);
+    let startDate = new Date(config.startDate.year, config.startDate.month - 1, config.startDate.day);
+    let endDate = new Date(config.endDate.year, config.endDate.month - 1, config.endDate.day);
+
+    if (config.recurring) {
+      startDate.setFullYear(assetDate.getFullYear());
+      endDate.setFullYear(assetDate.getFullYear());
+
+      if (endDate < startDate) {
+        if (assetDate > endDate) {
+          endDate.setFullYear(endDate.getFullYear() + 1);
+        } else {
+          startDate.setFullYear(startDate.getFullYear() - 1);
+        }
+      }
+    }
+
+    return { workflow: { continue: assetDate >= startDate && assetDate <= endDate } };
+  },
+
   assetLock: ({ config, data }) => {
     if (!config.inverse && data.asset.visibility !== AssetVisibility.Locked) {
       return { changes: { asset: { visibility: AssetVisibility.Locked } } };
@@ -179,6 +200,7 @@ const {
   assetFavorite,
   assetFileFilter,
   assetLocationFilter,
+  assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
   assetTypeFilter,
@@ -195,6 +217,7 @@ export {
   assetFavorite,
   assetFileFilter,
   assetLocationFilter,
+  assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
   assetTypeFilter,

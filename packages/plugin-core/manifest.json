@@ -184,6 +184,98 @@
       "uiHints": ["Filter"]
     },
     {
+      "name": "assetDateFilter",
+      "title": "Filter by date",
+      "description": "Filter assets by date taken",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "object",
+            "title": "Start date",
+            "description": "Earliest date of assets to include",
+            "properties": {
+              "day": {
+                "type": "number",
+                "title": "Day",
+                "description": "Day of the year to match",
+                "uiHint": {
+                  "order": 1
+                }
+              },
+              "month": {
+                "type": "number",
+                "title": "Month",
+                "description": "Month of the year to match",
+                "uiHint": {
+                  "order": 2
+                }
+              },
+              "year": {
+                "type": "number",
+                "title": "Year",
+                "description": "Year to match",
+                "uiHint": {
+                  "order": 3
+                }
+              }
+            },
+            "uiHint": {
+              "order": 1
+            },
+            "required": ["day", "month", "year"]
+          },
+          "endDate": {
+            "type": "object",
+            "title": "End date",
+            "description": "Latest date of assets to include",
+            "properties": {
+              "day": {
+                "type": "number",
+                "title": "Day",
+                "description": "Day of the year to match",
+                "uiHint": {
+                  "order": 1
+                }
+              },
+              "month": {
+                "type": "number",
+                "title": "Month",
+                "description": "Month of the year to match",
+                "uiHint": {
+                  "order": 2
+                }
+              },
+              "year": {
+                "type": "number",
+                "title": "Year",
+                "description": "Year to match",
+                "uiHint": {
+                  "order": 3
+                }
+              }
+            },
+            "uiHint": {
+              "order": 2
+            },
+            "required": ["day", "month", "year"]
+          },
+          "recurring": {
+            "type": "boolean",
+            "default": false,
+            "title": "Match recurring dates",
+            "description": "Allow any assets with matching months/days regardless of the year",
+            "uiHint": {
+              "order": 3
+            }
+          }
+        },
+        "required": ["recurring", "startDate", "endDate"]
+      },
+      "uiHints": ["Filter"]
+    },
+    {
       "name": "assetTypeFilter",
       "title": "Filter by asset type",
       "description": "Filter assets by type",
