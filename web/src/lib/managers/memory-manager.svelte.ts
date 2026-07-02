@@ -6,6 +6,7 @@ import {
   updateMemory,
   MemorySearchOrder,
   MemoryType,
+  memoriesStatistics,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { authManager } from '$lib/managers/auth-manager.svelte';
@@ -191,10 +192,15 @@ class MemoryManager {
 
   private async load(page: number) {
     if (this.#filters !== undefined) {
-      const { items, hasNextPage, total } = await searchMemories({ size: PAGE_SIZE, ...this.#filters, page });
+      const items = await searchMemories({ size: PAGE_SIZE, ...this.#filters, page });
       this.memories.push(...items);
-      this.#hasNextPage = hasNextPage;
-      this.#total = total;
+
+      if (this.#total === undefined) {
+        const { total } = await memoriesStatistics(this.#filters);
+        this.#total = total;
+      }
+
+      this.#hasNextPage = this.memories.length < this.#total;
     }
   }
 

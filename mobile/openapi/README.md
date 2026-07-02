@@ -482,7 +482,6 @@ Class | Method | HTTP request | Description
  - [MemoryCreateDto](doc//MemoryCreateDto.md)
  - [MemoryResponseDto](doc//MemoryResponseDto.md)
  - [MemorySearchOrder](doc//MemorySearchOrder.md)
- - [MemorySearchResponseDto](doc//MemorySearchResponseDto.md)
  - [MemoryStatisticsResponseDto](doc//MemoryStatisticsResponseDto.md)
  - [MemoryType](doc//MemoryType.md)
  - [MemoryUpdateDto](doc//MemoryUpdateDto.md)

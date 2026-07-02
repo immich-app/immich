@@ -203,7 +203,6 @@ part 'model/memories_update.dart';
 part 'model/memory_create_dto.dart';
 part 'model/memory_response_dto.dart';
 part 'model/memory_search_order.dart';
-part 'model/memory_search_response_dto.dart';
 part 'model/memory_statistics_response_dto.dart';
 part 'model/memory_type.dart';
 part 'model/memory_update_dto.dart';

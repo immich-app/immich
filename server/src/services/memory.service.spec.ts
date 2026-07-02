@@ -34,28 +34,24 @@ describe(MemoryService.name, () => {
       const asset = AssetFactory.create();
       const memory1 = MemoryFactory.from({ ownerId: userId }).asset(asset).build();
       const memory2 = MemoryFactory.create({ ownerId: userId });
-      mocks.memory.search.mockResolvedValue({
-        items: [getForMemory(memory1), getForMemory(memory2)],
-        hasNextPage: false,
-      });
+      mocks.memory.search.mockResolvedValue([getForMemory(memory1), getForMemory(memory2)]);
       mocks.memory.statistics.mockResolvedValue({ total: 2 });
 
-      await expect(sut.search(factory.auth({ user: { id: userId } }), {})).resolves.toMatchObject({
-        items: expect.arrayContaining([
+      await expect(sut.search(factory.auth({ user: { id: userId } }), {})).resolves.toEqual(
+        expect.arrayContaining([
           expect.objectContaining({
             id: memory1.id,
             assets: expect.arrayContaining([expect.objectContaining({ id: asset.id })]),
           }),
         ]),
-        hasNextPage: false,
-        total: 2,
-      });
+      );
+      mocks.memory.search.mockResolvedValue([]);
+      await expect(sut.search(factory.auth(), {})).resolves.toEqual([]);
     });
 
     it('should map empty result', async () => {
-      mocks.memory.search.mockResolvedValue({ items: [], hasNextPage: false });
-      mocks.memory.statistics.mockResolvedValue({ total: 0 });
-      await expect(sut.search(factory.auth(), {})).resolves.toMatchObject({ items: [], hasNextPage: false, total: 0 });
+      mocks.memory.search.mockResolvedValue([]);
+      await expect(sut.search(factory.auth(), {})).resolves.toEqual([]);
     });
   });
 

@@ -133,8 +133,8 @@ describe(MemoryService.name, () => {
       await sut.onMemoriesCreate();
 
       const memories = await memoryRepo.search(user.id, {});
-      expect(memories.items.length).toBe(1);
-      expect(memories.items[0]).toEqual(
+      expect(memories.length).toBe(1);
+      expect(memories[0]).toEqual(
         expect.objectContaining({
           id: expect.any(String),
           createdAt: expect.any(Date),
@@ -173,8 +173,8 @@ describe(MemoryService.name, () => {
       await sut.onMemoriesCreate();
 
       const memories = await memoryRepo.search(user.id, {});
-      expect(memories.items.length).toBe(1);
-      expect(memories.items[0]).toEqual(
+      expect(memories.length).toBe(1);
+      expect(memories[0]).toEqual(
         expect.objectContaining({
           id: expect.any(String),
           createdAt: expect.any(Date),
@@ -228,12 +228,12 @@ describe(MemoryService.name, () => {
       await sut.onMemoriesCreate();
 
       const memories = await memoryRepo.search(user.id, {});
-      expect(memories.items.length).toBe(1);
+      expect(memories.length).toBe(1);
 
       await sut.onMemoriesCreate();
 
       const memoriesAfter = await memoryRepo.search(user.id, {});
-      expect(memoriesAfter.items.length).toBe(1);
+      expect(memoriesAfter.length).toBe(1);
     });
   });
 

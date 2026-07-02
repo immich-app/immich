@@ -1350,13 +1350,6 @@ export type MemoryResponseDto = {
     /** Last update date */
     updatedAt: string;
 };
-export type MemorySearchResponseDto = {
-    /** Whether there are more pages */
-    hasNextPage: boolean;
-    items: MemoryResponseDto[];
-    /** Total number of matching memories */
-    total: number;
-};
 export type MemoryCreateDto = {
     /** Asset IDs to associate with memory */
     assetIds?: string[];
@@ -4988,7 +4981,7 @@ export function searchMemories({ $for, isSaved, isTrashed, order, page, size, $t
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
-        data: MemorySearchResponseDto;
+        data: MemoryResponseDto[];
     }>(`/memories${QS.query(QS.explode({
         "for": $for,
         isSaved,

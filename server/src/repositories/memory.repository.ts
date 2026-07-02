@@ -58,8 +58,8 @@ export class MemoryRepository implements IBulkAsset {
     { params: [DummyValue.UUID, {}] },
     { name: 'date filter', params: [DummyValue.UUID, { for: DummyValue.DATE }] },
   )
-  async search(ownerId: string, dto: MemorySearchDto) {
-    const items = await this.searchBuilder(ownerId, dto)
+  search(ownerId: string, dto: MemorySearchDto) {
+    return this.searchBuilder(ownerId, dto)
       .select((eb) =>
         jsonArrayFrom(
           eb
@@ -90,11 +90,9 @@ export class MemoryRepository implements IBulkAsset {
           ? qb.orderBy(sql`RANDOM()`)
           : qb.orderBy('memoryAt', (dto.order?.toLowerCase() || 'desc') as OrderByDirection),
       )
-      .$if(dto.size !== undefined, (qb) => qb.limit(dto.size! + 1))
+      .$if(dto.size !== undefined, (qb) => qb.limit(dto.size!))
       .$if(dto.page !== undefined && dto.size !== undefined, (qb) => qb.offset((dto.page! - 1) * dto.size!))
       .execute();
-
-    return paginationHelper(items, dto.size ?? items.length);
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

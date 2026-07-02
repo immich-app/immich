@@ -451,8 +451,6 @@ class ApiClient {
           return MemoryResponseDto.fromJson(value);
         case 'MemorySearchOrder':
           return MemorySearchOrderTypeTransformer().decode(value);
-        case 'MemorySearchResponseDto':
-          return MemorySearchResponseDto.fromJson(value);
         case 'MemoryStatisticsResponseDto':
           return MemoryStatisticsResponseDto.fromJson(value);
         case 'MemoryType':

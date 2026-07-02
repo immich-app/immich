@@ -522,7 +522,7 @@ class MemoriesApi {
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<MemorySearchResponseDto?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
+  Future<List<MemoryResponseDto>?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
     final response = await searchMemoriesWithHttpInfo(for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, page: page, size: size, type: type, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -531,8 +531,11 @@ class MemoriesApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MemorySearchResponseDto',) as MemorySearchResponseDto;
-    
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<MemoryResponseDto>') as List)
+        .cast<MemoryResponseDto>()
+        .toList(growable: false);
+
     }
     return null;
   }
