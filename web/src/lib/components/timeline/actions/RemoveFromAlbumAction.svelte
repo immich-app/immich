@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
@@ -15,16 +16,29 @@
   }
 
   let { album = $bindable(), onRemove, assetIds, menuItem = false }: Props = $props();
+  const removeSingleAssetShortcut = $derived(assetIds?.length === 1 ? { key: 'x' } : null);
+  const singleAssetShortcuts = $derived<ShortcutOptions[]>(
+    assetIds?.length === 1
+      ? [
+          {
+            shortcut: { key: 'X', shift: true },
+            onShortcut: () => removeFromAlbum({ skipConfirmation: true }),
+          },
+        ]
+      : [],
+  );
 
-  const removeFromAlbum = async () => {
+  const removeFromAlbum = async ({ skipConfirmation = false }: { skipConfirmation?: boolean } = {}) => {
     const ids = assetIds ?? assetMultiSelectManager.assets.map(({ id }) => id) ?? [];
 
-    const isConfirmed = await modalManager.showDialog({
-      prompt: $t('remove_assets_album_confirmation', { values: { count: ids.length } }),
-    });
+    if (!skipConfirmation) {
+      const isConfirmed = await modalManager.showDialog({
+        prompt: $t('remove_assets_album_confirmation', { values: { count: ids.length } }),
+      });
 
-    if (!isConfirmed) {
-      return;
+      if (!isConfirmed) {
+        return;
+      }
     }
 
     try {
@@ -47,8 +61,15 @@
   };
 </script>
 
+<svelte:document use:shortcuts={singleAssetShortcuts} />
+
 {#if menuItem}
-  <MenuOption text={$t('remove_from_album')} icon={mdiImageRemoveOutline} onClick={removeFromAlbum} />
+  <MenuOption
+    text={$t('remove_from_album')}
+    icon={mdiImageRemoveOutline}
+    onClick={removeFromAlbum}
+    shortcut={removeSingleAssetShortcut}
+  />
 {:else}
   <IconButton
     shape="round"
@@ -56,6 +77,6 @@
     variant="ghost"
     aria-label={$t('remove_from_album')}
     icon={mdiDeleteOutline}
-    onclick={removeFromAlbum}
+    onclick={() => removeFromAlbum()}
   />
 {/if}

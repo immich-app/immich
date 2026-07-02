@@ -1720,6 +1720,7 @@
   "remove_filter": "Usuń filtr",
   "remove_from_album": "Usuń z albumu",
   "remove_from_album_action_prompt": "{count} usunięto z albumu",
+  "remove_from_album_without_confirmation": "Usuń z albumu bez potwierdzania",
   "remove_from_favorites": "Usuń z ulubionych",
   "remove_from_lock_folder_action_prompt": "{count} usunięte z folderu zablokowanego",
   "remove_from_locked_folder": "Usuń z folderu zablokowanego",
