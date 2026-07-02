@@ -295,9 +295,12 @@ Class | Method | HTTP request | Description
 *SystemMetadataApi* | [**getVersionCheckState**](doc//SystemMetadataApi.md#getversioncheckstate) | **GET** /system-metadata/version-check-state | Retrieve version check state
 *SystemMetadataApi* | [**updateAdminOnboarding**](doc//SystemMetadataApi.md#updateadminonboarding) | **POST** /system-metadata/admin-onboarding | Update admin onboarding
 *TagsApi* | [**bulkTagAssets**](doc//TagsApi.md#bulktagassets) | **PUT** /tags/assets | Tag assets
+*TagsApi* | [**bulkTagUntagAssets**](doc//TagsApi.md#bulktaguntagassets) | **POST** /tags/assets | Tag/Untag assets
+*TagsApi* | [**bulkUntagAssets**](doc//TagsApi.md#bulkuntagassets) | **DELETE** /tags/assets | Untag assets
 *TagsApi* | [**createTag**](doc//TagsApi.md#createtag) | **POST** /tags | Create a tag
 *TagsApi* | [**deleteTag**](doc//TagsApi.md#deletetag) | **DELETE** /tags/{id} | Delete a tag
 *TagsApi* | [**getAllTags**](doc//TagsApi.md#getalltags) | **GET** /tags | Retrieve tags
+*TagsApi* | [**getAllTagsForAssets**](doc//TagsApi.md#getalltagsforassets) | **GET** /tags/getAllTagsForAssets | Retrieve tags for assets
 *TagsApi* | [**getTagById**](doc//TagsApi.md#gettagbyid) | **GET** /tags/{id} | Retrieve a tag
 *TagsApi* | [**tagAssets**](doc//TagsApi.md#tagassets) | **PUT** /tags/{id}/assets | Tag assets
 *TagsApi* | [**untagAssets**](doc//TagsApi.md#untagassets) | **DELETE** /tags/{id}/assets | Untag assets
@@ -668,12 +671,15 @@ Class | Method | HTTP request | Description
  - [SystemConfigThemeDto](doc//SystemConfigThemeDto.md)
  - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)
  - [SystemConfigUserDto](doc//SystemConfigUserDto.md)
+ - [TagBulkAddRemoveAssetsDto](doc//TagBulkAddRemoveAssetsDto.md)
+ - [TagBulkAddRemoveAssetsResponseDto](doc//TagBulkAddRemoveAssetsResponseDto.md)
  - [TagBulkAssetsDto](doc//TagBulkAssetsDto.md)
  - [TagBulkAssetsResponseDto](doc//TagBulkAssetsResponseDto.md)
  - [TagCreateDto](doc//TagCreateDto.md)
  - [TagResponseDto](doc//TagResponseDto.md)
  - [TagUpdateDto](doc//TagUpdateDto.md)
  - [TagUpsertDto](doc//TagUpsertDto.md)
+ - [TagsForAssetsResponseDto](doc//TagsForAssetsResponseDto.md)
  - [TagsResponse](doc//TagsResponse.md)
  - [TagsUpdate](doc//TagsUpdate.md)
  - [TemplateDto](doc//TemplateDto.md)

@@ -45,6 +45,51 @@ describe(TagController.name, () => {
     });
   });
 
+  describe('PUT /tags/assets', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).put('/tags/assets');
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('DELETE /tags/assets', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).delete('/tags/assets');
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('POST /tags/assets', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).post('/tags/assets');
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+  });
+
+  describe('GET /tags/getAllTagsForAssets', () => {
+    it('should be an authenticated route', async () => {
+      await request(ctx.getHttpServer()).get(`/tags/getAllTagsForAssets?assetIds=${factory.uuid()}`);
+      expect(ctx.authenticate).toHaveBeenCalled();
+    });
+
+    it('should require a valid uuid', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).get(`/tags/getAllTagsForAssets?assetIds=123`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.validationError([{ path: ['assetIds', 0], message: 'Invalid UUID' }]));
+    });
+
+    it('should allow passing an array of assetIds or a single assetId as a string', async () => {
+      const uuid1 = factory.uuid();
+      const uuid2 = factory.uuid();
+      await request(ctx.getHttpServer()).get(`/tags/getAllTagsForAssets?assetIds=${uuid1}`);
+      expect(service.getAllForAssets).toHaveBeenCalledWith(undefined, [uuid1]);
+
+      service.resetAllMocks();
+      await request(ctx.getHttpServer()).get(`/tags/getAllTagsForAssets?assetIds=${uuid1}&assetIds=${uuid2}`);
+      expect(service.getAllForAssets).toHaveBeenCalledWith(undefined, [uuid1, uuid2]);
+    });
+  });
+
   describe('GET /tags/:id', () => {
     it('should be an authenticated route', async () => {
       await request(ctx.getHttpServer()).get(`/tags/${factory.uuid()}`);

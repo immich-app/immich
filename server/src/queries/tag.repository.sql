@@ -60,6 +60,23 @@ where
 order by
   "value"
 
+-- TagRepository.getIdsForAssets
+select distinct
+  "tagId" as "tagId",
+  (
+    select
+      coalesce(array_agg(distinct ta."assetId"), '{}')
+    from
+      tag_asset as ta
+    where
+      ta."tagId" = tag_asset."tagId"
+      and ta."assetId" in ($1)
+  ) as "assetIds"
+from
+  "tag_asset"
+where
+  "assetId" in ($2)
+
 -- TagRepository.create
 insert into
   "tag" ("userId", "color", "value")
@@ -100,6 +117,13 @@ insert into
 values
   ($1, $2)
 on conflict do nothing
+returning
+  *
+
+-- TagRepository.deleteAssetIds
+delete from "tag_asset"
+where
+  ("tagId", "assetId") IN (($1, $2))
 returning
   *
 
