@@ -84,6 +84,14 @@ class StorageRepository {
     return entity;
   }
 
+  Future<String?> getMediaUrlForAsset(LocalAsset asset) async {
+    final entity = await getAssetEntityForAsset(asset);
+    if (entity == null) {
+      return null;
+    }
+    return entity.getMediaUrl();
+  }
+
   Future<bool> isAssetAvailableLocally(String assetId) async {
     try {
       final entity = await AssetEntity.fromId(assetId);

@@ -6,16 +6,16 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/tag.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
@@ -25,6 +25,7 @@ import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_mobile/widgets/common/date_time_picker.dart';
 import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:immich_mobile/widgets/common/tag_picker.dart';
+import 'package:logging/logging.dart';
 import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
 
 final actionServiceProvider = Provider<ActionService>(
@@ -35,11 +36,15 @@ final actionServiceProvider = Provider<ActionService>(
     ref.watch(driftAlbumApiRepositoryProvider),
     ref.watch(remoteAlbumRepository),
     ref.watch(trashedLocalAssetRepository),
+    ref.watch(trashSyncRepositoryProvider),
     ref.watch(assetMediaRepositoryProvider),
     ref.watch(downloadRepositoryProvider),
     ref.watch(tagServiceProvider),
+    Logger('ActionService'),
   ),
 );
+
+typedef RemoteTrashResolveResult = ({int displayCount, bool success});
 
 class ActionService {
   final AssetApiRepository _assetApiRepository;
@@ -48,9 +53,11 @@ class ActionService {
   final DriftAlbumApiRepository _albumApiRepository;
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
+  final DriftTrashSyncRepository _trashSyncRepository;
   final AssetMediaRepository _assetMediaRepository;
   final DownloadRepository _downloadRepository;
   final TagService _tagService;
+  final Logger _logger;
 
   const ActionService(
     this._assetApiRepository,
@@ -59,9 +66,11 @@ class ActionService {
     this._albumApiRepository,
     this._remoteAlbumRepository,
     this._trashedLocalAssetRepository,
+    this._trashSyncRepository,
     this._assetMediaRepository,
     this._downloadRepository,
     this._tagService,
+    this._logger,
   );
 
   Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
@@ -318,11 +327,48 @@ class ActionService {
     if (deletedIds.isEmpty) {
       return 0;
     }
-    if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+    if (CurrentPlatform.isAndroid) {
       await _trashedLocalAssetRepository.applyTrashedAssets(deletedIds);
     } else {
       await _localAssetRepository.delete(deletedIds);
     }
     return deletedIds.length;
+  }
+
+  Future<RemoteTrashResolveResult> resolveRemoteTrash(
+    Iterable<String> trashedChecksums, {
+    required bool isSyncApproved,
+  }) async {
+    if (!isSyncApproved) {
+      await _trashSyncRepository.updateApproves(trashedChecksums, false);
+      return (displayCount: trashedChecksums.length, success: true);
+    }
+    final assetsToTrash = await _trashSyncRepository.getTrashSyncMoveCandidates(trashedChecksums);
+    if (assetsToTrash.isEmpty) {
+      // No localAssetEntity found; close review to avoid re-showing the same items.
+      await _trashSyncRepository.updateApproves(trashedChecksums, true);
+      return (displayCount: trashedChecksums.length, success: true);
+    }
+
+    final localIds = assetsToTrash.map((item) => item.candidate.asset.id).toSet().toList();
+    _logger.info("Moving assets to trash: ${localIds.join(", ")}");
+    final deletedIds = await _assetMediaRepository.deleteAll(localIds);
+    if (deletedIds.isEmpty) {
+      return (displayCount: 0, success: false);
+    }
+    final deletedIdLookup = deletedIds.toSet();
+    final deletedAssetsToTrash = assetsToTrash.where((item) => deletedIdLookup.contains(item.candidate.asset.id));
+
+    final resolvedChecksums = deletedAssetsToTrash.map((item) => item.candidate.asset.checksum!).toSet();
+    await _trashSyncRepository.transaction<void>(() async {
+      if (CurrentPlatform.isAndroid) {
+        await _trashedLocalAssetRepository.trashLocalAssets(deletedAssetsToTrash);
+      } else {
+        await _localAssetRepository.delete(deletedIds);
+      }
+      await _trashSyncRepository.updateApproves(resolvedChecksums, true);
+    });
+
+    return (displayCount: resolvedChecksums.length, success: resolvedChecksums.length == trashedChecksums.length);
   }
 }

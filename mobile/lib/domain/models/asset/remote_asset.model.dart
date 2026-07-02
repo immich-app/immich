@@ -23,6 +23,7 @@ class RemoteAsset extends BaseAsset {
     required super.createdAt,
     required super.updatedAt,
     this.uploadedAt,
+    this.deletedAt,
     super.width,
     super.height,
     super.durationMs,
@@ -32,7 +33,6 @@ class RemoteAsset extends BaseAsset {
     super.livePhotoVideoId,
     this.stackId,
     required super.isEdited,
-    this.deletedAt,
   }) : localAssetId = localId;
 
   @override
@@ -48,7 +48,7 @@ class RemoteAsset extends BaseAsset {
   String get heroTag => '${localId ?? checksum}_$id';
 
   @override
-  bool get isEditable => isImage && !isMotionPhoto && !isAnimatedImage;
+  bool get isEditable => isImage && !isMotionPhoto && !isAnimatedImage && deletedAt == null;
 
   bool get isTrashed => deletedAt != null;
 
@@ -62,6 +62,7 @@ class RemoteAsset extends BaseAsset {
     createdAt: $createdAt,
     updatedAt: $updatedAt,
     uploadedAt: ${uploadedAt ?? "<NA>"},
+    deletedAt: ${deletedAt ?? "<NA>"},
     width: ${width ?? "<NA>"},
     height: ${height ?? "<NA>"},
     durationMs: ${durationMs ?? "<NA>"},
@@ -89,6 +90,7 @@ class RemoteAsset extends BaseAsset {
         ownerId == other.ownerId &&
         thumbHash == other.thumbHash &&
         visibility == other.visibility &&
+        deletedAt == other.deletedAt &&
         stackId == other.stackId &&
         uploadedAt == other.uploadedAt &&
         deletedAt == other.deletedAt;
@@ -102,6 +104,7 @@ class RemoteAsset extends BaseAsset {
       localId.hashCode ^
       thumbHash.hashCode ^
       visibility.hashCode ^
+      deletedAt.hashCode ^
       stackId.hashCode ^
       uploadedAt.hashCode ^
       deletedAt.hashCode;
@@ -116,6 +119,7 @@ class RemoteAsset extends BaseAsset {
     DateTime? createdAt,
     DateTime? updatedAt,
     DateTime? uploadedAt,
+    DateTime? deletedAt,
     int? width,
     int? height,
     int? durationMs,
@@ -125,7 +129,6 @@ class RemoteAsset extends BaseAsset {
     String? livePhotoVideoId,
     String? stackId,
     bool? isEdited,
-    DateTime? deletedAt,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -137,6 +140,7 @@ class RemoteAsset extends BaseAsset {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       uploadedAt: uploadedAt ?? this.uploadedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
       width: width ?? this.width,
       height: height ?? this.height,
       durationMs: durationMs ?? this.durationMs,
@@ -146,7 +150,6 @@ class RemoteAsset extends BaseAsset {
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,
       isEdited: isEdited ?? this.isEdited,
-      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }

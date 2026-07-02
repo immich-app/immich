@@ -3,11 +3,11 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 
 typedef TrashedAsset = ({String albumId, LocalAsset asset});
 
@@ -20,7 +20,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     if (hashes.isEmpty) {
       return Future.value();
     }
-    return _db.batch((batch) async {
+    return _db.batch((batch) {
       for (final entry in hashes.entries) {
         batch.update(
           _db.trashedLocalAssetEntity,
@@ -104,9 +104,11 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
           _db.trashedLocalAssetEntity,
         )..addColumns([_db.trashedLocalAssetEntity.id])).map((r) => r.read(_db.trashedLocalAssetEntity.id)!).get();
         final idToDelete = existingIds.where((id) => !assetIds.contains(id));
-        for (final slice in idToDelete.slices(kDriftMaxChunk)) {
-          await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
-        }
+        await _db.batch((batch) {
+          for (final slice in idToDelete.slices(kDriftMaxChunk)) {
+            batch.deleteWhere(_db.trashedLocalAssetEntity, (t) => t.id.isIn(slice));
+          }
+        });
       }
     });
   }
@@ -125,45 +127,44 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         .map((row) => row.read<int>(_db.trashedLocalAssetEntity.id.count()) ?? 0);
   }
 
-  Future<void> trashLocalAsset(Map<String, List<LocalAsset>> assetsByAlbums) async {
-    if (assetsByAlbums.isEmpty) {
+  Future<void> trashLocalAssets(Iterable<RemoteTrashMoveCandidate> candidates) async {
+    if (candidates.isEmpty) {
       return Future.value();
     }
 
     final companions = <TrashedLocalAssetEntityCompanion>[];
     final idToDelete = <String>{};
 
-    for (final entry in assetsByAlbums.entries) {
-      for (final asset in entry.value) {
-        idToDelete.add(asset.id);
-        companions.add(
-          TrashedLocalAssetEntityCompanion(
-            id: Value(asset.id),
-            name: Value(asset.name),
-            albumId: Value(entry.key),
-            checksum: Value(asset.checksum),
-            type: Value(asset.type),
-            width: Value(asset.width),
-            height: Value(asset.height),
-            durationMs: Value(asset.durationMs),
-            isFavorite: Value(asset.isFavorite),
-            orientation: Value(asset.orientation),
-            playbackStyle: Value(asset.playbackStyle),
-            createdAt: Value(asset.createdAt),
-            updatedAt: Value(asset.updatedAt),
-            source: const Value(TrashOrigin.remoteSync),
-          ),
-        );
-      }
+    for (final candidate in candidates) {
+      final asset = candidate.candidate.asset;
+      idToDelete.add(asset.id);
+      companions.add(
+        TrashedLocalAssetEntityCompanion(
+          id: Value(asset.id),
+          name: Value(asset.name),
+          albumId: Value(candidate.albumId),
+          checksum: Value(asset.checksum),
+          type: Value(asset.type),
+          width: Value(asset.width),
+          height: Value(asset.height),
+          durationMs: Value(asset.durationMs),
+          isFavorite: Value(asset.isFavorite),
+          orientation: Value(asset.orientation),
+          playbackStyle: Value(asset.playbackStyle),
+          createdAt: Value(asset.createdAt),
+          updatedAt: Value(asset.updatedAt),
+          source: const Value(TrashOrigin.remoteSync),
+        ),
+      );
     }
 
-    await _db.transaction(() async {
+    // Keep this transaction-free; callers commit it together with trashSyncEntity updates.
+    await _db.batch((batch) {
       for (final companion in companions) {
-        await _db.into(_db.trashedLocalAssetEntity).insertOnConflictUpdate(companion);
+        batch.insert(_db.trashedLocalAssetEntity, companion, onConflict: DoUpdate((_) => companion));
       }
-
       for (final slice in idToDelete.slices(kDriftMaxChunk)) {
-        await (_db.delete(_db.localAssetEntity)..where((t) => t.id.isIn(slice))).go();
+        batch.deleteWhere(_db.localAssetEntity, (t) => t.id.isIn(slice));
       }
     });
   }
@@ -202,12 +203,14 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     });
 
     await _db.transaction(() async {
-      for (final companion in companions) {
-        await _db.into(_db.localAssetEntity).insertOnConflictUpdate(companion);
-      }
-      for (final slice in idList.slices(kDriftMaxChunk)) {
-        await (_db.delete(_db.trashedLocalAssetEntity)..where((t) => t.id.isIn(slice))).go();
-      }
+      await _db.batch((batch) {
+        for (final companion in companions) {
+          batch.insert(_db.localAssetEntity, companion, onConflict: DoUpdate((_) => companion));
+        }
+        for (final slice in idList.slices(kDriftMaxChunk)) {
+          batch.deleteWhere(_db.trashedLocalAssetEntity, (t) => t.id.isIn(slice));
+        }
+      });
     });
   }
 
@@ -255,39 +258,15 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
     });
 
     await _db.transaction(() async {
-      for (final companion in companions) {
-        await _db.into(_db.trashedLocalAssetEntity).insertOnConflictUpdate(companion);
-      }
-      for (final slice in idList.slices(kDriftMaxChunk)) {
-        await (_db.delete(_db.localAssetEntity)..where((t) => t.id.isIn(slice))).go();
-      }
+      await _db.batch((batch) {
+        for (final companion in companions) {
+          batch.insert(_db.trashedLocalAssetEntity, companion, onConflict: DoUpdate((_) => companion));
+        }
+        for (final slice in idList.slices(kDriftMaxChunk)) {
+          batch.deleteWhere(_db.localAssetEntity, (t) => t.id.isIn(slice));
+        }
+      });
     });
-  }
-
-  Future<Map<String, List<LocalAsset>>> getToTrash() async {
-    final result = <String, List<LocalAsset>>{};
-
-    final rows =
-        await (_db.select(_db.localAlbumAssetEntity).join([
-              innerJoin(_db.localAlbumEntity, _db.localAlbumAssetEntity.albumId.equalsExp(_db.localAlbumEntity.id)),
-              innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
-              leftOuterJoin(
-                _db.remoteAssetEntity,
-                _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
-              ),
-            ])..where(
-              _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected) &
-                  _db.remoteAssetEntity.deletedAt.isNotNull(),
-            ))
-            .get();
-
-    for (final row in rows) {
-      final albumId = row.readTable(_db.localAlbumAssetEntity).albumId;
-      final asset = row.readTable(_db.localAssetEntity).toDto();
-      (result[albumId] ??= <LocalAsset>[]).add(asset);
-    }
-
-    return result;
   }
 
   //attempt to reuse existing checksums

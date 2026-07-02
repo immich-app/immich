@@ -12,10 +12,12 @@ import 'package:immich_mobile/domain/models/config/share_config.dart';
 import 'package:immich_mobile/domain/models/config/slideshow_config.dart';
 import 'package:immich_mobile/domain/models/config/theme_config.dart';
 import 'package:immich_mobile/domain/models/config/timeline_config.dart';
+import 'package:immich_mobile/domain/models/config/trash_sync_config.dart';
 import 'package:immich_mobile/domain/models/config/viewer_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/utils/semver.dart';
 
@@ -35,6 +37,7 @@ class AppConfig {
   final NetworkConfig network;
   final ShareConfig share;
   final FeatureMessageConfig featureMessage;
+  final TrashSyncConfig trashSync;
 
   const AppConfig({
     this.logLevel = .info,
@@ -50,6 +53,7 @@ class AppConfig {
     this.network = const .new(),
     this.share = const .new(),
     this.featureMessage = const .new(),
+    this.trashSync = const .new(),
   });
 
   AppConfig copyWith({
@@ -66,6 +70,7 @@ class AppConfig {
     NetworkConfig? network,
     ShareConfig? share,
     FeatureMessageConfig? featureMessage,
+    TrashSyncConfig? trashSync,
   }) => .new(
     logLevel: logLevel ?? this.logLevel,
     theme: theme ?? this.theme,
@@ -80,6 +85,7 @@ class AppConfig {
     network: network ?? this.network,
     share: share ?? this.share,
     featureMessage: featureMessage ?? this.featureMessage,
+    trashSync: trashSync ?? this.trashSync,
   );
 
   @override
@@ -98,7 +104,8 @@ class AppConfig {
           other.backup == backup &&
           other.network == network &&
           other.share == share &&
-          other.featureMessage == featureMessage);
+          other.featureMessage == featureMessage &&
+          other.trashSync == trashSync);
 
   @override
   int get hashCode => Object.hash(
@@ -115,11 +122,12 @@ class AppConfig {
     network,
     share,
     featureMessage,
+    trashSync,
   );
 
   @override
   String toString() =>
-      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, featureMessage: $featureMessage)';
+      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, featureMessage: $featureMessage, trashSync: $trashSync)';
 
   T read<T>(SettingsKey<T> key) =>
       (switch (key) {
@@ -167,6 +175,7 @@ class AppConfig {
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
             .featureMessageSeenRelease => featureMessage.seenRelease,
+            .trashSyncMode => trashSync.mode,
           })
           as T;
 
@@ -221,6 +230,7 @@ class AppConfig {
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
       .featureMessageSeenRelease => copyWith(featureMessage: featureMessage.copyWith(seenRelease: value as SemVer)),
+      .trashSyncMode => copyWith(trashSync: trashSync.copyWith(mode: value as TrashSyncMode)),
     };
   }
 }

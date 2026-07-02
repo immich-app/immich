@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -68,19 +70,24 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildActionButton(IconData icon, String text, Function() onTap, {Widget? trailing}) {
+    buildActionButton(IconData icon, String text, Function() onTap, {Widget? trailing, Color? btnColor}) {
       return ListTile(
         dense: true,
         visualDensity: VisualDensity.standard,
         contentPadding: const EdgeInsets.only(left: 30, right: 30),
         minLeadingWidth: 40,
-        leading: SizedBox(child: Icon(icon, color: theme.textTheme.labelLarge?.color?.withAlpha(250), size: 20)),
+        leading: SizedBox(
+          child: Icon(icon, color: btnColor ?? theme.textTheme.labelLarge?.color?.withAlpha(250), size: 20),
+        ),
         title: Text(
           text,
-          style: theme.textTheme.labelLarge?.copyWith(color: theme.textTheme.labelLarge?.color?.withAlpha(250)),
+          style: theme.textTheme.labelLarge?.copyWith(
+            color: btnColor ?? theme.textTheme.labelLarge?.color?.withAlpha(250),
+          ),
         ).tr(),
         onTap: onTap,
         trailing: trailing,
+        iconColor: btnColor,
       );
     }
 
@@ -93,6 +100,25 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         Icons.cleaning_services_outlined,
         "free_up_space",
         () => context.pushRoute(SettingsSubRoute(section: SettingSection.freeUpSpace)),
+      );
+    }
+
+    Widget buildOutOfSyncButton() {
+      return Consumer(
+        builder: (context, ref, _) {
+          final outOfSyncCount = ref.watch(outOfSyncAssetsCountProvider).value ?? 0;
+          if (outOfSyncCount == 0) {
+            return const SizedBox.shrink();
+          }
+          final btnColor = theme.colorScheme.tertiary;
+          return buildActionButton(
+            Icons.warning_amber_rounded,
+            'review_out_of_sync_changes'.t(),
+            () => context.pushRoute(const DriftTrashSyncReviewRoute()),
+            trailing: Text('($outOfSyncCount)', style: theme.textTheme.labelLarge?.copyWith(color: btnColor)),
+            btnColor: btnColor,
+          );
+        },
       );
     }
 
@@ -269,6 +295,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     ],
                   ),
                 ),
+                buildOutOfSyncButton(),
                 if (isReadonlyModeEnabled) buildReadonlyMessage(),
                 buildAppLogButton(),
                 buildFreeUpSpaceButton(),

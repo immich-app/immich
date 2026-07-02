@@ -35,6 +35,7 @@ enum TimelineOrigin {
   albumActivities,
   folder,
   recentlyAdded,
+  syncTrash,
 }
 
 class TimelineFactory {
@@ -64,6 +65,8 @@ class TimelineFactory {
   TimelineService favorite(String userId) => TimelineService(_timelineRepository.favorite(userId, groupBy));
 
   TimelineService trash(String userId) => TimelineService(_timelineRepository.trash(userId, groupBy));
+
+  TimelineService toTrashSyncReview() => TimelineService(_timelineRepository.toTrashSyncReview(groupBy));
 
   TimelineService archive(String userId) => TimelineService(_timelineRepository.archived(userId, groupBy));
 

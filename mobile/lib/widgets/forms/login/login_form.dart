@@ -11,8 +11,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
@@ -235,7 +234,8 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
-    bool isSyncRemoteDeletionsMode() => Platform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false);
+    bool isSyncRemoteDeletionsMode() =>
+        Platform.isAndroid && SettingsRepository.instance.appConfig.trashSync.mode == TrashSyncMode.autoSync;
 
     login() async {
       TextInput.finishAutofillContext();

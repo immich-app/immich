@@ -8,6 +8,7 @@ import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -35,6 +36,7 @@ class ViewerKebabMenu extends ConsumerWidget {
     final currentAlbum = ref.watch(currentRemoteAlbumProvider);
     final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
     final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting);
+    final isWaitingForTrashApproval = ref.watch(isWaitingForTrashApprovalProvider(asset.checksum)).value == true;
 
     final actionContext = ActionButtonContext(
       asset: asset,
@@ -48,6 +50,7 @@ class ViewerKebabMenu extends ConsumerWidget {
       source: ActionSource.viewer,
       isCasting: isCasting,
       timelineOrigin: timelineOrigin,
+      isWaitingForTrashApproval: isWaitingForTrashApproval,
     );
 
     final menuChildren = ActionButtonBuilder.buildViewerKebabMenu(actionContext, context);

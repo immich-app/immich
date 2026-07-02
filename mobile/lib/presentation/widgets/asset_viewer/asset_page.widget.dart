@@ -79,8 +79,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   @override
   void didUpdateWidget(AssetPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.index != widget.index) {
-      _asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
+    final asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
+    if (oldWidget.index != widget.index || asset?.heroTag != _asset?.heroTag) {
+      _asset = asset;
     }
   }
 

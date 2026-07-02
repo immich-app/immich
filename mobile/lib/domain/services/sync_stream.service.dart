@@ -3,18 +3,14 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:collection/collection.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
+import 'package:immich_mobile/domain/services/trash_sync.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_api.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/semver.dart';
 import 'package:logging/logging.dart';
@@ -32,10 +28,7 @@ class SyncStreamService {
 
   final SyncApiRepository _syncApiRepository;
   final SyncStreamRepository _syncStreamRepository;
-  final DriftLocalAssetRepository _localAssetRepository;
-  final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
-  final AssetMediaRepository _assetMediaRepository;
-  final IPermissionRepository _permissionRepository;
+  final TrashSyncService _trashSyncService;
   final SyncMigrationRepository _syncMigrationRepository;
   final ApiService _api;
   final Completer<void>? _cancellation;
@@ -43,12 +36,9 @@ class SyncStreamService {
   SyncStreamService({
     required this._syncApiRepository,
     required this._syncStreamRepository,
-    required this._localAssetRepository,
-    required this._trashedLocalAssetRepository,
-    required this._assetMediaRepository,
-    required this._permissionRepository,
     required this._syncMigrationRepository,
     required this._api,
+    required this._trashSyncService,
     this._cancellation,
   });
 
@@ -195,24 +185,22 @@ class SyncStreamService {
       case SyncEntityType.partnerDeleteV1:
         return _syncStreamRepository.deletePartnerV1(data.cast());
       case SyncEntityType.assetV1:
-        final remoteSyncAssets = data.cast<SyncAssetV1>();
+        final remoteSyncAssets = data.cast<SyncAssetV1>().toList();
         await _syncStreamRepository.updateAssetsV1(remoteSyncAssets);
-        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
-          await _syncAssetTrashStatus(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.id).toList());
-        }
+        await _trashSyncService.syncRemoteTrashState(remoteSyncAssets.map((e) => (id: e.id, deletedAt: e.deletedAt)));
         return;
       case SyncEntityType.assetV2:
-        final remoteSyncAssets = data.cast<SyncAssetV2>();
+        final remoteSyncAssets = data.cast<SyncAssetV2>().toList();
         await _syncStreamRepository.updateAssetsV2(remoteSyncAssets);
-        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
-          await _syncAssetTrashStatus(remoteSyncAssets.where((e) => e.deletedAt != null).map((e) => e.id).toList());
-        }
+        await _trashSyncService.syncRemoteTrashState(remoteSyncAssets.map((e) => (id: e.id, deletedAt: e.deletedAt)));
         return;
       case SyncEntityType.assetDeleteV1:
-        final remoteSyncAssets = data.cast<SyncAssetDeleteV1>();
-        if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
-          await _syncAssetDeletion(remoteSyncAssets.map((e) => e.assetId).toList());
-        }
+        final remoteSyncAssets = data.cast<SyncAssetDeleteV1>().toList();
+        final now = DateTime.now();
+        final remoteDeletedAtByRemoteId = Map<String, DateTime>.fromEntries(
+          remoteSyncAssets.map((e) => MapEntry(e.assetId, now)),
+        );
+        await _trashSyncService.applyRemoteRemovalToLocal(remoteDeletedAtByRemoteId);
         return _syncStreamRepository.deleteAssetsV1(remoteSyncAssets);
       case SyncEntityType.assetExifV1:
         return _syncStreamRepository.updateAssetsExifV1(data.cast());
@@ -491,60 +479,5 @@ class SyncStreamService {
     } catch (error, stackTrace) {
       _logger.severe("Error processing AssetEditReadyV2 websocket event", error, stackTrace);
     }
-  }
-
-  Future<void> _handleRemoteDeleted(Iterable<String> remoteIds) async {
-    if (remoteIds.isEmpty) {
-      return Future.value();
-    } else {
-      final localAssetsToTrash = await _localAssetRepository.getAssetsFromBackupAlbums(remoteIds);
-      if (localAssetsToTrash.isNotEmpty) {
-        await _trashLocalAssets(localAssetsToTrash);
-      } else {
-        _logger.info("No assets found in backup-enabled albums for remote assets: $remoteIds");
-      }
-    }
-  }
-
-  Future<void> _trashLocalAssets(Map<String, List<LocalAsset>> localAssetsToTrash) async {
-    final localIds = localAssetsToTrash.values.expand((assets) => assets).map((asset) => asset.id).toList();
-    _logger.info("Moving to trash ${localIds.join(", ")} assets");
-    final movedIds = await _assetMediaRepository.deleteAll(localIds);
-    if (movedIds.isNotEmpty) {
-      final movedAssetsByAlbum = localAssetsToTrash.map(
-        (albumId, assets) => MapEntry(albumId, assets.where((asset) => movedIds.contains(asset.id)).toList()),
-      )..removeWhere((_, assets) => assets.isEmpty);
-
-      await _trashedLocalAssetRepository.trashLocalAsset(movedAssetsByAlbum);
-    }
-  }
-
-  Future<void> _applyRemoteRestoreToLocal() async {
-    final assetsToRestore = await _trashedLocalAssetRepository.getToRestore();
-    if (assetsToRestore.isNotEmpty) {
-      final restoredIds = await _assetMediaRepository.restoreAssetsFromTrash(assetsToRestore);
-      await _trashedLocalAssetRepository.applyRestoredAssets(restoredIds);
-    } else {
-      _logger.info("No remote assets found for restoration");
-    }
-  }
-
-  Future<void> _syncAssetTrashStatus(List<String> remoteIds) async {
-    if (!(await _permissionRepository.hasManageMediaPermission())) {
-      _logger.warning("Syncing asset trash status cannot proceed because MANAGE_MEDIA permission is missing");
-      return;
-    }
-
-    await _handleRemoteDeleted(remoteIds);
-    await _applyRemoteRestoreToLocal();
-  }
-
-  Future<void> _syncAssetDeletion(List<String> remoteIds) async {
-    if (!(await _permissionRepository.hasManageMediaPermission())) {
-      _logger.warning("Syncing asset deletion cannot proceed because MANAGE_MEDIA permission is missing");
-      return;
-    }
-
-    await _handleRemoteDeleted(remoteIds);
   }
 }

@@ -662,6 +662,21 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
+
+  Future<ActionResult> resolveRemoteTrash(ActionSource source, {required bool isSyncApproved}) async {
+    final selectedChecksums = _getAssets(source).map((a) => a.checksum).nonNulls;
+    _logger.info('resolveRemoteTrash, selectedChecksums: $selectedChecksums, isSyncApproved: $isSyncApproved');
+    if (selectedChecksums.isEmpty) {
+      return const ActionResult(count: 0, success: false, error: 'Failed to select asset(s)');
+    }
+    try {
+      final result = await _service.resolveRemoteTrash(selectedChecksums, isSyncApproved: isSyncApproved);
+      return ActionResult(count: result.displayCount, success: result.success);
+    } catch (error, stack) {
+      _logger.severe('Failed to ${isSyncApproved ? 'allow' : 'deny'} to move assets to trash', error, stack);
+      return ActionResult(count: selectedChecksums.length, success: false, error: error.toString());
+    }
+  }
 }
 
 extension on Iterable<RemoteAsset> {

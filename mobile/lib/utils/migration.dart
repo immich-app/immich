@@ -11,17 +11,20 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/trash_sync.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-const int targetVersion = 26;
+const int targetVersion = 27;
 
 Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   final int version = Store.get(StoreKey.version, targetVersion);
+  var migratedMetadata = false;
 
   if (version < 25) {
     await _migrateTo25();
@@ -29,9 +32,18 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
   if (version < 26) {
     await _migrateTo26(drift);
+    migratedMetadata = true;
+  }
+
+  if (version < 27) {
+    await _migrateTo27(drift);
+    migratedMetadata = true;
   }
 
   await Store.put(StoreKey.version, targetVersion);
+  if (migratedMetadata) {
+    await SettingsRepository.instance.refresh();
+  }
   return;
 }
 
@@ -136,6 +148,33 @@ Future<void> _migrateTo26(Drift drift) async {
   await migrator.migrateInt(StoreKey.legacyBackupTriggerDelay, SettingsKey.backupTriggerDelay);
   await migrator.migrateBool(StoreKey.legacySyncAlbums, SettingsKey.backupSyncAlbums);
   await migrator.complete();
+}
+
+Future<void> _migrateTo27(Drift drift) async {
+  final key = SettingsKey.trashSyncMode;
+  final existing = await (drift.select(
+    drift.settingsEntity,
+  )..where((row) => row.key.equals(key.name))).getSingleOrNull();
+
+  if (existing == null) {
+    final legacy = await (drift.select(
+      drift.storeEntity,
+    )..where((row) => row.id.equals(StoreKey.manageLocalMediaAndroid.id) & row.intValue.equals(1))).getSingleOrNull();
+
+    if (legacy != null) {
+      await drift
+          .into(drift.settingsEntity)
+          .insertOnConflictUpdate(
+            SettingsEntityCompanion.insert(
+              key: key.name,
+              value: Value(key.encode(TrashSyncMode.autoSync)),
+              updatedAt: Value(DateTime.now()),
+            ),
+          );
+    }
+  }
+
+  await (drift.delete(drift.storeEntity)..where((row) => row.id.equals(StoreKey.manageLocalMediaAndroid.id))).go();
 }
 
 Future<void> _migrateAlbumSortMode(_StoreMigrator migrator) async {

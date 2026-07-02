@@ -18,6 +18,9 @@ enum StoreKey<T> {
 
   syncMigrationStatus<String>._(1013),
 
+  reviewRemoteDeletions<bool>._(1014),
+  trashSyncLastCleanup<int>._(1015),
+
   // Legacy keys that have been migrated to the new metadata store
   legacyBackupRequireCharging<bool>._(7),
   legacyBackupTriggerDelay<int>._(8),
