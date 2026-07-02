@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart';
+import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:mocktail/mocktail.dart' as mock;
@@ -18,6 +20,7 @@ class RepositoryMocks {
   final localAlbum = LocalAlbumRepositoryStub(MockLocalAlbumRepository());
   final localAsset = LocalAssetRepositoryStub(MockDriftLocalAssetRepository());
   final trashedAsset = MockTrashedLocalAssetRepository();
+  final remoteAsset = RemoteAssetRepositoryStub(MockRemoteAssetRepository());
 
   final nativeApi = NativeSyncApiStub(MockNativeSyncApi());
 
@@ -30,10 +33,12 @@ class RepositoryMocks {
     localAlbum.reset();
     localAsset.reset();
     reset(trashedAsset);
+    remoteAsset.reset();
     nativeApi.reset();
     _stubLocalAlbumRepository();
     _stubLocalAssetRepository();
     _stubNativeSyncApi();
+    _stubRemoteAssetRepository();
   }
 
   void _stubLocalAlbumRepository() {
@@ -48,6 +53,11 @@ class RepositoryMocks {
 
   void _stubNativeSyncApi() {
     when(nativeApi.hashAssets).thenAnswer((_) async => []);
+  }
+
+  void _stubRemoteAssetRepository() {
+    when(remoteAsset.getAssetEdits).thenAnswer((_) async => []);
+    when(remoteAsset.getExif).thenAnswer((_) async => null);
   }
 }
 
@@ -89,6 +99,7 @@ class ServiceMocks {
 
   void _stubAssetService() {
     when(asset.updateFavorite).thenAnswer((_) async {});
+    when(asset.applyEdits).thenAnswer((_) async {});
   }
 }
 
@@ -96,6 +107,7 @@ void _registerFallbacks() {
   registerFallbackValue(LocalAlbumFactory.create());
   registerFallbackValue(LocalAssetFactory.create());
   registerFallbackValue(Uint8List(0));
+  registerFallbackValue(<AssetEdit>[]);
 }
 
 extension type const Stub<T extends Mock>(T mockedClass) {
@@ -117,6 +129,15 @@ extension type const LocalAssetRepositoryStub(MockDriftLocalAssetRepository repo
 
   Future<void> Function() get updateHashes =>
       () => repo.updateHashes(any());
+}
+
+extension type const RemoteAssetRepositoryStub(MockRemoteAssetRepository repo)
+    implements Stub<MockRemoteAssetRepository> {
+  Future<List<AssetEdit>> Function() get getAssetEdits =>
+      () => repo.getAssetEdits(any());
+
+  Future<ExifInfo?> Function() get getExif =>
+      () => repo.getExif(any());
 }
 
 extension type const PartnerServiceStub(MockPartnerService service) implements Stub<MockPartnerService> {
@@ -167,6 +188,9 @@ extension type const UserServiceStub(MockUserService service) implements Stub<Mo
 extension type const AssetServiceStub(MockAssetService service) implements Stub<MockAssetService> {
   Future<void> Function() get updateFavorite =>
       () => service.updateFavorite(any(), any());
+
+  Future<void> Function() get applyEdits =>
+      () => service.applyEdits(any(), any());
 }
 
 extension type const NativeSyncApiStub(MockNativeSyncApi api) implements Stub<MockNativeSyncApi> {

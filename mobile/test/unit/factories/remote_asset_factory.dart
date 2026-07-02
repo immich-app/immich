@@ -5,7 +5,13 @@ import '../../utils.dart';
 class RemoteAssetFactory {
   const RemoteAssetFactory();
 
-  static RemoteAsset create({String? id, String? name, String? ownerId, bool isFavorite = false}) {
+  static RemoteAsset create({
+    String? id,
+    String? name,
+    String? ownerId,
+    bool isFavorite = false,
+    AssetType type = .image,
+  }) {
     id = TestUtils.uuid(id);
 
     return RemoteAsset(
@@ -13,7 +19,7 @@ class RemoteAssetFactory {
       name: name ?? 'remote_$id.jpg',
       ownerId: TestUtils.uuid(ownerId),
       checksum: 'checksum-$id',
-      type: .image,
+      type: type,
       createdAt: TestUtils.yesterday(),
       updatedAt: TestUtils.now(),
       isFavorite: isFavorite,

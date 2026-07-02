@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -303,14 +302,6 @@ class ActionService {
     final updatedAlbum = await _albumApiRepository.updateAlbum(albumId, owner, thumbnailAssetId: assetId);
     await _remoteAlbumRepository.update(updatedAlbum);
     return true;
-  }
-
-  Future<void> applyEdits(String remoteId, List<AssetEdit> edits) async {
-    if (edits.isEmpty) {
-      await _assetApiRepository.removeEdits(remoteId);
-    } else {
-      await _assetApiRepository.editAsset(remoteId, edits);
-    }
   }
 
   Future<int> _deleteLocalAssets(List<String> localIds) async {

@@ -21,7 +21,7 @@ class FavoriteAction extends AssetAction<RemoteAsset> {
       .where(
         (asset) => asset is RemoteAsset && asset.ownerId == scope.authUser.id && asset.isFavorite == !shouldFavorite,
       )
-      .cast<RemoteAsset>();
+      .cast();
 
   @override
   bool isVisible(ActionScope scope) => filter(scope).isNotEmpty;

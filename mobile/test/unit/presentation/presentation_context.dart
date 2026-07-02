@@ -43,6 +43,7 @@ class PresentationContext {
     currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
     assetServiceProvider.overrideWithValue(service.asset.service),
     partnerServiceProvider.overrideWithValue(service.partner.service),
+    remoteAssetRepositoryProvider.overrideWithValue(repository.remoteAsset.repo),
   ];
 
   static Future<PresentationContext> create() async {
