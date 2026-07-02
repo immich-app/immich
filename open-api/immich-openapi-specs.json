@@ -2702,6 +2702,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Album ID",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -2712,6 +2713,7 @@
             "name": "userId",
             "required": true,
             "in": "path",
+            "description": "Album user ID, or \"me\" to reference the current user",
             "schema": {
               "type": "string"
             }
@@ -2762,6 +2764,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Album ID",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -2772,6 +2775,7 @@
             "name": "userId",
             "required": true,
             "in": "path",
+            "description": "Album user ID, or \"me\" to reference the current user",
             "schema": {
               "type": "string"
             }

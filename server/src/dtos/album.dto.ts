@@ -140,6 +140,18 @@ export const AlbumResponseSchema = z
   })
   .meta({ id: 'AlbumResponseDto' });
 
+const AlbumUserParamSchema = z.object({
+  id: z.uuidv4().describe('Album ID'),
+  // TODO: disallow 'me' as a shortcut in v4 and type userId as uuidv4
+  userId: z
+    .string()
+    .refine((value) => value === 'me' || z.uuidv4().safeParse(value).success, {
+      error: 'Must be a UUID v4 or "me"',
+    })
+    .describe('Album user ID, or "me" to reference the current user'),
+});
+
+export class AlbumUserParamDto extends createZodDto(AlbumUserParamSchema) {}
 export class AddUsersDto extends createZodDto(AddUsersSchema) {}
 export class AlbumUserCreateDto extends createZodDto(AlbumUserCreateSchema) {}
 export class CreateAlbumDto extends createZodDto(CreateAlbumSchema) {}
