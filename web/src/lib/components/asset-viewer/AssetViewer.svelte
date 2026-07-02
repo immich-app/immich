@@ -1,7 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { focusTrap } from '$lib/actions/focus-trap';
-  import { shortcuts } from '$lib/actions/shortcut';
+  import { shortcuts, type ShortcutOptions } from '$lib/actions/shortcut';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import NextAssetAction from '$lib/components/asset-viewer/actions/NextAssetAction.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/PreviousAssetAction.svelte';
@@ -15,6 +15,7 @@
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
   import { getAssetActions } from '$lib/services/asset.service';
+  import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
@@ -35,7 +36,7 @@
     type PersonResponseDto,
     type StackResponseDto,
   } from '@immich/sdk';
-  import { CommandPaletteDefaultProvider } from '@immich/ui';
+  import { CommandPaletteDefaultProvider, modalManager } from '@immich/ui';
   import { onDestroy, onMount, untrack } from 'svelte';
   import type { SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
@@ -447,6 +448,51 @@
       ocrManager.hasOcrData,
   );
 
+  let isShortcutModalOpen = false;
+
+  const handleOpenShortcutModal = async () => {
+    if (isShortcutModalOpen) {
+      return;
+    }
+
+    isShortcutModalOpen = true;
+    await modalManager.show(ShortcutsModal, { shortcuts: albumAssetViewerShortcuts });
+    isShortcutModalOpen = false;
+  };
+
+  const albumAssetViewerShortcuts = $derived({
+    general: [
+      { key: ['←', 'a'], action: $t('view_previous_asset') },
+      { key: ['→', 'd'], action: $t('view_next_asset') },
+      { key: ['Esc'], action: $t('back_close_deselect') },
+    ],
+    actions: [
+      { key: ['f'], action: $t('favorite_or_unfavorite_photo') },
+      { key: ['i'], action: $t('show_or_hide_info') },
+      { key: ['l'], action: $t('add_to_album') },
+      { key: ['t'], action: $t('tag_assets') },
+      { key: ['p'], action: $t('tag_people') },
+      { key: ['x'], action: $t('remove_from_album') },
+      { key: ['⇧', 'x'], action: $t('remove_from_album_without_confirmation') },
+      { key: ['⇧', 'a'], action: $t('archive_or_unarchive_photo') },
+      { key: ['⇧', 'd'], action: $t('download') },
+      { key: ['Del'], action: $t('trash_delete_asset'), info: $t('shift_to_permanent_delete') },
+      ...(authManager.authenticated && authManager.preferences.ratings.enabled
+        ? [{ key: ['1-5'], action: $t('rate_asset'), info: $t('zero_to_clear_rating') }]
+        : []),
+    ],
+  });
+  const shortcutModalShortcuts = $derived<ShortcutOptions[]>(
+    album && $slideshowState === SlideshowState.None && !assetViewerManager.isShowEditor
+      ? [{ shortcut: { key: '?', shift: true }, onShortcut: handleOpenShortcutModal }]
+      : [],
+  );
+  const documentShortcuts = $derived<ShortcutOptions[]>([
+    { shortcut: { key: 'ArrowUp' }, onShortcut: () => navigateStack('previous') },
+    { shortcut: { key: 'ArrowDown' }, onShortcut: () => navigateStack('next') },
+    ...shortcutModalShortcuts,
+  ]);
+
   const { Tag, TagPeople } = $derived(getAssetActions($t, asset));
   const showDetailPanel = $derived(
     asset.hasMetadata &&
@@ -477,13 +523,7 @@
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
 <OnEvents {onAssetUpdate} />
 
-<svelte:document
-  bind:fullscreenElement
-  use:shortcuts={[
-    { shortcut: { key: 'ArrowUp' }, onShortcut: () => navigateStack('previous') },
-    { shortcut: { key: 'ArrowDown' }, onShortcut: () => navigateStack('next') },
-  ]}
-/>
+<svelte:document bind:fullscreenElement use:shortcuts={documentShortcuts} />
 
 <section
   id="immich-asset-viewer"
