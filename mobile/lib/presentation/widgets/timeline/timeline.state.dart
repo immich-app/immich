@@ -100,11 +100,19 @@ class TimelineStateNotifier extends Notifier<TimelineState> {
 // This provider watches the buckets from the timeline service & args and serves the segments.
 // It should be used only after the timeline service and timeline args provider is overridden
 final timelineSegmentProvider = StreamProvider.autoDispose<List<Segment>>((ref) async* {
+  final log = Logger('TimelineSegmentProvider');
+
   final args = ref.watch(timelineArgsProvider);
   final columnCount = args.columnCount;
   final spacing = args.spacing;
   final availableTileWidth = args.maxWidth - (spacing * (columnCount - 1));
+  log.info(
+    'timelineSegmentProvider: maxWidth=${args.maxWidth}, spacing=$spacing, availableTileWidth=$availableTileWidth, columnCount=$columnCount',
+  );
   final tileExtent = math.max(0, availableTileWidth) / columnCount;
+  log.info(
+    'timelineSegmentProvider: tileExtent=$tileExtent (availableTileWidth=$availableTileWidth / columnCount=$columnCount)',
+  );
 
   final groupBy = args.groupBy ?? ref.watch(appConfigProvider.select((config) => config.timeline.groupAssetsBy));
 

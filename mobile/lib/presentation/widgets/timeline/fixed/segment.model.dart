@@ -42,8 +42,7 @@ class FixedSegment extends Segment {
     required super.headerExtent,
     required super.spacing,
     required super.header,
-  }) : assert(tileHeight != 0),
-       mainAxisExtend = tileHeight + spacing;
+  }) : mainAxisExtend = tileHeight + spacing;
 
   @override
   double indexToLayoutOffset(int index) {
