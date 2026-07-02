@@ -896,6 +896,71 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     }
   }
 
+  /// Replaces all OCR rows for [assetId] with [data] (e.g. after an asset edit re-runs OCR).
+  Future<void> replaceAssetOcr(String assetId, Iterable<AssetOcrResponseDto> data) async {
+    try {
+      await _db.batch((batch) {
+        batch.deleteWhere(_db.assetOcrEntity, (row) => row.assetId.equals(assetId));
+
+        for (final ocr in data) {
+          batch.insert(
+            _db.assetOcrEntity,
+            AssetOcrEntityCompanion(
+              id: Value(ocr.id),
+              assetId: Value(ocr.assetId),
+              recognizedText: Value(ocr.text),
+              x1: Value(ocr.x1),
+              y1: Value(ocr.y1),
+              x2: Value(ocr.x2),
+              y2: Value(ocr.y2),
+              x3: Value(ocr.x3),
+              y3: Value(ocr.y3),
+              x4: Value(ocr.x4),
+              y4: Value(ocr.y4),
+              boxScore: Value(ocr.boxScore),
+              textScore: Value(ocr.textScore),
+              isVisible: const Value(true),
+            ),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: replaceAssetOcr', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> replaceAssetFaces(String assetId, Iterable<AssetFaceResponseDto> data) async {
+    try {
+      await _db.batch((batch) {
+        batch.deleteWhere(_db.assetFaceEntity, (row) => row.assetId.equals(assetId));
+
+        for (final face in data) {
+          batch.insert(
+            _db.assetFaceEntity,
+            AssetFaceEntityCompanion(
+              id: Value(face.id),
+              assetId: Value(assetId),
+              personId: Value(face.person?.id),
+              imageWidth: Value(face.imageWidth),
+              imageHeight: Value(face.imageHeight),
+              boundingBoxX1: Value(face.boundingBoxX1),
+              boundingBoxY1: Value(face.boundingBoxY1),
+              boundingBoxX2: Value(face.boundingBoxX2),
+              boundingBoxY2: Value(face.boundingBoxY2),
+              sourceType: Value(face.sourceType.orElse(null)?.value ?? SourceType.machineLearning.value),
+              isVisible: const Value(true),
+              deletedAt: const Value(null),
+            ),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: replaceAssetFaces', error, stack);
+      rethrow;
+    }
+  }
+
   Future<void> pruneAssets() async {
     try {
       await _db.transaction(() async {
