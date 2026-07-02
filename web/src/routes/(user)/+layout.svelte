@@ -12,11 +12,24 @@
   // $page.data.asset is loaded by route specific +page.ts loaders if that
   // route contains the assetId path.
   $effect.pre(() => {
+    // Explicitly reference the param to ensure this effect re-runs on param changes
+    const assetIdParam = page.params.assetId;
+
     if (page.data.asset) {
       assetViewerManager.setAsset(page.data.asset);
+    } else if (assetIdParam) {
+      // When returning via history.back() to a route with assetId,
+      // page.data.asset won't be loaded (no loader re-run).
+      // Load it directly from the route params.
+      assetViewerManager.setAssetId(assetIdParam).catch(() => {
+        assetViewerManager.showAssetViewer(false);
+      });
     } else {
       assetViewerManager.showAssetViewer(false);
     }
+  });
+
+  $effect(() => {
     const asset = page.url.searchParams.get('at');
     assetViewerManager.gridScrollTarget = { at: asset };
   });

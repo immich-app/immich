@@ -202,7 +202,7 @@
   };
 
   const handleMergePeople = async (detail: PersonResponseDto) => {
-    await goto(Route.viewPerson(detail, { previousRoute: Route.people(), action: 'merge' }));
+    await goto(Route.viewPerson(detail, { action: 'merge' }));
   };
 
   const onResetSearchBar = async () => {

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate } from '$app/navigation';
   import { page } from '$app/state';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
@@ -29,7 +29,7 @@
   import { handlePromiseError } from '$lib/utils';
   import { parseUtcDate } from '$lib/utils/date-time';
   import { handleError } from '$lib/utils/handle-error';
-  import { isAlbumsRoute, isPeopleRoute } from '$lib/utils/navigation';
+  import { navigateBack } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import {
     type AlbumResponseDto,
@@ -48,11 +48,6 @@
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
   let searchResultsElement: HTMLElement | undefined = $state();
-
-  // The GalleryViewer pushes it's own history state, which causes weird
-  // behavior for history.back(). To prevent that we store the previous page
-  // manually and navigate back to that.
-  let previousRoute = $state<string>(Route.explore());
 
   let nextPage = $state(1);
   let searchResultAlbums: AlbumResponseDto[] = $state([]);
@@ -81,20 +76,6 @@
   });
 
   afterNavigate(({ from }) => {
-    // Prevent setting previousRoute to the current page.
-    if (from?.url && from.route.id !== page.route.id) {
-      previousRoute = from.url.href;
-    }
-    const route = from?.route?.id;
-
-    if (isPeopleRoute(route)) {
-      previousRoute = Route.photos();
-    }
-
-    if (isAlbumsRoute(route)) {
-      previousRoute = Route.explore();
-    }
-
     tick()
       .then(() => {
         window.scrollTo(0, scrollYHistory);
@@ -386,7 +367,7 @@
       </div>
     {:else}
       <div class="fixed inset-s-0 top-0 z-2 w-full">
-        <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
+        <ControlAppBar onClose={() => navigateBack(Route.explore())} backIcon={mdiArrowLeft}>
           <div class="mx-auto w-full max-w-2xl pe-2">
             <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
           </div>
