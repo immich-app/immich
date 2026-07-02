@@ -153,6 +153,6 @@ class DeepLinkService {
       return null;
     }
 
-    return DriftPersonRoute(person: person);
+    return DriftPersonRoute(initialPerson: person);
   }
 }
