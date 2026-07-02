@@ -20,6 +20,7 @@ String getPlaybackUrlForRemoteId(final String id) {
   return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/video/playback?';
 }
 
-String getFaceThumbnailUrl(final String personId) {
-  return '${Store.get(StoreKey.serverEndpoint)}/people/$personId/thumbnail';
+String getFaceThumbnailUrl(final String personId, {DateTime? updatedAt}) {
+  final url = '${Store.get(StoreKey.serverEndpoint)}/people/$personId/thumbnail';
+  return updatedAt != null ? '$url?c=${updatedAt.millisecondsSinceEpoch}' : url;
 }
