@@ -50,37 +50,43 @@ class TimelineArgs {
 }
 
 class TimelineState {
-  final bool isScrubbing;
   final bool isScrolling;
 
-  const TimelineState({this.isScrubbing = false, this.isScrolling = false});
+  /// Indicates whether the timeline is scrolling beyond some configured "high" speed,
+  /// such as when programmatically scrolling to the top or a really fast user fling
+  final bool isFastScrolling;
 
-  bool get isInteracting => isScrubbing || isScrolling;
+  const TimelineState({this.isScrolling = false, this.isFastScrolling = false});
+
+  bool get isInteracting => isScrolling || isFastScrolling;
 
   @override
   bool operator ==(covariant TimelineState other) {
-    return isScrubbing == other.isScrubbing && isScrolling == other.isScrolling;
+    return isScrolling == other.isScrolling && isFastScrolling == other.isFastScrolling;
   }
 
   @override
-  int get hashCode => isScrubbing.hashCode ^ isScrolling.hashCode;
+  int get hashCode => isScrolling.hashCode ^ isFastScrolling.hashCode;
 
-  TimelineState copyWith({bool? isScrubbing, bool? isScrolling}) {
-    return TimelineState(isScrubbing: isScrubbing ?? this.isScrubbing, isScrolling: isScrolling ?? this.isScrolling);
+  TimelineState copyWith({bool? isScrubbing, bool? isScrolling, bool? isFastScrolling}) {
+    return TimelineState(
+      isScrolling: isScrolling ?? this.isScrolling,
+      isFastScrolling: isFastScrolling ?? this.isFastScrolling,
+    );
   }
 }
 
 class TimelineStateNotifier extends Notifier<TimelineState> {
-  void setScrubbing(bool isScrubbing) {
-    state = state.copyWith(isScrubbing: isScrubbing);
-  }
-
   void setScrolling(bool isScrolling) {
     state = state.copyWith(isScrolling: isScrolling);
   }
 
+  void setFastScrolling(bool isFastScrolling) {
+    state = state.copyWith(isFastScrolling: isFastScrolling);
+  }
+
   @override
-  TimelineState build() => const TimelineState(isScrubbing: false, isScrolling: false);
+  TimelineState build() => const TimelineState(isScrolling: false, isFastScrolling: false);
 }
 
 // This provider watches the buckets from the timeline service & args and serves the segments.

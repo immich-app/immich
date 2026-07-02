@@ -106,7 +106,7 @@ class _FixedSegmentRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isScrubbing = ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
+    final shouldDeferAssetLoading = ref.watch(timelineStateProvider.select((s) => s.isFastScrolling));
     final timelineService = ref.read(timelineServiceProvider);
     final isDynamicLayout = columnCount <= (context.isMobile ? 2 : 3);
 
@@ -119,7 +119,7 @@ class _FixedSegmentRow extends ConsumerWidget {
       );
     }
 
-    if (isScrubbing) {
+    if (shouldDeferAssetLoading) {
       return _buildPlaceholder(context);
     }
 

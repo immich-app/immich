@@ -150,6 +150,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   double _baseScaleFactor = 3.0;
   int? _restoreAssetIndex;
 
+  final Stopwatch _scrollClock = Stopwatch()..start();
+  double _lastScrollPixelOffset = 0;
+  Duration? _lastScrollTimestamp;
+
   @override
   void initState() {
     super.initState();
@@ -182,11 +186,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     switch (event) {
       case ScrollToTopEvent():
         {
-          final timelineState = ref.read(timelineStateProvider.notifier);
-          timelineState.setScrubbing(true);
-          _scrollController
-              .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
-              .whenComplete(() => timelineState.setScrubbing(false));
+          _scrollController.animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
         }
 
       case ScrollToDateEvent scrollToDateEvent:
@@ -251,8 +251,64 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     super.dispose();
   }
 
+  /// Calculate the velocity of a timeline scroll event and track if it exceeds some threshold
+  bool _onScrollVelocityNotification(ScrollNotification notification) {
+    // Only consider the primary timeline ScrollView (no nested views)
+    if (notification.depth != 0) {
+      return false;
+    }
+
+    if (notification is ScrollStartNotification) {
+      _lastScrollTimestamp = null;
+
+      return false;
+    } else if (notification is ScrollEndNotification) {
+      _lastScrollTimestamp = null;
+      ref.read(timelineStateProvider.notifier).setFastScrolling(false);
+
+      return false;
+    } else if (notification is! ScrollUpdateNotification) {
+      // Assert we have a `ScrollUpdateNotification`
+      return false;
+    }
+
+    final now = _scrollClock.elapsed;
+    final lastTimestamp = _lastScrollTimestamp;
+    final lastPixelOffset = _lastScrollPixelOffset;
+
+    _lastScrollTimestamp = now;
+    _lastScrollPixelOffset = notification.metrics.pixels;
+
+    if (lastTimestamp == null) {
+      // First tick of scroll
+      return false;
+    }
+
+    final deltaSeconds = (now - lastTimestamp).inMicroseconds / Duration.microsecondsPerSecond;
+    if (deltaSeconds <= 0) {
+      return false;
+    }
+
+    final velocity = (_lastScrollPixelOffset - lastPixelOffset).abs() / deltaSeconds;
+
+    // Use same threshold calculation as Flutter's `ScrollPhysics.recommendDeferredLoading`, adding hysteresis
+    // Pixels per second must exceed the length of the longest view dimension to start fast scrolling
+    // and it must drop below 50% of that dimension to stop fast scrolling
+    final enterThreshold = View.of(context).physicalSize.longestSide;
+
+    final notifier = ref.read(timelineStateProvider.notifier);
+    final isFastScrolling = ref.read(timelineStateProvider).isFastScrolling;
+
+    if (!isFastScrolling && velocity > enterThreshold) {
+      notifier.setFastScrolling(true);
+    } else if (isFastScrolling && velocity < enterThreshold / 2) {
+      notifier.setFastScrolling(false);
+    }
+
+    return false;
+  }
+
   void _scrollToDate(DateTime date) {
-    final timelineState = ref.read(timelineStateProvider.notifier);
     final asyncSegments = ref.read(timelineSegmentProvider);
     asyncSegments.whenData((segments) {
       // Find the segment that contains assets from the target date
@@ -279,16 +335,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       if (fallbackSegment != null) {
         // Scroll to the segment with a small offset to show the header
         final targetOffset = fallbackSegment.startOffset - 50;
-        timelineState.setScrubbing(true);
-        _scrollController
-            .animateTo(
-              targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-            )
-            .whenComplete(() => timelineState.setScrubbing(false));
-      } else {
-        timelineState.setScrubbing(false);
+        _scrollController.animateTo(
+          targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
       }
     });
   }
@@ -480,7 +531,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      timeline,
+                      NotificationListener<ScrollNotification>(
+                        onNotification: _onScrollVelocityNotification,
+                        child: timeline,
+                      ),
                       if (isBottomWidgetVisible)
                         Positioned(
                           top: MediaQuery.paddingOf(context).top,
