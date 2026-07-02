@@ -73,12 +73,18 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
         return;
       }
 
-      ImmichToast.show(
-        context: context,
-        msg: result.count == 0
-            ? 'add_to_album_bottom_sheet_already_exists'.t(context: context, args: {"album": album.name})
-            : 'add_to_album_bottom_sheet_added'.t(context: context, args: {"album": album.name}),
-      );
+      final String msg;
+      if (result.count == 0) {
+        msg = 'add_to_album_bottom_sheet_already_exists'.t(context: context, args: {"album": album.name});
+      } else if (result.existing > 0) {
+        msg = 'add_to_album_bottom_sheet_partial_added'.t(
+          context: context,
+          args: {"added": result.count.toString(), "album": album.name, "existing": result.existing.toString()},
+        );
+      } else {
+        msg = 'add_to_album_bottom_sheet_added'.t(context: context, args: {"album": album.name});
+      }
+      ImmichToast.show(context: context, msg: msg);
     }
 
     Future<void> onKeyboardExpand() {
