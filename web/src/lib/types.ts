@@ -97,7 +97,7 @@ export type JSONSchemaProperty = {
   properties?: Record<string, JSONSchemaProperty>;
   required?: string[];
   uiHint?: {
-    type?: 'AlbumId' | 'AssetId' | 'PersonId';
+    type?: 'AlbumId' | 'AssetId' | 'PersonId' | 'TagId';
     order?: number;
   };
 };

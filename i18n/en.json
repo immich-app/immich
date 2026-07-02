@@ -2131,6 +2131,8 @@
   "trigger": "Trigger",
   "trigger_asset_metadata_extraction": "Asset Metadata Extraction",
   "trigger_asset_metadata_extraction_description": "Triggered when the EXIF metadata of an asset is extracted",
+  "trigger_asset_tagged": "Asset Tagged",
+  "trigger_asset_tagged_description": "Triggered when a tag is added to an asset",
   "trigger_asset_uploaded": "Asset Upload",
   "trigger_asset_uploaded_description": "Triggered when a new asset is uploaded",
   "trigger_person_recognized": "Person Recognized",

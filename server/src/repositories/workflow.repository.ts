@@ -8,6 +8,7 @@ import { WorkflowSearchDto } from 'src/dtos/workflow.dto';
 import { DB } from 'src/schema';
 import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table';
 import { WorkflowTable } from 'src/schema/tables/workflow.table';
+import { withTags } from 'src/utils/database';
 
 export type WorkflowStepUpsert = Omit<Insertable<WorkflowStepTable>, 'workflowId' | 'order'>;
 
@@ -142,6 +143,7 @@ export class WorkflowRepository {
       .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
       .select((eb) => [
         ...columns.workflowAssetV1,
+        withTags,
         jsonObjectFrom(
           eb
             .selectFrom('asset_exif')
