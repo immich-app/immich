@@ -17,9 +17,9 @@
   import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Icon, modalManager, Theme, themeManager } from '@immich/ui';
-  import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
+  import { mdiCog, mdiMap, mdiMapMarker, mdiImageMultiple } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
-  import { isEqual, omit } from 'lodash-es';
+  import { debounce, isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
   import {
     GlobeControl,
@@ -30,6 +30,7 @@
     type LngLatLike,
     type Map,
     type MapMouseEvent,
+    type ExpressionSpecification,
   } from 'maplibre-gl';
   import { onDestroy, onMount, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -47,6 +48,7 @@
     ScaleControl,
   } from 'svelte-maplibre';
   import type { SelectionBBox } from './types';
+  import { autoZoomCluster } from './utils';
 
   interface Props {
     mapMarkers?: MapMarkerResponseDto[];
@@ -60,6 +62,10 @@
     onOpenInMapView?: (() => Promise<void> | void) | undefined;
     onSelect?: (assetIds: string[]) => void;
     onClusterSelect?: (assetIds: string[], bbox: SelectionBBox) => void;
+    onBoundsChange?: (bbox: SelectionBBox) => void;
+    visibleAssetIds?: Set<string> | undefined;
+    isTimelineOpen?: boolean;
+    onToggleTimeline?: () => void;
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
     rounded?: boolean;
@@ -79,6 +85,10 @@
     onOpenInMapView = undefined,
     onSelect = () => {},
     onClusterSelect,
+    onBoundsChange,
+    visibleAssetIds,
+    isTimelineOpen = false,
+    onToggleTimeline,
     onClickPoint = () => {},
     popup,
     rounded = false,
@@ -130,33 +140,42 @@
     if (!map) {
       return;
     }
-
     const mapSource = map.getSource('geojson') as GeoJSONSource;
-    const leaves = await mapSource.getClusterLeaves(clusterId, 10_000, 0);
-    const ids = leaves.map((leaf) => leaf.properties?.id as string);
 
-    if (onClusterSelect && ids.length > 1) {
-      const [firstLongitude, firstLatitude] = (leaves[0].geometry as Point).coordinates;
-      let west = firstLongitude;
-      let south = firstLatitude;
-      let east = firstLongitude;
-      let north = firstLatitude;
+    await autoZoomCluster({
+      map,
+      mapSource,
+      clusterId,
+      onSelect,
+      onClusterSelect,
+    });
+  }
 
-      for (const leaf of leaves.slice(1)) {
-        const [longitude, latitude] = (leaf.geometry as Point).coordinates;
-        west = Math.min(west, longitude);
-        south = Math.min(south, latitude);
-        east = Math.max(east, longitude);
-        north = Math.max(north, latitude);
-      }
-
-      const bbox = { west, south, east, north };
-      onClusterSelect(ids, bbox);
+  const handleBoundsChange = debounce(() => {
+    if (!map || !onBoundsChange) {
       return;
     }
 
-    onSelect(ids);
-  }
+    const bounds = map.getBounds();
+    if (!bounds) {
+      return;
+    }
+
+    let west = bounds.getWest();
+    let east = bounds.getEast();
+    let south = Math.max(-90, Math.min(90, bounds.getSouth()));
+    let north = Math.max(-90, Math.min(90, bounds.getNorth()));
+
+    if (east - west >= 360) {
+      west = -180;
+      east = 180;
+    } else {
+      west = bounds.getSouthWest().wrap().lng;
+      east = bounds.getNorthEast().wrap().lng;
+    }
+
+    onBoundsChange({ west, south, east, north });
+  }, 200);
 
   function handleMapClick(event: MapMouseEvent) {
     if (clickable) {
@@ -216,6 +235,12 @@
       fileCreatedBefore: dateBefore,
     };
   }
+
+  const filter: ExpressionSpecification | undefined = $derived.by(() =>
+    visibleAssetIds
+      ? (['in', ['get', 'id'], ['literal', Array.from(visibleAssetIds)]] as unknown as ExpressionSpecification)
+      : undefined,
+  );
 
   async function loadMapMarkers() {
     if (abortController) {
@@ -330,6 +355,18 @@
   onload={(event: Map) => {
     event.setMaxZoom(18);
     event.on('click', handleMapClick);
+    event.on('moveend', handleBoundsChange);
+    event.on('zoomend', handleBoundsChange);
+
+    handleBoundsChange();
+
+    event.on('mouseenter', 'geojson-clusters', () => {
+      event.getCanvas().style.cursor = 'pointer';
+    });
+    event.on('mouseleave', 'geojson-clusters', () => {
+      event.getCanvas().style.cursor = '';
+    });
+
     if (!simplified) {
       event.addControl(new GlobeControl(), 'top-left');
     }
@@ -352,6 +389,21 @@
         <ControlGroup>
           <ControlButton onclick={handleSettingsClick}>
             <Icon icon={mdiCog} size="100%" class="text-black/80" />
+          </ControlButton>
+        </ControlGroup>
+      </Control>
+    {/if}
+
+    {#if onToggleTimeline}
+      <Control position="top-right">
+        <ControlGroup>
+          <ControlButton title={$t('timeline')} onclick={() => onToggleTimeline?.()}>
+            <Icon
+              title={$t('timeline')}
+              icon={mdiImageMultiple}
+              size="100%"
+              class={isTimelineOpen ? 'text-immich-primary dark:text-immich-primary' : 'text-black/80'}
+            />
           </ControlButton>
         </ControlGroup>
       </Control>
@@ -390,6 +442,7 @@
       </MarkerLayer>
       <MarkerLayer
         applyToClusters={false}
+        filter={filter as never}
         asButton
         onclick={(event) => {
           if (!popup) {
