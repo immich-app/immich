@@ -1,1 +1,0 @@
-* Fixed foreground backup not triggered on app relaunch 

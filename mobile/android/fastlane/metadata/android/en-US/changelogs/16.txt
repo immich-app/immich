@@ -1,2 +1,0 @@
-* Update to Material Design 3
-* Fixed back button navigation - no longer return back to the home page

@@ -1,1 +1,0 @@
-* Added announcement pop-up when a new released is pushed out in Github.

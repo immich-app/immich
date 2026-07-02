@@ -1,3 +1,0 @@
-* Fixed back button navigation
-* Added duplicated asset upload handling mechanism
-* Fixed cannot signout completely when "Save Logged In" is checked

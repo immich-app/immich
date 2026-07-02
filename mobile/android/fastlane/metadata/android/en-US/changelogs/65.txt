@@ -1,2 +1,0 @@
-* Various performance improvements
-* UI improvement on metadata sheet

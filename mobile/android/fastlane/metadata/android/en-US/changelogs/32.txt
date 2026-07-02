@@ -1,1 +1,0 @@
-* Modify Album API endpoint to return count attribute instead of all assets to reduce network consumption and CPU processing.
