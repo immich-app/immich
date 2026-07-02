@@ -280,8 +280,7 @@ class SyncStreamService {
         return;
       // SyncCompleteV1 is used to signal the completion of the sync process. Cleanup stale assets and signal completion
       case SyncEntityType.syncCompleteV1:
-        return;
-      // return _syncStreamRepository.pruneAssets();
+        return _syncStreamRepository.pruneAssets();
       // Request to reset the client state. Clear everything related to remote entities
       case SyncEntityType.syncResetV1:
         return _syncStreamRepository.reset();
