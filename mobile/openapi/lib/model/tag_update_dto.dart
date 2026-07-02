@@ -14,28 +14,38 @@ class TagUpdateDto {
   /// Returns a new [TagUpdateDto] instance.
   TagUpdateDto({
     this.color = const Optional.absent(),
+    this.name = const Optional.absent(),
   });
 
   /// Tag color (hex)
   Optional<String?> color;
 
+  /// Tag name
+  Optional<String?> name;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is TagUpdateDto &&
-    other.color == color;
+    other.color == color &&
+    other.name == name;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (color == null ? 0 : color!.hashCode);
+    (color == null ? 0 : color!.hashCode) +
+    (name == null ? 0 : name!.hashCode);
 
   @override
-  String toString() => 'TagUpdateDto[color=$color]';
+  String toString() => 'TagUpdateDto[color=$color, name=$name]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
     if (this.color.isPresent) {
       final value = this.color.value;
       json[r'color'] = value;
+    }
+    if (this.name.isPresent) {
+      final value = this.name.value;
+      json[r'name'] = value;
     }
     return json;
   }
@@ -50,6 +60,7 @@ class TagUpdateDto {
 
       return TagUpdateDto(
         color: json.containsKey(r'color') ? Optional.present(mapValueOfType<String>(json, r'color')) : const Optional.absent(),
+        name: json.containsKey(r'name') ? Optional.present(mapValueOfType<String>(json, r'name')) : const Optional.absent(),
       );
     }
     return null;

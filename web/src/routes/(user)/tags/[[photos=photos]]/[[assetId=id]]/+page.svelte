@@ -63,6 +63,14 @@
     tags = await getAllTags();
   };
 
+  const onTagUpdate = async (response: TagResponseDto) => {
+    if (response.value !== tag.path) {
+      await navigateToView(response.value || '');
+    }
+
+    await onRefresh();
+  };
+
   const onTagDelete = async (response: TreeNode) => {
     if (response.path === tag.path) {
       await navigateToView(tag.parent ? tag.parent.path : '');
@@ -74,7 +82,7 @@
   const { Create, Update, Delete } = $derived(getTagActions($t, tag));
 </script>
 
-<OnEvents onTagCreate={onRefresh} onTagUpdate={onRefresh} {onTagDelete} />
+<OnEvents onTagCreate={onRefresh} {onTagUpdate} {onTagDelete} />
 
 <UserPageLayout title={data.meta.title} actions={[Create, Update, Delete]}>
   {#snippet sidebar()}
