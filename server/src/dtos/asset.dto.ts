@@ -51,6 +51,7 @@ const AssetBulkUpdateSchema = AssetBulkUpdateBaseSchema.pipe(
 
 const UpdateAssetSchema = UpdateAssetBaseSchema.extend({
   livePhotoVideoId: z.uuidv4().nullish().describe('Live photo video ID'),
+  visibility: AssetVisibilitySchema.optional().describe('Asset visibility'),
 }).meta({ id: 'UpdateAssetDto' });
 
 const AssetBulkDeleteSchema = BulkIdsSchema.extend({
