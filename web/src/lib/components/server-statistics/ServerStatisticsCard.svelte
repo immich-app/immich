@@ -41,7 +41,7 @@
       <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros()}</span>
     </div>
   {:then data}
-    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="{data.value} {data.unit ? data.unit : ''}">
+    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="{data.value} {data.unit ?? ''}">
       <span class="text-gray-300 dark:text-gray-600">{zeros(data)}</span><span>{data.value}</span>
       {#if data.unit}
         <code class="font-mono text-base font-normal">{data.unit}</code>
