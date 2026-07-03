@@ -200,6 +200,11 @@ export class BaseConfig implements VideoCodecSWConfig {
     const options = ['-c:v', videoCodec, '-c:a', audioCodec, '-map', `0:${videoStream.index}`, '-map_metadata', '-1'];
     if (audioStream) {
       options.push('-map', `0:${audioStream.index}`);
+      // If there are more than 2 channels sometimes the channel config is broken when re-encoded
+      // TODO: Store the number of channels in the db and then set it during the transcoding: -channel_layout 5.1
+      if ([TranscodeTarget.All, TranscodeTarget.Audio].includes(target)) {
+        options.push('-ac', '2');
+      }
     }
     if (this.getBFrames() > -1) {
       options.push('-bf', `${this.getBFrames()}`);
