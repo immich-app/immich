@@ -39,6 +39,22 @@ const resetEnv = () => {
     'REDIS_URL',
 
     'NO_COLOR',
+
+    'DB_REPLICATION_ENABLED',
+    'DB_REPLICA_0_HOSTNAME',
+    'DB_REPLICA_0_PORT',
+    'DB_REPLICA_0_USERNAME',
+    'DB_REPLICA_0_PASSWORD',
+    'DB_REPLICA_0_DATABASE_NAME',
+    'DB_REPLICA_0_SSL_MODE',
+    'DB_REPLICA_0_URL',
+    'DB_REPLICA_1_HOSTNAME',
+    'DB_REPLICA_1_PORT',
+    'DB_REPLICA_1_USERNAME',
+    'DB_REPLICA_1_PASSWORD',
+    'DB_REPLICA_1_DATABASE_NAME',
+    'DB_REPLICA_1_SSL_MODE',
+    'DB_REPLICA_1_URL',
   ]) {
     delete process.env[env];
   }
@@ -126,9 +142,12 @@ describe('getEnv', () => {
           database: 'immich',
           username: 'postgres',
           password: 'postgres',
+          ssl: undefined,
         },
         skipMigrations: false,
         vectorExtension: undefined,
+        enableReplicas: false,
+        replicas: undefined,
       });
     });
 
@@ -322,6 +341,121 @@ describe('getEnv', () => {
       process.env.IMMICH_TELEMETRY_INCLUDE = 'io, host, api';
       const { telemetry } = getEnv();
       expect(telemetry.metrics).toEqual(new Set([ImmichTelemetry.Api, ImmichTelemetry.Host, ImmichTelemetry.Io]));
+    });
+  });
+
+  describe('replicas', () => {
+    it('should default to no replicas', () => {
+      const { database } = getEnv();
+      expect(database.enableReplicas).toBe(false);
+      expect(database.replicas).toBeUndefined();
+    });
+
+    it('should parse a parts-based replica with defaults applied', () => {
+      process.env.DB_REPLICA_0_HOSTNAME = 'replica-host';
+      const { database } = getEnv();
+      expect(database.replicas).toEqual([
+        {
+          connectionType: 'parts',
+          host: 'replica-host',
+          port: 5432,
+          username: 'postgres',
+          password: 'postgres',
+          database: 'immich',
+          ssl: undefined,
+        },
+      ]);
+    });
+
+    it('should parse a parts-based replica with explicit values', () => {
+      process.env.DB_REPLICA_0_HOSTNAME = 'replica-host';
+      process.env.DB_REPLICA_0_PORT = '5433';
+      process.env.DB_REPLICA_0_USERNAME = 'replica-user';
+      process.env.DB_REPLICA_0_PASSWORD = 'replica-pass';
+      process.env.DB_REPLICA_0_DATABASE_NAME = 'immich_replica';
+      process.env.DB_REPLICA_0_SSL_MODE = 'require';
+      const { database } = getEnv();
+      expect(database.replicas).toEqual([
+        {
+          connectionType: 'parts',
+          host: 'replica-host',
+          port: 5433,
+          username: 'replica-user',
+          password: 'replica-pass',
+          database: 'immich_replica',
+          ssl: 'require',
+        },
+      ]);
+    });
+
+    it('should parse a url-based replica', () => {
+      process.env.DB_REPLICA_0_URL = 'postgres://replica-user:replica-pass@replica-host:5432/immich_replica';
+      const { database } = getEnv();
+      expect(database.replicas).toEqual([
+        {
+          connectionType: 'url',
+          url: 'postgres://replica-user:replica-pass@replica-host:5432/immich_replica',
+        },
+      ]);
+    });
+
+    it('should prefer DB_REPLICA_<n>_URL over other fields for the same index', () => {
+      process.env.DB_REPLICA_0_URL = 'postgres://replica-user:replica-pass@replica-host:5432/immich_replica';
+      process.env.DB_REPLICA_0_HOSTNAME = 'ignored-host';
+      const { database } = getEnv();
+      expect(database.replicas).toEqual([
+        {
+          connectionType: 'url',
+          url: 'postgres://replica-user:replica-pass@replica-host:5432/immich_replica',
+        },
+      ]);
+    });
+
+    it('should parse multiple replicas in index order', () => {
+      process.env.DB_REPLICA_1_HOSTNAME = 'replica-host-1';
+      process.env.DB_REPLICA_0_HOSTNAME = 'replica-host-0';
+      const { database } = getEnv();
+      expect(database.replicas).toEqual([
+        {
+          connectionType: 'parts',
+          host: 'replica-host-0',
+          port: 5432,
+          username: 'postgres',
+          password: 'postgres',
+          database: 'immich',
+          ssl: undefined,
+        },
+        {
+          connectionType: 'parts',
+          host: 'replica-host-1',
+          port: 5432,
+          username: 'postgres',
+          password: 'postgres',
+          database: 'immich',
+          ssl: undefined,
+        },
+      ]);
+    });
+
+    it('should enable replicas when DB_REPLICATION_ENABLED is true and at least one replica is configured', () => {
+      process.env.DB_REPLICATION_ENABLED = 'true';
+      process.env.DB_REPLICA_0_HOSTNAME = 'replica-host';
+      const { database } = getEnv();
+      expect(database.enableReplicas).toBe(true);
+      expect(database.replicas).toHaveLength(1);
+    });
+
+    it('should throw an error when DB_REPLICATION_ENABLED is true and no replicas are configured', () => {
+      process.env.DB_REPLICATION_ENABLED = 'true';
+      expect(() => getEnv()).toThrowError(
+        '[DB_REPLICAS] At least one DB_REPLICA_<n>_* must be configured when DB_REPLICATION_ENABLED=true',
+      );
+    });
+
+    it('should throw an error for an invalid replica configuration', () => {
+      // a parts-style replica requires at least a hostname
+      process.env.DB_REPLICA_0_PORT = '5433';
+      expect(() => getEnv()).toThrowError('[DB_REPLICAS] Invalid DB replica configuration');
     });
   });
 });

@@ -34,6 +34,45 @@ const trustedProxiesSchema = z
 
   .pipe(z.union([z.undefined(), IsIPRange({ requireCIDR: false })]));
 
+const ReplicaSchema = z.union([
+  z.object({
+    connectionType: z.literal('parts'), // We require a unique host.
+    host: z.string().min(1),
+    port: z.coerce.number().int().positive().optional(),
+    username: z.string().min(1).optional(),
+    password: z.string().min(1).optional(),
+    databaseName: z.string().min(1).optional(),
+    sslMode: DatabaseSslModeSchema.optional(),
+  }),
+  z.object({ connectionType: z.literal('url'), url: z.string().min(1) }),
+]);
+
+const ReplicasFromEnvSchema = z.preprocess((input) => {
+  const env = input as Record<string, unknown>;
+  const keys = Object.keys(env);
+  const indices = keys
+    .map((k) => k.match(/^DB_REPLICA_(\d+)_(?:HOSTNAME|PORT|USERNAME|PASSWORD|DATABASE_NAME|SSL_MODE|URL)$/)?.[1])
+    .filter((v): v is string => !!v)
+    .map(Number)
+    .filter((v, i, arr) => arr.indexOf(v) === i)
+    .sort((a, b) => a - b);
+  return indices.map((i) => {
+    const url = env[`DB_REPLICA_${i}_URL`];
+    if (url) {
+      return { connectionType: 'url', url };
+    }
+    return {
+      connectionType: 'parts',
+      host: env[`DB_REPLICA_${i}_HOSTNAME`],
+      port: env[`DB_REPLICA_${i}_PORT`],
+      username: env[`DB_REPLICA_${i}_USERNAME`],
+      password: env[`DB_REPLICA_${i}_PASSWORD`],
+      databaseName: env[`DB_REPLICA_${i}_DATABASE_NAME`],
+      sslMode: env[`DB_REPLICA_${i}_SSL_MODE`],
+    };
+  });
+}, z.array(ReplicaSchema));
+
 export const EnvSchema = z
   .object({
     IMMICH_API_METRICS_PORT: z.coerce.number().int().optional(),
@@ -78,6 +117,7 @@ export const EnvSchema = z
     DB_URL: z.string().optional(),
     DB_USERNAME: z.string().optional(),
     DB_VECTOR_EXTENSION: z.enum(['pgvector', 'vectorchord']).optional(),
+    DB_REPLICATION_ENABLED: stringBool.optional(),
     NO_COLOR: z.string().optional(),
     REDIS_HOSTNAME: z.string().optional(),
     REDIS_PORT: z.coerce.number().int().optional(),
@@ -86,5 +126,38 @@ export const EnvSchema = z
     REDIS_PASSWORD: z.string().optional(),
     REDIS_SOCKET: z.string().optional(),
     REDIS_URL: z.string().optional(),
+  })
+  .loose()
+  .transform((env, ctx) => {
+    const parsed = ReplicasFromEnvSchema.safeParse(env);
+
+    if (!parsed.success) {
+      for (const _ of parsed.error.issues) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['DB_REPLICAS'],
+          message: 'Invalid DB replica configuration',
+        });
+      }
+
+      return {
+        ...env,
+        DB_REPLICAS: [],
+      };
+    }
+
+    return {
+      ...env,
+      DB_REPLICAS: parsed.data,
+    };
+  })
+  .superRefine((env, ctx) => {
+    if (env.DB_REPLICATION_ENABLED && env.DB_REPLICAS.length === 0) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['DB_REPLICAS'],
+        message: 'At least one DB_REPLICA_<n>_* must be configured when DB_REPLICATION_ENABLED=true',
+      });
+    }
   })
   .meta({ id: 'EnvDto' });

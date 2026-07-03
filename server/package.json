@@ -86,6 +86,7 @@
     "jsonwebtoken": "^9.0.2",
     "kysely": "0.28.17",
     "kysely-postgres-js": "^3.0.0",
+    "kysely-replication": "^0.3.0",
     "lodash": "^4.17.21",
     "luxon": "^3.4.2",
     "mnemonist": "^0.40.3",

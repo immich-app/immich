@@ -66,6 +66,8 @@ export interface EnvData {
     config: DatabaseConnectionParams;
     skipMigrations: boolean;
     vectorExtension?: VectorExtension;
+    enableReplicas?: boolean;
+    replicas?: [DatabaseConnectionParams, ...DatabaseConnectionParams[]];
   };
 
   licensePublicKey: {
@@ -242,6 +244,25 @@ const getEnv = (): EnvData => {
         ssl: dto.DB_SSL_MODE || undefined,
       };
 
+  const replicaConnections: DatabaseConnectionParams[] = dto.DB_REPLICAS.map((r) =>
+    r.connectionType === 'url'
+      ? { connectionType: 'url', url: r.url }
+      : {
+          connectionType: 'parts',
+          host: r.host,
+          port: r.port || 5432,
+          username: r.username || 'postgres',
+          password: r.password || 'postgres',
+          database: r.databaseName || 'immich',
+          ssl: r.sslMode || undefined,
+        },
+  );
+
+  const databaseReplicas: [DatabaseConnectionParams, ...DatabaseConnectionParams[]] | undefined =
+    replicaConnections.length > 0
+      ? (replicaConnections as [DatabaseConnectionParams, ...DatabaseConnectionParams[]])
+      : undefined;
+
   let vectorExtension: VectorExtension | undefined;
   if (dto.DB_VECTOR_EXTENSION) {
     switch (dto.DB_VECTOR_EXTENSION) {
@@ -311,6 +332,8 @@ const getEnv = (): EnvData => {
       config: databaseConnection,
       skipMigrations: dto.DB_SKIP_MIGRATIONS ?? false,
       vectorExtension,
+      enableReplicas: dto.DB_REPLICATION_ENABLED ?? false,
+      replicas: databaseReplicas,
     },
 
     helmet: {
