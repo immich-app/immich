@@ -86,10 +86,14 @@ Information on the current workers can be found [here](/administration/jobs-work
 | `DB_VECTOR_EXTENSION`<sup>\*2</sup> | Database vector extension (one of [`vectorchord`, `pgvector`])                         |            | server                         |
 | `DB_SKIP_MIGRATIONS`                | Whether to skip running migrations on startup (one of [`true`, `false`])               |  `false`   | server                         |
 | `DB_STORAGE_TYPE`                   | Optimize concurrent IO on SSDs or sequential IO on HDDs ([`SSD`, `HDD`])<sup>\*3</sup> |   `SSD`    | database                       |
-
-\*1: The values of `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE_NAME` are passed to the Postgres container as the variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `docker-compose.yml`.
-
-\*2: If not provided, the appropriate extension to use is auto-detected at startup by introspecting the database. When multiple extensions are installed, the order of preference is VectorChord, pgvecto.rs, pgvector.
+| `DB_REPLICATION_ENABLED`            | Enable readonly database replication                                                   |  `false`   | server                         |
+| `DB_REPLICA_<n>_URL`                | Replica database URL for replica `<n>`                                                 |            | server                         |
+| `DB_REPLICA_<n>_HOSTNAME`           | Replica database host for replica `<n>`                                                |            | server                         |
+| `DB_REPLICA_<n>_PORT`               | Replica database port for replica `<n>`                                                |            | server                         |
+| `DB_REPLICA_<n>_USERNAME`           | Replica database user for replica `<n>`                                                |            | server                         |
+| `DB_REPLICA_<n>_PASSWORD`           | Replica database password for replica `<n>`                                            |            | server                         |
+| `DB_REPLICA_<n>_DATABASE_NAME`      | Replica database name for replica `<n>`                                                |            | server                         |
+| `DB_REPLICA_<n>_SSL_MODE`           | Replica database SSL mode for replica `<n>`                                            |            | server                         |
 
 \*3: Uses either [`postgresql.ssd.conf`](https://github.com/immich-app/base-images/blob/main/postgres/postgresql.ssd.conf) or [`postgresql.hdd.conf`](https://github.com/immich-app/base-images/blob/main/postgres/postgresql.hdd.conf) which mainly controls the Postgres `effective_io_concurrency` setting to allow for concurrenct IO on SSDs and sequential IO on HDDs.
 

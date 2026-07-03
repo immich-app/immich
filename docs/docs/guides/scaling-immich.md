@@ -17,3 +17,17 @@ By default, each running `immich-server` container comes with multiple internal 
 ## Scaling down
 
 In the same way you can scale up to multiple containers, you can also choose to scale down. All state is stored in Postgres, Redis, and the filesystem so there is no risk in stopping a running immich-server container, for example if you want to use your GPU to play some games. As long as there is an API worker running you will still be able to browse Immich, and jobs will wait to be processed until there is a worker available for them.
+
+## Readonly database replicas
+
+Immich supports using one or more read-only database replicas to distribute read queries while continuing to send all writes to the primary database. This can improve performance for read-heavy workloads.
+
+Replication support is disabled by default. To enable it, set `DB_REPLICATION_ENABLED=true` and configure at least one replica. Replica connections can be configured either with a single connection URL or with individual connection parameters, as with the primary database.
+
+Replicas are numbered starting at 0 (`DB_REPLICA_0_*`, `DB_REPLICA_1_*`, etc.). You may configure as many replicas as needed.
+
+This feature uses [kysely-org/kysely-replication](github.com/kysely-org/kysely-replication) for query routing.
+
+:::warning
+Immich does not configure, manage or monitor database replication itself. You are responsible for setting up and maintaining replication between your primary database and any read-only replicas. Immich only routes read queries to the configured replicas and write queries to the primary database
+:::
