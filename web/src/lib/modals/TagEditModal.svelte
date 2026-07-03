@@ -20,7 +20,7 @@
   const tagPathDisplay = $state(tagPath.endsWith(tagName) ? tagPath.slice(0, -tagName.length) : tagPath);
 
   const onSubmit = async () => {
-    const success = await handleUpdateTag(tag, { color: tagColor, name: tagName });
+    const success = await handleUpdateTag(tag, { color: tagColor || null, name: tagName });
     if (success) {
       onClose();
     }
