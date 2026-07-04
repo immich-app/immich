@@ -102,6 +102,8 @@ services:
         condition: service_started
       database:
         condition: service_started
+      database-replica:
+        condition: service_started
     healthcheck:
       disable: false
 
@@ -159,8 +161,13 @@ services:
       test: redis-cli ping || exit 1
 
   database:
+    &postgres
     container_name: immich_postgres
     image: ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - NET_RAW
     env_file:
       - .env
     environment:
@@ -168,13 +175,58 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
       POSTGRES_INITDB_ARGS: '--data-checksums'
-    volumes:
-      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
+      REPLICATION_USERNAME: ${REPLICATION_USERNAME:-replicator}
+      REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:-postgres}
+      REPLICATION_SLOT_NAME: ${REPLICATION_SLOT_NAME:-immich_replica_slot}
     shm_size: 128mb
+    restart: unless-stopped
     healthcheck:
       disable: false
+    volumes:
+      - ${UPLOAD_LOCATION}/postgres:/var/lib/postgresql/data
+      - ./replication/:/docker-entrypoint-initdb.d:ro
+    ports:
+      - 5432:5432
+
+  replica-bootstrap:
+    <<: *postgres
+    container_name: immich_postgres_replica_bootstrap
+    entrypoint: ['/bin/bash', '-c']
+    command:
+      - |
+        set -e
+        if [ -f "$$PGDATA/standby.signal" ]; then
+          echo "Replica already bootstrapped"
+          exit 0
+        fi
+        export PGPASSWORD="$$REPLICATION_PASSWORD"
+        pg_basebackup \
+          -h database \
+          -D "$$PGDATA" \
+          -U "$$REPLICATION_USERNAME" \
+          -v -P -R \
+          -X stream \
+          -C -S "$$REPLICATION_SLOT_NAME"
+    healthcheck:
+      disable: true
+    ports: []
+    volumes:
+      - ${UPLOAD_LOCATION}/postgres-replica:/var/lib/postgresql/data
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: 'no'
+
+  database-replica:
+    <<: *postgres
+    container_name: immich_postgres_replica
+    # disable ports so we don't overlap.
+    ports: []
+    volumes:
+      - ${UPLOAD_LOCATION}/postgres-replica:/var/lib/postgresql/data
+    depends_on:
+      replica-bootstrap:
+        condition: service_completed_successfully
   # set IMMICH_TELEMETRY_INCLUDE=all in .env to enable metrics
   # immich-prometheus:
   #   container_name: immich_prometheus
@@ -195,6 +247,10 @@ services:
   #   image: grafana/grafana:10.3.3-ubuntu
   #   volumes:
   #     - grafana_data:/var/lib/grafana
+
+networks:
+  immich:
+    driver: bridge
 
 volumes:
   model_cache:
