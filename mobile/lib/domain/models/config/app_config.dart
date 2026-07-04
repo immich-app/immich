@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/config/album_config.dart';
 import 'package:immich_mobile/domain/models/config/backup_config.dart';
 import 'package:immich_mobile/domain/models/config/cleanup_config.dart';
 import 'package:immich_mobile/domain/models/config/dynamic_wallpaper_config.dart';
+import 'package:immich_mobile/domain/models/config/feature_message_config.dart';
 import 'package:immich_mobile/domain/models/config/image_config.dart';
 import 'package:immich_mobile/domain/models/config/map_config.dart';
 import 'package:immich_mobile/domain/models/config/network_config.dart';
@@ -17,6 +18,7 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/utils/semver.dart';
 
 const defaultConfig = AppConfig();
 
@@ -34,6 +36,7 @@ class AppConfig {
   final NetworkConfig network;
   final ShareConfig share;
   final DynamicWallpaperConfig dynamicWallpaper;
+  final FeatureMessageConfig featureMessage;
 
   const AppConfig({
     this.logLevel = .info,
@@ -49,6 +52,7 @@ class AppConfig {
     this.network = const .new(),
     this.share = const .new(),
     this.dynamicWallpaper = const .new(),
+    this.featureMessage = const .new(),
   });
 
   AppConfig copyWith({
@@ -65,6 +69,7 @@ class AppConfig {
     NetworkConfig? network,
     ShareConfig? share,
     DynamicWallpaperConfig? dynamicWallpaper,
+    FeatureMessageConfig? featureMessage,
   }) => .new(
     logLevel: logLevel ?? this.logLevel,
     theme: theme ?? this.theme,
@@ -79,6 +84,7 @@ class AppConfig {
     network: network ?? this.network,
     share: share ?? this.share,
     dynamicWallpaper: dynamicWallpaper ?? this.dynamicWallpaper,
+    featureMessage: featureMessage ?? this.featureMessage,
   );
 
   @override
@@ -97,7 +103,8 @@ class AppConfig {
           other.backup == backup &&
           other.network == network &&
           other.share == share &&
-          other.dynamicWallpaper == dynamicWallpaper);
+          other.dynamicWallpaper == dynamicWallpaper &&
+          other.featureMessage == featureMessage);
 
   @override
   int get hashCode => Object.hash(
@@ -114,11 +121,12 @@ class AppConfig {
     network,
     share,
     dynamicWallpaper,
+    featureMessage,
   );
 
   @override
   String toString() =>
-      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, dynamicWallpaper: $dynamicWallpaper)';
+      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, dynamicWallpaper: $dynamicWallpaper, featureMessage: $featureMessage)';
 
   T read<T>(SettingsKey<T> key) =>
       (switch (key) {
@@ -167,6 +175,7 @@ class AppConfig {
             .slideshowDirection => slideshow.direction,
             .dynamicWallpaperAssetIds => dynamicWallpaper.assetIds,
             .dynamicWallpaperAssetLayouts => dynamicWallpaper.assetLayouts,
+            .featureMessageSeenRelease => featureMessage.seenRelease,
           })
           as T;
 
@@ -226,6 +235,7 @@ class AppConfig {
       .dynamicWallpaperAssetLayouts => copyWith(
         dynamicWallpaper: dynamicWallpaper.copyWith(assetLayouts: value as Map<String, DynamicWallpaperAssetLayout>),
       ),
+      .featureMessageSeenRelease => copyWith(featureMessage: featureMessage.copyWith(seenRelease: value as SemVer)),
     };
   }
 }

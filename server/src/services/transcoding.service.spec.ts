@@ -381,6 +381,8 @@ describe(TranscodingService.name, () => {
       '50',
       '-keyint_min',
       '50',
+      '-ac',
+      '2',
       '-copyts',
       '-r',
       '50130000/2012441',

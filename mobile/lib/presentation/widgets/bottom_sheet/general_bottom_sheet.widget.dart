@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/domain/models/setting.model.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/advanced_info_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
+import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/bulk_tag_assets_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
@@ -27,7 +28,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -59,7 +59,6 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
   Widget build(BuildContext context) {
     final multiselect = ref.watch(multiSelectProvider);
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
-    final advancedTroubleshooting = ref.watch(settingsProvider.notifier).get(Setting.advancedTroubleshooting);
     final tagsEnabled = ref.watch(
       userMetadataPreferencesProvider.select((value) => value.valueOrNull?.tagsEnabled ?? false),
     );
@@ -87,6 +86,9 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
       return sheetController.animateTo(0.85, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
     }
 
+    final assets = multiselect.selectedAssets.toList(growable: false);
+    final actions = [AssetDebugAction(assets: assets)];
+
     return BaseBottomSheet(
       controller: sheetController,
       initialChildSize: widget.minChildSize ?? 0.15,
@@ -94,9 +96,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
       actions: [
-        if (multiselect.selectedAssets.length == 1 && advancedTroubleshooting) ...[
-          const AdvancedInfoActionButton(source: ActionSource.timeline),
-        ],
+        ...actions.map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
         const ShareActionButton(source: ActionSource.timeline),
         if (multiselect.hasRemote) ...[
           const ShareLinkActionButton(source: ActionSource.timeline),
