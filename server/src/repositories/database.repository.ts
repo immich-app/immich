@@ -25,6 +25,7 @@ import { immich_uuid_v7 } from 'src/schema/functions';
 import { ExtensionVersion, VectorExtension } from 'src/types';
 import { vectorIndexQuery } from 'src/utils/database';
 import z from 'zod';
+import 'kysely-replication/force'
 
 export let cachedVectorExtension: VectorExtension | undefined;
 export async function getVectorExtension(runner: Kysely<DB>): Promise<VectorExtension> {
@@ -254,7 +255,7 @@ export class DatabaseRepository {
   }
 
   getMigrations() {
-    return this.db.selectFrom('kysely_migrations').select(['name', 'timestamp']).orderBy('name', 'asc').execute();
+    return this.db.withPrimary().selectFrom('kysely_migrations').select(['name', 'timestamp']).orderBy('name', 'asc').execute();
   }
 
   async getSchemaDrift() {
@@ -362,6 +363,7 @@ export class DatabaseRepository {
 
   private async getRowCount(table: keyof DB): Promise<number> {
     const { count } = await this.db
+      .withPrimary()
       .selectFrom(this.db.dynamic.table(table).as('t'))
       .select((eb) => eb.fn.countAll<number>().as('count'))
       .executeTakeFirstOrThrow();
@@ -509,7 +511,7 @@ export class DatabaseRepository {
 
   private createMigrator(): Migrator {
     return new Migrator({
-      db: this.db,
+      db: this.db.withPrimary(),
       migrationLockTableName: 'kysely_migrations_lock',
       allowUnorderedMigrations: this.configRepository.isDev(),
       migrationTableName: 'kysely_migrations',
