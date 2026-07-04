@@ -188,3 +188,6 @@ url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c55847602
 [[tools.rust]]
 version = "1.92.0"
 backend = "core:rust"
+
+[tools.rust.options]
+targets = "aarch64-apple-ios,aarch64-apple-ios-sim,aarch64-linux-android,armv7-linux-androideabi,x86_64-apple-ios,x86_64-linux-android"
