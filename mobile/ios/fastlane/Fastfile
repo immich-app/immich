@@ -284,6 +284,7 @@ end
       configuration: "Release",
       export_method: "app-store",
       skip_package_ipa: true,
+      xcodebuild_formatter: "", # raw xcodebuild output so script-phase errors show in CI logs
       xcargs: build_xcargs(group_id: DEV_GROUP_ID),
       export_options: {
         provisioningProfiles: {
