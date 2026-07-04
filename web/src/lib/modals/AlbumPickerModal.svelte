@@ -22,10 +22,11 @@
   let selectedRowIndex: number = $state(-1);
 
   type Props = {
+    remove?: boolean;
     onClose: (albums?: AlbumResponseDto[]) => void;
   };
 
-  let { onClose }: Props = $props();
+  let { remove, onClose }: Props = $props();
 
   onMount(async () => {
     albums = await getAllAlbums({});
@@ -38,7 +39,7 @@
 
   const rowConverter = new AlbumModalRowConverter($albumViewSettings.sortBy, $albumViewSettings.sortOrder);
   const albumModalRows = $derived(
-    rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex, multiSelectedAlbumIds),
+    rowConverter.toModalRows(search, recentAlbums, albums, selectedRowIndex, multiSelectedAlbumIds, !remove),
   );
   const selectableRowCount = $derived(albumModalRows.filter((row) => isSelectableRowType(row.type)).length);
 
@@ -148,7 +149,7 @@
   };
 </script>
 
-<Modal title={$t('add_to_album')} {onClose} size="small">
+<Modal title={$t(remove ? 'remove_from_album' : 'add_to_album')} {onClose} size="small">
   <ModalBody>
     <div class="mb-2 flex max-h-100 flex-col">
       {#if loading}
