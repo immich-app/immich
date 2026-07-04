@@ -184,3 +184,7 @@ url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c55847602
 [tools.java."platforms.windows-x64"]
 checksum = "sha256:b6c17e747ae78cdd6de4d7532b3164b277daee97c007d3eaa2b39cca99882664"
 url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c558476027ac/13/GPL/openjdk-21.0.2_windows-x64_bin.zip"
+
+[[tools.rust]]
+version = "1.92.0"
+backend = "core:rust"
