@@ -28,7 +28,6 @@ class ImmichWallpaperService : WallpaperService() {
   companion object {
     private val activeEngines = Collections.synchronizedSet(mutableSetOf<WallpaperEngine>())
     private val activeServices = Collections.synchronizedSet(mutableSetOf<ImmichWallpaperService>())
-    private const val WAKE_APPLY_DEBOUNCE_MS = 1_000L
     private val FALLBACK_COLOR = Color.rgb(18, 18, 18)
 
     fun refreshActiveWallpapers() {
@@ -39,13 +38,13 @@ class ImmichWallpaperService : WallpaperService() {
 
   private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
   private val wallpaperOperationMutex = Mutex()
-  private var lastWakeApplyElapsed = 0L
+  private val wakeCoordinator = DynamicWallpaperWakeCoordinator()
 
   private val screenReceiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
       when (intent.action) {
         Intent.ACTION_SCREEN_ON,
-        Intent.ACTION_USER_PRESENT -> rotateVisibleWallpaperForWake()
+        Intent.ACTION_USER_PRESENT -> requestWakeRotation()
       }
     }
   }
@@ -77,23 +76,38 @@ class ImmichWallpaperService : WallpaperService() {
     return WallpaperEngine()
   }
 
-  private fun rotateVisibleWallpaperForWake() {
-    val engines = synchronized(activeEngines) { activeEngines.filter { it.isWallpaperVisible } }
-    if (engines.isEmpty()) {
-      return
-    }
-
-    val now = SystemClock.elapsedRealtime()
-    if (now - lastWakeApplyElapsed < WAKE_APPLY_DEBOUNCE_MS) {
-      return
-    }
-
+  private fun requestWakeRotation() {
     serviceScope.launch {
-      wallpaperOperationMutex.withLock {
-        rotateActiveIndex()
-        lastWakeApplyElapsed = now
+      val shouldRefresh = wallpaperOperationMutex.withLock {
+        val hasVisibleWallpaper = synchronized(activeEngines) { activeEngines.any { it.isWallpaperVisible } }
+        val shouldRotate = wakeCoordinator.onWakeSignal(hasVisibleWallpaper, SystemClock.elapsedRealtime())
+        if (shouldRotate) {
+          rotateActiveIndex()
+        }
+        shouldRotate
       }
-      refreshActiveWallpapers()
+
+      if (shouldRefresh) {
+        refreshActiveWallpapers()
+      }
+    }
+  }
+
+  private fun requestVisibleWallpaperDraw(engine: WallpaperEngine) {
+    serviceScope.launch {
+      val shouldRefresh = wallpaperOperationMutex.withLock {
+        val shouldRotate = wakeCoordinator.onWallpaperVisible(SystemClock.elapsedRealtime())
+        if (shouldRotate) {
+          rotateActiveIndex()
+        }
+        shouldRotate
+      }
+
+      if (shouldRefresh) {
+        refreshActiveWallpapers()
+      } else {
+        engine.drawLocalOrFallback()
+      }
     }
   }
 
@@ -122,7 +136,7 @@ class ImmichWallpaperService : WallpaperService() {
     override fun onVisibilityChanged(visible: Boolean) {
       isWallpaperVisible = visible
       if (visible) {
-        drawLocalOrFallback()
+        requestVisibleWallpaperDraw(this)
       }
     }
 
