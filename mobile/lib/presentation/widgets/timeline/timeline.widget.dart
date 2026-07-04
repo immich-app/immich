@@ -85,35 +85,40 @@ class _TimelineState extends State<Timeline> {
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (_, constraints) => ProviderScope(
-        key: ValueKey(_rebuildTrigger),
-        overrides: [
-          timelineArgsProvider.overrideWith(
-            (ref) => TimelineArgs(
-              maxWidth: constraints.maxWidth,
-              maxHeight: constraints.maxHeight,
-              columnCount: ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow)),
-              showStorageIndicator: widget.showStorageIndicator,
-              withStack: widget.withStack,
-              groupBy: widget.groupBy,
+      builder: (_, constraints) {
+        if (constraints.maxWidth <= 0) {
+          return widget.loadingWidget ?? const SizedBox.shrink();
+        }
+        return ProviderScope(
+          key: ValueKey(_rebuildTrigger),
+          overrides: [
+            timelineArgsProvider.overrideWith(
+              (ref) => TimelineArgs(
+                maxWidth: constraints.maxWidth,
+                maxHeight: constraints.maxHeight,
+                columnCount: ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow)),
+                showStorageIndicator: widget.showStorageIndicator,
+                withStack: widget.withStack,
+                groupBy: widget.groupBy,
+              ),
             ),
+            if (widget.readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
+          ],
+          child: _SliverTimeline(
+            topSliverWidget: widget.topSliverWidget,
+            topSliverWidgetHeight: widget.topSliverWidgetHeight,
+            bottomSliverWidget: widget.bottomSliverWidget,
+            appBar: widget.appBar,
+            bottomSheet: widget.bottomSheet,
+            withScrubber: widget.withScrubber,
+            persistentBottomBar: widget.persistentBottomBar,
+            snapToMonth: widget.snapToMonth,
+            maxWidth: constraints.maxWidth,
+            loadingWidget: widget.loadingWidget,
+            onRefresh: widget.onRefresh == null ? null : _handleRefresh,
           ),
-          if (widget.readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
-        ],
-        child: _SliverTimeline(
-          topSliverWidget: widget.topSliverWidget,
-          topSliverWidgetHeight: widget.topSliverWidgetHeight,
-          bottomSliverWidget: widget.bottomSliverWidget,
-          appBar: widget.appBar,
-          bottomSheet: widget.bottomSheet,
-          withScrubber: widget.withScrubber,
-          persistentBottomBar: widget.persistentBottomBar,
-          snapToMonth: widget.snapToMonth,
-          maxWidth: constraints.maxWidth,
-          loadingWidget: widget.loadingWidget,
-          onRefresh: widget.onRefresh == null ? null : _handleRefresh,
-        ),
-      ),
+        );
+      },
     );
   }
 }
