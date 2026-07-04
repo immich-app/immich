@@ -13,8 +13,9 @@ round-trips but is not wired into the server yet.
 ## Layout
 ```
 crates/
-  immich_core        pure logic, no binding deps. capabilities = cargo features (hashing).
-  immich_core_dart   cdylib/staticlib + cbindgen header for dart:ffi (mobile)
+  immich_core        pure logic, no binding deps. capabilities = cargo features (hashing, image).
+  immich_core_ffi    the hand-written C ABI + cbindgen header — consumed by dart (ffigen),
+                     swift (native C interop) and kotlin (JNI shim)
   immich_core_napi   cdylib (.node) via napi-rs (server, unwired)
 immich_native_core/  the Flutter package mobile depends on. build hook + ffigen @Native bindings.
 smoke/               host dart + node roundtrip scripts (no device)
@@ -23,13 +24,13 @@ Bindings are separate crates (Cargo can't gate `crate-type` by feature).
 
 ## How the native lib is built (Flutter native assets — no prebuilt, no CI)
 `immich_native_core/hook/build.dart` (`native_toolchain_rust`) compiles
-`crates/immich_core_dart` **from source on every app build** via rustup and bundles
+`crates/immich_core_ffi` **from source on every app build** via rustup and bundles
 it as a Flutter *code asset*. The Dart side uses ffigen `@Native` externals bound to
 that asset — no `DynamicLibrary`, no prebuilt artifacts, no fetch/publish/separate-repo.
 
 Native assets is on by default on Flutter stable (3.38+), so a stock `flutter build`
 runs the hook. Each builder needs **rustup** (the hook auto-installs the pinned
-toolchain + targets from `crates/immich_core_dart/rust-toolchain.toml`).
+toolchain + targets from `crates/immich_core_ffi/rust-toolchain.toml`).
 
 ## Dev commands (mise)
 ```
@@ -43,7 +44,7 @@ mise run smoke         Rust tests + host dart:ffi + host napi roundtrips
 
 ## Add a capability (end to end)
 1. add the logic to `crates/immich_core` (behind a cargo feature if it pulls a dep).
-2. expose a C entry in `crates/immich_core_dart/src/lib.rs` — `#[no_mangle] pub extern "C"`,
+2. expose a C entry in `crates/immich_core_ffi/src/lib.rs` — `#[no_mangle] pub extern "C"`,
    wrap the body in `guard(...)` (panic at the boundary → null, never unwind into the host),
    validate pointers, return Rust-owned memory the caller frees via `immich_core_free_string`.
 3. `mise run codegen` — regenerates the committed cbindgen header + ffigen `@Native` bindings.

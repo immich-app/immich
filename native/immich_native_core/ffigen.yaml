@@ -9,7 +9,7 @@ description: 'FFI bindings to immich_native_core — generated, do not edit.'
 output: 'lib/src/ffi/bindings.g.dart'
 headers:
   entry-points:
-    - '../crates/immich_core_dart/include/immich_core.h'
+    - '../crates/immich_core_ffi/include/immich_core.h'
   include-directives:
     - '**/immich_core.h'
 functions:

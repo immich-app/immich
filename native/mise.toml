@@ -22,17 +22,17 @@ run = "cargo clippy --workspace --all-targets -- -D warnings"
 alias = "codegen"
 description = "Generate the C header (cbindgen) + Dart @Native bindings (ffigen)"
 sources = [
-    "crates/immich_core_dart/src/lib.rs",
-    "crates/immich_core_dart/cbindgen.toml",
+    "crates/immich_core_ffi/src/lib.rs",
+    "crates/immich_core_ffi/cbindgen.toml",
     "immich_native_core/ffigen.yaml",
 ]
 outputs = [
-    "crates/immich_core_dart/include/immich_core.h",
-    "immich_native_core/lib/immich_native_core_bindings_generated.dart",
+    "crates/immich_core_ffi/include/immich_core.h",
+    "immich_native_core/lib/src/ffi/bindings.g.dart",
 ]
 run = [
-    "cargo build -p immich_core_dart",
-    "cd immich_native_core && dart run ffigen --config ffigen.yaml && dart format lib/immich_native_core_bindings_generated.dart",
+    "cargo build -p immich_core_ffi",
+    "cd immich_native_core && dart run ffigen --config ffigen.yaml && dart format lib/src/ffi/bindings.g.dart",
 ]
 
 # Host FFI roundtrip through the real build hook — no device. Builds the Rust crate
@@ -44,7 +44,7 @@ run = "flutter test"
 
 [tasks."build:dart"]
 description = "Build the dart:ffi cdylib directly (host, raw cargo)"
-run = "cargo build -p immich_core_dart"
+run = "cargo build -p immich_core_ffi"
 
 [tasks."build:napi"]
 description = "Build the node addon + stage a .node for require() (server, unwired)"
@@ -56,7 +56,7 @@ run = [
 [tasks."smoke:dart"]
 description = "Host dart:ffi ABI roundtrip (raw DynamicLibrary on the cdylib)"
 depends = ["build:dart"]
-run = "dart run smoke/dart_smoke.dart target/debug/libimmich_core_dart.dylib"
+run = "dart run smoke/dart_smoke.dart target/debug/libimmich_core_ffi.dylib"
 
 [tasks."smoke:node"]
 description = "Host napi roundtrip"

@@ -1,7 +1,7 @@
 // Mobile-side roundtrip: open the dart:ffi cdylib and call into the shared core.
 // Standalone script (no package:ffi dep) — reads the returned C string by hand.
 //
-//   dart run smoke/dart_smoke.dart target/debug/libimmich_core_dart.dylib
+//   dart run smoke/dart_smoke.dart target/debug/libimmich_core_ffi.dylib
 
 import 'dart:ffi';
 
@@ -18,7 +18,7 @@ String _readCString(Pointer<Uint8> p) {
 }
 
 void main(List<String> args) {
-  final libPath = args.isNotEmpty ? args.first : 'target/debug/libimmich_core_dart.dylib';
+  final libPath = args.isNotEmpty ? args.first : 'target/debug/libimmich_core_ffi.dylib';
   final lib = DynamicLibrary.open(libPath);
 
   final version = lib.lookupFunction<_VersionNative, _VersionNative>('immich_core_version');

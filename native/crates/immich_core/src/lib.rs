@@ -1,7 +1,7 @@
 //! immich_native_core — shared Rust core for the immich server (napi) and mobile (dart:ffi).
 //!
 //! Pure logic only: no binding or platform deps live here. Each binding crate
-//! (`immich_core_dart`, `immich_core_napi`) is a thin wrapper. Capabilities are
+//! (`immich_core_ffi`, `immich_core_napi`) is a thin wrapper. Capabilities are
 //! cargo features (`hashing`, `image`, ...) so every binding opts into the same set.
 
 #[cfg(feature = "hashing")]

@@ -2,14 +2,15 @@
 resolver = "2"
 members = [
     "crates/immich_core",
-    "crates/immich_core_dart",
+    "crates/immich_core_ffi",
     "crates/immich_core_napi",
 ]
 
 # shared logic lives in immich_core (no binding deps). each binding crate is a
-# thin wrapper that picks its own crate-type: immich_core_dart -> cdylib/staticlib
-# for dart:ffi (mobile), immich_core_napi -> cdylib (.node) for the node server.
-# capabilities (hashing, exif, ...) are cargo features on immich_core so both
+# thin wrapper that picks its own crate-type: immich_core_ffi -> cdylib/staticlib,
+# the C ABI consumed by dart (ffigen), swift (C interop) and kotlin (JNI shim);
+# immich_core_napi -> cdylib (.node) for the node server.
+# capabilities (hashing, image, ...) are cargo features on immich_core so both
 # bindings opt into the same set. crate-type can't be feature-gated, which is why
 # the bindings are separate crates rather than one crate with feature flags.
 

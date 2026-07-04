@@ -235,7 +235,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "immich_core_dart"
+name = "immich_core_ffi"
 version = "0.1.0"
 dependencies = [
  "cbindgen",

@@ -1,5 +1,5 @@
 [package]
-name = "immich_core_dart"
+name = "immich_core_ffi"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

@@ -30,7 +30,7 @@ Flutter bundles it as a code asset; the `@Native` bindings resolve against it.
 
 ## Layout
 
-- `hook/build.dart` — builds `../crates/immich_core_dart` via `native_toolchain_rust`.
+- `hook/build.dart` — builds `../crates/immich_core_ffi` via `native_toolchain_rust`.
 - `lib/immich_native_core.dart` — barrel, the public API.
 - `lib/src/{core,hashing,image}.dart` — thin wrappers, one file per Rust module.
 - `lib/src/ffi/bindings.g.dart` — ffigen `@Native` output (committed; do not edit).

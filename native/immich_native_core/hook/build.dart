@@ -4,7 +4,7 @@ import 'package:code_assets/code_assets.dart';
 import 'package:hooks/hooks.dart';
 import 'package:native_toolchain_rust/native_toolchain_rust.dart';
 
-// Builds crates/immich_core_dart from source on every app build and bundles it as
+// Builds crates/immich_core_ffi from source on every app build and bundles it as
 // a code asset. assetName must match the ffigen output (its package URI is the
 // @Native DefaultAsset id). The crate is a sibling, so point cratePath at it.
 void main(List<String> args) async {
@@ -12,7 +12,7 @@ void main(List<String> args) async {
     await _ensureRustTarget(input);
     await RustBuilder(
       assetName: 'src/ffi/bindings.g.dart',
-      cratePath: '../crates/immich_core_dart',
+      cratePath: '../crates/immich_core_ffi',
     ).run(input: input, output: output);
   });
 }
@@ -50,7 +50,7 @@ Future<void> _ensureRustTarget(BuildInput input) async {
   };
   if (triple == null) return;
   final crate = input.packageRoot
-      .resolve('../crates/immich_core_dart/')
+      .resolve('../crates/immich_core_ffi/')
       .toFilePath();
   // best effort — if rustup itself is broken the build below reports it properly
   await Process.run('rustup', [
