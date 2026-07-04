@@ -88,9 +88,21 @@ void main() {
     });
 
     test('reorders selected ids using ReorderableListView indexes', () {
-      final ids = DynamicWallpaperService.reorderAssetIds(['a', 'b', 'c', 'd'], 1, 4);
+      final ids = DynamicWallpaperService.reorderAssetIds(['a', 'b', 'c', 'd'], 1, 3);
 
       expect(ids, ['a', 'c', 'd', 'b']);
+    });
+
+    test('reorders selected ids one step down', () {
+      final ids = DynamicWallpaperService.reorderAssetIds(['a', 'b', 'c', 'd'], 1, 2);
+
+      expect(ids, ['a', 'c', 'b', 'd']);
+    });
+
+    test('reorders selected ids upward', () {
+      final ids = DynamicWallpaperService.reorderAssetIds(['a', 'b', 'c', 'd'], 2, 0);
+
+      expect(ids, ['c', 'a', 'b', 'd']);
     });
 
     test('prunes layouts to selected ids and drops identity layouts', () {
@@ -197,7 +209,7 @@ void main() {
         calls.add('native');
       });
 
-      await service.reorderSelection(1, 3);
+      await service.reorderSelection(1, 2);
 
       verify(
         () => settings.write<List<String>, List<String>>(SettingsKey.dynamicWallpaperAssetIds, ['a', 'c', 'b']),
@@ -232,7 +244,7 @@ void main() {
       });
       when(() => api.updateSelection(any(), any(), any())).thenAnswer((_) => Future.error(Exception('native failed')));
 
-      await expectLater(service.reorderSelection(0, 2), throwsException);
+      await expectLater(service.reorderSelection(0, 1), throwsException);
 
       expect(writes, [
         ['b', 'a', 'c'],

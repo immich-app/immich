@@ -95,9 +95,8 @@ class DynamicWallpaperService {
 
   static List<String> reorderAssetIds(List<String> currentAssetIds, int oldIndex, int newIndex) {
     final nextAssetIds = [...currentAssetIds];
-    final adjustedNewIndex = oldIndex < newIndex ? newIndex - 1 : newIndex;
     final assetId = nextAssetIds.removeAt(oldIndex);
-    nextAssetIds.insert(adjustedNewIndex, assetId);
+    nextAssetIds.insert(newIndex, assetId);
     return nextAssetIds;
   }
 
