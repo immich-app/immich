@@ -15,7 +15,10 @@ String sha1Hex(Uint8List bytes) {
   final buf = malloc<Uint8>(len == 0 ? 1 : len);
   try {
     if (len > 0) buf.asTypedList(len).setAll(0, bytes);
-    return readAndFree(bindings.immich_core_sha1_hex(buf.cast(), len), 'sha1_hex');
+    return readAndFree(
+      bindings.immich_core_sha1_hex(buf.cast(), len),
+      'sha1_hex',
+    );
   } finally {
     malloc.free(buf);
   }
@@ -27,7 +30,10 @@ String sha1Hex(Uint8List bytes) {
 String sha1File(String path) {
   final cpath = path.toNativeUtf8();
   try {
-    return readAndFree(bindings.immich_core_sha1_file(cpath.cast()), 'sha1_file');
+    return readAndFree(
+      bindings.immich_core_sha1_file(cpath.cast()),
+      'sha1_file',
+    );
   } finally {
     malloc.free(cpath);
   }
