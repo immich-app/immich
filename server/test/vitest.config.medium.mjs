@@ -15,6 +15,7 @@ export default defineConfig({
     globalSetup: ['test/medium/globalSetup.ts'],
     server: {
       deps: {
+        inline: ['kysely', 'kysely-replication'],
         fallbackCJS: true,
       },
     },

@@ -1,5 +1,4 @@
 import { Kysely } from 'kysely';
-import 'kysely-replication/force'
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -41,7 +40,7 @@ const globalSetup = async () => {
 
   process.env.IMMICH_TEST_POSTGRES_URL = postgresUrl;
 
-  const db = new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: postgresUrl }, false, undefined));
+  const db = new Kysely<DB>(getKyselyConfig({ connectionType: 'url', url: postgresUrl }, false));
 
   const configRepository = new ConfigRepository();
   const logger = LoggingRepository.create();

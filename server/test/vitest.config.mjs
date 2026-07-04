@@ -24,6 +24,7 @@ export default defineConfig({
     },
     server: {
       deps: {
+        inline: ['kysely', 'kysely-replication'],
         fallbackCJS: true,
       },
     },
