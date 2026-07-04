@@ -73,7 +73,7 @@ const SystemConfigIntegrityJobSchema = z
 
 const SystemConfigIntegrityChecksumJobSchema = SystemConfigIntegrityJobSchema.extend({
   timeLimit: z.int().nonnegative().describe('How long the integrity checksum job may run for'),
-  percentageLimit: z.int().nonnegative().describe('Percentage limit of the integrity checksum job'),
+  percentageLimit: z.number().nonnegative().describe('Percentage limit of the integrity checksum job'),
 })
   .describe('Integrity checksum job config')
   .meta({ id: 'SystemConfigIntegrityChecksumJob' });
