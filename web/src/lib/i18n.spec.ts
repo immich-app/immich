@@ -1,5 +1,5 @@
 import { readFileSync, readdirSync } from 'node:fs';
-import { getClosestAvailableLocale, langs } from '$lib/utils/i18n';
+import { getClosestAvailableLocale, getPreferredLocale, langs } from '$lib/utils/i18n';
 
 describe('i18n', () => {
   describe('loaders', () => {
@@ -57,6 +57,17 @@ describe('i18n', () => {
       expect(getClosestAvailableLocale(['pt_BR'], allLocales)).toBe('pt_BR');
       expect(getClosestAvailableLocale(['sr_Cyrl'], allLocales)).toBe('sr_Cyrl');
       expect(getClosestAvailableLocale(['zh_Hant'], allLocales)).toBe('zh_Hant');
+    });
+  });
+
+  describe('getPreferredLocale', () => {
+    it('maps Chinese browser locales to available script-based translations', () => {
+      expect(getPreferredLocale(['zh-CN'])).toBe('zh-Hans');
+      expect(getPreferredLocale(['zh-SG'])).toBe('zh-Hans');
+      expect(getPreferredLocale(['zh'])).toBe('zh-Hans');
+      expect(getPreferredLocale(['zh-TW'])).toBe('zh-Hant');
+      expect(getPreferredLocale(['zh-HK'])).toBe('zh-Hant');
+      expect(getPreferredLocale(['zh-MO'])).toBe('zh-Hant');
     });
   });
 });

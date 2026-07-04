@@ -23,6 +23,20 @@ export const convertBCP47 = (code: string) => code.replaceAll('_', '-');
 
 export const langCodes = fileCodes.map((code) => convertBCP47(code));
 
+const localeAliases: Record<string, string[]> = {
+  zh: ['zh-Hans'],
+  'zh-CN': ['zh-Hans'],
+  'zh-HK': ['zh-Hant'],
+  'zh-MO': ['zh-Hant'],
+  'zh-SG': ['zh-Hans'],
+  'zh-TW': ['zh-Hant'],
+};
+
+const getLocaleCandidates = (locale: string) => {
+  const normalizedLocale = convertBCP47(locale);
+  return [normalizedLocale, ...(localeAliases[normalizedLocale] ?? [])];
+};
+
 // https://github.com/kaisermann/svelte-i18n/blob/780932a3e1270d521d348aac8ba03be9df309f04/src/runtime/stores/locale.ts#L11
 const getSubLocales = (locale: string) => {
   return convertBCP47(locale)
@@ -36,7 +50,11 @@ export const getClosestAvailableLocale = (locales: readonly string[], allLocales
   return locales.find((locale) => getSubLocales(locale).some((subLocale) => allLocalesSet.has(subLocale)));
 };
 
-export const getPreferredLocale = () => getClosestAvailableLocale(navigator.languages, langCodes);
+export const getPreferredLocale = (locales: readonly string[] = navigator.languages) =>
+  getClosestAvailableLocale(
+    locales.flatMap((locale) => getLocaleCandidates(locale)),
+    langCodes,
+  );
 
 const rtlCodes = new Set([
   'ae',
