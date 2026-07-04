@@ -270,12 +270,16 @@ class _DynamicWallpaperSelectionList extends StatefulWidget {
 
 class _DynamicWallpaperSelectionListState extends State<_DynamicWallpaperSelectionList> {
   late List<String> _assetIds = [...widget.assetIds];
+  late Map<String, config_model.DynamicWallpaperAssetLayout> _assetLayouts = {...widget.assetLayouts};
 
   @override
   void didUpdateWidget(covariant _DynamicWallpaperSelectionList oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!_listEquals(widget.assetIds, _assetIds)) {
       _assetIds = [...widget.assetIds];
+    }
+    if (!_mapEquals(widget.assetLayouts, _assetLayouts)) {
+      _assetLayouts = {...widget.assetLayouts};
     }
   }
 
@@ -312,6 +316,15 @@ class _DynamicWallpaperSelectionListState extends State<_DynamicWallpaperSelecti
 
     try {
       await widget.service.updateLayout(assetId, nextLayout);
+      if (mounted) {
+        setState(() {
+          if (nextLayout.isIdentity) {
+            _assetLayouts.remove(assetId);
+          } else {
+            _assetLayouts[assetId] = nextLayout.normalized();
+          }
+        });
+      }
       widget.onSelectionChanged();
       if (mounted) {
         ImmichToast.show(context: context, msg: 'dynamic_wallpaper_layout_saved'.tr());
@@ -353,7 +366,7 @@ class _DynamicWallpaperSelectionListState extends State<_DynamicWallpaperSelecti
             key: ValueKey(assetId),
             assetId: assetId,
             index: index,
-            hasLayout: widget.assetLayouts.containsKey(assetId),
+            hasLayout: _assetLayouts.containsKey(assetId),
             onEdit: () => _edit(assetId),
             onRemove: () async {
               await widget.service.removeSelection([assetId]);
@@ -721,6 +734,20 @@ bool _listEquals<T>(List<T> a, List<T> b) {
 
   for (var i = 0; i < a.length; i++) {
     if (a[i] != b[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool _mapEquals<K, V>(Map<K, V> a, Map<K, V> b) {
+  if (a.length != b.length) {
+    return false;
+  }
+
+  for (final entry in a.entries) {
+    if (b[entry.key] != entry.value) {
       return false;
     }
   }

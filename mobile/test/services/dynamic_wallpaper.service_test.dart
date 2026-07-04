@@ -292,6 +292,40 @@ void main() {
       ).called(1);
     });
 
+    test('identity layout update removes persisted layout', () async {
+      final settings = _MockSettingsRepository();
+      final api = _MockDynamicWallpaperApi();
+      final service = DynamicWallpaperService(settings, api, isAndroid: true);
+      const existingLayout = config_model.DynamicWallpaperAssetLayout(rotationDegrees: 90);
+
+      when(() => settings.appConfig).thenReturn(
+        const AppConfig(
+          dynamicWallpaper: config_model.DynamicWallpaperConfig(assetIds: ['a'], assetLayouts: {'a': existingLayout}),
+        ),
+      );
+      when(() => api.updateSelection(any(), any(), any())).thenAnswer((_) async {});
+      when(
+        () =>
+            settings.write<
+              Map<String, config_model.DynamicWallpaperAssetLayout>,
+              Map<String, config_model.DynamicWallpaperAssetLayout>
+            >(SettingsKey.dynamicWallpaperAssetLayouts, any()),
+      ).thenAnswer((_) async {});
+
+      await service.updateLayout('a', config_model.DynamicWallpaperAssetLayout.identity);
+
+      verify(
+        () => api.updateSelection([DynamicWallpaperAssetRef(remoteId: 'a', isEdited: false)], ['a'], false),
+      ).called(1);
+      verify(
+        () =>
+            settings.write<
+              Map<String, config_model.DynamicWallpaperAssetLayout>,
+              Map<String, config_model.DynamicWallpaperAssetLayout>
+            >(SettingsKey.dynamicWallpaperAssetLayouts, {}),
+      ).called(1);
+    });
+
     test('disable calls native API on Android without changing selection', () async {
       final settings = _MockSettingsRepository();
       final api = _MockDynamicWallpaperApi();

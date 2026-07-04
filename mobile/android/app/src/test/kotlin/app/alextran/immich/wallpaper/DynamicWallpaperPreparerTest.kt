@@ -3,9 +3,11 @@ package app.alextran.immich.wallpaper
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import java.io.File
 import java.io.IOException
 import kotlinx.coroutines.runBlocking
 import org.junit.After
+import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -133,6 +135,39 @@ class DynamicWallpaperPreparerTest {
   }
 
   @Test
+  fun `writes transformed wallpaper copy without changing source file`() = runBlocking {
+    val source = File(context.cacheDir, "wallpaper-source.jpg")
+    Bitmap.createBitmap(8, 4, Bitmap.Config.ARGB_8888).use { bitmap ->
+      source.outputStream().use { output ->
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 95, output)
+      }
+    }
+    val originalBytes = source.readBytes()
+    val asset = DynamicWallpaperAssetRef(
+      remoteId = "remote-a",
+      localId = null,
+      isEdited = false,
+      layout = DynamicWallpaperAssetLayout(
+        rotationDegrees = 90L,
+        cropLeft = 0.0,
+        cropTop = 0.0,
+        cropRight = 1.0,
+        cropBottom = 0.5,
+      ),
+    )
+    val preparer = DynamicWallpaperPreparer(
+      context,
+      remoteBitmapLoader = { _, _, _ -> BitmapFactory.decodeFile(source.absolutePath) },
+    )
+    DynamicWallpaperConfigStore.writeSelection(context, listOf(asset))
+
+    preparer.prepare(listOf(asset), force = true)
+
+    assertArrayEquals(originalBytes, source.readBytes())
+    assertTrue(DynamicWallpaperConfigStore.preparedFile(context, "remote-a").isFile)
+  }
+
+  @Test
   fun `prepares only forced asset when missing preparation is disabled`() = runBlocking {
     val assetA = DynamicWallpaperAssetRef(remoteId = "remote-a", localId = null, isEdited = false)
     val assetB = DynamicWallpaperAssetRef(remoteId = "remote-b", localId = null, isEdited = false)
@@ -154,5 +189,13 @@ class DynamicWallpaperPreparerTest {
 
   private fun bitmap(): Bitmap {
     return Bitmap.createBitmap(32, 32, Bitmap.Config.ARGB_8888)
+  }
+
+  private inline fun Bitmap.use(block: (Bitmap) -> Unit) {
+    try {
+      block(this)
+    } finally {
+      recycle()
+    }
   }
 }

@@ -205,7 +205,7 @@ object DynamicWallpaperConfigStore {
           remoteId = assetRef.remoteId,
           localId = existing.localId,
           isEdited = existing.isEdited,
-          layout = assetRef.layout ?: existing.layout,
+          layout = assetRef.layout,
         )
       }
     }
