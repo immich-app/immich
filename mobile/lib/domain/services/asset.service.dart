@@ -35,7 +35,7 @@ class AssetService {
   }
 
   Future<List<RemoteAsset>> getRemoteAssets(List<String> ids) {
-    return _remoteAssetRepository.getByIds(ids);
+    return _remoteRepository.getByIds(ids);
   }
 
   Future<List<RemoteAsset>> getStack(RemoteAsset asset) async {
