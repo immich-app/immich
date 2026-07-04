@@ -43,10 +43,7 @@ class DynamicWallpaperActionButton extends ConsumerWidget {
         ImmichToast.show(
           context: context,
           msg: messageKey.tr(
-            namedArgs: {
-              'added': update.addedCount.toString(),
-              'skipped': update.skippedCount.toString(),
-            },
+            namedArgs: {'added': update.addedCount.toString(), 'skipped': update.skippedCount.toString()},
           ),
         );
       },
