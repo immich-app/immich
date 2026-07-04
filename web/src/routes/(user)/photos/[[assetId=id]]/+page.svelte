@@ -9,6 +9,7 @@
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
   import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
+  import RemoveFromAlbum from '$lib/components/timeline/actions/RemoveFromAlbumAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import FavoriteAction from '$lib/components/timeline/actions/FavoriteAction.svelte';
   import LinkLivePhotoAction from '$lib/components/timeline/actions/LinkLivePhotoAction.svelte';
@@ -153,6 +154,7 @@
         {#if authManager.preferences.tags.enabled}
           <TagAction menuItem />
         {/if}
+        <RemoveFromAlbum menuItem />
         <DeleteAssets
           menuItem
           onAssetDelete={(assetIds) => timelineManager.removeAssets(assetIds)}
