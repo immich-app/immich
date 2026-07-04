@@ -15,17 +15,12 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
   private val preparer = DynamicWallpaperPreparer(context.applicationContext)
 
   override fun configure(assets: List<DynamicWallpaperAssetRef>, callback: (Result<Unit>) -> Unit) {
-    scope.launch {
-      try {
-        val normalizedAssets = DynamicWallpaperRotation.deduplicateRefsPreservingOrder(assets)
-        DynamicWallpaperConfigStore.writeSelection(context, normalizedAssets)
-        preparer.prepare(normalizedAssets, force = false)
-        ImmichWallpaperService.refreshActiveWallpapers()
-        callback(Result.success(Unit))
-      } catch (error: Throwable) {
-        callback(Result.failure(error))
-      }
-    }
+    updateWallpapers(
+      assets = assets,
+      callback = callback,
+      writeSelection = { DynamicWallpaperConfigStore.writeSelection(context, it) },
+      prepare = { preparer.prepare(it, force = false) },
+    )
   }
 
   override fun openLiveWallpaperPicker(callback: (Result<Unit>) -> Unit) {
@@ -53,17 +48,12 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
   }
 
   override fun refresh(assets: List<DynamicWallpaperAssetRef>, callback: (Result<Unit>) -> Unit) {
-    scope.launch {
-      try {
-        val normalizedAssets = DynamicWallpaperRotation.deduplicateRefsPreservingOrder(assets)
-        DynamicWallpaperConfigStore.writeSelection(context, normalizedAssets, resetActiveIndex = false)
-        preparer.prepare(normalizedAssets, force = true)
-        ImmichWallpaperService.refreshActiveWallpapers()
-        callback(Result.success(Unit))
-      } catch (error: Throwable) {
-        callback(Result.failure(error))
-      }
-    }
+    updateWallpapers(
+      assets = assets,
+      callback = callback,
+      writeSelection = { DynamicWallpaperConfigStore.writeSelection(context, it, resetActiveIndex = false) },
+      prepare = { preparer.prepare(it, force = true) },
+    )
   }
 
   override fun updateSelection(
@@ -72,32 +62,29 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
     prepareMissing: Boolean,
     callback: (Result<Unit>) -> Unit,
   ) {
-    scope.launch {
-      try {
-        val normalizedAssets = if (prepareMissing) {
-          DynamicWallpaperRotation.deduplicateRefsPreservingOrder(assets)
+    val forcePrepareIdSet = forcePrepareIds.toSet()
+    updateWallpapers(
+      assets = assets,
+      callback = callback,
+      normalize = {
+        if (prepareMissing) {
+          DynamicWallpaperRotation.deduplicateRefsPreservingOrder(it)
         } else {
-          DynamicWallpaperConfigStore.refsPreservingSourceMetadata(context, assets)
+          DynamicWallpaperConfigStore.refsPreservingSourceMetadata(context, it)
         }
-
-        DynamicWallpaperConfigStore.writeSelectionPreservingActiveAsset(context, normalizedAssets)
-
-        val forcePrepareIdSet = forcePrepareIds.toSet()
+      },
+      writeSelection = { DynamicWallpaperConfigStore.writeSelectionPreservingActiveAsset(context, it) },
+      prepare = {
         if (prepareMissing || forcePrepareIdSet.isNotEmpty()) {
           preparer.prepare(
-            normalizedAssets,
+            it,
             force = false,
             forcePrepareIds = forcePrepareIdSet,
             prepareMissing = prepareMissing,
           )
         }
-
-        ImmichWallpaperService.refreshActiveWallpapers()
-        callback(Result.success(Unit))
-      } catch (error: Throwable) {
-        callback(Result.failure(error))
-      }
-    }
+      },
+    )
   }
 
   override fun disable(callback: (Result<Unit>) -> Unit) {
@@ -116,6 +103,27 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
       callback(Result.success(DynamicWallpaperConfigStore.status(context)))
     } catch (error: Throwable) {
       callback(Result.failure(error))
+    }
+  }
+
+  private fun updateWallpapers(
+    assets: List<DynamicWallpaperAssetRef>,
+    callback: (Result<Unit>) -> Unit,
+    normalize: (List<DynamicWallpaperAssetRef>) -> List<DynamicWallpaperAssetRef> =
+      DynamicWallpaperRotation::deduplicateRefsPreservingOrder,
+    writeSelection: (List<DynamicWallpaperAssetRef>) -> Unit,
+    prepare: suspend (List<DynamicWallpaperAssetRef>) -> Unit,
+  ) {
+    scope.launch {
+      try {
+        val normalizedAssets = normalize(assets)
+        writeSelection(normalizedAssets)
+        prepare(normalizedAssets)
+        ImmichWallpaperService.refreshActiveWallpapers()
+        callback(Result.success(Unit))
+      } catch (error: Throwable) {
+        callback(Result.failure(error))
+      }
     }
   }
 }

@@ -9,11 +9,12 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Rect
 import android.os.Build
 import android.os.SystemClock
 import android.service.wallpaper.WallpaperService
 import android.view.SurfaceHolder
+import app.alextran.immich.images.calculateInSampleSize
+import app.alextran.immich.images.drawBitmapCenterCrop
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -167,7 +168,7 @@ class ImmichWallpaperService : WallpaperService() {
         if (bitmap == null) {
           drawFallback(canvas)
         } else {
-          drawCenterCrop(canvas, bitmap)
+          drawBitmap(canvas, bitmap)
           bitmap.recycle()
         }
       } finally {
@@ -197,47 +198,13 @@ class ImmichWallpaperService : WallpaperService() {
       return DynamicWallpaperConfigStore.preparedFile(applicationContext, config.assetIds[activeIndex])
     }
 
-    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
-      val height = options.outHeight
-      val width = options.outWidth
-      var inSampleSize = 1
-
-      if (height > reqHeight || width > reqWidth) {
-        val halfHeight = height / 2
-        val halfWidth = width / 2
-        while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
-          inSampleSize *= 2
-        }
-      }
-
-      return inSampleSize
-    }
-
     private fun drawFallback(canvas: Canvas) {
       canvas.drawColor(FALLBACK_COLOR)
     }
 
-    private fun drawCenterCrop(canvas: Canvas, bitmap: Bitmap) {
+    private fun drawBitmap(canvas: Canvas, bitmap: Bitmap) {
       canvas.drawColor(FALLBACK_COLOR)
-
-      val canvasWidth = canvas.width
-      val canvasHeight = canvas.height
-      if (canvasWidth <= 0 || canvasHeight <= 0 || bitmap.width <= 0 || bitmap.height <= 0) {
-        return
-      }
-
-      val scale = maxOf(
-        canvasWidth.toFloat() / bitmap.width.toFloat(),
-        canvasHeight.toFloat() / bitmap.height.toFloat(),
-      )
-      val targetWidth = (bitmap.width * scale).toInt()
-      val targetHeight = (bitmap.height * scale).toInt()
-      val left = (canvasWidth - targetWidth) / 2
-      val top = (canvasHeight - targetHeight) / 2
-
-      val src = Rect(0, 0, bitmap.width, bitmap.height)
-      val dst = Rect(left, top, left + targetWidth, top + targetHeight)
-      canvas.drawBitmap(bitmap, src, dst, paint)
+      drawBitmapCenterCrop(canvas, bitmap, paint)
     }
   }
 }

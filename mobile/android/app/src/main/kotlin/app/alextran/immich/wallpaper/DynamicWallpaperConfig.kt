@@ -22,6 +22,14 @@ private const val kConfigVersion = "configVersion"
 private const val kPreparationErrors = "preparationErrors"
 private const val kLastPreparationError = "lastPreparationError"
 
+private val kDynamicWallpaperIdentityLayout = DynamicWallpaperAssetLayout(
+  rotationDegrees = 0L,
+  cropLeft = 0.0,
+  cropTop = 0.0,
+  cropRight = 1.0,
+  cropBottom = 1.0,
+)
+
 data class DynamicWallpaperConfig(
   val enabled: Boolean,
   val assetRefs: List<DynamicWallpaperAssetRef>,
@@ -352,22 +360,11 @@ fun DynamicWallpaperAssetLayout.normalized(): DynamicWallpaperAssetLayout {
 }
 
 fun DynamicWallpaperAssetLayout.isIdentity(): Boolean {
-  val normalized = normalized()
-  return normalized.rotationDegrees == 0L &&
-    normalized.cropLeft == 0.0 &&
-    normalized.cropTop == 0.0 &&
-    normalized.cropRight == 1.0 &&
-    normalized.cropBottom == 1.0
+  return normalized() == kDynamicWallpaperIdentityLayout
 }
 
 fun DynamicWallpaperAssetRef.normalizedLayoutOrDefault(): DynamicWallpaperAssetLayout {
-  return layout?.normalized() ?: DynamicWallpaperAssetLayout(
-    rotationDegrees = 0L,
-    cropLeft = 0.0,
-    cropTop = 0.0,
-    cropRight = 1.0,
-    cropBottom = 1.0,
-  )
+  return layout?.normalized() ?: kDynamicWallpaperIdentityLayout
 }
 
 private fun StoredDynamicWallpaperAssetLayout.toLayout(): DynamicWallpaperAssetLayout {

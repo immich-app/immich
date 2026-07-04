@@ -94,20 +94,4 @@ object ExifBitmapUtils {
       } ?: ExifInterface.ORIENTATION_NORMAL
     }.getOrDefault(ExifInterface.ORIENTATION_NORMAL)
   }
-
-  private fun calculateInSampleSize(options: BitmapFactory.Options, targetWidth: Int, targetHeight: Int): Int {
-    val height = options.outHeight
-    val width = options.outWidth
-    var inSampleSize = 1
-
-    if (height > targetHeight || width > targetWidth) {
-      val halfHeight = height / 2
-      val halfWidth = width / 2
-      while (halfHeight / inSampleSize >= targetHeight && halfWidth / inSampleSize >= targetWidth) {
-        inSampleSize *= 2
-      }
-    }
-
-    return inSampleSize
-  }
 }

@@ -6,9 +6,9 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Matrix
 import android.graphics.Paint
-import android.graphics.Rect
 import android.provider.MediaStore.Images
 import app.alextran.immich.images.ExifBitmapUtils
+import app.alextran.immich.images.drawBitmapCenterCrop
 import app.alextran.immich.widget.ImmichAPI
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -114,15 +114,8 @@ class DynamicWallpaperPreparer(
     val output = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(output)
     val paint = Paint(Paint.FILTER_BITMAP_FLAG)
-    val left = (targetWidth - scaledWidth) / 2
-    val top = (targetHeight - scaledHeight) / 2
 
-    canvas.drawBitmap(
-      scaled,
-      Rect(0, 0, scaled.width, scaled.height),
-      Rect(left, top, left + scaledWidth, top + scaledHeight),
-      paint,
-    )
+    drawBitmapCenterCrop(canvas, scaled, paint)
 
     if (scaled !== bitmap) {
       scaled.recycle()

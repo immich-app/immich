@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:auto_route/auto_route.dart';
 import 'package:crop_image/crop_image.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -62,18 +60,6 @@ class _DynamicWallpaperSettingsState extends ConsumerState<DynamicWallpaperSetti
     final service = ref.watch(dynamicWallpaperServiceProvider);
     final status = ref.watch(_dynamicWallpaperPreparationStatusProvider);
     final selectedCount = config.assetIds.length;
-
-    if (!Platform.isAndroid) {
-      return SettingsSubPageScaffold(
-        settings: [
-          ListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-            title: Text('dynamic_wallpaper_settings_title'.tr()),
-            subtitle: Text('dynamic_wallpaper_android_only'.tr()),
-          ),
-        ],
-      );
-    }
 
     return SettingsSubPageScaffold(
       showDivider: true,
