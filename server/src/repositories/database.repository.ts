@@ -2,6 +2,7 @@ import { schemaDiff, schemaFromCode, schemaFromDatabase } from '@immich/sql-tool
 import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
 import { FileMigrationProvider, Kysely, Migrator, sql } from 'kysely';
+import 'kysely-replication/force';
 import { InjectKysely } from 'nestjs-kysely';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -25,7 +26,6 @@ import { immich_uuid_v7 } from 'src/schema/functions';
 import { ExtensionVersion, VectorExtension } from 'src/types';
 import { vectorIndexQuery } from 'src/utils/database';
 import z from 'zod';
-import 'kysely-replication/force'
 
 export let cachedVectorExtension: VectorExtension | undefined;
 export async function getVectorExtension(runner: Kysely<DB>): Promise<VectorExtension> {
@@ -255,7 +255,12 @@ export class DatabaseRepository {
   }
 
   getMigrations() {
-    return this.db.withPrimary().selectFrom('kysely_migrations').select(['name', 'timestamp']).orderBy('name', 'asc').execute();
+    return this.db
+      .withPrimary()
+      .selectFrom('kysely_migrations')
+      .select(['name', 'timestamp'])
+      .orderBy('name', 'asc')
+      .execute();
   }
 
   async getSchemaDrift() {
