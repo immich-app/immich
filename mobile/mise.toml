@@ -1,6 +1,9 @@
 [tools]
 "aqua:flutter/flutter" = "3.44.1"
 java = "21.0.2"
+# immich_native_core builds from source via a dart build hook that drives rustup.
+# mise bootstraps rustup + this toolchain; keep in sync with the crate's rust-toolchain.toml.
+rust = "1.92.0"
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.37.0"
