@@ -40,6 +40,7 @@ class DriftBackupSettings extends ConsumerWidget {
           ),
           const _BackupOnlyWhenChargingButton(),
           const _BackupDelaySlider(),
+          const _ParallelBackupWorkerSlider(),
         ],
         const Divider(),
         SettingGroupTitle(
@@ -292,6 +293,44 @@ class _BackupDelaySlider extends ConsumerWidget {
           min: 0.0,
           divisions: 3,
           label: formatBackupDelaySliderValue(currentValue),
+        ),
+      ],
+    );
+  }
+}
+
+class _ParallelBackupWorkerSlider extends ConsumerWidget {
+  const _ParallelBackupWorkerSlider();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final parallelUploadCount = ref.watch(appConfigProvider.select((c) => c.backup.parallelUploadCount));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 24.0, top: 8.0),
+          child: Text(
+            'backup_controller_page_parallel_upload_count'.tr(
+              namedArgs: {'count': parallelUploadCount.toString()},
+            ),
+            style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+          ),
+        ),
+        Slider(
+          value: parallelUploadCount.toDouble(),
+          onChanged: (double v) async {
+            final newParallelUploadCount = v.toInt();
+            await ref.read(settingsProvider).write(SettingsKey.parallelUploadCount, newParallelUploadCount);
+          },
+          onChangeEnd: (double v) async {
+            final newParallelUploadCount = v.toInt();
+            await ref.read(settingsProvider).write(SettingsKey.parallelUploadCount, newParallelUploadCount);
+          },
+          max: 10.0,
+          min: 1.0,
+          divisions: 9,
+          label: parallelUploadCount.toString(),
         ),
       ],
     );
