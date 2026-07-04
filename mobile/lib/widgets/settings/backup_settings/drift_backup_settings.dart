@@ -30,8 +30,23 @@ class DriftBackupSettings extends ConsumerWidget {
           title: "network_requirements".t(context: context),
           icon: Icons.cell_tower,
         ),
-        const _UseCellularForVideosButton(),
-        const _UseCellularForPhotosButton(),
+        Column(
+          children: [
+            SettingGroupTitle(
+              title: "videos".t(context: context),
+              icon: Icons.video_camera_back_outlined,
+            ),
+            const _UseCellularForVideosButton(),
+            const _AllowMeteredVpnForVideosButton(),
+            const SizedBox(height: 24),
+            SettingGroupTitle(
+              title: "photos".t(context: context),
+              icon: Icons.image_outlined,
+            ),
+            const _UseCellularForPhotosButton(),
+            const _AllowMeteredVpnForPhotosButton(),
+          ],
+        ),
         if (CurrentPlatform.isAndroid) ...[
           const Divider(),
           SettingGroupTitle(
@@ -200,8 +215,22 @@ class _UseCellularForVideosButton extends StatelessWidget {
     return _BackupSwitchTile(
       metadataKey: SettingsKey.backupUseCellularForVideos,
       selector: (c) => c.backup.useCellularForVideos,
-      titleKey: "videos",
-      subtitleKey: "network_requirement_videos_upload",
+      titleKey: "network_requirement_videos_upload_title",
+      subtitleKey: "network_requirement_videos_upload_subtitle",
+    );
+  }
+}
+
+class _AllowMeteredVpnForVideosButton extends StatelessWidget {
+  const _AllowMeteredVpnForVideosButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return _BackupSwitchTile(
+      metadataKey: SettingsKey.backupAllowMeteredVpnForVideos,
+      selector: (c) => c.backup.allowMeteredVpnForVideos,
+      titleKey: "network_requirement_allow_metered_vpn_for_videos_title",
+      subtitleKey: "network_requirement_allow_metered_vpn_for_videos_subtitle",
     );
   }
 }
@@ -214,8 +243,22 @@ class _UseCellularForPhotosButton extends StatelessWidget {
     return _BackupSwitchTile(
       metadataKey: SettingsKey.backupUseCellularForPhotos,
       selector: (c) => c.backup.useCellularForPhotos,
-      titleKey: "photos",
-      subtitleKey: "network_requirement_photos_upload",
+      titleKey: "network_requirement_photos_upload_title",
+      subtitleKey: "network_requirement_photos_upload_subtitle",
+    );
+  }
+}
+
+class _AllowMeteredVpnForPhotosButton extends StatelessWidget {
+  const _AllowMeteredVpnForPhotosButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return _BackupSwitchTile(
+      metadataKey: SettingsKey.backupAllowMeteredVpnForPhotos,
+      selector: (c) => c.backup.allowMeteredVpnForPhotos,
+      titleKey: "network_requirement_allow_metered_vpn_for_photos_title",
+      subtitleKey: "network_requirement_allow_metered_vpn_for_photos_subtitle",
     );
   }
 }

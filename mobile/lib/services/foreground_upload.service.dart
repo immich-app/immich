@@ -86,18 +86,23 @@ class ForegroundUploadService {
     }
 
     final networkCapabilities = await _connectivityApi.getCapabilities();
-    final hasWifi = networkCapabilities.isUnmetered;
-    _logger.info('Network capabilities: $networkCapabilities, hasWifi/isUnmetered: $hasWifi');
+    final isUnmetered = networkCapabilities.isUnmetered;
+    _logger.info('Network capabilities: $networkCapabilities, isUnmetered: $isUnmetered');
 
     if (useSequentialUpload) {
-      await _uploadSequentially(items: candidates, cancelToken: cancelToken, hasWifi: hasWifi, callbacks: callbacks);
+      await _uploadSequentially(
+          items: candidates,
+          cancelToken: cancelToken,
+          networkCapabilities: networkCapabilities,
+          callbacks: callbacks,
+      );
     } else {
       await _executeWithWorkerPool<LocalAsset>(
         items: candidates,
         cancelToken: cancelToken,
         shouldSkip: (asset) {
-          final requireWifi = _shouldRequireWiFi(asset);
-          return requireWifi && !hasWifi;
+          final allowUpload = _allowUpload(asset, networkCapabilities);
+          return !allowUpload;
         },
         processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
       );
@@ -108,7 +113,7 @@ class ForegroundUploadService {
   Future<void> _uploadSequentially({
     required List<LocalAsset> items,
     required Completer<void> cancelToken,
-    required bool hasWifi,
+    required List<NetworkCapability> networkCapabilities,
     required UploadCallbacks callbacks,
   }) async {
     await _storageRepository.clearCache();
@@ -119,9 +124,9 @@ class ForegroundUploadService {
         break;
       }
 
-      final requireWifi = _shouldRequireWiFi(asset);
-      if (requireWifi && !hasWifi) {
-        _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
+      final allowUpload = _allowUpload(asset, networkCapabilities);
+      if (!allowUpload) {
+        _logger.warning('Skipping upload for ${asset.id} because the configured network requirements are not met');
         continue;
       }
 
@@ -450,14 +455,39 @@ class ForegroundUploadService {
     }
   }
 
-  bool _shouldRequireWiFi(LocalAsset asset) {
+  bool _allowUpload(LocalAsset asset, List<NetworkCapability> networkCapabilities) {
+    // Specifically check for cellular first so we disallow an unmetered vpn
+    // over disallowed cellular
     final backup = SettingsRepository.instance.appConfig.backup;
-    if (asset.isVideo && backup.useCellularForVideos) {
-      return false;
+    if (networkCapabilities.hasCellular) {
+      if (asset.isVideo) {
+        if (!backup.useCellularForVideos) {
+          return false;
+        }
+
+        return !networkCapabilities.hasVpn || networkCapabilities.isUnmetered || backup.allowMeteredVpnForVideos;
+      } else {
+        if (!backup.useCellularForPhotos) {
+          return false;
+        }
+
+        return !networkCapabilities.hasVpn || networkCapabilities.isUnmetered || backup.allowMeteredVpnForPhotos;
+      }
     }
-    if (!asset.isVideo && backup.useCellularForPhotos) {
-      return false;
+
+    if (networkCapabilities.isUnmetered) {
+      return true;
     }
-    return true;
+
+    if (networkCapabilities.hasVpn) {
+      if (asset.isVideo) {
+        return backup.allowMeteredVpnForVideos;
+      } else {
+        return backup.allowMeteredVpnForPhotos;
+      }
+    }
+
+    // We are using a metered wifi/ethernet connection
+    return false;
   }
 }
