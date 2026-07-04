@@ -152,22 +152,13 @@ class DynamicWallpaperPreparer(
   }
 
   private fun transformForDisplay(bitmap: Bitmap, layout: DynamicWallpaperAssetLayout): Bitmap {
-    var current = bitmap
-
-    val rotated = rotateBitmap(current, layout.rotationDegrees)
-    if (rotated !== current) {
-      current = rotated
+    val rotated = rotateBitmap(bitmap, layout.rotationDegrees)
+    val cropped = cropBitmap(rotated, layout)
+    if (cropped !== rotated && rotated !== bitmap) {
+      rotated.recycle()
     }
 
-    val cropped = cropBitmap(current, layout)
-    if (cropped !== current) {
-      if (current !== bitmap) {
-        current.recycle()
-      }
-      current = cropped
-    }
-
-    return current
+    return cropped
   }
 
   private fun rotateBitmap(bitmap: Bitmap, rotationDegrees: Long): Bitmap {

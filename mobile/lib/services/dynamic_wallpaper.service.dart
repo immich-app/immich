@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/config/dynamic_wallpaper_config.dart' as config_model;
@@ -175,7 +176,7 @@ class DynamicWallpaperService {
     }
 
     await _settingsRepository.write(SettingsKey.dynamicWallpaperAssetIds, nextAssetIds);
-    if (!_layoutMapsEqual(current.assetLayouts, nextAssetLayouts)) {
+    if (!mapEquals(current.assetLayouts, nextAssetLayouts)) {
       await _settingsRepository.write(SettingsKey.dynamicWallpaperAssetLayouts, nextAssetLayouts);
     }
   }
@@ -282,21 +283,4 @@ class DynamicWallpaperService {
       cropBottom: normalized.cropBottom,
     );
   }
-}
-
-bool _layoutMapsEqual(
-  Map<String, config_model.DynamicWallpaperAssetLayout> a,
-  Map<String, config_model.DynamicWallpaperAssetLayout> b,
-) {
-  if (a.length != b.length) {
-    return false;
-  }
-
-  for (final entry in a.entries) {
-    if (b[entry.key] != entry.value) {
-      return false;
-    }
-  }
-
-  return true;
 }

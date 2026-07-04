@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:crop_image/crop_image.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -275,10 +276,10 @@ class _DynamicWallpaperSelectionListState extends State<_DynamicWallpaperSelecti
   @override
   void didUpdateWidget(covariant _DynamicWallpaperSelectionList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (!_listEquals(widget.assetIds, _assetIds)) {
+    if (!listEquals(widget.assetIds, _assetIds)) {
       _assetIds = [...widget.assetIds];
     }
-    if (!_mapEquals(widget.assetLayouts, _assetLayouts)) {
+    if (!mapEquals(widget.assetLayouts, _assetLayouts)) {
       _assetLayouts = {...widget.assetLayouts};
     }
   }
@@ -725,32 +726,4 @@ class _DynamicWallpaperThumbnail extends ConsumerWidget {
       ),
     );
   }
-}
-
-bool _listEquals<T>(List<T> a, List<T> b) {
-  if (a.length != b.length) {
-    return false;
-  }
-
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] != b[i]) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool _mapEquals<K, V>(Map<K, V> a, Map<K, V> b) {
-  if (a.length != b.length) {
-    return false;
-  }
-
-  for (final entry in a.entries) {
-    if (b[entry.key] != entry.value) {
-      return false;
-    }
-  }
-
-  return true;
 }

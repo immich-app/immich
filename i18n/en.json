@@ -913,7 +913,6 @@
   "dynamic_wallpaper_remove_photo": "Remove photo",
   "dynamic_wallpaper_rotate_left": "Rotate left",
   "dynamic_wallpaper_rotate_right": "Rotate right",
-  "dynamic_wallpaper_select_photos": "Select photos",
   "dynamic_wallpaper_select_subtitle": "Add or remove photos from the timeline. Already selected photos are checked.",
   "dynamic_wallpaper_select_title": "Select photos",
   "dynamic_wallpaper_selection_added_and_skipped": "Added {added} photo(s). {skipped} already in your wallpaper list.",

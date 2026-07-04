@@ -27,7 +27,6 @@ import java.util.Collections
 class ImmichWallpaperService : WallpaperService() {
   companion object {
     private val activeEngines = Collections.synchronizedSet(mutableSetOf<WallpaperEngine>())
-    private val activeServices = Collections.synchronizedSet(mutableSetOf<ImmichWallpaperService>())
     private val FALLBACK_COLOR = Color.rgb(18, 18, 18)
 
     fun refreshActiveWallpapers() {
@@ -51,7 +50,6 @@ class ImmichWallpaperService : WallpaperService() {
 
   override fun onCreate() {
     super.onCreate()
-    activeServices.add(this)
     val filter = IntentFilter().apply {
       addAction(Intent.ACTION_SCREEN_ON)
       addAction(Intent.ACTION_USER_PRESENT)
@@ -66,7 +64,6 @@ class ImmichWallpaperService : WallpaperService() {
   }
 
   override fun onDestroy() {
-    activeServices.remove(this)
     runCatching { unregisterReceiver(screenReceiver) }
     serviceScope.cancel()
     super.onDestroy()
@@ -206,8 +203,8 @@ class ImmichWallpaperService : WallpaperService() {
       var inSampleSize = 1
 
       if (height > reqHeight || width > reqWidth) {
-        var halfHeight = height / 2
-        var halfWidth = width / 2
+        val halfHeight = height / 2
+        val halfWidth = width / 2
         while (halfHeight / inSampleSize >= reqHeight && halfWidth / inSampleSize >= reqWidth) {
           inSampleSize *= 2
         }

@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
+
 class DynamicWallpaperConfig {
   final List<String> assetIds;
   final Map<String, DynamicWallpaperAssetLayout> assetLayouts;
@@ -14,8 +16,8 @@ class DynamicWallpaperConfig {
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is DynamicWallpaperConfig &&
-          _listEquals(other.assetIds, assetIds) &&
-          _mapEquals(other.assetLayouts, assetLayouts));
+          listEquals(other.assetIds, assetIds) &&
+          mapEquals(other.assetLayouts, assetLayouts));
 
   @override
   int get hashCode => Object.hash(Object.hashAll(assetIds), Object.hashAll(assetLayouts.entries));
@@ -115,31 +117,3 @@ class DynamicWallpaperAssetLayout {
 int _normalizeRotation(int degrees) => ((degrees % 360) + 360) % 360 ~/ 90 * 90;
 
 double _clampUnit(double value) => value.clamp(0.0, 1.0).toDouble();
-
-bool _mapEquals<K, V>(Map<K, V> a, Map<K, V> b) {
-  if (a.length != b.length) {
-    return false;
-  }
-
-  for (final entry in a.entries) {
-    if (b[entry.key] != entry.value) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool _listEquals<T>(List<T> a, List<T> b) {
-  if (a.length != b.length) {
-    return false;
-  }
-
-  for (var i = 0; i < a.length; i++) {
-    if (a[i] != b[i]) {
-      return false;
-    }
-  }
-
-  return true;
-}
