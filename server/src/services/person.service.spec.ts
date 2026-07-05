@@ -4,6 +4,7 @@ import { mapFaces, mapPerson } from 'src/dtos/person.dto';
 import { AssetFileType, CacheControl, JobName, JobStatus, SourceType, SystemMetadataKey } from 'src/enum';
 import { FaceSearchResult } from 'src/repositories/search.repository';
 import { PersonService } from 'src/services/person.service';
+import { ASSET_FACE_PERSON_FKEY_CONSTRAINT } from 'src/utils/database';
 import { ImmichFileResponse } from 'src/utils/file';
 import { AssetFaceFactory } from 'test/factories/asset-face.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
@@ -1041,6 +1042,47 @@ describe(PersonService.name, () => {
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.not.arrayContaining([face.id]),
         newPersonId: primaryFace.person!.id,
+      });
+    });
+
+    it('should create a new person if the matched person was concurrently merged/deleted', async () => {
+      const asset = AssetFactory.create();
+      const [noPerson1, primaryFace] = [
+        AssetFaceFactory.create({ assetId: asset.id }),
+        AssetFaceFactory.from().person().build(),
+      ];
+
+      const faces = [
+        { ...noPerson1, distance: 0 },
+        { ...primaryFace, distance: 0.2 },
+      ] as FaceSearchResult[];
+
+      const newPerson = PersonFactory.create();
+
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
+      mocks.search.searchFaces.mockResolvedValue(faces);
+      mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson1, asset));
+      mocks.person.reassignFaces.mockRejectedValueOnce(
+        Object.assign(new Error('violates foreign key constraint'), {
+          constraint_name: ASSET_FACE_PERSON_FKEY_CONSTRAINT,
+        }),
+      );
+      mocks.person.create.mockResolvedValue(newPerson);
+
+      await sut.handleRecognizeFaces({ id: noPerson1.id });
+
+      expect(mocks.person.create).toHaveBeenCalledWith({
+        ownerId: asset.ownerId,
+        faceAssetId: noPerson1.id,
+      });
+      expect(mocks.person.reassignFaces).toHaveBeenCalledTimes(2);
+      expect(mocks.person.reassignFaces).toHaveBeenNthCalledWith(1, {
+        faceIds: [noPerson1.id],
+        newPersonId: primaryFace.person!.id,
+      });
+      expect(mocks.person.reassignFaces).toHaveBeenNthCalledWith(2, {
+        faceIds: [noPerson1.id],
+        newPersonId: newPerson.id,
       });
     });
 

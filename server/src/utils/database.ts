@@ -72,12 +72,16 @@ export const removeUndefinedKeys = <T extends object>(update: T, template: unkno
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
 export const VIDEO_STREAM_SESSION_PK_CONSTRAINT = 'video_stream_session_pkey';
+export const ASSET_FACE_PERSON_FKEY_CONSTRAINT = 'asset_face_personId_fkey';
 
 export const isAssetChecksumConstraint = (error: unknown) =>
   (error as PostgresError)?.constraint_name === ASSET_CHECKSUM_CONSTRAINT;
 
 export const isVideoStreamSessionPkConstraint = (error: unknown) =>
   (error as PostgresError)?.constraint_name === VIDEO_STREAM_SESSION_PK_CONSTRAINT;
+
+export const isAssetFacePersonFkeyConstraint = (error: unknown) =>
+  (error as PostgresError)?.constraint_name === ASSET_FACE_PERSON_FKEY_CONSTRAINT;
 
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)]);

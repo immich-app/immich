@@ -41,6 +41,7 @@ import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
+import { isAssetFacePersonFkeyConstraint } from 'src/utils/database';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
@@ -534,7 +535,19 @@ export class PersonService extends BaseService {
 
     if (personId) {
       this.logger.debug(`Assigning face ${id} to person ${personId}`);
-      await this.personRepository.reassignFaces({ faceIds: [id], newPersonId: personId });
+      try {
+        await this.personRepository.reassignFaces({ faceIds: [id], newPersonId: personId });
+      } catch (error: unknown) {
+        if (!isAssetFacePersonFkeyConstraint(error)) {
+          throw error;
+        }
+
+        // the matched person was merged/deleted concurrently; fall back to a new person for this face
+        this.logger.warn(`Person ${personId} no longer exists, creating new person for face ${id}`);
+        const newPerson = await this.personRepository.create({ ownerId: face.asset.ownerId, faceAssetId: face.id });
+        await this.jobRepository.queue({ name: JobName.PersonGenerateThumbnail, data: { id: newPerson.id } });
+        await this.personRepository.reassignFaces({ faceIds: [id], newPersonId: newPerson.id });
+      }
     }
 
     return JobStatus.Success;
