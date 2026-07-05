@@ -12,6 +12,16 @@ final backupRepositoryProvider = Provider<DriftBackupRepository>(
   (ref) => DriftBackupRepository(ref.watch(driftProvider)),
 );
 
+// Explicit ranking used to resolve visibility when an asset belongs to more than one
+// selected local album. Deliberately not the enum's raw index, which is unrelated to
+// restrictiveness and could silently change if the shared enum is ever reordered.
+const _visibilityRestrictiveness = {
+  AssetVisibility.timeline: 0,
+  AssetVisibility.hidden: 1,
+  AssetVisibility.archive: 2,
+  AssetVisibility.locked: 3,
+};
+
 class DriftBackupRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftBackupRepository(this._db) : super(_db);
@@ -113,5 +123,65 @@ class DriftBackupRepository extends DriftDatabaseRepository {
     }
 
     return query.map((localAsset) => localAsset.toDto()).get();
+  }
+
+  /// Resolves the visibility each of [assetIds] should be uploaded with, based on the
+  /// default visibility of its selected local album(s). If an asset belongs to more than
+  /// one currently-selected album (uncommon - the ordinary case is one asset, one folder),
+  /// the most restrictive visibility wins. Assets with no selected album are omitted.
+  Future<Map<String, AssetVisibility>> getDefaultVisibilities(Iterable<String> assetIds) async {
+    final ids = assetIds.toList();
+    if (ids.isEmpty) {
+      return {};
+    }
+
+    final query = _db.localAlbumAssetEntity.selectOnly()
+      ..addColumns([_db.localAlbumAssetEntity.assetId, _db.localAlbumEntity.defaultVisibility])
+      ..join([
+        innerJoin(
+          _db.localAlbumEntity,
+          _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
+          useColumns: false,
+        ),
+      ])
+      ..where(
+        _db.localAlbumAssetEntity.assetId.isIn(ids) &
+            _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected),
+      );
+
+    final result = <String, AssetVisibility>{};
+    for (final row in await query.get()) {
+      final assetId = row.read(_db.localAlbumAssetEntity.assetId)!;
+      final visibility = row.readWithConverter(_db.localAlbumEntity.defaultVisibility)!;
+      final current = result[assetId];
+      if (current == null || _visibilityRestrictiveness[visibility]! > _visibilityRestrictiveness[current]!) {
+        result[assetId] = visibility;
+      }
+    }
+    return result;
+  }
+
+  /// Returns the server-side asset IDs, for [userId], of assets in local album [albumId]
+  /// that are already backed up (matched via checksum). Used to retroactively apply a
+  /// folder's visibility setting to assets that were uploaded before the setting changed.
+  Future<List<String>> getBackedUpRemoteAssetIds(String albumId, String userId) async {
+    final query = _db.localAlbumAssetEntity.selectOnly()
+      ..addColumns([_db.remoteAssetEntity.id])
+      ..join([
+        innerJoin(
+          _db.localAssetEntity,
+          _db.localAssetEntity.id.equalsExp(_db.localAlbumAssetEntity.assetId),
+          useColumns: false,
+        ),
+        innerJoin(
+          _db.remoteAssetEntity,
+          _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
+              _db.remoteAssetEntity.ownerId.equals(userId),
+          useColumns: false,
+        ),
+      ])
+      ..where(_db.localAlbumAssetEntity.albumId.equals(albumId));
+
+    return (await query.get()).map((row) => row.read(_db.remoteAssetEntity.id)!).toList();
   }
 }

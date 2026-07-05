@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -12,6 +13,7 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
@@ -21,6 +23,7 @@ import 'package:immich_mobile/providers/permission.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/widgets/backup/backup_info_card.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:logging/logging.dart';
@@ -135,6 +138,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                 const SizedBox(height: 8),
                 const _BackupAlbumSelectionCard(),
                 if (selectedAlbum.isNotEmpty) ...[
+                  const _VisibilityCard(),
                   const _TotalCard(),
                   const _BackupCard(),
                   const _RemainderCard(),
@@ -408,6 +412,107 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
           },
           child: const Text("select", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
         ),
+      ),
+    );
+  }
+}
+
+class _VisibilityCard extends ConsumerWidget {
+  const _VisibilityCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedAlbums = ref
+        .watch(backupAlbumProvider)
+        .where((album) => album.backupSelection == BackupSelection.selected)
+        .toList();
+
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.all(Radius.circular(20)),
+        side: BorderSide(color: context.colorScheme.outlineVariant, width: 1),
+      ),
+      elevation: 0,
+      borderOnForeground: false,
+      child: Column(
+        children: [
+          ListTile(
+            minVerticalPadding: 18,
+            title: Text("backup_visibility_title", style: context.textTheme.titleMedium).tr(),
+            subtitle: Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text(
+                "backup_visibility_subtitle",
+                style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+              ).tr(),
+            ),
+          ),
+          const Divider(height: 0),
+          for (final album in selectedAlbums) _AlbumVisibilityRow(album: album),
+        ],
+      ),
+    );
+  }
+}
+
+class _AlbumVisibilityRow extends ConsumerWidget {
+  final LocalAlbum album;
+
+  const _AlbumVisibilityRow({required this.album});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListTile(
+      dense: true,
+      title: Text(album.name, style: context.textTheme.bodyMedium),
+      trailing: SegmentedButton<AssetVisibility>(
+        segments: [
+          ButtonSegment(
+            value: AssetVisibility.timeline,
+            icon: const Icon(Icons.image_outlined),
+            tooltip: "timeline".tr(),
+          ),
+          ButtonSegment(
+            value: AssetVisibility.archive,
+            icon: const Icon(Icons.archive_outlined),
+            tooltip: "archive".tr(),
+          ),
+          ButtonSegment(value: AssetVisibility.locked, icon: const Icon(Icons.lock_outline), tooltip: "lock".tr()),
+        ],
+        selected: {album.defaultVisibility},
+        showSelectedIcon: false,
+        style: const ButtonStyle(visualDensity: VisualDensity.compact),
+        onSelectionChanged: (selection) async {
+          final visibility = selection.first;
+          await ref.read(backupAlbumProvider.notifier).setDefaultVisibility(album, visibility);
+
+          // Retroactively apply to assets from this folder already on the server -
+          // the setting is the ground truth for what shows on the main timeline,
+          // regardless of when an asset was uploaded.
+          final currentUser = ref.read(currentUserProvider);
+          if (currentUser == null) {
+            return;
+          }
+
+          final remoteIds = await ref
+              .read(backupRepositoryProvider)
+              .getBackedUpRemoteAssetIds(album.id, currentUser.id);
+          if (remoteIds.isEmpty) {
+            return;
+          }
+
+          final actionService = ref.read(actionServiceProvider);
+          switch (visibility) {
+            case AssetVisibility.timeline:
+              await actionService.unArchive(remoteIds);
+            case AssetVisibility.archive:
+              await actionService.archive(remoteIds);
+            case AssetVisibility.locked:
+              await actionService.moveToLockFolder(remoteIds, []);
+            case AssetVisibility.hidden:
+              break;
+          }
+        },
       ),
     );
   }

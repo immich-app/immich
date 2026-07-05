@@ -4,12 +4,13 @@ import 'package:drift/drift.dart' as i0;
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart'
     as i1;
 import 'package:immich_mobile/domain/models/album/local_album.model.dart' as i2;
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as i3;
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart'
-    as i3;
-import 'package:drift/src/runtime/query_builder/query_builder.dart' as i4;
+    as i4;
+import 'package:drift/src/runtime/query_builder/query_builder.dart' as i5;
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart'
-    as i5;
-import 'package:drift/internal/modular.dart' as i6;
+    as i6;
+import 'package:drift/internal/modular.dart' as i7;
 
 typedef $$LocalAlbumEntityTableCreateCompanionBuilder =
     i1.LocalAlbumEntityCompanion Function({
@@ -19,6 +20,7 @@ typedef $$LocalAlbumEntityTableCreateCompanionBuilder =
       required i2.BackupSelection backupSelection,
       i0.Value<bool> isIosSharedAlbum,
       i0.Value<String?> linkedRemoteAlbumId,
+      i0.Value<i3.AssetVisibility> defaultVisibility,
       i0.Value<bool?> marker_,
     });
 typedef $$LocalAlbumEntityTableUpdateCompanionBuilder =
@@ -29,6 +31,7 @@ typedef $$LocalAlbumEntityTableUpdateCompanionBuilder =
       i0.Value<i2.BackupSelection> backupSelection,
       i0.Value<bool> isIosSharedAlbum,
       i0.Value<String?> linkedRemoteAlbumId,
+      i0.Value<i3.AssetVisibility> defaultVisibility,
       i0.Value<bool?> marker_,
     });
 
@@ -45,30 +48,30 @@ final class $$LocalAlbumEntityTableReferences
     super.$_typedResult,
   );
 
-  static i5.$RemoteAlbumEntityTable _linkedRemoteAlbumIdTable(
+  static i6.$RemoteAlbumEntityTable _linkedRemoteAlbumIdTable(
     i0.GeneratedDatabase db,
-  ) => i6.ReadDatabaseContainer(db)
-      .resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity')
+  ) => i7.ReadDatabaseContainer(db)
+      .resultSet<i6.$RemoteAlbumEntityTable>('remote_album_entity')
       .createAlias(
         i0.$_aliasNameGenerator(
-          i6.ReadDatabaseContainer(db)
+          i7.ReadDatabaseContainer(db)
               .resultSet<i1.$LocalAlbumEntityTable>('local_album_entity')
               .linkedRemoteAlbumId,
-          i6.ReadDatabaseContainer(
+          i7.ReadDatabaseContainer(
             db,
-          ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity').id,
+          ).resultSet<i6.$RemoteAlbumEntityTable>('remote_album_entity').id,
         ),
       );
 
-  i5.$$RemoteAlbumEntityTableProcessedTableManager? get linkedRemoteAlbumId {
+  i6.$$RemoteAlbumEntityTableProcessedTableManager? get linkedRemoteAlbumId {
     final $_column = $_itemColumn<String>('linked_remote_album_id');
     if ($_column == null) return null;
-    final manager = i5
+    final manager = i6
         .$$RemoteAlbumEntityTableTableManager(
           $_db,
-          i6.ReadDatabaseContainer(
+          i7.ReadDatabaseContainer(
             $_db,
-          ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+          ).resultSet<i6.$RemoteAlbumEntityTable>('remote_album_entity'),
         )
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_linkedRemoteAlbumIdTable($_db));
@@ -114,29 +117,35 @@ class $$LocalAlbumEntityTableFilterComposer
     builder: (column) => i0.ColumnFilters(column),
   );
 
+  i0.ColumnWithTypeConverterFilters<i3.AssetVisibility, i3.AssetVisibility, int>
+  get defaultVisibility => $composableBuilder(
+    column: $table.defaultVisibility,
+    builder: (column) => i0.ColumnWithTypeConverterFilters(column),
+  );
+
   i0.ColumnFilters<bool> get marker_ => $composableBuilder(
     column: $table.marker_,
     builder: (column) => i0.ColumnFilters(column),
   );
 
-  i5.$$RemoteAlbumEntityTableFilterComposer get linkedRemoteAlbumId {
-    final i5.$$RemoteAlbumEntityTableFilterComposer composer = $composerBuilder(
+  i6.$$RemoteAlbumEntityTableFilterComposer get linkedRemoteAlbumId {
+    final i6.$$RemoteAlbumEntityTableFilterComposer composer = $composerBuilder(
       composer: this,
       getCurrentColumn: (t) => t.linkedRemoteAlbumId,
-      referencedTable: i6.ReadDatabaseContainer(
+      referencedTable: i7.ReadDatabaseContainer(
         $db,
-      ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+      ).resultSet<i6.$RemoteAlbumEntityTable>('remote_album_entity'),
       getReferencedColumn: (t) => t.id,
       builder:
           (
             joinBuilder, {
             $addJoinBuilderToRootComposer,
             $removeJoinBuilderFromRootComposer,
-          }) => i5.$$RemoteAlbumEntityTableFilterComposer(
+          }) => i6.$$RemoteAlbumEntityTableFilterComposer(
             $db: $db,
-            $table: i6.ReadDatabaseContainer(
+            $table: i7.ReadDatabaseContainer(
               $db,
-            ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+            ).resultSet<i6.$RemoteAlbumEntityTable>('remote_album_entity'),
             $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
             joinBuilder: joinBuilder,
             $removeJoinBuilderFromRootComposer:
@@ -181,30 +190,35 @@ class $$LocalAlbumEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
+  i0.ColumnOrderings<int> get defaultVisibility => $composableBuilder(
+    column: $table.defaultVisibility,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
   i0.ColumnOrderings<bool> get marker_ => $composableBuilder(
     column: $table.marker_,
     builder: (column) => i0.ColumnOrderings(column),
   );
 
-  i5.$$RemoteAlbumEntityTableOrderingComposer get linkedRemoteAlbumId {
-    final i5.$$RemoteAlbumEntityTableOrderingComposer composer =
+  i6.$$RemoteAlbumEntityTableOrderingComposer get linkedRemoteAlbumId {
+    final i6.$$RemoteAlbumEntityTableOrderingComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.linkedRemoteAlbumId,
-          referencedTable: i6.ReadDatabaseContainer(
+          referencedTable: i7.ReadDatabaseContainer(
             $db,
-          ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+          ).resultSet<i6.$RemoteAlbumEntityTable>('remote_album_entity'),
           getReferencedColumn: (t) => t.id,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => i5.$$RemoteAlbumEntityTableOrderingComposer(
+              }) => i6.$$RemoteAlbumEntityTableOrderingComposer(
                 $db: $db,
-                $table: i6.ReadDatabaseContainer(
+                $table: i7.ReadDatabaseContainer(
                   $db,
-                ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+                ).resultSet<i6.$RemoteAlbumEntityTable>('remote_album_entity'),
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -244,28 +258,34 @@ class $$LocalAlbumEntityTableAnnotationComposer
     builder: (column) => column,
   );
 
+  i0.GeneratedColumnWithTypeConverter<i3.AssetVisibility, int>
+  get defaultVisibility => $composableBuilder(
+    column: $table.defaultVisibility,
+    builder: (column) => column,
+  );
+
   i0.GeneratedColumn<bool> get marker_ =>
       $composableBuilder(column: $table.marker_, builder: (column) => column);
 
-  i5.$$RemoteAlbumEntityTableAnnotationComposer get linkedRemoteAlbumId {
-    final i5.$$RemoteAlbumEntityTableAnnotationComposer composer =
+  i6.$$RemoteAlbumEntityTableAnnotationComposer get linkedRemoteAlbumId {
+    final i6.$$RemoteAlbumEntityTableAnnotationComposer composer =
         $composerBuilder(
           composer: this,
           getCurrentColumn: (t) => t.linkedRemoteAlbumId,
-          referencedTable: i6.ReadDatabaseContainer(
+          referencedTable: i7.ReadDatabaseContainer(
             $db,
-          ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+          ).resultSet<i6.$RemoteAlbumEntityTable>('remote_album_entity'),
           getReferencedColumn: (t) => t.id,
           builder:
               (
                 joinBuilder, {
                 $addJoinBuilderToRootComposer,
                 $removeJoinBuilderFromRootComposer,
-              }) => i5.$$RemoteAlbumEntityTableAnnotationComposer(
+              }) => i6.$$RemoteAlbumEntityTableAnnotationComposer(
                 $db: $db,
-                $table: i6.ReadDatabaseContainer(
+                $table: i7.ReadDatabaseContainer(
                   $db,
-                ).resultSet<i5.$RemoteAlbumEntityTable>('remote_album_entity'),
+                ).resultSet<i6.$RemoteAlbumEntityTable>('remote_album_entity'),
                 $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
                 joinBuilder: joinBuilder,
                 $removeJoinBuilderFromRootComposer:
@@ -316,6 +336,8 @@ class $$LocalAlbumEntityTableTableManager
                     const i0.Value.absent(),
                 i0.Value<bool> isIosSharedAlbum = const i0.Value.absent(),
                 i0.Value<String?> linkedRemoteAlbumId = const i0.Value.absent(),
+                i0.Value<i3.AssetVisibility> defaultVisibility =
+                    const i0.Value.absent(),
                 i0.Value<bool?> marker_ = const i0.Value.absent(),
               }) => i1.LocalAlbumEntityCompanion(
                 id: id,
@@ -324,6 +346,7 @@ class $$LocalAlbumEntityTableTableManager
                 backupSelection: backupSelection,
                 isIosSharedAlbum: isIosSharedAlbum,
                 linkedRemoteAlbumId: linkedRemoteAlbumId,
+                defaultVisibility: defaultVisibility,
                 marker_: marker_,
               ),
           createCompanionCallback:
@@ -334,6 +357,8 @@ class $$LocalAlbumEntityTableTableManager
                 required i2.BackupSelection backupSelection,
                 i0.Value<bool> isIosSharedAlbum = const i0.Value.absent(),
                 i0.Value<String?> linkedRemoteAlbumId = const i0.Value.absent(),
+                i0.Value<i3.AssetVisibility> defaultVisibility =
+                    const i0.Value.absent(),
                 i0.Value<bool?> marker_ = const i0.Value.absent(),
               }) => i1.LocalAlbumEntityCompanion.insert(
                 id: id,
@@ -342,6 +367,7 @@ class $$LocalAlbumEntityTableTableManager
                 backupSelection: backupSelection,
                 isIosSharedAlbum: isIosSharedAlbum,
                 linkedRemoteAlbumId: linkedRemoteAlbumId,
+                defaultVisibility: defaultVisibility,
                 marker_: marker_,
               ),
           withReferenceMapper: (p0) => p0
@@ -414,7 +440,7 @@ typedef $$LocalAlbumEntityTableProcessedTableManager =
       i0.PrefetchHooks Function({bool linkedRemoteAlbumId})
     >;
 
-class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
+class $LocalAlbumEntityTable extends i4.LocalAlbumEntity
     with i0.TableInfo<$LocalAlbumEntityTable, i1.LocalAlbumEntityData> {
   @override
   final i0.GeneratedDatabase attachedDatabase;
@@ -451,7 +477,7 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
         false,
         type: i0.DriftSqlType.dateTime,
         requiredDuringInsert: false,
-        defaultValue: i4.currentDateAndTime,
+        defaultValue: i5.currentDateAndTime,
       );
   @override
   late final i0.GeneratedColumnWithTypeConverter<i2.BackupSelection, int>
@@ -478,7 +504,7 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
         defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
           'CHECK ("is_ios_shared_album" IN (0, 1))',
         ),
-        defaultValue: const i4.Constant(false),
+        defaultValue: const i5.Constant(false),
       );
   static const i0.VerificationMeta _linkedRemoteAlbumIdMeta =
       const i0.VerificationMeta('linkedRemoteAlbumId');
@@ -493,6 +519,19 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
         defaultConstraints: i0.GeneratedColumn.constraintIsAlways(
           'REFERENCES remote_album_entity (id) ON DELETE SET NULL',
         ),
+      );
+  @override
+  late final i0.GeneratedColumnWithTypeConverter<i3.AssetVisibility, int>
+  defaultVisibility =
+      i0.GeneratedColumn<int>(
+        'default_visibility',
+        aliasedName,
+        false,
+        type: i0.DriftSqlType.int,
+        requiredDuringInsert: false,
+        defaultValue: const i5.Constant(0),
+      ).withConverter<i3.AssetVisibility>(
+        i1.$LocalAlbumEntityTable.$converterdefaultVisibility,
       );
   static const i0.VerificationMeta _marker_Meta = const i0.VerificationMeta(
     'marker_',
@@ -516,6 +555,7 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
     backupSelection,
     isIosSharedAlbum,
     linkedRemoteAlbumId,
+    defaultVisibility,
     marker_,
   ];
   @override
@@ -612,6 +652,13 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
         i0.DriftSqlType.string,
         data['${effectivePrefix}linked_remote_album_id'],
       ),
+      defaultVisibility: i1.$LocalAlbumEntityTable.$converterdefaultVisibility
+          .fromSql(
+            attachedDatabase.typeMapping.read(
+              i0.DriftSqlType.int,
+              data['${effectivePrefix}default_visibility'],
+            )!,
+          ),
       marker_: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.bool,
         data['${effectivePrefix}marker'],
@@ -628,6 +675,10 @@ class $LocalAlbumEntityTable extends i3.LocalAlbumEntity
   $converterbackupSelection = const i0.EnumIndexConverter<i2.BackupSelection>(
     i2.BackupSelection.values,
   );
+  static i0.JsonTypeConverter2<i3.AssetVisibility, int, int>
+  $converterdefaultVisibility = const i0.EnumIndexConverter<i3.AssetVisibility>(
+    i3.AssetVisibility.values,
+  );
   @override
   bool get withoutRowId => true;
   @override
@@ -642,6 +693,7 @@ class LocalAlbumEntityData extends i0.DataClass
   final i2.BackupSelection backupSelection;
   final bool isIosSharedAlbum;
   final String? linkedRemoteAlbumId;
+  final i3.AssetVisibility defaultVisibility;
   final bool? marker_;
   const LocalAlbumEntityData({
     required this.id,
@@ -650,6 +702,7 @@ class LocalAlbumEntityData extends i0.DataClass
     required this.backupSelection,
     required this.isIosSharedAlbum,
     this.linkedRemoteAlbumId,
+    required this.defaultVisibility,
     this.marker_,
   });
   @override
@@ -668,6 +721,13 @@ class LocalAlbumEntityData extends i0.DataClass
     map['is_ios_shared_album'] = i0.Variable<bool>(isIosSharedAlbum);
     if (!nullToAbsent || linkedRemoteAlbumId != null) {
       map['linked_remote_album_id'] = i0.Variable<String>(linkedRemoteAlbumId);
+    }
+    {
+      map['default_visibility'] = i0.Variable<int>(
+        i1.$LocalAlbumEntityTable.$converterdefaultVisibility.toSql(
+          defaultVisibility,
+        ),
+      );
     }
     if (!nullToAbsent || marker_ != null) {
       map['marker'] = i0.Variable<bool>(marker_);
@@ -690,6 +750,8 @@ class LocalAlbumEntityData extends i0.DataClass
       linkedRemoteAlbumId: serializer.fromJson<String?>(
         json['linkedRemoteAlbumId'],
       ),
+      defaultVisibility: i1.$LocalAlbumEntityTable.$converterdefaultVisibility
+          .fromJson(serializer.fromJson<int>(json['defaultVisibility'])),
       marker_: serializer.fromJson<bool?>(json['marker_']),
     );
   }
@@ -707,6 +769,11 @@ class LocalAlbumEntityData extends i0.DataClass
       ),
       'isIosSharedAlbum': serializer.toJson<bool>(isIosSharedAlbum),
       'linkedRemoteAlbumId': serializer.toJson<String?>(linkedRemoteAlbumId),
+      'defaultVisibility': serializer.toJson<int>(
+        i1.$LocalAlbumEntityTable.$converterdefaultVisibility.toJson(
+          defaultVisibility,
+        ),
+      ),
       'marker_': serializer.toJson<bool?>(marker_),
     };
   }
@@ -718,6 +785,7 @@ class LocalAlbumEntityData extends i0.DataClass
     i2.BackupSelection? backupSelection,
     bool? isIosSharedAlbum,
     i0.Value<String?> linkedRemoteAlbumId = const i0.Value.absent(),
+    i3.AssetVisibility? defaultVisibility,
     i0.Value<bool?> marker_ = const i0.Value.absent(),
   }) => i1.LocalAlbumEntityData(
     id: id ?? this.id,
@@ -728,6 +796,7 @@ class LocalAlbumEntityData extends i0.DataClass
     linkedRemoteAlbumId: linkedRemoteAlbumId.present
         ? linkedRemoteAlbumId.value
         : this.linkedRemoteAlbumId,
+    defaultVisibility: defaultVisibility ?? this.defaultVisibility,
     marker_: marker_.present ? marker_.value : this.marker_,
   );
   LocalAlbumEntityData copyWithCompanion(i1.LocalAlbumEntityCompanion data) {
@@ -744,6 +813,9 @@ class LocalAlbumEntityData extends i0.DataClass
       linkedRemoteAlbumId: data.linkedRemoteAlbumId.present
           ? data.linkedRemoteAlbumId.value
           : this.linkedRemoteAlbumId,
+      defaultVisibility: data.defaultVisibility.present
+          ? data.defaultVisibility.value
+          : this.defaultVisibility,
       marker_: data.marker_.present ? data.marker_.value : this.marker_,
     );
   }
@@ -757,6 +829,7 @@ class LocalAlbumEntityData extends i0.DataClass
           ..write('backupSelection: $backupSelection, ')
           ..write('isIosSharedAlbum: $isIosSharedAlbum, ')
           ..write('linkedRemoteAlbumId: $linkedRemoteAlbumId, ')
+          ..write('defaultVisibility: $defaultVisibility, ')
           ..write('marker_: $marker_')
           ..write(')'))
         .toString();
@@ -770,6 +843,7 @@ class LocalAlbumEntityData extends i0.DataClass
     backupSelection,
     isIosSharedAlbum,
     linkedRemoteAlbumId,
+    defaultVisibility,
     marker_,
   );
   @override
@@ -782,6 +856,7 @@ class LocalAlbumEntityData extends i0.DataClass
           other.backupSelection == this.backupSelection &&
           other.isIosSharedAlbum == this.isIosSharedAlbum &&
           other.linkedRemoteAlbumId == this.linkedRemoteAlbumId &&
+          other.defaultVisibility == this.defaultVisibility &&
           other.marker_ == this.marker_);
 }
 
@@ -793,6 +868,7 @@ class LocalAlbumEntityCompanion
   final i0.Value<i2.BackupSelection> backupSelection;
   final i0.Value<bool> isIosSharedAlbum;
   final i0.Value<String?> linkedRemoteAlbumId;
+  final i0.Value<i3.AssetVisibility> defaultVisibility;
   final i0.Value<bool?> marker_;
   const LocalAlbumEntityCompanion({
     this.id = const i0.Value.absent(),
@@ -801,6 +877,7 @@ class LocalAlbumEntityCompanion
     this.backupSelection = const i0.Value.absent(),
     this.isIosSharedAlbum = const i0.Value.absent(),
     this.linkedRemoteAlbumId = const i0.Value.absent(),
+    this.defaultVisibility = const i0.Value.absent(),
     this.marker_ = const i0.Value.absent(),
   });
   LocalAlbumEntityCompanion.insert({
@@ -810,6 +887,7 @@ class LocalAlbumEntityCompanion
     required i2.BackupSelection backupSelection,
     this.isIosSharedAlbum = const i0.Value.absent(),
     this.linkedRemoteAlbumId = const i0.Value.absent(),
+    this.defaultVisibility = const i0.Value.absent(),
     this.marker_ = const i0.Value.absent(),
   }) : id = i0.Value(id),
        name = i0.Value(name),
@@ -821,6 +899,7 @@ class LocalAlbumEntityCompanion
     i0.Expression<int>? backupSelection,
     i0.Expression<bool>? isIosSharedAlbum,
     i0.Expression<String>? linkedRemoteAlbumId,
+    i0.Expression<int>? defaultVisibility,
     i0.Expression<bool>? marker_,
   }) {
     return i0.RawValuesInsertable({
@@ -831,6 +910,7 @@ class LocalAlbumEntityCompanion
       if (isIosSharedAlbum != null) 'is_ios_shared_album': isIosSharedAlbum,
       if (linkedRemoteAlbumId != null)
         'linked_remote_album_id': linkedRemoteAlbumId,
+      if (defaultVisibility != null) 'default_visibility': defaultVisibility,
       if (marker_ != null) 'marker': marker_,
     });
   }
@@ -842,6 +922,7 @@ class LocalAlbumEntityCompanion
     i0.Value<i2.BackupSelection>? backupSelection,
     i0.Value<bool>? isIosSharedAlbum,
     i0.Value<String?>? linkedRemoteAlbumId,
+    i0.Value<i3.AssetVisibility>? defaultVisibility,
     i0.Value<bool?>? marker_,
   }) {
     return i1.LocalAlbumEntityCompanion(
@@ -851,6 +932,7 @@ class LocalAlbumEntityCompanion
       backupSelection: backupSelection ?? this.backupSelection,
       isIosSharedAlbum: isIosSharedAlbum ?? this.isIosSharedAlbum,
       linkedRemoteAlbumId: linkedRemoteAlbumId ?? this.linkedRemoteAlbumId,
+      defaultVisibility: defaultVisibility ?? this.defaultVisibility,
       marker_: marker_ ?? this.marker_,
     );
   }
@@ -882,6 +964,13 @@ class LocalAlbumEntityCompanion
         linkedRemoteAlbumId.value,
       );
     }
+    if (defaultVisibility.present) {
+      map['default_visibility'] = i0.Variable<int>(
+        i1.$LocalAlbumEntityTable.$converterdefaultVisibility.toSql(
+          defaultVisibility.value,
+        ),
+      );
+    }
     if (marker_.present) {
       map['marker'] = i0.Variable<bool>(marker_.value);
     }
@@ -897,6 +986,7 @@ class LocalAlbumEntityCompanion
           ..write('backupSelection: $backupSelection, ')
           ..write('isIosSharedAlbum: $isIosSharedAlbum, ')
           ..write('linkedRemoteAlbumId: $linkedRemoteAlbumId, ')
+          ..write('defaultVisibility: $defaultVisibility, ')
           ..write('marker_: $marker_')
           ..write(')'))
         .toString();

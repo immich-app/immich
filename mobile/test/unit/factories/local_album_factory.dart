@@ -1,4 +1,5 @@
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
 import '../../utils.dart';
 
@@ -13,6 +14,7 @@ class LocalAlbumFactory {
     bool? isIosSharedAlbum,
     String? linkedRemoteAlbumId,
     int? assetCount,
+    AssetVisibility? defaultVisibility,
   }) {
     id = TestUtils.uuid(id);
     return LocalAlbum(
@@ -23,6 +25,7 @@ class LocalAlbumFactory {
       isIosSharedAlbum: isIosSharedAlbum ?? false,
       linkedRemoteAlbumId: linkedRemoteAlbumId,
       assetCount: assetCount ?? 10,
+      defaultVisibility: defaultVisibility ?? AssetVisibility.timeline,
     );
   }
 }

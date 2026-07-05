@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
@@ -16,6 +17,9 @@ class LocalAlbumEntity extends Table with DriftDefaultsMixin {
   // // Linked album for putting assets to the remote album after finished uploading
   TextColumn get linkedRemoteAlbumId =>
       text().references(RemoteAlbumEntity, #id, onDelete: KeyAction.setNull).nullable()();
+
+  // Default visibility applied to new assets auto-backed-up from this folder
+  IntColumn get defaultVisibility => intEnum<AssetVisibility>().withDefault(const Constant(0))();
 
   // Used for mark & sweep
   BoolColumn get marker_ => boolean().nullable()();
@@ -34,6 +38,7 @@ extension LocalAlbumEntityDataHelper on LocalAlbumEntityData {
       backupSelection: backupSelection,
       linkedRemoteAlbumId: linkedRemoteAlbumId,
       isIosSharedAlbum: isIosSharedAlbum,
+      defaultVisibility: defaultVisibility,
     );
   }
 }

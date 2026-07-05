@@ -114,6 +114,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       updatedAt: Value(localAlbum.updatedAt),
       backupSelection: localAlbum.backupSelection,
       isIosSharedAlbum: Value(localAlbum.isIosSharedAlbum),
+      defaultVisibility: Value(localAlbum.defaultVisibility),
     );
 
     return _db.transaction(() async {
@@ -141,12 +142,16 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
             updatedAt: Value(album.updatedAt),
             backupSelection: album.backupSelection,
             isIosSharedAlbum: Value(album.isIosSharedAlbum),
+            defaultVisibility: Value(album.defaultVisibility),
             marker_: const Value(null),
           );
 
           batch.insert(
             _db.localAlbumEntity,
             companion,
+            // Deliberately excludes backupSelection and defaultVisibility from the conflict
+            // update - both are user-chosen settings that a routine device re-sync must never
+            // silently reset back to their defaults.
             onConflict: DoUpdate(
               (old) => LocalAlbumEntityCompanion(
                 id: companion.id,

@@ -645,6 +645,8 @@
   "backup_info_card_assets": "assets",
   "backup_options": "Backup Options",
   "backup_settings_subtitle": "Manage upload settings",
+  "backup_visibility_subtitle": "Choose what shows on your main timeline for each backed-up folder",
+  "backup_visibility_title": "Visibility",
   "backward": "Backward",
   "battery_optimization_backup_reliability": "Disabling battery optimizations can improve the reliability of background backup",
   "biometric_auth_enabled": "Biometric authentication enabled",

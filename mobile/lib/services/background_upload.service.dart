@@ -170,10 +170,11 @@ class BackgroundUploadService {
 
     const batchSize = 100;
     final batch = candidates.take(batchSize).toList();
+    final visibilities = await _backupRepository.getDefaultVisibilities(batch.map((asset) => asset.id));
     List<UploadTask> tasks = [];
 
     for (final asset in batch) {
-      final task = await getUploadTask(asset);
+      final task = await getUploadTask(asset, visibility: visibilities[asset.id] ?? AssetVisibility.timeline);
       if (task != null) {
         tasks.add(task);
       }
@@ -259,7 +260,12 @@ class BackgroundUploadService {
   }
 
   @visibleForTesting
-  Future<UploadTask?> getUploadTask(LocalAsset asset, {String group = kBackupGroup, int? priority}) async {
+  Future<UploadTask?> getUploadTask(
+    LocalAsset asset, {
+    String group = kBackupGroup,
+    int? priority,
+    AssetVisibility visibility = AssetVisibility.timeline,
+  }) async {
     final entity = await _storageRepository.getAssetEntityForAsset(asset);
     if (entity == null) {
       _logger.warning("Asset entity not found for ${asset.id} - ${asset.name}");
@@ -320,6 +326,7 @@ class BackgroundUploadService {
       adjustmentTime: entity.isLivePhoto ? null : asset.adjustmentTime?.toIso8601String(),
       latitude: entity.isLivePhoto ? null : asset.latitude?.toString(),
       longitude: entity.isLivePhoto ? null : asset.longitude?.toString(),
+      fields: visibility != AssetVisibility.timeline ? {'visibility': visibility.name} : null,
     );
   }
 

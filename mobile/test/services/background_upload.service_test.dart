@@ -120,6 +120,38 @@ void main() {
       expect(task!.fields['filename'], equals('OriginalLivePhoto.mov'));
       verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
     });
+
+    test('does not include visibility field for the default timeline visibility', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/file.jpg');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'OriginalPhoto.jpg');
+
+      final task = await sut.getUploadTask(asset);
+
+      expect(task, isNotNull);
+      expect(task!.fields.containsKey('visibility'), isFalse);
+    });
+
+    test('includes visibility field when visibility is not timeline', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/file.jpg');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'OriginalPhoto.jpg');
+
+      final task = await sut.getUploadTask(asset, visibility: AssetVisibility.locked);
+
+      expect(task, isNotNull);
+      expect(task!.fields['visibility'], equals('locked'));
+    });
   });
 
   group('getLivePhotoUploadTask', () {

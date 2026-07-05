@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/local_album.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -53,6 +54,18 @@ class BackupAlbumNotifier extends StateNotifier<List<LocalAlbum>> {
           (currentAlbum) => currentAlbum.id == album.id
               ? currentAlbum.copyWith(backupSelection: BackupSelection.excluded)
               : currentAlbum,
+        )
+        .toList();
+  }
+
+  Future<void> setDefaultVisibility(LocalAlbum album, AssetVisibility visibility) async {
+    album = album.copyWith(defaultVisibility: visibility);
+    await _localAlbumService.update(album);
+
+    state = state
+        .map(
+          (currentAlbum) =>
+              currentAlbum.id == album.id ? currentAlbum.copyWith(defaultVisibility: visibility) : currentAlbum,
         )
         .toList();
   }

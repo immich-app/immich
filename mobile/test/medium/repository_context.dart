@@ -293,6 +293,7 @@ class MediumRepositoryContext {
     BackupSelection? backupSelection,
     bool? isIosSharedAlbum,
     String? linkedRemoteAlbumId,
+    AssetVisibility? defaultVisibility,
   }) {
     id ??= TestUtils.uuid();
     return db
@@ -305,6 +306,7 @@ class MediumRepositoryContext {
             backupSelection: .new(backupSelection ?? .none),
             isIosSharedAlbum: .new(isIosSharedAlbum ?? false),
             linkedRemoteAlbumId: .new(linkedRemoteAlbumId),
+            defaultVisibility: .new(defaultVisibility ?? .timeline),
           ),
         );
   }

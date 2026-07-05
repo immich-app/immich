@@ -54,6 +54,12 @@ When enabled, Immich automatically creates albums on the server that mirror the 
 
 This is a one-way sync from your device to the server. You can enable this feature at any time and use the **Reorganize into album** button to backfill existing uploads into their corresponding albums.
 
+### Visibility per folder
+
+For each folder selected for backup, you can set a default visibility: **Timeline**, **Archive**, or **Locked**. This controls whether photos from that folder show up on your main timeline, are archived, or are placed in the locked folder.
+
+Changing a folder's visibility takes effect immediately for all of its photos and videos on the server, not just ones uploaded afterward — there's no need to re-upload or manually update anything already backed up.
+
 ## Platform Specific Features
 
 ### Android

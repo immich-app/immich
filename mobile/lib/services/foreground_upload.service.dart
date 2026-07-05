@@ -85,12 +85,20 @@ class ForegroundUploadService {
       return;
     }
 
+    final visibilities = await _backupRepository.getDefaultVisibilities(candidates.map((asset) => asset.id));
+
     final networkCapabilities = await _connectivityApi.getCapabilities();
     final hasWifi = networkCapabilities.isUnmetered;
     _logger.info('Network capabilities: $networkCapabilities, hasWifi/isUnmetered: $hasWifi');
 
     if (useSequentialUpload) {
-      await _uploadSequentially(items: candidates, cancelToken: cancelToken, hasWifi: hasWifi, callbacks: callbacks);
+      await _uploadSequentially(
+        items: candidates,
+        cancelToken: cancelToken,
+        hasWifi: hasWifi,
+        callbacks: callbacks,
+        visibilities: visibilities,
+      );
     } else {
       await _executeWithWorkerPool<LocalAsset>(
         items: candidates,
@@ -99,7 +107,12 @@ class ForegroundUploadService {
           final requireWifi = _shouldRequireWiFi(asset);
           return requireWifi && !hasWifi;
         },
-        processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+        processItem: (asset) => _uploadSingleAsset(
+          asset,
+          cancelToken,
+          callbacks: callbacks,
+          visibility: visibilities[asset.id] ?? AssetVisibility.timeline,
+        ),
       );
     }
   }
@@ -110,6 +123,7 @@ class ForegroundUploadService {
     required Completer<void> cancelToken,
     required bool hasWifi,
     required UploadCallbacks callbacks,
+    Map<String, AssetVisibility> visibilities = const {},
   }) async {
     await _storageRepository.clearCache();
     shouldAbortUpload = false;
@@ -125,7 +139,12 @@ class ForegroundUploadService {
         continue;
       }
 
-      await _uploadSingleAsset(asset, cancelToken, callbacks: callbacks);
+      await _uploadSingleAsset(
+        asset,
+        cancelToken,
+        callbacks: callbacks,
+        visibility: visibilities[asset.id] ?? AssetVisibility.timeline,
+      );
     }
   }
 
@@ -236,6 +255,7 @@ class ForegroundUploadService {
     LocalAsset asset,
     Completer<void>? cancelToken, {
     required UploadCallbacks callbacks,
+    AssetVisibility visibility = AssetVisibility.timeline,
   }) async {
     File? file;
     File? livePhotoFile;
@@ -353,6 +373,10 @@ class ForegroundUploadService {
 
       if (livePhotoVideoId != null) {
         fields['livePhotoVideoId'] = livePhotoVideoId;
+      }
+
+      if (visibility != AssetVisibility.timeline) {
+        fields['visibility'] = visibility.name;
       }
 
       // Add cloudId metadata only to the still image, not the motion video, becasue when the sync id happens, the motion video can get associated with the wrong still image.

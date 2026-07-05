@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
 
@@ -239,6 +240,113 @@ void main() {
       final result = await sut.getCandidates(userId);
       expect(result.length, 1);
       expect(result.first.id, asset.id);
+    });
+  });
+
+  group('getDefaultVisibilities', () {
+    test('returns empty map for empty id list', () async {
+      final result = await sut.getDefaultVisibilities([]);
+      expect(result, isEmpty);
+    });
+
+    test('returns timeline default when album has no custom visibility', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+
+      final result = await sut.getDefaultVisibilities([asset.id]);
+      expect(result[asset.id], AssetVisibility.timeline);
+    });
+
+    test('returns the album default visibility for an asset in that album', () async {
+      final album = await ctx.newLocalAlbum(
+        backupSelection: BackupSelection.selected,
+        defaultVisibility: AssetVisibility.archive,
+      );
+      final asset = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+
+      final result = await sut.getDefaultVisibilities([asset.id]);
+      expect(result[asset.id], AssetVisibility.archive);
+    });
+
+    test('most restrictive visibility wins when asset is in two selected albums', () async {
+      final archiveAlbum = await ctx.newLocalAlbum(
+        backupSelection: BackupSelection.selected,
+        defaultVisibility: AssetVisibility.archive,
+      );
+      final lockedAlbum = await ctx.newLocalAlbum(
+        backupSelection: BackupSelection.selected,
+        defaultVisibility: AssetVisibility.locked,
+      );
+      final asset = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: archiveAlbum.id, assetId: asset.id);
+      await ctx.newLocalAlbumAsset(albumId: lockedAlbum.id, assetId: asset.id);
+
+      final result = await sut.getDefaultVisibilities([asset.id]);
+      expect(result[asset.id], AssetVisibility.locked);
+    });
+
+    test('asset only in an excluded album is not included', () async {
+      final excludedAlbum = await ctx.newLocalAlbum(
+        backupSelection: BackupSelection.excluded,
+        defaultVisibility: AssetVisibility.locked,
+      );
+      final asset = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: excludedAlbum.id, assetId: asset.id);
+
+      final result = await sut.getDefaultVisibilities([asset.id]);
+      expect(result.containsKey(asset.id), isFalse);
+    });
+  });
+
+  group('getBackedUpRemoteAssetIds', () {
+    late String userId;
+
+    setUp(() async {
+      final user = await ctx.newUser();
+      userId = user.id;
+    });
+
+    test('returns the remote id for a backed-up asset in the album', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final remote = await ctx.newRemoteAsset(ownerId: userId);
+      final local = await ctx.newLocalAsset(checksum: remote.checksum);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getBackedUpRemoteAssetIds(album.id, userId);
+      expect(result, [remote.id]);
+    });
+
+    test('excludes assets from other albums', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final otherAlbum = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final remote = await ctx.newRemoteAsset(ownerId: userId);
+      final local = await ctx.newLocalAsset(checksum: remote.checksum);
+      await ctx.newLocalAlbumAsset(albumId: otherAlbum.id, assetId: local.id);
+
+      final result = await sut.getBackedUpRemoteAssetIds(album.id, userId);
+      expect(result, isEmpty);
+    });
+
+    test('excludes assets that are not yet backed up', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final local = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getBackedUpRemoteAssetIds(album.id, userId);
+      expect(result, isEmpty);
+    });
+
+    test('excludes backed-up assets belonging to a different user', () async {
+      final otherUser = await ctx.newUser();
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final remote = await ctx.newRemoteAsset(ownerId: otherUser.id);
+      final local = await ctx.newLocalAsset(checksum: remote.checksum);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final result = await sut.getBackedUpRemoteAssetIds(album.id, userId);
+      expect(result, isEmpty);
     });
   });
 }

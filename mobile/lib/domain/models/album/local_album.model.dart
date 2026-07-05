@@ -1,3 +1,5 @@
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+
 enum BackupSelection {
   // Used to sort albums based on the backupSelection
   // selected -> none -> excluded
@@ -16,6 +18,7 @@ class LocalAlbum {
   final int assetCount;
   final BackupSelection backupSelection;
   final String? linkedRemoteAlbumId;
+  final AssetVisibility defaultVisibility;
 
   const LocalAlbum({
     required this.id,
@@ -25,6 +28,7 @@ class LocalAlbum {
     this.backupSelection = BackupSelection.none,
     this.isIosSharedAlbum = false,
     this.linkedRemoteAlbumId,
+    this.defaultVisibility = AssetVisibility.timeline,
   });
 
   LocalAlbum copyWith({
@@ -35,6 +39,7 @@ class LocalAlbum {
     BackupSelection? backupSelection,
     bool? isIosSharedAlbum,
     String? linkedRemoteAlbumId,
+    AssetVisibility? defaultVisibility,
   }) {
     return LocalAlbum(
       id: id ?? this.id,
@@ -44,6 +49,7 @@ class LocalAlbum {
       backupSelection: backupSelection ?? this.backupSelection,
       isIosSharedAlbum: isIosSharedAlbum ?? this.isIosSharedAlbum,
       linkedRemoteAlbumId: linkedRemoteAlbumId ?? this.linkedRemoteAlbumId,
+      defaultVisibility: defaultVisibility ?? this.defaultVisibility,
     );
   }
 
@@ -62,7 +68,8 @@ class LocalAlbum {
         other.assetCount == assetCount &&
         other.backupSelection == backupSelection &&
         other.isIosSharedAlbum == isIosSharedAlbum &&
-        other.linkedRemoteAlbumId == linkedRemoteAlbumId;
+        other.linkedRemoteAlbumId == linkedRemoteAlbumId &&
+        other.defaultVisibility == defaultVisibility;
   }
 
   @override
@@ -73,7 +80,8 @@ class LocalAlbum {
         assetCount.hashCode ^
         backupSelection.hashCode ^
         isIosSharedAlbum.hashCode ^
-        linkedRemoteAlbumId.hashCode;
+        linkedRemoteAlbumId.hashCode ^
+        defaultVisibility.hashCode;
   }
 
   @override
@@ -86,6 +94,7 @@ assetCount: $assetCount,
 backupSelection: $backupSelection,
 isIosSharedAlbum: $isIosSharedAlbum
 linkedRemoteAlbumId: $linkedRemoteAlbumId,
+defaultVisibility: $defaultVisibility,
 }''';
   }
 }
