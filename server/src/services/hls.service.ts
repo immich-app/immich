@@ -135,14 +135,15 @@ export class HlsService extends BaseService {
     const sourceResolution = Math.min(asset.videoStream.height, asset.videoStream.width);
     const targetResolution = Math.max(sourceResolution, HLS_VARIANTS[0].resolution);
     const lines = ['#EXTM3U', `#EXT-X-VERSION:${HLS_VERSION}`, '#EXT-X-INDEPENDENT-SEGMENTS'];
+    const { videoCodecs, resolutions } = ffmpeg.realtime;
     for (let i = 0; i < HLS_VARIANTS.length; i++) {
       const { resolution, bitrate, codec, codecString } = HLS_VARIANTS[i];
-      if (resolution > targetResolution || !SUPPORTED_HWA_CODECS[ffmpeg.accel].includes(codec)) {
+      if (resolution > targetResolution || !videoCodecs.includes(codec) || !resolutions.includes(resolution)) {
         continue;
       }
       const { width, height } = getOutputSize(asset.videoStream, resolution);
       lines.push(
-        `#EXT-X-STREAM-INF:BANDWIDTH=${bitrate},RESOLUTION=${width}x${height},CODECS="${codecString},mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=${fps}`,
+        `#EXT-X-STREAM-INF:BANDWIDTH=${bitrate * 1.35},RESOLUTION=${width}x${height},CODECS="${codecString},mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=${fps}`,
         `${sessionId}/${i}/playlist.m3u8`,
       );
     }

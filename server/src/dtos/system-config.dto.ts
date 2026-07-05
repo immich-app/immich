@@ -11,6 +11,7 @@ import {
   AudioCodecSchema,
   ColorspaceSchema,
   CQModeSchema,
+  HlsVideoResolutionSchema,
   ImageFormatSchema,
   LogLevelSchema,
   OAuthTokenEndpointAuthMethodSchema,
@@ -115,6 +116,8 @@ const SystemConfigFFmpegSchema = z
     realtime: z
       .object({
         enabled: configBool.describe('Enable real-time HLS transcoding (alpha)'),
+        videoCodecs: z.array(VideoCodecSchema).describe('Video codecs to use for real-time HLS transcoding'),
+        resolutions: z.array(HlsVideoResolutionSchema).describe('Resolutions to use for real-time HLS transcoding'),
       })
       .meta({ id: 'SystemConfigFFmpegRealtimeDto' }),
   })
