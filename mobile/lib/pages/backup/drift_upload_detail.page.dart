@@ -136,19 +136,19 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              // Use slot-based assignment to prevent items from jumping
-              final slots = _assignItemsToSlots(uploadingItems);
-              final item = slots[index];
-              if (item != null) {
-                return _buildCurrentUploadCard(context, item);
-              } else {
-                return _buildPlaceholderCard(context);
-              }
-            }, childCount: max(
-                uploadingItems.length,
-                SettingsRepository.instance.appConfig.backup.parallelUploadCount
-            )),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                // Use slot-based assignment to prevent items from jumping
+                final slots = _assignItemsToSlots(uploadingItems);
+                final item = slots[index];
+                if (item != null) {
+                  return _buildCurrentUploadCard(context, item);
+                } else {
+                  return _buildPlaceholderCard(context);
+                }
+              },
+              childCount: max(uploadingItems.length, SettingsRepository.instance.appConfig.backup.parallelUploadCount),
+            ),
           ),
         ),
 

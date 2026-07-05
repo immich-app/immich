@@ -311,9 +311,7 @@ class _ParallelBackupWorkerSlider extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.only(left: 24.0, top: 8.0),
           child: Text(
-            'backup_controller_page_parallel_upload_count'.tr(
-              namedArgs: {'count': parallelUploadCount.toString()},
-            ),
+            'backup_controller_page_parallel_upload_count'.tr(namedArgs: {'count': parallelUploadCount.toString()}),
             style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
           ),
         ),

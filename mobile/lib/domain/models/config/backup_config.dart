@@ -48,8 +48,15 @@ class BackupConfig {
           other.syncAlbums == syncAlbums);
 
   @override
-  int get hashCode =>
-      Object.hash(enabled, useCellularForVideos, useCellularForPhotos, requireCharging, triggerDelay, parallelUploadCount, syncAlbums);
+  int get hashCode => Object.hash(
+    enabled,
+    useCellularForVideos,
+    useCellularForPhotos,
+    requireCharging,
+    triggerDelay,
+    parallelUploadCount,
+    syncAlbums,
+  );
 
   @override
   String toString() =>
