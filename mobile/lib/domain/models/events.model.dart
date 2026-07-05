@@ -1,3 +1,4 @@
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 
 // Timeline Events
@@ -11,8 +12,9 @@ class ScrollToTopEvent extends Event {
 
 class ScrollToDateEvent extends Event {
   final DateTime date;
+  final BaseAsset? asset;
 
-  const ScrollToDateEvent(this.date);
+  const ScrollToDateEvent(this.date, [this.asset]);
 }
 
 // Asset Viewer Events

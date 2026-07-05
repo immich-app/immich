@@ -190,7 +190,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
         }
 
       case ScrollToDateEvent scrollToDateEvent:
-        _scrollToDate(scrollToDateEvent.date);
+        _scrollToDate(scrollToDateEvent.date, scrollToDateEvent.asset);
       case TimelineReloadEvent():
         setState(() {});
       default:
@@ -251,10 +251,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     super.dispose();
   }
 
-  void _scrollToDate(DateTime date) {
+  void _scrollToDate(DateTime date, [BaseAsset? asset]) {
     final timelineState = ref.read(timelineStateProvider.notifier);
     final asyncSegments = ref.read(timelineSegmentProvider);
-    asyncSegments.whenData((segments) {
+    asyncSegments.whenData((segments) async {
       // Find the segment that contains assets from the target date
       final targetSegment = segments.firstWhereOrNull((segment) {
         if (segment.bucket is TimeBucket) {
@@ -276,21 +276,51 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
             return false;
           });
 
-      if (fallbackSegment != null) {
-        // Scroll to the segment with a small offset to show the header
-        final targetOffset = fallbackSegment.startOffset - 50;
-        timelineState.setScrubbing(true);
+      if (fallbackSegment == null) {
+        timelineState.setScrubbing(false);
+        return;
+      }
+
+      double targetOffset = fallbackSegment.startOffset - 50;
+
+      if (asset != null) {
+        final assets = await ref
+            .read(timelineServiceProvider)
+            .loadAssets(fallbackSegment.firstAssetIndex, fallbackSegment.bucket.assetCount);
+        final indexInSegment = assets.indexWhere((a) => _isSameAsset(a, asset));
+        if (indexInSegment != -1) {
+          final columnCount = ref.read(timelineArgsProvider).columnCount;
+          final rowIndex = fallbackSegment.firstIndex + 1 + (indexInSegment ~/ columnCount);
+          targetOffset = fallbackSegment.indexToLayoutOffset(rowIndex) - 50;
+        }
+      }
+
+      timelineState.setScrubbing(true);
+      unawaited(
         _scrollController
             .animateTo(
               targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeInOut,
             )
-            .whenComplete(() => timelineState.setScrubbing(false));
-      } else {
-        timelineState.setScrubbing(false);
-      }
+            .whenComplete(() => timelineState.setScrubbing(false)),
+      );
     });
+  }
+
+  bool _isSameAsset(BaseAsset a, BaseAsset b) {
+    if (a.heroTag == b.heroTag) {
+      return true;
+    }
+    final aRemoteId = switch (a) {
+      RemoteAsset r => r.id,
+      LocalAsset l => l.remoteId,
+    };
+    final bRemoteId = switch (b) {
+      RemoteAsset r => r.id,
+      LocalAsset l => l.remoteId,
+    };
+    return aRemoteId != null && aRemoteId == bRemoteId;
   }
 
   // Drag selection methods

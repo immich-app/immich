@@ -346,7 +346,7 @@ class DriftMemoryPage extends HookConsumerWidget {
                       ],
                     ),
                   ),
-                  DriftMemoryBottomInfo(memory: memories[mIndex], title: title),
+                  DriftMemoryBottomInfo(memory: memories[mIndex], asset: currentAsset.value, title: title),
                 ],
               );
             },
