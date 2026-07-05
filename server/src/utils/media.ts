@@ -36,9 +36,9 @@ export const getOutputSize = (videoStream: VideoStreamInfo, targetRes: number) =
   return isVideoVertical(videoStream) ? { width: targetRes, height: larger } : { width: larger, height: targetRes };
 };
 
-const pickLevel = (levels: CodecLevel[], frame: number, rate: number, width: number, height: number): string => {
+const pickLevel = (levels: CodecLevel[], frame: number, rate: number): string => {
   for (const level of levels) {
-    if (frame <= level.maxFrame && rate <= level.maxRate && width <= level.maxWidth && height <= level.maxHeight) {
+    if (frame <= level.maxFrame && rate <= level.maxRate) {
       return level.token;
     }
   }
@@ -49,15 +49,15 @@ export const getCodecString = (codec: VideoCodec, width: number, height: number,
   switch (codec) {
     case VideoCodec.H264: {
       const macroblocks = Math.ceil(width / 16) * Math.ceil(height / 16);
-      return `avc1.6400${pickLevel(H264_LEVELS, macroblocks, macroblocks * fps, width, height)}`;
+      return `avc1.6400${pickLevel(H264_LEVELS, macroblocks, macroblocks * fps)}`;
     }
     case VideoCodec.Hevc: {
       const samples = width * height;
-      return `hvc1.1.6.${pickLevel(HEVC_LEVELS, samples, samples * fps, width, height)}.B0`;
+      return `hvc1.1.6.${pickLevel(HEVC_LEVELS, samples, samples * fps)}.B0`;
     }
     case VideoCodec.Av1: {
       const samples = width * height;
-      return `av01.0.${pickLevel(AV1_LEVELS, samples, samples * fps, width, height)}.08`;
+      return `av01.0.${pickLevel(AV1_LEVELS, samples, samples * fps)}.08`;
     }
     default: {
       throw new Error(`Codec '${codec}' does not support HLS codec strings`);
