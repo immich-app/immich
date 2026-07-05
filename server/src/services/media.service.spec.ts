@@ -122,7 +122,7 @@ describe(MediaService.name, () => {
       await sut.handleQueueGenerateThumbnails({ force: false });
 
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
-      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
+      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: null });
       expect(mocks.person.getRandomFace).toHaveBeenCalled();
       expect(mocks.person.update).toHaveBeenCalledTimes(1);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
@@ -149,7 +149,7 @@ describe(MediaService.name, () => {
         },
       ]);
 
-      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
+      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: null });
     });
 
     it('should queue all assets with missing preview', async () => {
@@ -162,7 +162,7 @@ describe(MediaService.name, () => {
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.AssetGenerateThumbnails, data: { id: asset.id } },
       ]);
-      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
+      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: null });
     });
 
     it('should queue all assets with missing thumbhash', async () => {
@@ -178,7 +178,7 @@ describe(MediaService.name, () => {
         { name: JobName.AssetGenerateThumbnails, data: { id: asset.id } },
       ]);
 
-      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
+      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: null });
     });
 
     it('should queue all assets with missing fullsize when feature is enabled', async () => {
@@ -196,7 +196,7 @@ describe(MediaService.name, () => {
         },
       ]);
 
-      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
+      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: null });
     });
 
     it('should not queue assets with missing fullsize when feature is disabled', async () => {
@@ -209,7 +209,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
 
-      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
+      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: null });
     });
 
     it('should queue assets with edits but missing edited thumbnails', async () => {
@@ -226,7 +226,7 @@ describe(MediaService.name, () => {
         },
       ]);
 
-      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
+      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: null });
     });
 
     it('should not queue assets with missing edited fullsize when feature is disabled', async () => {
@@ -239,7 +239,7 @@ describe(MediaService.name, () => {
       expect(mocks.assetJob.streamForThumbnailJob).toHaveBeenCalledWith({ force: false, fullsizeEnabled: false });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([]);
 
-      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: '' });
+      expect(mocks.person.getAll).toHaveBeenCalledWith({ thumbnailPath: null });
     });
 
     it('should queue assets with missing fullsize when force is true, regardless of setting', async () => {

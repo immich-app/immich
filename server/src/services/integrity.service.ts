@@ -291,7 +291,9 @@ export class IntegrityService extends BaseService {
 
     const personThumbnailPaths = await this.integrityRepository.getPersonThumbnailPathsByPaths(paths);
     for (const { thumbnailPath } of personThumbnailPaths) {
-      untrackedFiles.delete(thumbnailPath);
+      if (thumbnailPath) {
+        untrackedFiles.delete(thumbnailPath);
+      }
     }
 
     if (untrackedFiles.size > 0) {

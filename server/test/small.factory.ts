@@ -88,17 +88,17 @@ const authApiKeyFactory = (apiKey: Partial<AuthApiKey> = {}) => ({
   ...apiKey,
 });
 
-const authUserFactory = (authUser: Partial<AuthUser> = {}) => {
+const authUserFactory = (authUser: Partial<UserAdmin> = {}) => {
   const {
     id = newUuid(),
     isAdmin = false,
-    name = 'Test User',
+    name: rawName = 'Test User',
     email = 'test@immich.cloud',
     quotaUsageInBytes = 0,
     quotaSizeInBytes = null,
   } = authUser;
 
-  return { id, isAdmin, name, email, quotaUsageInBytes, quotaSizeInBytes };
+  return { id, isAdmin, name: rawName ?? email, email, quotaUsageInBytes, quotaSizeInBytes };
 };
 
 const queueStatisticsFactory = (dto?: Partial<QueueStatisticsDto>) => ({

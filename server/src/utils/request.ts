@@ -18,8 +18,8 @@ export const getUserAgentDetails = (headers: IncomingHttpHeaders) => {
   const appVersion = getAppVersionFromUA(headers['user-agent'] ?? '');
 
   return {
-    deviceType: userAgent.browser.name || userAgent.device.type || (headers['devicemodel'] as string) || '',
-    deviceOS: userAgent.os.name || (headers['devicetype'] as string) || '',
+    deviceType: userAgent.browser.name || userAgent.device.type || (headers['devicemodel'] as string) || null,
+    deviceOS: userAgent.os.name || (headers['devicetype'] as string) || null,
     appVersion,
   };
 };

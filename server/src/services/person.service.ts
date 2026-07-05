@@ -44,6 +44,7 @@ import { getDimensions } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFacialRecognitionEnabled } from 'src/utils/misc';
+import { nullIfEmpty } from 'src/utils/string';
 import { Point, transformPoints } from 'src/utils/transform';
 
 @Injectable()
@@ -177,7 +178,7 @@ export class PersonService extends BaseService {
   async create(auth: AuthDto, dto: PersonCreateDto): Promise<PersonResponseDto> {
     const person = await this.personRepository.create({
       ownerId: auth.user.id,
-      name: dto.name,
+      name: nullIfEmpty(dto.name),
       birthDate: dto.birthDate,
       isHidden: dto.isHidden,
       isFavorite: dto.isFavorite,
@@ -206,7 +207,7 @@ export class PersonService extends BaseService {
     const person = await this.personRepository.update({
       id,
       faceAssetId: faceId,
-      name,
+      name: nullIfEmpty(name),
       birthDate,
       isHidden,
       isFavorite,
@@ -251,8 +252,10 @@ export class PersonService extends BaseService {
   }
 
   @Chunked()
-  private async removeAllPeople(people: { id: string; thumbnailPath: string }[]) {
-    await Promise.all(people.map((person) => this.storageRepository.unlink(person.thumbnailPath)));
+  private async removeAllPeople(people: { id: string; thumbnailPath: string | null }[]) {
+    await Promise.all(
+      people.map((person) => (person.thumbnailPath ? this.storageRepository.unlink(person.thumbnailPath) : Promise.resolve())),
+    );
     await this.personRepository.delete(people.map((person) => person.id));
     this.logger.debug(`Deleted ${people.length} people`);
   }

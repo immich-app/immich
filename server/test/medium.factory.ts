@@ -274,7 +274,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
       session,
       user: {
         id: user.id,
-        name: user.name,
+        name: user.name ?? user.email,
         email: user.email,
       },
     });
@@ -778,8 +778,8 @@ const loginResponse = (): LoginResponseDto => {
     accessToken: 'access-token',
     userId: user.id,
     userEmail: user.email,
-    name: user.name,
-    profileImagePath: user.profileImagePath,
+    name: user.name ?? user.email,
+    profileImagePath: user.profileImagePath ?? '',
     isAdmin: user.isAdmin,
     shouldChangePassword: user.shouldChangePassword,
     isOnboarded: false,

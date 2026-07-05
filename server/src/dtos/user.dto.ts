@@ -58,8 +58,8 @@ export const mapUser = (entity: MaybeDehydrated<User | UserAdmin>): UserResponse
   return {
     id: entity.id,
     email: entity.email,
-    name: entity.name,
-    profileImagePath: entity.profileImagePath,
+    name: entity.name ?? entity.email,
+    profileImagePath: entity.profileImagePath ?? '',
     avatarColor: entity.avatarColor ?? emailToAvatarColor(entity.email),
     profileChangedAt: asDateTimeString(entity.profileChangedAt),
   };
@@ -145,7 +145,7 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     createdAt: entity.createdAt,
     deletedAt: entity.deletedAt,
     updatedAt: entity.updatedAt,
-    oauthId: entity.oauthId,
+    oauthId: entity.oauthId ?? '',
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,

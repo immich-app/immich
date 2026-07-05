@@ -125,10 +125,10 @@ export type Asset = {
 
 export type User = {
   id: string;
-  name: string;
+  name: string | null;
   email: string;
   avatarColor: UserAvatarColor | null;
-  profileImagePath: string;
+  profileImagePath: string | null;
   profileChangedAt: Date;
 };
 
@@ -139,7 +139,7 @@ export type UserAdmin = User & {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-  oauthId: string;
+  oauthId: string | null;
   quotaSizeInBytes: number | null;
   quotaUsageInBytes: number;
   status: UserStatus;
@@ -230,8 +230,8 @@ export type Session = {
   createdAt: Date;
   updatedAt: Date;
   expiresAt: Date | null;
-  deviceOS: string;
-  deviceType: string;
+  deviceOS: string | null;
+  deviceType: string | null;
   appVersion: string | null;
   pinExpiresAt: Date | null;
   isPendingSyncReset: boolean;
@@ -246,12 +246,12 @@ export type Person = {
   updatedAt: Date;
   updateId: string;
   isFavorite: boolean;
-  name: string;
+  name: string | null;
   birthDate: Date | null;
   color: string | null;
   faceAssetId: string | null;
   isHidden: boolean;
-  thumbnailPath: string;
+  thumbnailPath: string | null;
 };
 
 export type AssetFace = {

@@ -278,14 +278,14 @@ describe(AlbumService.name, () => {
       await sut.create(AuthFactory.create(owner), {
         albumName: album.albumName,
         albumUsers: [albumUser],
-        description: album.description,
+        description: album.description ?? undefined,
         assetIds: [assetId],
       });
 
       expect(mocks.album.create).toHaveBeenCalledWith(
         {
           albumName: album.albumName,
-          description: album.description,
+          description: album.description ?? undefined,
           order: 'asc',
           albumThumbnailAssetId: assetId,
         },
@@ -330,14 +330,14 @@ describe(AlbumService.name, () => {
 
       await sut.create(AuthFactory.create(owner), {
         albumName: album.albumName,
-        description: album.description,
+        description: album.description ?? undefined,
         assetIds: [assetId, 'asset-2'],
       });
 
       expect(mocks.album.create).toHaveBeenCalledWith(
         {
           albumName: album.albumName,
-          description: album.description,
+          description: album.description ?? undefined,
           order: 'desc',
           albumThumbnailAssetId: assetId,
         },

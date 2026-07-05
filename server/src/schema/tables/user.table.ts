@@ -31,8 +31,8 @@ export class UserTable {
   @Column({ unique: true })
   email!: string;
 
-  @Column({ default: '' })
-  password!: Generated<string>;
+  @Column({ nullable: true, default: null })
+  password!: string | null;
 
   @Column({ nullable: true })
   pinCode!: string | null;
@@ -40,8 +40,8 @@ export class UserTable {
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
 
-  @Column({ default: '' })
-  profileImagePath!: Generated<string>;
+  @Column({ nullable: true, default: null })
+  profileImagePath!: string | null;
 
   @Column({ type: 'boolean', default: false })
   isAdmin!: Generated<boolean>;
@@ -55,8 +55,8 @@ export class UserTable {
   @DeleteDateColumn()
   deletedAt!: Timestamp | null;
 
-  @Column({ default: '' })
-  oauthId!: Generated<string>;
+  @Column({ nullable: true, default: null })
+  oauthId!: string | null;
 
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
@@ -64,9 +64,8 @@ export class UserTable {
   @Column({ unique: true, nullable: true, default: null })
   storageLabel!: string | null;
 
-  // TODO remove default, make nullable, and convert empty spaces to null
-  @Column({ default: '' })
-  name!: string;
+  @Column({ nullable: true, default: null })
+  name!: string | null;
 
   @Column({ type: 'bigint', nullable: true })
   quotaSizeInBytes!: ColumnType<number> | null;

@@ -47,7 +47,7 @@ export interface DeleteFacesOptions {
 
 export interface GetAllPeopleOptions {
   ownerId?: string;
-  thumbnailPath?: string;
+  thumbnailPath?: string | null;
   faceAssetId?: string | null;
   isHidden?: boolean;
 }
@@ -130,7 +130,10 @@ export class PersonRepository {
       .selectFrom('person')
       .selectAll('person')
       .$if(!!options.ownerId, (qb) => qb.where('person.ownerId', '=', options.ownerId!))
-      .$if(options.thumbnailPath !== undefined, (qb) => qb.where('person.thumbnailPath', '=', options.thumbnailPath!))
+      .$if(options.thumbnailPath === null, (qb) => qb.where('person.thumbnailPath', 'is', null))
+      .$if(typeof options.thumbnailPath === 'string', (qb) =>
+        qb.where('person.thumbnailPath', '=', options.thumbnailPath!),
+      )
       .$if(options.faceAssetId === null, (qb) => qb.where('person.faceAssetId', 'is', null))
       .$if(!!options.faceAssetId, (qb) => qb.where('person.faceAssetId', '=', options.faceAssetId!))
       .$if(options.isHidden !== undefined, (qb) => qb.where('person.isHidden', '=', options.isHidden!))
@@ -142,7 +145,7 @@ export class PersonRepository {
     return this.db
       .selectFrom('person')
       .select(['id', 'thumbnailPath'])
-      .where('thumbnailPath', '!=', sql.lit(''))
+      .where('thumbnailPath', 'is not', null)
       .limit(sql.lit(3))
       .execute();
   }
@@ -166,7 +169,7 @@ export class PersonRepository {
       .orderBy('person.isFavorite', 'desc')
       .having((eb) =>
         eb.or([
-          eb('person.name', '!=', ''),
+          eb('person.name', 'is not', null),
           eb(
             (innerEb) => innerEb.fn.count('asset_face.assetId'),
             '>=',
@@ -200,9 +203,9 @@ export class PersonRepository {
       )
       .$if(!options?.closestFaceAssetId, (qb) =>
         qb
-          .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
+          .orderBy(sql`person.name is null`, 'asc')
           .orderBy((eb) => eb.fn.count('asset_face.assetId'), 'desc')
-          .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
+          .orderBy('person.name', (om) => om.asc().nullsLast())
           .orderBy('person.createdAt'),
       )
       .$if(!options?.withHidden, (qb) => qb.where('person.isHidden', '=', false))
@@ -338,9 +341,10 @@ export class PersonRepository {
       .selectFrom('person')
       .select(['person.id', 'person.name'])
       .distinctOn((eb) => eb.fn('lower', ['person.name']))
-      .where((eb) => eb.and([eb('person.ownerId', '=', userId), eb('person.name', '!=', '')]))
+      .where((eb) => eb.and([eb('person.ownerId', '=', userId), eb('person.name', 'is not', null)]))
       .$if(!withHidden, (qb) => qb.where('person.isHidden', '=', false))
-      .execute();
+      .execute()
+      .then((rows) => rows.filter((row): row is PersonNameResponse => row.name !== null));
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

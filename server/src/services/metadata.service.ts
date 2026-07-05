@@ -36,6 +36,7 @@ import { isAssetChecksumConstraint } from 'src/utils/database';
 import { mergeTimeZone } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
 import { isFaceImportEnabled } from 'src/utils/misc';
+import { nullIfEmpty } from 'src/utils/string';
 import { upsertTags } from 'src/utils/tag';
 import { Tasks } from 'src/utils/tasks';
 
@@ -303,7 +304,7 @@ export class MetadataService extends BaseService {
       focalLength: validate(exifTags.FocalLength),
 
       // comments
-      description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
+      description: nullIfEmpty(String(exifTags.ImageDescription || exifTags.Description || '').trim()),
       profileDescription: exifTags.ProfileDescription || null,
       rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, 1, 5),
 

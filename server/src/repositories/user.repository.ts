@@ -234,7 +234,7 @@ export class UserRepository {
       .selectFrom('user')
       .leftJoin('asset', (join) => join.onRef('asset.ownerId', '=', 'user.id').on('asset.deletedAt', 'is', null))
       .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
-      .select(['user.id as userId', 'user.name as userName', 'user.quotaSizeInBytes'])
+      .select(['user.id as userId', sql<string>`coalesce(${sql.ref('user.name')}, ${sql.ref('user.email')})`.as('userName'), 'user.quotaSizeInBytes'])
       .select((eb) => [
         eb.fn
           .countAll<number>()

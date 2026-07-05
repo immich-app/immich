@@ -1,4 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
+import { Updateable } from 'kysely';
 import { SALT_ROUNDS } from 'src/constants';
 import { AssetStatsDto, AssetStatsResponseDto, mapStats } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -15,9 +16,11 @@ import {
 } from 'src/dtos/user.dto';
 import { JobName, UserMetadataKey, UserStatus } from 'src/enum';
 import { UserFindOptions } from 'src/repositories/user.repository';
+import { UserTable } from 'src/schema/tables/user.table';
 import { BaseService } from 'src/services/base.service';
 import { getCalendarHeatmap } from 'src/services/shared/user-methods';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
+import { nullIfEmpty } from 'src/utils/string';
 
 @Injectable()
 export class UserAdminService extends BaseService {
@@ -90,7 +93,13 @@ export class UserAdminService extends BaseService {
       dto.storageLabel = null;
     }
 
-    const updatedUser = await this.userRepository.update(id, { ...dto, updatedAt: new Date() });
+    const update: Updateable<UserTable> = {
+      ...dto,
+      name: nullIfEmpty(dto.name),
+      updatedAt: new Date(),
+    };
+
+    const updatedUser = await this.userRepository.update(id, update);
 
     return mapUserAdmin(updatedUser);
   }

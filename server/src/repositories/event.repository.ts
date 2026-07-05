@@ -116,18 +116,18 @@ type QueueStartEvent = {
 };
 
 type UserEvent = {
-  name: string;
+  name: string | null;
   id: string;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
   status: UserStatus;
   email: string;
-  profileImagePath: string;
+  profileImagePath: string | null;
   isAdmin: boolean;
   shouldChangePassword: boolean;
   avatarColor: UserAvatarColor | null;
-  oauthId: string;
+  oauthId: string | null;
   storageLabel: string | null;
   quotaSizeInBytes: number | null;
   quotaUsageInBytes: number;

@@ -90,7 +90,7 @@ describe(SharedLinkService.name, () => {
       assetIds: assets.map(({ asset }) => asset.id),
     });
 
-    await expect(sut.getMine({ user, sharedLink }, [])).resolves.toMatchObject({
+    await expect(sut.getMine(factory.auth({ user, sharedLink }), [])).resolves.toMatchObject({
       assets: assets.map(({ asset }) => expect.objectContaining({ id: asset.id })),
     });
   });
@@ -614,7 +614,7 @@ describe(SharedLinkService.name, () => {
       assetIds: [asset.id],
     });
 
-    await expect(sut.getMine({ user, sharedLink }, [])).resolves.toMatchObject({
+    await expect(sut.getMine(factory.auth({ user, sharedLink }), [])).resolves.toMatchObject({
       assets: [expect.objectContaining({ id: asset.id })],
     });
 
@@ -622,6 +622,6 @@ describe(SharedLinkService.name, () => {
       assetIds: [asset.id],
     });
 
-    await expect(sut.getMine({ user, sharedLink }, [])).resolves.toHaveProperty('assets', []);
+    await expect(sut.getMine(factory.auth({ user, sharedLink }), [])).resolves.toHaveProperty('assets', []);
   });
 });

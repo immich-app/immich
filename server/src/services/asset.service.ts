@@ -46,6 +46,7 @@ import {
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
+import { nullIfEmpty } from 'src/utils/string';
 import { transformOcrBoundingBox } from 'src/utils/transform';
 
 @Injectable()
@@ -506,7 +507,7 @@ export class AssetService extends BaseService {
     const { id, description, dateTimeOriginal, latitude, longitude, rating } = dto;
     const writes = _.omitBy(
       {
-        description,
+        description: nullIfEmpty(description),
         dateTimeOriginal,
         timeZone: extractTimeZone(dateTimeOriginal)?.name,
         latitude,

@@ -295,6 +295,12 @@ export class BaseService {
     }
 
     const payload: Insertable<UserTable> = { ...dto };
+    if (payload.name === '') {
+      payload.name = null;
+    }
+    if (payload.oauthId === '') {
+      payload.oauthId = null;
+    }
     if (payload.password) {
       payload.password = await this.cryptoRepository.hashBcrypt(payload.password, SALT_ROUNDS);
     }

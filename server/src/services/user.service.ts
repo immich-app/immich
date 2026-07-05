@@ -22,6 +22,7 @@ import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 import { generateProfileImage } from 'src/utils/profile-image';
+import { nullIfEmpty } from 'src/utils/string';
 
 @Injectable()
 export class UserService extends BaseService {
@@ -63,7 +64,7 @@ export class UserService extends BaseService {
 
     const update: Updateable<UserTable> = {
       email: dto.email,
-      name: dto.name,
+      name: nullIfEmpty(dto.name),
       avatarColor: dto.avatarColor,
     };
 
@@ -127,17 +128,17 @@ export class UserService extends BaseService {
 
     return {
       userId: user.id,
-      profileImagePath: user.profileImagePath,
+      profileImagePath: user.profileImagePath ?? '',
       profileChangedAt: user.profileChangedAt,
     };
   }
 
   async deleteProfileImage(auth: AuthDto): Promise<void> {
     const user = await this.findOrFail(auth.user.id, { withDeleted: false });
-    if (user.profileImagePath === '') {
+    if (!user.profileImagePath) {
       throw new BadRequestException("Can't delete a missing profile Image");
     }
-    await this.userRepository.update(auth.user.id, { profileImagePath: '', profileChangedAt: new Date() });
+    await this.userRepository.update(auth.user.id, { profileImagePath: null, profileChangedAt: new Date() });
     await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [user.profileImagePath] } });
   }
 

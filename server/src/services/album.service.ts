@@ -20,6 +20,7 @@ import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 import { asDateTimeString } from 'src/utils/date';
 import { getPreferences } from 'src/utils/preferences';
+import { nullIfEmpty } from 'src/utils/string';
 
 @Injectable()
 export class AlbumService extends BaseService {
@@ -120,7 +121,7 @@ export class AlbumService extends BaseService {
     const album = await this.albumRepository.create(
       {
         albumName: dto.albumName,
-        description: dto.description,
+        description: nullIfEmpty(dto.description),
         albumThumbnailAssetId: assetIds[0] || null,
         order: getPreferences(userMetadata).albums.defaultAssetOrder,
       },
@@ -152,7 +153,7 @@ export class AlbumService extends BaseService {
       {
         id: album.id,
         albumName: dto.albumName,
-        description: dto.description,
+        description: nullIfEmpty(dto.description),
         albumThumbnailAssetId: dto.albumThumbnailAssetId,
         isActivityEnabled: dto.isActivityEnabled,
         order: dto.order,

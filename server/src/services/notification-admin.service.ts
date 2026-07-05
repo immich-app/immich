@@ -39,7 +39,7 @@ export class NotificationAdminService extends BaseService {
       template: EmailTemplate.TEST_EMAIL,
       data: {
         baseUrl: getExternalDomain(server),
-        displayName: user.name,
+        displayName: user.name ?? user.email,
       },
       customTemplate: tempTemplate!,
     });

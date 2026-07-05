@@ -174,9 +174,9 @@ export class PeopleResponseDto extends createZodDto(PeopleResponseSchema) {}
 export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
   return {
     id: person.id,
-    name: person.name,
+    name: person.name ?? '',
     birthDate: asDateString(person.birthDate),
-    thumbnailPath: person.thumbnailPath,
+    thumbnailPath: person.thumbnailPath ?? '',
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,

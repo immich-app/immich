@@ -310,7 +310,7 @@ order by
 -- UserRepository.getUserStats
 select
   "user"."id" as "userId",
-  "user"."name" as "userName",
+  coalesce("user"."name", "user"."email") as "userName",
   "user"."quotaSizeInBytes",
   count(*) filter (
     where

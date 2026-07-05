@@ -46,7 +46,7 @@ export const mapSession = (entity: Session, currentId?: string): SessionResponse
   expiresAt: entity.expiresAt?.toISOString(),
   current: currentId === entity.id,
   appVersion: entity.appVersion,
-  deviceOS: entity.deviceOS,
-  deviceType: entity.deviceType,
+  deviceOS: entity.deviceOS ?? '',
+  deviceType: entity.deviceType ?? '',
   isPendingSyncReset: entity.isPendingSyncReset,
 });

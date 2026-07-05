@@ -28,11 +28,12 @@ import { isGranted } from 'src/utils/access';
 import { HumanReadableSize } from 'src/utils/bytes';
 import { generateProfileImage } from 'src/utils/profile-image';
 import { getUserAgentDetails } from 'src/utils/request';
+import { nullIfEmpty } from 'src/utils/string';
 export interface LoginDetails {
   isSecure: boolean;
   clientIp: string;
-  deviceType: string;
-  deviceOS: string;
+  deviceType: string | null;
+  deviceOS: string | null;
   appVersion: string | null;
 }
 
@@ -207,7 +208,7 @@ export class AuthService extends BaseService {
     const admin = await this.createUser({
       isAdmin: true,
       email: dto.email,
-      name: dto.name,
+      name: nullIfEmpty(dto.name),
       password: dto.password,
       storageLabel: 'admin',
     });
@@ -361,11 +362,12 @@ export class AuthService extends BaseService {
       });
 
       user = await this.createUser({
-        name:
+        name: nullIfEmpty(
           profile.name ||
-          `${profile.given_name || ''} ${profile.family_name || ''}`.trim() ||
-          profile.preferred_username ||
-          normalizedEmail,
+            `${profile.given_name || ''} ${profile.family_name || ''}`.trim() ||
+            profile.preferred_username ||
+            '',
+        ),
         email: normalizedEmail,
         oauthId: profile.sub,
         quotaSizeInBytes: storageQuota === null ? null : storageQuota * HumanReadableSize.GiB,
@@ -439,7 +441,7 @@ export class AuthService extends BaseService {
       await this.sessionRepository.update(auth.session.id, { oauthSid: null });
     }
 
-    const user = await this.userRepository.update(auth.user.id, { oauthId: '' });
+    const user = await this.userRepository.update(auth.user.id, { oauthId: null });
     return mapUserAdmin(user);
   }
 
@@ -493,7 +495,10 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException('Invalid share key');
     }
 
-    return { user: sharedLink.user, sharedLink };
+    return {
+      user: { ...sharedLink.user, name: sharedLink.user.name ?? sharedLink.user.email },
+      sharedLink,
+    };
   }
 
   async validateSharedLinkSlug(slug: string | string[]): Promise<AuthDto> {
@@ -504,12 +509,15 @@ export class AuthService extends BaseService {
       throw new UnauthorizedException('Invalid share slug');
     }
 
-    return { user: sharedLink.user, sharedLink };
+    return {
+      user: { ...sharedLink.user, name: sharedLink.user.name ?? sharedLink.user.email },
+      sharedLink,
+    };
   }
 
   private isValidSharedLink(
-    sharedLink?: AuthSharedLink & { user: AuthUser | null },
-  ): sharedLink is AuthSharedLink & { user: AuthUser } {
+    sharedLink?: AuthSharedLink & { user: (Omit<AuthUser, 'name'> & { name: string | null }) | null },
+  ): sharedLink is AuthSharedLink & { user: Omit<AuthUser, 'name'> & { name: string | null } } {
     return !!sharedLink?.user && (!sharedLink.expiresAt || new Date(sharedLink.expiresAt) > new Date());
   }
 
@@ -518,7 +526,7 @@ export class AuthService extends BaseService {
     const apiKey = await this.apiKeyRepository.getKey(hashed);
     if (apiKey?.user) {
       return {
-        user: apiKey.user,
+        user: { ...apiKey.user, name: apiKey.user.name ?? apiKey.user.email },
         apiKey,
       };
     }
@@ -567,7 +575,7 @@ export class AuthService extends BaseService {
       }
 
       return {
-        user: session.user,
+        user: { ...session.user, name: session.user.name ?? session.user.email },
         session: {
           id: session.id,
           hasElevatedPermission,

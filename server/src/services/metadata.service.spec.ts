@@ -1296,7 +1296,7 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-            description: '',
+            description: null,
           }),
           lockedPropertiesBehavior: 'skip',
         }),
@@ -1380,7 +1380,7 @@ describe(MetadataService.name, () => {
 
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      const faceTags = makeFaceTags({ Name: person.name });
+      const faceTags = makeFaceTags({ Name: person.name ?? undefined });
 
       // Simulating EXIF returning a string with >16 decimal places
       faceTags.RegionInfo!.RegionList[0].Area.X = '0.48564814814814824';
@@ -1409,7 +1409,7 @@ describe(MetadataService.name, () => {
 
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      mockReadTags(makeFaceTags({ Name: person.name }));
+      mockReadTags(makeFaceTags({ Name: person.name ?? undefined }));
       mocks.person.getDistinctNames.mockResolvedValue([]);
       mocks.person.createAll.mockResolvedValue([person.id]);
       mocks.person.update.mockResolvedValue(person);
@@ -1451,8 +1451,8 @@ describe(MetadataService.name, () => {
 
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
       mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-      mockReadTags(makeFaceTags({ Name: person.name }));
-      mocks.person.getDistinctNames.mockResolvedValue([{ id: person.id, name: person.name }]);
+      mockReadTags(makeFaceTags({ Name: person.name ?? undefined }));
+      mocks.person.getDistinctNames.mockResolvedValue([{ id: person.id, name: person.name! }]);
       mocks.person.createAll.mockResolvedValue([]);
       mocks.person.update.mockResolvedValue(person);
       await sut.handleMetadataExtraction({ id: asset.id });
@@ -1538,7 +1538,7 @@ describe(MetadataService.name, () => {
 
           mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
           mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { import: true } } });
-          mockReadTags(makeFaceTags({ Name: person.name }, orientation));
+          mockReadTags(makeFaceTags({ Name: person.name ?? undefined }, orientation));
           mocks.person.getDistinctNames.mockResolvedValue([]);
           mocks.person.createAll.mockResolvedValue([person.id]);
           mocks.person.update.mockResolvedValue(person);

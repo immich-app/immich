@@ -21,8 +21,8 @@ const email = 'test@immich.com';
 const loginDetails = {
   isSecure: true,
   clientIp: '127.0.0.1',
-  deviceOS: '',
-  deviceType: '',
+  deviceOS: null,
+  deviceType: null,
   appVersion: null,
 };
 
@@ -858,7 +858,7 @@ describe(AuthService.name, () => {
       expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ name: 'Given Family' }));
     });
 
-    it('should fallback to email when no username is provided', async () => {
+    it('should store a null name when no username is provided', async () => {
       const profile = OAuthProfileFactory.create({ name: undefined, given_name: undefined, family_name: undefined });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
@@ -874,7 +874,7 @@ describe(AuthService.name, () => {
         loginDetails,
       );
 
-      expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ name: profile.email }));
+      expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ name: null }));
     });
 
     it('should ignore an invalid storage quota', async () => {
@@ -1017,7 +1017,7 @@ describe(AuthService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
         profile: OAuthProfileFactory.create({
-          sub: user.oauthId,
+          sub: user.oauthId!,
           email: user.email,
           picture: 'https://auth.immich.cloud/profiles/1.jpg',
         }),
@@ -1141,8 +1141,7 @@ describe(AuthService.name, () => {
 
     it('should not link an already linked oauth.sub', async () => {
       const authUser = UserFactory.create();
-      const authApiKey = ApiKeyFactory.create({ permissions: [] });
-      const auth = { user: authUser, apiKey: authApiKey };
+      const auth = AuthFactory.from(authUser).apiKey({ permissions: [] }).build();
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create() });
@@ -1166,7 +1165,7 @@ describe(AuthService.name, () => {
 
       await sut.unlink(auth);
 
-      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
+      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: null });
     });
 
     it('should unlink an account and remove the oauthSid from the session', async () => {
@@ -1181,7 +1180,7 @@ describe(AuthService.name, () => {
       await sut.unlink(auth);
 
       expect(mocks.session.update).toHaveBeenCalledWith(session.id, { oauthSid: null });
-      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
+      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: null });
     });
   });
 

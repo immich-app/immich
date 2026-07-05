@@ -46,7 +46,7 @@ export class AuthFactory {
       user: {
         id,
         isAdmin,
-        name,
+        name: name ?? email,
         email,
         quotaUsageInBytes,
         quotaSizeInBytes,

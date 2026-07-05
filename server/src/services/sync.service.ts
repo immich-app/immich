@@ -238,7 +238,11 @@ export class SyncService extends BaseService {
     const upsertType = SyncEntityType.AuthUserV1;
     const upserts = this.syncRepository.authUser.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, profileImagePath, ...data } of upserts) {
-      send(response, { type: upsertType, ids: [updateId], data: { ...data, hasProfileImage: !!profileImagePath } });
+      send(response, {
+        type: upsertType,
+        ids: [updateId],
+        data: { ...data, name: data.name ?? data.email, oauthId: data.oauthId ?? '', hasProfileImage: !!profileImagePath },
+      });
     }
   }
 
@@ -252,7 +256,11 @@ export class SyncService extends BaseService {
     const upsertType = SyncEntityType.UserV1;
     const upserts = this.syncRepository.user.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, profileImagePath, ...data } of upserts) {
-      send(response, { type: upsertType, ids: [updateId], data: { ...data, hasProfileImage: !!profileImagePath } });
+      send(response, {
+        type: upsertType,
+        ids: [updateId],
+        data: { ...data, name: data.name ?? data.email, hasProfileImage: !!profileImagePath },
+      });
     }
   }
 
@@ -437,7 +445,11 @@ export class SyncService extends BaseService {
     const upserts = this.syncRepository.album.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
       const albumUsers = await this.syncRepository.album.getAlbumUsers(data.id);
-      send(response, { type: upsertType, ids: [updateId], data: syncAlbumV2ToV1(data, albumUsers) });
+      send(response, {
+        type: upsertType,
+        ids: [updateId],
+        data: syncAlbumV2ToV1({ ...data, description: data.description ?? '' }, albumUsers),
+      });
     }
   }
 
@@ -451,7 +463,7 @@ export class SyncService extends BaseService {
     const upsertType = SyncEntityType.AlbumV2;
     const upserts = this.syncRepository.album.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
-      send(response, { type: upsertType, ids: [updateId], data });
+      send(response, { type: upsertType, ids: [updateId], data: { ...data, description: data.description ?? '' } });
     }
   }
 
@@ -825,7 +837,7 @@ export class SyncService extends BaseService {
     const upsertType = SyncEntityType.PersonV1;
     const upserts = this.syncRepository.person.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
-      send(response, { type: upsertType, ids: [updateId], data });
+      send(response, { type: upsertType, ids: [updateId], data: { ...data, name: data.name ?? '' } });
     }
   }
 

@@ -41,7 +41,7 @@ describe(UserAdminService.name, () => {
       await expect(
         sut.create({
           email: userStub.user1.email,
-          name: userStub.user1.name,
+          name: userStub.user1.name ?? userStub.user1.email,
           password: 'password',
           storageLabel: 'label',
         }),

@@ -155,7 +155,7 @@ describe(PersonService.name, () => {
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
       await expect(sut.getThumbnail(auth, person.id)).resolves.toEqual(
         new ImmichFileResponse({
-          path: person.thumbnailPath,
+          path: person.thumbnailPath!,
           contentType: 'image/jpeg',
           cacheControl: CacheControl.PrivateWithoutCache,
         }),

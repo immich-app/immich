@@ -5,7 +5,6 @@ import { BaseService } from 'src/services/base.service';
 @Injectable()
 export class AuthAdminService extends BaseService {
   async unlinkAll(_auth: AuthDto) {
-    // TODO replace '' with null
-    await this.userRepository.updateAll({ oauthId: '' });
+    await this.userRepository.updateAll({ oauthId: null });
   }
 }

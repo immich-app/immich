@@ -253,7 +253,7 @@ export class NotificationService extends BaseService {
       template: EmailTemplate.TEST_EMAIL,
       data: {
         baseUrl: getExternalDomain(server),
-        displayName: user.name,
+        displayName: user.name ?? user.email,
       },
       customTemplate: tempTemplate!,
     });
@@ -282,7 +282,7 @@ export class NotificationService extends BaseService {
       template: EmailTemplate.WELCOME,
       data: {
         baseUrl: getExternalDomain(server),
-        displayName: user.name,
+        displayName: user.name ?? user.email,
         username: user.email,
         password,
       },
@@ -332,7 +332,7 @@ export class NotificationService extends BaseService {
         albumId: album.id,
         albumName: album.albumName,
         senderName,
-        recipientName: recipient.name,
+        recipientName: recipient.name ?? recipient.email,
         cid: attachment ? attachment.cid : undefined,
       },
       customTemplate: templates.email.albumInviteTemplate,
@@ -388,7 +388,7 @@ export class NotificationService extends BaseService {
         baseUrl: getExternalDomain(server),
         albumId: album.id,
         albumName: album.albumName,
-        recipientName: user.name,
+        recipientName: user.name ?? user.email,
         cid: attachment ? attachment.cid : undefined,
       },
       customTemplate: templates.email.albumUpdateTemplate,
@@ -456,7 +456,7 @@ export class NotificationService extends BaseService {
   }
 
   private async sendAlbumLocalNotification(
-    album: MapAlbumDto,
+    album: Pick<MapAlbumDto, 'id' | 'albumName'>,
     userId: string,
     type: NotificationType.AlbumInvite | NotificationType.AlbumUpdate,
     senderName?: string,

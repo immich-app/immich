@@ -48,9 +48,9 @@ export function mapLoginResponse(entity: UserAdmin, accessToken: string): LoginR
     accessToken,
     userId: entity.id,
     userEmail: entity.email,
-    name: entity.name,
+    name: entity.name ?? entity.email,
     isAdmin: entity.isAdmin,
-    profileImagePath: entity.profileImagePath,
+    profileImagePath: entity.profileImagePath ?? '',
     shouldChangePassword: entity.shouldChangePassword,
     isOnboarded: onboardingMetadata?.isOnboarded ?? false,
   };
