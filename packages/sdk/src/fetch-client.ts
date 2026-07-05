@@ -7539,12 +7539,8 @@ export enum JobName {
     AssetFileMigration = "AssetFileMigration",
     AssetGenerateThumbnailsQueueAll = "AssetGenerateThumbnailsQueueAll",
     AssetGenerateThumbnails = "AssetGenerateThumbnails",
-<<<<<<< HEAD:open-api/typescript-sdk/src/fetch-client.ts
     PartialAssetCleanup = "PartialAssetCleanup",
     PartialAssetCleanupQueueAll = "PartialAssetCleanupQueueAll",
-    AuditLogCleanup = "AuditLogCleanup",
-=======
->>>>>>> main:packages/sdk/src/fetch-client.ts
     AuditTableCleanup = "AuditTableCleanup",
     DatabaseBackup = "DatabaseBackup",
     FacialRecognitionQueueAll = "FacialRecognitionQueueAll",
