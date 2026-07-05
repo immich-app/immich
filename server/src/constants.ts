@@ -235,14 +235,52 @@ export const HLS_PLAYLIST_CONTENT_TYPE = 'application/vnd.apple.mpegurl';
 export const HLS_SEGMENT_DURATION = 2;
 export const HLS_SEGMENT_FILENAME_REGEX = /^seg_(\d+)\.m4s$/;
 export const HLS_VARIANTS = [
-  { resolution: 480, codec: VideoCodec.Av1, bitrate: 1_000_000, codecString: 'av01.0.04M.08' },
-  { resolution: 480, codec: VideoCodec.Hevc, bitrate: 1_200_000, codecString: 'hvc1.1.6.L90.B0' },
-  { resolution: 480, codec: VideoCodec.H264, bitrate: 2_500_000, codecString: 'avc1.64001e' },
-  { resolution: 720, codec: VideoCodec.Av1, bitrate: 2_000_000, codecString: 'av01.0.08M.08' },
-  { resolution: 720, codec: VideoCodec.Hevc, bitrate: 2_500_000, codecString: 'hvc1.1.6.L93.B0' },
-  { resolution: 720, codec: VideoCodec.H264, bitrate: 5_000_000, codecString: 'avc1.64001f' },
-  { resolution: 1080, codec: VideoCodec.Av1, bitrate: 4_000_000, codecString: 'av01.0.09M.08' },
-  { resolution: 1080, codec: VideoCodec.Hevc, bitrate: 4_500_000, codecString: 'hvc1.1.6.L120.B0' },
-  { resolution: 1080, codec: VideoCodec.H264, bitrate: 8_000_000, codecString: 'avc1.640028' },
+  { resolution: 480, codec: VideoCodec.Av1, bitrate: 1_000_000 },
+  { resolution: 480, codec: VideoCodec.Hevc, bitrate: 1_200_000 },
+  { resolution: 480, codec: VideoCodec.H264, bitrate: 2_500_000 },
+  { resolution: 720, codec: VideoCodec.Av1, bitrate: 2_000_000 },
+  { resolution: 720, codec: VideoCodec.Hevc, bitrate: 2_500_000 },
+  { resolution: 720, codec: VideoCodec.H264, bitrate: 5_000_000 },
+  { resolution: 1080, codec: VideoCodec.Av1, bitrate: 4_000_000 },
+  { resolution: 1080, codec: VideoCodec.Hevc, bitrate: 4_500_000 },
+  { resolution: 1080, codec: VideoCodec.H264, bitrate: 8_000_000 },
 ];
 export const HLS_VERSION = 7;
+
+export type CodecLevel = { maxFrame: number; maxRate: number; maxWidth: number; maxHeight: number; token: string };
+
+const [maxWidth, maxHeight] = [Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER];
+
+// H.264 High profile: token is the hex level_idc.
+export const H264_LEVELS: CodecLevel[] = [
+  { maxFrame: 1620, maxRate: 40_500, token: '1e', maxWidth, maxHeight }, // 3.0
+  { maxFrame: 3600, maxRate: 108_000, token: '1f', maxWidth, maxHeight }, // 3.1
+  { maxFrame: 5120, maxRate: 216_000, token: '20', maxWidth, maxHeight }, // 3.2
+  { maxFrame: 8192, maxRate: 245_760, token: '28', maxWidth, maxHeight }, // 4.0
+  { maxFrame: 8704, maxRate: 522_240, token: '2a', maxWidth, maxHeight }, // 4.2
+  { maxFrame: 22_080, maxRate: 589_824, token: '32', maxWidth, maxHeight }, // 5.0
+  { maxFrame: 36_864, maxRate: 983_040, token: '33', maxWidth, maxHeight }, // 5.1
+  { maxFrame: 36_864, maxRate: 2_073_600, token: '34', maxWidth, maxHeight }, // 5.2
+];
+
+// HEVC Main profile, Main tier: token is `L` + level_idc (level × 30).
+export const HEVC_LEVELS: CodecLevel[] = [
+  { maxFrame: 552_960, maxRate: 16_588_800, token: 'L90', maxWidth, maxHeight }, // 3.0
+  { maxFrame: 983_040, maxRate: 33_177_600, token: 'L93', maxWidth, maxHeight }, // 3.1
+  { maxFrame: 2_228_224, maxRate: 66_846_720, token: 'L120', maxWidth, maxHeight }, // 4.0
+  { maxFrame: 2_228_224, maxRate: 133_693_440, token: 'L123', maxWidth, maxHeight }, // 4.1
+  { maxFrame: 8_912_896, maxRate: 267_386_880, token: 'L150', maxWidth, maxHeight }, // 5.0
+  { maxFrame: 8_912_896, maxRate: 534_773_760, token: 'L153', maxWidth, maxHeight }, // 5.1
+  { maxFrame: 8_912_896, maxRate: 1_069_547_520, token: 'L156', maxWidth, maxHeight }, // 5.2
+];
+
+// AV1 Main profile (0), Main tier (M): token is the two-digit seq_level_idx + `M`.
+export const AV1_LEVELS: CodecLevel[] = [
+  { maxFrame: 665_856, maxRate: 19_975_168, token: '04M', maxWidth: 4352, maxHeight: 2448 }, // 3.0
+  { maxFrame: 1_065_024, maxRate: 31_950_336, token: '05M', maxWidth: 5504, maxHeight: 3096 }, // 3.1
+  { maxFrame: 2_359_296, maxRate: 70_778_880, token: '08M', maxWidth: 6144, maxHeight: 3456 }, // 4.0
+  { maxFrame: 2_359_296, maxRate: 141_557_760, token: '09M', maxWidth: 6144, maxHeight: 3456 }, // 4.1
+  { maxFrame: 8_912_896, maxRate: 267_386_880, token: '12M', maxWidth: 8192, maxHeight: 4352 }, // 5.0
+  { maxFrame: 8_912_896, maxRate: 534_773_760, token: '13M', maxWidth: 8192, maxHeight: 4352 }, // 5.1
+  { maxFrame: 8_912_896, maxRate: 1_069_547_520, token: '14M', maxWidth: 8192, maxHeight: 4352 }, // 5.2
+];
