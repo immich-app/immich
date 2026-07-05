@@ -276,7 +276,9 @@ export class LibraryService extends BaseService {
     this.logger.log(`Imported ${assetIds.length} ${progressMessage} file(s) into library ${job.libraryId}`);
 
     await Promise.all(
-      assetIds.map((assetId) => this.eventRepository.emit('AssetCreate', { asset: { id: assetId, ownerId: library.ownerId } })),
+      assetIds.map((assetId) =>
+        this.eventRepository.emit('AssetCreate', { asset: { id: assetId, ownerId: library.ownerId } }),
+      ),
     );
 
     await this.queuePostSyncJobs(assetIds);
