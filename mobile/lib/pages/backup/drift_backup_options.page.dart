@@ -38,8 +38,7 @@ class DriftBackupOptionsPage extends ConsumerWidget {
         if (currentCellularForVideos == previousCellularForVideos &&
             currentAllowMeteredVpnForVideos == previousAllowMeteredVpnForVideos &&
             currentCellularForPhotos == previousCellularForPhotos &&
-            currentAllowMeteredVpnForPhotos == previousAllowMeteredVpnForPhotos
-        ) {
+            currentAllowMeteredVpnForPhotos == previousAllowMeteredVpnForPhotos) {
           return;
         }
 

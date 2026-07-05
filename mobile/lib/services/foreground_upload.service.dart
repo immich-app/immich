@@ -91,10 +91,10 @@ class ForegroundUploadService {
 
     if (useSequentialUpload) {
       await _uploadSequentially(
-          items: candidates,
-          cancelToken: cancelToken,
-          networkCapabilities: networkCapabilities,
-          callbacks: callbacks,
+        items: candidates,
+        cancelToken: cancelToken,
+        networkCapabilities: networkCapabilities,
+        callbacks: callbacks,
       );
     } else {
       await _executeWithWorkerPool<LocalAsset>(
