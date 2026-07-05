@@ -1,6 +1,10 @@
 import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:openapi/api.dart';
@@ -11,7 +15,7 @@ SyncUserV1 _createUser({String id = 'user-1'}) {
     name: 'Test User',
     email: 'test@test.com',
     deletedAt: null,
-    avatarColor: null,
+    avatarColor: const Optional.absent(),
     hasProfileImage: false,
     profileChangedAt: DateTime(2024, 1, 1),
   );
@@ -34,6 +38,7 @@ SyncAssetV1 _createAsset({
     isFavorite: false,
     fileCreatedAt: DateTime(2024, 1, 1),
     fileModifiedAt: DateTime(2024, 1, 1),
+    createdAt: DateTime(2024, 1, 1),
     localDateTime: DateTime(2024, 1, 1),
     visibility: AssetVisibility.timeline,
     width: width,
@@ -181,6 +186,58 @@ void main() {
 
       expect(result.width, equals(existingWidth), reason: 'Width should remain as originally set');
       expect(result.height, equals(existingHeight), reason: 'Height should remain as originally set');
+    });
+  });
+
+  group('SyncStreamRepository - reset()', () {
+    test('nulls linkedRemoteAlbumId on localAlbumEntity so FK refs do not dangle', () async {
+      const localAlbumId = 'local-1';
+      const remoteAlbumId = 'remote-1';
+
+      await db.remoteAlbumEntity.insertOne(
+        RemoteAlbumEntityCompanion.insert(id: remoteAlbumId, name: 'Movies', order: AlbumAssetOrder.desc),
+      );
+      await db.localAlbumEntity.insertOne(
+        LocalAlbumEntityCompanion.insert(
+          id: localAlbumId,
+          name: 'Movies',
+          backupSelection: BackupSelection.selected,
+          linkedRemoteAlbumId: const drift.Value(remoteAlbumId),
+        ),
+      );
+
+      // sanity: link is set before reset
+      final before = await (db.localAlbumEntity.select()..where((t) => t.id.equals(localAlbumId))).getSingle();
+      expect(before.linkedRemoteAlbumId, equals(remoteAlbumId));
+
+      await sut.reset();
+
+      final after = await (db.localAlbumEntity.select()..where((t) => t.id.equals(localAlbumId))).getSingle();
+      expect(
+        after.linkedRemoteAlbumId,
+        isNull,
+        reason:
+            'reset() runs with PRAGMA foreign_keys = OFF so the ON DELETE SET NULL cascade does not fire — the link must be nulled manually',
+      );
+      expect(after.name, equals('Movies'), reason: 'local album row itself must be preserved');
+      expect(after.backupSelection, equals(BackupSelection.selected));
+
+      final remoteRows = await db.remoteAlbumEntity.select().get();
+      expect(remoteRows, isEmpty, reason: 'reset() still wipes remoteAlbumEntity');
+    });
+
+    test('preserves localAlbumEntity rows that have no linkedRemoteAlbumId', () async {
+      const localAlbumId = 'local-unlinked';
+      await db.localAlbumEntity.insertOne(
+        LocalAlbumEntityCompanion.insert(id: localAlbumId, name: 'Camera', backupSelection: BackupSelection.none),
+      );
+
+      await sut.reset();
+
+      final after = await (db.localAlbumEntity.select()..where((t) => t.id.equals(localAlbumId))).getSingle();
+      expect(after.linkedRemoteAlbumId, isNull);
+      expect(after.name, equals('Camera'));
+      expect(after.backupSelection, equals(BackupSelection.none));
     });
   });
 }

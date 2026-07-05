@@ -4,16 +4,15 @@ import { jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { AssetFace } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetVisibility, SourceType } from 'src/enum';
+import { AssetFileType, AssetVisibility, SourceType, UserMetadataKey } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { removeUndefinedKeys } from 'src/utils/database';
+import { dummy, removeUndefinedKeys, withFilePath } from 'src/utils/database';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
-  minimumFaceCount: number;
   withHidden: boolean;
   closestFaceAssetId?: string;
 }
@@ -168,7 +167,17 @@ export class PersonRepository {
       .having((eb) =>
         eb.or([
           eb('person.name', '!=', ''),
-          eb((innerEb) => innerEb.fn.count('asset_face.assetId'), '>=', options?.minimumFaceCount || 1),
+          eb(
+            (innerEb) => innerEb.fn.count('asset_face.assetId'),
+            '>=',
+            sql<number>`COALESCE(
+              (SELECT value -> 'people' ->> 'minimumFaces'
+              FROM user_metadata
+              WHERE "userId" = ${userId}
+                AND key = ${sql.lit(UserMetadataKey.Preferences)}),
+              '3'
+            )::int `,
+          ),
         ]),
       )
       .groupBy('person.id')
@@ -282,15 +291,7 @@ export class PersonRepository {
         'asset.originalPath',
         'asset_exif.orientation as exifOrientation',
       ])
-      .select((eb) =>
-        eb
-          .selectFrom('asset_file')
-          .select('asset_file.path')
-          .whereRef('asset_file.assetId', '=', 'asset.id')
-          .where('asset_file.type', '=', sql.lit(AssetFileType.Preview))
-          .where('asset_file.isEdited', '=', false)
-          .as('previewPath'),
-      )
+      .select((eb) => withFilePath(eb, AssetFileType.Preview).as('previewPath'))
       .where('person.id', '=', id)
       .where('asset_face.deletedAt', 'is', null)
       .executeTakeFirst();
@@ -318,18 +319,15 @@ export class PersonRepository {
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING, { withHidden: true }] })
   getByName(userId: string, personName: string, { withHidden }: PersonNameSearchOptions) {
     return this.db
-      .selectFrom('person')
-      .selectAll('person')
-      .where((eb) =>
-        eb.and([
-          eb('person.ownerId', '=', userId),
-          eb.or([
-            eb(eb.fn('lower', ['person.name']), 'like', `${personName.toLowerCase()}%`),
-            eb(eb.fn('lower', ['person.name']), 'like', `% ${personName.toLowerCase()}%`),
-          ]),
-        ]),
+      .with('similarity_threshold', (db) =>
+        db.selectNoFrom(sql`set_config('pg_trgm.word_similarity_threshold', '0.5', true)`.as('thresh')),
       )
-      .limit(1000)
+      .selectFrom(['similarity_threshold', 'person'])
+      .selectAll('person')
+      .where('person.ownerId', '=', userId)
+      .where(() => sql`f_unaccent("person"."name") %> f_unaccent(${personName})`)
+      .orderBy(sql`f_unaccent("person"."name") <->>> f_unaccent(${personName})`)
+      .limit(100)
       .$if(!withHidden, (qb) => qb.where('person.isHidden', '=', false))
       .execute();
   }
@@ -429,7 +427,7 @@ export class PersonRepository {
       (query as any) = query.with('added_embeddings', (db) => db.insertInto('face_search').values(embeddingsToAdd));
     }
 
-    await query.selectFrom(sql`(select 1)`.as('dummy')).execute();
+    await query.selectFrom(dummy).execute();
   }
 
   async update(person: Updateable<PersonTable> & { id: string }) {

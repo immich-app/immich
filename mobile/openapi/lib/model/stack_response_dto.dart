@@ -18,7 +18,6 @@ class StackResponseDto {
     required this.primaryAssetId,
   });
 
-  /// Stack assets
   List<AssetResponseDto> assets;
 
   /// Stack ID

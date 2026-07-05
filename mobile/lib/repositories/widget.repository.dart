@@ -1,5 +1,6 @@
 import 'package:home_widget/home_widget.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 
 final widgetRepositoryProvider = Provider((_) => const WidgetRepository());
 
@@ -14,7 +15,7 @@ class WidgetRepository {
     await HomeWidget.updateWidget(iOSName: iosName, qualifiedAndroidName: androidName);
   }
 
-  Future<void> setAppGroupId(String appGroupId) async {
-    await HomeWidget.setAppGroupId(appGroupId);
+  Future<void> setAppGroupId() async {
+    await HomeWidget.setAppGroupId(await networkApi.getAppGroupId());
   }
 }

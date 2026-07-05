@@ -1,15 +1,13 @@
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { fromISODateTimeUTCToObject, fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
 import { faker } from '@faker-js/faker';
 import { AssetTypeEnum, AssetVisibility, type AssetResponseDto, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { Sync } from 'factory.ts';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { fromISODateTimeUTCToObject, fromTimelinePlainDateTime } from '$lib/utils/timeline-util';
 
 export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   id: Sync.each(() => faker.string.uuid()),
   createdAt: Sync.each(() => faker.date.past().toISOString()),
-  deviceAssetId: Sync.each(() => faker.string.uuid()),
   ownerId: Sync.each(() => faker.string.uuid()),
-  deviceId: '',
   libraryId: Sync.each(() => faker.string.uuid()),
   type: Sync.each(() => faker.helpers.enumValue(AssetTypeEnum)),
   originalPath: Sync.each(() => faker.system.filePath()),
@@ -23,7 +21,7 @@ export const assetFactory = Sync.makeFactory<AssetResponseDto>({
   isFavorite: Sync.each(() => faker.datatype.boolean()),
   isArchived: false,
   isTrashed: false,
-  duration: '0:00:00.00000',
+  duration: null,
   checksum: Sync.each(() => faker.string.alphanumeric(28)),
   isOffline: Sync.each(() => faker.datatype.boolean()),
   hasMetadata: Sync.each(() => faker.datatype.boolean()),
@@ -40,13 +38,14 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   tags: [],
   thumbhash: Sync.each(() => faker.string.alphanumeric(28)),
   localDateTime: Sync.each(() => fromISODateTimeUTCToObject(faker.date.past().toISOString())),
+  createdAt: Sync.each(() => fromISODateTimeUTCToObject(faker.date.past().toISOString())),
   fileCreatedAt: Sync.each(() => fromISODateTimeUTCToObject(faker.date.past().toISOString())),
   isFavorite: Sync.each(() => faker.datatype.boolean()),
   visibility: AssetVisibility.Timeline,
   isTrashed: false,
   isImage: true,
   isVideo: false,
-  duration: '0:00:00.00000',
+  duration: null,
   stack: null,
   projectionType: null,
   livePhotoVideoId: Sync.each(() => faker.string.uuid()),
@@ -68,6 +67,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     livePhotoVideoId: [],
     fileCreatedAt: [],
     localOffsetHours: [],
+    createdAt: [],
     ownerId: [],
     projectionType: [],
     ratio: [],
@@ -76,8 +76,8 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
   };
   for (const asset of timelineAsset) {
     const fileCreatedAt = fromTimelinePlainDateTime(asset.fileCreatedAt).toISO();
-    bucketAssets.city.push(asset.city);
-    bucketAssets.country.push(asset.country);
+    bucketAssets.city?.push(asset.city);
+    bucketAssets.country?.push(asset.country);
     bucketAssets.duration.push(asset.duration!);
     bucketAssets.id.push(asset.id);
     bucketAssets.visibility.push(asset.visibility);

@@ -1,9 +1,9 @@
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import { MaintenanceAction, setMaintenanceMode, type SetMaintenanceModeDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import { mdiProgressWrench } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 export const getMaintenanceAdminActions = ($t: MessageFormatter) => {
   const StartMaintenance: ActionItem = {

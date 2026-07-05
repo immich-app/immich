@@ -1,10 +1,17 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/pages/edit/editor.provider.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class EditImageActionButton extends ConsumerWidget {
@@ -14,13 +21,33 @@ class EditImageActionButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentAsset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
 
-    onPress() {
-      if (currentAsset == null) {
+    Future<void> editImage(List<AssetEdit> edits) async {
+      if (currentAsset == null || currentAsset.remoteId == null) {
         return;
       }
 
-      final image = Image(image: getFullImageProvider(currentAsset));
-      context.pushRoute(DriftEditImageRoute(asset: currentAsset, image: image, isEdited: false));
+      await ref.read(actionProvider.notifier).applyEdits(ActionSource.viewer, edits);
+    }
+
+    Future<void> onPress() async {
+      if (currentAsset == null || currentAsset.remoteId == null) {
+        return;
+      }
+
+      final imageProvider = getFullImageProvider(currentAsset, edited: false);
+
+      final image = Image(image: imageProvider);
+      final (edits, exifInfo) = await (
+        ref.read(remoteAssetRepositoryProvider).getAssetEdits(currentAsset.remoteId!),
+        ref.read(remoteAssetRepositoryProvider).getExif(currentAsset.remoteId!),
+      ).wait;
+
+      if (exifInfo == null) {
+        return;
+      }
+
+      ref.read(editorStateProvider.notifier).init(edits, exifInfo);
+      await context.pushRoute(DriftEditImageRoute(image: image, applyEdits: editImage));
     }
 
     return BaseActionButton(

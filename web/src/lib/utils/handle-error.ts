@@ -16,6 +16,18 @@ export function getServerErrorMessage(error: unknown) {
     }
   }
 
+  if (Array.isArray(data?.errors) && data.errors.length > 0) {
+    const details = data.errors
+      .map(({ path, message }) => {
+        const field = path
+          .map((segment, i) => (typeof segment === 'number' ? `[${segment}]` : i === 0 ? segment : `.${segment}`))
+          .join('');
+        return field ? `${field}: ${message}` : message;
+      })
+      .join(', ');
+    return `${data.message}: ${details}`;
+  }
+
   return data?.message || error.message;
 }
 

@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Queue job status
 class QueueJobStatus {
   /// Instantiate a new enum with the provided [value].
   const QueueJobStatus._(this.value);

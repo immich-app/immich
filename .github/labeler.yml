@@ -1,7 +1,7 @@
 cli:
   - changed-files:
       - any-glob-to-any-file:
-          - cli/src/**
+          - packages/cli/src/**
 
 documentation:
   - changed-files:

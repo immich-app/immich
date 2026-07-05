@@ -1350,3 +1350,7 @@ i0.Index get idxAssetFaceAssetId => i0.Index(
   'idx_asset_face_asset_id',
   'CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)',
 );
+i0.Index get idxAssetFaceVisiblePerson => i0.Index(
+  'idx_asset_face_visible_person',
+  'CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person ON asset_face_entity (person_id, asset_id) WHERE is_visible = 1 AND deleted_at IS NULL',
+);

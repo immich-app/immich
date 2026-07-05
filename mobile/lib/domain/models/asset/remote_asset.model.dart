@@ -10,6 +10,8 @@ class RemoteAsset extends BaseAsset {
   final AssetVisibility visibility;
   final String ownerId;
   final String? stackId;
+  final DateTime? uploadedAt;
+  final DateTime? deletedAt;
 
   const RemoteAsset({
     required this.id,
@@ -20,15 +22,17 @@ class RemoteAsset extends BaseAsset {
     required super.type,
     required super.createdAt,
     required super.updatedAt,
+    this.uploadedAt,
     super.width,
     super.height,
-    super.durationInSeconds,
+    super.durationMs,
     super.isFavorite = false,
     this.thumbHash,
     this.visibility = AssetVisibility.timeline,
     super.livePhotoVideoId,
     this.stackId,
     required super.isEdited,
+    this.deletedAt,
   }) : localAssetId = localId;
 
   @override
@@ -44,6 +48,11 @@ class RemoteAsset extends BaseAsset {
   String get heroTag => '${localId ?? checksum}_$id';
 
   @override
+  bool get isEditable => isImage && !isMotionPhoto && !isAnimatedImage;
+
+  bool get isTrashed => deletedAt != null;
+
+  @override
   String toString() {
     return '''Asset {
     id: $id,
@@ -52,9 +61,10 @@ class RemoteAsset extends BaseAsset {
     type: $type,
     createdAt: $createdAt,
     updatedAt: $updatedAt,
+    uploadedAt: ${uploadedAt ?? "<NA>"},
     width: ${width ?? "<NA>"},
     height: ${height ?? "<NA>"},
-    durationInSeconds: ${durationInSeconds ?? "<NA>"},
+    durationMs: ${durationMs ?? "<NA>"},
     localId: ${localId ?? "<NA>"},
     isFavorite: $isFavorite,
     thumbHash: ${thumbHash ?? "<NA>"},
@@ -68,14 +78,20 @@ class RemoteAsset extends BaseAsset {
   // Not checking for localId here
   @override
   bool operator ==(Object other) {
-    if (other is! RemoteAsset) return false;
-    if (identical(this, other)) return true;
+    if (other is! RemoteAsset) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
     return super == other &&
         id == other.id &&
         ownerId == other.ownerId &&
         thumbHash == other.thumbHash &&
         visibility == other.visibility &&
-        stackId == other.stackId;
+        stackId == other.stackId &&
+        uploadedAt == other.uploadedAt &&
+        deletedAt == other.deletedAt;
   }
 
   @override
@@ -86,7 +102,9 @@ class RemoteAsset extends BaseAsset {
       localId.hashCode ^
       thumbHash.hashCode ^
       visibility.hashCode ^
-      stackId.hashCode;
+      stackId.hashCode ^
+      uploadedAt.hashCode ^
+      deletedAt.hashCode;
 
   RemoteAsset copyWith({
     String? id,
@@ -97,15 +115,17 @@ class RemoteAsset extends BaseAsset {
     AssetType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? uploadedAt,
     int? width,
     int? height,
-    int? durationInSeconds,
+    int? durationMs,
     bool? isFavorite,
     String? thumbHash,
     AssetVisibility? visibility,
     String? livePhotoVideoId,
     String? stackId,
     bool? isEdited,
+    DateTime? deletedAt,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -116,15 +136,105 @@ class RemoteAsset extends BaseAsset {
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      uploadedAt: uploadedAt ?? this.uploadedAt,
       width: width ?? this.width,
       height: height ?? this.height,
-      durationInSeconds: durationInSeconds ?? this.durationInSeconds,
+      durationMs: durationMs ?? this.durationMs,
       isFavorite: isFavorite ?? this.isFavorite,
       thumbHash: thumbHash ?? this.thumbHash,
       visibility: visibility ?? this.visibility,
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,
       isEdited: isEdited ?? this.isEdited,
+      deletedAt: deletedAt ?? this.deletedAt,
+    );
+  }
+}
+
+class RemoteAssetExif extends RemoteAsset {
+  final ExifInfo exifInfo;
+
+  const RemoteAssetExif({
+    required super.id,
+    super.localId,
+    required super.name,
+    required super.ownerId,
+    required super.checksum,
+    required super.type,
+    required super.createdAt,
+    required super.updatedAt,
+    super.uploadedAt,
+    super.deletedAt,
+    super.width,
+    super.height,
+    super.durationMs,
+    super.isFavorite = false,
+    super.thumbHash,
+    super.visibility = AssetVisibility.timeline,
+    super.livePhotoVideoId,
+    super.stackId,
+    super.isEdited = false,
+    this.exifInfo = const ExifInfo(),
+  });
+
+  @override
+  bool operator ==(Object other) {
+    if (other is! RemoteAssetExif) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
+    return super == other && exifInfo == other.exifInfo;
+  }
+
+  @override
+  int get hashCode => super.hashCode ^ exifInfo.hashCode;
+
+  @override
+  RemoteAssetExif copyWith({
+    String? id,
+    String? localId,
+    String? name,
+    String? ownerId,
+    String? checksum,
+    AssetType? type,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? uploadedAt,
+    DateTime? deletedAt,
+    int? width,
+    int? height,
+    int? durationMs,
+    bool? isFavorite,
+    String? thumbHash,
+    AssetVisibility? visibility,
+    String? livePhotoVideoId,
+    String? stackId,
+    bool? isEdited,
+    ExifInfo? exifInfo,
+  }) {
+    return RemoteAssetExif(
+      id: id ?? this.id,
+      localId: localId ?? this.localId,
+      name: name ?? this.name,
+      ownerId: ownerId ?? this.ownerId,
+      checksum: checksum ?? this.checksum,
+      type: type ?? this.type,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      uploadedAt: uploadedAt ?? this.uploadedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      width: width ?? this.width,
+      height: height ?? this.height,
+      durationMs: durationMs ?? this.durationMs,
+      isFavorite: isFavorite ?? this.isFavorite,
+      thumbHash: thumbHash ?? this.thumbHash,
+      visibility: visibility ?? this.visibility,
+      livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
+      stackId: stackId ?? this.stackId,
+      isEdited: isEdited ?? this.isEdited,
+      exifInfo: exifInfo ?? this.exifInfo, // Use the new parameter
     );
   }
 }

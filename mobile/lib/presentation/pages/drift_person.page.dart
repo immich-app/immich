@@ -58,11 +58,11 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
         return PersonOptionSheet(
           onEditName: () async {
             await handleEditName(context);
-            context.pop();
+            ContextHelper(context).pop();
           },
           onEditBirthday: () async {
             await handleEditBirthday(context);
-            context.pop();
+            ContextHelper(context).pop();
           },
           birthdayExists: _person.birthDate != null,
         );

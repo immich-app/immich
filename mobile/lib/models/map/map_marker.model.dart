@@ -17,7 +17,9 @@ class MapMarker {
 
   @override
   bool operator ==(covariant MapMarker other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.latLng == latLng && other.assetRemoteId == assetRemoteId;
   }

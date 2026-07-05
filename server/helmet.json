@@ -2,9 +2,9 @@
   "contentSecurityPolicy": {
     "directives": {
       "default-src": ["'self'"],
-      "script-src": ["'self'", "'wasm-unsafe-eval", "'unsafe-inline'", "https://www.gstatic.com"],
+      "script-src": ["'self'", "'wasm-unsafe-eval'", "'unsafe-inline'", "https://www.gstatic.com"],
       "style-src": ["'self'", "'unsafe-inline'"],
-      "img-src": ["'self'", "'data:'", "'blob:'"],
+      "img-src": ["'self'", "data:", "blob:"],
       "connect-src": [
         "'self'",
         "blob:",

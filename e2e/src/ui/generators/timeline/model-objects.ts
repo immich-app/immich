@@ -32,8 +32,12 @@ export function generateThumbhash(rng: SeededRandom): string {
   return Array.from({ length: 10 }, () => rng.nextInt(0, 256).toString(16).padStart(2, '0')).join('');
 }
 
-export function generateDuration(rng: SeededRandom): string {
-  return `${rng.nextInt(GENERATION_CONSTANTS.MIN_VIDEO_DURATION_SECONDS, GENERATION_CONSTANTS.MAX_VIDEO_DURATION_SECONDS)}.${rng.nextInt(0, 1000).toString().padStart(3, '0')}`;
+export function generateDuration(rng: SeededRandom): number {
+  return (
+    rng.nextInt(GENERATION_CONSTANTS.MIN_VIDEO_DURATION_SECONDS, GENERATION_CONSTANTS.MAX_VIDEO_DURATION_SECONDS) *
+      1000 +
+    rng.nextInt(0, 1000)
+  );
 }
 
 export function generateUUID(): string {

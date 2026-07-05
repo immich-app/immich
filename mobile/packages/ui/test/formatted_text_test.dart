@@ -10,7 +10,9 @@ List<InlineSpan> _getContentSpans(WidgetTester tester) {
   final richText = tester.widget<RichText>(find.byType(RichText));
   final root = richText.text as TextSpan;
   final wrapper = root.children?.firstOrNull;
-  if (wrapper is TextSpan) return wrapper.children ?? [];
+  if (wrapper is TextSpan) {
+    return wrapper.children ?? [];
+  }
   return [];
 }
 

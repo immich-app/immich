@@ -8,7 +8,6 @@ import {
   Param,
   ParseFilePipe,
   Post,
-  Put,
   Query,
   Req,
   Res,
@@ -22,16 +21,12 @@ import {
   AssetBulkUploadCheckResponseDto,
   AssetMediaResponseDto,
   AssetMediaStatus,
-  CheckExistingAssetsResponseDto,
 } from 'src/dtos/asset-media-response.dto';
 import {
   AssetBulkUploadCheckDto,
   AssetMediaCreateDto,
   AssetMediaOptionsDto,
-  AssetMediaReplaceDto,
   AssetMediaSize,
-  CheckExistingAssetsDto,
-  UploadFieldName,
 } from 'src/dtos/asset-media.dto';
 import { AssetDownloadOriginalDto } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -112,36 +107,6 @@ export class AssetMediaController {
     await sendFile(res, next, () => this.service.downloadOriginal(auth, id, dto), this.logger);
   }
 
-  @Put(':id/original')
-  @UseInterceptors(FileUploadInterceptor)
-  @ApiConsumes('multipart/form-data')
-  @ApiResponse({
-    status: 200,
-    description: 'Asset replaced successfully',
-    type: AssetMediaResponseDto,
-  })
-  @Endpoint({
-    summary: 'Replace asset',
-    description: 'Replace the asset with new file, without changing its id.',
-    history: new HistoryBuilder().added('v1').deprecated('v1', { replacementId: 'copyAsset' }),
-  })
-  @Authenticated({ permission: Permission.AssetReplace, sharedLink: true })
-  async replaceAsset(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @UploadedFiles(new ParseFilePipe({ validators: [new FileNotEmptyValidator([UploadFieldName.ASSET_DATA])] }))
-    files: UploadFiles,
-    @Body() dto: AssetMediaReplaceDto,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<AssetMediaResponseDto> {
-    const { file } = getFiles(files);
-    const responseDto = await this.service.replaceAsset(auth, id, dto, file);
-    if (responseDto.status === AssetMediaStatus.DUPLICATE) {
-      res.status(HttpStatus.OK);
-    }
-    return responseDto;
-  }
-
   @Get(':id/thumbnail')
   @FileResponse()
   @Authenticated({ permission: Permission.AssetView, sharedLink: true })
@@ -159,6 +124,16 @@ export class AssetMediaController {
     @Res() res: Response,
     @Next() next: NextFunction,
   ) {
+    if (dto.size === AssetMediaSize.Original) {
+      this.logger.deprecate(
+        'Calling the thumbnail endpoint with size=original is deprecated. Use the :id/original endpoint instead',
+      );
+      const [_, reqSearch] = req.url.split('?');
+      const redirSearchParams = new URLSearchParams(reqSearch);
+      redirSearchParams.delete('size');
+      return res.redirect('original' + '?' + redirSearchParams.toString());
+    }
+
     const viewThumbnailRes = await this.service.viewThumbnail(auth, id, dto);
 
     if (viewThumbnailRes instanceof ImmichFileResponse) {
@@ -200,21 +175,6 @@ export class AssetMediaController {
     @Next() next: NextFunction,
   ) {
     await sendFile(res, next, () => this.service.playbackVideo(auth, id), this.logger);
-  }
-
-  @Post('exist')
-  @Authenticated({ permission: Permission.AssetUpload })
-  @Endpoint({
-    summary: 'Check existing assets',
-    description: 'Checks if multiple assets exist on the server and returns all existing - used by background backup',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
-  })
-  @HttpCode(HttpStatus.OK)
-  checkExistingAssets(
-    @Auth() auth: AuthDto,
-    @Body() dto: CheckExistingAssetsDto,
-  ): Promise<CheckExistingAssetsResponseDto> {
-    return this.service.checkExistingAssets(auth, dto);
   }
 
   @Post('bulk-upload-check')

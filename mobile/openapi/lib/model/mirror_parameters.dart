@@ -16,7 +16,6 @@ class MirrorParameters {
     required this.axis,
   });
 
-  /// Axis to mirror along
   MirrorAxis axis;
 
   @override

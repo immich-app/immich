@@ -139,7 +139,15 @@ from
         from
           "user"
         where
-          "user"."id" = "album"."ownerId"
+          exists (
+            select
+            from
+              "album_user"
+            where
+              "album_user"."role" = 'owner'
+              and "album_user"."albumId" = "album"."id"
+              and "album_user"."userId" = "user"."id"
+          )
           and "user"."deletedAt" is null
       ) as "owner" on true
     where
@@ -201,7 +209,15 @@ from
         from
           "user"
         where
-          "user"."id" = "album"."ownerId"
+          exists (
+            select
+            from
+              "album_user"
+            where
+              "album_user"."role" = 'owner'
+              and "album_user"."albumId" = "album"."id"
+              and "album_user"."userId" = "user"."id"
+          )
           and "user"."deletedAt" is null
       ) as "owner" on true
     where

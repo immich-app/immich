@@ -1,16 +1,17 @@
+import { getAllLibraries, getLibraryStatistics, getUserAdmin, searchUsersAdmin } from '@immich/sdk';
 import { authenticate, requestServerInfo } from '$lib/utils/auth';
 import { getFormatter } from '$lib/utils/i18n';
-import { getAllLibraries, getLibraryStatistics, getUserAdmin, searchUsersAdmin } from '@immich/sdk';
 import type { LayoutLoad } from './$types';
 
-export const load = (async ({ url }) => {
+export const load = (async ({ url, depends }) => {
+  depends('app:libraries');
   await authenticate(url, { admin: true });
   await requestServerInfo();
   const allUsers = await searchUsersAdmin({ withDeleted: false });
   const $t = await getFormatter();
 
   const libraries = await getAllLibraries();
-  const statistics = await Promise.all(
+  const statisticsPromise = Promise.all(
     libraries.map(async ({ id }) => [id, await getLibraryStatistics({ id })] as const),
   );
   const owners = await Promise.all(
@@ -20,7 +21,7 @@ export const load = (async ({ url }) => {
   return {
     allUsers,
     libraries,
-    statistics: Object.fromEntries(statistics),
+    statisticsPromise: statisticsPromise.then((stats) => Object.fromEntries(stats)),
     owners: Object.fromEntries(owners),
     meta: {
       title: $t('external_libraries'),

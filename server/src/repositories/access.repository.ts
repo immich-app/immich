@@ -35,9 +35,14 @@ class ActivityAccess {
     return this.db
       .selectFrom('activity')
       .select('activity.id')
-      .leftJoin('album', (join) => join.onRef('activity.albumId', '=', 'album.id').on('album.deletedAt', 'is', null))
+      .innerJoin('album', (join) => join.onRef('activity.albumId', '=', 'album.id').on('album.deletedAt', 'is', null))
+      .innerJoin('album_user', (join) =>
+        join
+          .onRef('album.id', '=', 'album_user.albumId')
+          .on('album_user.role', '=', sql.lit(AlbumUserRole.Owner))
+          .on('album_user.userId', '=', asUuid(userId)),
+      )
       .where('activity.id', 'in', [...activityIds])
-      .whereRef('album.ownerId', '=', asUuid(userId))
       .execute()
       .then((activities) => new Set(activities.map((activity) => activity.id)));
   }
@@ -52,11 +57,11 @@ class ActivityAccess {
     return this.db
       .selectFrom('album')
       .select('album.id')
-      .leftJoin('album_user as albumUsers', 'albumUsers.albumId', 'album.id')
-      .leftJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.userId').on('user.deletedAt', 'is', null))
+      .innerJoin('album_user as albumUsers', 'albumUsers.albumId', 'album.id')
+      .innerJoin('user', (join) => join.onRef('user.id', '=', 'albumUsers.userId').on('user.deletedAt', 'is', null))
       .where('album.id', 'in', [...albumIds])
       .where('album.isActivityEnabled', '=', true)
-      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('user.id', '=', userId)]))
+      .where((eb) => eb('user.id', '=', userId))
       .where('album.deletedAt', 'is', null)
       .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
@@ -77,7 +82,12 @@ class AlbumAccess {
       .selectFrom('album')
       .select('album.id')
       .where('album.id', 'in', [...albumIds])
-      .where('album.ownerId', '=', userId)
+      .innerJoin('album_user', (join) =>
+        join
+          .onRef('album.id', '=', 'album_user.albumId')
+          .on('album_user.role', '=', sql.lit(AlbumUserRole.Owner))
+          .on('album_user.userId', '=', userId),
+      )
       .where('album.deletedAt', 'is', null)
       .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
@@ -96,8 +106,8 @@ class AlbumAccess {
     return this.db
       .selectFrom('album')
       .select('album.id')
-      .leftJoin('album_user', 'album_user.albumId', 'album.id')
-      .leftJoin('user', (join) => join.onRef('user.id', '=', 'album_user.userId').on('user.deletedAt', 'is', null))
+      .innerJoin('album_user', 'album_user.albumId', 'album.id')
+      .innerJoin('user', (join) => join.onRef('user.id', '=', 'album_user.userId').on('user.deletedAt', 'is', null))
       .where('album.id', 'in', [...albumIds])
       .where('album.deletedAt', 'is', null)
       .where('user.id', '=', userId)
@@ -152,7 +162,7 @@ class AssetAccess {
           eb('asset.livePhotoVideoId', '=', sql<string>`any(target.ids)`),
         ]),
       )
-      .where((eb) => eb.or([eb('album.ownerId', '=', userId), eb('user.id', '=', userId)]))
+      .where('user.id', '=', userId)
       .where('album.deletedAt', 'is', null)
       .execute()
       .then((assets) => {

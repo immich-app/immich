@@ -5,17 +5,25 @@ import {
   CreateDateColumn,
   ForeignKeyColumn,
   Generated,
+  Index,
   Table,
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { CreateIdColumn, UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AlbumUserRole } from 'src/enum';
+import { album_user_role_enum } from 'src/schema/enums';
 import { album_user_after_insert, album_user_delete_audit } from 'src/schema/functions';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { UserTable } from 'src/schema/tables/user.table';
 
 @Table({ name: 'album_user' })
+@Index({
+  name: 'album_user_unique_owner',
+  columns: ['albumId'],
+  unique: true,
+  where: `role = 'owner'`,
+})
 // Pre-existing indices from original album <--> user ManyToMany mapping
 @UpdatedAtTrigger('album_user_updatedAt')
 @AfterInsertTrigger({
@@ -47,7 +55,7 @@ export class AlbumUserTable {
   })
   userId!: string;
 
-  @Column({ type: 'character varying', default: AlbumUserRole.Editor })
+  @Column({ enum: album_user_role_enum, default: AlbumUserRole.Editor })
   role!: Generated<AlbumUserRole>;
 
   @CreateIdColumn({ index: true })

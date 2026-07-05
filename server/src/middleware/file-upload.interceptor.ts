@@ -96,7 +96,11 @@ export class FileUploadInterceptor implements NestInterceptor {
 
   private handleFile(request: AuthRequest, file: Express.Multer.File, callback: Callback<Partial<ImmichFile>>) {
     request.on('error', (error) => {
-      this.logger.warn('Request error while uploading file, cleaning up', error);
+      if ('code' in error && error.code === 'ECONNRESET') {
+        this.logger.debug('Upload was cancelled');
+      } else {
+        this.logger.error(`Upload failed with: ${error}`);
+      }
       this.assetService.onUploadError(request, file).catch(this.logger.error);
     });
 

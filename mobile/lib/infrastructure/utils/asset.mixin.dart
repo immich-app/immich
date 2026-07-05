@@ -8,5 +8,5 @@ mixin AssetEntityMixin on Table {
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   IntColumn get width => integer().nullable()();
   IntColumn get height => integer().nullable()();
-  IntColumn get durationInSeconds => integer().nullable()();
+  IntColumn get durationMs => integer().nullable()();
 }

@@ -1,18 +1,3 @@
-import { goto } from '$app/navigation';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import AlbumAddUsersModal from '$lib/modals/AlbumAddUsersModal.svelte';
-import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
-import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
-import { Route } from '$lib/route';
-import { user } from '$lib/stores/user.store';
-import { createAlbumAndRedirect } from '$lib/utils/album-utils';
-import { downloadArchive } from '$lib/utils/asset-utils';
-import { openFileUploadDialog } from '$lib/utils/file-uploader';
-
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import {
   addAssetsToAlbum as addToAlbum,
   addAssetsToAlbums as addToAlbums,
@@ -25,14 +10,27 @@ import {
   updateAlbumUser,
   type AlbumResponseDto,
   type AlbumsAddAssetsResponseDto,
+  type AssetResponseDto,
   type BulkIdResponseDto,
   type UpdateAlbumDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
-import { mdiLink, mdiPlus, mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
+import { mdiImageOutline, mdiLink, mdiPlus, mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
-import { get } from 'svelte/store';
+import { goto } from '$app/navigation';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import AlbumAddUsersModal from '$lib/modals/AlbumAddUsersModal.svelte';
+import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
+import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
+import { Route } from '$lib/route';
+import { createAlbumAndRedirect } from '$lib/utils/album-utils';
+import { downloadArchive } from '$lib/utils/asset-utils';
+import { openFileUploadDialog } from '$lib/utils/file-uploader';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 export const getAlbumsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {
@@ -45,11 +43,10 @@ export const getAlbumsActions = ($t: MessageFormatter) => {
 };
 
 export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) => {
-  const isOwned = get(user).id === album.ownerId;
+  const isOwned = album.albumUsers[0].user.id === authManager.user.id;
 
   const Share: ActionItem = {
     title: $t('share'),
-    type: $t('command'),
     icon: mdiShareVariantOutline,
     $if: () => isOwned,
     onAction: () => modalManager.show(AlbumOptionsModal, { album }),
@@ -57,7 +54,6 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
 
   const AddUsers: ActionItem = {
     title: $t('invite_people'),
-    type: $t('command'),
     icon: mdiPlus,
     color: 'primary',
     onAction: () => modalManager.show(AlbumAddUsersModal, { album }),
@@ -65,7 +61,6 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
 
   const CreateSharedLink: ActionItem = {
     title: $t('create_link'),
-    type: $t('command'),
     icon: mdiLink,
     color: 'primary',
     onAction: () => modalManager.show(SharedLinkCreateModal, { albumId: album.id }),
@@ -74,10 +69,19 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
   return { Share, AddUsers, CreateSharedLink };
 };
 
+export const getAlbumAssetActions = ($t: MessageFormatter, album: AlbumResponseDto, asset: AssetResponseDto) => {
+  const SetCover: ActionItem = {
+    title: $t('set_as_album_cover'),
+    icon: mdiImageOutline,
+    onAction: () => handleUpdateThumbnail(album, asset.id),
+  };
+
+  return { SetCover };
+};
+
 export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponseDto, assets: TimelineAsset[]) => {
   const AddAssets: ActionItem = {
     title: $t('add_assets'),
-    type: $t('command'),
     color: 'primary',
     icon: mdiPlusBoxOutline,
     $if: () => assets.length > 0,
@@ -92,7 +96,6 @@ export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponse
   const Upload: ActionItem = {
     title: $t('select_from_computer'),
     description: $t('album_upload_assets'),
-    type: $t('command'),
     icon: mdiUpload,
     onAction: () => void openFileUploadDialog({ albumId: album.id }),
   };
@@ -211,6 +214,23 @@ export const handleRemoveUserFromAlbum = async (album: AlbumResponseDto, albumUs
     eventManager.emit('AlbumUserDelete', { albumId: album.id, userId: albumUser.id });
   } catch (error) {
     handleError(error, $t('errors.unable_to_remove_album_users'));
+  }
+};
+
+const handleUpdateThumbnail = async (album: AlbumResponseDto, assetId: string) => {
+  const $t = await getFormatter();
+
+  try {
+    const response = await updateAlbumInfo({
+      id: album.id,
+      updateAlbumDto: {
+        albumThumbnailAssetId: assetId,
+      },
+    });
+    eventManager.emit('AlbumUpdate', response);
+    toastManager.primary($t('album_cover_updated'));
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_update_album_cover'));
   }
 };
 

@@ -41,7 +41,9 @@ describe('/stacks', () => {
         .send({ assetIds: [asset.id] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['assetIds'], message: 'Too small: expected array to have >=2 items' }]),
+      );
     });
 
     it('should require a valid id', async () => {
@@ -51,7 +53,12 @@ describe('/stacks', () => {
         .send({ assetIds: [uuidDto.invalid, uuidDto.invalid] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['assetIds', 0], message: 'Invalid UUID' },
+          { path: ['assetIds', 1], message: 'Invalid UUID' },
+        ]),
+      );
     });
 
     it('should require access', async () => {

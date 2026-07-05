@@ -14,15 +14,20 @@ class AssetIdsResponseDto {
   /// Returns a new [AssetIdsResponseDto] instance.
   AssetIdsResponseDto({
     required this.assetId,
-    this.error,
+    this.error = const Optional.absent(),
     required this.success,
   });
 
   /// Asset ID
   String assetId;
 
-  /// Error reason if failed
-  AssetIdsResponseDtoErrorEnum? error;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<AssetIdErrorReason?> error;
 
   /// Whether operation succeeded
   bool success;
@@ -46,10 +51,9 @@ class AssetIdsResponseDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'assetId'] = this.assetId;
-    if (this.error != null) {
-      json[r'error'] = this.error;
-    } else {
-    //  json[r'error'] = null;
+    if (this.error.isPresent) {
+      final value = this.error.value;
+      json[r'error'] = value;
     }
       json[r'success'] = this.success;
     return json;
@@ -65,7 +69,7 @@ class AssetIdsResponseDto {
 
       return AssetIdsResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId')!,
-        error: AssetIdsResponseDtoErrorEnum.fromJson(json[r'error']),
+        error: json.containsKey(r'error') ? Optional.present(AssetIdErrorReason.fromJson(json[r'error'])) : const Optional.absent(),
         success: mapValueOfType<bool>(json, r'success')!,
       );
     }
@@ -118,81 +122,4 @@ class AssetIdsResponseDto {
     'success',
   };
 }
-
-/// Error reason if failed
-class AssetIdsResponseDtoErrorEnum {
-  /// Instantiate a new enum with the provided [value].
-  const AssetIdsResponseDtoErrorEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const duplicate = AssetIdsResponseDtoErrorEnum._(r'duplicate');
-  static const noPermission = AssetIdsResponseDtoErrorEnum._(r'no_permission');
-  static const notFound = AssetIdsResponseDtoErrorEnum._(r'not_found');
-
-  /// List of all possible values in this [enum][AssetIdsResponseDtoErrorEnum].
-  static const values = <AssetIdsResponseDtoErrorEnum>[
-    duplicate,
-    noPermission,
-    notFound,
-  ];
-
-  static AssetIdsResponseDtoErrorEnum? fromJson(dynamic value) => AssetIdsResponseDtoErrorEnumTypeTransformer().decode(value);
-
-  static List<AssetIdsResponseDtoErrorEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetIdsResponseDtoErrorEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AssetIdsResponseDtoErrorEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [AssetIdsResponseDtoErrorEnum] to String,
-/// and [decode] dynamic data back to [AssetIdsResponseDtoErrorEnum].
-class AssetIdsResponseDtoErrorEnumTypeTransformer {
-  factory AssetIdsResponseDtoErrorEnumTypeTransformer() => _instance ??= const AssetIdsResponseDtoErrorEnumTypeTransformer._();
-
-  const AssetIdsResponseDtoErrorEnumTypeTransformer._();
-
-  String encode(AssetIdsResponseDtoErrorEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a AssetIdsResponseDtoErrorEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  AssetIdsResponseDtoErrorEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'duplicate': return AssetIdsResponseDtoErrorEnum.duplicate;
-        case r'no_permission': return AssetIdsResponseDtoErrorEnum.noPermission;
-        case r'not_found': return AssetIdsResponseDtoErrorEnum.notFound;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [AssetIdsResponseDtoErrorEnumTypeTransformer] instance.
-  static AssetIdsResponseDtoErrorEnumTypeTransformer? _instance;
-}
-
 

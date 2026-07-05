@@ -1,13 +1,64 @@
+<script module lang="ts">
+  import { TUNABLES } from '$lib/utils/tunables';
+
+  // Chrome renders HDR images with normally invisible seam lines in a regular
+  // grid pattern. When the user pinch/scroll zooms, these seams become visible
+  // and grow more prominent at higher zoom levels.
+  //
+  // Adding `will-change: transform` prevents the seams by converting the
+  // element into a GPU texture that Chrome rasterizes once and reuses. But
+  // this texture is frozen at a fixed resolution and never re-renders from
+  // the source image, so zooming in magnifies the frozen texture rather than
+  // the source, which can appear blurry.
+  //
+  // To keep the texture sharp, we size this div closer to the image's native
+  // dimensions and apply a CSS counter-scale. Chrome renders these textures
+  // as a grid of small tiles backed by a shared GPU memory budget — if the
+  // texture is too large, tiles go missing and show up as transparent gaps.
+  // We cap the texture size based on the device's GPU capability.
+  //
+  // This workaround is only needed in Chromium-based browsers. Firefox and
+  // Safari use different rasterization pipelines and don't exhibit this bug.
+  // See https://issues.chromium.org/issues/40084005
+  const isChromium = 'chrome' in globalThis;
+
+  function getMaxRasterPixels() {
+    const override = TUNABLES.IMAGE_RASTER.MAX_PIXELS;
+    if (override > 0) {
+      return override;
+    }
+    if (override < 0 || !isChromium) {
+      return 0;
+    }
+    try {
+      const canvas = document.createElement('canvas');
+      const gl = canvas.getContext('webgl');
+      const maxTextureSize = gl?.getParameter(gl.MAX_TEXTURE_SIZE) ?? 0;
+      if (maxTextureSize >= 16_384) {
+        return 16_000_000;
+      }
+      if (maxTextureSize >= 8192) {
+        return 10_000_000;
+      }
+      return 4_000_000;
+    } catch {
+      return 4_000_000;
+    }
+  }
+
+  const maxRasterPixels = getMaxRasterPixels();
+</script>
+
 <script lang="ts">
-  import { thumbhash } from '$lib/actions/thumbhash';
   import AlphaBackground from '$lib/components/AlphaBackground.svelte';
-  import BrokenAsset from '$lib/components/assets/broken-asset.svelte';
+  import BrokenAsset from '$lib/components/assets/BrokenAsset.svelte';
   import DelayedLoadingSpinner from '$lib/components/DelayedLoadingSpinner.svelte';
   import ImageLayer from '$lib/components/ImageLayer.svelte';
+  import Thumbhash from '$lib/components/Thumbhash.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { getAssetUrls } from '$lib/utils';
   import { AdaptiveImageLoader, type QualityList } from '$lib/utils/adaptive-image-loader.svelte';
-  import { scaleToCover, scaleToFit } from '$lib/utils/container-utils';
+  import { scaleToCover, scaleToFit, type Size } from '$lib/utils/container-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto, SharedLinkResponseDto } from '@immich/sdk';
@@ -17,10 +68,7 @@
     asset: AssetResponseDto;
     sharedLink?: SharedLinkResponseDto;
     objectFit?: 'contain' | 'cover';
-    container: {
-      width: number;
-      height: number;
-    };
+    container: Size;
     onUrlChange?: (url: string) => void;
     onImageReady?: () => void;
     onError?: () => void;
@@ -101,16 +149,35 @@
     return { width: 1, height: 1 };
   });
 
-  const { width, height, left, top } = $derived.by(() => {
-    const scaleFn = objectFit === 'cover' ? scaleToCover : scaleToFit;
-    const { width, height } = scaleFn(imageDimensions, container);
-    return {
-      width: width + 'px',
-      height: height + 'px',
-      left: (container.width - width) / 2 + 'px',
-      top: (container.height - height) / 2 + 'px',
-    };
-  });
+  const { insetInlineStart, top, displayWidth, displayHeight, rasterWidth, rasterHeight, rasterScale } = $derived.by(
+    () => {
+      const scaleFn = objectFit === 'cover' ? scaleToCover : scaleToFit;
+      const { width, height } = scaleFn(imageDimensions, container);
+      if (maxRasterPixels === 0) {
+        return {
+          insetInlineStart: (container.width - width) / 2 + 'px',
+          top: (container.height - height) / 2 + 'px',
+          displayWidth: width + 'px',
+          displayHeight: height + 'px',
+          rasterWidth: width + 'px',
+          rasterHeight: height + 'px',
+          rasterScale: 1,
+        };
+      }
+      const nativeRatio = imageDimensions.width / width;
+      const budgetRatio = Math.sqrt(maxRasterPixels / Math.max(width * height, 1));
+      const rasterRatio = Math.max(1, Math.min(nativeRatio, budgetRatio));
+      return {
+        insetInlineStart: (container.width - width) / 2 + 'px',
+        top: (container.height - height) / 2 + 'px',
+        displayWidth: width + 'px',
+        displayHeight: height + 'px',
+        rasterWidth: width * rasterRatio + 'px',
+        rasterHeight: height * rasterRatio + 'px',
+        rasterScale: 1 / rasterRatio,
+      };
+    },
+  );
 
   const { status } = $derived(adaptiveImageLoader);
   const alt = $derived(status.urls.preview ? $getAltText(toTimelineAsset(asset)) : '');
@@ -149,26 +216,25 @@
       (quality.preview === 'success' ? previewElement : undefined) ??
       (quality.thumbnail === 'success' ? thumbnailElement : undefined);
   });
-
-  const zoomTransform = $derived.by(() => {
-    const { currentZoom, currentPositionX, currentPositionY } = assetViewerManager.zoomState;
-    if (currentZoom === 1 && currentPositionX === 0 && currentPositionY === 0) {
-      return undefined;
-    }
-    return `translate(${currentPositionX}px, ${currentPositionY}px) scale(${currentZoom})`;
-  });
 </script>
 
-<div class="relative h-full w-full overflow-hidden will-change-transform" bind:this={ref}>
+<div class="relative size-full overflow-hidden" bind:this={ref}>
   {@render backdrop?.()}
 
-  <!-- pointer-events-none so events pass through to the container where zoom-image listens -->
   <div
-    class="absolute inset-0 pointer-events-none"
-    style:transform={zoomTransform}
-    style:transform-origin={zoomTransform ? '0 0' : undefined}
+    class="pointer-events-none absolute overflow-hidden"
+    style:inset-inline-start={insetInlineStart}
+    style:top
+    style:width={displayWidth}
+    style:height={displayHeight}
   >
-    <div class="absolute" style:left style:top style:width style:height>
+    <div
+      style:width={rasterWidth}
+      style:height={rasterHeight}
+      style:transform="scale({rasterScale})"
+      style:transform-origin="0 0"
+      style:will-change={maxRasterPixels > 0 ? 'transform' : undefined}
+    >
       {#if show.alphaBackground}
         <AlphaBackground />
       {/if}
@@ -176,7 +242,7 @@
       {#if show.thumbhash}
         {#if asset.thumbhash}
           <!-- Thumbhash / spinner layer  -->
-          <canvas use:thumbhash={{ base64ThumbHash: asset.thumbhash }} class="h-full w-full absolute"></canvas>
+          <Thumbhash base64ThumbHash={asset.thumbhash} class="absolute size-full" />
         {:else if show.spinner}
           <DelayedLoadingSpinner />
         {/if}
@@ -185,8 +251,8 @@
       {#if show.thumbnail}
         <ImageLayer
           {adaptiveImageLoader}
-          {width}
-          {height}
+          width={rasterWidth}
+          height={rasterHeight}
           quality="thumbnail"
           src={status.urls.thumbnail}
           alt=""
@@ -195,17 +261,12 @@
         />
       {/if}
 
-      {#if show.brokenAsset}
-        <BrokenAsset class="text-xl h-full w-full absolute" />
-      {/if}
-
       {#if show.preview}
         <ImageLayer
           {adaptiveImageLoader}
           {alt}
-          {width}
-          {height}
-          {overlays}
+          width={rasterWidth}
+          height={rasterHeight}
           quality="preview"
           src={status.urls.preview}
           bind:ref={previewElement}
@@ -216,14 +277,23 @@
         <ImageLayer
           {adaptiveImageLoader}
           {alt}
-          {width}
-          {height}
-          {overlays}
+          width={rasterWidth}
+          height={rasterHeight}
           quality="original"
           src={status.urls.original}
           bind:ref={originalElement}
         />
       {/if}
     </div>
+
+    {#if show.brokenAsset}
+      <BrokenAsset class="absolute inset-0 z-10 size-full text-xl" />
+    {/if}
+
+    {#if overlays}
+      <div class="pointer-events-none absolute inset-0">
+        {@render overlays()}
+      </div>
+    {/if}
   </div>
 </div>

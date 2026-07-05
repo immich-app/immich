@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ApiKeyGrid from '$lib/components/user-settings-page/user-api-key-grid.svelte';
+  import ApiKeyGrid from '$lib/components/user-settings-page/UserApiKeyGrid.svelte';
   import { Permission } from '@immich/sdk';
   import { Checkbox, IconButton, Input, Label } from '@immich/ui';
   import { mdiClose } from '@mdi/js';
@@ -50,7 +50,7 @@
 </script>
 
 <Label label={$t('permission')} for="permission-container" />
-<div class="flex items-center gap-2 m-4" id="permission-container">
+<div class="m-4 flex items-center gap-2" id="permission-container">
   <Checkbox id="input-select-all" size="tiny" checked={allItemsSelected} onCheckedChange={onCheckedAllChange} />
   <Label label={$t('select_all')} for="input-select-all" />
 </div>

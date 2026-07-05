@@ -1,14 +1,14 @@
 import {
   CallHandler,
   ExecutionContext,
-  HttpException,
   Injectable,
   InternalServerErrorException,
   NestInterceptor,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { Observable, catchError, throwError } from 'rxjs';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { logGlobalError } from 'src/utils/logger';
+import { isHttpException, onRequestError } from 'src/utils/logger';
 import { routeToErrorMessage } from 'src/utils/misc';
 
 @Injectable()
@@ -18,14 +18,16 @@ export class ErrorInterceptor implements NestInterceptor {
   }
 
   intercept(context: ExecutionContext, next: CallHandler<any>): Observable<any> {
+    const req = context.switchToHttp().getRequest<Request>();
+
     return next.handle().pipe(
       catchError((error) =>
         throwError(() => {
-          if (error instanceof HttpException) {
+          if (isHttpException(error)) {
             return error;
           }
 
-          logGlobalError(this.logger, error);
+          onRequestError(req, error, this.logger);
 
           const message = routeToErrorMessage(context.getHandler().name);
           return new InternalServerErrorException(message);

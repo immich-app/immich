@@ -39,7 +39,7 @@
     </p>
     <p><b>{$t('cannot_undo_this_action')}</b></p>
 
-    <div class="pt-4 flex justify-center items-center gap-2">
+    <div class="flex items-center justify-center gap-2 pt-4">
       <Checkbox id="confirm-deletion-input" bind:checked color="secondary" />
       <Label label={$t('do_not_show_again')} for="confirm-deletion-input" />
     </div>

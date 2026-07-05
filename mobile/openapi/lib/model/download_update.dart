@@ -13,20 +13,21 @@ part of openapi.api;
 class DownloadUpdate {
   /// Returns a new [DownloadUpdate] instance.
   DownloadUpdate({
-    this.archiveSize,
-    this.includeEmbeddedVideos,
+    this.archiveSize = const Optional.absent(),
+    this.includeEmbeddedVideos = const Optional.absent(),
   });
 
   /// Maximum archive size in bytes
   ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  int? archiveSize;
+  Optional<int?> archiveSize;
 
   /// Whether to include embedded videos in downloads
   ///
@@ -35,7 +36,7 @@ class DownloadUpdate {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? includeEmbeddedVideos;
+  Optional<bool?> includeEmbeddedVideos;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DownloadUpdate &&
@@ -53,15 +54,13 @@ class DownloadUpdate {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.archiveSize != null) {
-      json[r'archiveSize'] = this.archiveSize;
-    } else {
-    //  json[r'archiveSize'] = null;
+    if (this.archiveSize.isPresent) {
+      final value = this.archiveSize.value;
+      json[r'archiveSize'] = value;
     }
-    if (this.includeEmbeddedVideos != null) {
-      json[r'includeEmbeddedVideos'] = this.includeEmbeddedVideos;
-    } else {
-    //  json[r'includeEmbeddedVideos'] = null;
+    if (this.includeEmbeddedVideos.isPresent) {
+      final value = this.includeEmbeddedVideos.value;
+      json[r'includeEmbeddedVideos'] = value;
     }
     return json;
   }
@@ -75,8 +74,8 @@ class DownloadUpdate {
       final json = value.cast<String, dynamic>();
 
       return DownloadUpdate(
-        archiveSize: mapValueOfType<int>(json, r'archiveSize'),
-        includeEmbeddedVideos: mapValueOfType<bool>(json, r'includeEmbeddedVideos'),
+        archiveSize: json.containsKey(r'archiveSize') ? Optional.present(json[r'archiveSize'] == null ? null : int.parse('${json[r'archiveSize']}')) : const Optional.absent(),
+        includeEmbeddedVideos: json.containsKey(r'includeEmbeddedVideos') ? Optional.present(mapValueOfType<bool>(json, r'includeEmbeddedVideos')) : const Optional.absent(),
       );
     }
     return null;

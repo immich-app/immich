@@ -13,8 +13,8 @@ part of openapi.api;
 class SharedLinksResponse {
   /// Returns a new [SharedLinksResponse] instance.
   SharedLinksResponse({
-    this.enabled = true,
-    this.sidebarWeb = false,
+    required this.enabled,
+    required this.sidebarWeb,
   });
 
   /// Whether shared links are enabled

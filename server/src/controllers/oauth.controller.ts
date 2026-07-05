@@ -1,11 +1,12 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AuthDto,
   LoginResponseDto,
   OAuthAuthorizeResponseDto,
+  OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
   OAuthConfigDto,
 } from 'src/dtos/auth.dto';
@@ -111,5 +112,18 @@ export class OAuthController {
   })
   unlinkOAuthAccount(@Auth() auth: AuthDto): Promise<UserAdminResponseDto> {
     return this.service.unlink(auth);
+  }
+
+  @Post('backchannel-logout')
+  @HttpCode(HttpStatus.OK)
+  @ApiConsumes('application/x-www-form-urlencoded')
+  @Endpoint({
+    summary: 'Backchannel OAuth logout',
+    description:
+      'Logout the OAuth account and invalidate the session specified by the sid claim or all sessions if the sid claim is not present.',
+    history: new HistoryBuilder().added('v2'),
+  })
+  async logoutOAuth(@Body() dto: OAuthBackchannelLogoutDto): Promise<void> {
+    return this.service.backchannelLogout(dto);
   }
 }

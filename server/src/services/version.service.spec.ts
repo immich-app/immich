@@ -1,21 +1,15 @@
 import { DateTime } from 'luxon';
 import { SemVer } from 'semver';
 import { defaults } from 'src/config';
-import { serverVersion } from 'src/constants';
-import { ImmichEnvironment, JobName, JobStatus, SystemMetadataKey } from 'src/enum';
+import { ReleaseChannel } from 'src/dtos/system-config.dto';
+import { CronJob, JobName, JobStatus, SystemMetadataKey } from 'src/enum';
 import { VersionService } from 'src/services/version.service';
-import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { factory } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
-const mockRelease = (version: string) => ({
-  id: 1,
-  url: 'https://api.github.com/repos/owner/repo/releases/1',
-  tag_name: version,
-  name: 'Release 1000',
-  created_at: DateTime.utc().toISO(),
+const mockVersionResponse = (version: string) => ({
+  version,
   published_at: DateTime.utc().toISO(),
-  body: '',
 });
 
 describe(VersionService.name, () => {
@@ -24,7 +18,14 @@ describe(VersionService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(VersionService));
+    mocks.cron.create.mockResolvedValue();
+    mocks.cron.update.mockResolvedValue();
   });
+
+  vitest.mock(import('src/constants.js'), async (importOriginal) => ({
+    ...(await importOriginal()),
+    serverVersion: new SemVer('v3.0.0'),
+  }));
 
   it('should work', () => {
     expect(sut).toBeDefined();
@@ -45,19 +46,35 @@ describe(VersionService.name, () => {
       mocks.versionHistory.getLatest.mockResolvedValue({
         id: 'version-1',
         createdAt: new Date(),
-        version: serverVersion.toString(),
+        version: '3.0.0',
       });
       await expect(sut.onBootstrap()).resolves.toBeUndefined();
       expect(mocks.versionHistory.create).not.toHaveBeenCalled();
+    });
+
+    it('should create a version check cron job when the database lock is acquired', async () => {
+      mocks.database.tryLock.mockResolvedValue(true);
+      mocks.versionHistory.getLatest.mockResolvedValue({
+        id: 'version-1',
+        createdAt: new Date(),
+        version: '3.0.0',
+      });
+      await sut.onBootstrap();
+      expect(mocks.cron.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          name: CronJob.VersionCheck,
+        }),
+      );
     });
   });
 
   describe('getVersion', () => {
     it('should respond the server version', () => {
       expect(sut.getVersion()).toEqual({
-        major: serverVersion.major,
-        minor: serverVersion.minor,
-        patch: serverVersion.patch,
+        major: 3,
+        minor: 0,
+        patch: 0,
+        prerelease: null,
       });
     });
   });
@@ -78,34 +95,32 @@ describe(VersionService.name, () => {
   });
 
   describe('handVersionCheck', () => {
-    beforeEach(() => {
-      mocks.config.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.Production }));
-    });
-
-    it('should not run in dev mode', async () => {
-      mocks.config.getEnv.mockReturnValue(mockEnvData({ environment: ImmichEnvironment.Development }));
-      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
-    });
-
-    it('should not run if the last check was < 60 minutes ago', async () => {
-      mocks.systemMetadata.get.mockResolvedValue({
-        checkedAt: DateTime.utc().minus({ minutes: 5 }).toISO(),
-        releaseVersion: '1.0.0',
-      });
-      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
-    });
-
     it('should not run if version check is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ newVersionCheck: { enabled: false } });
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
     });
 
-    it('should run if it has been > 60 minutes', async () => {
-      mocks.serverInfo.getGitHubRelease.mockResolvedValue(mockRelease('v100.0.0'));
-      mocks.systemMetadata.get.mockResolvedValue({
-        checkedAt: DateTime.utc().minus({ minutes: 65 }).toISO(),
+    it('should skip if the last check was less than 50 seconds ago', async () => {
+      mocks.systemMetadata.get.mockResolvedValueOnce(null).mockResolvedValueOnce({
+        checkedAt: DateTime.utc().minus({ seconds: 30 }).toISO(),
         releaseVersion: '1.0.0',
       });
+      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Skipped);
+      expect(mocks.serverInfo.getLatestRelease).not.toHaveBeenCalled();
+    });
+
+    it('should run if the last check was more than 50 seconds ago', async () => {
+      mocks.systemMetadata.get.mockResolvedValueOnce(null).mockResolvedValueOnce({
+        checkedAt: DateTime.utc().minus({ seconds: 60 }).toISO(),
+        releaseVersion: '1.0.0',
+      });
+      mocks.serverInfo.getLatestRelease.mockResolvedValue(mockVersionResponse('v3.0.0'));
+      await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Success);
+      expect(mocks.serverInfo.getLatestRelease).toHaveBeenCalled();
+    });
+
+    it('should run and notify if a new version is available', async () => {
+      mocks.serverInfo.getLatestRelease.mockResolvedValue(mockVersionResponse('v100.0.0'));
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Success);
       expect(mocks.systemMetadata.set).toHaveBeenCalled();
       expect(mocks.logger.log).toHaveBeenCalled();
@@ -113,17 +128,17 @@ describe(VersionService.name, () => {
     });
 
     it('should not notify if the version is equal', async () => {
-      mocks.serverInfo.getGitHubRelease.mockResolvedValue(mockRelease(serverVersion.toString()));
+      mocks.serverInfo.getLatestRelease.mockResolvedValue(mockVersionResponse('v3.0.0'));
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Success);
       expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.VersionCheckState, {
         checkedAt: expect.any(String),
-        releaseVersion: serverVersion.toString(),
+        releaseVersion: 'v3.0.0',
       });
       expect(mocks.websocket.clientBroadcast).not.toHaveBeenCalled();
     });
 
-    it('should handle a github error', async () => {
-      mocks.serverInfo.getGitHubRelease.mockRejectedValue(new Error('GitHub is down'));
+    it('should handle a version check error', async () => {
+      mocks.serverInfo.getLatestRelease.mockRejectedValue(new Error('Version service is down'));
       await expect(sut.handleVersionCheck()).resolves.toEqual(JobStatus.Failed);
       expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
       expect(mocks.websocket.clientBroadcast).not.toHaveBeenCalled();
@@ -134,24 +149,24 @@ describe(VersionService.name, () => {
   describe('onConfigUpdate', () => {
     it('should queue a version check job when newVersionCheck is enabled', async () => {
       await sut.onConfigUpdate({
-        oldConfig: { ...defaults, newVersionCheck: { enabled: false } },
-        newConfig: { ...defaults, newVersionCheck: { enabled: true } },
+        oldConfig: { ...defaults, newVersionCheck: { enabled: false, channel: ReleaseChannel.Stable } },
+        newConfig: { ...defaults, newVersionCheck: { enabled: true, channel: ReleaseChannel.Stable } },
       });
       expect(mocks.job.queue).toHaveBeenCalledWith({ name: JobName.VersionCheck, data: {} });
     });
 
     it('should not queue a version check job when newVersionCheck is disabled', async () => {
       await sut.onConfigUpdate({
-        oldConfig: { ...defaults, newVersionCheck: { enabled: true } },
-        newConfig: { ...defaults, newVersionCheck: { enabled: false } },
+        oldConfig: { ...defaults, newVersionCheck: { enabled: true, channel: ReleaseChannel.Stable } },
+        newConfig: { ...defaults, newVersionCheck: { enabled: false, channel: ReleaseChannel.Stable } },
       });
       expect(mocks.job.queue).not.toHaveBeenCalled();
     });
 
     it('should not queue a version check job when newVersionCheck was already enabled', async () => {
       await sut.onConfigUpdate({
-        oldConfig: { ...defaults, newVersionCheck: { enabled: true } },
-        newConfig: { ...defaults, newVersionCheck: { enabled: true } },
+        oldConfig: { ...defaults, newVersionCheck: { enabled: true, channel: ReleaseChannel.Stable } },
+        newConfig: { ...defaults, newVersionCheck: { enabled: true, channel: ReleaseChannel.Stable } },
       });
       expect(mocks.job.queue).not.toHaveBeenCalled();
     });
@@ -160,21 +175,36 @@ describe(VersionService.name, () => {
   describe('onWebsocketConnection', () => {
     it('should send on_server_version client event', async () => {
       await sut.onWebsocketConnection({ userId: '42' });
-      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_server_version', '42', expect.any(SemVer));
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_server_version', '42', {
+        major: 3,
+        minor: 0,
+        patch: 0,
+        prerelease: null,
+      });
       expect(mocks.websocket.clientSend).toHaveBeenCalledTimes(1);
     });
 
     it('should also send a new release notification', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ checkedAt: '2024-01-01', releaseVersion: 'v1.42.0' });
       await sut.onWebsocketConnection({ userId: '42' });
-      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_server_version', '42', expect.any(SemVer));
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_server_version', '42', {
+        major: 3,
+        minor: 0,
+        patch: 0,
+        prerelease: null,
+      });
       expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_new_release', '42', expect.any(Object));
     });
 
     it('should not send a release notification when the version check is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValueOnce({ newVersionCheck: { enabled: false } });
       await sut.onWebsocketConnection({ userId: '42' });
-      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_server_version', '42', expect.any(SemVer));
+      expect(mocks.websocket.clientSend).toHaveBeenCalledWith('on_server_version', '42', {
+        major: 3,
+        minor: 0,
+        patch: 0,
+        prerelease: null,
+      });
       expect(mocks.websocket.clientSend).not.toHaveBeenCalledWith('on_new_release', '42', expect.any(Object));
     });
   });

@@ -91,11 +91,14 @@ describe('/server', () => {
     it('should respond with the server version', async () => {
       const { status, body } = await request(app).get('/server/version');
       expect(status).toBe(200);
-      expect(body).toEqual({
-        major: expect.any(Number),
-        minor: expect.any(Number),
-        patch: expect.any(Number),
-      });
+      expect(body).toEqual(
+        expect.objectContaining({
+          major: expect.any(Number),
+          minor: expect.any(Number),
+          patch: expect.any(Number),
+        }),
+      );
+      expect(Object.keys(body)).toEqual(expect.arrayContaining(['major', 'minor', 'patch', 'prerelease']));
     });
   });
 
@@ -115,6 +118,7 @@ describe('/server', () => {
         oauthAutoLaunch: false,
         ocr: false,
         passwordLogin: true,
+        realtimeTranscoding: false,
         search: true,
         sidecar: true,
         trash: true,
@@ -139,6 +143,7 @@ describe('/server', () => {
         maintenanceMode: false,
         mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
         mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
+        minFaces: 3,
       });
     });
   });
@@ -203,16 +208,6 @@ describe('/server', () => {
         sidecar: ['.xmp'],
         image: expect.any(Array),
         video: expect.any(Array),
-      });
-    });
-  });
-
-  describe('GET /server/theme', () => {
-    it('should respond with the server theme', async () => {
-      const { status, body } = await request(app).get('/server/theme');
-      expect(status).toBe(200);
-      expect(body).toEqual({
-        customCss: '',
       });
     });
   });

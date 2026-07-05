@@ -21,7 +21,7 @@ void main() {
 """);
 
       upgradeDto(value, targetType);
-      expect(value['tags'], TagsResponse().toJson());
+      expect(value['tags'], TagsResponse(enabled: false, sidebarWeb: false).toJson());
       expect(value['download']['includeEmbeddedVideos'], false);
     });
 

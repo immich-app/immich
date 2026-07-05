@@ -15,7 +15,7 @@ class AssetMetadataBulkUpsertItemDto {
   AssetMetadataBulkUpsertItemDto({
     required this.assetId,
     required this.key,
-    required this.value,
+    this.value = const {},
   });
 
   /// Asset ID
@@ -25,13 +25,13 @@ class AssetMetadataBulkUpsertItemDto {
   String key;
 
   /// Metadata value (object)
-  Object value;
+  Map<String, Object> value;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetMetadataBulkUpsertItemDto &&
     other.assetId == assetId &&
     other.key == key &&
-    other.value == value;
+    _deepEquality.equals(other.value, value);
 
   @override
   int get hashCode =>
@@ -62,7 +62,7 @@ class AssetMetadataBulkUpsertItemDto {
       return AssetMetadataBulkUpsertItemDto(
         assetId: mapValueOfType<String>(json, r'assetId')!,
         key: mapValueOfType<String>(json, r'key')!,
-        value: mapValueOfType<Object>(json, r'value')!,
+        value: mapCastOfType<String, Object>(json, r'value')!,
       );
     }
     return null;

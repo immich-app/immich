@@ -13,22 +13,34 @@ part of openapi.api;
 class LibraryStatsResponseDto {
   /// Returns a new [LibraryStatsResponseDto] instance.
   LibraryStatsResponseDto({
-    this.photos = 0,
-    this.total = 0,
-    this.usage = 0,
-    this.videos = 0,
+    required this.photos,
+    required this.total,
+    required this.usage,
+    required this.videos,
   });
 
   /// Number of photos
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int photos;
 
   /// Total number of assets
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int total;
 
   /// Storage usage in bytes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int usage;
 
   /// Number of videos
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int videos;
 
   @override

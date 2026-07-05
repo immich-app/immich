@@ -19,6 +19,7 @@ class SystemConfigUserDto {
   /// Delete delay
   ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   int deleteDelay;
 
   @override

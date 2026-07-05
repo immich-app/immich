@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'open-api/**'
+      - 'mobile/lib/utils/openapi_patching.dart'
       - '.github/workflows/check-openapi.yml'
 
 concurrency:
@@ -19,13 +20,47 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
 
       - name: Check for breaking API changes
-        uses: oasdiff/oasdiff-action/breaking@2a37bc82462349c03a533b8b608bebbaf57b3e60 # v0.0.33
+        uses: oasdiff/oasdiff-action/breaking@e24529087d93f837b28b50bb66ba9016380a7fcc # v0.1.2
         with:
           base: https://raw.githubusercontent.com/${{ github.repository }}/main/open-api/immich-openapi-specs.json
           revision: open-api/immich-openapi-specs.json
           fail-on: ERR
+          review: false
+
+  check-mobile-patches:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        with:
+          github_token: ${{ github.token }}
+          working_directory: ./mobile
+
+      - name: Get packages
+        working-directory: ./mobile
+        run: flutter pub get
+
+      - name: Fetch base spec from main
+        run: |
+          curl -fsSL \
+            "https://raw.githubusercontent.com/${{ github.repository }}/main/open-api/immich-openapi-specs.json" \
+            -o /tmp/base-spec.json
+
+      - name: Check newly-required fields have a backward-compat patch
+        working-directory: ./mobile
+        env:
+          OPENAPI_BASE_SPEC: /tmp/base-spec.json
+          OPENAPI_REVISION_SPEC: ../open-api/immich-openapi-specs.json
+        run: flutter test test/openapi_patches_coverage.dart

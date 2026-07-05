@@ -1,6 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
 import { ApiKey } from 'src/database';
-import { APIKeyCreateDto, APIKeyCreateResponseDto, APIKeyResponseDto, APIKeyUpdateDto } from 'src/dtos/api-key.dto';
+import { ApiKeyCreateDto, ApiKeyCreateResponseDto, ApiKeyResponseDto, ApiKeyUpdateDto } from 'src/dtos/api-key.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
@@ -8,7 +8,7 @@ import { isGranted } from 'src/utils/access';
 
 @Injectable()
 export class ApiKeyService extends BaseService {
-  async create(auth: AuthDto, dto: APIKeyCreateDto): Promise<APIKeyCreateResponseDto> {
+  async create(auth: AuthDto, dto: ApiKeyCreateDto): Promise<ApiKeyCreateResponseDto> {
     const token = this.cryptoRepository.randomBytesAsText(32);
     const hashed = this.cryptoRepository.hashSha256(token);
 
@@ -26,7 +26,7 @@ export class ApiKeyService extends BaseService {
     return { secret: token, apiKey: this.map(entity) };
   }
 
-  async update(auth: AuthDto, id: string, dto: APIKeyUpdateDto): Promise<APIKeyResponseDto> {
+  async update(auth: AuthDto, id: string, dto: ApiKeyUpdateDto): Promise<ApiKeyResponseDto> {
     const exists = await this.apiKeyRepository.getById(auth.user.id, id);
     if (!exists) {
       throw new BadRequestException('API Key not found');
@@ -54,7 +54,7 @@ export class ApiKeyService extends BaseService {
     await this.apiKeyRepository.delete(auth.user.id, id);
   }
 
-  async getMine(auth: AuthDto): Promise<APIKeyResponseDto> {
+  async getMine(auth: AuthDto): Promise<ApiKeyResponseDto> {
     if (!auth.apiKey) {
       throw new ForbiddenException('Not authenticated with an API Key');
     }
@@ -67,7 +67,7 @@ export class ApiKeyService extends BaseService {
     return this.map(key);
   }
 
-  async getById(auth: AuthDto, id: string): Promise<APIKeyResponseDto> {
+  async getById(auth: AuthDto, id: string): Promise<ApiKeyResponseDto> {
     const key = await this.apiKeyRepository.getById(auth.user.id, id);
     if (!key) {
       throw new BadRequestException('API Key not found');
@@ -75,12 +75,12 @@ export class ApiKeyService extends BaseService {
     return this.map(key);
   }
 
-  async getAll(auth: AuthDto): Promise<APIKeyResponseDto[]> {
+  async getAll(auth: AuthDto): Promise<ApiKeyResponseDto[]> {
     const keys = await this.apiKeyRepository.getByUserId(auth.user.id);
     return keys.map((key) => this.map(key));
   }
 
-  private map(entity: ApiKey): APIKeyResponseDto {
+  private map(entity: ApiKey): ApiKeyResponseDto {
     return {
       id: entity.id,
       name: entity.name,

@@ -63,9 +63,7 @@ export class PersonService extends BaseService {
       }
       closestFaceAssetId = person.faceAssetId;
     }
-    const { machineLearning } = await this.getConfig({ withCache: false });
     const { items, hasNextPage } = await this.personRepository.getAllForUser(pagination, auth.user.id, {
-      minimumFaceCount: machineLearning.facialRecognition.minFaces,
       withHidden,
       closestFaceAssetId,
     });
@@ -627,11 +625,15 @@ export class PersonService extends BaseService {
   // TODO return a asset face response
   async createFace(auth: AuthDto, dto: AssetFaceCreateDto): Promise<void> {
     await Promise.all([
-      this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.assetId] }),
+      this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [dto.assetId] }),
       this.requireAccess({ auth, permission: Permission.PersonRead, ids: [dto.personId] }),
     ]);
 
-    const asset = await this.assetRepository.getById(dto.assetId, { edits: true, exifInfo: true });
+    const [asset, person] = await Promise.all([
+      this.assetRepository.getById(dto.assetId, { edits: true, exifInfo: true }),
+      this.findOrFail(dto.personId),
+    ]);
+
     if (!asset) {
       throw new NotFoundException('Asset not found');
     }
@@ -689,6 +691,10 @@ export class PersonService extends BaseService {
       boundingBoxY2: Math.round(bottomRight.y),
       sourceType: SourceType.Manual,
     });
+
+    if (!person.faceAssetId) {
+      await this.createNewFeaturePhoto([person.id]);
+    }
   }
 
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {

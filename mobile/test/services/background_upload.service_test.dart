@@ -11,12 +11,11 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../domain/service.mock.dart';
 import '../fixtures/asset.stub.dart';
 import '../infrastructure/repository.mock.dart';
 import '../mocks/asset_entity.mock.dart';
@@ -28,13 +27,10 @@ void main() {
   late MockStorageRepository mockStorageRepository;
   late MockDriftLocalAssetRepository mockLocalAssetRepository;
   late MockDriftBackupRepository mockBackupRepository;
-  late MockAppSettingsService mockAppSettingsService;
   late MockAssetMediaRepository mockAssetMediaRepository;
   late Drift db;
 
   setUpAll(() async {
-    registerFallbackValue(AppSettingsEnum.useCellularForUploadPhotos);
-
     TestWidgetsFlutterBinding.ensureInitialized();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       const MethodChannel('plugins.flutter.io/path_provider'),
@@ -42,6 +38,7 @@ void main() {
     );
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await SettingsRepository.ensureInitialized(db);
 
     await Store.put(StoreKey.serverEndpoint, 'http://test-server.com');
     await Store.put(StoreKey.deviceId, 'test-device-id');
@@ -52,18 +49,13 @@ void main() {
     mockStorageRepository = MockStorageRepository();
     mockLocalAssetRepository = MockDriftLocalAssetRepository();
     mockBackupRepository = MockDriftBackupRepository();
-    mockAppSettingsService = MockAppSettingsService();
     mockAssetMediaRepository = MockAssetMediaRepository();
-
-    when(() => mockAppSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)).thenReturn(false);
-    when(() => mockAppSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)).thenReturn(false);
 
     sut = BackgroundUploadService(
       mockUploadRepository,
       mockStorageRepository,
       mockLocalAssetRepository,
       mockBackupRepository,
-      mockAppSettingsService,
       mockAssetMediaRepository,
     );
 
@@ -179,7 +171,6 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
-        mockAppSettingsService,
         mockAssetMediaRepository,
       );
       addTearDown(() => sutWithV24.dispose());
@@ -230,7 +221,6 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
-        mockAppSettingsService,
         mockAssetMediaRepository,
       );
       addTearDown(() => sutAndroid.dispose());
@@ -271,7 +261,6 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
-        mockAppSettingsService,
         mockAssetMediaRepository,
       );
       addTearDown(() => sutWithV24.dispose());
@@ -312,7 +301,6 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
-        mockAppSettingsService,
         mockAssetMediaRepository,
       );
       addTearDown(() => sutWithV24.dispose());

@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 
 class BackupToggleButton extends ConsumerStatefulWidget {
   final VoidCallback onStart;
@@ -31,7 +30,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
       end: 1,
     ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
 
-    _isEnabled = ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+    _isEnabled = ref.read(appConfigProvider).backup.enabled;
   }
 
   @override
@@ -41,7 +40,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
   }
 
   Future<void> _onToggle(bool value) async {
-    await ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.enableBackup, value);
+    await ref.read(settingsProvider).write(.backupEnabled, value);
 
     setState(() {
       _isEnabled = value;
@@ -107,65 +106,57 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
               borderRadius: const BorderRadius.all(Radius.circular(18.5)),
               color: context.colorScheme.surfaceContainerLow,
             ),
-            child: Material(
-              color: context.colorScheme.surfaceContainerLow,
-              borderRadius: const BorderRadius.all(Radius.circular(20.5)),
-              child: InkWell(
-                borderRadius: const BorderRadius.all(Radius.circular(20.5)),
-                onTap: () => _onToggle(!_isEnabled),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [
-                              context.primaryColor.withValues(alpha: 0.2),
-                              context.primaryColor.withValues(alpha: 0.1),
-                            ],
-                          ),
-                        ),
-                        child: isProcessing
-                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                            : Icon(Icons.cloud_upload_outlined, color: context.primaryColor, size: 24),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          context.primaryColor.withValues(alpha: 0.2),
+                          context.primaryColor.withValues(alpha: 0.1),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    child: isProcessing
+                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                        : Icon(Icons.cloud_upload_outlined, color: context.primaryColor, size: 24),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    "enable_backup".t(context: context),
-                                    style: context.textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (errorCount > 0)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: Text(
-                                  "upload_error_with_count".t(context: context, args: {'count': '$errorCount'}),
-                                  style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.error),
+                            Flexible(
+                              child: Text(
+                                "enable_backup".t(context: context),
+                                style: context.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: context.primaryColor,
                                 ),
                               ),
+                            ),
                           ],
                         ),
-                      ),
-                      Switch.adaptive(value: _isEnabled, onChanged: (value) => _onToggle(value)),
-                    ],
+                        if (errorCount > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              "upload_error_with_count".t(context: context, args: {'count': '$errorCount'}),
+                              style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.error),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
+                  Switch.adaptive(value: _isEnabled, onChanged: (value) => _onToggle(value)),
+                ],
               ),
             ),
           ),

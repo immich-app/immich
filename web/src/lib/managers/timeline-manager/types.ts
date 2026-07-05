@@ -1,5 +1,5 @@
-import type { TimelineDate, TimelineDateTime, TimelineYearMonth } from '$lib/utils/timeline-util';
 import type { AssetStackResponseDto, AssetVisibility } from '@immich/sdk';
+import type { TimelineDate, TimelineDateTime, TimelineYearMonth } from '$lib/utils/timeline-util';
 
 export type ViewportTopMonth = TimelineYearMonth | undefined | 'lead-in' | 'lead-out';
 
@@ -22,6 +22,7 @@ export type TimelineAsset = {
   ratio: number;
   thumbhash: string | null;
   localDateTime: TimelineDateTime;
+  createdAt: TimelineDateTime;
   fileCreatedAt: TimelineDateTime;
   visibility: AssetVisibility;
   isFavorite: boolean;
@@ -29,7 +30,7 @@ export type TimelineAsset = {
   isVideo: boolean;
   isImage: boolean;
   stack: AssetStackResponseDto | null;
-  duration: string | null;
+  duration: number | null;
   projectionType: string | null;
   livePhotoVideoId: string | null;
   city: string | null;
@@ -71,12 +72,7 @@ export interface TrashAssets {
   values: string[];
 }
 
-export interface UpdateStackAssets {
-  type: 'update_stack_assets';
-  values: string[];
-}
-
-export type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets | UpdateStackAssets;
+export type PendingChange = AddAsset | UpdateAsset | DeleteAsset | TrashAssets;
 
 export type ScrubberMonth = {
   height: number;

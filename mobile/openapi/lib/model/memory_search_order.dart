@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Sort order
 class MemorySearchOrder {
   /// Instantiate a new enum with the provided [value].
   const MemorySearchOrder._(this.value);

@@ -32,6 +32,7 @@ class FacialRecognitionConfig {
   /// Minimum number of faces required for recognition
   ///
   /// Minimum value: 1
+  /// Maximum value: 9007199254740991
   int minFaces;
 
   /// Minimum confidence score for face detection
@@ -83,9 +84,9 @@ class FacialRecognitionConfig {
 
       return FacialRecognitionConfig(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        maxDistance: (mapValueOfType<num>(json, r'maxDistance')!).toDouble(),
+        maxDistance: mapValueOfType<double>(json, r'maxDistance')!,
         minFaces: mapValueOfType<int>(json, r'minFaces')!,
-        minScore: (mapValueOfType<num>(json, r'minScore')!).toDouble(),
+        minScore: mapValueOfType<double>(json, r'minScore')!,
         modelName: mapValueOfType<String>(json, r'modelName')!,
       );
     }

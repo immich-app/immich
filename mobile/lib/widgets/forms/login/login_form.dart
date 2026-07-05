@@ -15,16 +15,19 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
+import 'package:immich_mobile/providers/feature_message.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/provider_utils.dart';
+import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/utils/version_compatibility.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
@@ -34,7 +37,6 @@ import 'package:immich_ui/immich_ui.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 class LoginForm extends HookConsumerWidget {
   LoginForm({super.key});
@@ -42,7 +44,9 @@ class LoginForm extends HookConsumerWidget {
   final log = Logger('LoginForm');
 
   String? _validateUrl(String? url) {
-    if (url == null || url.isEmpty) return null;
+    if (url == null || url.isEmpty) {
+      return null;
+    }
 
     final parsedUrl = Uri.tryParse(url);
     if (parsedUrl == null || !parsedUrl.isAbsolute || !parsedUrl.scheme.startsWith("http") || parsedUrl.host.isEmpty) {
@@ -53,9 +57,15 @@ class LoginForm extends HookConsumerWidget {
   }
 
   String? _validateEmail(String? email) {
-    if (email == null || email == '') return null;
-    if (email.endsWith(' ')) return 'login_form_err_trailing_whitespace'.tr();
-    if (email.startsWith(' ')) return 'login_form_err_leading_whitespace'.tr();
+    if (email == null || email == '') {
+      return null;
+    }
+    if (email.endsWith(' ')) {
+      return 'login_form_err_trailing_whitespace'.tr();
+    }
+    if (email.startsWith(' ')) {
+      return 'login_form_err_leading_whitespace'.tr();
+    }
     if (email.contains(' ') || !email.contains('@')) {
       return 'login_form_err_invalid_email'.tr();
     }
@@ -80,18 +90,9 @@ class LoginForm extends HookConsumerWidget {
     checkVersionMismatch() async {
       try {
         final packageInfo = await PackageInfo.fromPlatform();
-        final appVersion = packageInfo.version;
-        final appMajorVersion = int.parse(appVersion.split('.')[0]);
-        final appMinorVersion = int.parse(appVersion.split('.')[1]);
-        final serverMajorVersion = serverInfo.serverVersion.major;
-        final serverMinorVersion = serverInfo.serverVersion.minor;
-
-        warningMessage.value = getVersionCompatibilityMessage(
-          appMajorVersion,
-          appMinorVersion,
-          serverMajorVersion,
-          serverMinorVersion,
-        );
+        final appSemVer = SemVer.fromString(packageInfo.version);
+        final serverSemVer = serverInfo.serverVersion;
+        warningMessage.value = getVersionCompatibilityMessage(serverVersion: serverSemVer, appVersion: appSemVer);
       } catch (error) {
         warningMessage.value = 'Error checking version compatibility';
       }
@@ -175,18 +176,20 @@ class LoginForm extends HookConsumerWidget {
 
     Future<void> handleSyncFlow() async {
       final backgroundManager = ref.read(backgroundSyncProvider);
+      final viewIntentHandler = ref.read(viewIntentHandlerProvider);
 
       await backgroundManager.syncLocal(full: true);
       await backgroundManager.syncRemote();
+      await viewIntentHandler.flushDeferredViewIntent();
       await backgroundManager.hashAssets();
 
-      if (Store.get(StoreKey.syncAlbums, false)) {
+      if (SettingsRepository.instance.appConfig.backup.syncAlbums) {
         await backgroundManager.syncLinkedAlbum();
       }
     }
 
     getManageMediaPermission() async {
-      final hasPermission = await ref.read(localFilesManagerRepositoryProvider).hasManageMediaPermission();
+      final hasPermission = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
       if (!hasPermission) {
         await showDialog(
           context: context,
@@ -217,7 +220,7 @@ class LoginForm extends HookConsumerWidget {
                 ),
                 TextButton(
                   onPressed: () {
-                    ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
+                    unawaited(ref.read(permissionRepositoryProvider).requestManageMediaPermission());
                     Navigator.of(context).pop();
                   },
                   child: Text(
@@ -246,18 +249,15 @@ class LoginForm extends HookConsumerWidget {
         if (result.shouldChangePassword && !result.isAdmin) {
           unawaited(context.pushRoute(const ChangePasswordRoute()));
         } else {
-          final isBeta = Store.isBetaTimelineEnabled;
-          if (isBeta) {
-            await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-            if (isSyncRemoteDeletionsMode()) {
-              await getManageMediaPermission();
-            }
-            unawaited(handleSyncFlow());
-            ref.read(websocketProvider.notifier).connect();
-            unawaited(context.replaceRoute(const TabShellRoute()));
-            return;
+          await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+          if (isSyncRemoteDeletionsMode()) {
+            await getManageMediaPermission();
           }
-          unawaited(context.replaceRoute(const TabControllerRoute()));
+          unawaited(handleSyncFlow());
+          ref.read(websocketProvider.notifier).connect();
+          unawaited(ref.read(featureMessageServiceProvider).markSeen());
+          unawaited(context.router.replaceAll([const TabShellRoute()]));
+          return;
         }
       } catch (error) {
         ImmichToast.show(
@@ -338,21 +338,14 @@ class LoginForm extends HookConsumerWidget {
               .saveAuthInfo(accessToken: loginResponseDto.accessToken);
 
           if (isSuccess) {
-            final permission = ref.watch(galleryPermissionNotifier);
-            final isBeta = Store.isBetaTimelineEnabled;
-            if (!isBeta && (permission.isGranted || permission.isLimited)) {
-              unawaited(ref.watch(backupProvider.notifier).resumeBackup());
+            await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
+            if (isSyncRemoteDeletionsMode()) {
+              await getManageMediaPermission();
             }
-            if (isBeta) {
-              await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-              if (isSyncRemoteDeletionsMode()) {
-                await getManageMediaPermission();
-              }
-              unawaited(handleSyncFlow());
-              unawaited(context.replaceRoute(const TabShellRoute()));
-              return;
-            }
-            unawaited(context.replaceRoute(const TabControllerRoute()));
+            unawaited(handleSyncFlow());
+            unawaited(ref.read(featureMessageServiceProvider).markSeen());
+            unawaited(context.router.replaceAll([const TabShellRoute()]));
+            return;
           }
         } catch (error, stack) {
           log.severe('Error logging in with OAuth: $error', stack);
@@ -387,11 +380,21 @@ class LoginForm extends HookConsumerWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: context.isDarkTheme ? Colors.red.shade700 : Colors.red.shade100,
-            borderRadius: const BorderRadius.all(Radius.circular(8)),
-            border: Border.all(color: context.isDarkTheme ? Colors.red.shade900 : Colors.red[200]!),
+            color: context.isDarkTheme ? Colors.amber.shade700 : Colors.amber.shade100,
+            borderRadius: const BorderRadius.all(Radius.circular(12)),
+            border: Border.all(color: context.isDarkTheme ? Colors.amber.shade800 : Colors.amber[200]!, width: 2),
           ),
-          child: Text(warningMessage.value!, textAlign: TextAlign.center),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.warning_amber_rounded, color: Colors.amber.shade800),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Padding(padding: const EdgeInsets.only(top: 2), child: Text(warningMessage.value!)),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -403,19 +406,16 @@ class LoginForm extends HookConsumerWidget {
               mainAxisSize: MainAxisSize.max,
               children: [
                 ImmichForm(
+                  onSubmit: getServerAuthSettings,
                   submitText: 'next'.t(context: context),
                   submitIcon: Icons.arrow_forward_rounded,
-                  onSubmit: getServerAuthSettings,
-                  child: ImmichTextInput(
+                  builder: (_, form) => ImmichURLInput(
                     controller: serverEndpointController,
                     label: 'login_form_endpoint_url'.t(context: context),
                     hintText: 'login_form_endpoint_hint'.t(context: context),
                     validator: _validateUrl,
-                    keyboardAction: TextInputAction.next,
-                    keyboardType: TextInputType.url,
-                    autofillHints: const [AutofillHints.url],
-                    autoCorrect: false,
-                    onSubmit: (ctx, _) => ImmichForm.of(ctx).submit(),
+                    keyboardAction: .next,
+                    onSubmit: (_) => form.submit(),
                   ),
                 ),
                 ImmichTextButton(
@@ -443,10 +443,10 @@ class LoginForm extends HookConsumerWidget {
                 ),
                 if (isPasswordLoginEnable.value)
                   ImmichForm(
+                    onSubmit: login,
                     submitText: 'login'.t(context: context),
                     submitIcon: Icons.login_rounded,
-                    onSubmit: login,
-                    child: Column(
+                    builder: (context, form) => Column(
                       spacing: ImmichSpacing.md,
                       children: [
                         ImmichTextInput(
@@ -457,7 +457,7 @@ class LoginForm extends HookConsumerWidget {
                           keyboardAction: TextInputAction.next,
                           keyboardType: TextInputType.emailAddress,
                           autofillHints: const [AutofillHints.email],
-                          onSubmit: (_, _) => passwordFocusNode.requestFocus(),
+                          onSubmit: (_) => passwordFocusNode.requestFocus(),
                         ),
                         ImmichPasswordInput(
                           controller: passwordController,
@@ -465,17 +465,17 @@ class LoginForm extends HookConsumerWidget {
                           label: 'password'.t(context: context),
                           hintText: 'login_form_password_hint'.t(context: context),
                           keyboardAction: TextInputAction.go,
-                          onSubmit: (ctx, _) => ImmichForm.of(ctx).submit(),
+                          onSubmit: (_) => form.submit(),
                         ),
                       ],
                     ),
                   ),
                 if (isOauthEnable.value)
                   ImmichForm(
+                    onSubmit: oAuthLogin,
                     submitText: oAuthButtonLabel.value,
                     submitIcon: Icons.pin_outlined,
-                    onSubmit: oAuthLogin,
-                    child: isPasswordLoginEnable.value
+                    builder: (context, _) => isPasswordLoginEnable.value
                         ? Padding(
                             padding: const EdgeInsets.only(left: 18.0, right: 18.0, top: 12.0),
                             child: Divider(color: context.isDarkTheme ? Colors.white : Colors.black, height: 5),

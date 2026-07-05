@@ -16,6 +16,7 @@ class SyncAssetEditDeleteV1 {
     required this.editId,
   });
 
+  /// Edit ID
   String editId;
 
   @override

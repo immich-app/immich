@@ -2,48 +2,172 @@ experimental_monorepo_root = true
 
 [monorepo]
 config_roots = [
-  "plugins",
+  "packages/plugin-core",
   "server",
-  "cli",
+  "packages/cli",
   "deployment",
   "mobile",
   "e2e",
   "web",
   "docs",
   ".github",
+  "machine-learning",
 ]
 
 [tools]
-node = "24.14.0"
-flutter = "3.35.7"
-pnpm = "10.32.1"
-terragrunt = "0.99.4"
-opentofu = "1.11.5"
+node = "24.15.0"
+pnpm = "11.6.0"
+terragrunt = "1.0.3"
+opentofu = "1.11.6"
+"npm:oazapfts" = "7.5.0"
+"github:extism/cli" = "1.6.3"
+"github:webassembly/binaryen" = "version_124"
+"github:extism/js-pdk" = "1.6.0"
 java = "21.0.2"
 
-[tools."github:CQLabs/homebrew-dcm"]
-version = "1.35.1"
-bin = "dcm"
-postinstall = "chmod +x $MISE_TOOL_INSTALL_PATH/dcm"
+[tools."github:jellyfin/jellyfin-ffmpeg"]
+version = "7.1.3-6"
+
+[tools."github:jellyfin/jellyfin-ffmpeg".platforms]
+linux-x64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_linux64-gpl.tar.xz" }
+linux-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_linuxarm64-gpl.tar.xz" }
+macos-x64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_mac64-gpl.tar.xz" }
+macos-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz" }
 
 [settings]
 experimental = true
 pin = true
+lockfile = true
+
+[tasks.release]
+run = [
+  "pnpm --filter @immich/scripts install --frozen-lockfile",
+  "pnpm --filter @immich/scripts build",
+  "pnpm --filter @immich/scripts cli release {{arg(name='args', var=true)}}",
+  { task = "//:open-api" },
+]
+
+[tasks.plugins]
+run = [
+  "pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter @immich/plugin-core install --frozen-lockfile",
+  "pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter @immich/plugin-core build",
+]
+
+[tasks.open-api-typescript]
+run = [
+  "oazapfts --optimistic --argumentStyle=object --useEnumType --allSchemas open-api/immich-openapi-specs.json packages/sdk/src/fetch-client.ts",
+  { task = "//:sdk:install" },
+  { task = "//:sdk:build" },
+]
+
+[tasks.open-api-dart]
+dir = "open-api"
+run = "bash ./bin/generate-dart-sdk.sh"
+
+[tasks.open-api]
+env = { SHARP_IGNORE_GLOBAL_LIBVIPS = true }
+run = [
+  { task = "//:plugins" },
+  { task = "//server:install" },
+  { task = "//server:build" },
+  { task = "//server:sync-open-api" },
+  { task = ":open-api-typescript" },
+  { task = ":open-api-dart" },
+]
+
+[tasks.sql]
+dir = "server"
+run = "node ./dist/bin/sync-sql.js"
+
+# TODO dev, prod, and e2e should be de-duplicated by using env but for some reason I ran into issues
+[tasks.dev]
+depends = "//:plugins"
+dir = "docker"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.dev.yml up --remove-orphans"
+depends_post = "//:dev-down"
+
+[tasks.dev-update]
+run = { task = "//:dev", args = ["--build", "-V"] }
+
+[tasks.dev-scale]
+run = { task = "//:dev", args = ["--build", "-V", "--scale immich-server=3"] }
+
+[tasks.dev-down]
+dir = "docker"
+run = "docker compose -f ./docker-compose.dev.yml down --remove-orphans"
+
+[tasks.prod]
+depends = "//:plugins"
+dir = "docker"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.prod.yml up --build --remove-orphans"
+depends_post = "//:prod-down"
+
+[tasks.prod-scale]
+run = { task = "//:prod", args = [
+  "--build",
+  "-V",
+  "--scale immich-server=3",
+  "--scale immich-microservices",
+] }
+
+[tasks.prod-down]
+dir = "docker"
+run = "docker compose -f ./docker-compose.prod.yml down --remove-orphans"
+
+[tasks.e2e]
+depends = "//:plugins"
+dir = "e2e"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.yml up --remove-orphans"
+depends_post = "//:e2e-down"
+
+[tasks.e2e-dev]
+depends = "//:plugins"
+dir = "e2e"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.dev.yml up --remove-orphans"
+depends_post = "//:e2e-dev-down"
+
+[tasks.e2e-update]
+run = { task = "//:e2e", args = ["--build", '-V'] }
+
+[tasks.e2e-down]
+dir = "e2e"
+run = "docker compose -f ./docker-compose.yml down --remove-orphans"
+
+[tasks.e2e-dev-down]
+dir = "e2e"
+run = "docker compose -f ./docker-compose.dev.yml down --remove-orphans"
 
 # SDK tasks
 [tasks."sdk:install"]
-dir = "open-api/typescript-sdk"
-run = "pnpm install --filter @immich/sdk --frozen-lockfile"
+dir = "packages/sdk"
+run = "pnpm --filter @immich/sdk install --frozen-lockfile"
 
 [tasks."sdk:build"]
-dir = "open-api/typescript-sdk"
-run = "pnpm run build"
+dir = "packages/sdk"
+run = "pnpm build"
 
 # i18n tasks
 [tasks."i18n:format"]
-dir = "i18n"
-run = "pnpm run format"
+run = "pnpm format"
 
 [tasks."i18n:format-fix"]
-dir = "i18n"
-run = "pnpm run format:fix"
+run = "pnpm format:fix"
+
+[tasks.clean]
+run = [
+  "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +",
+  "find . -name 'dist' -type d -prune -exec rm -rf '{}' +",
+  "find . -name 'build' -type d -prune -exec rm -rf '{}' +",
+  "find . -name '.svelte-kit' -type d -prune -exec rm -rf '{}' +",
+  "find . -name 'coverage' -type d -prune -exec rm -rf '{}' +",
+  "find . -name '.pnpm-store' -type d -prune -exec rm -rf '{}' +",
+  { task = "//:*-down" },
+]

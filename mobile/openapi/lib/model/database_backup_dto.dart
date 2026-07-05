@@ -15,30 +15,42 @@ class DatabaseBackupDto {
   DatabaseBackupDto({
     required this.filename,
     required this.filesize,
+    required this.timezone,
   });
 
+  /// Backup filename
   String filename;
 
-  num filesize;
+  /// Backup file size
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
+  int filesize;
+
+  /// Backup timezone
+  String timezone;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DatabaseBackupDto &&
     other.filename == filename &&
-    other.filesize == filesize;
+    other.filesize == filesize &&
+    other.timezone == timezone;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (filename.hashCode) +
-    (filesize.hashCode);
+    (filesize.hashCode) +
+    (timezone.hashCode);
 
   @override
-  String toString() => 'DatabaseBackupDto[filename=$filename, filesize=$filesize]';
+  String toString() => 'DatabaseBackupDto[filename=$filename, filesize=$filesize, timezone=$timezone]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'filename'] = this.filename;
       json[r'filesize'] = this.filesize;
+      json[r'timezone'] = this.timezone;
     return json;
   }
 
@@ -52,7 +64,8 @@ class DatabaseBackupDto {
 
       return DatabaseBackupDto(
         filename: mapValueOfType<String>(json, r'filename')!,
-        filesize: num.parse('${json[r'filesize']}'),
+        filesize: mapValueOfType<int>(json, r'filesize')!,
+        timezone: mapValueOfType<String>(json, r'timezone')!,
       );
     }
     return null;
@@ -102,6 +115,7 @@ class DatabaseBackupDto {
   static const requiredKeys = <String>{
     'filename',
     'filesize',
+    'timezone',
   };
 }
 

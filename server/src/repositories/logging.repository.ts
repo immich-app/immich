@@ -119,6 +119,10 @@ export class LoggingRepository {
     logLevels = level ? LOG_LEVELS.slice(LOG_LEVELS.indexOf(level)) : [];
   }
 
+  getLogLevel(): LogLevel {
+    return logLevels[0] || LogLevel.Fatal;
+  }
+
   verbose(message: string, ...details: LogDetails) {
     this.handleMessage(LogLevel.Verbose, message, details);
   }

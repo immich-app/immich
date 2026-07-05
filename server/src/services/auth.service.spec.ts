@@ -13,6 +13,7 @@ import { SessionFactory } from 'test/factories/session.factory';
 import { UserFactory } from 'test/factories/user.factory';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
+import { userStub } from 'test/fixtures/user.stub';
 import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -163,6 +164,32 @@ describe(AuthService.name, () => {
       });
     });
 
+    it('should return the custom end session endpoint if provided', async () => {
+      const auth = AuthFactory.create();
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        oauth: { enabled: true, endSessionEndpoint: 'http://custom-logout-url' },
+      });
+
+      await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
+        successful: true,
+        redirectUri: 'http://custom-logout-url',
+      });
+    });
+
+    it('should return the auto-discovered end session endpoint if custom endpoint is not provided', async () => {
+      const auth = AuthFactory.create();
+
+      mocks.systemMetadata.get.mockResolvedValue({
+        oauth: { enabled: true, endSessionEndpoint: '' },
+      });
+
+      await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
+        successful: true,
+        redirectUri: 'http://end-session-endpoint',
+      });
+    });
+
     it('should return the default redirect', async () => {
       const auth = AuthFactory.create();
 
@@ -195,6 +222,64 @@ describe(AuthService.name, () => {
     });
   });
 
+  describe('backchannelLogout', () => {
+    const dto = { logout_token: 'fake-jwt-token' };
+
+    it('should throw a Bad Request Exception if OAuth is not enabled', async () => {
+      await expect(sut.backchannelLogout(dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.backchannelLogout(dto)).rejects.toThrow(
+        'Received backchannel logout request but OAuth is not enabled',
+      );
+    });
+
+    it('should throw a Bad Request Exception if the logout token validation fails', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.validateLogoutToken.mockRejectedValue(new Error('Token validation failed'));
+
+      await expect(sut.backchannelLogout(dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.backchannelLogout(dto)).rejects.toThrow('Error backchannel logout: token validation failed');
+    });
+
+    it('should throw a Bad Request Exception if there are no claims in the logout token', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.validateLogoutToken.mockResolvedValue(null);
+
+      await expect(sut.backchannelLogout(dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.backchannelLogout(dto)).rejects.toThrow('Invalid logout token: no claims found');
+    });
+
+    it('should throw a Bad Request Exception if there is neither the sub nor the sid claim', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.validateLogoutToken.mockResolvedValue({ sub: '', sid: '' });
+
+      await expect(sut.backchannelLogout(dto)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.backchannelLogout(dto)).rejects.toThrow(
+        'Invalid logout token: it must contain either a sub or a sid claim',
+      );
+    });
+
+    it('should invalidate the OAuth session(s) if the logout token is valid', async () => {
+      const claims = { sub: 'fake-sub', sid: 'fake-sid' };
+      const deletedSessionIds: string[] = ['fake-session-1', 'fake-session-2'];
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.validateLogoutToken.mockResolvedValue(claims);
+      mocks.session.invalidateOAuth.mockResolvedValue(deletedSessionIds);
+      mocks.event.emit.mockResolvedValue(void 0);
+      mocks.event.emit.mockResolvedValue(void 0);
+
+      await sut.backchannelLogout(dto);
+
+      expect(mocks.session.invalidateOAuth).toHaveBeenCalledWith({
+        oauthSid: claims.sid,
+        oauthId: claims.sub,
+      });
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('SessionDelete', { sessionId: 'fake-session-1' });
+      expect(mocks.event.emit).toHaveBeenCalledWith('SessionDelete', { sessionId: 'fake-session-2' });
+    });
+  });
+
   describe('adminSignUp', () => {
     const dto: SignUpDto = { email: 'test@immich.com', password: 'password', name: 'immich admin' };
 
@@ -209,11 +294,13 @@ describe(AuthService.name, () => {
     it('should sign up the admin', async () => {
       mocks.user.getAdmin.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue({
+        ...userStub.admin,
         ...dto,
         id: 'admin',
+        name: 'immich admin',
         createdAt: new Date('2021-01-01'),
         metadata: [] as UserMetadataItem[],
-      } as unknown as UserAdmin);
+      } as UserAdmin);
 
       await expect(sut.adminSignUp(dto)).resolves.toMatchObject({
         avatarColor: expect.any(String),
@@ -247,6 +334,7 @@ describe(AuthService.name, () => {
         user: UserFactory.create(),
         pinExpiresAt: null,
         appVersion: null,
+        oauthSid: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -413,6 +501,7 @@ describe(AuthService.name, () => {
         user: UserFactory.create(),
         pinExpiresAt: null,
         appVersion: null,
+        oauthSid: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -441,6 +530,7 @@ describe(AuthService.name, () => {
         isPendingSyncReset: false,
         pinExpiresAt: null,
         appVersion: null,
+        oauthSid: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -463,6 +553,7 @@ describe(AuthService.name, () => {
         isPendingSyncReset: false,
         pinExpiresAt: null,
         appVersion: null,
+        oauthSid: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -598,7 +689,7 @@ describe(AuthService.name, () => {
     it('should not allow auto registering', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
       mocks.user.getByEmail.mockResolvedValue(void 0);
-      mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create());
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create() });
 
       await expect(
         sut.callback(
@@ -616,7 +707,7 @@ describe(AuthService.name, () => {
       const profile = OAuthProfileFactory.create();
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
-      mocks.oauth.getProfile.mockResolvedValue(profile);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.getByEmail.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(SessionFactory.create());
@@ -631,11 +722,31 @@ describe(AuthService.name, () => {
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: profile.sub });
     });
 
+    it('should normalize the email from the OAuth profile before linking', async () => {
+      const user = UserFactory.create();
+      const profile = OAuthProfileFactory.create({ email: '  TEST@IMMICH.CLOUD  ' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
+      mocks.user.getByEmail.mockResolvedValue(user);
+      mocks.user.update.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.getByEmail).toHaveBeenCalledWith('test@immich.cloud');
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: profile.sub });
+    });
+
     it('should not link to a user with a different oauth sub', async () => {
       const user = UserFactory.create({ oauthId: 'existing-sub' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
-      mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create());
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create() });
       mocks.user.getByEmail.mockResolvedValueOnce(user);
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
 
@@ -656,7 +767,7 @@ describe(AuthService.name, () => {
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.create.mockResolvedValue(UserFactory.create({ oauthId: 'oauth-id' }));
-      mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create());
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create() });
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
       await sut.callback(
@@ -675,7 +786,7 @@ describe(AuthService.name, () => {
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.create.mockResolvedValue(UserFactory.create());
       mocks.session.create.mockResolvedValue(SessionFactory.create());
-      mocks.oauth.getProfile.mockResolvedValue({ sub: 'sub' });
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: { sub: 'sub' } });
 
       await expect(
         sut.callback(
@@ -697,12 +808,12 @@ describe(AuthService.name, () => {
       it(`should use the mobile redirect override for a url of ${url}`, async () => {
         mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithMobileOverride);
         mocks.user.getByOAuthId.mockResolvedValue(UserFactory.create());
-        mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create());
+        mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create() });
         mocks.session.create.mockResolvedValue(SessionFactory.create());
 
         await sut.callback({ url, state: 'xyz789', codeVerifier: 'foo' }, {}, loginDetails);
 
-        expect(mocks.oauth.getProfile).toHaveBeenCalledWith(
+        expect(mocks.oauth.getProfileAndOAuthSid).toHaveBeenCalledWith(
           expect.objectContaining({}),
           'http://mobile-redirect?code=abc123',
           'xyz789',
@@ -715,7 +826,7 @@ describe(AuthService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
-      mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create());
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create() });
       mocks.user.create.mockResolvedValue(UserFactory.create({ oauthId: 'oauth-id' }));
       mocks.session.create.mockResolvedValue(SessionFactory.create());
 
@@ -730,9 +841,9 @@ describe(AuthService.name, () => {
 
     it('should infer name from given and family names', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
-      mocks.oauth.getProfile.mockResolvedValue(
-        OAuthProfileFactory.create({ name: undefined, given_name: 'Given', family_name: 'Family' }),
-      );
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ name: undefined, given_name: 'Given', family_name: 'Family' }),
+      });
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.create.mockResolvedValue(UserFactory.create());
@@ -751,7 +862,7 @@ describe(AuthService.name, () => {
       const profile = OAuthProfileFactory.create({ name: undefined, given_name: undefined, family_name: undefined });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
-      mocks.oauth.getProfile.mockResolvedValue(profile);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.create.mockResolvedValue(UserFactory.create());
@@ -768,7 +879,9 @@ describe(AuthService.name, () => {
 
     it('should ignore an invalid storage quota', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create({ immich_quota: 'abc' }));
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ immich_quota: 'abc' }),
+      });
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue(UserFactory.create({ oauthId: 'oauth-id' }));
@@ -785,7 +898,9 @@ describe(AuthService.name, () => {
 
     it('should ignore a negative quota', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create({ immich_quota: -5 }));
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ immich_quota: -5 }),
+      });
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue(UserFactory.create({ oauthId: 'oauth-id' }));
@@ -802,7 +917,7 @@ describe(AuthService.name, () => {
 
     it('should set quota for 0 quota', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create({ immich_quota: 0 }));
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create({ immich_quota: 0 }) });
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue(UserFactory.create({ oauthId: 'oauth-id' }));
@@ -819,7 +934,7 @@ describe(AuthService.name, () => {
 
     it('should use a valid storage quota', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithStorageQuota);
-      mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create({ immich_quota: 5 }));
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create({ immich_quota: 5 }) });
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.getByOAuthId.mockResolvedValue(void 0);
@@ -839,14 +954,15 @@ describe(AuthService.name, () => {
       const fileId = newUuid();
       const user = UserFactory.create({ oauthId: 'oauth-id' });
       const profile = OAuthProfileFactory.create({ picture: 'https://auth.immich.cloud/profiles/1.jpg' });
+      const pictureBytes = new Uint8Array([1, 2, 3, 4, 5]);
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
-      mocks.oauth.getProfile.mockResolvedValue(profile);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.crypto.randomUUID.mockReturnValue(fileId);
       mocks.oauth.getProfilePicture.mockResolvedValue({
         contentType: 'image/jpeg',
-        data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
+        data: pictureBytes.buffer,
       });
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(SessionFactory.create());
@@ -858,23 +974,54 @@ describe(AuthService.name, () => {
       );
 
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, {
-        profileImagePath: expect.stringContaining(`/data/profile/${user.id}/${fileId}.jpg`),
+        profileImagePath: expect.stringContaining(`/data/profile/${user.id}/${fileId}.webp`),
         profileChangedAt: expect.any(Date),
       });
       expect(mocks.oauth.getProfilePicture).toHaveBeenCalledWith(profile.picture);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
+        Buffer.from(pictureBytes.buffer),
+        expect.objectContaining({ format: 'webp', processInvalidImages: false }),
+        expect.stringContaining(`/data/profile/${user.id}/${fileId}.webp`),
+      );
+    });
+
+    it('should not update the user when thumbnail processing fails on the OAuth picture', async () => {
+      const user = UserFactory.create({ oauthId: 'oauth-id' });
+      const profile = OAuthProfileFactory.create({ picture: 'https://auth.immich.cloud/profiles/1.jpg' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.oauth.getProfilePicture.mockResolvedValue({
+        contentType: 'text/html',
+        data: new Uint8Array([1, 2, 3, 4, 5]).buffer,
+      });
+      mocks.media.generateThumbnail.mockRejectedValue(new Error('not an image'));
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await expect(
+        sut.callback(
+          { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+          {},
+          loginDetails,
+        ),
+      ).resolves.toBeDefined();
+
+      expect(mocks.user.update).not.toHaveBeenCalled();
+      expect(mocks.job.queue).not.toHaveBeenCalled();
     });
 
     it('should not sync the profile picture if the user already has one', async () => {
       const user = UserFactory.create({ oauthId: 'oauth-id', profileImagePath: 'not-empty' });
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
-      mocks.oauth.getProfile.mockResolvedValue(
-        OAuthProfileFactory.create({
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({
           sub: user.oauthId,
           email: user.email,
           picture: 'https://auth.immich.cloud/profiles/1.jpg',
         }),
-      );
+      });
       mocks.user.getByOAuthId.mockResolvedValue(user);
       mocks.user.update.mockResolvedValue(user);
       mocks.session.create.mockResolvedValue(SessionFactory.create());
@@ -891,7 +1038,9 @@ describe(AuthService.name, () => {
 
     it('should only allow "admin" and "user" for the role claim', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
-      mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create({ immich_role: 'foo' }));
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ immich_role: 'foo' }),
+      });
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getAdmin.mockResolvedValue(UserFactory.create({ isAdmin: true }));
       mocks.user.getByOAuthId.mockResolvedValue(void 0);
@@ -909,7 +1058,9 @@ describe(AuthService.name, () => {
 
     it('should create an admin user if the role claim is set to admin', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
-      mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create({ immich_role: 'admin' }));
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ immich_role: 'admin' }),
+      });
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getByOAuthId.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue(UserFactory.create({ oauthId: 'oauth-id' }));
@@ -928,7 +1079,9 @@ describe(AuthService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({
         oauth: { ...systemConfigStub.oauthWithAutoRegister.oauth, roleClaim: 'my_role' },
       });
-      mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create({ my_role: 'admin' }));
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ my_role: 'admin' }),
+      });
       mocks.user.getByEmail.mockResolvedValue(void 0);
       mocks.user.getByOAuthId.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue(UserFactory.create({ oauthId: 'oauth-id' }));
@@ -951,7 +1104,7 @@ describe(AuthService.name, () => {
       const profile = OAuthProfileFactory.create();
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
-      mocks.oauth.getProfile.mockResolvedValue(profile);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
       mocks.user.update.mockResolvedValue(user);
 
       await sut.link(
@@ -963,13 +1116,36 @@ describe(AuthService.name, () => {
       expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: profile.sub });
     });
 
+    it('should link an account and update the session with the oauthSid', async () => {
+      const user = UserFactory.create();
+      const session = SessionFactory.create();
+      const auth = AuthFactory.from(user).session(session).build();
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: { sub: 'sub' },
+        sid: session.oauthSid ?? undefined,
+      });
+      mocks.user.update.mockResolvedValue(user);
+      mocks.session.update.mockResolvedValue(session);
+
+      await sut.link(
+        auth,
+        { url: 'http://immich/user-settings?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+      );
+
+      expect(mocks.session.update).toHaveBeenCalledWith(session.id, { oauthSid: session.oauthSid });
+      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: 'sub' });
+    });
+
     it('should not link an already linked oauth.sub', async () => {
       const authUser = UserFactory.create();
       const authApiKey = ApiKeyFactory.create({ permissions: [] });
       const auth = { user: authUser, apiKey: authApiKey };
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
-      mocks.oauth.getProfile.mockResolvedValue(OAuthProfileFactory.create());
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile: OAuthProfileFactory.create() });
       mocks.user.getByOAuthId.mockResolvedValue({ id: 'other-user' } as UserAdmin);
 
       await expect(
@@ -990,6 +1166,21 @@ describe(AuthService.name, () => {
 
       await sut.unlink(auth);
 
+      expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
+    });
+
+    it('should unlink an account and remove the oauthSid from the session', async () => {
+      const user = UserFactory.create();
+      const session = SessionFactory.create();
+      const auth = AuthFactory.from(user).session(session).build();
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.session.update.mockResolvedValue(session);
+      mocks.user.update.mockResolvedValue(user);
+
+      await sut.unlink(auth);
+
+      expect(mocks.session.update).toHaveBeenCalledWith(session.id, { oauthSid: null });
       expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
     });
   });

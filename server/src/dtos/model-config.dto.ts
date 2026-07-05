@@ -1,83 +1,57 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
-import { ValidateBoolean } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 
-export class TaskConfig {
-  @ValidateBoolean({ description: 'Whether the task is enabled' })
-  enabled!: boolean;
-}
-
-export class ModelConfig extends TaskConfig {
-  @ApiProperty({ description: 'Name of the model to use' })
-  @IsString()
-  @IsNotEmpty()
-  modelName!: string;
-}
-
-export class CLIPConfig extends ModelConfig {}
-
-export class DuplicateDetectionConfig extends TaskConfig {
-  @IsNumber()
-  @Min(0.001)
-  @Max(0.1)
-  @Type(() => Number)
-  @ApiProperty({
-    type: 'number',
-    format: 'double',
-    description: 'Maximum distance threshold for duplicate detection',
+const TaskConfigSchema = z
+  .object({
+    enabled: z.boolean().describe('Whether the task is enabled'),
   })
-  maxDistance!: number;
-}
+  .meta({ id: 'TaskConfig' });
 
-export class FacialRecognitionConfig extends ModelConfig {
-  @IsNumber()
-  @Min(0.1)
-  @Max(1)
-  @Type(() => Number)
-  @ApiProperty({ type: 'number', format: 'double', description: 'Minimum confidence score for face detection' })
-  minScore!: number;
+const ModelConfigSchema = TaskConfigSchema.extend({
+  modelName: z.string().describe('Name of the model to use'),
+});
 
-  @IsNumber()
-  @Min(0.1)
-  @Max(2)
-  @Type(() => Number)
-  @ApiProperty({
-    type: 'number',
-    format: 'double',
-    description: 'Maximum distance threshold for face recognition',
-  })
-  maxDistance!: number;
+export const CLIPConfigSchema = ModelConfigSchema.meta({ id: 'CLIPConfig' });
 
-  @IsNumber()
-  @Min(1)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer', description: 'Minimum number of faces required for recognition' })
-  minFaces!: number;
-}
+export const DuplicateDetectionConfigSchema = TaskConfigSchema.extend({
+  maxDistance: z
+    .number()
+    .meta({ format: 'double' })
+    .min(0.001)
+    .max(0.1)
+    .describe('Maximum distance threshold for duplicate detection'),
+}).meta({ id: 'DuplicateDetectionConfig' });
 
-export class OcrConfig extends ModelConfig {
-  @IsNumber()
-  @Min(1)
-  @Type(() => Number)
-  @ApiProperty({ type: 'integer', description: 'Maximum resolution for OCR processing' })
-  maxResolution!: number;
+export const FacialRecognitionConfigSchema = ModelConfigSchema.extend({
+  minScore: z
+    .number()
+    .meta({ format: 'double' })
+    .min(0.1)
+    .max(1)
+    .describe('Minimum confidence score for face detection'),
+  maxDistance: z
+    .number()
+    .meta({ format: 'double' })
+    .min(0.1)
+    .max(2)
+    .describe('Maximum distance threshold for face recognition'),
+  minFaces: z.int().min(1).describe('Minimum number of faces required for recognition'),
+}).meta({ id: 'FacialRecognitionConfig' });
 
-  @IsNumber()
-  @Min(0.1)
-  @Max(1)
-  @Type(() => Number)
-  @ApiProperty({ type: 'number', format: 'double', description: 'Minimum confidence score for text detection' })
-  minDetectionScore!: number;
+export const OcrConfigSchema = ModelConfigSchema.extend({
+  maxResolution: z.int().min(1).describe('Maximum resolution for OCR processing'),
+  minDetectionScore: z
+    .number()
+    .meta({ format: 'double' })
+    .min(0.1)
+    .max(1)
+    .describe('Minimum confidence score for text detection'),
+  minRecognitionScore: z
+    .number()
+    .meta({ format: 'double' })
+    .min(0.1)
+    .max(1)
+    .describe('Minimum confidence score for text recognition'),
+}).meta({ id: 'OcrConfig' });
 
-  @IsNumber()
-  @Min(0.1)
-  @Max(1)
-  @Type(() => Number)
-  @ApiProperty({
-    type: 'number',
-    format: 'double',
-    description: 'Minimum confidence score for text recognition',
-  })
-  minRecognitionScore!: number;
-}
+export class CLIPConfig extends createZodDto(CLIPConfigSchema) {}

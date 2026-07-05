@@ -51,12 +51,13 @@
     const unknownDateKey = $t('unknown_date');
 
     for (const backup of backups) {
+      const timezone = backup.timezone;
       const dateMatch = backup.filename.match(/\d+T\d+/);
       let dateKey: string;
       let dt: DateTime;
 
       if (dateMatch) {
-        dt = DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone: 'utc' });
+        dt = DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone: timezone });
         dateKey = dt.toFormat('LLLL d, yyyy');
       } else {
         dt = DateTime.fromMillis(0);
@@ -90,8 +91,8 @@
   <Card color="info">
     <CardBody>
       {#if uploadProgress === -1}
-        <div class="flex justify-between items-center">
-          <div class="flex gap-2 items-end w-max">
+        <div class="flex items-center justify-between">
+          <div class="flex w-max items-end gap-2">
             <Icon icon={mdiTrayArrowUp} size="20" class="text-muted"></Icon>
             <Text class="grow">{$t('admin.maintenance_upload_backup')}</Text>
           </div>
@@ -117,7 +118,7 @@
   {#each [...groupedBackups.entries()] as [dateGroup, groupBackups] (dateGroup)}
     <Stack gap={2}>
       <div class="mt-5 mb-1">
-        <div class="bg-primary-50 flex gap-2 px-4 py-2 rounded-xl w-max place-items-center">
+        <div class="flex w-max place-items-center gap-2 rounded-xl bg-primary-50 px-4 py-2">
           <Icon icon={mdiCalendar} size="18" />
           <Text size="small" fontWeight="medium" color="muted">{dateGroup}</Text>
         </div>
@@ -128,6 +129,7 @@
           filename={backup.filename}
           filesize={backup.filesize}
           expectedVersion={props.expectedVersion}
+          timezone={backup.timezone}
         />
       {/each}
     </Stack>

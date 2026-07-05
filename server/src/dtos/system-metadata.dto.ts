@@ -1,26 +1,33 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { ValidateBoolean } from 'src/validation';
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 
-export class AdminOnboardingUpdateDto {
-  @ValidateBoolean({ description: 'Is admin onboarded' })
-  isOnboarded!: boolean;
-}
+const AdminOnboardingUpdateSchema = z
+  .object({
+    isOnboarded: z.boolean().describe('Is admin onboarded'),
+  })
+  .meta({ id: 'AdminOnboardingUpdateDto' });
 
-export class AdminOnboardingResponseDto {
-  @ValidateBoolean({ description: 'Is admin onboarded' })
-  isOnboarded!: boolean;
-}
+const AdminOnboardingResponseSchema = z
+  .object({
+    isOnboarded: z.boolean().describe('Is admin onboarded'),
+  })
+  .meta({ id: 'AdminOnboardingResponseDto' });
 
-export class ReverseGeocodingStateResponseDto {
-  @ApiProperty({ description: 'Last update timestamp' })
-  lastUpdate!: string | null;
-  @ApiProperty({ description: 'Last import file name' })
-  lastImportFileName!: string | null;
-}
+const ReverseGeocodingStateResponseSchema = z
+  .object({
+    lastUpdate: z.string().nullable().describe('Last update timestamp'),
+    lastImportFileName: z.string().nullable().describe('Last import file name'),
+  })
+  .meta({ id: 'ReverseGeocodingStateResponseDto' });
 
-export class VersionCheckStateResponseDto {
-  @ApiProperty({ description: 'Last check timestamp' })
-  checkedAt!: string | null;
-  @ApiProperty({ description: 'Release version' })
-  releaseVersion!: string | null;
-}
+const VersionCheckStateResponseSchema = z
+  .object({
+    checkedAt: z.string().nullable().describe('Last check timestamp'),
+    releaseVersion: z.string().nullable().describe('Release version'),
+  })
+  .meta({ id: 'VersionCheckStateResponseDto' });
+
+export class AdminOnboardingUpdateDto extends createZodDto(AdminOnboardingUpdateSchema) {}
+export class AdminOnboardingResponseDto extends createZodDto(AdminOnboardingResponseSchema) {}
+export class ReverseGeocodingStateResponseDto extends createZodDto(ReverseGeocodingStateResponseSchema) {}
+export class VersionCheckStateResponseDto extends createZodDto(VersionCheckStateResponseSchema) {}

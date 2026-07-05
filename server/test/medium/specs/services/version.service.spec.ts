@@ -1,6 +1,7 @@
 import { Kysely } from 'kysely';
 import { serverVersion } from 'src/constants';
 import { JobName } from 'src/enum';
+import { CronRepository } from 'src/repositories/cron.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -16,7 +17,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(VersionService, {
     database: db || defaultDatabase,
     real: [DatabaseRepository, VersionHistoryRepository],
-    mock: [LoggingRepository, JobRepository],
+    mock: [LoggingRepository, JobRepository, CronRepository],
   });
 };
 

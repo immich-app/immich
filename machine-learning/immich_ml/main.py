@@ -12,7 +12,7 @@ from zipfile import BadZipFile
 
 import orjson
 from fastapi import Depends, FastAPI, File, Form, HTTPException
-from fastapi.responses import ORJSONResponse, PlainTextResponse
+from fastapi.responses import PlainTextResponse
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from PIL.Image import Image
 from pydantic import ValidationError
@@ -32,6 +32,7 @@ from .schemas import (
     ModelIdentity,
     ModelTask,
     ModelType,
+    ORJSONResponse,
     PipelineRequest,
     T,
 )
@@ -117,20 +118,6 @@ async def preload_models(preload: PreloadModelData) -> None:
             ModelTask.OCR,
         )
 
-    if preload.clip_fallback is not None:
-        log.warning(
-            "Deprecated env variable: 'MACHINE_LEARNING_PRELOAD__CLIP'. "
-            "Use 'MACHINE_LEARNING_PRELOAD__CLIP__TEXTUAL' and "
-            "'MACHINE_LEARNING_PRELOAD__CLIP__VISUAL' instead."
-        )
-
-    if preload.facial_recognition_fallback is not None:
-        log.warning(
-            "Deprecated env variable: 'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION'. "
-            "Use 'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__DETECTION' and "
-            "'MACHINE_LEARNING_PRELOAD__FACIAL_RECOGNITION__RECOGNITION' instead."
-        )
-
 
 def update_state() -> Iterator[None]:
     global active_requests, last_called
@@ -183,7 +170,10 @@ async def predict(
     text: str | None = Form(default=None),
 ) -> Any:
     if image is not None:
-        inputs: Image | str = await run(lambda: decode_pil(image))
+        decoded = await run(lambda: decode_pil(image))
+        if decoded.width == 0 or decoded.height == 0:
+            raise HTTPException(400, "Image has zero width or height")
+        inputs: Image | str = decoded
     elif text is not None:
         inputs = text
     else:

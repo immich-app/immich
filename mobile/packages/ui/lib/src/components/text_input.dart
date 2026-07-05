@@ -1,33 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ImmichTextInput extends StatefulWidget {
-  final String label;
+  final String? label;
   final String? hintText;
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final String? Function(String?)? validator;
-  final void Function(BuildContext, String)? onSubmit;
+  final void Function(String value)? onSubmit;
   final TextInputType keyboardType;
   final TextInputAction? keyboardAction;
   final List<String>? autofillHints;
   final Widget? suffixIcon;
   final bool obscureText;
-  final bool autoCorrect;
+  final bool autocorrect;
+  final SmartDashesType? smartDashesType;
+  final SmartQuotesType? smartQuotesType;
+  final List<TextInputFormatter>? inputFormatters;
+  final bool enabled;
+  final bool autofocus;
+  final AutovalidateMode? autovalidateMode;
 
   const ImmichTextInput({
     super.key,
     this.controller,
     this.focusNode,
-    required this.label,
+    this.label,
     this.hintText,
     this.validator,
     this.onSubmit,
-    this.keyboardType = TextInputType.text,
+    this.keyboardType = .text,
     this.keyboardAction,
     this.autofillHints,
     this.suffixIcon,
     this.obscureText = false,
-    this.autoCorrect = true,
+    this.autocorrect = true,
+    this.smartDashesType,
+    this.smartQuotesType,
+    this.inputFormatters,
+    this.enabled = true,
+    this.autofocus = false,
+    this.autovalidateMode,
   });
 
   @override
@@ -36,7 +49,6 @@ class ImmichTextInput extends StatefulWidget {
 
 class _ImmichTextInputState extends State<ImmichTextInput> {
   late final FocusNode _focusNode;
-  String? _error;
 
   @override
   void initState() {
@@ -52,40 +64,26 @@ class _ImmichTextInputState extends State<ImmichTextInput> {
     super.dispose();
   }
 
-  String? _validateInput(String? value) {
-    setState(() {
-      _error = widget.validator?.call(value);
-    });
-    return null;
-  }
-
-  bool get _hasError => _error != null && _error!.isNotEmpty;
-
   @override
   Widget build(BuildContext context) {
-    final themeData = Theme.of(context);
-
     return TextFormField(
       controller: widget.controller,
       focusNode: _focusNode,
-      decoration: InputDecoration(
-        hintText: widget.hintText,
-        labelText: widget.label,
-        labelStyle: themeData.inputDecorationTheme.labelStyle?.copyWith(
-          color: _hasError ? themeData.colorScheme.error : null,
-        ),
-        errorText: _error,
-        suffixIcon: widget.suffixIcon,
-      ),
+      enabled: widget.enabled,
+      autofocus: widget.autofocus,
+      autovalidateMode: widget.autovalidateMode,
+      decoration: InputDecoration(hintText: widget.hintText, labelText: widget.label, suffixIcon: widget.suffixIcon),
       obscureText: widget.obscureText,
-      validator: _validateInput,
-      keyboardType: widget.keyboardType,
+      validator: widget.validator,
       textInputAction: widget.keyboardAction,
-      autocorrect: widget.autoCorrect,
-      autofillHints: widget.autofillHints,
-      onTap: () => setState(() => _error = null),
       onTapOutside: (_) => _focusNode.unfocus(),
-      onFieldSubmitted: (value) => widget.onSubmit?.call(context, value),
+      onFieldSubmitted: (value) => widget.onSubmit?.call(value),
+      keyboardType: widget.keyboardType,
+      autofillHints: widget.autofillHints,
+      autocorrect: widget.autocorrect,
+      smartDashesType: widget.smartDashesType,
+      smartQuotesType: widget.smartQuotesType,
+      inputFormatters: widget.inputFormatters,
     );
   }
 }

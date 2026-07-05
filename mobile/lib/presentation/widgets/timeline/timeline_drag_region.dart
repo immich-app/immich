@@ -81,11 +81,15 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
 
   TimelineAssetIndex? _getValueKeyAtPosition(Offset position) {
     final box = context.findAncestorRenderObjectOfType<RenderBox>();
-    if (box == null) return null;
+    if (box == null) {
+      return null;
+    }
 
     final hitTestResult = BoxHitTestResult();
     final local = box.globalToLocal(position);
-    if (!box.hitTest(hitTestResult, position: local)) return null;
+    if (!box.hitTest(hitTestResult, position: local)) {
+      return null;
+    }
 
     return (hitTestResult.path.firstWhereOrNull((hit) => hit.target is _TimelineAssetIndexProxy)?.target
             as _TimelineAssetIndexProxy?)
@@ -103,7 +107,9 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
 
     final initialHit = _getValueKeyAtPosition(event.globalPosition);
     anchorAsset = initialHit;
-    if (initialHit == null) return;
+    if (initialHit == null) {
+      return;
+    }
 
     if (anchorAsset != null) {
       widget.onStart?.call(anchorAsset!);
@@ -117,8 +123,12 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
   }
 
   void _onLongPressMove(LongPressMoveUpdateDetails event) {
-    if (anchorAsset == null) return;
-    if (topScrollOffset == null || bottomScrollOffset == null) return;
+    if (anchorAsset == null) {
+      return;
+    }
+    if (topScrollOffset == null || bottomScrollOffset == null) {
+      return;
+    }
 
     final currentDy = event.localPosition.dy;
 
@@ -138,7 +148,9 @@ class _TimelineDragRegionState extends State<TimelineDragRegion> {
     }
 
     final currentlyTouchingAsset = _getValueKeyAtPosition(event.globalPosition);
-    if (currentlyTouchingAsset == null) return;
+    if (currentlyTouchingAsset == null) {
+      return;
+    }
 
     if (assetUnderPointer != currentlyTouchingAsset) {
       if (!scrollNotified) {
@@ -202,7 +214,9 @@ class TimelineAssetIndex {
 
   @override
   bool operator ==(covariant TimelineAssetIndex other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.assetIndex == assetIndex && other.segmentIndex == segmentIndex;
   }

@@ -20,7 +20,6 @@ class AssetMediaResponseDto {
   /// Asset media ID
   String id;
 
-  /// Upload status
   AssetMediaStatus status;
 
   @override

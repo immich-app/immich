@@ -25,6 +25,7 @@ export class SessionFactory {
       updateId: newUuidV7(),
       updatedAt: newDate(),
       userId: newUuid(),
+      oauthSid: newUuid(),
       ...dto,
     });
   }

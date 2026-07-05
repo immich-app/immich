@@ -14,8 +14,8 @@ class PinCodeChangeDto {
   /// Returns a new [PinCodeChangeDto] instance.
   PinCodeChangeDto({
     required this.newPinCode,
-    this.password,
-    this.pinCode,
+    this.password = const Optional.absent(),
+    this.pinCode = const Optional.absent(),
   });
 
   /// New PIN code (4-6 digits)
@@ -28,7 +28,7 @@ class PinCodeChangeDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? password;
+  Optional<String?> password;
 
   /// New PIN code (4-6 digits)
   ///
@@ -37,7 +37,7 @@ class PinCodeChangeDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? pinCode;
+  Optional<String?> pinCode;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PinCodeChangeDto &&
@@ -58,15 +58,13 @@ class PinCodeChangeDto {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'newPinCode'] = this.newPinCode;
-    if (this.password != null) {
-      json[r'password'] = this.password;
-    } else {
-    //  json[r'password'] = null;
+    if (this.password.isPresent) {
+      final value = this.password.value;
+      json[r'password'] = value;
     }
-    if (this.pinCode != null) {
-      json[r'pinCode'] = this.pinCode;
-    } else {
-    //  json[r'pinCode'] = null;
+    if (this.pinCode.isPresent) {
+      final value = this.pinCode.value;
+      json[r'pinCode'] = value;
     }
     return json;
   }
@@ -81,8 +79,8 @@ class PinCodeChangeDto {
 
       return PinCodeChangeDto(
         newPinCode: mapValueOfType<String>(json, r'newPinCode')!,
-        password: mapValueOfType<String>(json, r'password'),
-        pinCode: mapValueOfType<String>(json, r'pinCode'),
+        password: json.containsKey(r'password') ? Optional.present(mapValueOfType<String>(json, r'password')) : const Optional.absent(),
+        pinCode: json.containsKey(r'pinCode') ? Optional.present(mapValueOfType<String>(json, r'pinCode')) : const Optional.absent(),
       );
     }
     return null;

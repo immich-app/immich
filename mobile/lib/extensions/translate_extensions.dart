@@ -1,7 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl/message_format.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
+import 'package:intl/message_format.dart';
 
 extension StringTranslateExtension on String {
   String t({BuildContext? context, Map<String, Object>? args}) {

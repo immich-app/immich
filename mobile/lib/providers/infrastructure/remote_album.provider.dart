@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -6,9 +8,12 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/providers/album/pending_album_uploads.provider.dart';
+import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:logging/logging.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 class RemoteAlbumState {
   final List<RemoteAlbum> albums;
@@ -24,7 +29,9 @@ class RemoteAlbumState {
 
   @override
   bool operator ==(covariant RemoteAlbumState other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     final listEquals = const DeepCollectionEquality().equals;
 
     return listEquals(other.albums, albums);
@@ -82,13 +89,63 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     List<String> assetIds = const [],
   }) async {
     try {
-      final album = await _remoteAlbumService.createAlbum(title: title, description: description, assetIds: assetIds);
+      final currentUser = ref.read(currentUserProvider);
+      if (currentUser == null) {
+        throw Exception('User not logged in');
+      }
+
+      final album = await _remoteAlbumService.createAlbum(
+        title: title,
+        owner: currentUser,
+        description: description,
+        assetIds: assetIds,
+      );
 
       state = state.copyWith(albums: [...state.albums, album]);
 
       return album;
     } catch (error, stack) {
       _logger.severe('Failed to create album', error, stack);
+      rethrow;
+    }
+  }
+
+  /// Creates an album from a heterogeneous asset selection. Already-remote
+  /// assets seed the album immediately; local-only assets are uploaded in the
+  /// background and linked one-by-one as each upload completes.
+  Future<RemoteAlbum?> createAlbumWithAssets({
+    required String title,
+    String? description,
+    Iterable<BaseAsset> assets = const [],
+  }) async {
+    try {
+      final currentUser = ref.read(currentUserProvider);
+      if (currentUser == null) {
+        throw Exception('User not logged in');
+      }
+
+      final candidates = RemoteAlbumService.categorizeCandidates(assets);
+      final album = await _remoteAlbumService.createAlbum(
+        title: title,
+        owner: currentUser,
+        description: description,
+        assetIds: candidates.remoteAssetIds,
+      );
+
+      state = state.copyWith(albums: [...state.albums, album]);
+
+      if (candidates.localAssetsToUpload.isNotEmpty) {
+        unawaited(
+          addAssetsToAlbum(
+            album.id,
+            candidates.localAssetsToUpload,
+          ).then<void>((_) {}).catchError((Object _, StackTrace _) {}),
+        );
+      }
+
+      return album;
+    } catch (error, stack) {
+      _logger.severe('Failed to create album with assets', error, stack);
       rethrow;
     }
   }
@@ -143,8 +200,97 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     return _remoteAlbumService.getAssets(albumId);
   }
 
-  Future<int> addAssets(String albumId, List<String> assetIds) {
-    return _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
+  Future<int> addAssets(String albumId, List<String> assetIds) async {
+    final added = await _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
+    if (added > 0) {
+      await _refreshAlbumInState(albumId);
+    }
+    return added;
+  }
+
+  /// Links a freshly-uploaded local asset to an album using its new remote ID,
+  /// upserting a placeholder remote asset row so the local DB join survives
+  /// until the next sync catches up.
+  Future<int> linkUploadedAssetToAlbum(String albumId, LocalAsset source, String remoteId) async {
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+
+    final added = await _remoteAlbumService.linkUploadedAssetToAlbum(albumId, remoteId, currentUser, source);
+    if (added > 0) {
+      await _refreshAlbumInState(albumId);
+    }
+    return added;
+  }
+
+  /// Adds a heterogeneous asset selection to an album. Already-remote assets
+  /// are linked immediately; local-only assets are queued in
+  /// [pendingAlbumUploadsProvider] (so the album page can show them with
+  /// progress indicators), uploaded, and linked one-by-one as each finishes.
+  Future<int> addAssetsToAlbum(String albumId, Iterable<BaseAsset> assets) async {
+    final currentUser = ref.read(currentUserProvider);
+    if (currentUser == null) {
+      throw Exception('User not logged in');
+    }
+
+    final candidates = RemoteAlbumService.categorizeCandidates(assets);
+    final pendingNotifier = ref.read(pendingAlbumUploadsProvider(albumId).notifier);
+    pendingNotifier.enqueue(candidates.localAssetsToUpload);
+
+    Completer<void>? cancelToken;
+    if (candidates.localAssetsToUpload.isNotEmpty) {
+      cancelToken = Completer<void>();
+      ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;
+    }
+
+    try {
+      final added = await _remoteAlbumService.addAssetsToAlbum(
+        albumId: albumId,
+        uploader: currentUser,
+        candidates: candidates,
+        cancelToken: cancelToken,
+        uploadCallbacks: UploadCallbacks(
+          onProgress: (localAssetId, _, bytes, totalBytes) {
+            final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
+            pendingNotifier.updateProgress(localAssetId, progress);
+          },
+          onSuccess: (localAssetId, _) => pendingNotifier.remove(localAssetId),
+          onError: (localAssetId, _) => pendingNotifier.markFailed(localAssetId),
+        ),
+      );
+      if (added > 0) {
+        await _refreshAlbumInState(albumId);
+      }
+      return added;
+    } catch (error, stack) {
+      if (candidates.localAssetsToUpload.isNotEmpty) {
+        pendingNotifier.markAllFailed();
+      }
+      _logger.severe('Failed to add assets to album $albumId', error, stack);
+      rethrow;
+    } finally {
+      if (cancelToken != null) {
+        if (cancelToken.isCompleted) {
+          pendingNotifier.clear();
+        }
+        if (ref.read(manualUploadCancelTokenProvider) == cancelToken) {
+          ref.read(manualUploadCancelTokenProvider.notifier).state = null;
+        }
+      }
+    }
+  }
+
+  /// Re-reads a single album from the local DB and replaces it in [state] so
+  /// that views bound to the album list (counts, thumbnails) reflect the
+  /// latest junction-table changes without a full `refresh()`.
+  Future<void> _refreshAlbumInState(String albumId) async {
+    final updated = await _remoteAlbumService.get(albumId);
+    if (updated == null) {
+      return;
+    }
+
+    state = state.copyWith(albums: state.albums.map((album) => album.id == albumId ? updated : album).toList());
   }
 
   Future<void> addUsers(String albumId, List<String> userIds) {

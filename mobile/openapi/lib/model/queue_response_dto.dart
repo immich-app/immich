@@ -21,7 +21,6 @@ class QueueResponseDto {
   /// Whether the queue is paused
   bool isPaused;
 
-  /// Queue name
   QueueName name;
 
   QueueStatisticsDto statistics;

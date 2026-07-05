@@ -1,20 +1,22 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/utils/timezone.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const ViewerTopAppBar({super.key});
@@ -28,21 +30,20 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final album = ref.watch(currentRemoteAlbumProvider);
 
-    final user = ref.watch(currentUserProvider);
-    final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isInLockedView = ref.watch(inLockedViewProvider);
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
 
     if (album != null && album.isActivityEnabled && album.isShared && asset is RemoteAsset) {
-      ref.watch(albumActivityProvider(album.id, asset.id));
+      ref.watch(albumActivityProvider((album.id, asset.id)));
     }
 
     final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
     double opacity = ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
 
     final originalTheme = context.themeData;
+    final assetForAction = [asset];
 
     final actions = <Widget>[
       if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
@@ -60,10 +61,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           },
         ),
 
-      if (asset.hasRemote && isOwner && !asset.isFavorite)
-        const FavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
-      if (asset.hasRemote && isOwner && asset.isFavorite)
-        const UnFavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
+      ActionIconButtonWidget(action: FavoriteAction(assets: assetForAction)),
 
       ViewerKebabMenu(originalTheme: originalTheme),
     ];
@@ -75,29 +73,48 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
       child: AnimatedOpacity(
         opacity: opacity,
         duration: Durations.short2,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: showingDetails
-                ? null
-                : const LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.black45, Colors.black12, Colors.transparent],
-                    stops: [0.0, 0.7, 1.0],
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: IgnorePointer(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: showingDetails
+                        ? null
+                        : const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.black45, Colors.black12, Colors.transparent],
+                            stops: [0.0, 0.7, 1.0],
+                          ),
                   ),
-          ),
-          child: AppBar(
-            backgroundColor: Colors.transparent,
-            leading: const _AppBarBackButton(),
-            iconTheme: const IconThemeData(size: 22, color: Colors.white),
-            actionsIconTheme: const IconThemeData(size: 22, color: Colors.white),
-            shape: const Border(),
-            actions: showingDetails || isReadonlyModeEnabled
-                ? null
-                : isInLockedView
-                ? lockedViewActions
-                : actions,
-          ),
+                ),
+              ),
+            ),
+            SafeArea(
+              bottom: false,
+              child: SizedBox(
+                height: preferredSize.height,
+                child: Theme(
+                  data: context.themeData.copyWith(iconTheme: const IconThemeData(size: 22, color: Colors.white)),
+                  child: NavigationToolbar(
+                    centerMiddle: true,
+                    leading: const _AppBarBackButton(),
+                    middle: showingDetails ? null : _AssetInfoTitle(asset: asset),
+                    trailing: !showingDetails && !isReadonlyModeEnabled
+                        ? ImmichColorOverride(
+                            color: Colors.white,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: isInLockedView ? lockedViewActions : actions,
+                            ),
+                          )
+                        : null,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -113,20 +130,46 @@ class _AppBarBackButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final showingDetails = ref.watch(assetViewerProvider.select((state) => state.showingDetails));
-    return Padding(
-      padding: const EdgeInsets.only(left: 12.0),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: showingDetails ? context.colorScheme.surface : Colors.transparent,
-          shape: const CircleBorder(),
-          iconSize: 22,
-          iconColor: showingDetails ? context.colorScheme.onSurface : Colors.white,
-          padding: EdgeInsets.zero,
-          elevation: showingDetails ? 4 : 0,
-        ),
-        onPressed: context.maybePop,
-        child: const Icon(Icons.arrow_back_rounded),
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: showingDetails ? context.colorScheme.surface : Colors.transparent,
+        shape: const CircleBorder(),
+        iconSize: 22,
+        iconColor: showingDetails ? context.colorScheme.onSurface : Colors.white,
+        padding: const EdgeInsets.all(10.0),
+        elevation: showingDetails ? 4 : 0,
       ),
+      onPressed: context.maybePop,
+      child: const Icon(Icons.arrow_back_rounded),
+    );
+  }
+}
+
+class _AssetInfoTitle extends ConsumerWidget {
+  final BaseAsset asset;
+
+  const _AssetInfoTitle({required this.asset});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    DateTime dateTime = asset.createdAt.toLocal();
+    final currentYear = DateTime.now().year;
+    final exifInfo = ref.watch(assetExifProvider(asset)).valueOrNull;
+
+    if (exifInfo?.dateTimeOriginal != null) {
+      (dateTime, _) = applyTimezoneOffset(dateTime: exifInfo!.dateTimeOriginal!, timeZone: exifInfo.timeZone);
+    }
+
+    final isCurrentYear = dateTime.year == currentYear;
+    final dateFormatted = isCurrentYear ? DateFormat.MMMd().format(dateTime) : DateFormat.yMMMd().format(dateTime);
+    final timeFormatted = DateFormat.jm().format(dateTime);
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(dateFormatted, style: context.textTheme.labelLarge?.copyWith(color: Colors.white)),
+        Text(timeFormatted, style: context.textTheme.labelMedium?.copyWith(color: Colors.white70)),
+      ],
     );
   }
 }

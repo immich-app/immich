@@ -19,6 +19,9 @@ class AssetStackResponseDto {
   });
 
   /// Number of assets in stack
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 9007199254740991
   int assetCount;
 
   /// Stack ID

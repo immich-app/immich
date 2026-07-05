@@ -2,7 +2,6 @@
 /// <reference no-default-lib="true"/>
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
-
 import { handleCancel } from './request';
 
 const sw = globalThis as unknown as ServiceWorkerGlobalScope;

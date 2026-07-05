@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "strict": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "outDir": "build",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "rootDir": "./src",
+    "lib": ["esnext", "dom"]
+  },
+  "include": ["src/**/*.ts"]
+}

@@ -323,17 +323,6 @@ where
 limit
   $3
 
--- AssetRepository.getAllByDeviceId
-select
-  "deviceAssetId"
-from
-  "asset"
-where
-  "ownerId" = $1::uuid
-  and "deviceId" = $2
-  and "visibility" != $3
-  and "deletedAt" is null
-
 -- AssetRepository.getLivePhotoCount
 select
   count(*) as "count"
@@ -393,9 +382,8 @@ limit
 -- AssetRepository.updateAll
 update "asset"
 set
-  "deviceId" = $1
 where
-  "id" = any ($2::uuid[])
+  "id" = any ($1::uuid[])
 
 -- AssetRepository.getByChecksum
 select
@@ -433,6 +421,22 @@ where
   and "libraryId" is null
 limit
   $3
+
+-- AssetRepository.getCalendarHeatmap
+select
+  date_trunc('DAY', "asset"."createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC' as "date",
+  count(*) as "count"
+from
+  "asset"
+where
+  "ownerId" = $1::uuid
+  and "createdAt" >= $2
+  and "createdAt" < $3
+  and "deletedAt" is null
+group by
+  date_trunc('DAY', "asset"."createdAt" AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'
+order by
+  "date" asc
 
 -- AssetRepository.getTimeBuckets
 with
@@ -477,9 +481,8 @@ with
       "asset"."ownerId",
       "asset"."status",
       asset."fileCreatedAt" at time zone 'utc' as "fileCreatedAt",
+      asset."createdAt" at time zone 'utc' as "createdAt",
       encode("asset"."thumbhash", 'base64') as "thumbhash",
-      "asset_exif"."city",
-      "asset_exif"."country",
       "asset_exif"."projectionType",
       coalesce(
         case
@@ -492,6 +495,8 @@ with
         end,
         1
       ) as "ratio",
+      "asset_exif"."city",
+      "asset_exif"."country",
       "stack"
     from
       "asset"
@@ -526,8 +531,6 @@ with
   ),
   "agg" as (
     select
-      coalesce(array_agg("city"), '{}') as "city",
-      coalesce(array_agg("country"), '{}') as "country",
       coalesce(array_agg("duration"), '{}') as "duration",
       coalesce(array_agg("id"), '{}') as "id",
       coalesce(array_agg("visibility"), '{}') as "visibility",
@@ -537,11 +540,14 @@ with
       coalesce(array_agg("livePhotoVideoId"), '{}') as "livePhotoVideoId",
       coalesce(array_agg("fileCreatedAt"), '{}') as "fileCreatedAt",
       coalesce(array_agg("localOffsetHours"), '{}') as "localOffsetHours",
+      coalesce(array_agg("createdAt"), '{}') as "createdAt",
       coalesce(array_agg("ownerId"), '{}') as "ownerId",
       coalesce(array_agg("projectionType"), '{}') as "projectionType",
       coalesce(array_agg("ratio"), '{}') as "ratio",
       coalesce(array_agg("status"), '{}') as "status",
       coalesce(array_agg("thumbhash"), '{}') as "thumbhash",
+      coalesce(array_agg("city"), '{}') as "city",
+      coalesce(array_agg("country"), '{}') as "country",
       coalesce(json_agg("stack"), '[]') as "stack"
     from
       "cte"
@@ -580,60 +586,19 @@ where
 limit
   $5
 
--- AssetRepository.getAllForUserFullSync
+-- AssetRepository.getRecentlyCreatedAssetIds
 select
-  "asset".*,
-  to_json("asset_exif") as "exifInfo",
-  to_json("stacked_assets") as "stack"
+  "id" as "data",
+  "createdAt" as "value"
 from
   "asset"
-  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  left join "stack" on "stack"."id" = "asset"."stackId"
-  left join lateral (
-    select
-      "stack".*,
-      count("stacked") as "assetCount"
-    from
-      "asset" as "stacked"
-    where
-      "stacked"."stackId" = "stack"."id"
-    group by
-      "stack"."id"
-  ) as "stacked_assets" on "stack"."id" is not null
 where
-  "asset"."ownerId" = $1::uuid
-  and "asset"."visibility" != $2
-  and "asset"."updatedAt" <= $3
-  and "asset"."id" > $4
+  "ownerId" = $1::uuid
+  and "asset"."visibility" = $2
+  and "type" = $3
+  and "deletedAt" is null
 order by
-  "asset"."id"
-limit
-  $5
-
--- AssetRepository.getChangedDeltaSync
-select
-  "asset".*,
-  to_json("asset_exif") as "exifInfo",
-  to_json("stacked_assets") as "stack"
-from
-  "asset"
-  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  left join "stack" on "stack"."id" = "asset"."stackId"
-  left join lateral (
-    select
-      "stack".*,
-      count("stacked") as "assetCount"
-    from
-      "asset" as "stacked"
-    where
-      "stacked"."stackId" = "stack"."id"
-    group by
-      "stack"."id"
-  ) as "stacked_assets" on "stack"."id" is not null
-where
-  "asset"."ownerId" = any ($1::uuid[])
-  and "asset"."visibility" != $2
-  and "asset"."updatedAt" > $3
+  "value" desc
 limit
   $4
 
@@ -720,13 +685,14 @@ select
       "asset_file"
     where
       "asset_file"."assetId" = "asset"."id"
-      and "asset_file"."type" = $1
+      and "asset_file"."type" = 'encoded_video'
+      and "asset_file"."isEdited" = false
   ) as "encodedVideoPath"
 from
   "asset"
 where
-  "asset"."id" = $2
-  and "asset"."type" = $3
+  "asset"."id" = $1
+  and "asset"."type" = $2
 
 -- AssetRepository.getForOcr
 select

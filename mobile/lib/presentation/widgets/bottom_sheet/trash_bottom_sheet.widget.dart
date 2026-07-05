@@ -10,20 +10,19 @@ class TrashBottomBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SafeArea(
-      child: Align(
-        alignment: Alignment.bottomCenter,
-        child: SizedBox(
-          height: 64,
-          child: Container(
-            color: context.themeData.canvasColor,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                DeleteTrashActionButton(source: ActionSource.timeline),
-                RestoreTrashActionButton(source: ActionSource.timeline),
-              ],
-            ),
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Container(
+        color: context.themeData.canvasColor,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: const SafeArea(
+          top: false,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              DeleteTrashActionButton(source: ActionSource.timeline),
+              RestoreTrashActionButton(source: ActionSource.timeline),
+            ],
           ),
         ),
       ),

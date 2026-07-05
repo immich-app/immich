@@ -1,98 +1,140 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
-import { PluginAction, PluginFilter } from 'src/database';
-import { PluginContext as PluginContextType, PluginTriggerType } from 'src/enum';
-import type { JSONSchema } from 'src/types/plugin-schema.types';
-import { ValidateEnum } from 'src/validation';
+import { WorkflowTrigger } from '@immich/plugin-sdk';
+import { createZodDto } from 'nestjs-zod';
+import { JsonSchemaDto } from 'src/dtos/json-schema.dto';
+import { WorkflowTriggerSchema, WorkflowType, WorkflowTypeSchema } from 'src/enum';
+import { asPluginKey } from 'src/utils/workflow';
+import z from 'zod';
 
-export class PluginTriggerResponseDto {
-  @ValidateEnum({ enum: PluginTriggerType, name: 'PluginTriggerType', description: 'Trigger type' })
-  type!: PluginTriggerType;
-  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType', description: 'Context type' })
-  contextType!: PluginContextType;
-}
+const PluginSearchSchema = z
+  .object({
+    id: z.uuidv4().optional().describe('Plugin ID'),
+    enabled: z.boolean().optional().describe('Whether the plugin is enabled'),
+    name: z.string().optional(),
+    version: z.string().optional(),
+    title: z.string().optional(),
+    description: z.string().optional(),
+  })
+  .meta({ id: 'PluginSearchDto' });
 
-export class PluginResponseDto {
-  @ApiProperty({ description: 'Plugin ID' })
-  id!: string;
-  @ApiProperty({ description: 'Plugin name' })
-  name!: string;
-  @ApiProperty({ description: 'Plugin title' })
-  title!: string;
-  @ApiProperty({ description: 'Plugin description' })
-  description!: string;
-  @ApiProperty({ description: 'Plugin author' })
-  author!: string;
-  @ApiProperty({ description: 'Plugin version' })
-  version!: string;
-  @ApiProperty({ description: 'Creation date' })
-  createdAt!: string;
-  @ApiProperty({ description: 'Last update date' })
-  updatedAt!: string;
-  @ApiProperty({ description: 'Plugin filters' })
-  filters!: PluginFilterResponseDto[];
-  @ApiProperty({ description: 'Plugin actions' })
-  actions!: PluginActionResponseDto[];
-}
+const PluginMethodResponseSchema = z
+  .object({
+    key: z.string().describe('Key'),
+    name: z.string().describe('Name'),
+    title: z.string().describe('Title'),
+    description: z.string().describe('Description'),
+    types: z.array(WorkflowTypeSchema).describe('Workflow types'),
+    uiHints: z.array(z.string()).describe('Ui hints'),
+    // TODO fix this
+    schema: z.object().optional(),
+    hostFunctions: z.boolean(),
+  })
+  .meta({ id: 'PluginMethodResponseDto' });
 
-export class PluginFilterResponseDto {
-  @ApiProperty({ description: 'Filter ID' })
-  id!: string;
-  @ApiProperty({ description: 'Plugin ID' })
-  pluginId!: string;
-  @ApiProperty({ description: 'Method name' })
-  methodName!: string;
-  @ApiProperty({ description: 'Filter title' })
-  title!: string;
-  @ApiProperty({ description: 'Filter description' })
-  description!: string;
+const PluginResponseSchema = z
+  .object({
+    id: z.uuidv4().describe('Plugin ID'),
+    name: z.string().describe('Plugin name'),
+    title: z.string().describe('Plugin title'),
+    description: z.string().describe('Plugin description'),
+    author: z.string().describe('Plugin author'),
+    version: z.string().describe('Plugin version'),
+    createdAt: z.string().describe('Creation date'),
+    updatedAt: z.string().describe('Last update date'),
+    methods: z.array(PluginMethodResponseSchema).describe('Plugin methods'),
+  })
+  .meta({ id: 'PluginResponseDto' });
 
-  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType', each: true, description: 'Supported contexts' })
-  supportedContexts!: PluginContextType[];
-  @ApiProperty({ description: 'Filter schema' })
-  schema!: JSONSchema | null;
-}
+const PluginTemplateStepResponseSchema = z
+  .object({
+    method: z.string().describe('Step plugin method'),
+    config: z.record(z.string(), z.unknown()).nullable().describe('Step configuration'),
+    enabled: z.boolean().optional().describe('Whether the step is enabled'),
+  })
+  .meta({ id: 'PluginTemplateStepResponseDto' });
 
-export class PluginActionResponseDto {
-  @ApiProperty({ description: 'Action ID' })
-  id!: string;
-  @ApiProperty({ description: 'Plugin ID' })
-  pluginId!: string;
-  @ApiProperty({ description: 'Method name' })
-  methodName!: string;
-  @ApiProperty({ description: 'Action title' })
-  title!: string;
-  @ApiProperty({ description: 'Action description' })
-  description!: string;
+const PluginTemplateResponseSchema = z
+  .object({
+    key: z.string().describe('Template key (unique across all templates)'),
+    title: z.string().describe('Template title'),
+    description: z.string().describe('Template description'),
+    trigger: WorkflowTriggerSchema.describe('Workflow trigger'),
+    steps: z.array(PluginTemplateStepResponseSchema).describe('Workflow steps'),
+    uiHints: z.array(z.string()).describe('Ui hints, for example "smart-album"'),
+  })
+  .meta({ id: 'PluginTemplateResponseDto' });
 
-  @ValidateEnum({ enum: PluginContextType, name: 'PluginContextType', each: true, description: 'Supported contexts' })
-  supportedContexts!: PluginContextType[];
-  @ApiProperty({ description: 'Action schema' })
-  schema!: JSONSchema | null;
-}
+const PluginMethodSearchSchema = z
+  .object({
+    id: z.uuidv4().optional().describe('Plugin method ID'),
+    enabled: z.boolean().optional().describe('Whether the plugin method is enabled'),
+    name: z.string().optional(),
+    title: z.string().optional(),
+    description: z.string().optional(),
+    type: WorkflowTypeSchema.optional().describe('Workflow types'),
+    trigger: WorkflowTriggerSchema.optional().describe('Workflow trigger'),
+    pluginName: z.string().optional().describe('Plugin name'),
+    pluginVersion: z.string().optional().describe('Plugin version'),
+  })
+  .meta({ id: 'PluginMethodSearchDto' });
 
-export class PluginInstallDto {
-  @ApiProperty({ description: 'Path to plugin manifest file' })
-  @IsString()
-  @IsNotEmpty()
-  manifestPath!: string;
-}
+export class PluginSearchDto extends createZodDto(PluginSearchSchema) {}
+export class PluginResponseDto extends createZodDto(PluginResponseSchema) {}
+export class PluginMethodSearchDto extends createZodDto(PluginMethodSearchSchema) {}
+export class PluginMethodResponseDto extends createZodDto(PluginMethodResponseSchema) {}
+export class PluginTemplateResponseDto extends createZodDto(PluginTemplateResponseSchema) {}
 
-export type MapPlugin = {
+export type PluginTemplate = {
+  name: string;
+  title: string;
+  description: string;
+  trigger: WorkflowTrigger;
+  steps: Array<{
+    method: string;
+    config?: Record<string, unknown> | null;
+    enabled?: boolean;
+  }>;
+  uiHints: string[];
+};
+
+export const mapTemplate = (plugin: { name: string }, template: PluginTemplate): PluginTemplateResponseDto => {
+  return {
+    key: asPluginKey({ pluginName: plugin.name, name: template.name }),
+    title: template.title,
+    description: template.description,
+    trigger: template.trigger,
+    steps: template.steps.map((step) => ({
+      method: step.method,
+      config: step.config ?? null,
+      enabled: step.enabled,
+    })),
+    uiHints: template.uiHints ?? [],
+  };
+};
+
+type Plugin = {
   id: string;
   name: string;
   title: string;
   description: string;
   author: string;
   version: string;
-  wasmPath: string;
   createdAt: Date;
   updatedAt: Date;
-  filters: PluginFilter[];
-  actions: PluginAction[];
+  methods: PluginMethod[];
 };
 
-export function mapPlugin(plugin: MapPlugin): PluginResponseDto {
+type PluginMethod = {
+  pluginName: string;
+  name: string;
+  title: string;
+  description: string;
+  types: WorkflowType[];
+  schema: JsonSchemaDto | null;
+  hostFunctions: boolean;
+  uiHints: string[];
+};
+
+export function mapPlugin(plugin: Plugin): PluginResponseDto {
   return {
     id: plugin.id,
     name: plugin.name,
@@ -102,7 +144,19 @@ export function mapPlugin(plugin: MapPlugin): PluginResponseDto {
     version: plugin.version,
     createdAt: plugin.createdAt.toISOString(),
     updatedAt: plugin.updatedAt.toISOString(),
-    filters: plugin.filters,
-    actions: plugin.actions,
+    methods: plugin.methods.map((method) => mapMethod(method)),
   };
 }
+
+export const mapMethod = (method: PluginMethod): PluginMethodResponseDto => {
+  return {
+    key: asPluginKey({ pluginName: method.pluginName, name: method.name }),
+    name: method.name,
+    title: method.title,
+    hostFunctions: method.hostFunctions,
+    uiHints: method.uiHints,
+    description: method.description,
+    types: method.types,
+    schema: method.schema as any,
+  };
+};

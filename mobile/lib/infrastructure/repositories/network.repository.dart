@@ -22,7 +22,14 @@ class NetworkRepository {
       final session = URLSession.fromRawPointer(clientPointer.cast());
       _client = CupertinoClient.fromSharedSession(session);
     } else {
-      _client = OkHttpClient.fromJniGlobalRef(clientPointer);
+      _client = OkHttpClient.fromJniGlobalRef(
+        clientPointer,
+        configuration: const OkHttpClientConfiguration(
+          connectTimeout: Duration(seconds: 30),
+          readTimeout: Duration(seconds: 60),
+          writeTimeout: Duration(seconds: 60),
+        ),
+      );
     }
   }
 

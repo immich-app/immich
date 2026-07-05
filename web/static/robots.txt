@@ -1,6 +1,7 @@
 # Allow social media access og Tags
 User-agent: *
 Allow: /share/
+Allow: /s/
 Allow: /api/assets/
 
 # https://www.robotstxt.org/robotstxt.html

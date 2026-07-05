@@ -8,8 +8,6 @@ import {
   ChecksumAlgorithm,
   MemoryType,
   Permission,
-  PluginContext,
-  PluginTriggerType,
   SharedLinkType,
   SourceType,
   UserAvatarColor,
@@ -18,10 +16,8 @@ import {
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { PluginActionTable, PluginFilterTable, PluginTable } from 'src/schema/tables/plugin.table';
-import { WorkflowActionTable, WorkflowFilterTable, WorkflowTable } from 'src/schema/tables/workflow.table';
+import { PluginTable } from 'src/schema/tables/plugin.table';
 import { UserMetadataItem } from 'src/types';
-import type { ActionConfig, FilterConfig, JSONSchema } from 'src/types/plugin-schema.types';
 
 export type AuthUser = {
   id: string;
@@ -104,7 +100,7 @@ export type Memory = {
   showAt: Date | null;
   hideAt: Date | null;
   type: MemoryType;
-  data: object;
+  data: Record<string, unknown>;
   ownerId: string;
   isSaved: boolean;
   assets: ShallowDehydrateObject<MapAsset>[];
@@ -114,8 +110,6 @@ export type Asset = {
   id: string;
   checksum: Buffer<ArrayBufferLike>;
   checksumAlgorithm: ChecksumAlgorithm;
-  deviceAssetId: string;
-  deviceId: string;
   fileCreatedAt: Date;
   fileModifiedAt: Date;
   isExternal: boolean;
@@ -197,7 +191,6 @@ export type SharedLink = {
 };
 
 export type Album = Selectable<AlbumTable> & {
-  owner: ShallowDehydrateObject<User>;
   assets: ShallowDehydrateObject<Selectable<AssetTable>>[];
 };
 
@@ -281,43 +274,6 @@ export type AssetFace = {
 
 export type Plugin = Selectable<PluginTable>;
 
-export type PluginFilter = Selectable<PluginFilterTable> & {
-  methodName: string;
-  title: string;
-  description: string;
-  supportedContexts: PluginContext[];
-  schema: JSONSchema | null;
-};
-
-export type PluginAction = Selectable<PluginActionTable> & {
-  methodName: string;
-  title: string;
-  description: string;
-  supportedContexts: PluginContext[];
-  schema: JSONSchema | null;
-};
-
-export type Workflow = Selectable<WorkflowTable> & {
-  triggerType: PluginTriggerType;
-  name: string | null;
-  description: string;
-  enabled: boolean;
-};
-
-export type WorkflowFilter = Selectable<WorkflowFilterTable> & {
-  workflowId: string;
-  pluginFilterId: string;
-  filterConfig: FilterConfig | null;
-  order: number;
-};
-
-export type WorkflowAction = Selectable<WorkflowActionTable> & {
-  workflowId: string;
-  pluginActionId: string;
-  actionConfig: ActionConfig | null;
-  order: number;
-};
-
 const userColumns = ['id', 'name', 'email', 'avatarColor', 'profileImagePath', 'profileChangedAt'] as const;
 const userWithPrefixColumns = [
   'user2.id',
@@ -333,8 +289,6 @@ export const columns = {
     'asset.id',
     'asset.checksum',
     'asset.checksumAlgorithm',
-    'asset.deviceAssetId',
-    'asset.deviceId',
     'asset.fileCreatedAt',
     'asset.fileModifiedAt',
     'asset.isExternal',
@@ -349,6 +303,32 @@ export const columns = {
     'asset.width',
     'asset.height',
     'asset.isEdited',
+  ],
+  workflowAssetV1: [
+    'asset.id',
+    'asset.ownerId',
+    'asset.stackId',
+    'asset.livePhotoVideoId',
+    'asset.libraryId',
+    'asset.duplicateId',
+    'asset.createdAt',
+    'asset.updatedAt',
+    'asset.deletedAt',
+    'asset.fileCreatedAt',
+    'asset.fileModifiedAt',
+    'asset.localDateTime',
+    'asset.type',
+    'asset.status',
+    'asset.visibility',
+    'asset.duration',
+    'asset.checksum',
+    'asset.originalPath',
+    'asset.originalFileName',
+    'asset.isOffline',
+    'asset.isFavorite',
+    'asset.isExternal',
+    'asset.isEdited',
+    'asset.isFavorite',
   ],
   assetFiles: ['asset_file.id', 'asset_file.path', 'asset_file.type', 'asset_file.isEdited'],
   assetFilesForThumbnail: [
@@ -381,6 +361,16 @@ export const columns = {
   tag: ['tag.id', 'tag.value', 'tag.createdAt', 'tag.updatedAt', 'tag.color', 'tag.parentId'],
   apiKey: ['id', 'name', 'userId', 'createdAt', 'updatedAt', 'permissions'],
   notification: ['id', 'createdAt', 'level', 'type', 'title', 'description', 'data', 'readAt'],
+  pluginMethod: [
+    'plugin_method.name',
+    'plugin_method.title',
+    'plugin_method.description',
+    'plugin_method.types',
+    'plugin_method.schema',
+    'plugin_method.hostFunctions',
+    'plugin_method.allowedHosts',
+    'plugin_method.uiHints',
+  ],
   syncAsset: [
     'asset.id',
     'asset.ownerId',
@@ -389,10 +379,53 @@ export const columns = {
     'asset.checksum',
     'asset.fileCreatedAt',
     'asset.fileModifiedAt',
+    'asset.createdAt',
     'asset.localDateTime',
     'asset.type',
     'asset.deletedAt',
     'asset.isFavorite',
+    'asset.visibility',
+    'asset.duration',
+    'asset.livePhotoVideoId',
+    'asset.stackId',
+    'asset.libraryId',
+    'asset.width',
+    'asset.height',
+    'asset.isEdited',
+  ],
+  syncAlbumAsset: [
+    'asset.id',
+    'asset.ownerId',
+    'asset.originalFileName',
+    'asset.thumbhash',
+    'asset.checksum',
+    'asset.fileCreatedAt',
+    'asset.fileModifiedAt',
+    'asset.createdAt',
+    'asset.localDateTime',
+    'asset.type',
+    'asset.deletedAt',
+    'asset.visibility',
+    'asset.duration',
+    'asset.livePhotoVideoId',
+    'asset.stackId',
+    'asset.libraryId',
+    'asset.width',
+    'asset.height',
+    'asset.isEdited',
+  ],
+  syncPartnerAsset: [
+    'asset.id',
+    'asset.ownerId',
+    'asset.originalFileName',
+    'asset.thumbhash',
+    'asset.checksum',
+    'asset.fileCreatedAt',
+    'asset.fileModifiedAt',
+    'asset.localDateTime',
+    'asset.createdAt',
+    'asset.type',
+    'asset.deletedAt',
     'asset.visibility',
     'asset.duration',
     'asset.livePhotoVideoId',
@@ -433,6 +466,23 @@ export const columns = {
     'asset_exif.rating',
     'asset_exif.fps',
   ],
+  syncAssetOcr: [
+    'asset_ocr.id',
+    'asset_ocr.assetId',
+    'asset_ocr.x1',
+    'asset_ocr.y1',
+    'asset_ocr.x2',
+    'asset_ocr.y2',
+    'asset_ocr.x3',
+    'asset_ocr.y3',
+    'asset_ocr.x4',
+    'asset_ocr.y4',
+    'asset_ocr.text',
+    'asset_ocr.boxScore',
+    'asset_ocr.textScore',
+    'asset_ocr.updateId',
+    'asset_ocr.isVisible',
+  ],
   syncAssetEdit: [
     'asset_edit.id',
     'asset_edit.assetId',
@@ -471,17 +521,6 @@ export const columns = {
     'asset_exif.state',
     'asset_exif.tags',
     'asset_exif.timeZone',
-  ],
-  plugin: [
-    'plugin.id as id',
-    'plugin.name as name',
-    'plugin.title as title',
-    'plugin.description as description',
-    'plugin.author as author',
-    'plugin.version as version',
-    'plugin.wasmPath as wasmPath',
-    'plugin.createdAt as createdAt',
-    'plugin.updatedAt as updatedAt',
   ],
 } as const;
 

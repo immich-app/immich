@@ -1,19 +1,16 @@
 import { Injectable, NotAcceptableException } from '@nestjs/common';
-import { Interval } from '@nestjs/schedule';
 import { NextFunction, Request, Response } from 'express';
+import { escape } from 'lodash';
 import { readFileSync } from 'node:fs';
-import sanitizeHtml from 'sanitize-html';
-import { ONE_HOUR } from 'src/constants';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AuthService } from 'src/services/auth.service';
 import { SharedLinkService } from 'src/services/shared-link.service';
-import { VersionService } from 'src/services/version.service';
 import { OpenGraphTags } from 'src/utils/misc';
 
 export const render = (index: string, meta: OpenGraphTags) => {
   const [title, description, imageUrl] = [meta.title, meta.description, meta.imageUrl].map((item) =>
-    item ? sanitizeHtml(item, { allowedTags: [] }) : '',
+    item ? escape(item) : '',
   );
 
   const tags = `
@@ -40,16 +37,10 @@ export class ApiService {
   constructor(
     private authService: AuthService,
     private sharedLinkService: SharedLinkService,
-    private versionService: VersionService,
     private configRepository: ConfigRepository,
     private logger: LoggingRepository,
   ) {
     this.logger.setContext(ApiService.name);
-  }
-
-  @Interval(ONE_HOUR.as('milliseconds'))
-  async onVersionCheck() {
-    await this.versionService.handleQueueVersionCheck();
   }
 
   ssr(excludePaths: string[]) {

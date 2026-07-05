@@ -37,26 +37,23 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Advertencia
+> [!WARNING]
+> ⚠️ Siempre sigue el plan de backups [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) para tus fotos y videos.
+>
 
-- ⚠️ El proyecto está en **activo desarrollo**.
-- ⚠️ Es probable que haya errores y cambios disruptivos.
-- ⚠️ **¡No utilices la aplicación como única forma de almacenar tus fotos y videos!**
-- ⚠️ Siempre sigue el plan de backups [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) para tus fotos y videos.
+> [!NOTE]
+> Puedes encontrar la documentación oficial, incluidas las guías de instalación, en <https://immich.app/>.
 
 ## Contenido
 
-- [Documentación oficial](https://docs.immich.app)
-- [Hoja de ruta](https://github.com/orgs/immich-app/projects/1)
-- [Demo](#demo)
-- [Funciones](#funciones)
+- [Documentación](https://docs.immich.app/)
 - [Introducción](https://docs.immich.app/overview/introduction)
 - [Instalación](https://docs.immich.app/install/requirements)
+- [Hoja de ruta](https://immich.app/roadmap)
+- [Demo](#demo)
+- [Funciones](#funciones)
+- [Traducciones](https://docs.immich.app/developer/translations)
 - [Directrices para contribuir](https://docs.immich.app/overview/support-the-project)
-
-## Documentación
-
-Puedes encontrar la documentación oficial, incluidas las guías de instalación, en <https://immich.app/>.
 
 ## Demo
 

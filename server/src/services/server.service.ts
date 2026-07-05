@@ -86,7 +86,7 @@ export class ServerService extends BaseService {
   }
 
   async getFeatures(): Promise<ServerFeaturesDto> {
-    const { reverseGeocoding, metadata, map, machineLearning, trash, oauth, passwordLogin, notifications } =
+    const { reverseGeocoding, metadata, map, machineLearning, trash, oauth, passwordLogin, notifications, ffmpeg } =
       await this.getConfig({ withCache: false });
     const { configFile } = this.configRepository.getEnv();
 
@@ -106,12 +106,8 @@ export class ServerService extends BaseService {
       passwordLogin: passwordLogin.enabled,
       configFile: !!configFile,
       email: notifications.smtp.enabled,
+      realtimeTranscoding: ffmpeg.realtime.enabled,
     };
-  }
-
-  async getTheme() {
-    const { theme } = await this.getConfig({ withCache: false });
-    return theme;
   }
 
   async getSystemConfig(): Promise<ServerConfigDto> {
@@ -132,12 +128,19 @@ export class ServerService extends BaseService {
       mapDarkStyleUrl: config.map.darkStyle,
       mapLightStyleUrl: config.map.lightStyle,
       maintenanceMode: false,
+      minFaces: config.machineLearning.facialRecognition.minFaces,
     };
   }
 
   async getStatistics(): Promise<ServerStatsResponseDto> {
     const userStats: UserStatsQueryResponse[] = await this.userRepository.getUserStats();
     const serverStats = new ServerStatsResponseDto();
+    serverStats.photos ??= 0;
+    serverStats.videos ??= 0;
+    serverStats.usage ??= 0;
+    serverStats.usagePhotos ??= 0;
+    serverStats.usageVideos ??= 0;
+    serverStats.usageByUser ??= [];
 
     for (const user of userStats) {
       const usage = new UsageByUserDto();

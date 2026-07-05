@@ -7,20 +7,22 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_overlay.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
@@ -56,17 +58,30 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   _DragIntent _dragIntent = _DragIntent.none;
   Drag? _drag;
 
+  BaseAsset? _asset;
+
   @override
   void initState() {
     super.initState();
     _eventSubscription = EventStream.shared.listen(_onEvent);
+    _asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_scrollController.hasClients) return;
+      if (!mounted || !_scrollController.hasClients) {
+        return;
+      }
       _scrollController.snapPosition.snapOffset = _snapOffset;
       if (_showingDetails && _snapOffset > 0) {
         _scrollController.jumpTo(_snapOffset);
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(AssetPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.index != widget.index) {
+      _asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
+    }
   }
 
   @override
@@ -81,12 +96,19 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     switch (event) {
       case ViewerShowDetailsEvent():
         _showDetails();
+      case TimelineReloadEvent():
+        final asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
+        if (asset != _asset) {
+          setState(() => _asset = asset);
+        }
       default:
     }
   }
 
   void _showDetails() {
-    if (!_scrollController.hasClients || _snapOffset <= 0) return;
+    if (!_scrollController.hasClients || _snapOffset <= 0) {
+      return;
+    }
     _viewer.setShowingDetails(true);
     _scrollController.animateTo(_snapOffset, duration: Durations.medium2, curve: Curves.easeOutCubic);
   }
@@ -127,7 +149,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _updateDrag(DragUpdateDetails details) {
-    if (_dragStart == null) return;
+    if (_dragStart == null) {
+      return;
+    }
 
     if (_dragIntent == _DragIntent.none) {
       _dragIntent = switch ((details.globalPosition - _dragStart!.globalPosition).dy) {
@@ -140,7 +164,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     switch (_dragIntent) {
       case _DragIntent.none:
       case _DragIntent.scroll:
-        if (_drag == null) _startProxyDrag();
+        if (_drag == null) {
+          _startProxyDrag();
+        }
         _drag?.update(details);
 
         _syncShowingDetails();
@@ -150,7 +176,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _endDrag(DragEndDetails details) {
-    if (_dragStart == null) return;
+    if (_dragStart == null) {
+      return;
+    }
 
     final start = _dragStart;
     _dragStart = null;
@@ -187,7 +215,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     PhotoViewControllerBase controller,
     PhotoViewScaleStateController scaleStateController,
   ) {
-    if (!_showingDetails && _isZoomed) return;
+    if (!_showingDetails && _isZoomed) {
+      return;
+    }
     _beginDrag(details);
   }
 
@@ -214,9 +244,11 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _onTapUp(BuildContext context, TapUpDetails details, PhotoViewControllerValue controllerValue) {
-    if (_showingDetails || _dragStart != null) return;
+    if (_showingDetails || _dragStart != null) {
+      return;
+    }
 
-    final tapToNavigate = ref.read(appSettingsServiceProvider).getSetting<bool>(AppSettingsEnum.tapToNavigate);
+    final tapToNavigate = ref.read(appConfigProvider).viewer.tapToNavigate;
     if (!tapToNavigate) {
       _viewer.toggleControls();
       return;
@@ -246,31 +278,43 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _viewer.setZoomed(_isZoomed);
 
     if (scaleState != PhotoViewScaleState.initial) {
-      if (_dragStart == null) _viewer.setControls(false);
+      if (_dragStart == null) {
+        _viewer.setControls(false);
+      }
       return;
     }
 
-    if (!_showingDetails) _viewer.setControls(true);
+    if (!_showingDetails) {
+      _viewer.setControls(true);
+    }
   }
 
   void _listenForScaleBoundaries(PhotoViewControllerBase? controller) {
     _scaleBoundarySub?.cancel();
     _scaleBoundarySub = null;
-    if (controller == null || controller.scaleBoundaries != null) return;
+    if (controller == null || controller.scaleBoundaries != null) {
+      return;
+    }
     _scaleBoundarySub = controller.outputStateStream.listen((_) {
       if (controller.scaleBoundaries != null) {
         _scaleBoundarySub?.cancel();
         _scaleBoundarySub = null;
-        if (mounted) setState(() {});
+        if (mounted) {
+          setState(() {});
+        }
       }
     });
   }
 
   double _getImageHeight(double maxWidth, double maxHeight, BaseAsset? asset) {
     final sb = _viewController?.scaleBoundaries;
-    if (sb != null) return sb.childSize.height * sb.initialScale;
+    if (sb != null) {
+      return sb.childSize.height * sb.initialScale;
+    }
 
-    if (asset == null || asset.width == null || asset.height == null) return maxHeight;
+    if (asset == null || asset.width == null || asset.height == null) {
+      return maxHeight;
+    }
 
     final r = asset.width! / asset.height!;
     return math.min(maxWidth / r, maxHeight);
@@ -286,14 +330,16 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     required PhotoViewHeroAttributes? heroAttributes,
     required bool isCurrent,
     required bool isPlayingMotionVideo,
+    required String? localFilePath,
   }) {
     final size = context.sizeData;
+    final imageProvider = getFullImageProvider(asset, size: size, localFilePath: localFilePath);
 
     if (asset.isImage && !isPlayingMotionVideo) {
       return PhotoView(
         key: Key(asset.heroTag),
         index: widget.index,
-        imageProvider: getFullImageProvider(asset, size: size),
+        imageProvider: imageProvider,
         heroAttributes: heroAttributes,
         loadingBuilder: (context, progress, index) => const Center(child: ImmichLoadingIndicator()),
         gaplessPlayback: true,
@@ -340,12 +386,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       child: NativeVideoViewer(
         key: _NativeVideoViewerKey(asset.heroTag),
         asset: asset,
+        localFilePath: localFilePath,
         isCurrent: isCurrent,
-        image: Image(
-          image: getFullImageProvider(asset, size: size),
-          fit: BoxFit.contain,
-          alignment: Alignment.center,
-        ),
+        image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
       ),
     );
   }
@@ -356,14 +399,17 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
+    final timelineOrigin = ref.read(timelineServiceProvider).origin;
+    final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
-    final asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
+    final asset = _asset;
     if (asset == null) {
       return const Center(child: ImmichLoadingIndicator());
     }
 
     BaseAsset displayAsset = asset;
-    final stackChildren = ref.watch(stackChildrenNotifier(asset)).valueOrNull;
+    final showAssetStack = ref.watch(timelineServiceProvider.select((s) => s.origin != TimelineOrigin.trash));
+    final stackChildren = showAssetStack ? ref.watch(stackChildrenNotifier(asset)).valueOrNull : null;
     if (stackChildren != null && stackChildren.isNotEmpty) {
       displayAsset = stackChildren.elementAt(stackIndex);
     }
@@ -382,6 +428,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     if (_scrollController.hasClients) {
       _scrollController.snapPosition.snapOffset = _snapOffset;
     }
+
+    final viewIntentFilePath = timelineOrigin == TimelineOrigin.deepLink ? ref.watch(viewIntentFilePathProvider) : null;
 
     return Stack(
       children: [
@@ -402,8 +450,18 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                         : null,
                     isCurrent: isCurrent,
                     isPlayingMotionVideo: isPlayingMotionVideo,
+                    localFilePath: viewIntentFilePath,
                   ),
                 ),
+                if (showingOcr && displayAsset.width != null && displayAsset.height != null)
+                  Positioned.fill(
+                    child: OcrOverlay(
+                      asset: displayAsset,
+                      imageSize: Size(displayAsset.width!.toDouble(), displayAsset.height!.toDouble()),
+                      viewportSize: Size(viewportWidth, viewportHeight),
+                      controller: _viewController,
+                    ),
+                  ),
                 IgnorePointer(
                   ignoring: !_showingDetails,
                   child: Column(

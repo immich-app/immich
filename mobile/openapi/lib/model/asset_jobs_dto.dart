@@ -20,7 +20,6 @@ class AssetJobsDto {
   /// Asset IDs
   List<String> assetIds;
 
-  /// Job name
   AssetJobName name;
 
   @override

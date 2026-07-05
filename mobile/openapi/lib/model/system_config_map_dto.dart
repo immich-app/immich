@@ -18,11 +18,13 @@ class SystemConfigMapDto {
     required this.lightStyle,
   });
 
+  /// Dark map style URL
   String darkStyle;
 
   /// Enabled
   bool enabled;
 
+  /// Light map style URL
   String lightStyle;
 
   @override

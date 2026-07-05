@@ -20,7 +20,6 @@ class SystemConfigImageDto {
     required this.thumbnail,
   });
 
-  /// Colorspace
   Colorspace colorspace;
 
   /// Extract embedded

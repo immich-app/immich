@@ -14,27 +14,26 @@ select
   "activity"."id"
 from
   "activity"
-  left join "album" on "activity"."albumId" = "album"."id"
+  inner join "album" on "activity"."albumId" = "album"."id"
   and "album"."deletedAt" is null
+  inner join "album_user" on "album"."id" = "album_user"."albumId"
+  and "album_user"."role" = 'owner'
+  and "album_user"."userId" = $1::uuid
 where
-  "activity"."id" in ($1)
-  and "album"."ownerId" = $2::uuid
+  "activity"."id" in ($2)
 
 -- AccessRepository.activity.checkCreateAccess
 select
   "album"."id"
 from
   "album"
-  left join "album_user" as "albumUsers" on "albumUsers"."albumId" = "album"."id"
-  left join "user" on "user"."id" = "albumUsers"."userId"
+  inner join "album_user" as "albumUsers" on "albumUsers"."albumId" = "album"."id"
+  inner join "user" on "user"."id" = "albumUsers"."userId"
   and "user"."deletedAt" is null
 where
   "album"."id" in ($1)
   and "album"."isActivityEnabled" = $2
-  and (
-    "album"."ownerId" = $3
-    or "user"."id" = $4
-  )
+  and "user"."id" = $3
   and "album"."deletedAt" is null
 
 -- AccessRepository.album.checkOwnerAccess
@@ -42,9 +41,11 @@ select
   "album"."id"
 from
   "album"
+  inner join "album_user" on "album"."id" = "album_user"."albumId"
+  and "album_user"."role" = 'owner'
+  and "album_user"."userId" = $1
 where
-  "album"."id" in ($1)
-  and "album"."ownerId" = $2
+  "album"."id" in ($2)
   and "album"."deletedAt" is null
 
 -- AccessRepository.album.checkSharedAlbumAccess
@@ -52,8 +53,8 @@ select
   "album"."id"
 from
   "album"
-  left join "album_user" on "album_user"."albumId" = "album"."id"
-  left join "user" on "user"."id" = "album_user"."userId"
+  inner join "album_user" on "album_user"."albumId" = "album"."id"
+  inner join "user" on "user"."id" = "album_user"."userId"
   and "user"."deletedAt" is null
 where
   "album"."id" in ($1)
@@ -93,10 +94,7 @@ where
     "asset"."id" = any (target.ids)
     or "asset"."livePhotoVideoId" = any (target.ids)
   )
-  and (
-    "album"."ownerId" = $2
-    or "user"."id" = $3
-  )
+  and "user"."id" = $2
   and "album"."deletedAt" is null
 
 -- AccessRepository.asset.checkOwnerAccess

@@ -37,25 +37,23 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Feragatname
+> [!WARNING]
+> ⚠️ Değerli fotoğraflarınız ve videolarınız için daima [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) yedekleme planını uygulayın!
+> 
 
-- ⚠️ Proje **çok aktif** bir şekilde geliştirilmektedir.
-- ⚠️ Hatalar ve uygulama yapısını bozan değişiklikler olabilir.
-- ⚠️ **Uygulamayı, fotoğraflarınızı ve videolarınızı saklamanın tek yöntemi olarak kullanmayın!**
+> [!NOTE]
+> Kurulum dahil olmak üzere resmi belgeleri https://immich.app/ adresinde bulabilirsiniz.
 
-## Content
+## Bağlantılar
 
-- [Resmi Belgeler](https://docs.immich.app)
-- [Yol Haritası](https://github.com/orgs/immich-app/projects/1)
-- [Demo](#demo)
-- [Özellikler](#özellikler)
+- [Resmi Belgeler](https://docs.immich.app/)
 - [Giriş](https://docs.immich.app/overview/introduction)
 - [Kurulum](https://docs.immich.app/install/requirements)
+- [Yol Haritası](https://immich.app/roadmap)
+- [Demo](#demo)
+- [Özellikler](#özellikler)
+- [Çeviriler](https://docs.immich.app/developer/translations)
 - [Katkı Sağlama Rehberi](https://docs.immich.app/overview/support-the-project)
-
-## Belgeler
-
-Kurulum dahil olmak üzere resmi belgeleri https://immich.app/ adresinde bulabilirsiniz.
 
 ## Demo
 

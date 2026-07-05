@@ -83,9 +83,7 @@ volumes:
   model_cache:
   prometheus_data:
   grafana_data:
-  pnpm_cache:
-  pnpm_store_server:
-  pnpm_store_web:
+  build_cache:
   server_node_modules:
   web_node_modules:
   github_node_modules:

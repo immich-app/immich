@@ -37,26 +37,23 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Clause de non-responsabilité
+> [!WARNING]
+> ⚠️ Ayez toujours un plan de sauvegarde en [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) pour vos précieuses photos et vidéos !
+>
 
-- ⚠️ Le projet est en **très fort** développement.
-- ⚠️ Attendez-vous à rencontrer des bogues et des changements importants.
-- ⚠️ **N'utilisez pas cette application comme seul support de sauvegarde de vos photos et vos vidéos.**
-- ⚠️ Ayez toujours un plan de sauvegarde en [3-2-1](https://www.seagate.com/fr/fr/blog/what-is-a-3-2-1-backup-strategy/) pour vos précieuses photos et vidéos !
+> [!NOTE]
+> Vous pouvez trouver la documentation principale ainsi que les guides d'installation sur https://immich.app/.
 
 ## Sommaire
 
-- [Documentation officielle](https://docs.immich.app)
-- [Feuille de route](https://github.com/orgs/immich-app/projects/1)
-- [Démo](#démo)
-- [Fonctionnalités](#fonctionnalités)
+- [Documentation](https://docs.immich.app/)
 - [Introduction](https://docs.immich.app/overview/introduction)
 - [Installation](https://docs.immich.app/install/requirements)
+- [Feuille de route](https://immich.app/roadmap)
+- [Démo](#démo)
+- [Fonctionnalités](#fonctionnalités)
+- [Traductions](https://docs.immich.app/developer/translations)
 - [Contribution](https://docs.immich.app/overview/support-the-project)
-
-## Documentation
-
-Vous pouvez trouver la documentation principale ainsi que les guides d'installation sur https://immich.app/.
 
 ## Démo
 

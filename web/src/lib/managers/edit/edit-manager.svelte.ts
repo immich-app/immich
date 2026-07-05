@@ -1,12 +1,12 @@
-import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/transform-tool.svelte';
-import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import { waitForWebsocketEvent } from '$lib/stores/websocket';
-import { getFormatter } from '$lib/utils/i18n';
 import { editAsset, removeAssetEdits, type AssetEditsCreateDto, type AssetResponseDto } from '@immich/sdk';
 import { ConfirmModal, modalManager, toastManager } from '@immich/ui';
 import { mdiCropRotate } from '@mdi/js';
 import type { Component } from 'svelte';
+import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/TransformTool.svelte';
+import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { waitForWebsocketEvent } from '$lib/stores/websocket';
+import { getFormatter } from '$lib/utils/i18n';
 
 export type EditAction = AssetEditsCreateDto['edits'][number];
 export type EditActions = EditAction[];
@@ -127,7 +127,7 @@ export class EditManager {
 
     try {
       // Setup the websocket listener before sending the edit request
-      const editCompleted = waitForWebsocketEvent('AssetEditReadyV1', (event) => event.asset.id === assetId, 10_000);
+      const editCompleted = waitForWebsocketEvent('AssetEditReadyV2', (event) => event.asset.id === assetId, 10_000);
 
       await (edits.length === 0
         ? removeAssetEdits({ id: assetId })

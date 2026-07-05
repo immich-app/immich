@@ -5,6 +5,7 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -20,7 +21,7 @@ const setup = (db?: Kysely<DB>) => {
   return newMediumService(PersonService, {
     database: db || defaultDatabase,
     real: [AccessRepository, DatabaseRepository, PersonRepository, AssetRepository, AssetEditRepository],
-    mock: [LoggingRepository, StorageRepository],
+    mock: [JobRepository, LoggingRepository, StorageRepository],
   });
 };
 
@@ -89,6 +90,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 200, height: 200 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 200 });
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
 
       const auth = factory.auth({ user });
 
@@ -128,6 +130,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 150, height: 200 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 200 });
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
 
       await ctx.newEdits(asset.id, {
         edits: [
@@ -199,6 +202,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 100, height: 200 });
       await ctx.newExif({ assetId: asset.id, exifImageWidth: 200, exifImageHeight: 100 });
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
 
       await ctx.newEdits(asset.id, {
         edits: [
@@ -263,6 +267,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 200, height: 100 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 100, exifImageWidth: 200 });
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
 
       await ctx.newEdits(asset.id, {
         edits: [
@@ -327,6 +332,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 200, height: 150 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 200 });
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
 
       await ctx.newEdits(asset.id, {
         edits: [
@@ -400,6 +406,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 150, height: 100 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 100, exifImageWidth: 200 });
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
 
       await ctx.newEdits(asset.id, {
         edits: [
@@ -473,6 +480,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 200, height: 150 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 150 });
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
 
       await ctx.newEdits(asset.id, {
         edits: [
@@ -543,6 +551,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 150, height: 100 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 200 });
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
 
       await ctx.newEdits(asset.id, {
         edits: [
@@ -622,6 +631,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 100, height: 100 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 100, exifImageWidth: 100 });
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
 
       await ctx.newEdits(asset.id, {
         edits: [
@@ -692,6 +702,7 @@ describe(PersonService.name, () => {
       const { person } = await ctx.newPerson({ ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 100, height: 100 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 100, orientation: '6' });
+      ctx.getMock(JobRepository).queueAll.mockResolvedValue();
 
       await ctx.newEdits(asset.id, {
         edits: [

@@ -13,25 +13,25 @@ part of openapi.api;
 class ServerAboutResponseDto {
   /// Returns a new [ServerAboutResponseDto] instance.
   ServerAboutResponseDto({
-    this.build,
-    this.buildImage,
-    this.buildImageUrl,
-    this.buildUrl,
-    this.exiftool,
-    this.ffmpeg,
-    this.imagemagick,
-    this.libvips,
+    this.build = const Optional.absent(),
+    this.buildImage = const Optional.absent(),
+    this.buildImageUrl = const Optional.absent(),
+    this.buildUrl = const Optional.absent(),
+    this.exiftool = const Optional.absent(),
+    this.ffmpeg = const Optional.absent(),
+    this.imagemagick = const Optional.absent(),
+    this.libvips = const Optional.absent(),
     required this.licensed,
-    this.nodejs,
-    this.repository,
-    this.repositoryUrl,
-    this.sourceCommit,
-    this.sourceRef,
-    this.sourceUrl,
-    this.thirdPartyBugFeatureUrl,
-    this.thirdPartyDocumentationUrl,
-    this.thirdPartySourceUrl,
-    this.thirdPartySupportUrl,
+    this.nodejs = const Optional.absent(),
+    this.repository = const Optional.absent(),
+    this.repositoryUrl = const Optional.absent(),
+    this.sourceCommit = const Optional.absent(),
+    this.sourceRef = const Optional.absent(),
+    this.sourceUrl = const Optional.absent(),
+    this.thirdPartyBugFeatureUrl = const Optional.absent(),
+    this.thirdPartyDocumentationUrl = const Optional.absent(),
+    this.thirdPartySourceUrl = const Optional.absent(),
+    this.thirdPartySupportUrl = const Optional.absent(),
     required this.version,
     required this.versionUrl,
   });
@@ -43,7 +43,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? build;
+  Optional<String?> build;
 
   /// Build image name
   ///
@@ -52,7 +52,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? buildImage;
+  Optional<String?> buildImage;
 
   /// Build image URL
   ///
@@ -61,7 +61,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? buildImageUrl;
+  Optional<String?> buildImageUrl;
 
   /// Build URL
   ///
@@ -70,7 +70,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? buildUrl;
+  Optional<String?> buildUrl;
 
   /// ExifTool version
   ///
@@ -79,7 +79,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? exiftool;
+  Optional<String?> exiftool;
 
   /// FFmpeg version
   ///
@@ -88,7 +88,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? ffmpeg;
+  Optional<String?> ffmpeg;
 
   /// ImageMagick version
   ///
@@ -97,7 +97,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? imagemagick;
+  Optional<String?> imagemagick;
 
   /// libvips version
   ///
@@ -106,7 +106,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? libvips;
+  Optional<String?> libvips;
 
   /// Whether the server is licensed
   bool licensed;
@@ -118,7 +118,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? nodejs;
+  Optional<String?> nodejs;
 
   /// Repository name
   ///
@@ -127,7 +127,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? repository;
+  Optional<String?> repository;
 
   /// Repository URL
   ///
@@ -136,7 +136,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? repositoryUrl;
+  Optional<String?> repositoryUrl;
 
   /// Source commit hash
   ///
@@ -145,7 +145,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? sourceCommit;
+  Optional<String?> sourceCommit;
 
   /// Source reference (branch/tag)
   ///
@@ -154,7 +154,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? sourceRef;
+  Optional<String?> sourceRef;
 
   /// Source URL
   ///
@@ -163,7 +163,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? sourceUrl;
+  Optional<String?> sourceUrl;
 
   /// Third-party bug/feature URL
   ///
@@ -172,7 +172,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? thirdPartyBugFeatureUrl;
+  Optional<String?> thirdPartyBugFeatureUrl;
 
   /// Third-party documentation URL
   ///
@@ -181,7 +181,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? thirdPartyDocumentationUrl;
+  Optional<String?> thirdPartyDocumentationUrl;
 
   /// Third-party source URL
   ///
@@ -190,7 +190,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? thirdPartySourceUrl;
+  Optional<String?> thirdPartySourceUrl;
 
   /// Third-party support URL
   ///
@@ -199,7 +199,7 @@ class ServerAboutResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? thirdPartySupportUrl;
+  Optional<String?> thirdPartySupportUrl;
 
   /// Server version
   String version;
@@ -261,96 +261,78 @@ class ServerAboutResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.build != null) {
-      json[r'build'] = this.build;
-    } else {
-    //  json[r'build'] = null;
+    if (this.build.isPresent) {
+      final value = this.build.value;
+      json[r'build'] = value;
     }
-    if (this.buildImage != null) {
-      json[r'buildImage'] = this.buildImage;
-    } else {
-    //  json[r'buildImage'] = null;
+    if (this.buildImage.isPresent) {
+      final value = this.buildImage.value;
+      json[r'buildImage'] = value;
     }
-    if (this.buildImageUrl != null) {
-      json[r'buildImageUrl'] = this.buildImageUrl;
-    } else {
-    //  json[r'buildImageUrl'] = null;
+    if (this.buildImageUrl.isPresent) {
+      final value = this.buildImageUrl.value;
+      json[r'buildImageUrl'] = value;
     }
-    if (this.buildUrl != null) {
-      json[r'buildUrl'] = this.buildUrl;
-    } else {
-    //  json[r'buildUrl'] = null;
+    if (this.buildUrl.isPresent) {
+      final value = this.buildUrl.value;
+      json[r'buildUrl'] = value;
     }
-    if (this.exiftool != null) {
-      json[r'exiftool'] = this.exiftool;
-    } else {
-    //  json[r'exiftool'] = null;
+    if (this.exiftool.isPresent) {
+      final value = this.exiftool.value;
+      json[r'exiftool'] = value;
     }
-    if (this.ffmpeg != null) {
-      json[r'ffmpeg'] = this.ffmpeg;
-    } else {
-    //  json[r'ffmpeg'] = null;
+    if (this.ffmpeg.isPresent) {
+      final value = this.ffmpeg.value;
+      json[r'ffmpeg'] = value;
     }
-    if (this.imagemagick != null) {
-      json[r'imagemagick'] = this.imagemagick;
-    } else {
-    //  json[r'imagemagick'] = null;
+    if (this.imagemagick.isPresent) {
+      final value = this.imagemagick.value;
+      json[r'imagemagick'] = value;
     }
-    if (this.libvips != null) {
-      json[r'libvips'] = this.libvips;
-    } else {
-    //  json[r'libvips'] = null;
+    if (this.libvips.isPresent) {
+      final value = this.libvips.value;
+      json[r'libvips'] = value;
     }
       json[r'licensed'] = this.licensed;
-    if (this.nodejs != null) {
-      json[r'nodejs'] = this.nodejs;
-    } else {
-    //  json[r'nodejs'] = null;
+    if (this.nodejs.isPresent) {
+      final value = this.nodejs.value;
+      json[r'nodejs'] = value;
     }
-    if (this.repository != null) {
-      json[r'repository'] = this.repository;
-    } else {
-    //  json[r'repository'] = null;
+    if (this.repository.isPresent) {
+      final value = this.repository.value;
+      json[r'repository'] = value;
     }
-    if (this.repositoryUrl != null) {
-      json[r'repositoryUrl'] = this.repositoryUrl;
-    } else {
-    //  json[r'repositoryUrl'] = null;
+    if (this.repositoryUrl.isPresent) {
+      final value = this.repositoryUrl.value;
+      json[r'repositoryUrl'] = value;
     }
-    if (this.sourceCommit != null) {
-      json[r'sourceCommit'] = this.sourceCommit;
-    } else {
-    //  json[r'sourceCommit'] = null;
+    if (this.sourceCommit.isPresent) {
+      final value = this.sourceCommit.value;
+      json[r'sourceCommit'] = value;
     }
-    if (this.sourceRef != null) {
-      json[r'sourceRef'] = this.sourceRef;
-    } else {
-    //  json[r'sourceRef'] = null;
+    if (this.sourceRef.isPresent) {
+      final value = this.sourceRef.value;
+      json[r'sourceRef'] = value;
     }
-    if (this.sourceUrl != null) {
-      json[r'sourceUrl'] = this.sourceUrl;
-    } else {
-    //  json[r'sourceUrl'] = null;
+    if (this.sourceUrl.isPresent) {
+      final value = this.sourceUrl.value;
+      json[r'sourceUrl'] = value;
     }
-    if (this.thirdPartyBugFeatureUrl != null) {
-      json[r'thirdPartyBugFeatureUrl'] = this.thirdPartyBugFeatureUrl;
-    } else {
-    //  json[r'thirdPartyBugFeatureUrl'] = null;
+    if (this.thirdPartyBugFeatureUrl.isPresent) {
+      final value = this.thirdPartyBugFeatureUrl.value;
+      json[r'thirdPartyBugFeatureUrl'] = value;
     }
-    if (this.thirdPartyDocumentationUrl != null) {
-      json[r'thirdPartyDocumentationUrl'] = this.thirdPartyDocumentationUrl;
-    } else {
-    //  json[r'thirdPartyDocumentationUrl'] = null;
+    if (this.thirdPartyDocumentationUrl.isPresent) {
+      final value = this.thirdPartyDocumentationUrl.value;
+      json[r'thirdPartyDocumentationUrl'] = value;
     }
-    if (this.thirdPartySourceUrl != null) {
-      json[r'thirdPartySourceUrl'] = this.thirdPartySourceUrl;
-    } else {
-    //  json[r'thirdPartySourceUrl'] = null;
+    if (this.thirdPartySourceUrl.isPresent) {
+      final value = this.thirdPartySourceUrl.value;
+      json[r'thirdPartySourceUrl'] = value;
     }
-    if (this.thirdPartySupportUrl != null) {
-      json[r'thirdPartySupportUrl'] = this.thirdPartySupportUrl;
-    } else {
-    //  json[r'thirdPartySupportUrl'] = null;
+    if (this.thirdPartySupportUrl.isPresent) {
+      final value = this.thirdPartySupportUrl.value;
+      json[r'thirdPartySupportUrl'] = value;
     }
       json[r'version'] = this.version;
       json[r'versionUrl'] = this.versionUrl;
@@ -366,25 +348,25 @@ class ServerAboutResponseDto {
       final json = value.cast<String, dynamic>();
 
       return ServerAboutResponseDto(
-        build: mapValueOfType<String>(json, r'build'),
-        buildImage: mapValueOfType<String>(json, r'buildImage'),
-        buildImageUrl: mapValueOfType<String>(json, r'buildImageUrl'),
-        buildUrl: mapValueOfType<String>(json, r'buildUrl'),
-        exiftool: mapValueOfType<String>(json, r'exiftool'),
-        ffmpeg: mapValueOfType<String>(json, r'ffmpeg'),
-        imagemagick: mapValueOfType<String>(json, r'imagemagick'),
-        libvips: mapValueOfType<String>(json, r'libvips'),
+        build: json.containsKey(r'build') ? Optional.present(mapValueOfType<String>(json, r'build')) : const Optional.absent(),
+        buildImage: json.containsKey(r'buildImage') ? Optional.present(mapValueOfType<String>(json, r'buildImage')) : const Optional.absent(),
+        buildImageUrl: json.containsKey(r'buildImageUrl') ? Optional.present(mapValueOfType<String>(json, r'buildImageUrl')) : const Optional.absent(),
+        buildUrl: json.containsKey(r'buildUrl') ? Optional.present(mapValueOfType<String>(json, r'buildUrl')) : const Optional.absent(),
+        exiftool: json.containsKey(r'exiftool') ? Optional.present(mapValueOfType<String>(json, r'exiftool')) : const Optional.absent(),
+        ffmpeg: json.containsKey(r'ffmpeg') ? Optional.present(mapValueOfType<String>(json, r'ffmpeg')) : const Optional.absent(),
+        imagemagick: json.containsKey(r'imagemagick') ? Optional.present(mapValueOfType<String>(json, r'imagemagick')) : const Optional.absent(),
+        libvips: json.containsKey(r'libvips') ? Optional.present(mapValueOfType<String>(json, r'libvips')) : const Optional.absent(),
         licensed: mapValueOfType<bool>(json, r'licensed')!,
-        nodejs: mapValueOfType<String>(json, r'nodejs'),
-        repository: mapValueOfType<String>(json, r'repository'),
-        repositoryUrl: mapValueOfType<String>(json, r'repositoryUrl'),
-        sourceCommit: mapValueOfType<String>(json, r'sourceCommit'),
-        sourceRef: mapValueOfType<String>(json, r'sourceRef'),
-        sourceUrl: mapValueOfType<String>(json, r'sourceUrl'),
-        thirdPartyBugFeatureUrl: mapValueOfType<String>(json, r'thirdPartyBugFeatureUrl'),
-        thirdPartyDocumentationUrl: mapValueOfType<String>(json, r'thirdPartyDocumentationUrl'),
-        thirdPartySourceUrl: mapValueOfType<String>(json, r'thirdPartySourceUrl'),
-        thirdPartySupportUrl: mapValueOfType<String>(json, r'thirdPartySupportUrl'),
+        nodejs: json.containsKey(r'nodejs') ? Optional.present(mapValueOfType<String>(json, r'nodejs')) : const Optional.absent(),
+        repository: json.containsKey(r'repository') ? Optional.present(mapValueOfType<String>(json, r'repository')) : const Optional.absent(),
+        repositoryUrl: json.containsKey(r'repositoryUrl') ? Optional.present(mapValueOfType<String>(json, r'repositoryUrl')) : const Optional.absent(),
+        sourceCommit: json.containsKey(r'sourceCommit') ? Optional.present(mapValueOfType<String>(json, r'sourceCommit')) : const Optional.absent(),
+        sourceRef: json.containsKey(r'sourceRef') ? Optional.present(mapValueOfType<String>(json, r'sourceRef')) : const Optional.absent(),
+        sourceUrl: json.containsKey(r'sourceUrl') ? Optional.present(mapValueOfType<String>(json, r'sourceUrl')) : const Optional.absent(),
+        thirdPartyBugFeatureUrl: json.containsKey(r'thirdPartyBugFeatureUrl') ? Optional.present(mapValueOfType<String>(json, r'thirdPartyBugFeatureUrl')) : const Optional.absent(),
+        thirdPartyDocumentationUrl: json.containsKey(r'thirdPartyDocumentationUrl') ? Optional.present(mapValueOfType<String>(json, r'thirdPartyDocumentationUrl')) : const Optional.absent(),
+        thirdPartySourceUrl: json.containsKey(r'thirdPartySourceUrl') ? Optional.present(mapValueOfType<String>(json, r'thirdPartySourceUrl')) : const Optional.absent(),
+        thirdPartySupportUrl: json.containsKey(r'thirdPartySupportUrl') ? Optional.present(mapValueOfType<String>(json, r'thirdPartySupportUrl')) : const Optional.absent(),
         version: mapValueOfType<String>(json, r'version')!,
         versionUrl: mapValueOfType<String>(json, r'versionUrl')!,
       );

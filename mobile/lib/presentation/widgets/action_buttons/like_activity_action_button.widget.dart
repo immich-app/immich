@@ -23,7 +23,7 @@ class LikeActivityActionButton extends ConsumerWidget {
     final asset = ref.watch(assetViewerProvider.select((s) => s.currentAsset)) as RemoteAsset?;
     final user = ref.watch(currentUserProvider);
 
-    final activities = ref.watch(albumActivityProvider(album?.id ?? "", asset?.id));
+    final activities = ref.watch(albumActivityProvider((album?.id ?? "", asset?.id)));
 
     onTap(Activity? liked) async {
       if (user == null) {
@@ -31,12 +31,12 @@ class LikeActivityActionButton extends ConsumerWidget {
       }
 
       if (liked != null) {
-        await ref.read(albumActivityProvider(album?.id ?? "", asset?.id).notifier).removeActivity(liked.id);
+        await ref.read(albumActivityProvider((album?.id ?? "", asset?.id)).notifier).removeActivity(liked.id);
       } else {
-        await ref.read(albumActivityProvider(album?.id ?? "", asset?.id).notifier).addLike();
+        await ref.read(albumActivityProvider((album?.id ?? "", asset?.id)).notifier).addLike();
       }
 
-      ref.invalidate(albumActivityProvider(album?.id ?? "", asset?.id));
+      ref.invalidate(albumActivityProvider((album?.id ?? "", asset?.id)));
     }
 
     return activities.when(

@@ -38,12 +38,9 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Avvertenze
-
-- ⚠️ Il progetto è in fase di sviluppo **molto attivo**.  
-- ⚠️ Possono esserci bug o cambiamenti radicali, che possono non essere retrocompatibili (breaking changes).
-- ⚠️ **Non usare l’app come unico modo per archiviare le tue foto e i tuoi video.**  
-- ⚠️ Segui sempre la regola di backup [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) per proteggere i tuoi ricordi e le foto a cui tieni!  
+> [!WARNING]
+> ⚠️ Segui sempre la regola di backup [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) per proteggere i tuoi ricordi e le foto a cui tieni!
+>
 
 > [!NOTE]  
 > La documentazione principale, comprese le guide all’installazione, si trova su https://immich.app/.  

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -23,6 +25,12 @@ class FavoriteActionButton extends ConsumerWidget {
     final result = await ref.read(actionProvider.notifier).favorite(source);
 
     if (source == ActionSource.viewer) {
+      if (result.success) {
+        final currentAsset = ref.read(assetViewerProvider).currentAsset;
+        if (currentAsset is RemoteAsset && !currentAsset.isFavorite) {
+          ref.read(assetViewerProvider.notifier).setAsset(currentAsset.copyWith(isFavorite: true));
+        }
+      }
       return;
     }
 

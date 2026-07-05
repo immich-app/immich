@@ -1,8 +1,7 @@
-import { CastDestinationType, CastState, type ICastDestination } from '$lib/managers/cast-manager.svelte';
-import { preferences } from '$lib/stores/user.store';
 import 'chromecast-caf-sender';
 import { Duration } from 'luxon';
-import { get } from 'svelte/store';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { CastDestinationType, CastState, type ICastDestination } from '$lib/managers/cast-manager.svelte';
 
 const FRAMEWORK_LINK = 'https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1';
 
@@ -26,8 +25,7 @@ export class GCastDestination implements ICastDestination {
   private currentUrl: string | null = null;
 
   async initialize(): Promise<boolean> {
-    const preferencesStore = get(preferences);
-    if (!preferencesStore || !preferencesStore.cast.gCastEnabled) {
+    if (!authManager.authenticated || !authManager.preferences.cast.gCastEnabled) {
       this.isAvailable = false;
       return false;
     }
@@ -173,6 +171,7 @@ export class GCastDestination implements ICastDestination {
   ///
   private onSessionStateChanged(event: cast.framework.SessionStateEventData) {
     switch (event.sessionState) {
+      case cast.framework.SessionState.NO_SESSION:
       case cast.framework.SessionState.SESSION_ENDED: {
         this.session = null;
         break;
@@ -182,6 +181,11 @@ export class GCastDestination implements ICastDestination {
         this.session = event.session.getSessionObj();
         break;
       }
+      case cast.framework.SessionState.SESSION_START_FAILED: {
+        console.error('Google Cast failed to start session:', event.errorCode);
+        break;
+      }
+      // no default
     }
   }
 

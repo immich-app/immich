@@ -16,8 +16,8 @@ test.describe('Duplicates Utility', () => {
 
   test.beforeEach(async ({ context }) => {
     [firstAsset, secondAsset] = await Promise.all([
-      utils.createAsset(admin.accessToken, { deviceAssetId: 'duplicate-a' }),
-      utils.createAsset(admin.accessToken, { deviceAssetId: 'duplicate-b' }),
+      utils.createAsset(admin.accessToken, {}),
+      utils.createAsset(admin.accessToken, {}),
     ]);
 
     await updateAssets(

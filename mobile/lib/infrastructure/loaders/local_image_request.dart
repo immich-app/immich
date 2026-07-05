@@ -46,7 +46,9 @@ class LocalImageRequest extends ImageRequest {
       isVideo: assetType == AssetType.video,
       preferEncoded: true,
     );
-    if (info == null) return null;
+    if (info == null) {
+      return null;
+    }
 
     final (codec, _) = await _codecFromEncodedPlatformImage(info['pointer']!, info['length']!) ?? (null, null);
     return codec;

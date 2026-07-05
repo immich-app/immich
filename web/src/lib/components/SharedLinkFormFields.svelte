@@ -30,7 +30,7 @@
   });
 </script>
 
-<div class="flex flex-col gap-4 mt-4">
+<div class="mt-4 flex flex-col gap-4">
   <div>
     <Field label={$t('custom_url')} description={$t('shared_link_custom_url_description')}>
       <Input bind:value={slug} autocomplete="off" />

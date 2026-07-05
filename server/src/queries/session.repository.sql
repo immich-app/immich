@@ -74,7 +74,7 @@ delete from "session"
 where
   "id" = $1::uuid
 
--- SessionRepository.invalidate
+-- SessionRepository.invalidateAll
 delete from "session"
 where
   "userId" = $1

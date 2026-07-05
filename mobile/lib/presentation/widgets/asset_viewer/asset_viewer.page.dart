@@ -17,12 +17,13 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/download_statu
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_page.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_preloader.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_top_app_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_bottom_app_bar.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_top_app_bar.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 @RoutePage()
@@ -65,13 +66,17 @@ class AssetViewer extends ConsumerStatefulWidget {
 
   static void setAsset(WidgetRef ref, BaseAsset asset) {
     ref.read(assetViewerProvider.notifier).reset();
+
+    // Hide controls by default for videos
+    if (asset.isVideo) {
+      ref.read(assetViewerProvider.notifier).setControls(false);
+    }
+
     _setAsset(ref, asset);
   }
 
   static void _setAsset(WidgetRef ref, BaseAsset asset) {
     ref.read(assetViewerProvider.notifier).setAsset(asset);
-    // Hide controls by default for videos
-    if (asset.isVideo) ref.read(assetViewerProvider.notifier).setControls(false);
   }
 }
 
@@ -88,7 +93,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
   void _onTapNavigate(int direction) {
     final page = _pageController.page?.toInt();
-    if (page == null) return;
+    if (page == null) {
+      return;
+    }
     final target = page + direction;
     final maxPage = _totalAssets - 1;
     if (target >= 0 && target <= maxPage) {
@@ -103,7 +110,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     final asset = ref.read(assetViewerProvider).currentAsset;
     assert(asset != null, "Current asset should not be null when opening the AssetViewer");
-    if (asset != null) _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+    if (asset != null) {
+      _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();
+    }
 
     _reloadSubscription = EventStream.shared.listen(_onEvent);
 
@@ -120,7 +129,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _reloadSubscription?.cancel();
     _stackChildrenKeepAlive?.close();
 
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    unawaited(restoreEdgeToEdge());
 
     super.dispose();
   }
@@ -135,7 +144,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   // playing, and preventing the video on the next page from becoming ready
   // unnecessarily.
   bool _onScrollEnd(ScrollEndNotification notification) {
-    if (notification.depth != 0) return false;
+    if (notification.depth != 0) {
+      return false;
+    }
 
     final page = _pageController.page?.round();
     if (page != null && page != _currentPage) {
@@ -153,7 +164,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _currentPage = index;
 
     final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
-    if (asset == null) return;
+    if (asset == null) {
+      return;
+    }
 
     AssetViewer._setAsset(ref, asset);
     _preloader.preload(index, context.sizeData);
@@ -163,9 +176,13 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _handleCasting() {
-    if (!ref.read(castProvider).isCasting) return;
+    if (!ref.read(castProvider).isCasting) {
+      return;
+    }
     final asset = ref.read(assetViewerProvider).currentAsset;
-    if (asset == null) return;
+    if (asset == null) {
+      return;
+    }
 
     if (asset is RemoteAsset) {
       context.scaffoldMessenger.hideCurrentSnackBar();
@@ -197,7 +214,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onViewerReloadEvent() {
-    if (_totalAssets <= 1) return;
+    if (_totalAssets <= 1) {
+      return;
+    }
 
     final index = _pageController.page?.round() ?? 0;
     final target = index >= _totalAssets - 1 ? index - 1 : index + 1;
@@ -233,10 +252,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _setSystemUIMode(bool controls, bool details) {
-    final mode = !controls || (CurrentPlatform.isIOS && details)
-        ? SystemUiMode.immersiveSticky
-        : SystemUiMode.edgeToEdge;
-    unawaited(SystemChrome.setEnabledSystemUIMode(mode));
+    final immersive = !controls || (CurrentPlatform.isIOS && details);
+    unawaited(immersive ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky) : restoreEdgeToEdge());
   }
 
   @override
@@ -250,7 +267,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     // Listen for casting changes and send initial asset to the cast provider
     ref.listen(castProvider.select((value) => value.isCasting), (_, isCasting) {
-      if (!isCasting) return;
+      if (!isCasting) {
+        return;
+      }
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _handleCasting();
       });

@@ -16,18 +16,25 @@ class SyncAssetEditV1 {
     required this.action,
     required this.assetId,
     required this.id,
-    required this.parameters,
+    this.parameters = const {},
     required this.sequence,
   });
 
   AssetEditAction action;
 
+  /// Asset ID
   String assetId;
 
+  /// Edit ID
   String id;
 
-  Object parameters;
+  /// Edit parameters
+  Map<String, Object> parameters;
 
+  /// Edit sequence
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   int sequence;
 
   @override
@@ -35,7 +42,7 @@ class SyncAssetEditV1 {
     other.action == action &&
     other.assetId == assetId &&
     other.id == id &&
-    other.parameters == parameters &&
+    _deepEquality.equals(other.parameters, parameters) &&
     other.sequence == sequence;
 
   @override
@@ -72,7 +79,7 @@ class SyncAssetEditV1 {
         action: AssetEditAction.fromJson(json[r'action'])!,
         assetId: mapValueOfType<String>(json, r'assetId')!,
         id: mapValueOfType<String>(json, r'id')!,
-        parameters: mapValueOfType<Object>(json, r'parameters')!,
+        parameters: mapCastOfType<String, Object>(json, r'parameters')!,
         sequence: mapValueOfType<int>(json, r'sequence')!,
       );
     }

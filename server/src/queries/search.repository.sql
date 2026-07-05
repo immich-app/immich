@@ -7,18 +7,17 @@ from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."visibility" = $1
-  and "asset"."fileCreatedAt" >= $2
-  and "asset_exif"."lensModel" = $3
-  and "asset"."ownerId" = any ($4::uuid[])
-  and "asset"."isFavorite" = $5
+  "asset"."fileCreatedAt" >= $1
+  and "asset_exif"."lensModel" = $2
+  and "asset"."ownerId" = any ($3::uuid[])
+  and "asset"."isFavorite" = $4
   and "asset"."deletedAt" is null
 order by
   "asset"."fileCreatedAt" desc
 limit
-  $6
+  $5
 offset
-  $7
+  $6
 
 -- SearchRepository.searchStatistics
 select
@@ -27,55 +26,28 @@ from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."visibility" = $1
-  and "asset"."fileCreatedAt" >= $2
-  and "asset_exif"."lensModel" = $3
-  and "asset"."ownerId" = any ($4::uuid[])
-  and "asset"."isFavorite" = $5
+  "asset"."fileCreatedAt" >= $1
+  and "asset_exif"."lensModel" = $2
+  and "asset"."ownerId" = any ($3::uuid[])
+  and "asset"."isFavorite" = $4
   and "asset"."deletedAt" is null
 
 -- SearchRepository.searchRandom
-(
-  select
-    "asset".*
-  from
-    "asset"
-    inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  where
-    "asset"."visibility" = $1
-    and "asset"."fileCreatedAt" >= $2
-    and "asset_exif"."lensModel" = $3
-    and "asset"."ownerId" = any ($4::uuid[])
-    and "asset"."isFavorite" = $5
-    and "asset"."deletedAt" is null
-    and "asset"."id" < $6
-  order by
-    random()
-  limit
-    $7
-)
-union all
-(
-  select
-    "asset".*
-  from
-    "asset"
-    inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  where
-    "asset"."visibility" = $8
-    and "asset"."fileCreatedAt" >= $9
-    and "asset_exif"."lensModel" = $10
-    and "asset"."ownerId" = any ($11::uuid[])
-    and "asset"."isFavorite" = $12
-    and "asset"."deletedAt" is null
-    and "asset"."id" > $13
-  order by
-    random()
-  limit
-    $14
-)
+select
+  "asset".*
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."fileCreatedAt" >= $1
+  and "asset_exif"."lensModel" = $2
+  and "asset"."ownerId" = any ($3::uuid[])
+  and "asset"."isFavorite" = $4
+  and "asset"."deletedAt" is null
+order by
+  random()
 limit
-  $15
+  $5
 
 -- SearchRepository.searchLargeAssets
 select
@@ -84,19 +56,17 @@ select
 from
   "asset"
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
-  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."visibility" = $1
-  and "asset"."fileCreatedAt" >= $2
-  and "asset_exif"."lensModel" = $3
-  and "asset"."ownerId" = any ($4::uuid[])
-  and "asset"."isFavorite" = $5
+  "asset"."fileCreatedAt" >= $1
+  and "asset_exif"."lensModel" = $2
+  and "asset"."ownerId" = any ($3::uuid[])
+  and "asset"."isFavorite" = $4
   and "asset"."deletedAt" is null
-  and "asset_exif"."fileSizeInByte" > $6
+  and "asset_exif"."fileSizeInByte" > $5
 order by
   "asset_exif"."fileSizeInByte" desc
 limit
-  $7
+  $6
 
 -- SearchRepository.searchSmart
 begin
@@ -109,18 +79,17 @@ from
   inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
   inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
 where
-  "asset"."visibility" = $1
-  and "asset"."fileCreatedAt" >= $2
-  and "asset_exif"."lensModel" = $3
-  and "asset"."ownerId" = any ($4::uuid[])
-  and "asset"."isFavorite" = $5
+  "asset"."fileCreatedAt" >= $1
+  and "asset_exif"."lensModel" = $2
+  and "asset"."ownerId" = any ($3::uuid[])
+  and "asset"."isFavorite" = $4
   and "asset"."deletedAt" is null
 order by
-  smart_search.embedding <=> $6
+  smart_search.embedding <=> $5
 limit
-  $7
+  $6
 offset
-  $8
+  $7
 commit
 
 -- SearchRepository.getEmbedding

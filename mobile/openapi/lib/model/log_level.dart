@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Log level
 class LogLevel {
   /// Instantiate a new enum with the provided [value].
   const LogLevel._(this.value);

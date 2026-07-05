@@ -112,10 +112,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
       _PropertyItem(label: 'Updated At', value: asset.updatedAt.toString()),
       _PropertyItem(label: 'Width', value: asset.width?.toString()),
       _PropertyItem(label: 'Height', value: asset.height?.toString()),
-      _PropertyItem(
-        label: 'Duration',
-        value: asset.durationInSeconds != null ? '${asset.durationInSeconds} seconds' : null,
-      ),
+      _PropertyItem(label: 'Duration', value: asset.durationMs != null ? '${asset.durationMs} ms' : null),
       _PropertyItem(label: 'Is Favorite', value: asset.isFavorite.toString()),
       _PropertyItem(label: 'Live Photo Video ID', value: asset.livePhotoVideoId),
       _PropertyItem(label: 'Is Edited', value: asset.isEdited.toString()),
@@ -194,8 +191,12 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
   }
 
   String _getAssetTypeTitle(BaseAsset asset) {
-    if (asset is LocalAsset) return 'Local Asset';
-    if (asset is RemoteAsset) return 'Remote Asset';
+    if (asset is LocalAsset) {
+      return 'Local Asset';
+    }
+    if (asset is RemoteAsset) {
+      return 'Remote Asset';
+    }
     return 'Base Asset';
   }
 }

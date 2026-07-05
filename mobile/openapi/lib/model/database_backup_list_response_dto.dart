@@ -16,6 +16,7 @@ class DatabaseBackupListResponseDto {
     this.backups = const [],
   });
 
+  /// List of backups
   List<DatabaseBackupDto> backups;
 
   @override

@@ -32,7 +32,9 @@ class LivePhotosMetadata {
 
   @override
   bool operator ==(covariant LivePhotosMetadata other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.part == part && other.id == id;
   }

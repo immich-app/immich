@@ -1,7 +1,7 @@
 <script lang="ts">
   import { shortcut } from '$lib/actions/shortcut';
+  import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { handleRemoveSharedLinkAssets } from '$lib/services/shared-link.service';
-  import { getAssetControlContext } from '$lib/utils/context';
   import { type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiDeleteOutline } from '@mdi/js';
@@ -13,13 +13,11 @@
 
   let { sharedLink = $bindable() }: Props = $props();
 
-  const { getAssets, clearSelect } = getAssetControlContext();
-
   const handleSelect = async () => {
-    const assetIds = getAssets().map(({ id }) => id);
+    const assetIds = assetMultiSelectManager.assets.map(({ id }) => id);
     const success = await handleRemoveSharedLinkAssets(sharedLink, assetIds);
     if (success) {
-      clearSelect();
+      assetMultiSelectManager.clear();
     }
   };
 </script>

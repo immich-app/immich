@@ -14,14 +14,13 @@ class AssetBulkUploadCheckResult {
   /// Returns a new [AssetBulkUploadCheckResult] instance.
   AssetBulkUploadCheckResult({
     required this.action,
-    this.assetId,
+    this.assetId = const Optional.absent(),
     required this.id,
-    this.isTrashed,
-    this.reason,
+    this.isTrashed = const Optional.absent(),
+    this.reason = const Optional.absent(),
   });
 
-  /// Upload action
-  AssetBulkUploadCheckResultActionEnum action;
+  AssetUploadAction action;
 
   /// Existing asset ID if duplicate
   ///
@@ -30,9 +29,9 @@ class AssetBulkUploadCheckResult {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? assetId;
+  Optional<String?> assetId;
 
-  /// Asset ID
+  /// Client-side identifier echoed from the request to match results to inputs
   String id;
 
   /// Whether existing asset is trashed
@@ -42,10 +41,15 @@ class AssetBulkUploadCheckResult {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isTrashed;
+  Optional<bool?> isTrashed;
 
-  /// Rejection reason if rejected
-  AssetBulkUploadCheckResultReasonEnum? reason;
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<AssetRejectReason?> reason;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUploadCheckResult &&
@@ -70,21 +74,18 @@ class AssetBulkUploadCheckResult {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'action'] = this.action;
-    if (this.assetId != null) {
-      json[r'assetId'] = this.assetId;
-    } else {
-    //  json[r'assetId'] = null;
+    if (this.assetId.isPresent) {
+      final value = this.assetId.value;
+      json[r'assetId'] = value;
     }
       json[r'id'] = this.id;
-    if (this.isTrashed != null) {
-      json[r'isTrashed'] = this.isTrashed;
-    } else {
-    //  json[r'isTrashed'] = null;
+    if (this.isTrashed.isPresent) {
+      final value = this.isTrashed.value;
+      json[r'isTrashed'] = value;
     }
-    if (this.reason != null) {
-      json[r'reason'] = this.reason;
-    } else {
-    //  json[r'reason'] = null;
+    if (this.reason.isPresent) {
+      final value = this.reason.value;
+      json[r'reason'] = value;
     }
     return json;
   }
@@ -98,11 +99,11 @@ class AssetBulkUploadCheckResult {
       final json = value.cast<String, dynamic>();
 
       return AssetBulkUploadCheckResult(
-        action: AssetBulkUploadCheckResultActionEnum.fromJson(json[r'action'])!,
-        assetId: mapValueOfType<String>(json, r'assetId'),
+        action: AssetUploadAction.fromJson(json[r'action'])!,
+        assetId: json.containsKey(r'assetId') ? Optional.present(mapValueOfType<String>(json, r'assetId')) : const Optional.absent(),
         id: mapValueOfType<String>(json, r'id')!,
-        isTrashed: mapValueOfType<bool>(json, r'isTrashed'),
-        reason: AssetBulkUploadCheckResultReasonEnum.fromJson(json[r'reason']),
+        isTrashed: json.containsKey(r'isTrashed') ? Optional.present(mapValueOfType<bool>(json, r'isTrashed')) : const Optional.absent(),
+        reason: json.containsKey(r'reason') ? Optional.present(AssetRejectReason.fromJson(json[r'reason'])) : const Optional.absent(),
       );
     }
     return null;
@@ -154,152 +155,4 @@ class AssetBulkUploadCheckResult {
     'id',
   };
 }
-
-/// Upload action
-class AssetBulkUploadCheckResultActionEnum {
-  /// Instantiate a new enum with the provided [value].
-  const AssetBulkUploadCheckResultActionEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const accept = AssetBulkUploadCheckResultActionEnum._(r'accept');
-  static const reject = AssetBulkUploadCheckResultActionEnum._(r'reject');
-
-  /// List of all possible values in this [enum][AssetBulkUploadCheckResultActionEnum].
-  static const values = <AssetBulkUploadCheckResultActionEnum>[
-    accept,
-    reject,
-  ];
-
-  static AssetBulkUploadCheckResultActionEnum? fromJson(dynamic value) => AssetBulkUploadCheckResultActionEnumTypeTransformer().decode(value);
-
-  static List<AssetBulkUploadCheckResultActionEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetBulkUploadCheckResultActionEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AssetBulkUploadCheckResultActionEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [AssetBulkUploadCheckResultActionEnum] to String,
-/// and [decode] dynamic data back to [AssetBulkUploadCheckResultActionEnum].
-class AssetBulkUploadCheckResultActionEnumTypeTransformer {
-  factory AssetBulkUploadCheckResultActionEnumTypeTransformer() => _instance ??= const AssetBulkUploadCheckResultActionEnumTypeTransformer._();
-
-  const AssetBulkUploadCheckResultActionEnumTypeTransformer._();
-
-  String encode(AssetBulkUploadCheckResultActionEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a AssetBulkUploadCheckResultActionEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  AssetBulkUploadCheckResultActionEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'accept': return AssetBulkUploadCheckResultActionEnum.accept;
-        case r'reject': return AssetBulkUploadCheckResultActionEnum.reject;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [AssetBulkUploadCheckResultActionEnumTypeTransformer] instance.
-  static AssetBulkUploadCheckResultActionEnumTypeTransformer? _instance;
-}
-
-
-/// Rejection reason if rejected
-class AssetBulkUploadCheckResultReasonEnum {
-  /// Instantiate a new enum with the provided [value].
-  const AssetBulkUploadCheckResultReasonEnum._(this.value);
-
-  /// The underlying value of this enum member.
-  final String value;
-
-  @override
-  String toString() => value;
-
-  String toJson() => value;
-
-  static const duplicate = AssetBulkUploadCheckResultReasonEnum._(r'duplicate');
-  static const unsupportedFormat = AssetBulkUploadCheckResultReasonEnum._(r'unsupported-format');
-
-  /// List of all possible values in this [enum][AssetBulkUploadCheckResultReasonEnum].
-  static const values = <AssetBulkUploadCheckResultReasonEnum>[
-    duplicate,
-    unsupportedFormat,
-  ];
-
-  static AssetBulkUploadCheckResultReasonEnum? fromJson(dynamic value) => AssetBulkUploadCheckResultReasonEnumTypeTransformer().decode(value);
-
-  static List<AssetBulkUploadCheckResultReasonEnum> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <AssetBulkUploadCheckResultReasonEnum>[];
-    if (json is List && json.isNotEmpty) {
-      for (final row in json) {
-        final value = AssetBulkUploadCheckResultReasonEnum.fromJson(row);
-        if (value != null) {
-          result.add(value);
-        }
-      }
-    }
-    return result.toList(growable: growable);
-  }
-}
-
-/// Transformation class that can [encode] an instance of [AssetBulkUploadCheckResultReasonEnum] to String,
-/// and [decode] dynamic data back to [AssetBulkUploadCheckResultReasonEnum].
-class AssetBulkUploadCheckResultReasonEnumTypeTransformer {
-  factory AssetBulkUploadCheckResultReasonEnumTypeTransformer() => _instance ??= const AssetBulkUploadCheckResultReasonEnumTypeTransformer._();
-
-  const AssetBulkUploadCheckResultReasonEnumTypeTransformer._();
-
-  String encode(AssetBulkUploadCheckResultReasonEnum data) => data.value;
-
-  /// Decodes a [dynamic value][data] to a AssetBulkUploadCheckResultReasonEnum.
-  ///
-  /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
-  /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
-  /// cannot be decoded successfully, then an [UnimplementedError] is thrown.
-  ///
-  /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
-  /// and users are still using an old app with the old code.
-  AssetBulkUploadCheckResultReasonEnum? decode(dynamic data, {bool allowNull = true}) {
-    if (data != null) {
-      switch (data) {
-        case r'duplicate': return AssetBulkUploadCheckResultReasonEnum.duplicate;
-        case r'unsupported-format': return AssetBulkUploadCheckResultReasonEnum.unsupportedFormat;
-        default:
-          if (!allowNull) {
-            throw ArgumentError('Unknown enum value to decode: $data');
-          }
-      }
-    }
-    return null;
-  }
-
-  /// Singleton [AssetBulkUploadCheckResultReasonEnumTypeTransformer] instance.
-  static AssetBulkUploadCheckResultReasonEnumTypeTransformer? _instance;
-}
-
 

@@ -16,6 +16,7 @@ class DatabaseBackupDeleteDto {
     this.backups = const [],
   });
 
+  /// Backup filenames to delete
   List<String> backups;
 
   @override

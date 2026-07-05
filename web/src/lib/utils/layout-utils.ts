@@ -1,11 +1,10 @@
-import { TUNABLES } from '$lib/utils/tunables';
 import { JustifiedLayout, type LayoutOptions } from '@immich/justified-layout-wasm';
-
+import type { AssetResponseDto } from '@immich/sdk';
+import createJustifiedLayout from 'justified-layout';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { getAssetRatio } from '$lib/utils/asset-utils';
 import { isTimelineAsset, isTimelineAssets } from '$lib/utils/timeline-util';
-import type { AssetResponseDto } from '@immich/sdk';
-import createJustifiedLayout from 'justified-layout';
+import { TUNABLES } from '$lib/utils/tunables';
 
 export type getJustifiedLayoutFromAssetsFunction = typeof getJustifiedLayoutFromAssets;
 

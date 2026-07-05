@@ -1,5 +1,4 @@
 import {
-  AfterDeleteTrigger,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -12,24 +11,13 @@ import {
 } from '@immich/sql-tools';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { AssetOrder } from 'src/enum';
-import { album_delete_audit } from 'src/schema/functions';
 import { AssetTable } from 'src/schema/tables/asset.table';
-import { UserTable } from 'src/schema/tables/user.table';
 
 @Table({ name: 'album' })
 @UpdatedAtTrigger('album_updatedAt')
-@AfterDeleteTrigger({
-  scope: 'statement',
-  function: album_delete_audit,
-  referencingOldTableAs: 'old',
-  when: 'pg_trigger_depth() = 0',
-})
 export class AlbumTable {
   @PrimaryGeneratedColumn()
   id!: Generated<string>;
-
-  @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  ownerId!: string;
 
   @Column({ default: 'Untitled Album' })
   albumName!: Generated<string>;

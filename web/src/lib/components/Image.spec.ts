@@ -1,6 +1,6 @@
+import { fireEvent, render } from '@testing-library/svelte';
 import Image from '$lib/components/Image.svelte';
 import { cancelImageUrl } from '$lib/utils/sw-messaging';
-import { fireEvent, render } from '@testing-library/svelte';
 
 vi.mock('$lib/utils/sw-messaging', () => ({
   cancelImageUrl: vi.fn(),

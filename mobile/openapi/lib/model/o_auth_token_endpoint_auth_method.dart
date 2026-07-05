@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-/// Token endpoint auth method
+/// OAuth token endpoint auth method
 class OAuthTokenEndpointAuthMethod {
   /// Instantiate a new enum with the provided [value].
   const OAuthTokenEndpointAuthMethod._(this.value);
@@ -23,13 +23,13 @@ class OAuthTokenEndpointAuthMethod {
 
   String toJson() => value;
 
-  static const post = OAuthTokenEndpointAuthMethod._(r'client_secret_post');
-  static const basic = OAuthTokenEndpointAuthMethod._(r'client_secret_basic');
+  static const clientSecretPost = OAuthTokenEndpointAuthMethod._(r'client_secret_post');
+  static const clientSecretBasic = OAuthTokenEndpointAuthMethod._(r'client_secret_basic');
 
   /// List of all possible values in this [enum][OAuthTokenEndpointAuthMethod].
   static const values = <OAuthTokenEndpointAuthMethod>[
-    post,
-    basic,
+    clientSecretPost,
+    clientSecretBasic,
   ];
 
   static OAuthTokenEndpointAuthMethod? fromJson(dynamic value) => OAuthTokenEndpointAuthMethodTypeTransformer().decode(value);
@@ -68,8 +68,8 @@ class OAuthTokenEndpointAuthMethodTypeTransformer {
   OAuthTokenEndpointAuthMethod? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case r'client_secret_post': return OAuthTokenEndpointAuthMethod.post;
-        case r'client_secret_basic': return OAuthTokenEndpointAuthMethod.basic;
+        case r'client_secret_post': return OAuthTokenEndpointAuthMethod.clientSecretPost;
+        case r'client_secret_basic': return OAuthTokenEndpointAuthMethod.clientSecretBasic;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

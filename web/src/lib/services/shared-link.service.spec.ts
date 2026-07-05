@@ -1,5 +1,5 @@
-import { asUrl } from '$lib/services/shared-link.service';
 import type { ServerConfigDto } from '@immich/sdk';
+import { asUrl } from '$lib/services/shared-link.service';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
 describe('SharedLinkService', () => {

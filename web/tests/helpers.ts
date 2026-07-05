@@ -1,6 +1,6 @@
-import TestWrapper from '$lib/components/TestWrapper.svelte';
 import { render, type RenderResult } from '@testing-library/svelte';
 import { type Component } from 'svelte';
+import TestWrapper from '$lib/components/TestWrapper.svelte';
 
 export const renderWithTooltips = <T extends Record<string, unknown>, K extends Component<T>>(
   component: K,

@@ -29,7 +29,9 @@ class RemoteImageRequest extends ImageRequest {
     }
 
     final info = await remoteImageApi.requestImage(uri, requestId: requestId, preferEncoded: true);
-    if (info == null) return null;
+    if (info == null) {
+      return null;
+    }
 
     final (codec, _) = await _codecFromEncodedPlatformImage(info['pointer']!, info['length']!) ?? (null, null);
     return codec;

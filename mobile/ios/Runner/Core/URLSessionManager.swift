@@ -4,7 +4,7 @@ import native_video_player
 let CLIENT_CERT_LABEL = "app.alextran.immich.client_identity"
 let HEADERS_KEY = "immich.request_headers"
 let SERVER_URLS_KEY = "immich.server_urls"
-let APP_GROUP = "group.app.immich.share"
+let APP_GROUP = Bundle.main.object(forInfoDictionaryKey: "AppGroupId") as! String
 let COOKIE_EXPIRY_DAYS: TimeInterval = 400
 
 enum AuthCookie: CaseIterable {
@@ -36,7 +36,7 @@ extension UserDefaults {
 /// Old sessions are kept alive by Dart's FFI retain until all isolates release them.
 class URLSessionManager: NSObject {
   static let shared = URLSessionManager()
-  
+
   private(set) var session: URLSession
   let delegate: URLSessionManagerDelegate
   private static let cacheDir: URL = {
@@ -53,7 +53,7 @@ class URLSessionManager: NSObject {
   )
   static let userAgent: String = {
     let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
-    return "Immich_iOS_\(version)"
+    return "immich-ios/\(version)"
   }()
   static let cookieStorage = HTTPCookieStorage.sharedCookieStorage(forGroupContainerIdentifier: APP_GROUP)
   private static var serverUrls: [String] = []

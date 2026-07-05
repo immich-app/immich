@@ -17,7 +17,6 @@ class AlbumUserResponseDto {
     required this.user,
   });
 
-  /// Album user role
   AlbumUserRole role;
 
   UserResponseDto user;

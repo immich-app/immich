@@ -38,26 +38,23 @@
   <a href="README_th_TH.md">ภาษาไทย</a>
 </p>
 
-## Ansvarsfriskrivning
+> [!WARNING]
+> ⚠️ Tillämpa alltid [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/)-strategin för säkerhetskopiering av dina foton och videor!
+>
 
-- ⚠️ Projektet är under **mycket aktiv** utveckling.
-- ⚠️ Förvänta dig buggar och brytande förändringar.
-- ⚠️ **Använd inte appen som enda lagringssätt för dina foton och videor.**
-- ⚠️ Tillämpa alltid [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/)-strategin för säkerhetskopiering av dina foton och videor!
+> [!NOTE]
+> Dokumentation och installationsguider hittas på https://immich.app/.
 
 ## Innehåll
 
-- [Officiell Dokumentation](https://docs.immich.app)
-- [Roadmap](https://github.com/orgs/immich-app/projects/1)
-- [Demo](#demo)
-- [Funktioner](#features)
+- [Officiell Dokumentation](https://docs.immich.app/)
 - [Introduktion](https://docs.immich.app/overview/introduction)
 - [Installation](https://docs.immich.app/install/requirements)
+- [Roadmap](https://immich.app/roadmap)
+- [Demo](#demo)
+- [Funktioner](#funktioner)
+- [Översättningar](https://docs.immich.app/developer/translations)
 - [Riktlinjer för Bidrag](https://docs.immich.app/overview/support-the-project)
-
-## Dokumentation
-
-Dokumentation och installationsguider hittas på https://imiich.app/.
 
 ## Demo
 

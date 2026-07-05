@@ -50,12 +50,13 @@ class ImmichToast {
         ),
       ),
       positionedToastBuilder: (context, child, gravity) {
+        final isTop = gravity == ToastGravity.TOP;
         return Positioned(
-          top: gravity == ToastGravity.TOP ? 150 : null,
-          bottom: gravity == ToastGravity.BOTTOM ? 150 : null,
+          top: isTop ? 150 : null,
+          bottom: isTop ? null : 150 + MediaQuery.of(context).viewInsets.bottom,
           left: MediaQuery.of(context).size.width / 2 - 150,
           right: MediaQuery.of(context).size.width / 2 - 150,
-          child: child,
+          child: IgnorePointer(child: child),
         );
       },
       gravity: gravity,

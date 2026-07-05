@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { Insertable, Kysely } from 'kysely';
 import { DateTime } from 'luxon';
 import { createHash, randomBytes } from 'node:crypto';
@@ -26,14 +25,17 @@ import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
+import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
+import { IntegrityRepository } from 'src/repositories/integrity.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MapRepository } from 'src/repositories/map.repository';
+import { MediaRepository } from 'src/repositories/media.repository';
 import { MemoryRepository } from 'src/repositories/memory.repository';
 import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
@@ -73,7 +75,7 @@ import { UserTable } from 'src/schema/tables/user.table';
 import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.service';
 import { MetadataService } from 'src/services/metadata.service';
 import { SyncService } from 'src/services/sync.service';
-import { UploadFile } from 'src/types';
+import { ClassConstructor, UploadFile } from 'src/types';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory';
@@ -82,10 +84,6 @@ import { Mocked } from 'vitest';
 
 // eslint-disable-next-line unicorn/prefer-module
 export const testAssetsDir = resolve(__dirname, '../../e2e/test-assets');
-
-interface ClassConstructor<T = any> extends Function {
-  new (...args: any[]): T;
-}
 
 type MediumTestOptions = {
   mock: ClassConstructor<any>[];
@@ -217,13 +215,18 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   async newExif(dto: Insertable<AssetExifTable>) {
-    const result = await this.get(AssetRepository).upsertExif(dto, { lockedPropertiesBehavior: 'override' });
+    const result = await this.get(AssetRepository).upsertExif({ exif: dto, lockedPropertiesBehavior: 'override' });
     return { result };
   }
 
-  async newAlbum(dto: Insertable<AlbumTable>, assetIds?: string[]) {
+  async newAlbum({ ownerId, ...dto }: Insertable<AlbumTable> & { ownerId: string }, assetIds?: string[]) {
     const album = mediumFactory.albumInsert(dto);
-    const result = await this.get(AlbumRepository).create(album, assetIds ?? [], []);
+    const result = await this.get(AlbumRepository).create(
+      album,
+      assetIds ?? [],
+      [{ userId: ownerId, role: AlbumUserRole.Owner }],
+      ownerId,
+    );
     return { album, result };
   }
 
@@ -356,7 +359,14 @@ export class ExifTestContext extends MediumTestContext<MetadataService> {
   constructor(database: Kysely<DB>) {
     super(MetadataService, {
       database,
-      real: [AssetRepository, AssetJobRepository, MetadataRepository, SystemMetadataRepository, TagRepository],
+      real: [
+        AssetRepository,
+        AssetJobRepository,
+        MediaRepository,
+        MetadataRepository,
+        SystemMetadataRepository,
+        TagRepository,
+      ],
       mock: [ConfigRepository, EventRepository, LoggingRepository, MapRepository, StorageRepository],
     });
 
@@ -406,12 +416,12 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case AssetRepository:
     case AssetEditRepository:
     case AssetJobRepository:
+    case IntegrityRepository:
     case MemoryRepository:
     case NotificationRepository:
     case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
-    case PluginRepository:
     case SearchRepository:
     case SessionRepository:
     case SharedLinkRepository:
@@ -439,8 +449,13 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
       return new key(LoggingRepository.create());
     }
 
+    case MediaRepository:
     case MetadataRepository: {
       return new key(LoggingRepository.create());
+    }
+
+    case PluginRepository: {
+      return new key(db, LoggingRepository.create());
     }
 
     case StorageRepository: {
@@ -470,11 +485,11 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case ConfigRepository:
     case CryptoRepository:
     case MemoryRepository:
+    case IntegrityRepository:
     case NotificationRepository:
     case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
-    case PluginRepository:
     case SessionRepository:
     case SyncRepository:
     case SyncCheckpointRepository:
@@ -498,6 +513,10 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
       return automock(DatabaseRepository, {
         args: [undefined, { setContext: () => {} }, { getEnv: () => ({ database: { vectorExtension: '' } }) }],
       });
+    }
+
+    case CronRepository: {
+      return automock(CronRepository, { args: [undefined, { setContext: () => {} }], strict: false });
     }
 
     case EmailRepository: {
@@ -544,8 +563,6 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
   const id = asset.id || newUuid();
   const now = newDate();
   const defaults: Insertable<AssetTable> = {
-    deviceAssetId: '',
-    deviceId: '',
     originalFileName: '',
     checksum: randomBytes(32),
     checksumAlgorithm: ChecksumAlgorithm.sha1File,
@@ -567,9 +584,9 @@ const assetInsert = (asset: Partial<Insertable<AssetTable>> = {}) => {
   };
 };
 
-const albumInsert = (album: Partial<Insertable<AlbumTable>> & { ownerId: string }) => {
+const albumInsert = (album: Partial<Insertable<AlbumTable>>) => {
   const id = album.id || newUuid();
-  const defaults: Omit<Insertable<AlbumTable>, 'ownerId'> = {
+  const defaults: Insertable<AlbumTable> = {
     albumName: 'Album',
   };
 

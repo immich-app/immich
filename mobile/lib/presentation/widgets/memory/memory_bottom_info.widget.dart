@@ -30,7 +30,7 @@ class DriftMemoryBottomInfo extends StatelessWidget {
                 style: TextStyle(color: Colors.grey[400], fontSize: 13.0, fontWeight: FontWeight.w500),
               ),
               Text(
-                df.format(fileCreatedDate),
+                df.format(fileCreatedDate.toLocal()),
                 style: const TextStyle(color: Colors.white, fontSize: 15.0, fontWeight: FontWeight.w500),
               ),
             ],
@@ -40,9 +40,8 @@ class DriftMemoryBottomInfo extends StatelessWidget {
             child: MaterialButton(
               minWidth: 0,
               onPressed: () async {
-                await context.maybePop();
-                await context.navigateTo(const TabShellRoute(children: [MainTimelineRoute()]));
-                EventStream.shared.emit(ScrollToDateEvent(fileCreatedDate));
+                await context.router.navigate(const TabShellRoute(children: [MainTimelineRoute()]));
+                EventStream.shared.emit(ScrollToDateEvent(fileCreatedDate.toLocal()));
               },
               shape: const CircleBorder(),
               color: Colors.white.withValues(alpha: 0.2),

@@ -10,7 +10,7 @@
 
 part of openapi.api;
 
-
+/// Notification type
 class NotificationType {
   /// Instantiate a new enum with the provided [value].
   const NotificationType._(this.value);

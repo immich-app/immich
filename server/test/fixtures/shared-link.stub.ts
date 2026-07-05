@@ -1,5 +1,4 @@
 import { MapAsset } from 'src/dtos/asset-response.dto';
-import { SharedLinkResponseDto } from 'src/dtos/shared-link.dto';
 import { SharedLinkType } from 'src/enum';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -70,23 +69,6 @@ export const sharedLinkStub = {
     album: null,
     slug: null,
   }),
-  readonlyNoExif: Object.freeze({
-    id: '123',
-    userId: authStub.admin.user.id,
-    key: sharedLinkBytes,
-    type: SharedLinkType.Individual,
-    createdAt: today,
-    expiresAt: tomorrow,
-    allowUpload: false,
-    allowDownload: false,
-    showExif: false,
-    description: null,
-    password: null,
-    assets: [],
-    albumId: null,
-    album: null,
-    slug: null,
-  }),
   passwordRequired: Object.freeze({
     id: '123',
     userId: authStub.admin.user.id,
@@ -103,39 +85,5 @@ export const sharedLinkStub = {
     assets: [],
     albumId: null,
     album: null,
-  }),
-};
-
-export const sharedLinkResponseStub = {
-  valid: Object.freeze<SharedLinkResponseDto>({
-    allowDownload: true,
-    allowUpload: true,
-    assets: [],
-    createdAt: today,
-    description: null,
-    password: null,
-    expiresAt: tomorrow,
-    id: '123',
-    key: sharedLinkBytes.toString('base64url'),
-    showMetadata: true,
-    type: SharedLinkType.Album,
-    userId: 'admin_id',
-    slug: null,
-  }),
-  expired: Object.freeze<SharedLinkResponseDto>({
-    album: undefined,
-    allowDownload: true,
-    allowUpload: true,
-    assets: [],
-    createdAt: today,
-    description: null,
-    password: null,
-    expiresAt: yesterday,
-    id: '123',
-    key: sharedLinkBytes.toString('base64url'),
-    showMetadata: true,
-    type: SharedLinkType.Album,
-    userId: 'admin_id',
-    slug: null,
   }),
 };

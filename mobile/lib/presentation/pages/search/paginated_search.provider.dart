@@ -44,7 +44,9 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
   Stream<int> get assetCount => _assetCountController.stream;
 
   Future<void> search(SearchFilter filter) async {
-    if (state.nextPage == null || state.isLoading) return;
+    if (state.nextPage == null || state.isLoading) {
+      return;
+    }
 
     state = SearchState(assets: state.assets, nextPage: state.nextPage, isLoading: true);
 

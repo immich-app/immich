@@ -40,10 +40,6 @@
       android:foregroundServiceType="dataSync|shortService" />
 
     <meta-data
-      android:name="io.flutter.embedding.android.EnableImpeller"
-      android:value="false" />
-
-    <meta-data
       android:name="com.google.firebase.messaging.default_notification_icon"
       android:resource="@drawable/notification_icon" />
 
@@ -91,6 +87,20 @@
         <action android:name="android.intent.action.SEND_MULTIPLE" />
         <category android:name="android.intent.category.DEFAULT" />
         <data android:mimeType="video/*" />
+      </intent-filter>
+
+      <!-- Allow Immich to act as an image viewer -->
+      <intent-filter android:label="View in Immich">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:scheme="content" android:mimeType="image/*" />
+      </intent-filter>
+
+      <!-- Allow Immich to act as a video viewer -->
+      <intent-filter android:label="View in Immich">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <data android:scheme="content" android:mimeType="video/*" />
       </intent-filter>
 
       <!-- immich:// URL scheme handling -->

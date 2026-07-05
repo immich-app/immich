@@ -1,6 +1,5 @@
-import { langs } from '$lib/constants';
-import { getClosestAvailableLocale } from '$lib/utils/i18n';
 import { readFileSync, readdirSync } from 'node:fs';
+import { getClosestAvailableLocale, langs } from '$lib/utils/i18n';
 
 describe('i18n', () => {
   describe('loaders', () => {
@@ -12,7 +11,7 @@ describe('i18n', () => {
         }
 
         const code = filename.replaceAll('.json', '');
-        const item = langs.find((lang) => lang.weblateCode === code || lang.code === code);
+        const item = langs.find((lang) => lang.code === code);
         expect(item, `${filename} has no loader`).toBeDefined();
         if (!item) {
           return;
@@ -50,6 +49,14 @@ describe('i18n', () => {
     it('ignores the locale for a more specific match', () => {
       expect(getClosestAvailableLocale(['zh'], allLocales)).toBeUndefined();
       expect(getClosestAvailableLocale(['de', 'zh', 'en-US'], allLocales)).toBe('en-US');
+    });
+
+    it('matches underscore-based stored locale codes against normalized locale lists', () => {
+      const allLocales = ['de-CH', 'pt-BR', 'sr-Cyrl', 'zh-Hant'];
+      expect(getClosestAvailableLocale(['de_CH'], allLocales)).toBe('de_CH');
+      expect(getClosestAvailableLocale(['pt_BR'], allLocales)).toBe('pt_BR');
+      expect(getClosestAvailableLocale(['sr_Cyrl'], allLocales)).toBe('sr_Cyrl');
+      expect(getClosestAvailableLocale(['zh_Hant'], allLocales)).toBe('zh_Hant');
     });
   });
 });

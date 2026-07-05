@@ -20,14 +20,14 @@ jobs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
+        uses: immich-app/devtools/actions/create-workflow-token@9db058b2e6eec20e07760b0e17a0505c78ec3191 # create-workflow-token-action-v2.0.1
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@f50e3b600b6ac1763ddb8f3dfc69093512b967a1 # pre-job-action-v2.0.3
+        uses: immich-app/devtools/actions/pre-job@91f342bb4477c4bc10c576ae739da875d85aa164 # pre-job-action-v2.0.4
         with:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
@@ -49,49 +49,38 @@ jobs:
         working-directory: ./mobile
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@57ff6ebfd507b045514442683ff06ff1b2f6efbd # create-workflow-token-action-v1.0.2
+        uses: immich-app/devtools/actions/create-workflow-token@9db058b2e6eec20e07760b0e17a0505c78ec3191 # create-workflow-token-action-v2.0.1
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
-      - name: Setup Flutter SDK
-        uses: subosito/flutter-action@0ca7a949e71ae44c8e688a51c5e7e93b2c87e295 # v2.22.0
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
         with:
-          channel: 'stable'
-          flutter-version-file: ./mobile/pubspec.yaml
+          github_token: ${{ steps.token.outputs.token }}
+          working_directory: ./mobile
 
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
 
       - name: Install dependencies for UI package
-        run: dart pub get
+        run: flutter pub get
         working-directory: ./mobile/packages/ui
 
-      - name: Install dependencies for UI Showcase
-        run: dart pub get
-        working-directory: ./mobile/packages/ui/showcase
-
-      - name: Install DCM
-        uses: CQLabs/setup-dcm@8697ae0790c0852e964a6ef1d768d62a6675481a # v2.0.1
-        with:
-          github-token: ${{ steps.token.outputs.token }}
-          version: auto
-          working-directory: ./mobile
-
-      - name: Generate translation file
-        run: dart run easy_localization:generate -S ../i18n && dart run bin/generate_keys.dart
+      - name: Generate translation files
+        run: mise //mobile:codegen:translation
 
       - name: Run Build Runner
-        run: make build
+        run: mise //mobile:codegen:dart
 
       - name: Generate platform API
-        run: make pigeon
+        run: mise //mobile:codegen:pigeon
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
@@ -101,26 +90,24 @@ jobs:
             mobile/**/*.g.dart
             mobile/**/*.gr.dart
             mobile/**/*.drift.dart
+            mobile/**/*.g.swift
+            mobile/**/*.g.kt
 
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'
         env:
           CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
-          echo "ERROR: Generated files not up to date! Run 'make build' and 'make pigeon' inside the mobile directory"
+          echo "ERROR: Generated files not up to date! Run 'mise //mobile:codegen:dart' and 'mise //mobile:codegen:pigeon'"
           echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
-      - name: Run dart analyze
-        run: dart analyze --fatal-infos
+      - name: Run analyze
+        run: mise //mobile:analyze
 
-      - name: Run dart format
-        run: make format
+      - name: Run format
+        run: mise //mobile:format
 
       # TODO: Re-enable after upgrading custom_lint
       # - name: Run dart custom_lint
       #   run: dart run custom_lint
-
-      # TODO: Use https://github.com/CQLabs/dcm-action
-      - name: Run DCM
-        run: dcm analyze lib --fatal-style --fatal-warnings

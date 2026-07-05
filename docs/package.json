@@ -17,10 +17,10 @@
     "write-heading-ids": "docusaurus write-heading-ids"
   },
   "dependencies": {
-    "@docusaurus/core": "~3.9.0",
-    "@docusaurus/preset-classic": "~3.9.0",
-    "@docusaurus/theme-common": "~3.9.0",
-    "@docusaurus/theme-mermaid": "~3.9.0",
+    "@docusaurus/core": "~3.10.0",
+    "@docusaurus/preset-classic": "~3.10.0",
+    "@docusaurus/theme-common": "~3.10.0",
+    "@docusaurus/theme-mermaid": "~3.10.0",
     "@mdi/js": "^7.3.67",
     "@mdi/react": "^1.6.1",
     "@mdx-js/react": "^3.0.0",
@@ -30,17 +30,17 @@
     "postcss": "^8.4.25",
     "prism-react-renderer": "^2.3.1",
     "raw-loader": "^4.0.2",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "tailwindcss": "^3.2.4",
     "url": "^0.11.0"
   },
   "devDependencies": {
-    "@docusaurus/module-type-aliases": "~3.9.0",
-    "@docusaurus/tsconfig": "^3.7.0",
-    "@docusaurus/types": "^3.7.0",
+    "@docusaurus/module-type-aliases": "~3.10.0",
+    "@docusaurus/tsconfig": "^3.10.0",
+    "@docusaurus/types": "^3.10.0",
     "prettier": "^3.7.4",
-    "typescript": "^5.1.6"
+    "typescript": "^6.0.0"
   },
   "browserslist": {
     "production": [
@@ -56,8 +56,5 @@
   },
   "engines": {
     "node": ">=20"
-  },
-  "volta": {
-    "node": "24.14.0"
   }
 }

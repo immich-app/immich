@@ -1,12 +1,16 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/platform/permission_api.g.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-final permissionRepositoryProvider = Provider((_) {
-  return const PermissionRepository();
+final permissionRepositoryProvider = Provider((ref) {
+  return PermissionRepository(ref.watch(permissionApiProvider));
 });
 
 class PermissionRepository implements IPermissionRepository {
-  const PermissionRepository();
+  final PermissionApi _permissionApi;
+
+  const PermissionRepository(this._permissionApi);
 
   @override
   Future<bool> hasLocationWhenInUsePermission() {
@@ -34,6 +38,21 @@ class PermissionRepository implements IPermissionRepository {
   Future<bool> openSettings() {
     return openAppSettings();
   }
+
+  @override
+  Future<bool> hasManageMediaPermission() {
+    return _permissionApi.hasManageMediaPermission();
+  }
+
+  @override
+  Future<bool> requestManageMediaPermission() {
+    return _permissionApi.requestManageMediaPermission();
+  }
+
+  @override
+  Future<bool> manageMediaPermission() {
+    return _permissionApi.manageMediaPermission();
+  }
 }
 
 abstract interface class IPermissionRepository {
@@ -42,4 +61,7 @@ abstract interface class IPermissionRepository {
   Future<bool> hasLocationAlwaysPermission();
   Future<bool> requestLocationAlwaysPermission();
   Future<bool> openSettings();
+  Future<bool> hasManageMediaPermission();
+  Future<bool> requestManageMediaPermission();
+  Future<bool> manageMediaPermission();
 }

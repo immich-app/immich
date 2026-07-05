@@ -1,6 +1,6 @@
 import { TUNABLES } from '$lib/utils/tunables';
-import type { MonthGroup } from '../month-group.svelte';
 import { TimelineManager } from '../timeline-manager.svelte';
+import type { TimelineMonth } from '../timeline-month.svelte';
 
 const {
   TIMELINE: { INTERSECTION_EXPAND_TOP, INTERSECTION_EXPAND_BOTTOM },
@@ -40,7 +40,7 @@ function calculateViewportProximity(regionTop: number, regionBottom: number, win
   return ViewportProximity.InViewport;
 }
 
-export function updateMonthGroupViewportProximity(timelineManager: TimelineManager, month: MonthGroup) {
+export function updateTimelineMonthViewportProximity(timelineManager: TimelineManager, month: TimelineMonth) {
   const proximity = calculateViewportProximity(
     month.top,
     month.top + month.height,
@@ -52,18 +52,4 @@ export function updateMonthGroupViewportProximity(timelineManager: TimelineManag
   if (isInOrNearViewport(proximity)) {
     timelineManager.clearDeferredLayout(month);
   }
-}
-
-export function calculateViewerAssetViewportProximity(
-  timelineManager: TimelineManager,
-  positionTop: number,
-  positionHeight: number,
-) {
-  const headerHeight = timelineManager.headerHeight;
-  return calculateViewportProximity(
-    positionTop,
-    positionTop + positionHeight,
-    timelineManager.visibleWindow.top - headerHeight,
-    timelineManager.visibleWindow.bottom + headerHeight,
-  );
 }

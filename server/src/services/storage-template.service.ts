@@ -413,20 +413,16 @@ export class StorageTemplateService extends BaseService {
       lensModel: lensModel ?? '',
     };
 
-    const systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const zone = asset.timeZone || systemTimeZone;
-    const dt = DateTime.fromJSDate(asset.fileCreatedAt, { zone });
+    const dt = DateTime.fromJSDate(asset.fileCreatedAt);
 
     for (const token of Object.values(storageTokens).flat()) {
       substitutions[token] = dt.toFormat(token);
       if (albumName) {
-        // Use system time zone for album dates to ensure all assets get the exact same date.
+        // Album date tokens are rendered in the server time zone to match storage template datetime behavior.
         substitutions['album-startDate-' + token] = albumStartDate
-          ? DateTime.fromJSDate(albumStartDate, { zone: systemTimeZone }).toFormat(token)
+          ? DateTime.fromJSDate(albumStartDate).toFormat(token)
           : '';
-        substitutions['album-endDate-' + token] = albumEndDate
-          ? DateTime.fromJSDate(albumEndDate, { zone: systemTimeZone }).toFormat(token)
-          : '';
+        substitutions['album-endDate-' + token] = albumEndDate ? DateTime.fromJSDate(albumEndDate).toFormat(token) : '';
       }
     }
 

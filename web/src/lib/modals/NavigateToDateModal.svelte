@@ -52,7 +52,7 @@
     </HStack>
     <HStack fullWidth>
       <DateInput
-        class="immich-form-input text-gray-700 w-full"
+        class="immich-form-input w-full text-gray-700"
         id="datetime"
         type="datetime-local"
         bind:value={selectedDate}

@@ -13,14 +13,13 @@ part of openapi.api;
 class SharedLinkEditDto {
   /// Returns a new [SharedLinkEditDto] instance.
   SharedLinkEditDto({
-    this.allowDownload,
-    this.allowUpload,
-    this.changeExpiryTime,
-    this.description,
-    this.expiresAt,
-    this.password,
-    this.showMetadata,
-    this.slug,
+    this.allowDownload = const Optional.absent(),
+    this.allowUpload = const Optional.absent(),
+    this.description = const Optional.absent(),
+    this.expiresAt = const Optional.absent(),
+    this.password = const Optional.absent(),
+    this.showMetadata = const Optional.absent(),
+    this.slug = const Optional.absent(),
   });
 
   /// Allow downloads
@@ -30,7 +29,7 @@ class SharedLinkEditDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? allowDownload;
+  Optional<bool?> allowDownload;
 
   /// Allow uploads
   ///
@@ -39,25 +38,16 @@ class SharedLinkEditDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? allowUpload;
-
-  /// Whether to change the expiry time. Few clients cannot send null to set the expiryTime to never. Setting this flag and not sending expiryAt is considered as null instead. Clients that can send null values can ignore this.
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  bool? changeExpiryTime;
+  Optional<bool?> allowUpload;
 
   /// Link description
-  String? description;
+  Optional<String?> description;
 
   /// Expiration date
-  DateTime? expiresAt;
+  Optional<DateTime?> expiresAt;
 
   /// Link password
-  String? password;
+  Optional<String?> password;
 
   /// Show metadata
   ///
@@ -66,16 +56,15 @@ class SharedLinkEditDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? showMetadata;
+  Optional<bool?> showMetadata;
 
   /// Custom URL slug
-  String? slug;
+  Optional<String?> slug;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SharedLinkEditDto &&
     other.allowDownload == allowDownload &&
     other.allowUpload == allowUpload &&
-    other.changeExpiryTime == changeExpiryTime &&
     other.description == description &&
     other.expiresAt == expiresAt &&
     other.password == password &&
@@ -87,7 +76,6 @@ class SharedLinkEditDto {
     // ignore: unnecessary_parenthesis
     (allowDownload == null ? 0 : allowDownload!.hashCode) +
     (allowUpload == null ? 0 : allowUpload!.hashCode) +
-    (changeExpiryTime == null ? 0 : changeExpiryTime!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (password == null ? 0 : password!.hashCode) +
@@ -95,49 +83,39 @@ class SharedLinkEditDto {
     (slug == null ? 0 : slug!.hashCode);
 
   @override
-  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, changeExpiryTime=$changeExpiryTime, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug]';
+  String toString() => 'SharedLinkEditDto[allowDownload=$allowDownload, allowUpload=$allowUpload, description=$description, expiresAt=$expiresAt, password=$password, showMetadata=$showMetadata, slug=$slug]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.allowDownload != null) {
-      json[r'allowDownload'] = this.allowDownload;
-    } else {
-    //  json[r'allowDownload'] = null;
+    if (this.allowDownload.isPresent) {
+      final value = this.allowDownload.value;
+      json[r'allowDownload'] = value;
     }
-    if (this.allowUpload != null) {
-      json[r'allowUpload'] = this.allowUpload;
-    } else {
-    //  json[r'allowUpload'] = null;
+    if (this.allowUpload.isPresent) {
+      final value = this.allowUpload.value;
+      json[r'allowUpload'] = value;
     }
-    if (this.changeExpiryTime != null) {
-      json[r'changeExpiryTime'] = this.changeExpiryTime;
-    } else {
-    //  json[r'changeExpiryTime'] = null;
+    if (this.description.isPresent) {
+      final value = this.description.value;
+      json[r'description'] = value;
     }
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (this.expiresAt.isPresent) {
+      final value = this.expiresAt.value;
+      json[r'expiresAt'] = value == null ? null : (_isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')
+        ? value.millisecondsSinceEpoch
+        : value.toUtc().toIso8601String());
     }
-    if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'expiresAt'] = null;
+    if (this.password.isPresent) {
+      final value = this.password.value;
+      json[r'password'] = value;
     }
-    if (this.password != null) {
-      json[r'password'] = this.password;
-    } else {
-    //  json[r'password'] = null;
+    if (this.showMetadata.isPresent) {
+      final value = this.showMetadata.value;
+      json[r'showMetadata'] = value;
     }
-    if (this.showMetadata != null) {
-      json[r'showMetadata'] = this.showMetadata;
-    } else {
-    //  json[r'showMetadata'] = null;
-    }
-    if (this.slug != null) {
-      json[r'slug'] = this.slug;
-    } else {
-    //  json[r'slug'] = null;
+    if (this.slug.isPresent) {
+      final value = this.slug.value;
+      json[r'slug'] = value;
     }
     return json;
   }
@@ -151,14 +129,13 @@ class SharedLinkEditDto {
       final json = value.cast<String, dynamic>();
 
       return SharedLinkEditDto(
-        allowDownload: mapValueOfType<bool>(json, r'allowDownload'),
-        allowUpload: mapValueOfType<bool>(json, r'allowUpload'),
-        changeExpiryTime: mapValueOfType<bool>(json, r'changeExpiryTime'),
-        description: mapValueOfType<String>(json, r'description'),
-        expiresAt: mapDateTime(json, r'expiresAt', r''),
-        password: mapValueOfType<String>(json, r'password'),
-        showMetadata: mapValueOfType<bool>(json, r'showMetadata'),
-        slug: mapValueOfType<String>(json, r'slug'),
+        allowDownload: json.containsKey(r'allowDownload') ? Optional.present(mapValueOfType<bool>(json, r'allowDownload')) : const Optional.absent(),
+        allowUpload: json.containsKey(r'allowUpload') ? Optional.present(mapValueOfType<bool>(json, r'allowUpload')) : const Optional.absent(),
+        description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
+        expiresAt: json.containsKey(r'expiresAt') ? Optional.present(mapDateTime(json, r'expiresAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')) : const Optional.absent(),
+        password: json.containsKey(r'password') ? Optional.present(mapValueOfType<String>(json, r'password')) : const Optional.absent(),
+        showMetadata: json.containsKey(r'showMetadata') ? Optional.present(mapValueOfType<bool>(json, r'showMetadata')) : const Optional.absent(),
+        slug: json.containsKey(r'slug') ? Optional.present(mapValueOfType<String>(json, r'slug')) : const Optional.absent(),
       );
     }
     return null;

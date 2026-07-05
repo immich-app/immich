@@ -1,34 +1,35 @@
+import { AssetOrder, getAssetInfo, getTimeBuckets, AssetOrderBy, type AssetResponseDto } from '@immich/sdk';
+import { clamp, isEqual } from 'lodash-es';
+import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { GroupInsertionCache } from '$lib/managers/timeline-manager/group-insertion-cache.svelte';
-import { updateMonthGroupViewportProximity } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
+import { updateTimelineMonthViewportProximity } from '$lib/managers/timeline-manager/internal/intersection-support.svelte';
 import { updateGeometry } from '$lib/managers/timeline-manager/internal/layout-support.svelte';
 import { loadFromTimeBuckets } from '$lib/managers/timeline-manager/internal/load-support.svelte';
 import {
-  findClosestGroupForDate,
-  findMonthGroupForAsset as findMonthGroupForAssetUtil,
-  findMonthGroupForDate,
+  findClosestTimelineMonthForDate,
+  findTimelineMonthForAsset as findTimelineMonthForAssetUtil,
+  findTimelineMonthForDate,
   getAssetWithOffset,
-  getMonthGroupByDate,
+  getTimelineMonthByDate,
   retrieveRange as retrieveRangeUtil,
 } from '$lib/managers/timeline-manager/internal/search-support.svelte';
 import { WebsocketSupport } from '$lib/managers/timeline-manager/internal/websocket-support.svelte';
 import { CancellableTask } from '$lib/utils/cancellable-task';
 import { PersistedLocalStorage } from '$lib/utils/persisted';
 import {
+  getOrderingDate,
   isAssetResponseDto,
   setDifference,
   toTimelineAsset,
   type TimelineDateTime,
   type TimelineYearMonth,
 } from '$lib/utils/timeline-util';
-import { AssetOrder, getAssetInfo, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
-import { clamp, isEqual } from 'lodash-es';
-import { SvelteDate, SvelteSet } from 'svelte/reactivity';
-import { DayGroup } from './day-group.svelte';
 import { isMismatched, updateObject } from './internal/utils.svelte';
-import { MonthGroup } from './month-group.svelte';
+import { TimelineDay } from './timeline-day.svelte';
+import { TimelineMonth } from './timeline-month.svelte';
 import type {
   AssetDescriptor,
   Direction,
@@ -40,7 +41,7 @@ import type {
 } from './types';
 
 type ViewportTopMonthIntersection = {
-  month: MonthGroup | undefined;
+  month: TimelineMonth | undefined;
   // Where viewport top intersects month (0 = month top, 1 = month bottom)
   viewportTopRatioInMonth: number;
   // Where month bottom is in viewport (0 = viewport top, 1 = viewport bottom)
@@ -67,7 +68,7 @@ export class TimelineManager extends VirtualScrollManager {
 
   isInitialized = $state(false);
   isScrollingOnLoad = false;
-  months: MonthGroup[] = $state([]);
+  months: TimelineMonth[] = $state([]);
   albumAssets: Set<string> = new SvelteSet();
   scrubberMonths: ScrubberMonth[] = $state([]);
   scrubberTimelineHeight: number = $state(0);
@@ -113,7 +114,7 @@ export class TimelineManager extends VirtualScrollManager {
 
     this.#unsubscribes.push(
       eventManager.on({
-        AssetUpdate: (asset: AssetResponseDto) => this.upsertAssets([toTimelineAsset(asset)]),
+        AssetUpdate: (asset: AssetResponseDto) => this.#updateAssets([toTimelineAsset(asset)]),
       }),
     );
   }
@@ -137,24 +138,27 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   async *assetsIterator(options?: {
-    startMonthGroup?: MonthGroup;
-    startDayGroup?: DayGroup;
+    startTimelineMonth?: TimelineMonth;
+    startTimelineDay?: TimelineDay;
     startAsset?: TimelineAsset;
     direction?: Direction;
   }) {
     const direction = options?.direction ?? 'earlier';
-    let { startDayGroup, startAsset } = options ?? {};
-    for (const monthGroup of this.monthGroupIterator({ direction, startMonthGroup: options?.startMonthGroup })) {
-      await this.loadMonthGroup(monthGroup.yearMonth, { cancelable: false });
-      yield* monthGroup.assetsIterator({ startDayGroup, startAsset, direction });
-      startDayGroup = startAsset = undefined;
+    let { startTimelineDay, startAsset } = options ?? {};
+    for (const timelineMonth of this.timelineMonthIterator({
+      direction,
+      startTimelineMonth: options?.startTimelineMonth,
+    })) {
+      await this.loadTimelineMonth(timelineMonth.yearMonth, { cancelable: false });
+      yield* timelineMonth.assetsIterator({ startTimelineDay, startAsset, direction });
+      startTimelineDay = startAsset = undefined;
     }
   }
 
-  *monthGroupIterator(options?: { direction?: Direction; startMonthGroup?: MonthGroup }) {
+  *timelineMonthIterator(options?: { direction?: Direction; startTimelineMonth?: TimelineMonth }) {
     const isEarlier = options?.direction === 'earlier';
-    let startIndex = options?.startMonthGroup
-      ? this.months.indexOf(options.startMonthGroup)
+    let startIndex = options?.startTimelineMonth
+      ? this.months.indexOf(options.startTimelineMonth)
       : isEarlier
         ? 0
         : this.months.length - 1;
@@ -181,7 +185,7 @@ export class TimelineManager extends VirtualScrollManager {
     this.#websocketSupport = undefined;
   }
 
-  #calculateMonthBottomViewportRatio(month: MonthGroup | undefined) {
+  #calculateMonthBottomViewportRatio(month: TimelineMonth | undefined) {
     if (!month) {
       return 0;
     }
@@ -191,7 +195,7 @@ export class TimelineManager extends VirtualScrollManager {
     return clamp(bottomOfMonthInViewport / windowHeight, 0, 1);
   }
 
-  #calculateVewportTopRatioInMonth(month: MonthGroup | undefined) {
+  #calculateVewportTopRatioInMonth(month: TimelineMonth | undefined) {
     if (!month) {
       return 0;
     }
@@ -209,7 +213,12 @@ export class TimelineManager extends VirtualScrollManager {
     this.#updatingViewportProximities = true;
 
     for (const month of this.months) {
-      updateMonthGroupViewportProximity(this, month);
+      updateTimelineMonthViewportProximity(this, month);
+      if (month.isInOrNearViewport && month.isLoaded) {
+        for (const day of month.timelineDays) {
+          day.updateAssetBoundaries();
+        }
+      }
     }
 
     const month = this.months.find((month) => month.isInViewport);
@@ -225,17 +234,17 @@ export class TimelineManager extends VirtualScrollManager {
     this.#updatingViewportProximities = false;
   }
 
-  clearDeferredLayout(month: MonthGroup) {
-    const hasDeferred = month.dayGroups.some((group) => group.deferredLayout);
+  clearDeferredLayout(month: TimelineMonth) {
+    const hasDeferred = month.timelineDays.some((group) => group.deferredLayout);
     if (hasDeferred) {
       updateGeometry(this, month, { invalidateHeight: true, noDefer: true });
-      for (const group of month.dayGroups) {
+      for (const group of month.timelineDays) {
         group.deferredLayout = false;
       }
     }
   }
 
-  async #initializeMonthGroups() {
+  async #initializeTimelineMonths() {
     const timebuckets = await getTimeBuckets({
       ...authManager.params,
       ...this.#options,
@@ -243,12 +252,13 @@ export class TimelineManager extends VirtualScrollManager {
 
     this.months = timebuckets.map((timeBucket) => {
       const date = new SvelteDate(timeBucket.timeBucket);
-      return new MonthGroup(
+      return new TimelineMonth(
         this,
         { year: date.getUTCFullYear(), month: date.getUTCMonth() + 1 },
         timeBucket.count,
         false,
         this.#options.order,
+        this.#options.orderBy,
       );
     });
     this.albumAssets.clear();
@@ -280,7 +290,7 @@ export class TimelineManager extends VirtualScrollManager {
     this.albumAssets.clear();
     await this.initTask.execute(async () => {
       this.#options = options;
-      await this.#initializeMonthGroups();
+      await this.#initializeTimelineMonths();
     }, true);
   }
 
@@ -332,31 +342,31 @@ export class TimelineManager extends VirtualScrollManager {
       assetCount: month.assetsCount,
       year: month.yearMonth.year,
       month: month.yearMonth.month,
-      title: month.monthGroupTitle,
+      title: month.title,
       height: month.height,
     }));
     this.scrubberTimelineHeight = this.totalViewerHeight;
   }
 
-  async loadMonthGroup(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }): Promise<void> {
+  async loadTimelineMonth(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }): Promise<void> {
     let cancelable = true;
     if (options) {
       cancelable = options.cancelable;
     }
-    const monthGroup = getMonthGroupByDate(this, yearMonth);
-    if (!monthGroup) {
+    const timelineMonth = getTimelineMonthByDate(this, yearMonth);
+    if (!timelineMonth) {
       return;
     }
 
-    if (monthGroup.loader?.executed) {
+    if (timelineMonth.loader?.executed) {
       return;
     }
 
-    const executionStatus = await monthGroup.loader?.execute(async (signal: AbortSignal) => {
-      await loadFromTimeBuckets(this, monthGroup, this.#options, signal);
+    const executionStatus = await timelineMonth.loader?.execute(async (signal: AbortSignal) => {
+      await loadFromTimeBuckets(this, timelineMonth, this.#options, signal);
     }, cancelable);
     if (executionStatus === 'LOADED') {
-      updateGeometry(this, monthGroup, { invalidateHeight: false });
+      updateGeometry(this, timelineMonth, { invalidateHeight: false });
       this.updateViewportProximities();
     }
   }
@@ -367,15 +377,15 @@ export class TimelineManager extends VirtualScrollManager {
     this.addAssetsUpsertSegments([...notExcluded]);
   }
 
-  async findMonthGroupForAsset(asset: AssetDescriptor | AssetResponseDto) {
+  async findTimelineMonthForAsset(asset: AssetDescriptor | AssetResponseDto) {
     if (!this.isInitialized) {
       await this.initTask.waitUntilExecution();
     }
 
     const { id } = asset;
-    let { monthGroup } = findMonthGroupForAssetUtil(this, id) ?? {};
-    if (monthGroup) {
-      return monthGroup;
+    let { timelineMonth } = findTimelineMonthForAssetUtil(this, id) ?? {};
+    if (timelineMonth) {
+      return timelineMonth;
     }
 
     const response = isAssetResponseDto(asset)
@@ -390,20 +400,23 @@ export class TimelineManager extends VirtualScrollManager {
       return;
     }
 
-    monthGroup = await this.#loadMonthGroupAtTime(timelineAsset.localDateTime, { cancelable: false });
-    if (monthGroup?.findAssetById({ id })) {
-      return monthGroup;
+    timelineMonth = await this.#loadTimelineMonthAtTime(
+      getOrderingDate(timelineAsset, this.#options.orderBy || AssetOrderBy.TakenAt),
+      { cancelable: false },
+    );
+    if (timelineMonth?.findAssetById({ id })) {
+      return timelineMonth;
     }
   }
 
-  async #loadMonthGroupAtTime(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }) {
-    await this.loadMonthGroup(yearMonth, options);
-    return getMonthGroupByDate(this, yearMonth);
+  async #loadTimelineMonthAtTime(yearMonth: TimelineYearMonth, options?: { cancelable: boolean }) {
+    await this.loadTimelineMonth(yearMonth, options);
+    return getTimelineMonthByDate(this, yearMonth);
   }
 
-  getMonthGroupByAssetId(assetId: string) {
-    const monthGroupInfo = findMonthGroupForAssetUtil(this, assetId);
-    return monthGroupInfo?.monthGroup;
+  getTimelineMonthByAssetId(assetId: string) {
+    const timelineMonthInfo = findTimelineMonthForAssetUtil(this, assetId);
+    return timelineMonthInfo?.timelineMonth;
   }
 
   // note: the `index` input is expected to be in the range [0, assetCount). This
@@ -414,7 +427,7 @@ export class TimelineManager extends VirtualScrollManager {
 
     let accumulatedCount = 0;
 
-    let randomMonth: MonthGroup | undefined = undefined;
+    let randomMonth: TimelineMonth | undefined = undefined;
     for (const month of this.months) {
       if (randomAssetIndex < accumulatedCount + month.assetsCount) {
         randomMonth = month;
@@ -426,10 +439,10 @@ export class TimelineManager extends VirtualScrollManager {
     if (!randomMonth) {
       return;
     }
-    await this.loadMonthGroup(randomMonth.yearMonth, { cancelable: false });
+    await this.loadTimelineMonth(randomMonth.yearMonth, { cancelable: false });
 
-    let randomDay: DayGroup | undefined = undefined;
-    for (const day of randomMonth.dayGroups) {
+    let randomDay: TimelineDay | undefined = undefined;
+    for (const day of randomMonth.timelineDays) {
       if (randomAssetIndex < accumulatedCount + day.viewerAssets.length) {
         randomDay = day;
         break;
@@ -459,10 +472,11 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   protected upsertSegmentForAsset(asset: TimelineAsset) {
-    let month = getMonthGroupByDate(this, asset.localDateTime);
+    const dateTime = getOrderingDate(asset, this.#options.orderBy || AssetOrderBy.TakenAt);
+    let month = getTimelineMonthByDate(this, dateTime);
 
     if (!month) {
-      month = new MonthGroup(this, asset.localDateTime, 1, true, this.#options.order);
+      month = new TimelineMonth(this, dateTime, 1, true, this.#options.order, this.#options.orderBy);
       this.months.push(month);
     }
     return month;
@@ -508,7 +522,7 @@ export class TimelineManager extends VirtualScrollManager {
       return { updated: new Set<string>(), notUpdated: ids, changedGeometry: false };
     }
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
-    const changedMonthGroups = new Set<MonthGroup>();
+    const changedTimelineMonths = new Set<TimelineMonth>();
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     let notUpdated = new Set(ids);
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
@@ -523,7 +537,7 @@ export class TimelineManager extends VirtualScrollManager {
         assetsToMoveSegments.push(result.moveAssets);
       }
       if (result.changedGeometry) {
-        changedMonthGroups.add(month);
+        changedTimelineMonths.add(month);
       }
       notUpdated = setDifference(notUpdated, result.processedIds);
       for (const id of result.processedIds) {
@@ -537,8 +551,8 @@ export class TimelineManager extends VirtualScrollManager {
       }
     }
     this.addAssetsUpsertSegments(assetsToAdd);
-    const changedGeometry = changedMonthGroups.size > 0;
-    for (const month of changedMonthGroups) {
+    const changedGeometry = changedTimelineMonths.size > 0;
+    for (const month of changedTimelineMonths) {
       updateGeometry(this, month, { invalidateHeight: true });
     }
     if (changedGeometry) {
@@ -573,20 +587,20 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   async getClosestAssetToDate(dateTime: TimelineDateTime) {
-    let monthGroup = findMonthGroupForDate(this, dateTime);
-    if (!monthGroup) {
+    let timelineMonth = findTimelineMonthForDate(this, dateTime);
+    if (!timelineMonth) {
       // if exact match not found, find closest
-      monthGroup = findClosestGroupForDate(this.months, dateTime);
-      if (!monthGroup) {
+      timelineMonth = findClosestTimelineMonthForDate(this.months, dateTime);
+      if (!timelineMonth) {
         return;
       }
     }
-    await this.loadMonthGroup(dateTime, { cancelable: false });
-    const asset = monthGroup.findClosest(dateTime);
+    await this.loadTimelineMonth(dateTime, { cancelable: false });
+    const asset = timelineMonth.findClosest(dateTime);
     if (asset) {
       return asset;
     }
-    for await (const asset of this.assetsIterator({ startMonthGroup: monthGroup })) {
+    for await (const asset of this.assetsIterator({ startTimelineMonth: timelineMonth })) {
       return asset;
     }
   }
@@ -618,16 +632,16 @@ export class TimelineManager extends VirtualScrollManager {
   }
 
   protected postUpsert(context: GroupInsertionCache): void {
-    for (const group of context.existingDayGroups) {
+    for (const group of context.existingTimelineDays) {
       group.sortAssets(this.#options.order);
     }
 
-    for (const monthGroup of context.bucketsWithNewDayGroups) {
-      monthGroup.sortDayGroups();
+    for (const timelineMonth of context.bucketsWithNewTimelineDays) {
+      timelineMonth.sortTimelineDays();
     }
 
     for (const month of context.updatedBuckets) {
-      month.sortDayGroups();
+      month.sortTimelineDays();
       updateGeometry(this, month, { invalidateHeight: true });
     }
     this.updateViewportProximities();

@@ -1,10 +1,10 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
   import empty3Url from '$lib/assets/empty-3.svg';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
-  import RestoreAssets from '$lib/components/timeline/actions/RestoreAction.svelte';
+  import RestoreAssets from './RestoreAction.svelte';
   import SelectAllAssets from '$lib/components/timeline/actions/SelectAllAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
   import Timeline from '$lib/components/timeline/Timeline.svelte';
@@ -55,13 +55,13 @@
       assetInteraction={assetMultiSelectManager}
       onEscape={handleEscape}
     >
-      <p class="font-medium text-gray-500/60 dark:text-gray-300/60 p-4">
+      <p class="p-4 font-medium text-gray-500/60 dark:text-gray-300/60">
         {$t('trashed_items_will_be_permanently_deleted_after', {
           values: { days: serverConfigManager.value.trashDays },
         })}
       </p>
       {#snippet empty()}
-        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} class="mt-10 mx-auto" />
+        <EmptyPlaceholder text={$t('trash_no_results_message')} src={empty3Url} class="mx-auto mt-10" />
       {/snippet}
     </Timeline>
   </UserPageLayout>

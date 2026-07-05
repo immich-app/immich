@@ -5,4 +5,9 @@
 
   <string name="memory_widget_description">See memories from Immich.</string>
   <string name="random_widget_description">View a random image from your library or a specific album.</string>
+
+  <string name="bg_downloader_notification_channel_name">Uploads and downloads</string>
+  <string name="bg_downloader_notification_channel_description">Progress updates for uploads and downloads</string>
+
+  <string name="background_worker_notification_channel_name">Background backup</string>
 </resources>

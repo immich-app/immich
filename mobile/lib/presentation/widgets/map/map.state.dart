@@ -3,10 +3,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class MapState {
@@ -81,38 +80,38 @@ class MapStateNotifier extends Notifier<MapState> {
   }
 
   void switchFavoriteOnly(bool isFavoriteOnly) {
-    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapShowFavoriteOnly, isFavoriteOnly);
+    ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly);
     state = state.copyWith(onlyFavorites: isFavoriteOnly);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void switchIncludeArchived(bool isIncludeArchived) {
-    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapIncludeArchived, isIncludeArchived);
+    ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived);
     state = state.copyWith(includeArchived: isIncludeArchived);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void switchWithPartners(bool isWithPartners) {
-    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapwithPartners, isWithPartners);
+    ref.read(settingsProvider).write(.mapWithPartners, isWithPartners);
     state = state.copyWith(withPartners: isWithPartners);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void setRelativeTime(int relativeDays) {
-    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.mapRelativeDate, relativeDays);
+    ref.read(settingsProvider).write(.mapRelativeDate, relativeDays);
     state = state.copyWith(relativeDays: relativeDays);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   @override
   MapState build() {
-    final appSettingsService = ref.read(appSettingsServiceProvider);
+    final mapConfig = ref.read(appConfigProvider.select((config) => config.map));
     return MapState(
-      themeMode: ThemeMode.values[appSettingsService.getSetting(AppSettingsEnum.mapThemeMode)],
-      onlyFavorites: appSettingsService.getSetting(AppSettingsEnum.mapShowFavoriteOnly),
-      includeArchived: appSettingsService.getSetting(AppSettingsEnum.mapIncludeArchived),
-      withPartners: appSettingsService.getSetting(AppSettingsEnum.mapwithPartners),
-      relativeDays: appSettingsService.getSetting(AppSettingsEnum.mapRelativeDate),
+      themeMode: mapConfig.themeMode,
+      onlyFavorites: mapConfig.favoritesOnly,
+      includeArchived: mapConfig.includeArchived,
+      withPartners: mapConfig.withPartners,
+      relativeDays: mapConfig.relativeDays,
       bounds: LatLngBounds(northeast: const LatLng(0, 0), southwest: const LatLng(0, 0)),
     );
   }

@@ -80,7 +80,9 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
 
   bool _isPresetSelected(int? daysAgo) {
     final state = ref.read(cleanupProvider);
-    if (state.selectedDate == null) return false;
+    if (state.selectedDate == null) {
+      return false;
+    }
 
     final expectedDate = daysAgo != null ? DateTime.now().subtract(Duration(days: daysAgo)) : DateTime(2000);
 
@@ -703,11 +705,11 @@ class _DeleteConfirmationDialog extends StatelessWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () => context.pop(false),
+          onPressed: () => ContextHelper(context).pop(false),
           child: Text('cancel'.t(context: context)),
         ),
         ElevatedButton(
-          onPressed: () => context.pop(true),
+          onPressed: () => ContextHelper(context).pop(true),
           style: ElevatedButton.styleFrom(
             backgroundColor: context.colorScheme.error,
             foregroundColor: context.colorScheme.onError,
@@ -747,7 +749,7 @@ class _DeleteSuccessDialog extends StatelessWidget {
       ),
       actions: [
         ElevatedButton(
-          onPressed: () => context.pop(),
+          onPressed: () => ContextHelper(context).pop(),
           child: Text('done'.t(context: context)),
         ),
       ],

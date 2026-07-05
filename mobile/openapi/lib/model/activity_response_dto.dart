@@ -14,7 +14,7 @@ class ActivityResponseDto {
   /// Returns a new [ActivityResponseDto] instance.
   ActivityResponseDto({
     required this.assetId,
-    this.comment,
+    this.comment = const Optional.absent(),
     required this.createdAt,
     required this.id,
     required this.type,
@@ -25,7 +25,7 @@ class ActivityResponseDto {
   String? assetId;
 
   /// Comment text (for comment activities)
-  String? comment;
+  Optional<String?> comment;
 
   /// Creation date
   DateTime createdAt;
@@ -33,7 +33,6 @@ class ActivityResponseDto {
   /// Activity ID
   String id;
 
-  /// Activity type
   ReactionType type;
 
   UserResponseDto user;
@@ -65,14 +64,15 @@ class ActivityResponseDto {
     if (this.assetId != null) {
       json[r'assetId'] = this.assetId;
     } else {
-    //  json[r'assetId'] = null;
+      json[r'assetId'] = null;
     }
-    if (this.comment != null) {
-      json[r'comment'] = this.comment;
-    } else {
-    //  json[r'comment'] = null;
+    if (this.comment.isPresent) {
+      final value = this.comment.value;
+      json[r'comment'] = value;
     }
-      json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+      json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')
+        ? this.createdAt.millisecondsSinceEpoch
+        : this.createdAt.toUtc().toIso8601String();
       json[r'id'] = this.id;
       json[r'type'] = this.type;
       json[r'user'] = this.user;
@@ -89,8 +89,8 @@ class ActivityResponseDto {
 
       return ActivityResponseDto(
         assetId: mapValueOfType<String>(json, r'assetId'),
-        comment: mapValueOfType<String>(json, r'comment'),
-        createdAt: mapDateTime(json, r'createdAt', r'')!,
+        comment: json.containsKey(r'comment') ? Optional.present(mapValueOfType<String>(json, r'comment')) : const Optional.absent(),
+        createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')!,
         id: mapValueOfType<String>(json, r'id')!,
         type: ReactionType.fromJson(json[r'type'])!,
         user: UserResponseDto.fromJson(json[r'user'])!,

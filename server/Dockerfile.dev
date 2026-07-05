@@ -1,14 +1,10 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202603251709@sha256:2bf3053c732fcb87ec90c3c614632ac44847423468ccc57fd935bff771828d9d AS dev
+FROM ghcr.io/immich-app/base-server-dev:202606161235@sha256:9f88b07acc8b7bf37a1dd3d5a19193f664443eaaab4e08e9f9341414c5e4b23f AS dev
 
-ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0 \
-  CI=1 \
-  COREPACK_HOME=/tmp \
-  PNPM_HOME=/buildcache/pnpm-store
 
-RUN npm install --global corepack@latest && \
-  corepack enable pnpm && \
-  echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc && \
+COPY --from=ghcr.io/jdx/mise:2026.6.10@sha256:f57ac375a262f52f8ac3f9101348dbff2187d5e4b59612154f2f2808dbe46ef6 /usr/local/bin/mise /usr/local/bin/mise
+
+RUN echo "devdir=/buildcache/node-gyp" >> /usr/local/etc/npmrc && \
   echo "store-dir=/buildcache/pnpm-store" >> /usr/local/etc/npmrc && \
   echo "cache-dir=/buildcache/pnpm-cache" >> /usr/local/etc/npmrc && \
   echo "# Retry configuration - default is 2" >> /usr/local/etc/npmrc && \
@@ -16,12 +12,17 @@ RUN npm install --global corepack@latest && \
   mkdir -p /buildcache/pnpm-store /buildcache/pnpm-cache /buildcache/node-gyp && \
   chmod -R o+rw /buildcache
 
+ENV CI=1
+ENV PNPM_HOME=/buildcache/pnpm-store
+ENV MISE_DATA_DIR=/buildcache/mise
+ENV MISE_TRUSTED_CONFIG_PATHS=/usr/src/app/mise.toml
+ENV PATH="${MISE_DATA_DIR}/shims:${PATH}:/usr/src/app/server/bin:/usr/src/app/web/bin"
+ENV IMMICH_ENV=development
+ENV NVIDIA_DRIVER_CAPABILITIES=all
+ENV NVIDIA_VISIBLE_DEVICES=all
+
 WORKDIR /usr/src/app
 
-ENV PATH="${PATH}:/usr/src/app/server/bin:/usr/src/app/web/bin" \
-  IMMICH_ENV=development \
-  NVIDIA_DRIVER_CAPABILITIES=all \
-  NVIDIA_VISIBLE_DEVICES=all
 ENTRYPOINT ["tini", "--", "/bin/bash", "-c"]
 
 FROM dev AS dev-container-server

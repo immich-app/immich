@@ -53,7 +53,7 @@ import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509KeyManager
 import javax.net.ssl.X509TrustManager
 
-const val USER_AGENT = "Immich_Android_${BuildConfig.VERSION_NAME}"
+const val USER_AGENT = "immich-android/${BuildConfig.VERSION_NAME}"
 private const val CERT_ALIAS = "client_cert"
 private const val PREFS_NAME = "immich.ssl"
 private const val PREFS_CERT_ALIAS = "immich.client_cert"

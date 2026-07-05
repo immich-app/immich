@@ -6,8 +6,8 @@ import 'dart:math';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
+import 'package:immich_mobile/utils/isolate_worker.dart';
 import 'package:worker_manager/src/number_of_processors/processors_io.dart';
-import 'package:worker_manager/src/worker/worker.dart';
 import 'package:worker_manager/worker_manager.dart';
 
 final workerManagerPatch = _Executor();
@@ -15,6 +15,13 @@ final workerManagerPatch = _Executor();
 // [-2^54; 2^53] is compatible with dart2js, see core.int doc
 const _minId = -9007199254740992;
 const _maxId = 9007199254740992;
+
+class _GentleTask<R> extends Task<R> implements Gentle {
+  @override
+  final GentleExecution<R> execution;
+
+  _GentleTask({required super.id, required super.completer, required super.workPriority, required this.execution});
+}
 
 class Mixinable<T> {
   late final itSelf = this as T;
@@ -43,16 +50,21 @@ mixin _ExecutorLogger on Mixinable<_Executor> {
   }
 
   void logMessage(String message) {
-    if (log) print(message);
+    if (log) {
+      print(message);
+    }
   }
 }
 
 class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
   final _queue = PriorityQueue<Task>();
-  final _pool = <Worker>[];
+  final _pool = <IsolateWorker>[];
   var _nextTaskId = _minId;
   var _dynamicSpawning = false;
   var _isolatesCount = numberOfProcessors;
+
+  @visibleForTesting
+  UnmodifiableListView<IsolateWorker> get pool => UnmodifiableListView(_pool);
 
   @override
   Future<void> init({int? isolatesCount, bool? dynamicSpawning}) async {
@@ -75,113 +87,35 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
   @override
   Future<void> dispose() async {
     _queue.clear();
-    for (final worker in _pool) {
-      worker.kill();
-    }
+    final shutdown = _pool.map((worker) => worker.shutdown()).toList(growable: false);
     _pool.clear();
+    await Future.wait(shutdown);
     super.dispose();
   }
 
-  Cancelable<R> execute<R>(Execute<R> execution, {WorkPriority priority = WorkPriority.immediately}) {
-    return _createCancelable<R>(execution: execution, priority: priority);
-  }
-
-  Cancelable<R> executeNow<R>(ExecuteGentle<R> execution) {
-    final task = TaskGentle<R>(
-      id: "",
-      workPriority: WorkPriority.immediately,
-      execution: execution,
-      completer: Completer<R>(),
-    );
-
-    Future<void> run() async {
-      try {
-        final result = await execution(() => task.canceled);
-        task.complete(result, null, null);
-      } catch (error, st) {
-        task.complete(null, error, st);
-      }
-    }
-
-    run();
-    return Cancelable(completer: task.completer, onCancel: () => _cancel(task));
-  }
-
-  Cancelable<R> executeWithPort<R, T>(
-    ExecuteWithPort<R> execution, {
-    WorkPriority priority = WorkPriority.immediately,
-    required void Function(T value) onMessage,
-  }) {
-    return _createCancelable<R>(
-      execution: execution,
-      priority: priority,
-      onMessage: (message) => onMessage(message as T),
-    );
-  }
-
-  Cancelable<R> executeGentle<R>(ExecuteGentle<R> execution, {WorkPriority priority = WorkPriority.immediately}) {
-    return _createCancelable<R>(execution: execution, priority: priority);
-  }
-
-  Cancelable<R> executeGentleWithPort<R, T>(
-    ExecuteGentleWithPort<R> execution, {
-    WorkPriority priority = WorkPriority.immediately,
-    required void Function(T value) onMessage,
-  }) {
-    return _createCancelable<R>(
-      execution: execution,
-      priority: priority,
-      onMessage: (message) => onMessage(message as T),
-    );
-  }
-
-  void _createWorkers() {
-    for (var i = 0; i < _isolatesCount; i++) {
-      _pool.add(Worker());
-    }
-  }
-
-  Future<void> _initializeWorkers() async {
-    await Future.wait(_pool.map((e) => e.initialize()));
-  }
-
-  Cancelable<R> _createCancelable<R>({
-    required Function execution,
-    WorkPriority priority = WorkPriority.immediately,
-    void Function(Object value)? onMessage,
-  }) {
+  /// Runs [execution] on a worker isolate; its [Completer] completes when the
+  /// returned [Cancelable] is cancelled.
+  Cancelable<R> executeGentle<R>(GentleExecution<R> execution, {WorkPriority priority = WorkPriority.immediately}) {
     if (_nextTaskId + 1 == _maxId) {
       _nextTaskId = _minId;
     }
     final id = _nextTaskId.toString();
     _nextTaskId++;
-    late final Task<R> task;
-    final completer = Completer<R>();
-    if (execution is Execute<R>) {
-      task = TaskRegular<R>(id: id, workPriority: priority, execution: execution, completer: completer);
-    } else if (execution is ExecuteWithPort<R>) {
-      task = TaskWithPort<R>(
-        id: id,
-        workPriority: priority,
-        execution: execution,
-        completer: completer,
-        onMessage: onMessage!,
-      );
-    } else if (execution is ExecuteGentle<R>) {
-      task = TaskGentle<R>(id: id, workPriority: priority, execution: execution, completer: completer);
-    } else if (execution is ExecuteGentleWithPort<R>) {
-      task = TaskGentleWithPort<R>(
-        id: id,
-        workPriority: priority,
-        execution: execution,
-        completer: completer,
-        onMessage: onMessage!,
-      );
-    }
+    final task = _GentleTask<R>(id: id, workPriority: priority, execution: execution, completer: Completer<R>());
     _queue.add(task);
     _schedule();
     logTaskAdded(task.id);
     return Cancelable(completer: task.completer, onCancel: () => _cancel(task));
+  }
+
+  void _createWorkers() {
+    for (var i = 0; i < _isolatesCount; i++) {
+      _pool.add(IsolateWorker());
+    }
+  }
+
+  Future<void> _initializeWorkers() async {
+    await Future.wait(_pool.map((e) => e.initialize()));
   }
 
   Future<void> _ensureWorkersInitialized() async {
@@ -199,7 +133,7 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
     if (_pool.every((worker) => worker.taskId != null)) {
       return;
     }
-    if (_dynamicSpawning) {
+    if (_dynamicSpawning && _queue.isNotEmpty) {
       final freeWorker = _pool.firstWhereOrNull(
         (worker) => worker.taskId == null && !worker.initialized && !worker.initializing,
       );
@@ -214,14 +148,16 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
       _ensureWorkersInitialized();
       return;
     }
-    if (_queue.isEmpty) return;
+    if (_queue.isEmpty) {
+      return;
+    }
     final task = _queue.removeFirst();
 
     availableWorker
         .work(task)
         .then(
           (value) {
-            //could be completed already by cancel and it is normal.
+            //might be completed by cancel and it is normal.
             //Assuming that worker finished with error and cleaned gracefully
             task.complete(value, null, null);
           },
@@ -230,7 +166,11 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
           },
         )
         .whenComplete(() {
-          if (_dynamicSpawning && _queue.isEmpty) availableWorker.kill();
+          if (_dynamicSpawning && _queue.isEmpty) {
+            // Retire the idle worker; shutdown() nulls its fields so the husk
+            // stays pooled and is revived by initialize() if work arrives.
+            unawaited(availableWorker.shutdown());
+          }
           _schedule();
         });
   }
@@ -239,13 +179,8 @@ class _Executor extends Mixinable<_Executor> with _ExecutorLogger {
   void _cancel(Task task) {
     task.cancel();
     _queue.remove(task);
-    final targetWorker = _pool.firstWhereOrNull((worker) => worker.taskId == task.id);
-    if (task is Gentle) {
-      targetWorker?.cancelGentle();
-    } else {
-      targetWorker?.kill();
-      if (!_dynamicSpawning) targetWorker?.initialize();
-    }
+    // All tasks are gentle: signal cancellation; the worker unwinds on its own.
+    _pool.firstWhereOrNull((worker) => worker.taskId == task.id)?.cancelGentle();
     super._cancel(task);
   }
 }

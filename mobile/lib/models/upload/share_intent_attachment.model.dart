@@ -88,7 +88,9 @@ class ShareIntentAttachment {
 
   @override
   bool operator ==(covariant ShareIntentAttachment other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.path == path && other.type == type;
   }

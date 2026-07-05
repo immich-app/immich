@@ -25,7 +25,7 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncAckDeleteDto] syncAckDeleteDto (required):
-  Future<Response> deleteSyncAckWithHttpInfo(SyncAckDeleteDto syncAckDeleteDto,) async {
+  Future<Response> deleteSyncAckWithHttpInfo(SyncAckDeleteDto syncAckDeleteDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/ack';
 
@@ -47,6 +47,7 @@ class SyncApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -57,126 +58,11 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncAckDeleteDto] syncAckDeleteDto (required):
-  Future<void> deleteSyncAck(SyncAckDeleteDto syncAckDeleteDto,) async {
-    final response = await deleteSyncAckWithHttpInfo(syncAckDeleteDto,);
+  Future<void> deleteSyncAck(SyncAckDeleteDto syncAckDeleteDto, { Future<void>? abortTrigger, }) async {
+    final response = await deleteSyncAckWithHttpInfo(syncAckDeleteDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
-  }
-
-  /// Get delta sync for user
-  ///
-  /// Retrieve changed assets since the last sync for the authenticated user.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [AssetDeltaSyncDto] assetDeltaSyncDto (required):
-  Future<Response> getDeltaSyncWithHttpInfo(AssetDeltaSyncDto assetDeltaSyncDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/sync/delta-sync';
-
-    // ignore: prefer_final_locals
-    Object? postBody = assetDeltaSyncDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Get delta sync for user
-  ///
-  /// Retrieve changed assets since the last sync for the authenticated user.
-  ///
-  /// Parameters:
-  ///
-  /// * [AssetDeltaSyncDto] assetDeltaSyncDto (required):
-  Future<AssetDeltaSyncResponseDto?> getDeltaSync(AssetDeltaSyncDto assetDeltaSyncDto,) async {
-    final response = await getDeltaSyncWithHttpInfo(assetDeltaSyncDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'AssetDeltaSyncResponseDto',) as AssetDeltaSyncResponseDto;
-    
-    }
-    return null;
-  }
-
-  /// Get full sync for user
-  ///
-  /// Retrieve all assets for a full synchronization for the authenticated user.
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [AssetFullSyncDto] assetFullSyncDto (required):
-  Future<Response> getFullSyncForUserWithHttpInfo(AssetFullSyncDto assetFullSyncDto,) async {
-    // ignore: prefer_const_declarations
-    final apiPath = r'/sync/full-sync';
-
-    // ignore: prefer_final_locals
-    Object? postBody = assetFullSyncDto;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>['application/json'];
-
-
-    return apiClient.invokeAPI(
-      apiPath,
-      'POST',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-    );
-  }
-
-  /// Get full sync for user
-  ///
-  /// Retrieve all assets for a full synchronization for the authenticated user.
-  ///
-  /// Parameters:
-  ///
-  /// * [AssetFullSyncDto] assetFullSyncDto (required):
-  Future<List<AssetResponseDto>?> getFullSyncForUser(AssetFullSyncDto assetFullSyncDto,) async {
-    final response = await getFullSyncForUserWithHttpInfo(assetFullSyncDto,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-    // When a remote server returns no body with a status of 204, we shall not decode it.
-    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
-    // FormatException when trying to decode an empty string.
-    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
-        .cast<AssetResponseDto>()
-        .toList(growable: false);
-
-    }
-    return null;
   }
 
   /// Retrieve acknowledgements
@@ -184,7 +70,7 @@ class SyncApi {
   /// Retrieve the synchronization acknowledgments for the current session.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getSyncAckWithHttpInfo() async {
+  Future<Response> getSyncAckWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/ack';
 
@@ -206,14 +92,15 @@ class SyncApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve acknowledgements
   ///
   /// Retrieve the synchronization acknowledgments for the current session.
-  Future<List<SyncAckDto>?> getSyncAck() async {
-    final response = await getSyncAckWithHttpInfo();
+  Future<List<SyncAckDto>?> getSyncAck({ Future<void>? abortTrigger, }) async {
+    final response = await getSyncAckWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -239,7 +126,7 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncStreamDto] syncStreamDto (required):
-  Future<Response> getSyncStreamWithHttpInfo(SyncStreamDto syncStreamDto,) async {
+  Future<Response> getSyncStreamWithHttpInfo(SyncStreamDto syncStreamDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/stream';
 
@@ -261,6 +148,7 @@ class SyncApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -271,8 +159,8 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncStreamDto] syncStreamDto (required):
-  Future<void> getSyncStream(SyncStreamDto syncStreamDto,) async {
-    final response = await getSyncStreamWithHttpInfo(syncStreamDto,);
+  Future<void> getSyncStream(SyncStreamDto syncStreamDto, { Future<void>? abortTrigger, }) async {
+    final response = await getSyncStreamWithHttpInfo(syncStreamDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -287,7 +175,7 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncAckSetDto] syncAckSetDto (required):
-  Future<Response> sendSyncAckWithHttpInfo(SyncAckSetDto syncAckSetDto,) async {
+  Future<Response> sendSyncAckWithHttpInfo(SyncAckSetDto syncAckSetDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/ack';
 
@@ -309,6 +197,7 @@ class SyncApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -319,8 +208,8 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncAckSetDto] syncAckSetDto (required):
-  Future<void> sendSyncAck(SyncAckSetDto syncAckSetDto,) async {
-    final response = await sendSyncAckWithHttpInfo(syncAckSetDto,);
+  Future<void> sendSyncAck(SyncAckSetDto syncAckSetDto, { Future<void>? abortTrigger, }) async {
+    final response = await sendSyncAckWithHttpInfo(syncAckSetDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

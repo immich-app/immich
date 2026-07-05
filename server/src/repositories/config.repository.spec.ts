@@ -85,7 +85,7 @@ describe('getEnv', () => {
   describe('IMMICH_MEDIA_LOCATION', () => {
     it('should throw an error for relative paths', () => {
       process.env.IMMICH_MEDIA_LOCATION = './relative/path';
-      expect(() => getEnv()).toThrowError('IMMICH_MEDIA_LOCATION must be an absolute path');
+      expect(() => getEnv()).toThrowError('[IMMICH_MEDIA_LOCATION] Must be an absolute path');
     });
   });
 
@@ -98,7 +98,7 @@ describe('getEnv', () => {
 
     it('should throw an error for invalid value', () => {
       process.env.IMMICH_ALLOW_EXTERNAL_PLUGINS = 'invalid';
-      expect(() => getEnv()).toThrowError('IMMICH_ALLOW_EXTERNAL_PLUGINS must be a boolean value');
+      expect(() => getEnv()).toThrowError('[IMMICH_ALLOW_EXTERNAL_PLUGINS] Invalid option: expected one of');
     });
   });
 
@@ -111,7 +111,7 @@ describe('getEnv', () => {
 
     it('should throw an error for invalid value', () => {
       process.env.IMMICH_ALLOW_SETUP = 'invalid';
-      expect(() => getEnv()).toThrowError('IMMICH_ALLOW_SETUP must be a boolean value');
+      expect(() => getEnv()).toThrowError('[IMMICH_ALLOW_SETUP] Invalid option: expected one of');
     });
   });
 
@@ -134,7 +134,7 @@ describe('getEnv', () => {
 
     it('should validate DB_SSL_MODE', () => {
       process.env.DB_SSL_MODE = 'invalid';
-      expect(() => getEnv()).toThrowError('DB_SSL_MODE must be one of the following values:');
+      expect(() => getEnv()).toThrow(/\[DB_SSL_MODE\] Invalid option: expected one of/);
     });
 
     it('should accept a valid DB_SSL_MODE', () => {
@@ -278,7 +278,7 @@ describe('getEnv', () => {
 
     it('should reject invalid trusted proxies', () => {
       process.env.IMMICH_TRUSTED_PROXIES = '10.1';
-      expect(() => getEnv()).toThrow('IMMICH_TRUSTED_PROXIES must be an ip address, or ip address range');
+      expect(() => getEnv()).toThrow('[IMMICH_TRUSTED_PROXIES] Must be an ip address or ip address range');
     });
   });
 

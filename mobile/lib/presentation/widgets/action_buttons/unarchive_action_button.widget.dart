@@ -14,7 +14,9 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 
 // used to allow performing unarchive action from different sources (without duplicating code)
 Future<void> performUnArchiveAction(BuildContext context, WidgetRef ref, {required ActionSource source}) async {
-  if (!context.mounted) return;
+  if (!context.mounted) {
+    return;
+  }
 
   if (source == ActionSource.viewer) {
     EventStream.shared.emit(const ViewerReloadAssetEvent());

@@ -1,11 +1,11 @@
 <script lang="ts">
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import PlacesControls from '$lib/components/places-page/places-controls.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import PlacesControls from './PlacesControls.svelte';
   import type { PageData } from './$types';
   import { type AssetResponseDto } from '@immich/sdk';
   import { t } from 'svelte-i18n';
   import { locale } from '$lib/stores/preferences.store';
-  import Places from '$lib/components/places-page/places-list.svelte';
+  import Places from './PlacesList.svelte';
   import { placesViewSettings } from '$lib/stores/preferences.store';
 
   interface Props {

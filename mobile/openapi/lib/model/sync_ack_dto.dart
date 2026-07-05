@@ -20,7 +20,6 @@ class SyncAckDto {
   /// Acknowledgment ID
   String ack;
 
-  /// Sync entity type
   SyncEntityType type;
 
   @override

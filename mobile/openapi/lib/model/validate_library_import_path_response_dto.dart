@@ -14,8 +14,8 @@ class ValidateLibraryImportPathResponseDto {
   /// Returns a new [ValidateLibraryImportPathResponseDto] instance.
   ValidateLibraryImportPathResponseDto({
     required this.importPath,
-    this.isValid = false,
-    this.message,
+    required this.isValid,
+    this.message = const Optional.absent(),
   });
 
   /// Import path
@@ -31,7 +31,7 @@ class ValidateLibraryImportPathResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? message;
+  Optional<String?> message;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is ValidateLibraryImportPathResponseDto &&
@@ -53,10 +53,9 @@ class ValidateLibraryImportPathResponseDto {
     final json = <String, dynamic>{};
       json[r'importPath'] = this.importPath;
       json[r'isValid'] = this.isValid;
-    if (this.message != null) {
-      json[r'message'] = this.message;
-    } else {
-    //  json[r'message'] = null;
+    if (this.message.isPresent) {
+      final value = this.message.value;
+      json[r'message'] = value;
     }
     return json;
   }
@@ -72,7 +71,7 @@ class ValidateLibraryImportPathResponseDto {
       return ValidateLibraryImportPathResponseDto(
         importPath: mapValueOfType<String>(json, r'importPath')!,
         isValid: mapValueOfType<bool>(json, r'isValid')!,
-        message: mapValueOfType<String>(json, r'message'),
+        message: json.containsKey(r'message') ? Optional.present(mapValueOfType<String>(json, r'message')) : const Optional.absent(),
       );
     }
     return null;

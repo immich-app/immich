@@ -34,7 +34,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
     final isOwner = album.ownerId == userId;
 
     void showErrorMessage() {
-      context.pop();
+      ContextHelper(context).pop();
       ImmichToast.show(
         context: context,
         msg: "shared_album_section_people_action_error".t(context: context),
@@ -60,7 +60,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
         showErrorMessage();
       }
 
-      context.pop();
+      ContextHelper(context).pop();
     }
 
     Future<void> addUsers() async {

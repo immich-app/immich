@@ -107,7 +107,7 @@ class _LocationPicker extends HookWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () => context.pop(),
+          onPressed: () => ContextHelper(context).pop(),
           child: Text(
             "cancel",
             style: context.textTheme.bodyMedium?.copyWith(

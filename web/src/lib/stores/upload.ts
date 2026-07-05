@@ -1,5 +1,5 @@
-import { UploadState, type UploadAsset } from '$lib/types';
 import { derived, writable } from 'svelte/store';
+import { UploadState, type UploadAsset } from '$lib/types';
 
 function createUploadStore() {
   const uploadAssets = writable<Array<UploadAsset>>([]);
@@ -96,6 +96,13 @@ function createUploadStore() {
             }
 
             case UploadState.DONE: {
+              break;
+            }
+
+            case UploadState.PENDING:
+            case UploadState.STARTED:
+            case undefined: {
+              console.error('Cannot remove uploads in progress');
               break;
             }
           }

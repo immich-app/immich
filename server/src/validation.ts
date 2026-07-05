@@ -1,40 +1,78 @@
-import {
-  ArgumentMetadata,
-  BadRequestException,
-  FileValidator,
-  Injectable,
-  ParseUUIDPipe,
-  applyDecorators,
-} from '@nestjs/common';
-import { ApiProperty, ApiPropertyOptions } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
-import {
-  IsArray,
-  IsBoolean,
-  IsDate,
-  IsEnum,
-  IsHexColor,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  IsUUID,
-  Matches,
-  Validate,
-  ValidateBy,
-  ValidateIf,
-  ValidationArguments,
-  ValidationOptions,
-  ValidatorConstraint,
-  ValidatorConstraintInterface,
-  buildMessage,
-  isDateString,
-  isDefined,
-} from 'class-validator';
-import { CronJob } from 'cron';
-import { DateTime } from 'luxon';
+import { ArgumentMetadata, FileValidator, Injectable, ParseUUIDPipe } from '@nestjs/common';
+import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
-import { Property, PropertyOptions } from 'src/decorators';
 import { isIP, isIPRange } from 'validator';
+import z from 'zod';
+
+export type IsIPRangeOptions = { requireCIDR?: boolean };
+
+function isIPOrRange(value: string, options?: IsIPRangeOptions): boolean {
+  const { requireCIDR = true } = options ?? {};
+  if (isIPRange(value)) {
+    return true;
+  }
+  if (!requireCIDR && isIP(value)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * Zod schema that validates an array of strings as IP addresses or IP/CIDR ranges.
+ * When requireCIDR is true (default), plain IPs are rejected; only CIDR ranges are allowed.
+ *
+ * @example
+ * z.string().optional().transform(...).pipe(IsIPRange())
+ * @example
+ * z.string().optional().transform(...).pipe(IsIPRange({ requireCIDR: false }))
+ */
+export function IsIPRange(options?: IsIPRangeOptions) {
+  return z
+    .array(z.string())
+    .refine((arr) => arr.every((item) => isIPOrRange(item, options)), 'Must be an ip address or ip address range');
+}
+
+/**
+ * Like z.object().partial(), but rejects objects where every field is undefined.
+ * Use for update/patch DTOs where at least one field must be provided.
+ *
+ * @example
+ * nonEmptyPartial({ name: z.string(), bio: z.string() }).meta({ id: 'UpdateDto' });
+ */
+export function nonEmptyPartial<T extends z.ZodRawShape>(shape: T) {
+  return z
+    .object(shape)
+    .partial()
+    .refine((data) => Object.values(data as Record<string, unknown>).some((value) => value !== undefined), {
+      message: 'At least one field must be provided',
+    });
+}
+
+/**
+ * Zod schema that validates sibling-exclusion for object schemas.
+ * Validation passes when the target property is missing, or when none of the sibling properties are present.
+ * Use with .pipe() like IsIPRange.
+ *
+ * @example
+ * const Schema = z.object({ a: z.string().optional(), b: z.string().optional() });
+ * Schema.pipe(IsNotSiblingOf(Schema, 'a', ['b']));
+ */
+export function IsNotSiblingOf<
+  TSchema extends z.ZodObject<z.ZodRawShape>,
+  TKey extends z.infer<ReturnType<TSchema['keyof']>> & keyof z.infer<TSchema>,
+>(_schema: TSchema, property: TKey, siblings: TKey[]) {
+  type T = z.infer<TSchema>;
+  const message = `${String(property)} cannot exist alongside ${siblings.join(' or ')}`;
+  return z.custom<T>().refine(
+    (data) => {
+      if (data[property] === undefined) {
+        return true;
+      }
+      return siblings.every((sibling) => data[sibling] === undefined);
+    },
+    { message },
+  );
+}
 
 @Injectable()
 export class ParseMeUUIDPipe extends ParseUUIDPipe {
@@ -66,386 +104,154 @@ export class FileNotEmptyValidator extends FileValidator {
   }
 }
 
-type UUIDOptions = { optional?: boolean; each?: boolean; nullable?: boolean };
-export const ValidateUUID = (options?: UUIDOptions & PropertyOptions) => {
-  const { optional, each, nullable, ...apiPropertyOptions } = {
-    optional: false,
-    each: false,
-    nullable: false,
-    ...options,
-  };
-  return applyDecorators(
-    IsUUID('4', { each }),
-    Property({ format: 'uuid', ...apiPropertyOptions }),
-    optional ? Optional({ nullable }) : IsNotEmpty(),
-    each ? IsArray() : IsString(),
-  );
-};
+const UUIDParamSchema = z.object({
+  id: z.uuidv4(),
+});
 
-export function IsAxisAlignedRotation() {
-  return ValidateBy(
-    {
-      name: 'isAxisAlignedRotation',
-      validator: {
-        validate(value: any) {
-          return [0, 90, 180, 270].includes(value);
-        },
-        defaultMessage: buildMessage(
-          (eachPrefix) => eachPrefix + '$property must be one of the following values: 0, 90, 180, 270',
-          {},
-        ),
-      },
-    },
-    {},
-  );
-}
+export class UUIDParamDto extends createZodDto(UUIDParamSchema) {}
 
-@ValidatorConstraint({ name: 'uniqueEditActions' })
-class UniqueEditActionsValidator implements ValidatorConstraintInterface {
-  validate(edits: { action: string; parameters?: unknown }[]): boolean {
-    if (!Array.isArray(edits)) {
-      return true;
-    }
+const UUIDv7ParamSchema = z.object({
+  id: z.uuidv7(),
+});
 
-    const actionSet = new Set<string>();
-    for (const edit of edits) {
-      const key = edit.action === 'mirror' ? `${edit.action}-${JSON.stringify(edit.parameters)}` : edit.action;
-      if (actionSet.has(key)) {
-        return false;
-      }
-      actionSet.add(key);
-    }
-    return true;
-  }
+export class UUIDv7ParamDto extends createZodDto(UUIDv7ParamSchema) {}
 
-  defaultMessage(): string {
-    return 'Duplicate edit actions are not allowed';
-  }
-}
+const UUIDAssetIDParamSchema = z.object({
+  id: z.uuidv4(),
+  assetId: z.uuidv4(),
+});
 
-export const IsUniqueEditActions = () => Validate(UniqueEditActionsValidator);
+export class UUIDAssetIDParamDto extends createZodDto(UUIDAssetIDParamSchema) {}
 
-export class UUIDParamDto {
-  @IsNotEmpty()
-  @IsUUID('4')
-  @ApiProperty({ format: 'uuid' })
-  id!: string;
-}
+const FilenameParamSchema = z.object({
+  filename: z.string().regex(/^[a-zA-Z0-9_\-.]+$/, {
+    error: 'Filename contains invalid characters',
+  }),
+});
 
-export class UUIDAssetIDParamDto {
-  @ValidateUUID()
-  id!: string;
-
-  @ValidateUUID()
-  assetId!: string;
-}
-
-export class FilenameParamDto {
-  @IsNotEmpty()
-  @IsString()
-  @ApiProperty({ format: 'string' })
-  @Matches(/^[a-zA-Z0-9_\-.]+$/, {
-    message: 'Filename contains invalid characters',
-  })
-  filename!: string;
-}
-
-type PinCodeOptions = { optional?: boolean } & OptionalOptions;
-export const PinCode = (options?: PinCodeOptions & ApiPropertyOptions) => {
-  const { optional, nullable, emptyToNull, ...apiPropertyOptions } = {
-    optional: false,
-    nullable: false,
-    emptyToNull: false,
-    ...options,
-  };
-  const decorators = [
-    IsString(),
-    IsNotEmpty(),
-    Matches(/^\d{6}$/, { message: ({ property }) => `${property} must be a 6-digit numeric string` }),
-    ApiProperty({ example: '123456', ...apiPropertyOptions }),
-  ];
-
-  if (optional) {
-    decorators.push(Optional({ nullable, emptyToNull }));
-  }
-
-  return applyDecorators(...decorators);
-};
-
-export interface OptionalOptions {
-  nullable?: boolean;
-  /** convert empty strings to null */
-  emptyToNull?: boolean;
-}
+export class FilenameParamDto extends createZodDto(FilenameParamSchema) {}
 
 /**
- * Checks if value is missing and if so, ignores all validators.
- *
- * @param validationOptions {@link OptionalOptions}
- *
- * @see IsOptional exported from `class-validator.
+ * Unified email validation
+ * Converts email strings to lowercase and validates against HTML5 email regex
+ * @docs https://zod.dev/api?id=email
  */
-// https://stackoverflow.com/a/71353929
-export function Optional({ nullable, emptyToNull, ...validationOptions }: OptionalOptions = {}) {
-  const decorators: PropertyDecorator[] = [];
+export const toEmail = z
+  .email({
+    pattern: z.regexes.html5Email,
+    error: (iss) => `Invalid input: expected email, received ${typeof iss.input}`,
+  })
+  .transform((val) => val.toLowerCase());
 
-  if (nullable === true) {
-    decorators.push(IsOptional(validationOptions));
-  } else {
-    decorators.push(ValidateIf((object: any, v: any) => v !== undefined, validationOptions));
-  }
-
-  if (emptyToNull) {
-    decorators.push(Transform(({ value }) => (value === '' ? null : value)));
-  }
-
-  return applyDecorators(...decorators);
-}
-
-export function IsNotSiblingOf(siblings: string[], validationOptions?: ValidationOptions) {
-  return ValidateBy(
+/**
+ * Parse ISO 8601 datetime strings to Date objects
+ * @docs https://zod.dev/api?id=codec
+ */
+export const isoDatetimeToDate = z
+  .codec(
+    z.iso.datetime({
+      error: (iss) => `Invalid input: expected ISO 8601 datetime string, received ${typeof iss.input}`,
+      offset: true,
+    }),
+    z.date(),
     {
-      name: 'isNotSiblingOf',
-      constraints: siblings,
-      validator: {
-        validate(value: any, args: ValidationArguments) {
-          if (!isDefined(value)) {
-            return true;
-          }
-          return args.constraints.filter((prop) => isDefined((args.object as any)[prop])).length === 0;
-        },
-        defaultMessage: (args: ValidationArguments) => {
-          return `${args.property} cannot exist alongside any of the following properties: ${args.constraints.join(', ')}`;
-        },
+      decode: (isoString) => new Date(isoString),
+      encode: (date) => date.toISOString(),
+    },
+  )
+  .meta({ example: '2024-01-01T00:00:00.000Z' });
+
+/**
+ * Parse ISO date strings to Date objects
+ * @docs https://zod.dev/api?id=codec
+ */
+export const isoDateToDate = z
+  .codec(
+    z.iso.date({
+      error: (iss) => `Invalid input: expected ISO date string (YYYY-MM-DD), received ${typeof iss.input}`,
+    }),
+    z.date(),
+    {
+      decode: (isoString) => new Date(isoString),
+      encode: (date) => {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
       },
     },
-    validationOptions,
-  );
-}
+  )
+  .meta({ example: '2024-01-01' });
 
-export const ValidateHexColor = () => {
-  const decorators = [
-    IsHexColor(),
-    Transform(({ value }) => (typeof value === 'string' && value[0] !== '#' ? `#${value}` : value)),
-  ];
+/**
+ * Latitude in range [-90, 90]. Reuse for body or query params.
+ *
+ * @example
+ * // Regular (body): optional coordinates
+ * latitudeSchema.optional().describe('Latitude coordinate')
+ *
+ * @example
+ * // Pipe (query): coerce string to number then validate range
+ * z.coerce.number().pipe(latitudeSchema).describe('Latitude (-90 to 90)')
+ */
+export const latitudeSchema = z.number().min(-90).max(90);
 
-  return applyDecorators(...decorators);
-};
+/**
+ * Longitude in range [-180, 180]. Reuse for body or query params.
+ *
+ * @example
+ * // Regular (body): optional coordinates
+ * longitudeSchema.optional().describe('Longitude coordinate')
+ *
+ * @example
+ * // Pipe (query): coerce string to number then validate range
+ * z.coerce.number().pipe(longitudeSchema).describe('Longitude (-180 to 180)')
+ */
+export const longitudeSchema = z.number().min(-180).max(180);
 
-type DateOptions = OptionalOptions & { optional?: boolean; format?: 'date' | 'date-time' };
-export const ValidateDate = (options?: DateOptions & PropertyOptions) => {
-  const {
-    optional,
-    nullable = false,
-    emptyToNull = false,
-    format = 'date-time',
-    ...apiPropertyOptions
-  } = options || {};
+/**
+ * Parse string to boolean
+ * This should be used for boolean query parameters and path parameters, but not for boolean request body parameters, as the first are always string.
+ * We don't use z.coerce.boolean() as any truthy value is considered true
+ * z.stringbool() is a more robust way to parse strings to booleans as it lets you specify the truthy and falsy values and the case sensitivity.
+ * @docs https://zod.dev/api?id=coercion
+ * @docs https://zod.dev/api?id=stringbool
+ */
+export const stringToBool = z
+  .stringbool({ truthy: ['true'], falsy: ['false'], case: 'sensitive' })
+  .meta({ type: 'boolean' });
 
-  return applyDecorators(
-    Property({ format, ...apiPropertyOptions }),
-    IsDate(),
-    optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
-    Transform(({ key, value }) => {
-      if (value === null || value === undefined) {
-        return value;
-      }
-
-      if (!isDateString(value)) {
-        throw new BadRequestException(`${key} must be a date string`);
-      }
-
-      return new Date(value as string);
-    }),
-  );
-};
-
-type StringOptions = OptionalOptions & { optional?: boolean; trim?: boolean };
-export const ValidateString = (options?: StringOptions & ApiPropertyOptions) => {
-  const { optional, nullable, emptyToNull, trim, ...apiPropertyOptions } = options || {};
-  const decorators = [
-    ApiProperty(apiPropertyOptions),
-    IsString(),
-    optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
-  ];
-
-  if (trim) {
-    decorators.push(Transform(({ value }: { value: string }) => value?.trim()));
-  }
-
-  return applyDecorators(...decorators);
-};
-
-type BooleanOptions = OptionalOptions & { optional?: boolean };
-export const ValidateBoolean = (options?: BooleanOptions & PropertyOptions) => {
-  const { optional, nullable, emptyToNull, ...apiPropertyOptions } = options || {};
-  const decorators = [
-    Property(apiPropertyOptions),
-    IsBoolean(),
-    Transform(({ value }) => {
-      if (value == 'true') {
-        return true;
-      } else if (value == 'false') {
-        return false;
-      }
-      return value;
-    }),
-    optional ? Optional({ nullable, emptyToNull }) : IsNotEmpty(),
-  ];
-
-  return applyDecorators(...decorators);
-};
-
-type EnumOptions<T> = {
-  enum: T;
-  name: string;
-  each?: boolean;
-  optional?: boolean;
-  nullable?: boolean;
-  default?: T[keyof T];
-  description?: string;
-};
-export const ValidateEnum = <T extends object>({
-  name,
-  enum: value,
-  each,
-  optional,
-  nullable,
-  default: defaultValue,
-  description,
-}: EnumOptions<T>) => {
-  return applyDecorators(
-    optional ? Optional({ nullable }) : IsNotEmpty(),
-    IsEnum(value, { each }),
-    ApiProperty({ enumName: name, enum: value, isArray: each, default: defaultValue, description }),
-  );
-};
-
-@ValidatorConstraint({ name: 'cronValidator' })
-class CronValidator implements ValidatorConstraintInterface {
-  validate(expression: string): boolean {
+/**
+ * Parse JSON strings from multipart/form-data
+ */
+export const JsonParsed = z.transform((val, ctx) => {
+  if (typeof val === 'string') {
     try {
-      new CronJob(expression, () => {});
-      return true;
+      return JSON.parse(val);
     } catch {
-      return false;
+      ctx.issues.push({
+        code: 'custom',
+        message: `Invalid input: expected JSON string, received ${typeof val}`,
+        input: val,
+      });
+      return z.NEVER;
     }
   }
-}
+  return val;
+});
 
-export const IsCronExpression = () => Validate(CronValidator, { message: 'Invalid cron expression' });
+/**
+ * Hex color validation and normalization.
+ * Accepts formats: #RGB, #RGBA, #RRGGBB, #RRGGBBAA (with or without # prefix).
+ * Normalizes output to always include the # prefix.
+ *
+ * @example
+ * hexColor.optional()
+ */
+const hexColorRegex = /^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
+export const hexColor = z
+  .string()
+  .regex(hexColorRegex)
+  .transform((val) => (val.startsWith('#') ? val : `#${val}`));
 
-type IValue = { value: unknown };
-
-export const toEmail = ({ value }: IValue) => (typeof value === 'string' ? value.toLowerCase() : value);
-
-export const toSanitized = ({ value }: IValue) => {
-  const input = typeof value === 'string' ? value : '';
-  return sanitize(input.replaceAll('.', ''));
-};
-
-export const isValidInteger = (value: number, options: { min?: number; max?: number }): value is number => {
-  const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
-  return Number.isInteger(value) && value >= min && value <= max;
-};
-
-export function isDateStringFormat(value: unknown, format: string) {
-  if (typeof value !== 'string') {
-    return false;
-  }
-  return DateTime.fromFormat(value, format, { zone: 'utc' }).isValid;
-}
-
-export function IsDateStringFormat(format: string, validationOptions?: ValidationOptions) {
-  return ValidateBy(
-    {
-      name: 'isDateStringFormat',
-      constraints: [format],
-      validator: {
-        validate(value: unknown) {
-          return isDateStringFormat(value, format);
-        },
-        defaultMessage: () => `$property must be a string in the format ${format}`,
-      },
-    },
-    validationOptions,
-  );
-}
-
-function maxDate(date: DateTime, maxDate: DateTime | (() => DateTime)) {
-  return date <= (maxDate instanceof DateTime ? maxDate : maxDate());
-}
-
-export function MaxDateString(
-  date: DateTime | (() => DateTime),
-  validationOptions?: ValidationOptions,
-): PropertyDecorator {
-  return ValidateBy(
-    {
-      name: 'maxDateString',
-      constraints: [date],
-      validator: {
-        validate: (value, args) => {
-          const date = DateTime.fromISO(value, { zone: 'utc' });
-          return maxDate(date, args?.constraints[0]);
-        },
-        defaultMessage: buildMessage(
-          (eachPrefix) => 'maximal allowed date for ' + eachPrefix + '$property is $constraint1',
-          validationOptions,
-        ),
-      },
-    },
-    validationOptions,
-  );
-}
-
-type IsIPRangeOptions = { requireCIDR?: boolean };
-export function IsIPRange(options: IsIPRangeOptions, validationOptions?: ValidationOptions): PropertyDecorator {
-  const { requireCIDR } = { requireCIDR: true, ...options };
-
-  return ValidateBy(
-    {
-      name: 'isIPRange',
-      validator: {
-        validate: (value): boolean => {
-          if (isIPRange(value)) {
-            return true;
-          }
-
-          if (!requireCIDR && isIP(value)) {
-            return true;
-          }
-
-          return false;
-        },
-        defaultMessage: buildMessage(
-          (eachPrefix) => eachPrefix + '$property must be an ip address, or ip address range',
-          validationOptions,
-        ),
-      },
-    },
-    validationOptions,
-  );
-}
-
-@ValidatorConstraint({ name: 'isGreaterThanOrEqualTo' })
-export class IsGreaterThanOrEqualToConstraint implements ValidatorConstraintInterface {
-  validate(value: unknown, args: ValidationArguments) {
-    const relatedPropertyName = args.constraints?.[0] as string;
-    const relatedValue = (args.object as Record<string, unknown>)[relatedPropertyName];
-    if (!Number.isFinite(value) || !Number.isFinite(relatedValue)) {
-      return true;
-    }
-
-    return Number(value) >= Number(relatedValue);
-  }
-
-  defaultMessage(args: ValidationArguments) {
-    const relatedPropertyName = args.constraints?.[0] as string;
-    return `${args.property} must be greater than or equal to ${relatedPropertyName}`;
-  }
-}
-
-export const IsGreaterThanOrEqualTo = (property: string, validationOptions?: ValidationOptions) => {
-  return Validate(IsGreaterThanOrEqualToConstraint, [property], validationOptions);
-};
+export const sanitizeFilename = z.string().transform((val) => sanitize(val.replaceAll('.', '')));
