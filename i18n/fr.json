@@ -171,7 +171,7 @@
     "machine_learning_ocr_max_resolution": "Résolution maximale",
     "machine_learning_ocr_max_resolution_description": "Les prévisualisations au-dessus de cette résolution seront retaillées en conservant leur ratio. Des valeurs plus grandes sont plus précises, mais sont plus lentes et utilisent plus de mémoire.",
     "machine_learning_ocr_min_detection_score": "Score minimum de détection",
-    "machine_learning_ocr_min_detection_score_description": "Score de confiance minimum pour la détection du textew entre 0 et 1. Des valeurs faibles permettront de reconnaître davantage de texte mais peuvent entraîner des faux positifs.",
+    "machine_learning_ocr_min_detection_score_description": "Score de confiance minimum pour la détection du texte, entre 0 et 1. Des valeurs faibles permettront de reconnaître davantage de texte mais peuvent entraîner des faux positifs.",
     "machine_learning_ocr_min_recognition_score": "Score de reconnaissance minimum",
     "machine_learning_ocr_min_score_recognition_description": "Score de confiance minimum pour la reconnaissance du texte, entre 0 et 1. Des valeurs faible permettront de reconnaître davantage de texte, mais peuvent entraîner des faux positifs.",
     "machine_learning_ocr_model": "Modèle de Reconnaissance Optique de Caractères OCR",
