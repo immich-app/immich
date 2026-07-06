@@ -423,7 +423,9 @@ class _EditorPreviewState extends ConsumerState<_EditorPreview> with TickerProvi
                   1.0,
                   1.0,
                 ),
-              child: Container(
+              child: AnimatedContainer(
+                duration: editorState.animationDuration,
+                curve: Curves.easeInOut,
                 padding: const EdgeInsets.all(10),
                 width: (editorState.rotationAngle % 180 == 0) ? baseWidth : baseHeight,
                 height: (editorState.rotationAngle % 180 == 0) ? baseHeight : baseWidth,
