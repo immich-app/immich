@@ -112,23 +112,19 @@ Java_app_alextran_immich_NativeImage_rotate(
 // Bitmap.copy(ARGB_8888) byte-for-byte so it's a drop-in for the intermediate 8888 bitmap.
 // Each source pixel is a native (little-endian on every Android ABI) u32 with R in bits 0-9,
 // G in 10-19, B in 20-29, A in 30-31 (standard RGB10_A2). Each 10-bit channel maps to 8-bit via
-// round(v*255/1023) through a small L1-resident LUT; the 2-bit alpha maps a*85. Output is R,G,B,A
-// bytes per pixel, i.e. Android ARGB_8888 memory == Dart PixelFormat.rgba8888.
+// round(v*255/1023). The 2-bit alpha maps to a*85. Both are kept as plain arithmetic as the whole
+// loop auto-vectorizes to NEON and measures faster than a LUT on-device. Output is R,G,B,A bytes
+// per pixel, i.e. Android ARGB_8888 memory == Dart PixelFormat.rgba8888.
 static void convert_1010102(const uint8_t *src, int srcStride, uint32_t *dst, int w, int h) {
-  uint8_t scale[1024];
-  for (int v = 0; v < 1024; v++) {
-    scale[v] = (uint8_t) ((v * 255 + 511) / 1023);
-  }
-  static const uint8_t alpha[4] = {0, 85, 170, 255};
   for (int y = 0; y < h; y++) {
     const uint32_t *srcRow = (const uint32_t *) (src + (size_t) y * srcStride);
     uint32_t *dstRow = dst + (size_t) y * w;
     for (int x = 0; x < w; x++) {
       uint32_t px = srcRow[x];
-      uint32_t r = scale[px & 0x3FF];
-      uint32_t g = scale[(px >> 10) & 0x3FF];
-      uint32_t b = scale[(px >> 20) & 0x3FF];
-      uint32_t a = alpha[(px >> 30) & 0x3];
+      uint32_t r = ((px & 0x3FF) * 16336u + 32768u) >> 16;
+      uint32_t g = (((px >> 10) & 0x3FF) * 16336u + 32768u) >> 16;
+      uint32_t b = (((px >> 20) & 0x3FF) * 16336u + 32768u) >> 16;
+      uint32_t a = ((px >> 30) & 0x3) * 85u;
       dstRow[x] = r | (g << 8) | (b << 16) | (a << 24);
     }
   }
