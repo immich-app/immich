@@ -154,7 +154,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
 }
 
 class _AspectRatioButton extends StatelessWidget {
-  final AspectRatioPreset ratio;
+  final CropAspectRatio ratio;
   final bool isSelected;
   final VoidCallback onPressed;
 
@@ -217,7 +217,7 @@ class _AspectRatioSelector extends ConsumerWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: AspectRatioPreset.values.map((entry) {
+        children: aspectRatioPresets.map((entry) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: _AspectRatioButton(
@@ -379,21 +379,22 @@ class _EditorPreviewState extends ConsumerState<_EditorPreview> with TickerProvi
     final editorNotifier = ref.read(editorStateProvider.notifier);
 
     ref.listen(editorStateProvider, (previous, current) {
-      // Only re-apply the aspect ratio when it or the rotation actually changed, otherwise infinite callback loop
-      if (previous?.aspectRatio != current.aspectRatio || previous?.rotationAngle != current.rotationAngle) {
+      // Only re-apply the aspect ratio when it changes, otherwise the crop rect will shrink on every rotation
+      if (previous?.aspectRatio != current.aspectRatio) {
+        double? ratio;
+
         switch (current.aspectRatio) {
-          case AspectRatioPreset.free:
-            cropController.aspectRatio = null;
-          case AspectRatioPreset.original:
-            cropController.aspectRatio = current.originalWidth / current.originalHeight;
+          case CropAspectRatio.original:
+            ratio = current.originalWidth / current.originalHeight;
           default:
-            cropController.aspectRatio = current.aspectRatio.ratio;
+            ratio = current.aspectRatio.ratio;
         }
 
-        // If the rotation is 90 or 270 degrees, we need to swap the aspect ratio for the crop controller
-        if (current.rotationAngle % 180 != 0 && cropController.aspectRatio != null) {
-          cropController.aspectRatio = 1 / cropController.aspectRatio!;
+        if (current.rotationAngle % 180 != 0) {
+          ratio = ratio != null ? 1 / ratio : null;
         }
+
+        cropController.aspectRatio = ratio;
       }
 
       if (cropController.crop != current.crop) {

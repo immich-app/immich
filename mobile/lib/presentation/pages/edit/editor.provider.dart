@@ -61,7 +61,7 @@ class EditorProvider extends Notifier<EditorState> {
     state = state.copyWith(crop: crop, hasUnsavedEdits: true);
   }
 
-  void setAspectRatio(AspectRatioPreset preset) {
+  void setAspectRatio(CropAspectRatio preset) {
     state = state.copyWith(aspectRatio: preset, hasUnsavedEdits: true);
   }
 
@@ -72,7 +72,7 @@ class EditorProvider extends Notifier<EditorState> {
       flipHorizontal: false,
       flipVertical: false,
       crop: const Rect.fromLTRB(0, 0, 1, 1),
-      aspectRatio: AspectRatioPreset.free,
+      aspectRatio: CropAspectRatio.free,
       hasUnsavedEdits: true,
     );
   }
@@ -113,7 +113,7 @@ class EditorState {
   final bool flipHorizontal;
   final bool flipVertical;
   final Rect crop;
-  final AspectRatioPreset aspectRatio;
+  final CropAspectRatio aspectRatio;
 
   final int originalWidth;
   final int originalHeight;
@@ -128,7 +128,7 @@ class EditorState {
     bool? flipHorizontal,
     bool? flipVertical,
     Rect? crop,
-    AspectRatioPreset? aspectRatio,
+    CropAspectRatio? aspectRatio,
     int? originalWidth,
     int? originalHeight,
     Duration? animationDuration,
@@ -141,7 +141,7 @@ class EditorState {
        originalWidth = originalWidth ?? 0,
        originalHeight = originalHeight ?? 0,
        crop = crop ?? const Rect.fromLTRB(0, 0, 1, 1),
-       aspectRatio = aspectRatio ?? AspectRatioPreset.free,
+       aspectRatio = aspectRatio ?? CropAspectRatio.free,
        hasUnsavedEdits = hasUnsavedEdits ?? false;
 
   EditorState copyWith({
@@ -149,7 +149,7 @@ class EditorState {
     int? rotationAngle,
     bool? flipHorizontal,
     bool? flipVertical,
-    AspectRatioPreset? aspectRatio,
+    CropAspectRatio? aspectRatio,
     int? originalWidth,
     int? originalHeight,
     Duration? animationDuration,
