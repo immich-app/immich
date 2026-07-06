@@ -2,10 +2,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/actions/action.widget.dart';
-import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
@@ -14,6 +13,7 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provid
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_ui/immich_ui.dart';
 
@@ -42,11 +42,24 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     double opacity = ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
 
     final originalTheme = context.themeData;
-    final assetForAction = [asset];
+
+    // favorite only consumes `asset`/`isInLockedView`; other fields are unused placeholders.
+    final favoriteContext = ActionButtonContext(
+      asset: asset,
+      isOwner: false,
+      isArchived: false,
+      isTrashEnabled: false,
+      isStacked: false,
+      isInLockedView: isInLockedView,
+      currentAlbum: album,
+      advancedTroubleshooting: false,
+      source: ActionSource.viewer,
+    );
 
     final actions = <Widget>[
       if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
-      ActionIconButtonWidget(action: FavoriteAction(assets: assetForAction)),
+      if (ActionButtonType.favorite.shouldShow(favoriteContext))
+        ActionButtonType.favorite.buildButton(favoriteContext, context, true),
 
       ViewerKebabMenu(originalTheme: originalTheme),
     ];

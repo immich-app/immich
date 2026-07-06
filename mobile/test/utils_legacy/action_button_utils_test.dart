@@ -4,6 +4,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/utils/action_button.utils.dart';
 import 'package:immich_mobile/utils/semver.dart';
 
@@ -1141,6 +1142,52 @@ void main() {
           expect(widget, isA<Widget>());
         }
       }
+    });
+  });
+
+  group('ActionButtonType.favorite', () {
+    ActionButtonContext contextFor(BaseAsset asset, {bool isInLockedView = false}) {
+      return ActionButtonContext(
+        asset: asset,
+        isOwner: true,
+        isArchived: false,
+        isTrashEnabled: true,
+        isInLockedView: isInLockedView,
+        currentAlbum: null,
+        advancedTroubleshooting: false,
+        isStacked: false,
+        source: ActionSource.viewer,
+      );
+    }
+
+    test('shouldShow is true for a remote asset outside locked view', () {
+      expect(ActionButtonType.favorite.shouldShow(contextFor(createRemoteAsset())), isTrue);
+    });
+
+    test('shouldShow is false in locked view', () {
+      expect(ActionButtonType.favorite.shouldShow(contextFor(createRemoteAsset(), isInLockedView: true)), isFalse);
+    });
+
+    test('shouldShow is false for a local-only asset', () {
+      expect(ActionButtonType.favorite.shouldShow(contextFor(createLocalAsset())), isFalse);
+    });
+
+    test('is excluded from the bottom bar and kebab menu positions', () {
+      final context = contextFor(createRemoteAsset());
+      expect(ActionButtonType.favorite.showsAt(ButtonPosition.bottomBar, context), isFalse);
+      expect(ActionButtonType.favorite.showsAt(ButtonPosition.kebabMenu, context), isFalse);
+    });
+
+    test('buildButton returns an icon button by default and a menu item for menuItem', () {
+      final context = contextFor(createRemoteAsset());
+      expect(ActionButtonType.favorite.buildButton(context), isA<ActionIconButtonWidget>());
+      expect(ActionButtonType.favorite.buildButton(context, null, false, true), isA<ActionMenuItemWidget>());
+    });
+
+    test('does not appear in the viewer bottom bar or kebab menu builders', () {
+      final context = contextFor(createRemoteAsset());
+      expect(ActionButtonBuilder.getViewerBottomBarTypes(context), isNot(contains(ActionButtonType.favorite)));
+      expect(ActionButtonBuilder.getViewerKebabMenuTypes(context), isNot(contains(ActionButtonType.favorite)));
     });
   });
 
