@@ -29,7 +29,7 @@ docker image prune
 ## Versioning Policy
 
 Immich follows [semantic versioning][semver], which tags releases in the format `<major>.<minor>.<patch>`.
-We intend for breaking changes, inclding those to the API or deployment, to be limited to major version releases.
+We intend for breaking changes, including those to the API or deployment, to be limited to major version releases.
 You can configure your Docker image to point to the current major version by using a metatag, such as `:v3`. These metatags do not follow release candidates.
 
 The mobile app is typically compatible with the current and prior major version. However, the server is only compatible with the matching major version.
