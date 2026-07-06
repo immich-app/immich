@@ -10,6 +10,7 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart'
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:logging/logging.dart';
 
 // A first fetch that never delivers - the state a suspended or storm-starved
 // bucket watch is stuck in when the timeline mounts on a zero-sized first frame
@@ -115,5 +116,35 @@ void main() {
 
     expect(probed, isNotNull);
     expect(probed!.maxWidth, 402.0);
+  });
+
+  testWidgets('a timeline stuck at zero width logs a severe blank timeline signature after 5s', (tester) async {
+    final records = <LogRecord>[];
+    Logger.root.level = Level.INFO;
+    addTearDown(() => Logger.root.level = Level.OFF);
+    final logSubscription = Logger.root.onRecord.listen(records.add);
+    addTearDown(logSubscription.cancel);
+
+    bool isZeroWidthAlarm(LogRecord r) => r.level == Level.SEVERE && r.message.contains('width still 0');
+
+    tester.view.physicalSize = Size.zero;
+    tester.view.devicePixelRatio = 3.0;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          timelineServiceProvider.overrideWithValue(_FrozenBucketService()),
+          appConfigProvider.overrideWithValue(const AppConfig()),
+        ],
+        child: const MaterialApp(home: Timeline(withScrubber: false, readOnly: true)),
+      ),
+    );
+
+    await tester.pump(const Duration(seconds: 2));
+    expect(records.where(isZeroWidthAlarm), isEmpty);
+
+    await tester.pump(const Duration(seconds: 4));
+    expect(records.where(isZeroWidthAlarm), isNotEmpty);
   });
 }

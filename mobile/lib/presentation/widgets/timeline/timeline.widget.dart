@@ -67,7 +67,7 @@ class Timeline extends ConsumerWidget {
     final columnCount = ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow));
     return LayoutBuilder(
       builder: (_, constraints) {
-        Logger('TimelineProbe').info('layout pass ${constraints.maxWidth}x${constraints.maxHeight}');
+        Logger('TimelineProbe').fine('layout pass ${constraints.maxWidth}x${constraints.maxHeight}');
         return ProviderScope(
           overrides: [
             // overrideWithValue keeps the scoped args in sync with the latest constraints on rebuilds,
@@ -113,6 +113,8 @@ class _AlwaysReadOnlyNotifier extends ReadOnlyModeNotifier {
   void toggleReadonlyMode() {}
 }
 
+const _kZeroWidthAlarmDelay = Duration(seconds: 5);
+
 class _SliverTimeline extends ConsumerStatefulWidget {
   const _SliverTimeline({
     this.topSliverWidget,
@@ -156,11 +158,23 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   double _scaleFactor = 3.0;
   double _baseScaleFactor = 3.0;
   int? _restoreAssetIndex;
+  Timer? _zeroWidthAlarm;
+  DateTime? _zeroWidthSince;
 
   @override
   void initState() {
     super.initState();
     Logger('TimelineProbe').info('timeline mounted maxWidth=${widget.maxWidth}');
+    if ((widget.maxWidth ?? 0) <= 0) {
+      _zeroWidthSince = DateTime.now();
+      _zeroWidthAlarm = Timer(_kZeroWidthAlarmDelay, () {
+        if (mounted && (widget.maxWidth ?? 0) <= 0) {
+          Logger(
+            'TimelineProbe',
+          ).severe('timeline width still 0 ${_kZeroWidthAlarmDelay.inSeconds}s after mount, tiles have no extent');
+        }
+      });
+    }
     _scrollController = ScrollController(onAttach: _restoreAssetPosition);
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
@@ -177,6 +191,16 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     super.didUpdateWidget(oldWidget);
     if (widget.maxWidth != oldWidget.maxWidth) {
       Logger('TimelineProbe').info('timeline maxWidth ${oldWidget.maxWidth} -> ${widget.maxWidth}');
+      if ((widget.maxWidth ?? 0) > 0 && _zeroWidthSince != null) {
+        final stuckFor = DateTime.now().difference(_zeroWidthSince!);
+        _zeroWidthAlarm?.cancel();
+        _zeroWidthSince = null;
+        if (stuckFor >= _kZeroWidthAlarmDelay) {
+          Logger(
+            'TimelineProbe',
+          ).severe('timeline width recovered to ${widget.maxWidth} after ${stuckFor.inSeconds}s at 0');
+        }
+      }
       // The updated args already regenerate the segments, only remember the scroll position to restore it afterwards
       final segments = ref.read(timelineSegmentProvider).valueOrNull;
       if (segments != null && _scrollController.hasClients) {
@@ -253,6 +277,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   @override
   void dispose() {
+    _zeroWidthAlarm?.cancel();
     _scrollController.dispose();
     _eventSubscription?.cancel();
     super.dispose();

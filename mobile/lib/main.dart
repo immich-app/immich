@@ -58,11 +58,16 @@ void main() async {
     await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
     await migrateDatabaseIfNeeded(drift);
 
-    Logger('LaunchProbe').info(
-      'launch: prewarm=${Platform.environment['ActivePrewarm'] ?? '0'}, '
-      'view=${WidgetsBinding.instance.platformDispatcher.implicitView?.physicalSize}, '
-      'lifecycle=${WidgetsBinding.instance.lifecycleState}',
-    );
+    final viewSize = WidgetsBinding.instance.platformDispatcher.implicitView?.physicalSize;
+    final launchContext =
+        'prewarm=${Platform.environment['ActivePrewarm'] ?? '0'}, '
+        'view=${viewSize == null ? 'none' : '${viewSize.width}x${viewSize.height}'}, '
+        'lifecycle=${WidgetsBinding.instance.lifecycleState}';
+    if (viewSize == null || viewSize.isEmpty) {
+      Logger('LaunchProbe').warning('launch with zero view bounds: $launchContext');
+    } else {
+      Logger('LaunchProbe').info('launch: $launchContext');
+    }
 
     runApp(ProviderScope(overrides: [driftProvider.overrideWith(driftOverride(drift))], child: const MainWidget()));
   } catch (error, stack) {
