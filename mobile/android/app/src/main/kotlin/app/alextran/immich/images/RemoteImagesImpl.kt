@@ -1,6 +1,8 @@
 package app.alextran.immich.images
 
 import android.content.Context
+import android.graphics.ImageDecoder
+import android.os.Build
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
 import app.alextran.immich.INITIAL_BUFFER_SIZE
@@ -22,6 +24,7 @@ import java.io.File
 import java.io.IOException
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 
 private const val MAX_PREALLOC_BYTES = 128 * 1024 * 1024
 
@@ -29,6 +32,7 @@ private class RemoteRequest(val cancellationSignal: CancellationSignal)
 
 class RemoteImagesImpl(context: Context) : RemoteImageApi {
   private val requestMap = ConcurrentHashMap<Long, RemoteRequest>()
+  private val decodeExecutor = Executors.newFixedThreadPool(2)
 
   init {
     ImageFetcherManager.initialize(context)
@@ -41,7 +45,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
   override fun requestImage(
     url: String,
     requestId: Long,
-    @Suppress("UNUSED_PARAMETER") preferEncoded: Boolean, // always returns encoded; setting has no effect on Android
+    preferEncoded: Boolean,
     callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
@@ -51,12 +55,49 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
       url,
       signal,
       onSuccess = { buffer ->
-        requestMap.remove(requestId)
         if (signal.isCanceled) {
-          NativeBuffer.free(buffer.pointer)
+          requestMap.remove(requestId)
+          buffer.free()
           return@fetch callback(CANCELLED)
         }
 
+        // Decode natively when the caller wants pixels: Flutter's fallback decoder copies
+        // 10-bit bitmaps (RGBA_1010102) as if they were rgba8888, garbling colors. Decode on a
+        // dedicated pool - the fetch callback threads are shared with video streaming. On any
+        // decode failure (including OOM on huge originals), hand Flutter the encoded bytes as
+        // before.
+        if (!preferEncoded && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+          decodeExecutor.execute {
+            val res = if (signal.isCanceled) null else try {
+              val source = ImageDecoder.createSource(NativeBuffer.wrap(buffer.pointer, buffer.offset))
+              source.decodeBitmap().toNativeBuffer()
+            } catch (_: Throwable) {
+              null
+            }
+            requestMap.remove(requestId)
+            when {
+              res != null -> {
+                buffer.free()
+                callback(Result.success(res))
+              }
+              signal.isCanceled -> {
+                buffer.free()
+                callback(CANCELLED)
+              }
+              else -> callback(
+                Result.success(
+                  mapOf(
+                    "pointer" to buffer.pointer,
+                    "length" to buffer.offset.toLong()
+                  )
+                )
+              )
+            }
+          }
+          return@fetch
+        }
+
+        requestMap.remove(requestId)
         callback(
           Result.success(
             mapOf(
