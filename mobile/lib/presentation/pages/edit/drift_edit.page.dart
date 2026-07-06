@@ -162,19 +162,46 @@ class _AspectRatioButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = isSelected ? context.primaryColor : context.themeData.iconTheme.color;
+
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: [
         IconButton(
           iconSize: 36,
-          icon: Transform.rotate(
-            angle: ratio.iconRotated ? pi / 2 : 0,
-            child: Icon(ratio.icon, color: isSelected ? context.primaryColor : context.themeData.iconTheme.color),
-          ),
+          icon: ratio.ratio != null
+              ? _AspectRatioRect(ratio: ratio.ratio!, color: color)
+              : Icon(ratio.icon, color: color),
           onPressed: onPressed,
         ),
         Text(ratio.label, style: context.textTheme.displayMedium),
       ],
+    );
+  }
+}
+
+class _AspectRatioRect extends StatelessWidget {
+  final double ratio;
+  final Color? color;
+
+  const _AspectRatioRect({required this.ratio, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 28,
+      height: 28,
+      child: Center(
+        child: AspectRatio(
+          aspectRatio: ratio,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: color ?? Colors.transparent, width: 3),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -187,12 +214,6 @@ class _AspectRatioSelector extends ConsumerWidget {
     final editorState = ref.watch(editorStateProvider);
     final editorNotifier = ref.read(editorStateProvider.notifier);
 
-    // the whole crop view is rotated, so we need to swap the aspect ratio when the rotation is 90 or 270 degrees
-    double? selectedAspectRatio = editorState.aspectRatio;
-    if (editorState.rotationAngle % 180 != 0 && selectedAspectRatio != null) {
-      selectedAspectRatio = 1 / selectedAspectRatio;
-    }
-
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -201,8 +222,8 @@ class _AspectRatioSelector extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: _AspectRatioButton(
               ratio: entry,
-              isSelected: selectedAspectRatio == entry.ratio,
-              onPressed: () => editorNotifier.setAspectRatio(entry.ratio),
+              isSelected: editorState.aspectRatio == entry,
+              onPressed: () => editorNotifier.setAspectRatio(entry),
             ),
           );
         }).toList(),
@@ -357,8 +378,24 @@ class _EditorPreviewState extends ConsumerState<_EditorPreview> with TickerProvi
     final editorState = ref.watch(editorStateProvider);
     final editorNotifier = ref.read(editorStateProvider.notifier);
 
-    ref.listen(editorStateProvider, (_, current) {
-      cropController.aspectRatio = current.aspectRatio;
+    ref.listen(editorStateProvider, (previous, current) {
+      // Only re-apply the aspect ratio when it or the rotation actually changed. Re-applying on every
+      // crop change would reshape the crop, which fires onCrop, which loops back here indefinitely.
+      if (previous?.aspectRatio != current.aspectRatio || previous?.rotationAngle != current.rotationAngle) {
+        switch (current.aspectRatio) {
+          case AspectRatioPreset.free:
+            cropController.aspectRatio = null;
+          case AspectRatioPreset.original:
+            cropController.aspectRatio = current.originalWidth / current.originalHeight;
+          default:
+            cropController.aspectRatio = current.aspectRatio.ratio;
+        }
+
+        // If the rotation is 90 or 270 degrees, we need to swap the aspect ratio for the crop controller
+        if (current.rotationAngle % 180 != 0 && cropController.aspectRatio != null) {
+          cropController.aspectRatio = 1 / cropController.aspectRatio!;
+        }
+      }
 
       if (cropController.crop != current.crop) {
         cropController.crop = current.crop;
