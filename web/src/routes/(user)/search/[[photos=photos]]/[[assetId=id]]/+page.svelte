@@ -34,6 +34,7 @@
   import {
     type AlbumResponseDto,
     type AssetResponseDto,
+    AssetVisibility,
     getPerson,
     getTagById,
     type MetadataSearchDto,
@@ -141,8 +142,10 @@
     try {
       const { albums, assets } =
         ('query' in searchDto || 'queryAssetId' in searchDto) && smartSearchEnabled
-          ? await searchSmart({ smartSearchDto: { ...searchDto, language: $lang } })
-          : await searchAssets({ metadataSearchDto: searchDto });
+          ? await searchSmart({
+              smartSearchDto: { visibility: AssetVisibility.Timeline, ...searchDto, language: $lang },
+            })
+          : await searchAssets({ metadataSearchDto: { visibility: AssetVisibility.Timeline, ...searchDto } });
 
       searchResultAlbums.push(...albums.items);
       searchResultAssets.push(...assets.items);
