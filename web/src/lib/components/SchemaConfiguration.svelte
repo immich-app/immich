@@ -107,6 +107,6 @@
     <Input bind:value={() => getValue<string>(), setValue} />
   </Field>
 {:else}
-  <Text>Unknown schema</Text>
+  <Text>{$t('unknown_schema')}</Text>
   <CodeBlock code={JSON.stringify(schema, null, 2)} />
 {/if}
