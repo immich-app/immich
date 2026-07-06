@@ -25890,9 +25890,10 @@
           },
           "percentageLimit": {
             "description": "Percentage limit of the integrity checksum job",
-            "maximum": 9007199254740991,
+            "format": "double",
+            "maximum": 1,
             "minimum": 0,
-            "type": "integer"
+            "type": "number"
           },
           "timeLimit": {
             "description": "How long the integrity checksum job may run for",
