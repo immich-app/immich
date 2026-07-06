@@ -6,10 +6,12 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:sqlite3/common.dart';
 
 void configureFileDownloaderNotifications() {
   FileDownloader().configureNotificationForGroup(
@@ -46,7 +48,7 @@ abstract final class Bootstrap {
     await configureSqliteCache();
     final (db, updatePool) = await openSqliteConnectionWithUpdatePool(name: 'immich');
     final drift = Drift.sqlite(db, updatePool);
-    final logDb = DriftLogger.sqlite(await openSqliteConnection(name: 'immich_logs'));
+    final logDb = await _openLogDb();
     final DriftStoreRepository storeRepo = DriftStoreRepository(drift);
 
     await StoreService.init(storeRepository: storeRepo, listenUpdates: listenStoreUpdates);
@@ -64,4 +66,21 @@ abstract final class Bootstrap {
     await PhotoManager.setIgnorePermissionCheck(true);
     return (drift, logDb);
   }
+}
+
+Future<DriftLogger> _openLogDb() async {
+  Future<DriftLogger> open() async => DriftLogger.sqlite(await openSqliteConnection(name: 'immich_logs'));
+
+  final logDb = await open();
+  try {
+    await logDb.customSelect('SELECT COUNT(*) FROM logger_messages').get();
+  } on SqliteException catch (error) {
+    if (error.resultCode == 11 || error.resultCode == 26) {
+      dPrint(() => 'Logs database is unusable, recreating it');
+      await logDb.close();
+      await deleteSqliteDatabase(name: 'immich_logs');
+      return open();
+    }
+  }
+  return logDb;
 }

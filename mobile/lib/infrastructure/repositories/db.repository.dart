@@ -373,6 +373,16 @@ final class _DriftPoolStreamQueries extends StreamQueryStore {
   }
 }
 
+Future<void> deleteSqliteDatabase({required String name}) async {
+  final file = await _databaseFile(name);
+  for (final path in [file.path, '${file.path}-wal', '${file.path}-shm']) {
+    final sidecar = File(path);
+    if (await sidecar.exists()) {
+      await sidecar.delete();
+    }
+  }
+}
+
 Future<SqliteConnection> openSqliteConnection({required String name}) async {
   return _openImmichDatabase(await _databaseFile(name));
 }
