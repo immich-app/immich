@@ -1,5 +1,5 @@
 # dev build
-FROM ghcr.io/immich-app/base-server-dev:202606161235@sha256:9f88b07acc8b7bf37a1dd3d5a19193f664443eaaab4e08e9f9341414c5e4b23f AS dev
+FROM ghcr.io/immich-app/base-server-dev:202607061334@sha256:c83ef9c6d7f5e7f6a276fe96647484d46b7bf6cacc1e35b823dd1d7a1aeda3b8 AS dev
 
 
 COPY --from=ghcr.io/jdx/mise:2026.6.14@sha256:b8f8c20fc3308f8b1d00ccca2bc968e4e208af1c5c1069e1ad9753baa099acff /usr/local/bin/mise /usr/local/bin/mise
