@@ -46,10 +46,9 @@ class ViewerBottomBar extends ConsumerWidget {
 
     final assets = [asset];
     final scope = ActionScope.from(context, ref);
+    final restore = RestoreAction(assets: assets, scope: scope);
     final actions = <Widget>[
-      ActionColumnButtonWidget(
-        action: RestoreAction(assets: assets, scope: scope),
-      ),
+      if (restore.isVisible) ActionColumnButtonWidget(action: restore),
       const ShareActionButton(source: ActionSource.viewer),
 
       if (!isInLockedView) ...[

@@ -15,6 +15,7 @@ extension type const AssetFilter<T extends BaseAsset>(Iterable<T> assets) implem
       remote().where((asset) => asset.visibility != visibility);
   AssetFilter<RemoteAsset> archived({bool isArchived = true}) =>
       remote().where((asset) => asset.isArchived == isArchived);
+  AssetFilter<RemoteAsset> locked({bool isLocked = true}) => remote().where((asset) => asset.isLocked == isLocked);
   AssetFilter<RemoteAsset> stacked({bool isStacked = true}) => remote().where((asset) => asset.isStacked == isStacked);
   AssetFilter<RemoteAsset> trashed({bool isTrashed = true}) => remote().where((asset) => asset.isTrashed == isTrashed);
 

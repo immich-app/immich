@@ -12,7 +12,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permane
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
@@ -102,6 +101,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
               actions.favorite,
               actions.archive,
               actions.stack,
+              actions.lock,
             ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
           ],
           const DownloadActionButton(source: ActionSource.timeline),
@@ -111,7 +111,6 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
                 : const DeletePermanentActionButton(source: ActionSource.timeline),
             const EditDateTimeActionButton(source: ActionSource.timeline),
             const EditLocationActionButton(source: ActionSource.timeline),
-            const MoveToLockFolderActionButton(source: ActionSource.timeline),
           ],
         ],
         if (multiselect.hasMerged) const DeleteLocalActionButton(source: ActionSource.timeline),
