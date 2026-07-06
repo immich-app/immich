@@ -254,30 +254,37 @@ backend = "aqua:opentofu/opentofu"
 [tools.opentofu."platforms.linux-arm64"]
 checksum = "sha256:d4f2ab15776925864b049bb329d69682851de6f5204f256e9fa86d07a0308850"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.11.6/tofu_1.11.6_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/391536382"
 
 [tools.opentofu."platforms.linux-arm64-musl"]
 checksum = "sha256:d4f2ab15776925864b049bb329d69682851de6f5204f256e9fa86d07a0308850"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.11.6/tofu_1.11.6_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/391536382"
 
 [tools.opentofu."platforms.linux-x64"]
 checksum = "sha256:02800fafa2753a9f50c38483e2fdf5bc353fd62895eb9e25eec9a5145df3a69e"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.11.6/tofu_1.11.6_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/391536401"
 
 [tools.opentofu."platforms.linux-x64-musl"]
 checksum = "sha256:02800fafa2753a9f50c38483e2fdf5bc353fd62895eb9e25eec9a5145df3a69e"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.11.6/tofu_1.11.6_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/391536401"
 
 [tools.opentofu."platforms.macos-arm64"]
 checksum = "sha256:62d7fa8539e13b444827aa0a3b90c5972da5c47e8f8882d9dcf2e430e78840c1"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.11.6/tofu_1.11.6_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/391536399"
 
 [tools.opentofu."platforms.macos-x64"]
 checksum = "sha256:1408cdef1c380f914565e6b4bb70794c6b163f195fcb233357f3d6c5745906b6"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.11.6/tofu_1.11.6_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/391536384"
 
 [tools.opentofu."platforms.windows-x64"]
 checksum = "sha256:27323f70c875b8251bfd7e61a4cffc3ebff4e56ed1e611b955016f0c7077367e"
 url = "https://github.com/opentofu/opentofu/releases/download/v1.11.6/tofu_1.11.6_windows_amd64.tar.gz"
+url_api = "https://api.github.com/repos/opentofu/opentofu/releases/assets/391536406"
 
 [[tools.pnpm]]
 version = "11.6.0"
@@ -286,31 +293,37 @@ backend = "aqua:pnpm/pnpm"
 [tools.pnpm."platforms.linux-arm64"]
 checksum = "sha256:2fec653ff6dadab340d1c3d2214688a7451cc471f39710839440b293ca7c53b0"
 url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-linux-arm64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/445120174"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-arm64-musl"]
 checksum = "sha256:56a78c08cf22adf29e7dacb6f7f100139731693863d20fb94a7883463a62169e"
 url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-linux-arm64-musl.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/445120177"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64"]
 checksum = "sha256:74d64c1646385fb21691f32f0ab6aca1a9f5c829ba54d3cda3a24838a228e68c"
 url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-linux-x64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/445120176"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.linux-x64-musl"]
 checksum = "sha256:7a0c463a09d912fba6b7d9eca0a946bc228ea50f3015a05c09a29e7e85a932d7"
 url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-linux-x64-musl.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/445120175"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.macos-arm64"]
 checksum = "sha256:87c901635a14481fb30566a3749041134ffd4317bc6fe866c345b69fdf9b6b85"
 url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-darwin-arm64.tar.gz"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/445120180"
 provenance = "github-attestations"
 
 [tools.pnpm."platforms.windows-x64"]
 checksum = "sha256:91c753435542b04859c689304fae0dd64eba6b40937cfa426a48485b712e4e9c"
 url = "https://github.com/pnpm/pnpm/releases/download/v11.6.0/pnpm-win32-x64.zip"
+url_api = "https://api.github.com/repos/pnpm/pnpm/releases/assets/445120173"
 provenance = "github-attestations"
 
 [[tools.terragrunt]]
@@ -320,27 +333,34 @@ backend = "aqua:gruntwork-io/terragrunt"
 [tools.terragrunt."platforms.linux-arm64"]
 checksum = "sha256:e5b60ab05b5214db694e6bc215d8124fb626e277cdb56b86f6147ae110d510fe"
 url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.0.3/terragrunt_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/406654253"
 
 [tools.terragrunt."platforms.linux-arm64-musl"]
 checksum = "sha256:e5b60ab05b5214db694e6bc215d8124fb626e277cdb56b86f6147ae110d510fe"
 url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.0.3/terragrunt_linux_arm64.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/406654253"
 
 [tools.terragrunt."platforms.linux-x64"]
 checksum = "sha256:6d48049baf82e0bf9c804368dc85cbfeadc10955e33777e9e8de3e020b94b073"
 url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.0.3/terragrunt_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/406654196"
 
 [tools.terragrunt."platforms.linux-x64-musl"]
 checksum = "sha256:6d48049baf82e0bf9c804368dc85cbfeadc10955e33777e9e8de3e020b94b073"
 url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.0.3/terragrunt_linux_amd64.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/406654196"
 
 [tools.terragrunt."platforms.macos-arm64"]
 checksum = "sha256:aacb5be2ca5475300cbce246dfbd8a45eb47510fbaa70fab8561c49ef5db03aa"
 url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.0.3/terragrunt_darwin_arm64.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/406654084"
 
 [tools.terragrunt."platforms.macos-x64"]
 checksum = "sha256:3133c2251e191aede8e3dd2a5b3aee2e91c5f08f88f117aee40eed9a24c8ef6b"
 url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.0.3/terragrunt_darwin_amd64.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/406653970"
 
 [tools.terragrunt."platforms.windows-x64"]
 checksum = "sha256:183b2745b4e04980a6bfa4450ff81956a12596ca22d70f7aaa793980f5b036db"
 url = "https://github.com/gruntwork-io/terragrunt/releases/download/v1.0.3/terragrunt_windows_amd64.exe.tar.gz"
+url_api = "https://api.github.com/repos/gruntwork-io/terragrunt/releases/assets/406654412"

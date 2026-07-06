@@ -38,6 +38,9 @@
   // Cast
   let gCastEnabled = $state(authManager.preferences.cast?.gCastEnabled ?? false);
 
+  // Recently added
+  let recentlyAddedSidebar = $state(authManager.preferences.recentlyAdded?.sidebarWeb ?? false);
+
   const handleSave = async () => {
     try {
       const response = await updateMyPreferences({
@@ -50,6 +53,7 @@
           sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
           tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
           cast: { gCastEnabled },
+          recentlyAdded: { sidebarWeb: recentlyAddedSidebar },
         },
       });
 
@@ -166,6 +170,14 @@
           <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('gcast_enabled')} description={$t('gcast_enabled_description')}>
               <Switch bind:checked={gCastEnabled} />
+            </Field>
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion key="recentlyAdded" title={$t('recently_added')} subtitle={$t('recently_added_description')}>
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
+            <Field label={$t('sidebar')} description={$t('sidebar_display_description')}>
+              <Switch bind:checked={recentlyAddedSidebar} />
             </Field>
           </div>
         </SettingAccordion>

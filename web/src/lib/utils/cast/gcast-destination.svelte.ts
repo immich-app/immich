@@ -25,7 +25,7 @@ export class GCastDestination implements ICastDestination {
   private currentUrl: string | null = null;
 
   async initialize(): Promise<boolean> {
-    if (!authManager.authenticated || authManager.preferences.cast.gCastEnabled) {
+    if (!authManager.authenticated || !authManager.preferences.cast.gCastEnabled) {
       this.isAvailable = false;
       return false;
     }

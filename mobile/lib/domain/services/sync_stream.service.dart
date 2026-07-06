@@ -25,6 +25,7 @@ enum SyncMigrationTask {
   v20260128_CopyExifWidthHeightToAsset, // Asset table has incorrect width and height for video ratio calculations.
   v20260128_ResetAssetV1, // Asset v2.5.0 has width and height information that were edited assets.
   v20260597_ResetAssetV1AssetV2, // Assets didn't include the uploadedAt column.
+  v20260701_ResetAlbumsV1, // Album user migration dropped the owner. Sync fresh albums from the server to re-populate them.
 }
 
 class SyncStreamService {
@@ -103,6 +104,12 @@ class SyncStreamService {
   }
 
   Future<void> _runPreSyncTasks(List<String> migrations, SemVer semVer) async {
+    if (!migrations.contains(SyncMigrationTask.v20260701_ResetAlbumsV1.name)) {
+      _logger.info("Running pre-sync task: v20260701_ResetAlbumsV1");
+      await _syncApiRepository.deleteSyncAck([SyncEntityType.albumV1]);
+      migrations.add(SyncMigrationTask.v20260701_ResetAlbumsV1.name);
+    }
+
     if (!migrations.contains(SyncMigrationTask.v20260128_ResetExifV1.name)) {
       _logger.info("Running pre-sync task: v20260128_ResetExifV1");
       await _syncApiRepository.deleteSyncAck([
