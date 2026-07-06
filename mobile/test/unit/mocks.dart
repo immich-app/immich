@@ -119,6 +119,11 @@ class ServiceMocks {
   void _stubCleanupService() {
     when(cleanup.deleteLocalAssets).thenAnswer((_) async => 0);
   }
+
+  void _stubRemoteAlbumService() {
+    when(album.removeAssets).thenAnswer((_) async => 0);
+    when(album.updateAlbum).thenAnswer((_) async => RemoteAlbumFactory.create());
+  }
 }
 
 void _registerFallbacks() {
@@ -234,6 +239,17 @@ extension type const RemoteAlbumServiceStub(MockRemoteAlbumService service) impl
 extension type const CleanupServiceStub(MockCleanupService service) implements Stub<MockCleanupService> {
   Future<int> Function() get deleteLocalAssets =>
       () => service.deleteLocalAssets(any());
+}
+
+extension type const RemoteAlbumServiceStub(MockRemoteAlbumService service) implements Stub<MockRemoteAlbumService> {
+  Future<int> Function() get removeAssets =>
+      () => service.removeAssets(
+        albumId: any(named: 'albumId'),
+        assetIds: any(named: 'assetIds'),
+      );
+
+  Future<RemoteAlbum> Function() get updateAlbum =>
+      () => service.updateAlbum(any(), thumbnailAssetId: any(named: 'thumbnailAssetId'));
 }
 
 extension type const NativeSyncApiStub(MockNativeSyncApi api) implements Stub<MockNativeSyncApi> {
