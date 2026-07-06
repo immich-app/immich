@@ -244,6 +244,12 @@ export const HLS_VARIANTS = [
   { resolution: 1080, codec: VideoCodec.Av1, bitrate: 4_000_000 },
   { resolution: 1080, codec: VideoCodec.Hevc, bitrate: 4_500_000 },
   { resolution: 1080, codec: VideoCodec.H264, bitrate: 8_000_000 },
+  { resolution: 1440, codec: VideoCodec.Av1, bitrate: 7_000_000 },
+  { resolution: 1440, codec: VideoCodec.Hevc, bitrate: 8_000_000 },
+  { resolution: 1440, codec: VideoCodec.H264, bitrate: 14_000_000 },
+  { resolution: 2160, codec: VideoCodec.Av1, bitrate: 12_000_000 },
+  { resolution: 2160, codec: VideoCodec.Hevc, bitrate: 14_000_000 },
+  { resolution: 2160, codec: VideoCodec.H264, bitrate: 25_000_000 },
 ];
 export const HLS_VERSION = 7;
 
@@ -259,6 +265,9 @@ export const H264_LEVELS: CodecLevel[] = [
   { maxFrame: 22_080, maxRate: 589_824, token: '32' }, // 5.0
   { maxFrame: 36_864, maxRate: 983_040, token: '33' }, // 5.1
   { maxFrame: 36_864, maxRate: 2_073_600, token: '34' }, // 5.2
+  { maxFrame: 139_264, maxRate: 4_177_920, token: '3c' }, // 6.0
+  { maxFrame: 139_264, maxRate: 8_355_840, token: '3d' }, // 6.1
+  { maxFrame: 139_264, maxRate: 16_711_680, token: '3e' }, // 6.2
 ];
 
 // HEVC Main profile, Main tier: token is `L` + level_idc (level × 30).
@@ -270,6 +279,9 @@ export const HEVC_LEVELS: CodecLevel[] = [
   { maxFrame: 8_912_896, maxRate: 267_386_880, token: 'L150' }, // 5.0
   { maxFrame: 8_912_896, maxRate: 534_773_760, token: 'L153' }, // 5.1
   { maxFrame: 8_912_896, maxRate: 1_069_547_520, token: 'L156' }, // 5.2
+  { maxFrame: 35_651_584, maxRate: 1_069_547_520, token: 'L180' }, // 6.0
+  { maxFrame: 35_651_584, maxRate: 2_139_095_040, token: 'L183' }, // 6.1
+  { maxFrame: 35_651_584, maxRate: 4_278_190_080, token: 'L186' }, // 6.2
 ];
 
 // AV1 Main profile (0), Main tier (M): token is the two-digit seq_level_idx + `M`.
@@ -281,4 +293,7 @@ export const AV1_LEVELS: CodecLevel[] = [
   { maxFrame: 8_912_896, maxRate: 267_386_880, token: '12M' }, // 5.0
   { maxFrame: 8_912_896, maxRate: 534_773_760, token: '13M' }, // 5.1
   { maxFrame: 8_912_896, maxRate: 1_069_547_520, token: '14M' }, // 5.2
+  { maxFrame: 35_651_584, maxRate: 1_069_547_520, token: '16M' }, // 6.0
+  { maxFrame: 35_651_584, maxRate: 2_139_095_040, token: '17M' }, // 6.1
+  { maxFrame: 35_651_584, maxRate: 4_278_190_080, token: '18M' }, // 6.2
 ];

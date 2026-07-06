@@ -1,5 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { VideoCodec } from 'src/enum';
+import { HlsVideoResolution, VideoCodec } from 'src/enum';
 import { HlsService } from 'src/services/hls.service';
 import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub';
 import { factory } from 'test/small.factory';
@@ -157,6 +157,18 @@ ${sessionId}/6/playlist.m3u8
 ${sessionId}/7/playlist.m3u8
 #EXT-X-STREAM-INF:BANDWIDTH=10800000,RESOLUTION=1080x1920,CODECS="avc1.640028,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
 ${sessionId}/8/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=9450000,RESOLUTION=1440x2560,CODECS="av01.0.12M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+${sessionId}/9/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=10800000,RESOLUTION=1440x2560,CODECS="hvc1.1.6.L150.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+${sessionId}/10/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=18900000,RESOLUTION=1440x2560,CODECS="avc1.640032,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+${sessionId}/11/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=16200000,RESOLUTION=2160x3840,CODECS="av01.0.12M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+${sessionId}/12/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=18900000,RESOLUTION=2160x3840,CODECS="hvc1.1.6.L150.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+${sessionId}/13/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=33750000,RESOLUTION=2160x3840,CODECS="avc1.640033,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+${sessionId}/14/playlist.m3u8
 `;
 
 describe(HlsService.name, () => {
@@ -172,11 +184,22 @@ describe(HlsService.name, () => {
     const assetId = 'asset-1';
 
     const allCodecs = [VideoCodec.Av1, VideoCodec.Hevc, VideoCodec.H264];
+    const allResolutions = [
+      HlsVideoResolution.p480,
+      HlsVideoResolution.p720,
+      HlsVideoResolution.p1080,
+      HlsVideoResolution.p1440,
+      HlsVideoResolution.p2160,
+    ];
 
-    const setup = (asset: typeof eiffelTower | typeof waterfall, videoCodecs?: VideoCodec[]) => {
+    const setup = (
+      asset: typeof eiffelTower | typeof waterfall,
+      videoCodecs?: VideoCodec[],
+      resolutions?: HlsVideoResolution[],
+    ) => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
       mocks.systemMetadata.get.mockResolvedValue({
-        ffmpeg: { realtime: { enabled: true, ...(videoCodecs && { videoCodecs }) } },
+        ffmpeg: { realtime: { enabled: true, videoCodecs, resolutions } },
       });
       mocks.videoStream.getForMainPlaylist.mockResolvedValue(asset);
       mocks.crypto.randomUUID.mockReturnValue(sessionId);
@@ -198,8 +221,8 @@ describe(HlsService.name, () => {
       await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(eiffelExpectedMasterNoAv1);
     });
 
-    it('derives codec levels from the source frame rate (waterfall, 29.83fps)', async () => {
-      setup(waterfall, allCodecs);
+    it('offers every resolution up to the source and derives 4K codec levels (waterfall, 4K, 29.83fps)', async () => {
+      setup(waterfall, allCodecs, allResolutions);
       await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(waterfallExpectedMasterAv1);
     });
 

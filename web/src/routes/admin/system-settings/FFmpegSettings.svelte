@@ -433,6 +433,8 @@
                 { value: HlsVideoResolution.$480, text: '480p' },
                 { value: HlsVideoResolution.$720, text: '720p' },
                 { value: HlsVideoResolution.$1080, text: '1080p' },
+                { value: HlsVideoResolution.$1440, text: '1440p' },
+                { value: HlsVideoResolution.$2160, text: '2160p' },
               ]}
               isEdited={!isEqual(
                 sortBy(configToEdit.ffmpeg.realtime.resolutions),

@@ -139,7 +139,7 @@ export class HlsService extends BaseService {
       const { width, height } = getOutputSize(asset.videoStream, resolution);
       const codecString = getCodecString(codec, width, height, fps);
       lines.push(
-        `#EXT-X-STREAM-INF:BANDWIDTH=${bitrate * 1.35},RESOLUTION=${width}x${height},CODECS="${codecString},mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=${roundedFps}`,
+        `#EXT-X-STREAM-INF:BANDWIDTH=${Math.round(bitrate * 1.35)},RESOLUTION=${width}x${height},CODECS="${codecString},mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=${roundedFps}`,
         `${sessionId}/${i}/playlist.m3u8`,
       );
     }
