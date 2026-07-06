@@ -21,6 +21,7 @@ import {
   type TimelineDateTime,
   type TimelineYearMonth,
   getOrderingDate,
+  fromISODateTimeUTCToLocal,
 } from '$lib/utils/timeline-util';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
 import { TimelineDay } from './timeline-day.svelte';
@@ -190,7 +191,7 @@ export class TimelineMonth {
         isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
         localDateTime,
-        createdAt: fromISODateTimeUTCToObject(bucketAssets.createdAt[i]),
+        createdAt: fromISODateTimeUTCToLocal(bucketAssets.createdAt[i]).toObject(),
         fileCreatedAt,
         ownerId: bucketAssets.ownerId[i],
         projectionType: bucketAssets.projectionType[i],
