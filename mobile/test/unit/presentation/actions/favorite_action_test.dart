@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../domain/service.mock.dart';
@@ -27,51 +29,58 @@ void main() {
   group('FavoriteAction', () {
     testWidgets('favorites the eligible owned assets', (tester) async {
       final asset = owned();
+      final action = await tester.pumpTestAction(context, (scope) => FavoriteAction(assets: [asset], scope: scope));
 
-      await tester.pumpTestAction(context, FavoriteAction(assets: [asset]));
+      expect(action.icon, Icons.favorite_border_rounded);
+      expect(action.label, StaticTranslations.instance.favorite);
 
-      verify(() => assetService.updateFavorite([asset.id], true)).called(1);
+      verify(() => assetService.update([asset.id], isFavorite: const Some(true))).called(1);
     });
 
     testWidgets('unfavorite the eligible owned assets', (tester) async {
       final asset = owned(isFavorite: true);
+      final action = await tester.pumpTestAction(context, (scope) => FavoriteAction(assets: [asset], scope: scope));
 
-      await tester.pumpTestAction(context, FavoriteAction(assets: [asset]));
+      expect(action.icon, Icons.favorite_rounded);
+      expect(action.label, StaticTranslations.instance.unfavorite);
 
-      verify(() => assetService.updateFavorite([asset.id], false)).called(1);
+      verify(() => assetService.update([asset.id], isFavorite: const Some(false))).called(1);
     });
 
-    testWidgets('ignores assets owned by someone else', (tester) async {
-      final mine = owned();
+    testWidgets('dispatches on owned state, ignoring assets owned by others', (tester) async {
+      final mine = owned(isFavorite: true);
       final theirs = RemoteAssetFactory.create();
+      final action = await tester.pumpTestAction(
+        context,
+        (scope) => FavoriteAction(assets: [mine, theirs], scope: scope),
+      );
+      expect(action.label, StaticTranslations.instance.unfavorite);
 
-      await tester.pumpTestAction(context, FavoriteAction(assets: [mine, theirs]));
-
-      verify(() => assetService.updateFavorite([mine.id], true)).called(1);
+      verify(() => assetService.update([mine.id], isFavorite: const Some(false))).called(1);
     });
 
     testWidgets('batches every eligible owned asset into a single call', (tester) async {
       final first = owned();
       final second = owned();
 
-      await tester.pumpTestAction(context, FavoriteAction(assets: [first, second]));
+      await tester.pumpTestAction(context, (scope) => FavoriteAction(assets: [first, second], scope: scope));
 
-      verify(() => assetService.updateFavorite([first.id, second.id], true)).called(1);
+      verify(() => assetService.update([first.id, second.id], isFavorite: const Some(true))).called(1);
     });
 
-    testWidgets('skips owned assets already in the target state', (tester) async {
+    testWidgets('favorites only the owned assets not already favorite', (tester) async {
       final stale = owned();
       final alreadyFavorite = owned(isFavorite: true);
 
-      await tester.pumpTestAction(context, FavoriteAction(assets: [stale, alreadyFavorite]));
+      await tester.pumpTestAction(context, (scope) => FavoriteAction(assets: [stale, alreadyFavorite], scope: scope));
 
-      verify(() => assetService.updateFavorite([stale.id], true)).called(1);
+      verify(() => assetService.update([stale.id], isFavorite: const Some(true))).called(1);
     });
 
     testWidgets('reports the favorite count through the toast repository', (tester) async {
       final toast = context.repository.toast;
 
-      await tester.pumpTestAction(context, FavoriteAction(assets: [owned(), owned()]));
+      await tester.pumpTestAction(context, (scope) => FavoriteAction(assets: [owned(), owned()], scope: scope));
 
       final message = verify(() => toast.success(captureAny())).captured.single as String;
       expect(message, StaticTranslations.instance.favorite_action_prompt(count: 2));
@@ -80,7 +89,10 @@ void main() {
     testWidgets('reports the unfavorite count through the toast repository', (tester) async {
       final toast = context.repository.toast;
 
-      await tester.pumpTestAction(context, FavoriteAction(assets: [owned(isFavorite: true), owned(isFavorite: true)]));
+      await tester.pumpTestAction(
+        context,
+        (scope) => FavoriteAction(assets: [owned(isFavorite: true), owned(isFavorite: true)], scope: scope),
+      );
 
       final message = verify(() => toast.success(captureAny())).captured.single as String;
       expect(message, StaticTranslations.instance.unfavorite_action_prompt(count: 2));

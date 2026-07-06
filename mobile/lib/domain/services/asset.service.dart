@@ -4,6 +4,7 @@ import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
+import 'package:immich_mobile/utils/option.dart';
 
 class AssetService {
   final RemoteAssetRepository _remoteRepository;
@@ -69,15 +70,6 @@ class AssetService {
     return _localRepository.getSourceAlbums(localAssetId, backupSelection: backupSelection);
   }
 
-  Future<void> updateFavorite(List<String> remoteIds, bool isFavorite) async {
-    if (remoteIds.isEmpty) {
-      return;
-    }
-
-    await _apiRepository.updateFavorite(remoteIds, isFavorite);
-    await _remoteRepository.updateFavorite(remoteIds, isFavorite);
-  }
-
   Future<void> restoreTrash(List<String> remoteIds) async {
     if (remoteIds.isEmpty) {
       return;
@@ -105,12 +97,16 @@ class AssetService {
     await _apiRepository.unStack(stackIds);
   }
 
-  Future<void> updateVisibility(List<String> remoteIds, AssetVisibility visibility) async {
+  Future<void> update(
+    List<String> remoteIds, {
+    Option<bool> isFavorite = const .none(),
+    Option<AssetVisibility> visibility = const .none(),
+  }) async {
     if (remoteIds.isEmpty) {
       return;
     }
 
-    await _apiRepository.updateVisibility(remoteIds, visibility);
-    await _remoteRepository.updateVisibility(remoteIds, visibility);
+    await _apiRepository.update(remoteIds, isFavorite: isFavorite, visibility: visibility);
+    await _remoteRepository.update(remoteIds, isFavorite: isFavorite, visibility: visibility);
   }
 }

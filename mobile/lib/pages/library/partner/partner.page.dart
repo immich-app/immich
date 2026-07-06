@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/partner.action.dart';
 import 'package:immich_mobile/presentation/widgets/people/partner_user_avatar.widget.dart';
@@ -27,13 +28,14 @@ class PartnerPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sharedByAsync = ref.watch(partnersStateProvider);
+    final scope = ActionScope.from(context, ref);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(context.t.partners),
         elevation: 0,
         centerTitle: false,
-        actions: const [ActionIconButtonWidget(action: PartnerAddAction())],
+        actions: [ActionIconButtonWidget(action: PartnerAddAction(scope: scope))],
       ),
       body: sharedByAsync.when(
         data: (partners) => PartnerSharedByList(partners: partners.toList(growable: false)),
@@ -44,11 +46,12 @@ class PartnerPage extends ConsumerWidget {
   }
 }
 
-class _EmptyPartners extends StatelessWidget {
+class _EmptyPartners extends ConsumerWidget {
   const _EmptyPartners();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scope = ActionScope.from(context, ref);
     return Padding(
       padding: const .symmetric(horizontal: 16.0),
       child: Column(
@@ -58,9 +61,9 @@ class _EmptyPartners extends StatelessWidget {
             padding: const .symmetric(vertical: 8),
             child: Text(context.t.partner_page_empty_message, style: const TextStyle(fontSize: 14)),
           ),
-          const Align(
+          Align(
             alignment: .center,
-            child: ActionButtonWidget(action: PartnerAddAction()),
+            child: ActionButtonWidget(action: PartnerAddAction(scope: scope)),
           ),
         ],
       ),
@@ -69,16 +72,17 @@ class _EmptyPartners extends StatelessWidget {
 }
 
 @visibleForTesting
-class PartnerSharedByList extends StatelessWidget {
+class PartnerSharedByList extends ConsumerWidget {
   const PartnerSharedByList({super.key, required this.partners});
 
   final List<Partner> partners;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (partners.isEmpty) {
       return const _EmptyPartners();
     }
+    final scope = ActionScope.from(context, ref);
 
     return ListView.builder(
       itemCount: partners.length,
@@ -89,7 +93,7 @@ class PartnerSharedByList extends StatelessWidget {
           title: Text(partner.name),
           subtitle: Text(partner.email),
           trailing: ActionIconButtonWidget(
-            action: PartnerRemoveAction(sharedWithId: partner.id, partnerName: partner.name),
+            action: PartnerRemoveAction(sharedWithId: partner.id, partnerName: partner.name, scope: scope),
           ),
         );
       },

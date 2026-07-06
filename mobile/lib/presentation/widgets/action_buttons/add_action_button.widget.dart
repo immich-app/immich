@@ -5,6 +5,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
@@ -49,6 +50,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
 
     final user = ref.read(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
+    final scope = ActionScope.from(context, ref);
 
     return [
       Padding(
@@ -68,7 +70,9 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text("move_to".tr(), style: context.textTheme.labelMedium),
         ),
-        ActionMenuItemWidget(action: ArchiveAction(assets: [asset])),
+        ActionMenuItemWidget(
+          action: ArchiveAction(assets: [asset], scope: scope),
+        ),
         BaseActionButton(
           iconData: Icons.lock_outline,
           label: "locked_folder".tr(),

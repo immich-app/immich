@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:mocktail/mocktail.dart' as mock;
 import 'package:mocktail/mocktail.dart';
 
@@ -90,11 +91,10 @@ class ServiceMocks {
   }
 
   void _stubAssetService() {
-    when(asset.updateFavorite).thenAnswer((_) async {});
+    when(asset.update).thenAnswer((_) async {});
     when(asset.stack).thenAnswer((_) async {});
     when(asset.unstack).thenAnswer((_) async {});
     when(asset.restoreTrash).thenAnswer((_) async {});
-    when(asset.updateVisibility).thenAnswer((_) async {});
   }
 }
 
@@ -103,6 +103,8 @@ void _registerFallbacks() {
   registerFallbackValue(LocalAssetFactory.create());
   registerFallbackValue(Uint8List(0));
   registerFallbackValue(AssetVisibility.timeline);
+  registerFallbackValue(const Option<bool>.none());
+  registerFallbackValue(const Option<AssetVisibility>.none());
 }
 
 extension type const Stub<T extends Mock>(T mockedClass) {
@@ -172,8 +174,12 @@ extension type const UserServiceStub(MockUserService service) implements Stub<Mo
 }
 
 extension type const AssetServiceStub(MockAssetService service) implements Stub<MockAssetService> {
-  Future<void> Function() get updateFavorite =>
-      () => service.updateFavorite(any(), any());
+  Future<void> Function() get update =>
+      () => service.update(
+        any(),
+        isFavorite: any(named: 'isFavorite'),
+        visibility: any(named: 'visibility'),
+      );
 
   Future<void> Function() get stack =>
       () => service.stack(any(), any());
@@ -183,9 +189,6 @@ extension type const AssetServiceStub(MockAssetService service) implements Stub<
 
   Future<void> Function() get restoreTrash =>
       () => service.restoreTrash(any());
-
-  Future<void> Function() get updateVisibility =>
-      () => service.updateVisibility(any(), any());
 }
 
 extension type const NativeSyncApiStub(MockNativeSyncApi api) implements Stub<MockNativeSyncApi> {

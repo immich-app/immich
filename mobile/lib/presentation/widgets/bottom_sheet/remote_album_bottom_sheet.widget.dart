@@ -3,10 +3,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
-import 'package:immich_mobile/presentation/actions/archive.action.dart';
-import 'package:immich_mobile/presentation/actions/favorite.action.dart';
-import 'package:immich_mobile/presentation/actions/stack.action.dart';
+import 'package:immich_mobile/presentation/actions/asset_actions.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
@@ -84,8 +83,8 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
       return sheetController.animateTo(0.85, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
     }
 
-    final assets = multiselect.selectedAssets.toList(growable: false);
-    final actions = [FavoriteAction(assets: assets), ArchiveAction(assets: assets), StackAction(assets: assets)];
+    final scope = ActionScope.from(context, ref);
+    final actions = AssetActions.from(scope, multiselect.selectedAssets.toList(growable: false));
 
     return BaseBottomSheet(
       controller: sheetController,
@@ -99,7 +98,11 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
           const ShareLinkActionButton(source: ActionSource.timeline),
 
           if (ownsAlbum) ...[
-            ...actions.map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
+            ...[
+              actions.favorite,
+              actions.archive,
+              actions.stack,
+            ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
           ],
           const DownloadActionButton(source: ActionSource.timeline),
           if (ownsAlbum) ...[

@@ -10,25 +10,16 @@ import '../../factories/remote_asset_factory.dart';
 import '../presentation_context.dart';
 
 class _FakeAction extends BaseAction {
-  _FakeAction({this.visible = true, this.error});
+  _FakeAction({required super.scope, bool visible = true, this.error})
+    : super(icon: Icons.bolt, label: 'fake', isVisible: visible);
 
-  final bool visible;
   final Object? error;
 
   bool ran = false;
   bool? selectionDuringOnAction;
 
   @override
-  IconData get icon => Icons.bolt;
-
-  @override
-  String label(ActionScope scope) => 'fake';
-
-  @override
-  bool isVisible(ActionScope scope) => visible;
-
-  @override
-  Future<void> onAction(ActionScope scope) async {
+  Future<void> onAction() async {
     ran = true;
     selectionDuringOnAction = scope.ref.read(multiSelectProvider).isEnabled;
     if (error != null) {
@@ -75,9 +66,9 @@ void main() {
 
   group('TimelineAction', () {
     testWidgets('runs the wrapped action and then clears the selection', (tester) async {
-      final inner = _FakeAction();
       final (scope, container) = await pumpScope(tester);
-      await TimelineAction(action: inner).onAction(scope);
+      final inner = _FakeAction(scope: scope);
+      await TimelineAction(action: inner).onAction();
 
       expect(inner.ran, isTrue);
       expect(inner.selectionDuringOnAction, isTrue, reason: 'reset must run after the inner action, not before');
@@ -86,19 +77,19 @@ void main() {
 
     testWidgets('rethrows and keeps the selection when the wrapped action throws', (tester) async {
       final error = Exception('boom');
-      final inner = _FakeAction(error: error);
       final (scope, container) = await pumpScope(tester);
+      final inner = _FakeAction(scope: scope, error: error);
 
-      await expectLater(TimelineAction(action: inner).onAction(scope), throwsA(same(error)));
+      await expectLater(TimelineAction(action: inner).onAction(), throwsA(same(error)));
 
       expect(inner.ran, isTrue);
       expect(container.read(multiSelectProvider).isEnabled, isTrue);
     });
 
     testWidgets('delegates visibility to the wrapped action', (tester) async {
-      await tester.pumpTestWidget(
+      await tester.pumpActionButton(
         context,
-        ActionIconButtonWidget(action: TimelineAction(action: _FakeAction(visible: false))),
+        (scope) => TimelineAction(action: _FakeAction(scope: scope, visible: false)),
       );
 
       expect(find.byType(ActionIconButtonWidget), findsOneWidget);
