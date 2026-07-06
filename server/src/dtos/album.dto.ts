@@ -1,6 +1,7 @@
 import { ShallowDehydrateObject } from 'kysely';
 import { createZodDto } from 'nestjs-zod';
 import { AlbumUser, AuthSharedLink } from 'src/database';
+import { HistoryBuilder } from 'src/decorators';
 import { BulkIdErrorReasonSchema } from 'src/dtos/asset-ids.response.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
@@ -148,7 +149,7 @@ const AlbumUserParamSchema = z.object({
     .refine((value) => value === 'me' || z.uuidv4().safeParse(value).success, {
       error: 'Must be a UUID v4 or "me"',
     })
-    .describe('Album user ID, or "me" to reference the current user'),
+    .describe('Album user ID, or "me" to reference the current user. "me" is deprecated and will be removed in v4'),
 });
 
 export class AlbumUserParamDto extends createZodDto(AlbumUserParamSchema) {}
