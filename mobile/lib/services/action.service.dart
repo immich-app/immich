@@ -199,14 +199,6 @@ class ActionService {
     );
   }
 
-  Future<int> removeFromAlbum(List<String> remoteIds, String albumId) async {
-    final result = await _albumApiRepository.removeAssets(albumId, remoteIds);
-    if (result.removed.isNotEmpty) {
-      await _remoteAlbumRepository.removeAssets(albumId, result.removed);
-    }
-    return result.removed.length;
-  }
-
   Future<bool> updateDescription(String assetId, String description) async {
     // update remote first, then local to ensure consistency
     await _assetApiRepository.updateDescription(assetId, description);

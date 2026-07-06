@@ -318,33 +318,6 @@ class ActionNotifier extends Notifier<void> {
     );
   }
 
-  Future<ActionResult> removeFromAlbum(ActionSource source, String albumId) async {
-    final ids = _getRemoteIdsForSource(source);
-    try {
-      final removedCount = await _service.removeFromAlbum(ids, albumId);
-      return ActionResult(count: removedCount, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to remove assets from album', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> setAlbumCover(ActionSource source, String albumId) async {
-    final assets = _getAssets(source);
-    final asset = assets.first;
-    if (asset is! RemoteAsset) {
-      return const ActionResult(count: 1, success: false, error: 'Asset must be remote');
-    }
-
-    try {
-      await _service.setAlbumCover(albumId, asset.id);
-      return const ActionResult(count: 1, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to set album cover', error, stack);
-      return ActionResult(count: 1, success: false, error: error.toString());
-    }
-  }
-
   Future<ActionResult> updateDescription(ActionSource source, String description) async {
     final ids = _getRemoteIdsForSource(source);
     if (ids.length != 1) {
