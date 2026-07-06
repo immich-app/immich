@@ -9,7 +9,6 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
-import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
@@ -75,7 +74,6 @@ class ActionButtonContext {
 
 enum ActionButtonType {
   openInfo,
-  favorite,
   openActivity,
   likeActivity,
   share,
@@ -188,9 +186,6 @@ enum ActionButtonType {
             context.asset is RemoteAsset && //
             context.isOwner,
       ActionButtonType.openInfo => true,
-      ActionButtonType.favorite =>
-        !context.isInLockedView && //
-            context.asset.hasRemote,
       ActionButtonType.viewInTimeline =>
         context.timelineOrigin != TimelineOrigin.main &&
             context.timelineOrigin != TimelineOrigin.deepLink &&
@@ -216,7 +211,6 @@ enum ActionButtonType {
     ActionButtonType.openActivity || ActionButtonType.likeActivity =>
       position != ButtonPosition.bottomBar || context.timelineOrigin != TimelineOrigin.trash,
     ActionButtonType.editImage => position != ButtonPosition.bottomBar || context.currentAlbum?.isShared != true,
-    ActionButtonType.favorite => false,
     _ => true,
   };
 
@@ -328,10 +322,6 @@ enum ActionButtonType {
       ActionButtonType.editImage => EditImageActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.addTo => AddActionButton(originalTheme: context.originalTheme),
       ActionButtonType.openActivity => OpenActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
-      ActionButtonType.favorite =>
-        menuItem
-            ? ActionMenuItemWidget(action: FavoriteAction(assets: [context.asset]))
-            : ActionIconButtonWidget(action: FavoriteAction(assets: [context.asset])),
     };
   }
 
