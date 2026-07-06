@@ -404,7 +404,11 @@ export const uploadFiles = async (files: string[], options: UploadOptionsDto): P
   return newAssets;
 };
 
-const uploadFile = async (input: string, stats: Stats, { visibility }: UploadFileDto): Promise<AssetMediaResponseDto> => {
+const uploadFile = async (
+  input: string,
+  stats: Stats,
+  { visibility }: UploadFileDto,
+): Promise<AssetMediaResponseDto> => {
   const { baseUrl, headers } = defaults;
 
   const formData = new FormData();
