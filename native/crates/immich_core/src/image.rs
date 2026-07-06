@@ -79,6 +79,59 @@ pub fn rotate_rgba8888(
     true
 }
 
+// 10-bit -> 8-bit, matching Skia's Bitmap.copy(ARGB_8888): round(v * 255 / 1023).
+// Compile-time LUT so it's one lookup per channel, not a mul+div per pixel. The
+// integer form equals round-half-up for all 1024 inputs and v*255/1023 never lands
+// on x.5, so it's exact for every value (verified on-device against Skia).
+const SCALE10: [u8; 1024] = {
+    let mut lut = [0u8; 1024];
+    let mut v = 0usize;
+    while v < 1024 {
+        lut[v] = ((v as u32 * 255 + 511) / 1023) as u8;
+        v += 1;
+    }
+    lut
+};
+
+// 2-bit alpha -> 8-bit (a * 85). Photos decode opaque (a == 3 -> 255).
+const ALPHA2: [u8; 4] = [0, 85, 170, 255];
+
+/// Convert an Android RGBA_1010102 buffer (what a 10-bit HEIC/AVIF decodes to on
+/// API 33+) to RGBA8888, byte-for-byte with Skia's `Bitmap.copy(ARGB_8888)`. Each
+/// src pixel is a little-endian u32 with R in bits 0-9, G in 10-19, B in 20-29,
+/// A in 30-31 (standard RGB10_A2 packing). `src` is `h` rows of `src_stride` bytes,
+/// `dst` the caller's densely packed `w*h*4`. Returns false on inconsistent sizes
+/// so the caller can fall back — same contract as [`rotate_rgba8888`], no alloc.
+pub fn rgba1010102_to_rgba8888(
+    src: &[u8],
+    src_stride: usize,
+    w: usize,
+    h: usize,
+    dst: &mut [u8],
+) -> bool {
+    if w == 0 || h == 0 || src_stride < w * 4 {
+        return false;
+    }
+    if src.len() < src_stride * h || dst.len() < w * h * 4 {
+        return false;
+    }
+    for y in 0..h {
+        let s_row = y * src_stride;
+        let d_row = y * w * 4;
+        for x in 0..w {
+            let s = s_row + x * 4;
+            // explicit little-endian — dodges an unaligned *const u32 read on non-x86
+            let px = u32::from_le_bytes([src[s], src[s + 1], src[s + 2], src[s + 3]]);
+            let d = d_row + x * 4;
+            dst[d] = SCALE10[(px & 0x3FF) as usize];
+            dst[d + 1] = SCALE10[((px >> 10) & 0x3FF) as usize];
+            dst[d + 2] = SCALE10[((px >> 20) & 0x3FF) as usize];
+            dst[d + 3] = ALPHA2[((px >> 30) & 0x3) as usize];
+        }
+    }
+    true
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -169,5 +222,44 @@ mod tests {
         let mut small = vec![0u8; 4];
         assert!(!rotate_rgba8888(&src, 8, 2, 2, ROTATE_90, &mut small)); // dst too small
         assert!(!rotate_rgba8888(&src, 4, 2, 2, 1, &mut small)); // stride < sw*4
+    }
+
+    // On-device (Pixel 9a) vs Skia's Bitmap.copy(ARGB_8888). 179/111 rule out `>> 2`.
+    #[test]
+    fn scale10_matches_skia() {
+        for (v, want) in [
+            (0, 0),
+            (111, 28),
+            (179, 45),
+            (230, 57),
+            (304, 76),
+            (1023, 255),
+        ] {
+            assert_eq!(SCALE10[v], want, "SCALE10[{v}]");
+        }
+        assert_eq!(ALPHA2, [0, 85, 170, 255]);
+    }
+
+    // px = little-endian u32; R low 10 bits, A top 2.
+    #[test]
+    fn convert_packing() {
+        let red = 0x0000_03FFu32.to_le_bytes(); // R=1023, rest 0
+        let alpha = 0xC000_0000u32.to_le_bytes(); // A=3, rest 0
+        let mut src = Vec::new();
+        src.extend_from_slice(&red);
+        src.extend_from_slice(&alpha);
+        let mut dst = vec![0u8; 8];
+        assert!(rgba1010102_to_rgba8888(&src, 8, 2, 1, &mut dst));
+        assert_eq!(&dst[0..4], &[255, 0, 0, 0]); // opaque-less red
+        assert_eq!(&dst[4..8], &[0, 0, 0, 255]); // opaque black
+    }
+
+    #[test]
+    fn convert_rejects_bad_sizes() {
+        let src = vec![0u8; 16];
+        let mut small = vec![0u8; 4];
+        assert!(!rgba1010102_to_rgba8888(&src, 0, 0, 0, &mut small)); // zero dims
+        assert!(!rgba1010102_to_rgba8888(&src, 4, 2, 2, &mut small)); // stride < w*4
+        assert!(!rgba1010102_to_rgba8888(&src, 8, 2, 2, &mut small)); // dst too small
     }
 }

@@ -98,6 +98,45 @@ pub unsafe extern "C" fn immich_core_rotate_rgba8888(
     .unwrap_or(false)
 }
 
+/// Convert an RGBA_1010102 image (`src`, `sh` rows of `src_stride` bytes) to
+/// RGBA8888 in the caller's densely-packed `w*h*4` `dst`, matching Skia's
+/// `Bitmap.copy(ARGB_8888)`. Returns false (a safe no-op) on null pointers or
+/// inconsistent sizes so the caller can fall back. The platform side owns the
+/// bitmap lock + the dst allocation; this only fills dst.
+///
+/// # Safety
+/// `src` must be valid for reads of `src_len` bytes and `dst` for writes of `dst_len`.
+#[no_mangle]
+pub unsafe extern "C" fn immich_core_rgba1010102_to_rgba8888(
+    src: *const u8,
+    src_len: usize,
+    src_stride: usize,
+    width: u32,
+    height: u32,
+    dst: *mut u8,
+    dst_len: usize,
+) -> bool {
+    if src.is_null() || dst.is_null() {
+        return false;
+    }
+    // SAFETY: caller guarantees `src` is valid for reads of `src_len` bytes (see # Safety).
+    let src_slice = unsafe { std::slice::from_raw_parts(src, src_len) };
+    // SAFETY: caller guarantees `dst` is valid for writes of `dst_len` bytes (see # Safety).
+    let dst_slice = unsafe { std::slice::from_raw_parts_mut(dst, dst_len) };
+    // AssertUnwindSafe: a panic mid-convert only leaves dst partially written — not a
+    // broken invariant — and we return false so the caller discards the buffer.
+    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        immich_core::image::rgba1010102_to_rgba8888(
+            src_slice,
+            src_stride,
+            width as usize,
+            height as usize,
+            dst_slice,
+        )
+    }))
+    .unwrap_or(false)
+}
+
 /// Release a string returned by this library.
 ///
 /// # Safety

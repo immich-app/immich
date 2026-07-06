@@ -52,6 +52,24 @@ bool immich_core_rotate_rgba8888(const uint8_t *src,
                                  uintptr_t dst_len);
 
 /**
+ * Convert an RGBA_1010102 image (`src`, `sh` rows of `src_stride` bytes) to
+ * RGBA8888 in the caller's densely-packed `w*h*4` `dst`, matching Skia's
+ * `Bitmap.copy(ARGB_8888)`. Returns false (a safe no-op) on null pointers or
+ * inconsistent sizes so the caller can fall back. The platform side owns the
+ * bitmap lock + the dst allocation; this only fills dst.
+ *
+ * # Safety
+ * `src` must be valid for reads of `src_len` bytes and `dst` for writes of `dst_len`.
+ */
+bool immich_core_rgba1010102_to_rgba8888(const uint8_t *src,
+                                         uintptr_t src_len,
+                                         uintptr_t src_stride,
+                                         uint32_t width,
+                                         uint32_t height,
+                                         uint8_t *dst,
+                                         uintptr_t dst_len);
+
+/**
  * Release a string returned by this library.
  *
  * # Safety
