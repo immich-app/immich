@@ -19129,7 +19129,7 @@
           1440,
           2160
         ],
-        "type": "number"
+        "type": "integer"
       },
       "ImageFormat": {
         "description": "Image format",

@@ -16,26 +16,26 @@ class HlsVideoResolution {
   const HlsVideoResolution._(this.value);
 
   /// The underlying value of this enum member.
-  final num value;
+  final int value;
 
   @override
   String toString() => value.toString();
 
-  num toJson() => value;
+  int toJson() => value;
 
-  static const n480 = HlsVideoResolution._('480');
-  static const n720 = HlsVideoResolution._('720');
-  static const n1080 = HlsVideoResolution._('1080');
-  static const n1440 = HlsVideoResolution._('1440');
-  static const n2160 = HlsVideoResolution._('2160');
+  static const number480 = HlsVideoResolution._(480);
+  static const number720 = HlsVideoResolution._(720);
+  static const number1080 = HlsVideoResolution._(1080);
+  static const number1440 = HlsVideoResolution._(1440);
+  static const number2160 = HlsVideoResolution._(2160);
 
   /// List of all possible values in this [enum][HlsVideoResolution].
   static const values = <HlsVideoResolution>[
-    n480,
-    n720,
-    n1080,
-    n1440,
-    n2160,
+    number480,
+    number720,
+    number1080,
+    number1440,
+    number2160,
   ];
 
   static HlsVideoResolution? fromJson(dynamic value) => HlsVideoResolutionTypeTransformer().decode(value);
@@ -54,14 +54,14 @@ class HlsVideoResolution {
   }
 }
 
-/// Transformation class that can [encode] an instance of [HlsVideoResolution] to num,
+/// Transformation class that can [encode] an instance of [HlsVideoResolution] to int,
 /// and [decode] dynamic data back to [HlsVideoResolution].
 class HlsVideoResolutionTypeTransformer {
   factory HlsVideoResolutionTypeTransformer() => _instance ??= const HlsVideoResolutionTypeTransformer._();
 
   const HlsVideoResolutionTypeTransformer._();
 
-  num encode(HlsVideoResolution data) => data.value;
+  int encode(HlsVideoResolution data) => data.value;
 
   /// Decodes a [dynamic value][data] to a HlsVideoResolution.
   ///
@@ -74,11 +74,11 @@ class HlsVideoResolutionTypeTransformer {
   HlsVideoResolution? decode(dynamic data, {bool allowNull = true}) {
     if (data != null) {
       switch (data) {
-        case '480': return HlsVideoResolution.n480;
-        case '720': return HlsVideoResolution.n720;
-        case '1080': return HlsVideoResolution.n1080;
-        case '1440': return HlsVideoResolution.n1440;
-        case '2160': return HlsVideoResolution.n2160;
+        case 480: return HlsVideoResolution.number480;
+        case 720: return HlsVideoResolution.number720;
+        case 1080: return HlsVideoResolution.number1080;
+        case 1440: return HlsVideoResolution.number1440;
+        case 2160: return HlsVideoResolution.number2160;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

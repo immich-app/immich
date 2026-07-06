@@ -540,7 +540,7 @@ export enum HlsVideoResolution {
 export const HlsVideoResolutionSchema = z
   .enum(HlsVideoResolution)
   .describe('HLS video resolution')
-  .meta({ id: 'HlsVideoResolution' });
+  .meta({ id: 'HlsVideoResolution', type: 'integer' });
 
 export enum Colorspace {
   Srgb = 'srgb',
