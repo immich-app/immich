@@ -211,10 +211,16 @@ export class StorageRepository {
 
   async checkDiskUsage(folder: string): Promise<DiskUsage> {
     const stats = await fs.statfs(folder);
+    // `blocks`/`bfree`/`bavail` are counts of `frsize` (fundamental block size),
+    // not `bsize` (preferred I/O size). Equal on native filesystems, but they
+    // diverge on FUSE mounts (Docker Desktop VirtioFS, OrbStack), where using
+    // `bsize` overstates capacity (often ~32x). `frsize` is exposed since Node 24
+    // (nodejs/node#62277); fall back to `bsize` on older runtimes.
+    const blockSize = stats.frsize || stats.bsize;
     return {
-      available: stats.bavail * stats.bsize,
-      free: stats.bfree * stats.bsize,
-      total: stats.blocks * stats.bsize,
+      available: stats.bavail * blockSize,
+      free: stats.bfree * blockSize,
+      total: stats.blocks * blockSize,
     };
   }
 
