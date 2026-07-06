@@ -14,25 +14,6 @@
 char *immich_core_version(void);
 
 /**
- * SHA-1 (lowercase hex) of `len` bytes at `ptr`. Returns NULL on a null pointer.
- * Free the result with [`immich_core_free_string`].
- *
- * # Safety
- * `ptr` must be valid for reads of `len` bytes.
- */
-char *immich_core_sha1_hex(const unsigned char *ptr, uintptr_t len);
-
-/**
- * SHA-1 (lowercase hex) of the file at `path` (NUL-terminated UTF-8), read via
- * mmap — no Dart-side read or copy. Returns NULL on a null path, non-UTF-8 path,
- * or any IO error. Free the result with [`immich_core_free_string`].
- *
- * # Safety
- * `path` must be a valid NUL-terminated C string, or null.
- */
-char *immich_core_sha1_file(const char *path);
-
-/**
  * Rotate an RGBA8888 image to the given EXIF `orientation`. `src` is `sh` rows of
  * `src_stride` bytes; `dst` is the caller's densely-packed `dw*dh*4` output (dims
  * swap for 90/270/transpose). Returns false (a safe no-op) on null pointers or

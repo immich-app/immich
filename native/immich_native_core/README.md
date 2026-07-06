@@ -13,14 +13,10 @@ dependencies:
     path: ../native/immich_native_core
 ```
 
-`dart pub get`, then call it:
-
-```dart
-import 'package:immich_native_core/immich_native_core.dart';
-
-final version = coreVersion();
-final hex = sha1Hex(bytes); // hash large inputs off the main isolate (worker_manager)
-```
+`dart pub get`. The dart surface is exactly the ffigen output of the C header —
+the current capabilities (EXIF rotate, 10-bit convert) are called by the platform
+decode pipelines, not by dart, so there are no hand-written dart wrappers. Add one
+only when a dart feature actually consumes a function.
 
 No app-level Gradle/Podfile edits. `hook/build.dart` compiles the Rust crate and
 Flutter bundles it as a code asset; the `@Native` bindings resolve against it.
@@ -31,8 +27,7 @@ Flutter bundles it as a code asset; the `@Native` bindings resolve against it.
 ## Layout
 
 - `hook/build.dart` — builds `../crates/immich_core_ffi` via `native_toolchain_rust`.
-- `lib/immich_native_core.dart` — barrel, the public API.
-- `lib/src/{core,hashing,image}.dart` — thin wrappers, one file per Rust module.
+- `lib/immich_native_core.dart` — barrel; re-exports the generated bindings.
 - `lib/src/ffi/bindings.g.dart` — ffigen `@Native` output (committed; do not edit).
 - `ffigen.yaml` — ffi-native mode; asset-id must match the hook's `assetName`.
 - `test/` — host FFI roundtrip (`flutter test`); device runs via `mobile/integration_test`.

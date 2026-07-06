@@ -9,10 +9,10 @@ license.workspace = true
 [lib]
 crate-type = ["cdylib", "staticlib"]
 
-# hashing (SHA-1 asset identity) is the reason this lib exists — always on, so the
-# cbindgen header + ffigen bindings always match the exported symbols.
+# features pinned explicitly so the cbindgen header + ffigen bindings always
+# match the exported symbols regardless of default-feature drift.
 [dependencies]
-immich_core = { path = "../immich_core", default-features = false, features = ["hashing", "image"] }
+immich_core = { path = "../immich_core", default-features = false, features = ["image"] }
 
 [build-dependencies]
 cbindgen = { workspace = true }

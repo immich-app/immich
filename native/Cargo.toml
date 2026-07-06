@@ -10,7 +10,7 @@ members = [
 # thin wrapper that picks its own crate-type: immich_core_ffi -> cdylib/staticlib,
 # the C ABI consumed by dart (ffigen), swift (C interop) and kotlin (JNI shim);
 # immich_core_napi -> cdylib (.node) for the node server.
-# capabilities (hashing, image, ...) are cargo features on immich_core so both
+# capabilities (image, ...) are cargo features on immich_core so both
 # bindings opt into the same set. crate-type can't be feature-gated, which is why
 # the bindings are separate crates rather than one crate with feature flags.
 
@@ -24,8 +24,6 @@ license = "AGPL-3.0-only"
 # default-features = false MUST live here (workspace level) — cargo ignores it if
 # set only on the inner crate. inner crates then add the minimal features they need.
 [workspace.dependencies]
-sha1 = { version = "0.11", default-features = false }
-memmap2 = { version = "0.9", default-features = false }
 napi = { version = "3", default-features = false }
 napi-derive = "3"
 napi-build = "2"

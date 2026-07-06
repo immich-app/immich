@@ -1,19 +1,25 @@
 # immich_native_core (PoC)
 
-Shared Rust core consumed by the **mobile** app (Flutter, dart:ffi) and the
-**server** (Node, napi `.node` addon).
+Shared Rust core for the pixel work the platforms can't do without native code,
+built from source into the app via Flutter native assets.
 
-Status: **plumbing PoC.** It proves the wiring — Rust → codegen → build-from-source
-on each app build → load on both platforms — not a perf win yet. The one capability
-(`sha1_hex`) is single-shot in-memory, and the local-sync probe found hashing isn't
-the hot path; a measured payload is the next step. `core_version` is a smoke
-entrypoint. Mobile is the consumed path; the server napi crate builds and
-round-trips but is not wired into the server yet.
+The two capabilities are ports of native code we already ship or have in review,
+so the same logic exists once, tested, instead of per-platform C:
+- **EXIF-orientation rotate** — from `mobile/android/app/src/main/cpp/native_image.c`
+  (#29337, merged; fixes #24796, sideways RAW photos). Byte-for-byte the same affine
+  + tiled copy, plus bounds checks the raw C can't have.
+- **RGBA_1010102 → RGBA8888 convert** — the 10-bit HEIC/AVIF color fix (#29631,
+  fixes #24906). Same `round(v*255/1023)` LUT + packing as the C, proven on-device
+  against Skia's `Bitmap.copy(ARGB_8888)`.
+
+Both fill a caller-owned output buffer (no allocation at the boundary) because the
+production callers hold JNI-locked bitmaps. Nothing in the app calls the core yet;
+wiring `native_image.c`'s JNI shims to it is the follow-up.
 
 ## Layout
 ```
 crates/
-  immich_core        pure logic, no binding deps. capabilities = cargo features (hashing, image).
+  immich_core        pure logic, no binding deps. capabilities = cargo features (image).
   immich_core_ffi    the hand-written C ABI + cbindgen header — consumed by dart (ffigen),
                      swift (native C interop) and kotlin (JNI shim)
   immich_core_napi   cdylib (.node) via napi-rs (server, unwired)
@@ -45,13 +51,15 @@ mise run smoke         Rust tests + host dart:ffi + host napi roundtrips
 ## Add a capability (end to end)
 1. add the logic to `crates/immich_core` (behind a cargo feature if it pulls a dep).
 2. expose a C entry in `crates/immich_core_ffi/src/lib.rs` — `#[no_mangle] pub extern "C"`,
-   wrap the body in `guard(...)` (panic at the boundary → null, never unwind into the host),
-   validate pointers, return Rust-owned memory the caller frees via `immich_core_free_string`.
+   wrap the body in `guard(...)`/`catch_unwind` (panic at the boundary → sentinel, never
+   unwind into the host), validate pointers, and either fill a caller-owned buffer or
+   return Rust-owned memory freed via `immich_core_free_string`.
 3. `mise run codegen` — regenerates the committed cbindgen header + ffigen `@Native` bindings.
-4. add an ergonomic wrapper + null-check in `immich_native_core/lib/immich_native_core.dart`.
-5. (optional) mirror it in `crates/immich_core_napi/src/lib.rs` for the server.
-6. `mise run test:flutter` (host) + add a case to `immich_native_core/test/`, and to
-   `mobile/integration_test/native_core_test.dart` to exercise it on a device.
+4. `mise run test:flutter` (host) + a case in `immich_native_core/test/` and in
+   `mobile/integration_test/native_core_test.dart` (device). The dart surface is the
+   generated bindings; add a hand-written dart wrapper only when a dart feature consumes it.
+5. platform callers: kotlin via the existing JNI shim pattern (`NativeImage.kt`), swift
+   reads the same header natively.
 
 ## Consume from immich/mobile
 `immich_native_core: { path: ../native/immich_native_core }` in `mobile/pubspec.yaml`,

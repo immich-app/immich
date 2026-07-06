@@ -8,7 +8,7 @@ license.workspace = true
 crate-type = ["cdylib"]
 
 [dependencies]
-immich_core = { path = "../immich_core", default-features = false, features = ["hashing"] }
+immich_core = { path = "../immich_core", default-features = false }
 napi = { workspace = true, features = ["napi4", "dyn-symbols"] }
 napi-derive = { workspace = true }
 

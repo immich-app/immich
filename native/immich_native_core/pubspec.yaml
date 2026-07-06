@@ -13,15 +13,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  ffi: ^2.2.0
   # build-hook deps — run at build time to compile the Rust crate (need rustup).
   code_assets: ^1.2.1
   hooks: ^2.0.2
   native_toolchain_rust: ^1.0.4
 
 dev_dependencies:
+  ffi: ^2.2.0 # tests only — the lib surface is the generated bindings (dart:ffi)
   ffigen: 20.1.1 # pinned exact — a caret bump can re-emit bindings
-  crypto: ^3.0.7 # pure-Dart SHA-1 baseline for the perf bench only
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0

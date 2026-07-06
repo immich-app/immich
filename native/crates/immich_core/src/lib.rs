@@ -2,10 +2,7 @@
 //!
 //! Pure logic only: no binding or platform deps live here. Each binding crate
 //! (`immich_core_ffi`, `immich_core_napi`) is a thin wrapper. Capabilities are
-//! cargo features (`hashing`, `image`, ...) so every binding opts into the same set.
-
-#[cfg(feature = "hashing")]
-pub mod hashing;
+//! cargo features (`image`, ...) so every binding opts into the same set.
 
 #[cfg(feature = "image")]
 pub mod image;

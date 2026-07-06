@@ -1,8 +1,8 @@
-/// dart:ffi bindings to the immich_native_core Rust core (built from source via
-/// Dart build hooks). Public API only — implementation lives in `src/`, organised
-/// to mirror the Rust crate's modules (core / hashing / image).
+/// dart:ffi bindings to the immich_native_core Rust core, built from source and
+/// bundled via the Dart build hook. The dart surface is exactly the ffigen output
+/// of the C header — the production callers of the current capabilities are the
+/// platform decode pipelines (Kotlin/JNI, Swift), so there are no hand-written
+/// dart wrappers; add one only when a dart feature actually consumes a function.
 library;
 
-export 'src/core.dart';
-export 'src/hashing.dart';
-export 'src/image.dart';
+export 'src/ffi/bindings.g.dart';
