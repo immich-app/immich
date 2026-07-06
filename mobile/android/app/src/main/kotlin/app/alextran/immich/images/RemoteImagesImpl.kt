@@ -32,7 +32,6 @@ private class RemoteRequest(val cancellationSignal: CancellationSignal)
 
 class RemoteImagesImpl(context: Context) : RemoteImageApi {
   private val requestMap = ConcurrentHashMap<Long, RemoteRequest>()
-  private val decodeExecutor = Executors.newFixedThreadPool(2)
 
   init {
     ImageFetcherManager.initialize(context)
@@ -40,6 +39,10 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
 
   companion object {
     val CANCELLED = Result.success<Map<String, Long>?>(null)
+
+    // Shared, process-lifetime pool: RemoteImagesImpl is re-created per FlutterEngine, so a
+    // per-instance pool would leak threads across engine restarts.
+    private val decodeExecutor = Executors.newFixedThreadPool(2)
   }
 
   override fun requestImage(
@@ -76,6 +79,8 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
             }
             requestMap.remove(requestId)
             when {
+              // Deliver even if the request was cancelled meanwhile: re-checking here would orphan
+              // res's malloc, and Dart frees the buffer itself when it sees the cancel.
               res != null -> {
                 buffer.free()
                 callback(Result.success(res))
