@@ -48,10 +48,6 @@ export interface UploadOptionsDto {
   jsonOutput?: boolean;
 }
 
-interface UploadFileDto {
-  visibility?: AssetVisibility;
-}
-
 class UploadFile extends File {
   constructor(
     private filepath: string,
@@ -407,7 +403,7 @@ export const uploadFiles = async (files: string[], options: UploadOptionsDto): P
 const uploadFile = async (
   input: string,
   stats: Stats,
-  { visibility }: UploadFileDto,
+  { visibility }: UploadOptionsDto,
 ): Promise<AssetMediaResponseDto> => {
   const { baseUrl, headers } = defaults;
 
