@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
+import 'package:logging/logging.dart';
 
 typedef TimelineAssetSource = Future<List<BaseAsset>> Function(int index, int count);
 
@@ -108,6 +109,9 @@ class TimelineService {
     _bucketSubscription = _bucketSource().listen((buckets) {
       _mutex.run(() async {
         final totalAssets = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
+        Logger(
+          'TimelineProbe',
+        ).info('[${origin.name}] bucket emission: ${buckets.length} buckets / $totalAssets assets');
 
         if (totalAssets == 0) {
           _bufferOffset = 0;

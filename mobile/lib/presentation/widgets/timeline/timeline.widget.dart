@@ -28,6 +28,7 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
+import 'package:logging/logging.dart';
 
 class Timeline extends ConsumerWidget {
   const Timeline({
@@ -65,35 +66,38 @@ class Timeline extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final columnCount = ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow));
     return LayoutBuilder(
-      builder: (_, constraints) => ProviderScope(
-        overrides: [
-          // overrideWithValue keeps the scoped args in sync with the latest constraints on rebuilds,
-          // a function override would stay locked to the first frame's constraints for the whole session
-          timelineArgsProvider.overrideWithValue(
-            TimelineArgs(
-              maxWidth: constraints.maxWidth,
-              maxHeight: constraints.maxHeight,
-              columnCount: columnCount,
-              showStorageIndicator: showStorageIndicator,
-              withStack: withStack,
-              groupBy: groupBy,
+      builder: (_, constraints) {
+        Logger('TimelineProbe').info('layout pass ${constraints.maxWidth}x${constraints.maxHeight}');
+        return ProviderScope(
+          overrides: [
+            // overrideWithValue keeps the scoped args in sync with the latest constraints on rebuilds,
+            // a function override would stay locked to the first frame's constraints for the whole session
+            timelineArgsProvider.overrideWithValue(
+              TimelineArgs(
+                maxWidth: constraints.maxWidth,
+                maxHeight: constraints.maxHeight,
+                columnCount: columnCount,
+                showStorageIndicator: showStorageIndicator,
+                withStack: withStack,
+                groupBy: groupBy,
+              ),
             ),
+            if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
+          ],
+          child: _SliverTimeline(
+            topSliverWidget: topSliverWidget,
+            topSliverWidgetHeight: topSliverWidgetHeight,
+            bottomSliverWidget: bottomSliverWidget,
+            appBar: appBar,
+            bottomSheet: bottomSheet,
+            withScrubber: withScrubber,
+            persistentBottomBar: persistentBottomBar,
+            snapToMonth: snapToMonth,
+            maxWidth: constraints.maxWidth,
+            loadingWidget: loadingWidget,
           ),
-          if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
-        ],
-        child: _SliverTimeline(
-          topSliverWidget: topSliverWidget,
-          topSliverWidgetHeight: topSliverWidgetHeight,
-          bottomSliverWidget: bottomSliverWidget,
-          appBar: appBar,
-          bottomSheet: bottomSheet,
-          withScrubber: withScrubber,
-          persistentBottomBar: persistentBottomBar,
-          snapToMonth: snapToMonth,
-          maxWidth: constraints.maxWidth,
-          loadingWidget: loadingWidget,
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -156,6 +160,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   @override
   void initState() {
     super.initState();
+    Logger('TimelineProbe').info('timeline mounted maxWidth=${widget.maxWidth}');
     _scrollController = ScrollController(onAttach: _restoreAssetPosition);
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
@@ -171,6 +176,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   void didUpdateWidget(covariant _SliverTimeline oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.maxWidth != oldWidget.maxWidth) {
+      Logger('TimelineProbe').info('timeline maxWidth ${oldWidget.maxWidth} -> ${widget.maxWidth}');
       // The updated args already regenerate the segments, only remember the scroll position to restore it afterwards
       final segments = ref.read(timelineSegmentProvider).valueOrNull;
       if (segments != null && _scrollController.hasClients) {

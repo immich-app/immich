@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:logging/logging.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
@@ -18,8 +19,12 @@ final timelineArgsProvider = Provider.autoDispose<TimelineArgs>(
 final timelineServiceProvider = Provider<TimelineService>(
   (ref) {
     final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
+    Logger('TimelineProbe').info('main timeline service built with ${timelineUsers.length} users');
     final timelineService = ref.watch(timelineFactoryProvider).main(timelineUsers);
-    ref.onDispose(timelineService.dispose);
+    ref.onDispose(() {
+      Logger('TimelineProbe').info('main timeline service disposed');
+      timelineService.dispose();
+    });
     return timelineService;
   },
   // Empty dependencies to inform the framework that this provider
@@ -45,5 +50,9 @@ final timelineUsersProvider = StreamProvider<List<String>>((ref) {
   return ref
       .watch(timelineRepositoryProvider)
       .watchTimelineUserIds(currentUserId)
-      .distinct(const ListEquality<String>().equals);
+      .distinct(const ListEquality<String>().equals)
+      .map((users) {
+        Logger('TimelineProbe').info('timeline users emission: ${users.length}');
+        return users;
+      });
 });
