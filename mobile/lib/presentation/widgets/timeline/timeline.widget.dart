@@ -29,7 +29,7 @@ import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
-class Timeline extends StatelessWidget {
+class Timeline extends ConsumerWidget {
   const Timeline({
     super.key,
     this.topSliverWidget,
@@ -62,15 +62,18 @@ class Timeline extends StatelessWidget {
   final Widget? loadingWidget;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final columnCount = ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow));
     return LayoutBuilder(
       builder: (_, constraints) => ProviderScope(
         overrides: [
-          timelineArgsProvider.overrideWith(
-            (ref) => TimelineArgs(
+          // overrideWithValue keeps the scoped args in sync with the latest constraints on rebuilds,
+          // a function override would stay locked to the first frame's constraints for the whole session
+          timelineArgsProvider.overrideWithValue(
+            TimelineArgs(
               maxWidth: constraints.maxWidth,
               maxHeight: constraints.maxHeight,
-              columnCount: ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow)),
+              columnCount: columnCount,
               showStorageIndicator: showStorageIndicator,
               withStack: withStack,
               groupBy: groupBy,
@@ -168,13 +171,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   void didUpdateWidget(covariant _SliverTimeline oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.maxWidth != oldWidget.maxWidth) {
-      final asyncSegments = ref.read(timelineSegmentProvider);
-      asyncSegments.whenData((segments) {
-        final index = _getCurrentAssetIndex(segments);
-        // Refresh to wait for new segments to be generated with the updated width before restoring the scroll position
-        final _ = ref.refresh(timelineArgsProvider);
-        _restoreAssetIndex = index;
-      });
+      // The updated args already regenerate the segments, only remember the scroll position to restore it afterwards
+      final segments = ref.read(timelineSegmentProvider).valueOrNull;
+      if (segments != null && _scrollController.hasClients) {
+        _restoreAssetIndex = _getCurrentAssetIndex(segments);
+      }
     }
   }
 
