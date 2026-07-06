@@ -17,9 +17,11 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../domain/service.mock.dart';
 import '../../test_utils.dart';
 import '../factories/user_factory.dart';
 import '../mocks.dart';
@@ -45,6 +47,7 @@ class PresentationContext {
     assetServiceProvider.overrideWithValue(service.asset.service),
     partnerServiceProvider.overrideWithValue(service.partner.service),
     toastRepositoryProvider.overrideWithValue(repository.toast),
+    gCastServiceProvider.overrideWithValue(MockGCastService()),
   ];
 
   static Future<PresentationContext> create() async {
