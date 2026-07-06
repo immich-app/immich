@@ -379,8 +379,7 @@ class _EditorPreviewState extends ConsumerState<_EditorPreview> with TickerProvi
     final editorNotifier = ref.read(editorStateProvider.notifier);
 
     ref.listen(editorStateProvider, (previous, current) {
-      // Only re-apply the aspect ratio when it or the rotation actually changed. Re-applying on every
-      // crop change would reshape the crop, which fires onCrop, which loops back here indefinitely.
+      // Only re-apply the aspect ratio when it or the rotation actually changed, otherwise infinite callback loop
       if (previous?.aspectRatio != current.aspectRatio || previous?.rotationAngle != current.rotationAngle) {
         switch (current.aspectRatio) {
           case AspectRatioPreset.free:
