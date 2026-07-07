@@ -74,13 +74,16 @@ Future<DriftLogger> _openLogDb() async {
   final logDb = await open();
   try {
     await logDb.customSelect('SELECT COUNT(*) FROM logger_messages').get();
+    return logDb;
   } on SqliteException catch (error) {
-    if (error.resultCode == 11 || error.resultCode == 26) {
-      dPrint(() => 'Logs database is unusable, recreating it');
+    if (error.resultCode != SqlError.SQLITE_CORRUPT && error.resultCode != SqlError.SQLITE_NOTADB) {
       await logDb.close();
-      await deleteSqliteDatabase(name: 'immich_logs');
-      return open();
+      rethrow;
     }
+
+    dPrint(() => 'Logs database is corrupt, recreating it');
+    await logDb.close();
+    await deleteSqliteDatabase(name: 'immich_logs');
+    return open();
   }
-  return logDb;
 }
