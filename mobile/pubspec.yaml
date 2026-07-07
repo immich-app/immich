@@ -117,7 +117,7 @@ dependency_overrides:
   objective_c:
     git:
       url: https://github.com/mertalev/native
-      ref: '2915556701f4734a784222f290a82adb1b101682'
+      ref: '2915556701f4734a784222f290a82adb1b101682' # https://github.com/dart-lang/native/pull/3458
       path: pkgs/objective_c/
 
 flutter:
