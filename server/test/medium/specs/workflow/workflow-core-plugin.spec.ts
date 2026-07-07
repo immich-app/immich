@@ -21,7 +21,7 @@ import { MediumTestContext } from 'test/medium.factory';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { getKyselyDB } from 'test/utils';
 
-let initialized = false;
+let isInitialized = false;
 
 class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
   constructor(database: Kysely<DB>) {
@@ -44,7 +44,7 @@ class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
   }
 
   async init() {
-    if (initialized) {
+    if (isInitialized) {
       return;
     }
 
@@ -57,7 +57,7 @@ class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
     await this.sut.onPluginSync();
     await this.sut.onPluginLoad();
 
-    initialized = true;
+    isInitialized = true;
   }
 }
 
@@ -337,7 +337,7 @@ describe('core plugin', () => {
     it('should favorite an asset within a given radius', async () => {
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
-      await ctx.newExif({ assetId: asset.id, latitude: 49.273_353_221_145_36, longitude: -123.103_871_440_787_64 });
+      await ctx.newExif({ assetId: asset.id, latitude: 49.27335322114536, longitude: -123.10387144078764 });
 
       const workflow = await createWorkflow({
         ownerId: user.id,
@@ -345,7 +345,7 @@ describe('core plugin', () => {
         steps: [
           {
             method: 'immich-plugin-core#assetLocationFilter',
-            config: { coordinate: { latitude: 49.288_821_679_949_29, longitude: -123.111_153_098_813_7, radius: 2 } },
+            config: { coordinate: { latitude: 49.28882167994929, longitude: -123.1111530988137, radius: 2 } },
           },
           {
             method: 'immich-plugin-core#assetFavorite',
@@ -360,7 +360,7 @@ describe('core plugin', () => {
     it('should not favorite asset outside a given radius', async () => {
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
-      await ctx.newExif({ assetId: asset.id, latitude: 49.261_266_052_570_35, longitude: -123.248_959_390_781_96 });
+      await ctx.newExif({ assetId: asset.id, latitude: 49.26126605257035, longitude: -123.24895939078196 });
 
       const workflow = await createWorkflow({
         ownerId: user.id,
@@ -368,7 +368,7 @@ describe('core plugin', () => {
         steps: [
           {
             method: 'immich-plugin-core#assetLocationFilter',
-            config: { coordinate: { latitude: 49.288_821_679_949_29, longitude: -123.111_153_098_813_7, radius: 10 } },
+            config: { coordinate: { latitude: 49.28882167994929, longitude: -123.1111530988137, radius: 10 } },
           },
           {
             method: 'immich-plugin-core#assetFavorite',

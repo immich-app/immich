@@ -172,6 +172,7 @@ describe(TimelineService.name, () => {
           await ctx.newExif({ assetId: result.asset.id, make: 'Canon' });
           return result;
         }),
+
         ctx.newUser().then(async ({ user }) => {
           const result = await ctx.newAsset({
             ownerId: user.id,

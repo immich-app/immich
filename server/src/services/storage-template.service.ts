@@ -141,8 +141,8 @@ export class StorageTemplateService extends BaseService {
   @OnJob({ name: JobName.StorageTemplateMigrationSingle, queue: QueueName.StorageTemplateMigration })
   async handleMigrationSingle({ id }: JobOf<JobName.StorageTemplateMigrationSingle>): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: true });
-    const storageTemplateEnabled = config.storageTemplate.enabled;
-    if (!storageTemplateEnabled) {
+    const isStorageTemplateEnabled = config.storageTemplate.enabled;
+    if (!isStorageTemplateEnabled) {
       return JobStatus.Skipped;
     }
 
@@ -372,8 +372,8 @@ export class StorageTemplateService extends BaseService {
       let duplicateCount = 0;
 
       while (true) {
-        const exists = await this.storageRepository.checkFileExists(destination);
-        if (!exists) {
+        const isExists = await this.storageRepository.checkFileExists(destination);
+        if (!isExists) {
           break;
         }
 

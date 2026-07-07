@@ -57,11 +57,13 @@
     onClose?.();
   };
   $effect(() => {
-    if (isOpen && menuContainer) {
-      triggerElement = document.activeElement as HTMLElement;
-      menuContainer.focus();
-      $optionClickCallbackStore = closeContextMenu;
+    if (!(isOpen && menuContainer)) {
+      return;
     }
+
+    triggerElement = document.activeElement as HTMLElement;
+    menuContainer.focus();
+    $optionClickCallbackStore = closeContextMenu;
   });
 
   const oncontextmenu = async (event: MouseEvent) => {

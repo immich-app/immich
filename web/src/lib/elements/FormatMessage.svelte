@@ -41,10 +41,12 @@
 
     for (const option of Object.values(element.options)) {
       for (const pluralElement of option.value) {
-        if (pluralElement.type === TYPE.tag) {
-          const tag = pluralElement.value;
-          replacements[tag] = (...parts) => `<${tag}>${parts}</${tag}>`;
+        if (pluralElement.type !== TYPE.tag) {
+          continue;
         }
+
+        const tag = pluralElement.value;
+        replacements[tag] = (...parts) => `<${tag}>${parts}</${tag}>`;
       }
     }
 

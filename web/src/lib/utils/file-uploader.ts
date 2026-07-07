@@ -124,7 +124,7 @@ export const fileUploadHandler = async ({
 };
 
 function getDeviceAssetId(asset: File) {
-  return 'web' + '-' + asset.name + '-' + asset.lastModified;
+  return 'web-' + asset.name + '-' + asset.lastModified;
 }
 
 function hashFile(file: File): Promise<string> {

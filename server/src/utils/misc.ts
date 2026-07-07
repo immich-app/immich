@@ -152,11 +152,7 @@ export const routeToErrorMessage = (methodName: string) =>
   'Failed to ' + methodName.replaceAll(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
 
 const isSchema = (schema: string | ReferenceObject | SchemaObject): schema is SchemaObject => {
-  if (typeof schema === 'string' || '$ref' in schema) {
-    return false;
-  }
-
-  return true;
+  return !(typeof schema === 'string' || '$ref' in schema);
 };
 
 const patchOpenAPI = (document: OpenAPIObject) => {
@@ -195,20 +191,22 @@ const patchOpenAPI = (document: OpenAPIObject) => {
     document.components.schemas = sortKeys(schemas);
 
     for (const [schemaName, schema] of Object.entries(schemas)) {
-      if (schema.properties) {
-        schema.properties = sortKeys(schema.properties);
-
-        for (const [key, value] of Object.entries(schema.properties)) {
-          if (typeof value === 'string') {
-            continue;
-          }
-
-          if (isSchema(value) && value.type === 'number' && value.format === 'float') {
-            throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
-          }
-        }
-        schema.required?.sort();
+      if (!schema.properties) {
+        continue;
       }
+
+      schema.properties = sortKeys(schema.properties);
+
+      for (const [key, value] of Object.entries(schema.properties)) {
+        if (typeof value === 'string') {
+          continue;
+        }
+
+        if (isSchema(value) && value.type === 'number' && value.format === 'float') {
+          throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+        }
+      }
+      schema.required?.sort();
     }
   }
 

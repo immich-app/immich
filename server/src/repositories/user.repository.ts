@@ -46,7 +46,7 @@ export class UserRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BOOLEAN] })
   get(userId: string, options: UserFindOptions) {
-    options = options || {};
+    options ||= {};
 
     return this.db
       .selectFrom('user')

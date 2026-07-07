@@ -93,10 +93,7 @@ export class QueueService extends BaseService {
   private updateConcurrency(config: SystemConfig) {
     this.logger.debug(`Updating queue concurrency settings`);
     for (const queueName of Object.values(QueueName)) {
-      let concurrency = 1;
-      if (this.isConcurrentQueue(queueName)) {
-        concurrency = config.job[queueName].concurrency;
-      }
+      const concurrency = this.isConcurrentQueue(queueName) ? config.job[queueName].concurrency : 1;
       this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
       this.jobRepository.setConcurrency(queueName, concurrency);
     }
@@ -161,9 +158,7 @@ export class QueueService extends BaseService {
         throw new BadRequestException(`The BackgroundTask queue cannot be paused`);
       }
       await this.jobRepository.pause(name);
-    }
-
-    if (dto.isPaused === false) {
+    } else if (dto.isPaused === false) {
       await this.jobRepository.resume(name);
     }
 

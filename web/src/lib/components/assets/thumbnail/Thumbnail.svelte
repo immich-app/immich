@@ -167,7 +167,7 @@
       e.preventDefault();
     };
     element.addEventListener('click', click);
-    element.addEventListener('pointerdown', start, true);
+    element.addEventListener('pointerdown', start, { capture: true });
     element.addEventListener('pointerup', clearLongPressTimer, { capture: true, passive: true });
     return {
       destroy: () => {
@@ -215,8 +215,7 @@
   onkeydown={(evt) => {
     if (evt.key === 'Enter') {
       callClickHandlers();
-    }
-    if (evt.key === 'x') {
+    } else if (evt.key === 'x') {
       onSelect?.(asset);
     }
     if (document.activeElement === element && evt.key === 'Escape') {

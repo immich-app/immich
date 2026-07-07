@@ -209,7 +209,7 @@ const metadataFields = [
     icon: mdiPhoneRotateLandscape,
     titleKey: 'orientation',
     keys: ['orientation'],
-    render: (asset, $t) => String(asset.exifInfo?.orientation || $t('unknown')),
+    render: (asset, $t) => asset.exifInfo?.orientation || $t('unknown'),
   },
   {
     icon: mdiPanorama,
@@ -240,7 +240,7 @@ const normalizeForComparison = (key: MetadataFieldKey, value: unknown): unknown 
     return value;
   }
 
-  if (key === 'fileCreatedAt' || key === 'fileModifiedAt' || key === 'dateTimeOriginal' || key === 'modifyDate') {
+  if (['fileCreatedAt', 'fileModifiedAt', 'dateTimeOriginal', 'modifyDate'].includes(key)) {
     const dateTime = DateTime.fromISO(String(value));
     return dateTime.isValid ? dateTime.toISO() : String(value);
   }
@@ -273,7 +273,7 @@ const getValueForAsset = (asset: AssetResponseDto, key: MetadataFieldKey): unkno
       return getAssetResolution(asset);
     }
     default: {
-      if (asset.exifInfo && key in asset.exifInfo) {
+      if (asset.exifInfo && Object.hasOwn(asset.exifInfo, key)) {
         return asset.exifInfo[key as keyof typeof asset.exifInfo];
       }
       return undefined;
