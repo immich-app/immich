@@ -135,7 +135,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   ConsumerState createState() => _SliverTimelineState();
 }
 
-class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
+class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBindingObserver {
   late final ScrollController _scrollController;
   StreamSubscription? _eventSubscription;
 
@@ -153,6 +153,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _scrollController = ScrollController(onAttach: _restoreAssetPosition);
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
@@ -178,17 +179,14 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     }
   }
 
+  // Capture iOS status bar tap
+  @override
+  void handleStatusBarTap() => _scrollToTop();
+
   void _onEvent(Event event) {
     switch (event) {
       case ScrollToTopEvent():
-        {
-          final timelineState = ref.read(timelineStateProvider.notifier);
-          timelineState.setScrubbing(true);
-          _scrollController
-              .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
-              .whenComplete(() => timelineState.setScrubbing(false));
-        }
-
+        _scrollToTop();
       case ScrollToDateEvent scrollToDateEvent:
         _scrollToDate(scrollToDateEvent.date);
       case TimelineReloadEvent():
@@ -246,9 +244,22 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
     _eventSubscription?.cancel();
     super.dispose();
+  }
+
+  void _scrollToTop() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+
+    final timelineState = ref.read(timelineStateProvider.notifier);
+    timelineState.setScrubbing(true);
+    _scrollController
+        .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
+        .whenComplete(() => timelineState.setScrubbing(false));
   }
 
   void _scrollToDate(DateTime date) {
@@ -381,6 +392,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       child: PrimaryScrollController(
         controller: _scrollController,
         child: Scaffold(
+          // This removes the built in Scaffold `handleStatusBarTap` implementation, preventing duplicate
+          // events when we provide our own
+          primary: false,
           resizeToAvoidBottomInset: false,
           floatingActionButton: const DownloadStatusFloatingButton(),
           body: asyncSegments.widgetWhen(
