@@ -151,13 +151,13 @@ const methods = wrapper<Manifest>({
   }),
 
   webhook: ({ config, data, functions, type, trigger }) => {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    const headers: Record<string, string> = {};
 
     if (config.headerName && config.headerValue) {
       headers[config.headerName] = config.headerValue;
     }
+
+    headers['Content-Type'] = 'application/json';
 
     functions.httpRequest(config.url, {
       method: config.method ?? 'POST',
