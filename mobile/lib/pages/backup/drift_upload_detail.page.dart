@@ -8,6 +8,7 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
+import 'package:immich_mobile/utils/upload_speed_calculator.dart';
 import 'package:path/path.dart' as path;
 
 @RoutePage()
@@ -60,6 +61,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
   Widget build(BuildContext context) {
     final uploadItems = ref.watch(driftBackupProvider.select((state) => state.uploadItems));
     final iCloudProgress = ref.watch(driftBackupProvider.select((state) => state.iCloudDownloadProgress));
+    final totalNetworkSpeed = ref.watch(driftBackupProvider.select((state) => state.totalNetworkSpeed));
 
     for (final item in uploadItems.values) {
       if (item.isFailed == true) {
@@ -85,7 +87,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
         elevation: 0,
         scrolledUnderElevation: 1,
       ),
-      body: _buildTwoSectionLayout(context, uploadingItems, failedItems, iCloudProgress),
+      body: _buildTwoSectionLayout(context, uploadingItems, failedItems, iCloudProgress, totalNetworkSpeed),
     );
   }
 
@@ -94,6 +96,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
     List<DriftUploadStatus> uploadingItems,
     List<DriftUploadStatus> failedItems,
     Map<String, double> iCloudProgress,
+    double totalNetworkSpeed,
   ) {
     return CustomScrollView(
       slivers: [
@@ -128,6 +131,9 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
             title: "uploading".t(context: context),
             count: uploadingItems.length,
             color: context.colorScheme.primary,
+            trailing: uploadingItems.isNotEmpty && totalNetworkSpeed > 0
+                ? '${"total".t(context: context)}: ${UploadSpeedCalculator.formatSpeed(totalNetworkSpeed)}'
+                : null,
           ),
         ),
         SliverPadding(
@@ -173,7 +179,13 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
     );
   }
 
-  Widget _buildSectionHeader(BuildContext context, {required String title, int? count, required Color color}) {
+  Widget _buildSectionHeader(
+    BuildContext context, {
+    required String title,
+    int? count,
+    required Color color,
+    String? trailing,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
       child: Row(
@@ -197,6 +209,13 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
                   ),
                 )
               : const SizedBox.shrink(),
+          if (trailing != null) ...[
+            const Spacer(),
+            Text(
+              trailing,
+              style: context.textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600, color: color),
+            ),
+          ],
         ],
       ),
     );

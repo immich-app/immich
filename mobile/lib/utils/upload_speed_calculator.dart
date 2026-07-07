@@ -91,13 +91,18 @@ class UploadSpeedCalculator {
 
   /// Returns a human-readable string representation of the current speed.
   ///
-  /// Returns '-- MB/s' if N/A, otherwise in MB/s or kB/s format.
-  String get speedAsString {
-    final s = _currentSpeed;
-    return switch (s) {
+  /// Returns '-- MB/s' if N/A, otherwise in MB/s (one decimal) or kB/s format.
+  String get speedAsString => formatSpeed(_currentSpeed);
+
+  /// Formats a speed given in MB/s as a human-readable string.
+  ///
+  /// Returns '-- MB/s' for a non-positive speed, '{n.n} MB/s' with one decimal
+  /// for speeds at or above 1 MB/s, and a whole '{n} kB/s' for slower speeds.
+  static String formatSpeed(double mbPerSecond) {
+    return switch (mbPerSecond) {
       <= 0 => '-- MB/s',
-      >= 1 => '${s.round()} MB/s',
-      _ => '${(s * 1000).round()} kB/s',
+      >= 1 => '${mbPerSecond.toStringAsFixed(1)} MB/s',
+      _ => '${(mbPerSecond * 1000).round()} kB/s',
     };
   }
 
@@ -163,6 +168,21 @@ class UploadSpeedManager {
   /// Gets the current speed string for a specific task.
   String getSpeedAsString(String taskId) {
     return _calculators[taskId]?.speedAsString ?? '-- MB/s';
+  }
+
+  /// Combined speed (MB/s) of all tracked uploads currently transferring.
+  ///
+  /// Calculators without a valid reading yet (speed <= 0) are ignored, so this
+  /// reflects the aggregate throughput of the uploads running in parallel.
+  double get totalSpeed {
+    double total = 0;
+    for (final calculator in _calculators.values) {
+      final speed = calculator.speed;
+      if (speed > 0) {
+        total += speed;
+      }
+    }
+    return total;
   }
 
   /// Gets the time remaining string for a specific task.

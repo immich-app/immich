@@ -113,6 +113,9 @@ class DriftBackupState {
 
   final Map<String, double> iCloudDownloadProgress;
 
+  /// Combined upload speed (MB/s) across the uploads currently in progress.
+  final double totalNetworkSpeed;
+
   const DriftBackupState({
     required this.totalCount,
     required this.backupCount,
@@ -122,6 +125,7 @@ class DriftBackupState {
     this.error = BackupError.none,
     required this.uploadItems,
     this.iCloudDownloadProgress = const {},
+    this.totalNetworkSpeed = 0.0,
   });
 
   DriftBackupState copyWith({
@@ -133,6 +137,7 @@ class DriftBackupState {
     BackupError? error,
     Map<String, DriftUploadStatus>? uploadItems,
     Map<String, double>? iCloudDownloadProgress,
+    double? totalNetworkSpeed,
   }) {
     return DriftBackupState(
       totalCount: totalCount ?? this.totalCount,
@@ -143,6 +148,7 @@ class DriftBackupState {
       error: error ?? this.error,
       uploadItems: uploadItems ?? this.uploadItems,
       iCloudDownloadProgress: iCloudDownloadProgress ?? this.iCloudDownloadProgress,
+      totalNetworkSpeed: totalNetworkSpeed ?? this.totalNetworkSpeed,
     );
   }
 
@@ -150,7 +156,7 @@ class DriftBackupState {
 
   @override
   String toString() {
-    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, isSyncing: $isSyncing, error: $error, uploadItems: $uploadItems, iCloudDownloadProgress: $iCloudDownloadProgress)';
+    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, isSyncing: $isSyncing, error: $error, uploadItems: $uploadItems, iCloudDownloadProgress: $iCloudDownloadProgress, totalNetworkSpeed: $totalNetworkSpeed)';
   }
 
   @override
@@ -166,6 +172,7 @@ class DriftBackupState {
         other.processingCount == processingCount &&
         other.isSyncing == isSyncing &&
         other.error == error &&
+        other.totalNetworkSpeed == totalNetworkSpeed &&
         mapEquals(other.iCloudDownloadProgress, iCloudDownloadProgress) &&
         mapEquals(other.uploadItems, uploadItems);
   }
@@ -179,7 +186,8 @@ class DriftBackupState {
         isSyncing.hashCode ^
         error.hashCode ^
         uploadItems.hashCode ^
-        iCloudDownloadProgress.hashCode;
+        iCloudDownloadProgress.hashCode ^
+        totalNetworkSpeed.hashCode;
   }
 }
 
@@ -282,7 +290,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     _cancelToken?.complete();
     _cancelToken = null;
     _uploadSpeedManager.clear();
-    state = state.copyWith(uploadItems: {}, iCloudDownloadProgress: {});
+    state = state.copyWith(uploadItems: {}, iCloudDownloadProgress: {}, totalNetworkSpeed: 0);
   }
 
   void _handleICloudProgress(String localAssetId, double progress) {
@@ -304,9 +312,11 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
     final progress = totalBytes > 0 ? bytes / totalBytes : 0.0;
     final networkSpeedAsString = _uploadSpeedManager.updateProgress(localAssetId, bytes, totalBytes);
+    final totalNetworkSpeed = _uploadSpeedManager.totalSpeed;
     final currentItem = state.uploadItems[localAssetId];
     if (currentItem != null) {
       state = state.copyWith(
+        totalNetworkSpeed: totalNetworkSpeed,
         uploadItems: {
           ...state.uploadItems,
           localAssetId: currentItem.copyWith(
@@ -319,6 +329,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
       );
     } else {
       state = state.copyWith(
+        totalNetworkSpeed: totalNetworkSpeed,
         uploadItems: {
           ...state.uploadItems,
           localAssetId: DriftUploadStatus(
