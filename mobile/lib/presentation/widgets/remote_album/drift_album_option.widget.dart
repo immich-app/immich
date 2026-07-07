@@ -15,6 +15,8 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
     this.onToggleAlbumOrder,
     this.onEditAlbum,
     this.onShowOptions,
+    this.onToggleOffline,
+    this.isOffline = false,
     this.iconColor,
     this.iconShadows,
   });
@@ -27,6 +29,8 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
   final VoidCallback? onToggleAlbumOrder;
   final VoidCallback? onEditAlbum;
   final VoidCallback? onShowOptions;
+  final VoidCallback? onToggleOffline;
+  final bool isOffline;
   final Color? iconColor;
   final List<Shadow>? iconShadows;
 
@@ -96,6 +100,17 @@ class DriftRemoteAlbumOption extends ConsumerWidget {
           label: 'create_shared_link'.t(context: context),
           iconData: Icons.link,
           onPressed: onCreateSharedLink,
+          menuItem: true,
+        ),
+      );
+    }
+
+    if (onToggleOffline != null) {
+      menuChildren.add(
+        BaseActionButton(
+          label: isOffline ? 'remove_offline_copy'.t(context: context) : 'make_available_offline'.t(context: context),
+          iconData: isOffline ? Icons.file_download_off_outlined : Icons.download_for_offline_outlined,
+          onPressed: onToggleOffline,
           menuItem: true,
         ),
       );

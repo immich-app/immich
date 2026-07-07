@@ -47,9 +47,13 @@ import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart
     as i22;
 import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dart'
     as i23;
-import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/offline_album.entity.drift.dart'
     as i24;
-import 'package:drift/internal/modular.dart' as i25;
+import 'package:immich_mobile/infrastructure/entities/offline_asset.entity.drift.dart'
+    as i25;
+import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+    as i26;
+import 'package:drift/internal/modular.dart' as i27;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -99,9 +103,13 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i23.$AssetOcrEntityTable assetOcrEntity = i23.$AssetOcrEntityTable(
     this,
   );
-  i24.MergedAssetDrift get mergedAssetDrift => i25.ReadDatabaseContainer(
+  late final i24.$OfflineAlbumEntityTable offlineAlbumEntity = i24
+      .$OfflineAlbumEntityTable(this);
+  late final i25.$OfflineAssetEntityTable offlineAssetEntity = i25
+      .$OfflineAssetEntityTable(this);
+  i26.MergedAssetDrift get mergedAssetDrift => i27.ReadDatabaseContainer(
     this,
-  ).accessor<i24.MergedAssetDrift>(i24.MergedAssetDrift.new);
+  ).accessor<i26.MergedAssetDrift>(i26.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -140,6 +148,8 @@ abstract class $Drift extends i0.GeneratedDatabase {
     assetEditEntity,
     settingsEntity,
     assetOcrEntity,
+    offlineAlbumEntity,
+    offlineAssetEntity,
     i10.idxPartnerSharedWithId,
     i11.idxLatLng,
     i11.idxRemoteExifCity,
@@ -349,6 +359,15 @@ abstract class $Drift extends i0.GeneratedDatabase {
       ),
       result: [i0.TableUpdate('asset_ocr_entity', kind: i0.UpdateKind.delete)],
     ),
+    i0.WritePropagation(
+      on: i0.TableUpdateQuery.onTableName(
+        'remote_album_entity',
+        limitUpdateKind: i0.UpdateKind.delete,
+      ),
+      result: [
+        i0.TableUpdate('offline_album_entity', kind: i0.UpdateKind.delete),
+      ],
+    ),
   ]);
   @override
   i0.DriftDatabaseOptions get options =>
@@ -414,4 +433,8 @@ class $DriftManager {
       i22.$$SettingsEntityTableTableManager(_db, _db.settingsEntity);
   i23.$$AssetOcrEntityTableTableManager get assetOcrEntity =>
       i23.$$AssetOcrEntityTableTableManager(_db, _db.assetOcrEntity);
+  i24.$$OfflineAlbumEntityTableTableManager get offlineAlbumEntity =>
+      i24.$$OfflineAlbumEntityTableTableManager(_db, _db.offlineAlbumEntity);
+  i25.$$OfflineAssetEntityTableTableManager get offlineAssetEntity =>
+      i25.$$OfflineAssetEntityTableTableManager(_db, _db.offlineAssetEntity);
 }

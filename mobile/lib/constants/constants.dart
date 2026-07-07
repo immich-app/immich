@@ -24,6 +24,10 @@ const String kDownloadGroupImage = 'group_image';
 const String kDownloadGroupVideo = 'group_video';
 const String kDownloadGroupLivePhoto = 'group_livephoto';
 const String kShareDownloadGroup = 'group_share';
+const String kDownloadGroupOfflineAsset = 'group_offline_asset';
+
+// Directory (relative to application support) for offline album downloads
+const String kOfflineAssetsDirectory = 'offline_assets';
 
 // Timeline constants
 const int kTimelineNoneSegmentSize = 120;

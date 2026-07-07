@@ -6,6 +6,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/offline_file.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
@@ -60,6 +61,7 @@ abstract final class Bootstrap {
     );
 
     await NetworkRepository.init();
+    await OfflineFileRegistry.ensureInitialized(drift);
     // Remove once all asset operations are migrated to Native APIs
     await PhotoManager.setIgnorePermissionCheck(true);
     return (drift, logDb);

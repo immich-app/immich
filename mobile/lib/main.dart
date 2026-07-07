@@ -106,6 +106,8 @@ Future<void> initApp() async {
 
   await FileDownloader().trackTasksInGroup(kDownloadGroupLivePhoto, markDownloadedComplete: false);
 
+  await FileDownloader().trackTasksInGroup(kDownloadGroupOfflineAsset);
+
   unawaited(FileDownloader().trackTasks());
 
   LicenseRegistry.addLicense(() async* {

@@ -5,6 +5,7 @@ import 'package:async/async.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
+import 'package:immich_mobile/infrastructure/repositories/offline_file.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
@@ -172,13 +173,21 @@ ImageProvider getFullImageProvider(
     } else {
       throw ArgumentError("Unsupported asset type: ${asset.runtimeType}");
     }
-    provider = RemoteFullImageProvider(
-      assetId: assetId,
-      thumbhash: thumbhash,
-      assetType: asset.type,
-      isAnimated: asset.isAnimatedImage,
-      edited: edited,
-    );
+
+    // Prefer files downloaded for offline albums; they are full-resolution
+    // originals, so this also works without a server connection
+    final offlinePath = asset.type == AssetType.image ? OfflineFileRegistry.instance.getOriginalPath(assetId) : null;
+    if (offlinePath != null) {
+      provider = FileImage(File(offlinePath));
+    } else {
+      provider = RemoteFullImageProvider(
+        assetId: assetId,
+        thumbhash: thumbhash,
+        assetType: asset.type,
+        isAnimated: asset.isAnimatedImage,
+        edited: edited,
+      );
+    }
   }
 
   return provider;
@@ -191,8 +200,19 @@ ImageProvider? getThumbnailImageProvider(BaseAsset asset, {Size size = kThumbnai
   }
 
   final assetId = asset is RemoteAsset ? asset.id : (asset as LocalAsset).remoteId;
+  if (assetId == null) {
+    return null;
+  }
+
+  // Prefer thumbnails downloaded for offline albums so grids keep working
+  // without a server connection
+  final offlineThumbPath = OfflineFileRegistry.instance.getThumbnailPath(assetId);
+  if (offlineThumbPath != null) {
+    return FileImage(File(offlineThumbPath));
+  }
+
   final thumbhash = asset is RemoteAsset ? asset.thumbHash ?? "" : "";
-  return assetId != null ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash, edited: edited) : null;
+  return RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash, edited: edited);
 }
 
 bool _shouldUseLocalAsset(BaseAsset asset) =>

@@ -8,12 +8,14 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/album/offline_album_banner.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/pending_uploads_banner.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/remote_album_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/remote_album/drift_album_option.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/offline_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -165,6 +167,45 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     unawaited(context.pushRoute(DriftActivitiesRoute(album: _album)));
   }
 
+  Future<void> toggleOffline(BuildContext context) async {
+    final service = ref.read(offlineAlbumServiceProvider);
+
+    try {
+      if (await service.isAlbumOffline(_album.id)) {
+        await service.disable(_album.id);
+
+        if (context.mounted) {
+          ImmichToast.show(
+            context: context,
+            msg: 'offline_album_removed'.t(context: context),
+            toastType: ToastType.success,
+          );
+        }
+        return;
+      }
+
+      final enqueued = await service.enable(_album.id);
+
+      if (context.mounted) {
+        ImmichToast.show(
+          context: context,
+          msg: enqueued == 0
+              ? 'offline_album_ready'.t(context: context)
+              : 'offline_album_download_started'.t(context: context, args: {'count': enqueued.toString()}),
+          toastType: ToastType.success,
+        );
+      }
+    } catch (error) {
+      if (context.mounted) {
+        ImmichToast.show(
+          context: context,
+          msg: 'scaffold_body_error_occurred'.t(context: context),
+          toastType: ToastType.error,
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
@@ -180,7 +221,12 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
         currentRemoteAlbumScopedProvider.overrideWithValue(_album),
       ],
       child: Timeline(
-        topSliverWidget: PendingUploadsBanner(albumId: _album.id),
+        topSliverWidget: SliverMainAxisGroup(
+          slivers: [
+            PendingUploadsBanner(albumId: _album.id),
+            OfflineAlbumBanner(albumId: _album.id),
+          ],
+        ),
         appBar: RemoteAlbumSliverAppBar(
           icon: Icons.photo_album_outlined,
           kebabMenu: _AlbumKebabMenu(
@@ -192,6 +238,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
             onEditAlbum: () => showEditTitleAndDescription(context),
             onCreateSharedLink: () => unawaited(context.pushRoute(SharedLinkEditRoute(albumId: _album.id))),
             onShowOptions: () => context.pushRoute(DriftAlbumOptionsRoute(album: _album)),
+            onToggleOffline: () => toggleOffline(context),
           ),
           onEditTitle: isOwner ? () => showEditTitleAndDescription(context) : null,
           onActivity: () => showActivity(context),
@@ -368,6 +415,7 @@ class _AlbumKebabMenu extends ConsumerWidget {
   final VoidCallback? onEditAlbum;
   final VoidCallback? onCreateSharedLink;
   final VoidCallback? onShowOptions;
+  final VoidCallback? onToggleOffline;
 
   const _AlbumKebabMenu({
     required this.album,
@@ -378,6 +426,7 @@ class _AlbumKebabMenu extends ConsumerWidget {
     this.onEditAlbum,
     this.onCreateSharedLink,
     this.onShowOptions,
+    this.onToggleOffline,
   });
 
   double _calculateScrollProgress(FlexibleSpaceBarSettings? settings) {
@@ -408,6 +457,7 @@ class _AlbumKebabMenu extends ConsumerWidget {
 
     final user = ref.watch(currentUserProvider);
     final isOwner = user != null && user.id == album.ownerId;
+    final isOffline = ref.watch(isAlbumOfflineProvider(album.id)).valueOrNull ?? false;
 
     return FutureBuilder<bool>(
       future: ref
@@ -427,6 +477,8 @@ class _AlbumKebabMenu extends ConsumerWidget {
           onEditAlbum: isOwner ? onEditAlbum : null,
           onCreateSharedLink: isOwner ? onCreateSharedLink : null,
           onShowOptions: onShowOptions,
+          onToggleOffline: onToggleOffline,
+          isOffline: isOffline,
         );
       },
     );

@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/offline_file.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
@@ -142,6 +143,16 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       }
 
       final remoteId = (videoAsset as RemoteAsset).id;
+
+      // Prefer files downloaded for offline albums; they are the original
+      // videos, so this also works without a server connection
+      final offlinePath = OfflineFileRegistry.instance.getOriginalPath(videoAsset.livePhotoVideoId ?? remoteId);
+      if (offlinePath != null && await File(offlinePath).exists()) {
+        return VideoSource.init(
+          path: CurrentPlatform.isAndroid ? File(offlinePath).uri.toString() : offlinePath,
+          type: VideoSourceType.file,
+        );
+      }
 
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
       final isOriginalVideo = ref.read(appConfigProvider).viewer.loadOriginalVideo;
