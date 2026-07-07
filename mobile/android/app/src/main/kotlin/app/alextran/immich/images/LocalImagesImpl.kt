@@ -46,22 +46,47 @@ inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0)): Bitmap {
 }
 
 fun Bitmap.toNativeBuffer(): Map<String, Long>  {
-  val size = width * height * 4
+  // Dart reads the buffer as rgba8888, but 10-bit sources decode to RGBA_1010102, which garbles
+  // colors when copied verbatim. Convert those straight into the output buffer in native code -
+  // one pass, no intermediate ARGB_8888 bitmap.
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && config == Bitmap.Config.RGBA_1010102) {
+    val info = IntArray(3)
+    val pointer = NativeImage.convert1010102(this, info)
+    if (pointer != 0L) {
+      recycle()
+      return mapOf(
+        "pointer" to pointer,
+        "width" to info[0].toLong(),
+        "height" to info[1].toLong(),
+        "rowBytes" to info[2].toLong()
+      )
+    }
+    // native convert declined (OOM/lock) -> fall through to the Skia copy path below.
+  }
+  // Other non-8888 configs (e.g. HDR F16) still need Skia's convert; 8-bit is copied as-is.
+  val bitmap = if (config != Bitmap.Config.ARGB_8888) {
+    val converted = copy(Bitmap.Config.ARGB_8888, false)
+    recycle()
+    converted ?: throw IOException("could not convert bitmap to ARGB_8888")
+  } else {
+    this
+  }
+  val size = bitmap.width * bitmap.height * 4
   val pointer = NativeBuffer.allocate(size)
   try {
     val buffer = NativeBuffer.wrap(pointer, size)
-    copyPixelsToBuffer(buffer)
+    bitmap.copyPixelsToBuffer(buffer)
     return mapOf(
       "pointer" to pointer,
-      "width" to width.toLong(),
-      "height" to height.toLong(),
-      "rowBytes" to (width * 4).toLong()
+      "width" to bitmap.width.toLong(),
+      "height" to bitmap.height.toLong(),
+      "rowBytes" to (bitmap.width * 4).toLong()
     )
-  } catch (e: Exception) {
+  } catch (e: Throwable) {
     NativeBuffer.free(pointer)
     throw e
   } finally {
-    recycle()
+    bitmap.recycle()
   }
 }
 
