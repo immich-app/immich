@@ -32,8 +32,8 @@
 
 <div class="mt-4 flex flex-col gap-4">
   <div>
-    <Field label={$t('custom_url')} description={$t('shared_link_custom_url_description')}>
-      <Input bind:value={slug} autocomplete="off" />
+    <Field label={$t('custom_url')} description={$t('shared_link_custom_url_description')} invalid={slug.includes('/')}>
+      <Input bind:value={slug} pattern="[^\/]*" autocomplete="off" />
     </Field>
     {#if slug}
       <Text size="tiny" color="muted" class="pt-2 break-all">/s/{encodeURIComponent(slug)}</Text>

@@ -18,6 +18,12 @@ const SharedLinkSearchSchema = z
   })
   .meta({ id: 'SharedLinkSearchDto' });
 
+const SharedLinkSlugSchema = z
+  .string()
+  .regex(/^[^\/]*$/, 'forward slash "/" is not allowed')
+  .nullable()
+  .describe('Custom URL slug');
+
 const SharedLinkCreateSchema = z
   .object({
     type: SharedLinkTypeSchema,
@@ -25,7 +31,7 @@ const SharedLinkCreateSchema = z
     albumId: z.uuidv4().optional().describe('Album ID (for album sharing)'),
     description: z.string().nullable().optional().describe('Link description'),
     password: z.string().nullable().optional().describe('Link password'),
-    slug: z.string().nullable().optional().describe('Custom URL slug'),
+    slug: SharedLinkSlugSchema.optional(),
     expiresAt: isoDatetimeToDate.nullable().describe('Expiration date').default(null).optional(),
     allowUpload: z.boolean().optional().describe('Allow uploads'),
     allowDownload: z.boolean().default(true).optional().describe('Allow downloads'),
@@ -37,7 +43,7 @@ const SharedLinkEditSchema = z
   .object({
     description: z.string().nullable().optional().describe('Link description'),
     password: z.string().nullable().optional().describe('Link password'),
-    slug: z.string().nullable().optional().describe('Custom URL slug'),
+    slug: SharedLinkSlugSchema.optional(),
     expiresAt: isoDatetimeToDate.nullish().describe('Expiration date'),
     allowUpload: z.boolean().optional().describe('Allow uploads'),
     allowDownload: z.boolean().optional().describe('Allow downloads'),
@@ -66,7 +72,7 @@ const SharedLinkResponseSchema = z
     allowUpload: z.boolean().describe('Allow uploads'),
     allowDownload: z.boolean().describe('Allow downloads'),
     showMetadata: z.boolean().describe('Show metadata'),
-    slug: z.string().nullable().describe('Custom URL slug'),
+    slug: SharedLinkSlugSchema,
   })
   .describe('Shared link response')
   .meta({ id: 'SharedLinkResponseDto' });
