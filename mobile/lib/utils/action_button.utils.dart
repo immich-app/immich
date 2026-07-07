@@ -9,6 +9,8 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_image.action.dart';
+import 'package:immich_mobile/presentation/actions/open_activity.action.dart';
 import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
@@ -18,10 +20,8 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_a
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/open_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/open_in_browser_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
@@ -111,7 +111,10 @@ enum ActionButtonType {
 
   bool shouldShow(ActionButtonContext context) {
     return switch (this) {
-      ActionButtonType.advancedInfo => context.advancedTroubleshooting,
+      ActionButtonType.advancedInfo => AssetDebugAction.canShow(
+        assetCount: context.selectedCount,
+        advancedTroubleshooting: context.advancedTroubleshooting,
+      ),
       ActionButtonType.share => true,
       ActionButtonType.shareLink =>
         !context.isInLockedView && //
@@ -195,14 +198,18 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.localAlbum &&
             context.isOwner,
       ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
-      ActionButtonType.editImage =>
-        !context.isInLockedView &&
-            context.asset.isEditable &&
-            context.serverVersion >= const SemVer(major: 2, minor: 6, patch: 0),
+      ActionButtonType.editImage => EditImageAction.canShow(
+        asset: context.asset,
+        isInLockedView: context.isInLockedView,
+        serverVersion: context.serverVersion,
+      ),
       ActionButtonType.addTo =>
         !context.isInLockedView && //
             context.asset.hasRemote,
-      ActionButtonType.openActivity => _isInActivityAlbum(context),
+      ActionButtonType.openActivity => OpenActivityAction.canShow(
+        isInLockedView: context.isInLockedView,
+        album: context.currentAlbum,
+      ),
       ActionButtonType.slideshow => true,
     };
   }
@@ -319,9 +326,15 @@ enum ActionButtonType {
               },
       ),
       ActionButtonType.cast => CastActionButton(iconOnly: iconOnly, menuItem: menuItem),
-      ActionButtonType.editImage => EditImageActionButton(iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.editImage when menuItem => ActionMenuItemWidget(
+        action: EditImageAction(assets: [context.asset]),
+      ),
+      ActionButtonType.editImage => ActionColumnButtonWidget(action: EditImageAction(assets: [context.asset])),
       ActionButtonType.addTo => AddActionButton(originalTheme: context.originalTheme),
-      ActionButtonType.openActivity => OpenActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.openActivity when menuItem => ActionMenuItemWidget(
+        action: OpenActivityAction(assets: [context.asset]),
+      ),
+      ActionButtonType.openActivity => ActionColumnButtonWidget(action: OpenActivityAction(assets: [context.asset])),
     };
   }
 
