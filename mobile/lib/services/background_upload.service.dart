@@ -336,6 +336,7 @@ class BackgroundUploadService {
       return null;
     }
 
+    // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
     final fields = {'livePhotoVideoId': livePhotoVideoId, 'visibility': api.AssetVisibility.hidden.value};
 
     final requiresWiFi = _shouldRequireWiFi(asset);

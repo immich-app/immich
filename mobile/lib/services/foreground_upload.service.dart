@@ -339,6 +339,7 @@ class ForegroundUploadService {
         final livePhotoResult = await _uploadRepository.uploadFile(
           file: livePhotoFile,
           originalFileName: livePhotoTitle,
+          // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
           fields: {...fields, 'visibility': AssetVisibility.hidden.value},
           cancelToken: cancelToken,
           onProgress: onProgress != null
