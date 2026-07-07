@@ -4,14 +4,15 @@
 
 <script lang="ts">
   import { getProfileImageUrl } from '$lib/utils';
+  import { getUserDisplayName } from '$lib/utils/string-utils';
   import { type UserAvatarColor } from '@immich/sdk';
   import { t } from 'svelte-i18n';
 
   interface User {
     id: string;
-    name: string;
+    name: string | null;
     email: string;
-    profileImagePath: string;
+    profileImagePath: string | null;
     avatarColor: UserAvatarColor;
     profileChangedAt: string;
   }
@@ -69,7 +70,7 @@
 
   let colorClass = $derived(colorClasses[user.avatarColor]);
   let sizeClass = $derived(sizeClasses[size]);
-  let title = $derived(label ?? `${user.name} (${user.email})`);
+  let title = $derived(label ?? `${getUserDisplayName(user)} (${user.email})`);
   let interactiveClass = $derived(
     interactive
       ? 'border-2 border-immich-primary hover:border-immich-dark-primary dark:hover:border-immich-primary dark:border-immich-dark-primary transition-colors'
@@ -100,7 +101,7 @@
       class:text-2xl={size === 'xxl'}
       class:text-3xl={size === 'xxxl'}
     >
-      {user.name[0] || ''}
+      {(getUserDisplayName(user)[0] || user.email[0] || '').toUpperCase()}
     </span>
   {/if}
 </figure>

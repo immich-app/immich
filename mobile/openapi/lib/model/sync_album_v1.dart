@@ -28,7 +28,7 @@ class SyncAlbumV1 {
   DateTime createdAt;
 
   /// Album description
-  String description;
+  String? description;
 
   /// Album ID
   String id;
@@ -66,7 +66,7 @@ class SyncAlbumV1 {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (createdAt.hashCode) +
-    (description.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
     (id.hashCode) +
     (isActivityEnabled.hashCode) +
     (name.hashCode) +
@@ -83,7 +83,11 @@ class SyncAlbumV1 {
       json[r'createdAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')
         ? this.createdAt.millisecondsSinceEpoch
         : this.createdAt.toUtc().toIso8601String();
+    if (this.description != null) {
       json[r'description'] = this.description;
+    } else {
+      json[r'description'] = null;
+    }
       json[r'id'] = this.id;
       json[r'isActivityEnabled'] = this.isActivityEnabled;
       json[r'name'] = this.name;
@@ -110,7 +114,7 @@ class SyncAlbumV1 {
 
       return SyncAlbumV1(
         createdAt: mapDateTime(json, r'createdAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')!,
-        description: mapValueOfType<String>(json, r'description')!,
+        description: mapValueOfType<String>(json, r'description'),
         id: mapValueOfType<String>(json, r'id')!,
         isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled')!,
         name: mapValueOfType<String>(json, r'name')!,

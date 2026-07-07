@@ -128,7 +128,7 @@ export class UserService extends BaseService {
 
     return {
       userId: user.id,
-      profileImagePath: user.profileImagePath ?? '',
+      profileImagePath: user.profileImagePath,
       profileChangedAt: user.profileChangedAt,
     };
   }

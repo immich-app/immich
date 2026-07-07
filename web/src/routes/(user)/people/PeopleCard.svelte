@@ -5,6 +5,7 @@
   import { Route } from '$lib/route';
   import { getPersonActions } from '$lib/services/person.service';
   import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { getPersonDisplayName } from '$lib/utils/string-utils';
   import { type PersonResponseDto } from '@immich/sdk';
   import { Icon } from '@immich/ui';
   import {
@@ -50,8 +51,8 @@
       <ImageThumbnail
         shadow
         url={getPeopleThumbnailUrl(person)}
-        altText={person.name}
-        title={person.name}
+        altText={getPersonDisplayName(person.name)}
+        title={getPersonDisplayName(person.name)}
         widthStyle="100%"
         circle
         preload={false}

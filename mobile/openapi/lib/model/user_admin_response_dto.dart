@@ -52,16 +52,16 @@ class UserAdminResponseDto {
   UserLicense? license;
 
   /// User name
-  String name;
+  String? name;
 
   /// OAuth ID
-  String oauthId;
+  String? oauthId;
 
   /// Profile change date
   DateTime profileChangedAt;
 
   /// Profile image path
-  String profileImagePath;
+  String? profileImagePath;
 
   /// Storage quota in bytes
   ///
@@ -116,10 +116,10 @@ class UserAdminResponseDto {
     (id.hashCode) +
     (isAdmin.hashCode) +
     (license == null ? 0 : license!.hashCode) +
-    (name.hashCode) +
-    (oauthId.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
+    (oauthId == null ? 0 : oauthId!.hashCode) +
     (profileChangedAt.hashCode) +
-    (profileImagePath.hashCode) +
+    (profileImagePath == null ? 0 : profileImagePath!.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
     (quotaUsageInBytes == null ? 0 : quotaUsageInBytes!.hashCode) +
     (shouldChangePassword.hashCode) +
@@ -151,10 +151,22 @@ class UserAdminResponseDto {
     } else {
       json[r'license'] = null;
     }
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
+    if (this.oauthId != null) {
       json[r'oauthId'] = this.oauthId;
+    } else {
+      json[r'oauthId'] = null;
+    }
       json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
+    if (this.profileImagePath != null) {
       json[r'profileImagePath'] = this.profileImagePath;
+    } else {
+      json[r'profileImagePath'] = null;
+    }
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
@@ -194,10 +206,10 @@ class UserAdminResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         license: UserLicense.fromJson(json[r'license']),
-        name: mapValueOfType<String>(json, r'name')!,
-        oauthId: mapValueOfType<String>(json, r'oauthId')!,
+        name: mapValueOfType<String>(json, r'name'),
+        oauthId: mapValueOfType<String>(json, r'oauthId'),
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),
         quotaUsageInBytes: mapValueOfType<int>(json, r'quotaUsageInBytes'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,

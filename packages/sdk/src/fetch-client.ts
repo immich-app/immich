@@ -21,11 +21,11 @@ export type UserResponseDto = {
     /** User ID */
     id: string;
     /** User name */
-    name: string;
+    name: string | null;
     /** Profile change date */
     profileChangedAt: string;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
 };
 export type ActivityResponseDto = {
     /** Asset ID (if activity is for an asset) */
@@ -214,13 +214,13 @@ export type UserAdminResponseDto = {
     isAdmin: boolean;
     license: (UserLicense) | null;
     /** User name */
-    name: string;
+    name: string | null;
     /** OAuth ID */
-    oauthId: string;
+    oauthId: string | null;
     /** Profile change date */
     profileChangedAt: string;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
     /** Storage quota in bytes */
     quotaSizeInBytes: number | null;
     /** Storage usage in bytes */
@@ -465,9 +465,9 @@ export type SessionResponseDto = {
     /** Is current session */
     current: boolean;
     /** Device OS */
-    deviceOS: string;
+    deviceOS: string | null;
     /** Device type */
-    deviceType: string;
+    deviceType: string | null;
     /** Expiration date */
     expiresAt?: string;
     /** Session ID */
@@ -508,7 +508,7 @@ export type AlbumResponseDto = {
     /** Creation date */
     createdAt: string;
     /** Album description */
-    description: string;
+    description: string | null;
     /** End date (latest asset) */
     endDate?: string;
     /** Has shared link */
@@ -842,9 +842,9 @@ export type PersonResponseDto = {
     /** Is hidden */
     isHidden: boolean;
     /** Person name */
-    name: string;
+    name: string | null;
     /** Thumbnail path */
-    thumbnailPath: string;
+    thumbnailPath: string | null;
     /** Last update date */
     updatedAt?: string;
 };
@@ -1057,9 +1057,9 @@ export type LoginResponseDto = {
     /** Is onboarded */
     isOnboarded: boolean;
     /** User name */
-    name: string;
+    name: string | null;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
     /** Should change password */
     shouldChangePassword: boolean;
     /** User email */
@@ -1435,11 +1435,11 @@ export type PartnerResponseDto = {
     /** Show in timeline */
     inTimeline?: boolean;
     /** User name */
-    name: string;
+    name: string | null;
     /** Profile change date */
     profileChangedAt: string;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
 };
 export type PartnerCreateDto = {
     /** User ID to share with */
@@ -2157,9 +2157,9 @@ export type SessionCreateResponseDto = {
     /** Is current session */
     current: boolean;
     /** Device OS */
-    deviceOS: string;
+    deviceOS: string | null;
     /** Device type */
-    deviceType: string;
+    deviceType: string | null;
     /** Expiration date */
     expiresAt?: string;
     /** Session ID */
@@ -2768,7 +2768,7 @@ export type CreateProfileImageResponseDto = {
     /** Profile image change date */
     profileChangedAt: string;
     /** Profile image file path */
-    profileImagePath: string;
+    profileImagePath: string | null;
     /** User ID */
     userId: string;
 };
@@ -2893,7 +2893,7 @@ export type SyncAlbumV1 = {
     /** Created at */
     createdAt: string;
     /** Album description */
-    description: string;
+    description: string | null;
     /** Album ID */
     id: string;
     /** Is activity enabled */
@@ -2912,7 +2912,7 @@ export type SyncAlbumV2 = {
     /** Created at */
     createdAt: string;
     /** Album description */
-    description: string;
+    description: string | null;
     /** Album ID */
     id: string;
     /** Is activity enabled */
@@ -3197,9 +3197,9 @@ export type SyncAuthUserV1 = {
     /** User is admin */
     isAdmin: boolean;
     /** User name */
-    name: string;
+    name: string | null;
     /** User OAuth ID */
-    oauthId: string;
+    oauthId: string | null;
     /** User pin code */
     pinCode: string | null;
     /** User profile changed at */
@@ -3289,7 +3289,7 @@ export type SyncPersonV1 = {
     /** Is hidden */
     isHidden: boolean;
     /** Person name */
-    name: string;
+    name: string | null;
     /** Owner ID */
     ownerId: string;
     /** Updated at */
@@ -3341,7 +3341,7 @@ export type SyncUserV1 = {
     /** User ID */
     id: string;
     /** User name */
-    name: string;
+    name: string | null;
     /** User profile changed at */
     profileChangedAt: string;
 };

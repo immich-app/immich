@@ -3,7 +3,7 @@
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { getPersonDisplayName, normalizeSearchString } from '$lib/utils/string-utils';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, HStack, LoadingSpinner, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { onMount } from 'svelte';
@@ -26,7 +26,9 @@
     people
       .filter((person) => !excludedIds.includes(person.id))
       .filter(
-        (person) => !searchName || normalizeSearchString(person.name).includes(normalizeSearchString(searchName)),
+        (person) =>
+          !searchName ||
+          normalizeSearchString(getPersonDisplayName(person.name)).includes(normalizeSearchString(searchName)),
       ),
   );
 
@@ -84,7 +86,7 @@
                   circle
                   shadow
                   url={getPeopleThumbnailUrl(person)}
-                  altText={person.name}
+                  altText={getPersonDisplayName(person.name)}
                   widthStyle="100%"
                 />
                 <p class="line-clamp-2 text-center text-sm font-medium">{person.name}</p>

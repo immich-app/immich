@@ -7,6 +7,7 @@
   import { getPeopleThumbnailUrl, handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { zoomImageToBase64 } from '$lib/utils/people-utils';
+  import { getPersonDisplayName } from '$lib/utils/string-utils';
   import { getPersonNameWithHiddenValue } from '$lib/utils/person';
   import {
     AssetTypeEnum,
@@ -266,7 +267,7 @@
                     shadow
                     highlighted={isHighlighted}
                     url={getPeopleThumbnailUrl(selectedPersonToReassign[face.id])}
-                    altText={selectedPersonToReassign[face.id].name}
+                    altText={getPersonDisplayName(selectedPersonToReassign[face.id].name)}
                     title={$getPersonNameWithHiddenValue(
                       selectedPersonToReassign[face.id].name,
                       selectedPersonToReassign[face.id]?.isHidden,
@@ -281,7 +282,7 @@
                     shadow
                     highlighted={isHighlighted}
                     url={getPeopleThumbnailUrl(face.person)}
-                    altText={face.person.name}
+                    altText={getPersonDisplayName(face.person.name)}
                     title={$getPersonNameWithHiddenValue(face.person.name, face.person.isHidden)}
                     widthStyle={thumbnailWidth}
                     heightStyle={thumbnailWidth}

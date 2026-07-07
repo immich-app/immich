@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { getPersonDisplayName } from '$lib/utils/string-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { mergePerson, type PersonResponseDto } from '@immich/sdk';
   import { FormModal, Icon, IconButton, toastManager } from '@immich/ui';
@@ -66,7 +67,7 @@
           circle
           shadow
           url={getPeopleThumbnailUrl(personToMerge)}
-          altText={personToMerge.name}
+          altText={getPersonDisplayName(personToMerge.name)}
           widthStyle="100%"
         />
       </div>
@@ -105,7 +106,7 @@
           circle
           shadow
           url={getPeopleThumbnailUrl(personToBeMergedInto)}
-          altText={personToBeMergedInto.name}
+          altText={getPersonDisplayName(personToBeMergedInto.name)}
           widthStyle="100%"
         />
       </button>
@@ -124,7 +125,7 @@
                     circle
                     shadow
                     url={getPeopleThumbnailUrl(person)}
-                    altText={person.name}
+                    altText={getPersonDisplayName(person.name)}
                     widthStyle="100%"
                   />
                 </button>

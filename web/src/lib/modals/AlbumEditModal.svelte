@@ -1,6 +1,7 @@
 <script lang="ts">
   import AlbumCover from '$lib/components/album-page/AlbumCover.svelte';
   import { handleUpdateAlbum } from '$lib/services/album.service';
+  import { nullToEmpty } from '$lib/utils/string-utils';
   import { type AlbumResponseDto } from '@immich/sdk';
   import { Field, FormModal, Input, Textarea } from '@immich/ui';
   import { mdiRenameOutline } from '@mdi/js';
@@ -14,7 +15,7 @@
   let { album, onClose }: Props = $props();
 
   let albumName = $state(album.albumName);
-  let description = $state(album.description);
+  let description = $state(nullToEmpty(album.description));
 
   const onSubmit = async () => {
     const success = await handleUpdateAlbum(album, { albumName, description });

@@ -47,7 +47,7 @@ class SyncPersonV1 {
   bool isHidden;
 
   /// Person name
-  String name;
+  String? name;
 
   /// Owner ID
   String ownerId;
@@ -78,7 +78,7 @@ class SyncPersonV1 {
     (id.hashCode) +
     (isFavorite.hashCode) +
     (isHidden.hashCode) +
-    (name.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
     (ownerId.hashCode) +
     (updatedAt.hashCode);
 
@@ -110,7 +110,11 @@ class SyncPersonV1 {
       json[r'id'] = this.id;
       json[r'isFavorite'] = this.isFavorite;
       json[r'isHidden'] = this.isHidden;
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
       json[r'ownerId'] = this.ownerId;
       json[r'updatedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')
         ? this.updatedAt.millisecondsSinceEpoch
@@ -134,7 +138,7 @@ class SyncPersonV1 {
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
-        name: mapValueOfType<String>(json, r'name')!,
+        name: mapValueOfType<String>(json, r'name'),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
         updatedAt: mapDateTime(json, r'updatedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')!,
       );

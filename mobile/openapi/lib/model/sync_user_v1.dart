@@ -37,7 +37,7 @@ class SyncUserV1 {
   String id;
 
   /// User name
-  String name;
+  String? name;
 
   /// User profile changed at
   DateTime profileChangedAt;
@@ -60,7 +60,7 @@ class SyncUserV1 {
     (email.hashCode) +
     (hasProfileImage.hashCode) +
     (id.hashCode) +
-    (name.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
     (profileChangedAt.hashCode);
 
   @override
@@ -82,7 +82,11 @@ class SyncUserV1 {
       json[r'email'] = this.email;
       json[r'hasProfileImage'] = this.hasProfileImage;
       json[r'id'] = this.id;
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
       json[r'profileChangedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')
         ? this.profileChangedAt.millisecondsSinceEpoch
         : this.profileChangedAt.toUtc().toIso8601String();
@@ -103,7 +107,7 @@ class SyncUserV1 {
         email: mapValueOfType<String>(json, r'email')!,
         hasProfileImage: mapValueOfType<bool>(json, r'hasProfileImage')!,
         id: mapValueOfType<String>(json, r'id')!,
-        name: mapValueOfType<String>(json, r'name')!,
+        name: mapValueOfType<String>(json, r'name'),
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')!,
       );
     }

@@ -4,6 +4,7 @@
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { getPersonDisplayName } from '$lib/utils/string-utils';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, LoadingSpinner, Text } from '@immich/ui';
   import { mdiArrowRight, mdiClose } from '@mdi/js';
@@ -48,7 +49,7 @@
 
   const filterPeople = (list: PersonResponseDto[], name: string) => {
     const nameLower = name.toLowerCase();
-    return name ? list.filter((p) => p.name.toLowerCase().includes(nameLower)) : list;
+    return name ? list.filter((p) => getPersonDisplayName(p.name).toLowerCase().includes(nameLower)) : list;
   };
 
   const styles = tv({
@@ -88,7 +89,7 @@
             class={styles({ selected: selectedPeople.has(person.id) })}
             onclick={() => togglePersonSelection(person.id)}
           >
-            <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={person.name} widthStyle="100%" />
+            <ImageThumbnail circle shadow url={getPeopleThumbnailUrl(person)} altText={getPersonDisplayName(person.name)} widthStyle="100%" />
             <p class="mt-2 line-clamp-2 text-sm font-medium dark:text-white">{person.name}</p>
           </button>
         {/each}

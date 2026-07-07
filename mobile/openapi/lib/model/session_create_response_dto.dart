@@ -35,10 +35,10 @@ class SessionCreateResponseDto {
   bool current;
 
   /// Device OS
-  String deviceOS;
+  String? deviceOS;
 
   /// Device type
-  String deviceType;
+  String? deviceType;
 
   /// Expiration date
   ///
@@ -80,8 +80,8 @@ class SessionCreateResponseDto {
     (appVersion == null ? 0 : appVersion!.hashCode) +
     (createdAt.hashCode) +
     (current.hashCode) +
-    (deviceOS.hashCode) +
-    (deviceType.hashCode) +
+    (deviceOS == null ? 0 : deviceOS!.hashCode) +
+    (deviceType == null ? 0 : deviceType!.hashCode) +
     (expiresAt == null ? 0 : expiresAt!.hashCode) +
     (id.hashCode) +
     (isPendingSyncReset.hashCode) +
@@ -100,8 +100,16 @@ class SessionCreateResponseDto {
     }
       json[r'createdAt'] = this.createdAt;
       json[r'current'] = this.current;
+    if (this.deviceOS != null) {
       json[r'deviceOS'] = this.deviceOS;
+    } else {
+      json[r'deviceOS'] = null;
+    }
+    if (this.deviceType != null) {
       json[r'deviceType'] = this.deviceType;
+    } else {
+      json[r'deviceType'] = null;
+    }
     if (this.expiresAt.isPresent) {
       final value = this.expiresAt.value;
       json[r'expiresAt'] = value;
@@ -125,8 +133,8 @@ class SessionCreateResponseDto {
         appVersion: mapValueOfType<String>(json, r'appVersion'),
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         current: mapValueOfType<bool>(json, r'current')!,
-        deviceOS: mapValueOfType<String>(json, r'deviceOS')!,
-        deviceType: mapValueOfType<String>(json, r'deviceType')!,
+        deviceOS: mapValueOfType<String>(json, r'deviceOS'),
+        deviceType: mapValueOfType<String>(json, r'deviceType'),
         expiresAt: json.containsKey(r'expiresAt') ? Optional.present(mapValueOfType<String>(json, r'expiresAt')) : const Optional.absent(),
         id: mapValueOfType<String>(json, r'id')!,
         isPendingSyncReset: mapValueOfType<bool>(json, r'isPendingSyncReset')!,

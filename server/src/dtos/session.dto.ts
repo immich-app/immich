@@ -23,8 +23,8 @@ const SessionResponseSchema = z
     updatedAt: z.string().describe('Last update date'),
     expiresAt: z.string().optional().describe('Expiration date'),
     current: z.boolean().describe('Is current session'),
-    deviceType: z.string().describe('Device type'),
-    deviceOS: z.string().describe('Device OS'),
+    deviceType: z.string().nullable().describe('Device type'),
+    deviceOS: z.string().nullable().describe('Device OS'),
     appVersion: z.string().nullable().describe('App version'),
     isPendingSyncReset: z.boolean().describe('Is pending sync reset'),
   })
@@ -46,7 +46,7 @@ export const mapSession = (entity: Session, currentId?: string): SessionResponse
   expiresAt: entity.expiresAt?.toISOString(),
   current: currentId === entity.id,
   appVersion: entity.appVersion,
-  deviceOS: entity.deviceOS ?? '',
-  deviceType: entity.deviceType ?? '',
+  deviceOS: entity.deviceOS,
+  deviceType: entity.deviceType,
   isPendingSyncReset: entity.isPendingSyncReset,
 });

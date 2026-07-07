@@ -22,7 +22,7 @@ class CreateProfileImageResponseDto {
   DateTime profileChangedAt;
 
   /// Profile image file path
-  String profileImagePath;
+  String? profileImagePath;
 
   /// User ID
   String userId;
@@ -37,7 +37,7 @@ class CreateProfileImageResponseDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (profileChangedAt.hashCode) +
-    (profileImagePath.hashCode) +
+    (profileImagePath == null ? 0 : profileImagePath!.hashCode) +
     (userId.hashCode);
 
   @override
@@ -48,7 +48,11 @@ class CreateProfileImageResponseDto {
       json[r'profileChangedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')
         ? this.profileChangedAt.millisecondsSinceEpoch
         : this.profileChangedAt.toUtc().toIso8601String();
+    if (this.profileImagePath != null) {
       json[r'profileImagePath'] = this.profileImagePath;
+    } else {
+      json[r'profileImagePath'] = null;
+    }
       json[r'userId'] = this.userId;
     return json;
   }
@@ -63,7 +67,7 @@ class CreateProfileImageResponseDto {
 
       return CreateProfileImageResponseDto(
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
         userId: mapValueOfType<String>(json, r'userId')!,
       );
     }

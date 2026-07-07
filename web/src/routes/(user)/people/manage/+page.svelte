@@ -6,6 +6,7 @@
   import { ToggleVisibility } from '$lib/constants';
   import { locale } from '$lib/stores/preferences.store';
   import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { getPersonDisplayName } from '$lib/utils/string-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, updatePeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, IconButton, toastManager } from '@immich/ui';
@@ -163,7 +164,7 @@
             {hidden}
             shadow
             url={getPeopleThumbnailUrl(person)}
-            altText={person.name}
+            altText={getPersonDisplayName(person.name)}
             widthStyle="100%"
             hiddenIconClass="text-white group-hover:text-black transition-colors"
             preload={false}

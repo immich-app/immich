@@ -17,7 +17,7 @@ class FaceManager {
       if (!face.person) {
         continue;
       }
-      map.set(face, face.person.name);
+      map.set(face, face.person.name ?? '');
     }
 
     return map;

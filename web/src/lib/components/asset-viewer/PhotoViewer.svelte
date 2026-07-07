@@ -17,6 +17,7 @@
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
   import { getBoundingBox, type BoundingBox } from '$lib/utils/people-utils';
+  import { getPersonDisplayName } from '$lib/utils/string-utils';
   import { type SharedLinkResponseDto } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
   import { onDestroy, untrack } from 'svelte';
@@ -165,7 +166,7 @@
       if (face.person.isHidden && !assetViewerManager.isShowingHiddenPeople) {
         continue;
       }
-      map.set(face, face.person.name);
+      map.set(face, getPersonDisplayName(face.person.name));
     }
     return map;
   });

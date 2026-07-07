@@ -36,7 +36,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { getPersonDisplayName, normalizeSearchString, nullToEmpty, nullToUndefined } from '$lib/utils/string-utils';
   import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
@@ -210,7 +210,7 @@
     }
 
     try {
-      person = await updatePerson({ id: person.id, personUpdateDto: { name: personName } });
+      person = await updatePerson({ id: person.id, personUpdateDto: { name: nullToUndefined(personName) } });
       toastManager.primary($t('change_name_successfully'));
     } catch (error) {
       handleError(error, $t('errors.unable_to_save_name'));
@@ -240,7 +240,7 @@
     const normalizedPersonName = normalizeSearchString(personName);
     const existingPerson = result.find(
       ({ name, id }: PersonResponseDto) =>
-        normalizeSearchString(name) === normalizedPersonName && id !== person.id && name,
+        normalizeSearchString(name ?? '') === normalizedPersonName && id !== person.id && name,
     );
     if (existingPerson) {
       personMerge2 = existingPerson;
@@ -248,7 +248,7 @@
       potentialMergePeople = result
         .filter(
           (person: PersonResponseDto) =>
-            normalizeSearchString(personMerge2?.name ?? '') === normalizeSearchString(person.name) &&
+            normalizeSearchString(personMerge2?.name ?? '') === normalizeSearchString(person.name ?? '') &&
             person.id !== personMerge2?.id &&
             person.id !== personMerge1?.id &&
             !person.isHidden,
@@ -367,7 +367,7 @@
               <EditNameInput
                 {person}
                 bind:suggestedPeople
-                name={person.name}
+                name={nullToEmpty(person.name)}
                 bind:isSearchingPeople
                 onChange={handleNameChange}
                 {thumbnailData}
@@ -384,7 +384,7 @@
                     circle
                     shadow
                     url={thumbnailData}
-                    altText={person.name}
+                    altText={getPersonDisplayName(person.name)}
                     widthStyle="3.375rem"
                     heightStyle="3.375rem"
                   />
@@ -439,7 +439,7 @@
                         circle
                         shadow
                         url={getPeopleThumbnailUrl(person)}
-                        altText={person.name}
+                        altText={getPersonDisplayName(person.name)}
                         widthStyle="2rem"
                         heightStyle="2rem"
                       />

@@ -6,6 +6,7 @@
   import { faceManager } from '$lib/stores/face.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { getPeopleThumbnailUrl } from '$lib/utils';
+  import { getPersonDisplayName } from '$lib/utils/string-utils';
   import { type AssetResponseDto } from '@immich/sdk';
   import { IconButton, Text } from '@immich/ui';
   import { mdiEye, mdiEyeOff, mdiPencil, mdiPlus } from '@mdi/js';
@@ -112,8 +113,8 @@
             curve
             shadow
             url={getPeopleThumbnailUrl(person)}
-            altText={person.name}
-            title={person.name}
+            altText={getPersonDisplayName(person.name)}
+            title={getPersonDisplayName(person.name)}
             widthStyle="100%"
             hidden={person.isHidden}
             highlighted={isHighlighted}

@@ -52,7 +52,7 @@ class AlbumResponseDto {
   DateTime createdAt;
 
   /// Album description
-  String description;
+  String? description;
 
   /// End date (latest asset)
   ///
@@ -132,7 +132,7 @@ class AlbumResponseDto {
     (assetCount.hashCode) +
     (contributorCounts.hashCode) +
     (createdAt.hashCode) +
-    (description.hashCode) +
+    (description == null ? 0 : description!.hashCode) +
     (endDate == null ? 0 : endDate!.hashCode) +
     (hasSharedLink.hashCode) +
     (id.hashCode) +
@@ -161,7 +161,11 @@ class AlbumResponseDto {
       json[r'contributorCounts'] = value;
     }
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
+    if (this.description != null) {
       json[r'description'] = this.description;
+    } else {
+      json[r'description'] = null;
+    }
     if (this.endDate.isPresent) {
       final value = this.endDate.value;
       json[r'endDate'] = value == null ? null : value.toUtc().toIso8601String();
@@ -201,7 +205,7 @@ class AlbumResponseDto {
         assetCount: mapValueOfType<int>(json, r'assetCount')!,
         contributorCounts: json.containsKey(r'contributorCounts') ? Optional.present(ContributorCountResponseDto.listFromJson(json[r'contributorCounts'])) : const Optional.absent(),
         createdAt: mapDateTime(json, r'createdAt', r'')!,
-        description: mapValueOfType<String>(json, r'description')!,
+        description: mapValueOfType<String>(json, r'description'),
         endDate: json.containsKey(r'endDate') ? Optional.present(mapDateTime(json, r'endDate', r'')) : const Optional.absent(),
         hasSharedLink: mapValueOfType<bool>(json, r'hasSharedLink')!,
         id: mapValueOfType<String>(json, r'id')!,

@@ -46,10 +46,10 @@ class SyncAuthUserV1 {
   bool isAdmin;
 
   /// User name
-  String name;
+  String? name;
 
   /// User OAuth ID
-  String oauthId;
+  String? oauthId;
 
   /// User pin code
   String? pinCode;
@@ -97,8 +97,8 @@ class SyncAuthUserV1 {
     (hasProfileImage.hashCode) +
     (id.hashCode) +
     (isAdmin.hashCode) +
-    (name.hashCode) +
-    (oauthId.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
+    (oauthId == null ? 0 : oauthId!.hashCode) +
     (pinCode == null ? 0 : pinCode!.hashCode) +
     (profileChangedAt.hashCode) +
     (quotaSizeInBytes == null ? 0 : quotaSizeInBytes!.hashCode) +
@@ -125,8 +125,16 @@ class SyncAuthUserV1 {
       json[r'hasProfileImage'] = this.hasProfileImage;
       json[r'id'] = this.id;
       json[r'isAdmin'] = this.isAdmin;
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
+    if (this.oauthId != null) {
       json[r'oauthId'] = this.oauthId;
+    } else {
+      json[r'oauthId'] = null;
+    }
     if (this.pinCode != null) {
       json[r'pinCode'] = this.pinCode;
     } else {
@@ -164,8 +172,8 @@ class SyncAuthUserV1 {
         hasProfileImage: mapValueOfType<bool>(json, r'hasProfileImage')!,
         id: mapValueOfType<String>(json, r'id')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        oauthId: mapValueOfType<String>(json, r'oauthId')!,
+        name: mapValueOfType<String>(json, r'name'),
+        oauthId: mapValueOfType<String>(json, r'oauthId'),
         pinCode: mapValueOfType<String>(json, r'pinCode'),
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')!,
         quotaSizeInBytes: mapValueOfType<int>(json, r'quotaSizeInBytes'),

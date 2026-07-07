@@ -1,5 +1,6 @@
 <script lang="ts">
   import SearchPeople from '$lib/components/faces-page/PeopleSearch.svelte';
+  import { getPersonDisplayName } from '$lib/utils/string-utils';
   import { type PersonResponseDto } from '@immich/sdk';
   import { Button } from '@immich/ui';
   import { t } from 'svelte-i18n';
@@ -34,7 +35,7 @@
     ? 'rounded-t-lg dark:border-immich-dark-gray'
     : 'rounded-lg'} border border-gray-200 bg-gray-100 p-2 dark:border-immich-dark-gray dark:bg-gray-700"
 >
-  <ImageThumbnail circle shadow url={thumbnailData} altText={person.name} widthStyle="2rem" heightStyle="2rem" />
+  <ImageThumbnail circle shadow url={thumbnailData} altText={getPersonDisplayName(person.name)} widthStyle="2rem" heightStyle="2rem" />
   <form class="ms-4 flex w-full justify-between gap-16" autocomplete="off" {onsubmit}>
     <SearchPeople
       bind:searchName={name}

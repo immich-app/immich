@@ -413,7 +413,7 @@
               <AlbumDescription
                 id={album.id}
                 {isOwned}
-                bind:description={() => album.description, (description) => (album = { ...album, description })}
+                bind:description={() => album.description ?? '', (description) => (album = { ...album, description: description || null })}
               />
             </section>
           {/if}

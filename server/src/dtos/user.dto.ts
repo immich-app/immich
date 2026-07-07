@@ -25,9 +25,9 @@ export class UserUpdateMeDto extends createZodDto(UserUpdateMeSchema) {}
 export const UserResponseSchema = z
   .object({
     id: z.uuidv4().describe('User ID'),
-    name: z.string().describe('User name'),
+    name: z.string().nullable().describe('User name'),
     email: toEmail.describe('User email'),
-    profileImagePath: z.string().describe('Profile image path'),
+    profileImagePath: z.string().nullable().describe('Profile image path'),
     avatarColor: UserAvatarColorSchema,
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     profileChangedAt: z.string().meta({ format: 'date-time' }).describe('Profile change date'),
@@ -58,8 +58,8 @@ export const mapUser = (entity: MaybeDehydrated<User | UserAdmin>): UserResponse
   return {
     id: entity.id,
     email: entity.email,
-    name: entity.name ?? entity.email,
-    profileImagePath: entity.profileImagePath ?? '',
+    name: entity.name,
+    profileImagePath: entity.profileImagePath,
     avatarColor: entity.avatarColor ?? emailToAvatarColor(entity.email),
     profileChangedAt: asDateTimeString(entity.profileChangedAt),
   };
@@ -122,7 +122,7 @@ const UserAdminResponseSchema = UserResponseSchema.extend({
   createdAt: isoDatetimeToDate.describe('Creation date'),
   deletedAt: isoDatetimeToDate.nullable().describe('Deletion date'),
   updatedAt: isoDatetimeToDate.describe('Last update date'),
-  oauthId: z.string().describe('OAuth ID'),
+  oauthId: z.string().nullable().describe('OAuth ID'),
   quotaSizeInBytes: z.int().min(0).nullable().describe('Storage quota in bytes'),
   quotaUsageInBytes: z.int().min(0).nullable().describe('Storage usage in bytes'),
   status: UserStatusSchema,
@@ -145,7 +145,7 @@ export function mapUserAdmin(entity: UserAdmin): UserAdminResponseDto {
     createdAt: entity.createdAt,
     deletedAt: entity.deletedAt,
     updatedAt: entity.updatedAt,
-    oauthId: entity.oauthId ?? '',
+    oauthId: entity.oauthId,
     quotaSizeInBytes: entity.quotaSizeInBytes,
     quotaUsageInBytes: entity.quotaUsageInBytes,
     status: entity.status,

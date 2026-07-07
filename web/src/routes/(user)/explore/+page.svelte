@@ -7,6 +7,7 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { Route } from '$lib/route';
   import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { getPersonDisplayName } from '$lib/utils/string-utils';
   import { getAssetInfo, AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Icon } from '@immich/ui';
@@ -75,7 +76,7 @@
                 circle
                 shadow
                 url={getPeopleThumbnailUrl(person)}
-                altText={person.name}
+                altText={getPersonDisplayName(person.name)}
                 widthStyle="100%"
               />
               {#if person.isFavorite}

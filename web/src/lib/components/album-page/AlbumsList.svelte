@@ -19,7 +19,7 @@
   } from '$lib/stores/preferences.store';
   import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { getUserDisplayName, normalizeSearchString } from '$lib/utils/string-utils';
   import { AlbumUserRole, type AlbumResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { mdiDeleteOutline, mdiDownload, mdiRenameOutline, mdiShareVariantOutline } from '@mdi/js';
@@ -111,13 +111,13 @@
         } else {
           const ownerA = albumsA[0].albumUsers[0].user;
           const ownerB = albumsB[0].albumUsers[0].user;
-          return ownerA.name.localeCompare(ownerB.name, $locale) * sortSign;
+          return getUserDisplayName(ownerA).localeCompare(getUserDisplayName(ownerB), $locale) * sortSign;
         }
       });
 
       return sortedByOwnerNames.map(([ownerId, albums]) => ({
         id: ownerId,
-        name: ownerId === currentUserId ? $t('my_albums') : albums[0].albumUsers[0].user.name,
+        name: ownerId === currentUserId ? $t('my_albums') : getUserDisplayName(albums[0].albumUsers[0].user),
         albums,
       }));
     },
@@ -146,7 +146,7 @@
       ? albums.filter(
           ({ albumName, description }) =>
             normalizeSearchString(albumName).includes(normalizedSearchQuery) ||
-            normalizeSearchString(description).includes(normalizedSearchQuery),
+            normalizeSearchString(description ?? '').includes(normalizedSearchQuery),
         )
       : albums,
   );

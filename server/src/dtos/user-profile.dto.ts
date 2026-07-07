@@ -13,7 +13,7 @@ const CreateProfileImageResponseSchema = z
   .object({
     userId: z.uuidv4().describe('User ID'),
     profileChangedAt: isoDatetimeToDate.describe('Profile image change date'),
-    profileImagePath: z.string().describe('Profile image file path'),
+    profileImagePath: z.string().nullable().describe('Profile image file path'),
   })
   .meta({ id: 'CreateProfileImageResponseDto' });
 

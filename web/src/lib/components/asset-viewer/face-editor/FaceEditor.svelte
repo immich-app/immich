@@ -7,7 +7,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { getPersonDisplayName, normalizeSearchString } from '$lib/utils/string-utils';
   import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, Input, modalManager, toastManager } from '@immich/ui';
   import { Canvas, InteractiveFabricObject, Rect } from 'fabric';
@@ -38,7 +38,9 @@
 
   let filteredCandidates = $derived(
     searchTerm
-      ? candidates.filter((person) => normalizeSearchString(person.name).includes(normalizeSearchString(searchTerm)))
+      ? candidates.filter((person) =>
+          normalizeSearchString(getPersonDisplayName(person.name)).includes(normalizeSearchString(searchTerm)),
+        )
       : candidates,
   );
 
@@ -400,8 +402,8 @@
                 curve
                 shadow
                 url={getPeopleThumbnailUrl(person)}
-                altText={person.name}
-                title={person.name}
+                altText={getPersonDisplayName(person.name)}
+                title={getPersonDisplayName(person.name)}
                 widthStyle="30px"
                 heightStyle="30px"
               />

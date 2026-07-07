@@ -3,6 +3,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { handleCreateLibrary } from '$lib/services/library.service';
+  import { getUserDisplayName } from '$lib/utils/string-utils';
   import { Field, FormModal, HelperText, Select } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -38,7 +39,7 @@
   {onSubmit}
 >
   <Field label={$t('owner')}>
-    <Select bind:value={ownerId} options={users.map((user) => ({ label: user.name, value: user.id }))} />
+    <Select bind:value={ownerId} options={users.map((user) => ({ label: getUserDisplayName(user), value: user.id }))} />
     <HelperText color="warning">{$t('admin.note_cannot_be_changed_later')}</HelperText>
   </Field>
 </FormModal>

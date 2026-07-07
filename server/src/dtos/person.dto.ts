@@ -61,10 +61,10 @@ const PersonSearchSchema = z
 export const PersonResponseSchema = z
   .object({
     id: z.uuidv4().describe('Person ID'),
-    name: z.string().describe('Person name'),
+    name: z.string().nullable().describe('Person name'),
     // TODO: use `isoDateToDate` when using `ZodSerializerDto` on the controllers.
     birthDate: z.string().meta({ format: 'date' }).describe('Person date of birth').nullable(),
-    thumbnailPath: z.string().describe('Thumbnail path'),
+    thumbnailPath: z.string().nullable().describe('Thumbnail path'),
     isHidden: z.boolean().describe('Is hidden'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     updatedAt: z
@@ -174,9 +174,9 @@ export class PeopleResponseDto extends createZodDto(PeopleResponseSchema) {}
 export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
   return {
     id: person.id,
-    name: person.name ?? '',
+    name: person.name,
     birthDate: asDateString(person.birthDate),
-    thumbnailPath: person.thumbnailPath ?? '',
+    thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,

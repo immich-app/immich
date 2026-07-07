@@ -13,7 +13,7 @@
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { getPersonDisplayName, normalizeSearchString, nullToEmpty } from '$lib/utils/string-utils';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
@@ -217,7 +217,7 @@
 
   const onNameChangeInputFocus = (person: PersonResponseDto) => {
     editingPerson = person;
-    newName = person.name;
+    newName = nullToEmpty(person.name);
   };
 
   const onNameChangeSubmit = async (name: string, targetPerson: PersonResponseDto) => {
@@ -238,7 +238,7 @@
         potentialMergePeople = people
           .filter(
             (person: PersonResponseDto) =>
-              normalizeSearchString(personMerge2?.name ?? '') === normalizeSearchString(person.name) &&
+              normalizeSearchString(personMerge2?.name ?? '') === normalizeSearchString(person.name ?? '') &&
               person.id !== personMerge2?.id &&
               person.id !== personMerge1?.id &&
               !person.isHidden,
@@ -272,7 +272,8 @@
     const searchResult = await searchPerson({ name, withHidden: true });
     const normalizedName = normalizeSearchString(name);
     return searchResult.find(
-      (person) => normalizeSearchString(person.name) === normalizedName && person.id !== personId && person.name,
+      (person) =>
+        normalizeSearchString(person.name ?? '') === normalizedName && person.id !== personId && person.name,
     );
   };
 

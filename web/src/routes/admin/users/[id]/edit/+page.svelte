@@ -4,6 +4,7 @@
   import { Route } from '$lib/route';
   import { handleUpdateUserAdmin } from '$lib/services/user-admin.service';
   import { userInteraction } from '$lib/stores/user.svelte';
+  import { nullToEmpty, nullToUndefined } from '$lib/utils/string-utils';
   import { ByteUnit, convertFromBytes, convertToBytes } from '$lib/utils/byte-units';
   import { Field, FormModal, Input, Link, NumberInput, Switch, Text } from '@immich/ui';
   import { mdiAccountEditOutline } from '@mdi/js';
@@ -17,7 +18,8 @@
   let { data }: Props = $props();
 
   const user = $derived(data.user);
-  let { isAdmin, name, email } = $derived(user);
+  let { isAdmin, email } = $derived(user);
+  let name = $state(nullToEmpty(data.user.name));
   let storageLabel = $derived(user.storageLabel || '');
   const previousQuota = $derived(user.quotaSizeInBytes);
 
@@ -43,7 +45,7 @@
 
     const success = await handleUpdateUserAdmin(user, {
       email,
-      name,
+      name: nullToUndefined(name),
       storageLabel,
       quotaSizeInBytes: typeof quotaSize === 'number' ? convertToBytes(quotaSize, ByteUnit.GiB) : null,
       isAdmin,

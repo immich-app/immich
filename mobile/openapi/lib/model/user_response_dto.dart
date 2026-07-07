@@ -30,13 +30,13 @@ class UserResponseDto {
   String id;
 
   /// User name
-  String name;
+  String? name;
 
   /// Profile change date
   DateTime profileChangedAt;
 
   /// Profile image path
-  String profileImagePath;
+  String? profileImagePath;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UserResponseDto &&
@@ -53,9 +53,9 @@ class UserResponseDto {
     (avatarColor.hashCode) +
     (email.hashCode) +
     (id.hashCode) +
-    (name.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
     (profileChangedAt.hashCode) +
-    (profileImagePath.hashCode);
+    (profileImagePath == null ? 0 : profileImagePath!.hashCode);
 
   @override
   String toString() => 'UserResponseDto[avatarColor=$avatarColor, email=$email, id=$id, name=$name, profileChangedAt=$profileChangedAt, profileImagePath=$profileImagePath]';
@@ -65,9 +65,17 @@ class UserResponseDto {
       json[r'avatarColor'] = this.avatarColor;
       json[r'email'] = this.email;
       json[r'id'] = this.id;
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
       json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
+    if (this.profileImagePath != null) {
       json[r'profileImagePath'] = this.profileImagePath;
+    } else {
+      json[r'profileImagePath'] = null;
+    }
     return json;
   }
 
@@ -83,9 +91,9 @@ class UserResponseDto {
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
-        name: mapValueOfType<String>(json, r'name')!,
+        name: mapValueOfType<String>(json, r'name'),
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
       );
     }
     return null;

@@ -20,7 +20,7 @@ import z from 'zod';
 const SyncUserV1Schema = z
   .object({
     id: z.uuidv4().describe('User ID'),
-    name: z.string().describe('User name'),
+    name: z.string().nullable().describe('User name'),
     email: z.string().describe('User email'),
     avatarColor: UserAvatarColorSchema.nullish(),
     deletedAt: isoDatetimeToDate.nullable().describe('User deleted at'),
@@ -33,7 +33,7 @@ const SyncAuthUserV1Schema = SyncUserV1Schema.merge(
   z.object({
     isAdmin: z.boolean().describe('User is admin'),
     pinCode: z.string().nullable().describe('User pin code'),
-    oauthId: z.string().describe('User OAuth ID'),
+    oauthId: z.string().nullable().describe('User OAuth ID'),
     storageLabel: z.string().nullable().describe('User storage label'),
     quotaSizeInBytes: z.int().nullable().describe('Quota size in bytes'),
     quotaUsageInBytes: z.int().describe('Quota usage in bytes'),
@@ -222,7 +222,7 @@ const SyncAlbumV1Schema = z
     id: z.uuidv4().describe('Album ID'),
     ownerId: z.uuidv4().describe('Owner ID'),
     name: z.string().describe('Album name'),
-    description: z.string().describe('Album description'),
+    description: z.string().nullable().describe('Album description'),
     createdAt: isoDatetimeToDate.describe('Created at'),
     updatedAt: isoDatetimeToDate.describe('Updated at'),
     thumbnailAssetId: z.string().nullable().describe('Thumbnail asset ID'),
@@ -235,7 +235,7 @@ const SyncAlbumV2Schema = z
   .object({
     id: z.uuidv4().describe('Album ID'),
     name: z.string().describe('Album name'),
-    description: z.string().describe('Album description'),
+    description: z.string().nullable().describe('Album description'),
     createdAt: isoDatetimeToDate.describe('Created at'),
     updatedAt: isoDatetimeToDate.describe('Updated at'),
     thumbnailAssetId: z.string().nullable().describe('Thumbnail asset ID'),
@@ -337,7 +337,7 @@ const SyncPersonV1Schema = z
     createdAt: isoDatetimeToDate.describe('Created at'),
     updatedAt: isoDatetimeToDate.describe('Updated at'),
     ownerId: z.uuidv4().describe('Owner ID'),
-    name: z.string().describe('Person name'),
+    name: z.string().nullable().describe('Person name'),
     birthDate: isoDatetimeToDate.nullable().describe('Birth date'),
     isHidden: z.boolean().describe('Is hidden'),
     isFavorite: z.boolean().describe('Is favorite'),

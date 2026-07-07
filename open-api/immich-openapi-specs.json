@@ -16549,6 +16549,7 @@
           },
           "description": {
             "description": "Album description",
+            "nullable": true,
             "type": "string"
           },
           "endDate": {
@@ -18474,6 +18475,7 @@
           },
           "profileImagePath": {
             "description": "Profile image file path",
+            "nullable": true,
             "type": "string"
           },
           "userId": {
@@ -19486,10 +19488,12 @@
           },
           "name": {
             "description": "User name",
+            "nullable": true,
             "type": "string"
           },
           "profileImagePath": {
             "description": "Profile image path",
+            "nullable": true,
             "type": "string"
           },
           "shouldChangePassword": {
@@ -20667,6 +20671,7 @@
           },
           "name": {
             "description": "User name",
+            "nullable": true,
             "type": "string"
           },
           "profileChangedAt": {
@@ -20676,6 +20681,7 @@
           },
           "profileImagePath": {
             "description": "Profile image path",
+            "nullable": true,
             "type": "string"
           }
         },
@@ -21086,10 +21092,12 @@
           },
           "name": {
             "description": "Person name",
+            "nullable": true,
             "type": "string"
           },
           "thumbnailPath": {
             "description": "Thumbnail path",
+            "nullable": true,
             "type": "string"
           },
           "updatedAt": {
@@ -22830,10 +22838,12 @@
           },
           "deviceOS": {
             "description": "Device OS",
+            "nullable": true,
             "type": "string"
           },
           "deviceType": {
             "description": "Device type",
+            "nullable": true,
             "type": "string"
           },
           "expiresAt": {
@@ -22889,10 +22899,12 @@
           },
           "deviceOS": {
             "description": "Device OS",
+            "nullable": true,
             "type": "string"
           },
           "deviceType": {
             "description": "Device type",
+            "nullable": true,
             "type": "string"
           },
           "expiresAt": {
@@ -23885,6 +23897,7 @@
           },
           "description": {
             "description": "Album description",
+            "nullable": true,
             "type": "string"
           },
           "id": {
@@ -23947,6 +23960,7 @@
           },
           "description": {
             "description": "Album description",
+            "nullable": true,
             "type": "string"
           },
           "id": {
@@ -24892,10 +24906,12 @@
           },
           "name": {
             "description": "User name",
+            "nullable": true,
             "type": "string"
           },
           "oauthId": {
             "description": "User OAuth ID",
+            "nullable": true,
             "type": "string"
           },
           "pinCode": {
@@ -25270,6 +25286,7 @@
           },
           "name": {
             "description": "Person name",
+            "nullable": true,
             "type": "string"
           },
           "ownerId": {
@@ -25504,6 +25521,7 @@
           },
           "name": {
             "description": "User name",
+            "nullable": true,
             "type": "string"
           },
           "profileChangedAt": {
@@ -27369,10 +27387,12 @@
           },
           "name": {
             "description": "User name",
+            "nullable": true,
             "type": "string"
           },
           "oauthId": {
             "description": "OAuth ID",
+            "nullable": true,
             "type": "string"
           },
           "profileChangedAt": {
@@ -27382,6 +27402,7 @@
           },
           "profileImagePath": {
             "description": "Profile image path",
+            "nullable": true,
             "type": "string"
           },
           "quotaSizeInBytes": {
@@ -27662,6 +27683,7 @@
           },
           "name": {
             "description": "User name",
+            "nullable": true,
             "type": "string"
           },
           "profileChangedAt": {
@@ -27671,6 +27693,7 @@
           },
           "profileImagePath": {
             "description": "Profile image path",
+            "nullable": true,
             "type": "string"
           }
         },

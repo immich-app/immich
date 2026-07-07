@@ -33,10 +33,10 @@ class LoginResponseDto {
   bool isOnboarded;
 
   /// User name
-  String name;
+  String? name;
 
   /// Profile image path
-  String profileImagePath;
+  String? profileImagePath;
 
   /// Should change password
   bool shouldChangePassword;
@@ -64,8 +64,8 @@ class LoginResponseDto {
     (accessToken.hashCode) +
     (isAdmin.hashCode) +
     (isOnboarded.hashCode) +
-    (name.hashCode) +
-    (profileImagePath.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
+    (profileImagePath == null ? 0 : profileImagePath!.hashCode) +
     (shouldChangePassword.hashCode) +
     (userEmail.hashCode) +
     (userId.hashCode);
@@ -78,8 +78,16 @@ class LoginResponseDto {
       json[r'accessToken'] = this.accessToken;
       json[r'isAdmin'] = this.isAdmin;
       json[r'isOnboarded'] = this.isOnboarded;
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
+    if (this.profileImagePath != null) {
       json[r'profileImagePath'] = this.profileImagePath;
+    } else {
+      json[r'profileImagePath'] = null;
+    }
       json[r'shouldChangePassword'] = this.shouldChangePassword;
       json[r'userEmail'] = this.userEmail;
       json[r'userId'] = this.userId;
@@ -98,8 +106,8 @@ class LoginResponseDto {
         accessToken: mapValueOfType<String>(json, r'accessToken')!,
         isAdmin: mapValueOfType<bool>(json, r'isAdmin')!,
         isOnboarded: mapValueOfType<bool>(json, r'isOnboarded')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,
+        name: mapValueOfType<String>(json, r'name'),
+        profileImagePath: mapValueOfType<String>(json, r'profileImagePath'),
         shouldChangePassword: mapValueOfType<bool>(json, r'shouldChangePassword')!,
         userEmail: mapValueOfType<String>(json, r'userEmail')!,
         userId: mapValueOfType<String>(json, r'userId')!,

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
+  import { nullToEmpty, nullToUndefined } from '$lib/utils/string-utils';
   import { updateMyUser } from '@immich/sdk';
   import { Button, Field, Input, toastManager } from '@immich/ui';
   import { cloneDeep } from 'lodash-es';
@@ -9,6 +10,7 @@
   import { fade } from 'svelte/transition';
 
   let editedUser = $state(cloneDeep(authManager.user));
+  let name = $state(nullToEmpty(authManager.user.name));
   const bubble = createBubbler();
 
   const handleSaveProfile = async () => {
@@ -16,11 +18,12 @@
       const data = await updateMyUser({
         userUpdateMeDto: {
           email: editedUser.email,
-          name: editedUser.name,
+          name: nullToUndefined(name),
         },
       });
 
       Object.assign(editedUser, data);
+      name = nullToEmpty(data.name);
       authManager.setUser(data);
 
       toastManager.primary($t('saved_profile'));
@@ -43,7 +46,7 @@
         </Field>
 
         <Field label={$t('name')} required>
-          <Input bind:value={editedUser.name} />
+          <Input bind:value={name} />
         </Field>
 
         <Field label={$t('storage_label')} disabled>

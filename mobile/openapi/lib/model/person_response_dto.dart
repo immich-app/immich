@@ -51,10 +51,10 @@ class PersonResponseDto {
   bool isHidden;
 
   /// Person name
-  String name;
+  String? name;
 
   /// Thumbnail path
-  String thumbnailPath;
+  String? thumbnailPath;
 
   /// Last update date
   ///
@@ -84,8 +84,8 @@ class PersonResponseDto {
     (id.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
     (isHidden.hashCode) +
-    (name.hashCode) +
-    (thumbnailPath.hashCode) +
+    (name == null ? 0 : name!.hashCode) +
+    (thumbnailPath == null ? 0 : thumbnailPath!.hashCode) +
     (updatedAt == null ? 0 : updatedAt!.hashCode);
 
   @override
@@ -108,8 +108,16 @@ class PersonResponseDto {
       json[r'isFavorite'] = value;
     }
       json[r'isHidden'] = this.isHidden;
+    if (this.name != null) {
       json[r'name'] = this.name;
+    } else {
+      json[r'name'] = null;
+    }
+    if (this.thumbnailPath != null) {
       json[r'thumbnailPath'] = this.thumbnailPath;
+    } else {
+      json[r'thumbnailPath'] = null;
+    }
     if (this.updatedAt.isPresent) {
       final value = this.updatedAt.value;
       json[r'updatedAt'] = value == null ? null : value.toUtc().toIso8601String();
@@ -131,8 +139,8 @@ class PersonResponseDto {
         id: mapValueOfType<String>(json, r'id')!,
         isFavorite: json.containsKey(r'isFavorite') ? Optional.present(mapValueOfType<bool>(json, r'isFavorite')) : const Optional.absent(),
         isHidden: mapValueOfType<bool>(json, r'isHidden')!,
-        name: mapValueOfType<String>(json, r'name')!,
-        thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath')!,
+        name: mapValueOfType<String>(json, r'name'),
+        thumbnailPath: mapValueOfType<String>(json, r'thumbnailPath'),
         updatedAt: json.containsKey(r'updatedAt') ? Optional.present(mapDateTime(json, r'updatedAt', r'')) : const Optional.absent(),
       );
     }
