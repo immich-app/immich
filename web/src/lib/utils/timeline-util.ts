@@ -39,8 +39,6 @@ export const fromISODateTimeToObject = (isoDateTime: string, timeZone: string): 
 // used for AssetResponseDto.localDateTime, amongst others
 export const fromISODateTimeUTC = (isoDateTimeUtc: string) => fromISODateTime(isoDateTimeUtc, 'UTC');
 
-export const fromISODateTimeUTCToLocal = (isoDateTimeUtc: string) => fromISODateTime(isoDateTimeUtc, 'UTC').toLocal();
-
 export const fromISODateTimeUTCToObject = (isoDateTimeUtc: string): TimelineDateTime =>
   (fromISODateTimeUTC(isoDateTimeUtc) as DateTime<true>).toObject();
 
