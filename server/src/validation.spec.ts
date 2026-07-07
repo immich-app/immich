@@ -1,8 +1,25 @@
-import { IsNotSiblingOf } from 'src/validation';
+import { IsNotSiblingOf, slugRegex } from 'src/validation';
 import { describe, expect, it } from 'vitest';
 import z from 'zod';
 
 describe('Validation', () => {
+  describe('slugRegex', () => {
+    const SlugSchema = z.object({ slug: z.string().regex(slugRegex) });
+
+    it('passes for a plain slug', () => {
+      expect(SlugSchema.safeParse({ slug: 'my-custom-link' }).success).toBe(true);
+    });
+
+    it('passes for an empty string', () => {
+      expect(SlugSchema.safeParse({ slug: '' }).success).toBe(true);
+    });
+
+    it('fails for a slug containing a forward slash', () => {
+      expect(SlugSchema.safeParse({ slug: '/my-custom-link' }).success).toBe(false);
+      expect(SlugSchema.safeParse({ slug: 'my/custom/link' }).success).toBe(false);
+    });
+  });
+
   describe('IsNotSiblingOf', () => {
     const MySchemaBase = z.object({
       attribute1: z.string().optional(),

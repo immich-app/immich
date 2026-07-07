@@ -23019,6 +23019,7 @@
           "slug": {
             "description": "Custom URL slug",
             "nullable": true,
+            "pattern": "^[^/]*$",
             "type": "string"
           },
           "type": {
@@ -23065,6 +23066,7 @@
           "slug": {
             "description": "Custom URL slug",
             "nullable": true,
+            "pattern": "^[^/]*$",
             "type": "string"
           }
         },

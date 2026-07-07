@@ -29,4 +29,22 @@ describe('SharedLinkFormFields component', () => {
     expect(isChecked(showMetadataSwitch)).toBe(false);
     expect(isChecked(allowDownloadSwitch)).toBe(false);
   });
+
+  it('strips forward slashes from the custom URL field', async () => {
+    const { container } = renderWithTooltips(SharedLinkFormFields, {
+      slug: '',
+      password: '',
+      description: '',
+      allowDownload: true,
+      allowUpload: false,
+      showMetadata: true,
+      expiresAt: null,
+    });
+    const user = userEvent.setup();
+
+    const input = container.querySelector('input[type="text"], input:not([type])') as HTMLInputElement;
+    await user.type(input, 'foo/bar');
+
+    expect(input.value).toBe('foobar');
+  });
 });

@@ -255,3 +255,9 @@ export const hexColor = z
   .transform((val) => (val.startsWith('#') ? val : `#${val}`));
 
 export const sanitizeFilename = z.string().transform((val) => sanitize(val.replaceAll('.', '')));
+
+/**
+ * URL slug validation - must not contain "/" since a slug is used as a single path segment
+ * (e.g. a shared link's custom URL). Allowing "/" would break routing.
+ */
+export const slugRegex = /^[^/]*$/;

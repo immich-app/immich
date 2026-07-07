@@ -4,7 +4,7 @@ import { HistoryBuilder } from 'src/decorators';
 import { AlbumResponseSchema, mapAlbum } from 'src/dtos/album.dto';
 import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto';
 import { SharedLinkTypeSchema } from 'src/enum';
-import { isoDatetimeToDate } from 'src/validation';
+import { isoDatetimeToDate, slugRegex } from 'src/validation';
 import z from 'zod';
 
 const SharedLinkSearchSchema = z
@@ -25,7 +25,12 @@ const SharedLinkCreateSchema = z
     albumId: z.uuidv4().optional().describe('Album ID (for album sharing)'),
     description: z.string().nullable().optional().describe('Link description'),
     password: z.string().nullable().optional().describe('Link password'),
-    slug: z.string().nullable().optional().describe('Custom URL slug'),
+    slug: z
+      .string()
+      .regex(slugRegex, 'Custom URL must not contain "/"')
+      .nullable()
+      .optional()
+      .describe('Custom URL slug'),
     expiresAt: isoDatetimeToDate.nullable().describe('Expiration date').default(null).optional(),
     allowUpload: z.boolean().optional().describe('Allow uploads'),
     allowDownload: z.boolean().default(true).optional().describe('Allow downloads'),
@@ -37,7 +42,12 @@ const SharedLinkEditSchema = z
   .object({
     description: z.string().nullable().optional().describe('Link description'),
     password: z.string().nullable().optional().describe('Link password'),
-    slug: z.string().nullable().optional().describe('Custom URL slug'),
+    slug: z
+      .string()
+      .regex(slugRegex, 'Custom URL must not contain "/"')
+      .nullable()
+      .optional()
+      .describe('Custom URL slug'),
     expiresAt: isoDatetimeToDate.nullish().describe('Expiration date'),
     allowUpload: z.boolean().optional().describe('Allow uploads'),
     allowDownload: z.boolean().optional().describe('Allow downloads'),
