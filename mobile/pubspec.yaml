@@ -84,7 +84,7 @@ dependencies:
   cupertino_http:
     git:
       url: https://github.com/mertalev/http
-      ref: 'b65e9a327915d1ff1051b64dd5b85734830a28ba'
+      ref: '21e146ad5bdabb3806abb92c9f51314c2348acbb'
       path: pkgs/cupertino_http/
   ok_http:
     git:
