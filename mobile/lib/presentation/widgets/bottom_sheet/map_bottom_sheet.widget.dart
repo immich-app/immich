@@ -35,7 +35,6 @@ class _ScopedMapTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: this causes the timeline to switch to flicker to "loading" state and back. This is both janky and inefficient.
     return ProviderScope(
       overrides: [
         timelineServiceProvider.overrideWith((ref) {
@@ -44,13 +43,16 @@ class _ScopedMapTimeline extends StatelessWidget {
             throw Exception('User must be logged in to access archive');
           }
 
-          final users = ref.watch(mapStateProvider).withPartners
-              ? ref.watch(timelineUsersProvider).valueOrNull ?? [user.id]
-              : [user.id];
+          final withPartners = ref.watch(mapStateProvider.select((s) => s.withPartners));
+          final users = withPartners ? ref.watch(timelineUsersProvider).valueOrNull ?? [user.id] : [user.id];
 
           final timelineService = ref
               .watch(timelineFactoryProvider)
-              .map(users, ref.watch(mapStateProvider).toOptions());
+              .geographicMap(
+                users,
+                () => ref.read(mapStateProvider).toOptions(),
+                ref.read(mapStateProvider.notifier).optionsStream,
+              );
           ref.onDispose(timelineService.dispose);
           return timelineService;
         }),

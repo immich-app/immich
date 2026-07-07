@@ -509,9 +509,21 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     return query.map((row) => row.toDto()).get();
   }
 
-  TimelineQuery map(List<String> userIds, TimelineMapOptions options, GroupAssetsBy groupBy) => (
-    bucketSource: () => _watchMapBucket(userIds, options, groupBy: groupBy),
-    assetSource: (offset, count) => _getMapBucketAssets(userIds, options, offset: offset, count: count),
+  /// Creates a geographic map query that can dynamically filter on changing [TimelineMapOptions]
+  /// (most notably the active map bounds)
+  TimelineQuery geographicMap(
+    List<String> userIds,
+    TimelineMapOptions Function() currentOptions,
+    Stream<TimelineMapOptions> optionsStream,
+    GroupAssetsBy groupBy,
+  ) => (
+    bucketSource: () => Stream.value(currentOptions())
+        .followedBy(optionsStream)
+        .switchMap(
+          // Any error would kill the stream for all options; make sure the stream stays alive
+          (options) => _watchMapBucket(userIds, options, groupBy: groupBy).handleError((_) {}),
+        ),
+    assetSource: (offset, count) => _getMapBucketAssets(userIds, currentOptions(), offset: offset, count: count),
     origin: TimelineOrigin.map,
   );
 
