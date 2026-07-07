@@ -97,6 +97,15 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     }
   }
 
+  // Drops the previous drag range and adds the new one in a single update. The
+  // full-set copy per drag tick is the accepted cost of immutable state.
+  void selectRange(Set<BaseAsset> toSelect, Set<BaseAsset> toDeselect) {
+    final selectedAssets = state.selectedAssets.toSet()
+      ..removeAll(toDeselect)
+      ..addAll(toSelect);
+    state = state.copyWith(selectedAssets: selectedAssets);
+  }
+
   void reset() {
     state = const MultiSelectState(selectedAssets: {}, lockedSelectionAssets: {}, forceEnable: false);
   }

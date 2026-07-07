@@ -182,6 +182,18 @@ class TimelineService {
     return _buffer.slice(start, start + count);
   }
 
+  /// Reads a range without disturbing the buffer; queries the source if it isn't resident.
+  Future<List<BaseAsset>> getAssetsRange(int index, int count) async {
+    if (index < 0 || count <= 0 || index >= _totalAssets) {
+      return const [];
+    }
+    final clamped = math.min(count, _totalAssets - index);
+    if (hasRange(index, clamped)) {
+      return getAssets(index, clamped);
+    }
+    return _assetSource(index, clamped);
+  }
+
   // Preload assets around the given index for asset viewer
   Future<void> preloadAssets(int index) => _mutex.run(() => _loadAssets(index, math.min(5, _totalAssets - index)));
 
