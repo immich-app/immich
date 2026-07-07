@@ -24,6 +24,7 @@ select
   "session"."updatedAt",
   "session"."pinExpiresAt",
   "session"."appVersion",
+  "session"."oauthBearerToken",
   (
     select
       to_json(obj)
