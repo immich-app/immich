@@ -173,6 +173,7 @@ part 'model/face_dto.dart';
 part 'model/facial_recognition_config.dart';
 part 'model/folders_response.dart';
 part 'model/folders_update.dart';
+part 'model/hls_video_resolution.dart';
 part 'model/image_format.dart';
 part 'model/integrity_report.dart';
 part 'model/integrity_report_response_dto.dart';

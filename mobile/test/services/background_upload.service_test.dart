@@ -140,6 +140,7 @@ void main() {
       expect(task, isNotNull);
       expect(task!.fields['filename'], equals('OriginalLivePhoto.HEIC'));
       expect(task.fields['livePhotoVideoId'], equals('video-id-123'));
+      expect(task.fields['visibility'], equals('hidden'));
       verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
     });
 
@@ -333,6 +334,7 @@ void main() {
       expect(task, isNotNull);
       expect(task!.fields.containsKey('metadata'), isTrue);
       expect(task.fields['livePhotoVideoId'], equals('video-123'));
+      expect(task.fields['visibility'], equals('hidden'));
 
       final metadata = jsonDecode(task.fields['metadata']!) as List;
       expect(metadata, hasLength(1));
