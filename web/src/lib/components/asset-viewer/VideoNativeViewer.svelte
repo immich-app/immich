@@ -5,6 +5,7 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
   import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
   import { getAssetHlsSessionUrl, getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
@@ -150,6 +151,15 @@
       },
     },
     useMediaCapabilities: false,
+    xhrSetup: (xhr: XMLHttpRequest, url: string) => {
+      const authenticatedUrl = new URL(url, globalThis.location.origin);
+      for (const [key, value] of Object.entries(authManager.params)) {
+        if (value) {
+          authenticatedUrl.searchParams.set(key, value as string);
+        }
+      }
+      xhr.open('GET', authenticatedUrl.toString());
+    },
   };
 
   const releaseSession = () => {
@@ -323,6 +333,18 @@
     {
       shortcut: { key: ' ' },
       onShortcut: () => (videoPlayer?.paused ? videoPlayer?.play() : videoPlayer?.pause()),
+    },
+    {
+      shortcut: { shift: true, key: 'ArrowLeft' },
+      onShortcut: () =>
+        videoPlayer ? (videoPlayer.currentTime = Math.max(videoPlayer.currentTime - 0.4, 0)) : undefined,
+    },
+    {
+      shortcut: { shift: true, key: 'ArrowRight' },
+      onShortcut: () =>
+        videoPlayer
+          ? (videoPlayer.currentTime = Math.min(videoPlayer.currentTime + 0.4, videoPlayer.duration))
+          : undefined,
     },
   ]}
 />

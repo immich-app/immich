@@ -160,8 +160,8 @@ export class IntegrityRepository {
     >;
   }
 
-  @GenerateSql({ params: [DummyValue.DATE, DummyValue.DATE], stream: true })
-  streamAssetChecksums(startMarker?: Date, endMarker?: Date) {
+  @GenerateSql({ params: [DummyValue.DATE], stream: true })
+  streamAssetChecksums(startMarker?: Date) {
     return this.db
       .selectFrom('asset')
       .where('asset.deletedAt', 'is', null)
@@ -177,9 +177,9 @@ export class IntegrityRepository {
         'asset.id as assetId',
         'integrity_report.id as reportId',
       ])
-      .$if(startMarker !== undefined, (qb) => qb.where('createdAt', '>=', startMarker!))
-      .$if(endMarker !== undefined, (qb) => qb.where('createdAt', '<=', endMarker!))
-      .orderBy('createdAt', 'asc')
+      .where('asset.isExternal', '=', sql.lit(false))
+      .$if(startMarker !== undefined, (qb) => qb.where('asset.createdAt', '>=', startMarker!))
+      .orderBy('asset.createdAt', 'asc')
       .stream();
   }
 

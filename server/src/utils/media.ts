@@ -1,4 +1,4 @@
-import { AUDIO_ENCODER, SUPPORTED_HWA_CODECS } from 'src/constants';
+import { AUDIO_ENCODER, AV1_LEVELS, CodecLevel, H264_LEVELS, HEVC_LEVELS, SUPPORTED_HWA_CODECS } from 'src/constants';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   ColorMatrix,
@@ -34,6 +34,29 @@ export const getOutputSize = (videoStream: VideoStreamInfo, targetRes: number) =
     larger -= 1;
   }
   return isVideoVertical(videoStream) ? { width: targetRes, height: larger } : { width: larger, height: targetRes };
+};
+
+const pickLevel = (levels: CodecLevel[], frame: number, rate: number) =>
+  levels.find((level) => frame <= level.maxFrame && rate <= level.maxRate) ?? levels.at(-1)!;
+
+export const getCodecString = (codec: VideoCodec, width: number, height: number, fps: number): string => {
+  switch (codec) {
+    case VideoCodec.H264: {
+      const macroblocks = Math.ceil(width / 16) * Math.ceil(height / 16);
+      return `avc1.6400${pickLevel(H264_LEVELS, macroblocks, macroblocks * fps).token}`;
+    }
+    case VideoCodec.Hevc: {
+      const samples = width * height;
+      return `hvc1.1.6.${pickLevel(HEVC_LEVELS, samples, samples * fps).token}.B0`;
+    }
+    case VideoCodec.Av1: {
+      const samples = width * height;
+      return `av01.0.${pickLevel(AV1_LEVELS, samples, samples * fps).token}.08`;
+    }
+    default: {
+      throw new Error(`Codec '${codec}' does not support HLS codec strings`);
+    }
+  }
 };
 
 export class BaseConfig implements VideoCodecSWConfig {
@@ -200,6 +223,11 @@ export class BaseConfig implements VideoCodecSWConfig {
     const options = ['-c:v', videoCodec, '-c:a', audioCodec, '-map', `0:${videoStream.index}`, '-map_metadata', '-1'];
     if (audioStream) {
       options.push('-map', `0:${audioStream.index}`);
+      // If there are more than 2 channels sometimes the channel config is broken when re-encoded
+      // TODO: Store the number of channels in the db and then set it during the transcoding: -channel_layout 5.1
+      if ([TranscodeTarget.All, TranscodeTarget.Audio].includes(target)) {
+        options.push('-ac', '2');
+      }
     }
     if (this.getBFrames() > -1) {
       options.push('-bf', `${this.getBFrames()}`);
@@ -788,6 +816,12 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
     const options = [`-${this.useCQP() ? 'q:v' : 'global_quality:v'}`, `${this.config.crf}`];
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
+      // Workaround for https://github.com/immich-app/immich/issues/29220, to be revisited
+      // QSV seems to ignore -maxrate without -b:v
+      // -b:v alongside global_quality uses QVBR
+      if (!this.useCQP()) {
+        options.push('-b:v', `${bitrates.target}${bitrates.unit}`);
+      }
       options.push('-maxrate', `${bitrates.max}${bitrates.unit}`, '-bufsize', `${bitrates.max * 2}${bitrates.unit}`);
     }
     return options;

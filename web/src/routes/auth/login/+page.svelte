@@ -141,11 +141,11 @@
           <Alert color="danger" title={errorMessage} closable />
         {/if}
 
-        <Field label={$t('email')}>
+        <Field label={$t('email')} required="indicator">
           <Input id="email" name="email" type="email" autocomplete="email" bind:value={email} />
         </Field>
 
-        <Field label={$t('password')}>
+        <Field label={$t('password')} required="indicator">
           <PasswordInput id="password" bind:value={password} autocomplete="current-password" />
         </Field>
 

@@ -12,10 +12,11 @@
     icon?: string;
     title: string;
     valuePromise: MaybePromise<ValueData>;
+    tooltip?: string;
     footer?: Snippet;
   }
 
-  let { icon, title, valuePromise, footer }: Props = $props();
+  let { icon, title, valuePromise, tooltip, footer }: Props = $props();
   const zeros = (data?: ValueData) => {
     let length = 13;
     if (data) {
@@ -32,22 +33,22 @@
     {#if icon}
       <Icon {icon} size="40" />
     {/if}
-    <Text size="giant" fontWeight="medium">{title}</Text>
+    <Text size="giant" fontWeight="medium" title={tooltip}>{title}</Text>
   </div>
 
   {#await valuePromise}
-    <div class="relative mx-auto font-mono text-2xl font-medium">
+    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="0">
       <span class="shimmer-text text-gray-300 dark:text-gray-600">{zeros()}</span>
     </div>
   {:then data}
-    <div class="relative mx-auto font-mono text-2xl font-medium">
+    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="{data.value} {data.unit ?? ''}">
       <span class="text-gray-300 dark:text-gray-600">{zeros(data)}</span><span>{data.value}</span>
       {#if data.unit}
         <code class="font-mono text-base font-normal">{data.unit}</code>
       {/if}
     </div>
   {:catch _}
-    <div class="relative mx-auto font-mono text-2xl font-medium">
+    <div class="relative mx-auto font-mono text-2xl font-medium" aria-label="0">
       <span class="text-gray-300 dark:text-gray-600">{zeros()}</span>
     </div>
   {/await}

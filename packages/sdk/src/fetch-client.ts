@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.0.0-rc.0
+ * 3.0.1
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -342,6 +342,10 @@ export type RatingsResponse = {
     /** Whether ratings are enabled */
     enabled: boolean;
 };
+export type RecentlyAddedResponse = {
+    /** Whether the recently added page appears in the web sidebar */
+    sidebarWeb: boolean;
+};
 export type SharedLinksResponse = {
     /** Whether shared links are enabled */
     enabled: boolean;
@@ -364,6 +368,7 @@ export type UserPreferencesResponseDto = {
     people: PeopleResponse;
     purchase: PurchaseResponse;
     ratings: RatingsResponse;
+    recentlyAdded: RecentlyAddedResponse;
     sharedLinks: SharedLinksResponse;
     tags: TagsResponse;
 };
@@ -421,6 +426,10 @@ export type RatingsUpdate = {
     /** Whether ratings are enabled */
     enabled?: boolean;
 };
+export type RecentlyAddedUpdate = {
+    /** Whether the recently added page appears in the web sidebar */
+    sidebarWeb?: boolean;
+};
 export type SharedLinksUpdate = {
     /** Whether shared links are enabled */
     enabled?: boolean;
@@ -444,6 +453,7 @@ export type UserPreferencesUpdateDto = {
     people?: PeopleUpdate;
     purchase?: PurchaseUpdate;
     ratings?: RatingsUpdate;
+    recentlyAdded?: RecentlyAddedUpdate;
     sharedLinks?: SharedLinksUpdate;
     tags?: TagsUpdate;
 };
@@ -673,7 +683,7 @@ export type AssetMediaResponseDto = {
 export type AssetBulkUpdateDto = {
     /** Original date and time */
     dateTimeOriginal?: string;
-    /** Relative time offset in seconds */
+    /** Relative time offset in minutes */
     dateTimeRelative?: number;
     /** Asset description */
     description?: string;
@@ -696,7 +706,7 @@ export type AssetBulkUpdateDto = {
 export type AssetBulkUploadCheckItem = {
     /** Base64 or hex encoded SHA1 hash */
     checksum: string;
-    /** Asset ID */
+    /** Client-side identifier echoed in the response to match results to inputs (e.g. filename) */
     id: string;
 };
 export type AssetBulkUploadCheckDto = {
@@ -707,7 +717,7 @@ export type AssetBulkUploadCheckResult = {
     action: AssetUploadAction;
     /** Existing asset ID if duplicate */
     assetId?: string;
-    /** Asset ID */
+    /** Client-side identifier echoed from the request to match results to inputs */
     id: string;
     /** Whether existing asset is trashed */
     isTrashed?: boolean;
@@ -2292,6 +2302,10 @@ export type SystemConfigBackupsDto = {
 export type SystemConfigFFmpegRealtimeDto = {
     /** Enable real-time HLS transcoding (alpha) */
     enabled: boolean;
+    /** Resolutions to use for real-time HLS transcoding */
+    resolutions: HlsVideoResolution[];
+    /** Video codecs to use for real-time HLS transcoding */
+    videoCodecs: VideoCodec[];
 };
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
@@ -2501,7 +2515,7 @@ export type SystemConfigNightlyTasksDto = {
     generateMemories: boolean;
     /** Missing thumbnails */
     missingThumbnails: boolean;
-    /** Start time */
+    /** Start time (HH:MM) */
     startTime: string;
     /** Sync quota usage */
     syncQuotaUsage: boolean;
@@ -4452,12 +4466,13 @@ export function endSession({ id, key, sessionId, slug }: {
 /**
  * Get HLS media playlist
  */
-export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex }: {
+export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex, xImmichHlsPos }: {
     id: string;
     key?: string;
     sessionId: string;
     slug?: string;
     variantIndex: number;
+    xImmichHlsPos?: number;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchBlob<{
         status: 200;
@@ -4466,7 +4481,10 @@ export function getMediaPlaylist({ id, key, sessionId, slug, variantIndex }: {
         key,
         slug
     }))}`, {
-        ...opts
+        ...opts,
+        headers: oazapfts.mergeHeaders(opts?.headers, {
+            "x-immich-hls-pos": xImmichHlsPos
+        })
     }));
 }
 /**
@@ -7614,6 +7632,13 @@ export enum CQMode {
     Auto = "auto",
     Cqp = "cqp",
     Icq = "icq"
+}
+export enum HlsVideoResolution {
+    $480 = 480,
+    $720 = 720,
+    $1080 = 1080,
+    $1440 = 1440,
+    $2160 = 2160
 }
 export enum ToneMapping {
     Hable = "hable",
