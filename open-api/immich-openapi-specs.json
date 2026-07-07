@@ -2713,7 +2713,14 @@
             "name": "userId",
             "required": true,
             "in": "path",
-            "description": "Album user ID, or \"me\" to reference the current user. \"me\" is deprecated and will be removed in v4",
+            "description": "Album user ID, or \"me\" to reference the current user.",
+            "x-immich-history": [
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "\"me\" as a value is deprecated"
+              }
+            ],
             "schema": {
               "type": "string"
             }
@@ -2775,7 +2782,14 @@
             "name": "userId",
             "required": true,
             "in": "path",
-            "description": "Album user ID, or \"me\" to reference the current user. \"me\" is deprecated and will be removed in v4",
+            "description": "Album user ID, or \"me\" to reference the current user.",
+            "x-immich-history": [
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "\"me\" as a value is deprecated"
+              }
+            ],
             "schema": {
               "type": "string"
             }
