@@ -84,7 +84,7 @@ dependencies:
   cupertino_http:
     git:
       url: https://github.com/mertalev/http
-      ref: '21e146ad5bdabb3806abb92c9f51314c2348acbb'
+      ref: '58b03c756b81d16b3975a8ae4b91d25360123bb5'
       path: pkgs/cupertino_http/
   ok_http:
     git:
@@ -117,7 +117,7 @@ dependency_overrides:
   objective_c:
     git:
       url: https://github.com/mertalev/native
-      ref: '677cb071eb04aec758477c8897dee56e4e3f6c07'
+      ref: '2915556701f4734a784222f290a82adb1b101682'
       path: pkgs/objective_c/
 
 flutter:
