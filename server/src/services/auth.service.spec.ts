@@ -164,6 +164,18 @@ describe(AuthService.name, () => {
       });
     });
 
+    it('should include the id token hint for OAuth sessions', async () => {
+      const auth = AuthFactory.from().session({ oauthBearerToken: 'id-token' }).build();
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.session.delete.mockResolvedValue();
+
+      await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
+        successful: true,
+        redirectUri: 'http://end-session-endpoint/?id_token_hint=id-token',
+      });
+    });
+
     it('should return the custom end session endpoint if provided', async () => {
       const auth = AuthFactory.create();
 
@@ -335,6 +347,7 @@ describe(AuthService.name, () => {
         pinExpiresAt: null,
         appVersion: null,
         oauthSid: null,
+        oauthBearerToken: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -350,6 +363,7 @@ describe(AuthService.name, () => {
         session: {
           id: session.id,
           hasElevatedPermission: false,
+          oauthBearerToken: null,
         },
       });
     });
@@ -502,6 +516,7 @@ describe(AuthService.name, () => {
         pinExpiresAt: null,
         appVersion: null,
         oauthSid: null,
+        oauthBearerToken: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -517,6 +532,7 @@ describe(AuthService.name, () => {
         session: {
           id: session.id,
           hasElevatedPermission: false,
+          oauthBearerToken: null,
         },
       });
     });
@@ -531,6 +547,7 @@ describe(AuthService.name, () => {
         pinExpiresAt: null,
         appVersion: null,
         oauthSid: null,
+        oauthBearerToken: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -554,6 +571,7 @@ describe(AuthService.name, () => {
         pinExpiresAt: null,
         appVersion: null,
         oauthSid: null,
+        oauthBearerToken: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -720,6 +738,27 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.getByEmail).toHaveBeenCalledTimes(1);
       expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: profile.sub });
+    });
+
+    it('should store the OAuth bearer token on the new session', async () => {
+      const user = UserFactory.create();
+      const profile = OAuthProfileFactory.create();
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile, sid: 'oauth-sid', idToken: 'oauth-bearer-token' });
+      mocks.user.getByEmail.mockResolvedValue(user);
+      mocks.user.update.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.session.create).toHaveBeenCalledWith(
+        expect.objectContaining({ oauthSid: 'oauth-sid', oauthBearerToken: 'oauth-bearer-token' }),
+      );
     });
 
     it('should normalize the email from the OAuth profile before linking', async () => {
@@ -1125,6 +1164,7 @@ describe(AuthService.name, () => {
       mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
         profile: { sub: 'sub' },
         sid: session.oauthSid ?? undefined,
+        idToken: session.oauthBearerToken ?? undefined,
       });
       mocks.user.update.mockResolvedValue(user);
       mocks.session.update.mockResolvedValue(session);
@@ -1135,7 +1175,10 @@ describe(AuthService.name, () => {
         {},
       );
 
-      expect(mocks.session.update).toHaveBeenCalledWith(session.id, { oauthSid: session.oauthSid });
+      expect(mocks.session.update).toHaveBeenCalledWith(session.id, {
+        oauthSid: session.oauthSid,
+        oauthBearerToken: session.oauthBearerToken,
+      });
       expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: 'sub' });
     });
 
@@ -1169,7 +1212,7 @@ describe(AuthService.name, () => {
       expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
     });
 
-    it('should unlink an account and remove the oauthSid from the session', async () => {
+    it('should unlink an account and remove the OAuth data from the session', async () => {
       const user = UserFactory.create();
       const session = SessionFactory.create();
       const auth = AuthFactory.from(user).session(session).build();
@@ -1180,7 +1223,7 @@ describe(AuthService.name, () => {
 
       await sut.unlink(auth);
 
-      expect(mocks.session.update).toHaveBeenCalledWith(session.id, { oauthSid: null });
+      expect(mocks.session.update).toHaveBeenCalledWith(session.id, { oauthSid: null, oauthBearerToken: null });
       expect(mocks.user.update).toHaveBeenCalledWith(auth.user.id, { oauthId: '' });
     });
   });
