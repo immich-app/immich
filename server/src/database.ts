@@ -246,7 +246,7 @@ export type Person = {
   updatedAt: Date;
   updateId: string;
   isFavorite: boolean;
-  name: string;
+  name: string | null;
   birthDate: Date | null;
   color: string | null;
   faceAssetId: string | null;
