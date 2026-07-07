@@ -197,7 +197,7 @@ class _AspectRatioRect extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               border: Border.all(color: color ?? Colors.transparent, width: 3),
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: const BorderRadius.all(Radius.circular(4)),
             ),
           ),
         ),
@@ -383,12 +383,10 @@ class _EditorPreviewState extends ConsumerState<_EditorPreview> with TickerProvi
       if (previous?.aspectRatio != current.aspectRatio) {
         double? ratio;
 
-        switch (current.aspectRatio) {
-          case CropAspectRatio.original:
-            ratio = current.originalWidth / current.originalHeight;
-          default:
-            ratio = current.aspectRatio.ratio;
-        }
+        ratio = switch (current.aspectRatio) {
+          CropAspectRatio.original => current.originalWidth / current.originalHeight,
+          _ => current.aspectRatio.ratio,
+        };
 
         if (current.rotationAngle % 180 != 0) {
           ratio = ratio != null ? 1 / ratio : null;
