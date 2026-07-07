@@ -2302,6 +2302,10 @@ export type SystemConfigBackupsDto = {
 export type SystemConfigFFmpegRealtimeDto = {
     /** Enable real-time HLS transcoding (alpha) */
     enabled: boolean;
+    /** Resolutions to use for real-time HLS transcoding */
+    resolutions: HlsVideoResolution[];
+    /** Video codecs to use for real-time HLS transcoding */
+    videoCodecs: VideoCodec[];
 };
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
@@ -7628,6 +7632,13 @@ export enum CQMode {
     Auto = "auto",
     Cqp = "cqp",
     Icq = "icq"
+}
+export enum HlsVideoResolution {
+    $480 = 480,
+    $720 = 720,
+    $1080 = 1080,
+    $1440 = 1440,
+    $2160 = 2160
 }
 export enum ToneMapping {
     Hable = "hable",
