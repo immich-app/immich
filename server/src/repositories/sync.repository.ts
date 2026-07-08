@@ -576,11 +576,32 @@ class MemoryToAssetSync extends BaseSync {
 
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
-    return this.upsertQuery('memory_asset', options)
-      .select(['memoriesId as memoryId', 'assetId as assetId'])
-      .select('updateId')
-      .where('memoriesId', 'in', (eb) => eb.selectFrom('memory').select('id').where('ownerId', '=', options.userId))
-      .stream();
+    return (
+      this.upsertQuery('memory_asset', options)
+        .select(['memoriesId as memoryId', 'assetId as assetId'])
+        .select('updateId')
+        .where('memoriesId', 'in', (eb) => eb.selectFrom('memory').select('id').where('ownerId', '=', options.userId))
+        // Only sync links whose asset is also delivered to this user (own or partner assets).
+        // Otherwise the client inserts a memory_asset row referencing an unknown asset,
+        // hits a foreign-key violation, and jams the sync loop permanently.
+        // See https://github.com/immich-app/immich/issues/22772
+        .where('assetId', 'in', (eb) =>
+          eb
+            .selectFrom('asset')
+            .select('id')
+            .where((eb) =>
+              eb.or([
+                eb('ownerId', '=', options.userId),
+                eb(
+                  'ownerId',
+                  'in',
+                  eb.selectFrom('partner').select('sharedById').where('sharedWithId', '=', options.userId),
+                ),
+              ]),
+            ),
+        )
+        .stream()
+    );
   }
 }
 

@@ -731,6 +731,24 @@ where
     where
       "ownerId" = $3
   )
+  and "assetId" in (
+    select
+      "id"
+    from
+      "asset"
+    where
+      (
+        "ownerId" = $4
+        or "ownerId" in (
+          select
+            "sharedById"
+          from
+            "partner"
+          where
+            "sharedWithId" = $5
+        )
+      )
+  )
 order by
   "memory_asset"."updateId" asc
 
