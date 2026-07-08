@@ -15,7 +15,6 @@ class DynamicWallpaperRotationTest {
   @Test
   fun `rotates to next available asset and loops`() {
     val config = DynamicWallpaperConfig(
-      enabled = true,
       assetRefs = DynamicWallpaperRotation.refsFromAssetIds(listOf("a", "b", "c")),
       activeIndex = 2,
       configVersion = kDynamicWallpaperConfigVersion,
@@ -29,7 +28,6 @@ class DynamicWallpaperRotationTest {
   @Test
   fun `skips missing asset`() {
     val config = DynamicWallpaperConfig(
-      enabled = true,
       assetRefs = DynamicWallpaperRotation.refsFromAssetIds(listOf("a", "b", "c")),
       activeIndex = 0,
       configVersion = kDynamicWallpaperConfigVersion,
@@ -43,7 +41,6 @@ class DynamicWallpaperRotationTest {
   @Test
   fun `returns null when no local image is available`() {
     val config = DynamicWallpaperConfig(
-      enabled = true,
       assetRefs = DynamicWallpaperRotation.refsFromAssetIds(listOf("a", "b")),
       activeIndex = 0,
       configVersion = kDynamicWallpaperConfigVersion,

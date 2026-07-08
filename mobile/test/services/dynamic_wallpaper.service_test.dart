@@ -18,6 +18,23 @@ class _MockDynamicWallpaperApi extends Mock implements DynamicWallpaperApi {}
 
 class _MockAssetService extends Mock implements AssetService {}
 
+DynamicWallpaperStatus _status({
+  int selectedCount = 1,
+  int preparedCount = 1,
+  int missingCount = 0,
+  int failedCount = 0,
+  String? lastError,
+}) {
+  return DynamicWallpaperStatus(
+    enabled: true,
+    selectedCount: selectedCount,
+    preparedCount: preparedCount,
+    missingCount: missingCount,
+    failedCount: failedCount,
+    lastError: lastError,
+  );
+}
+
 void main() {
   group('DynamicWallpaperService', () {
     test('keeps only remote image ids from selected assets', () {
@@ -118,6 +135,22 @@ void main() {
       expect(layouts, {'a': const config_model.DynamicWallpaperAssetLayout(rotationDegrees: 90)});
     });
 
+    test('dynamic wallpaper config hash is stable for equal maps with different order', () {
+      const layoutA = config_model.DynamicWallpaperAssetLayout(rotationDegrees: 90);
+      const layoutB = config_model.DynamicWallpaperAssetLayout(cropTop: 0.1, cropBottom: 0.9);
+      const first = config_model.DynamicWallpaperConfig(
+        assetIds: ['a', 'b'],
+        assetLayouts: {'a': layoutA, 'b': layoutB},
+      );
+      const second = config_model.DynamicWallpaperConfig(
+        assetIds: ['a', 'b'],
+        assetLayouts: {'b': layoutB, 'a': layoutA},
+      );
+
+      expect(first, second);
+      expect(first.hashCode, second.hashCode);
+    });
+
     test('does not persist settings when Android configure fails', () async {
       final settings = _MockSettingsRepository();
       final api = _MockDynamicWallpaperApi();
@@ -136,6 +169,24 @@ void main() {
       verifyNever(() => settings.write<List<String>, List<String>>(SettingsKey.dynamicWallpaperAssetIds, any()));
     });
 
+    test('does not persist settings when Android preparation status failed', () async {
+      final settings = _MockSettingsRepository();
+      final api = _MockDynamicWallpaperApi();
+      final service = DynamicWallpaperService(settings, api, isAndroid: true);
+
+      when(() => settings.appConfig).thenReturn(const AppConfig());
+      when(
+        () => api.configure(any()),
+      ).thenAnswer((_) async => _status(selectedCount: 1, preparedCount: 0, missingCount: 1, failedCount: 1));
+      when(
+        () => settings.write<List<String>, List<String>>(SettingsKey.dynamicWallpaperAssetIds, any()),
+      ).thenAnswer((_) async {});
+
+      await expectLater(service.configure(assetIds: ['a']), throwsA(isA<DynamicWallpaperPreparationException>()));
+
+      verifyNever(() => settings.write<List<String>, List<String>>(SettingsKey.dynamicWallpaperAssetIds, any()));
+    });
+
     test('persists settings after Android configure succeeds', () async {
       final settings = _MockSettingsRepository();
       final api = _MockDynamicWallpaperApi();
@@ -149,6 +200,7 @@ void main() {
       when(() => assetService.getRemoteAssets(['a', 'b'])).thenAnswer((_) async => [assetA, assetB]);
       when(() => api.configure(any())).thenAnswer((_) async {
         calls.add('native');
+        return _status(selectedCount: 2, preparedCount: 2);
       });
       when(() => settings.write<List<String>, List<String>>(SettingsKey.dynamicWallpaperAssetIds, any())).thenAnswer((
         _,
@@ -181,7 +233,7 @@ void main() {
         () => settings.appConfig,
       ).thenReturn(const AppConfig(dynamicWallpaper: config_model.DynamicWallpaperConfig(assetIds: ['a'])));
       when(() => assetService.getRemoteAssets(['a'])).thenAnswer((_) async => [assetA]);
-      when(() => api.refresh(any())).thenAnswer((_) async {});
+      when(() => api.refresh(any())).thenAnswer((_) async => _status());
 
       await service.refreshPreparedWallpapers();
 
@@ -207,6 +259,7 @@ void main() {
       });
       when(() => api.updateSelection(any(), any(), any())).thenAnswer((_) async {
         calls.add('native');
+        return _status(selectedCount: 3, preparedCount: 3);
       });
 
       await service.reorderSelection(1, 2);
@@ -264,7 +317,7 @@ void main() {
         () => settings.appConfig,
       ).thenReturn(const AppConfig(dynamicWallpaper: config_model.DynamicWallpaperConfig(assetIds: ['a'])));
       when(() => assetService.getRemoteAssets(['a'])).thenAnswer((_) async => [assetA]);
-      when(() => api.updateSelection(any(), any(), any())).thenAnswer((_) async {});
+      when(() => api.updateSelection(any(), any(), any())).thenAnswer((_) async => _status());
       when(
         () =>
             settings.write<
@@ -315,7 +368,7 @@ void main() {
           dynamicWallpaper: config_model.DynamicWallpaperConfig(assetIds: ['a'], assetLayouts: {'a': existingLayout}),
         ),
       );
-      when(() => api.updateSelection(any(), any(), any())).thenAnswer((_) async {});
+      when(() => api.updateSelection(any(), any(), any())).thenAnswer((_) async => _status());
       when(
         () =>
             settings.write<

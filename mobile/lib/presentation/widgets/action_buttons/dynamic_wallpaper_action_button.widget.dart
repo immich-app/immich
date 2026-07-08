@@ -28,7 +28,15 @@ class DynamicWallpaperActionButton extends ConsumerWidget {
           return;
         }
 
-        final update = await service.addSelection(assets);
+        final DynamicWallpaperSelectionUpdate update;
+        try {
+          update = await service.addSelection(assets);
+        } catch (_) {
+          if (context.mounted) {
+            ImmichToast.show(context: context, msg: 'dynamic_wallpaper_update_failed'.tr(), toastType: ToastType.error);
+          }
+          return;
+        }
 
         if (!context.mounted) {
           return;

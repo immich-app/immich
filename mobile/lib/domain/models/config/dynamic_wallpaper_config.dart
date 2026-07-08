@@ -20,7 +20,13 @@ class DynamicWallpaperConfig {
           mapEquals(other.assetLayouts, assetLayouts));
 
   @override
-  int get hashCode => Object.hash(Object.hashAll(assetIds), Object.hashAll(assetLayouts.entries));
+  int get hashCode {
+    final sortedLayoutKeys = assetLayouts.keys.toList()..sort();
+    return Object.hash(
+      Object.hashAll(assetIds),
+      Object.hashAll(sortedLayoutKeys.map((key) => Object.hash(key, assetLayouts[key]))),
+    );
+  }
 
   @override
   String toString() => 'DynamicWallpaperConfig(assetIds: $assetIds, assetLayouts: $assetLayouts)';

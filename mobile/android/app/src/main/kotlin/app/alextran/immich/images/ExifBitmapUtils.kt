@@ -7,6 +7,7 @@ import android.graphics.Matrix
 import android.net.Uri
 import androidx.exifinterface.media.ExifInterface
 import java.io.ByteArrayInputStream
+import java.io.File
 
 object ExifBitmapUtils {
   fun decodeSampledBitmap(data: ByteArray, targetWidth: Int, targetHeight: Int): Bitmap? {
@@ -41,6 +42,18 @@ object ExifBitmapUtils {
       BitmapFactory.decodeStream(input, null, options)
     } ?: return null
 
+    return applyOrientation(bitmap, orientation)
+  }
+
+  fun decodeSampledBitmap(file: File, targetWidth: Int, targetHeight: Int): Bitmap? {
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeFile(file.absolutePath, bounds)
+
+    val options = BitmapFactory.Options().apply {
+      inSampleSize = calculateInSampleSize(bounds, targetWidth, targetHeight)
+    }
+    val bitmap = BitmapFactory.decodeFile(file.absolutePath, options) ?: return null
+    val orientation = readOrientation(file)
     return applyOrientation(bitmap, orientation)
   }
 
@@ -92,6 +105,15 @@ object ExifBitmapUtils {
           ExifInterface.ORIENTATION_NORMAL,
         )
       } ?: ExifInterface.ORIENTATION_NORMAL
+    }.getOrDefault(ExifInterface.ORIENTATION_NORMAL)
+  }
+
+  private fun readOrientation(file: File): Int {
+    return runCatching {
+      ExifInterface(file.absolutePath).getAttributeInt(
+        ExifInterface.TAG_ORIENTATION,
+        ExifInterface.ORIENTATION_NORMAL,
+      )
     }.getOrDefault(ExifInterface.ORIENTATION_NORMAL)
   }
 }

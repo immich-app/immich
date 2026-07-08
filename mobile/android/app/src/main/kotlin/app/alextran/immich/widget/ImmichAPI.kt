@@ -10,6 +10,7 @@ import com.google.gson.reflect.TypeToken
 import es.antonborri.home_widget.HomeWidgetPlugin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -122,8 +123,16 @@ class ImmichAPI(cfg: ServerConfig) {
       requestMethod = "GET"
       applyCustomHeaders()
     }
-    val data = connection.getInputStream().readBytes()
-    ExifBitmapUtils.decodeSampledBitmap(data, targetWidth, targetHeight) ?: throw Exception("Invalid image data")
+    val tempFile = File.createTempFile("immich-original-", ".image")
+    try {
+      connection.inputStream.use { input ->
+        tempFile.outputStream().use { output -> input.copyTo(output) }
+      }
+      ExifBitmapUtils.decodeSampledBitmap(tempFile, targetWidth, targetHeight) ?: throw Exception("Invalid image data")
+    } finally {
+      connection.disconnect()
+      tempFile.delete()
+    }
   }
 
   suspend fun fetchAlbums(): List<Album> = withContext(Dispatchers.IO) {

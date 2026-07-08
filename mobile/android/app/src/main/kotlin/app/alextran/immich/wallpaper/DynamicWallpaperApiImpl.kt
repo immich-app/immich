@@ -9,12 +9,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperApi {
   private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
   private val preparer = DynamicWallpaperPreparer(context.applicationContext)
+  private val updateMutex = Mutex()
 
-  override fun configure(assets: List<DynamicWallpaperAssetRef>, callback: (Result<Unit>) -> Unit) {
+  override fun configure(assets: List<DynamicWallpaperAssetRef>, callback: (Result<DynamicWallpaperStatus>) -> Unit) {
     updateWallpapers(
       assets = assets,
       callback = callback,
@@ -47,7 +50,7 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
     }
   }
 
-  override fun refresh(assets: List<DynamicWallpaperAssetRef>, callback: (Result<Unit>) -> Unit) {
+  override fun refresh(assets: List<DynamicWallpaperAssetRef>, callback: (Result<DynamicWallpaperStatus>) -> Unit) {
     updateWallpapers(
       assets = assets,
       callback = callback,
@@ -60,7 +63,7 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
     assets: List<DynamicWallpaperAssetRef>,
     forcePrepareIds: List<String>,
     prepareMissing: Boolean,
-    callback: (Result<Unit>) -> Unit,
+    callback: (Result<DynamicWallpaperStatus>) -> Unit,
   ) {
     val forcePrepareIdSet = forcePrepareIds.toSet()
     updateWallpapers(
@@ -82,6 +85,8 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
             forcePrepareIds = forcePrepareIdSet,
             prepareMissing = prepareMissing,
           )
+        } else {
+          DynamicWallpaperConfigStore.status(context)
         }
       },
     )
@@ -90,8 +95,10 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
   override fun disable(callback: (Result<Unit>) -> Unit) {
     try {
       val wallpaperManager = WallpaperManager.getInstance(context)
-      wallpaperManager.clear(WallpaperManager.FLAG_SYSTEM)
-      wallpaperManager.clear(WallpaperManager.FLAG_LOCK)
+      if (DynamicWallpaperConfigStore.isImmichLiveWallpaperEnabled(context)) {
+        wallpaperManager.clear(WallpaperManager.FLAG_SYSTEM)
+        wallpaperManager.clear(WallpaperManager.FLAG_LOCK)
+      }
       callback(Result.success(Unit))
     } catch (error: Throwable) {
       callback(Result.failure(error))
@@ -100,6 +107,7 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
 
   override fun getStatus(callback: (Result<DynamicWallpaperStatus>) -> Unit) {
     try {
+      DynamicWallpaperConfigStore.migrateIfNeeded(context)
       callback(Result.success(DynamicWallpaperConfigStore.status(context)))
     } catch (error: Throwable) {
       callback(Result.failure(error))
@@ -108,19 +116,23 @@ class DynamicWallpaperApiImpl(private val context: Context) : DynamicWallpaperAp
 
   private fun updateWallpapers(
     assets: List<DynamicWallpaperAssetRef>,
-    callback: (Result<Unit>) -> Unit,
+    callback: (Result<DynamicWallpaperStatus>) -> Unit,
     normalize: (List<DynamicWallpaperAssetRef>) -> List<DynamicWallpaperAssetRef> =
       DynamicWallpaperRotation::deduplicateRefsPreservingOrder,
     writeSelection: (List<DynamicWallpaperAssetRef>) -> Unit,
-    prepare: suspend (List<DynamicWallpaperAssetRef>) -> Unit,
+    prepare: suspend (List<DynamicWallpaperAssetRef>) -> DynamicWallpaperStatus,
   ) {
     scope.launch {
       try {
-        val normalizedAssets = normalize(assets)
-        writeSelection(normalizedAssets)
-        prepare(normalizedAssets)
-        ImmichWallpaperService.refreshActiveWallpapers()
-        callback(Result.success(Unit))
+        val status = updateMutex.withLock {
+          DynamicWallpaperConfigStore.migrateIfNeeded(context)
+          val normalizedAssets = normalize(assets)
+          writeSelection(normalizedAssets)
+          val nextStatus = prepare(normalizedAssets)
+          ImmichWallpaperService.refreshActiveWallpapers()
+          nextStatus
+        }
+        callback(Result.success(status))
       } catch (error: Throwable) {
         callback(Result.failure(error))
       }

@@ -73,6 +73,13 @@ class _DynamicWallpaperSettingsState extends ConsumerState<DynamicWallpaperSetti
         _DynamicWallpaperStatusTile(
           selectedCount: selectedCount,
           status: status,
+          onRetry: () async {
+            try {
+              await service.refreshPreparedWallpapers();
+            } finally {
+              ref.invalidate(_dynamicWallpaperPreparationStatusProvider);
+            }
+          },
           onDisable: () async {
             await service.disable();
             ref.invalidate(_dynamicWallpaperPreparationStatusProvider);
@@ -138,7 +145,16 @@ class _DynamicWallpaperSettingsState extends ConsumerState<DynamicWallpaperSetti
       return;
     }
 
-    final nextAssetIds = await service.replaceSelection(selectedAssets, preservedAssetIds: preservedAssetIds);
+    final List<String> nextAssetIds;
+    try {
+      nextAssetIds = await service.replaceSelection(selectedAssets, preservedAssetIds: preservedAssetIds);
+    } catch (_) {
+      ref.invalidate(_dynamicWallpaperPreparationStatusProvider);
+      if (context.mounted) {
+        ImmichToast.show(context: context, msg: 'dynamic_wallpaper_update_failed'.tr(), toastType: ToastType.error);
+      }
+      return;
+    }
 
     ref.invalidate(_dynamicWallpaperPreparationStatusProvider);
 
@@ -312,13 +328,21 @@ class _DynamicWallpaperPeopleFilterSheetState extends ConsumerState<_DynamicWall
 class _DynamicWallpaperStatusTile extends StatelessWidget {
   final int selectedCount;
   final AsyncValue<DynamicWallpaperStatus> status;
+  final Future<void> Function() onRetry;
   final Future<void> Function() onDisable;
 
-  const _DynamicWallpaperStatusTile({required this.selectedCount, required this.status, required this.onDisable});
+  const _DynamicWallpaperStatusTile({
+    required this.selectedCount,
+    required this.status,
+    required this.onRetry,
+    required this.onDisable,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isEnabled = status.valueOrNull?.enabled == true;
+    final value = status.valueOrNull;
+    final isEnabled = value?.enabled == true;
+    final hasPreparationIssue = value != null && selectedCount > 0 && (value.failedCount > 0 || value.missingCount > 0);
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 20),
@@ -336,6 +360,39 @@ class _DynamicWallpaperStatusTile extends StatelessWidget {
             'dynamic_wallpaper_status_subtitle'.tr(namedArgs: {'count': selectedCount.toString()}),
             style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
           ),
+          if (value != null && selectedCount > 0) ...[
+            const SizedBox(height: 4),
+            Text(
+              'dynamic_wallpaper_preparation_status'.tr(
+                namedArgs: {'prepared': value.preparedCount.toString(), 'selected': selectedCount.toString()},
+              ),
+              style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+            ),
+          ],
+          if (value != null && value.failedCount > 0) ...[
+            const SizedBox(height: 4),
+            Text(
+              'dynamic_wallpaper_preparation_failed'.tr(namedArgs: {'count': value.failedCount.toString()}),
+              style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.error),
+            ),
+          ],
+          if (value?.lastError case final lastError?) ...[
+            const SizedBox(height: 4),
+            Text(
+              'dynamic_wallpaper_last_error'.tr(namedArgs: {'error': lastError}),
+              style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.error),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+          if (hasPreparationIssue) ...[
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: Text('dynamic_wallpaper_retry'.tr()),
+            ),
+          ],
           if (isEnabled) ...[
             const SizedBox(height: 8),
             OutlinedButton.icon(

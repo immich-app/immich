@@ -1,4 +1,3 @@
-import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -51,18 +50,59 @@ class MultiSelectState {
     if (identical(this, other)) {
       return true;
     }
-    final setEquals = const DeepCollectionEquality().equals;
-
-    return setEquals(other.selectedAssets, selectedAssets) &&
-        setEquals(other.lockedSelectionAssets, lockedSelectionAssets) &&
+    return _assetSetsEqual(other.selectedAssets, selectedAssets) &&
+        _assetSetsEqual(other.lockedSelectionAssets, lockedSelectionAssets) &&
         other.forceEnable == forceEnable;
   }
 
   @override
   int get hashCode =>
-      const DeepCollectionEquality().hash(selectedAssets) ^
-      const DeepCollectionEquality().hash(lockedSelectionAssets) ^
+      Object.hashAllUnordered(selectedAssets.map(_assetEqualityHash)) ^
+      Object.hashAllUnordered(lockedSelectionAssets.map(_assetEqualityHash)) ^
       forceEnable.hashCode;
+
+  static int _baseAssetEqualityHash(BaseAsset asset) {
+    return Object.hash(
+      asset.name,
+      asset.type,
+      asset.createdAt,
+      asset.updatedAt,
+      asset.width,
+      asset.height,
+      asset.durationMs,
+      asset.isFavorite,
+      asset.isEdited,
+    );
+  }
+
+  static bool _assetSetsEqual(Set<BaseAsset> left, Set<BaseAsset> right) {
+    return left.length == right.length && left.every((asset) => MultiSelectNotifier.containsAsset(right, asset));
+  }
+
+  static int _assetEqualityHash(BaseAsset asset) {
+    return switch (asset) {
+      RemoteAsset() => Object.hash(
+        _baseAssetEqualityHash(asset),
+        asset.id,
+        asset.ownerId,
+        asset.thumbHash,
+        asset.visibility,
+        asset.stackId,
+        asset.uploadedAt,
+        asset.deletedAt,
+      ),
+      LocalAsset() => Object.hash(
+        _baseAssetEqualityHash(asset),
+        asset.id,
+        asset.cloudId,
+        asset.orientation,
+        asset.playbackStyle,
+        asset.adjustmentTime,
+        asset.latitude,
+        asset.longitude,
+      ),
+    };
+  }
 }
 
 class MultiSelectNotifier extends Notifier<MultiSelectState> {

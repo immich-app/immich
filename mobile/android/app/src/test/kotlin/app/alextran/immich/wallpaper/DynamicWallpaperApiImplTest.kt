@@ -32,7 +32,7 @@ class DynamicWallpaperApiImplTest {
   fun `update selection without missing preparation does not prepare assets`() {
     val api = DynamicWallpaperApiImpl(context)
     val latch = CountDownLatch(1)
-    var result: Result<Unit>? = null
+    var result: Result<DynamicWallpaperStatus>? = null
 
     api.updateSelection(
       listOf(DynamicWallpaperAssetRef(remoteId = "remote-a", localId = null, isEdited = false)),
@@ -71,7 +71,7 @@ class DynamicWallpaperApiImplTest {
 
     val api = DynamicWallpaperApiImpl(context)
     val latch = CountDownLatch(1)
-    var result: Result<Unit>? = null
+    var result: Result<DynamicWallpaperStatus>? = null
 
     api.updateSelection(
       listOf(DynamicWallpaperAssetRef(remoteId = "remote-a", localId = null, isEdited = false, layout = null)),

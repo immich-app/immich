@@ -22,6 +22,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Collections
 
@@ -45,6 +46,7 @@ class ImmichWallpaperService : WallpaperService() {
       when (intent.action) {
         Intent.ACTION_SCREEN_ON,
         Intent.ACTION_USER_PRESENT -> requestWakeRotation()
+        Intent.ACTION_SCREEN_OFF -> wakeCoordinator.onScreenOff()
       }
     }
   }
@@ -54,6 +56,7 @@ class ImmichWallpaperService : WallpaperService() {
     val filter = IntentFilter().apply {
       addAction(Intent.ACTION_SCREEN_ON)
       addAction(Intent.ACTION_USER_PRESENT)
+      addAction(Intent.ACTION_SCREEN_OFF)
     }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -162,16 +165,37 @@ class ImmichWallpaperService : WallpaperService() {
         return
       }
 
-      val canvas = runCatching { holder.lockCanvas() }.getOrNull() ?: return
+      val frame = holder.surfaceFrame
+      val targetWidth = frame.width().coerceAtLeast(1)
+      val targetHeight = frame.height().coerceAtLeast(1)
+      serviceScope.launch {
+        val bitmap = withContext(Dispatchers.IO) {
+          runCatching { loadActiveBitmap(targetWidth, targetHeight) }.getOrNull()
+        }
+        drawBitmapOrFallback(bitmap)
+      }
+    }
+
+    private fun drawBitmapOrFallback(bitmap: Bitmap?) {
+      val holder = surfaceHolder
+      if (!holder.surface.isValid) {
+        bitmap?.recycle()
+        return
+      }
+
+      val canvas = runCatching { holder.lockCanvas() }.getOrNull()
+      if (canvas == null) {
+        bitmap?.recycle()
+        return
+      }
       try {
-        val bitmap = loadActiveBitmap(canvas.width, canvas.height)
         if (bitmap == null) {
           drawFallback(canvas)
         } else {
           drawBitmap(canvas, bitmap)
-          bitmap.recycle()
         }
       } finally {
+        bitmap?.recycle()
         holder.unlockCanvasAndPost(canvas)
       }
     }

@@ -384,10 +384,10 @@ private open class DynamicWallpaperPigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface DynamicWallpaperApi {
-  fun configure(assets: List<DynamicWallpaperAssetRef>, callback: (Result<Unit>) -> Unit)
+  fun configure(assets: List<DynamicWallpaperAssetRef>, callback: (Result<DynamicWallpaperStatus>) -> Unit)
   fun openLiveWallpaperPicker(callback: (Result<Unit>) -> Unit)
-  fun refresh(assets: List<DynamicWallpaperAssetRef>, callback: (Result<Unit>) -> Unit)
-  fun updateSelection(assets: List<DynamicWallpaperAssetRef>, forcePrepareIds: List<String>, prepareMissing: Boolean, callback: (Result<Unit>) -> Unit)
+  fun refresh(assets: List<DynamicWallpaperAssetRef>, callback: (Result<DynamicWallpaperStatus>) -> Unit)
+  fun updateSelection(assets: List<DynamicWallpaperAssetRef>, forcePrepareIds: List<String>, prepareMissing: Boolean, callback: (Result<DynamicWallpaperStatus>) -> Unit)
   fun disable(callback: (Result<Unit>) -> Unit)
   fun getStatus(callback: (Result<DynamicWallpaperStatus>) -> Unit)
 
@@ -406,12 +406,13 @@ interface DynamicWallpaperApi {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val assetsArg = args[0] as List<DynamicWallpaperAssetRef>
-            api.configure(assetsArg) { result: Result<Unit> ->
+            api.configure(assetsArg) { result: Result<DynamicWallpaperStatus> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(DynamicWallpaperPigeonUtils.wrapError(error))
               } else {
-                reply.reply(DynamicWallpaperPigeonUtils.wrapResult(null))
+                val data = result.getOrNull()
+                reply.reply(DynamicWallpaperPigeonUtils.wrapResult(data))
               }
             }
           }
@@ -442,12 +443,13 @@ interface DynamicWallpaperApi {
           channel.setMessageHandler { message, reply ->
             val args = message as List<Any?>
             val assetsArg = args[0] as List<DynamicWallpaperAssetRef>
-            api.refresh(assetsArg) { result: Result<Unit> ->
+            api.refresh(assetsArg) { result: Result<DynamicWallpaperStatus> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(DynamicWallpaperPigeonUtils.wrapError(error))
               } else {
-                reply.reply(DynamicWallpaperPigeonUtils.wrapResult(null))
+                val data = result.getOrNull()
+                reply.reply(DynamicWallpaperPigeonUtils.wrapResult(data))
               }
             }
           }
@@ -463,12 +465,13 @@ interface DynamicWallpaperApi {
             val assetsArg = args[0] as List<DynamicWallpaperAssetRef>
             val forcePrepareIdsArg = args[1] as List<String>
             val prepareMissingArg = args[2] as Boolean
-            api.updateSelection(assetsArg, forcePrepareIdsArg, prepareMissingArg) { result: Result<Unit> ->
+            api.updateSelection(assetsArg, forcePrepareIdsArg, prepareMissingArg) { result: Result<DynamicWallpaperStatus> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(DynamicWallpaperPigeonUtils.wrapError(error))
               } else {
-                reply.reply(DynamicWallpaperPigeonUtils.wrapResult(null))
+                val data = result.getOrNull()
+                reply.reply(DynamicWallpaperPigeonUtils.wrapResult(data))
               }
             }
           }

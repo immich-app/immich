@@ -39,7 +39,6 @@ class DynamicWallpaperConfigStoreTest {
 
     val config = DynamicWallpaperConfigStore.read(context)
 
-    assertTrue(config.enabled)
     assertEquals(listOf("a", "b"), config.assetIds)
     assertEquals("local-a", config.assetRefs[0].localId)
     assertFalse(config.assetRefs[0].isEdited)
@@ -89,6 +88,7 @@ class DynamicWallpaperConfigStoreTest {
       .putInt("configVersion", 1)
       .commit()
 
+    DynamicWallpaperConfigStore.migrateIfNeeded(context)
     val config = DynamicWallpaperConfigStore.read(context)
 
     assertEquals(kDynamicWallpaperConfigVersion, config.configVersion)
@@ -101,6 +101,25 @@ class DynamicWallpaperConfigStoreTest {
     )
     assertEquals(1, config.activeIndex)
     assertEquals(kDynamicWallpaperConfigVersion, context.getSharedPreferences(kDynamicWallpaperPrefsName, Context.MODE_PRIVATE).getInt("configVersion", 0))
+    assertFalse(context.getSharedPreferences(kDynamicWallpaperPrefsName, Context.MODE_PRIVATE).contains("enabled"))
+    assertFalse(context.getSharedPreferences(kDynamicWallpaperPrefsName, Context.MODE_PRIVATE).contains("assetIds"))
+  }
+
+  @Test
+  fun `read old config version has no side effects`() {
+    context.getSharedPreferences(kDynamicWallpaperPrefsName, Context.MODE_PRIVATE)
+      .edit()
+      .putBoolean("enabled", true)
+      .putString("assetRefs", Gson().toJson(listOf(mapOf("remoteId" to "a"))))
+      .putString("assetIds", Gson().toJson(listOf("a")))
+      .putInt("configVersion", kDynamicWallpaperConfigVersion - 1)
+      .commit()
+    DynamicWallpaperConfigStore.preparedFile(context, "a").writeText("stale")
+
+    DynamicWallpaperConfigStore.read(context)
+
+    assertTrue(DynamicWallpaperConfigStore.hasPreparedFile(context, "a"))
+    assertEquals(kDynamicWallpaperConfigVersion - 1, context.getSharedPreferences(kDynamicWallpaperPrefsName, Context.MODE_PRIVATE).getInt("configVersion", 0))
   }
 
   @Test
@@ -114,7 +133,7 @@ class DynamicWallpaperConfigStoreTest {
       .commit()
     DynamicWallpaperConfigStore.preparedFile(context, "a").writeText("stale")
 
-    DynamicWallpaperConfigStore.read(context)
+    DynamicWallpaperConfigStore.migrateIfNeeded(context)
 
     assertFalse(DynamicWallpaperConfigStore.hasPreparedFile(context, "a"))
   }

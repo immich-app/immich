@@ -14,6 +14,16 @@ void main() {
       expect(MultiSelectNotifier.containsAsset({asset}, timelineAsset), isTrue);
     });
 
+    test('state hash matches equality for equivalent remote assets with different local ids', () {
+      final asset = RemoteAssetFactory.create(id: 'asset', ownerId: 'owner');
+      final timelineAsset = asset.copyWith(localId: 'local-copy');
+      final state = MultiSelectState(selectedAssets: {asset}, lockedSelectionAssets: const {});
+      final equivalentState = MultiSelectState(selectedAssets: {timelineAsset}, lockedSelectionAssets: const {});
+
+      expect(state, equivalentState);
+      expect(state.hashCode, equivalentState.hashCode);
+    });
+
     test('does not add duplicate equivalent assets', () {
       final asset = RemoteAssetFactory.create(id: 'asset', ownerId: 'owner');
       final timelineAsset = asset.copyWith(localId: 'local-copy');

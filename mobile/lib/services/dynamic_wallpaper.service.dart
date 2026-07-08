@@ -28,6 +28,15 @@ class DynamicWallpaperSelectionUpdate {
   const DynamicWallpaperSelectionUpdate({required this.assetIds, required this.addedCount, required this.skippedCount});
 }
 
+class DynamicWallpaperPreparationException implements Exception {
+  final DynamicWallpaperStatus status;
+
+  const DynamicWallpaperPreparationException(this.status);
+
+  @override
+  String toString() => status.lastError ?? 'Dynamic wallpaper preparation failed';
+}
+
 class DynamicWallpaperService {
   final SettingsRepository _settingsRepository;
   final DynamicWallpaperApi _api;
@@ -171,7 +180,8 @@ class DynamicWallpaperService {
     final nextAssetLayouts = pruneAssetLayouts(assetLayouts ?? current.assetLayouts, nextAssetIds);
 
     if (_isAndroid) {
-      await _api.configure(await _assetRefsFor(nextAssetIds, layouts: nextAssetLayouts));
+      final status = await _api.configure(await _assetRefsFor(nextAssetIds, layouts: nextAssetLayouts));
+      _throwIfPreparationFailed(status, nextAssetIds.length);
     }
 
     await _settingsRepository.write(SettingsKey.dynamicWallpaperAssetIds, nextAssetIds);
@@ -197,7 +207,10 @@ class DynamicWallpaperService {
 
     final prunedLayouts = pruneAssetLayouts(nextLayouts, current.assetIds);
     if (_isAndroid) {
-      await _api.updateSelection(await _assetRefsFor(current.assetIds, layouts: prunedLayouts), [assetId], false);
+      final status = await _api.updateSelection(await _assetRefsFor(current.assetIds, layouts: prunedLayouts), [
+        assetId,
+      ], false);
+      _throwIfPreparationFailed(status, current.assetIds.length);
     }
 
     await _settingsRepository.write(SettingsKey.dynamicWallpaperAssetLayouts, prunedLayouts);
@@ -212,7 +225,8 @@ class DynamicWallpaperService {
   Future<void> refreshPreparedWallpapers() async {
     if (_isAndroid) {
       final currentAssetIds = _settingsRepository.appConfig.dynamicWallpaper.assetIds;
-      await _api.refresh(await _assetRefsFor(currentAssetIds));
+      final status = await _api.refresh(await _assetRefsFor(currentAssetIds));
+      _throwIfPreparationFailed(status, currentAssetIds.length);
     }
   }
 
@@ -281,5 +295,11 @@ class DynamicWallpaperService {
       cropRight: normalized.cropRight,
       cropBottom: normalized.cropBottom,
     );
+  }
+
+  void _throwIfPreparationFailed(DynamicWallpaperStatus status, int selectedCount) {
+    if (selectedCount > 0 && (status.preparedCount == 0 || status.failedCount > 0)) {
+      throw DynamicWallpaperPreparationException(status);
+    }
   }
 }

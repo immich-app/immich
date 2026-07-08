@@ -31,7 +31,6 @@ private val kDynamicWallpaperIdentityLayout = DynamicWallpaperAssetLayout(
 )
 
 data class DynamicWallpaperConfig(
-  val enabled: Boolean,
   val assetRefs: List<DynamicWallpaperAssetRef>,
   val activeIndex: Int,
   val configVersion: Int,
@@ -141,32 +140,44 @@ object DynamicWallpaperConfigStore {
       assetRefs.size,
     )
     val configVersion = prefs.getInt(kConfigVersion, 0)
-    if (configVersion < kDynamicWallpaperConfigVersion) {
-      preparedDirectory(context).deleteRecursively()
-    }
-    if (configVersion < kDynamicWallpaperConfigVersion || !prefs.contains(kAssetRefs)) {
-      prefs.edit()
-        .putString(kAssetRefs, gson.toJson(assetRefs.map { it.toStored() }))
-        .putString(kAssetIds, gson.toJson(assetRefs.map { it.remoteId }))
-        .putInt(kConfigVersion, kDynamicWallpaperConfigVersion)
-        .putInt(kActiveIndex, activeIndex)
-        .apply()
-    }
 
     return DynamicWallpaperConfig(
-      enabled = prefs.getBoolean(kEnabled, assetRefs.isNotEmpty()),
       assetRefs = assetRefs,
       activeIndex = activeIndex,
-      configVersion = kDynamicWallpaperConfigVersion,
+      configVersion = configVersion,
     )
   }
 
-  fun writeSelection(context: Context, assetRefs: List<DynamicWallpaperAssetRef>, resetActiveIndex: Boolean = true) {
-    val normalizedAssetRefs = DynamicWallpaperRotation.deduplicateRefsPreservingOrder(assetRefs)
+  fun migrateIfNeeded(context: Context) {
     val prefs = prefs(context)
-    if (prefs.getInt(kConfigVersion, 0) < kDynamicWallpaperConfigVersion) {
+    val configVersion = prefs.getInt(kConfigVersion, 0)
+    if (configVersion >= kDynamicWallpaperConfigVersion && prefs.contains(kAssetRefs) && !prefs.contains(kAssetIds) && !prefs.contains(kEnabled)) {
+      return
+    }
+
+    val assetRefs = readAssetRefs(prefs)
+    val activeIndex = DynamicWallpaperRotation.normalizeActiveIndex(
+      prefs.getInt(kActiveIndex, 0),
+      assetRefs.size,
+    )
+
+    if (configVersion < kDynamicWallpaperConfigVersion) {
       preparedDirectory(context).deleteRecursively()
     }
+
+    prefs.edit()
+      .putString(kAssetRefs, gson.toJson(assetRefs.map { it.toStored() }))
+      .putInt(kConfigVersion, kDynamicWallpaperConfigVersion)
+      .putInt(kActiveIndex, activeIndex)
+      .remove(kAssetIds)
+      .remove(kEnabled)
+      .apply()
+  }
+
+  fun writeSelection(context: Context, assetRefs: List<DynamicWallpaperAssetRef>, resetActiveIndex: Boolean = true) {
+    migrateIfNeeded(context)
+    val normalizedAssetRefs = DynamicWallpaperRotation.deduplicateRefsPreservingOrder(assetRefs)
+    val prefs = prefs(context)
     val activeIndex = if (resetActiveIndex) {
       0
     } else {
@@ -174,9 +185,7 @@ object DynamicWallpaperConfigStore {
     }
 
     prefs.edit()
-      .putBoolean(kEnabled, normalizedAssetRefs.isNotEmpty())
       .putString(kAssetRefs, gson.toJson(normalizedAssetRefs.map { it.toStored() }))
-      .putString(kAssetIds, gson.toJson(normalizedAssetRefs.map { it.remoteId }))
       .putInt(kActiveIndex, activeIndex)
       .putInt(kConfigVersion, kDynamicWallpaperConfigVersion)
       .remove(kPreparationErrors)
@@ -185,6 +194,7 @@ object DynamicWallpaperConfigStore {
   }
 
   fun writeSelectionPreservingActiveAsset(context: Context, assetRefs: List<DynamicWallpaperAssetRef>) {
+    migrateIfNeeded(context)
     val current = read(context)
     val activeAssetId = current.assetIds.getOrNull(current.activeIndex)
     val normalizedAssetRefs = DynamicWallpaperRotation.deduplicateRefsPreservingOrder(assetRefs)
@@ -194,9 +204,7 @@ object DynamicWallpaperConfigStore {
       ?: DynamicWallpaperRotation.normalizeActiveIndex(current.activeIndex, normalizedAssetRefs.size)
 
     prefs(context).edit()
-      .putBoolean(kEnabled, normalizedAssetRefs.isNotEmpty())
       .putString(kAssetRefs, gson.toJson(normalizedAssetRefs.map { it.toStored() }))
-      .putString(kAssetIds, gson.toJson(normalizedAssetRefs.map { it.remoteId }))
       .putInt(kActiveIndex, activeIndex)
       .putInt(kConfigVersion, kDynamicWallpaperConfigVersion)
       .apply()
