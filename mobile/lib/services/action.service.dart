@@ -83,11 +83,6 @@ class ActionService {
     await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.timeline);
   }
 
-  Future<void> trash(List<String> remoteIds) async {
-    await _assetApiRepository.delete(remoteIds, false);
-    await _remoteAssetRepository.trash(remoteIds);
-  }
-
   Future<int> emptyTrash(String userId) async {
     final count = await _assetApiRepository.emptyTrash();
     await _remoteAssetRepository.emptyTrash(userId);

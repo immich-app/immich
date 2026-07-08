@@ -13,24 +13,21 @@ import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/cast.action.dart';
+import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/open_in_browser.action.dart';
-import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/remove_from_album.action.dart';
-import 'package:immich_mobile/presentation/actions/set_profile_picture.action.dart';
+import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
+import 'package:immich_mobile/presentation/actions/set_profile_picture.action.dart';
 import 'package:immich_mobile/presentation/actions/similar_photos.action.dart';
 import 'package:immich_mobile/presentation/actions/slideshow.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -85,9 +82,7 @@ enum ActionButtonType {
   removeFromLockFolder,
   removeFromAlbum,
   restoreTrash,
-  trash,
   deleteLocal,
-  deletePermanent,
   delete,
   advancedInfo;
 
@@ -112,25 +107,12 @@ enum ActionButtonType {
         !context.isInLockedView && //
             context.asset.hasRemote && //
             !context.asset.hasLocal,
-      ActionButtonType.trash =>
-        context.isOwner && //
-            !context.isInLockedView && //
-            context.asset.hasRemote && //
-            context.isTrashEnabled && //
-            context.timelineOrigin != TimelineOrigin.trash,
       ActionButtonType.restoreTrash =>
         context.isOwner && //
             !context.isInLockedView && //
             context.asset.hasRemote && //
             context.timelineOrigin == TimelineOrigin.trash,
-      ActionButtonType.deletePermanent =>
-        context.isOwner && //
-            context.asset.hasRemote && //
-            (!context.isTrashEnabled || context.timelineOrigin == TimelineOrigin.trash || context.isInLockedView),
-      ActionButtonType.delete =>
-        context.isOwner && //
-            !context.isInLockedView && //
-            context.asset.hasRemote,
+      ActionButtonType.delete => true, //
       ActionButtonType.moveToLockFolder =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -141,7 +123,7 @@ enum ActionButtonType {
             context.asset.hasRemote,
       ActionButtonType.deleteLocal =>
         !context.isInLockedView && //
-            context.asset.hasLocal,
+            context.asset.isMerged,
       ActionButtonType.upload =>
         !context.isInLockedView && //
             context.asset.storage == AssetState.local,
@@ -209,26 +191,20 @@ enum ActionButtonType {
         action: ArchiveAction(assets: [context.asset], scope: scope),
       ),
       ActionButtonType.download => DownloadActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
-      ActionButtonType.trash => TrashActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.restoreTrash => ActionMenuItemWidget(
         action: RestoreAction(assets: [context.asset], scope: scope),
       ),
-      ActionButtonType.deletePermanent => DeletePermanentActionButton(
-        source: context.source,
-        iconOnly: iconOnly,
-        menuItem: menuItem,
+      ActionButtonType.delete => ActionMenuItemWidget(
+        action: DeleteAction(assets: [context.asset], scope: scope),
       ),
-      ActionButtonType.delete => DeleteActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.moveToLockFolder => ActionMenuItemWidget(
         action: LockAction(assets: [context.asset], scope: scope),
       ),
       ActionButtonType.removeFromLockFolder => ActionMenuItemWidget(
         action: LockAction(assets: [context.asset], scope: scope),
       ),
-      ActionButtonType.deleteLocal => DeleteLocalActionButton(
-        source: context.source,
-        iconOnly: iconOnly,
-        menuItem: menuItem,
+      ActionButtonType.deleteLocal => ActionMenuItemWidget(
+        action: CleanupLocalAction(assets: [context.asset], scope: scope),
       ),
       ActionButtonType.upload => UploadActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.removeFromAlbum => ActionMenuItemWidget(
@@ -277,8 +253,6 @@ enum ActionButtonType {
     // 0: info
     ActionButtonType.openInfo => 0,
     // 10: move, remove, and delete
-    ActionButtonType.trash => 10,
-    ActionButtonType.deletePermanent => 10,
     ActionButtonType.removeFromLockFolder => 10,
     ActionButtonType.removeFromAlbum => 10,
     ActionButtonType.unstack => 10,
@@ -306,7 +280,6 @@ class ActionButtonBuilder {
     ActionButtonType.archive,
     ActionButtonType.unarchive,
     ActionButtonType.restoreTrash,
-    ActionButtonType.deletePermanent,
   };
 
   static List<Widget> build(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {

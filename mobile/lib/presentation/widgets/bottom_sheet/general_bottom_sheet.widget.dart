@@ -8,21 +8,16 @@ import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/asset_actions.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/bulk_tag_assets_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
@@ -51,7 +46,6 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final multiselect = ref.watch(multiSelectProvider);
-    final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
     final tagsEnabled = ref.watch(
       userMetadataPreferencesProvider.select((value) => value.valueOrNull?.tagsEnabled ?? false),
     );
@@ -93,6 +87,8 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
           actions.debug,
           actions.favorite,
           actions.archive,
+          actions.delete,
+          actions.cleanup,
           actions.stack,
           actions.lock,
         ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
@@ -100,16 +96,10 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
         if (multiselect.hasRemote) ...[
           const ShareLinkActionButton(source: ActionSource.timeline),
           if (multiselect.onlyRemote) const DownloadActionButton(source: ActionSource.timeline),
-          isTrashEnable
-              ? const TrashActionButton(source: ActionSource.timeline)
-              : const DeletePermanentActionButton(source: ActionSource.timeline),
           if (tagsEnabled) const BulkTagAssetsActionButton(source: ActionSource.timeline),
           const EditDateTimeActionButton(source: ActionSource.timeline),
           const EditLocationActionButton(source: ActionSource.timeline),
-          if (multiselect.onlyLocal || multiselect.hasMerged) const DeleteActionButton(source: ActionSource.timeline),
         ],
-        if (multiselect.onlyLocal || multiselect.hasMerged)
-          const DeleteLocalActionButton(source: ActionSource.timeline),
         if (multiselect.onlyLocal) const UploadActionButton(source: ActionSource.timeline),
       ],
       slivers: [

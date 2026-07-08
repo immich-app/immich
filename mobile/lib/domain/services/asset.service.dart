@@ -109,4 +109,22 @@ class AssetService {
     await _apiRepository.update(remoteIds, isFavorite: isFavorite, visibility: visibility);
     await _remoteRepository.update(remoteIds, isFavorite: isFavorite, visibility: visibility);
   }
+
+  Future<void> trash(List<String> remoteIds) async {
+    if (remoteIds.isEmpty) {
+      return;
+    }
+
+    await _apiRepository.delete(remoteIds, false);
+    await _remoteRepository.trash(remoteIds);
+  }
+
+  Future<void> delete(List<String> remoteIds) async {
+    if (remoteIds.isEmpty) {
+      return;
+    }
+
+    await _apiRepository.delete(remoteIds, true);
+    await _remoteRepository.delete(remoteIds);
+  }
 }
