@@ -2,8 +2,19 @@ from typing import Any, Iterable
 
 import numpy as np
 import numpy.typing as npt
-from rapidocr.utils.typings import EngineType, LangRec
+from rapidocr.utils.typings import EngineType, LangRec, OCRVersion
+from rapidocr.utils.typings import ModelType as RapidModelType
 from typing_extensions import TypedDict
+
+
+def resolve_ocr_version_and_type(model_name: str) -> tuple[OCRVersion, RapidModelType]:
+    if "PP-OCRv6" in model_name:
+        if "tiny" in model_name:
+            return OCRVersion.PPOCRV6, RapidModelType.TINY
+        if "medium" in model_name:
+            return OCRVersion.PPOCRV6, RapidModelType.MEDIUM
+        return OCRVersion.PPOCRV6, RapidModelType.SMALL
+    return OCRVersion.PPOCRV5, RapidModelType.MOBILE if "mobile" in model_name else RapidModelType.SERVER
 
 
 class TextDetectionOutput(TypedDict):

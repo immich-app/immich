@@ -28,7 +28,9 @@ from immich_ml.models.facial_recognition.detection import FaceDetector
 from immich_ml.models.facial_recognition.recognition import FaceRecognizer
 from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
-from immich_ml.models.ocr.schemas import OcrOptions
+from immich_ml.models.ocr.schemas import OcrOptions, resolve_ocr_version_and_type
+from rapidocr.utils.typings import ModelType as RapidModelType
+from rapidocr.utils.typings import OCRVersion
 from immich_ml.schemas import ModelFormat, ModelPrecision, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession
@@ -1019,6 +1021,22 @@ class TestFaceRecognition:
 
 
 class TestOcr:
+    @pytest.mark.parametrize(
+        ("model_name", "expected"),
+        [
+            ("PP-OCRv6_tiny", (OCRVersion.PPOCRV6, RapidModelType.TINY)),
+            ("PP-OCRv6_small", (OCRVersion.PPOCRV6, RapidModelType.SMALL)),
+            ("PP-OCRv6_medium", (OCRVersion.PPOCRV6, RapidModelType.MEDIUM)),
+            ("PP-OCRv5_mobile", (OCRVersion.PPOCRV5, RapidModelType.MOBILE)),
+            ("PP-OCRv5_server", (OCRVersion.PPOCRV5, RapidModelType.SERVER)),
+            ("LATIN__PP-OCRv5_mobile", (OCRVersion.PPOCRV5, RapidModelType.MOBILE)),
+        ],
+    )
+    def test_resolve_ocr_version_and_type(
+        self, model_name: str, expected: tuple[OCRVersion, RapidModelType]
+    ) -> None:
+        assert resolve_ocr_version_and_type(model_name) == expected
+
     def test_set_det_min_score(self, path: mock.Mock) -> None:
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
 
