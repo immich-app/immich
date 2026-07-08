@@ -77,6 +77,8 @@ export class SearchService extends BaseService {
 
     if (dto.albumIds && dto.albumIds.length > 0) {
       await this.requireAccess({ auth, ids: dto.albumIds, permission: Permission.AlbumRead });
+    } else if (auth.sharedLink) {
+      throw new BadRequestException('Shared link access is only allowed in combination with an albumIds filter');
     } else {
       userIds = await this.getUserIdsToSearch(auth, dto.visibility);
     }

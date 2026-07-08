@@ -10552,7 +10552,24 @@
       "post": {
         "description": "Search for assets based on various metadata criteria.",
         "operationId": "searchAssets",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
