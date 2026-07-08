@@ -414,7 +414,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       displayAsset = stackChildren.elementAt(stackIndex);
     }
 
-    final isCurrent = currentAsset != null && currentAsset.isSameAsset(displayAsset);
+    final isCurrent = currentAsset != null && currentAsset.refersToSameAsset(displayAsset);
 
     final viewportWidth = MediaQuery.widthOf(context);
     final viewportHeight = MediaQuery.heightOf(context);

@@ -80,7 +80,7 @@ sealed class BaseAsset {
   bool get isRemoteOnly => storage == AssetState.remote;
 
   // Same asset even if localId is known on one side but not the other (heroTag isn't stable then)
-  bool isSameAsset(BaseAsset other) {
+  bool refersToSameAsset(BaseAsset other) {
     if (remoteId != null && other.remoteId != null) {
       return remoteId == other.remoteId;
     }

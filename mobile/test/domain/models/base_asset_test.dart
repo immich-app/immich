@@ -4,7 +4,7 @@ import '../../unit/factories/local_asset_factory.dart';
 import '../../unit/factories/remote_asset_factory.dart';
 
 void main() {
-  group('BaseAsset.isSameAsset', () {
+  group('BaseAsset.refersToSameAsset', () {
     test('search/folder copy (localId null) matches the merged DB copy (localId set)', () {
       // #29472: search and folder assets arrive with localId null, then the viewer
       // watches the DB copy which fills localId. heroTag embeds localId, so it
@@ -16,15 +16,15 @@ void main() {
       expect(mergedCopy.localId, 'local-1');
       expect(searchCopy.heroTag, isNot(mergedCopy.heroTag));
 
-      expect(searchCopy.isSameAsset(mergedCopy), isTrue);
-      expect(mergedCopy.isSameAsset(searchCopy), isTrue);
+      expect(searchCopy.refersToSameAsset(mergedCopy), isTrue);
+      expect(mergedCopy.refersToSameAsset(searchCopy), isTrue);
     });
 
     test('different remote assets are not the same', () {
       final a = RemoteAssetFactory.create(id: 'asset-1');
       final b = RemoteAssetFactory.create(id: 'asset-2');
 
-      expect(a.isSameAsset(b), isFalse);
+      expect(a.refersToSameAsset(b), isFalse);
     });
 
     test('same checksum but different remote ids are not the same (duplicate files)', () {
@@ -32,15 +32,15 @@ void main() {
       final b = RemoteAssetFactory.create(id: 'asset-2').copyWith(checksum: a.checksum);
 
       expect(a.checksum, b.checksum);
-      expect(a.isSameAsset(b), isFalse);
+      expect(a.refersToSameAsset(b), isFalse);
     });
 
     test('falls back to checksum when only one side has an id (local-only vs remote-only)', () {
       final remoteOnly = RemoteAssetFactory.create(id: 'asset-1');
       final localOnly = LocalAssetFactory.create(id: 'local-1').copyWith(checksum: remoteOnly.checksum);
 
-      expect(remoteOnly.isSameAsset(localOnly), isTrue);
-      expect(localOnly.isSameAsset(remoteOnly), isTrue);
+      expect(remoteOnly.refersToSameAsset(localOnly), isTrue);
+      expect(localOnly.refersToSameAsset(remoteOnly), isTrue);
     });
   });
 }
