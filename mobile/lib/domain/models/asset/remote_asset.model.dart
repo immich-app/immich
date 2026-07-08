@@ -10,6 +10,7 @@ class RemoteAsset extends BaseAsset {
   final AssetVisibility visibility;
   final String ownerId;
   final String? stackId;
+  final String? livePhotoVideoId;
   final DateTime? uploadedAt;
   final DateTime? deletedAt;
 
@@ -29,7 +30,7 @@ class RemoteAsset extends BaseAsset {
     super.isFavorite = false,
     this.thumbHash,
     this.visibility = AssetVisibility.timeline,
-    super.livePhotoVideoId,
+    this.livePhotoVideoId,
     this.stackId,
     required super.isEdited,
     this.deletedAt,
@@ -37,6 +38,23 @@ class RemoteAsset extends BaseAsset {
 
   @override
   String? get localId => localAssetId;
+
+  @override
+  AssetPlaybackStyle get playbackStyle {
+    if (isVideo) {
+      return AssetPlaybackStyle.video;
+    }
+    if (livePhotoVideoId != null) {
+      return AssetPlaybackStyle.livePhoto;
+    }
+    if (isImage && durationMs != null && durationMs! > 0) {
+      return AssetPlaybackStyle.imageAnimated;
+    }
+    if (isImage) {
+      return AssetPlaybackStyle.image;
+    }
+    return AssetPlaybackStyle.unknown;
+  }
 
   @override
   String? get remoteId => id;
@@ -90,6 +108,7 @@ class RemoteAsset extends BaseAsset {
         thumbHash == other.thumbHash &&
         visibility == other.visibility &&
         stackId == other.stackId &&
+        livePhotoVideoId == other.livePhotoVideoId &&
         uploadedAt == other.uploadedAt &&
         deletedAt == other.deletedAt;
   }
@@ -103,6 +122,7 @@ class RemoteAsset extends BaseAsset {
       thumbHash.hashCode ^
       visibility.hashCode ^
       stackId.hashCode ^
+      livePhotoVideoId.hashCode ^
       uploadedAt.hashCode ^
       deletedAt.hashCode;
 

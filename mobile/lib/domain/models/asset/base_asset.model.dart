@@ -27,7 +27,6 @@ sealed class BaseAsset {
   final int? height;
   final int? durationMs;
   final bool isFavorite;
-  final String? livePhotoVideoId;
   final bool isEdited;
 
   const BaseAsset({
@@ -40,31 +39,14 @@ sealed class BaseAsset {
     this.height,
     this.durationMs,
     this.isFavorite = false,
-    this.livePhotoVideoId,
     required this.isEdited,
   });
 
   bool get isImage => type == AssetType.image;
   bool get isVideo => type == AssetType.video;
 
-  bool get isMotionPhoto => livePhotoVideoId != null;
+  bool get isMotionPhoto => playbackStyle == AssetPlaybackStyle.livePhoto;
   bool get isAnimatedImage => playbackStyle == AssetPlaybackStyle.imageAnimated;
-
-  AssetPlaybackStyle get playbackStyle {
-    if (isVideo) {
-      return AssetPlaybackStyle.video;
-    }
-    if (isMotionPhoto) {
-      return AssetPlaybackStyle.livePhoto;
-    }
-    if (isImage && durationMs != null && durationMs! > 0) {
-      return AssetPlaybackStyle.imageAnimated;
-    }
-    if (isImage) {
-      return AssetPlaybackStyle.image;
-    }
-    return AssetPlaybackStyle.unknown;
-  }
 
   Duration get duration {
     final durationMs = this.durationMs;
@@ -86,6 +68,7 @@ sealed class BaseAsset {
   String? get localId;
   String? get remoteId;
   String get heroTag;
+  AssetPlaybackStyle get playbackStyle;
 
   @override
   String toString() {

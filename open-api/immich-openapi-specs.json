@@ -19120,6 +19120,17 @@
         },
         "type": "object"
       },
+      "HlsVideoResolution": {
+        "description": "HLS video resolution",
+        "enum": [
+          480,
+          720,
+          1080,
+          1440,
+          2160
+        ],
+        "type": "integer"
+      },
       "ImageFormat": {
         "description": "Image format",
         "enum": [
@@ -25754,10 +25765,26 @@
           "enabled": {
             "description": "Enable real-time HLS transcoding (alpha)",
             "type": "boolean"
+          },
+          "resolutions": {
+            "description": "Resolutions to use for real-time HLS transcoding",
+            "items": {
+              "$ref": "#/components/schemas/HlsVideoResolution"
+            },
+            "type": "array"
+          },
+          "videoCodecs": {
+            "description": "Video codecs to use for real-time HLS transcoding",
+            "items": {
+              "$ref": "#/components/schemas/VideoCodec"
+            },
+            "type": "array"
           }
         },
         "required": [
-          "enabled"
+          "enabled",
+          "resolutions",
+          "videoCodecs"
         ],
         "type": "object"
       },
@@ -25890,9 +25917,10 @@
           },
           "percentageLimit": {
             "description": "Percentage limit of the integrity checksum job",
-            "maximum": 9007199254740991,
+            "format": "double",
+            "maximum": 1,
             "minimum": 0,
-            "type": "integer"
+            "type": "number"
           },
           "timeLimit": {
             "description": "How long the integrity checksum job may run for",
