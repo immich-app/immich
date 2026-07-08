@@ -10,7 +10,6 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart'
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:logging/logging.dart';
 
 // A first fetch that never delivers - the state a suspended or storm-starved
 // bucket watch is stuck in when the timeline mounts on a zero-sized first frame
@@ -29,6 +28,23 @@ class _EmptyBucketService implements TimelineService {
   @override
   Stream<List<Bucket>> Function() get watchBuckets =>
       () => Stream.value(const []);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+// Counts how many times the bucket stream is subscribed. Each subscription is a
+// fresh photo query, so the count is our proxy for "did the relayout re-run the
+// segment query for an input it does not use".
+class _CountingBucketService implements TimelineService {
+  int watchCount = 0;
+  final _ctrl = StreamController<List<Bucket>>.broadcast();
+
+  @override
+  Stream<List<Bucket>> Function() get watchBuckets => () {
+    watchCount++;
+    return _ctrl.stream;
+  };
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -118,33 +134,57 @@ void main() {
     expect(probed!.maxWidth, 402.0);
   });
 
-  testWidgets('a timeline stuck at zero width logs a severe blank timeline signature after 5s', (tester) async {
-    final records = <LogRecord>[];
-    Logger.root.level = Level.INFO;
-    addTearDown(() => Logger.root.level = Level.OFF);
-    final logSubscription = Logger.root.onRecord.listen(records.add);
-    addTearDown(logSubscription.cancel);
-
-    bool isZeroWidthAlarm(LogRecord r) => r.level == Level.SEVERE && r.message.contains('width still 0');
-
-    tester.view.physicalSize = Size.zero;
+  testWidgets('a height-only relayout (multiselect app bar toggle) keeps the timeline, a width change refreshes it', (
+    tester,
+  ) async {
+    final service = _CountingBucketService();
     tester.view.devicePixelRatio = 3.0;
+    tester.view.physicalSize = const Size(1206, 2622);
     addTearDown(tester.view.reset);
+
+    TimelineArgs? probed;
+    final probe = Consumer(
+      builder: (_, ref, __) {
+        probed = ref.watch(timelineArgsProvider);
+        return const SizedBox.shrink();
+      },
+    );
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          timelineServiceProvider.overrideWithValue(_FrozenBucketService()),
+          timelineServiceProvider.overrideWithValue(service),
           appConfigProvider.overrideWithValue(const AppConfig()),
         ],
-        child: const MaterialApp(home: Timeline(withScrubber: false, readOnly: true)),
+        child: MaterialApp(home: Timeline(withScrubber: false, readOnly: true, loadingWidget: probe)),
       ),
     );
+    await tester.pump();
 
-    await tester.pump(const Duration(seconds: 2));
-    expect(records.where(isZeroWidthAlarm), isEmpty);
+    final initialSubscriptions = service.watchCount;
+    final initialWidth = probed!.maxWidth;
+    final initialHeight = probed!.maxHeight;
+    expect(initialSubscriptions, greaterThan(0));
 
-    await tester.pump(const Duration(seconds: 4));
-    expect(records.where(isZeroWidthAlarm), isNotEmpty);
+    // toggling multiselect changes the app bar, so only the available height moves
+    tester.view.physicalSize = const Size(1206, 2000);
+    await tester.pump();
+    await tester.pump();
+
+    expect(probed!.maxHeight, isNot(initialHeight), reason: 'the height should have actually changed');
+    expect(probed!.maxWidth, initialWidth);
+    expect(
+      service.watchCount,
+      initialSubscriptions,
+      reason: 'a height-only change must not re-run the bucket query for an input the segments do not use',
+    );
+
+    // a real width change (rotation, fold, split screen) should refresh the tiles
+    tester.view.physicalSize = const Size(1000, 2000);
+    await tester.pump();
+    await tester.pump();
+
+    expect(probed!.maxWidth, lessThan(initialWidth));
+    expect(service.watchCount, greaterThan(initialSubscriptions));
   });
 }

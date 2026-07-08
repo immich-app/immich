@@ -58,17 +58,6 @@ void main() async {
     await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
     await migrateDatabaseIfNeeded(drift);
 
-    final viewSize = WidgetsBinding.instance.platformDispatcher.implicitView?.physicalSize;
-    final launchContext =
-        'prewarm=${Platform.environment['ActivePrewarm'] ?? '0'}, '
-        'view=${viewSize == null ? 'none' : '${viewSize.width}x${viewSize.height}'}, '
-        'lifecycle=${WidgetsBinding.instance.lifecycleState}';
-    if (viewSize == null || viewSize.isEmpty) {
-      Logger('LaunchProbe').warning('launch with zero view bounds: $launchContext');
-    } else {
-      Logger('LaunchProbe').info('launch: $launchContext');
-    }
-
     runApp(ProviderScope(overrides: [driftProvider.overrideWith(driftOverride(drift))], child: const MainWidget()));
   } catch (error, stack) {
     runApp(BootstrapErrorWidget(error: error.toString(), stack: stack.toString()));
@@ -134,26 +123,28 @@ class ImmichApp extends ConsumerStatefulWidget {
 }
 
 class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserver {
-  final _lifecycleLog = Logger('AppLifeCycle');
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    _lifecycleLog.info(state.name);
     switch (state) {
       case AppLifecycleState.resumed:
+        dPrint(() => "[APP STATE] resumed");
         ref.read(appStateProvider.notifier).handleAppResume();
         unawaited(ref.read(viewIntentHandlerProvider).onAppResumed());
         break;
       case AppLifecycleState.inactive:
+        dPrint(() => "[APP STATE] inactive");
         ref.read(appStateProvider.notifier).handleAppInactivity();
         break;
       case AppLifecycleState.paused:
+        dPrint(() => "[APP STATE] paused");
         ref.read(appStateProvider.notifier).handleAppPause();
         break;
       case AppLifecycleState.detached:
+        dPrint(() => "[APP STATE] detached");
         ref.read(appStateProvider.notifier).handleAppDetached();
         break;
       case AppLifecycleState.hidden:
+        dPrint(() => "[APP STATE] hidden");
         ref.read(appStateProvider.notifier).handleAppHidden();
         break;
     }

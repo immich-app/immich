@@ -10,7 +10,6 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/utils/async_mutex.dart';
-import 'package:logging/logging.dart';
 
 typedef TimelineAssetSource = Future<List<BaseAsset>> Function(int index, int count);
 
@@ -90,8 +89,6 @@ class TimelineFactory {
       TimelineService(_timelineRepository.map(userIds, options, groupBy));
 }
 
-const _kFirstEmissionAlarmDelay = Duration(seconds: 10);
-
 class TimelineService {
   final TimelineAssetSource _assetSource;
   final TimelineBucketSource _bucketSource;
@@ -100,8 +97,6 @@ class TimelineService {
   int _bufferOffset = 0;
   List<BaseAsset> _buffer = [];
   StreamSubscription? _bucketSubscription;
-  Timer? _firstEmissionAlarm;
-  final DateTime _builtAt = DateTime.now();
 
   int _totalAssets = 0;
   int get totalAssets => _totalAssets;
@@ -110,29 +105,9 @@ class TimelineService {
     : this._(assetSource: query.assetSource, bucketSource: query.bucketSource, origin: query.origin);
 
   TimelineService._({required this._assetSource, required this._bucketSource, required this.origin}) {
-    _firstEmissionAlarm = Timer(_kFirstEmissionAlarmDelay, () {
-      Logger('TimelineProbe').severe(
-        '[${origin.name}] no bucket emission ${_kFirstEmissionAlarmDelay.inSeconds}s after service build, '
-        'first fetch looks stuck',
-      );
-    });
     _bucketSubscription = _bucketSource().listen((buckets) {
-      final alarm = _firstEmissionAlarm;
-      if (alarm != null) {
-        _firstEmissionAlarm = null;
-        if (alarm.isActive) {
-          alarm.cancel();
-        } else {
-          Logger(
-            'TimelineProbe',
-          ).severe('[${origin.name}] first bucket emission after ${DateTime.now().difference(_builtAt).inSeconds}s');
-        }
-      }
       _mutex.run(() async {
         final totalAssets = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
-        Logger(
-          'TimelineProbe',
-        ).fine('[${origin.name}] bucket emission: ${buckets.length} buckets / $totalAssets assets');
 
         if (totalAssets == 0) {
           _bufferOffset = 0;
@@ -259,8 +234,6 @@ class TimelineService {
   }
 
   Future<void> dispose() async {
-    _firstEmissionAlarm?.cancel();
-    _firstEmissionAlarm = null;
     await _bucketSubscription?.cancel();
     _bucketSubscription = null;
     _buffer = [];
