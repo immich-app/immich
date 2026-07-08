@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
@@ -27,6 +28,7 @@ import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -200,9 +202,24 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> moveToLockFolder(ActionSource source) async {
+  Future<ActionResult?> moveToLockFolder(ActionSource source, BuildContext context) async {
     final ids = _getOwnedRemoteIdsForSource(source);
     final localIds = _getLocalIdsForSource(source, ignoreLocalOnly: true);
+
+    if (localIds.isNotEmpty) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => ConfirmDialog(
+          title: "move_to_locked_folder",
+          content: CurrentPlatform.isAndroid ? "delete_dialog_alert_local" : "move_to_locked_folder_local_ios",
+          ok: "confirm",
+        ),
+      );
+      if (confirmed != true) {
+        return null;
+      }
+    }
+
     try {
       await _service.moveToLockFolder(ids, localIds);
       return ActionResult(count: ids.length, success: true);

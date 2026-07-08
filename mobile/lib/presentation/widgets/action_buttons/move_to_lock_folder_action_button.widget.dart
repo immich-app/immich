@@ -16,11 +16,15 @@ Future<void> performMoveToLockFolderAction(BuildContext context, WidgetRef ref, 
     return;
   }
 
+  final result = await ref.read(actionProvider.notifier).moveToLockFolder(source, context);
+  if (result == null) {
+    return;
+  }
+
   if (source == ActionSource.viewer) {
     EventStream.shared.emit(const ViewerReloadAssetEvent());
   }
 
-  final result = await ref.read(actionProvider.notifier).moveToLockFolder(source);
   ref.read(multiSelectProvider.notifier).reset();
 
   final successMessage = 'move_to_lock_folder_action_prompt'.t(
