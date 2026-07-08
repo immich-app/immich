@@ -5,6 +5,7 @@ import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/partner.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/remote_exif.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
@@ -52,6 +53,8 @@ class MockUserRepository extends Mock implements UserRepository {}
 class MockPartnerRepository extends Mock implements PartnerRepository {}
 
 class MockToastRepository extends Mock implements ToastRepository {}
+
+class MockRemoteExifRepository extends Mock implements RemoteExifRepository {}
 
 // API Repos
 class MockUserApiRepository extends Mock implements UserApiRepository {}

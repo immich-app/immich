@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
+import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/exif_map.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -53,10 +53,6 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
     }
   }
 
-  void editLocation() async {
-    await ref.read(actionProvider.notifier).editLocation(ActionSource.viewer, context);
-  }
-
   @override
   Widget build(BuildContext context) {
     final asset = widget.asset;
@@ -68,6 +64,7 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
       return const SizedBox.shrink();
     }
 
+    final editLocation = EditLocationAction(assets: [asset], scope: ActionScope.from(context, ref));
     final locationName = _getLocationName(exifInfo);
     final coordinates = "${exifInfo?.latitude?.toStringAsFixed(4)}, ${exifInfo?.longitude?.toStringAsFixed(4)}";
 
@@ -80,7 +77,7 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
             title: 'location'.t(context: context),
             titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
             trailing: hasCoordinates ? const Icon(Icons.edit_location_alt, size: 20) : null,
-            onTap: editLocation,
+            onTap: editLocation.onAction,
           ),
           if (hasCoordinates)
             Padding(
@@ -115,7 +112,7 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
                 color: context.primaryColor,
               ),
               leading: const Icon(Icons.location_off),
-              onTap: editLocation,
+              onTap: editLocation.onAction,
             ),
         ],
       ),

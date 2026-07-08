@@ -3,6 +3,8 @@ import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
@@ -15,6 +17,8 @@ class AssetActions {
   final LockAction lock;
   final DeleteAction delete;
   final CleanupLocalAction cleanup;
+  final EditDateTimeAction editDateTime;
+  final EditLocationAction editLocation;
 
   const AssetActions({
     required this.debug,
@@ -24,6 +28,8 @@ class AssetActions {
     required this.lock,
     required this.delete,
     required this.cleanup,
+    required this.editDateTime,
+    required this.editLocation,
   });
 
   factory AssetActions.from(ActionScope scope, List<BaseAsset> assets) => .new(
@@ -34,5 +40,7 @@ class AssetActions {
     lock: LockAction(assets: assets, scope: scope),
     delete: DeleteAction(assets: assets, scope: scope),
     cleanup: CleanupLocalAction(assets: assets, scope: scope),
+    editDateTime: EditDateTimeAction(assets: assets, scope: scope),
+    editLocation: EditLocationAction(assets: assets, scope: scope),
   );
 }

@@ -1,17 +1,26 @@
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/remote_exif.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
+import 'package:maplibre_gl/maplibre_gl.dart';
 
 class AssetService {
   final RemoteAssetRepository _remoteRepository;
+  final RemoteExifRepository _exifRepository;
   final DriftLocalAssetRepository _localRepository;
   final AssetApiRepository _apiRepository;
 
-  const AssetService({required this._remoteRepository, required this._localRepository, required this._apiRepository});
+  const AssetService({
+    required this._remoteRepository,
+    required this._exifRepository,
+    required this._localRepository,
+    required this._apiRepository,
+  });
 
   Future<BaseAsset?> getAsset(BaseAsset asset) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;
@@ -101,13 +110,35 @@ class AssetService {
     List<String> remoteIds, {
     Option<bool> isFavorite = const .none(),
     Option<AssetVisibility> visibility = const .none(),
+    Option<LatLng> location = const .none(),
+    Option<String> dateTime = const .none(),
   }) async {
     if (remoteIds.isEmpty) {
       return;
     }
 
-    await _apiRepository.update(remoteIds, isFavorite: isFavorite, visibility: visibility);
-    await _remoteRepository.update(remoteIds, isFavorite: isFavorite, visibility: visibility);
+    final parsedDateTime = dateTime.map((dt) => DateTime.parse(dt));
+    final offset = RegExp(r'[+-]\d{2}:\d{2}$').firstMatch(dateTime.unwrapOrNull ?? '')?.group(0);
+
+    await _apiRepository.update(
+      remoteIds,
+      isFavorite: isFavorite,
+      visibility: visibility,
+      location: location,
+      dateTimeOriginal: dateTime,
+    );
+    await _remoteRepository.update(
+      remoteIds,
+      isFavorite: isFavorite,
+      visibility: visibility,
+      createdAt: parsedDateTime,
+    );
+    await _exifRepository.update(
+      remoteIds,
+      location: location,
+      dateTimeOriginal: parsedDateTime,
+      timeZone: .fromNullable(offset).map((o) => 'UTC$o'),
+    );
   }
 
   Future<void> trash(List<String> remoteIds) async {
@@ -126,5 +157,13 @@ class AssetService {
 
     await _apiRepository.delete(remoteIds, true);
     await _remoteRepository.delete(remoteIds);
+  }
+
+  Future<void> applyEdits(String remoteId, List<AssetEdit> edits) async {
+    if (edits.isEmpty) {
+      await _apiRepository.removeEdits(remoteId);
+    } else {
+      await _apiRepository.editAsset(remoteId, edits);
+    }
   }
 }

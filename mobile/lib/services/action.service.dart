@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -21,11 +20,7 @@ import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/utils/timezone.dart';
-import 'package:immich_mobile/widgets/common/date_time_picker.dart';
-import 'package:immich_mobile/widgets/common/location_picker.dart';
 import 'package:immich_mobile/widgets/common/tag_picker.dart';
-import 'package:maplibre_gl/maplibre_gl.dart' as maplibre;
 
 final actionServiceProvider = Provider<ActionService>(
   (ref) => ActionService(
@@ -117,83 +112,6 @@ class ActionService {
     return await _deleteLocalAssets(localIds);
   }
 
-  Future<bool> editLocation(List<String> remoteIds, BuildContext context) async {
-    maplibre.LatLng? initialLatLng;
-    if (remoteIds.length == 1) {
-      final exif = await _remoteAssetRepository.getExif(remoteIds[0]);
-
-      if (exif?.latitude != null && exif?.longitude != null) {
-        initialLatLng = maplibre.LatLng(exif!.latitude!, exif.longitude!);
-      }
-    }
-
-    final location = await showLocationPicker(context: context, initialLatLng: initialLatLng);
-
-    if (location == null) {
-      return false;
-    }
-
-    await _assetApiRepository.updateLocation(remoteIds, location);
-    await _remoteAssetRepository.updateLocation(remoteIds, location);
-
-    return true;
-  }
-
-  Future<bool> editDateTime(List<String> remoteIds, BuildContext context) async {
-    DateTime? initialDate;
-    String? timeZone;
-    Duration? offset;
-
-    if (remoteIds.length == 1) {
-      final assetId = remoteIds.first;
-      final asset = await _remoteAssetRepository.get(assetId);
-      if (asset == null) {
-        return false;
-      }
-
-      final exifData = await _remoteAssetRepository.getExif(assetId);
-
-      // Use EXIF timezone information if available (matching web app and display behavior)
-      DateTime dt = asset.createdAt.toLocal();
-      offset = dt.timeZoneOffset;
-
-      if (exifData?.dateTimeOriginal != null) {
-        timeZone = exifData!.timeZone;
-        (dt, offset) = applyTimezoneOffset(dateTime: exifData.dateTimeOriginal!, timeZone: exifData.timeZone);
-      }
-
-      initialDate = dt;
-    }
-
-    final dateTime = await showDateTimePicker(
-      context: context,
-      initialDateTime: initialDate,
-      initialTZ: timeZone,
-      initialTZOffset: offset,
-    );
-
-    if (dateTime == null) {
-      return false;
-    }
-
-    await applyDateTime(remoteIds, dateTime);
-
-    return true;
-  }
-
-  @visibleForTesting
-  Future<void> applyDateTime(List<String> remoteIds, String dateTime) async {
-    final parsedDateTime = DateTime.parse(dateTime);
-    final offset = RegExp(r'[+-]\d{2}:\d{2}$').firstMatch(dateTime)?.group(0);
-
-    await _assetApiRepository.updateDateTime(remoteIds, dateTime);
-    await _remoteAssetRepository.updateDateTime(
-      remoteIds,
-      parsedDateTime,
-      timeZone: offset == null ? null : 'UTC$offset',
-    );
-  }
-
   Future<bool> updateDescription(String assetId, String description) async {
     // update remote first, then local to ensure consistency
     await _assetApiRepository.updateDescription(assetId, description);
@@ -265,14 +183,6 @@ class ActionService {
     final updatedAlbum = await _albumApiRepository.updateAlbum(albumId, owner, thumbnailAssetId: assetId);
     await _remoteAlbumRepository.update(updatedAlbum);
     return true;
-  }
-
-  Future<void> applyEdits(String remoteId, List<AssetEdit> edits) async {
-    if (edits.isEmpty) {
-      await _assetApiRepository.removeEdits(remoteId);
-    } else {
-      await _assetApiRepository.editAsset(remoteId, edits);
-    }
   }
 
   Future<int> _deleteLocalAssets(List<String> localIds) async {

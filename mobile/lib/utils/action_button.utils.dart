@@ -20,8 +20,6 @@ import 'package:immich_mobile/presentation/actions/remove_from_album.action.dart
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
 import 'package:immich_mobile/presentation/actions/set_profile_picture.action.dart';
-import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
-import 'package:immich_mobile/presentation/actions/set_profile_picture.action.dart';
 import 'package:immich_mobile/presentation/actions/similar_photos.action.dart';
 import 'package:immich_mobile/presentation/actions/slideshow.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
