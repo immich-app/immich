@@ -153,9 +153,26 @@
     background-color: black;
   }
 
+  /*
+   * Restore a visible keyboard-focus indicator.
+   *
+   * Tailwind ring utilities (e.g. `focus-visible:ring-*`) only cover elements
+   * that opt in. A blanket `input:focus-visible { outline: none !important }`
+   * rule stripped the keyboard-focus indicator on every native `<input>`
+   * without an explicit ring utility, breaking keyboard-only navigation
+   * (see #19498).
+   *
+   * This fallback ensures any focusable element without an explicit
+   * `focus-visible:` rule still receives a visible outline. `outline-offset`
+   * is reset on native inputs to neutralize the user-agent default offset.
+   */
+  :focus-visible {
+    outline: 2px solid var(--color-immich-primary);
+    outline-offset: 2px;
+  }
+
   input:focus-visible {
-    outline-offset: 0px !important;
-    outline: none !important;
+    outline-offset: 0;
   }
 
   .text-white-shadow {
