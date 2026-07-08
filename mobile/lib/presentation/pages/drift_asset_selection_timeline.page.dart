@@ -5,15 +5,18 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 
 @RoutePage()
 class DriftAssetSelectionTimelinePage extends ConsumerWidget {
   final Set<BaseAsset> lockedSelectionAssets;
   final Set<BaseAsset> initialSelectedAssets;
+  final List<String> peopleFilterIds;
   const DriftAssetSelectionTimelinePage({
     super.key,
     this.lockedSelectionAssets = const {},
     this.initialSelectedAssets = const {},
+    this.peopleFilterIds = const [],
   });
 
   @override
@@ -31,7 +34,10 @@ class DriftAssetSelectionTimelinePage extends ConsumerWidget {
         ),
         timelineServiceProvider.overrideWith((ref) {
           final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
-          final timelineService = ref.watch(timelineFactoryProvider).main(timelineUsers);
+          final user = ref.watch(currentUserProvider);
+          final timelineService = peopleFilterIds.isNotEmpty && user != null
+              ? ref.watch(timelineFactoryProvider).people(user.id, peopleFilterIds)
+              : ref.watch(timelineFactoryProvider).main(timelineUsers);
           ref.onDispose(timelineService.dispose);
           return timelineService;
         }),

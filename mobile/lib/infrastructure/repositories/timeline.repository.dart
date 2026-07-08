@@ -383,6 +383,18 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     origin: TimelineOrigin.person,
   );
 
+  TimelineQuery people(String userId, List<String> personIds, GroupAssetsBy groupBy) {
+    final uniquePersonIds = personIds.toSet().toList(growable: false);
+    return uniquePersonIds.isEmpty
+        ? remote(userId, groupBy)
+        : (
+            bucketSource: () => _watchPeopleBucket(userId, uniquePersonIds, groupBy: groupBy),
+            assetSource: (offset, count) =>
+                _getPeopleBucketAssets(userId, uniquePersonIds, offset: offset, count: count),
+            origin: TimelineOrigin.person,
+          );
+  }
+
   Stream<List<Bucket>> _watchPlaceBucket(String place, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
       // TODO: implement GroupAssetBy for place
@@ -499,6 +511,82 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..where(
         (row) =>
             row.id.isInQuery(idQuery) &
+            row.deletedAt.isNull() &
+            row.ownerId.equals(userId) &
+            row.visibility.equalsValue(AssetVisibility.timeline),
+      )
+      ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+      ..limit(count, offset: offset);
+
+    return query.map((row) => row.toDto()).get();
+  }
+
+  Expression<bool> _hasAllPeopleFilter($RemoteAssetEntityTable row, List<String> personIds) {
+    final distinctPeopleCount = _db.assetFaceEntity.personId.count(distinct: true);
+    final idQuery = _db.assetFaceEntity.selectOnly()
+      ..addColumns([_db.assetFaceEntity.assetId])
+      ..where(
+        _db.assetFaceEntity.personId.isIn(personIds) &
+            _db.assetFaceEntity.isVisible.equals(true) &
+            _db.assetFaceEntity.deletedAt.isNull(),
+      )
+      ..groupBy([_db.assetFaceEntity.assetId], having: distinctPeopleCount.equals(personIds.length));
+
+    return row.id.isInQuery(idQuery);
+  }
+
+  Stream<List<Bucket>> _watchPeopleBucket(
+    String userId,
+    List<String> personIds, {
+    GroupAssetsBy groupBy = GroupAssetsBy.day,
+  }) {
+    if (groupBy == GroupAssetsBy.none) {
+      final query = _db.remoteAssetEntity.selectOnly()
+        ..addColumns([_db.remoteAssetEntity.id.count()])
+        ..where(
+          _hasAllPeopleFilter(_db.remoteAssetEntity, personIds) &
+              _db.remoteAssetEntity.deletedAt.isNull() &
+              _db.remoteAssetEntity.ownerId.equals(userId) &
+              _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline),
+        );
+
+      return query.map((row) {
+        final count = row.read(_db.remoteAssetEntity.id.count())!;
+        return _generateBuckets(count);
+      }).watchSingle();
+    }
+
+    final assetCountExp = _db.remoteAssetEntity.id.count();
+    final dateExp = _db.remoteAssetEntity.effectiveCreatedAt(groupBy);
+
+    final query = _db.remoteAssetEntity.selectOnly()
+      ..addColumns([assetCountExp, dateExp])
+      ..where(
+        _hasAllPeopleFilter(_db.remoteAssetEntity, personIds) &
+            _db.remoteAssetEntity.ownerId.equals(userId) &
+            _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
+            _db.remoteAssetEntity.deletedAt.isNull(),
+      )
+      ..groupBy([dateExp])
+      ..orderBy([OrderingTerm.desc(dateExp)]);
+
+    return query.map((row) {
+      final timeline = row.read(dateExp)!.truncateDate(groupBy);
+      final assetCount = row.read(assetCountExp)!;
+      return TimeBucket(date: timeline, assetCount: assetCount);
+    }).watch();
+  }
+
+  Future<List<BaseAsset>> _getPeopleBucketAssets(
+    String userId,
+    List<String> personIds, {
+    required int offset,
+    required int count,
+  }) {
+    final query = _db.remoteAssetEntity.select()
+      ..where(
+        (row) =>
+            _hasAllPeopleFilter(row, personIds) &
             row.deletedAt.isNull() &
             row.ownerId.equals(userId) &
             row.visibility.equalsValue(AssetVisibility.timeline),

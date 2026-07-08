@@ -69,5 +69,77 @@ void main() {
       expect(assets, hasLength(1));
       expect((assets.first as RemoteAsset).id, asset.id);
     });
+
+    test('people query only returns assets containing all selected people', () async {
+      final user = await ctx.newUser();
+      final personA = await ctx.newPerson(ownerId: user.id);
+      final personB = await ctx.newPerson(ownerId: user.id);
+      final both = await ctx.newRemoteAsset(ownerId: user.id);
+      final onlyA = await ctx.newRemoteAsset(ownerId: user.id);
+
+      await ctx.newFace(assetId: both.id, personId: personA.id);
+      await ctx.newFace(assetId: both.id, personId: personB.id);
+      await ctx.newFace(assetId: onlyA.id, personId: personA.id);
+
+      final query = sut.people(user.id, [personA.id, personB.id], .day);
+
+      final buckets = await query.bucketSource().first;
+      expect(buckets.fold<int>(0, (count, bucket) => count + bucket.assetCount), 1);
+
+      final assets = await query.assetSource(0, 10);
+      expect(assets, hasLength(1));
+      expect((assets.single as RemoteAsset).id, both.id);
+    });
+
+    test('people query does not duplicate assets with repeated matching faces', () async {
+      final user = await ctx.newUser();
+      final personA = await ctx.newPerson(ownerId: user.id);
+      final personB = await ctx.newPerson(ownerId: user.id);
+      final asset = await ctx.newRemoteAsset(ownerId: user.id);
+
+      await ctx.newFace(assetId: asset.id, personId: personA.id);
+      await ctx.newFace(assetId: asset.id, personId: personA.id);
+      await ctx.newFace(assetId: asset.id, personId: personB.id);
+
+      final query = sut.people(user.id, [personA.id, personB.id], .day);
+
+      final buckets = await query.bucketSource().first;
+      expect(buckets.fold<int>(0, (count, bucket) => count + bucket.assetCount), 1);
+
+      final assets = await query.assetSource(0, 10);
+      expect(assets, hasLength(1));
+      expect((assets.single as RemoteAsset).id, asset.id);
+    });
+
+    test('people query excludes hidden deleted archived and other owner assets', () async {
+      final user = await ctx.newUser();
+      final otherUser = await ctx.newUser();
+      final personA = await ctx.newPerson(ownerId: user.id);
+      final personB = await ctx.newPerson(ownerId: user.id);
+      final visible = await ctx.newRemoteAsset(ownerId: user.id);
+      final hidden = await ctx.newRemoteAsset(ownerId: user.id, visibility: AssetVisibility.hidden);
+      final archived = await ctx.newRemoteAsset(ownerId: user.id, visibility: AssetVisibility.archive);
+      final deleted = await ctx.newRemoteAsset(ownerId: user.id, deletedAt: DateTime.now());
+      final otherOwner = await ctx.newRemoteAsset(ownerId: otherUser.id);
+      final hiddenFace = await ctx.newRemoteAsset(ownerId: user.id);
+      final deletedFace = await ctx.newRemoteAsset(ownerId: user.id);
+
+      for (final asset in [visible, hidden, archived, deleted, otherOwner]) {
+        await ctx.newFace(assetId: asset.id, personId: personA.id);
+        await ctx.newFace(assetId: asset.id, personId: personB.id);
+      }
+      await ctx.newFace(assetId: hiddenFace.id, personId: personA.id);
+      await ctx.newFace(assetId: hiddenFace.id, personId: personB.id, isVisible: false);
+      await ctx.newFace(assetId: deletedFace.id, personId: personA.id);
+      await ctx.newFace(assetId: deletedFace.id, personId: personB.id, deletedAt: DateTime.now());
+
+      final query = sut.people(user.id, [personA.id, personB.id], .day);
+
+      final buckets = await query.bucketSource().first;
+      expect(buckets.fold<int>(0, (count, bucket) => count + bucket.assetCount), 1);
+
+      final assets = await query.assetSource(0, 10);
+      expect(assets.map((asset) => (asset as RemoteAsset).id), [visible.id]);
+    });
   });
 }

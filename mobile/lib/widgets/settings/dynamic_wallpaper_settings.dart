@@ -6,15 +6,21 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/config/dynamic_wallpaper_config.dart' as config_model;
+import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/platform/dynamic_wallpaper_api.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/dynamic_wallpaper.service.dart';
+import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/widgets/common/search_field.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
@@ -80,6 +86,13 @@ class _DynamicWallpaperSettingsState extends ConsumerState<DynamicWallpaperSetti
           onButtonTap: () => _selectWallpaperPhotos(context, ref, config.assetIds, service),
         ),
         SettingsButtonListTile(
+          icon: Icons.people_alt_outlined,
+          title: 'dynamic_wallpaper_people_filter_title'.tr(),
+          subtileText: 'dynamic_wallpaper_people_filter_subtitle'.tr(),
+          buttonText: 'dynamic_wallpaper_filter_by_people'.tr(),
+          onButtonTap: () => _selectWallpaperPhotosByPeople(context, ref, config.assetIds, service),
+        ),
+        SettingsButtonListTile(
           icon: Icons.wallpaper_outlined,
           title: 'dynamic_wallpaper_picker_title'.tr(),
           subtileText: 'dynamic_wallpaper_picker_subtitle'.tr(namedArgs: {'count': selectedCount.toString()}),
@@ -105,8 +118,9 @@ class _DynamicWallpaperSettingsState extends ConsumerState<DynamicWallpaperSetti
     BuildContext context,
     WidgetRef ref,
     List<String> currentAssetIds,
-    DynamicWallpaperService service,
-  ) async {
+    DynamicWallpaperService service, {
+    List<String> peopleFilterIds = const [],
+  }) async {
     final initialAssets = await ref.read(assetServiceProvider).getRemoteAssets(currentAssetIds);
 
     if (!context.mounted) {
@@ -117,7 +131,7 @@ class _DynamicWallpaperSettingsState extends ConsumerState<DynamicWallpaperSetti
     final preservedAssetIds = currentAssetIds.where((assetId) => !loadedAssetIds.contains(assetId)).toList();
 
     final selectedAssets = await context.pushRoute<Set<BaseAsset>>(
-      DriftAssetSelectionTimelineRoute(initialSelectedAssets: initialAssets.toSet()),
+      DriftAssetSelectionTimelineRoute(initialSelectedAssets: initialAssets.toSet(), peopleFilterIds: peopleFilterIds),
     );
 
     if (selectedAssets == null) {
@@ -134,6 +148,164 @@ class _DynamicWallpaperSettingsState extends ConsumerState<DynamicWallpaperSetti
         msg: 'dynamic_wallpaper_selection_saved'.tr(namedArgs: {'count': nextAssetIds.length.toString()}),
       );
     }
+  }
+
+  Future<void> _selectWallpaperPhotosByPeople(
+    BuildContext context,
+    WidgetRef ref,
+    List<String> currentAssetIds,
+    DynamicWallpaperService service,
+  ) async {
+    final selectedPeople = await showModalBottomSheet<List<DriftPerson>>(
+      context: context,
+      useSafeArea: true,
+      isScrollControlled: true,
+      backgroundColor: context.colorScheme.surface,
+      builder: (context) => const _DynamicWallpaperPeopleFilterSheet(),
+    );
+
+    if (selectedPeople == null || selectedPeople.isEmpty || !context.mounted) {
+      return;
+    }
+
+    await _selectWallpaperPhotos(
+      context,
+      ref,
+      currentAssetIds,
+      service,
+      peopleFilterIds: selectedPeople.map((person) => person.id).toList(growable: false),
+    );
+  }
+}
+
+class _DynamicWallpaperPeopleFilterSheet extends ConsumerStatefulWidget {
+  const _DynamicWallpaperPeopleFilterSheet();
+
+  @override
+  ConsumerState<_DynamicWallpaperPeopleFilterSheet> createState() => _DynamicWallpaperPeopleFilterSheetState();
+}
+
+class _DynamicWallpaperPeopleFilterSheetState extends ConsumerState<_DynamicWallpaperPeopleFilterSheet> {
+  final FocusNode _searchFocus = FocusNode();
+  final Set<DriftPerson> _selectedPeople = {};
+  String _search = '';
+
+  @override
+  void dispose() {
+    _searchFocus.dispose();
+    super.dispose();
+  }
+
+  void _togglePerson(DriftPerson person) {
+    setState(() {
+      if (_selectedPeople.contains(person)) {
+        _selectedPeople.remove(person);
+      } else {
+        _selectedPeople.add(person);
+      }
+    });
+  }
+
+  String _personName(DriftPerson person) {
+    return person.name.isEmpty ? 'add_a_name'.tr() : person.name;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final people = ref.watch(driftGetAllPeopleProvider);
+    final height = MediaQuery.sizeOf(context).height * 0.85;
+
+    return SizedBox(
+      height: height,
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                IconButton(
+                  tooltip: 'cancel'.tr(),
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+                Expanded(
+                  child: Text(
+                    'dynamic_wallpaper_people_filter_title'.tr(),
+                    style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                TextButton(
+                  onPressed: _selectedPeople.isEmpty
+                      ? null
+                      : () => Navigator.of(context).pop(_selectedPeople.toList(growable: false)),
+                  child: Text('done'.tr()),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: SearchField(
+              focusNode: _searchFocus,
+              onChanged: (value) => setState(() => _search = value),
+              onTapOutside: (_) => _searchFocus.unfocus(),
+              filled: true,
+              hintText: 'filter_people'.tr(),
+            ),
+          ),
+          Expanded(
+            child: people.when(
+              data: (people) {
+                final filteredPeople = people
+                    .where((person) {
+                      return _personName(
+                        person,
+                      ).toLowerCase().removeDiacritics().contains(_search.toLowerCase().removeDiacritics());
+                    })
+                    .toList(growable: false);
+
+                if (filteredPeople.isEmpty) {
+                  return Center(child: Text('no_people_found'.tr()));
+                }
+
+                return ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  itemCount: filteredPeople.length,
+                  itemBuilder: (context, index) {
+                    final person = filteredPeople[index];
+                    final isSelected = _selectedPeople.contains(person);
+
+                    return Padding(
+                      key: ValueKey(person.id),
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        selected: isSelected,
+                        selectedTileColor: context.colorScheme.primaryContainer,
+                        tileColor: context.colorScheme.surfaceContainerLow,
+                        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
+                        leading: CircleAvatar(
+                          backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
+                        ),
+                        title: Text(
+                          _personName(person),
+                          overflow: TextOverflow.ellipsis,
+                          style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+                        ),
+                        trailing: Checkbox(value: isSelected, onChanged: (_) => _togglePerson(person)),
+                        onTap: () => _togglePerson(person),
+                      ),
+                    );
+                  },
+                );
+              },
+              error: (_, _) => Center(child: Text('get_people_error'.tr())),
+              loading: () => const Center(child: CircularProgressIndicator()),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

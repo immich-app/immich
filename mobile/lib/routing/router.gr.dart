@@ -443,6 +443,7 @@ class DriftAssetSelectionTimelineRoute
     Key? key,
     Set<BaseAsset> lockedSelectionAssets = const {},
     Set<BaseAsset> initialSelectedAssets = const {},
+    List<String> peopleFilterIds = const [],
     List<PageRouteInfo>? children,
   }) : super(
          DriftAssetSelectionTimelineRoute.name,
@@ -450,6 +451,7 @@ class DriftAssetSelectionTimelineRoute
            key: key,
            lockedSelectionAssets: lockedSelectionAssets,
            initialSelectedAssets: initialSelectedAssets,
+           peopleFilterIds: peopleFilterIds,
          ),
          initialChildren: children,
        );
@@ -466,6 +468,7 @@ class DriftAssetSelectionTimelineRoute
         key: args.key,
         lockedSelectionAssets: args.lockedSelectionAssets,
         initialSelectedAssets: args.initialSelectedAssets,
+        peopleFilterIds: args.peopleFilterIds,
       );
     },
   );
@@ -476,6 +479,7 @@ class DriftAssetSelectionTimelineRouteArgs {
     this.key,
     this.lockedSelectionAssets = const {},
     this.initialSelectedAssets = const {},
+    this.peopleFilterIds = const [],
   });
 
   final Key? key;
@@ -484,9 +488,11 @@ class DriftAssetSelectionTimelineRouteArgs {
 
   final Set<BaseAsset> initialSelectedAssets;
 
+  final List<String> peopleFilterIds;
+
   @override
   String toString() {
-    return 'DriftAssetSelectionTimelineRouteArgs{key: $key, lockedSelectionAssets: $lockedSelectionAssets, initialSelectedAssets: $initialSelectedAssets}';
+    return 'DriftAssetSelectionTimelineRouteArgs{key: $key, lockedSelectionAssets: $lockedSelectionAssets, initialSelectedAssets: $initialSelectedAssets, peopleFilterIds: $peopleFilterIds}';
   }
 
   @override
@@ -501,6 +507,10 @@ class DriftAssetSelectionTimelineRouteArgs {
         const SetEquality<BaseAsset>().equals(
           initialSelectedAssets,
           other.initialSelectedAssets,
+        ) &&
+        const ListEquality<String>().equals(
+          peopleFilterIds,
+          other.peopleFilterIds,
         );
   }
 
@@ -508,7 +518,8 @@ class DriftAssetSelectionTimelineRouteArgs {
   int get hashCode =>
       key.hashCode ^
       const SetEquality<BaseAsset>().hash(lockedSelectionAssets) ^
-      const SetEquality<BaseAsset>().hash(initialSelectedAssets);
+      const SetEquality<BaseAsset>().hash(initialSelectedAssets) ^
+      const ListEquality<String>().hash(peopleFilterIds);
 }
 
 /// generated route for
