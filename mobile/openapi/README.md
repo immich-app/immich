@@ -452,6 +452,7 @@ Class | Method | HTTP request | Description
  - [FacialRecognitionConfig](doc//FacialRecognitionConfig.md)
  - [FoldersResponse](doc//FoldersResponse.md)
  - [FoldersUpdate](doc//FoldersUpdate.md)
+ - [HlsVideoResolution](doc//HlsVideoResolution.md)
  - [ImageFormat](doc//ImageFormat.md)
  - [IntegrityReport](doc//IntegrityReport.md)
  - [IntegrityReportResponseDto](doc//IntegrityReportResponseDto.md)

@@ -309,8 +309,8 @@ packages:
     dependency: "direct main"
     description:
       path: "pkgs/cupertino_http"
-      ref: a0a933358517c6d01cff37fc2a2752ee2d744a3c
-      resolved-ref: a0a933358517c6d01cff37fc2a2752ee2d744a3c
+      ref: "58b03c756b81d16b3975a8ae4b91d25360123bb5"
+      resolved-ref: "58b03c756b81d16b3975a8ae4b91d25360123bb5"
       url: "https://github.com/mertalev/http"
     source: git
     version: "3.0.0-wip"
@@ -1158,12 +1158,13 @@ packages:
     source: hosted
     version: "0.5.0"
   objective_c:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: objective_c
-      sha256: "6cb691c686fa2838c6deb34980d426145c2a5d537491cb83d463c33cdbc726ed"
-      url: "https://pub.dev"
-    source: hosted
+      path: "pkgs/objective_c"
+      ref: "2915556701f4734a784222f290a82adb1b101682"
+      resolved-ref: "2915556701f4734a784222f290a82adb1b101682"
+      url: "https://github.com/mertalev/native"
+    source: git
     version: "9.4.1"
   octo_image:
     dependency: "direct main"
