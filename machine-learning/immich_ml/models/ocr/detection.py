@@ -11,10 +11,11 @@ from rapidocr.utils.typings import EngineType, LangDet, TaskType
 
 from immich_ml.config import log
 from immich_ml.models.base import InferenceModel
+from immich_ml.models.constants import PADDLE_MODEL_SPECS
 from immich_ml.schemas import ModelFormat, ModelSession, ModelTask, ModelType
 from immich_ml.sessions.ort import OrtSession
 
-from .schemas import TextDetectionOutput, resolve_ocr_version_and_type
+from .schemas import TextDetectionOutput
 
 
 class TextDetector(InferenceModel):
@@ -40,7 +41,7 @@ class TextDetector(InferenceModel):
         )
 
     def _download(self) -> None:
-        ocr_version, model_type = resolve_ocr_version_and_type(self.model_name)
+        ocr_version, model_type = PADDLE_MODEL_SPECS[self.model_name.split("__")[-1]]
         model_info = InferSession.get_model_url(
             FileInfo(
                 engine_type=EngineType.ONNXRUNTIME,
