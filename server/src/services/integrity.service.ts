@@ -360,7 +360,7 @@ export class IntegrityService extends BaseService {
 
     this.logger.log(`Scanning for missing files...`);
 
-    const assetPaths = this.integrityRepository.streamAssetPaths();
+    const assetPaths = this.integrityRepository.streamAssetPathsForMissingFiles();
 
     let total = 0;
     for await (const batchPaths of chunk(assetPaths, JOBS_LIBRARY_PAGINATION_SIZE)) {
