@@ -5977,6 +5977,55 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/duplicates/resolve-all": {
+      "post": {
+        "description": "Resolve all duplicate groups by keeping the suggested asset in each group and deleting/trashing duplicates.",
+        "operationId": "resolveAllDuplicates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BulkIdResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Resolve all duplicate groups",
+        "tags": [
+          "Duplicates"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.0.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "duplicate.delete",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/duplicates/{id}": {
       "delete": {
         "description": "Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.",

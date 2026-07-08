@@ -110,6 +110,22 @@ export class DuplicateService extends BaseService {
     return results;
   }
 
+  async resolveAll(auth: AuthDto): Promise<BulkIdResponseDto[]> {
+    await this.duplicateRepository.cleanupSingletonGroups(auth.user.id);
+
+    const duplicates = await this.duplicateRepository.getAll(auth.user.id);
+
+    const groups = duplicates.map(({ duplicateId, assets }) => {
+      const mappedAssets = assets.map((asset) => mapAsset(asset, { auth }));
+      const keepAssetIds = suggestDuplicateKeepAssetIds(mappedAssets);
+      const keepAssetIdSet = new Set(keepAssetIds);
+      const trashAssetIds = mappedAssets.map((asset) => asset.id).filter((id) => !keepAssetIdSet.has(id));
+      return { duplicateId, keepAssetIds, trashAssetIds };
+    });
+
+    return this.resolve(auth, { groups });
+  }
+
   private async resolveGroup(auth: AuthDto, group: DuplicateResolveGroupDto): Promise<BulkIdResponseDto> {
     const { duplicateId, keepAssetIds, trashAssetIds } = group;
 
