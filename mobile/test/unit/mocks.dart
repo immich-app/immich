@@ -22,6 +22,8 @@ class RepositoryMocks {
   final localAsset = LocalAssetRepositoryStub(MockDriftLocalAssetRepository());
   final trashedAsset = MockTrashedLocalAssetRepository();
   final toast = MockToastRepository();
+  final remoteAlbum = MockRemoteAlbumRepository();
+  final albumApi = MockDriftAlbumApiRepository();
 
   final nativeApi = NativeSyncApiStub(MockNativeSyncApi());
 
@@ -34,6 +36,8 @@ class RepositoryMocks {
     localAlbum.reset();
     localAsset.reset();
     reset(trashedAsset);
+    reset(remoteAlbum);
+    reset(albumApi);
     nativeApi.reset();
     reset(toast);
     _stubLocalAlbumRepository();
