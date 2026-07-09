@@ -555,4 +555,80 @@ export class MediaRepository {
     const median = history.sort((a, b) => a - b)[1];
     return outputFrames + median;
   }
+
+  async extractVideoFrames(input: string, timestamps: number[], outputDir: string): Promise<string[]> {
+    const outputPaths: string[] = [];
+
+    for (let i = 0; i < timestamps.length; i++) {
+      const timestamp = timestamps[i];
+      const outputPath = `${outputDir}/frame_${i}.jpg`;
+
+      await new Promise<void>((resolve, reject) => {
+        ffmpeg(input, { niceness: 10 })
+          .inputOptions(['-ss', String(timestamp / 1000)])
+          .outputOptions(['-frames:v', '1', '-q:v', '2'])
+          .output(outputPath)
+          .on('error', reject)
+          .on('end', () => resolve())
+          .run();
+      });
+
+      outputPaths.push(outputPath);
+    }
+
+    return outputPaths;
+  }
+
+  async detectSceneChanges(input: string, threshold: number, maxFrames: number): Promise<number[]> {
+    return new Promise((resolve, reject) => {
+      const timestamps: number[] = [];
+      const ffprobe = spawn(
+        'ffprobe',
+        [
+          '-v',
+          'error',
+          '-select_streams',
+          'v:0',
+          '-show_entries',
+          'frame=pts_time',
+          '-f',
+          'lavfi',
+          `-i`,
+          String.raw`movie='${input}',select='gt(scene\,${threshold})'`,
+          '-of',
+          'csv=p=0',
+        ],
+        { stdio: ['ignore', 'pipe', 'pipe'] },
+      );
+
+      let stderr = '';
+      ffprobe.stderr.setEncoding('utf8');
+      ffprobe.stderr.on('data', (chunk: string) => (stderr += chunk));
+      ffprobe.stdout.setEncoding('utf8');
+      ffprobe.stdout.on('data', (chunk: string) => {
+        for (const line of chunk.split('\n')) {
+          if (!line.trim()) {
+            continue;
+          }
+          const ptsTime = Number.parseFloat(line.trim());
+          if (!Number.isNaN(ptsTime)) {
+            timestamps.push(Math.round(ptsTime * 1000));
+            if (timestamps.length >= maxFrames) {
+              ffprobe.kill();
+              resolve(timestamps);
+              return;
+            }
+          }
+        }
+      });
+
+      ffprobe.on('error', reject);
+      ffprobe.on('close', (code) => {
+        if (code !== 0 && code !== null && timestamps.length < maxFrames) {
+          return reject(new Error(`ffprobe exited with code ${code}: ${stderr.trim()}`));
+        }
+        resolve(timestamps);
+      });
+    });
+  }
 }

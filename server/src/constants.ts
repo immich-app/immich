@@ -38,6 +38,7 @@ export const VECTOR_EXTENSIONS = [DatabaseExtension.VectorChord, DatabaseExtensi
 
 export const VECTOR_INDEX_TABLES = {
   [VectorIndex.Clip]: 'smart_search',
+  [VectorIndex.ClipVideo]: 'smart_search_video',
   [VectorIndex.Face]: 'face_search',
 } as const;
 

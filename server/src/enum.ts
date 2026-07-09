@@ -948,6 +948,7 @@ export enum QueueCleanType {
 
 export enum VectorIndex {
   Clip = 'clip_index',
+  ClipVideo = 'clip_video_index',
   Face = 'face_index',
 }
 

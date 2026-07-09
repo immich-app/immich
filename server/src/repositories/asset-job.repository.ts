@@ -212,7 +212,15 @@ export class AssetJobRepository {
     return this.assetsWithPreviews()
       .select(['asset.id'])
       .$if(!force, (qb) =>
-        qb.where((eb) => eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'asset.id')))),
+        qb.where((eb) =>
+          eb.or([
+            eb.not((eb) => eb.exists(eb.selectFrom('smart_search').whereRef('assetId', '=', 'asset.id'))),
+            eb.and([
+              eb('asset.type', '=', AssetType.Video),
+              eb.not((eb) => eb.exists(eb.selectFrom('smart_search_video').whereRef('assetId', '=', 'asset.id'))),
+            ]),
+          ]),
+        ),
       )
       .stream();
   }
@@ -221,7 +229,7 @@ export class AssetJobRepository {
   getForClipEncoding(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.id', 'asset.visibility'])
+      .select(['asset.id', 'asset.visibility', 'asset.type', 'asset.duration', 'asset.originalPath'])
       .select((eb) => withFiles(eb, AssetFileType.Preview))
       .where('asset.id', '=', id)
       .executeTakeFirst();

@@ -27,7 +27,7 @@ export enum ModelType {
   OCR = 'ocr',
 }
 
-export type ModelPayload = { imagePath: string } | { text: string };
+export type ModelPayload = { imagePath: string } | { imageBuffer: Buffer } | { text: string };
 
 type ModelOptions = { modelName: string };
 
@@ -212,6 +212,12 @@ export class MachineLearningRepository {
     return response[ModelTask.SEARCH];
   }
 
+  async encodeImageBuffer(imageBuffer: Buffer, { modelName }: CLIPConfig) {
+    const request = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: { modelName } } };
+    const response = await this.predict<ClipVisualResponse>({ imageBuffer }, request);
+    return response[ModelTask.SEARCH];
+  }
+
   async encodeText(text: string, { language, modelName }: TextEncodingOptions) {
     const request = { [ModelTask.SEARCH]: { [ModelType.TEXTUAL]: { modelName, options: { language } } } };
     const response = await this.predict<ClipTextualResponse>({ text }, request);
@@ -236,6 +242,8 @@ export class MachineLearningRepository {
     if ('imagePath' in payload) {
       const fileBuffer = await readFile(payload.imagePath);
       formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
+    } else if ('imageBuffer' in payload) {
+      formData.append('image', new Blob([new Uint8Array(payload.imageBuffer)]));
     } else if ('text' in payload) {
       formData.append('text', payload.text);
     } else {

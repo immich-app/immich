@@ -117,6 +117,10 @@ const updatedConfig = Object.freeze<SystemConfig>({
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
+      videoFrameStrategy: 'time',
+      videoFrameInterval: 30,
+      videoMaxFrames: 20,
+      videoSceneThreshold: 0.1,
     },
     duplicateDetection: {
       enabled: true,

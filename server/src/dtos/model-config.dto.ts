@@ -11,7 +11,19 @@ const ModelConfigSchema = TaskConfigSchema.extend({
   modelName: z.string().describe('Name of the model to use'),
 });
 
-export const CLIPConfigSchema = ModelConfigSchema.meta({ id: 'CLIPConfig' });
+export const CLIPConfigSchema = ModelConfigSchema.extend({
+  videoFrameStrategy: z
+    .enum(['time', 'scene'])
+    .describe('Strategy for extracting frames from videos: time-based intervals or scene-change detection'),
+  videoFrameInterval: z.int().min(1).describe('Interval in seconds between extracted frames (time-based strategy)'),
+  videoMaxFrames: z.int().min(1).describe('Maximum number of frames to extract per video'),
+  videoSceneThreshold: z
+    .number()
+    .meta({ format: 'double' })
+    .min(0.01)
+    .max(1)
+    .describe('Scene change detection threshold (scene-based strategy, lower = more sensitive)'),
+}).meta({ id: 'CLIPConfig' });
 
 export const DuplicateDetectionConfigSchema = TaskConfigSchema.extend({
   maxDistance: z

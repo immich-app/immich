@@ -85,6 +85,10 @@ export type SystemConfig = {
     clip: {
       enabled: boolean;
       modelName: string;
+      videoFrameStrategy: 'time' | 'scene';
+      videoFrameInterval: number;
+      videoMaxFrames: number;
+      videoSceneThreshold: number;
     };
     duplicateDetection: {
       enabled: boolean;
@@ -302,6 +306,10 @@ export const defaults = Object.freeze<SystemConfig>({
     clip: {
       enabled: true,
       modelName: 'ViT-B-32__openai',
+      videoFrameStrategy: 'time',
+      videoFrameInterval: 30,
+      videoMaxFrames: 20,
+      videoSceneThreshold: 0.1,
     },
     duplicateDetection: {
       enabled: true,

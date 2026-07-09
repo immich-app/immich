@@ -436,6 +436,73 @@ export class SearchRepository {
       .execute();
   }
 
+  async upsertVideoFrames(
+    assetId: string,
+    frames: { frameIndex: number; timestamp: number; embedding: string }[],
+  ): Promise<void> {
+    await this.db.transaction().execute(async (trx) => {
+      await trx.deleteFrom('smart_search_video').where('assetId', '=', assetId).execute();
+      if (frames.length > 0) {
+        await trx
+          .insertInto('smart_search_video')
+          .values(frames.map((f) => ({ assetId, ...f })))
+          .execute();
+      }
+    });
+  }
+
+  async deleteVideoEmbeddings(assetId: string): Promise<void> {
+    await this.db.deleteFrom('smart_search_video').where('assetId', '=', assetId).execute();
+  }
+
+  @GenerateSql({
+    params: [
+      { page: 1, size: 200 },
+      {
+        takenAfter: DummyValue.DATE,
+        embedding: DummyValue.VECTOR,
+        lensModel: DummyValue.STRING,
+        withStacked: true,
+        isFavorite: true,
+        userIds: [DummyValue.UUID],
+      },
+    ],
+  })
+  searchSmartVideo(pagination: SearchPaginationOptions, options: SmartSearchOptions) {
+    if (!z.int().min(1).max(1000).safeParse(pagination.size).success) {
+      throw new Error(`Invalid value for 'size': ${pagination.size}`);
+    }
+
+    return this.db.transaction().execute(async (trx) => {
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.ClipVideo])}`.execute(trx);
+
+      const ranked = trx
+        .selectFrom('smart_search_video')
+        .select([
+          'smart_search_video.assetId',
+          'smart_search_video.timestamp',
+          'smart_search_video.frameIndex',
+          sql<number>`smart_search_video.embedding <=> ${options.embedding}`.as('distance'),
+          sql<number>`row_number() over (partition by smart_search_video."assetId" order by smart_search_video.embedding <=> ${options.embedding})`.as(
+            'rn',
+          ),
+        ]);
+
+      const items = await searchAssetBuilder(trx, options)
+        .selectAll('asset')
+        .innerJoin(ranked.as('video_ranked'), (join) =>
+          join.onRef('asset.id', '=', 'video_ranked.assetId').on('video_ranked.rn', '=', 1),
+        )
+        .select(['video_ranked.timestamp', 'video_ranked.frameIndex', 'video_ranked.distance'])
+        .orderBy(sql`video_ranked.distance`)
+        .limit(pagination.size + 1)
+        .offset((pagination.page - 1) * pagination.size)
+        .execute();
+
+      return paginationHelper(items, pagination.size);
+    });
+  }
+
   async getCountries(userIds: string[]): Promise<string[]> {
     const res = await this.getExifField('country', userIds).execute();
     return res.map((row) => row.country!);

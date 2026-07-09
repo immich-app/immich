@@ -113,6 +113,18 @@ export const AssetResponseSchema = SanitizedAssetResponseSchema.extend(
       .boolean()
       .describe('Is edited')
       .meta(new HistoryBuilder().added('v2.5.0').beta('v2.5.0').getExtensions()),
+    videoTimestamp: z
+      .int()
+      .min(0)
+      .nullable()
+      .optional()
+      .describe('Timestamp in milliseconds of the best-matching video frame (null for images)'),
+    videoFrameIndex: z
+      .int()
+      .min(0)
+      .nullable()
+      .optional()
+      .describe('Index of the best-matching video frame (null for images)'),
   }).shape,
 ).meta({ id: 'AssetResponseDto' });
 
@@ -154,6 +166,8 @@ export type MapAsset = {
   width: number | null;
   height: number | null;
   isEdited: boolean;
+  videoTimestamp?: number | null;
+  videoFrameIndex?: number | null;
 };
 
 export type AssetMapOptions = {
@@ -242,5 +256,7 @@ export function mapAsset(entity: MaybeDehydrated<MapAsset>, options: AssetMapOpt
     width: entity.width,
     height: entity.height,
     isEdited: entity.isEdited,
+    videoTimestamp: entity.videoTimestamp ?? null,
+    videoFrameIndex: entity.videoFrameIndex ?? null,
   };
 }

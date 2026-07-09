@@ -1,8 +1,11 @@
 import { Injectable } from '@nestjs/common';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { SystemConfig } from 'src/config';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
-import { AssetVisibility, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
+import { AssetType, AssetVisibility, DatabaseLock, ImmichWorker, JobName, JobStatus, QueueName } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
@@ -108,6 +111,10 @@ export class SmartInfoService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    if (asset.type === AssetType.Video && asset.duration && asset.duration > 0) {
+      return this.encodeVideoClip(asset, machineLearning);
+    }
+
     const embedding = await this.machineLearningRepository.encodeImage(asset.files[0].path, machineLearning.clip);
 
     if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {
@@ -117,12 +124,73 @@ export class SmartInfoService extends BaseService {
 
     const newConfig = await this.getConfig({ withCache: true });
     if (machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
-      // Skip the job if the model has changed since the embedding was generated.
       return JobStatus.Skipped;
     }
 
     await this.searchRepository.upsert(asset.id, embedding);
 
     return JobStatus.Success;
+  }
+
+  private async encodeVideoClip(
+    asset: NonNullable<Awaited<ReturnType<typeof this.assetJobRepository.getForClipEncoding>>>,
+    machineLearning: SystemConfig['machineLearning'],
+  ): Promise<JobStatus> {
+    const { clip } = machineLearning;
+    const duration = asset.duration!;
+    const maxFrames = clip.videoMaxFrames;
+
+    let timestamps: number[];
+
+    if (clip.videoFrameStrategy === 'scene') {
+      timestamps = await this.mediaRepository.detectSceneChanges(
+        asset.originalPath,
+        clip.videoSceneThreshold,
+        maxFrames,
+      );
+    } else {
+      const interval = clip.videoFrameInterval * 1000;
+      timestamps = [];
+      for (let t = 0; t < duration && timestamps.length < maxFrames; t += interval) {
+        timestamps.push(t);
+      }
+      if (timestamps.length === 0) {
+        timestamps.push(0);
+      }
+    }
+
+    if (timestamps.length === 0) {
+      this.logger.warn(`No frames extracted for video ${asset.id}`);
+      return JobStatus.Failed;
+    }
+
+    const tempDir = await mkdtemp(join(tmpdir(), `immich-video-frames-${asset.id}-`));
+
+    try {
+      const framePaths = await this.mediaRepository.extractVideoFrames(asset.originalPath, timestamps, tempDir);
+
+      const frames: { frameIndex: number; timestamp: number; embedding: string }[] = [];
+
+      for (let i = 0; i < framePaths.length; i++) {
+        const embedding = await this.machineLearningRepository.encodeImage(framePaths[i], clip);
+        frames.push({ frameIndex: i, timestamp: timestamps[i], embedding });
+      }
+
+      if (this.databaseRepository.isBusy(DatabaseLock.CLIPDimSize)) {
+        this.logger.verbose(`Waiting for CLIP dimension size to be updated`);
+        await this.databaseRepository.wait(DatabaseLock.CLIPDimSize);
+      }
+
+      const newConfig = await this.getConfig({ withCache: true });
+      if (machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName) {
+        return JobStatus.Skipped;
+      }
+
+      await this.searchRepository.upsertVideoFrames(asset.id, frames);
+
+      return JobStatus.Success;
+    } finally {
+      await rm(tempDir, { recursive: true, force: true }).catch(() => {});
+    }
   }
 }

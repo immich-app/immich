@@ -19,6 +19,7 @@ import {
   StatisticsSearchDto,
 } from 'src/dtos/search.dto';
 import { AssetOrder, AssetVisibility, Permission } from 'src/enum';
+import { SmartSearchOptions } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
@@ -171,17 +172,38 @@ export class SearchService extends BaseService {
     }
     const page = dto.page ?? 1;
     const size = dto.size || 100;
-    const { hasNextPage, items } = await this.searchRepository.searchSmart(
-      { page, size },
-      {
-        ...dto,
-        userIds: await userIds,
-        embedding,
-        visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
-      },
-    );
+    const searchOptions: SmartSearchOptions = {
+      ...dto,
+      userIds: await userIds,
+      embedding,
+      visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+    };
 
-    return this.mapResponse(items, hasNextPage ? (page + 1).toString() : null, { auth });
+    const [imageResults, videoResults] = await Promise.all([
+      this.searchRepository.searchSmart({ page: 1, size: size * 2 }, searchOptions),
+      this.searchRepository.searchSmartVideo({ page: 1, size: size * 2 }, searchOptions),
+    ]);
+
+    const mergedMap = new Map<string, MapAsset & { videoTimestamp?: number; videoFrameIndex?: number }>();
+
+    for (const item of imageResults.items) {
+      mergedMap.set(item.id, item);
+    }
+
+    for (const item of videoResults.items) {
+      const existing = mergedMap.get(item.id);
+      const videoItem = item as MapAsset & { timestamp?: number; frameIndex?: number; distance?: number };
+      if (!existing) {
+        mergedMap.set(item.id, { ...item, videoTimestamp: videoItem.timestamp, videoFrameIndex: videoItem.frameIndex });
+      }
+    }
+
+    const merged = [...mergedMap.values()];
+    const startIndex = (page - 1) * size;
+    const pageItems = merged.slice(startIndex, startIndex + size);
+    const hasNextPage = merged.length > startIndex + size;
+
+    return this.mapResponse(pageItems, hasNextPage ? (page + 1).toString() : null, { auth });
   }
 
   async getAssetsByCity(auth: AuthDto): Promise<AssetResponseDto[]> {
