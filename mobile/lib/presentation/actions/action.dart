@@ -31,4 +31,6 @@ abstract class BaseAction {
   const BaseAction({required this.scope, required this.icon, required this.label, this.isVisible = true});
 
   Future<void> onAction();
+
+  Future<void> Function()? get onSecondaryAction => null;
 }

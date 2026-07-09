@@ -11,8 +11,9 @@ class _ActionWidgetScope {
   final IconData icon;
   final String label;
   final FutureOr<void> Function() onAction;
+  final FutureOr<void> Function()? onSecondaryAction;
 
-  const _ActionWidgetScope({required this.icon, required this.label, required this.onAction});
+  const _ActionWidgetScope({required this.icon, required this.label, required this.onAction, this.onSecondaryAction});
 }
 
 class _ActionWidget extends ConsumerWidget {
@@ -21,12 +22,24 @@ class _ActionWidget extends ConsumerWidget {
 
   const _ActionWidget({required this.action, required this.builder});
 
-  Future<void> _onAction() async {
+  Future<void> _guard(Future<void> Function() handler) async {
     try {
-      await action.onAction();
+      await handler();
     } catch (error, stackTrace) {
       handleError(error, stack: stackTrace, description: 'Action failed: ${action.runtimeType}');
     }
+  }
+
+  Future<void> Function() get _onAction =>
+      () => _guard(action.onAction);
+
+  Future<void> Function()? get _onSecondaryAction {
+    final onSecondaryAction = action.onSecondaryAction;
+    if (onSecondaryAction == null) {
+      return null;
+    }
+
+    return () => _guard(onSecondaryAction);
   }
 
   @override
@@ -35,7 +48,9 @@ class _ActionWidget extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return builder(.new(icon: action.icon, label: action.label, onAction: _onAction));
+    return builder(
+      .new(icon: action.icon, label: action.label, onAction: _onAction, onSecondaryAction: _onSecondaryAction),
+    );
   }
 }
 
@@ -48,7 +63,8 @@ class ActionIconButtonWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _ActionWidget(
     action: action,
-    builder: (ctx) => ImmichIconButton(icon: ctx.icon, onPressed: ctx.onAction, variant: variant),
+    builder: (ctx) =>
+        ImmichIconButton(icon: ctx.icon, onPressed: ctx.onAction, onLongPress: ctx.onSecondaryAction, variant: variant),
   );
 }
 
@@ -61,7 +77,13 @@ class ActionButtonWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _ActionWidget(
     action: action,
-    builder: (ctx) => ImmichTextButton(labelText: ctx.label, icon: ctx.icon, onPressed: ctx.onAction, variant: variant),
+    builder: (ctx) => ImmichTextButton(
+      labelText: ctx.label,
+      icon: ctx.icon,
+      onPressed: ctx.onAction,
+      onLongPress: ctx.onSecondaryAction,
+      variant: variant,
+    ),
   );
 }
 
@@ -73,7 +95,12 @@ class ActionColumnButtonWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _ActionWidget(
     action: action,
-    builder: (ctx) => ImmichColumnButton(icon: ctx.icon, label: ctx.label, onPressed: ctx.onAction),
+    builder: (ctx) => ImmichColumnButton(
+      icon: ctx.icon,
+      label: ctx.label,
+      onPressed: ctx.onAction,
+      onLongPress: ctx.onSecondaryAction,
+    ),
   );
 }
 
