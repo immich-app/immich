@@ -243,7 +243,10 @@ class _AssetTileWidget extends ConsumerWidget {
       return false;
     }
 
-    // Iterate with `==`; locked selection can compare equivalent asset copies.
+    // Iterate with `==` instead of `Set.contains` because `RemoteAsset.hashCode`
+    // includes `localId` while `==` does not — so the same server asset can
+    // hash to a different bucket when its `localId` differs (e.g., album-fetched
+    // copy has localId=null, merged-timeline copy has it populated).
     return lockSelectionAssets.any((a) => a == asset);
   }
 
