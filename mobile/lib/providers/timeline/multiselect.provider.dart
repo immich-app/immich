@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -50,59 +51,15 @@ class MultiSelectState {
     if (identical(this, other)) {
       return true;
     }
-    return _assetSetsEqual(other.selectedAssets, selectedAssets) &&
-        _assetSetsEqual(other.lockedSelectionAssets, lockedSelectionAssets) &&
+    final setEquals = const DeepCollectionEquality().equals;
+
+    return setEquals(other.selectedAssets, selectedAssets) &&
+        setEquals(other.lockedSelectionAssets, lockedSelectionAssets) &&
         other.forceEnable == forceEnable;
   }
 
   @override
-  int get hashCode =>
-      Object.hashAllUnordered(selectedAssets.map(_assetEqualityHash)) ^
-      Object.hashAllUnordered(lockedSelectionAssets.map(_assetEqualityHash)) ^
-      forceEnable.hashCode;
-
-  static int _baseAssetEqualityHash(BaseAsset asset) {
-    return Object.hash(
-      asset.name,
-      asset.type,
-      asset.createdAt,
-      asset.updatedAt,
-      asset.width,
-      asset.height,
-      asset.durationMs,
-      asset.isFavorite,
-      asset.isEdited,
-    );
-  }
-
-  static bool _assetSetsEqual(Set<BaseAsset> left, Set<BaseAsset> right) {
-    return left.length == right.length && left.every((asset) => MultiSelectNotifier.containsAsset(right, asset));
-  }
-
-  static int _assetEqualityHash(BaseAsset asset) {
-    return switch (asset) {
-      RemoteAsset() => Object.hash(
-        _baseAssetEqualityHash(asset),
-        asset.id,
-        asset.ownerId,
-        asset.thumbHash,
-        asset.visibility,
-        asset.stackId,
-        asset.uploadedAt,
-        asset.deletedAt,
-      ),
-      LocalAsset() => Object.hash(
-        _baseAssetEqualityHash(asset),
-        asset.id,
-        asset.cloudId,
-        asset.orientation,
-        asset.playbackStyle,
-        asset.adjustmentTime,
-        asset.latitude,
-        asset.longitude,
-      ),
-    };
-  }
+  int get hashCode => selectedAssets.hashCode ^ lockedSelectionAssets.hashCode ^ forceEnable.hashCode;
 }
 
 class MultiSelectNotifier extends Notifier<MultiSelectState> {
@@ -116,26 +73,8 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     return _defaultState ?? const MultiSelectState(selectedAssets: {}, lockedSelectionAssets: {}, forceEnable: false);
   }
 
-  static bool containsAsset(Iterable<BaseAsset> assets, BaseAsset? asset) {
-    return asset != null && assets.any((a) => a == asset);
-  }
-
-  static Set<BaseAsset> addAssets(Set<BaseAsset> selectedAssets, Iterable<BaseAsset> assets) {
-    final next = selectedAssets.toSet();
-    for (final asset in assets) {
-      if (!containsAsset(next, asset)) {
-        next.add(asset);
-      }
-    }
-    return next;
-  }
-
-  static Set<BaseAsset> removeAssets(Set<BaseAsset> selectedAssets, Iterable<BaseAsset> assets) {
-    return selectedAssets.where((selected) => !assets.any((asset) => asset == selected)).toSet();
-  }
-
   void selectAsset(BaseAsset asset) {
-    if (containsAsset(state.selectedAssets, asset)) {
+    if (state.selectedAssets.contains(asset)) {
       return;
     }
 
@@ -143,7 +82,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   }
 
   void deselectAsset(BaseAsset asset) {
-    if (!containsAsset(state.selectedAssets, asset)) {
+    if (!state.selectedAssets.contains(asset)) {
       return;
     }
 
@@ -151,7 +90,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   }
 
   void toggleAssetSelection(BaseAsset asset) {
-    if (containsAsset(state.selectedAssets, asset)) {
+    if (state.selectedAssets.contains(asset)) {
       deselectAsset(asset);
     } else {
       selectAsset(asset);
@@ -165,12 +104,20 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   /// Bucket bulk operations
   void selectBucket(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
-    state = state.copyWith(selectedAssets: addAssets(state.selectedAssets, assets));
+    final selectedAssets = state.selectedAssets.toSet();
+
+    selectedAssets.addAll(assets);
+
+    state = state.copyWith(selectedAssets: selectedAssets);
   }
 
   void deselectBucket(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
-    state = state.copyWith(selectedAssets: removeAssets(state.selectedAssets, assets));
+    final selectedAssets = state.selectedAssets.toSet();
+
+    selectedAssets.removeAll(assets);
+
+    state = state.copyWith(selectedAssets: selectedAssets);
   }
 
   void toggleBucketSelection(int offset, int bucketCount) async {
@@ -184,13 +131,19 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     }
 
     // Check if all assets in this bucket are currently selected
-    final allSelected = bucketAssets.every((asset) => containsAsset(state.selectedAssets, asset));
+    final allSelected = bucketAssets.every((asset) => state.selectedAssets.contains(asset));
+
+    final selectedAssets = state.selectedAssets.toSet();
 
     if (allSelected) {
-      state = state.copyWith(selectedAssets: removeAssets(state.selectedAssets, bucketAssets));
+      // If all assets in this bucket are selected, deselect them
+      selectedAssets.removeAll(bucketAssets);
     } else {
-      state = state.copyWith(selectedAssets: addAssets(state.selectedAssets, bucketAssets));
+      // If not all assets in this bucket are selected, select them all
+      selectedAssets.addAll(bucketAssets);
     }
+
+    state = state.copyWith(selectedAssets: selectedAssets);
   }
 
   void setLockedSelectionAssets(Set<BaseAsset> assets) {
@@ -206,5 +159,5 @@ final bucketSelectionProvider = Provider.family<bool, List<BaseAsset>>((ref, buc
   }
 
   // Check if all assets in the bucket are selected
-  return bucketAssets.every((asset) => MultiSelectNotifier.containsAsset(selectedAssets, asset));
+  return bucketAssets.every((asset) => selectedAssets.contains(asset));
 }, dependencies: [multiSelectProvider, timelineServiceProvider]);
