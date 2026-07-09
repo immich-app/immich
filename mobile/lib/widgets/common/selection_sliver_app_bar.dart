@@ -20,7 +20,7 @@ class _SelectionSliverAppBarState extends ConsumerState<SelectionSliverAppBar> {
     final toExclude = ref.watch(multiSelectProvider.select((s) => s.lockedSelectionAssets));
 
     final filteredAssets = selection.where((asset) {
-      return !refersToSelectedAsset(toExclude, asset);
+      return !toExclude.contains(asset);
     }).toSet();
 
     onDone(Set<BaseAsset> selected) {

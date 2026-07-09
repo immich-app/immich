@@ -243,7 +243,8 @@ class _AssetTileWidget extends ConsumerWidget {
       return false;
     }
 
-    return refersToSelectedAsset(lockSelectionAssets, asset);
+    // Iterate with `==`; locked selection can compare equivalent asset copies.
+    return lockSelectionAssets.any((a) => a == asset);
   }
 
   @override
