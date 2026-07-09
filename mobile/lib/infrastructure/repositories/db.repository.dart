@@ -328,7 +328,7 @@ class Drift extends $Drift {
                 await m.addColumn(v32.trashedLocalAssetEntity, v32.trashedLocalAssetEntity.adjustmentTime);
                 await m.addColumn(v32.trashedLocalAssetEntity, v32.trashedLocalAssetEntity.latitude);
                 await m.addColumn(v32.trashedLocalAssetEntity, v32.trashedLocalAssetEntity.longitude);
-             },
+              },
             ),
           ),
         );
