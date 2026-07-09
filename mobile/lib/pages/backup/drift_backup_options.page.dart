@@ -21,7 +21,9 @@ class DriftBackupOptionsPage extends ConsumerWidget {
     bool hasPopped = false;
     final previousBackup = ref.read(appConfigProvider).backup;
     final previousCellularForVideos = previousBackup.useCellularForVideos;
+    final previousAllowMeteredVpnForVideos = previousBackup.allowMeteredVpnForVideos;
     final previousCellularForPhotos = previousBackup.useCellularForPhotos;
+    final previousAllowMeteredVpnForPhotos = previousBackup.allowMeteredVpnForPhotos;
     return PopScope(
       onPopInvokedWithResult: (didPop, result) async {
         // There is an issue with Flutter where the pop event
@@ -29,10 +31,14 @@ class DriftBackupOptionsPage extends ConsumerWidget {
 
         final currentBackup = ref.read(appConfigProvider).backup;
         final currentCellularForVideos = currentBackup.useCellularForVideos;
+        final currentAllowMeteredVpnForVideos = currentBackup.allowMeteredVpnForVideos;
         final currentCellularForPhotos = currentBackup.useCellularForPhotos;
+        final currentAllowMeteredVpnForPhotos = currentBackup.allowMeteredVpnForPhotos;
 
         if (currentCellularForVideos == previousCellularForVideos &&
-            currentCellularForPhotos == previousCellularForPhotos) {
+            currentAllowMeteredVpnForVideos == previousAllowMeteredVpnForVideos &&
+            currentCellularForPhotos == previousCellularForPhotos &&
+            currentAllowMeteredVpnForPhotos == previousAllowMeteredVpnForPhotos) {
           return;
         }
 
