@@ -54,7 +54,7 @@ class AlbumResponseDto {
   /// Album description
   String description;
 
-  /// End date (latest asset)
+  /// UTC representation of (local) end date (latest asset)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
@@ -92,7 +92,7 @@ class AlbumResponseDto {
   /// Is shared album
   bool shared;
 
-  /// Start date (earliest asset)
+  /// UTC representation of (local) start date (earliest asset)
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
