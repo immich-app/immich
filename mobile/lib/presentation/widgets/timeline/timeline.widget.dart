@@ -29,7 +29,7 @@ import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
-class Timeline extends StatelessWidget {
+class Timeline extends ConsumerWidget {
   const Timeline({
     super.key,
     this.topSliverWidget,
@@ -62,35 +62,40 @@ class Timeline extends StatelessWidget {
   final Widget? loadingWidget;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final columnCount = ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow));
     return LayoutBuilder(
-      builder: (_, constraints) => ProviderScope(
-        overrides: [
-          timelineArgsProvider.overrideWith(
-            (ref) => TimelineArgs(
-              maxWidth: constraints.maxWidth,
-              maxHeight: constraints.maxHeight,
-              columnCount: ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow)),
-              showStorageIndicator: showStorageIndicator,
-              withStack: withStack,
-              groupBy: groupBy,
+      builder: (_, constraints) {
+        return ProviderScope(
+          overrides: [
+            // overrideWithValue keeps the scoped args in sync with the latest constraints on rebuilds,
+            // a function override would stay locked to the first frame's constraints for the whole session
+            timelineArgsProvider.overrideWithValue(
+              TimelineArgs(
+                maxWidth: constraints.maxWidth,
+                maxHeight: constraints.maxHeight,
+                columnCount: columnCount,
+                showStorageIndicator: showStorageIndicator,
+                withStack: withStack,
+                groupBy: groupBy,
+              ),
             ),
+            if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
+          ],
+          child: _SliverTimeline(
+            topSliverWidget: topSliverWidget,
+            topSliverWidgetHeight: topSliverWidgetHeight,
+            bottomSliverWidget: bottomSliverWidget,
+            appBar: appBar,
+            bottomSheet: bottomSheet,
+            withScrubber: withScrubber,
+            persistentBottomBar: persistentBottomBar,
+            snapToMonth: snapToMonth,
+            maxWidth: constraints.maxWidth,
+            loadingWidget: loadingWidget,
           ),
-          if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
-        ],
-        child: _SliverTimeline(
-          topSliverWidget: topSliverWidget,
-          topSliverWidgetHeight: topSliverWidgetHeight,
-          bottomSliverWidget: bottomSliverWidget,
-          appBar: appBar,
-          bottomSheet: bottomSheet,
-          withScrubber: withScrubber,
-          persistentBottomBar: persistentBottomBar,
-          snapToMonth: snapToMonth,
-          maxWidth: constraints.maxWidth,
-          loadingWidget: loadingWidget,
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -135,7 +140,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   ConsumerState createState() => _SliverTimelineState();
 }
 
-class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
+class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBindingObserver {
   late final ScrollController _scrollController;
   StreamSubscription? _eventSubscription;
 
@@ -153,6 +158,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _scrollController = ScrollController(onAttach: _restoreAssetPosition);
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
@@ -168,27 +174,22 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   void didUpdateWidget(covariant _SliverTimeline oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.maxWidth != oldWidget.maxWidth) {
-      final asyncSegments = ref.read(timelineSegmentProvider);
-      asyncSegments.whenData((segments) {
-        final index = _getCurrentAssetIndex(segments);
-        // Refresh to wait for new segments to be generated with the updated width before restoring the scroll position
-        final _ = ref.refresh(timelineArgsProvider);
-        _restoreAssetIndex = index;
-      });
+      // The updated args already regenerate the segments, only remember the scroll position to restore it afterwards
+      final segments = ref.read(timelineSegmentProvider).valueOrNull;
+      if (segments != null && _scrollController.hasClients) {
+        _restoreAssetIndex = _getCurrentAssetIndex(segments);
+      }
     }
   }
+
+  // Capture iOS status bar tap
+  @override
+  void handleStatusBarTap() => _scrollToTop();
 
   void _onEvent(Event event) {
     switch (event) {
       case ScrollToTopEvent():
-        {
-          final timelineState = ref.read(timelineStateProvider.notifier);
-          timelineState.setScrubbing(true);
-          _scrollController
-              .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
-              .whenComplete(() => timelineState.setScrubbing(false));
-        }
-
+        _scrollToTop();
       case ScrollToDateEvent scrollToDateEvent:
         _scrollToDate(scrollToDateEvent.date);
       case TimelineReloadEvent():
@@ -246,9 +247,22 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
     _eventSubscription?.cancel();
     super.dispose();
+  }
+
+  void _scrollToTop() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+
+    final timelineState = ref.read(timelineStateProvider.notifier);
+    timelineState.setScrubbing(true);
+    _scrollController
+        .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
+        .whenComplete(() => timelineState.setScrubbing(false));
   }
 
   void _scrollToDate(DateTime date) {
@@ -381,6 +395,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       child: PrimaryScrollController(
         controller: _scrollController,
         child: Scaffold(
+          // This removes the built in Scaffold `handleStatusBarTap` implementation, preventing duplicate
+          // events when we provide our own
+          primary: false,
           resizeToAvoidBottomInset: false,
           floatingActionButton: const DownloadStatusFloatingButton(),
           body: asyncSegments.widgetWhen(
