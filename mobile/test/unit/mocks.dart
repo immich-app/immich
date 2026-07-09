@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
@@ -13,6 +14,7 @@ import '../domain/service.mock.dart';
 import '../infrastructure/repository.mock.dart';
 import 'factories/local_album_factory.dart';
 import 'factories/local_asset_factory.dart';
+import 'factories/remote_album_factory.dart';
 import 'factories/user_factory.dart';
 
 class RepositoryMocks {
@@ -20,6 +22,8 @@ class RepositoryMocks {
   final localAsset = LocalAssetRepositoryStub(MockDriftLocalAssetRepository());
   final trashedAsset = MockTrashedLocalAssetRepository();
   final toast = MockToastRepository();
+  final remoteAlbum = MockRemoteAlbumRepository();
+  final albumApi = MockDriftAlbumApiRepository();
 
   final nativeApi = NativeSyncApiStub(MockNativeSyncApi());
 
@@ -32,6 +36,8 @@ class RepositoryMocks {
     localAlbum.reset();
     localAsset.reset();
     reset(trashedAsset);
+    reset(remoteAlbum);
+    reset(albumApi);
     nativeApi.reset();
     reset(toast);
     _stubLocalAlbumRepository();
@@ -58,6 +64,7 @@ class ServiceMocks {
   final partner = PartnerServiceStub(MockPartnerService());
   final user = UserServiceStub(MockUserService());
   final asset = AssetServiceStub(MockAssetService());
+  final album = RemoteAlbumServiceStub(MockRemoteAlbumService());
 
   ServiceMocks() {
     resetAll();
@@ -68,9 +75,11 @@ class ServiceMocks {
     partner.reset();
     user.reset();
     asset.reset();
+    album.reset();
     _stubUserService();
     _stubPartnerService();
     _stubAssetService();
+    _stubRemoteAlbumService();
   }
 
   void _stubUserService() {
@@ -95,6 +104,11 @@ class ServiceMocks {
     when(asset.stack).thenAnswer((_) async {});
     when(asset.unstack).thenAnswer((_) async {});
     when(asset.restoreTrash).thenAnswer((_) async {});
+  }
+
+  void _stubRemoteAlbumService() {
+    when(album.removeAssets).thenAnswer((_) async => 0);
+    when(album.updateAlbum).thenAnswer((_) async => RemoteAlbumFactory.create());
   }
 }
 
@@ -189,6 +203,17 @@ extension type const AssetServiceStub(MockAssetService service) implements Stub<
 
   Future<void> Function() get restoreTrash =>
       () => service.restoreTrash(any());
+}
+
+extension type const RemoteAlbumServiceStub(MockRemoteAlbumService service) implements Stub<MockRemoteAlbumService> {
+  Future<int> Function() get removeAssets =>
+      () => service.removeAssets(
+        albumId: any(named: 'albumId'),
+        assetIds: any(named: 'assetIds'),
+      );
+
+  Future<RemoteAlbum> Function() get updateAlbum =>
+      () => service.updateAlbum(any(), thumbnailAssetId: any(named: 'thumbnailAssetId'));
 }
 
 extension type const NativeSyncApiStub(MockNativeSyncApi api) implements Stub<MockNativeSyncApi> {

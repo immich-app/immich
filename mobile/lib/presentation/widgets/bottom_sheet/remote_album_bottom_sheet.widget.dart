@@ -6,14 +6,14 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/asset_actions.dart';
+import 'package:immich_mobile/presentation/actions/remove_from_album.action.dart';
+import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
@@ -83,7 +83,8 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
     }
 
     final scope = ActionScope.from(context, ref);
-    final actions = AssetActions.from(scope, multiselect.selectedAssets.toList(growable: false));
+    final assets = multiselect.selectedAssets.toList(growable: false);
+    final actions = AssetActions.from(scope, assets);
 
     return BaseBottomSheet(
       controller: sheetController,
@@ -114,9 +115,18 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
           ],
         ],
         if (multiselect.hasMerged) const DeleteLocalActionButton(source: ActionSource.timeline),
-        if (ownsAlbum) RemoveFromAlbumActionButton(source: ActionSource.timeline, albumId: widget.album.id),
-        if (ownsAlbum && multiselect.selectedAssets.length == 1)
-          SetAlbumCoverActionButton(source: ActionSource.timeline, albumId: widget.album.id),
+        if (ownsAlbum)
+          ActionColumnButtonWidget(
+            action: TimelineAction(
+              action: RemoveFromAlbumAction(assets: assets, albumId: widget.album.id, scope: scope),
+            ),
+          ),
+        if (ownsAlbum)
+          ActionColumnButtonWidget(
+            action: TimelineAction(
+              action: SetAlbumCoverAction(assets: assets, albumId: widget.album.id, scope: scope),
+            ),
+          ),
       ],
       slivers: ownsAlbum
           ? [const AddToAlbumHeader(), AlbumSelector(onAlbumSelected: addToAlbum, onKeyboardExpanded: onKeyboardExpand)]

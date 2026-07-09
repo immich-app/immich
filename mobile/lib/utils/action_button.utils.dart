@@ -16,7 +16,9 @@ import 'package:immich_mobile/presentation/actions/cast.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/open_in_browser.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
+import 'package:immich_mobile/presentation/actions/remove_from_album.action.dart';
 import 'package:immich_mobile/presentation/actions/set_profile_picture.action.dart';
+import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
 import 'package:immich_mobile/presentation/actions/similar_photos.action.dart';
 import 'package:immich_mobile/presentation/actions/slideshow.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
@@ -26,8 +28,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_a
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
@@ -231,17 +231,11 @@ enum ActionButtonType {
         menuItem: menuItem,
       ),
       ActionButtonType.upload => UploadActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
-      ActionButtonType.removeFromAlbum => RemoveFromAlbumActionButton(
-        albumId: context.currentAlbum!.id,
-        source: context.source,
-        iconOnly: iconOnly,
-        menuItem: menuItem,
+      ActionButtonType.removeFromAlbum => ActionMenuItemWidget(
+        action: RemoveFromAlbumAction(assets: [context.asset], albumId: context.currentAlbum!.id, scope: scope),
       ),
-      ActionButtonType.setAlbumCover => SetAlbumCoverActionButton(
-        albumId: context.currentAlbum!.id,
-        source: context.source,
-        iconOnly: iconOnly,
-        menuItem: menuItem,
+      ActionButtonType.setAlbumCover => ActionMenuItemWidget(
+        action: SetAlbumCoverAction(assets: [context.asset], albumId: context.currentAlbum!.id, scope: scope),
       ),
       ActionButtonType.likeActivity => LikeActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.unstack => ActionMenuItemWidget(
