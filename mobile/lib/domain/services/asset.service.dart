@@ -26,6 +26,10 @@ class AssetService {
     return _localRepository.getByChecksum(checksum);
   }
 
+  Future<LocalAsset?> getLocalAsset(String id) {
+    return _localRepository.get(id);
+  }
+
   Future<RemoteAsset?> getRemoteAssetByChecksum(String checksum) {
     return _remoteRepository.getByChecksum(checksum);
   }

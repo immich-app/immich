@@ -426,7 +426,7 @@ export class AuthService extends BaseService {
       throw new BadRequestException('This OAuth account has already been linked to another user.');
     }
 
-    if (auth.session) {
+    if (auth.session && sid) {
       await this.sessionRepository.update(auth.session.id, { oauthSid: sid });
     }
 
