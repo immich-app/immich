@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -154,7 +155,13 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       return;
     }
 
-    if (result.count == 0) {
+    if (result.count == 0 && result.failedCount > 0) {
+      ImmichToast.show(
+        context: context,
+        msg: 'assets_cannot_be_added_to_album_count'.t(context: context, args: {'count': result.failedCount}),
+        toastType: ToastType.error,
+      );
+    } else if (result.count == 0) {
       ImmichToast.show(
         context: context,
         msg: 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {'album': album.name}),
