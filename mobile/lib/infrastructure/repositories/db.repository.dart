@@ -320,14 +320,14 @@ class Drift extends $Drift {
               from30To31: (m, v31) async {
                 await m.createIndex(v31.idxRemoteAssetUploaded);
               },
-              from30To31: (m, v31) async {
-                await m.create(v31.trashSyncEntity);
-                await m.createIndex(v31.idxTrashSyncIsSyncApproved);
-                await m.createIndex(v31.idxTrashSyncChecksumStatus);
-                await m.addColumn(v31.trashedLocalAssetEntity, v31.trashedLocalAssetEntity.iCloudId);
-                await m.addColumn(v31.trashedLocalAssetEntity, v31.trashedLocalAssetEntity.adjustmentTime);
-                await m.addColumn(v31.trashedLocalAssetEntity, v31.trashedLocalAssetEntity.latitude);
-                await m.addColumn(v31.trashedLocalAssetEntity, v31.trashedLocalAssetEntity.longitude);
+              from31To32: (m, v32) async {
+                await m.create(v32.trashSyncEntity);
+                await m.createIndex(v32.idxTrashSyncIsSyncApproved);
+                await m.createIndex(v32.idxTrashSyncChecksumStatus);
+                await m.addColumn(v32.trashedLocalAssetEntity, v32.trashedLocalAssetEntity.iCloudId);
+                await m.addColumn(v32.trashedLocalAssetEntity, v32.trashedLocalAssetEntity.adjustmentTime);
+                await m.addColumn(v32.trashedLocalAssetEntity, v32.trashedLocalAssetEntity.latitude);
+                await m.addColumn(v32.trashedLocalAssetEntity, v32.trashedLocalAssetEntity.longitude);
              },
             ),
           ),
