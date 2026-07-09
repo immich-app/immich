@@ -8,8 +8,8 @@ import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_asset.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -42,7 +42,9 @@ class ViewerBottomBar extends ConsumerWidget {
     final editImage = EditAssetAction(assets: assets, scope: scope);
     final actions = <Widget>[
       if (restore.isVisible) ActionColumnButtonWidget(action: restore),
-      const ShareActionButton(source: ActionSource.viewer),
+      ActionColumnButtonWidget(
+        action: ShareAction(assets: assets, scope: scope),
+      ),
 
       if (!isInLockedView) ...[
         if (!isInTrash) ...[

@@ -7,10 +7,10 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/asset_actions.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -58,16 +58,21 @@ class FavoriteBottomSheet extends ConsumerWidget {
     }
 
     final scope = ActionScope.from(context, ref);
-    final actions = AssetActions.from(scope, multiselect.selectedAssets.toList(growable: false));
+    final assets = multiselect.selectedAssets.toList(growable: false);
+    final actions = AssetActions.from(scope, assets);
 
     return BaseBottomSheet(
       initialChildSize: 0.4,
       maxChildSize: 0.7,
       shouldCloseOnMinExtent: false,
       actions: [
-        const ShareActionButton(source: ActionSource.timeline),
+        ActionColumnButtonWidget(
+          action: ShareAction(assets: assets, scope: scope),
+        ),
         if (multiselect.hasRemote) ...[
-          const ShareLinkActionButton(source: ActionSource.timeline),
+          ActionColumnButtonWidget(
+            action: ShareLinkAction(assets: assets, scope: scope),
+          ),
           ...[
             actions.favorite,
             actions.archive,

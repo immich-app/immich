@@ -108,17 +108,6 @@ class ActionNotifier extends Notifier<void> {
     };
   }
 
-  Future<ActionResult> shareLink(ActionSource source, BuildContext context) async {
-    final ids = _getRemoteIdsForSource(source);
-    try {
-      await _service.shareLink(ids, context);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to create shared link for assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
   Future<ActionResult> emptyTrash(String userId) async {
     try {
       final count = await _service.emptyTrash(userId);
@@ -285,30 +274,6 @@ class ActionNotifier extends Notifier<void> {
     } catch (error, stack) {
       _logger.severe('Failed to update rating for asset', error, stack);
       return ActionResult(count: 1, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> shareAssets(
-    ActionSource source,
-    BuildContext context, {
-    ShareAssetType fileType = ShareAssetType.original,
-    Completer<void>? cancelCompleter,
-    void Function(double progress)? onAssetDownloadProgress,
-  }) async {
-    final ids = _getAssets(source).toList(growable: false);
-
-    try {
-      final count = await _service.shareAssets(
-        ids,
-        context,
-        fileType: fileType,
-        cancelCompleter: cancelCompleter,
-        onAssetDownloadProgress: onAssetDownloadProgress,
-      );
-      return ActionResult(count: count, success: count > 0 || ids.isEmpty);
-    } catch (error, stack) {
-      _logger.severe('Failed to share assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
