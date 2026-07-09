@@ -4,7 +4,7 @@ import type { Manifest } from '../dist/index.d.ts';
 
 type MatchValueConfig = {
   pattern: string;
-  matchType?: 'contains' | 'exact' | 'regex' | 'startsWith';
+  matchType?: 'contains' | 'exact' | 'regex' | 'startsWith' | 'greaterThan' | 'lessThan';
   caseSensitive?: boolean;
 };
 
@@ -30,6 +30,20 @@ const matchValueResult = (value: string, config: MatchValueConfig) => {
       const flags = caseSensitive ? '' : 'i';
       const regex = new RegExp(searchPattern, flags);
       return { workflow: { continue: regex.test(value) } };
+    }
+
+    case 'greaterThan': {
+      if (Number.isNaN(Number.parseFloat(searchName)) || Number.isNaN(Number.parseFloat(searchPattern))) {
+        return { workflow: { continue: searchName > searchPattern } };
+      }
+      return { workflow: { continue: Number.parseFloat(searchName) > Number.parseFloat(searchPattern) } };
+    }
+
+    case 'lessThan': {
+      if (Number.isNaN(Number.parseFloat(searchName)) || Number.isNaN(Number.parseFloat(searchPattern))) {
+        return { workflow: { continue: searchName < searchPattern } };
+      }
+      return { workflow: { continue: Number.parseFloat(searchName) < Number.parseFloat(searchPattern) } };
     }
 
     default: {
@@ -129,11 +143,11 @@ const methods = wrapper<Manifest>({
   },
 
   assetExifFilter: ({ config, data }) => {
-    if (!data.asset.exifInfo) {
+    if (!data.asset.exifInfo || data.asset.exifInfo[config.property] === null) {
       return { workflow: { continue: false } };
     }
 
-    return matchValueResult(String(data.asset.exifInfo[config.property] || ''), config);
+    return matchValueResult(String(data.asset.exifInfo[config.property]), config);
   },
 
   assetDateFilter: ({ config, data }) => {

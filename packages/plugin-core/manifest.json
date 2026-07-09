@@ -351,7 +351,7 @@
           "matchType": {
             "type": "string",
             "title": "Match type",
-            "enum": ["contains", "startsWith", "exact", "regex"],
+            "enum": ["contains", "startsWith", "exact", "regex", "greaterThan", "lessThan"],
             "default": "contains",
             "description": "Type of pattern matching to perform",
             "uiHint": {
