@@ -52,6 +52,7 @@ class FavoriteBottomSheet extends ConsumerWidget {
         );
       }
 
+      // Only report the failure when nothing was added; if some succeeded we show "added".
       if (result.added > 0) {
         ImmichToast.show(
           context: context,

@@ -155,6 +155,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       return;
     }
 
+    // Only report the failure when nothing was added; if some succeeded we show "added".
     if (result.count > 0) {
       ImmichToast.show(
         context: context,
