@@ -178,7 +178,7 @@ export class AssetMediaController {
   }
 
   @Post('bulk-upload-check')
-  @Authenticated({ permission: Permission.AssetUpload })
+  @Authenticated({ permission: Permission.AssetUpload, sharedLink: true })
   @Endpoint({
     summary: 'Check bulk upload',
     description: 'Determine which assets have already been uploaded to the server based on their SHA1 checksums.',

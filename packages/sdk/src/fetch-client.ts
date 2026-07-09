@@ -4144,13 +4144,18 @@ export function updateAssets({ assetBulkUpdateDto }: {
 /**
  * Check bulk upload
  */
-export function checkBulkUpload({ assetBulkUploadCheckDto }: {
+export function checkBulkUpload({ key, slug, assetBulkUploadCheckDto }: {
+    key?: string;
+    slug?: string;
     assetBulkUploadCheckDto: AssetBulkUploadCheckDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: AssetBulkUploadCheckResponseDto;
-    }>("/assets/bulk-upload-check", oazapfts.json({
+    }>(`/assets/bulk-upload-check${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
         ...opts,
         method: "POST",
         body: assetBulkUploadCheckDto

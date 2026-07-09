@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
-import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto';
+import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaSize } from 'src/dtos/asset-media.dto';
 import { AssetFileType, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
@@ -258,6 +258,66 @@ describe(AssetService.name, () => {
       const assets = [...result];
       expect(assets).toHaveLength(1);
       expect(assets[0]).toEqual(response.id);
+    });
+  });
+
+  describe('bulkUploadCheck', () => {
+    it('should detect duplicates for a shared link with upload access', async () => {
+      const { sut, ctx } = setup();
+
+      const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      const sharedLink = await sharedLinkRepo.create({
+        key: randomBytes(50),
+        type: SharedLinkType.Individual,
+        description: 'Shared link description',
+        userId: user.id,
+        allowDownload: true,
+        allowUpload: true,
+      });
+
+      const auth = factory.auth({ user: { id: user.id }, sharedLink });
+
+      await expect(
+        sut.bulkUploadCheck(auth, { assets: [{ id: '1', checksum: asset.checksum.toString('hex') }] }),
+      ).resolves.toEqual({
+        results: [
+          {
+            id: '1',
+            action: AssetUploadAction.REJECT,
+            reason: AssetRejectReason.DUPLICATE,
+            assetId: asset.id,
+            isTrashed: false,
+          },
+        ],
+      });
+    });
+
+    it('should reject a shared link without upload access', async () => {
+      const { sut, ctx } = setup();
+
+      const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      const sharedLink = await sharedLinkRepo.create({
+        key: randomBytes(50),
+        type: SharedLinkType.Individual,
+        description: 'Shared link description',
+        userId: user.id,
+        allowDownload: true,
+        allowUpload: false,
+      });
+
+      const auth = factory.auth({ user: { id: user.id }, sharedLink });
+
+      await expect(
+        sut.bulkUploadCheck(auth, { assets: [{ id: '1', checksum: asset.checksum.toString('hex') }] }),
+      ).rejects.toThrow('Not found or no asset.upload access');
     });
   });
 

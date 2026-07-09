@@ -312,6 +312,13 @@ export class AssetMediaService extends BaseService {
   }
 
   async bulkUploadCheck(auth: AuthDto, dto: AssetBulkUploadCheckDto): Promise<AssetBulkUploadCheckResponseDto> {
+    await this.requireAccess({
+      auth,
+      permission: Permission.AssetUpload,
+      // do not need an id here, but the interface requires it
+      ids: [auth.user.id],
+    });
+
     const checksums: Buffer[] = dto.assets.map((asset) => fromChecksum(asset.checksum));
     const results = await this.assetRepository.getByChecksums(auth.user.id, checksums);
     const checksumMap: Record<string, { id: string; isTrashed: boolean }> = {};

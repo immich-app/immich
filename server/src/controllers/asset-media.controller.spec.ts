@@ -1,6 +1,6 @@
 import { AssetMediaController } from 'src/controllers/asset-media.controller';
 import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto';
-import { AssetMetadataKey } from 'src/enum';
+import { AssetMetadataKey, Permission } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import request from 'supertest';
@@ -189,6 +189,22 @@ describe(AssetMediaController.name, () => {
         const { status } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail?size=original`);
         expect(status).toBe(302);
       });
+    });
+  });
+
+  describe('POST /assets/bulk-upload-check', () => {
+    it('should be an authenticated route that allows shared link access', async () => {
+      service.bulkUploadCheck.mockResolvedValue({ results: [] });
+
+      await request(ctx.getHttpServer())
+        .post('/assets/bulk-upload-check')
+        .send({ assets: [{ id: '1', checksum: 'd2947b871a706081be194569951b7db246907957' }] });
+
+      expect(ctx.authenticate).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: expect.objectContaining({ permission: Permission.AssetUpload, sharedLinkRoute: true }),
+        }),
+      );
     });
   });
 });

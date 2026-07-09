@@ -830,6 +830,30 @@ describe(AssetMediaService.name, () => {
 
       expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(authStub.admin.user.id, [file1, file2]);
     });
+
+    it('should allow a shared link with upload access', async () => {
+      const auth = AuthFactory.from().sharedLink({ allowUpload: true }).build();
+
+      mocks.asset.getByChecksums.mockResolvedValue([]);
+
+      await expect(
+        sut.bulkUploadCheck(auth, { assets: [{ id: '1', checksum: file1.toString('hex') }] }),
+      ).resolves.toEqual({
+        results: [{ id: '1', action: AssetUploadAction.ACCEPT }],
+      });
+
+      expect(mocks.asset.getByChecksums).toHaveBeenCalledWith(auth.user.id, [file1]);
+    });
+
+    it('should reject a shared link without upload access', async () => {
+      const auth = AuthFactory.from().sharedLink({ allowUpload: false }).build();
+
+      await expect(
+        sut.bulkUploadCheck(auth, { assets: [{ id: '1', checksum: file1.toString('hex') }] }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.asset.getByChecksums).not.toHaveBeenCalled();
+    });
   });
 
   describe('onUploadError', () => {
