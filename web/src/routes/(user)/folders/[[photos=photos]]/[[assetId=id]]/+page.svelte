@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/UserPageLayout.svelte';
@@ -41,7 +41,6 @@
   let { data }: Props = $props();
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
-  let pathAssets = $state(data.pathAssets);
 
   const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));
 
@@ -49,24 +48,18 @@
 
   afterNavigate(() => {
     assetMultiSelectManager.clear();
-    pathAssets = data.pathAssets;
   });
 
   const navigateToView = (path: string) => {
     return goto(getLinkForPath(path), { keepFocus: true, noScroll: true });
   };
 
-  const refreshCurrentFolder = async () => {
-    if (!data.tree.path) {
-      return;
-    }
-
-    pathAssets = await foldersStore.refreshFolderAssets(data.tree.path);
-  };
-
   const triggerAssetUpdate = async () => {
     assetMultiSelectManager.clear();
-    await refreshCurrentFolder();
+    if (data.tree.path) {
+      await foldersStore.refreshAssetsByPath(data.tree.path);
+    }
+    await invalidateAll();
   };
 
   const handleSetVisibility = () => {
@@ -74,11 +67,11 @@
   };
 
   const handleSelectAllAssets = () => {
-    if (!pathAssets) {
+    if (!data.pathAssets) {
       return;
     }
 
-    assetMultiSelectManager.selectAssets(pathAssets.map((asset) => toTimelineAsset(asset)));
+    assetMultiSelectManager.selectAssets(data.pathAssets.map((asset) => toTimelineAsset(asset)));
   };
 </script>
 
@@ -100,7 +93,7 @@
     </Sidebar>
   {/snippet}
 
-  <OnEvents onAssetsDelete={refreshCurrentFolder} />
+  <OnEvents onAssetsDelete={invalidateAll} />
 
   <Breadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
 
@@ -108,10 +101,10 @@
     <TreeItemThumbnails items={data.tree.children} icon={mdiFolder} onClick={handleNavigateToFolder} />
 
     <!-- Assets -->
-    {#if pathAssets && pathAssets.length > 0}
+    {#if data.pathAssets && data.pathAssets.length > 0}
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
         <GalleryViewer
-          assets={pathAssets}
+          assets={data.pathAssets}
           assetInteraction={assetMultiSelectManager}
           {viewport}
           showAssetName={true}
@@ -141,9 +134,9 @@
       <FavoriteAction
         removeFavorite={assetMultiSelectManager.isAllFavorite}
         onFavorite={function handleFavoriteUpdate(ids, isFavorite) {
-          if (pathAssets && pathAssets.length > 0) {
+          if (data.pathAssets && data.pathAssets.length > 0) {
             for (const id of ids) {
-              const asset = pathAssets.find((asset) => asset.id === id);
+              const asset = data.pathAssets.find((asset) => asset.id === id);
               if (asset) {
                 asset.isFavorite = isFavorite;
               }
