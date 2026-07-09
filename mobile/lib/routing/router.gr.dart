@@ -500,84 +500,6 @@ class DriftAssetSelectionTimelineRouteArgs {
 }
 
 /// generated route for
-/// [DynamicWallpaperAssetSelectionTimelinePage]
-class DynamicWallpaperAssetSelectionTimelineRoute
-    extends PageRouteInfo<DynamicWallpaperAssetSelectionTimelineRouteArgs> {
-  DynamicWallpaperAssetSelectionTimelineRoute({
-    Key? key,
-    Set<BaseAsset> initialSelectedAssets = const {},
-    List<String> peopleFilterIds = const [],
-    List<PageRouteInfo>? children,
-  }) : super(
-         DynamicWallpaperAssetSelectionTimelineRoute.name,
-         args: DynamicWallpaperAssetSelectionTimelineRouteArgs(
-           key: key,
-           initialSelectedAssets: initialSelectedAssets,
-           peopleFilterIds: peopleFilterIds,
-         ),
-         initialChildren: children,
-       );
-
-  static const String name = 'DynamicWallpaperAssetSelectionTimelineRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      final args = data.argsAs<DynamicWallpaperAssetSelectionTimelineRouteArgs>(
-        orElse: () => const DynamicWallpaperAssetSelectionTimelineRouteArgs(),
-      );
-      return DynamicWallpaperAssetSelectionTimelinePage(
-        key: args.key,
-        initialSelectedAssets: args.initialSelectedAssets,
-        peopleFilterIds: args.peopleFilterIds,
-      );
-    },
-  );
-}
-
-class DynamicWallpaperAssetSelectionTimelineRouteArgs {
-  const DynamicWallpaperAssetSelectionTimelineRouteArgs({
-    this.key,
-    this.initialSelectedAssets = const {},
-    this.peopleFilterIds = const [],
-  });
-
-  final Key? key;
-
-  final Set<BaseAsset> initialSelectedAssets;
-
-  final List<String> peopleFilterIds;
-
-  @override
-  String toString() {
-    return 'DynamicWallpaperAssetSelectionTimelineRouteArgs{key: $key, initialSelectedAssets: $initialSelectedAssets, peopleFilterIds: $peopleFilterIds}';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other is! DynamicWallpaperAssetSelectionTimelineRouteArgs) {
-      return false;
-    }
-    return key == other.key &&
-        const SetEquality<BaseAsset>().equals(
-          initialSelectedAssets,
-          other.initialSelectedAssets,
-        ) &&
-        const ListEquality<String>().equals(
-          peopleFilterIds,
-          other.peopleFilterIds,
-        );
-  }
-
-  @override
-  int get hashCode =>
-      key.hashCode ^
-      const SetEquality<BaseAsset>().hash(initialSelectedAssets) ^
-      const ListEquality<String>().hash(peopleFilterIds);
-}
-
-/// generated route for
 /// [DriftBackupAlbumSelectionPage]
 class DriftBackupAlbumSelectionRoute extends PageRouteInfo<void> {
   const DriftBackupAlbumSelectionRoute({List<PageRouteInfo>? children})
@@ -1301,6 +1223,98 @@ class DriftVideoRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DynamicWallpaperAssetSelectionTimelinePage]
+class DynamicWallpaperAssetSelectionTimelineRoute
+    extends PageRouteInfo<DynamicWallpaperAssetSelectionTimelineRouteArgs> {
+  DynamicWallpaperAssetSelectionTimelineRoute({
+    Key? key,
+    Set<BaseAsset> initialSelectedAssets = const {},
+    List<String> peopleFilterIds = const [],
+    List<PageRouteInfo>? children,
+  }) : super(
+         DynamicWallpaperAssetSelectionTimelineRoute.name,
+         args: DynamicWallpaperAssetSelectionTimelineRouteArgs(
+           key: key,
+           initialSelectedAssets: initialSelectedAssets,
+           peopleFilterIds: peopleFilterIds,
+         ),
+         initialChildren: children,
+       );
+
+  static const String name = 'DynamicWallpaperAssetSelectionTimelineRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DynamicWallpaperAssetSelectionTimelineRouteArgs>(
+        orElse: () => const DynamicWallpaperAssetSelectionTimelineRouteArgs(),
+      );
+      return DynamicWallpaperAssetSelectionTimelinePage(
+        key: args.key,
+        initialSelectedAssets: args.initialSelectedAssets,
+        peopleFilterIds: args.peopleFilterIds,
+      );
+    },
+  );
+}
+
+class DynamicWallpaperAssetSelectionTimelineRouteArgs {
+  const DynamicWallpaperAssetSelectionTimelineRouteArgs({
+    this.key,
+    this.initialSelectedAssets = const {},
+    this.peopleFilterIds = const [],
+  });
+
+  final Key? key;
+
+  final Set<BaseAsset> initialSelectedAssets;
+
+  final List<String> peopleFilterIds;
+
+  @override
+  String toString() {
+    return 'DynamicWallpaperAssetSelectionTimelineRouteArgs{key: $key, initialSelectedAssets: $initialSelectedAssets, peopleFilterIds: $peopleFilterIds}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DynamicWallpaperAssetSelectionTimelineRouteArgs) return false;
+    return key == other.key &&
+        const SetEquality<BaseAsset>().equals(
+          initialSelectedAssets,
+          other.initialSelectedAssets,
+        ) &&
+        const ListEquality<String>().equals(
+          peopleFilterIds,
+          other.peopleFilterIds,
+        );
+  }
+
+  @override
+  int get hashCode =>
+      key.hashCode ^
+      const SetEquality<BaseAsset>().hash(initialSelectedAssets) ^
+      const ListEquality<String>().hash(peopleFilterIds);
+}
+
+/// generated route for
+/// [DynamicWallpaperSettingsPage]
+class DynamicWallpaperSettingsRoute extends PageRouteInfo<void> {
+  const DynamicWallpaperSettingsRoute({List<PageRouteInfo>? children})
+    : super(DynamicWallpaperSettingsRoute.name, initialChildren: children);
+
+  static const String name = 'DynamicWallpaperSettingsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DynamicWallpaperSettingsPage();
+    },
+  );
+}
+
+/// generated route for
 /// [FolderPage]
 class FolderRoute extends PageRouteInfo<FolderRouteArgs> {
   FolderRoute({
@@ -1706,22 +1720,6 @@ class SettingsRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const SettingsPage();
-    },
-  );
-}
-
-/// generated route for
-/// [DynamicWallpaperSettingsPage]
-class DynamicWallpaperSettingsRoute extends PageRouteInfo<void> {
-  const DynamicWallpaperSettingsRoute({List<PageRouteInfo>? children})
-    : super(DynamicWallpaperSettingsRoute.name, initialChildren: children);
-
-  static const String name = 'DynamicWallpaperSettingsRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const DynamicWallpaperSettingsPage();
     },
   );
 }
