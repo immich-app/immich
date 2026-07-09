@@ -9,6 +9,14 @@ final multiSelectProvider = NotifierProvider<MultiSelectNotifier, MultiSelectSta
   dependencies: [timelineServiceProvider],
 );
 
+bool refersToSelectedAsset(Iterable<BaseAsset> assets, BaseAsset asset) {
+  return assets.any((selected) => selected == asset || selected.refersToSameAsset(asset));
+}
+
+Set<BaseAsset> removeReferringAsset(Iterable<BaseAsset> assets, BaseAsset asset) {
+  return assets.where((selected) => !(selected == asset || selected.refersToSameAsset(asset))).toSet();
+}
+
 class MultiSelectState {
   final Set<BaseAsset> selectedAssets;
   final Set<BaseAsset> lockedSelectionAssets;
@@ -74,7 +82,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   }
 
   void selectAsset(BaseAsset asset) {
-    if (state.selectedAssets.contains(asset)) {
+    if (refersToSelectedAsset(state.selectedAssets, asset)) {
       return;
     }
 
@@ -82,15 +90,15 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   }
 
   void deselectAsset(BaseAsset asset) {
-    if (!state.selectedAssets.contains(asset)) {
+    if (!refersToSelectedAsset(state.selectedAssets, asset)) {
       return;
     }
 
-    state = state.copyWith(selectedAssets: state.selectedAssets.where((a) => a != asset).toSet());
+    state = state.copyWith(selectedAssets: removeReferringAsset(state.selectedAssets, asset));
   }
 
   void toggleAssetSelection(BaseAsset asset) {
-    if (state.selectedAssets.contains(asset)) {
+    if (refersToSelectedAsset(state.selectedAssets, asset)) {
       deselectAsset(asset);
     } else {
       selectAsset(asset);
@@ -106,16 +114,21 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
     final selectedAssets = state.selectedAssets.toSet();
 
-    selectedAssets.addAll(assets);
+    for (final asset in assets) {
+      if (!refersToSelectedAsset(selectedAssets, asset)) {
+        selectedAssets.add(asset);
+      }
+    }
 
     state = state.copyWith(selectedAssets: selectedAssets);
   }
 
   void deselectBucket(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
-    final selectedAssets = state.selectedAssets.toSet();
-
-    selectedAssets.removeAll(assets);
+    var selectedAssets = state.selectedAssets.toSet();
+    for (final asset in assets) {
+      selectedAssets = removeReferringAsset(selectedAssets, asset);
+    }
 
     state = state.copyWith(selectedAssets: selectedAssets);
   }
@@ -131,16 +144,25 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     }
 
     // Check if all assets in this bucket are currently selected
-    final allSelected = bucketAssets.every((asset) => state.selectedAssets.contains(asset));
+    final allSelected = bucketAssets.every((asset) => refersToSelectedAsset(state.selectedAssets, asset));
 
     final selectedAssets = state.selectedAssets.toSet();
 
     if (allSelected) {
       // If all assets in this bucket are selected, deselect them
-      selectedAssets.removeAll(bucketAssets);
+      var nextSelectedAssets = selectedAssets;
+      for (final asset in bucketAssets) {
+        nextSelectedAssets = removeReferringAsset(nextSelectedAssets, asset);
+      }
+      state = state.copyWith(selectedAssets: nextSelectedAssets);
+      return;
     } else {
       // If not all assets in this bucket are selected, select them all
-      selectedAssets.addAll(bucketAssets);
+      for (final asset in bucketAssets) {
+        if (!refersToSelectedAsset(selectedAssets, asset)) {
+          selectedAssets.add(asset);
+        }
+      }
     }
 
     state = state.copyWith(selectedAssets: selectedAssets);
@@ -159,5 +181,5 @@ final bucketSelectionProvider = Provider.family<bool, List<BaseAsset>>((ref, buc
   }
 
   // Check if all assets in the bucket are selected
-  return bucketAssets.every((asset) => selectedAssets.contains(asset));
+  return bucketAssets.every((asset) => refersToSelectedAsset(selectedAssets, asset));
 }, dependencies: [multiSelectProvider, timelineServiceProvider]);

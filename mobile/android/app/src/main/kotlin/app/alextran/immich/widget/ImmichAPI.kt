@@ -102,8 +102,12 @@ class ImmichAPI(cfg: ServerConfig) {
     gson.fromJson(response, type)
   }
 
-  suspend fun fetchImage(asset: Asset): Bitmap {
-    return fetchPreviewImage(asset.id)
+  suspend fun fetchImage(asset: Asset): Bitmap = withContext(Dispatchers.IO) {
+    val url = buildRequestURL("/assets/${asset.id}/thumbnail", listOf("size" to "preview", "edited" to "true"))
+    val connection = url.openConnection()
+    val data = connection.getInputStream().readBytes()
+    BitmapFactory.decodeByteArray(data, 0, data.size)
+      ?: throw Exception("Invalid image data")
   }
 
   suspend fun fetchPreviewImage(assetId: String): Bitmap = withContext(Dispatchers.IO) {

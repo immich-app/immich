@@ -138,7 +138,10 @@ class _DynamicWallpaperSettingsState extends ConsumerState<DynamicWallpaperSetti
     final preservedAssetIds = currentAssetIds.where((assetId) => !loadedAssetIds.contains(assetId)).toList();
 
     final selectedAssets = await context.pushRoute<Set<BaseAsset>>(
-      DriftAssetSelectionTimelineRoute(initialSelectedAssets: initialAssets.toSet(), peopleFilterIds: peopleFilterIds),
+      DynamicWallpaperAssetSelectionTimelineRoute(
+        initialSelectedAssets: initialAssets.toSet(),
+        peopleFilterIds: peopleFilterIds,
+      ),
     );
 
     if (selectedAssets == null) {

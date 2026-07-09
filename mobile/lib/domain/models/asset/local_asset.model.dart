@@ -93,6 +93,7 @@ class LocalAsset extends BaseAsset {
   int get hashCode =>
       super.hashCode ^
       id.hashCode ^
+      remoteId.hashCode ^
       orientation.hashCode ^
       playbackStyle.hashCode ^
       adjustmentTime.hashCode ^

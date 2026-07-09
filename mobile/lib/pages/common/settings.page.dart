@@ -30,7 +30,6 @@ enum SettingSection {
   notifications('notifications', Icons.notifications_none_rounded, "setting_notifications_subtitle"),
   preferences('preferences_settings_title', Icons.interests_outlined, "preferences_settings_subtitle"),
   timeline('asset_list_settings_title', Icons.auto_awesome_mosaic_outlined, "asset_list_settings_subtitle"),
-  dynamicWallpaper('dynamic_wallpaper_settings_title', Icons.wallpaper_outlined, "dynamic_wallpaper_settings_subtitle"),
   beta('sync_status', Icons.sync_outlined, "sync_status_subtitle");
 
   final String title;
@@ -47,16 +46,11 @@ enum SettingSection {
     SettingSection.notifications => const NotificationSetting(),
     SettingSection.preferences => const PreferenceSetting(),
     SettingSection.timeline => const AssetListSettings(),
-    SettingSection.dynamicWallpaper => const DynamicWallpaperSettings(),
     SettingSection.beta => const SyncStatusAndActions(),
   };
 
   const SettingSection(this.title, this.icon, this.subtitle);
 }
-
-List<SettingSection> get _availableSettingSections => SettingSection.values
-    .where((section) => Platform.isAndroid || section != SettingSection.dynamicWallpaper)
-    .toList(growable: false);
 
 @RoutePage()
 class SettingsPage extends StatelessWidget {
@@ -76,7 +70,7 @@ class _MobileLayout extends StatelessWidget {
   const _MobileLayout();
   @override
   Widget build(BuildContext context) {
-    final List<Widget> settings = _availableSettingSections
+    final List<Widget> settings = SettingSection.values
         .expand(
           (setting) => setting == SettingSection.beta
               ? [
@@ -97,6 +91,16 @@ class _MobileLayout extends StatelessWidget {
                 ],
         )
         .toList();
+    if (Platform.isAndroid) {
+      settings.add(
+        SettingsCard(
+          title: 'dynamic_wallpaper_settings_title'.tr(),
+          subtitle: 'dynamic_wallpaper_settings_subtitle'.tr(),
+          icon: Icons.wallpaper_outlined,
+          settingRoute: const DynamicWallpaperSettingsRoute(),
+        ),
+      );
+    }
     settings.add(
       SettingsCard(
         icon: Icons.auto_awesome_outlined,
@@ -113,8 +117,7 @@ class _TabletLayout extends HookWidget {
   const _TabletLayout();
   @override
   Widget build(BuildContext context) {
-    final sections = _availableSettingSections;
-    final selectedSection = useState<SettingSection>(sections.first);
+    final selectedSection = useState<SettingSection>(SettingSection.values.first);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
@@ -123,7 +126,7 @@ class _TabletLayout extends HookWidget {
           flex: 2,
           child: CustomScrollView(
             slivers: [
-              ...sections.map(
+              ...SettingSection.values.map(
                 (s) => SliverToBoxAdapter(
                   child: ListTile(
                     title: Text(s.title).tr(),
@@ -135,6 +138,14 @@ class _TabletLayout extends HookWidget {
                   ),
                 ),
               ),
+              if (Platform.isAndroid)
+                SliverToBoxAdapter(
+                  child: ListTile(
+                    title: Text('dynamic_wallpaper_settings_title'.tr()),
+                    leading: const Icon(Icons.wallpaper_outlined),
+                    onTap: () => context.pushRoute(const DynamicWallpaperSettingsRoute()),
+                  ),
+                ),
               SliverToBoxAdapter(
                 child: ListTile(
                   title: Text('whats_new'.tr()),
@@ -148,6 +159,20 @@ class _TabletLayout extends HookWidget {
         const VerticalDivider(width: 1),
         Expanded(flex: 4, child: selectedSection.value.widget),
       ],
+    );
+  }
+}
+
+@RoutePage()
+class DynamicWallpaperSettingsPage extends StatelessWidget {
+  const DynamicWallpaperSettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    context.locale;
+    return Scaffold(
+      appBar: AppBar(centerTitle: false, title: const Text('dynamic_wallpaper_settings_title').tr()),
+      body: const DynamicWallpaperSettings(),
     );
   }
 }

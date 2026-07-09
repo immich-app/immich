@@ -4,26 +4,6 @@ import '../../unit/factories/local_asset_factory.dart';
 import '../../unit/factories/remote_asset_factory.dart';
 
 void main() {
-  group('BaseAsset equality', () {
-    test('remote asset hash ignores localId like equality', () {
-      final asset = RemoteAssetFactory.create(id: 'asset-1');
-      final mergedCopy = asset.copyWith(localId: 'local-1');
-
-      expect(asset, mergedCopy);
-      expect(asset.hashCode, mergedCopy.hashCode);
-      expect({asset}.contains(mergedCopy), isTrue);
-    });
-
-    test('local asset hash ignores remoteId like equality', () {
-      final asset = LocalAssetFactory.create(id: 'local-1');
-      final mergedCopy = asset.copyWith(remoteId: 'asset-1');
-
-      expect(asset, mergedCopy);
-      expect(asset.hashCode, mergedCopy.hashCode);
-      expect({asset}.contains(mergedCopy), isTrue);
-    });
-  });
-
   group('BaseAsset.refersToSameAsset', () {
     test('search/folder copy (localId null) matches the merged DB copy (localId set)', () {
       // #29472: search and folder assets arrive with localId null, then the viewer

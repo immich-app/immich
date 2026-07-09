@@ -216,7 +216,11 @@ class MediumRepositoryContext {
         );
   }
 
-  Future<AssetFaceEntityData> newFace({
+  Future<AssetFaceEntityData> newFace({String? assetId, String? personId, int? imageWidth, int? imageHeight}) {
+    return newFaceWithState(assetId: assetId, personId: personId, imageWidth: imageWidth, imageHeight: imageHeight);
+  }
+
+  Future<AssetFaceEntityData> newFaceWithState({
     String? assetId,
     String? personId,
     int? imageWidth,

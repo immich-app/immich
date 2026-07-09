@@ -10,11 +10,35 @@ import 'package:immich_mobile/providers/user.provider.dart';
 @RoutePage()
 class DriftAssetSelectionTimelinePage extends ConsumerWidget {
   final Set<BaseAsset> lockedSelectionAssets;
+  const DriftAssetSelectionTimelinePage({super.key, this.lockedSelectionAssets = const {}});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ProviderScope(
+      overrides: [
+        multiSelectProvider.overrideWith(
+          () => MultiSelectNotifier(
+            MultiSelectState(selectedAssets: {}, lockedSelectionAssets: lockedSelectionAssets, forceEnable: true),
+          ),
+        ),
+        timelineServiceProvider.overrideWith((ref) {
+          final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
+          final timelineService = ref.watch(timelineFactoryProvider).main(timelineUsers);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
+      ],
+      child: const Timeline(showStorageIndicator: true),
+    );
+  }
+}
+
+@RoutePage()
+class DynamicWallpaperAssetSelectionTimelinePage extends ConsumerWidget {
   final Set<BaseAsset> initialSelectedAssets;
   final List<String> peopleFilterIds;
-  const DriftAssetSelectionTimelinePage({
+  const DynamicWallpaperAssetSelectionTimelinePage({
     super.key,
-    this.lockedSelectionAssets = const {},
     this.initialSelectedAssets = const {},
     this.peopleFilterIds = const [],
   });
@@ -25,11 +49,7 @@ class DriftAssetSelectionTimelinePage extends ConsumerWidget {
       overrides: [
         multiSelectProvider.overrideWith(
           () => MultiSelectNotifier(
-            MultiSelectState(
-              selectedAssets: initialSelectedAssets,
-              lockedSelectionAssets: lockedSelectionAssets,
-              forceEnable: true,
-            ),
+            MultiSelectState(selectedAssets: initialSelectedAssets, lockedSelectionAssets: const {}, forceEnable: true),
           ),
         ),
         timelineServiceProvider.overrideWith((ref) {

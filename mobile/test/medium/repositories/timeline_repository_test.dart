@@ -129,9 +129,9 @@ void main() {
         await ctx.newFace(assetId: asset.id, personId: personB.id);
       }
       await ctx.newFace(assetId: hiddenFace.id, personId: personA.id);
-      await ctx.newFace(assetId: hiddenFace.id, personId: personB.id, isVisible: false);
+      await ctx.newFaceWithState(assetId: hiddenFace.id, personId: personB.id, isVisible: false);
       await ctx.newFace(assetId: deletedFace.id, personId: personA.id);
-      await ctx.newFace(assetId: deletedFace.id, personId: personB.id, deletedAt: DateTime.now());
+      await ctx.newFaceWithState(assetId: deletedFace.id, personId: personB.id, deletedAt: DateTime.now());
 
       final query = sut.people(user.id, [personA.id, personB.id], .day);
 

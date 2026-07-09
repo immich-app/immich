@@ -118,6 +118,7 @@ class RemoteAsset extends BaseAsset {
       super.hashCode ^
       id.hashCode ^
       ownerId.hashCode ^
+      localId.hashCode ^
       thumbHash.hashCode ^
       visibility.hashCode ^
       stackId.hashCode ^
