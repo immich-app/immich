@@ -2,26 +2,23 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
-class SimilarPhotosActionButton extends ConsumerWidget {
+class SimilarPhotosAction extends BaseAction {
   final String assetId;
-  final bool iconOnly;
-  final bool menuItem;
 
-  const SimilarPhotosActionButton({super.key, required this.assetId, this.iconOnly = false, this.menuItem = false});
+  SimilarPhotosAction({required this.assetId, required super.scope})
+    : super(icon: Icons.compare, label: scope.context.t.view_similar_photos);
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
-    if (!context.mounted) {
-      return;
-    }
+  @override
+  Future<void> onAction() async {
+    final ActionScope(:context, :ref) = scope;
 
     ref.invalidate(assetViewerProvider);
     ref.invalidate(paginatedSearchProvider);
@@ -42,17 +39,5 @@ class SimilarPhotosActionButton extends ConsumerWidget {
       );
 
     unawaited(context.navigateTo(const DriftSearchRoute()));
-  }
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return BaseActionButton(
-      iconData: Icons.compare,
-      label: "view_similar_photos".t(context: context),
-      iconOnly: iconOnly,
-      menuItem: menuItem,
-      onPressed: () => _onTap(context, ref),
-      maxWidth: 100,
-    );
   }
 }

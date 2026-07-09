@@ -14,7 +14,10 @@ import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/cast.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
+import 'package:immich_mobile/presentation/actions/open_in_browser.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
+import 'package:immich_mobile/presentation/actions/set_profile_picture.action.dart';
+import 'package:immich_mobile/presentation/actions/similar_photos.action.dart';
 import 'package:immich_mobile/presentation/actions/slideshow.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
@@ -23,13 +26,10 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_a
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/open_in_browser_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/set_profile_picture_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/similar_photos_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -247,21 +247,14 @@ enum ActionButtonType {
       ActionButtonType.unstack => ActionMenuItemWidget(
         action: StackAction(assets: [context.asset], scope: scope),
       ),
-      ActionButtonType.openInBrowser => OpenInBrowserActionButton(
-        remoteId: context.asset.remoteId!,
-        origin: context.timelineOrigin,
-        iconOnly: iconOnly,
-        menuItem: menuItem,
+      ActionButtonType.openInBrowser => ActionMenuItemWidget(
+        action: OpenInBrowserAction(remoteId: context.asset.remoteId!, origin: context.timelineOrigin, scope: scope),
       ),
-      ActionButtonType.similarPhotos => SimilarPhotosActionButton(
-        assetId: (context.asset as RemoteAsset).id,
-        iconOnly: iconOnly,
-        menuItem: menuItem,
+      ActionButtonType.similarPhotos => ActionMenuItemWidget(
+        action: SimilarPhotosAction(assetId: (context.asset as RemoteAsset).id, scope: scope),
       ),
-      ActionButtonType.setProfilePicture => SetProfilePictureActionButton(
-        asset: context.asset,
-        iconOnly: iconOnly,
-        menuItem: menuItem,
+      ActionButtonType.setProfilePicture => ActionMenuItemWidget(
+        action: SetProfilePictureAction(asset: context.asset, scope: scope),
       ),
       ActionButtonType.openInfo => BaseActionButton(
         label: 'info'.tr(),
