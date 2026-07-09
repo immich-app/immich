@@ -360,7 +360,7 @@ export class IntegrityService extends BaseService {
 
     this.logger.log(`Scanning for missing files...`);
 
-    const assetPaths = this.integrityRepository.streamAssetPaths();
+    const assetPaths = this.integrityRepository.streamAssetPathsForMissingFiles();
 
     let total = 0;
     for await (const batchPaths of chunk(assetPaths, JOBS_LIBRARY_PAGINATION_SIZE)) {
@@ -532,8 +532,7 @@ export class IntegrityService extends BaseService {
     const { count } = await this.integrityRepository.getAssetCount();
     const checkpoint = await this.systemMetadataRepository.get(SystemMetadataKey.IntegrityChecksumCheckpoint);
 
-    let startMarker: Date | undefined = checkpoint?.date ? new Date(checkpoint.date) : undefined;
-    let endMarker: Date | undefined;
+    const startMarker = checkpoint?.date ? new Date(checkpoint.date) : undefined;
 
     const printStats = () => {
       const averageTime = ((Date.now() - startedAt) / processed).toFixed(2);
@@ -546,31 +545,25 @@ export class IntegrityService extends BaseService {
 
     let lastCreatedAt: Date | undefined;
 
-    finishEarly: do {
-      this.logger.log(
-        `Processing assets in range [${startMarker?.toISOString() ?? 'beginning'}, ${endMarker?.toISOString() ?? 'end'}]`,
-      );
+    this.logger.log(`Processing assets from ${startMarker?.toISOString() ?? 'beginning'}`);
 
-      const assets = this.integrityRepository.streamAssetChecksums(startMarker, endMarker);
-      endMarker = startMarker;
-      startMarker = undefined;
+    const assets = this.integrityRepository.streamAssetChecksums(startMarker);
 
-      for await (const { originalPath, checksum, createdAt, assetId, reportId } of assets) {
-        await this.checkAssetChecksum(originalPath, checksum, assetId, reportId);
+    for await (const { originalPath, checksum, createdAt, assetId, reportId } of assets) {
+      await this.checkAssetChecksum(originalPath, checksum, assetId, reportId);
 
-        processed++;
+      processed++;
 
-        if (processed % 100 === 0) {
-          printStats();
-        }
-
-        if (Date.now() > startedAt + timeLimit || processed > count * percentageLimit) {
-          this.logger.log('Reached stop criteria.');
-          lastCreatedAt = createdAt;
-          break finishEarly;
-        }
+      if (processed % 100 === 0) {
+        printStats();
       }
-    } while (endMarker);
+
+      if (Date.now() > startedAt + timeLimit || processed > count * percentageLimit) {
+        this.logger.log('Reached stop criteria.');
+        lastCreatedAt = createdAt;
+        break;
+      }
+    }
 
     await this.systemMetadataRepository.set(SystemMetadataKey.IntegrityChecksumCheckpoint, {
       date: lastCreatedAt?.toISOString(),
