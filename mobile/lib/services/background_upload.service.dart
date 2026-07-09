@@ -22,6 +22,7 @@ import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart' as api;
 import 'package:path/path.dart' as p;
 
 final backgroundUploadServiceProvider = Provider((ref) {
@@ -335,7 +336,8 @@ class BackgroundUploadService {
       return null;
     }
 
-    final fields = {'livePhotoVideoId': livePhotoVideoId};
+    // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
+    final fields = {'livePhotoVideoId': livePhotoVideoId, 'visibility': api.AssetVisibility.hidden.value};
 
     final requiresWiFi = _shouldRequireWiFi(asset);
     final originalFileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;

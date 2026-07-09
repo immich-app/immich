@@ -622,7 +622,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     return (
       bucketSource: () => _watchRemoteBucket(filter: filter, groupBy: groupBy, sortBy: sortBy),
       assetSource: (offset, count) =>
-          _getRemoteAssets(filter: filter, offset: offset, count: count, joinLocal: joinLocal),
+          _getRemoteAssets(filter: filter, offset: offset, count: count, joinLocal: joinLocal, sortBy: sortBy),
       origin: origin,
     );
   }
@@ -659,6 +659,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     required int offset,
     required int count,
     bool joinLocal = false,
+    SortAssetsBy sortBy = SortAssetsBy.taken,
   }) {
     if (joinLocal) {
       final query =
@@ -671,7 +672,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
             ])
             ..addColumns([_db.localAssetEntity.id])
             ..where(filter(_db.remoteAssetEntity))
-            ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+            ..orderBy([
+              OrderingTerm.desc(
+                sortBy == SortAssetsBy.uploaded ? _db.remoteAssetEntity.uploadedAt : _db.remoteAssetEntity.createdAt,
+              ),
+            ])
             ..limit(count, offset: offset);
 
       return query
@@ -680,7 +685,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     } else {
       final query = _db.remoteAssetEntity.select()
         ..where(filter)
-        ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+        ..orderBy([(row) => OrderingTerm.desc(sortBy == SortAssetsBy.uploaded ? row.uploadedAt : row.createdAt)])
         ..limit(count, offset: offset);
 
       return query.map((row) => row.toDto()).get();

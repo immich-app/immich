@@ -7897,81 +7897,6 @@ class TrashedLocalAssetEntity extends Table
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
   TrashedLocalAssetEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  late final GeneratedColumn<String> checksum = GeneratedColumn<String>(
-    'checksum',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    $customConstraints: 'NULL',
-  );
-  late final GeneratedColumn<int> isFavorite = GeneratedColumn<int>(
-    'is_favorite',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: 'NOT NULL DEFAULT 0 CHECK (is_favorite IN (0, 1))',
-    defaultValue: const CustomExpression('0'),
-  );
-  late final GeneratedColumn<int> orientation = GeneratedColumn<int>(
-    'orientation',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: 'NOT NULL DEFAULT 0',
-    defaultValue: const CustomExpression('0'),
-  );
-  late final GeneratedColumn<String> iCloudId = GeneratedColumn<String>(
-    'i_cloud_id',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    $customConstraints: 'NULL',
-  );
-  late final GeneratedColumn<String> adjustmentTime = GeneratedColumn<String>(
-    'adjustment_time',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    $customConstraints: 'NULL',
-  );
-  late final GeneratedColumn<double> latitude = GeneratedColumn<double>(
-    'latitude',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-    $customConstraints: 'NULL',
-  );
-  late final GeneratedColumn<double> longitude = GeneratedColumn<double>(
-    'longitude',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-    $customConstraints: 'NULL',
-  );
-  late final GeneratedColumn<int> playbackStyle = GeneratedColumn<int>(
-    'playback_style',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: 'NOT NULL DEFAULT 0',
-    defaultValue: const CustomExpression('0'),
-  );
   late final GeneratedColumn<String> name = GeneratedColumn<String>(
     'name',
     aliasedName,
@@ -8030,6 +7955,14 @@ class TrashedLocalAssetEntity extends Table
     requiredDuringInsert: false,
     $customConstraints: 'NULL',
   );
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+    $customConstraints: 'NOT NULL',
+  );
   late final GeneratedColumn<String> albumId = GeneratedColumn<String>(
     'album_id',
     aliasedName,
@@ -8037,6 +7970,32 @@ class TrashedLocalAssetEntity extends Table
     type: DriftSqlType.string,
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL',
+  );
+  late final GeneratedColumn<String> checksum = GeneratedColumn<String>(
+    'checksum',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    $customConstraints: 'NULL',
+  );
+  late final GeneratedColumn<int> isFavorite = GeneratedColumn<int>(
+    'is_favorite',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 0 CHECK (is_favorite IN (0, 1))',
+    defaultValue: const CustomExpression('0'),
+  );
+  late final GeneratedColumn<int> orientation = GeneratedColumn<int>(
+    'orientation',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 0',
+    defaultValue: const CustomExpression('0'),
   );
   late final GeneratedColumn<int> source = GeneratedColumn<int>(
     'source',
@@ -8046,17 +8005,17 @@ class TrashedLocalAssetEntity extends Table
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL',
   );
+  late final GeneratedColumn<int> playbackStyle = GeneratedColumn<int>(
+    'playback_style',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    $customConstraints: 'NOT NULL DEFAULT 0',
+    defaultValue: const CustomExpression('0'),
+  );
   @override
   List<GeneratedColumn> get $columns => [
-    id,
-    checksum,
-    isFavorite,
-    orientation,
-    iCloudId,
-    adjustmentTime,
-    latitude,
-    longitude,
-    playbackStyle,
     name,
     type,
     createdAt,
@@ -8064,8 +8023,13 @@ class TrashedLocalAssetEntity extends Table
     width,
     height,
     durationMs,
+    id,
     albumId,
+    checksum,
+    isFavorite,
+    orientation,
     source,
+    playbackStyle,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -8081,42 +8045,6 @@ class TrashedLocalAssetEntity extends Table
   }) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
     return TrashedLocalAssetEntityData(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      checksum: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}checksum'],
-      ),
-      isFavorite: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}is_favorite'],
-      )!,
-      orientation: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}orientation'],
-      )!,
-      iCloudId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}i_cloud_id'],
-      ),
-      adjustmentTime: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}adjustment_time'],
-      ),
-      latitude: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}latitude'],
-      ),
-      longitude: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}longitude'],
-      ),
-      playbackStyle: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}playback_style'],
-      )!,
       name: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}name'],
@@ -8145,13 +8073,33 @@ class TrashedLocalAssetEntity extends Table
         DriftSqlType.int,
         data['${effectivePrefix}duration_ms'],
       ),
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
       albumId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}album_id'],
       )!,
+      checksum: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}checksum'],
+      ),
+      isFavorite: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}is_favorite'],
+      )!,
+      orientation: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}orientation'],
+      )!,
       source: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}source'],
+      )!,
+      playbackStyle: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}playback_style'],
       )!,
     );
   }
@@ -8173,15 +8121,6 @@ class TrashedLocalAssetEntity extends Table
 
 class TrashedLocalAssetEntityData extends DataClass
     implements Insertable<TrashedLocalAssetEntityData> {
-  final String id;
-  final String? checksum;
-  final int isFavorite;
-  final int orientation;
-  final String? iCloudId;
-  final String? adjustmentTime;
-  final double? latitude;
-  final double? longitude;
-  final int playbackStyle;
   final String name;
   final int type;
   final String createdAt;
@@ -8189,18 +8128,14 @@ class TrashedLocalAssetEntityData extends DataClass
   final int? width;
   final int? height;
   final int? durationMs;
+  final String id;
   final String albumId;
+  final String? checksum;
+  final int isFavorite;
+  final int orientation;
   final int source;
+  final int playbackStyle;
   const TrashedLocalAssetEntityData({
-    required this.id,
-    this.checksum,
-    required this.isFavorite,
-    required this.orientation,
-    this.iCloudId,
-    this.adjustmentTime,
-    this.latitude,
-    this.longitude,
-    required this.playbackStyle,
     required this.name,
     required this.type,
     required this.createdAt,
@@ -8208,31 +8143,17 @@ class TrashedLocalAssetEntityData extends DataClass
     this.width,
     this.height,
     this.durationMs,
+    required this.id,
     required this.albumId,
+    this.checksum,
+    required this.isFavorite,
+    required this.orientation,
     required this.source,
+    required this.playbackStyle,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    if (!nullToAbsent || checksum != null) {
-      map['checksum'] = Variable<String>(checksum);
-    }
-    map['is_favorite'] = Variable<int>(isFavorite);
-    map['orientation'] = Variable<int>(orientation);
-    if (!nullToAbsent || iCloudId != null) {
-      map['i_cloud_id'] = Variable<String>(iCloudId);
-    }
-    if (!nullToAbsent || adjustmentTime != null) {
-      map['adjustment_time'] = Variable<String>(adjustmentTime);
-    }
-    if (!nullToAbsent || latitude != null) {
-      map['latitude'] = Variable<double>(latitude);
-    }
-    if (!nullToAbsent || longitude != null) {
-      map['longitude'] = Variable<double>(longitude);
-    }
-    map['playback_style'] = Variable<int>(playbackStyle);
     map['name'] = Variable<String>(name);
     map['type'] = Variable<int>(type);
     map['created_at'] = Variable<String>(createdAt);
@@ -8246,8 +8167,15 @@ class TrashedLocalAssetEntityData extends DataClass
     if (!nullToAbsent || durationMs != null) {
       map['duration_ms'] = Variable<int>(durationMs);
     }
+    map['id'] = Variable<String>(id);
     map['album_id'] = Variable<String>(albumId);
+    if (!nullToAbsent || checksum != null) {
+      map['checksum'] = Variable<String>(checksum);
+    }
+    map['is_favorite'] = Variable<int>(isFavorite);
+    map['orientation'] = Variable<int>(orientation);
     map['source'] = Variable<int>(source);
+    map['playback_style'] = Variable<int>(playbackStyle);
     return map;
   }
 
@@ -8257,15 +8185,6 @@ class TrashedLocalAssetEntityData extends DataClass
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TrashedLocalAssetEntityData(
-      id: serializer.fromJson<String>(json['id']),
-      checksum: serializer.fromJson<String?>(json['checksum']),
-      isFavorite: serializer.fromJson<int>(json['isFavorite']),
-      orientation: serializer.fromJson<int>(json['orientation']),
-      iCloudId: serializer.fromJson<String?>(json['iCloudId']),
-      adjustmentTime: serializer.fromJson<String?>(json['adjustmentTime']),
-      latitude: serializer.fromJson<double?>(json['latitude']),
-      longitude: serializer.fromJson<double?>(json['longitude']),
-      playbackStyle: serializer.fromJson<int>(json['playbackStyle']),
       name: serializer.fromJson<String>(json['name']),
       type: serializer.fromJson<int>(json['type']),
       createdAt: serializer.fromJson<String>(json['createdAt']),
@@ -8273,23 +8192,19 @@ class TrashedLocalAssetEntityData extends DataClass
       width: serializer.fromJson<int?>(json['width']),
       height: serializer.fromJson<int?>(json['height']),
       durationMs: serializer.fromJson<int?>(json['durationMs']),
+      id: serializer.fromJson<String>(json['id']),
       albumId: serializer.fromJson<String>(json['albumId']),
+      checksum: serializer.fromJson<String?>(json['checksum']),
+      isFavorite: serializer.fromJson<int>(json['isFavorite']),
+      orientation: serializer.fromJson<int>(json['orientation']),
       source: serializer.fromJson<int>(json['source']),
+      playbackStyle: serializer.fromJson<int>(json['playbackStyle']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'checksum': serializer.toJson<String?>(checksum),
-      'isFavorite': serializer.toJson<int>(isFavorite),
-      'orientation': serializer.toJson<int>(orientation),
-      'iCloudId': serializer.toJson<String?>(iCloudId),
-      'adjustmentTime': serializer.toJson<String?>(adjustmentTime),
-      'latitude': serializer.toJson<double?>(latitude),
-      'longitude': serializer.toJson<double?>(longitude),
-      'playbackStyle': serializer.toJson<int>(playbackStyle),
       'name': serializer.toJson<String>(name),
       'type': serializer.toJson<int>(type),
       'createdAt': serializer.toJson<String>(createdAt),
@@ -8297,21 +8212,17 @@ class TrashedLocalAssetEntityData extends DataClass
       'width': serializer.toJson<int?>(width),
       'height': serializer.toJson<int?>(height),
       'durationMs': serializer.toJson<int?>(durationMs),
+      'id': serializer.toJson<String>(id),
       'albumId': serializer.toJson<String>(albumId),
+      'checksum': serializer.toJson<String?>(checksum),
+      'isFavorite': serializer.toJson<int>(isFavorite),
+      'orientation': serializer.toJson<int>(orientation),
       'source': serializer.toJson<int>(source),
+      'playbackStyle': serializer.toJson<int>(playbackStyle),
     };
   }
 
   TrashedLocalAssetEntityData copyWith({
-    String? id,
-    Value<String?> checksum = const Value.absent(),
-    int? isFavorite,
-    int? orientation,
-    Value<String?> iCloudId = const Value.absent(),
-    Value<String?> adjustmentTime = const Value.absent(),
-    Value<double?> latitude = const Value.absent(),
-    Value<double?> longitude = const Value.absent(),
-    int? playbackStyle,
     String? name,
     int? type,
     String? createdAt,
@@ -8319,20 +8230,14 @@ class TrashedLocalAssetEntityData extends DataClass
     Value<int?> width = const Value.absent(),
     Value<int?> height = const Value.absent(),
     Value<int?> durationMs = const Value.absent(),
+    String? id,
     String? albumId,
+    Value<String?> checksum = const Value.absent(),
+    int? isFavorite,
+    int? orientation,
     int? source,
+    int? playbackStyle,
   }) => TrashedLocalAssetEntityData(
-    id: id ?? this.id,
-    checksum: checksum.present ? checksum.value : this.checksum,
-    isFavorite: isFavorite ?? this.isFavorite,
-    orientation: orientation ?? this.orientation,
-    iCloudId: iCloudId.present ? iCloudId.value : this.iCloudId,
-    adjustmentTime: adjustmentTime.present
-        ? adjustmentTime.value
-        : this.adjustmentTime,
-    latitude: latitude.present ? latitude.value : this.latitude,
-    longitude: longitude.present ? longitude.value : this.longitude,
-    playbackStyle: playbackStyle ?? this.playbackStyle,
     name: name ?? this.name,
     type: type ?? this.type,
     createdAt: createdAt ?? this.createdAt,
@@ -8340,30 +8245,18 @@ class TrashedLocalAssetEntityData extends DataClass
     width: width.present ? width.value : this.width,
     height: height.present ? height.value : this.height,
     durationMs: durationMs.present ? durationMs.value : this.durationMs,
+    id: id ?? this.id,
     albumId: albumId ?? this.albumId,
+    checksum: checksum.present ? checksum.value : this.checksum,
+    isFavorite: isFavorite ?? this.isFavorite,
+    orientation: orientation ?? this.orientation,
     source: source ?? this.source,
+    playbackStyle: playbackStyle ?? this.playbackStyle,
   );
   TrashedLocalAssetEntityData copyWithCompanion(
     TrashedLocalAssetEntityCompanion data,
   ) {
     return TrashedLocalAssetEntityData(
-      id: data.id.present ? data.id.value : this.id,
-      checksum: data.checksum.present ? data.checksum.value : this.checksum,
-      isFavorite: data.isFavorite.present
-          ? data.isFavorite.value
-          : this.isFavorite,
-      orientation: data.orientation.present
-          ? data.orientation.value
-          : this.orientation,
-      iCloudId: data.iCloudId.present ? data.iCloudId.value : this.iCloudId,
-      adjustmentTime: data.adjustmentTime.present
-          ? data.adjustmentTime.value
-          : this.adjustmentTime,
-      latitude: data.latitude.present ? data.latitude.value : this.latitude,
-      longitude: data.longitude.present ? data.longitude.value : this.longitude,
-      playbackStyle: data.playbackStyle.present
-          ? data.playbackStyle.value
-          : this.playbackStyle,
       name: data.name.present ? data.name.value : this.name,
       type: data.type.present ? data.type.value : this.type,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
@@ -8373,23 +8266,25 @@ class TrashedLocalAssetEntityData extends DataClass
       durationMs: data.durationMs.present
           ? data.durationMs.value
           : this.durationMs,
+      id: data.id.present ? data.id.value : this.id,
       albumId: data.albumId.present ? data.albumId.value : this.albumId,
+      checksum: data.checksum.present ? data.checksum.value : this.checksum,
+      isFavorite: data.isFavorite.present
+          ? data.isFavorite.value
+          : this.isFavorite,
+      orientation: data.orientation.present
+          ? data.orientation.value
+          : this.orientation,
       source: data.source.present ? data.source.value : this.source,
+      playbackStyle: data.playbackStyle.present
+          ? data.playbackStyle.value
+          : this.playbackStyle,
     );
   }
 
   @override
   String toString() {
     return (StringBuffer('TrashedLocalAssetEntityData(')
-          ..write('id: $id, ')
-          ..write('checksum: $checksum, ')
-          ..write('isFavorite: $isFavorite, ')
-          ..write('orientation: $orientation, ')
-          ..write('iCloudId: $iCloudId, ')
-          ..write('adjustmentTime: $adjustmentTime, ')
-          ..write('latitude: $latitude, ')
-          ..write('longitude: $longitude, ')
-          ..write('playbackStyle: $playbackStyle, ')
           ..write('name: $name, ')
           ..write('type: $type, ')
           ..write('createdAt: $createdAt, ')
@@ -8397,23 +8292,19 @@ class TrashedLocalAssetEntityData extends DataClass
           ..write('width: $width, ')
           ..write('height: $height, ')
           ..write('durationMs: $durationMs, ')
+          ..write('id: $id, ')
           ..write('albumId: $albumId, ')
-          ..write('source: $source')
+          ..write('checksum: $checksum, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('orientation: $orientation, ')
+          ..write('source: $source, ')
+          ..write('playbackStyle: $playbackStyle')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(
-    id,
-    checksum,
-    isFavorite,
-    orientation,
-    iCloudId,
-    adjustmentTime,
-    latitude,
-    longitude,
-    playbackStyle,
     name,
     type,
     createdAt,
@@ -8421,22 +8312,18 @@ class TrashedLocalAssetEntityData extends DataClass
     width,
     height,
     durationMs,
+    id,
     albumId,
+    checksum,
+    isFavorite,
+    orientation,
     source,
+    playbackStyle,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is TrashedLocalAssetEntityData &&
-          other.id == this.id &&
-          other.checksum == this.checksum &&
-          other.isFavorite == this.isFavorite &&
-          other.orientation == this.orientation &&
-          other.iCloudId == this.iCloudId &&
-          other.adjustmentTime == this.adjustmentTime &&
-          other.latitude == this.latitude &&
-          other.longitude == this.longitude &&
-          other.playbackStyle == this.playbackStyle &&
           other.name == this.name &&
           other.type == this.type &&
           other.createdAt == this.createdAt &&
@@ -8444,21 +8331,17 @@ class TrashedLocalAssetEntityData extends DataClass
           other.width == this.width &&
           other.height == this.height &&
           other.durationMs == this.durationMs &&
+          other.id == this.id &&
           other.albumId == this.albumId &&
-          other.source == this.source);
+          other.checksum == this.checksum &&
+          other.isFavorite == this.isFavorite &&
+          other.orientation == this.orientation &&
+          other.source == this.source &&
+          other.playbackStyle == this.playbackStyle);
 }
 
 class TrashedLocalAssetEntityCompanion
     extends UpdateCompanion<TrashedLocalAssetEntityData> {
-  final Value<String> id;
-  final Value<String?> checksum;
-  final Value<int> isFavorite;
-  final Value<int> orientation;
-  final Value<String?> iCloudId;
-  final Value<String?> adjustmentTime;
-  final Value<double?> latitude;
-  final Value<double?> longitude;
-  final Value<int> playbackStyle;
   final Value<String> name;
   final Value<int> type;
   final Value<String> createdAt;
@@ -8466,18 +8349,14 @@ class TrashedLocalAssetEntityCompanion
   final Value<int?> width;
   final Value<int?> height;
   final Value<int?> durationMs;
+  final Value<String> id;
   final Value<String> albumId;
+  final Value<String?> checksum;
+  final Value<int> isFavorite;
+  final Value<int> orientation;
   final Value<int> source;
+  final Value<int> playbackStyle;
   const TrashedLocalAssetEntityCompanion({
-    this.id = const Value.absent(),
-    this.checksum = const Value.absent(),
-    this.isFavorite = const Value.absent(),
-    this.orientation = const Value.absent(),
-    this.iCloudId = const Value.absent(),
-    this.adjustmentTime = const Value.absent(),
-    this.latitude = const Value.absent(),
-    this.longitude = const Value.absent(),
-    this.playbackStyle = const Value.absent(),
     this.name = const Value.absent(),
     this.type = const Value.absent(),
     this.createdAt = const Value.absent(),
@@ -8485,19 +8364,15 @@ class TrashedLocalAssetEntityCompanion
     this.width = const Value.absent(),
     this.height = const Value.absent(),
     this.durationMs = const Value.absent(),
+    this.id = const Value.absent(),
     this.albumId = const Value.absent(),
-    this.source = const Value.absent(),
-  });
-  TrashedLocalAssetEntityCompanion.insert({
-    required String id,
     this.checksum = const Value.absent(),
     this.isFavorite = const Value.absent(),
     this.orientation = const Value.absent(),
-    this.iCloudId = const Value.absent(),
-    this.adjustmentTime = const Value.absent(),
-    this.latitude = const Value.absent(),
-    this.longitude = const Value.absent(),
+    this.source = const Value.absent(),
     this.playbackStyle = const Value.absent(),
+  });
+  TrashedLocalAssetEntityCompanion.insert({
     required String name,
     required int type,
     this.createdAt = const Value.absent(),
@@ -8505,23 +8380,19 @@ class TrashedLocalAssetEntityCompanion
     this.width = const Value.absent(),
     this.height = const Value.absent(),
     this.durationMs = const Value.absent(),
+    required String id,
     required String albumId,
+    this.checksum = const Value.absent(),
+    this.isFavorite = const Value.absent(),
+    this.orientation = const Value.absent(),
     required int source,
-  }) : id = Value(id),
-       name = Value(name),
+    this.playbackStyle = const Value.absent(),
+  }) : name = Value(name),
        type = Value(type),
+       id = Value(id),
        albumId = Value(albumId),
        source = Value(source);
   static Insertable<TrashedLocalAssetEntityData> custom({
-    Expression<String>? id,
-    Expression<String>? checksum,
-    Expression<int>? isFavorite,
-    Expression<int>? orientation,
-    Expression<String>? iCloudId,
-    Expression<String>? adjustmentTime,
-    Expression<double>? latitude,
-    Expression<double>? longitude,
-    Expression<int>? playbackStyle,
     Expression<String>? name,
     Expression<int>? type,
     Expression<String>? createdAt,
@@ -8529,19 +8400,15 @@ class TrashedLocalAssetEntityCompanion
     Expression<int>? width,
     Expression<int>? height,
     Expression<int>? durationMs,
+    Expression<String>? id,
     Expression<String>? albumId,
+    Expression<String>? checksum,
+    Expression<int>? isFavorite,
+    Expression<int>? orientation,
     Expression<int>? source,
+    Expression<int>? playbackStyle,
   }) {
     return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (checksum != null) 'checksum': checksum,
-      if (isFavorite != null) 'is_favorite': isFavorite,
-      if (orientation != null) 'orientation': orientation,
-      if (iCloudId != null) 'i_cloud_id': iCloudId,
-      if (adjustmentTime != null) 'adjustment_time': adjustmentTime,
-      if (latitude != null) 'latitude': latitude,
-      if (longitude != null) 'longitude': longitude,
-      if (playbackStyle != null) 'playback_style': playbackStyle,
       if (name != null) 'name': name,
       if (type != null) 'type': type,
       if (createdAt != null) 'created_at': createdAt,
@@ -8549,21 +8416,17 @@ class TrashedLocalAssetEntityCompanion
       if (width != null) 'width': width,
       if (height != null) 'height': height,
       if (durationMs != null) 'duration_ms': durationMs,
+      if (id != null) 'id': id,
       if (albumId != null) 'album_id': albumId,
+      if (checksum != null) 'checksum': checksum,
+      if (isFavorite != null) 'is_favorite': isFavorite,
+      if (orientation != null) 'orientation': orientation,
       if (source != null) 'source': source,
+      if (playbackStyle != null) 'playback_style': playbackStyle,
     });
   }
 
   TrashedLocalAssetEntityCompanion copyWith({
-    Value<String>? id,
-    Value<String?>? checksum,
-    Value<int>? isFavorite,
-    Value<int>? orientation,
-    Value<String?>? iCloudId,
-    Value<String?>? adjustmentTime,
-    Value<double?>? latitude,
-    Value<double?>? longitude,
-    Value<int>? playbackStyle,
     Value<String>? name,
     Value<int>? type,
     Value<String>? createdAt,
@@ -8571,19 +8434,15 @@ class TrashedLocalAssetEntityCompanion
     Value<int?>? width,
     Value<int?>? height,
     Value<int?>? durationMs,
+    Value<String>? id,
     Value<String>? albumId,
+    Value<String?>? checksum,
+    Value<int>? isFavorite,
+    Value<int>? orientation,
     Value<int>? source,
+    Value<int>? playbackStyle,
   }) {
     return TrashedLocalAssetEntityCompanion(
-      id: id ?? this.id,
-      checksum: checksum ?? this.checksum,
-      isFavorite: isFavorite ?? this.isFavorite,
-      orientation: orientation ?? this.orientation,
-      iCloudId: iCloudId ?? this.iCloudId,
-      adjustmentTime: adjustmentTime ?? this.adjustmentTime,
-      latitude: latitude ?? this.latitude,
-      longitude: longitude ?? this.longitude,
-      playbackStyle: playbackStyle ?? this.playbackStyle,
       name: name ?? this.name,
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
@@ -8591,41 +8450,19 @@ class TrashedLocalAssetEntityCompanion
       width: width ?? this.width,
       height: height ?? this.height,
       durationMs: durationMs ?? this.durationMs,
+      id: id ?? this.id,
       albumId: albumId ?? this.albumId,
+      checksum: checksum ?? this.checksum,
+      isFavorite: isFavorite ?? this.isFavorite,
+      orientation: orientation ?? this.orientation,
       source: source ?? this.source,
+      playbackStyle: playbackStyle ?? this.playbackStyle,
     );
   }
 
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (checksum.present) {
-      map['checksum'] = Variable<String>(checksum.value);
-    }
-    if (isFavorite.present) {
-      map['is_favorite'] = Variable<int>(isFavorite.value);
-    }
-    if (orientation.present) {
-      map['orientation'] = Variable<int>(orientation.value);
-    }
-    if (iCloudId.present) {
-      map['i_cloud_id'] = Variable<String>(iCloudId.value);
-    }
-    if (adjustmentTime.present) {
-      map['adjustment_time'] = Variable<String>(adjustmentTime.value);
-    }
-    if (latitude.present) {
-      map['latitude'] = Variable<double>(latitude.value);
-    }
-    if (longitude.present) {
-      map['longitude'] = Variable<double>(longitude.value);
-    }
-    if (playbackStyle.present) {
-      map['playback_style'] = Variable<int>(playbackStyle.value);
-    }
     if (name.present) {
       map['name'] = Variable<String>(name.value);
     }
@@ -8647,11 +8484,26 @@ class TrashedLocalAssetEntityCompanion
     if (durationMs.present) {
       map['duration_ms'] = Variable<int>(durationMs.value);
     }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
     if (albumId.present) {
       map['album_id'] = Variable<String>(albumId.value);
     }
+    if (checksum.present) {
+      map['checksum'] = Variable<String>(checksum.value);
+    }
+    if (isFavorite.present) {
+      map['is_favorite'] = Variable<int>(isFavorite.value);
+    }
+    if (orientation.present) {
+      map['orientation'] = Variable<int>(orientation.value);
+    }
     if (source.present) {
       map['source'] = Variable<int>(source.value);
+    }
+    if (playbackStyle.present) {
+      map['playback_style'] = Variable<int>(playbackStyle.value);
     }
     return map;
   }
@@ -8659,15 +8511,6 @@ class TrashedLocalAssetEntityCompanion
   @override
   String toString() {
     return (StringBuffer('TrashedLocalAssetEntityCompanion(')
-          ..write('id: $id, ')
-          ..write('checksum: $checksum, ')
-          ..write('isFavorite: $isFavorite, ')
-          ..write('orientation: $orientation, ')
-          ..write('iCloudId: $iCloudId, ')
-          ..write('adjustmentTime: $adjustmentTime, ')
-          ..write('latitude: $latitude, ')
-          ..write('longitude: $longitude, ')
-          ..write('playbackStyle: $playbackStyle, ')
           ..write('name: $name, ')
           ..write('type: $type, ')
           ..write('createdAt: $createdAt, ')
@@ -8675,8 +8518,13 @@ class TrashedLocalAssetEntityCompanion
           ..write('width: $width, ')
           ..write('height: $height, ')
           ..write('durationMs: $durationMs, ')
+          ..write('id: $id, ')
           ..write('albumId: $albumId, ')
-          ..write('source: $source')
+          ..write('checksum: $checksum, ')
+          ..write('isFavorite: $isFavorite, ')
+          ..write('orientation: $orientation, ')
+          ..write('source: $source, ')
+          ..write('playbackStyle: $playbackStyle')
           ..write(')'))
         .toString();
   }
@@ -9819,234 +9667,6 @@ class AssetOcrEntityCompanion extends UpdateCompanion<AssetOcrEntityData> {
   }
 }
 
-class TrashSyncEntity extends Table
-    with TableInfo<TrashSyncEntity, TrashSyncEntityData> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  TrashSyncEntity(this.attachedDatabase, [this._alias]);
-  late final GeneratedColumn<String> checksum = GeneratedColumn<String>(
-    'checksum',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  late final GeneratedColumn<int> isSyncApproved = GeneratedColumn<int>(
-    'is_sync_approved',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-    $customConstraints: 'NULL CHECK (is_sync_approved IN (0, 1))',
-  );
-  late final GeneratedColumn<String> remoteDeletedAt = GeneratedColumn<String>(
-    'remote_deleted_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-    $customConstraints: 'NOT NULL',
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    checksum,
-    isSyncApproved,
-    remoteDeletedAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'trash_sync_entity';
-  @override
-  Set<GeneratedColumn> get $primaryKey => {checksum};
-  @override
-  TrashSyncEntityData map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return TrashSyncEntityData(
-      checksum: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}checksum'],
-      )!,
-      isSyncApproved: attachedDatabase.typeMapping.read(
-        DriftSqlType.int,
-        data['${effectivePrefix}is_sync_approved'],
-      ),
-      remoteDeletedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}remote_deleted_at'],
-      )!,
-    );
-  }
-
-  @override
-  TrashSyncEntity createAlias(String alias) {
-    return TrashSyncEntity(attachedDatabase, alias);
-  }
-
-  @override
-  bool get withoutRowId => true;
-  @override
-  bool get isStrict => true;
-  @override
-  List<String> get customConstraints => const ['PRIMARY KEY(checksum)'];
-  @override
-  bool get dontWriteConstraints => true;
-}
-
-class TrashSyncEntityData extends DataClass
-    implements Insertable<TrashSyncEntityData> {
-  final String checksum;
-  final int? isSyncApproved;
-  final String remoteDeletedAt;
-  const TrashSyncEntityData({
-    required this.checksum,
-    this.isSyncApproved,
-    required this.remoteDeletedAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['checksum'] = Variable<String>(checksum);
-    if (!nullToAbsent || isSyncApproved != null) {
-      map['is_sync_approved'] = Variable<int>(isSyncApproved);
-    }
-    map['remote_deleted_at'] = Variable<String>(remoteDeletedAt);
-    return map;
-  }
-
-  factory TrashSyncEntityData.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return TrashSyncEntityData(
-      checksum: serializer.fromJson<String>(json['checksum']),
-      isSyncApproved: serializer.fromJson<int?>(json['isSyncApproved']),
-      remoteDeletedAt: serializer.fromJson<String>(json['remoteDeletedAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'checksum': serializer.toJson<String>(checksum),
-      'isSyncApproved': serializer.toJson<int?>(isSyncApproved),
-      'remoteDeletedAt': serializer.toJson<String>(remoteDeletedAt),
-    };
-  }
-
-  TrashSyncEntityData copyWith({
-    String? checksum,
-    Value<int?> isSyncApproved = const Value.absent(),
-    String? remoteDeletedAt,
-  }) => TrashSyncEntityData(
-    checksum: checksum ?? this.checksum,
-    isSyncApproved: isSyncApproved.present
-        ? isSyncApproved.value
-        : this.isSyncApproved,
-    remoteDeletedAt: remoteDeletedAt ?? this.remoteDeletedAt,
-  );
-  TrashSyncEntityData copyWithCompanion(TrashSyncEntityCompanion data) {
-    return TrashSyncEntityData(
-      checksum: data.checksum.present ? data.checksum.value : this.checksum,
-      isSyncApproved: data.isSyncApproved.present
-          ? data.isSyncApproved.value
-          : this.isSyncApproved,
-      remoteDeletedAt: data.remoteDeletedAt.present
-          ? data.remoteDeletedAt.value
-          : this.remoteDeletedAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TrashSyncEntityData(')
-          ..write('checksum: $checksum, ')
-          ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('remoteDeletedAt: $remoteDeletedAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(checksum, isSyncApproved, remoteDeletedAt);
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is TrashSyncEntityData &&
-          other.checksum == this.checksum &&
-          other.isSyncApproved == this.isSyncApproved &&
-          other.remoteDeletedAt == this.remoteDeletedAt);
-}
-
-class TrashSyncEntityCompanion extends UpdateCompanion<TrashSyncEntityData> {
-  final Value<String> checksum;
-  final Value<int?> isSyncApproved;
-  final Value<String> remoteDeletedAt;
-  const TrashSyncEntityCompanion({
-    this.checksum = const Value.absent(),
-    this.isSyncApproved = const Value.absent(),
-    this.remoteDeletedAt = const Value.absent(),
-  });
-  TrashSyncEntityCompanion.insert({
-    required String checksum,
-    this.isSyncApproved = const Value.absent(),
-    required String remoteDeletedAt,
-  }) : checksum = Value(checksum),
-       remoteDeletedAt = Value(remoteDeletedAt);
-  static Insertable<TrashSyncEntityData> custom({
-    Expression<String>? checksum,
-    Expression<int>? isSyncApproved,
-    Expression<String>? remoteDeletedAt,
-  }) {
-    return RawValuesInsertable({
-      if (checksum != null) 'checksum': checksum,
-      if (isSyncApproved != null) 'is_sync_approved': isSyncApproved,
-      if (remoteDeletedAt != null) 'remote_deleted_at': remoteDeletedAt,
-    });
-  }
-
-  TrashSyncEntityCompanion copyWith({
-    Value<String>? checksum,
-    Value<int?>? isSyncApproved,
-    Value<String>? remoteDeletedAt,
-  }) {
-    return TrashSyncEntityCompanion(
-      checksum: checksum ?? this.checksum,
-      isSyncApproved: isSyncApproved ?? this.isSyncApproved,
-      remoteDeletedAt: remoteDeletedAt ?? this.remoteDeletedAt,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (checksum.present) {
-      map['checksum'] = Variable<String>(checksum.value);
-    }
-    if (isSyncApproved.present) {
-      map['is_sync_approved'] = Variable<int>(isSyncApproved.value);
-    }
-    if (remoteDeletedAt.present) {
-      map['remote_deleted_at'] = Variable<String>(remoteDeletedAt.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('TrashSyncEntityCompanion(')
-          ..write('checksum: $checksum, ')
-          ..write('isSyncApproved: $isSyncApproved, ')
-          ..write('remoteDeletedAt: $remoteDeletedAt')
-          ..write(')'))
-        .toString();
-  }
-}
-
 class DatabaseAtV31 extends GeneratedDatabase {
   DatabaseAtV31(QueryExecutor e) : super(e);
   late final UserEntity userEntity = UserEntity(this);
@@ -10097,6 +9717,10 @@ class DatabaseAtV31 extends GeneratedDatabase {
     'idx_remote_asset_owner_visibility_deleted_created',
     'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)',
   );
+  late final Index idxRemoteAssetUploaded = Index(
+    'idx_remote_asset_uploaded',
+    'CREATE INDEX IF NOT EXISTS idx_remote_asset_uploaded ON remote_asset_entity (uploaded_at)',
+  );
   late final AuthUserEntity authUserEntity = AuthUserEntity(this);
   late final UserMetadataEntity userMetadataEntity = UserMetadataEntity(this);
   late final PartnerEntity partnerEntity = PartnerEntity(this);
@@ -10117,7 +9741,6 @@ class DatabaseAtV31 extends GeneratedDatabase {
   late final AssetEditEntity assetEditEntity = AssetEditEntity(this);
   late final Settings settings = Settings(this);
   late final AssetOcrEntity assetOcrEntity = AssetOcrEntity(this);
-  late final TrashSyncEntity trashSyncEntity = TrashSyncEntity(this);
   late final Index idxPartnerSharedWithId = Index(
     'idx_partner_shared_with_id',
     'CREATE INDEX IF NOT EXISTS idx_partner_shared_with_id ON partner_entity (shared_with_id)',
@@ -10170,14 +9793,6 @@ class DatabaseAtV31 extends GeneratedDatabase {
     'idx_asset_ocr_asset_id',
     'CREATE INDEX IF NOT EXISTS idx_asset_ocr_asset_id ON asset_ocr_entity (asset_id)',
   );
-  late final Index idxTrashSyncIsSyncApproved = Index(
-    'idx_trash_sync_is_sync_approved',
-    'CREATE INDEX IF NOT EXISTS idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)',
-  );
-  late final Index idxTrashSyncChecksumStatus = Index(
-    'idx_trash_sync_checksum_status',
-    'CREATE INDEX IF NOT EXISTS idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)',
-  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -10200,6 +9815,7 @@ class DatabaseAtV31 extends GeneratedDatabase {
     idxRemoteAssetChecksum,
     idxRemoteAssetStackId,
     idxRemoteAssetOwnerVisibilityDeletedCreated,
+    idxRemoteAssetUploaded,
     authUserEntity,
     userMetadataEntity,
     partnerEntity,
@@ -10216,7 +9832,6 @@ class DatabaseAtV31 extends GeneratedDatabase {
     assetEditEntity,
     settings,
     assetOcrEntity,
-    trashSyncEntity,
     idxPartnerSharedWithId,
     idxLatLng,
     idxRemoteExifCity,
@@ -10230,8 +9845,6 @@ class DatabaseAtV31 extends GeneratedDatabase {
     idxTrashedLocalAssetAlbum,
     idxAssetEditAssetId,
     idxAssetOcrAssetId,
-    idxTrashSyncIsSyncApproved,
-    idxTrashSyncChecksumStatus,
   ];
   @override
   StreamQueryUpdateRules get streamUpdateRules => const StreamQueryUpdateRules([

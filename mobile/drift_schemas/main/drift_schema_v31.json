@@ -1093,6 +1093,20 @@
     },
     {
       "id": 17,
+      "references": [
+        1
+      ],
+      "type": "index",
+      "data": {
+        "on": 1,
+        "name": "idx_remote_asset_uploaded",
+        "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_uploaded ON remote_asset_entity (uploaded_at)",
+        "unique": false,
+        "columns": []
+      }
+    },
+    {
+      "id": 18,
       "references": [],
       "type": "table",
       "data": {
@@ -1222,7 +1236,7 @@
       }
     },
     {
-      "id": 18,
+      "id": 19,
       "references": [
         0
       ],
@@ -1297,7 +1311,7 @@
       }
     },
     {
-      "id": 19,
+      "id": 20,
       "references": [
         0
       ],
@@ -1384,7 +1398,7 @@
       }
     },
     {
-      "id": 20,
+      "id": 21,
       "references": [
         1
       ],
@@ -1640,7 +1654,7 @@
       }
     },
     {
-      "id": 21,
+      "id": 22,
       "references": [
         1,
         4
@@ -1714,7 +1728,7 @@
       }
     },
     {
-      "id": 22,
+      "id": 23,
       "references": [
         4,
         0
@@ -1802,7 +1816,7 @@
       }
     },
     {
-      "id": 23,
+      "id": 24,
       "references": [
         1
       ],
@@ -1898,7 +1912,7 @@
       }
     },
     {
-      "id": 24,
+      "id": 25,
       "references": [
         0
       ],
@@ -2062,10 +2076,10 @@
       }
     },
     {
-      "id": 25,
+      "id": 26,
       "references": [
         1,
-        24
+        25
       ],
       "type": "table",
       "data": {
@@ -2136,7 +2150,7 @@
       }
     },
     {
-      "id": 26,
+      "id": 27,
       "references": [
         0
       ],
@@ -2280,10 +2294,10 @@
       }
     },
     {
-      "id": 27,
+      "id": 28,
       "references": [
         1,
-        26
+        27
       ],
       "type": "table",
       "data": {
@@ -2457,7 +2471,7 @@
       }
     },
     {
-      "id": 28,
+      "id": 29,
       "references": [],
       "type": "table",
       "data": {
@@ -2505,111 +2519,13 @@
       }
     },
     {
-      "id": 29,
+      "id": 30,
       "references": [],
       "type": "table",
       "data": {
         "name": "trashed_local_asset_entity",
         "was_declared_in_moor": false,
         "columns": [
-          {
-            "name": "id",
-            "getter_name": "id",
-            "moor_type": "string",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "checksum",
-            "getter_name": "checksum",
-            "moor_type": "string",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "is_favorite",
-            "getter_name": "isFavorite",
-            "moor_type": "bool",
-            "nullable": false,
-            "customConstraints": null,
-            "defaultConstraints": "CHECK (\"is_favorite\" IN (0, 1))",
-            "dialectAwareDefaultConstraints": {
-              "sqlite": "CHECK (\"is_favorite\" IN (0, 1))"
-            },
-            "default_dart": "const CustomExpression('0')",
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "orientation",
-            "getter_name": "orientation",
-            "moor_type": "int",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": "const CustomExpression('0')",
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "i_cloud_id",
-            "getter_name": "iCloudId",
-            "moor_type": "string",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "adjustment_time",
-            "getter_name": "adjustmentTime",
-            "moor_type": "dateTime",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "latitude",
-            "getter_name": "latitude",
-            "moor_type": "double",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "longitude",
-            "getter_name": "longitude",
-            "moor_type": "double",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "playback_style",
-            "getter_name": "playbackStyle",
-            "moor_type": "int",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": "const CustomExpression('0')",
-            "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const EnumIndexConverter<AssetPlaybackStyle>(AssetPlaybackStyle.values)",
-              "dart_type_name": "AssetPlaybackStyle"
-            }
-          },
           {
             "name": "name",
             "getter_name": "name",
@@ -2685,12 +2601,56 @@
             "dsl_features": []
           },
           {
+            "name": "id",
+            "getter_name": "id",
+            "moor_type": "string",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
             "name": "album_id",
             "getter_name": "albumId",
             "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "checksum",
+            "getter_name": "checksum",
+            "moor_type": "string",
+            "nullable": true,
+            "customConstraints": null,
+            "default_dart": null,
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "is_favorite",
+            "getter_name": "isFavorite",
+            "moor_type": "bool",
+            "nullable": false,
+            "customConstraints": null,
+            "defaultConstraints": "CHECK (\"is_favorite\" IN (0, 1))",
+            "dialectAwareDefaultConstraints": {
+              "sqlite": "CHECK (\"is_favorite\" IN (0, 1))"
+            },
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": []
+          },
+          {
+            "name": "orientation",
+            "getter_name": "orientation",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('0')",
             "default_client_dart": null,
             "dsl_features": []
           },
@@ -2707,6 +2667,20 @@
               "dart_expr": "const EnumIndexConverter<TrashOrigin>(TrashOrigin.values)",
               "dart_type_name": "TrashOrigin"
             }
+          },
+          {
+            "name": "playback_style",
+            "getter_name": "playbackStyle",
+            "moor_type": "int",
+            "nullable": false,
+            "customConstraints": null,
+            "default_dart": "const CustomExpression('0')",
+            "default_client_dart": null,
+            "dsl_features": [],
+            "type_converter": {
+              "dart_expr": "const EnumIndexConverter<AssetPlaybackStyle>(AssetPlaybackStyle.values)",
+              "dart_type_name": "AssetPlaybackStyle"
+            }
           }
         ],
         "is_virtual": false,
@@ -2720,7 +2694,7 @@
       }
     },
     {
-      "id": 30,
+      "id": 31,
       "references": [
         1
       ],
@@ -2814,7 +2788,7 @@
       }
     },
     {
-      "id": 31,
+      "id": 32,
       "references": [],
       "type": "table",
       "data": {
@@ -2862,7 +2836,7 @@
       }
     },
     {
-      "id": 32,
+      "id": 33,
       "references": [
         1
       ],
@@ -3042,65 +3016,13 @@
       }
     },
     {
-      "id": 33,
-      "references": [],
-      "type": "table",
-      "data": {
-        "name": "trash_sync_entity",
-        "was_declared_in_moor": false,
-        "columns": [
-          {
-            "name": "checksum",
-            "getter_name": "checksum",
-            "moor_type": "string",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "is_sync_approved",
-            "getter_name": "isSyncApproved",
-            "moor_type": "bool",
-            "nullable": true,
-            "customConstraints": null,
-            "defaultConstraints": "CHECK (\"is_sync_approved\" IN (0, 1))",
-            "dialectAwareDefaultConstraints": {
-              "sqlite": "CHECK (\"is_sync_approved\" IN (0, 1))"
-            },
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          },
-          {
-            "name": "remote_deleted_at",
-            "getter_name": "remoteDeletedAt",
-            "moor_type": "dateTime",
-            "nullable": false,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
-          }
-        ],
-        "is_virtual": false,
-        "without_rowid": true,
-        "constraints": [],
-        "strict": true,
-        "explicit_pk": [
-          "checksum"
-        ]
-      }
-    },
-    {
       "id": 34,
       "references": [
-        19
+        20
       ],
       "type": "index",
       "data": {
-        "on": 19,
+        "on": 20,
         "name": "idx_partner_shared_with_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_partner_shared_with_id ON partner_entity (shared_with_id)",
         "unique": false,
@@ -3110,11 +3032,11 @@
     {
       "id": 35,
       "references": [
-        20
+        21
       ],
       "type": "index",
       "data": {
-        "on": 20,
+        "on": 21,
         "name": "idx_lat_lng",
         "sql": "CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)",
         "unique": false,
@@ -3124,11 +3046,11 @@
     {
       "id": 36,
       "references": [
-        20
+        21
       ],
       "type": "index",
       "data": {
-        "on": 20,
+        "on": 21,
         "name": "idx_remote_exif_city",
         "sql": "CREATE INDEX IF NOT EXISTS idx_remote_exif_city\nON remote_exif_entity (city) WHERE city IS NOT NULL\n",
         "unique": false,
@@ -3138,11 +3060,11 @@
     {
       "id": 37,
       "references": [
-        21
+        22
       ],
       "type": "index",
       "data": {
-        "on": 21,
+        "on": 22,
         "name": "idx_remote_album_asset_album_asset",
         "sql": "CREATE INDEX IF NOT EXISTS idx_remote_album_asset_album_asset ON remote_album_asset_entity (album_id, asset_id)",
         "unique": false,
@@ -3152,11 +3074,11 @@
     {
       "id": 38,
       "references": [
-        23
+        24
       ],
       "type": "index",
       "data": {
-        "on": 23,
+        "on": 24,
         "name": "idx_remote_asset_cloud_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_cloud_id ON remote_asset_cloud_id_entity (cloud_id)",
         "unique": false,
@@ -3166,11 +3088,11 @@
     {
       "id": 39,
       "references": [
-        26
+        27
       ],
       "type": "index",
       "data": {
-        "on": 26,
+        "on": 27,
         "name": "idx_person_owner_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_person_owner_id ON person_entity (owner_id)",
         "unique": false,
@@ -3180,11 +3102,11 @@
     {
       "id": 40,
       "references": [
-        27
+        28
       ],
       "type": "index",
       "data": {
-        "on": 27,
+        "on": 28,
         "name": "idx_asset_face_person_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_person_id ON asset_face_entity (person_id)",
         "unique": false,
@@ -3194,11 +3116,11 @@
     {
       "id": 41,
       "references": [
-        27
+        28
       ],
       "type": "index",
       "data": {
-        "on": 27,
+        "on": 28,
         "name": "idx_asset_face_asset_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_asset_id ON asset_face_entity (asset_id)",
         "unique": false,
@@ -3208,11 +3130,11 @@
     {
       "id": 42,
       "references": [
-        27
+        28
       ],
       "type": "index",
       "data": {
-        "on": 27,
+        "on": 28,
         "name": "idx_asset_face_visible_person",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_face_visible_person\nON asset_face_entity (person_id, asset_id)\nWHERE is_visible = 1 AND deleted_at IS NULL\n",
         "unique": false,
@@ -3222,11 +3144,11 @@
     {
       "id": 43,
       "references": [
-        29
+        30
       ],
       "type": "index",
       "data": {
-        "on": 29,
+        "on": 30,
         "name": "idx_trashed_local_asset_checksum",
         "sql": "CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_checksum ON trashed_local_asset_entity (checksum)",
         "unique": false,
@@ -3236,11 +3158,11 @@
     {
       "id": 44,
       "references": [
-        29
+        30
       ],
       "type": "index",
       "data": {
-        "on": 29,
+        "on": 30,
         "name": "idx_trashed_local_asset_album",
         "sql": "CREATE INDEX IF NOT EXISTS idx_trashed_local_asset_album ON trashed_local_asset_entity (album_id)",
         "unique": false,
@@ -3250,11 +3172,11 @@
     {
       "id": 45,
       "references": [
-        30
+        31
       ],
       "type": "index",
       "data": {
-        "on": 30,
+        "on": 31,
         "name": "idx_asset_edit_asset_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)",
         "unique": false,
@@ -3264,41 +3186,13 @@
     {
       "id": 46,
       "references": [
-        32
+        33
       ],
       "type": "index",
       "data": {
-        "on": 32,
+        "on": 33,
         "name": "idx_asset_ocr_asset_id",
         "sql": "CREATE INDEX IF NOT EXISTS idx_asset_ocr_asset_id ON asset_ocr_entity (asset_id)",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 47,
-      "references": [
-        33
-      ],
-      "type": "index",
-      "data": {
-        "on": 33,
-        "name": "idx_trash_sync_is_sync_approved",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)",
-        "unique": false,
-        "columns": []
-      }
-    },
-    {
-      "id": 48,
-      "references": [
-        33
-      ],
-      "type": "index",
-      "data": {
-        "on": 33,
-        "name": "idx_trash_sync_checksum_status",
-        "sql": "CREATE INDEX IF NOT EXISTS idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)",
         "unique": false,
         "columns": []
       }
@@ -3459,6 +3353,15 @@
       ]
     },
     {
+      "name": "idx_remote_asset_uploaded",
+      "sql": [
+        {
+          "dialect": "sqlite",
+          "sql": "CREATE INDEX IF NOT EXISTS idx_remote_asset_uploaded ON remote_asset_entity (uploaded_at)"
+        }
+      ]
+    },
+    {
       "name": "auth_user_entity",
       "sql": [
         {
@@ -3571,7 +3474,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"trashed_local_asset_entity\" (\"id\" TEXT NOT NULL, \"checksum\" TEXT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"orientation\" INTEGER NOT NULL DEFAULT 0, \"i_cloud_id\" TEXT NULL, \"adjustment_time\" TEXT NULL, \"latitude\" REAL NULL, \"longitude\" REAL NULL, \"playback_style\" INTEGER NOT NULL DEFAULT 0, \"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"album_id\" TEXT NOT NULL, \"source\" INTEGER NOT NULL, PRIMARY KEY (\"id\", \"album_id\")) WITHOUT ROWID, STRICT;"
+          "sql": "CREATE TABLE IF NOT EXISTS \"trashed_local_asset_entity\" (\"name\" TEXT NOT NULL, \"type\" INTEGER NOT NULL, \"created_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"updated_at\" TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP), \"width\" INTEGER NULL, \"height\" INTEGER NULL, \"duration_ms\" INTEGER NULL, \"id\" TEXT NOT NULL, \"album_id\" TEXT NOT NULL, \"checksum\" TEXT NULL, \"is_favorite\" INTEGER NOT NULL DEFAULT 0 CHECK (\"is_favorite\" IN (0, 1)), \"orientation\" INTEGER NOT NULL DEFAULT 0, \"source\" INTEGER NOT NULL, \"playback_style\" INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (\"id\", \"album_id\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },
@@ -3599,15 +3502,6 @@
         {
           "dialect": "sqlite",
           "sql": "CREATE TABLE IF NOT EXISTS \"asset_ocr_entity\" (\"id\" TEXT NOT NULL, \"asset_id\" TEXT NOT NULL REFERENCES remote_asset_entity (id) ON DELETE CASCADE, \"x1\" REAL NOT NULL, \"y1\" REAL NOT NULL, \"x2\" REAL NOT NULL, \"y2\" REAL NOT NULL, \"x3\" REAL NOT NULL, \"y3\" REAL NOT NULL, \"x4\" REAL NOT NULL, \"y4\" REAL NOT NULL, \"box_score\" REAL NOT NULL, \"text_score\" REAL NOT NULL, \"recognized_text\" TEXT NOT NULL, \"is_visible\" INTEGER NOT NULL DEFAULT 1 CHECK (\"is_visible\" IN (0, 1)), PRIMARY KEY (\"id\")) WITHOUT ROWID, STRICT;"
-        }
-      ]
-    },
-    {
-      "name": "trash_sync_entity",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"trash_sync_entity\" (\"checksum\" TEXT NOT NULL, \"is_sync_approved\" INTEGER NULL CHECK (\"is_sync_approved\" IN (0, 1)), \"remote_deleted_at\" TEXT NOT NULL, PRIMARY KEY (\"checksum\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },
@@ -3725,24 +3619,6 @@
         {
           "dialect": "sqlite",
           "sql": "CREATE INDEX IF NOT EXISTS idx_asset_ocr_asset_id ON asset_ocr_entity (asset_id)"
-        }
-      ]
-    },
-    {
-      "name": "idx_trash_sync_is_sync_approved",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE INDEX IF NOT EXISTS idx_trash_sync_is_sync_approved ON trash_sync_entity (is_sync_approved)"
-        }
-      ]
-    },
-    {
-      "name": "idx_trash_sync_checksum_status",
-      "sql": [
-        {
-          "dialect": "sqlite",
-          "sql": "CREATE INDEX IF NOT EXISTS idx_trash_sync_checksum_status ON trash_sync_entity (checksum, is_sync_approved)"
         }
       ]
     }

@@ -100,13 +100,13 @@
   </Field>
 {:else if schema.type === 'number'}
   <Field {label} {description}>
-    <NumberInput bind:value={getNumber, setValue} />
+    <NumberInput bind:value={getNumber, setValue} step={schema.precision} min={schema.minimum} max={schema.maximum} />
   </Field>
 {:else if schema.type === 'string'}
   <Field {label} {description}>
     <Input bind:value={() => getValue<string>(), setValue} />
   </Field>
 {:else}
-  <Text>Unknown schema</Text>
+  <Text>{$t('unknown_schema')}</Text>
   <CodeBlock code={JSON.stringify(schema, null, 2)} />
 {/if}
