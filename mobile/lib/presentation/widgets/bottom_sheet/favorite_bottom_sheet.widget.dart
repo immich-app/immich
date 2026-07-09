@@ -52,21 +52,21 @@ class FavoriteBottomSheet extends ConsumerWidget {
         );
       }
 
-      if (result.added == 0 && result.failed > 0) {
+      if (result.added > 0) {
+        ImmichToast.show(
+          context: context,
+          msg: 'add_to_album_bottom_sheet_added'.t(args: {"album": album.name}),
+        );
+      } else if (result.failed > 0) {
         ImmichToast.show(
           context: context,
           msg: 'assets_cannot_be_added_to_album_count'.t(context: context, args: {'count': result.failed}),
           toastType: ToastType.error,
         );
-      } else if (result.added != remoteAssets.length) {
-        ImmichToast.show(
-          context: context,
-          msg: 'add_to_album_bottom_sheet_already_exists'.t(args: {"album": album.name}),
-        );
       } else {
         ImmichToast.show(
           context: context,
-          msg: 'add_to_album_bottom_sheet_added'.t(args: {"album": album.name}),
+          msg: 'add_to_album_bottom_sheet_already_exists'.t(args: {"album": album.name}),
         );
       }
 
