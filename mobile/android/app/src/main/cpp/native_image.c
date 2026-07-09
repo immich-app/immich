@@ -80,6 +80,9 @@ Java_app_alextran_immich_NativeImage_rotate(
   int dw = swaps_dims(orientation) ? sh : sw;
   int dh = swaps_dims(orientation) ? sw : sh;
 
+  if (dh == 0 || (size_t) dw > SIZE_MAX / 4 / (size_t) dh) {
+    return 0;
+  }
   uint32_t *dst = (uint32_t *) malloc((size_t) dw * dh * 4);
   if (dst == NULL) {
     return 0;
