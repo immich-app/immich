@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto } from '$app/navigation';
+  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/UserPageLayout.svelte';
@@ -56,17 +56,18 @@
     return goto(getLinkForPath(path), { keepFocus: true, noScroll: true });
   };
 
-  const refreshCurrentFolder = async () => {
-    if (!data.tree.path) {
-      return;
-    }
+  const handleAssetsDelete = async (ids: string[]) => {
+   if (pathAssets) {
+     const deletedIds = new Set(ids);
+     pathAssets = pathAssets.filter((asset) => !deletedIds.has(asset.id));
+   }
 
-    pathAssets = await foldersStore.refreshFolderAssets(data.tree.path);
+   await invalidateAll();
   };
 
   const triggerAssetUpdate = async () => {
     assetMultiSelectManager.clear();
-    await refreshCurrentFolder();
+    await invalidateAll();
   };
 
   const handleSetVisibility = () => {
@@ -100,7 +101,7 @@
     </Sidebar>
   {/snippet}
 
-  <OnEvents onAssetsDelete={refreshCurrentFolder} />
+  <OnEvents onAssetsDelete={handleAssetsDelete} />
 
   <Breadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
 

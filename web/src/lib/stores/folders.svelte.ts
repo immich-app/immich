@@ -28,10 +28,6 @@ class FoldersStore {
     if (this.initialized) {
       return this.folders!;
     }
-    return this.refreshTree();
-  }
-
-  async refreshTree(): Promise<TreeNode> {
     this.folders = TreeNode.fromPaths(await getUniqueOriginalPaths());
     this.folders.collapse();
     this.initialized = true;
@@ -48,15 +44,6 @@ class FoldersStore {
 
   async fetchAssetsByPath(path: string) {
     return (this.assets[path] ??= await getAssetsByOriginalPath({ path }));
-  }
-
-  async refreshFolderAssets(path: string) {
-    const assets = await this.refreshAssetsByPath(path);
-    if (assets.length === 0) {
-      await this.refreshTree();
-    }
-
-    return assets;
   }
 
   clearCache() {
