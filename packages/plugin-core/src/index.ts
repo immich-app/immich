@@ -96,10 +96,10 @@ const methods = wrapper<Manifest>({
       return { workflow: { continue: false } };
     }
 
-    const configLat = Number.parseFloat(config.coordinate?.latitude ?? '');
-    const configLon = Number.parseFloat(config.coordinate?.longitude ?? '');
+    const configLat = config.coordinate?.latitude;
+    const configLon = config.coordinate?.longitude;
 
-    if (Number.isNaN(configLat) || Number.isNaN(configLat)) {
+    if (configLat === undefined || configLon === undefined) {
       return { workflow: { continue: true } };
     }
 
