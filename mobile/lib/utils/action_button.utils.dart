@@ -12,11 +12,12 @@ import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
+import 'package:immich_mobile/presentation/actions/cast.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
+import 'package:immich_mobile/presentation/actions/slideshow.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/cast_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
@@ -29,7 +30,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/set_profile_pi
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/similar_photos_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/slideshow_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -204,7 +204,7 @@ enum ActionButtonType {
         iconOnly: iconOnly,
         menuItem: menuItem,
       ),
-      ActionButtonType.slideshow => SlideshowActionButton(iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.slideshow => ActionMenuItemWidget(action: SlideshowAction(scope: scope)),
       ActionButtonType.archive || ActionButtonType.unarchive => ActionMenuItemWidget(
         action: ArchiveAction(assets: [context.asset], scope: scope),
       ),
@@ -279,7 +279,7 @@ enum ActionButtonType {
           EventStream.shared.emit(ScrollToDateEvent(context.asset.createdAt));
         },
       ),
-      ActionButtonType.cast => CastActionButton(iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.cast => ActionMenuItemWidget(action: CastAction(scope: scope)),
     };
   }
 
