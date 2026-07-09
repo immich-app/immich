@@ -52,7 +52,12 @@ class DriftMap extends ConsumerStatefulWidget {
 class _DriftMapState extends ConsumerState<DriftMap> {
   MapLibreMapController? mapController;
   final _reloadMutex = AsyncMutex();
-  final _debouncer = Debouncer(interval: const Duration(milliseconds: 500), maxWaitTime: const Duration(seconds: 2));
+
+  final _debouncer = Debouncer(
+    interval: const Duration(milliseconds: 150),
+    maxWaitTime: const Duration(milliseconds: 500),
+  );
+
   final ValueNotifier<double> bottomSheetOffset = ValueNotifier(0.25);
   final GlobalKey _bottomSheetKey = GlobalKey();
   StreamSubscription? _eventSubscription;
@@ -117,7 +122,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
   }
 
   void onMapMoved() {
-    if (mapController!.isCameraMoving || !mounted) {
+    if (!mounted) {
       return;
     }
 
@@ -213,6 +218,8 @@ class _Map extends StatelessWidget {
               : CameraPosition(target: initialLocation, zoom: MapUtils.mapZoomToAssetLevel),
           compassEnabled: false,
           rotateGesturesEnabled: false,
+          // Get continuous movement events for bounds tracking
+          trackCameraPosition: true,
           styleString: style,
           onMapCreated: onMapCreated,
           onStyleLoadedCallback: onMapReady,
