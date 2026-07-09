@@ -53,10 +53,10 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
     RegionList: {
       Area: {
         // (X,Y) // center of the rectangle
-        X: number;
-        Y: number;
-        W: number;
-        H: number;
+        X: number | string;
+        Y: number | string;
+        W: number | string;
+        H: number | string;
         Unit: string;
       };
       Rotation?: number;

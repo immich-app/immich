@@ -28,7 +28,7 @@ export class SearchController {
   constructor(private service: SearchService) {}
 
   @Post('metadata')
-  @Authenticated({ permission: Permission.AssetRead })
+  @Authenticated({ permission: Permission.AssetRead, sharedLink: true })
   @HttpCode(HttpStatus.OK)
   @Endpoint({
     summary: 'Search assets by metadata',

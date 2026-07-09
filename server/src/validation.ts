@@ -1,4 +1,5 @@
 import { ArgumentMetadata, FileValidator, Injectable, ParseUUIDPipe } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
 import { isIP, isIPRange } from 'validator';
@@ -173,12 +174,7 @@ export const isoDateToDate = z
     z.date(),
     {
       decode: (isoString) => new Date(isoString),
-      encode: (date) => {
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-      },
+      encode: (date) => DateTime.fromJSDate(date).toFormat('yyyy-MM-dd'),
     },
   )
   .meta({ example: '2024-01-01' });

@@ -3,8 +3,8 @@ name: Prepare new release
 on:
   workflow_dispatch:
     inputs:
-      serverBump:
-        description: 'Bump server version'
+      releaseType:
+        description: 'Release type'
         required: true
         default: 'false'
         type: choice
@@ -77,9 +77,9 @@ jobs:
 
       - name: Bump version
         env:
-          SERVER_BUMP: ${{ inputs.serverBump }}
+          RELEASE_TYPE: ${{ inputs.releaseType }}
           MOBILE_BUMP: ${{ inputs.mobileBump }}
-        run: pnpm --silent release -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
+        run: mise //:release --type "${RELEASE_TYPE}" --mobile "${MOBILE_BUMP}"
 
       - id: output
         run: |
@@ -149,7 +149,7 @@ jobs:
           github-token: ${{ steps.generate-token.outputs.token }}
 
       - name: Create draft release
-        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3.0.0
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
         with:
           draft: true
           prerelease: ${{ needs.bump_version.outputs.rc }}

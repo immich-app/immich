@@ -4,6 +4,7 @@ import {
   AssetVisibility,
   deleteAssets,
   LoginResponseDto,
+  SharedLinkType,
   updateAsset,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
@@ -357,6 +358,32 @@ describe('/search', () => {
         expect(body.assets.items).toHaveLength(assets.length);
       });
     }
+
+    it('should reject shared link access without an album filter', async () => {
+      const album = await utils.createAlbum(admin.accessToken, { albumName: 'foo' });
+      const sharedLink = await utils.createSharedLink(admin.accessToken, {
+        type: SharedLinkType.Album,
+        albumId: album.id,
+      });
+      const { status, body } = await request(app).post(`/search/metadata?key=${sharedLink.key}`).send({});
+      expect(status).toBe(400);
+      expect(body).toEqual({ message: 'Shared link access is only allowed in combination with an albumIds filter' });
+    });
+
+    it('should allow shared link access for albums', async () => {
+      const asset = await utils.createAsset(admin.accessToken);
+      const album = await utils.createAlbum(admin.accessToken, { albumName: 'foo', assetIds: [asset.id] });
+      const sharedLink = await utils.createSharedLink(admin.accessToken, {
+        type: SharedLinkType.Album,
+        albumId: album.id,
+      });
+
+      const { status, body } = await request(app)
+        .post(`/search/metadata?key=${sharedLink.key}`)
+        .send({ albumIds: [album.id] });
+      expect(status).toBe(200);
+      expect(body.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
+    });
   });
 
   describe('POST /search/random', () => {

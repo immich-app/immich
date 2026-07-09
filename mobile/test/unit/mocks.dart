@@ -1,7 +1,10 @@
 import 'dart:typed_data';
 
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:mocktail/mocktail.dart' as mock;
 import 'package:mocktail/mocktail.dart';
 
@@ -12,11 +15,11 @@ import 'factories/local_asset_factory.dart';
 import 'factories/user_factory.dart';
 
 class RepositoryMocks {
-  final localAlbum = MockLocalAlbumRepository();
-  final localAsset = MockDriftLocalAssetRepository();
+  final localAlbum = LocalAlbumRepositoryStub(MockLocalAlbumRepository());
+  final localAsset = LocalAssetRepositoryStub(MockDriftLocalAssetRepository());
   final trashedAsset = MockTrashedLocalAssetRepository();
 
-  final nativeApi = MockNativeSyncApi();
+  final nativeApi = NativeSyncApiStub(MockNativeSyncApi());
 
   RepositoryMocks() {
     resetAll();
@@ -24,16 +27,34 @@ class RepositoryMocks {
 
   void resetAll() {
     _registerFallbacks();
-    reset(localAlbum);
-    reset(localAsset);
+    localAlbum.reset();
+    localAsset.reset();
     reset(trashedAsset);
-    reset(nativeApi);
+    nativeApi.reset();
+    _stubLocalAlbumRepository();
+    _stubLocalAssetRepository();
+    _stubNativeSyncApi();
+  }
+
+  void _stubLocalAlbumRepository() {
+    when(localAlbum.getBackupAlbums).thenAnswer((_) async => []);
+    when(localAlbum.getAssetsToHash).thenAnswer((_) async => []);
+  }
+
+  void _stubLocalAssetRepository() {
+    when(localAsset.reconcileHashesFromCloudId).thenAnswer((_) async => {});
+    when(localAsset.updateHashes).thenAnswer((_) async => {});
+  }
+
+  void _stubNativeSyncApi() {
+    when(nativeApi.hashAssets).thenAnswer((_) async => []);
   }
 }
 
 class ServiceMocks {
-  final PartnerStub partner = PartnerStub(MockPartnerService());
-  final UserStub user = UserStub(MockUserService());
+  final partner = PartnerServiceStub(MockPartnerService());
+  final user = UserServiceStub(MockUserService());
+  final asset = AssetServiceStub(MockAssetService());
 
   ServiceMocks() {
     resetAll();
@@ -43,8 +64,10 @@ class ServiceMocks {
     _registerFallbacks();
     partner.reset();
     user.reset();
+    asset.reset();
     _stubUserService();
     _stubPartnerService();
+    _stubAssetService();
   }
 
   void _stubUserService() {
@@ -63,6 +86,10 @@ class ServiceMocks {
     when(partner.create).thenAnswer((_) async {});
     when(partner.delete).thenAnswer((_) async {});
   }
+
+  void _stubAssetService() {
+    when(asset.updateFavorite).thenAnswer((_) async {});
+  }
 }
 
 void _registerFallbacks() {
@@ -71,11 +98,28 @@ void _registerFallbacks() {
   registerFallbackValue(Uint8List(0));
 }
 
-extension type const Stub<T extends Mock>(T mockedService) {
-  void reset() => mock.reset(mockedService);
+extension type const Stub<T extends Mock>(T mockedClass) {
+  void reset() => mock.reset(mockedClass);
 }
 
-extension type const PartnerStub(MockPartnerService service) implements Stub<MockPartnerService> {
+extension type const LocalAlbumRepositoryStub(MockLocalAlbumRepository repo) implements Stub<MockLocalAlbumRepository> {
+  Future<List<LocalAlbum>> Function() get getBackupAlbums =>
+      () => repo.getBackupAlbums();
+
+  Future<List<LocalAsset>> Function() get getAssetsToHash =>
+      () => repo.getAssetsToHash(any());
+}
+
+extension type const LocalAssetRepositoryStub(MockDriftLocalAssetRepository repo)
+    implements Stub<MockDriftLocalAssetRepository> {
+  Future<void> Function() get reconcileHashesFromCloudId =>
+      () => repo.reconcileHashesFromCloudId();
+
+  Future<void> Function() get updateHashes =>
+      () => repo.updateHashes(any());
+}
+
+extension type const PartnerServiceStub(MockPartnerService service) implements Stub<MockPartnerService> {
   Stream<Iterable<User>> Function() get getCandidates =>
       () => service.getCandidates(any());
 
@@ -103,7 +147,7 @@ extension type const PartnerStub(MockPartnerService service) implements Stub<Moc
       );
 }
 
-extension type const UserStub(MockUserService service) implements Stub<MockUserService> {
+extension type const UserServiceStub(MockUserService service) implements Stub<MockUserService> {
   UserDto Function() get getMyUser =>
       () => service.getMyUser();
 
@@ -118,4 +162,14 @@ extension type const UserStub(MockUserService service) implements Stub<MockUserS
 
   Future<String?> Function() get createProfileImage =>
       () => service.createProfileImage(any(), any());
+}
+
+extension type const AssetServiceStub(MockAssetService service) implements Stub<MockAssetService> {
+  Future<void> Function() get updateFavorite =>
+      () => service.updateFavorite(any(), any());
+}
+
+extension type const NativeSyncApiStub(MockNativeSyncApi api) implements Stub<MockNativeSyncApi> {
+  Future<List<HashResult>> Function() get hashAssets =>
+      () => api.hashAssets(any(), allowNetworkAccess: any(named: 'allowNetworkAccess'));
 }
