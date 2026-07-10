@@ -294,8 +294,6 @@ export class AssetUploadService extends BaseService {
           checksum,
           checksumAlgorithm: ChecksumAlgorithm.sha1File,
           originalPath: path,
-          deviceAssetId: assetData.deviceAssetId,
-          deviceId: assetData.deviceId,
           fileCreatedAt: assetData.fileCreatedAt,
           fileModifiedAt: assetData.fileModifiedAt,
           localDateTime: assetData.fileCreatedAt,
