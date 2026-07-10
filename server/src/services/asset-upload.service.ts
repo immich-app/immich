@@ -215,7 +215,7 @@ export class AssetUploadService extends BaseService {
       const offset = await this.getCurrentOffset(asset.path);
       this.setCompleteHeader(res, version, asset.status !== AssetStatus.Partial);
       res.status(204).setHeader('Upload-Offset', offset.toString()).setHeader('Cache-Control', 'no-store');
-      if (asset.size) {
+      if (asset.size > 0) {
         res.setHeader('Upload-Length', asset.size.toString());
       }
       res.setHeader('Upload-Limit', this.getUploadLimits(backup)).send();

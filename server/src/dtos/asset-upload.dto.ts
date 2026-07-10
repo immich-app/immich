@@ -86,7 +86,7 @@ const StartUploadSchema = BaseUploadHeadersInputSchema.extend({
 })
   .transform((headers, ctx) => {
     const complete = parseUploadComplete(headers, ctx);
-    const length = headers[Header.UploadLength] ?? (complete !== false ? headers[Header.ContentLength] : undefined);
+    const length = headers[Header.UploadLength] ?? (complete === false ? undefined : headers[Header.ContentLength]);
     if (!length) {
       ctx.addIssue({ code: 'custom', message: `Missing ${Header.UploadLength} header` });
       return z.NEVER;
