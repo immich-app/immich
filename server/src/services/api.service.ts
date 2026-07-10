@@ -24,10 +24,6 @@ export const render = (index: string, meta: OpenGraphTags) => {
 
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${title}" />
-    <meta name="twitter:description" content="${description}" />
-
-    ${imageUrl ? `<meta name="twitter:image" content="${imageUrl}" />` : ''}`;
 
   return index.replace('<!-- metadata:tags -->', tags);
 };
