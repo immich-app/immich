@@ -7,6 +7,9 @@
 #[cfg(feature = "image")]
 pub mod image;
 
+#[cfg(feature = "thumbhash")]
+pub mod thumbhash;
+
 /// Version of the native core. Smoke-test entrypoint exercised by every binding.
 pub fn core_version() -> &'static str {
     env!("CARGO_PKG_VERSION")

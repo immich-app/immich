@@ -1,6 +1,7 @@
 // Host FFI roundtrip — `flutter test` builds the hook for the host platform and
 // resolves the @Native symbols, no device needed. Calls the generated bindings
 // directly (the package's actual surface); device runs: mobile/integration_test.
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:typed_data';
 
@@ -43,6 +44,15 @@ void main() {
     final version = ptr.cast<Utf8>().toDartString();
     immich_core_free_string(ptr);
     expect(version, isNotEmpty);
+  });
+
+  test('orientation swaps dims exactly for the 90/270/transpose family', () {
+    for (final o in [5, 6, 7, 8]) {
+      expect(immich_core_orientation_swaps_dims(o), isTrue, reason: 'o=$o');
+    }
+    for (final o in [0, 1, 2, 3, 4, 9]) {
+      expect(immich_core_orientation_swaps_dims(o), isFalse, reason: 'o=$o');
+    }
   });
 
   test('exif rotate: 180 reverses pixels, 90 swaps dims', () {
@@ -102,5 +112,39 @@ void main() {
           immich_core_rgba1010102_to_rgba8888(s, src.length, 4, 2, 2, d, len),
     );
     expect(badStride, isNull);
+  });
+
+  test('thumbhash decodes via the core: dims then fill', () {
+    final hash = base64Decode('1QcSHQRnh493V4dIh4eXh1h4kJUI');
+    final hashPtr = malloc<Uint8>(hash.length);
+    final w = malloc<Uint32>();
+    final h = malloc<Uint32>();
+    try {
+      hashPtr.asTypedList(hash.length).setAll(0, hash);
+      expect(immich_core_thumbhash_dims(hashPtr, hash.length, w, h), isTrue);
+      expect((w.value, h.value), (23, 32));
+
+      final len = w.value * h.value * 4;
+      final dst = malloc<Uint8>(len);
+      try {
+        expect(
+          immich_core_thumbhash_to_rgba(hashPtr, hash.length, dst, len),
+          isTrue,
+        );
+        final pixels = dst.asTypedList(len);
+        for (var i = 3; i < len; i += 4) {
+          expect(pixels[i], 255, reason: 'alpha at $i');
+        }
+        expect(pixels.toSet().length, greaterThan(2));
+      } finally {
+        malloc.free(dst);
+      }
+
+      expect(immich_core_thumbhash_dims(hashPtr, 4, w, h), isFalse);
+    } finally {
+      malloc.free(hashPtr);
+      malloc.free(w);
+      malloc.free(h);
+    }
   });
 }

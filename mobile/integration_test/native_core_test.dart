@@ -8,6 +8,7 @@
 // Self-contained: does NOT boot the immich app or need a server.
 //
 // Run:  flutter test integration_test/native_core_test.dart -d <device>
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:typed_data';
 
@@ -51,25 +52,64 @@ void main() {
     expect(version, isNotEmpty);
   });
 
+  test('orientation swaps dims exactly for the 90/270/transpose family', () {
+    for (final o in [5, 6, 7, 8]) {
+      expect(immich_core_orientation_swaps_dims(o), isTrue, reason: 'o=$o');
+    }
+    for (final o in [0, 1, 2, 3, 4, 9]) {
+      expect(immich_core_orientation_swaps_dims(o), isFalse, reason: 'o=$o');
+    }
+  });
+
   test('exif rotate (the #29337 algorithm) rotates 180 on device', () {
     // 2x1: red, green -> 180 -> green, red
     final src = Uint8List.fromList([255, 0, 0, 255, 0, 255, 0, 255]);
-    final out = _withBuffers(src, 8, (s, len, d) =>
-        immich_core_rotate_rgba8888(s, src.length, 8, 2, 1, 3, d, len));
+    final out = _withBuffers(src, 8, (s, len, d) => immich_core_rotate_rgba8888(s, src.length, 8, 2, 1, 3, d, len));
     expect(out, [0, 255, 0, 255, 255, 0, 0, 255]);
   });
 
   test('10-bit convert (the #29631 algorithm) matches Skia ground truth on device', () {
     // 179->45 and 111->28 pin round(v*255/1023) over >>2 (44/27) — the exact
     // discriminating values probed on this hardware against Bitmap.copy.
-    final src = Uint8List.fromList([
-      ..._px1010102(1023, 0, 0, 3),
-      ..._px1010102(179, 111, 0, 3),
-    ]);
-    final out = _withBuffers(src, 8, (s, len, d) =>
-        immich_core_rgba1010102_to_rgba8888(s, src.length, 8, 2, 1, d, len));
+    final src = Uint8List.fromList([..._px1010102(1023, 0, 0, 3), ..._px1010102(179, 111, 0, 3)]);
+    final out = _withBuffers(
+      src,
+      8,
+      (s, len, d) => immich_core_rgba1010102_to_rgba8888(s, src.length, 8, 2, 1, d, len),
+    );
     expect(out, isNotNull);
     expect(out!.sublist(0, 4), [255, 0, 0, 255]);
     expect(out.sublist(4, 8), [45, 28, 0, 255]);
+  });
+
+  test('thumbhash decodes via the core: dims then fill', () {
+    final hash = base64Decode('1QcSHQRnh493V4dIh4eXh1h4kJUI');
+    final hashPtr = malloc<Uint8>(hash.length);
+    final w = malloc<Uint32>();
+    final h = malloc<Uint32>();
+    try {
+      hashPtr.asTypedList(hash.length).setAll(0, hash);
+      expect(immich_core_thumbhash_dims(hashPtr, hash.length, w, h), isTrue);
+      expect((w.value, h.value), (23, 32));
+
+      final len = w.value * h.value * 4;
+      final dst = malloc<Uint8>(len);
+      try {
+        expect(immich_core_thumbhash_to_rgba(hashPtr, hash.length, dst, len), isTrue);
+        final pixels = dst.asTypedList(len);
+        for (var i = 3; i < len; i += 4) {
+          expect(pixels[i], 255, reason: 'alpha at $i');
+        }
+        expect(pixels.toSet().length, greaterThan(2));
+      } finally {
+        malloc.free(dst);
+      }
+
+      expect(immich_core_thumbhash_dims(hashPtr, 4, w, h), isFalse);
+    } finally {
+      malloc.free(hashPtr);
+      malloc.free(w);
+      malloc.free(h);
+    }
   });
 }

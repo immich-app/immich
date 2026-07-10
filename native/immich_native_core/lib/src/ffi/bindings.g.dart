@@ -12,6 +12,18 @@ import 'dart:ffi' as ffi;
 @ffi.Native<ffi.Pointer<ffi.Char> Function()>()
 external ffi.Pointer<ffi.Char> immich_core_version();
 
+/// Release a string returned by this library.
+///
+/// # Safety
+/// `ptr` must be a pointer previously returned by this library, or null.
+@ffi.Native<ffi.Void Function(ffi.Pointer<ffi.Char>)>()
+external void immich_core_free_string(ffi.Pointer<ffi.Char> ptr);
+
+/// Whether the EXIF `orientation` swaps width and height (the 90/270/transpose
+/// family) — callers use it to size and report the rotated output dims.
+@ffi.Native<ffi.Bool Function(ffi.Int32)>()
+external bool immich_core_orientation_swaps_dims(int orientation);
+
 /// Rotate an RGBA8888 image to the given EXIF `orientation`. `src` is `sh` rows of
 /// `src_stride` bytes; `dst` is the caller's densely-packed `dw*dh*4` output (dims
 /// swap for 90/270/transpose). Returns false (a safe no-op) on null pointers or
@@ -72,9 +84,45 @@ external bool immich_core_rgba1010102_to_rgba8888(
   int dst_len,
 );
 
-/// Release a string returned by this library.
+/// Placeholder size for a ThumbHash. Returns false (leaving the out params
+/// untouched) if the hash is malformed.
 ///
 /// # Safety
-/// `ptr` must be a pointer previously returned by this library, or null.
-@ffi.Native<ffi.Void Function(ffi.Pointer<ffi.Char>)>()
-external void immich_core_free_string(ffi.Pointer<ffi.Char> ptr);
+/// `hash` must be valid for reads of `hash_len` bytes; `out_width`/`out_height`
+/// must be valid for writes.
+@ffi.Native<
+  ffi.Bool Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.UintPtr,
+    ffi.Pointer<ffi.Uint32>,
+    ffi.Pointer<ffi.Uint32>,
+  )
+>()
+external bool immich_core_thumbhash_dims(
+  ffi.Pointer<ffi.Uint8> hash,
+  int hash_len,
+  ffi.Pointer<ffi.Uint32> out_width,
+  ffi.Pointer<ffi.Uint32> out_height,
+);
+
+/// Render a ThumbHash as RGBA8888 (not premultiplied) into the caller's
+/// densely-packed `w*h*4` `dst`, sized via [`immich_core_thumbhash_dims`].
+/// Returns false (a safe no-op) on a malformed hash or short buffer.
+///
+/// # Safety
+/// `hash` must be valid for reads of `hash_len` bytes and `dst` for writes of
+/// `dst_len`.
+@ffi.Native<
+  ffi.Bool Function(
+    ffi.Pointer<ffi.Uint8>,
+    ffi.UintPtr,
+    ffi.Pointer<ffi.Uint8>,
+    ffi.UintPtr,
+  )
+>()
+external bool immich_core_thumbhash_to_rgba(
+  ffi.Pointer<ffi.Uint8> hash,
+  int hash_len,
+  ffi.Pointer<ffi.Uint8> dst,
+  int dst_len,
+);

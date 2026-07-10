@@ -5,8 +5,9 @@ edition.workspace = true
 license.workspace = true
 
 [features]
-default = ["image"]
+default = ["image", "thumbhash"]
 image = [] # pure pixel math, no deps
+thumbhash = [] # placeholder decode, no deps
 
 [lints]
 workspace = true

@@ -41,7 +41,9 @@ class LocalImageApiImpl: LocalImageApi {
       guard let data = Data(base64Encoded: thumbhash)
       else { return completion(.failure(PigeonError(code: "", message: "Invalid base64 string: \(thumbhash)", details: nil)))}
 
-      let (width, height, pointer) = thumbHashToRGBA(hash: data)
+      guard let (width, height, pointer) = thumbHashToRGBA(hash: data)
+      else { return completion(.failure(PigeonError(code: "", message: "Invalid thumbhash: \(thumbhash)", details: nil)))}
+
       completion(.success([
         "pointer": Int64(Int(bitPattern: pointer.baseAddress)),
         "width": Int64(width),
