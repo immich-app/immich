@@ -6,7 +6,7 @@
   import { Field, FormModal, HelperText, Select } from '@immich/ui';
   import { mdiFolderSync } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import { type PageData } from './$types';
+  import type { PageData } from './$types';
 
   type Props = {
     data: PageData;
