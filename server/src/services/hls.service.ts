@@ -1,13 +1,7 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { constants } from 'node:fs';
 import { join } from 'node:path';
-import {
-  HLS_SEGMENT_DURATION,
-  HLS_SEGMENT_FILENAME_REGEX,
-  HLS_VARIANTS,
-  HLS_VERSION,
-  SUPPORTED_HWA_CODECS,
-} from 'src/constants';
+import { HLS_SEGMENT_DURATION, HLS_SEGMENT_FILENAME_REGEX, HLS_VARIANTS, HLS_VERSION } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -18,7 +12,7 @@ import { BaseService } from 'src/services/base.service';
 import { VideoPacketInfo, VideoStreamInfo } from 'src/types';
 import { PendingEvents } from 'src/utils/event';
 import { ImmichFileResponse } from 'src/utils/file';
-import { getOutputSize } from 'src/utils/media';
+import { getCodecString, getOutputSize } from 'src/utils/media';
 
 type AssetWithStreamInfo = { videoStream: VideoStreamInfo & { timeBase: number }; packets: VideoPacketInfo };
 type Segmentation = { fps: number; framesPerSegment: number; segmentCount: number; segmentDuration: number };
@@ -131,18 +125,21 @@ export class HlsService extends BaseService {
   }
 
   private generateMainPlaylist(sessionId: string, ffmpeg: SystemConfigFFmpegDto, asset: AssetWithStreamInfo) {
-    const fps = ((asset.packets.packetCount * asset.videoStream.timeBase) / asset.packets.totalDuration).toFixed(3);
+    const fps = (asset.packets.packetCount * asset.videoStream.timeBase) / asset.packets.totalDuration;
+    const roundedFps = fps.toFixed(3);
     const sourceResolution = Math.min(asset.videoStream.height, asset.videoStream.width);
     const targetResolution = Math.max(sourceResolution, HLS_VARIANTS[0].resolution);
     const lines = ['#EXTM3U', `#EXT-X-VERSION:${HLS_VERSION}`, '#EXT-X-INDEPENDENT-SEGMENTS'];
+    const { videoCodecs, resolutions } = ffmpeg.realtime;
     for (let i = 0; i < HLS_VARIANTS.length; i++) {
-      const { resolution, bitrate, codec, codecString } = HLS_VARIANTS[i];
-      if (resolution > targetResolution || !SUPPORTED_HWA_CODECS[ffmpeg.accel].includes(codec)) {
+      const { resolution, bitrate, codec } = HLS_VARIANTS[i];
+      if (resolution > targetResolution || !videoCodecs.includes(codec) || !resolutions.includes(resolution)) {
         continue;
       }
       const { width, height } = getOutputSize(asset.videoStream, resolution);
+      const codecString = getCodecString(codec, width, height, fps);
       lines.push(
-        `#EXT-X-STREAM-INF:BANDWIDTH=${bitrate},RESOLUTION=${width}x${height},CODECS="${codecString},mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=${fps}`,
+        `#EXT-X-STREAM-INF:BANDWIDTH=${Math.round(bitrate * 1.35)},RESOLUTION=${width}x${height},CODECS="${codecString},mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=${roundedFps}`,
         `${sessionId}/${i}/playlist.m3u8`,
       );
     }

@@ -1,4 +1,4 @@
-import { AUDIO_ENCODER, SUPPORTED_HWA_CODECS } from 'src/constants';
+import { AUDIO_ENCODER, AV1_LEVELS, CodecLevel, H264_LEVELS, HEVC_LEVELS, SUPPORTED_HWA_CODECS } from 'src/constants';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   ColorMatrix,
@@ -34,6 +34,29 @@ export const getOutputSize = (videoStream: VideoStreamInfo, targetRes: number) =
     larger -= 1;
   }
   return isVideoVertical(videoStream) ? { width: targetRes, height: larger } : { width: larger, height: targetRes };
+};
+
+const pickLevel = (levels: CodecLevel[], frame: number, rate: number) =>
+  levels.find((level) => frame <= level.maxFrame && rate <= level.maxRate) ?? levels.at(-1)!;
+
+export const getCodecString = (codec: VideoCodec, width: number, height: number, fps: number): string => {
+  switch (codec) {
+    case VideoCodec.H264: {
+      const macroblocks = Math.ceil(width / 16) * Math.ceil(height / 16);
+      return `avc1.6400${pickLevel(H264_LEVELS, macroblocks, macroblocks * fps).token}`;
+    }
+    case VideoCodec.Hevc: {
+      const samples = width * height;
+      return `hvc1.1.6.${pickLevel(HEVC_LEVELS, samples, samples * fps).token}.B0`;
+    }
+    case VideoCodec.Av1: {
+      const samples = width * height;
+      return `av01.0.${pickLevel(AV1_LEVELS, samples, samples * fps).token}.08`;
+    }
+    default: {
+      throw new Error(`Codec '${codec}' does not support HLS codec strings`);
+    }
+  }
 };
 
 export class BaseConfig implements VideoCodecSWConfig {

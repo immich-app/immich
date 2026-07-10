@@ -391,6 +391,8 @@ class ApiClient {
           return FoldersResponse.fromJson(value);
         case 'FoldersUpdate':
           return FoldersUpdate.fromJson(value);
+        case 'HlsVideoResolution':
+          return HlsVideoResolutionTypeTransformer().decode(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
         case 'IntegrityReport':

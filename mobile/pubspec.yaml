@@ -2,7 +2,7 @@ name: immich_mobile
 description: Immich - selfhosted backup media file on mobile phone
 
 publish_to: 'none'
-version: 3.0.1+3054
+version: 3.0.2+3055
 
 environment:
   sdk: '>=3.12.0 <4.0.0'
@@ -84,7 +84,7 @@ dependencies:
   cupertino_http:
     git:
       url: https://github.com/mertalev/http
-      ref: 'a0a933358517c6d01cff37fc2a2752ee2d744a3c' # https://github.com/dart-lang/http/pull/1876
+      ref: '58b03c756b81d16b3975a8ae4b91d25360123bb5'
       path: pkgs/cupertino_http/
   ok_http:
     git:
@@ -114,6 +114,11 @@ dev_dependencies:
 # Pin bonsoir to 5.x until cast releases a version compatible with bonsoir 6.x.
 dependency_overrides:
   bonsoir: ^5.1.11
+  objective_c:
+    git:
+      url: https://github.com/mertalev/native
+      ref: '2915556701f4734a784222f290a82adb1b101682' # https://github.com/dart-lang/native/pull/3458
+      path: pkgs/objective_c/
 
 flutter:
   uses-material-design: true

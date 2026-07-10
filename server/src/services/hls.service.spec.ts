@@ -1,5 +1,5 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { TranscodeHardwareAcceleration } from 'src/enum';
+import { HlsVideoResolution, VideoCodec } from 'src/enum';
 import { HlsService } from 'src/services/hls.service';
 import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub';
 import { factory } from 'test/small.factory';
@@ -96,67 +96,79 @@ seg_10.m4s
 
 const sessionId = '00000000-0000-0000-0000-000000000000';
 
-const eiffelExpectedMasterDisabled = `#EXTM3U
+const eiffelExpectedMasterAv1 = `#EXTM3U
 #EXT-X-VERSION:7
 #EXT-X-INDEPENDENT-SEGMENTS
-#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=480x852,CODECS="av01.0.04M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=1350000,RESOLUTION=480x852,CODECS="av01.0.04M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/0/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=1200000,RESOLUTION=480x852,CODECS="hvc1.1.6.L90.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=1620000,RESOLUTION=480x852,CODECS="hvc1.1.6.L90.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/1/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=480x852,CODECS="avc1.64001e,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=3375000,RESOLUTION=480x852,CODECS="avc1.64001e,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/2/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=2000000,RESOLUTION=720x1280,CODECS="av01.0.08M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=2700000,RESOLUTION=720x1280,CODECS="av01.0.05M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/3/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=720x1280,CODECS="hvc1.1.6.L93.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=3375000,RESOLUTION=720x1280,CODECS="hvc1.1.6.L93.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/4/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=720x1280,CODECS="avc1.64001f,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=6750000,RESOLUTION=720x1280,CODECS="avc1.64001f,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/5/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=4000000,RESOLUTION=1080x1920,CODECS="av01.0.09M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=5400000,RESOLUTION=1080x1920,CODECS="av01.0.08M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/6/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=4500000,RESOLUTION=1080x1920,CODECS="hvc1.1.6.L120.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=6075000,RESOLUTION=1080x1920,CODECS="hvc1.1.6.L120.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/7/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=8000000,RESOLUTION=1080x1920,CODECS="avc1.640028,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=10800000,RESOLUTION=1080x1920,CODECS="avc1.640028,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/8/playlist.m3u8
 `;
 
-const eiffelExpectedMasterRkmpp = `#EXTM3U
+const eiffelExpectedMasterNoAv1 = `#EXTM3U
 #EXT-X-VERSION:7
 #EXT-X-INDEPENDENT-SEGMENTS
-#EXT-X-STREAM-INF:BANDWIDTH=1200000,RESOLUTION=480x852,CODECS="hvc1.1.6.L90.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=1620000,RESOLUTION=480x852,CODECS="hvc1.1.6.L90.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/1/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=480x852,CODECS="avc1.64001e,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=3375000,RESOLUTION=480x852,CODECS="avc1.64001e,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/2/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=720x1280,CODECS="hvc1.1.6.L93.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=3375000,RESOLUTION=720x1280,CODECS="hvc1.1.6.L93.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/4/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=720x1280,CODECS="avc1.64001f,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=6750000,RESOLUTION=720x1280,CODECS="avc1.64001f,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/5/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=4500000,RESOLUTION=1080x1920,CODECS="hvc1.1.6.L120.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=6075000,RESOLUTION=1080x1920,CODECS="hvc1.1.6.L120.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/7/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=8000000,RESOLUTION=1080x1920,CODECS="avc1.640028,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
+#EXT-X-STREAM-INF:BANDWIDTH=10800000,RESOLUTION=1080x1920,CODECS="avc1.640028,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=24.910
 ${sessionId}/8/playlist.m3u8
 `;
 
-const waterfallExpectedMasterDisabled = `#EXTM3U
+const waterfallExpectedMasterAv1 = `#EXTM3U
 #EXT-X-VERSION:7
 #EXT-X-INDEPENDENT-SEGMENTS
-#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=480x852,CODECS="av01.0.04M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+#EXT-X-STREAM-INF:BANDWIDTH=1350000,RESOLUTION=480x852,CODECS="av01.0.04M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
 ${sessionId}/0/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=1200000,RESOLUTION=480x852,CODECS="hvc1.1.6.L90.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+#EXT-X-STREAM-INF:BANDWIDTH=1620000,RESOLUTION=480x852,CODECS="hvc1.1.6.L90.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
 ${sessionId}/1/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=480x852,CODECS="avc1.64001e,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+#EXT-X-STREAM-INF:BANDWIDTH=3375000,RESOLUTION=480x852,CODECS="avc1.64001f,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
 ${sessionId}/2/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=2000000,RESOLUTION=720x1280,CODECS="av01.0.08M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+#EXT-X-STREAM-INF:BANDWIDTH=2700000,RESOLUTION=720x1280,CODECS="av01.0.05M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
 ${sessionId}/3/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=720x1280,CODECS="hvc1.1.6.L93.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+#EXT-X-STREAM-INF:BANDWIDTH=3375000,RESOLUTION=720x1280,CODECS="hvc1.1.6.L93.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
 ${sessionId}/4/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=720x1280,CODECS="avc1.64001f,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+#EXT-X-STREAM-INF:BANDWIDTH=6750000,RESOLUTION=720x1280,CODECS="avc1.64001f,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
 ${sessionId}/5/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=4000000,RESOLUTION=1080x1920,CODECS="av01.0.09M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+#EXT-X-STREAM-INF:BANDWIDTH=5400000,RESOLUTION=1080x1920,CODECS="av01.0.08M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
 ${sessionId}/6/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=4500000,RESOLUTION=1080x1920,CODECS="hvc1.1.6.L120.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+#EXT-X-STREAM-INF:BANDWIDTH=6075000,RESOLUTION=1080x1920,CODECS="hvc1.1.6.L120.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
 ${sessionId}/7/playlist.m3u8
-#EXT-X-STREAM-INF:BANDWIDTH=8000000,RESOLUTION=1080x1920,CODECS="avc1.640028,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+#EXT-X-STREAM-INF:BANDWIDTH=10800000,RESOLUTION=1080x1920,CODECS="avc1.640028,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
 ${sessionId}/8/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=9450000,RESOLUTION=1440x2560,CODECS="av01.0.12M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+${sessionId}/9/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=10800000,RESOLUTION=1440x2560,CODECS="hvc1.1.6.L150.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+${sessionId}/10/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=18900000,RESOLUTION=1440x2560,CODECS="avc1.640032,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+${sessionId}/11/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=16200000,RESOLUTION=2160x3840,CODECS="av01.0.12M.08,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+${sessionId}/12/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=18900000,RESOLUTION=2160x3840,CODECS="hvc1.1.6.L150.B0,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+${sessionId}/13/playlist.m3u8
+#EXT-X-STREAM-INF:BANDWIDTH=33750000,RESOLUTION=2160x3840,CODECS="avc1.640033,mp4a.40.2",VIDEO-RANGE=SDR,FRAME-RATE=29.830
+${sessionId}/14/playlist.m3u8
 `;
 
 describe(HlsService.name, () => {
@@ -171,9 +183,24 @@ describe(HlsService.name, () => {
     const auth = factory.auth();
     const assetId = 'asset-1';
 
-    const setup = (asset: typeof eiffelTower | typeof waterfall, accel: TranscodeHardwareAcceleration) => {
+    const allCodecs = [VideoCodec.Av1, VideoCodec.Hevc, VideoCodec.H264];
+    const allResolutions = [
+      HlsVideoResolution.p480,
+      HlsVideoResolution.p720,
+      HlsVideoResolution.p1080,
+      HlsVideoResolution.p1440,
+      HlsVideoResolution.p2160,
+    ];
+
+    const setup = (
+      asset: typeof eiffelTower | typeof waterfall,
+      videoCodecs?: VideoCodec[],
+      resolutions?: HlsVideoResolution[],
+    ) => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
-      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { realtime: { enabled: true }, accel } });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { realtime: { enabled: true, videoCodecs, resolutions } },
+      });
       mocks.videoStream.getForMainPlaylist.mockResolvedValue(asset);
       mocks.crypto.randomUUID.mockReturnValue(sessionId);
       mocks.websocket.serverSend.mockImplementation((event, ...rest) => {
@@ -184,19 +211,19 @@ describe(HlsService.name, () => {
       });
     };
 
-    it('returns main playlist for eiffel-tower (1080p portrait, no acceleration)', async () => {
-      setup(eiffelTower, TranscodeHardwareAcceleration.Disabled);
-      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(eiffelExpectedMasterDisabled);
+    it('offers AV1, HEVC, and H.264 when AV1 is configured and the accelerator supports it', async () => {
+      setup(eiffelTower, allCodecs);
+      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(eiffelExpectedMasterAv1);
     });
 
-    it('returns main playlist for eiffel-tower with RKMPP (no AV1 variants)', async () => {
-      setup(eiffelTower, TranscodeHardwareAcceleration.Rkmpp);
-      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(eiffelExpectedMasterRkmpp);
+    it('omits AV1 when it is not in the configured codecs', async () => {
+      setup(eiffelTower);
+      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(eiffelExpectedMasterNoAv1);
     });
 
-    it('returns main playlist for waterfall (4K landscape) with no acceleration', async () => {
-      setup(waterfall, TranscodeHardwareAcceleration.Disabled);
-      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(waterfallExpectedMasterDisabled);
+    it('offers every resolution up to the source and derives 4K codec levels (waterfall, 4K, 29.83fps)', async () => {
+      setup(waterfall, allCodecs, allResolutions);
+      await expect(sut.getMainPlaylist(auth, assetId)).resolves.toBe(waterfallExpectedMasterAv1);
     });
 
     it('throws BadRequestException when realtime transcoding is disabled', async () => {

@@ -159,8 +159,6 @@ class ShareActionButton extends ConsumerWidget {
                 return;
               }
 
-              ref.read(multiSelectProvider.notifier).reset();
-
               if (!result.success) {
                 ImmichToast.show(
                   context: context,
@@ -173,7 +171,6 @@ class ShareActionButton extends ConsumerWidget {
               buildContext.pop();
             });
 
-        // Show download progress with a "Preparing" message
         return preparingDialog;
       },
       barrierDismissible: false,

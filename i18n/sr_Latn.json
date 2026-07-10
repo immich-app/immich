@@ -73,6 +73,7 @@
     "cron_expression_description": "Podesite interval skeniranja koristeći cron format. Za više informacija pogledajte npr. <link>Crontab Guru</link>",
     "cron_expression_presets": "Predefinisana podešavanja Cron izraza (expression)",
     "disable_login": "Onemogući prijavu",
+    "download_csv": "Preuzmite CSV",
     "duplicate_detection_job_description": "Pokrenite mašinsko učenje na sredstvima da biste otkrili slične slike. Oslanja se na pametnu pretragu",
     "exclusion_pattern_description": "Obrasci izuzimanja vam omogućavaju da ignorišete datoteke i fascikle kada skenirate biblioteku. Ovo je korisno ako imate fascikle koje sadrže datoteke koje ne želite da uvezete, kao što su RAW datoteke.",
     "export_config_as_json_description": "Skini trenutnu sistemsku konfiguraciju kao JSON fajl",
