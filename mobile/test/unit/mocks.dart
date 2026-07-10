@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:mocktail/mocktail.dart' as mock;
@@ -111,6 +112,7 @@ class ServiceMocks {
   final cleanup = CleanupServiceStub(MockCleanupService());
   final tag = TagServiceStub(MockTagService());
   final backgroundSync = MockBackgroundSyncManager();
+  final upload = MockForegroundUploadService();
 
   ServiceMocks() {
     resetAll();
@@ -125,6 +127,7 @@ class ServiceMocks {
     cleanup.reset();
     tag.reset();
     reset(backgroundSync);
+    reset(upload);
     _stubUserService();
     _stubPartnerService();
     _stubAssetService();
@@ -132,6 +135,7 @@ class ServiceMocks {
     _stubCleanupService();
     _stubTagService();
     _stubBackgroundSync();
+    _stubForegroundUpload();
   }
 
   void _stubUserService() {
@@ -180,6 +184,12 @@ class ServiceMocks {
     when(() => backgroundSync.syncLocal()).thenAnswer((_) async {});
     when(() => backgroundSync.hashAssets()).thenAnswer((_) async {});
   }
+
+  void _stubForegroundUpload() {
+    when(
+      () => upload.uploadManual(any(), cancelToken: any(named: 'cancelToken'), callbacks: any(named: 'callbacks')),
+    ).thenAnswer((_) async {});
+  }
 }
 
 void _registerFallbacks() {
@@ -196,7 +206,9 @@ void _registerFallbacks() {
   registerFallbackValue(const Option<DateTime>.none());
   registerFallbackValue(<BaseAsset>[]);
   registerFallbackValue(<RemoteAsset>[]);
+  registerFallbackValue(<LocalAsset>[]);
   registerFallbackValue(ShareAssetType.original);
+  registerFallbackValue(const UploadCallbacks());
   registerFallbackValue(_FakeBuildContext());
 }
 

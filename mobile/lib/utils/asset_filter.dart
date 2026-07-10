@@ -20,5 +20,5 @@ extension type const AssetFilter<T extends BaseAsset>(Iterable<T> assets) implem
   AssetFilter<RemoteAsset> trashed({bool isTrashed = true}) => remote().where((asset) => asset.isTrashed == isTrashed);
 
   AssetFilter<LocalAsset> local() => AssetFilter(assets.whereType<LocalAsset>());
-  AssetFilter<BaseAsset> backedUp() => where((asset) => asset.isMerged);
+  AssetFilter<BaseAsset> backedUp({bool isBackedUp = true}) => where((asset) => asset.isMerged == isBackedUp);
 }

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
@@ -9,8 +8,8 @@ import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_asset.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
@@ -40,16 +39,17 @@ class ViewerBottomBar extends ConsumerWidget {
     final restore = RestoreAction(assets: assets, scope: scope);
     final delete = DeleteAction(assets: assets, scope: scope);
     final editImage = EditAssetAction(assets: assets, scope: scope);
+    final upload = UploadAction(assets: assets, scope: scope, showProgress: true);
     final actions = <Widget>[
       if (restore.isVisible) ActionColumnButtonWidget(action: restore),
       ActionColumnButtonWidget(
         action: ShareAction(assets: assets, scope: scope),
       ),
+      if (editImage.isVisible) ActionColumnButtonWidget(action: editImage),
 
       if (!isInLockedView) ...[
         if (!isInTrash) ...[
-          if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
-          if (editImage.isVisible) ActionColumnButtonWidget(action: editImage),
+          if (upload.isVisible) ActionColumnButtonWidget(action: upload),
           if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
         ],
 

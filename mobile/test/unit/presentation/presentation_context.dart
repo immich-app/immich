@@ -23,6 +23,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_ui/immich_ui.dart';
@@ -63,6 +64,7 @@ class PresentationContext {
     remoteAlbumServiceProvider.overrideWithValue(service.album.service),
     cleanupServiceProvider.overrideWithValue(service.cleanup.service),
     gCastServiceProvider.overrideWithValue(MockGCastService()),
+    foregroundUploadServiceProvider.overrideWithValue(service.upload),
     serverInfoProvider.overrideWith((ref) => FakeServerInfoNotifier()),
     toastRepositoryProvider.overrideWithValue(repository.toast),
   ];

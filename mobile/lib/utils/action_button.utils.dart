@@ -14,21 +14,21 @@ import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/cast.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
+import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/open_in_browser.action.dart';
 import 'package:immich_mobile/presentation/actions/remove_from_album.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
 import 'package:immich_mobile/presentation/actions/set_profile_picture.action.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/similar_photos.action.dart';
 import 'package:immich_mobile/presentation/actions/slideshow.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
+import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
-import 'package:immich_mobile/presentation/actions/share.action.dart';
-import 'package:immich_mobile/presentation/actions/share_link.action.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
 
 class ActionButtonContext {
@@ -175,49 +175,52 @@ enum ActionButtonType {
     bool iconOnly = false,
     bool menuItem = false,
   ]) {
+    final assets = [context.asset];
     final scope = ActionScope.from(buildContext, ref);
     return switch (this) {
       ActionButtonType.advancedInfo => ActionMenuItemWidget(
-        action: AssetDebugAction(assets: [context.asset], scope: scope),
+        action: AssetDebugAction(assets: assets, scope: scope),
       ),
       ActionButtonType.share => ActionMenuItemWidget(
-        action: ShareAction(assets: [context.asset], scope: scope),
+        action: ShareAction(assets: assets, scope: scope),
       ),
       ActionButtonType.shareLink => ActionMenuItemWidget(
-        action: ShareLinkAction(assets: [context.asset], scope: scope),
+        action: ShareLinkAction(assets: assets, scope: scope),
       ),
       ActionButtonType.slideshow => ActionMenuItemWidget(action: SlideshowAction(scope: scope)),
       ActionButtonType.archive || ActionButtonType.unarchive => ActionMenuItemWidget(
-        action: ArchiveAction(assets: [context.asset], scope: scope),
+        action: ArchiveAction(assets: assets, scope: scope),
       ),
       ActionButtonType.download => ActionMenuItemWidget(
-        action: DownloadAction(assets: [context.asset], scope: scope),
+        action: DownloadAction(assets: assets, scope: scope),
       ),
       ActionButtonType.restoreTrash => ActionMenuItemWidget(
-        action: RestoreAction(assets: [context.asset], scope: scope),
+        action: RestoreAction(assets: assets, scope: scope),
       ),
       ActionButtonType.delete => ActionMenuItemWidget(
-        action: DeleteAction(assets: [context.asset], scope: scope),
+        action: DeleteAction(assets: assets, scope: scope),
       ),
       ActionButtonType.moveToLockFolder => ActionMenuItemWidget(
-        action: LockAction(assets: [context.asset], scope: scope),
+        action: LockAction(assets: assets, scope: scope),
       ),
       ActionButtonType.removeFromLockFolder => ActionMenuItemWidget(
-        action: LockAction(assets: [context.asset], scope: scope),
+        action: LockAction(assets: assets, scope: scope),
       ),
       ActionButtonType.deleteLocal => ActionMenuItemWidget(
-        action: CleanupLocalAction(assets: [context.asset], scope: scope),
+        action: CleanupLocalAction(assets: assets, scope: scope),
       ),
-      ActionButtonType.upload => UploadActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.upload => ActionMenuItemWidget(
+        action: UploadAction(assets: assets, scope: scope, showProgress: context.source == ActionSource.viewer),
+      ),
       ActionButtonType.removeFromAlbum => ActionMenuItemWidget(
-        action: RemoveFromAlbumAction(assets: [context.asset], albumId: context.currentAlbum!.id, scope: scope),
+        action: RemoveFromAlbumAction(assets: assets, albumId: context.currentAlbum!.id, scope: scope),
       ),
       ActionButtonType.setAlbumCover => ActionMenuItemWidget(
-        action: SetAlbumCoverAction(assets: [context.asset], albumId: context.currentAlbum!.id, scope: scope),
+        action: SetAlbumCoverAction(assets: assets, albumId: context.currentAlbum!.id, scope: scope),
       ),
       ActionButtonType.likeActivity => LikeActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.unstack => ActionMenuItemWidget(
-        action: StackAction(assets: [context.asset], scope: scope),
+        action: StackAction(assets: assets, scope: scope),
       ),
       ActionButtonType.openInBrowser => ActionMenuItemWidget(
         action: OpenInBrowserAction(remoteId: context.asset.remoteId!, origin: context.timelineOrigin, scope: scope),

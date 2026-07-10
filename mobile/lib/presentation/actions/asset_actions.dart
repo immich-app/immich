@@ -10,6 +10,7 @@ import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/actions/tag.action.dart';
+import 'package:immich_mobile/presentation/actions/upload.action.dart';
 
 class AssetActions {
   final AssetDebugAction debug;
@@ -23,6 +24,7 @@ class AssetActions {
   final EditLocationAction editLocation;
   final DownloadAction download;
   final TagAction tag;
+  final UploadAction upload;
 
   const AssetActions({
     required this.debug,
@@ -36,6 +38,7 @@ class AssetActions {
     required this.editLocation,
     required this.download,
     required this.tag,
+    required this.upload,
   });
 
   factory AssetActions.from(ActionScope scope, List<BaseAsset> assets) => .new(
@@ -50,5 +53,6 @@ class AssetActions {
     editLocation: EditLocationAction(assets: assets, scope: scope),
     download: DownloadAction(assets: assets, scope: scope),
     tag: TagAction(assets: assets, scope: scope),
+    upload: UploadAction(assets: assets, scope: scope),
   );
 }
