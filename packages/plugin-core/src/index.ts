@@ -96,10 +96,10 @@ const methods = wrapper<Manifest>({
       return { workflow: { continue: false } };
     }
 
-    const configLat = Number.parseFloat(config.coordinate?.latitude ?? '');
-    const configLon = Number.parseFloat(config.coordinate?.longitude ?? '');
+    const configLat = config.coordinate?.latitude;
+    const configLon = config.coordinate?.longitude;
 
-    if (Number.isNaN(configLat) || Number.isNaN(configLat)) {
+    if (configLat === undefined || configLon === undefined) {
       return { workflow: { continue: true } };
     }
 
@@ -122,6 +122,27 @@ const methods = wrapper<Manifest>({
     );
 
     return { workflow: { continue: earthDiameter * delta <= (config.coordinate?.radius ?? 0) } };
+  },
+
+  assetDateFilter: ({ config, data }) => {
+    const assetDate = new Date(data.asset.localDateTime);
+    let startDate = new Date(config.startDate.year, config.startDate.month - 1, config.startDate.day);
+    let endDate = new Date(config.endDate.year, config.endDate.month - 1, config.endDate.day);
+
+    if (config.recurring) {
+      startDate.setFullYear(assetDate.getFullYear());
+      endDate.setFullYear(assetDate.getFullYear());
+
+      if (endDate < startDate) {
+        if (assetDate > endDate) {
+          endDate.setFullYear(endDate.getFullYear() + 1);
+        } else {
+          startDate.setFullYear(startDate.getFullYear() - 1);
+        }
+      }
+    }
+
+    return { workflow: { continue: assetDate >= startDate && assetDate <= endDate } };
   },
 
   assetLock: ({ config, data }) => {
@@ -151,13 +172,13 @@ const methods = wrapper<Manifest>({
   }),
 
   webhook: ({ config, data, functions, type, trigger }) => {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    const headers: Record<string, string> = {};
 
     if (config.headerName && config.headerValue) {
       headers[config.headerName] = config.headerValue;
     }
+
+    headers['Content-Type'] = 'application/json';
 
     functions.httpRequest(config.url, {
       method: config.method ?? 'POST',
@@ -179,6 +200,7 @@ const {
   assetFavorite,
   assetFileFilter,
   assetLocationFilter,
+  assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
   assetTypeFilter,
@@ -195,6 +217,7 @@ export {
   assetFavorite,
   assetFileFilter,
   assetLocationFilter,
+  assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
   assetTypeFilter,
