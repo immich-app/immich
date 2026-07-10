@@ -13,7 +13,7 @@ const config = {
     // TODO pending `@immich/ui` to enable it
     // runes: true,
   },
-  preprocess: vitePreprocess(),
+  preprocess: vitePreprocess({ script: true }),
   kit: {
     version: {
       name: process.env.IMMICH_BUILD || process.env.npm_package_version || 'local',
