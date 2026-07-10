@@ -24,7 +24,7 @@ import 'package:immich_mobile/presentation/actions/similar_photos.action.dart';
 import 'package:immich_mobile/presentation/actions/slideshow.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
@@ -190,7 +190,9 @@ enum ActionButtonType {
       ActionButtonType.archive || ActionButtonType.unarchive => ActionMenuItemWidget(
         action: ArchiveAction(assets: [context.asset], scope: scope),
       ),
-      ActionButtonType.download => DownloadActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.download => ActionMenuItemWidget(
+        action: DownloadAction(assets: [context.asset], scope: scope),
+      ),
       ActionButtonType.restoreTrash => ActionMenuItemWidget(
         action: RestoreAction(assets: [context.asset], scope: scope),
       ),

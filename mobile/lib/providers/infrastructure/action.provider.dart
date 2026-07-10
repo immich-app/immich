@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
@@ -11,13 +10,10 @@ import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
-import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:logging/logging.dart';
 
 final actionProvider = NotifierProvider<ActionNotifier, void>(ActionNotifier.new, dependencies: [multiSelectProvider]);
@@ -75,29 +71,6 @@ class ActionNotifier extends Notifier<void> {
     return _getAssets(source).whereType<RemoteAsset>().toIds().toList(growable: false);
   }
 
-  List<String> _getLocalIdsForSource(ActionSource source, {bool ignoreLocalOnly = false}) {
-    final Set<BaseAsset> assets = _getAssets(source);
-    final List<String> localIds = [];
-
-    for (final asset in assets) {
-      if (ignoreLocalOnly && asset.storage != AssetState.merged) {
-        continue;
-      }
-      if (asset is LocalAsset) {
-        localIds.add(asset.id);
-      } else if (asset is RemoteAsset && asset.localId != null) {
-        localIds.add(asset.localId!);
-      }
-    }
-
-    return localIds;
-  }
-
-  List<String> _getOwnedRemoteIdsForSource(ActionSource source) {
-    final ownerId = ref.read(currentUserProvider)?.id;
-    return _getAssets(source).whereType<RemoteAsset>().ownedAssets(ownerId).toIds().toList(growable: false);
-  }
-
   Set<BaseAsset> _getAssets(ActionSource source) {
     return switch (source) {
       ActionSource.timeline => ref.read(multiSelectProvider).selectedAssets,
@@ -125,77 +98,6 @@ class ActionNotifier extends Notifier<void> {
     } catch (error, stack) {
       _logger.severe('Failed to restore all trash assets', error, stack);
       return ActionResult(count: 0, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> trashRemoteAndDeleteLocal(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    final localIds = _getLocalIdsForSource(source);
-    try {
-      await _service.trashRemoteAndDeleteLocal(ids, localIds);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to delete assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> deleteRemoteAndLocal(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    final localIds = _getLocalIdsForSource(source);
-    try {
-      await _service.deleteRemoteAndLocal(ids, localIds);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to delete assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult?> deleteLocal(ActionSource source, BuildContext context) async {
-    final assets = _getAssets(source);
-    bool? backedUpOnly = assets.every((asset) => asset.storage == AssetState.merged)
-        ? true
-        : await showDialog<bool>(
-            context: context,
-            builder: (BuildContext context) => DeleteLocalOnlyDialog(onDeleteLocal: (_) {}),
-          );
-
-    if (backedUpOnly == null) {
-      // User cancelled the dialog
-      return null;
-    }
-
-    final List<String> ids;
-    if (backedUpOnly) {
-      ids = assets.where((asset) => asset.storage == AssetState.merged).map((asset) => asset.localId!).toList();
-    } else {
-      ids = _getLocalIdsForSource(source);
-    }
-
-    try {
-      final deletedCount = await _service.deleteLocal(ids);
-      return ActionResult(count: deletedCount, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to delete assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult?> tagAssets(ActionSource source, BuildContext context) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    try {
-      final count = await _service.tagAssets(ids, context);
-      if (count == null) {
-        return null;
-      }
-
-      ref.invalidate(tagProvider);
-      return ActionResult(count: count, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to tag assets', error, stack);
-      ref.invalidate(tagProvider);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -274,18 +176,6 @@ class ActionNotifier extends Notifier<void> {
     } catch (error, stack) {
       _logger.severe('Failed to update rating for asset', error, stack);
       return ActionResult(count: 1, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> downloadAll(ActionSource source) async {
-    final assets = _getAssets(source).whereType<RemoteAsset>().toList(growable: false);
-    try {
-      final didEnqueue = await _service.downloadAll(assets);
-      final enqueueCount = didEnqueue.where((e) => e).length;
-      return ActionResult(count: enqueueCount, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to download assets', error, stack);
-      return ActionResult(count: assets.length, success: false, error: error.toString());
     }
   }
 
@@ -373,11 +263,4 @@ class ActionNotifier extends Notifier<void> {
 
 extension on Iterable<RemoteAsset> {
   Iterable<String> toIds() => map((e) => e.id);
-
-  Iterable<RemoteAsset> ownedAssets(String? ownerId) {
-    if (ownerId == null) {
-      return const [];
-    }
-    return whereType<RemoteAsset>().where((a) => a.ownerId == ownerId);
-  }
 }

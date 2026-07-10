@@ -7,6 +7,7 @@ import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/utils/option.dart';
@@ -35,6 +36,7 @@ class RepositoryMocks {
   final nativeApi = NativeSyncApiStub(MockNativeSyncApi());
   final assetApi = AssetApiRepositoryStub(MockAssetApiRepository());
   final assetMedia = AssetMediaRepositoryStub(MockAssetMediaRepository());
+  final download = DownloadRepositoryStub(MockDownloadRepository());
 
   RepositoryMocks() {
     resetAll();
@@ -52,6 +54,7 @@ class RepositoryMocks {
     nativeApi.reset();
     assetApi.reset();
     assetMedia.reset();
+    download.reset();
     reset(toast);
     _stubLocalAlbumRepository();
     _stubLocalAssetRepository();
@@ -60,6 +63,7 @@ class RepositoryMocks {
     _stubNativeSyncApi();
     _stubAssetApiRepository();
     _stubAssetMediaRepository();
+    _stubDownloadRepository();
   }
 
   void _stubRemoteAssetRepository() {
@@ -93,6 +97,10 @@ class RepositoryMocks {
   void _stubAssetMediaRepository() {
     when(assetMedia.shareAssets).thenAnswer((_) async => 1);
   }
+
+  void _stubDownloadRepository() {
+    when(download.downloadAllAssets).thenAnswer((_) async => const []);
+  }
 }
 
 class ServiceMocks {
@@ -101,6 +109,8 @@ class ServiceMocks {
   final asset = AssetServiceStub(MockAssetService());
   final album = RemoteAlbumServiceStub(MockRemoteAlbumService());
   final cleanup = CleanupServiceStub(MockCleanupService());
+  final tag = TagServiceStub(MockTagService());
+  final backgroundSync = MockBackgroundSyncManager();
 
   ServiceMocks() {
     resetAll();
@@ -113,11 +123,15 @@ class ServiceMocks {
     asset.reset();
     album.reset();
     cleanup.reset();
+    tag.reset();
+    reset(backgroundSync);
     _stubUserService();
     _stubPartnerService();
     _stubAssetService();
     _stubRemoteAlbumService();
     _stubCleanupService();
+    _stubTagService();
+    _stubBackgroundSync();
   }
 
   void _stubUserService() {
@@ -155,6 +169,17 @@ class ServiceMocks {
   void _stubCleanupService() {
     when(cleanup.deleteLocalAssets).thenAnswer((_) async => 0);
   }
+
+  void _stubTagService() {
+    when(tag.bulkTagAssets).thenAnswer((_) async => 0);
+    when(tag.upsertTags).thenAnswer((_) async => const []);
+    when(tag.getAllTags).thenAnswer((_) async => const {});
+  }
+
+  void _stubBackgroundSync() {
+    when(() => backgroundSync.syncLocal()).thenAnswer((_) async {});
+    when(() => backgroundSync.hashAssets()).thenAnswer((_) async {});
+  }
 }
 
 void _registerFallbacks() {
@@ -170,6 +195,7 @@ void _registerFallbacks() {
   registerFallbackValue(const Option<String>.none());
   registerFallbackValue(const Option<DateTime>.none());
   registerFallbackValue(<BaseAsset>[]);
+  registerFallbackValue(<RemoteAsset>[]);
   registerFallbackValue(ShareAssetType.original);
   registerFallbackValue(_FakeBuildContext());
 }
@@ -339,4 +365,20 @@ extension type const AssetMediaRepositoryStub(MockAssetMediaRepository api) impl
         cancelCompleter: any(named: 'cancelCompleter'),
         onAssetDownloadProgress: any(named: 'onAssetDownloadProgress'),
       );
+}
+
+extension type const DownloadRepositoryStub(MockDownloadRepository repo) implements Stub<MockDownloadRepository> {
+  Future<List<bool>> Function() get downloadAllAssets =>
+      () => repo.downloadAllAssets(any());
+}
+
+extension type const TagServiceStub(MockTagService service) implements Stub<MockTagService> {
+  Future<int> Function() get bulkTagAssets =>
+      () => service.bulkTagAssets(any(), any());
+
+  Future<List<Tag>> Function() get upsertTags =>
+      () => service.upsertTags(any());
+
+  Future<Set<Tag>> Function() get getAllTags =>
+      () => service.getAllTags();
 }

@@ -11,7 +11,6 @@ import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -106,7 +105,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
               actions.editLocation,
             ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
           ],
-          const DownloadActionButton(source: ActionSource.timeline),
+          ActionColumnButtonWidget(action: TimelineAction(action: actions.download)),
         ],
         if (ownsAlbum)
           ActionColumnButtonWidget(

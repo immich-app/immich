@@ -9,13 +9,10 @@ import 'package:immich_mobile/presentation/actions/asset_actions.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/bulk_tag_assets_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
@@ -44,9 +41,6 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final multiselect = ref.watch(multiSelectProvider);
-    final tagsEnabled = ref.watch(
-      userMetadataPreferencesProvider.select((value) => value.valueOrNull?.tagsEnabled ?? false),
-    );
 
     Future<void> addToAlbum(RemoteAlbum album) async {
       final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.timeline, album);
@@ -92,6 +86,8 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
           actions.lock,
           actions.editDateTime,
           actions.editLocation,
+          actions.download,
+          actions.tag,
         ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
         ActionColumnButtonWidget(
           action: ShareAction(assets: assets, scope: scope),
@@ -100,8 +96,6 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
           ActionColumnButtonWidget(
             action: ShareLinkAction(assets: assets, scope: scope),
           ),
-          if (multiselect.onlyRemote) const DownloadActionButton(source: ActionSource.timeline),
-          if (tagsEnabled) const BulkTagAssetsActionButton(source: ActionSource.timeline),
         ],
         if (multiselect.onlyLocal) const UploadActionButton(source: ActionSource.timeline),
       ],
