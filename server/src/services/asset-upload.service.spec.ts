@@ -252,7 +252,7 @@ describe(AssetUploadService.name, () => {
       mocks.asset.setComplete
         .mockRejectedValueOnce(new Error('Transient error'))
         .mockRejectedValueOnce(new Error('Transient error'))
-        .mockResolvedValue();
+        .mockResolvedValue(void 0);
 
       await sut.onComplete({ id: assetId, path, fileModifiedAt });
 
