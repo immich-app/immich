@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:immich_mobile/presentation/widgets/images/progressive_image_guard.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart'
     show
         PhotoViewScaleState,
@@ -438,15 +439,17 @@ class PhotoViewCoreState extends State<PhotoViewCore>
             height: scaleBoundaries.childSize.height * scale,
             child: widget.customChild!,
           )
-        : Image(
-            key: widget.heroAttributes?.tag != null ? ObjectKey(widget.heroAttributes!.tag) : null,
-            image: widget.imageProvider!,
-            semanticLabel: widget.semanticLabel,
-            gaplessPlayback: widget.gaplessPlayback ?? false,
-            filterQuality: widget.filterQuality,
-            width: scaleBoundaries.childSize.width * scale,
-            fit: BoxFit.contain,
-            isAntiAlias: widget.filterQuality == FilterQuality.high,
+        : ProgressiveImageGuard(
+            child: Image(
+              key: widget.heroAttributes?.tag != null ? ObjectKey(widget.heroAttributes!.tag) : null,
+              image: widget.imageProvider!,
+              semanticLabel: widget.semanticLabel,
+              gaplessPlayback: widget.gaplessPlayback ?? false,
+              filterQuality: widget.filterQuality,
+              width: scaleBoundaries.childSize.width * scale,
+              fit: BoxFit.contain,
+              isAntiAlias: widget.filterQuality == FilterQuality.high,
+            ),
           );
   }
 }

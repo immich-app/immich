@@ -8,6 +8,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/presentation/widgets/images/progressive_image_guard.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
@@ -301,7 +302,8 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     return IgnorePointer(
       child: Stack(
         children: [
-          if (!_isVideoReady || widget.asset.isMotionPhoto || isCasting) Center(child: widget.image),
+          if (!_isVideoReady || widget.asset.isMotionPhoto || isCasting)
+            Center(child: ProgressiveImageGuard(child: widget.image)),
           if (!isCasting) ...[
             Visibility.maintain(
               visible: _isVideoReady,
