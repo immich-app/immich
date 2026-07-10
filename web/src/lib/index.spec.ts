@@ -12,6 +12,10 @@ describe('cleanClass', () => {
   it('should unnest arrays', () => {
     expect(cleanClass('class1', ['class2', 'class3'])).toBe('class1 class2 class3');
   });
+
+  it('should unnest doubly nested arrays', () => {
+    expect(cleanClass('class1', [['class2a', 'class2b'], 'class3'])).toBe('class1 class2a class2b class3');
+  });
 });
 
 describe('isDefined', () => {
