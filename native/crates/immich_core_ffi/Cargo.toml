@@ -6,13 +6,19 @@ license.workspace = true
 
 # native_toolchain_rust requires cdylib (the bundled lib) + staticlib (iOS). It
 # derives the artifact name from [package].name, so no [lib] name override here.
+# "lib" additionally lets tests/ link the crate as a normal rust dependency.
 [lib]
-crate-type = ["cdylib", "staticlib"]
+crate-type = ["lib", "cdylib", "staticlib"]
 
 # features pinned explicitly so the cbindgen header + ffigen bindings always
 # match the exported symbols regardless of default-feature drift.
 [dependencies]
-immich_core = { path = "../immich_core", default-features = false, features = ["image"] }
+immich_core = { path = "../immich_core", default-features = false, features = ["image", "thumbhash"] }
+tokio = { workspace = true }
+
+[target.'cfg(target_os = "android")'.dependencies]
+jni = { workspace = true }
+libc = { workspace = true }
 
 [build-dependencies]
 cbindgen = { workspace = true }

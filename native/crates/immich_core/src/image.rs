@@ -192,6 +192,16 @@ mod tests {
     }
 
     #[test]
+    fn swaps_dims_only_for_the_90_270_transpose_family() {
+        for o in [TRANSPOSE, ROTATE_90, TRANSVERSE, ROTATE_270] {
+            assert!(swaps_dims(o), "o={o}");
+        }
+        for o in [0, 1, FLIP_HORIZONTAL, ROTATE_180, FLIP_VERTICAL, 9, -1] {
+            assert!(!swaps_dims(o), "o={o}");
+        }
+    }
+
+    #[test]
     fn identity_for_normal_orientation() {
         let src: Vec<u8> = (0..24u8).collect(); // 2x3 RGBA
         let mut dst = vec![0u8; 24];
@@ -252,6 +262,23 @@ mod tests {
         assert!(rgba1010102_to_rgba8888(&src, 8, 2, 1, &mut dst));
         assert_eq!(&dst[0..4], &[255, 0, 0, 0]); // opaque-less red
         assert_eq!(&dst[4..8], &[0, 0, 0, 255]); // opaque black
+    }
+
+    #[test]
+    fn convert_respects_src_stride_padding() {
+        let (w, h, stride) = (2usize, 2usize, 12usize); // 4 bytes row padding
+        let px = |v: u32| (v | 0xC000_0000).to_le_bytes(); // R=v, opaque
+        let mut src = vec![0u8; stride * h];
+        for (i, v) in [0u32, 179, 111, 1023].iter().enumerate() {
+            let (x, y) = (i % w, i / w);
+            src[y * stride + x * 4..y * stride + x * 4 + 4].copy_from_slice(&px(*v));
+        }
+        let mut dst = vec![0u8; w * h * 4];
+        assert!(rgba1010102_to_rgba8888(&src, stride, w, h, &mut dst));
+        for (i, want) in [0u8, 45, 28, 255].iter().enumerate() {
+            assert_eq!(dst[i * 4], *want, "R of pixel {i}");
+            assert_eq!(dst[i * 4 + 3], 255, "A of pixel {i}");
+        }
     }
 
     #[test]

@@ -4,8 +4,8 @@ import android.graphics.Bitmap
 
 object NativeImage {
   init {
-    // rotate() is compiled into the native_buffer shared lib (which already links jnigraphics).
-    System.loadLibrary("native_buffer")
+    // The image functions are JNI exports of the shared Rust core.
+    System.loadLibrary("immich_core_ffi")
   }
 
   /**

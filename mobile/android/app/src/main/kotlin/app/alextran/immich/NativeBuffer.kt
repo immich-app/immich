@@ -6,7 +6,8 @@ const val INITIAL_BUFFER_SIZE = 32 * 1024
 
 object NativeBuffer {
   init {
-    System.loadLibrary("native_buffer")
+    // All native code lives in the shared Rust core (built by the Flutter build hook).
+    System.loadLibrary("immich_core_ffi")
   }
 
   @JvmStatic
