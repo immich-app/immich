@@ -1,10 +1,8 @@
-import { BadRequestException } from '@nestjs/common';
-import { ApiProperty } from '@nestjs/swagger';
-import { Expose, plainToInstance, Transform, Type } from 'class-transformer';
-import { Equals, IsBoolean, IsInt, IsNotEmpty, IsString, Min, ValidateIf, ValidateNested } from 'class-validator';
+import { createZodDto } from 'nestjs-zod';
 import { ImmichHeader } from 'src/enum';
-import { Optional, ValidateBoolean, ValidateDate } from 'src/validation';
+import { isoDatetimeToDate } from 'src/validation';
 import { parseDictionary } from 'structured-headers';
+import z from 'zod';
 
 export enum Header {
   ContentLength = 'content-length',
@@ -17,180 +15,163 @@ export enum Header {
   UploadOffset = 'upload-offset',
 }
 
-export class UploadAssetDataDto {
-  @IsNotEmpty()
-  @IsString()
-  deviceAssetId!: string;
+const UploadAssetDataSchema = z.object({
+  deviceAssetId: z.string().min(1),
+  deviceId: z.string().min(1),
+  fileCreatedAt: isoDatetimeToDate,
+  fileModifiedAt: isoDatetimeToDate,
+  filename: z.string().min(1),
+  isFavorite: z.boolean().optional(),
+  livePhotoVideoId: z.string().min(1).optional(),
+  iCloudId: z.string().min(1).optional(),
+});
 
-  @IsNotEmpty()
-  @IsString()
-  deviceId!: string;
+export class UploadAssetDataDto extends createZodDto(UploadAssetDataSchema) {}
 
-  @ValidateDate()
-  fileCreatedAt!: Date;
+const structuredDictionary = z.string().transform((value, ctx) => {
+  try {
+    return parseDictionary(value);
+  } catch {
+    ctx.addIssue({ code: 'custom', message: 'must be a valid structured dictionary' });
+    return z.NEVER;
+  }
+});
 
-  @ValidateDate()
-  fileModifiedAt!: Date;
+const assetData = structuredDictionary
+  .transform((dict) => ({
+    deviceAssetId: dict.get('device-asset-id')?.[0],
+    deviceId: dict.get('device-id')?.[0],
+    filename: dict.get('filename')?.[0],
+    fileCreatedAt: dict.get('file-created-at')?.[0],
+    fileModifiedAt: dict.get('file-modified-at')?.[0],
+    isFavorite: dict.get('is-favorite')?.[0],
+    livePhotoVideoId: dict.get('live-photo-video-id')?.[0],
+    iCloudId: dict.get('icloud-id')?.[0],
+  }))
+  .pipe(UploadAssetDataSchema);
 
-  @IsString()
-  @IsNotEmpty()
-  filename!: string;
+const checksum = structuredDictionary.transform((dict, ctx) => {
+  const value = dict.get('sha')?.[0];
+  if (value instanceof ArrayBuffer && value.byteLength === 20) {
+    return Buffer.from(value);
+  }
+  ctx.addIssue({ code: 'custom', message: `Invalid ${Header.ReprDigest} header` });
+  return z.NEVER;
+});
 
-  @ValidateBoolean({ optional: true })
-  isFavorite?: boolean;
+const BaseUploadHeadersInputSchema = z.object({
+  [Header.ContentLength]: z.coerce.number().int().min(0),
+});
 
-  @Optional()
-  @IsString()
-  @IsNotEmpty()
-  livePhotoVideoId?: string;
+const BaseUploadHeadersSchema = BaseUploadHeadersInputSchema.transform((headers) => ({
+  contentLength: headers[Header.ContentLength],
+}));
 
-  @Optional()
-  @IsString()
-  @IsNotEmpty()
-  iCloudId!: string;
-}
+export class BaseUploadHeadersDto extends createZodDto(BaseUploadHeadersSchema) {}
 
-export class BaseUploadHeadersDto {
-  @Expose({ name: Header.ContentLength })
-  @Min(0)
-  @IsInt()
-  @Type(() => Number)
-  contentLength!: number;
-}
-
-export class StartUploadDto extends BaseUploadHeadersDto {
-  @Expose({ name: Header.InteropVersion })
-  @Optional()
-  @Min(3)
-  @IsInt()
-  @Type(() => Number)
-  version?: number;
-
-  @Expose({ name: ImmichHeader.AssetData })
-  @ValidateNested()
-  @Transform(({ value }) => {
-    if (!value) {
-      throw new BadRequestException(`${ImmichHeader.AssetData} header is required`);
+const StartUploadSchema = BaseUploadHeadersInputSchema.extend({
+  [Header.InteropVersion]: z.coerce.number().int().min(3).optional(),
+  [ImmichHeader.AssetData]: assetData,
+  [Header.ReprDigest]: checksum,
+  [Header.UploadLength]: z.coerce.number().int().min(1).optional(),
+  [Header.UploadComplete]: z.string().optional(),
+  [Header.UploadIncomplete]: z.string().optional(),
+})
+  .transform((headers, ctx) => {
+    const complete = parseUploadComplete(headers, ctx);
+    const length = headers[Header.UploadLength] ?? (complete !== false ? headers[Header.ContentLength] : undefined);
+    if (!length) {
+      ctx.addIssue({ code: 'custom', message: `Missing ${Header.UploadLength} header` });
+      return z.NEVER;
     }
+    return {
+      contentLength: headers[Header.ContentLength],
+      version: headers[Header.InteropVersion],
+      assetData: headers[ImmichHeader.AssetData],
+      checksum: headers[Header.ReprDigest],
+      uploadLength: length,
+      uploadComplete: complete,
+    };
+  })
+  .meta({ id: 'StartUploadDto' });
 
-    try {
-      const dict = parseDictionary(value);
-      return plainToInstance(UploadAssetDataDto, {
-        deviceAssetId: dict.get('device-asset-id')?.[0],
-        deviceId: dict.get('device-id')?.[0],
-        filename: dict.get('filename')?.[0],
-        duration: dict.get('duration')?.[0],
-        fileCreatedAt: dict.get('file-created-at')?.[0],
-        fileModifiedAt: dict.get('file-modified-at')?.[0],
-        isFavorite: dict.get('is-favorite')?.[0],
-        livePhotoVideoId: dict.get('live-photo-video-id')?.[0],
-        iCloudId: dict.get('icloud-id')?.[0],
+export class StartUploadDto extends createZodDto(StartUploadSchema) {}
+
+const ResumeUploadSchema = BaseUploadHeadersInputSchema.extend({
+  [Header.InteropVersion]: z.coerce.number().int().min(3),
+  [Header.ContentType]: z.string().optional(),
+  [Header.UploadLength]: z.coerce.number().int().min(1).optional(),
+  [Header.UploadOffset]: z.coerce.number().int().min(0),
+  [Header.UploadComplete]: z.string().optional(),
+  [Header.UploadIncomplete]: z.string().optional(),
+})
+  .superRefine((headers, ctx) => {
+    if (headers[Header.InteropVersion] >= 6 && headers[Header.ContentType] !== 'application/partial-upload') {
+      ctx.addIssue({
+        code: 'custom',
+        path: [Header.ContentType],
+        message: 'must be equal to application/partial-upload',
       });
-    } catch {
-      throw new BadRequestException(`${ImmichHeader.AssetData} must be a valid structured dictionary`);
     }
   })
-  assetData!: UploadAssetDataDto;
+  .transform((headers, ctx) => ({
+    contentLength: headers[Header.ContentLength],
+    version: headers[Header.InteropVersion],
+    contentType: headers[Header.ContentType],
+    uploadLength: headers[Header.UploadLength],
+    uploadOffset: headers[Header.UploadOffset],
+    uploadComplete: parseUploadComplete(headers, ctx, true),
+  }))
+  .meta({ id: 'ResumeUploadDto' });
 
-  @Expose({ name: Header.ReprDigest })
-  @Transform(({ value }) => {
-    if (!value) {
-      throw new BadRequestException(`Missing ${Header.ReprDigest} header`);
-    }
+export class ResumeUploadDto extends createZodDto(ResumeUploadSchema) {}
 
-    const checksum = parseDictionary(value).get('sha')?.[0];
-    if (checksum instanceof ArrayBuffer && checksum.byteLength === 20) {
-      return Buffer.from(checksum);
-    }
-    throw new BadRequestException(`Invalid ${Header.ReprDigest} header`);
-  })
-  checksum!: Buffer;
+const GetUploadStatusSchema = z
+  .object({ [Header.InteropVersion]: z.coerce.number().int().min(3) })
+  .transform((headers) => ({ version: headers[Header.InteropVersion] }))
+  .meta({ id: 'GetUploadStatusDto' });
 
-  @Expose()
-  @Min(1)
-  @IsInt()
-  @Transform(({ obj }) => {
-    const uploadLength = obj[Header.UploadLength];
-    if (uploadLength != undefined) {
-      return Number(uploadLength);
-    }
+export class GetUploadStatusDto extends createZodDto(GetUploadStatusSchema) {}
 
-    const contentLength = obj[Header.ContentLength];
-    if (contentLength && isUploadComplete(obj) !== false) {
-      return Number(contentLength);
-    }
-    throw new BadRequestException(`Missing ${Header.UploadLength} header`);
-  })
-  uploadLength!: number;
+const UploadOkSchema = z.object({ id: z.string() }).meta({ id: 'UploadOkDto' });
 
-  @Expose()
-  @Transform(({ obj }) => isUploadComplete(obj))
-  uploadComplete?: boolean;
-}
-
-export class ResumeUploadDto extends BaseUploadHeadersDto {
-  @Expose({ name: Header.InteropVersion })
-  @Min(3)
-  @IsInt()
-  @Type(() => Number)
-  version!: number;
-
-  @Expose({ name: Header.ContentType })
-  @ValidateIf((o) => o.version && o.version >= 6)
-  @Equals('application/partial-upload')
-  contentType!: string;
-
-  @Expose({ name: Header.UploadLength })
-  @Min(1)
-  @IsInt()
-  @Type(() => Number)
-  @Optional()
-  uploadLength?: number;
-
-  @Expose({ name: Header.UploadOffset })
-  @Min(0)
-  @IsInt()
-  @Type(() => Number)
-  uploadOffset!: number;
-
-  @Expose()
-  @IsBoolean()
-  @Transform(({ obj }) => isUploadComplete(obj))
-  uploadComplete!: boolean;
-}
-
-export class GetUploadStatusDto {
-  @Expose({ name: Header.InteropVersion })
-  @Min(3)
-  @IsInt()
-  @Type(() => Number)
-  version!: number;
-}
-
-export class UploadOkDto {
-  @ApiProperty()
-  id!: string;
-}
+export class UploadOkDto extends createZodDto(UploadOkSchema) {}
 
 const STRUCTURED_TRUE = '?1';
 const STRUCTURED_FALSE = '?0';
 
-function isUploadComplete(obj: any) {
-  const uploadComplete = obj[Header.UploadComplete];
-  if (uploadComplete === STRUCTURED_TRUE) {
+function parseStructuredBoolean(value: string | undefined, header: Header, ctx: z.RefinementCtx) {
+  if (value === STRUCTURED_TRUE) {
     return true;
-  } else if (uploadComplete === STRUCTURED_FALSE) {
+  }
+  if (value === STRUCTURED_FALSE) {
     return false;
-  } else if (uploadComplete !== undefined) {
-    throw new BadRequestException('upload-complete must be a structured boolean value');
+  }
+  if (value !== undefined) {
+    ctx.addIssue({ code: 'custom', path: [header], message: `${header} must be a structured boolean value` });
+  }
+}
+
+type UploadCompleteHeaders = {
+  [Header.UploadComplete]?: string;
+  [Header.UploadIncomplete]?: string;
+};
+
+function parseUploadComplete(
+  headers: UploadCompleteHeaders,
+  ctx: z.RefinementCtx,
+  required = false,
+): boolean | undefined {
+  const complete = parseStructuredBoolean(headers[Header.UploadComplete], Header.UploadComplete, ctx);
+  if (complete !== undefined) {
+    return complete;
   }
 
-  const uploadIncomplete = obj[Header.UploadIncomplete];
-  if (uploadIncomplete === STRUCTURED_TRUE) {
-    return false;
-  } else if (uploadIncomplete === STRUCTURED_FALSE) {
-    return true;
-  } else if (uploadIncomplete !== undefined) {
-    throw new BadRequestException('upload-incomplete must be a structured boolean value');
+  const incomplete = parseStructuredBoolean(headers[Header.UploadIncomplete], Header.UploadIncomplete, ctx);
+  if (incomplete !== undefined) {
+    return !incomplete;
+  }
+  if (required && headers[Header.UploadComplete] === undefined && headers[Header.UploadIncomplete] === undefined) {
+    ctx.addIssue({ code: 'custom', message: `${Header.UploadComplete} is required` });
   }
 }
