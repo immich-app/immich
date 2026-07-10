@@ -220,6 +220,7 @@ const SystemConfigNightlyTasksSchema = z
     clusterNewFaces: configBool.describe('Cluster new faces'),
     generateMemories: configBool.describe('Generate memories'),
     syncQuotaUsage: configBool.describe('Sync quota usage'),
+    removeStaleUploads: configBool.describe('Remove stale uploads'),
   })
   .meta({ id: 'SystemConfigNightlyTasksDto' });
 

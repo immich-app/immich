@@ -37,8 +37,8 @@ const structuredDictionary = z.string().transform((value, ctx) => {
   }
 });
 
-const assetData = structuredDictionary
-  .transform((dict) => ({
+const assetData = structuredDictionary.transform((dict, ctx) => {
+  const result = UploadAssetDataSchema.safeParse({
     deviceAssetId: dict.get('device-asset-id')?.[0],
     deviceId: dict.get('device-id')?.[0],
     filename: dict.get('filename')?.[0],
@@ -47,8 +47,15 @@ const assetData = structuredDictionary
     isFavorite: dict.get('is-favorite')?.[0],
     livePhotoVideoId: dict.get('live-photo-video-id')?.[0],
     iCloudId: dict.get('icloud-id')?.[0],
-  }))
-  .pipe(UploadAssetDataSchema);
+  });
+  if (!result.success) {
+    for (const issue of result.error.issues) {
+      ctx.addIssue({ code: 'custom', path: issue.path, message: issue.message });
+    }
+    return z.NEVER;
+  }
+  return result.data;
+});
 
 const checksum = structuredDictionary.transform((dict, ctx) => {
   const value = dict.get('sha')?.[0];
@@ -157,6 +164,12 @@ type UploadCompleteHeaders = {
   [Header.UploadIncomplete]?: string;
 };
 
+function parseUploadComplete(headers: UploadCompleteHeaders, ctx: z.RefinementCtx, required: true): boolean;
+function parseUploadComplete(
+  headers: UploadCompleteHeaders,
+  ctx: z.RefinementCtx,
+  required?: false,
+): boolean | undefined;
 function parseUploadComplete(
   headers: UploadCompleteHeaders,
   ctx: z.RefinementCtx,
@@ -173,5 +186,6 @@ function parseUploadComplete(
   }
   if (required && headers[Header.UploadComplete] === undefined && headers[Header.UploadIncomplete] === undefined) {
     ctx.addIssue({ code: 'custom', message: `${Header.UploadComplete} is required` });
+    return z.NEVER;
   }
 }
