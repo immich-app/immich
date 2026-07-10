@@ -2296,12 +2296,11 @@ export type DatabaseBackupConfig = {
     /** Keep last amount */
     keepLastAmount: number;
 };
-export type UploadBackupConfig = {
-    maxAgeHours: number;
-};
 export type SystemConfigBackupsDto = {
     database: DatabaseBackupConfig;
-    upload: UploadBackupConfig;
+    upload: {
+        maxAgeHours: number;
+    };
 };
 export type SystemConfigFFmpegRealtimeDto = {
     /** Enable real-time HLS transcoding (alpha) */
@@ -2515,6 +2514,7 @@ export type SystemConfigNightlyTasksDto = {
     generateMemories: boolean;
     /** Missing thumbnails */
     missingThumbnails: boolean;
+    /** Remove stale uploads */
     removeStaleUploads: boolean;
     /** Start time (HH:MM) */
     startTime: string;
@@ -6763,8 +6763,6 @@ export function startUpload({ contentLength, key, reprDigest, slug, uploadComple
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: UploadOkDto;
-    } | {
-        status: 201;
     }>(`/upload${QS.query(QS.explode({
         key,
         slug

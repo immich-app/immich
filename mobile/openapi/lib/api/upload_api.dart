@@ -24,7 +24,7 @@ class UploadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> cancelUploadWithHttpInfo(String id, { String? key, String? slug, }) async {
+  Future<Response> cancelUploadWithHttpInfo(String id, { String? key, String? slug, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/upload/{id}'
       .replaceAll('{id}', id);
@@ -54,6 +54,7 @@ class UploadApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -64,15 +65,15 @@ class UploadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<void> cancelUpload(String id, { String? key, String? slug, }) async {
-    final response = await cancelUploadWithHttpInfo(id,  key: key, slug: slug, );
+  Future<void> cancelUpload(String id, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    final response = await cancelUploadWithHttpInfo(id, key: key, slug: slug, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
   }
 
   /// Performs an HTTP 'OPTIONS /upload' operation and returns the [Response].
-  Future<Response> getUploadOptionsWithHttpInfo() async {
+  Future<Response> getUploadOptionsWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/upload';
 
@@ -94,11 +95,12 @@ class UploadApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
-  Future<void> getUploadOptions() async {
-    final response = await getUploadOptionsWithHttpInfo();
+  Future<void> getUploadOptions({ Future<void>? abortTrigger, }) async {
+    final response = await getUploadOptionsWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -115,7 +117,7 @@ class UploadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> getUploadStatusWithHttpInfo(String id, String uploadDraftInteropVersion, { String? key, String? slug, }) async {
+  Future<Response> getUploadStatusWithHttpInfo(String id, String uploadDraftInteropVersion, { String? key, String? slug, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/upload/{id}'
       .replaceAll('{id}', id);
@@ -147,6 +149,7 @@ class UploadApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -160,8 +163,8 @@ class UploadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<void> getUploadStatus(String id, String uploadDraftInteropVersion, { String? key, String? slug, }) async {
-    final response = await getUploadStatusWithHttpInfo(id, uploadDraftInteropVersion,  key: key, slug: slug, );
+  Future<void> getUploadStatus(String id, String uploadDraftInteropVersion, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    final response = await getUploadStatusWithHttpInfo(id, uploadDraftInteropVersion, key: key, slug: slug, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -187,7 +190,7 @@ class UploadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> resumeUploadWithHttpInfo(String contentLength, String id, String uploadComplete, String uploadDraftInteropVersion, String uploadOffset, { String? key, String? slug, }) async {
+  Future<Response> resumeUploadWithHttpInfo(String contentLength, String id, String uploadComplete, String uploadDraftInteropVersion, String uploadOffset, { String? key, String? slug, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/upload/{id}'
       .replaceAll('{id}', id);
@@ -222,6 +225,7 @@ class UploadApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -244,8 +248,8 @@ class UploadApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<UploadOkDto?> resumeUpload(String contentLength, String id, String uploadComplete, String uploadDraftInteropVersion, String uploadOffset, { String? key, String? slug, }) async {
-    final response = await resumeUploadWithHttpInfo(contentLength, id, uploadComplete, uploadDraftInteropVersion, uploadOffset,  key: key, slug: slug, );
+  Future<UploadOkDto?> resumeUpload(String contentLength, String id, String uploadComplete, String uploadDraftInteropVersion, String uploadOffset, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    final response = await resumeUploadWithHttpInfo(contentLength, id, uploadComplete, uploadDraftInteropVersion, uploadOffset, key: key, slug: slug, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -280,7 +284,7 @@ class UploadApi {
   ///
   /// * [String] uploadDraftInteropVersion:
   ///   Indicates the version of the RUFH protocol supported by the client.
-  Future<Response> startUploadWithHttpInfo(String contentLength, String reprDigest, String xImmichAssetData, { String? key, String? slug, String? uploadComplete, String? uploadDraftInteropVersion, }) async {
+  Future<Response> startUploadWithHttpInfo(String contentLength, String reprDigest, String xImmichAssetData, { String? key, String? slug, String? uploadComplete, String? uploadDraftInteropVersion, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/upload';
 
@@ -319,6 +323,7 @@ class UploadApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -342,8 +347,8 @@ class UploadApi {
   ///
   /// * [String] uploadDraftInteropVersion:
   ///   Indicates the version of the RUFH protocol supported by the client.
-  Future<UploadOkDto?> startUpload(String contentLength, String reprDigest, String xImmichAssetData, { String? key, String? slug, String? uploadComplete, String? uploadDraftInteropVersion, }) async {
-    final response = await startUploadWithHttpInfo(contentLength, reprDigest, xImmichAssetData,  key: key, slug: slug, uploadComplete: uploadComplete, uploadDraftInteropVersion: uploadDraftInteropVersion, );
+  Future<UploadOkDto?> startUpload(String contentLength, String reprDigest, String xImmichAssetData, { String? key, String? slug, String? uploadComplete, String? uploadDraftInteropVersion, Future<void>? abortTrigger, }) async {
+    final response = await startUploadWithHttpInfo(contentLength, reprDigest, xImmichAssetData, key: key, slug: slug, uploadComplete: uploadComplete, uploadDraftInteropVersion: uploadDraftInteropVersion, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -34,8 +34,10 @@ class SystemConfigNightlyTasksDto {
   /// Missing thumbnails
   bool missingThumbnails;
 
+  /// Remove stale uploads
   bool removeStaleUploads;
 
+  /// Start time (HH:MM)
   String startTime;
 
   /// Sync quota usage

@@ -19,7 +19,7 @@ class SystemConfigBackupsDto {
 
   DatabaseBackupConfig database;
 
-  UploadBackupConfig upload;
+  SystemConfigBackupsDtoUpload upload;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigBackupsDto &&
@@ -52,7 +52,7 @@ class SystemConfigBackupsDto {
 
       return SystemConfigBackupsDto(
         database: DatabaseBackupConfig.fromJson(json[r'database'])!,
-        upload: UploadBackupConfig.fromJson(json[r'upload'])!,
+        upload: SystemConfigBackupsDtoUpload.fromJson(json[r'upload'])!,
       );
     }
     return null;
