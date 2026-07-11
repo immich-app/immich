@@ -28,5 +28,5 @@ pub use capi::image::{
     immich_core_orientation_swaps_dims, immich_core_rgba1010102_to_rgba8888,
     immich_core_rotate_rgba8888,
 };
-pub use capi::thumbhash::{immich_core_thumbhash_dims, immich_core_thumbhash_to_rgba};
+pub use capi::thumbhash::immich_core_thumbhash_decode;
 pub use capi::{immich_core_free_string, immich_core_version};

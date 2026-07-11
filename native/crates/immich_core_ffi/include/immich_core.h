@@ -35,7 +35,8 @@ bool immich_core_orientation_swaps_dims(int32_t orientation);
  * bitmap lock + the dst allocation; this only fills dst.
  *
  * # Safety
- * `src` must be valid for reads of `src_len` bytes and `dst` for writes of `dst_len`.
+ * `src` must be valid for reads of `src_len` bytes, `dst` for writes of `dst_len`,
+ * and the two ranges must not overlap.
  */
 bool immich_core_rotate_rgba8888(const uint8_t *src,
                                  uintptr_t src_len,
@@ -54,7 +55,8 @@ bool immich_core_rotate_rgba8888(const uint8_t *src,
  * bitmap lock + the dst allocation; this only fills dst.
  *
  * # Safety
- * `src` must be valid for reads of `src_len` bytes and `dst` for writes of `dst_len`.
+ * `src` must be valid for reads of `src_len` bytes, `dst` for writes of `dst_len`,
+ * and the two ranges must not overlap.
  */
 bool immich_core_rgba1010102_to_rgba8888(const uint8_t *src,
                                          uintptr_t src_len,
@@ -65,28 +67,13 @@ bool immich_core_rgba1010102_to_rgba8888(const uint8_t *src,
                                          uintptr_t dst_len);
 
 /**
- * Placeholder size for a ThumbHash. Returns false (leaving the out params
- * untouched) if the hash is malformed.
+ * Decode a ThumbHash into a freshly malloc'd RGBA8888 buffer (not premultiplied
+ * by alpha) and fill `out_info` with {width, height, rowBytes}. The caller owns
+ * the buffer and releases it with `free`. Returns null on a malformed hash,
+ * leaving `out_info` untouched.
  *
  * # Safety
- * `hash` must be valid for reads of `hash_len` bytes; `out_width`/`out_height`
- * must be valid for writes.
+ * `hash` must be valid for reads of `hash_len` bytes and `out_info` for writes
+ * of three u32 values.
  */
-bool immich_core_thumbhash_dims(const uint8_t *hash,
-                                uintptr_t hash_len,
-                                uint32_t *out_width,
-                                uint32_t *out_height);
-
-/**
- * Render a ThumbHash as RGBA8888 (not premultiplied) into the caller's
- * densely-packed `w*h*4` `dst`, sized via [`immich_core_thumbhash_dims`].
- * Returns false (a safe no-op) on a malformed hash or short buffer.
- *
- * # Safety
- * `hash` must be valid for reads of `hash_len` bytes and `dst` for writes of
- * `dst_len`.
- */
-bool immich_core_thumbhash_to_rgba(const uint8_t *hash,
-                                   uintptr_t hash_len,
-                                   uint8_t *dst,
-                                   uintptr_t dst_len);
+uint8_t *immich_core_thumbhash_decode(const uint8_t *hash, uintptr_t hash_len, uint32_t *out_info);

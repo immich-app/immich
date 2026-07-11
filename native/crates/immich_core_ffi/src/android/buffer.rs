@@ -11,7 +11,7 @@
 //! the caller falls back, never unwinding into the JVM. The pure allocator calls
 //! don't touch the env and contain no panicking code, so they run directly.
 
-use jni::objects::{JByteBuffer, JClass, JObject};
+use jni::objects::{JClass, JObject};
 use jni::sys::{jint, jlong, jobject};
 use jni::{EnvUnowned, Outcome};
 
@@ -76,37 +76,6 @@ pub extern "system" fn Java_app_alextran_immich_NativeBuffer_wrap<'local>(
         }
         Outcome::Panic(_) => std::ptr::null_mut(),
     }
-}
-
-#[no_mangle]
-pub extern "system" fn Java_app_alextran_immich_NativeBuffer_copy<'local>(
-    mut env: EnvUnowned<'local>,
-    _class: JClass<'local>,
-    buffer: JByteBuffer<'local>,
-    dest_address: jlong,
-    offset: jint,
-    length: jint,
-) {
-    // A non-direct buffer makes get_direct_buffer_address return Err, which becomes
-    // Outcome::Err here: a silent no-op, exactly like the C's NULL check.
-    crate::log::ensure_panic_hook();
-    let _ = env
-        .with_env(|env| -> jni::errors::Result<()> {
-            let src = env.get_direct_buffer_address(&buffer)?;
-            if !src.is_null() {
-                // SAFETY: `src` is the direct buffer's backing store and `dest` is a
-                // live libc allocation sized by the caller.
-                unsafe {
-                    libc::memcpy(
-                        dest_address as usize as *mut libc::c_void,
-                        src.add(offset as usize) as *const libc::c_void,
-                        length as usize,
-                    );
-                }
-            }
-            Ok(())
-        })
-        .into_outcome();
 }
 
 #[no_mangle]

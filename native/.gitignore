@@ -1,5 +1,5 @@
 /target
 smoke/*.node
 # generated + committed (regen via `mise run codegen`):
-#   crates/immich_core_dart/include/immich_core.h                     (cbindgen)
-#   immich_native_core/lib/immich_native_core_bindings_generated.dart (ffigen)
+#   crates/immich_core_ffi/include/immich_core.h    (cbindgen)
+#   immich_native_core/lib/src/ffi/bindings.g.dart  (ffigen)

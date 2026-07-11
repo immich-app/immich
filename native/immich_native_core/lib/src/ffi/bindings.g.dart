@@ -31,7 +31,8 @@ external bool immich_core_orientation_swaps_dims(int orientation);
 /// bitmap lock + the dst allocation; this only fills dst.
 ///
 /// # Safety
-/// `src` must be valid for reads of `src_len` bytes and `dst` for writes of `dst_len`.
+/// `src` must be valid for reads of `src_len` bytes, `dst` for writes of `dst_len`,
+/// and the two ranges must not overlap.
 @ffi.Native<
   ffi.Bool Function(
     ffi.Pointer<ffi.Uint8>,
@@ -62,7 +63,8 @@ external bool immich_core_rotate_rgba8888(
 /// bitmap lock + the dst allocation; this only fills dst.
 ///
 /// # Safety
-/// `src` must be valid for reads of `src_len` bytes and `dst` for writes of `dst_len`.
+/// `src` must be valid for reads of `src_len` bytes, `dst` for writes of `dst_len`,
+/// and the two ranges must not overlap.
 @ffi.Native<
   ffi.Bool Function(
     ffi.Pointer<ffi.Uint8>,
@@ -84,45 +86,23 @@ external bool immich_core_rgba1010102_to_rgba8888(
   int dst_len,
 );
 
-/// Placeholder size for a ThumbHash. Returns false (leaving the out params
-/// untouched) if the hash is malformed.
+/// Decode a ThumbHash into a freshly malloc'd RGBA8888 buffer (not premultiplied
+/// by alpha) and fill `out_info` with {width, height, rowBytes}. The caller owns
+/// the buffer and releases it with `free`. Returns null on a malformed hash,
+/// leaving `out_info` untouched.
 ///
 /// # Safety
-/// `hash` must be valid for reads of `hash_len` bytes; `out_width`/`out_height`
-/// must be valid for writes.
+/// `hash` must be valid for reads of `hash_len` bytes and `out_info` for writes
+/// of three u32 values.
 @ffi.Native<
-  ffi.Bool Function(
+  ffi.Pointer<ffi.Uint8> Function(
     ffi.Pointer<ffi.Uint8>,
     ffi.UintPtr,
     ffi.Pointer<ffi.Uint32>,
-    ffi.Pointer<ffi.Uint32>,
   )
 >()
-external bool immich_core_thumbhash_dims(
+external ffi.Pointer<ffi.Uint8> immich_core_thumbhash_decode(
   ffi.Pointer<ffi.Uint8> hash,
   int hash_len,
-  ffi.Pointer<ffi.Uint32> out_width,
-  ffi.Pointer<ffi.Uint32> out_height,
-);
-
-/// Render a ThumbHash as RGBA8888 (not premultiplied) into the caller's
-/// densely-packed `w*h*4` `dst`, sized via [`immich_core_thumbhash_dims`].
-/// Returns false (a safe no-op) on a malformed hash or short buffer.
-///
-/// # Safety
-/// `hash` must be valid for reads of `hash_len` bytes and `dst` for writes of
-/// `dst_len`.
-@ffi.Native<
-  ffi.Bool Function(
-    ffi.Pointer<ffi.Uint8>,
-    ffi.UintPtr,
-    ffi.Pointer<ffi.Uint8>,
-    ffi.UintPtr,
-  )
->()
-external bool immich_core_thumbhash_to_rgba(
-  ffi.Pointer<ffi.Uint8> hash,
-  int hash_len,
-  ffi.Pointer<ffi.Uint8> dst,
-  int dst_len,
+  ffi.Pointer<ffi.Uint32> out_info,
 );

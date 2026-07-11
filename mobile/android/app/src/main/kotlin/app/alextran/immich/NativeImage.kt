@@ -26,4 +26,12 @@ object NativeImage {
    */
   @JvmStatic
   external fun convert1010102(bitmap: Bitmap, outInfo: IntArray): Long
+
+  /**
+   * Decodes a ThumbHash placeholder into a freshly malloc'd RGBA_8888 native buffer. Returns the
+   * buffer address (free it with [NativeBuffer.free]) and fills [outInfo] with
+   * {width, height, rowBytes}. Returns 0 when the hash is malformed.
+   */
+  @JvmStatic
+  external fun thumbhash(hash: ByteArray, outInfo: IntArray): Long
 }

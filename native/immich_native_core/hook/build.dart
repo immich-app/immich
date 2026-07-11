@@ -13,6 +13,16 @@ void main(List<String> args) async {
     await RustBuilder(
       assetName: 'src/ffi/bindings.g.dart',
       cratePath: '../crates/immich_core_ffi',
+      // Android requires 16 KB-aligned load segments for Play (apps targeting
+      // Android 15+); the NDK linker still defaults to 4 KB, so force the page
+      // size for the .so. iOS/macOS/host use their own alignment and must not
+      // get this ELF-only flag. Set via env (not .cargo/config.toml) because the
+      // hook runs cargo from Flutter's cwd, where a crate-local config wouldn't
+      // be discovered.
+      extraCargoEnvironmentVariables: {
+        if (input.config.code.targetOS == OS.android)
+          'RUSTFLAGS': '-C link-arg=-Wl,-z,max-page-size=16384',
+      },
     ).run(input: input, output: output);
   });
 }

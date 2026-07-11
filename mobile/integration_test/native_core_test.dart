@@ -1,10 +1,10 @@
 // Plumbing check: proves immich_native_core is usable from the real immich app on
 // a real device — the build hook compiled the Rust for this target, the code asset
-// bundled into the app, and the @Native symbols resolve at runtime. The two
-// payloads run against their device-verified ground truth: the EXIF rotate ported
-// from native_image.c (#29337) and the 10-bit convert matching Skia's Bitmap.copy
-// (#29631). Calls the generated bindings directly — dart is the test harness here;
-// the production callers are the platform decode pipelines.
+// bundled into the app, and the @Native symbols resolve at runtime. The payloads
+// run against their device-verified ground truth: the EXIF rotate ported from
+// native_image.c (#29337), the 10-bit convert matching Skia's Bitmap.copy (#29631),
+// and the thumbhash decode. Calls the generated bindings directly — dart is the
+// test harness here; the production callers are the platform decode pipelines.
 // Self-contained: does NOT boot the immich app or need a server.
 //
 // Run:  flutter test integration_test/native_core_test.dart -d <device>
@@ -82,34 +82,29 @@ void main() {
     expect(out.sublist(4, 8), [45, 28, 0, 255]);
   });
 
-  test('thumbhash decodes via the core: dims then fill', () {
+  test('thumbhash decodes via the core into a malloc buffer', () {
     final hash = base64Decode('1QcSHQRnh493V4dIh4eXh1h4kJUI');
     final hashPtr = malloc<Uint8>(hash.length);
-    final w = malloc<Uint32>();
-    final h = malloc<Uint32>();
+    final info = malloc<Uint32>(3);
     try {
       hashPtr.asTypedList(hash.length).setAll(0, hash);
-      expect(immich_core_thumbhash_dims(hashPtr, hash.length, w, h), isTrue);
-      expect((w.value, h.value), (23, 32));
+      final ptr = immich_core_thumbhash_decode(hashPtr, hash.length, info);
+      expect(ptr, isNot(equals(nullptr)));
+      expect((info[0], info[1], info[2]), (23, 32, 23 * 4));
 
-      final len = w.value * h.value * 4;
-      final dst = malloc<Uint8>(len);
-      try {
-        expect(immich_core_thumbhash_to_rgba(hashPtr, hash.length, dst, len), isTrue);
-        final pixels = dst.asTypedList(len);
-        for (var i = 3; i < len; i += 4) {
-          expect(pixels[i], 255, reason: 'alpha at $i');
-        }
-        expect(pixels.toSet().length, greaterThan(2));
-      } finally {
-        malloc.free(dst);
+      final len = info[0] * info[1] * 4;
+      final pixels = ptr.asTypedList(len);
+      for (var i = 3; i < len; i += 4) {
+        expect(pixels[i], 255, reason: 'alpha at $i');
       }
+      expect(pixels.toSet().length, greaterThan(2));
+      malloc.free(ptr);
 
-      expect(immich_core_thumbhash_dims(hashPtr, 4, w, h), isFalse);
+      // malformed hash: null return, info untouched
+      expect(immich_core_thumbhash_decode(hashPtr, 4, info), equals(nullptr));
     } finally {
       malloc.free(hashPtr);
-      malloc.free(w);
-      malloc.free(h);
+      malloc.free(info);
     }
   });
 }

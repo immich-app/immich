@@ -14,9 +14,9 @@ dependencies:
 ```
 
 `dart pub get`. The dart surface is exactly the ffigen output of the C header —
-the current capabilities (EXIF rotate, 10-bit convert) are called by the platform
-decode pipelines, not by dart, so there are no hand-written dart wrappers. Add one
-only when a dart feature actually consumes a function.
+the current capabilities (EXIF rotate, 10-bit convert, thumbhash decode) are called
+by the platform decode pipelines, not by dart, so there are no hand-written dart
+wrappers. Add one only when a dart feature actually consumes a function.
 
 No app-level Gradle/Podfile edits. `hook/build.dart` compiles the Rust crate and
 Flutter bundles it as a code asset; the `@Native` bindings resolve against it.

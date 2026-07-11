@@ -1,8 +1,8 @@
 //! The shared tokio runtime for every async task the core ever runs. One static
 //! multi-thread runtime, created lazily on first use and reused for the process
 //! lifetime — FFI entry points must never build per-call or scoped runtimes.
-//! When the first async capability gets an FFI surface, this graduates to the
-//! explicit init/shutdown AppRuntime shape (isync / sha4x pattern).
+//! When the first async capability gets an FFI surface, this can graduate to an
+//! explicit init/shutdown lifecycle.
 
 use std::sync::LazyLock;
 use tokio::runtime::{Builder, Runtime};

@@ -8,8 +8,8 @@ fn main() {
     let out = Path::new(&crate_dir).join("include").join("immich_core.h");
     std::fs::create_dir_all(out.parent().unwrap()).ok();
 
-    // Hard-fail, not a warning: the CI drift gate diffs this header, so a silent
-    // codegen failure would let a stale header sail through green.
+    // Hard-fail, not a warning: the header is committed and consumed by ffigen +
+    // Swift, so a silent codegen failure would leave a stale header in the tree.
     match cbindgen::generate(&crate_dir) {
         Ok(bindings) => {
             bindings.write_to_file(&out);

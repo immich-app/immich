@@ -18,6 +18,5 @@ mod buffer;
 mod image;
 mod jnigraphics;
 mod log;
-mod thumbhash;
 
 pub(crate) use log::log_error;

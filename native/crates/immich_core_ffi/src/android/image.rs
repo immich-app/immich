@@ -1,8 +1,10 @@
-//! `NativeImage` — the bitmap pixel ops. Locks an Android bitmap, runs the shared
-//! `immich_core::image` math into a fresh libc buffer, hands it back to Kotlin.
-//! Ports of the former native_image.c.
+//! `NativeImage` — the pixel exports Kotlin calls: the bitmap ops ported from the
+//! former native_image.c (lock the bitmap, run the shared `immich_core::image`
+//! math into a fresh libc buffer, hand it back) and the thumbhash decode.
 
-use jni::objects::{JClass, JIntArray, JObject};
+use std::panic::{catch_unwind, AssertUnwindSafe};
+
+use jni::objects::{JByteArray, JClass, JIntArray, JObject};
 use jni::sys::{jint, jlong};
 use jni::{Env, EnvUnowned, Outcome};
 
@@ -62,13 +64,16 @@ fn with_bitmap_into_buffer(
     }
 
     let src_len = info.stride as usize * info.height as usize;
-    let ok = {
+    // AssertUnwindSafe: catching here keeps the unlock + free below on the panic
+    // path — otherwise an unwind would leak dst and leave the bitmap locked.
+    let ok = catch_unwind(AssertUnwindSafe(|| {
         // SAFETY: the locked bitmap is valid for `stride * height` bytes.
         let src = unsafe { std::slice::from_raw_parts(src_pixels as *const u8, src_len) };
         // SAFETY: dst was allocated with dst_len bytes above and never escaped.
         let dst_slice = unsafe { std::slice::from_raw_parts_mut(dst, dst_len) };
         work(&info, src, dst_slice)
-    };
+    }))
+    .unwrap_or(false);
     // SAFETY: paired with the successful lock above.
     unsafe { AndroidBitmap_unlockPixels(raw_env, raw_bitmap) };
     if !ok {
@@ -165,6 +170,39 @@ pub extern "system" fn Java_app_alextran_immich_NativeImage_convert1010102<'loca
         Outcome::Ok(ptr) => ptr,
         Outcome::Err(e) => {
             super::log_error(&format!("bitmap op failed: {e}"));
+            0
+        }
+        Outcome::Panic(_) => 0,
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_app_alextran_immich_NativeImage_thumbhash<'local>(
+    mut env: EnvUnowned<'local>,
+    _class: JClass<'local>,
+    hash: JByteArray<'local>,
+    out_info: JIntArray<'local>,
+) -> jlong {
+    crate::log::ensure_panic_hook();
+    let outcome = env
+        .with_env(|env| -> jni::errors::Result<jlong> {
+            let hash = env.convert_byte_array(&hash)?;
+            let Some((dst, w, h)) = crate::capi::thumbhash::decode_malloc(&hash) else {
+                return Ok(0);
+            };
+            let dims = [w as i32, h as i32, w as i32 * 4];
+            if out_info.set_region(env, 0, &dims).is_err() {
+                // SAFETY: dst never escaped; free before reporting failure.
+                unsafe { libc::free(dst as *mut libc::c_void) };
+                return Ok(0);
+            }
+            Ok(dst as jlong)
+        })
+        .into_outcome();
+    match outcome {
+        Outcome::Ok(ptr) => ptr,
+        Outcome::Err(e) => {
+            super::log_error(&format!("thumbhash decode failed: {e}"));
             0
         }
         Outcome::Panic(_) => 0,

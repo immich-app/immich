@@ -1,27 +1,30 @@
-# immich_native_core (PoC)
+# immich_native_core
 
 Shared Rust core for the pixel work the platforms can't do without native code,
-built from source into the app via Flutter native assets.
-
-The two capabilities are ports of native code we already ship or have in review,
-so the same logic exists once, tested, instead of per-platform C:
-- **EXIF-orientation rotate** — from `mobile/android/app/src/main/cpp/native_image.c`
-  (#29337, merged; fixes #24796, sideways RAW photos). Byte-for-byte the same affine
-  + tiled copy, plus bounds checks the raw C can't have.
+built from source into the app via Flutter native assets. It replaces the android
+C layer (`native_buffer.c`/`native_image.c`) and the per-platform thumbhash ports
+(`ThumbHash.java`/`Thumbhash.swift`), so the same logic exists once, tested:
+- **EXIF-orientation rotate** — from `native_image.c` (#29337; fixes #24796,
+  sideways RAW photos). Byte-for-byte the same affine + tiled copy, plus bounds
+  checks the raw C can't have.
 - **RGBA_1010102 → RGBA8888 convert** — the 10-bit HEIC/AVIF color fix (#29631,
   fixes #24906). Same `round(v*255/1023)` LUT + packing as the C, proven on-device
   against Skia's `Bitmap.copy(ARGB_8888)`.
+- **ThumbHash decode** — one bounds-checked implementation instead of the two
+  platform ports, which disagreed on rounding and crashed on truncated hashes.
+  Both platforms now render identical placeholders.
 
-Both fill a caller-owned output buffer (no allocation at the boundary) because the
-production callers hold JNI-locked bitmaps. Nothing in the app calls the core yet;
-wiring `native_image.c`'s JNI shims to it is the follow-up.
+The image ops fill a caller-owned output buffer (no allocation at the boundary)
+because the production callers hold JNI-locked bitmaps; the thumbhash decode
+returns a libc allocation the consumer frees with plain `free`.
 
 ## Layout
 ```
 crates/
-  immich_core        pure logic, no binding deps. capabilities = cargo features (image).
-  immich_core_ffi    the hand-written C ABI + cbindgen header — consumed by dart (ffigen),
-                     swift (native C interop) and kotlin (JNI shim)
+  immich_core        pure logic, no binding deps. capabilities = cargo features
+                     (image, thumbhash).
+  immich_core_ffi    the hand-written C ABI + cbindgen header — consumed by dart
+                     (ffigen), swift (C interop) and kotlin (JNI shims in src/android/)
   immich_core_napi   cdylib (.node) via napi-rs (server, unwired)
 immich_native_core/  the Flutter package mobile depends on. build hook + ffigen @Native bindings.
 smoke/               host dart + node roundtrip scripts (no device)
@@ -50,7 +53,7 @@ mise run smoke         Rust tests + host dart:ffi + host napi roundtrips
 
 ## Add a capability (end to end)
 1. add the logic to `crates/immich_core` (behind a cargo feature if it pulls a dep).
-2. expose a C entry in `crates/immich_core_ffi/src/lib.rs` — `#[no_mangle] pub extern "C"`,
+2. expose a C entry in `crates/immich_core_ffi/src/capi/` — `#[no_mangle] pub extern "C"`,
    wrap the body in `guard(...)`/`catch_unwind` (panic at the boundary → sentinel, never
    unwind into the host), validate pointers, and either fill a caller-owned buffer or
    return Rust-owned memory freed via `immich_core_free_string`.

@@ -11,8 +11,8 @@ use std::ptr;
 
 use immich_core_ffi::{
     immich_core_free_string, immich_core_orientation_swaps_dims,
-    immich_core_rgba1010102_to_rgba8888, immich_core_rotate_rgba8888, immich_core_thumbhash_dims,
-    immich_core_thumbhash_to_rgba, immich_core_version,
+    immich_core_rgba1010102_to_rgba8888, immich_core_rotate_rgba8888, immich_core_thumbhash_decode,
+    immich_core_version,
 };
 
 // "1QcSHQRnh493V4dIh4eXh1h4kJUI" decoded — the classic 23x32 opaque sample.
@@ -185,53 +185,35 @@ fn convert_rejects_bad_input_without_touching_dst() {
 }
 
 #[test]
-fn thumbhash_dims_then_decode() {
-    let (mut w, mut h) = (0u32, 0u32);
-    let ok =
-        unsafe { immich_core_thumbhash_dims(THUMBHASH.as_ptr(), THUMBHASH.len(), &mut w, &mut h) };
-    assert!(ok);
-    assert_eq!((w, h), (23, 32));
-
-    let mut dst = vec![0u8; (w * h * 4) as usize];
-    let ok = unsafe {
-        immich_core_thumbhash_to_rgba(
-            THUMBHASH.as_ptr(),
-            THUMBHASH.len(),
-            dst.as_mut_ptr(),
-            dst.len(),
-        )
+fn thumbhash_decodes_into_a_malloc_buffer() {
+    let mut info = [0u32; 3];
+    let ptr = unsafe {
+        immich_core_thumbhash_decode(THUMBHASH.as_ptr(), THUMBHASH.len(), info.as_mut_ptr())
     };
-    assert!(ok);
+    assert!(!ptr.is_null());
+    assert_eq!(info, [23, 32, 92]);
+
+    let len = (info[0] * info[1] * 4) as usize;
+    let pixels = unsafe { std::slice::from_raw_parts(ptr, len) };
     // opaque hash: every pixel fully opaque, image not a single flat color
-    assert!(dst.chunks_exact(4).all(|px| px[3] == 255));
-    assert!(dst.chunks_exact(4).any(|px| px[0] != dst[0]));
+    assert!(pixels.chunks_exact(4).all(|px| px[3] == 255));
+    assert!(pixels.chunks_exact(4).any(|px| px[0] != pixels[0]));
+    unsafe { libc::free(ptr as *mut libc::c_void) };
 }
 
 #[test]
 fn thumbhash_rejects_bad_input() {
-    let (mut w, mut h) = (0u32, 0u32);
+    let mut info = [7u32; 3];
     unsafe {
-        assert!(!immich_core_thumbhash_dims(ptr::null(), 21, &mut w, &mut h));
-        assert!(!immich_core_thumbhash_dims(
-            THUMBHASH.as_ptr(),
-            4,
-            &mut w,
-            &mut h
-        ));
-        let mut dst = [0u8; 16];
-        assert!(!immich_core_thumbhash_to_rgba(
-            THUMBHASH.as_ptr(),
-            THUMBHASH.len(),
-            dst.as_mut_ptr(),
-            dst.len()
-        ));
-        assert!(!immich_core_thumbhash_to_rgba(
-            ptr::null(),
-            21,
-            dst.as_mut_ptr(),
-            dst.len()
-        ));
+        assert!(immich_core_thumbhash_decode(ptr::null(), 21, info.as_mut_ptr()).is_null());
+        assert!(immich_core_thumbhash_decode(THUMBHASH.as_ptr(), 4, info.as_mut_ptr()).is_null());
+        assert!(
+            immich_core_thumbhash_decode(THUMBHASH.as_ptr(), THUMBHASH.len(), ptr::null_mut())
+                .is_null()
+        );
     }
+    // failed decodes never touched the out params
+    assert_eq!(info, [7, 7, 7]);
 }
 
 #[test]

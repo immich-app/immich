@@ -14,10 +14,15 @@ crate-type = ["lib", "cdylib", "staticlib"]
 # match the exported symbols regardless of default-feature drift.
 [dependencies]
 immich_core = { path = "../immich_core", default-features = false, features = ["image", "thumbhash"] }
+# libc everywhere: returned buffers live on the libc heap so every consumer frees
+# them with plain free (dart malloc.free / kotlin NativeBuffer.free / swift free).
+libc = { workspace = true }
 tokio = { workspace = true }
 
 [target.'cfg(target_os = "android")'.dependencies]
 jni = { workspace = true }
+
+[dev-dependencies]
 libc = { workspace = true }
 
 [build-dependencies]

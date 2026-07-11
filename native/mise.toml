@@ -22,7 +22,7 @@ run = "cargo clippy --workspace --all-targets -- -D warnings"
 alias = "codegen"
 description = "Generate the C header (cbindgen) + Dart @Native bindings (ffigen)"
 sources = [
-    "crates/immich_core_ffi/src/lib.rs",
+    "crates/immich_core_ffi/src/**/*.rs",
     "crates/immich_core_ffi/cbindgen.toml",
     "immich_native_core/ffigen.yaml",
 ]

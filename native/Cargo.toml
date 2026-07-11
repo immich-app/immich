@@ -35,7 +35,8 @@ napi-derive = "3"
 napi-build = "2"
 cbindgen = { version = "0.29", default-features = false }
 
-# CI-enforced (not review-hoped): the boundary crate also #![deny]s unwrap/expect.
+# enforced by `mise run lint` (clippy -D warnings); the boundary crate also
+# #![deny]s unwrap/expect.
 [workspace.lints.clippy]
 undocumented_unsafe_blocks = "deny"
 

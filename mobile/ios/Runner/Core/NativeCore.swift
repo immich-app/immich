@@ -5,15 +5,11 @@ import Foundation
 // framework in the bundle without linking Runner against it, so symbols are
 // resolved at runtime. Signatures mirror native/crates/immich_core_ffi/include/immich_core.h.
 enum NativeCore {
-  typealias ThumbhashDims = @convention(c) (
-    UnsafePointer<UInt8>?, UInt, UnsafeMutablePointer<UInt32>?, UnsafeMutablePointer<UInt32>?
-  ) -> Bool
-  typealias ThumbhashToRgba = @convention(c) (
-    UnsafePointer<UInt8>?, UInt, UnsafeMutablePointer<UInt8>?, UInt
-  ) -> Bool
+  typealias ThumbhashDecode = @convention(c) (
+    UnsafePointer<UInt8>?, UInt, UnsafeMutablePointer<UInt32>?
+  ) -> UnsafeMutablePointer<UInt8>?
 
-  static let thumbhashDims: ThumbhashDims? = symbol("immich_core_thumbhash_dims")
-  static let thumbhashToRgba: ThumbhashToRgba? = symbol("immich_core_thumbhash_to_rgba")
+  static let thumbhashDecode: ThumbhashDecode? = symbol("immich_core_thumbhash_decode")
 
   private static let handle: UnsafeMutableRawPointer? = {
     if let frameworks = Bundle.main.privateFrameworksPath {

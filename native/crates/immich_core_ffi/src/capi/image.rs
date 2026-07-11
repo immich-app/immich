@@ -7,7 +7,8 @@
 /// discard it. Nothing outside `src_len`/`dst_len` is touched.
 ///
 /// # Safety
-/// `src` must be valid for reads of `src_len` bytes and `dst` for writes of `dst_len`.
+/// `src` must be valid for reads of `src_len` bytes, `dst` for writes of `dst_len`,
+/// and the two ranges must not overlap.
 pub(super) unsafe fn fill_dst(
     src: *const u8,
     src_len: usize,
@@ -43,7 +44,8 @@ pub extern "C" fn immich_core_orientation_swaps_dims(orientation: i32) -> bool {
 /// bitmap lock + the dst allocation; this only fills dst.
 ///
 /// # Safety
-/// `src` must be valid for reads of `src_len` bytes and `dst` for writes of `dst_len`.
+/// `src` must be valid for reads of `src_len` bytes, `dst` for writes of `dst_len`,
+/// and the two ranges must not overlap.
 #[no_mangle]
 pub unsafe extern "C" fn immich_core_rotate_rgba8888(
     src: *const u8,
@@ -77,7 +79,8 @@ pub unsafe extern "C" fn immich_core_rotate_rgba8888(
 /// bitmap lock + the dst allocation; this only fills dst.
 ///
 /// # Safety
-/// `src` must be valid for reads of `src_len` bytes and `dst` for writes of `dst_len`.
+/// `src` must be valid for reads of `src_len` bytes, `dst` for writes of `dst_len`,
+/// and the two ranges must not overlap.
 #[no_mangle]
 pub unsafe extern "C" fn immich_core_rgba1010102_to_rgba8888(
     src: *const u8,
