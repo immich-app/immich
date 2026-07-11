@@ -10552,7 +10552,24 @@
       "post": {
         "description": "Search for assets based on various metadata criteria.",
         "operationId": "searchAssets",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -16206,7 +16223,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "contact": {}
   },
   "tags": [
