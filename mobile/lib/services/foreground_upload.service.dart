@@ -456,8 +456,8 @@ class ForegroundUploadService {
   }
 
   bool _allowUpload(LocalAsset asset, List<NetworkCapability> networkCapabilities) {
-    // Specifically check for cellular first so we disallow an unmetered vpn
-    // over disallowed cellular
+    // Check if we are allowed to use cellular, and if using a vpn on top of it
+    // whether that's allowed as well.
     final backup = SettingsRepository.instance.appConfig.backup;
     if (networkCapabilities.hasCellular) {
       if (asset.isVideo) {
@@ -465,13 +465,13 @@ class ForegroundUploadService {
           return false;
         }
 
-        return !networkCapabilities.hasVpn || networkCapabilities.isUnmetered || backup.allowMeteredVpnForVideos;
+        return !networkCapabilities.hasVpn || backup.allowMeteredVpnForVideos;
       } else {
         if (!backup.useCellularForPhotos) {
           return false;
         }
 
-        return !networkCapabilities.hasVpn || networkCapabilities.isUnmetered || backup.allowMeteredVpnForPhotos;
+        return !networkCapabilities.hasVpn || backup.allowMeteredVpnForPhotos;
       }
     }
 
