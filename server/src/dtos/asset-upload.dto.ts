@@ -88,7 +88,7 @@ const StartUploadSchema = BaseUploadHeadersInputSchema.extend({
     const complete = parseUploadComplete(headers, ctx);
     const length = headers[Header.UploadLength] ?? (complete === false ? undefined : headers[Header.ContentLength]);
     if (!length) {
-      ctx.addIssue({ code: 'custom', message: `Missing ${Header.UploadLength} header` });
+      ctx.addIssue({ code: 'custom', path: [Header.UploadLength], message: `Missing ${Header.UploadLength} header` });
       return z.NEVER;
     }
     return {
@@ -185,7 +185,7 @@ function parseUploadComplete(
     return !incomplete;
   }
   if (required && headers[Header.UploadComplete] === undefined && headers[Header.UploadIncomplete] === undefined) {
-    ctx.addIssue({ code: 'custom', message: `${Header.UploadComplete} is required` });
+    ctx.addIssue({ code: 'custom', path: [Header.UploadComplete], message: 'is required' });
     return z.NEVER;
   }
 }

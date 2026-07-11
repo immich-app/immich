@@ -18,6 +18,12 @@ const makeAssetData = (overrides?: Partial<any>): string => {
   });
 };
 
+const expectValidationIssue = (body: unknown, path: string[], message: string) => {
+  expect(body).toEqual(
+    expect.objectContaining({ errors: expect.arrayContaining([expect.objectContaining({ path, message })]) }),
+  );
+};
+
 describe(AssetUploadController.name, () => {
   let ctx: ControllerContext;
   let buffer: Buffer;
@@ -70,11 +76,7 @@ describe(AssetUploadController.name, () => {
         .send(buffer);
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        expect.objectContaining({
-          message: expect.arrayContaining(['version must not be less than 3']),
-        }),
-      );
+      expectValidationIssue(body, ['upload-draft-interop-version'], 'Too small: expected number to be >=3');
     });
 
     it('should require X-Immich-Asset-Data header', async () => {
@@ -87,7 +89,7 @@ describe(AssetUploadController.name, () => {
         .send(buffer);
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'x-immich-asset-data header is required' }));
+      expectValidationIssue(body, ['x-immich-asset-data'], 'Invalid input: expected string, received undefined');
     });
 
     it('should require Repr-Digest header', async () => {
@@ -100,7 +102,7 @@ describe(AssetUploadController.name, () => {
         .send(buffer);
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Missing repr-digest header' }));
+      expectValidationIssue(body, ['repr-digest'], 'Invalid input: expected string, received undefined');
     });
 
     it('should allow conventional upload without Upload-Complete header', async () => {
@@ -124,7 +126,7 @@ describe(AssetUploadController.name, () => {
         .send(buffer);
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Missing upload-length header' }));
+      expectValidationIssue(body, ['upload-length'], 'Missing upload-length header');
     });
 
     it('should infer upload length from content length if complete upload', async () => {
@@ -150,7 +152,7 @@ describe(AssetUploadController.name, () => {
         .send(buffer);
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Invalid repr-digest header' }));
+      expectValidationIssue(body, ['repr-digest'], 'Invalid repr-digest header');
     });
 
     it('should validate device-asset-id is required in asset data', async () => {
@@ -171,10 +173,10 @@ describe(AssetUploadController.name, () => {
         .send(buffer);
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        expect.objectContaining({
-          message: expect.arrayContaining([expect.stringContaining('deviceAssetId')]),
-        }),
+      expectValidationIssue(
+        body,
+        ['x-immich-asset-data', 'deviceAssetId'],
+        'Invalid input: expected string, received undefined',
       );
     });
 
@@ -196,10 +198,10 @@ describe(AssetUploadController.name, () => {
         .send(buffer);
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        expect.objectContaining({
-          message: expect.arrayContaining([expect.stringContaining('deviceId')]),
-        }),
+      expectValidationIssue(
+        body,
+        ['x-immich-asset-data', 'deviceId'],
+        'Invalid input: expected string, received undefined',
       );
     });
 
@@ -221,10 +223,10 @@ describe(AssetUploadController.name, () => {
         .send(buffer);
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        expect.objectContaining({
-          message: expect.arrayContaining([expect.stringContaining('filename')]),
-        }),
+      expectValidationIssue(
+        body,
+        ['x-immich-asset-data', 'filename'],
+        'Invalid input: expected string, received undefined',
       );
     });
 
@@ -254,7 +256,7 @@ describe(AssetUploadController.name, () => {
         .send(buffer);
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'upload-complete must be a structured boolean value' }));
+      expectValidationIssue(body, ['upload-complete'], 'upload-complete must be a structured boolean value');
     });
 
     it('should validate Upload-Length is a positive integer', async () => {
@@ -268,11 +270,7 @@ describe(AssetUploadController.name, () => {
         .send(buffer);
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        expect.objectContaining({
-          message: expect.arrayContaining(['uploadLength must not be less than 1']),
-        }),
-      );
+      expectValidationIssue(body, ['upload-length'], 'Too small: expected number to be >=1');
     });
   });
 
@@ -292,11 +290,7 @@ describe(AssetUploadController.name, () => {
         .send(Buffer.from('test'));
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        expect.objectContaining({
-          message: expect.arrayContaining(['version must be an integer number', 'version must not be less than 3']),
-        }),
-      );
+      expectValidationIssue(body, ['upload-draft-interop-version'], 'Invalid input: expected number, received NaN');
     });
 
     it('should require Upload-Offset header', async () => {
@@ -307,14 +301,7 @@ describe(AssetUploadController.name, () => {
         .send(Buffer.from('test'));
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        expect.objectContaining({
-          message: expect.arrayContaining([
-            'uploadOffset must be an integer number',
-            'uploadOffset must not be less than 0',
-          ]),
-        }),
-      );
+      expectValidationIssue(body, ['upload-offset'], 'Invalid input: expected number, received NaN');
     });
 
     it('should require Upload-Complete header', async () => {
@@ -326,7 +313,7 @@ describe(AssetUploadController.name, () => {
         .send(Buffer.from('test'));
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: ['uploadComplete must be a boolean value'] }));
+      expectValidationIssue(body, ['upload-complete'], 'is required');
     });
 
     it('should validate UUID parameter', async () => {
@@ -338,7 +325,11 @@ describe(AssetUploadController.name, () => {
         .send(Buffer.from('test'));
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: ['id must be a UUID'] }));
+      expect(body).toEqual(
+        expect.objectContaining({
+          errors: expect.arrayContaining([expect.objectContaining({ message: 'Invalid UUID', path: ['id'] })]),
+        }),
+      );
     });
 
     it('should validate Upload-Offset is a non-negative integer', async () => {
@@ -350,11 +341,7 @@ describe(AssetUploadController.name, () => {
         .send(Buffer.from('test'));
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        expect.objectContaining({
-          message: expect.arrayContaining(['uploadOffset must not be less than 0']),
-        }),
-      );
+      expectValidationIssue(body, ['upload-offset'], 'Too small: expected number to be >=0');
     });
 
     it('should require Content-Type: application/partial-upload for version >= 6', async () => {
@@ -367,11 +354,7 @@ describe(AssetUploadController.name, () => {
         .send(Buffer.from('test'));
 
       expect(status).toBe(400);
-      expect(body).toEqual(
-        expect.objectContaining({
-          message: ['contentType must be equal to application/partial-upload'],
-        }),
-      );
+      expectValidationIssue(body, ['content-type'], 'must be equal to application/partial-upload');
     });
 
     it('should allow other Content-Type for version < 6', async () => {
@@ -416,7 +399,11 @@ describe(AssetUploadController.name, () => {
       const { status, body } = await request(ctx.getHttpServer()).delete('/upload/invalid-uuid');
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: ['id must be a UUID'] }));
+      expect(body).toEqual(
+        expect.objectContaining({
+          errors: expect.arrayContaining([expect.objectContaining({ message: 'Invalid UUID', path: ['id'] })]),
+        }),
+      );
     });
   });
 

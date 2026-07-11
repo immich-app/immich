@@ -1,4 +1,4 @@
-import { BadRequestException } from '@nestjs/common';
+import { ZodValidationException } from 'nestjs-zod';
 import { IncomingHttpHeaders } from 'node:http';
 import { UAParser } from 'ua-parser-js';
 import z from 'zod';
@@ -31,5 +31,5 @@ export function validateSyncOrReject<T>(cls: { schema: z.ZodType<T> }, obj: unkn
   if (result.success) {
     return result.data;
   }
-  throw new BadRequestException(result.error.issues.map(({ message }) => message));
+  throw new ZodValidationException(result.error);
 }

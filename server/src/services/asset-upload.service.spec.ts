@@ -12,6 +12,7 @@ describe(AssetUploadService.name, () => {
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(AssetUploadService));
+    mocks.asset.setComplete.mockResolvedValue({ id: factory.uuid() } as any);
   });
 
   describe('onStart', () => {
@@ -51,8 +52,6 @@ describe(AssetUploadService.name, () => {
           id: assetId,
           ownerId: authStub.user1.user.id,
           checksum: mockDto.checksum,
-          deviceAssetId: mockDto.assetData.deviceAssetId,
-          deviceId: mockDto.assetData.deviceId,
           fileCreatedAt: mockDto.assetData.fileCreatedAt,
           fileModifiedAt: mockDto.assetData.fileModifiedAt,
           type: AssetType.Image,
@@ -225,7 +224,7 @@ describe(AssetUploadService.name, () => {
     it('should mark asset as complete and queue metadata extraction job', async () => {
       await sut.onComplete({ id: assetId, path, fileModifiedAt });
 
-      expect(mocks.asset.setComplete).toHaveBeenCalledWith(assetId);
+      expect(mocks.asset.setComplete).toHaveBeenCalledWith(assetId, undefined);
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.AssetExtractMetadata,
         data: { id: assetId, source: 'upload' },
@@ -378,7 +377,7 @@ describe(AssetUploadService.name, () => {
       const result = await sut.removeStaleUpload({ id: assetId });
 
       expect(result).toBe(JobStatus.Success);
-      expect(mocks.asset.setComplete).toHaveBeenCalledWith(assetId);
+      expect(mocks.asset.setComplete).toHaveBeenCalledWith(assetId, undefined);
       expect(mocks.storage.unlink).not.toHaveBeenCalled();
     });
 
