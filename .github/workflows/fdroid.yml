@@ -27,21 +27,27 @@ jobs:
           RELEASE: ${{ toJSON(github.event.release) }}
           TAG: ${{ github.event.release.tag_name }}
         run: |
-          export VERSION_CODE=$(yq '.version' mobile/pubspec.yaml | cut -d+ -f2)
+          VERSION_CODE=$(yq '.version' mobile/pubspec.yaml | cut -d+ -f2)
+          export VERSION_CODE
+
+          NEW_ENTRY=$(yq -P '
+            [.assets[] | select(.name == "app-release.apk")] as $matches |
+            with(select($matches | length == 0); error("app-release.apk not found in release assets")) |
+            {
+              "url": $matches[0].browser_download_url,
+              "sha256sum": ($matches[0].digest | sub("^sha256:", "")),
+              "date": (.published_at | split("T") | .[0]),
+              "version-code": env(VERSION_CODE)
+            } | .date tag= "!!timestamp"
+          ' <<< "$RELEASE")
+          export NEW_ENTRY
 
           git clone --depth 1 "https://oauth2:${GITLAB_TOKEN}@gitlab.futo.org/fdroid/repo-v2.git" fdroid-repo
           cd fdroid-repo
 
           yq -i '
-            [env(RELEASE).assets[] | select(.name == "app-release.apk")] as $matches |
-            with(select($matches | length == 0); error("app-release.apk not found in release assets")) |
             with(select([.apks[] | select(."version-code" == env(VERSION_CODE))] | length > 0); error("version-code already in index")) |
-            .apks = [{
-              "url": $matches[0].browser_download_url,
-              "sha256sum": ($matches[0].digest | sub("^sha256:", "")),
-              "date": (env(RELEASE).published_at | split("T") | .[0]),
-              "version-code": env(VERSION_CODE)
-            }] + .apks
+            .apks = [env(NEW_ENTRY)] + .apks
           ' apps/Immich/index.yml
 
           git config user.name "Immich Release Bot"
