@@ -13,7 +13,7 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2022",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals", "pannellum"]
   },
   "exclude": ["vite.config.ts"],
   "extends": "./.svelte-kit/tsconfig.json"

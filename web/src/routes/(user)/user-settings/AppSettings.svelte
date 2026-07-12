@@ -9,6 +9,8 @@
     autoPlayVideo,
     locale,
     loopVideo,
+    PanoramaViewerEngine,
+    panoramaViewerEngine,
     playVideoThumbnailOnHover,
     showDeleteModal,
   } from '$lib/stores/preferences.store';
@@ -59,6 +61,19 @@
     const current = themeManager.value === Theme.Dark ? ThemePreference.Dark : ThemePreference.Light;
     themeManager.setPreference(checked ? ThemePreference.System : current);
   };
+
+  const panoramaEngineOptions: ComboBoxOption[] = [
+    { value: PanoramaViewerEngine.PhotoSphereViewer, label: $t('panorama_viewer_engine_photo_sphere_viewer') },
+    { value: PanoramaViewerEngine.Pannellum, label: $t('panorama_viewer_engine_pannellum') },
+  ];
+  let selectedPanoramaEngineOption = $derived(
+    panoramaEngineOptions.find((option) => option.value === $panoramaViewerEngine) ?? panoramaEngineOptions[0],
+  );
+  const handlePanoramaEngineChange = (combobox: ComboBoxOption | undefined) => {
+    if (combobox) {
+      $panoramaViewerEngine = combobox.value as PanoramaViewerEngine;
+    }
+  };
 </script>
 
 <section class="my-4">
@@ -92,6 +107,15 @@
       <Field label={$t('display_original_photos')} description={$t('display_original_photos_setting_description')}>
         <Switch bind:checked={$alwaysLoadOriginalFile} />
       </Field>
+
+      <SettingCombobox
+        comboboxPlaceholder={$t('panorama_viewer_engine')}
+        selectedOption={selectedPanoramaEngineOption}
+        options={panoramaEngineOptions}
+        title={$t('panorama_viewer_engine')}
+        subtitle={$t('panorama_viewer_engine_description')}
+        onSelect={handlePanoramaEngineChange}
+      />
 
       <Field label={$t('video_hover_setting')} description={$t('video_hover_setting_description')}>
         <Switch bind:checked={$playVideoThumbnailOnHover} />

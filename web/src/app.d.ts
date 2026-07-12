@@ -26,6 +26,20 @@ declare module '$env/static/public' {
   export const PUBLIC_IMMICH_BUY_HOST: string;
 }
 
+// pannellum's npm package ships a UMD build meant to be loaded via a <script> tag (attaching
+// window.pannellum), not imported as an ES module - it has no module-level type declarations, and
+// @types/pannellum only provides the ambient global `Pannellum`/`window.pannellum` surface (see
+// tsconfig.json "types"). PannellumViewerAdapter.svelte loads it by injecting a real <script>/<link>
+// element, resolving the asset URLs via Vite's `?url` import suffix.
+declare module 'pannellum/build/pannellum.js?url' {
+  const url: string;
+  export default url;
+}
+declare module 'pannellum/build/pannellum.css?url' {
+  const url: string;
+  export default url;
+}
+
 interface Element {
   // Make optional, because it's unavailable on iPhones.
   requestFullscreen?(options?: FullscreenOptions): Promise<void>;

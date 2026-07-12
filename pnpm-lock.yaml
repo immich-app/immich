@@ -116,7 +116,7 @@ importers:
         version: link:../packages/e2e-auth-server
       '@immich/sdk':
         specifier: workspace:*
-        version: link:../packages/sdk
+        version: file:packages/sdk
       '@playwright/test':
         specifier: ^1.44.1
         version: 1.60.0
@@ -219,7 +219,7 @@ importers:
         version: 10.0.1(eslint@10.5.0(jiti@2.7.0))
       '@immich/sdk':
         specifier: workspace:*
-        version: link:../sdk
+        version: file:packages/sdk
       '@types/byte-size':
         specifier: ^8.1.0
         version: 8.1.2
@@ -318,7 +318,7 @@ importers:
         version: link:../plugin-sdk
       '@immich/sdk':
         specifier: workspace:*
-        version: link:../sdk
+        version: file:packages/sdk
       esbuild:
         specifier: ^0.28.0
         version: 0.28.1
@@ -337,7 +337,7 @@ importers:
         version: 1.1.1
       '@immich/sdk':
         specifier: workspace:*
-        version: link:../sdk
+        version: file:packages/sdk
       '@types/node':
         specifier: ^24.13.2
         version: 24.13.2
@@ -784,7 +784,7 @@ importers:
         version: 0.4.3
       '@immich/sdk':
         specifier: workspace:*
-        version: link:../packages/sdk
+        version: file:packages/sdk
       '@immich/ui':
         specifier: ^0.81.1
         version: 0.81.1(@sveltejs/kit@2.65.1(@opentelemetry/api@1.9.1)(@sveltejs/vite-plugin-svelte@7.1.2(svelte@5.56.3(@typescript-eslint/types@8.61.0))(vite@8.0.16(@types/node@24.13.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.56.3(@typescript-eslint/types@8.61.0))(typescript@6.0.3)(vite@8.0.16(@types/node@24.13.2)(esbuild@0.28.1)(jiti@2.7.0)(sass@1.101.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(svelte@5.56.3(@typescript-eslint/types@8.61.0))
@@ -827,6 +827,9 @@ importers:
       dom-to-image:
         specifier: ^2.6.0
         version: 2.6.0
+      exifr:
+        specifier: ^7.1.3
+        version: 7.1.3
       fabric:
         specifier: ^7.0.0
         version: 7.4.0
@@ -866,6 +869,9 @@ importers:
       media-chrome:
         specifier: ^4.19.0
         version: 4.19.2(react@19.2.7)
+      pannellum:
+        specifier: ^2.5.7
+        version: 2.5.7
       pmtiles:
         specifier: ^4.3.0
         version: 4.4.1
@@ -966,6 +972,9 @@ importers:
       '@types/luxon':
         specifier: ^3.4.2
         version: 3.7.1
+      '@types/pannellum':
+        specifier: ^2.5.1
+        version: 2.5.1
       '@types/qrcode':
         specifier: ^1.5.5
         version: 1.5.6
@@ -3245,6 +3254,9 @@ packages:
 
   '@immich/justified-layout-wasm@0.4.3':
     resolution: {integrity: sha512-fpcQ7zPhP3Cp1bEXhONVYSUeIANa2uzaQFGKufUZQo5FO7aFT77szTVChhlCy4XaVy5R4ZvgSkA/1TJmeORz7Q==}
+
+  '@immich/sdk@file:packages/sdk':
+    resolution: {directory: packages/sdk, type: directory}
 
   '@immich/sql-tools@0.5.2':
     resolution: {integrity: sha512-O1SJ+BbeFVsUTF4af1MfagJZM+lPgLjI8lQ3SZNjpo8SGJReSbUl2ii03OKuGni/G0yp2GnRLpOTNSHYGtVrcg==}
@@ -5528,6 +5540,9 @@ packages:
   '@types/oidc-provider@9.5.0':
     resolution: {integrity: sha512-eEzCRVTSqIHD9Bo/qRJ4XQWQ5Z/zBcG+Z2cGJluRsSuWx1RJihqRyPxhIEpMXTwPzHYRTQkVp7hwisQOwzzSAg==}
 
+  '@types/pannellum@2.5.1':
+    resolution: {integrity: sha512-5EoXUGFDWUXxjzIxc7T81EsWjd6ZphMgQgSIP9tPga4yFw4tepF0PlvTITCs6eOYXWkMdy5b5vAUxAT7i0oo6A==}
+
   '@types/parse5@5.0.3':
     resolution: {integrity: sha512-kUNnecmtkunAoQ3CnjmMkzNU/gtxG8guhi+Fk2U/kOpIKjIMKnXGp4IJCgQJrXSgMsWYimYG4TGjz/UzbGEBTw==}
 
@@ -7795,6 +7810,9 @@ packages:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
     engines: {node: '>=10'}
 
+  exifr@7.1.3:
+    resolution: {integrity: sha512-g/aje2noHivrRSLbAUtBPWFbxKdKhgj/xr1vATDdUXPOFYJlQ62Ft0oy+72V6XLIpDJfHs6gXLbBLAolqOXYRw==}
+
   exiftool-vendored.exe@13.59.0:
     resolution: {integrity: sha512-d+Glvl77sKAt3ybMyE2o9eLMtublnZIlii7QGFej5CwcPwvq9v440CmKnLvufzdUV3RGXU1q1/rZepONUNXJIQ==}
     os: [win32]
@@ -10033,6 +10051,9 @@ packages:
 
   package-manager-detector@1.6.0:
     resolution: {integrity: sha512-61A5ThoTiDG/C8s8UMZwSorAGwMJ0ERVGj2OjoW5pAalsNOg15+iQiPzrLJ4jhZ1HJzmC2PIHT2oEiH3R5fzNA==}
+
+  pannellum@2.5.7:
+    resolution: {integrity: sha512-AHMRYdLPxetwhBg4lO5EgoZ55C/e+wrJF2WaFQIQA18HSVcvLvsdXEjDL7WpD8MPIFwNnH9qoUDsUqP8cF4pgA==}
 
   param-case@3.0.4:
     resolution: {integrity: sha512-RXlj7zCYokReqWpOPH9oYivUzLYZ5vAPIfEmCTNViosC78F8F0H9y7T7gG2M39ymgutxF5gcFEsyZQSph9Bp3A==}
@@ -16102,6 +16123,10 @@ snapshots:
 
   '@immich/justified-layout-wasm@0.4.3': {}
 
+  '@immich/sdk@file:packages/sdk':
+    dependencies:
+      '@oazapfts/runtime': 1.2.0
+
   '@immich/sql-tools@0.5.2':
     dependencies:
       commander: 14.0.3
@@ -18459,6 +18484,8 @@ snapshots:
       '@types/keygrip': 1.0.6
       '@types/koa': 3.0.3
       '@types/node': 24.13.2
+
+  '@types/pannellum@2.5.1': {}
 
   '@types/parse5@5.0.3': {}
 
@@ -21091,6 +21118,8 @@ snapshots:
       onetime: 5.1.2
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
+
+  exifr@7.1.3: {}
 
   exiftool-vendored.exe@13.59.0:
     optional: true
@@ -23810,6 +23839,8 @@ snapshots:
       semver: 7.8.4
 
   package-manager-detector@1.6.0: {}
+
+  pannellum@2.5.7: {}
 
   param-case@3.0.4:
     dependencies:
