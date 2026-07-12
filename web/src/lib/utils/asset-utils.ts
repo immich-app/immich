@@ -26,7 +26,7 @@ import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { downloadBlob, downloadRequest, withError } from '$lib/utils';
+import { downloadBlob, downloadRequest, downloadRequestToFile, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
@@ -103,15 +103,23 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
 
     try {
       // TODO use sdk once it supports progress events
-      const { data } = await downloadRequest({
-        method: 'POST',
+      const requestOptions = {
+        method: 'POST' as const,
         url: getBaseUrl() + '/download/archive' + (queryParams ? `?${queryParams}` : ''),
         data: { assetIds: archive.assetIds, edited: true },
         signal: abort.signal,
-        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
-      });
+        onDownloadProgress: (event: ProgressEvent) => downloadManager.update(downloadKey, event.loaded),
+      };
 
-      downloadBlob(data, archiveName);
+      // Stream the archive to a disk-backed file when the browser supports it. Buffering it in
+      // memory makes Safari run out of memory for large archives (see #28316).
+      const file = await downloadRequestToFile(requestOptions);
+      if (file) {
+        downloadBlob(file, archiveName);
+      } else {
+        const { data } = await downloadRequest(requestOptions);
+        downloadBlob(data, archiveName);
+      }
     } catch (error) {
       const $t = get(t);
       handleError(error, $t('errors.unable_to_download_files'));

@@ -35,7 +35,7 @@ interface DownloadRequestOptions<T = unknown> {
   url: string;
   data?: T;
   signal?: AbortSignal;
-  onDownloadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
+  onDownloadProgress?: (event: ProgressEvent) => void;
 }
 
 interface DateFormatter {
@@ -168,6 +168,115 @@ export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions
   });
 };
 
+const OPFS_DOWNLOADS_DIRECTORY = 'downloads';
+const OPFS_DOWNLOAD_MAX_AGE_MS = 60 * 60 * 1000;
+
+const getOpfsDownloadsDirectory = async (): Promise<FileSystemDirectoryHandle | null> => {
+  if (
+    !globalThis.navigator?.storage?.getDirectory ||
+    typeof FileSystemFileHandle === 'undefined' ||
+    !('createWritable' in FileSystemFileHandle.prototype)
+  ) {
+    return null;
+  }
+
+  try {
+    const root = await navigator.storage.getDirectory();
+    return await root.getDirectoryHandle(OPFS_DOWNLOADS_DIRECTORY, { create: true });
+  } catch {
+    // OPFS can be unavailable in some browsing contexts (e.g. private browsing)
+    return null;
+  }
+};
+
+const removeStaleOpfsDownloads = async (directory: FileSystemDirectoryHandle) => {
+  const now = Date.now();
+  try {
+    for await (const name of directory.keys()) {
+      const timestamp = Number(name.split('-')[0]);
+      if (!Number.isFinite(timestamp) || now - timestamp > OPFS_DOWNLOAD_MAX_AGE_MS) {
+        await directory.removeEntry(name).catch(() => {});
+      }
+    }
+  } catch {
+    // a failed cleanup should never block the download itself
+  }
+};
+
+/**
+ * Downloads a request to a temporary file backed by the origin private file system instead of
+ * buffering the whole response in memory. Safari cannot spill large blobs to disk, so in-memory
+ * downloads of large archives make the page run out of memory (see #28316).
+ *
+ * Returns `null` when the browser does not support the required file system APIs, in which case
+ * the caller should fall back to an in-memory download.
+ */
+export const downloadRequestToFile = async <TBody = unknown>(
+  options: DownloadRequestOptions<TBody>,
+): Promise<File | null> => {
+  const directory = await getOpfsDownloadsDirectory();
+  if (!directory) {
+    return null;
+  }
+
+  await removeStaleOpfsDownloads(directory);
+
+  const temporaryFileName = `${Date.now()}-${crypto.randomUUID()}`;
+  let writable: FileSystemWritableFileStream;
+  let fileHandle: FileSystemFileHandle;
+  try {
+    fileHandle = await directory.getFileHandle(temporaryFileName, { create: true });
+    // Unsupported in Safari <26; guarded by the feature detection in getOpfsDownloadsDirectory
+    // eslint-disable-next-line tscompat/tscompat
+    writable = await fileHandle.createWritable();
+  } catch {
+    return null;
+  }
+
+  const { signal, method, url, data: body, onDownloadProgress: onProgress } = options;
+
+  try {
+    const response = await fetch(url, {
+      method: method || 'GET',
+      signal,
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+
+    if (!response.ok) {
+      throw new ApiError(response.statusText, response.status, await response.text());
+    }
+
+    if (!response.body) {
+      throw new Error(`Response for ${url} has no body`);
+    }
+
+    const total = Number(response.headers.get('Content-Length')) || 0;
+    const reader = response.body.getReader();
+    let loaded = 0;
+
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      // eslint-disable-next-line tscompat/tscompat
+      await writable.write(value);
+      loaded += value.byteLength;
+      onProgress?.(new ProgressEvent('progress', { lengthComputable: total > 0, loaded, total }));
+    }
+
+    // eslint-disable-next-line tscompat/tscompat
+    await writable.close();
+    return await fileHandle.getFile();
+  } catch (error) {
+    // eslint-disable-next-line tscompat/tscompat
+    await writable.abort().catch(() => {});
+    await directory.removeEntry(temporaryFileName).catch(() => {});
+    throw error;
+  }
+};
+
 let _sharedLink: SharedLinkResponseDto | undefined;
 
 export const setSharedLink = (sharedLink: typeof _sharedLink) => (_sharedLink = sharedLink);
@@ -282,6 +391,8 @@ const jsonReplacer = (_key: string, value: unknown) =>
         }, {})
     : value;
 
+const OBJECT_URL_REVOKE_DELAY_MS = 60 * 1000;
+
 export const downloadUrl = (url: string, filename: string) => {
   const anchor = document.createElement('a');
   anchor.href = url;
@@ -291,7 +402,11 @@ export const downloadUrl = (url: string, filename: string) => {
   anchor.click();
   anchor.remove();
 
-  URL.revokeObjectURL(url);
+  if (url.startsWith('blob:')) {
+    // Safari resolves the anchor's blob url asynchronously after the click, so revoking it
+    // synchronously can prevent the download from ever starting
+    setTimeout(() => URL.revokeObjectURL(url), OBJECT_URL_REVOKE_DELAY_MS);
+  }
 };
 
 export const downloadBlob = (data: Blob, filename: string) => downloadUrl(URL.createObjectURL(data), filename);
