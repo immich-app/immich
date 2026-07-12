@@ -367,7 +367,7 @@ export class SearchRepository {
       )
       .orderBy(
         sql`
-          coalesce(f_unaccent(name) <->>> f_unaccent(${placeName}), 0.1) +
+          (coalesce(f_unaccent(name) <->>> f_unaccent(${placeName}), 0.1) * 3) +
           coalesce(f_unaccent("admin2Name") <->>> f_unaccent(${placeName}), 0.1) +
           coalesce(f_unaccent("admin1Name") <->>> f_unaccent(${placeName}), 0.1) +
           coalesce(f_unaccent("alternateNames") <->>> f_unaccent(${placeName}), 0.1)
