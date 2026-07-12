@@ -390,14 +390,15 @@ describe(MediaService.name, () => {
       expect(mocks.asset.update).not.toHaveBeenCalledWith();
     });
 
-    it('should skip invisible assets', async () => {
-      const asset = AssetFactory.from({ visibility: AssetVisibility.Hidden }).exif().build();
-      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+    it('should generate thumbnails for hidden motion-photo companion videos', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video, visibility: AssetVisibility.Hidden }).exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...getForGenerateThumbnail(asset),
+        ...probeStub.videoStream2160p,
+      });
 
-      expect(await sut.handleGenerateThumbnails({ id: asset.id })).toEqual(JobStatus.Skipped);
-
-      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
-      expect(mocks.asset.update).not.toHaveBeenCalledWith();
+      await expect(sut.handleGenerateThumbnails({ id: asset.id })).resolves.toBe(JobStatus.Success);
+      expect(mocks.media.transcode).toHaveBeenCalled();
     });
 
     it('should delete previous preview if different path', async () => {
@@ -2041,6 +2042,16 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should queue thumbnail generation after successful transcoding', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStream2160p });
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.All } });
+      await sut.handleVideoConversion({ id: asset.id });
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetGenerateThumbnails,
+        data: { id: asset.id },
+      });
+    });
+
     it('should transcode when optimal and too big', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStream2160p });
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Optimal } });
@@ -2274,6 +2285,20 @@ describe(MediaService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Disabled } });
       await sut.handleVideoConversion({ id: 'video-id' });
       expect(mocks.media.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should queue thumbnail generation but not create an encoded-video file entry when no transcode is required', async () => {
+      const localAsset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).build();
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...localAsset, ...probeStub.videoStreamH264 });
+      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Disabled } });
+
+      await sut.handleVideoConversion({ id: localAsset.id });
+
+      expect(mocks.asset.upsertFile).not.toHaveBeenCalled();
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetGenerateThumbnails,
+        data: { id: localAsset.id },
+      });
     });
 
     it('should not remux when input is not an accepted container and transcoding is disabled', async () => {

@@ -9,7 +9,6 @@ import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
   AssetType,
-  AssetVisibility,
   AudioCodec,
   Colorspace,
   ImageFormat,
@@ -216,10 +215,6 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    if (asset.visibility === AssetVisibility.Hidden) {
-      this.logger.verbose(`Thumbnail generation skipped for asset ${id}: not visible`);
-      return JobStatus.Skipped;
-    }
 
     let generated: Awaited<ReturnType<MediaService['generateImageThumbnails']>>;
     if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
@@ -592,14 +587,14 @@ export class MediaService extends BaseService {
     const target = this.getTranscodeTarget(ffmpeg, videoStream, audioStream);
     if (target === TranscodeTarget.None && !this.isRemuxRequired(ffmpeg, format)) {
       const encodedVideo = getAssetFile(asset.files, AssetFileType.EncodedVideo, { isEdited: false });
-      if (encodedVideo) {
+      if (encodedVideo && encodedVideo.path !== input) {
         this.logger.log(`Transcoded video exists for asset ${asset.id}, but is no longer required. Deleting...`);
         await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [encodedVideo.path] } });
         await this.assetRepository.deleteFiles([encodedVideo]);
-      } else {
-        this.logger.verbose(`Asset ${asset.id} does not require transcoding based on current policy, skipping`);
       }
 
+      this.logger.verbose(`Asset ${asset.id} does not require transcoding based on current policy; using original file`);
+      await this.jobRepository.queue({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
       return JobStatus.Skipped;
     }
 
@@ -649,6 +644,8 @@ export class MediaService extends BaseService {
       path: output,
       isEdited: false,
     });
+
+    await this.jobRepository.queue({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
 
     return JobStatus.Success;
   }
