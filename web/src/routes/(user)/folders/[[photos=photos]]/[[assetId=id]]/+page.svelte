@@ -1,6 +1,7 @@
 <script lang="ts">
   import { afterNavigate, goto, invalidateAll } from '$app/navigation';
   import ActionMenuItem from '$lib/components/ActionMenuItem.svelte';
+  import OnEvents from '$lib/components/OnEvents.svelte';
   import UserPageLayout, { headerId } from '$lib/components/layouts/UserPageLayout.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
@@ -40,6 +41,7 @@
   let { data }: Props = $props();
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
+  let pathAssets = $state(data.pathAssets);
 
   const handleNavigateToFolder = (folderName: string) => navigateToView(joinPaths(data.tree.path, folderName));
 
@@ -47,17 +49,24 @@
 
   afterNavigate(() => {
     assetMultiSelectManager.clear();
+    pathAssets = data.pathAssets;
   });
 
   const navigateToView = (path: string) => {
     return goto(getLinkForPath(path), { keepFocus: true, noScroll: true });
   };
 
+  const handleAssetsDelete = async (ids: string[]) => {
+   if (pathAssets) {
+     const deletedIds = new Set(ids);
+     pathAssets = pathAssets.filter((asset) => !deletedIds.has(asset.id));
+   }
+
+   await invalidateAll();
+  };
+
   const triggerAssetUpdate = async () => {
     assetMultiSelectManager.clear();
-    if (data.tree.path) {
-      await foldersStore.refreshAssetsByPath(data.tree.path);
-    }
     await invalidateAll();
   };
 
@@ -66,11 +75,11 @@
   };
 
   const handleSelectAllAssets = () => {
-    if (!data.pathAssets) {
+    if (!pathAssets) {
       return;
     }
 
-    assetMultiSelectManager.selectAssets(data.pathAssets.map((asset) => toTimelineAsset(asset)));
+    assetMultiSelectManager.selectAssets(pathAssets.map((asset) => toTimelineAsset(asset)));
   };
 </script>
 
@@ -92,16 +101,18 @@
     </Sidebar>
   {/snippet}
 
+  <OnEvents onAssetsDelete={handleAssetsDelete} />
+
   <Breadcrumbs node={data.tree} icon={mdiFolderHome} title={$t('folders')} getLink={getLinkForPath} />
 
   <section class="mt-2 h-[calc(100%-(--spacing(25)))] immich-scrollbar overflow-auto">
     <TreeItemThumbnails items={data.tree.children} icon={mdiFolder} onClick={handleNavigateToFolder} />
 
     <!-- Assets -->
-    {#if data.pathAssets && data.pathAssets.length > 0}
+    {#if pathAssets && pathAssets.length > 0}
       <div bind:clientHeight={viewport.height} bind:clientWidth={viewport.width} class="mt-2">
         <GalleryViewer
-          assets={data.pathAssets}
+          assets={pathAssets}
           assetInteraction={assetMultiSelectManager}
           {viewport}
           showAssetName={true}
@@ -131,9 +142,9 @@
       <FavoriteAction
         removeFavorite={assetMultiSelectManager.isAllFavorite}
         onFavorite={function handleFavoriteUpdate(ids, isFavorite) {
-          if (data.pathAssets && data.pathAssets.length > 0) {
+          if (pathAssets && pathAssets.length > 0) {
             for (const id of ids) {
-              const asset = data.pathAssets.find((asset) => asset.id === id);
+              const asset = pathAssets.find((asset) => asset.id === id);
               if (asset) {
                 asset.isFavorite = isFavorite;
               }
