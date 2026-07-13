@@ -96,6 +96,39 @@ where
   "id" = $2
   and "enabled" = $3
 
+-- WorkflowRepository.getLogs
+select
+  "workflow_log"."createdAt",
+  "workflow_log"."halted",
+  "workflow_log"."error",
+  "workflow_log"."workflowId",
+  "workflow_log"."workflowStepId",
+  "workflow_log"."triggerDataId",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "plugin_method"."pluginId",
+          "plugin_method"."name" as "methodName",
+          "workflow_step"."order"
+        from
+          "workflow_step"
+          inner join "plugin_method" on "plugin_method"."id" = "workflow_step"."pluginMethodId"
+        where
+          "workflow_step"."id" = "workflow_log"."workflowStepId"
+      ) as obj
+  ) as "step"
+from
+  "workflow_log"
+where
+  "workflow_log"."workflowId" = $1
+order by
+  "workflow_log"."createdAt" desc
+limit
+  $2
+
 -- WorkflowRepository.delete
 delete from "workflow"
 where

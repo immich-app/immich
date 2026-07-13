@@ -15855,6 +15855,15 @@
             }
           },
           {
+            "name": "logging",
+            "required": false,
+            "in": "query",
+            "description": "Workflow logs run results",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "name",
             "required": false,
             "in": "query",
@@ -16165,6 +16174,95 @@
         ],
         "x-immich-permission": "workflow.update",
         "x-immich-state": "Deprecated"
+      }
+    },
+    "/workflows/{id}/logs": {
+      "get": {
+        "description": "Retrieve a workflow details without ids, default values, etc.",
+        "operationId": "getWorkflowLogs",
+        "parameters": [
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "description": "Filter by runs before a date/time",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+              "example": "2024-01-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of logs",
+            "schema": {
+              "maximum": 9007199254740991,
+              "exclusiveMinimum": true,
+              "default": 50,
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "result",
+            "required": false,
+            "in": "query",
+            "description": "Filter by run result",
+            "schema": {
+              "$ref": "#/components/schemas/WorkflowResult"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkflowLogEntryDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve a workflow",
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "workflow.logs"
       }
     },
     "/workflows/{id}/share": {
@@ -21015,6 +21113,7 @@
           "workflow.read",
           "workflow.update",
           "workflow.delete",
+          "workflow.logs",
           "adminUser.create",
           "adminUser.read",
           "adminUser.update",
@@ -27855,6 +27954,10 @@
             "description": "Workflow enabled",
             "type": "boolean"
           },
+          "logging": {
+            "description": "Workflow logs run results",
+            "type": "boolean"
+          },
           "name": {
             "description": "Workflow name",
             "nullable": true,
@@ -27873,6 +27976,49 @@
         },
         "required": [
           "trigger"
+        ],
+        "type": "object"
+      },
+      "WorkflowLogEntryDto": {
+        "properties": {
+          "at": {
+            "description": "Workflow run date/time",
+            "type": "string"
+          },
+          "lastStep": {
+            "description": "Last step ran, if the workflow ended early",
+            "properties": {
+              "index": {
+                "description": "Index of the step in the workflow",
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "method": {
+                "description": "Method of the step",
+                "type": "string"
+              }
+            },
+            "required": [
+              "method",
+              "index"
+            ],
+            "type": "object"
+          },
+          "result": {
+            "$ref": "#/components/schemas/WorkflowResult"
+          },
+          "triggerDataId": {
+            "description": "Workflow trigger data ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "at",
+          "result"
         ],
         "type": "object"
       },
@@ -27896,6 +28042,10 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
+          },
+          "logging": {
+            "description": "Workflow logs run results",
+            "type": "boolean"
           },
           "name": {
             "description": "Workflow name",
@@ -27923,12 +28073,22 @@
           "description",
           "enabled",
           "id",
+          "logging",
           "name",
           "steps",
           "trigger",
           "updatedAt"
         ],
         "type": "object"
+      },
+      "WorkflowResult": {
+        "description": "Workflow run result",
+        "enum": [
+          "completed",
+          "halted",
+          "error"
+        ],
+        "type": "string"
       },
       "WorkflowShareResponseDto": {
         "properties": {
@@ -28052,6 +28212,10 @@
           },
           "enabled": {
             "description": "Workflow enabled",
+            "type": "boolean"
+          },
+          "logging": {
+            "description": "Workflow logs run results",
             "type": "boolean"
           },
           "name": {

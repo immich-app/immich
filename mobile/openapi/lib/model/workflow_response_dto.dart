@@ -17,6 +17,7 @@ class WorkflowResponseDto {
     required this.description,
     required this.enabled,
     required this.id,
+    required this.logging,
     required this.name,
     this.steps = const [],
     required this.trigger,
@@ -35,6 +36,9 @@ class WorkflowResponseDto {
   /// Workflow ID
   String id;
 
+  /// Workflow logs run results
+  bool logging;
+
   /// Workflow name
   String? name;
 
@@ -52,6 +56,7 @@ class WorkflowResponseDto {
     other.description == description &&
     other.enabled == enabled &&
     other.id == id &&
+    other.logging == logging &&
     other.name == name &&
     _deepEquality.equals(other.steps, steps) &&
     other.trigger == trigger &&
@@ -64,13 +69,14 @@ class WorkflowResponseDto {
     (description == null ? 0 : description!.hashCode) +
     (enabled.hashCode) +
     (id.hashCode) +
+    (logging.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (steps.hashCode) +
     (trigger.hashCode) +
     (updatedAt.hashCode);
 
   @override
-  String toString() => 'WorkflowResponseDto[createdAt=$createdAt, description=$description, enabled=$enabled, id=$id, name=$name, steps=$steps, trigger=$trigger, updatedAt=$updatedAt]';
+  String toString() => 'WorkflowResponseDto[createdAt=$createdAt, description=$description, enabled=$enabled, id=$id, logging=$logging, name=$name, steps=$steps, trigger=$trigger, updatedAt=$updatedAt]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -82,6 +88,7 @@ class WorkflowResponseDto {
     }
       json[r'enabled'] = this.enabled;
       json[r'id'] = this.id;
+      json[r'logging'] = this.logging;
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
@@ -106,6 +113,7 @@ class WorkflowResponseDto {
         description: mapValueOfType<String>(json, r'description'),
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         id: mapValueOfType<String>(json, r'id')!,
+        logging: mapValueOfType<bool>(json, r'logging')!,
         name: mapValueOfType<String>(json, r'name'),
         steps: WorkflowStepDto.listFromJson(json[r'steps']),
         trigger: WorkflowTrigger.fromJson(json[r'trigger'])!,
@@ -161,6 +169,7 @@ class WorkflowResponseDto {
     'description',
     'enabled',
     'id',
+    'logging',
     'name',
     'steps',
     'trigger',

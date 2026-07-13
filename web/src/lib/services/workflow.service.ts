@@ -17,6 +17,7 @@ import {
   mdiDeleteOutline,
   mdiDownload,
   mdiFileDocumentMultipleOutline,
+  mdiHistory,
   mdiPause,
   mdiPencil,
   mdiPlay,
@@ -26,6 +27,7 @@ import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import WorkflowDuplicateModal from '$lib/modals/WorkflowDuplicateModal.svelte';
+import WorkflowLogsModal from '$lib/modals/WorkflowLogsModal.svelte';
 import WorkflowTemplatePickerModal from '$lib/modals/WorkflowTemplatePickerModal.svelte';
 import { Route } from '$lib/route';
 import { copyToClipboard, downloadJson } from '$lib/utils';
@@ -117,7 +119,13 @@ export const getWorkflowActions = ($t: MessageFormatter, workflow: WorkflowRespo
     onAction: () => handleDeleteWorkflow(workflow),
   };
 
-  return { CopyJson, Download, Duplicate, ToggleEnabled, Edit, Delete };
+  const Logs: ActionItem = {
+    title: $t('check_logs'),
+    icon: mdiHistory,
+    onAction: () => modalManager.show(WorkflowLogsModal, { workflow }),
+  };
+
+  return { CopyJson, Download, Duplicate, ToggleEnabled, Edit, Delete, Logs };
 };
 
 export const getWorkflowShowSchemaAction = (

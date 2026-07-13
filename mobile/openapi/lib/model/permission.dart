@@ -172,6 +172,7 @@ class Permission {
   static const workflowPeriodRead = Permission._(r'workflow.read');
   static const workflowPeriodUpdate = Permission._(r'workflow.update');
   static const workflowPeriodDelete = Permission._(r'workflow.delete');
+  static const workflowPeriodLogs = Permission._(r'workflow.logs');
   static const adminUserPeriodCreate = Permission._(r'adminUser.create');
   static const adminUserPeriodRead = Permission._(r'adminUser.read');
   static const adminUserPeriodUpdate = Permission._(r'adminUser.update');
@@ -330,6 +331,7 @@ class Permission {
     workflowPeriodRead,
     workflowPeriodUpdate,
     workflowPeriodDelete,
+    workflowPeriodLogs,
     adminUserPeriodCreate,
     adminUserPeriodRead,
     adminUserPeriodUpdate,
@@ -523,6 +525,7 @@ class PermissionTypeTransformer {
         case r'workflow.read': return Permission.workflowPeriodRead;
         case r'workflow.update': return Permission.workflowPeriodUpdate;
         case r'workflow.delete': return Permission.workflowPeriodDelete;
+        case r'workflow.logs': return Permission.workflowPeriodLogs;
         case r'adminUser.create': return Permission.adminUserPeriodCreate;
         case r'adminUser.read': return Permission.adminUserPeriodRead;
         case r'adminUser.update': return Permission.adminUserPeriodUpdate;

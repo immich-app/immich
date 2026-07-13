@@ -341,6 +341,7 @@ Class | Method | HTTP request | Description
 *WorkflowsApi* | [**deleteWorkflow**](doc//WorkflowsApi.md#deleteworkflow) | **DELETE** /workflows/{id} | Delete a workflow
 *WorkflowsApi* | [**getWorkflow**](doc//WorkflowsApi.md#getworkflow) | **GET** /workflows/{id} | Retrieve a workflow
 *WorkflowsApi* | [**getWorkflowForShare**](doc//WorkflowsApi.md#getworkflowforshare) | **GET** /workflows/{id}/share | Retrieve a workflow
+*WorkflowsApi* | [**getWorkflowLogs**](doc//WorkflowsApi.md#getworkflowlogs) | **GET** /workflows/{id}/logs | Retrieve a workflow
 *WorkflowsApi* | [**getWorkflowTriggers**](doc//WorkflowsApi.md#getworkflowtriggers) | **GET** /workflows/triggers | List all workflow triggers
 *WorkflowsApi* | [**searchWorkflows**](doc//WorkflowsApi.md#searchworkflows) | **GET** /workflows | List all workflows
 *WorkflowsApi* | [**updateWorkflow**](doc//WorkflowsApi.md#updateworkflow) | **PUT** /workflows/{id} | Update a workflow
@@ -711,7 +712,10 @@ Class | Method | HTTP request | Description
  - [VideoCodec](doc//VideoCodec.md)
  - [VideoContainer](doc//VideoContainer.md)
  - [WorkflowCreateDto](doc//WorkflowCreateDto.md)
+ - [WorkflowLogEntryDto](doc//WorkflowLogEntryDto.md)
+ - [WorkflowLogEntryDtoLastStep](doc//WorkflowLogEntryDtoLastStep.md)
  - [WorkflowResponseDto](doc//WorkflowResponseDto.md)
+ - [WorkflowResult](doc//WorkflowResult.md)
  - [WorkflowShareResponseDto](doc//WorkflowShareResponseDto.md)
  - [WorkflowShareStepDto](doc//WorkflowShareStepDto.md)
  - [WorkflowStepDto](doc//WorkflowStepDto.md)

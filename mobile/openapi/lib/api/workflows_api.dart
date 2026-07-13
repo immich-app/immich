@@ -239,6 +239,95 @@ class WorkflowsApi {
     return null;
   }
 
+  /// Retrieve a workflow
+  ///
+  /// Retrieve a workflow details without ids, default values, etc.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [DateTime] before:
+  ///   Filter by runs before a date/time
+  ///
+  /// * [int] limit:
+  ///   Maximum number of logs
+  ///
+  /// * [WorkflowResult] result:
+  ///   Filter by run result
+  Future<Response> getWorkflowLogsWithHttpInfo(String id, { DateTime? before, int? limit, WorkflowResult? result, Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/workflows/{id}/logs'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (before != null) {
+      queryParams.addAll(_queryParams('', 'before', before));
+    }
+    if (limit != null) {
+      queryParams.addAll(_queryParams('', 'limit', limit));
+    }
+    if (result != null) {
+      queryParams.addAll(_queryParams('', 'result', result));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Retrieve a workflow
+  ///
+  /// Retrieve a workflow details without ids, default values, etc.
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [DateTime] before:
+  ///   Filter by runs before a date/time
+  ///
+  /// * [int] limit:
+  ///   Maximum number of logs
+  ///
+  /// * [WorkflowResult] result:
+  ///   Filter by run result
+  Future<List<WorkflowLogEntryDto>?> getWorkflowLogs(String id, { DateTime? before, int? limit, WorkflowResult? result, Future<void>? abortTrigger, }) async {
+    final response = await getWorkflowLogsWithHttpInfo(id, before: before, limit: limit, result: result, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<WorkflowLogEntryDto>') as List)
+        .cast<WorkflowLogEntryDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// List all workflow triggers
   ///
   /// Retrieve a list of all available workflow triggers.
@@ -308,12 +397,15 @@ class WorkflowsApi {
   /// * [String] id:
   ///   Workflow ID
   ///
+  /// * [bool] logging:
+  ///   Workflow logs run results
+  ///
   /// * [String] name:
   ///   Workflow name
   ///
   /// * [WorkflowTrigger] trigger:
   ///   Workflow trigger type
-  Future<Response> searchWorkflowsWithHttpInfo({ String? description, bool? enabled, String? id, String? name, WorkflowTrigger? trigger, Future<void>? abortTrigger, }) async {
+  Future<Response> searchWorkflowsWithHttpInfo({ String? description, bool? enabled, String? id, bool? logging, String? name, WorkflowTrigger? trigger, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/workflows';
 
@@ -332,6 +424,9 @@ class WorkflowsApi {
     }
     if (id != null) {
       queryParams.addAll(_queryParams('', 'id', id));
+    }
+    if (logging != null) {
+      queryParams.addAll(_queryParams('', 'logging', logging));
     }
     if (name != null) {
       queryParams.addAll(_queryParams('', 'name', name));
@@ -370,13 +465,16 @@ class WorkflowsApi {
   /// * [String] id:
   ///   Workflow ID
   ///
+  /// * [bool] logging:
+  ///   Workflow logs run results
+  ///
   /// * [String] name:
   ///   Workflow name
   ///
   /// * [WorkflowTrigger] trigger:
   ///   Workflow trigger type
-  Future<List<WorkflowResponseDto>?> searchWorkflows({ String? description, bool? enabled, String? id, String? name, WorkflowTrigger? trigger, Future<void>? abortTrigger, }) async {
-    final response = await searchWorkflowsWithHttpInfo(description: description, enabled: enabled, id: id, name: name, trigger: trigger, abortTrigger: abortTrigger,);
+  Future<List<WorkflowResponseDto>?> searchWorkflows({ String? description, bool? enabled, String? id, bool? logging, String? name, WorkflowTrigger? trigger, Future<void>? abortTrigger, }) async {
+    final response = await searchWorkflowsWithHttpInfo(description: description, enabled: enabled, id: id, logging: logging, name: name, trigger: trigger, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
