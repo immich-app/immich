@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' hide AssetVisibility;
@@ -100,7 +101,7 @@ class ForegroundUploadService {
           final requireWifi = _shouldRequireWiFi(asset);
           return requireWifi && !hasWifi;
         },
-        processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+        processItem: (asset) => uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
       );
     }
   }
@@ -126,7 +127,7 @@ class ForegroundUploadService {
         continue;
       }
 
-      await _uploadSingleAsset(asset, cancelToken, callbacks: callbacks);
+      await uploadSingleAsset(asset, cancelToken, callbacks: callbacks);
     }
   }
 
@@ -143,7 +144,7 @@ class ForegroundUploadService {
     await _executeWithWorkerPool<LocalAsset>(
       items: localAssets,
       cancelToken: cancelToken,
-      processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+      processItem: (asset) => uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
     );
   }
 
@@ -233,7 +234,8 @@ class ForegroundUploadService {
     await Future.wait(workerFutures);
   }
 
-  Future<void> _uploadSingleAsset(
+  @visibleForTesting
+  Future<void> uploadSingleAsset(
     LocalAsset asset,
     Completer<void>? cancelToken, {
     required UploadCallbacks callbacks,

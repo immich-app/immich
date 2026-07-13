@@ -335,6 +335,14 @@ export class AlbumService extends BaseService {
 
   async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
+
+    const album = await this.findOrFail(id, userId, { withAssets: false });
+    const owner = album.albumUsers[0];
+
+    if (owner.user.id === userId) {
+      throw new BadRequestException('User is owner');
+    }
+
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
   }
 

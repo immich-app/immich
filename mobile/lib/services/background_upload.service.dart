@@ -317,6 +317,8 @@ class BackgroundUploadService {
       priority: priority,
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
+      // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
+      fields: entity.isLivePhoto ? {'visibility': api.AssetVisibility.hidden.value} : null,
       cloudId: entity.isLivePhoto ? null : asset.cloudId,
       adjustmentTime: entity.isLivePhoto ? null : asset.adjustmentTime?.toIso8601String(),
       latitude: entity.isLivePhoto ? null : asset.latitude?.toString(),
@@ -336,8 +338,7 @@ class BackgroundUploadService {
       return null;
     }
 
-    // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
-    final fields = {'livePhotoVideoId': livePhotoVideoId, 'visibility': api.AssetVisibility.hidden.value};
+    final fields = {'livePhotoVideoId': livePhotoVideoId};
 
     final requiresWiFi = _shouldRequireWiFi(asset);
     final originalFileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
