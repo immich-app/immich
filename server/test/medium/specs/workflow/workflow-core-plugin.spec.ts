@@ -428,6 +428,53 @@ describe('core plugin', () => {
     });
   });
 
+  describe('assetDateFilter', () => {
+    it('should favorite assets created during the first 7 days of a specific year and month', async () => {
+      const { user } = await ctx.newUser();
+      const [{ asset: asset1 }, { asset: asset2 }, { asset: asset3 }, { asset: asset4 }] = await Promise.all([
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date(2000, 2, 31, 13, 0, 0, 0) }),
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date(2000, 3, 1, 2, 0, 0, 0) }),
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date(2000, 3, 7, 14, 0, 0, 0) }),
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date(2000, 3, 8, 0, 0, 0, 0) }),
+      ]);
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetDateFilter',
+            config: {
+              startDate: { day: 1, month: 4, year: 2000 },
+              endDate: { day: 7, month: 4, year: 2000 },
+              recurring: false,
+            },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await expect(
+        ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset1.id }),
+      ).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset1.id)).resolves.toMatchObject({ isFavorite: false });
+      await expect(
+        ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset2.id }),
+      ).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset2.id)).resolves.toMatchObject({ isFavorite: true });
+      await expect(
+        ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset3.id }),
+      ).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset3.id)).resolves.toMatchObject({ isFavorite: true });
+      await expect(
+        ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset4.id }),
+      ).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset4.id)).resolves.toMatchObject({ isFavorite: false });
+    });
+  });
+
   describe('webhook', () => {
     it('should trigger a webhook on asset upload', async () => {
       const { user } = await ctx.newUser();
