@@ -163,7 +163,7 @@ export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 export type LargeAssetSearchOptions = AssetSearchOptions & { minFileSize?: number };
 
 export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
-  hasPerson?: boolean;
+  hasFaceCluster?: boolean;
   numResults: number;
   maxDistance: number;
   minBirthDate?: Date | null;
@@ -172,7 +172,7 @@ export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
 export interface FaceSearchResult {
   distance: number;
   id: string;
-  personId: string | null;
+  faceClusterId: string | null;
 }
 
 export interface AssetDuplicateResult {
@@ -341,7 +341,7 @@ export class SearchRepository {
       },
     ],
   })
-  searchFaces({ userIds, embedding, numResults, maxDistance, hasPerson, minBirthDate }: FaceEmbeddingSearch) {
+  searchFaces({ userIds, embedding, numResults, maxDistance, hasFaceCluster, minBirthDate }: FaceEmbeddingSearch) {
     if (!z.int().min(1).max(1000).safeParse(numResults).success) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
@@ -354,18 +354,18 @@ export class SearchRepository {
             .selectFrom('asset_face')
             .select([
               'asset_face.id',
-              'asset_face.personId',
+              'asset_face.faceClusterId',
               sql<number>`face_search.embedding <=> ${embedding}`.as('distance'),
             ])
             .innerJoin('asset', 'asset.id', 'asset_face.assetId')
             .innerJoin('face_search', 'face_search.faceId', 'asset_face.id')
-            .leftJoin('person', 'person.id', 'asset_face.personId')
+            .leftJoin('face_cluster', 'face_cluster.id', 'asset_face.faceClusterId')
             .where('asset.ownerId', '=', anyUuid(userIds))
             .where('asset.deletedAt', 'is', null)
-            .$if(!!hasPerson, (qb) => qb.where('asset_face.personId', 'is not', null))
+            .$if(!!hasFaceCluster, (qb) => qb.where('asset_face.faceClusterId', 'is not', null))
             .$if(!!minBirthDate, (qb) =>
               qb.where((eb) =>
-                eb.or([eb('person.birthDate', 'is', null), eb('person.birthDate', '<=', minBirthDate!)]),
+                eb.or([eb('face_cluster.birthDate', 'is', null), eb('face_cluster.birthDate', '<=', minBirthDate!)]),
               ),
             )
             .orderBy('distance')

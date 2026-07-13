@@ -835,6 +835,8 @@ export type PersonResponseDto = {
     birthDate: string | null;
     /** Person color (hex) */
     color?: string;
+    /** Face cluster ID */
+    faceClusterId: string;
     /** Person ID */
     id: string;
     /** Is favorite */
@@ -3212,6 +3214,24 @@ export type SyncAuthUserV1 = {
     storageLabel: string | null;
 };
 export type SyncCompleteV1 = {};
+export type SyncFaceClusterDeleteV1Schema = {
+    /** Face cluster ID */
+    faceClusterId: string;
+};
+export type SyncFaceClusterV1 = {
+    /** Birth date */
+    birthDate: string | null;
+    /** Created at */
+    createdAt: string;
+    /** Feature face asset ID */
+    featureFaceAssetId: string | null;
+    /** Face cluster ID */
+    id: string;
+    /** Name */
+    name: string;
+    /** Updated at */
+    updatedAt: string;
+};
 export type SyncMemoryAssetDeleteV1 = {
     /** Asset ID */
     assetId: string;
@@ -3290,6 +3310,22 @@ export type SyncPersonV1 = {
     isHidden: boolean;
     /** Person name */
     name: string;
+    /** Owner ID */
+    ownerId: string;
+    /** Updated at */
+    updatedAt: string;
+};
+export type SyncPersonV2 = {
+    /** Created at */
+    createdAt: string;
+    /** Face cluster ID */
+    faceClusterId: string;
+    /** Person ID */
+    id: string;
+    /** Is favorite */
+    isFavorite: boolean;
+    /** Is hidden */
+    isHidden: boolean;
     /** Owner ID */
     ownerId: string;
     /** Updated at */
@@ -7569,7 +7605,10 @@ export enum SyncEntityType {
     StackV1 = "StackV1",
     StackDeleteV1 = "StackDeleteV1",
     PersonV1 = "PersonV1",
+    PersonV2 = "PersonV2",
     PersonDeleteV1 = "PersonDeleteV1",
+    FaceClusterV1 = "FaceClusterV1",
+    FaceClusterDeleteV1 = "FaceClusterDeleteV1",
     AssetFaceV1 = "AssetFaceV1",
     AssetFaceV2 = "AssetFaceV2",
     AssetFaceDeleteV1 = "AssetFaceDeleteV1",
@@ -7604,6 +7643,8 @@ export enum SyncRequestType {
     StacksV1 = "StacksV1",
     UsersV1 = "UsersV1",
     PeopleV1 = "PeopleV1",
+    PeopleV2 = "PeopleV2",
+    FaceClusterV1 = "FaceClusterV1",
     AssetFacesV1 = "AssetFacesV1",
     AssetFacesV2 = "AssetFacesV2",
     UserMetadataV1 = "UserMetadataV1"

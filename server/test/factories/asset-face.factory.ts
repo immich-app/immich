@@ -27,7 +27,7 @@ export class AssetFaceFactory {
       imageHeight: 500,
       imageWidth: 400,
       isVisible: true,
-      personId: null,
+      faceClusterId: null,
       sourceType: SourceType.MachineLearning,
       updatedAt: newDate(),
       updateId: newUuidV7(),
@@ -37,7 +37,7 @@ export class AssetFaceFactory {
 
   person(dto: PersonLike = {}, builder?: FactoryBuilder<PersonFactory>) {
     this.#person = build(PersonFactory.from(dto), builder);
-    this.value.personId = this.#person.build().id;
+    this.value.faceClusterId = this.#person.build().faceClusterId;
     return this;
   }
 

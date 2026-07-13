@@ -246,12 +246,11 @@ export type Person = {
   updatedAt: Date;
   updateId: string;
   isFavorite: boolean;
-  name: string;
-  birthDate: Date | null;
-  color: string | null;
-  faceAssetId: string | null;
   isHidden: boolean;
+  birthDate: Date | null;
   thumbnailPath: string;
+  name: string;
+  faceClusterId: string;
 };
 
 export type AssetFace = {
@@ -264,7 +263,7 @@ export type AssetFace = {
   boundingBoxY2: number;
   imageHeight: number;
   imageWidth: number;
-  personId: string | null;
+  faceClusterId: string | null;
   sourceType: SourceType;
   person?: ShallowDehydrateObject<Person> | null;
   updatedAt: Date;

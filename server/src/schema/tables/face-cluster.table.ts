@@ -1,21 +1,26 @@
 import {
   AfterDeleteTrigger,
+  Check,
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
   Generated,
+  Index,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
-  Unique,
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { person_delete_audit } from 'src/schema/functions';
-import { FaceClusterTable } from 'src/schema/tables/face-cluster.table';
-import { UserTable } from 'src/schema/tables/user.table';
+import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 
-@Table('person')
+@Table('face_cluster')
+@Index({
+  name: 'idx_person_name_trigram',
+  using: 'gin',
+  expression: 'f_unaccent("name") gin_trgm_ops',
+})
 @UpdatedAtTrigger('face_cluster_updatedAt')
 @AfterDeleteTrigger({
   scope: 'statement',
@@ -23,8 +28,8 @@ import { UserTable } from 'src/schema/tables/user.table';
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
 })
-@Unique({ name: 'UQ_ownerId_faceClusterId', columns: ['ownerId', 'faceClusterId'] })
-export class PersonTable {
+@Check({ name: 'face_cluster_birthDate_chk', expression: `"birthDate" <= CURRENT_DATE` })
+export class FaceClusterTable {
   @PrimaryGeneratedColumn('uuid')
   id!: Generated<string>;
 
@@ -34,20 +39,14 @@ export class PersonTable {
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
 
-  @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
-  ownerId!: string;
-
-  @ForeignKeyColumn(() => FaceClusterTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', index: true })
-  faceClusterId!: string;
-
-  @Column({ type: 'boolean', default: false })
-  isHidden!: Generated<boolean>;
-
-  @Column({ type: 'boolean', default: false })
-  isFavorite!: Generated<boolean>;
-
   @Column({ default: '' })
-  thumbnailPath!: Generated<string>;
+  name!: Generated<string>;
+
+  @Column({ type: 'date', nullable: true })
+  birthDate!: Timestamp | null;
+
+  @ForeignKeyColumn(() => AssetFaceTable, { onDelete: 'SET NULL', nullable: true })
+  featureFaceAssetId!: string | null;
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;

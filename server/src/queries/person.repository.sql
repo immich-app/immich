@@ -3,9 +3,6 @@
 -- PersonRepository.reassignFaces
 update "asset_face"
 set
-  "personId" = $1
-where
-  "asset_face"."personId" = $2
 
 -- PersonRepository.delete
 delete from "person"
@@ -25,10 +22,14 @@ limit
 
 -- PersonRepository.getAllForUser
 select
-  "person".*
+  "person".*,
+  "face_cluster"."birthDate",
+  "face_cluster"."name",
+  "face_cluster"."featureFaceAssetId"
 from
   "person"
-  inner join "asset_face" on "asset_face"."personId" = "person"."id"
+  inner join "asset_face" on "asset_face"."faceClusterId" = "person"."faceClusterId"
+  inner join "face_cluster" on "face_cluster"."id" = "person"."faceClusterId"
   inner join "asset" on "asset_face"."assetId" = "asset"."id"
   and "asset"."visibility" = 'timeline'
   and "asset"."deletedAt" is null
@@ -38,10 +39,11 @@ where
   and "asset_face"."isVisible" is true
   and "person"."isHidden" = $2
 group by
-  "person"."id"
+  "person"."id",
+  "face_cluster"."id"
 having
   (
-    "person"."name" != $3
+    "face_cluster"."name" != $3
     or count("asset_face"."assetId") >= COALESCE(
       (
         SELECT
@@ -58,9 +60,9 @@ having
 order by
   "person"."isHidden" asc,
   "person"."isFavorite" desc,
-  NULLIF(person.name, '') is null asc,
+  NULLIF(face_cluster.name, '') is null asc,
   count("asset_face"."assetId") desc,
-  NULLIF(person.name, '') asc nulls last,
+  NULLIF(face_cluster.name, '') asc nulls last,
   "person"."createdAt"
 limit
   $5
@@ -72,7 +74,8 @@ select
   "person".*
 from
   "person"
-  left join "asset_face" on "asset_face"."personId" = "person"."id"
+  left join "asset_face" on "asset_face"."faceClusterId" = "person"."faceClusterId"
+  inner join "face_cluster" on "face_cluster"."id" = "person"."faceClusterId"
 where
   "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
@@ -90,19 +93,35 @@ select
     from
       (
         select
-          "person".*
+          "person".*,
+          "face_cluster"."featureFaceAssetId",
+          "face_cluster"."birthDate",
+          "face_cluster"."name",
+          "face_cluster"."featureFaceAssetId"
         from
           "person"
+          inner join "face_cluster" on "face_cluster"."id" = "asset_face"."faceClusterId"
         where
-          "person"."id" = "asset_face"."personId"
+          "person"."faceClusterId" = "asset_face"."faceClusterId"
+        order by
+          "person"."ownerId" = (
+            select
+              "asset"."ownerId"
+            from
+              "asset"
+            where
+              "asset"."id" = "asset_face"."assetId"
+          ) desc
+        limit
+          $1
       ) as obj
   ) as "person"
 from
   "asset_face"
 where
-  "asset_face"."assetId" = $1
+  "asset_face"."assetId" = $2
   and "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" = $2
+  and "asset_face"."isVisible" = $3
 order by
   "asset_face"."boundingBoxX1" asc
 
@@ -115,23 +134,39 @@ select
     from
       (
         select
-          "person".*
+          "person".*,
+          "face_cluster"."featureFaceAssetId",
+          "face_cluster"."birthDate",
+          "face_cluster"."name",
+          "face_cluster"."featureFaceAssetId"
         from
           "person"
+          inner join "face_cluster" on "face_cluster"."id" = "asset_face"."faceClusterId"
         where
-          "person"."id" = "asset_face"."personId"
+          "person"."faceClusterId" = "asset_face"."faceClusterId"
+        order by
+          "person"."ownerId" = (
+            select
+              "asset"."ownerId"
+            from
+              "asset"
+            where
+              "asset"."id" = "asset_face"."assetId"
+          ) desc
+        limit
+          $1
       ) as obj
   ) as "person"
 from
   "asset_face"
 where
-  "asset_face"."id" = $1
+  "asset_face"."id" = $2
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.getFaceForFacialRecognitionJob
 select
   "asset_face"."id",
-  "asset_face"."personId",
+  "asset_face"."faceClusterId",
   "asset_face"."sourceType",
   (
     select
@@ -191,7 +226,8 @@ select
   ) as "previewPath"
 from
   "person"
-  inner join "asset_face" on "asset_face"."id" = "person"."faceAssetId"
+  inner join "face_cluster" on "face_cluster"."id" = "person"."faceClusterId"
+  inner join "asset_face" on "asset_face"."id" = "face_cluster"."featureFaceAssetId"
   inner join "asset" on "asset_face"."assetId" = "asset"."id"
   left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
 where
@@ -201,7 +237,7 @@ where
 -- PersonRepository.reassignFace
 update "asset_face"
 set
-  "personId" = $1
+  "faceClusterId" = $1
 where
   "asset_face"."id" = $2
 
@@ -212,10 +248,14 @@ with
       set_config('pg_trgm.word_similarity_threshold', '0.5', true) as "thresh"
   )
 select
+  "face_cluster"."birthDate",
+  "face_cluster"."featureFaceAssetId",
+  "face_cluster"."name",
   "person".*
 from
   "similarity_threshold",
   "person"
+  inner join "face_cluster" on "face_cluster"."id" = "person"."faceClusterId"
 where
   "person"."ownerId" = $1
   and f_unaccent ("person"."name") %> f_unaccent ($2)
@@ -226,14 +266,15 @@ limit
 
 -- PersonRepository.getDistinctNames
 select distinct
-  on (lower("person"."name")) "person"."id",
-  "person"."name"
+  on (lower("face_cluster"."name")) "face_cluster"."id",
+  "face_cluster"."name"
 from
   "person"
+  inner join "face_cluster" on "face_cluster"."id" = "person"."faceClusterId"
 where
   (
     "person"."ownerId" = $1
-    and "person"."name" != $2
+    and "face_cluster"."name" != $2
   )
 
 -- PersonRepository.getStatistics
@@ -247,7 +288,14 @@ from
 where
   "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
-  and "asset_face"."personId" = $1
+  and "asset_face"."faceClusterId" = (
+    select
+      "person"."faceClusterId"
+    from
+      "person"
+    where
+      "person"."id" = $1
+  )
 
 -- PersonRepository.getNumberOfPeople
 select
@@ -267,7 +315,7 @@ where
     from
       "asset_face"
     where
-      "asset_face"."personId" = "person"."id"
+      "asset_face"."faceClusterId" = "person"."faceClusterId"
       and "asset_face"."deletedAt" is null
       and "asset_face"."isVisible" = $2
       and exists (
@@ -297,6 +345,15 @@ from
       1
   ) as "dummy"
 
+-- PersonRepository.updateAllFaceClusters
+insert into
+  "face_cluster" ("id", "name")
+values
+  ($1, $2)
+on conflict ("id") do update
+set
+  "name" = "excluded"."name"
+
 -- PersonRepository.getFacesByIds
 select
   "asset_face".*,
@@ -306,18 +363,35 @@ select
     from
       (
         select
-          "person".*
+          "person".*,
+          "face_cluster"."featureFaceAssetId",
+          "face_cluster"."birthDate",
+          "face_cluster"."name",
+          "face_cluster"."featureFaceAssetId"
         from
           "person"
+          inner join "face_cluster" on "face_cluster"."id" = "asset_face"."faceClusterId"
         where
-          "person"."id" = "asset_face"."personId"
+          "person"."faceClusterId" = "asset_face"."faceClusterId"
+        order by
+          "person"."ownerId" = (
+            select
+              "asset"."ownerId"
+            from
+              "asset"
+            where
+              "asset"."id" = "asset_face"."assetId"
+          ) desc
+        limit
+          $1
       ) as obj
   ) as "person"
 from
   "asset_face"
+  inner join "person" on "person"."faceClusterId" = "asset_face"."faceClusterId"
 where
-  "asset_face"."assetId" in ($1)
-  and "asset_face"."personId" in ($2)
+  "asset_face"."assetId" in ($2)
+  and "person"."id" in ($3)
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.getRandomFace
@@ -325,9 +399,10 @@ select
   "asset_face".*
 from
   "asset_face"
+  inner join "person" on "asset_face"."faceClusterId" = "person"."faceClusterId"
+  and "person"."id" = $1
 where
-  "asset_face"."personId" = $1
-  and "asset_face"."deletedAt" is null
+  "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
 
 -- PersonRepository.getLatestFaceDate
@@ -350,8 +425,8 @@ where
 
 -- PersonRepository.getForPeopleDelete
 select
-  "id",
-  "thumbnailPath"
+  "person"."id",
+  "person"."thumbnailPath"
 from
   "person"
 where
@@ -362,8 +437,9 @@ select
   "asset_face"."id"
 from
   "asset_face"
+  inner join "person" on "person"."faceClusterId" = "asset_face"."faceClusterId"
+  and "person"."id" = $1
   inner join "asset" on "asset"."id" = "asset_face"."assetId"
-  and "asset"."isOffline" = $1
+  and "asset"."isOffline" = $2
 where
-  "asset_face"."assetId" = $2
-  and "asset_face"."personId" = $3
+  "asset_face"."assetId" = $3
