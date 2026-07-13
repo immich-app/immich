@@ -1,35 +1,29 @@
 import {
   AfterDeleteTrigger,
-  Check,
   Column,
   CreateDateColumn,
   ForeignKeyColumn,
   Generated,
-  Index,
   PrimaryGeneratedColumn,
   Table,
   Timestamp,
+  Unique,
   UpdateDateColumn,
 } from '@immich/sql-tools';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { person_delete_audit } from 'src/schema/functions';
-import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
+import { FaceClusterTable } from 'src/schema/tables/face-cluster.table';
 import { UserTable } from 'src/schema/tables/user.table';
 
 @Table('person')
-@Index({
-  name: 'idx_person_name_trigram',
-  using: 'gin',
-  expression: 'f_unaccent("name") gin_trgm_ops',
-})
-@UpdatedAtTrigger('person_updatedAt')
+@UpdatedAtTrigger('person_cluster_updatedAt')
 @AfterDeleteTrigger({
   scope: 'statement',
   function: person_delete_audit,
   referencingOldTableAs: 'old',
   when: 'pg_trigger_depth() = 0',
 })
-@Check({ name: 'person_birthDate_chk', expression: `"birthDate" <= CURRENT_DATE` })
+@Unique({ name: 'UQ_ownerId_faceClusterId', columns: ['ownerId', 'faceClusterId'] })
 export class PersonTable {
   @PrimaryGeneratedColumn('uuid')
   id!: Generated<string>;
@@ -43,26 +37,17 @@ export class PersonTable {
   @ForeignKeyColumn(() => UserTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false })
   ownerId!: string;
 
-  @Column({ default: '' })
-  name!: Generated<string>;
-
-  @Column({ default: '' })
-  thumbnailPath!: Generated<string>;
+  @ForeignKeyColumn(() => FaceClusterTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', index: true })
+  faceClusterId!: string;
 
   @Column({ type: 'boolean', default: false })
   isHidden!: Generated<boolean>;
 
-  @Column({ type: 'date', nullable: true })
-  birthDate!: Timestamp | null;
-
-  @ForeignKeyColumn(() => AssetFaceTable, { onDelete: 'SET NULL', nullable: true })
-  faceAssetId!: string | null;
-
   @Column({ type: 'boolean', default: false })
   isFavorite!: Generated<boolean>;
 
-  @Column({ type: 'character varying', nullable: true, default: null })
-  color!: string | null;
+  @Column({ default: '' })
+  thumbnailPath!: Generated<string>;
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;

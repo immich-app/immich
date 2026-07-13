@@ -64,6 +64,7 @@ import { AssetFileTable } from 'src/schema/tables/asset-file.table';
 import { AssetJobStatusTable } from 'src/schema/tables/asset-job-status.table';
 import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { FaceClusterTable } from 'src/schema/tables/face-cluster.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { MemoryTable } from 'src/schema/tables/memory.table';
 import { PersonTable } from 'src/schema/tables/person.table';
@@ -256,9 +257,19 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   async newPerson(dto: Partial<Insertable<PersonTable>> & { ownerId: string }) {
+    if (!dto.faceClusterId) {
+      const { faceCluster } = await this.newFaceCluster();
+      dto.faceClusterId = faceCluster.id;
+    }
     const person = mediumFactory.personInsert(dto);
     const result = await this.get(PersonRepository).create(person);
     return { person, result };
+  }
+
+  async newFaceCluster(dto: Partial<Insertable<FaceClusterTable>> = {}) {
+    const faceCluster = mediumFactory.faceClusterInsert(dto);
+    const result = await this.get(PersonRepository).createFaceCluster(faceCluster);
+    return { faceCluster, result };
   }
 
   async newSession(dto: Partial<Insertable<SessionTable>> & { userId: string }) {
@@ -619,7 +630,7 @@ const assetFaceInsert = (assetFace: Partial<AssetFace> & { assetId: string }) =>
     id: assetFace.id ?? newUuid(),
     imageHeight: assetFace.imageHeight ?? 10,
     imageWidth: assetFace.imageWidth ?? 10,
-    personId: assetFace.personId ?? null,
+    faceClusterId: assetFace.faceClusterId ?? null,
     sourceType: assetFace.sourceType ?? SourceType.MachineLearning,
     isVisible: assetFace.isVisible ?? true,
   };
@@ -648,21 +659,29 @@ const assetJobStatusInsert = (
 
 const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: string }) => {
   const defaults = {
-    birthDate: person.birthDate || null,
-    color: person.color || null,
-    createdAt: person.createdAt || newDate(),
-    faceAssetId: person.faceAssetId || null,
-    id: person.id || newUuid(),
-    isFavorite: person.isFavorite || false,
-    isHidden: person.isHidden || false,
-    name: person.name || 'Test Name',
-    ownerId: person.ownerId || newUuid(),
-    thumbnailPath: person.thumbnailPath || '/path/to/thumbnail.jpg',
-  };
+    createdAt: newDate(),
+    id: newUuid(),
+    isFavorite: false,
+    isHidden: false,
+    ownerId: newUuid(),
+    thumbnailPath: '/path/to/thumbnail.jpg',
+    faceClusterId: newUuid(),
+  } satisfies Insertable<PersonTable>;
   return {
     ...defaults,
     ...person,
   };
+};
+
+const faceClusterInsert = (faceCluster: Partial<Insertable<FaceClusterTable>>) => {
+  const defaults = {
+    birthDate: null,
+    createdAt: newDate(),
+    featureFaceAssetId: null,
+    id: newUuid(),
+    name: 'Test Name',
+  } satisfies Insertable<FaceClusterTable>;
+  return { ...defaults, ...faceCluster };
 };
 
 const sha256 = (value: string) => createHash('sha256').update(value).digest();
@@ -806,6 +825,7 @@ export const mediumFactory = {
   albumInsert,
   faceInsert,
   personInsert,
+  faceClusterInsert,
   sessionInsert,
   syncStream,
   userInsert,

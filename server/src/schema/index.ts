@@ -14,6 +14,7 @@ import {
   asset_ocr_delete_audit,
   f_concat_ws,
   f_unaccent,
+  face_cluster_delete_audit,
   immich_uuid_v7,
   ll_to_earth_public,
   memory_asset_delete_audit,
@@ -47,6 +48,8 @@ import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetOcrAuditTable } from 'src/schema/tables/asset-ocr-audit.table';
 import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { FaceClusterAuditTable } from 'src/schema/tables/face-cluster-audit.table';
+import { FaceClusterTable } from 'src/schema/tables/face-cluster.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table';
@@ -114,6 +117,8 @@ export class ImmichDatabase {
     AssetTable,
     AssetFileTable,
     AssetExifTable,
+    FaceClusterAuditTable,
+    FaceClusterTable,
     FaceSearchTable,
     GeodataPlacesTable,
     IntegrityReportTable,
@@ -170,6 +175,7 @@ export class ImmichDatabase {
     memory_asset_delete_audit,
     stack_delete_audit,
     person_delete_audit,
+    face_cluster_delete_audit,
     user_metadata_audit,
     asset_metadata_audit,
     asset_face_audit,
@@ -216,6 +222,9 @@ export interface DB {
   asset_video: AssetVideoTable;
   asset_keyframe: AssetKeyframeTable;
   ocr_search: OcrSearchTable;
+
+  face_cluster: FaceClusterTable;
+  face_cluster_audit: FaceClusterAuditTable;
 
   face_search: FaceSearchTable;
 

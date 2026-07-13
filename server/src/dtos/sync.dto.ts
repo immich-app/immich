@@ -346,9 +346,30 @@ const SyncPersonV1Schema = z
   })
   .meta({ id: 'SyncPersonV1' });
 
+const SyncPersonV2Schema = SyncPersonV1Schema.extend({
+  faceClusterId: z.uuidv4().describe('Face cluster ID'),
+})
+  .omit({ name: true, birthDate: true, color: true, faceAssetId: true })
+  .meta({ id: 'SyncPersonV2' });
+
 const SyncPersonDeleteV1Schema = z
   .object({ personId: z.uuidv4().describe('Person ID') })
   .meta({ id: 'SyncPersonDeleteV1' });
+
+const SyncFaceClusterV1Schema = z
+  .object({
+    id: z.uuidv4().describe('Face cluster ID'),
+    name: z.string().describe('Name'),
+    createdAt: isoDatetimeToDate.describe('Created at'),
+    updatedAt: isoDatetimeToDate.describe('Updated at'),
+    birthDate: isoDatetimeToDate.nullable().describe('Birth date'),
+    featureFaceAssetId: z.uuidv4().nullable().describe('Feature face asset ID'),
+  })
+  .meta({ id: 'SyncFaceClusterV1' });
+
+const SyncFaceClusterDeleteV1Schema = z
+  .object({ faceClusterId: z.uuidv4().describe('Face cluster ID') })
+  .meta({ id: 'SyncFaceClusterDeleteV1Schema' });
 
 const SyncAssetFaceV1Schema = z
   .object({
@@ -443,7 +464,13 @@ class SyncStackDeleteV1 extends createZodDto(SyncStackDeleteV1Schema) {}
 @ExtraModel()
 class SyncPersonV1 extends createZodDto(SyncPersonV1Schema) {}
 @ExtraModel()
+class SyncPersonV2 extends createZodDto(SyncPersonV2Schema) {}
+@ExtraModel()
 class SyncPersonDeleteV1 extends createZodDto(SyncPersonDeleteV1Schema) {}
+@ExtraModel()
+class SyncFaceClusterV1 extends createZodDto(SyncFaceClusterV1Schema) {}
+@ExtraModel()
+class SyncFaceClusterDeleteV1 extends createZodDto(SyncFaceClusterDeleteV1Schema) {}
 @ExtraModel()
 class SyncAssetFaceV1 extends createZodDto(SyncAssetFaceV1Schema) {}
 @ExtraModel()
@@ -506,7 +533,10 @@ export type SyncItem = {
   [SyncEntityType.PartnerStackDeleteV1]: SyncStackDeleteV1;
   [SyncEntityType.PartnerStackV1]: SyncStackV1;
   [SyncEntityType.PersonV1]: SyncPersonV1;
+  [SyncEntityType.PersonV2]: SyncPersonV2;
   [SyncEntityType.PersonDeleteV1]: SyncPersonDeleteV1;
+  [SyncEntityType.FaceClusterV1]: SyncFaceClusterV1;
+  [SyncEntityType.FaceClusterDeleteV1]: SyncFaceClusterDeleteV1;
   [SyncEntityType.AssetFaceV1]: SyncAssetFaceV1;
   [SyncEntityType.AssetFaceV2]: SyncAssetFaceV2;
   [SyncEntityType.AssetFaceDeleteV1]: SyncAssetFaceDeleteV1;

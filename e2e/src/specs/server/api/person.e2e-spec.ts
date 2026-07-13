@@ -82,32 +82,32 @@ describe('/people', () => {
     const asset4 = await utils.createAsset(admin.accessToken);
 
     await Promise.all([
-      utils.createFace({ assetId: asset1.id, personId: visiblePerson.id }),
-      utils.createFace({ assetId: asset1.id, personId: hiddenPerson.id }),
-      utils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
-      utils.createFace({ assetId: asset1.id, personId: multipleAssetsPerson.id }),
-      utils.createFace({ assetId: asset2.id, personId: multipleAssetsPerson.id }),
-      utils.createFace({ assetId: asset3.id, personId: multipleAssetsPerson.id }), // 4 assets
+      utils.createFace({ assetId: asset1.id, faceClusterId: visiblePerson.faceClusterId }),
+      utils.createFace({ assetId: asset1.id, faceClusterId: hiddenPerson.faceClusterId }),
+      utils.createFace({ assetId: asset1.id, faceClusterId: multipleAssetsPerson.faceClusterId }),
+      utils.createFace({ assetId: asset1.id, faceClusterId: multipleAssetsPerson.faceClusterId }),
+      utils.createFace({ assetId: asset2.id, faceClusterId: multipleAssetsPerson.faceClusterId }),
+      utils.createFace({ assetId: asset3.id, faceClusterId: multipleAssetsPerson.faceClusterId }), // 4 assets
       // Named persons
-      utils.createFace({ assetId: asset1.id, personId: nameCharliePerson.id }), // 1 asset
-      utils.createFace({ assetId: asset1.id, personId: nameBobPerson.id }),
-      utils.createFace({ assetId: asset2.id, personId: nameBobPerson.id }), // 2 assets
-      utils.createFace({ assetId: asset1.id, personId: nameAlicePerson.id }), // 1 asset
+      utils.createFace({ assetId: asset1.id, faceClusterId: nameCharliePerson.faceClusterId }), // 1 asset
+      utils.createFace({ assetId: asset1.id, faceClusterId: nameBobPerson.faceClusterId }),
+      utils.createFace({ assetId: asset2.id, faceClusterId: nameBobPerson.faceClusterId }), // 2 assets
+      utils.createFace({ assetId: asset1.id, faceClusterId: nameAlicePerson.faceClusterId }), // 1 asset
       // Null-named person 4 assets
-      utils.createFace({ assetId: asset1.id, personId: nameNullPerson4Assets.id }),
-      utils.createFace({ assetId: asset2.id, personId: nameNullPerson4Assets.id }),
-      utils.createFace({ assetId: asset3.id, personId: nameNullPerson4Assets.id }),
-      utils.createFace({ assetId: asset4.id, personId: nameNullPerson4Assets.id }), // 4 assets
+      utils.createFace({ assetId: asset1.id, faceClusterId: nameNullPerson4Assets.faceClusterId }),
+      utils.createFace({ assetId: asset2.id, faceClusterId: nameNullPerson4Assets.faceClusterId }),
+      utils.createFace({ assetId: asset3.id, faceClusterId: nameNullPerson4Assets.faceClusterId }),
+      utils.createFace({ assetId: asset4.id, faceClusterId: nameNullPerson4Assets.faceClusterId }), // 4 assets
       // Null-named person 3 assets
-      utils.createFace({ assetId: asset1.id, personId: nameNullPerson3Assets.id }),
-      utils.createFace({ assetId: asset2.id, personId: nameNullPerson3Assets.id }),
-      utils.createFace({ assetId: asset3.id, personId: nameNullPerson3Assets.id }), // 3 assets
+      utils.createFace({ assetId: asset1.id, faceClusterId: nameNullPerson3Assets.faceClusterId }),
+      utils.createFace({ assetId: asset2.id, faceClusterId: nameNullPerson3Assets.faceClusterId }),
+      utils.createFace({ assetId: asset3.id, faceClusterId: nameNullPerson3Assets.faceClusterId }), // 3 assets
       // Null-named person 1 asset
-      utils.createFace({ assetId: asset3.id, personId: nameNullPerson1Asset.id }),
+      utils.createFace({ assetId: asset3.id, faceClusterId: nameNullPerson1Asset.faceClusterId }),
       // Favourite People
-      utils.createFace({ assetId: asset1.id, personId: nameFreddyPersonFavourite.id }),
-      utils.createFace({ assetId: asset2.id, personId: nameFreddyPersonFavourite.id }),
-      utils.createFace({ assetId: asset1.id, personId: nameBillPersonFavourite.id }),
+      utils.createFace({ assetId: asset1.id, faceClusterId: nameFreddyPersonFavourite.faceClusterId }),
+      utils.createFace({ assetId: asset2.id, faceClusterId: nameFreddyPersonFavourite.faceClusterId }),
+      utils.createFace({ assetId: asset1.id, faceClusterId: nameBillPersonFavourite.faceClusterId }),
     ]);
   });
 
@@ -294,24 +294,6 @@ describe('/people', () => {
         .send({ birthDate: null });
       expect(status).toBe(200);
       expect(body).toMatchObject({ birthDate: null });
-    });
-
-    it('should set a color', async () => {
-      const { status, body } = await request(app)
-        .put(`/people/${visiblePerson.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ color: '#555' });
-      expect(status).toBe(200);
-      expect(body).toMatchObject({ color: '#555' });
-    });
-
-    it('should clear a color', async () => {
-      const { status, body } = await request(app)
-        .put(`/people/${visiblePerson.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ color: null });
-      expect(status).toBe(200);
-      expect(body.color).toBeUndefined();
     });
 
     it('should mark a person as favorite', async () => {

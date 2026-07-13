@@ -205,6 +205,21 @@ export const person_delete_audit = registerFunction({
     END`,
 });
 
+export const face_cluster_delete_audit = registerFunction({
+  name: 'face_cluster_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    #variable_conflict use_column
+    BEGIN
+      INSERT INTO face_cluster_audit ("faceClusterId", "userId")
+      SELECT "old"."id", "person"."ownerId"
+      FROM OLD
+      INNER JOIN person ON "person"."faceClusterId" = "old"."id";
+      RETURN NULL;
+    END`,
+});
+
 export const user_metadata_audit = registerFunction({
   name: 'user_metadata_audit',
   returnType: 'TRIGGER',

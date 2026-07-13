@@ -36,6 +36,8 @@ enum SyncRequestType {
   stacksV1._(r'StacksV1'),
   usersV1._(r'UsersV1'),
   peopleV1._(r'PeopleV1'),
+  peopleV2._(r'PeopleV2'),
+  faceClusterV1._(r'FaceClusterV1'),
   assetFacesV1._(r'AssetFacesV1'),
   assetFacesV2._(r'AssetFacesV2'),
   userMetadataV1._(r'UserMetadataV1'),
@@ -122,6 +124,8 @@ class SyncRequestTypeTypeTransformer {
         case r'StacksV1': return SyncRequestType.stacksV1;
         case r'UsersV1': return SyncRequestType.usersV1;
         case r'PeopleV1': return SyncRequestType.peopleV1;
+        case r'PeopleV2': return SyncRequestType.peopleV2;
+        case r'FaceClusterV1': return SyncRequestType.faceClusterV1;
         case r'AssetFacesV1': return SyncRequestType.assetFacesV1;
         case r'AssetFacesV2': return SyncRequestType.assetFacesV2;
         case r'UserMetadataV1': return SyncRequestType.userMetadataV1;

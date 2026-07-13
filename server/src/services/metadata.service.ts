@@ -28,7 +28,7 @@ import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { PersonTable } from 'src/schema/tables/person.table';
+import { FaceClusterTable } from 'src/schema/tables/face-cluster.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
@@ -916,8 +916,8 @@ export class MetadataService extends BaseService {
     const facesToAdd: (Insertable<AssetFaceTable> & { assetId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
-    const missing: (Insertable<PersonTable> & { ownerId: string })[] = [];
-    const missingWithFaceAsset: { id: string; ownerId: string; faceAssetId: string }[] = [];
+    const missing: Insertable<FaceClusterTable>[] = [];
+    const missingWithFaceAsset: { id: string; featureFaceAssetId: string }[] = [];
 
     const adjustedRegionInfo = this.orientRegionInfo(tags.RegionInfo, tags.Orientation);
     const imageWidth = adjustedRegionInfo.AppliedToDimensions.W;
@@ -929,7 +929,7 @@ export class MetadataService extends BaseService {
       }
 
       const loweredName = region.Name.toLowerCase();
-      const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
+      const faceClusterId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
 
       const X = Number(region.Area.X);
       const Y = Number(region.Area.Y);
@@ -938,7 +938,7 @@ export class MetadataService extends BaseService {
 
       const face = {
         id: this.cryptoRepository.randomUUID(),
-        personId,
+        faceClusterId,
         assetId: asset.id,
         imageWidth,
         imageHeight,
@@ -951,14 +951,17 @@ export class MetadataService extends BaseService {
 
       facesToAdd.push(face);
       if (!existingNameMap.has(loweredName)) {
-        missing.push({ id: personId, ownerId: asset.ownerId, name: region.Name });
-        missingWithFaceAsset.push({ id: personId, ownerId: asset.ownerId, faceAssetId: face.id });
+        missing.push({ id: faceClusterId, name: region.Name });
+        missingWithFaceAsset.push({ id: faceClusterId, featureFaceAssetId: face.id });
       }
     }
 
     if (missing.length > 0) {
       this.logger.debugFn(() => `Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
-      const newPersonIds = await this.personRepository.createAll(missing);
+      const newFaceClusterIds = await this.personRepository.createAllFaceClusters(missing);
+      const newPersonIds = await this.personRepository.createAll(
+        newFaceClusterIds.map((faceClusterId) => ({ faceClusterId, ownerId: asset.ownerId })),
+      );
       const jobs = newPersonIds.map((id) => ({ name: JobName.PersonGenerateThumbnail, data: { id } }) as const);
       await this.jobRepository.queueAll(jobs);
     }
@@ -979,7 +982,7 @@ export class MetadataService extends BaseService {
     }
 
     if (missingWithFaceAsset.length > 0) {
-      await this.personRepository.updateAll(missingWithFaceAsset);
+      await this.personRepository.updateAllFaceClusters(missingWithFaceAsset);
     }
   }
 

@@ -69,7 +69,7 @@ describe(SearchService.name, () => {
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
       const { person } = await ctx.newPerson({ ownerId: user.id });
-      await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+      await ctx.newAssetFace({ assetId: asset.id, faceClusterId: person.faceClusterId });
 
       const auth = factory.auth({ user: { id: user.id } });
 
