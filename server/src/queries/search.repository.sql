@@ -142,7 +142,7 @@ where
   or f_unaccent ("admin1Name") %>> f_unaccent ($3)
   or f_unaccent ("alternateNames") %>> f_unaccent ($4)
 order by
-  coalesce(f_unaccent (name) <->>> f_unaccent ($5), 0.1) + coalesce(
+  (coalesce(f_unaccent (name) <->>> f_unaccent ($5), 0.1) * 3) + coalesce(
     f_unaccent ("admin2Name") <->>> f_unaccent ($6),
     0.1
   ) + coalesce(
