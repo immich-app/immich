@@ -210,17 +210,19 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       await _deleteAssets(deletes);
 
       await _upsertAssets(updates);
+      // Drop every existing album link for each changed asset before re-adding the
+      // ones the native side reports. A moved asset only reports its new album here,
+      // so leaving the old link around makes the per-album delete sweep wipe the
+      // asset entirely (it is still linked to a bucket it no longer lives in).
+      await _db.batch((batch) async {
+        for (final assetId in assetAlbums.keys) {
+          batch.deleteWhere(_db.localAlbumAssetEntity, (f) => f.assetId.equals(assetId));
+        }
+      });
       // The ugly casting below is required for now because the generated code
       // casts the returned values from the platform during decoding them
       // and iterating over them causes the type to be List<Object?> instead of
       // List<String>
-      await _db.batch((batch) async {
-        assetAlbums.cast<String, List<Object?>>().forEach((assetId, albumIds) {
-          for (final albumId in albumIds.cast<String?>().nonNulls) {
-            batch.deleteWhere(_db.localAlbumAssetEntity, (f) => f.albumId.equals(albumId) & f.assetId.equals(assetId));
-          }
-        });
-      });
       await _db.batch((batch) async {
         assetAlbums.cast<String, List<Object?>>().forEach((assetId, albumIds) {
           batch.insertAll(
