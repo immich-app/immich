@@ -277,10 +277,11 @@
       translations={{ close: $t('back') }}
       closeIcon={mdiArrowLeft}
       actions={[Duplicate, CopyJson, Download, Delete].map((item) => ({ ...item, color: undefined }))}
+      class="workflow-action-bar"
     >
-      <ControlBarHeader>
-        <ControlBarTitle>{data.workflow.name}</ControlBarTitle>
-        <ControlBarDescription>{data.workflow.description}</ControlBarDescription>
+      <ControlBarHeader class="min-w-0 flex-1">
+        <ControlBarTitle class="truncate">{data.workflow.name}</ControlBarTitle>
+        <ControlBarDescription class="truncate">{data.workflow.description}</ControlBarDescription>
       </ControlBarHeader>
       <ControlBarContent class="flex items-center justify-end gap-6">
         {#if hasChanges}
@@ -299,6 +300,17 @@
       </ControlBarContent>
     </ActionBar>
   </AppShellBar>
+
+  <style>
+    /*
+     * Allow the toolbar header to shrink on narrow screens so long workflow
+     * titles truncate instead of pushing the action buttons off-screen.
+     */
+    .workflow-action-bar :global(> div:first-child) {
+      flex-shrink: 1;
+      min-width: 0;
+    }
+  </style>
 
   <Container size="medium" class="pt-8 pb-24" center>
     <VStack gap={4}>
