@@ -1616,7 +1616,7 @@
   "person": "Person",
   "person_age_months": "{months, plural, one {# month} other {# months}} old",
   "person_age_year_months": "1 year, {months, plural, one {# month} other {# months}} old",
-  "person_age_years": "{years, plural, other {# years}} old",
+  "person_age_years": "{years, plural, one {# year} other {# years}} old",
   "person_birthdate": "Born on {date}",
   "person_hidden": "{name}{hidden, select, true { (hidden)} other {}}",
   "person_recognized": "Person recognized",
