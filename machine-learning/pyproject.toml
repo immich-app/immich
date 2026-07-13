@@ -92,4 +92,4 @@ select = ["E", "F", "I"]
 per-file-ignores = { "test_main.py" = ["F403"] }
 
 [tool.pytest.ini_options]
-markers = ["providers", "ov_device_ids"]
+markers = ["providers", "ov_device_ids", "gpu"]

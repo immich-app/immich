@@ -636,6 +636,50 @@ jobs:
       - name: Run ci-unit
         run: mise run ci-unit
 
+  ml-hwaccel-tests:
+    name: HW Accel Test ML (${{ matrix.name }})
+    needs: pre-job
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).machine-learning == true }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: nvidia-ampere
+            runner: pokedex-dgpu-nvidia-ampere
+            device: cuda
+            expected-ep: CUDAExecutionProvider
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./machine-learning
+    env:
+      IMMICH_HWACCEL_EXPECTED_EP: ${{ matrix.expected-ep }}
+      HF_HUB_DISABLE_XET: '1'
+    steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@9db058b2e6eec20e07760b0e17a0505c78ec3191 # create-workflow-token-action-v2.0.1
+        with:
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          token: ${{ steps.token.outputs.token }}
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        with:
+          github_token: ${{ steps.token.outputs.token }}
+
+      - name: Install
+        run: mise run install --extra ${{ matrix.device }}
+
+      - name: Run hardware tests
+        run: mise run test-hardware
+
   github-files-formatting:
     name: .github Files Formatting
     needs: pre-job
