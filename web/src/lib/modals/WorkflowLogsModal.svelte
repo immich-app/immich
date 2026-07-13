@@ -98,7 +98,7 @@
           <TableHeading>{$t('result')}</TableHeading>
         </TableHeader>
         <TableBody class="max-h-100">
-          {#each entries as entry}
+          {#each entries as entry (entry.id)}
             <TableRow>
               <TableCell>
                 <HStack class="justify-center">

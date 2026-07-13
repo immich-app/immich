@@ -2837,6 +2837,8 @@ export type WorkflowUpdateDto = {
 export type WorkflowLogEntryDto = {
     /** Workflow run date/time */
     at: string;
+    /** Workflow log entry ID */
+    id: string;
     /** Last step ran, if the workflow ended early */
     lastStep?: {
         /** Index of the step in the workflow */

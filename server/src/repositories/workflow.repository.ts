@@ -115,6 +115,7 @@ export class WorkflowRepository {
     return this.db
       .selectFrom('workflow_log')
       .select([
+        'workflow_log.id',
         'workflow_log.createdAt',
         'workflow_log.halted',
         'workflow_log.error',

@@ -85,6 +85,7 @@ const WorkflowShareResponseSchema = z
 
 const WorkflowLogEntrySchema = z
   .object({
+    id: z.uuidv4().describe('Workflow log entry ID'),
     at: z.string().describe('Workflow run date/time'),
     result: WorkflowResultSchema.describe('Workflow run result'),
     triggerDataId: z.uuid().optional().describe('Workflow trigger data ID'),

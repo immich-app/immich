@@ -88,6 +88,7 @@ export class WorkflowService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.WorkflowLogs, ids: [id] });
     const logs = await this.workflowRepository.getLogs(id, dto);
     return logs.map((entry) => ({
+      id: entry.id,
       at: entry.createdAt.toISOString(),
       result: entry.error ? WorkflowResult.Error : entry.halted ? WorkflowResult.Halted : WorkflowResult.Completed,
       triggerDataId: entry.triggerDataId ?? undefined,

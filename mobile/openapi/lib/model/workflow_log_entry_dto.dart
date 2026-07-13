@@ -14,6 +14,7 @@ class WorkflowLogEntryDto {
   /// Returns a new [WorkflowLogEntryDto] instance.
   WorkflowLogEntryDto({
     required this.at,
+    required this.id,
     this.lastStep = const Optional.absent(),
     required this.result,
     this.triggerDataId = const Optional.absent(),
@@ -21,6 +22,9 @@ class WorkflowLogEntryDto {
 
   /// Workflow run date/time
   String at;
+
+  /// Workflow log entry ID
+  String id;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -44,6 +48,7 @@ class WorkflowLogEntryDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is WorkflowLogEntryDto &&
     other.at == at &&
+    other.id == id &&
     other.lastStep == lastStep &&
     other.result == result &&
     other.triggerDataId == triggerDataId;
@@ -52,16 +57,18 @@ class WorkflowLogEntryDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (at.hashCode) +
+    (id.hashCode) +
     (lastStep == null ? 0 : lastStep!.hashCode) +
     (result.hashCode) +
     (triggerDataId == null ? 0 : triggerDataId!.hashCode);
 
   @override
-  String toString() => 'WorkflowLogEntryDto[at=$at, lastStep=$lastStep, result=$result, triggerDataId=$triggerDataId]';
+  String toString() => 'WorkflowLogEntryDto[at=$at, id=$id, lastStep=$lastStep, result=$result, triggerDataId=$triggerDataId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'at'] = this.at;
+      json[r'id'] = this.id;
     if (this.lastStep.isPresent) {
       final value = this.lastStep.value;
       json[r'lastStep'] = value;
@@ -84,6 +91,7 @@ class WorkflowLogEntryDto {
 
       return WorkflowLogEntryDto(
         at: mapValueOfType<String>(json, r'at')!,
+        id: mapValueOfType<String>(json, r'id')!,
         lastStep: json.containsKey(r'lastStep') ? Optional.present(WorkflowLogEntryDtoLastStep.fromJson(json[r'lastStep'])) : const Optional.absent(),
         result: WorkflowResult.fromJson(json[r'result'])!,
         triggerDataId: json.containsKey(r'triggerDataId') ? Optional.present(mapValueOfType<String>(json, r'triggerDataId')) : const Optional.absent(),
@@ -135,6 +143,7 @@ class WorkflowLogEntryDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'at',
+    'id',
     'result',
   };
 }
