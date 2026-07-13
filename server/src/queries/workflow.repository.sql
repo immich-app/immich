@@ -9,6 +9,7 @@ select
   "workflow"."enabled",
   "workflow"."createdAt",
   "workflow"."updatedAt",
+  "workflow"."logging",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -41,6 +42,7 @@ select
   "workflow"."enabled",
   "workflow"."createdAt",
   "workflow"."updatedAt",
+  "workflow"."logging",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -69,6 +71,7 @@ select
   "workflow"."id",
   "workflow"."name",
   "workflow"."trigger",
+  "workflow"."logging",
   (
     select
       coalesce(json_agg(agg), '[]')
