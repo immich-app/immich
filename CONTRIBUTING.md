@@ -38,8 +38,9 @@ All our translations are done through [Weblate](https://hosted.weblate.org/proje
 
 ### Datasets
 
-Help us improve our [Immich Datasets](https://datasets.immich.app) by submitting photos and videos taken from a variety of devices, including smartphones, DSLRs, and action cameras, as well as photos with unique features, such as panoramas, burst photos, and photo spheres. These datasets will be publically available for anyone to use, do not submit private/sensitive photos.
+Help us improve our [Immich Datasets](https://datasets.immich.app) by submitting photos and videos taken from a variety of devices, including smartphones, DSLRs, and action cameras, as well as photos with unique features, such as panoramas, burst photos, and photo spheres. These datasets will be publicly available for anyone to use, do not submit private/sensitive photos.
 
 ### Community support
 
 If you like helping others, answering Q&A discussions here on GitHub and replying to people on our Discord is also always appreciated.
+
