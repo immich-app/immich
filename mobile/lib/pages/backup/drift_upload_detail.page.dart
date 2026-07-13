@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
@@ -23,7 +26,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
   final Set<String> _failedTaskIds = {};
 
   final Map<String, int> _taskSlotAssignments = {};
-  static const int _maxSlots = 3;
+  static const int _maxSlots = 10;
 
   /// Assigns uploading items to fixed slots to prevent jumping when items complete
   List<DriftUploadStatus?> _assignItemsToSlots(List<DriftUploadStatus> uploadingItems) {
@@ -133,16 +136,19 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: SliverList(
-            delegate: SliverChildBuilderDelegate((context, index) {
-              // Use slot-based assignment to prevent items from jumping
-              final slots = _assignItemsToSlots(uploadingItems);
-              final item = slots[index];
-              if (item != null) {
-                return _buildCurrentUploadCard(context, item);
-              } else {
-                return _buildPlaceholderCard(context);
-              }
-            }, childCount: 3),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                // Use slot-based assignment to prevent items from jumping
+                final slots = _assignItemsToSlots(uploadingItems);
+                final item = slots[index];
+                if (item != null) {
+                  return _buildCurrentUploadCard(context, item);
+                } else {
+                  return _buildPlaceholderCard(context);
+                }
+              },
+              childCount: max(uploadingItems.length, SettingsRepository.instance.appConfig.backup.parallelUploadCount),
+            ),
           ),
         ),
 

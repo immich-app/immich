@@ -43,6 +43,7 @@ enum SettingsKey<T> {
   backupUseCellularForPhotos<bool>(),
   backupRequireCharging<bool>(),
   backupTriggerDelay<int>(),
+  parallelUploadCount<int>(),
   backupSyncAlbums<bool>(),
 
   // Timeline

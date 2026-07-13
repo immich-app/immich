@@ -640,6 +640,7 @@
   "backup_controller_page_backup_sub": "Backed up photos and videos",
   "backup_controller_page_excluded": "Excluded: ",
   "backup_controller_page_none_selected": "None selected",
+  "backup_controller_page_parallel_upload_count": "Parallel uploads: {count}",
   "backup_controller_page_remainder": "Remainder",
   "backup_controller_page_remainder_sub": "Remaining photos and videos to back up from selection",
   "backup_controller_page_server_storage": "Server Storage",

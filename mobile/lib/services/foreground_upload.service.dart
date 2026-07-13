@@ -93,6 +93,7 @@ class ForegroundUploadService {
     if (useSequentialUpload) {
       await _uploadSequentially(items: candidates, cancelToken: cancelToken, hasWifi: hasWifi, callbacks: callbacks);
     } else {
+      final backup = SettingsRepository.instance.appConfig.backup;
       await _executeWithWorkerPool<LocalAsset>(
         items: candidates,
         cancelToken: cancelToken,
@@ -101,6 +102,7 @@ class ForegroundUploadService {
           return requireWifi && !hasWifi;
         },
         processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+        concurrentWorkers: backup.parallelUploadCount,
       );
     }
   }
@@ -139,11 +141,13 @@ class ForegroundUploadService {
     if (localAssets.isEmpty) {
       return;
     }
+    final backup = SettingsRepository.instance.appConfig.backup;
 
     await _executeWithWorkerPool<LocalAsset>(
       items: localAssets,
       cancelToken: cancelToken,
       processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+      concurrentWorkers: backup.parallelUploadCount,
     );
   }
 
@@ -158,6 +162,7 @@ class ForegroundUploadService {
     if (files.isEmpty) {
       return;
     }
+    final backup = SettingsRepository.instance.appConfig.backup;
     await _executeWithWorkerPool<File>(
       items: files,
       cancelToken: cancelToken,
@@ -177,6 +182,7 @@ class ForegroundUploadService {
           onError?.call(fileId, result.errorMessage!);
         }
       },
+      concurrentWorkers: backup.parallelUploadCount,
     );
   }
 

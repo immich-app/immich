@@ -4,6 +4,7 @@ class BackupConfig {
   final bool useCellularForPhotos;
   final bool requireCharging;
   final int triggerDelay;
+  final int parallelUploadCount;
   final bool syncAlbums;
 
   const BackupConfig({
@@ -12,6 +13,7 @@ class BackupConfig {
     this.useCellularForPhotos = false,
     this.requireCharging = false,
     this.triggerDelay = 30,
+    this.parallelUploadCount = 3,
     this.syncAlbums = false,
   });
 
@@ -21,6 +23,7 @@ class BackupConfig {
     bool? useCellularForPhotos,
     bool? requireCharging,
     int? triggerDelay,
+    int? parallelUploadCount,
     bool? syncAlbums,
   }) => BackupConfig(
     enabled: enabled ?? this.enabled,
@@ -28,6 +31,7 @@ class BackupConfig {
     useCellularForPhotos: useCellularForPhotos ?? this.useCellularForPhotos,
     requireCharging: requireCharging ?? this.requireCharging,
     triggerDelay: triggerDelay ?? this.triggerDelay,
+    parallelUploadCount: parallelUploadCount ?? this.parallelUploadCount,
     syncAlbums: syncAlbums ?? this.syncAlbums,
   );
 
@@ -40,13 +44,21 @@ class BackupConfig {
           other.useCellularForPhotos == useCellularForPhotos &&
           other.requireCharging == requireCharging &&
           other.triggerDelay == triggerDelay &&
+          other.parallelUploadCount == parallelUploadCount &&
           other.syncAlbums == syncAlbums);
 
   @override
-  int get hashCode =>
-      Object.hash(enabled, useCellularForVideos, useCellularForPhotos, requireCharging, triggerDelay, syncAlbums);
+  int get hashCode => Object.hash(
+    enabled,
+    useCellularForVideos,
+    useCellularForPhotos,
+    requireCharging,
+    triggerDelay,
+    parallelUploadCount,
+    syncAlbums,
+  );
 
   @override
   String toString() =>
-      'BackupConfig(enabled: $enabled, useCellularForVideos: $useCellularForVideos, useCellularForPhotos: $useCellularForPhotos, requireCharging: $requireCharging, triggerDelay: $triggerDelay, syncAlbums: $syncAlbums)';
+      'BackupConfig(enabled: $enabled, useCellularForVideos: $useCellularForVideos, useCellularForPhotos: $useCellularForPhotos, requireCharging: $requireCharging, triggerDelay: $triggerDelay, parallelUploadCount: $parallelUploadCount, syncAlbums: $syncAlbums)';
 }
