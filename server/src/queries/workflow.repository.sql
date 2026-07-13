@@ -101,6 +101,7 @@ where
 
 -- WorkflowRepository.getLogs
 select
+  "workflow_log"."id",
   "workflow_log"."createdAt",
   "workflow_log"."halted",
   "workflow_log"."error",

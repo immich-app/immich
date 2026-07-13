@@ -456,7 +456,7 @@ export class WorkflowExecutionService extends BaseService {
         const shouldContinue = result?.workflow?.continue ?? true;
         if (!shouldContinue) {
           if (workflow.logging) {
-            this.workflowRepository.log({
+            await this.workflowRepository.log({
               workflowId,
               error: false,
               halted: true,
@@ -472,7 +472,7 @@ export class WorkflowExecutionService extends BaseService {
         this.logger.error(`Error executing workflow ${workflowId}:`, error);
 
         if (workflow.logging) {
-          this.workflowRepository.log({
+          await this.workflowRepository.log({
             workflowId,
             error: true,
             halted: false,
@@ -486,7 +486,7 @@ export class WorkflowExecutionService extends BaseService {
     }
 
     if (workflow.logging) {
-      this.workflowRepository.log({
+      await this.workflowRepository.log({
         workflowId,
         error: false,
         halted: false,
