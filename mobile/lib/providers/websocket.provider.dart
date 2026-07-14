@@ -42,10 +42,13 @@ class WebsocketState {
 }
 
 class WebsocketNotifier extends StateNotifier<WebsocketState> {
-  WebsocketNotifier(this._ref) : super(const WebsocketState(socket: null, isConnected: false));
+  WebsocketNotifier(this._ref, {Socket Function(dynamic, dynamic)? createSocket})
+    : _createSocket = createSocket ?? io,
+      super(const WebsocketState(socket: null, isConnected: false));
 
   final _log = Logger('WebsocketNotifier');
   final Ref _ref;
+  final Socket Function(dynamic, dynamic) _createSocket;
 
   final Debouncer _batchDebouncer = Debouncer(
     interval: const Duration(seconds: 5),
@@ -56,12 +59,13 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   @override
   void dispose() {
     _batchDebouncer.dispose();
+    state.socket?.dispose();
     super.dispose();
   }
 
-  /// Connects websocket to server unless already connected
+  /// Connects websocket to server unless a socket already exists
   void connect() {
-    if (state.isConnected) {
+    if (state.socket != null) {
       return;
     }
     final authenticationState = _ref.read(authProvider);
@@ -71,7 +75,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
         dPrint(() => "Attempting to connect to websocket");
         // Configure socket transports must be specified
-        Socket socket = io(
+        Socket socket = _createSocket(
           endpoint.origin,
           OptionBuilder()
               .setPath("${endpoint.path}/socket.io")
@@ -84,6 +88,9 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
               .build(),
         );
 
+        // Hold the socket now so disconnect() can tear it down even if it never connects
+        state = WebsocketState(isConnected: false, socket: socket);
+
         socket.onConnect((_) {
           dPrint(() => "Established Websocket Connection");
           state = WebsocketState(isConnected: true, socket: socket);
@@ -91,12 +98,12 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
         socket.onDisconnect((_) {
           dPrint(() => "Disconnect to Websocket Connection");
-          state = const WebsocketState(isConnected: false, socket: null);
+          state = WebsocketState(isConnected: false, socket: socket);
         });
 
         socket.on('error', (errorMessage) {
           _log.severe("Websocket Error - $errorMessage");
-          state = const WebsocketState(isConnected: false, socket: null);
+          state = WebsocketState(isConnected: false, socket: socket);
         });
 
         socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReadyV1);
