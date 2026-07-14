@@ -5,6 +5,7 @@ import android.graphics.ImageDecoder
 import android.os.Build
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
+import androidx.exifinterface.media.ExifInterface
 import app.alextran.immich.INITIAL_BUFFER_SIZE
 import app.alextran.immich.NativeBuffer
 import app.alextran.immich.NativeByteBuffer
@@ -29,6 +30,18 @@ import java.util.concurrent.Executors
 private const val MAX_PREALLOC_BYTES = 128 * 1024 * 1024
 
 private class RemoteRequest(val cancellationSignal: CancellationSignal)
+
+// A raw container (DNG/ARW/NEF/...) by TIFF magic - the decoder only sees the preview's mime.
+private fun isRawContainer(buffer: NativeByteBuffer): Boolean {
+  if (buffer.offset < 4) return false
+  val head = NativeBuffer.wrap(buffer.pointer, 4)
+  val b0 = head.get().toInt() and 0xFF
+  val b1 = head.get().toInt() and 0xFF
+  val b2 = head.get().toInt() and 0xFF
+  val b3 = head.get().toInt() and 0xFF
+  return (b0 == 0x49 && b1 == 0x49 && b2 == 0x2A && b3 == 0x00) ||
+    (b0 == 0x4D && b1 == 0x4D && b2 == 0x00 && b3 == 0x2A)
+}
 
 class RemoteImagesImpl(context: Context) : RemoteImageApi {
   private val requestMap = ConcurrentHashMap<Long, RemoteRequest>()
@@ -72,8 +85,18 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
         if (!preferEncoded && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
           decodeExecutor.execute {
             val res = if (signal.isCanceled) null else try {
-              val source = ImageDecoder.createSource(NativeBuffer.wrap(buffer.pointer, buffer.offset))
-              source.decodeBitmap().toNativeBuffer()
+              val bitmap = ImageDecoder.createSource(NativeBuffer.wrap(buffer.pointer, buffer.offset)).decodeBitmap()
+              // The embedded preview a raw decodes to has no orientation, so read the container's.
+              val orientation = if (isRawContainer(buffer)) {
+                readRawOrientation(NativeBuffer.wrap(buffer.pointer, buffer.offset), buffer.offset)
+              } else {
+                ExifInterface.ORIENTATION_NORMAL
+              }
+              if (orientation == ExifInterface.ORIENTATION_NORMAL || orientation == ExifInterface.ORIENTATION_UNDEFINED) {
+                bitmap.toNativeBuffer()
+              } else {
+                rotateToNativeBuffer(bitmap, orientation)
+              }
             } catch (_: Throwable) {
               null
             }
