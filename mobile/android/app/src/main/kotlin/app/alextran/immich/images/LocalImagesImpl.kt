@@ -64,13 +64,7 @@ fun Bitmap.toNativeBuffer(): Map<String, Long>  {
     // native convert declined (OOM/lock) -> fall through to the Skia copy path below.
   }
   // Other non-8888 configs (e.g. HDR F16) still need Skia's convert; 8-bit is copied as-is.
-  val bitmap = if (config != Bitmap.Config.ARGB_8888) {
-    val converted = copy(Bitmap.Config.ARGB_8888, false)
-    recycle()
-    converted ?: throw IOException("could not convert bitmap to ARGB_8888")
-  } else {
-    this
-  }
+  val bitmap = toArgb8888()
   val size = bitmap.width * bitmap.height * 4
   val pointer = NativeBuffer.allocate(size)
   try {
@@ -217,7 +211,6 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
         if (orientation == ExifInterface.ORIENTATION_NORMAL || orientation == ExifInterface.ORIENTATION_UNDEFINED) {
           bitmap.toNativeBuffer()
         } else {
-          signal.throwIfCanceled()
           rotateToNativeBuffer(bitmap, orientation)
         }
       }

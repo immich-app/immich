@@ -42,15 +42,16 @@ fun readRawOrientation(buffer: ByteBuffer, len: Int): Int {
   }
 }
 
+fun Bitmap.toArgb8888(): Bitmap {
+  if (config == Bitmap.Config.ARGB_8888) return this
+  val converted = copy(Bitmap.Config.ARGB_8888, false)
+  recycle()
+  return converted ?: throw IOException("could not convert bitmap to ARGB_8888")
+}
+
 // Force ARGB_8888 first: the native rotate needs a lockable 8888 buffer and allocates w*h*4.
 fun rotateToNativeBuffer(bitmap: Bitmap, orientation: Int): Map<String, Long> {
-  val src = if (bitmap.config != Bitmap.Config.ARGB_8888) {
-    val converted = bitmap.copy(Bitmap.Config.ARGB_8888, false)
-    bitmap.recycle()
-    converted ?: throw IOException("could not convert bitmap to ARGB_8888")
-  } else {
-    bitmap
-  }
+  val src = bitmap.toArgb8888()
   try {
     val info = IntArray(3)
     val pointer = NativeImage.rotate(src, orientation, info)
