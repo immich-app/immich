@@ -14,6 +14,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 import java.time.LocalDate
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 class ImmichAPI(cfg: ServerConfig) {
@@ -88,7 +89,8 @@ class ImmichAPI(cfg: ServerConfig) {
   }
 
   suspend fun fetchMemory(date: LocalDate): List<MemoryResult> = withContext(Dispatchers.IO) {
-    val iso8601 = date.format(DateTimeFormatter.ISO_LOCAL_DATE)
+    // server matches memories by the UTC day, so send noon UTC of the local day to land on the right day in every timezone
+    val iso8601 = date.atTime(12, 0).atOffset(ZoneOffset.UTC).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
     val url = buildRequestURL("/memories", listOf("for" to iso8601))
     val connection = (url.openConnection() as HttpURLConnection).apply {
       requestMethod = "GET"
