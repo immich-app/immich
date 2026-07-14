@@ -82,6 +82,7 @@
   let progressBarController: Tween<number> | undefined = $state(undefined);
   let videoPlayer: HTMLVideoElement | undefined = $state();
   const asHref = (asset: { id: string }) => `?${QueryParameter.ID}=${asset.id}`;
+  let previousPage = $state(Route.memories());
 
   const handleNavigate = async (asset?: { id: string }) => {
     if (assetViewerManager.isViewing) {
@@ -106,7 +107,7 @@
   const handlePreviousAsset = () => handleNavigate(current?.previous?.asset);
   const handleNextMemory = () => handleNavigate(current?.nextMemory?.assets[0]);
   const handlePreviousMemory = () => handleNavigate(current?.previousMemory?.assets[0]);
-  const handleEscape = async () => goto(Route.photos());
+  const handleEscape = async () => goto(previousPage);
   const handleSelectAll = () =>
     assetMultiSelectManager.selectAssets(current?.memory.assets.map((a) => toTimelineAsset(a)) || []);
 
@@ -249,7 +250,7 @@
 
   const init = (target: Page | NavigationTarget | null) => {
     if (memoryManager.memories.length === 0) {
-      return handlePromiseError(goto(Route.photos()));
+      return handlePromiseError(goto(previousPage));
     }
 
     current = loadFromParams(target);
@@ -281,6 +282,10 @@
   };
 
   afterNavigate(({ from, to }) => {
+    if (from?.url !== null && !from?.url.searchParams.has(QueryParameter.ID)) {
+      previousPage = from!.url.toString();
+    }
+
     memoryManager.ready().then(
       () => {
         let target;
@@ -381,7 +386,7 @@
             icon={mdiClose}
             aria-label={$t('close')}
             size="large"
-            onclick={() => goto(Route.photos())}
+            onclick={() => goto(previousPage)}
           />
           <p class="text-lg">
             {$memoryLaneTitle(current.memory)}

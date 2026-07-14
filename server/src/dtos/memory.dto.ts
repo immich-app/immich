@@ -14,6 +14,7 @@ const MemorySearchSchema = z
     isTrashed: stringToBool.optional().describe('Include trashed memories'),
     isSaved: stringToBool.optional().describe('Filter by saved status'),
     size: z.coerce.number().int().min(1).optional().describe('Number of memories to return'),
+    page: z.coerce.number().int().min(1).optional().describe('Page number'),
     order: AssetOrderWithRandomSchema.optional(),
   })
   .meta({ id: 'MemorySearchDto' });

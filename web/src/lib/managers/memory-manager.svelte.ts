@@ -1,9 +1,17 @@
-import { deleteMemory, type MemoryResponseDto, removeMemoryAssets, searchMemories, updateMemory } from '@immich/sdk';
+import {
+  deleteMemory,
+  type MemoryResponseDto,
+  removeMemoryAssets,
+  searchMemories,
+  updateMemory,
+  MemorySearchOrder,
+  MemoryType,
+  memoriesStatistics,
+} from '@immich/sdk';
 import { DateTime } from 'luxon';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { asLocalTimeISO } from '$lib/utils/date-time';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
 
 type MemoryIndex = {
@@ -20,10 +28,31 @@ export type MemoryAsset = MemoryIndex & {
   nextMemory?: MemoryResponseDto;
 };
 
+const PAGE_SIZE = 250;
+
 class MemoryManager {
   #loading: Promise<void> | undefined;
+  #filters:
+    | {
+        $for?: string;
+        isSaved?: boolean;
+        isTrashed?: boolean;
+        order?: MemorySearchOrder;
+        page?: number;
+        size?: number;
+        $type?: MemoryType;
+      }
+    | undefined;
+  #hasNextPage: boolean;
+  #page: number;
+  #total: number | undefined;
 
   constructor() {
+    this.#filters = undefined;
+    this.#hasNextPage = true;
+    this.#page = 1;
+    this.#total = $state(undefined);
+
     eventManager.on({
       AuthLogout: () => this.clearCache(),
       AuthUserLoaded: () => this.initialize(),
@@ -35,6 +64,16 @@ class MemoryManager {
     }
 
     this.scheduleHourlyRefresh();
+  }
+
+  get filters() {
+    return this.#filters;
+  }
+
+  set filters(filters) {
+    this.#filters = filters;
+    this.clearCache();
+    void this.loadNextPage();
   }
 
   ready() {
@@ -117,22 +156,52 @@ class MemoryManager {
     }
   }
 
+  loadNextPage() {
+    if (this.#hasNextPage) {
+      if (this.#loading === undefined) {
+        this.#loading = this.load(this.#page++);
+      } else {
+        void this.#loading.then(() => (this.#loading = this.load(this.#page++)));
+      }
+    }
+  }
+
+  get hasNextPage() {
+    return this.#hasNextPage;
+  }
+
+  get total() {
+    return this.#total;
+  }
+
   private clearCache() {
     this.#loading = undefined;
+    this.#hasNextPage = true;
+    this.#page = 1;
+    this.#total = undefined;
     this.memories = [];
   }
 
   private initialize() {
     if (!this.#loading) {
-      this.#loading = this.load();
+      this.#loading = this.load(this.#page++);
     }
 
     return this.#loading;
   }
 
-  private async load() {
-    const memories = await searchMemories({ $for: asLocalTimeISO(DateTime.now()) });
-    this.memories = memories.filter((memory) => memory.assets.length > 0);
+  private async load(page: number) {
+    if (this.#filters !== undefined) {
+      const items = await searchMemories({ size: PAGE_SIZE, ...this.#filters, page });
+      this.memories.push(...items);
+
+      if (this.#total === undefined) {
+        const { total } = await memoriesStatistics(this.#filters);
+        this.#total = total;
+      }
+
+      this.#hasNextPage = this.memories.length < this.#total;
+    }
   }
 
   private scheduleHourlyRefresh() {
@@ -146,12 +215,18 @@ class MemoryManager {
     const initialDelay = nextEvent.diff(now).as('milliseconds');
 
     setTimeout(() => {
-      this.#loading = this.load();
+      if (this.#page <= 2) {
+        this.clearCache();
+        this.loadNextPage();
+      }
 
       // Schedule subsequent events hourly
       setInterval(
         () => {
-          this.#loading = this.load();
+          if (this.#page <= 2) {
+            this.clearCache();
+            this.loadNextPage();
+          }
         },
         60 * 60 * 1000,
       );

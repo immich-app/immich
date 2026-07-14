@@ -4984,11 +4984,12 @@ export function reverseGeocode({ lat, lon }: {
 /**
  * Retrieve memories
  */
-export function searchMemories({ $for, isSaved, isTrashed, order, size, $type }: {
+export function searchMemories({ $for, isSaved, isTrashed, order, page, size, $type }: {
     $for?: string;
     isSaved?: boolean;
     isTrashed?: boolean;
     order?: MemorySearchOrder;
+    page?: number;
     size?: number;
     $type?: MemoryType;
 }, opts?: Oazapfts.RequestOpts) {
@@ -5000,6 +5001,7 @@ export function searchMemories({ $for, isSaved, isTrashed, order, size, $type }:
         isSaved,
         isTrashed,
         order,
+        page,
         size,
         "type": $type
     }))}`, {
@@ -5024,11 +5026,12 @@ export function createMemory({ memoryCreateDto }: {
 /**
  * Retrieve memories statistics
  */
-export function memoriesStatistics({ $for, isSaved, isTrashed, order, size, $type }: {
+export function memoriesStatistics({ $for, isSaved, isTrashed, order, page, size, $type }: {
     $for?: string;
     isSaved?: boolean;
     isTrashed?: boolean;
     order?: MemorySearchOrder;
+    page?: number;
     size?: number;
     $type?: MemoryType;
 }, opts?: Oazapfts.RequestOpts) {
@@ -5040,6 +5043,7 @@ export function memoriesStatistics({ $for, isSaved, isTrashed, order, size, $typ
         isSaved,
         isTrashed,
         order,
+        page,
         size,
         "type": $type
     }))}`, {

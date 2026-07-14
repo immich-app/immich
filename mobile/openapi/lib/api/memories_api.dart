@@ -265,11 +265,14 @@ class MemoriesApi {
   ///
   /// * [MemorySearchOrder] order:
   ///
+  /// * [int] page:
+  ///   Page number
+  ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<Response> memoriesStatisticsWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
+  Future<Response> memoriesStatisticsWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories/statistics';
 
@@ -291,6 +294,9 @@ class MemoriesApi {
     }
     if (order != null) {
       queryParams.addAll(_queryParams('', 'order', order));
+    }
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
     }
     if (size != null) {
       queryParams.addAll(_queryParams('', 'size', size));
@@ -331,12 +337,15 @@ class MemoriesApi {
   ///
   /// * [MemorySearchOrder] order:
   ///
+  /// * [int] page:
+  ///   Page number
+  ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<MemoryStatisticsResponseDto?> memoriesStatistics({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
-    final response = await memoriesStatisticsWithHttpInfo(for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, size: size, type: type, abortTrigger: abortTrigger,);
+  Future<MemoryStatisticsResponseDto?> memoriesStatistics({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
+    final response = await memoriesStatisticsWithHttpInfo(for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, page: page, size: size, type: type, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -434,11 +443,14 @@ class MemoriesApi {
   ///
   /// * [MemorySearchOrder] order:
   ///
+  /// * [int] page:
+  ///   Page number
+  ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<Response> searchMemoriesWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
+  Future<Response> searchMemoriesWithHttpInfo({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/memories';
 
@@ -460,6 +472,9 @@ class MemoriesApi {
     }
     if (order != null) {
       queryParams.addAll(_queryParams('', 'order', order));
+    }
+    if (page != null) {
+      queryParams.addAll(_queryParams('', 'page', page));
     }
     if (size != null) {
       queryParams.addAll(_queryParams('', 'size', size));
@@ -500,12 +515,15 @@ class MemoriesApi {
   ///
   /// * [MemorySearchOrder] order:
   ///
+  /// * [int] page:
+  ///   Page number
+  ///
   /// * [int] size:
   ///   Number of memories to return
   ///
   /// * [MemoryType] type:
-  Future<List<MemoryResponseDto>?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
-    final response = await searchMemoriesWithHttpInfo(for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, size: size, type: type, abortTrigger: abortTrigger,);
+  Future<List<MemoryResponseDto>?> searchMemories({ DateTime? for_, bool? isSaved, bool? isTrashed, MemorySearchOrder? order, int? page, int? size, MemoryType? type, Future<void>? abortTrigger, }) async {
+    final response = await searchMemoriesWithHttpInfo(for_: for_, isSaved: isSaved, isTrashed: isTrashed, order: order, page: page, size: size, type: type, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
