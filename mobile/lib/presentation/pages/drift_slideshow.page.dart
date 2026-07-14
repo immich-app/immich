@@ -51,6 +51,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   int? _crossfadeFromIndex;
   int? _crossfadeToIndex;
   int _zoomCycle = 0;
+  bool _disableAnimations = false;
 
   @override
   initState() {
@@ -68,6 +69,12 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     unawaited(WakelockPlus.enable());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _disableAnimations = MediaQuery.disableAnimationsOf(context);
   }
 
   @override
@@ -166,7 +173,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   }
 
   void _crossFadeToPage(int page) {
-    if (MediaQuery.disableAnimationsOf(context)) {
+    if (_disableAnimations) {
       _pageController.jumpToPage(page);
       return;
     }
@@ -343,7 +350,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
         onTapUp: (_, _, _) => _onTapUp(),
       );
 
-      if (MediaQuery.disableAnimationsOf(context)) {
+      if (_disableAnimations) {
         return buildPhotoView(scale);
       }
 
