@@ -332,17 +332,19 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     final imageProvider = getFullImageProvider(asset, size: context.sizeData);
 
     if (asset.isImage) {
+      PhotoView buildPhotoView(PhotoViewComputedScale initialScale) => PhotoView(
+        imageProvider: imageProvider,
+        index: index,
+        disableScaleGestures: true,
+        gaplessPlayback: true,
+        filterQuality: FilterQuality.high,
+        initialScale: initialScale,
+        controller: PhotoViewController(),
+        onTapUp: (_, _, _) => _onTapUp(),
+      );
+
       if (MediaQuery.disableAnimationsOf(context)) {
-        return PhotoView(
-          imageProvider: imageProvider,
-          index: index,
-          disableScaleGestures: true,
-          gaplessPlayback: true,
-          filterQuality: FilterQuality.high,
-          initialScale: scale,
-          controller: PhotoViewController(),
-          onTapUp: (_, _, _) => _onTapUp(),
-        );
+        return buildPhotoView(scale);
       }
 
       final zoomOut = _zoomCycle.isOdd;
@@ -360,16 +362,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
               : 1.0,
         ),
         duration: Duration(milliseconds: _paused ? 1 : max(duration - elapsed, 1)),
-        builder: (context, value, _) => PhotoView(
-          imageProvider: imageProvider,
-          index: index,
-          disableScaleGestures: true,
-          gaplessPlayback: true,
-          filterQuality: FilterQuality.high,
-          initialScale: scale * (1.0 + value * _kenBurnsZoom),
-          controller: PhotoViewController(),
-          onTapUp: (_, _, _) => _onTapUp(),
-        ),
+        builder: (context, value, _) => buildPhotoView(scale * (1.0 + value * _kenBurnsZoom)),
       );
     } else {
       final status = ref.watch(videoPlayerProvider(asset.heroTag).select((s) => s.status));
