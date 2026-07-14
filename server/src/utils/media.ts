@@ -241,7 +241,8 @@ export class BaseConfig implements VideoCodecSWConfig {
         options.push('-keyint_min', `${this.getGopSize()}`);
       }
     }
-    const isHvc = (videoCodec === 'copy' ? videoStream.codecName : videoCodec) === VideoCodec.Hevc;
+    const isHvc =
+      this.config.targetVideoCodec === VideoCodec.Hevc && (videoCodec !== 'copy' || videoStream.codecName === 'hevc');
     if (isHvc) {
       options.push('-tag:v', 'hvc1');
     }
