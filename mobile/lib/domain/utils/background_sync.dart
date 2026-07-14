@@ -49,15 +49,16 @@ class BackgroundSyncManager {
     this.onCloudIdSyncError,
   });
 
+  // The tasks the app-resume path re-runs. One in-flight when the app was suspended
+  // stays referenced but frozen, so on resume the dedupe guards would hand back the
+  // stale task instead of syncing (#28082). Websocket and cloud-id are excluded - the
+  // resume path never restarts them. [_allTasks] builds on this so the lists can't drift.
+  List<Cancelable?> get _resumeSyncTasks => [_syncTask, _deviceAlbumSyncTask, _hashTask, _linkedAlbumSyncTask];
+
+  List<Cancelable?> get _allTasks => [_syncWebsocketTask, _cloudIdSyncTask, ..._resumeSyncTasks];
+
   Future<void> cancel() async {
-    final List<Cancelable?> tasks = [
-      _syncTask,
-      _syncWebsocketTask,
-      _cloudIdSyncTask,
-      _linkedAlbumSyncTask,
-      _deviceAlbumSyncTask,
-      _hashTask,
-    ];
+    final tasks = _allTasks;
     _syncTask = null;
     _syncWebsocketTask = null;
     _cloudIdSyncTask = null;
@@ -67,12 +68,8 @@ class BackgroundSyncManager {
     await _cancelAll(tasks);
   }
 
-  // Cancels only the tasks the app-resume path re-runs. A task that was in-flight
-  // when the app was suspended stays referenced but frozen, so on resume the dedupe
-  // guards would hand back the stale task instead of syncing (#28082). Websocket and
-  // cloud-id tasks are left alone - the resume path does not restart them.
   Future<void> cancelResumeSyncs() async {
-    final List<Cancelable?> tasks = [_syncTask, _deviceAlbumSyncTask, _hashTask, _linkedAlbumSyncTask];
+    final tasks = _resumeSyncTasks;
     _syncTask = null;
     _deviceAlbumSyncTask = null;
     _hashTask = null;
