@@ -166,6 +166,7 @@ class AppConfig {
             .slideshowDuration => slideshow.duration,
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
+            .slideshowVideoMode => slideshow.videoMode,
             .featureMessageSeenRelease => featureMessage.seenRelease,
           })
           as T;
@@ -220,6 +221,7 @@ class AppConfig {
       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
+      .slideshowVideoMode => copyWith(slideshow: slideshow.copyWith(videoMode: value as SlideshowVideoMode)),
       .featureMessageSeenRelease => copyWith(featureMessage: featureMessage.copyWith(seenRelease: value as SemVer)),
     };
   }

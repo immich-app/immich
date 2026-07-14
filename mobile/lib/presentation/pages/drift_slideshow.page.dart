@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/config/slideshow_config.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -16,6 +17,9 @@ import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/models/cast/cast_manager_state.dart';
+import 'package:immich_mobile/providers/cast.provider.dart';
+import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -65,6 +69,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _createTimer();
     _updateNextIndex();
     ref.listenManual(appConfigProvider.select((s) => s.slideshow), _onConfigChanged);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _handleCasting());
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     unawaited(WakelockPlus.enable());
@@ -88,6 +93,9 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
       _createTimer();
     } else if (ref.read(videoPlayerProvider(asset.heroTag)).status == VideoPlaybackStatus.paused) {
       ref.read(videoPlayerProvider(asset.heroTag).notifier).play();
+      if (_config.videoMode == SlideshowVideoMode.useDuration) {
+        _createTimer();
+      }
     } else {
       _nextPage();
     }
@@ -120,16 +128,43 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     }
 
     final durationChanged = _config.duration != next.duration;
+    final videoModeChanged = _config.videoMode != next.videoMode;
     _config = next;
     _updateNextIndex();
 
     final asset = widget.timeline.getAssetSafe(_index);
-    if (durationChanged && !_paused && asset?.isImage == true) {
-      _timer.cancel();
-      _createTimer();
+    if (!_paused && asset != null) {
+      if (asset.isImage && durationChanged) {
+        _timer.cancel();
+        _createTimer();
+      } else if (!asset.isImage && videoModeChanged) {
+        _timer.cancel();
+        _stopwatch.stop();
+        _stopwatch.reset();
+        if (next.videoMode == SlideshowVideoMode.useDuration) {
+          _createTimer();
+        }
+      }
     }
 
     setState(() {});
+  }
+
+  void _handleCasting() {
+    if (!ref.read(castProvider).isCasting) {
+      return;
+    }
+    final asset = widget.timeline.getAssetSafe(_index);
+    if (asset == null) {
+      return;
+    }
+
+    if (asset is RemoteAsset) {
+      ref.read(castProvider.notifier).loadMedia(asset, false);
+      return;
+    }
+
+    ref.read(castProvider.notifier).stop();
   }
 
   void _updateNextIndex() {
@@ -238,7 +273,6 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     setState(() {
       _index = page;
       _zoomCycle++;
-
       if (!asset.isImage) {
         _paused = false;
       }
@@ -248,11 +282,18 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _stopwatch.stop();
     _stopwatch.reset();
 
-    if (!_paused && asset.isImage) {
-      _createTimer();
+    if (!_paused) {
+      if (asset.isImage) {
+        _createTimer();
+      } else if (_config.videoMode == SlideshowVideoMode.useDuration) {
+        // Video mode: use slideshow duration as timer
+        _createTimer();
+      }
+      // playToEnd mode: no timer — rely on video completion listener
     }
 
     _updateNextIndex();
+    _handleCasting();
   }
 
   void _onTapUp() async {
@@ -361,17 +402,9 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
         ),
       );
     } else {
-      final status = ref.watch(videoPlayerProvider(asset.heroTag).select((s) => s.status));
-      final position = ref.read(videoPlayerProvider(asset.heroTag)).position;
-
-      if (status == VideoPlaybackStatus.completed && isCurrent && position.inMicroseconds > 0) {
-        _nextPage();
-      } else if (status == VideoPlaybackStatus.playing) {
-        ref.read(videoPlayerProvider(asset.heroTag).notifier).setLoop(false);
-      }
-
       return PhotoView.customChild(
         onTapUp: (_, _, _) => _onTapUp(),
+        enablePanAlways: true,
         disableScaleGestures: true,
         filterQuality: FilterQuality.high,
         initialScale: scale,
@@ -386,6 +419,39 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(castProvider.select((c) => c.isCasting), (_, isCasting) {
+      if (!isCasting) return;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _handleCasting());
+    });
+
+    // Unified video advance detection — handles both local and Cast playback.
+    // In playToEnd mode: advance only when video has actually started (prev==playing)
+    // and then completed/idled. setLoop(false) prevents local player from looping.
+    final currentAsset = widget.timeline.getAssetSafe(_index);
+    if (currentAsset != null && !currentAsset.isImage) {
+      ref.listen(videoPlayerProvider(currentAsset.heroTag).select((s) => s.status), (prev, status) {
+        if (!mounted || _paused || _config.videoMode != SlideshowVideoMode.playToEnd) return;
+        if (status == VideoPlaybackStatus.playing) {
+          ref.read(videoPlayerProvider(currentAsset.heroTag).notifier).setLoop(false);
+        }
+        if (status == VideoPlaybackStatus.completed && prev == VideoPlaybackStatus.playing) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _nextPage());
+        }
+      });
+    }
+
+    // Cast completion: NativeVideoViewer not rendered when casting, so rely on
+    // castProvider.castState. Polling delivers playing/buffering → idle on finish.
+    // Guard with prev: only advance if video actually started (was not idle before).
+    ref.listen(castProvider.select((c) => c.castState), (prev, castState) {
+      if (!mounted || _paused || _config.videoMode != SlideshowVideoMode.playToEnd) return;
+      final asset = widget.timeline.getAssetSafe(_index);
+      if (asset == null || asset.isImage) return;
+      if (castState == CastState.idle && (prev == CastState.playing || prev == CastState.buffering)) {
+        WidgetsBinding.instance.addPostFrameCallback((_) => _nextPage());
+      }
+    });
+
     return Scaffold(
       appBar: PreferredSize(
         preferredSize: Size(AppBar().preferredSize.width, AppBar().preferredSize.height + 5),
@@ -410,6 +476,14 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
                         context.pushRoute(SettingsSubRoute(section: SettingSection.assetViewer));
                       },
                       icon: const Icon(Icons.settings),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        showDialog(context: context, builder: (context) => const CastDialog());
+                      },
+                      icon: Icon(
+                        ref.watch(castProvider.select((c) => c.isCasting)) ? Icons.cast_connected : Icons.cast,
+                      ),
                     ),
                   ],
                 ),

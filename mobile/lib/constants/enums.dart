@@ -25,4 +25,6 @@ enum SlideshowLook { contain, cover, blurredBackground }
 
 enum SlideshowDirection { forward, backward, shuffle }
 
+enum SlideshowVideoMode { playToEnd, useDuration }
+
 enum PartnerDirection { sharedBy, sharedWith }

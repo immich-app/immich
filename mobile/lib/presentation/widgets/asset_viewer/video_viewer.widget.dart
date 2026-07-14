@@ -70,7 +70,16 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       return;
     }
 
-    // Prevent unnecessary loading when swiping between assets.
+    // If video is already loaded and ready, play immediately (e.g. slideshow reuse).
+    if (_isVideoReady && _controller?.videoSource != null) {
+      final autoPlayVideo = ref.read(appConfigProvider).viewer.autoPlayVideo;
+      if (autoPlayVideo || widget.asset.isMotionPhoto) {
+        _notifier.play();
+      }
+      return;
+    }
+
+    // Otherwise, load from scratch after a short delay.
     _loadTimer = Timer(const Duration(milliseconds: 200), _loadVideo);
   }
 

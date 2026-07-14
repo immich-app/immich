@@ -75,6 +75,7 @@ enum SettingsKey<T> {
   slideshowDuration<int>(),
   slideshowLook<SlideshowLook>(codec: _EnumCodec(SlideshowLook.values)),
   slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values)),
+  slideshowVideoMode<SlideshowVideoMode>(codec: _EnumCodec(SlideshowVideoMode.values)),
 
   // Feature message
   featureMessageSeenRelease<SemVer>(codec: _SemVerCodec());

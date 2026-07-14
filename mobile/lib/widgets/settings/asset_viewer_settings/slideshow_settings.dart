@@ -20,6 +20,7 @@ class SlideshowSettings extends HookConsumerWidget {
     final useDuration = useState(slideshow.duration);
     final useLook = useState(slideshow.look);
     final useDirection = useState(slideshow.direction);
+    final useVideoMode = useState(slideshow.videoMode);
 
     useValueChanged<bool, void>(useRepeat.value, (_, __) {
       ref.read(settingsProvider).write(.slideshowRepeat, useRepeat.value);
@@ -32,6 +33,9 @@ class SlideshowSettings extends HookConsumerWidget {
     });
     useValueChanged<SlideshowDirection, void>(useDirection.value, (_, __) {
       ref.read(settingsProvider).write(.slideshowDirection, useDirection.value);
+    });
+    useValueChanged<SlideshowVideoMode, void>(useVideoMode.value, (_, __) {
+      ref.read(settingsProvider).write(.slideshowVideoMode, useVideoMode.value);
     });
 
     return Column(
@@ -52,6 +56,28 @@ class SlideshowSettings extends HookConsumerWidget {
           minValue: 5,
           noDivisons: 5,
           maxValue: 30,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: SettingsSubTitle(title: 'slideshow_video_mode'.t(context: context)),
+        ),
+        SettingsRadioListTile(
+          groups: [
+            SettingsRadioGroup(
+              title: 'slideshow_video_mode_play_to_end'.t(context: context),
+              value: SlideshowVideoMode.playToEnd,
+            ),
+            SettingsRadioGroup(
+              title: 'slideshow_video_mode_use_duration'.t(context: context),
+              value: SlideshowVideoMode.useDuration,
+            ),
+          ],
+          groupBy: useVideoMode.value,
+          onRadioChanged: (value) {
+            if (value != null) {
+              useVideoMode.value = value;
+            }
+          },
         ),
         Padding(
           padding: const EdgeInsets.only(top: 20),
