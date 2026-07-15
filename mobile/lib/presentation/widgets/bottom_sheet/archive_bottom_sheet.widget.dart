@@ -9,7 +9,6 @@ import 'package:immich_mobile/presentation/actions/asset_actions.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -92,8 +91,8 @@ class _ArchiveBottomSheetState extends ConsumerState<ArchiveBottomSheet> {
             actions.lock,
             actions.editDateTime,
             actions.editLocation,
+            actions.download,
           ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
-          if (multiselect.onlyRemote) const DownloadActionButton(source: ActionSource.timeline),
         ],
       ],
       slivers: [

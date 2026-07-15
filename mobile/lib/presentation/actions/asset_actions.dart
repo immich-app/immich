@@ -3,11 +3,13 @@ import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
+import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
+import 'package:immich_mobile/presentation/actions/tag.action.dart';
 
 class AssetActions {
   final AssetDebugAction debug;
@@ -19,6 +21,8 @@ class AssetActions {
   final CleanupLocalAction cleanup;
   final EditDateTimeAction editDateTime;
   final EditLocationAction editLocation;
+  final DownloadAction download;
+  final TagAction tag;
 
   const AssetActions({
     required this.debug,
@@ -30,6 +34,8 @@ class AssetActions {
     required this.cleanup,
     required this.editDateTime,
     required this.editLocation,
+    required this.download,
+    required this.tag,
   });
 
   factory AssetActions.from(ActionScope scope, List<BaseAsset> assets) => .new(
@@ -42,5 +48,7 @@ class AssetActions {
     cleanup: CleanupLocalAction(assets: assets, scope: scope),
     editDateTime: EditDateTimeAction(assets: assets, scope: scope),
     editLocation: EditLocationAction(assets: assets, scope: scope),
+    download: DownloadAction(assets: assets, scope: scope),
+    tag: TagAction(assets: assets, scope: scope),
   );
 }

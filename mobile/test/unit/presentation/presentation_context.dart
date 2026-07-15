@@ -17,10 +17,13 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
+import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
@@ -53,6 +56,9 @@ class PresentationContext {
     remoteAssetRepositoryProvider.overrideWithValue(repository.remoteAsset.repo),
     remoteExifRepositoryProvider.overrideWithValue(repository.remoteExif.repo),
     assetMediaRepositoryProvider.overrideWithValue(repository.assetMedia.api),
+    downloadRepositoryProvider.overrideWithValue(repository.download.repo),
+    tagServiceProvider.overrideWithValue(service.tag.service),
+    backgroundSyncProvider.overrideWithValue(service.backgroundSync),
     partnerServiceProvider.overrideWithValue(service.partner.service),
     remoteAlbumServiceProvider.overrideWithValue(service.album.service),
     cleanupServiceProvider.overrideWithValue(service.cleanup.service),
