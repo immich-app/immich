@@ -3,7 +3,7 @@ import { browser } from '$app/environment';
 
 const isSupported = browser && 'wakeLock' in navigator;
 
-let sentinel: WakeLockSentinel | null = null;
+let sentinel: WakeLockSentinel | undefined;
 let acquiring = false;
 
 export async function acquireWakeLock() {
@@ -11,12 +11,10 @@ export async function acquireWakeLock() {
     return;
   }
   // eslint-disable-next-line tscompat/tscompat
-  if (sentinel !== null && !sentinel.released) {
-    // There is already a wake lock
+  if (sentinel && !sentinel.released) {
     return;
   }
   if (acquiring) {
-    // There is already a wake lock request in progress
     return;
   }
   acquiring = true;
@@ -31,10 +29,10 @@ export async function acquireWakeLock() {
 }
 
 export async function releaseWakeLock() {
-  if (sentinel !== null) {
+  if (sentinel) {
     const toReleaseSentinel = sentinel;
-    // Set to null first to avoid race condition after await
-    sentinel = null;
+    // Unset first to avoid race condition after await
+    sentinel = undefined;
 
     // eslint-disable-next-line tscompat/tscompat
     await toReleaseSentinel.release();
@@ -45,7 +43,7 @@ if (isSupported) {
   // Wake lock is cleared when user changes to a different tab,
   // so we need to reacquire the wake lock when they come back.
   on(globalThis, 'visibilitychange', () => {
-    if (sentinel !== null && document.visibilityState === 'visible') {
+    if (sentinel && document.visibilityState === 'visible') {
       void acquireWakeLock();
     }
   });
