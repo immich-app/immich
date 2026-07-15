@@ -25,7 +25,6 @@ void main() {
       localRepository: MockLocalAssetRepository(),
       apiRepository: apiRepository,
       mediaRepository: mocks.assetMedia.api,
-      trashedLocalRepository: mocks.trashedAsset,
     );
   });
 

@@ -166,6 +166,11 @@
 			path = Sync;
 			sourceTree = "<group>";
 		};
+		B2D5F7B13005FCA00080CE3E /* AssetMedia */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = AssetMedia;
+			sourceTree = "<group>";
+		};
 		F0B57D3D2DF764BD00DC5BCC /* WidgetExtension */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
@@ -287,6 +292,7 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				B2D5F7B13005FCA00080CE3E /* AssetMedia */,
 				FE1BB4562F8319560087DBF9 /* Utility */,
 				FEE084F22EC172080045228E /* Schemas */,
 				B231F52D2E93A44A00BC45D1 /* Core */,
@@ -388,6 +394,7 @@
 			fileSystemSynchronizedGroups = (
 				B231F52D2E93A44A00BC45D1 /* Core */,
 				B2CF7F8C2DDE4EBB00744BF6 /* Sync */,
+				B2D5F7B13005FCA00080CE3E /* AssetMedia */,
 				FEE084F22EC172080045228E /* Schemas */,
 			);
 			name = Runner;

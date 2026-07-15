@@ -10,15 +10,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/feature_message.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/oauth.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
@@ -187,67 +187,70 @@ class LoginForm extends HookConsumerWidget {
       final viewIntentHandler = ref.read(viewIntentHandlerProvider);
 
       await backgroundManager.syncLocal(full: true);
-      await backgroundManager.syncRemote();
+      final syncSuccess = await backgroundManager.syncRemote();
       await viewIntentHandler.flushDeferredViewIntent();
       await backgroundManager.hashAssets();
+      if (syncSuccess) {
+        await backgroundManager.syncTrash();
+      }
 
       if (SettingsRepository.instance.appConfig.backup.syncAlbums) {
         await backgroundManager.syncLinkedAlbum();
       }
     }
 
-    Future<void> getManageMediaPermission() async {
-      final hasPermission = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
-      if (!context.mounted) {
+    Future<void> promptManageMediaIfNeeded() async {
+      if (!CurrentPlatform.isAndroid || !ref.read(appConfigProvider).trashSyncEnabled) {
         return;
       }
 
-      if (!hasPermission) {
-        await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10))),
-              elevation: 5,
-              title: Text(
-                context.t.manage_media_access_title,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: context.primaryColor),
-              ),
-              content: SingleChildScrollView(
-                child: ListBody(
-                  children: [
-                    Text(context.t.manage_media_access_subtitle, style: const TextStyle(fontSize: 14)),
-                    const SizedBox(height: 4),
-                    Text(context.t.manage_media_access_rationale, style: const TextStyle(fontSize: 12)),
-                  ],
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text(
-                    context.t.cancel,
-                    style: TextStyle(fontWeight: FontWeight.w600, color: context.primaryColor),
-                  ),
-                ),
-                TextButton(
-                  onPressed: () {
-                    unawaited(ref.read(permissionRepositoryProvider).requestManageMediaPermission());
-                    Navigator.of(context).pop();
-                  },
-                  child: Text(
-                    context.t.manage_media_access_settings,
-                    style: TextStyle(fontWeight: FontWeight.w600, color: context.primaryColor),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
+      final permission = ref.read(permissionRepositoryProvider);
+      if (await permission.hasManageMediaPermission() || !context.mounted) {
+        return;
       }
-    }
 
-    bool isSyncRemoteDeletionsMode() => Platform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false);
+      await showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            shape: const RoundedRectangleBorder(borderRadius: .all(.circular(10))),
+            elevation: 5,
+            title: Text(
+              context.t.manage_media_access_title,
+              style: .new(fontSize: 16, fontWeight: .bold, color: context.primaryColor),
+            ),
+            content: SingleChildScrollView(
+              child: ListBody(
+                children: [
+                  Text(context.t.manage_media_access_subtitle, style: const .new(fontSize: 14)),
+                  const SizedBox(height: 4),
+                  Text(context.t.manage_media_access_rationale, style: const .new(fontSize: 12)),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  context.t.cancel,
+                  style: .new(fontWeight: .w600, color: context.primaryColor),
+                ),
+              ),
+              TextButton(
+                onPressed: () {
+                  unawaited(permission.requestManageMediaPermission());
+                  Navigator.of(context).pop();
+                },
+                child: Text(
+                  context.t.manage_media_access_settings,
+                  style: .new(fontWeight: .w600, color: context.primaryColor),
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
 
     Future<void> login() async {
       TextInput.finishAutofillContext();
@@ -266,9 +269,7 @@ class LoginForm extends HookConsumerWidget {
           unawaited(context.pushRoute(const ChangePasswordRoute()));
         } else {
           await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-          if (isSyncRemoteDeletionsMode()) {
-            await getManageMediaPermission();
-          }
+          await promptManageMediaIfNeeded();
           unawaited(handleSyncFlow());
           if (!context.mounted) {
             return;
@@ -371,9 +372,7 @@ class LoginForm extends HookConsumerWidget {
 
           if (isSuccess && context.mounted) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
-            if (isSyncRemoteDeletionsMode()) {
-              await getManageMediaPermission();
-            }
+            await promptManageMediaIfNeeded();
             unawaited(handleSyncFlow());
             if (!context.mounted) {
               return;

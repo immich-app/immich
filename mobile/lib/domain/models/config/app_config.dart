@@ -31,6 +31,7 @@ abstract class AppConfig with _$AppConfig {
 
   const factory AppConfig({
     @Default(LogLevel.info) LogLevel logLevel,
+    @Default(false) bool trashSyncEnabled,
     @Default(ThemeConfig()) ThemeConfig theme,
     @Default(CleanupConfig()) CleanupConfig cleanup,
     @Default(MapConfig()) MapConfig map,
@@ -48,6 +49,7 @@ abstract class AppConfig with _$AppConfig {
   T read<T>(SettingsKey<T> key) =>
       (switch (key) {
             .logLevel => logLevel,
+            .trashSyncEnabled => trashSyncEnabled,
             .themePrimaryColor => theme.primaryColor,
             .themeMode => theme.mode,
             .themeDynamic => theme.dynamicTheme,
@@ -102,6 +104,7 @@ abstract class AppConfig with _$AppConfig {
   AppConfig write<T, U extends T>(SettingsKey<T> key, U value) {
     return switch (key) {
       .logLevel => copyWith(logLevel: value as LogLevel),
+      .trashSyncEnabled => copyWith(trashSyncEnabled: value as bool),
       .themePrimaryColor => copyWith(theme: theme.copyWith(primaryColor: value as ImmichColorPreset)),
       .themeMode => copyWith(theme: theme.copyWith(mode: value as ThemeMode)),
       .themeDynamic => copyWith(theme: theme.copyWith(dynamicTheme: value as bool)),

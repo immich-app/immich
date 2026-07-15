@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:immich_mobile/domain/utils/migrate_cloud_ids.dart' as m;
 import 'package:immich_mobile/domain/utils/sync_linked_album.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
 
@@ -34,6 +35,7 @@ class BackgroundSyncManager {
   Cancelable<void>? _deviceAlbumSyncTask;
   Cancelable<void>? _linkedAlbumSyncTask;
   Cancelable<void>? _hashTask;
+  Cancelable<void>? _trashSyncTask;
 
   BackgroundSyncManager({
     this.onRemoteSyncStart,
@@ -54,7 +56,13 @@ class BackgroundSyncManager {
   // stays referenced but frozen, so on resume the dedupe guards would hand back the
   // stale task instead of syncing (#28082). Websocket and cloud-id are excluded - the
   // resume path never restarts them. [_allTasks] builds on this so the lists can't drift.
-  List<Cancelable?> get _resumeSyncTasks => [_syncTask, _deviceAlbumSyncTask, _hashTask, _linkedAlbumSyncTask];
+  List<Cancelable?> get _resumeSyncTasks => [
+    _syncTask,
+    _deviceAlbumSyncTask,
+    _hashTask,
+    _linkedAlbumSyncTask,
+    _trashSyncTask,
+  ];
 
   List<Cancelable?> get _allTasks => [_syncWebsocketTask, _cloudIdSyncTask, ..._resumeSyncTasks];
 
@@ -67,6 +75,7 @@ class BackgroundSyncManager {
     _linkedAlbumSyncTask = null;
     _deviceAlbumSyncTask = null;
     _hashTask = null;
+    _trashSyncTask = null;
     await _cancelAll(tasks);
   }
 
@@ -194,6 +203,21 @@ class BackgroundSyncManager {
             }
           }
         });
+  }
+
+  Future<void> syncTrash() {
+    if (_trashSyncTask != null) {
+      return _trashSyncTask!.future;
+    }
+
+    _trashSyncTask = runInIsolateGentle(
+      computation: (ref) => ref.read(trashSyncServiceProvider).reconcile(),
+      debugLabel: 'trash-sync',
+    );
+
+    return _trashSyncTask!.whenComplete(() {
+      _trashSyncTask = null;
+    });
   }
 
   Future<void> syncWebsocketBatchV1(List<dynamic> batchData) {

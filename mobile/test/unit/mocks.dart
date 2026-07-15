@@ -29,7 +29,6 @@ class RepositoryMocks {
   final localAsset = LocalAssetRepositoryStub(MockLocalAssetRepository());
   final remoteAsset = RemoteAssetRepositoryStub(MockRemoteAssetRepository());
   final remoteExif = RemoteExifRepositoryStub(MockRemoteExifRepository());
-  final trashedAsset = MockTrashedLocalAssetRepository();
   final remoteAlbum = MockRemoteAlbumRepository();
   final albumApi = MockDriftAlbumApiRepository();
   final permission = PermissionRepositoryStub(MockPermissionRepository());
@@ -49,7 +48,6 @@ class RepositoryMocks {
     localAsset.reset();
     remoteAsset.reset();
     remoteExif.reset();
-    reset(trashedAsset);
     reset(remoteAlbum);
     reset(albumApi);
     nativeApi.reset();
@@ -420,6 +418,9 @@ extension type const PermissionRepositoryStub(MockPermissionRepository repo) imp
 
   Future<int> Function() get getAndroidSdkVersion =>
       () => repo.getAndroidSdkVersion();
+
+  Future<bool> Function() get hasManageMediaPermission =>
+      () => repo.hasManageMediaPermission();
 }
 
 extension type const TagServiceStub(MockTagService service) implements Stub<MockTagService> {

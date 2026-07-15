@@ -29,7 +29,7 @@ class AdvancedSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
-    final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
+    final trashSyncEnabled = useState(ref.watch(appConfigProvider).trashSyncEnabled);
     final isManageMediaSupported = useState(false);
     final manageMediaAndroidPermission = useState(false);
     final levelId = useState<int>(ref.watch(appConfigProvider).logLevel.index);
@@ -79,14 +79,16 @@ class AdvancedSettings extends HookConsumerWidget {
           children: [
             SettingsSwitchListTile(
               enabled: true,
-              valueNotifier: manageLocalMediaAndroid,
               title: context.t.advanced_settings_sync_remote_deletions_title,
               subtitle: context.t.advanced_settings_sync_remote_deletions_subtitle,
+              valueNotifier: trashSyncEnabled,
               onChanged: (value) async {
-                if (value) {
-                  final result = await ref.read(permissionRepositoryProvider).requestManageMediaPermission();
-                  manageLocalMediaAndroid.value = result;
-                  manageMediaAndroidPermission.value = result;
+                trashSyncEnabled.value = value;
+                await ref.read(settingsProvider).write(.trashSyncEnabled, value);
+                if (value && context.mounted) {
+                  manageMediaAndroidPermission.value = await ref
+                      .read(permissionRepositoryProvider)
+                      .requestManageMediaPermission();
                 }
               },
             ),
@@ -94,12 +96,18 @@ class AdvancedSettings extends HookConsumerWidget {
               title: context.t.manage_media_access_title,
               statusText: manageMediaAndroidPermission.value ? context.t.allowed : context.t.not_allowed,
               subtitle: context.t.manage_media_access_rationale,
-              statusColor: manageLocalMediaAndroid.value && !manageMediaAndroidPermission.value
+              statusColor: trashSyncEnabled.value && !manageMediaAndroidPermission.value
                   ? const Color.fromARGB(255, 243, 188, 106)
                   : null,
               onActionTap: () async {
-                final result = await ref.read(permissionRepositoryProvider).manageMediaPermission();
-                manageMediaAndroidPermission.value = result;
+                await ref.read(permissionRepositoryProvider).manageMediaPermission();
+                if (!context.mounted) {
+                  return;
+                }
+
+                manageMediaAndroidPermission.value = await ref
+                    .read(permissionRepositoryProvider)
+                    .hasManageMediaPermission();
               },
             ),
           ],
