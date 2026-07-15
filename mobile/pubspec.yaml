@@ -124,6 +124,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/
+    - assets/app-icons/
     - assets/feature_message/
   fonts:
     - family: GoogleSans

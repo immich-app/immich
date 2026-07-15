@@ -1,5 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
+import 'package:immich_mobile/platform/app_icon_api.g.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/platform/connectivity_api.g.dart';
@@ -20,6 +21,8 @@ final nativeSyncApiProvider = Provider<NativeSyncApi>((_) => NativeSyncApi());
 final permissionApiProvider = Provider<PermissionApi>((_) => PermissionApi());
 
 final connectivityApiProvider = Provider<ConnectivityApi>((_) => ConnectivityApi());
+
+final appIconApiProvider = Provider<AppIconApi>((_) => AppIconApi());
 
 final localImageApi = LocalImageApi();
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/widgets/settings/preference_settings/app_icon_setting.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/haptic_setting.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/share_setting.dart';
 import 'package:immich_mobile/widgets/settings/preference_settings/theme_setting.dart';
@@ -9,7 +10,7 @@ class PreferenceSetting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const preferenceSettings = [ThemeSetting(), HapticSetting(), ShareSetting()];
+    const preferenceSettings = [ThemeSetting(), AppIconSetting(), HapticSetting(), ShareSetting()];
 
     return const SettingsSubPageScaffold(settings: preferenceSettings, showDivider: true);
   }

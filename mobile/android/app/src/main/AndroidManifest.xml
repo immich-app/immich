@@ -56,11 +56,6 @@
       Window background behind the Flutter UI. -->
       <meta-data android:name="io.flutter.embedding.android.NormalTheme"
         android:resource="@style/NormalTheme" />
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
-        <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
-
 
       <!--TODO:
       Add this filter if you want to handle shared images-->
@@ -137,6 +132,72 @@
       </intent-filter>
     </activity>
 
+    <!-- Launcher aliases for the selectable app icons (see AppIconApiImpl).
+         Exactly one is enabled at a time; the LAUNCHER intent-filter lives on
+         these instead of MainActivity so the icon can be swapped at runtime. -->
+    <activity-alias android:name=".AppIconClassic" android:targetActivity=".MainActivity"
+      android:icon="@mipmap/ic_launcher" android:exported="true">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias android:name=".AppIconMidnight" android:targetActivity=".MainActivity"
+      android:icon="@mipmap/ic_launcher_midnight" android:exported="true" android:enabled="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias android:name=".AppIconOcean" android:targetActivity=".MainActivity"
+      android:icon="@mipmap/ic_launcher_ocean" android:exported="true" android:enabled="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias android:name=".AppIconSunset" android:targetActivity=".MainActivity"
+      android:icon="@mipmap/ic_launcher_sunset" android:exported="true" android:enabled="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias android:name=".AppIconForest" android:targetActivity=".MainActivity"
+      android:icon="@mipmap/ic_launcher_forest" android:exported="true" android:enabled="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias android:name=".AppIconBlossom" android:targetActivity=".MainActivity"
+      android:icon="@mipmap/ic_launcher_blossom" android:exported="true" android:enabled="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias android:name=".AppIconInk" android:targetActivity=".MainActivity"
+      android:icon="@mipmap/ic_launcher_ink" android:exported="true" android:enabled="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias android:name=".AppIconNeon" android:targetActivity=".MainActivity"
+      android:icon="@mipmap/ic_launcher_neon" android:exported="true" android:enabled="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias android:name=".AppIconGold" android:targetActivity=".MainActivity"
+      android:icon="@mipmap/ic_launcher_gold" android:exported="true" android:enabled="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
 
     <activity
       android:name="com.linusu.flutter_web_auth_2.CallbackActivity"
