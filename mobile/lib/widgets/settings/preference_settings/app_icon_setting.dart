@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/app_icons.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -108,7 +107,7 @@ class _AppIconTile extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: const BorderRadius.all(Radius.circular(13)),
-                  child: SvgPicture.asset(variant.assetPath, width: 64, height: 64),
+                  child: Image.asset(variant.assetPath, width: 64, height: 64),
                 ),
               ),
               if (isSelected)

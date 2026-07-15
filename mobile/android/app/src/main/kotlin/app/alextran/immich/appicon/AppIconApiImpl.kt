@@ -15,7 +15,7 @@ class AppIconApiImpl(context: Context) : AppIconApi {
   companion object {
     private const val DEFAULT_ICON = "classic"
     private val ICONS =
-      listOf("classic", "midnight", "ocean", "sunset", "forest", "blossom", "ink", "neon", "gold")
+      listOf("classic", "retro", "scenic", "midnight", "ocean", "sunset", "forest", "blossom", "ink", "neon", "gold")
   }
 
   private fun componentFor(iconId: String): ComponentName {

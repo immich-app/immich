@@ -142,6 +142,20 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity-alias>
+    <activity-alias android:name=".AppIconRetro" android:targetActivity=".MainActivity"
+      android:icon="@mipmap/ic_launcher_retro" android:exported="true" android:enabled="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
+    <activity-alias android:name=".AppIconScenic" android:targetActivity=".MainActivity"
+      android:icon="@mipmap/ic_launcher_scenic" android:exported="true" android:enabled="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity-alias>
     <activity-alias android:name=".AppIconMidnight" android:targetActivity=".MainActivity"
       android:icon="@mipmap/ic_launcher_midnight" android:exported="true" android:enabled="false">
       <intent-filter>

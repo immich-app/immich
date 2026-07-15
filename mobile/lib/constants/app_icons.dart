@@ -3,6 +3,8 @@
 /// alternate icon asset names), so renaming a value is a breaking change.
 enum AppIconVariant {
   classic,
+  retro,
+  scenic,
   midnight,
   ocean,
   sunset,
@@ -12,7 +14,7 @@ enum AppIconVariant {
   neon,
   gold;
 
-  String get assetPath => 'assets/app-icons/app-icon-$name.svg';
+  String get assetPath => 'assets/app-icons/app-icon-$name.png';
 
   String get translationKey => 'app_icon_$name';
 
