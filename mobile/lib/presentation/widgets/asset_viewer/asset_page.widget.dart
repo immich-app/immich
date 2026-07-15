@@ -331,9 +331,15 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     required bool isCurrent,
     required bool isPlayingMotionVideo,
     required String? localFilePath,
+    required Size? remoteThumbnailSize,
   }) {
     final size = context.sizeData;
-    final imageProvider = getFullImageProvider(asset, size: size, localFilePath: localFilePath);
+    final imageProvider = getFullImageProvider(
+      asset,
+      size: size,
+      localFilePath: localFilePath,
+      remoteThumbnailSize: remoteThumbnailSize,
+    );
 
     if (asset.isImage && !isPlayingMotionVideo) {
       return PhotoView(
@@ -395,7 +401,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentAsset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
+    final (currentAsset, initialThumbnail) = ref.watch(
+      assetViewerProvider.select((s) => (s.currentAsset, s.initialThumbnail)),
+    );
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
@@ -451,6 +459,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                     isCurrent: isCurrent,
                     isPlayingMotionVideo: isPlayingMotionVideo,
                     localFilePath: viewIntentFilePath,
+                    remoteThumbnailSize: initialThumbnail?.tag == displayAsset.heroTag ? initialThumbnail!.size : null,
                   ),
                 ),
                 if (showingOcr && displayAsset.width != null && displayAsset.height != null)

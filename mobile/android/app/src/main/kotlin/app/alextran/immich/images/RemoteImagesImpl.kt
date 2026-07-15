@@ -5,6 +5,7 @@ import android.graphics.ImageDecoder
 import android.os.Build
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
+import android.util.Size
 import app.alextran.immich.INITIAL_BUFFER_SIZE
 import app.alextran.immich.NativeBuffer
 import app.alextran.immich.NativeByteBuffer
@@ -49,6 +50,8 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
     url: String,
     requestId: Long,
     preferEncoded: Boolean,
+    width: Long,
+    height: Long,
     callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
@@ -73,7 +76,9 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
           decodeExecutor.execute {
             val res = if (signal.isCanceled) null else try {
               val source = ImageDecoder.createSource(NativeBuffer.wrap(buffer.pointer, buffer.offset))
-              source.decodeBitmap().toNativeBuffer()
+              val target = Size(width.toInt(), height.toInt())
+              source.decodeBitmap(target, exactSize = true)
+                .toNativeBuffer()
             } catch (_: Throwable) {
               null
             }

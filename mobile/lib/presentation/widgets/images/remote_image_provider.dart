@@ -13,11 +13,16 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
     with CancellableImageProviderMixin<RemoteImageProvider> {
   final String url;
   final bool edited;
+  final Size size;
 
-  RemoteImageProvider({required this.url, this.edited = true});
+  RemoteImageProvider({required this.url, this.edited = true, this.size = Size.zero});
 
-  RemoteImageProvider.thumbnail({required String assetId, required String thumbhash, this.edited = true})
-    : url = getThumbnailUrlForRemoteId(assetId, thumbhash: thumbhash, edited: edited);
+  RemoteImageProvider.thumbnail({
+    required String assetId,
+    required String thumbhash,
+    this.edited = true,
+    this.size = Size.zero,
+  }) : url = getThumbnailUrlForRemoteId(assetId, thumbhash: thumbhash, edited: edited);
 
   @override
   Future<RemoteImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -37,7 +42,7 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
   }
 
   Stream<ImageInfo> _codec(RemoteImageProvider key, ImageDecoderCallback decode) {
-    final request = this.request = RemoteImageRequest(uri: key.url);
+    final request = this.request = RemoteImageRequest(uri: key.url, size: key.size);
     return loadRequest(request, decode, isFinal: true);
   }
 
@@ -47,13 +52,13 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
       return true;
     }
     if (other is RemoteImageProvider) {
-      return url == other.url && edited == other.edited;
+      return url == other.url && edited == other.edited && size == other.size;
     }
     return false;
   }
 
   @override
-  int get hashCode => url.hashCode ^ edited.hashCode;
+  int get hashCode => url.hashCode ^ edited.hashCode ^ size.hashCode;
 }
 
 class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImageProvider>
@@ -63,6 +68,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   final AssetType assetType;
   final bool isAnimated;
   final bool edited;
+  final Size? thumbnailSize;
 
   RemoteFullImageProvider({
     required this.assetId,
@@ -70,6 +76,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     required this.assetType,
     required this.isAnimated,
     this.edited = true,
+    this.thumbnailSize,
   });
 
   @override
@@ -83,7 +90,13 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       return AnimatedImageStreamCompleter(
         stream: _animatedCodec(key, decode),
         scale: 1.0,
-        initialImage: getInitialImage(RemoteImageProvider.thumbnail(assetId: key.assetId, thumbhash: key.thumbhash)),
+        initialImage: getInitialImage(
+          RemoteImageProvider.thumbnail(
+            assetId: key.assetId,
+            thumbhash: key.thumbhash,
+            size: key.thumbnailSize ?? Size.zero,
+          ),
+        ),
         informationCollector: () => <DiagnosticsNode>[
           DiagnosticsProperty<ImageProvider>('Image provider', this),
           DiagnosticsProperty<String>('Asset Id', key.assetId),
@@ -96,7 +109,12 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
     return OneFramePlaceholderImageStreamCompleter(
       _codec(key, decode),
       initialImage: getInitialImage(
-        RemoteImageProvider.thumbnail(assetId: key.assetId, thumbhash: key.thumbhash, edited: key.edited),
+        RemoteImageProvider.thumbnail(
+          assetId: key.assetId,
+          thumbhash: key.thumbhash,
+          edited: key.edited,
+          size: key.thumbnailSize ?? Size.zero,
+        ),
       ),
       informationCollector: () => <DiagnosticsNode>[
         DiagnosticsProperty<ImageProvider>('Image provider', this),

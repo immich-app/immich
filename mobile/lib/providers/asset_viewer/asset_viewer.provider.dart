@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -12,6 +13,7 @@ class AssetViewerState {
   final bool isZoomed;
   final bool showingOcr;
   final BaseAsset? currentAsset;
+  final ({String tag, Size size})? initialThumbnail;
   final int stackIndex;
 
   const AssetViewerState({
@@ -21,6 +23,7 @@ class AssetViewerState {
     this.isZoomed = false,
     this.showingOcr = false,
     this.currentAsset,
+    this.initialThumbnail,
     this.stackIndex = 0,
   });
 
@@ -31,6 +34,7 @@ class AssetViewerState {
     bool? isZoomed,
     bool? showingOcr,
     BaseAsset? currentAsset,
+    ({String tag, Size size})? initialThumbnail,
     int? stackIndex,
   }) {
     return AssetViewerState(
@@ -40,6 +44,7 @@ class AssetViewerState {
       isZoomed: isZoomed ?? this.isZoomed,
       showingOcr: showingOcr ?? this.showingOcr,
       currentAsset: currentAsset ?? this.currentAsset,
+      initialThumbnail: initialThumbnail ?? this.initialThumbnail,
       stackIndex: stackIndex ?? this.stackIndex,
     );
   }
@@ -64,6 +69,7 @@ class AssetViewerState {
         other.isZoomed == isZoomed &&
         other.showingOcr == showingOcr &&
         other.currentAsset == currentAsset &&
+        other.initialThumbnail == initialThumbnail &&
         other.stackIndex == stackIndex;
   }
 
@@ -75,6 +81,7 @@ class AssetViewerState {
       isZoomed.hashCode ^
       showingOcr.hashCode ^
       currentAsset.hashCode ^
+      initialThumbnail.hashCode ^
       stackIndex.hashCode;
 }
 
@@ -93,11 +100,16 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     state = const AssetViewerState();
   }
 
-  void setAsset(BaseAsset asset) {
+  void setAsset(BaseAsset asset, {Size? thumbnailSize}) {
     if (asset == state.currentAsset) {
       return;
     }
-    state = state.copyWith(currentAsset: asset, stackIndex: 0, showingOcr: false);
+    state = state.copyWith(
+      currentAsset: asset,
+      initialThumbnail: thumbnailSize == null ? null : (tag: asset.heroTag, size: thumbnailSize),
+      stackIndex: 0,
+      showingOcr: false,
+    );
     _watchCurrentAsset(asset);
   }
 

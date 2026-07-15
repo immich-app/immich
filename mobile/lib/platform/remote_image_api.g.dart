@@ -60,7 +60,13 @@ class RemoteImageApi {
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<Map<String, int>?> requestImage(String url, {required int requestId, required bool preferEncoded}) async {
+  Future<Map<String, int>?> requestImage(
+    String url, {
+    required int requestId,
+    required bool preferEncoded,
+    required int width,
+    required int height,
+  }) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.RemoteImageApi.requestImage$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -68,7 +74,13 @@ class RemoteImageApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[url, requestId, preferEncoded]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[
+      url,
+      requestId,
+      preferEncoded,
+      width,
+      height,
+    ]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     final Object? pigeonVar_replyValue = _extractReplyValueOrThrow(

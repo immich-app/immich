@@ -47,7 +47,7 @@ private open class RemoteImagesPigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface RemoteImageApi {
-  fun requestImage(url: String, requestId: Long, preferEncoded: Boolean, callback: (Result<Map<String, Long>?>) -> Unit)
+  fun requestImage(url: String, requestId: Long, preferEncoded: Boolean, width: Long, height: Long, callback: (Result<Map<String, Long>?>) -> Unit)
   fun cancelRequest(requestId: Long)
   fun clearCache(callback: (Result<Long>) -> Unit)
 
@@ -68,7 +68,9 @@ interface RemoteImageApi {
             val urlArg = args[0] as String
             val requestIdArg = args[1] as Long
             val preferEncodedArg = args[2] as Boolean
-            api.requestImage(urlArg, requestIdArg, preferEncodedArg) { result: Result<Map<String, Long>?> ->
+            val widthArg = args[3] as Long
+            val heightArg = args[4] as Long
+            api.requestImage(urlArg, requestIdArg, preferEncodedArg, widthArg, heightArg) { result: Result<Map<String, Long>?> ->
               val error = result.exceptionOrNull()
               if (error != null) {
                 reply.reply(RemoteImagesPigeonUtils.wrapError(error))

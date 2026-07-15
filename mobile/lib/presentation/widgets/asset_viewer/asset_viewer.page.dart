@@ -64,7 +64,7 @@ class AssetViewer extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _AssetViewerState();
 
-  static void setAsset(WidgetRef ref, BaseAsset asset) {
+  static void setAsset(WidgetRef ref, BaseAsset asset, {Size? thumbnailSize}) {
     ref.read(assetViewerProvider.notifier).reset();
 
     // Hide controls by default for videos
@@ -72,11 +72,11 @@ class AssetViewer extends ConsumerStatefulWidget {
       ref.read(assetViewerProvider.notifier).setControls(false);
     }
 
-    _setAsset(ref, asset);
+    _setAsset(ref, asset, thumbnailSize: thumbnailSize);
   }
 
-  static void _setAsset(WidgetRef ref, BaseAsset asset) {
-    ref.read(assetViewerProvider.notifier).setAsset(asset);
+  static void _setAsset(WidgetRef ref, BaseAsset asset, {Size? thumbnailSize}) {
+    ref.read(assetViewerProvider.notifier).setAsset(asset, thumbnailSize: thumbnailSize);
   }
 }
 
