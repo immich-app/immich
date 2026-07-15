@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:immich_mobile/domain/utils/migrate_cloud_ids.dart' as m;
 import 'package:immich_mobile/domain/utils/sync_linked_album.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/utils/isolate.dart';
 import 'package:worker_manager/worker_manager.dart';
 
@@ -33,6 +34,7 @@ class BackgroundSyncManager {
   Cancelable<void>? _deviceAlbumSyncTask;
   Cancelable<void>? _linkedAlbumSyncTask;
   Cancelable<void>? _hashTask;
+  Cancelable<void>? _trashSyncTask;
 
   BackgroundSyncManager({
     this.onRemoteSyncStart,
@@ -57,6 +59,7 @@ class BackgroundSyncManager {
       _linkedAlbumSyncTask,
       _deviceAlbumSyncTask,
       _hashTask,
+      _trashSyncTask,
     ];
     final futures = [
       for (final task in tasks)
@@ -71,6 +74,7 @@ class BackgroundSyncManager {
     _linkedAlbumSyncTask = null;
     _deviceAlbumSyncTask = null;
     _hashTask = null;
+    _trashSyncTask = null;
 
     try {
       await Future.wait(futures);
@@ -158,6 +162,21 @@ class BackgroundSyncManager {
         .whenComplete(() {
           _syncTask = null;
         });
+  }
+
+  Future<void> syncTrash() {
+    if (_trashSyncTask != null) {
+      return _trashSyncTask!.future;
+    }
+
+    _trashSyncTask = runInIsolateGentle(
+      computation: (ref) => ref.read(trashSyncServiceProvider).reconcile(),
+      debugLabel: 'trash-sync',
+    );
+
+    return _trashSyncTask!.whenComplete(() {
+      _trashSyncTask = null;
+    });
   }
 
   Future<void> syncWebsocketBatchV1(List<dynamic> batchData) {

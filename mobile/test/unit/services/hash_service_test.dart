@@ -17,7 +17,6 @@ void main() {
       localAlbumRepository: mocks.localAlbum.repo,
       localAssetRepository: mocks.localAsset.repo,
       nativeSyncApi: mocks.nativeApi.api,
-      trashedLocalAssetRepository: mocks.trashedAsset,
     );
   });
 
@@ -106,7 +105,6 @@ void main() {
           localAssetRepository: mocks.localAsset.repo,
           nativeSyncApi: mocks.nativeApi.api,
           batchSize: batchSize,
-          trashedLocalAssetRepository: mocks.trashedAsset,
         );
 
         final album = LocalAlbumFactory.create();
