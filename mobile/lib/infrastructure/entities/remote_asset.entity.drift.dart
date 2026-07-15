@@ -1779,3 +1779,7 @@ i0.Index get idxRemoteAssetOwnerVisibilityDeletedCreated => i0.Index(
   'idx_remote_asset_owner_visibility_deleted_created',
   'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)',
 );
+i0.Index get idxRemoteAssetUploaded => i0.Index(
+  'idx_remote_asset_uploaded',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_uploaded ON remote_asset_entity (uploaded_at)',
+);

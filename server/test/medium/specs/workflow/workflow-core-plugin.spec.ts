@@ -428,6 +428,40 @@ describe('core plugin', () => {
     });
   });
 
+  describe('assetDateFilter', () => {
+    it('should favorite assets created during the first 7 days of a specific year and month', async () => {
+      const { user } = await ctx.newUser();
+      const [{ asset: asset1 }, { asset: asset2 }] = await Promise.all([
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2000-04-01') }),
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2000-04-07T23:59:59Z') }),
+      ]);
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetDateFilter',
+            config: {
+              startDate: { day: 1, month: 4, year: 2000 },
+              endDate: { day: 7, month: 4, year: 2000 },
+              recurring: false,
+            },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset1.id });
+      await expect(ctx.get(AssetRepository).getById(asset1.id)).resolves.toMatchObject({ isFavorite: true });
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset2.id });
+      await expect(ctx.get(AssetRepository).getById(asset2.id)).resolves.toMatchObject({ isFavorite: true });
+    });
+  });
+
   describe('webhook', () => {
     it('should trigger a webhook on asset upload', async () => {
       const { user } = await ctx.newUser();

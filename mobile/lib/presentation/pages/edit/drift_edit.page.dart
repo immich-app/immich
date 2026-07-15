@@ -154,7 +154,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
 }
 
 class _AspectRatioButton extends StatelessWidget {
-  final AspectRatioPreset ratio;
+  final CropAspectRatio ratio;
   final bool isSelected;
   final VoidCallback onPressed;
 
@@ -162,19 +162,46 @@ class _AspectRatioButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = isSelected ? context.primaryColor : context.themeData.iconTheme.color;
+
     return Column(
       mainAxisSize: MainAxisSize.max,
       children: [
         IconButton(
           iconSize: 36,
-          icon: Transform.rotate(
-            angle: ratio.iconRotated ? pi / 2 : 0,
-            child: Icon(ratio.icon, color: isSelected ? context.primaryColor : context.themeData.iconTheme.color),
-          ),
+          icon: ratio.ratio != null
+              ? _AspectRatioRect(ratio: ratio.ratio!, color: color)
+              : Icon(ratio.icon, color: color),
           onPressed: onPressed,
         ),
         Text(ratio.label, style: context.textTheme.displayMedium),
       ],
+    );
+  }
+}
+
+class _AspectRatioRect extends StatelessWidget {
+  final double ratio;
+  final Color? color;
+
+  const _AspectRatioRect({required this.ratio, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 28,
+      height: 28,
+      child: Center(
+        child: AspectRatio(
+          aspectRatio: ratio,
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: color ?? Colors.transparent, width: 3),
+              borderRadius: const BorderRadius.all(Radius.circular(4)),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -187,22 +214,16 @@ class _AspectRatioSelector extends ConsumerWidget {
     final editorState = ref.watch(editorStateProvider);
     final editorNotifier = ref.read(editorStateProvider.notifier);
 
-    // the whole crop view is rotated, so we need to swap the aspect ratio when the rotation is 90 or 270 degrees
-    double? selectedAspectRatio = editorState.aspectRatio;
-    if (editorState.rotationAngle % 180 != 0 && selectedAspectRatio != null) {
-      selectedAspectRatio = 1 / selectedAspectRatio;
-    }
-
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: AspectRatioPreset.values.map((entry) {
+        children: aspectRatioPresets.map((entry) {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 8.0),
             child: _AspectRatioButton(
               ratio: entry,
-              isSelected: selectedAspectRatio == entry.ratio,
-              onPressed: () => editorNotifier.setAspectRatio(entry.ratio),
+              isSelected: editorState.aspectRatio == entry,
+              onPressed: () => editorNotifier.setAspectRatio(entry),
             ),
           );
         }).toList(),
@@ -357,8 +378,22 @@ class _EditorPreviewState extends ConsumerState<_EditorPreview> with TickerProvi
     final editorState = ref.watch(editorStateProvider);
     final editorNotifier = ref.read(editorStateProvider.notifier);
 
-    ref.listen(editorStateProvider, (_, current) {
-      cropController.aspectRatio = current.aspectRatio;
+    ref.listen(editorStateProvider, (previous, current) {
+      // Only re-apply the aspect ratio when it changes, otherwise the crop rect will shrink on every rotation
+      if (previous?.aspectRatio != current.aspectRatio) {
+        double? ratio;
+
+        ratio = switch (current.aspectRatio) {
+          CropAspectRatio.original => current.originalWidth / current.originalHeight,
+          _ => current.aspectRatio.ratio,
+        };
+
+        if (current.rotationAngle % 180 != 0) {
+          ratio = ratio != null ? 1 / ratio : null;
+        }
+
+        cropController.aspectRatio = ratio;
+      }
 
       if (cropController.crop != current.crop) {
         cropController.crop = current.crop;
@@ -386,7 +421,9 @@ class _EditorPreviewState extends ConsumerState<_EditorPreview> with TickerProvi
                   1.0,
                   1.0,
                 ),
-              child: Container(
+              child: AnimatedContainer(
+                duration: editorState.animationDuration,
+                curve: Curves.easeInOut,
                 padding: const EdgeInsets.all(10),
                 width: (editorState.rotationAngle % 180 == 0) ? baseWidth : baseHeight,
                 height: (editorState.rotationAngle % 180 == 0) ? baseHeight : baseWidth,

@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/aspect_ratios.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/utils/editor.utils.dart';
@@ -60,13 +61,8 @@ class EditorProvider extends Notifier<EditorState> {
     state = state.copyWith(crop: crop, hasUnsavedEdits: true);
   }
 
-  void setAspectRatio(double? aspectRatio) {
-    if (aspectRatio != null && state.rotationAngle % 180 != 0) {
-      // When rotated 90 or 270 degrees, swap width and height for aspect ratio calculations
-      aspectRatio = 1 / aspectRatio;
-    }
-
-    state = state.copyWith(aspectRatio: aspectRatio);
+  void setAspectRatio(CropAspectRatio preset) {
+    state = state.copyWith(aspectRatio: preset, hasUnsavedEdits: true);
   }
 
   void resetEdits() {
@@ -76,19 +72,19 @@ class EditorProvider extends Notifier<EditorState> {
       flipHorizontal: false,
       flipVertical: false,
       crop: const Rect.fromLTRB(0, 0, 1, 1),
-      aspectRatio: null,
+      aspectRatio: CropAspectRatio.free,
       hasUnsavedEdits: true,
     );
   }
 
   void rotateCCW() {
     _animateRotation(state.rotationAngle - 90);
-    state = state.copyWith(hasUnsavedEdits: true);
+    state = state.copyWith(aspectRatio: state.aspectRatio.flipped, hasUnsavedEdits: true);
   }
 
   void rotateCW() {
     _animateRotation(state.rotationAngle + 90);
-    state = state.copyWith(hasUnsavedEdits: true);
+    state = state.copyWith(aspectRatio: state.aspectRatio.flipped, hasUnsavedEdits: true);
   }
 
   void flipHorizontally() {
@@ -117,7 +113,7 @@ class EditorState {
   final bool flipHorizontal;
   final bool flipVertical;
   final Rect crop;
-  final double? aspectRatio;
+  final CropAspectRatio aspectRatio;
 
   final int originalWidth;
   final int originalHeight;
@@ -132,7 +128,7 @@ class EditorState {
     bool? flipHorizontal,
     bool? flipVertical,
     Rect? crop,
-    this.aspectRatio,
+    CropAspectRatio? aspectRatio,
     int? originalWidth,
     int? originalHeight,
     Duration? animationDuration,
@@ -145,6 +141,7 @@ class EditorState {
        originalWidth = originalWidth ?? 0,
        originalHeight = originalHeight ?? 0,
        crop = crop ?? const Rect.fromLTRB(0, 0, 1, 1),
+       aspectRatio = aspectRatio ?? CropAspectRatio.free,
        hasUnsavedEdits = hasUnsavedEdits ?? false;
 
   EditorState copyWith({
@@ -152,7 +149,7 @@ class EditorState {
     int? rotationAngle,
     bool? flipHorizontal,
     bool? flipVertical,
-    double? aspectRatio = double.infinity,
+    CropAspectRatio? aspectRatio,
     int? originalWidth,
     int? originalHeight,
     Duration? animationDuration,
@@ -164,7 +161,7 @@ class EditorState {
       rotationAngle: rotationAngle ?? this.rotationAngle,
       flipHorizontal: flipHorizontal ?? this.flipHorizontal,
       flipVertical: flipVertical ?? this.flipVertical,
-      aspectRatio: aspectRatio == double.infinity ? this.aspectRatio : aspectRatio,
+      aspectRatio: aspectRatio ?? this.aspectRatio,
       animationDuration: animationDuration ?? this.animationDuration,
       originalWidth: originalWidth ?? this.originalWidth,
       originalHeight: originalHeight ?? this.originalHeight,

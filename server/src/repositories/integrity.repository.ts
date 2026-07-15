@@ -119,7 +119,7 @@ export class IntegrityRepository {
   }
 
   @GenerateSql({ params: [], stream: true })
-  streamAssetPaths() {
+  streamAssetPathsForMissingFiles() {
     return this.db
       .selectFrom((eb) =>
         eb
@@ -143,7 +143,7 @@ export class IntegrityRepository {
       )
       .leftJoin('integrity_report', (join) =>
         join
-          .on('integrity_report.type', '=', IntegrityReport.UntrackedFile)
+          .on('integrity_report.type', '=', IntegrityReport.MissingFile)
           .on((eb) =>
             eb.or([
               eb('integrity_report.assetId', '=', eb.ref('allPaths.assetId')),
@@ -160,8 +160,8 @@ export class IntegrityRepository {
     >;
   }
 
-  @GenerateSql({ params: [DummyValue.DATE, DummyValue.DATE], stream: true })
-  streamAssetChecksums(startMarker?: Date, endMarker?: Date) {
+  @GenerateSql({ params: [DummyValue.DATE], stream: true })
+  streamAssetChecksums(startMarker?: Date) {
     return this.db
       .selectFrom('asset')
       .where('asset.deletedAt', 'is', null)
@@ -178,9 +178,8 @@ export class IntegrityRepository {
         'integrity_report.id as reportId',
       ])
       .where('asset.isExternal', '=', sql.lit(false))
-      .$if(startMarker !== undefined, (qb) => qb.where('integrity_report.createdAt', '>=', startMarker!))
-      .$if(endMarker !== undefined, (qb) => qb.where('integrity_report.createdAt', '<=', endMarker!))
-      .orderBy('integrity_report.createdAt', 'asc')
+      .$if(startMarker !== undefined, (qb) => qb.where('asset.createdAt', '>=', startMarker!))
+      .orderBy('asset.createdAt', 'asc')
       .stream();
   }
 

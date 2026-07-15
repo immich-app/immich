@@ -2232,6 +2232,26 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should include hevc tag when target is hevc and using hwa', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStreamHDR10 });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          targetVideoCodec: VideoCodec.Hevc,
+          accel: TranscodeHardwareAcceleration.Nvenc,
+        },
+      });
+      await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          inputOptions: expect.any(Array),
+          outputOptions: expect.arrayContaining(['-c:v', 'hevc_nvenc', '-tag:v', 'hvc1']),
+          twoPass: false,
+        }),
+      );
+    });
+
     it('should copy audio stream when audio matches target', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.audioStreamAac });
       mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Optimal } });
