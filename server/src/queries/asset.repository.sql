@@ -101,6 +101,87 @@ where
   and "key" = $2
 commit
 
+-- AssetRepository.getCompletionMetadata
+select
+  "originalPath" as "path",
+  "status",
+  "fileModifiedAt",
+  "createdAt",
+  "checksum",
+  "fileSizeInByte" as "size"
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "id" = $1
+  and "ownerId" = $2
+
+-- AssetRepository.setComplete
+with
+  "completed_asset" as (
+    update "asset" as "complete_asset"
+    set
+      "status" = 'active',
+      "visibility" = case
+        when (
+          "complete_asset"."type" = 'VIDEO'
+          and exists (
+            select
+            from
+              "asset"
+            where
+              "complete_asset"."id" = "asset"."livePhotoVideoId"
+          )
+        ) then 'hidden'::asset_visibility_enum
+        else 'timeline'::asset_visibility_enum
+      end
+    where
+      "id" = $1
+      and "status" = 'partial'
+    returning
+      *
+  ),
+  "shared_link" as (
+    insert into
+      "album_asset" ("albumId", "assetId")
+    select
+      $2 as "albumId",
+      "completed_asset"."id"
+    from
+      "completed_asset"
+    on conflict do nothing
+  )
+select
+  *
+from
+  "completed_asset"
+
+-- AssetRepository.removeAndDecrementQuota
+with
+  "asset_exif" as (
+    select
+      "fileSizeInByte"
+    from
+      "asset_exif"
+    where
+      "assetId" = $1
+  ),
+  "asset" as (
+    delete from "asset"
+    where
+      "id" = $2
+    returning
+      "ownerId"
+  )
+update "user"
+set
+  "quotaUsageInBytes" = "quotaUsageInBytes" - "fileSizeInByte"
+from
+  "asset_exif",
+  "asset"
+where
+  "user"."id" = "asset"."ownerId"
+
 -- AssetRepository.getByDayOfYear
 with
   "res" as (
@@ -329,7 +410,9 @@ where
 
 -- AssetRepository.getUploadAssetIdByChecksum
 select
-  "id"
+  "id",
+  "status",
+  "createdAt"
 from
   "asset"
 where

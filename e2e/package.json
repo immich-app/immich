@@ -50,6 +50,7 @@
     "prettier-plugin-organize-imports": "^4.0.0",
     "sharp": "^0.34.5",
     "socket.io-client": "^4.7.4",
+    "structured-headers": "^2.0.2",
     "supertest": "^7.0.0",
     "typescript": "^6.0.0",
     "typescript-eslint": "^8.28.0",

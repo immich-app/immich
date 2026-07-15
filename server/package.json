@@ -110,6 +110,7 @@
     "sharp": "^0.34.5",
     "sirv": "^3.0.0",
     "socket.io": "^4.8.1",
+    "structured-headers": "^2.0.2",
     "tailwindcss-preset-email": "^1.4.0",
     "thumbhash": "^0.1.1",
     "transformation-matrix": "^3.1.0",

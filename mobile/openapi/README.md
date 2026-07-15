@@ -308,6 +308,11 @@ Class | Method | HTTP request | Description
 *TrashApi* | [**emptyTrash**](doc//TrashApi.md#emptytrash) | **POST** /trash/empty | Empty trash
 *TrashApi* | [**restoreAssets**](doc//TrashApi.md#restoreassets) | **POST** /trash/restore/assets | Restore assets
 *TrashApi* | [**restoreTrash**](doc//TrashApi.md#restoretrash) | **POST** /trash/restore | Restore trash
+*UploadApi* | [**cancelUpload**](doc//UploadApi.md#cancelupload) | **DELETE** /upload/{id} | 
+*UploadApi* | [**getUploadOptions**](doc//UploadApi.md#getuploadoptions) | **OPTIONS** /upload | 
+*UploadApi* | [**getUploadStatus**](doc//UploadApi.md#getuploadstatus) | **HEAD** /upload/{id} | 
+*UploadApi* | [**resumeUpload**](doc//UploadApi.md#resumeupload) | **PATCH** /upload/{id} | 
+*UploadApi* | [**startUpload**](doc//UploadApi.md#startupload) | **POST** /upload | 
 *UsersApi* | [**createProfileImage**](doc//UsersApi.md#createprofileimage) | **POST** /users/profile-image | Create user profile image
 *UsersApi* | [**deleteProfileImage**](doc//UsersApi.md#deleteprofileimage) | **DELETE** /users/profile-image | Delete user profile image
 *UsersApi* | [**deleteUserLicense**](doc//UsersApi.md#deleteuserlicense) | **DELETE** /users/me/license | Delete user product key
@@ -635,6 +640,7 @@ Class | Method | HTTP request | Description
  - [SyncUserMetadataV1](doc//SyncUserMetadataV1.md)
  - [SyncUserV1](doc//SyncUserV1.md)
  - [SystemConfigBackupsDto](doc//SystemConfigBackupsDto.md)
+ - [SystemConfigBackupsDtoUpload](doc//SystemConfigBackupsDtoUpload.md)
  - [SystemConfigDto](doc//SystemConfigDto.md)
  - [SystemConfigFFmpegDto](doc//SystemConfigFFmpegDto.md)
  - [SystemConfigFFmpegRealtimeDto](doc//SystemConfigFFmpegRealtimeDto.md)
@@ -690,6 +696,7 @@ Class | Method | HTTP request | Description
  - [UpdateAlbumUserDto](doc//UpdateAlbumUserDto.md)
  - [UpdateAssetDto](doc//UpdateAssetDto.md)
  - [UpdateLibraryDto](doc//UpdateLibraryDto.md)
+ - [UploadOkDto](doc//UploadOkDto.md)
  - [UsageByUserDto](doc//UsageByUserDto.md)
  - [UserAdminCreateDto](doc//UserAdminCreateDto.md)
  - [UserAdminDeleteDto](doc//UserAdminDeleteDto.md)

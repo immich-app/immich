@@ -75,8 +75,14 @@ export class StorageRepository {
     return fs.writeFile(filepath, buffer, { flag: 'wx' });
   }
 
-  createWriteStream(filepath: string): Writable {
-    return createWriteStream(filepath, { flags: 'w', flush: true });
+  createWriteStream(filepath: string, options?: { flush: boolean }): Writable {
+    const flush = options?.flush ?? true;
+    return createWriteStream(filepath, { flags: 'w', flush, highWaterMark: 1024 * 1024 });
+  }
+
+  createOrAppendWriteStream(filepath: string, options?: { flush: boolean }): Writable {
+    const flush = options?.flush ?? true;
+    return createWriteStream(filepath, { flags: 'a', flush, highWaterMark: 1024 * 1024 });
   }
 
   createOrOverwriteFile(filepath: string, buffer: Buffer) {
@@ -199,10 +205,13 @@ export class StorageRepository {
     }
   }
 
+  mkdir(filepath: string): Promise<string | undefined> {
+    return fs.mkdir(filepath, { recursive: true });
+  }
+
   mkdirSync(filepath: string): void {
-    if (!existsSync(filepath)) {
-      mkdirSync(filepath, { recursive: true });
-    }
+    // does not throw an error if the folder already exists
+    mkdirSync(filepath, { recursive: true });
   }
 
   existsSync(filepath: string) {

@@ -42,7 +42,7 @@ type EventMap = {
   AlbumInvite: [{ id: string; userId: string; senderName: string }];
 
   // asset events
-  AssetCreate: [{ asset: Asset; file: UploadFile }];
+  AssetCreate: [{ asset: Asset; file?: UploadFile }];
   AssetTag: [{ assetId: string }];
   AssetUntag: [{ assetId: string }];
   AssetHide: [{ assetId: string; userId: string }];
@@ -80,6 +80,9 @@ type EventMap = {
 
   // stack bulk events
   StackDeleteAll: [{ stackIds: string[]; userId: string }];
+
+  // upload events
+  UploadAbort: [{ assetId: string; abortTime: Date }];
 
   // user events
   UserSignup: [{ notify: boolean; id: string; password?: string }];

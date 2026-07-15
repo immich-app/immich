@@ -93,7 +93,13 @@ const SystemConfigIntegrityChecksSchema = z
   .describe('Integrity checks config')
   .meta({ id: 'SystemConfigIntegrityChecks' });
 
-const SystemConfigBackupsSchema = z.object({ database: DatabaseBackupSchema }).meta({ id: 'SystemConfigBackupsDto' });
+const UploadBackupSchema = z.object({
+  maxAgeHours: z.int().min(1),
+});
+
+const SystemConfigBackupsSchema = z
+  .object({ database: DatabaseBackupSchema, upload: UploadBackupSchema })
+  .meta({ id: 'SystemConfigBackupsDto' });
 
 const SystemConfigFFmpegSchema = z
   .object({
@@ -222,6 +228,7 @@ const SystemConfigNightlyTasksSchema = z
     clusterNewFaces: configBool.describe('Cluster new faces'),
     generateMemories: configBool.describe('Generate memories'),
     syncQuotaUsage: configBool.describe('Sync quota usage'),
+    removeStaleUploads: configBool.describe('Remove stale uploads'),
   })
   .meta({ id: 'SystemConfigNightlyTasksDto' });
 

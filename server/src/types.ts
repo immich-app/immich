@@ -336,8 +336,7 @@ export interface IIntegrityUntrackedFilesJob {
 
 export interface IIntegrityMissingFilesJob {
   items: ({ path: string; reportId: string | null } & (
-    | { assetId: string; fileAssetId: null }
-    | { assetId: null; fileAssetId: string }
+    { assetId: string; fileAssetId: null } | { assetId: null; fileAssetId: string }
   ))[];
 }
 
@@ -433,6 +432,8 @@ export type JobItem =
   | { name: JobName.PersonCleanup; data?: IBaseJob }
   | { name: JobName.AssetDelete; data: IAssetDeleteJob }
   | { name: JobName.AssetDeleteCheck; data?: IBaseJob }
+  | { name: JobName.PartialAssetCleanup; data: IEntityJob }
+  | { name: JobName.PartialAssetCleanupQueueAll; data?: IBaseJob }
 
   // Library Management
   | { name: JobName.LibrarySyncFiles; data: ILibraryFileJob }
@@ -553,8 +554,7 @@ export interface MemoryData {
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
 export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
 export type MaintenanceModeState =
-  | { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto }
-  | { isMaintenanceMode: false };
+  { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto } | { isMaintenanceMode: false };
 export type MemoriesState = {
   /** memories have already been created through this date */
   lastOnThisDayDate: string;

@@ -757,6 +757,8 @@ class ApiClient {
           return SyncUserV1.fromJson(value);
         case 'SystemConfigBackupsDto':
           return SystemConfigBackupsDto.fromJson(value);
+        case 'SystemConfigBackupsDtoUpload':
+          return SystemConfigBackupsDtoUpload.fromJson(value);
         case 'SystemConfigDto':
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
@@ -867,6 +869,8 @@ class ApiClient {
           return UpdateAssetDto.fromJson(value);
         case 'UpdateLibraryDto':
           return UpdateLibraryDto.fromJson(value);
+        case 'UploadOkDto':
+          return UploadOkDto.fromJson(value);
         case 'UsageByUserDto':
           return UsageByUserDto.fromJson(value);
         case 'UserAdminCreateDto':

@@ -9,7 +9,7 @@ import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos
 import { AssetMediaCreateDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetEditAction } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
 import { UploadBody } from 'src/types';
@@ -188,7 +188,11 @@ describe(AssetMediaService.name, () => {
     });
 
     it('should find an existing asset', async () => {
-      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue({
+        id: 'asset-id',
+        createdAt: new Date(),
+        status: AssetStatus.Active,
+      });
       await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('hex'))).resolves.toEqual({
         id: 'asset-id',
         status: AssetMediaStatus.DUPLICATE,
@@ -197,7 +201,11 @@ describe(AssetMediaService.name, () => {
     });
 
     it('should find an existing asset by base64', async () => {
-      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue('asset-id');
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue({
+        id: 'asset-id',
+        createdAt: new Date(),
+        status: AssetStatus.Active,
+      });
       await expect(sut.getUploadAssetIdByChecksum(authStub.admin, file1.toString('base64'))).resolves.toEqual({
         id: 'asset-id',
         status: AssetMediaStatus.DUPLICATE,
@@ -359,7 +367,11 @@ describe(AssetMediaService.name, () => {
       (error as any).constraint_name = ASSET_CHECKSUM_CONSTRAINT;
 
       mocks.asset.create.mockRejectedValue(error);
-      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue(assetEntity.id);
+      mocks.asset.getUploadAssetIdByChecksum.mockResolvedValue({
+        id: assetEntity.id,
+        createdAt: new Date(),
+        status: AssetStatus.Active,
+      });
 
       await expect(sut.uploadAsset(authStub.user1, createDto, file)).resolves.toEqual({
         id: 'id_1',
