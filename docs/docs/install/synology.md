@@ -10,9 +10,15 @@ This is a community contribution and not officially supported by the Immich team
 Community support can be found in the dedicated channel on the [Discord Server](https://discord.immich.app/).
 :::
 
-Immich can easily be installed on a Synology NAS using Container Manager within DSM. If you have not installed Container Manager already, you can install it in the Packages Center. Refer to the [Container Manager docs](https://kb.synology.com/en-us/DSM/help/ContainerManager/docker_desc?version=7) for more information on using Container Manager.
+Immich can be installed on a Synology NAS using either Container Manager (Docker) or as a native SynoCommunity package.
 
-## Step 1 - Download the required files
+---
+
+## Option 1 — Docker Installation via Container Manager
+
+If you have not installed Container Manager already, you can install it in the Packages Center. Refer to the [Container Manager docs](https://kb.synology.com/en-us/DSM/help/ContainerManager/docker_desc?version=7) for more information on using Container Manager.
+
+### Step 1 - Download the required files
 
 Create a directory of your choice (e.g. `./immich-app`) to house Immich. In general, it's best practice to have all Docker-based applications running under the `./docker` directory, so in this case, your directory structure will look like `./docker/immich-app`.
 
@@ -25,11 +31,11 @@ When you're all done, you should have the following:
 
 Download [`docker-compose.yml`](https://github.com/immich-app/immich/releases/latest/download/docker-compose.yml) and [`example.env`](https://github.com/immich-app/immich/releases/latest/download/example.env) to your computer. Upload the files to the `./docker/immich-app` directory, and rename `example.env` to `.env`. Note: If you plan to use the Synology Text editor to edit the `.env` file on the NAS within File Station, you will need to rename it to a temporary name (e.g. `example.txt`) in order to see 'Open with Text Editor' in the file context menu. Once saved, rename it back to `.env`.
 
-## Step 2 - Populate the .env file with custom values
+### Step 2 - Populate the .env file with custom values
 
 Follow [Step 2 in Docker Compose](/install/docker-compose#step-2---populate-the-env-file-with-custom-values) for instructions on customizing the `.env` file, and then return back to this guide to continue.
 
-## Step 3 - Create a new project in Container Manager
+### Step 3 - Create a new project in Container Manager
 
 Open Container Manager, and select the "**Project**" action on the left navigation bar and then click "**Create**".
 ![Create project](../../static/img/synology-container-manager-create-project.png)
@@ -50,7 +56,7 @@ Scroll to the bottom of the "**Details**" section and find the `IP Address` list
 
 ![Container details](../../static/img/synology-container-manager-container-details.png)
 
-## Step 4 - Configure Firewall Settings
+### Step 4 - Configure Firewall Settings
 
 Once your project completes the build process, your containers will start. In order to be able to access Immich from your browser, you need to configure the firewall settings for your Synology NAS to allow communication between the Immich containers.
 
@@ -68,7 +74,7 @@ Click "**Edit Rules**" and add the following firewall rules:
 
 ![Custom port rule](../../static/img/synology-custom-port-firewall-rule.png)
 
-## Next Steps
+### Next Steps
 
 Read the [Post Installation](/install/post-install.mdx) steps and [upgrade instructions](/install/upgrading.md).
 
@@ -77,15 +83,15 @@ Read the [Post Installation](/install/post-install.mdx) steps and [upgrade instr
 
 Check the post installation and upgrade instructions at the links above before proceeding with this section.
 
-## Step 1. Backup
+#### Step 1. Backup
 
 Ensure your photos and videos are backed up. Your `.env` settings will define where they are stored. There is no need to delete any files or folders within the `docker` folder when doing a release upgrade unless instructed in the release notes.
 
-## Step 2. Check release notes
+#### Step 2. Check release notes
 
 Always check the [release notes](https://github.com/immich-app/immich/releases) before proceeding with an update!
 
-## Step 3. Stop containers & clean up
+#### Step 3. Stop containers & clean up
 
 Open **Container Manager**. Select **Project** then your Immich app
 
@@ -103,13 +109,13 @@ Go to **Image** and select **Remove Unused Images**.
 
 ![Remove unused](../../static/img/synology-remove-unused.png)
 
-## Step 4. Build
+#### Step 4. Build
 
 Go to **Project**, select **Action** then **Build**. This will download, unpack, install and start the containers.
 
 ![Build](../../static/img/synology-build.png)
 
-## Step 5. Update firewall rule
+#### Step 5. Update firewall rule
 
 Without a fixed subnet, the default behavior is to automatically start the containers once installed. If `immich_server` runs for a few seconds and then stops, it may be because the firewall rule no longer matches the server IP address.
 
@@ -129,16 +135,16 @@ To prevent future firewall issues, you may set a fixed subnet. [See Set Fixed Su
 </details>
 
 <details id="set-fixed-subnet">
-  <summary>Set Fixed Subnet</summary>
+  <summary>Set Fixed Subnet (Docker only)</summary>
 
 Docker by default assigns dynamic subnets to bridge networks which can change when rebuilding containers and can cause firewall rules to break. To avoid this, define a fixed subnet in your `docker-compose.yml`:
 
-## Step 1. Determine current subnet
+#### Step 1. Determine current subnet
 
 Go to the **Container** section. Click on `immich_server` and scroll down on **General** to find the IP address.
 ![Container IP](../../static/img/synology-container-ip.png)
 
-## Step 2. Add network configuration
+#### Step 2. Add network configuration
 
 Add the following network configuration at the end of your `docker-compose.yml` file:
 
@@ -154,7 +160,7 @@ networks:
 
 If your docker container is running on a different subnet then update accordingly.
 
-## Step 3. Add network to each service
+#### Step 3. Add network to each service
 
 Add the network to each service (immich-server, immich-machine-learning, redis, database):
 
@@ -183,8 +189,65 @@ services:
 
 Save your changes. Synology will ask if you want to save changes only or rebuild containers. Select rebuild containers.
 
-## Step 4. Update Firewall Rules, if necessary
+#### Step 4. Update Firewall Rules, if necessary
 
 If your firewall rules were not already set for this subnet, the firewall rules will need to be updated. See [Step 4 - Configure Firewall Settings](#step-4---configure-firewall-settings).
 
 </details>
+
+---
+
+## Option 2 — SynoCommunity Package Installation
+
+Immich is also available as a native SPK package from the [SynoCommunity](https://synocommunity.com/) repository. This method integrates Immich directly into DSM's Package Center and uses DSM's service management for lifecycle handling.
+
+### Prerequisites
+
+- DSM 7.2 or later (64-bit only)
+- SynoCommunity repository added to Package Center
+
+:::note
+When you install the Immich package, Package Center will automatically prompt you to install any required dependencies (PostgreSQL, Redis, Node.js_v22, ffmpeg8, Perl, Python 3.14) if they aren't already installed. You do not need to install them manually beforehand.
+:::
+
+### Step 1 — Install PostgreSQL
+
+Install the PostgreSQL package from SynoCommunity if it isn't already present (Package Center will prompt you during Immich installation). During PostgreSQL installation, you will be prompted to create an administrator account with a username and password. Remember these credentials — you'll need them during the Immich installation.
+
+After installation, verify PostgreSQL is running on port **5433** (the SynoCommunity package uses this port to avoid conflict with Synology's built-in PostgreSQL on 5432). The SynoCommunity PostgreSQL package includes all extensions required by Immich: `unaccent`, `cube`, `earthdistance`, `pg_trgm`, `uuid-ossp`, and `vector` (pgvector for AI/ML search).
+
+### Step 2 — Install Immich
+
+Install the Immich package from SynoCommunity. The installation wizard will guide you through three screens:
+
+**Database Configuration**
+- Enter the PostgreSQL admin username and password you created in Step 1
+- The installer will create a dedicated `immich` database user and database
+
+**Shared Folder**
+- Select or create a DSM shared folder for media storage
+- This folder will contain your photos, videos, and thumbnails
+- Choose a volume with sufficient free space
+
+**Machine Learning (Optional)**
+- If enabled, approximately 300 MB of Python machine learning dependencies will be downloaded and installed
+- Provides smart search, facial recognition, and OCR capabilities
+- Can be omitted if you don't need these features
+
+### Step 4 — Access Immich
+
+Once the installation completes, Immich will start automatically. Access the web interface at:
+
+```
+http://<your-nas-ip>:2283
+```
+
+Follow the on-screen prompts to create your admin account and begin uploading photos.
+
+### Updating
+
+The SynoCommunity package updates through DSM's Package Center. When an update is available, you'll see a notification and can update with a single click. The database and media files are preserved during updates.
+
+### Uninstalling
+
+When uninstalling Immich, the wizard offers the option to export your Immich database in a format compatible with the upstream Immich backup mechanism. If you plan to migrate to a Docker installation later, enable this option and save the backup file to a safe location.
