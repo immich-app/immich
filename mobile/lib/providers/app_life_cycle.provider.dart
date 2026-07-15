@@ -126,6 +126,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           // TODO: Bring back when the soft freeze issue is addressed
           // _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds"),
         ]);
+        await _safeRun(backgroundManager.syncTrash(), "syncTrash");
       } else {
         await _safeRun(backgroundManager.hashAssets(), "hashAssets");
       }

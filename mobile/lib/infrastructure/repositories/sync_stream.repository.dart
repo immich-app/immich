@@ -71,6 +71,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             await _db.remoteAssetCloudIdEntity.deleteAll();
             await _db.assetEditEntity.deleteAll();
             await _db.assetOcrEntity.deleteAll();
+            await _db.trashSyncEntity.deleteAll();
+            await _db.serverDeletedChecksumEntity.deleteAll();
           });
         } finally {
           // re-enable FK even if the transaction throws, otherwise the connection

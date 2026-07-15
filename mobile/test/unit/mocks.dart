@@ -29,7 +29,6 @@ class RepositoryMocks {
   final localAsset = LocalAssetRepositoryStub(MockDriftLocalAssetRepository());
   final remoteAsset = RemoteAssetRepositoryStub(MockRemoteAssetRepository());
   final remoteExif = RemoteExifRepositoryStub(MockRemoteExifRepository());
-  final trashedAsset = MockTrashedLocalAssetRepository();
   final toast = MockToastRepository();
   final remoteAlbum = MockRemoteAlbumRepository();
   final albumApi = MockDriftAlbumApiRepository();
@@ -49,7 +48,6 @@ class RepositoryMocks {
     localAsset.reset();
     remoteAsset.reset();
     remoteExif.reset();
-    reset(trashedAsset);
     reset(remoteAlbum);
     reset(albumApi);
     nativeApi.reset();

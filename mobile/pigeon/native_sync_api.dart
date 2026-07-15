@@ -136,11 +136,5 @@ abstract class NativeSyncApi {
   void cancelSync();
 
   @TaskQueue(type: TaskQueueType.serialBackgroundThread)
-  Map<String, List<PlatformAsset>> getTrashedAssets();
-
-  @async
-  bool restoreFromTrashById(String mediaId, int type);
-
-  @TaskQueue(type: TaskQueueType.serialBackgroundThread)
   List<CloudIdResult> getCloudIdForAssetIds(List<String> assetIds);
 }

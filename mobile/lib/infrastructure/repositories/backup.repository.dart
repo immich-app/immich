@@ -58,6 +58,12 @@ class DriftBackupRepository extends DriftDatabaseRepository {
             INNER JOIN main.local_album_entity la on laa.album_id = la.id
             WHERE laa.asset_id = lae.id
                 AND la.backup_selection = ?3
+        )
+        AND NOT EXISTS (
+            SELECT 1 FROM trash_sync ts WHERE ts.asset_id = lae.id
+        )
+        AND NOT EXISTS (
+            SELECT 1 FROM server_deleted_checksum sd WHERE sd.checksum = lae.checksum
         );
       ''';
 
@@ -69,7 +75,14 @@ class DriftBackupRepository extends DriftDatabaseRepository {
             Variable.withInt(BackupSelection.selected.index),
             Variable.withInt(BackupSelection.excluded.index),
           ],
-          readsFrom: {_db.localAlbumAssetEntity, _db.localAlbumEntity, _db.localAssetEntity, _db.remoteAssetEntity},
+          readsFrom: {
+            _db.localAlbumAssetEntity,
+            _db.localAlbumEntity,
+            _db.localAssetEntity,
+            _db.remoteAssetEntity,
+            _db.trashSyncEntity,
+            _db.serverDeletedChecksumEntity,
+          },
         )
         .getSingle();
 
@@ -103,6 +116,16 @@ class DriftBackupRepository extends DriftDatabaseRepository {
                 ..where(
                   _db.remoteAssetEntity.checksum.equalsExp(lae.checksum) & _db.remoteAssetEntity.ownerId.equals(userId),
                 ),
+            ) &
+            notExistsQuery(
+              _db.trashSyncEntity.selectOnly()
+                ..addColumns([_db.trashSyncEntity.assetId])
+                ..where(_db.trashSyncEntity.assetId.equalsExp(lae.id)),
+            ) &
+            notExistsQuery(
+              _db.serverDeletedChecksumEntity.selectOnly()
+                ..addColumns([_db.serverDeletedChecksumEntity.checksum])
+                ..where(_db.serverDeletedChecksumEntity.checksum.equalsExp(lae.checksum)),
             ) &
             lae.id.isNotInQuery(_getExcludedSubquery()),
       )

@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
@@ -50,6 +51,20 @@ class MediumRepositoryContext {
     return .new(fallback);
   }
 
+  Future<AuthUserEntityData> newAuthUser({String? id, String? email}) async {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.authUserEntity)
+        .insertReturning(
+          AuthUserEntityCompanion(
+            id: .new(id),
+            email: .new(email ?? '$id@demo.immich.app'),
+            name: .new(email ?? 'user_$id'),
+            avatarColor: .new(TestUtils.randElement(AvatarColor.values)),
+          ),
+        );
+  }
+
   Future<UserEntityData> newUser({
     String? id,
     String? email,
@@ -63,7 +78,7 @@ class MediumRepositoryContext {
         .insertReturning(
           UserEntityCompanion(
             id: .new(id),
-            email: .new(email ?? '$id@test.com'),
+            email: .new(email ?? '$id@demo.immich.app'),
             name: .new(email ?? 'user_$id'),
             avatarColor: .new(avatarColor ?? TestUtils.randElement(AvatarColor.values)),
             profileChangedAt: .new(TestUtils.date(profileChangedAt)),

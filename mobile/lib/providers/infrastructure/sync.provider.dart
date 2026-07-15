@@ -11,8 +11,7 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/repositories/permission.repository.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 
 final syncMigrationRepositoryProvider = Provider((ref) => SyncMigrationRepository(ref.watch(driftProvider)));
 
@@ -20,10 +19,7 @@ final syncStreamServiceProvider = Provider(
   (ref) => SyncStreamService(
     syncApiRepository: ref.watch(syncApiRepositoryProvider),
     syncStreamRepository: ref.watch(syncStreamRepositoryProvider),
-    localAssetRepository: ref.watch(localAssetRepository),
-    trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
-    assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
-    permissionRepository: ref.watch(permissionRepositoryProvider),
+    trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
     syncMigrationRepository: ref.watch(syncMigrationRepositoryProvider),
     api: ref.watch(apiServiceProvider),
     cancellation: ref.watch(cancellationProvider),
@@ -38,9 +34,7 @@ final localSyncServiceProvider = Provider(
   (ref) => LocalSyncService(
     localAlbumRepository: ref.watch(localAlbumRepository),
     localAssetRepository: ref.watch(localAssetRepository),
-    trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
-    assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
-    permissionRepository: ref.watch(permissionRepositoryProvider),
+    trashSyncRepository: ref.watch(trashSyncRepositoryProvider),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
     cancellation: ref.watch(cancellationProvider),
   ),
@@ -51,7 +45,6 @@ final hashServiceProvider = Provider(
     localAlbumRepository: ref.watch(localAlbumRepository),
     localAssetRepository: ref.watch(localAssetRepository),
     nativeSyncApi: ref.watch(nativeSyncApiProvider),
-    trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
     cancellation: ref.watch(cancellationProvider),
   ),
 );
