@@ -454,14 +454,12 @@ describe('core plugin', () => {
         ],
       });
 
-      await expect(
-        ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset1.id }),
-      ).resolves.toBeUndefined();
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset1.id });
       await expect(ctx.get(AssetRepository).getById(asset1.id)).resolves.toMatchObject({ isFavorite: true });
-      await expect(
-        ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset2.id }),
-      ).resolves.toBeUndefined();
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset2.id });
       await expect(ctx.get(AssetRepository).getById(asset2.id)).resolves.toMatchObject({ isFavorite: true });
+    });
   });
 
   describe('webhook', () => {
