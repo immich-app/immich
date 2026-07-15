@@ -262,8 +262,7 @@
         <DuplicatesCompareControl
           assets={duplicates[duplicatesIndex].assets}
           suggestedKeepAssetIds={duplicates[duplicatesIndex].suggestedKeepAssetIds}
-          {showMore}
-          onToggleShowMore={() => (showMore = !showMore)}
+          bind:showMore
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}
