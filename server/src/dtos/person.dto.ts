@@ -16,10 +16,10 @@ const PersonCreateSchema = z
   .object({
     name: z.string().optional().describe('Person name'),
     birthDate: z
-      .string()
-      .meta({ format: 'date' })
-      .nullable()
-      .optional()
+      .preprocess(
+        (val) => (typeof val === 'string' && val.trim() === '' ? null : val),
+        z.string().meta({ format: 'date' }).nullable().optional(),
+      )
       .refine((val) => (val ? new Date(val) <= new Date() : true), { error: 'Birth date cannot be in the future' })
       .describe('Person date of birth'),
     isHidden: z.boolean().optional().describe('Person visibility (hidden)'),

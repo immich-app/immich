@@ -174,6 +174,24 @@ describe(PersonController.name, () => {
         errorDto.validationError([{ path: ['birthDate'], message: 'Birth date cannot be in the future' }]),
       );
     });
+
+    it('should accept an empty string birth date as null', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .put(`/people/${factory.uuid()}`)
+        .send({ birthDate: '' })
+        .set('Authorization', `Bearer token`);
+      expect(status).toBe(200);
+      expect(service.update).toHaveBeenCalledWith(undefined, expect.any(String), { birthDate: null });
+    });
+
+    it('should accept a null birth date', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .put(`/people/${factory.uuid()}`)
+        .send({ birthDate: null })
+        .set('Authorization', `Bearer token`);
+      expect(status).toBe(200);
+      expect(service.update).toHaveBeenCalledWith(undefined, expect.any(String), { birthDate: null });
+    });
   });
 
   describe('DELETE /people/:id', () => {
