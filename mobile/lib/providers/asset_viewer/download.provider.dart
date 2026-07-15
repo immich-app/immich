@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/download/download_state.model.dart';
-import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/services/download.service.dart';
 
 class DownloadStateNotifier extends StateNotifier<DownloadState> {
@@ -17,9 +16,10 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
           taskProgress: <String, DownloadInfo>{},
         ),
       ) {
-    _downloadService.onImageDownloadStatus = _downloadImageCallback;
-    _downloadService.onVideoDownloadStatus = _downloadVideoCallback;
-    _downloadService.onLivePhotoDownloadStatus = _downloadLivePhotoCallback;
+    // TODO(agg23): These callbacks were overriden and never actually ran. Fix/remove as necessary
+    // _downloadService.onImageDownloadStatus = _downloadImageCallback;
+    // _downloadService.onVideoDownloadStatus = _downloadVideoCallback;
+    // _downloadService.onLivePhotoDownloadStatus = _downloadLivePhotoCallback;
     _downloadService.onTaskProgress = _taskProgressCallback;
   }
 
@@ -42,6 +42,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   }
 
   // Download live photo callback
+  // ignore: unused_element
   void _downloadLivePhotoCallback(TaskStatusUpdate update) {
     _updateDownloadStatus(update.task.taskId, update.status);
 
@@ -50,8 +51,6 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
         if (update.task.metaData.isEmpty) {
           return;
         }
-        final livePhotosId = LivePhotosMetadata.fromJson(update.task.metaData).id;
-        _downloadService.saveLivePhotos(update.task, livePhotosId);
         _onDownloadComplete(update.task.taskId);
         break;
 
@@ -61,12 +60,12 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   }
 
   // Download image callback
+  // ignore: unused_element
   void _downloadImageCallback(TaskStatusUpdate update) {
     _updateDownloadStatus(update.task.taskId, update.status);
 
     switch (update.status) {
       case TaskStatus.complete:
-        _downloadService.saveImageWithPath(update.task);
         _onDownloadComplete(update.task.taskId);
         break;
 
@@ -76,12 +75,12 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
   }
 
   // Download video callback
+  // ignore: unused_element
   void _downloadVideoCallback(TaskStatusUpdate update) {
     _updateDownloadStatus(update.task.taskId, update.status);
 
     switch (update.status) {
       case TaskStatus.complete:
-        _downloadService.saveVideo(update.task);
         _onDownloadComplete(update.task.taskId);
         break;
 
