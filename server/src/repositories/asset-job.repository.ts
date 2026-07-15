@@ -4,7 +4,7 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility, VideoFrameExtractionStatus } from 'src/enum';
 import { DB } from 'src/schema';
 import {
   anyUuid,
@@ -347,6 +347,41 @@ export class AssetJobRepository {
       .select((eb) => withAudioStream(eb).as('audioStream'))
       .select((eb) => withVideoStream(eb).$notNull().as('videoStream'))
       .select((eb) => withVideoFormat(eb).$notNull().as('format'))
+      .where('asset.id', '=', id)
+      .where('asset.type', '=', sql.lit(AssetType.Video))
+      .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [undefined, DummyValue.STRING], stream: true })
+  streamForVideoFrameExtraction(force: boolean | undefined, parametersHash: string) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id'])
+      .where('asset.type', '=', sql.lit(AssetType.Video))
+      .$if(!force, (qb) =>
+        qb
+          .leftJoin('video_frame_extraction', 'video_frame_extraction.assetId', 'asset.id')
+          .where((eb) =>
+            eb.or([
+              eb('video_frame_extraction.assetId', 'is', null),
+              eb('video_frame_extraction.status', '!=', sql.lit(VideoFrameExtractionStatus.Completed)),
+              eb('video_frame_extraction.parametersHash', '!=', parametersHash),
+            ]),
+          )
+          .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
+      )
+      .where('asset.deletedAt', 'is', null)
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForVideoFrameExtraction(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .innerJoin('asset_video', 'asset_video.assetId', 'asset.id')
+      .select(['asset.id', 'asset.ownerId', 'asset.originalPath'])
+      .select((eb) => withVideoStream(eb).$notNull().as('videoStream'))
       .where('asset.id', '=', id)
       .where('asset.type', '=', sql.lit(AssetType.Video))
       .executeTakeFirst();

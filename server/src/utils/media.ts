@@ -535,6 +535,101 @@ export class ThumbnailConfig extends BaseConfig {
   }
 }
 
+/**
+ * scdet's `threshold` option only gates its own internal scene-cut flag (`lavfi.scd.score`), which we
+ * deliberately don't read - we only read the raw, unthresholded `lavfi.scd.mafd` change score. The
+ * value is kept high to avoid scdet's forced-keyframe side effect, which is moot anyway since we
+ * already force an all-intra encode via `-g 1`.
+ */
+const VIDEO_FRAME_EXTRACTION_SCDET_THRESHOLD = 100;
+
+export type VideoFrameExtractionOptions = {
+  /** Path to the source video file. */
+  inputPath: string;
+  /**
+   * Path the single, durable, byte-range-addressable fMP4 artifact should be written to. The fMP4
+   * init segment is embedded in-band at the start of this same file (byte offset 0) by ffmpeg's HLS
+   * muxer when using `single_file` mode - there is no separate init segment file.
+   */
+  artifactPath: string;
+  /** Path for the ephemeral `.m3u8` byte-range playlist, parsed and discarded after generation. */
+  playlistPath: string;
+  /** Path for the ephemeral scdet scores text file, parsed and discarded after generation. */
+  scoresPath: string;
+  /** Target short-side resolution (px) of extracted frames. */
+  targetResolution: number;
+  /** Fixed quantizer for the all-intra encode. */
+  qp: number;
+  /** Seconds between sampled frames (e.g. `1` for one frame per second). */
+  gridInterval: number;
+};
+
+/**
+ * Builds the ffmpeg command for the shared video-frame-extraction artifact: a single all-intra fMP4
+ * of downsampled frames sampled at a fixed interval, plus a parallel branch that scores each sampled
+ * frame's visual change (scdet mafd) without a second decode pass. See the "Trickplay" proposal for
+ * background - this artifact is a generic foundation intended for multiple future consumers
+ * (trickplay/seek-bar previews, video semantic search embeddings, etc.), not specific to any one of
+ * them.
+ *
+ * This is currently a software (CPU)-only implementation. Hardware-accelerated variants (vaapi/qsv/
+ * nvenc/rkmpp, matching the acceleration matrix used elsewhere for transcoding) are intentionally
+ * deferred to a follow-up - wiring each backend's device selection, scale filter, and encoder options
+ * correctly is exactly the kind of hardware-specific tuning this phase of work is scoped to avoid.
+ */
+export class VideoFrameExtractionConfig {
+  private constructor(private options: VideoFrameExtractionOptions) {}
+
+  static create(options: VideoFrameExtractionOptions) {
+    return new VideoFrameExtractionConfig(options);
+  }
+
+  getCommand(videoStream: VideoStreamInfo): string[] {
+    const { width, height } = getOutputSize(videoStream, this.options.targetResolution);
+    const fps = 1 / this.options.gridInterval;
+    const filterComplex = [
+      `[0:v]scale=${width}:${height},fps=${fps},split[enc][an]`,
+      `[an]scdet=threshold=${VIDEO_FRAME_EXTRACTION_SCDET_THRESHOLD},metadata=print:file=${this.options.scoresPath}[scored]`,
+    ].join(';');
+
+    return [
+      '-i',
+      this.options.inputPath,
+      '-filter_complex',
+      filterComplex,
+      '-map',
+      '[enc]',
+      '-c:v',
+      'libx264',
+      '-g',
+      '1',
+      '-qp',
+      String(this.options.qp),
+      '-bf',
+      '0',
+      '-an',
+      '-f',
+      'hls',
+      '-hls_segment_type',
+      'fmp4',
+      '-hls_flags',
+      'single_file',
+      '-hls_time',
+      '0',
+      '-hls_list_size',
+      '0',
+      '-hls_segment_filename',
+      this.options.artifactPath,
+      this.options.playlistPath,
+      '-map',
+      '[scored]',
+      '-f',
+      'null',
+      '-',
+    ];
+  }
+}
+
 export class H264Config extends BaseConfig {
   getEncoderOptions(): string[] {
     const out = this.getOutputThreadOptions();

@@ -253,6 +253,8 @@ export const HLS_VARIANTS = [
 ];
 export const HLS_VERSION = 7;
 
+export const VIDEO_FRAME_EXTRACTION_VERSION = 1;
+
 export type CodecLevel = { maxFrame: number; maxRate: number; token: string };
 
 // H.264 High profile: token is the hex level_idc.

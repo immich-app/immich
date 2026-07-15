@@ -555,4 +555,27 @@ export class MediaRepository {
     const median = history.sort((a, b) => a - b)[1];
     return outputFrames + median;
   }
+
+  /**
+   * Runs an arbitrary ffmpeg command to completion. Used for commands with multiple mapped outputs
+   * (e.g. video frame extraction, which produces both the frame artifact and a parallel scoring
+   * branch) that don't fit fluent-ffmpeg's single-output `transcode()` model.
+   */
+  runCommand(args: string[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const ffmpeg = spawn('ffmpeg', args, { stdio: ['ignore', 'ignore', 'pipe'] });
+
+      let stderr = '';
+      ffmpeg.stderr.setEncoding('utf8');
+      ffmpeg.stderr.on('data', (chunk: string) => (stderr += chunk));
+
+      ffmpeg.on('error', reject);
+      ffmpeg.on('close', (code) => {
+        if (code !== 0) {
+          return reject(new Error(`ffmpeg exited with code ${code}: ${stderr.trim()}`));
+        }
+        resolve();
+      });
+    });
+  }
 }

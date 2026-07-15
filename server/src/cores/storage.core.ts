@@ -130,6 +130,10 @@ export class StorageCore {
     return StorageCore.getNestedPath(StorageFolder.EncodedVideo, asset.ownerId, `${asset.id}.mp4`);
   }
 
+  static getVideoFrameArtifactPath(asset: ThumbnailPathEntity) {
+    return StorageCore.getNestedPath(StorageFolder.VideoFrames, asset.ownerId, `${asset.id}.m4s`);
+  }
+
   static getHlsSessionFolder({ ownerId, sessionId }: HlsSessionFolder) {
     return StorageCore.getNestedPath(StorageFolder.EncodedVideo, ownerId, sessionId);
   }

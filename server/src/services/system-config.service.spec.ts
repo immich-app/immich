@@ -45,6 +45,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.Workflow]: { concurrency: 5 },
     [QueueName.IntegrityCheck]: { concurrency: 1 },
     [QueueName.Editor]: { concurrency: 2 },
+    [QueueName.VideoFrameExtraction]: { concurrency: 1 },
   },
   backup: {
     database: {
@@ -250,6 +251,12 @@ const updatedConfig = Object.freeze<SystemConfig>({
       welcomeTemplate: '',
       albumUpdateTemplate: '',
     },
+  },
+  videoFrameExtraction: {
+    enabled: false,
+    targetResolution: 640,
+    qp: 34,
+    gridInterval: 1,
   },
 });
 

@@ -39,6 +39,7 @@ describe(StorageService.name, () => {
           profile: true,
           thumbs: true,
           upload: true,
+          'video-frames': true,
         },
       });
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('/data/encoded-video'));
@@ -47,6 +48,7 @@ describe(StorageService.name, () => {
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('/data/thumbs'));
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('/data/upload'));
       expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('/data/backups'));
+      expect(mocks.storage.mkdirSync).toHaveBeenCalledWith(expect.stringContaining('/data/video-frames'));
       expect(mocks.storage.createFile).toHaveBeenCalledWith(
         expect.stringContaining('/data/encoded-video/.immich'),
         expect.any(Buffer),
@@ -71,6 +73,10 @@ describe(StorageService.name, () => {
         expect.stringContaining('/data/backups/.immich'),
         expect.any(Buffer),
       );
+      expect(mocks.storage.createFile).toHaveBeenCalledWith(
+        expect.stringContaining('/data/video-frames/.immich'),
+        expect.any(Buffer),
+      );
     });
 
     it('should enable mount folder checking for a new folder type', async () => {
@@ -82,6 +88,7 @@ describe(StorageService.name, () => {
           profile: true,
           thumbs: true,
           upload: true,
+          'video-frames': true,
         },
       });
       mocks.asset.getFileSamples.mockResolvedValue([]);
@@ -104,6 +111,7 @@ describe(StorageService.name, () => {
           profile: true,
           thumbs: true,
           upload: true,
+          'video-frames': true,
         },
       });
       expect(mocks.storage.mkdirSync).toHaveBeenCalledTimes(2);

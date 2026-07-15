@@ -473,7 +473,11 @@ export type JobItem =
   | { name: JobName.IntegrityDeleteReports; data: IIntegrityDeleteReportsJob }
 
   // Editor
-  | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };
+  | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob }
+
+  // Video frame extraction
+  | { name: JobName.VideoFrameExtractionQueueAll; data: IBaseJob }
+  | { name: JobName.VideoFrameExtraction; data: IEntityJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

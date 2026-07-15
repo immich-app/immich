@@ -214,6 +214,12 @@ export type SystemConfig = {
   user: {
     deleteDelay: number;
   };
+  videoFrameExtraction: {
+    enabled: boolean;
+    targetResolution: number;
+    qp: number;
+    gridInterval: number;
+  };
 };
 
 export type MachineLearningConfig = SystemConfig['machineLearning'];
@@ -286,6 +292,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.Workflow]: { concurrency: 5 },
     [QueueName.IntegrityCheck]: { concurrency: 1 },
     [QueueName.Editor]: { concurrency: 2 },
+    [QueueName.VideoFrameExtraction]: { concurrency: 1 },
   },
   logging: {
     enabled: true,
@@ -445,5 +452,11 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   user: {
     deleteDelay: 7,
+  },
+  videoFrameExtraction: {
+    enabled: false,
+    targetResolution: 640,
+    qp: 34,
+    gridInterval: 1,
   },
 });

@@ -328,6 +328,7 @@ export enum StorageFolder {
   Profile = 'profile',
   Thumbnails = 'thumbs',
   Backups = 'backups',
+  VideoFrames = 'video-frames',
 }
 
 export const StorageFolderSchema = z.enum(StorageFolder).describe('Storage folder').meta({ id: 'StorageFolder' });
@@ -392,6 +393,18 @@ export enum AssetStatus {
   Trashed = 'trashed',
   Deleted = 'deleted',
 }
+
+export enum VideoFrameExtractionStatus {
+  Pending = 'pending',
+  Processing = 'processing',
+  Completed = 'completed',
+  Failed = 'failed',
+}
+
+export const VideoFrameExtractionStatusSchema = z
+  .enum(VideoFrameExtractionStatus)
+  .describe('Video frame extraction status')
+  .meta({ id: 'VideoFrameExtractionStatus' });
 
 export enum SourceType {
   MachineLearning = 'machine-learning',
@@ -809,6 +822,7 @@ export enum QueueName {
   Workflow = 'workflow',
   IntegrityCheck = 'integrityCheck',
   Editor = 'editor',
+  VideoFrameExtraction = 'videoFrameExtraction',
 }
 
 export const QueueNameSchema = z.enum(QueueName).describe('Queue name').meta({ id: 'QueueName' });
@@ -915,6 +929,10 @@ export enum JobName {
   IntegrityChecksumFilesRefresh = 'IntegrityChecksumFilesRefresh',
   IntegrityDeleteReportType = 'IntegrityDeleteReportType',
   IntegrityDeleteReports = 'IntegrityDeleteReports',
+
+  // Video frame extraction
+  VideoFrameExtractionQueueAll = 'VideoFrameExtractionQueueAll',
+  VideoFrameExtraction = 'VideoFrameExtraction',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
