@@ -99,6 +99,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       case TimelineReloadEvent():
         final asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
         if (asset != _asset) {
+          _isZoomed = false;
+          _viewer.setZoomed(false);
           setState(() => _asset = asset);
         }
       default:

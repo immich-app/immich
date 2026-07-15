@@ -239,7 +239,9 @@ export class UserService extends BaseService {
 
   @OnEvent({ name: 'AssetCreate' })
   async onAssetCreate({ asset, file }: ArgOf<'AssetCreate'>) {
-    await this.userRepository.updateUsage(asset.ownerId, file.size);
+    if (file) {
+      await this.userRepository.updateUsage(asset.ownerId, file.size);
+    }
   }
 
   @OnJob({ name: JobName.UserSyncUsage, queue: QueueName.BackgroundTask })
