@@ -303,6 +303,56 @@
       "uiHints": ["Filter"]
     },
     {
+      "name": "assetAddTags",
+      "title": "Add Tags",
+      "description": "Add tags to an asset",
+      "types": ["AssetV1"],
+      "hostFunctions": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "tags": {
+            "title": "Tags",
+            "description": "Tags to add to the asset",
+            "type": "string",
+            "array": true,
+            "uiHint": {
+              "type": "TagId"
+            }
+          }
+        },
+        "required": ["tags"]
+      }
+    },
+    {
+      "name": "assetTagFilter",
+      "title": "Filter by tags",
+      "description": "Filter assets by which tags they have",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "tags": {
+            "title": "Tags",
+            "description": "Which tags the asset must have",
+            "type": "string",
+            "array": true,
+            "uiHint": {
+              "type": "TagId"
+            }
+          },
+          "matching": {
+            "title": "Matching",
+            "description": "Whether assets must have all, any, or none of the listed tags",
+            "type": "string",
+            "enum": ["all", "any", "none"]
+          }
+        },
+        "required": ["tags", "matching"]
+      },
+      "uiHints": ["Filter"]
+    },
+    {
       "name": "assetArchive",
       "title": "Archive asset",
       "description": "Change asset visibility to archive",

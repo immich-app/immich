@@ -43,7 +43,7 @@ type EventMap = {
 
   // asset events
   AssetCreate: [{ asset: Asset; file: UploadFile }];
-  AssetTag: [{ assetId: string }];
+  AssetTag: [{ assetId: string; userId: string }];
   AssetUntag: [{ assetId: string }];
   AssetHide: [{ assetId: string; userId: string }];
   AssetShow: [{ assetId: string; userId: string }];

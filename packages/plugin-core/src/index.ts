@@ -3,6 +3,11 @@ import { AssetVisibility } from '@immich/sdk';
 import type { Manifest } from '../dist/index.d.ts';
 
 const methods = wrapper<Manifest>({
+  assetAddTags: ({ config, data, functions }) => {
+    functions.bulkTagAssets({ assetIds: [data.asset.id], tagIds: config.tags });
+    return {};
+  },
+
   assetAddToAlbums: ({ config, data, functions }) => {
     const assetId = data.asset.id;
 
@@ -163,6 +168,24 @@ const methods = wrapper<Manifest>({
     return { workflow: { continue: hasTimeZone === needsTimeZone } };
   },
 
+  assetTagFilter: ({ config, data }) => {
+    const assetTags = data.asset.tags.map((tag) => tag.id);
+
+    for (const tag of config.tags) {
+      if (assetTags.includes(tag)) {
+        if (config.matching === 'any') {
+          break;
+        } else if (config.matching === 'none') {
+          return { workflow: { continue: false } };
+        }
+      } else if (config.matching === 'all') {
+        return { workflow: { continue: false } };
+      }
+    }
+
+    return { workflow: { continue: true } };
+  },
+
   assetTypeFilter: ({ config, data }) => {
     return { workflow: { continue: config.allowedTypes.includes(data.asset.type) } };
   },
@@ -195,6 +218,7 @@ const methods = wrapper<Manifest>({
 });
 
 const {
+  assetAddTags,
   assetAddToAlbums,
   assetArchive,
   assetFavorite,
@@ -203,6 +227,7 @@ const {
   assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
+  assetTagFilter,
   assetTypeFilter,
   assetVisibility,
   webhook,
@@ -212,6 +237,7 @@ const {
 } = methods;
 
 export {
+  assetAddTags,
   assetAddToAlbums,
   assetArchive,
   assetFavorite,
@@ -220,6 +246,7 @@ export {
   assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
+  assetTagFilter,
   assetTypeFilter,
   assetVisibility,
   webhook,
