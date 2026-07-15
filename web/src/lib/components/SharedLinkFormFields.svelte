@@ -32,7 +32,7 @@
 
 <div class="mt-4 flex flex-col gap-4">
   <div>
-    <Field label={$t('custom_url_name')} description={$t('shared_link_custom_url_description')}>
+    <Field label={$t('shared_link_custom_url_title')} description={$t('shared_link_custom_url_description')}>
       <Input bind:value={slug} autocomplete="off" />
       {#if slug.includes('/')}
         <HelperText class="text-warning">{$t('shared_link_custom_url_warning')}</HelperText>
