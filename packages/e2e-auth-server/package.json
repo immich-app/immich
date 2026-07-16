@@ -13,5 +13,5 @@
     "oidc-provider": "^9.0.0",
     "tsx": "^4.20.6"
   },
-  "packageManager": "pnpm@11.6.0"
+  "packageManager": "pnpm@11.11.0"
 }

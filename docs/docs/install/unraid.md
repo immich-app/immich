@@ -121,7 +121,7 @@ alt="Go to Docker Tab and visit the address listed next to immich-web"
         width="90%"
         alt="Go to Docker Tab and visit the address listed next to immich-web"
     />
-    
+
 </details>
 
 :::tip
