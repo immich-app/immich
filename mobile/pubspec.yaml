@@ -44,7 +44,7 @@ dependencies:
   intl: ^0.20.2
   local_auth: ^2.3.0
   logging: ^1.3.0
-  maplibre_gl: ^0.22.0
+  maplibre_gl: ^0.26.0
   native_video_player:
     git:
       url: https://github.com/immich-app/native_video_player
