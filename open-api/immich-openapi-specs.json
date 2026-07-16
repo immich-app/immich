@@ -19306,7 +19306,9 @@
           "IntegrityChecksumFiles",
           "IntegrityChecksumFilesRefresh",
           "IntegrityDeleteReportType",
-          "IntegrityDeleteReports"
+          "IntegrityDeleteReports",
+          "VideoFrameExtractionQueueAll",
+          "VideoFrameExtraction"
         ],
         "type": "string"
       },
@@ -21579,7 +21581,8 @@
           "ocr",
           "workflow",
           "integrityCheck",
-          "editor"
+          "editor",
+          "videoFrameExtraction"
         ],
         "type": "string"
       },
@@ -21749,6 +21752,9 @@
           "videoConversion": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "videoFrameExtraction": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "workflow": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           }
@@ -21772,6 +21778,7 @@
           "storageTemplateMigration",
           "thumbnailGeneration",
           "videoConversion",
+          "videoFrameExtraction",
           "workflow"
         ],
         "type": "object"
@@ -23737,7 +23744,8 @@
           "upload",
           "profile",
           "thumbs",
-          "backups"
+          "backups",
+          "video-frames"
         ],
         "type": "string"
       },
@@ -25620,6 +25628,9 @@
           },
           "user": {
             "$ref": "#/components/schemas/SystemConfigUserDto"
+          },
+          "videoFrameExtraction": {
+            "$ref": "#/components/schemas/SystemConfigVideoFrameExtractionDto"
           }
         },
         "required": [
@@ -25644,7 +25655,8 @@
           "templates",
           "theme",
           "trash",
-          "user"
+          "user",
+          "videoFrameExtraction"
         ],
         "type": "object"
       },
@@ -26016,6 +26028,9 @@
           "videoConversion": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "videoFrameExtraction": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "workflow": {
             "$ref": "#/components/schemas/JobSettingsDto"
           }
@@ -26035,6 +26050,7 @@
           "smartSearch",
           "thumbnailGeneration",
           "videoConversion",
+          "videoFrameExtraction",
           "workflow"
         ],
         "type": "object"
@@ -26635,6 +26651,39 @@
         },
         "required": [
           "deleteDelay"
+        ],
+        "type": "object"
+      },
+      "SystemConfigVideoFrameExtractionDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enable video frame extraction",
+            "type": "boolean"
+          },
+          "gridInterval": {
+            "description": "Seconds between sampled frames",
+            "format": "double",
+            "minimum": 0.01,
+            "type": "number"
+          },
+          "qp": {
+            "description": "Fixed quantizer used for the all-intra frame encode",
+            "maximum": 51,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "targetResolution": {
+            "description": "Target short-side resolution (px) of extracted frames",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "gridInterval",
+          "qp",
+          "targetResolution"
         ],
         "type": "object"
       },
