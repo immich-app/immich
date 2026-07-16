@@ -536,7 +536,7 @@ export class ThumbnailConfig extends BaseConfig {
 }
 
 /**
- * scdet's `threshold` option only gates its own internal scene-cut flag (`lavfi.scd.score`), which we
+ * Scene change detection (scdet) `threshold` option only gates its own internal scene-cut flag (`lavfi.scd.score`), which we
  * deliberately don't read - we only read the raw, unthresholded `lavfi.scd.mafd` change score. The
  * value is kept high to avoid scdet's forced-keyframe side effect, which is moot anyway since we
  * already force an all-intra encode via `-g 1`.
