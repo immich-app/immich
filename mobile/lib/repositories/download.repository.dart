@@ -27,11 +27,9 @@ class DownloadRepository {
 
   void Function(TaskStatusUpdate)? onVideoDownloadStatus;
 
-  void Function(TaskStatusUpdate)? onLivePhotoDownloadStatus;
-
   void Function(TaskProgressUpdate)? onTaskProgress;
 
-  // #29900: `onLivePhotoDownloadStatus` is called before the DB has been updated, causing a race between the two Live Photo tasks
+  // #29900: `taskStatusCallback` is called before the DB has been updated, causing a race between the two Live Photo tasks
   // This callback instead listens directly to DB updates
   void Function(TaskRecord)? onLivePhotoRecordComplete;
 
@@ -50,7 +48,6 @@ class DownloadRepository {
 
     _downloader.registerCallbacks(
       group: kDownloadGroupLivePhoto,
-      taskStatusCallback: (update) => onLivePhotoDownloadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
 
