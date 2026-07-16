@@ -411,7 +411,7 @@ export class MediaRepository {
   }
 
   async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
-    const { width = 0, height = 0, hasAlpha = false } = await sharp(input).metadata();
+    const { width = 0, height = 0, hasAlpha = false } = await sharp(input, { unlimited: true }).metadata();
     return { width, height, isTransparent: hasAlpha };
   }
 
