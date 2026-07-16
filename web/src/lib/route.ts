@@ -120,7 +120,8 @@ export const Route = {
   // shared links
   sharedLinks: (params?: { filter?: SharedLinkTab }) => '/shared-links' + asQueryString(params),
   editSharedLink: ({ id }: { id: string }) => `/shared-links/${id}/edit`,
-  viewSharedLink: ({ slug, key }: { slug?: string | null; key: string }) => (slug ? `/s/${slug}` : `/share/${key}`),
+  viewSharedLink: ({ slug, key }: { slug?: string | null; key: string }) =>
+    slug ? `/s/${encodeURIComponent(slug)}` : `/share/${key}`,
 
   // settings
   userSettings: (params?: { isOpen?: OpenQueryParam }) => '/user-settings' + asQueryString(params),
