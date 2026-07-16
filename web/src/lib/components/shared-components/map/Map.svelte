@@ -309,12 +309,12 @@
     untrack(() => map?.jumpTo({ center, zoom }));
   });
 
-  const onAssetsDelete = async () => {
+  const onAssetsChanged = async () => {
     mapMarkers = await loadMapMarkers();
   };
 </script>
 
-<OnEvents {onAssetsDelete} />
+<OnEvents onAssetsDelete={onAssetsChanged} onAssetsArchive={onAssetsChanged} onAssetsUnarchive={onAssetsChanged} />
 
 <!--  We handle style loading ourselves so we set style blank here -->
 <MapLibre
