@@ -1095,6 +1095,124 @@ describe(AuthService.name, () => {
 
       expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ isAdmin: true }));
     });
+
+    it('should create an admin user if the role claim is an array containing admin', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ immich_role: ['user', 'admin'] }),
+      });
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getByOAuthId.mockResolvedValue(void 0);
+      mocks.user.create.mockResolvedValue(UserFactory.create({ oauthId: 'oauth-id' }));
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ isAdmin: true }));
+    });
+
+    it('should create a standard user if the role claim is an array containing only user', async () => {
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthWithAutoRegister);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ immich_role: ['user'] }),
+      });
+      mocks.user.getByEmail.mockResolvedValue(void 0);
+      mocks.user.getByOAuthId.mockResolvedValue(void 0);
+      mocks.user.create.mockResolvedValue(UserFactory.create({ oauthId: 'oauth-id' }));
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.create).toHaveBeenCalledWith(expect.objectContaining({ isAdmin: false }));
+    });
+
+    it('should promote an existing user to admin if the role claim contains admin on login', async () => {
+      const user = UserFactory.create({ isAdmin: false, oauthId: 'oauth-id' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_role: 'admin' }),
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.user.update.mockResolvedValue({ ...user, isAdmin: true });
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { isAdmin: true });
+    });
+
+    it('should demote an existing admin if the role claim only contains user on login', async () => {
+      const user = UserFactory.create({ isAdmin: true, oauthId: 'oauth-id' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ sub: user.oauthId, immich_role: ['user'] }),
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.user.update.mockResolvedValue({ ...user, isAdmin: false });
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { isAdmin: false });
+    });
+
+    it('should not change isAdmin for an existing user if the role claim is blank', async () => {
+      const user = UserFactory.create({ isAdmin: true, oauthId: 'oauth-id' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({
+        profile: OAuthProfileFactory.create({ sub: user.oauthId }),
+      });
+      mocks.user.getByOAuthId.mockResolvedValue(user);
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foo' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.update).not.toHaveBeenCalled();
+    });
+
+    it('should re-evaluate the role claim for a user linked by email', async () => {
+      const user = UserFactory.create({ isAdmin: false });
+      const profile = OAuthProfileFactory.create({ immich_role: 'admin' });
+
+      mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.oauthEnabled);
+      mocks.oauth.getProfileAndOAuthSid.mockResolvedValue({ profile });
+      mocks.user.getByEmail.mockResolvedValue(user);
+      mocks.user.update.mockResolvedValueOnce({ ...user, oauthId: profile.sub });
+      mocks.user.update.mockResolvedValueOnce({ ...user, oauthId: profile.sub, isAdmin: true });
+      mocks.session.create.mockResolvedValue(SessionFactory.create());
+
+      await sut.callback(
+        { url: 'http://immich/auth/login?code=abc123', state: 'xyz789', codeVerifier: 'foobar' },
+        {},
+        loginDetails,
+      );
+
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { oauthId: profile.sub });
+      expect(mocks.user.update).toHaveBeenCalledWith(user.id, { isAdmin: true });
+    });
   });
 
   describe('link', () => {
