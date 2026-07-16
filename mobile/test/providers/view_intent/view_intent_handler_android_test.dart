@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -50,6 +51,9 @@ class FakeAssetService extends Fake implements AssetService {
 
 class TestViewIntentService extends ViewIntentService {
   ViewIntentPayload? consumedAttachment;
+  Completer<ViewIntentPayload?>? consumeCompleter;
+  Object? consumeError;
+  int consumeViewIntentCalls = 0;
   int cleanupStaleTempFilesCalls = 0;
   int cleanupManagedTempFileCalls = 0;
   final List<String> managedTempPaths = [];
@@ -57,7 +61,18 @@ class TestViewIntentService extends ViewIntentService {
   TestViewIntentService() : super(MockViewIntentHostApi());
 
   @override
-  Future<ViewIntentPayload?> consumeViewIntent() async => consumedAttachment;
+  Future<ViewIntentPayload?> consumeViewIntent() async {
+    consumeViewIntentCalls++;
+    final error = consumeError;
+    if (error != null) {
+      throw error;
+    }
+    final completer = consumeCompleter;
+    if (completer != null) {
+      return completer.future;
+    }
+    return consumedAttachment;
+  }
 
   @override
   Future<void> cleanupStaleTempFiles() async {
@@ -158,7 +173,7 @@ void main() {
     verifyNever(() => resolver.resolve(any()));
   });
 
-  testWidgets('flushDeferredViewIntent consumes the pending attachment and routes the viewer', (tester) async {
+  test('flushDeferredViewIntent consumes the pending attachment and routes the viewer', () async {
     authNotifier.setAuthenticated(false);
     container.read(viewIntentPendingProvider.notifier).defer(payload);
     authNotifier.setAuthenticated(true);
@@ -167,19 +182,93 @@ void main() {
       return ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService);
     });
 
-    unawaited(handler.flushDeferredViewIntent());
-    await tester.pump();
-    await tester.pump();
-    await tester.idle();
+    final opened = await handler.flushDeferredViewIntent();
 
+    expect(opened, isTrue);
     expect(container.read(viewIntentPendingProvider), isNull);
     verify(() => resolver.resolve(payload)).called(1);
   });
 
   test('flushDeferredViewIntent does nothing when there is no pending attachment', () async {
-    await handler.flushDeferredViewIntent();
+    final opened = await handler.flushDeferredViewIntent();
 
+    expect(opened, isFalse);
     verifyNever(() => resolver.resolve(any()));
+  });
+
+  test('flushDeferredViewIntent keeps the pending attachment while unauthenticated', () async {
+    authNotifier.setAuthenticated(false);
+    container.read(viewIntentPendingProvider.notifier).defer(payload);
+
+    final opened = await handler.flushDeferredViewIntent();
+
+    expect(opened, isFalse);
+    expect(container.read(viewIntentPendingProvider), payload);
+    verifyNever(() => resolver.resolve(any()));
+  });
+
+  test('flushDeferredViewIntent propagates resolution failures', () async {
+    container.read(viewIntentPendingProvider.notifier).defer(payload);
+    when(() => resolver.resolve(payload)).thenThrow(StateError('resolution failed'));
+
+    await expectLater(handler.flushDeferredViewIntent(), throwsStateError);
+
+    expect(container.read(viewIntentPendingProvider), isNull);
+  });
+
+  test('init returns false when there is no initial view intent', () async {
+    final consumed = await handler.init();
+
+    expect(consumed, isFalse);
+    expect(viewIntentService.consumeViewIntentCalls, 1);
+    expect(viewIntentService.cleanupStaleTempFilesCalls, 1);
+  });
+
+  test('init treats native lookup errors as no usable intent', () async {
+    viewIntentService.consumeError = StateError('native lookup failed');
+
+    final consumed = await handler.init();
+
+    expect(consumed, isFalse);
+    expect(viewIntentService.consumeViewIntentCalls, 1);
+  });
+
+  test('init and initial resume share one native consumption operation', () async {
+    authNotifier.setAuthenticated(false);
+    final completer = Completer<ViewIntentPayload?>();
+    viewIntentService.consumeCompleter = completer;
+
+    final firstInit = handler.init();
+    final secondInit = handler.init();
+    final resume = handler.onAppResumed();
+
+    await Future<void>.delayed(Duration.zero);
+    expect(viewIntentService.consumeViewIntentCalls, 1);
+    completer.complete(payload);
+
+    expect(await firstInit, isTrue);
+    expect(await secondInit, isTrue);
+    await resume;
+    expect(viewIntentService.consumeViewIntentCalls, 1);
+    expect(container.read(viewIntentPendingProvider), payload);
+  });
+
+  test('resume checks after initialization remain independent and serialized', () async {
+    await handler.init();
+    final firstResumeCompleter = Completer<ViewIntentPayload?>();
+    viewIntentService.consumeCompleter = firstResumeCompleter;
+
+    final firstResume = handler.onAppResumed();
+    final secondResume = handler.onAppResumed();
+
+    await Future<void>.delayed(Duration.zero);
+    expect(viewIntentService.consumeViewIntentCalls, 2);
+    viewIntentService.consumeCompleter = null;
+    firstResumeCompleter.complete(null);
+
+    await firstResume;
+    await secondResume;
+    expect(viewIntentService.consumeViewIntentCalls, 3);
   });
 
   test('onAppResumed cleans stale temp files when no attachment is present', () async {
@@ -201,17 +290,13 @@ void main() {
     verifyNever(() => resolver.resolve(any()));
   });
 
-  testWidgets('onAppResumed handles attachment immediately when authenticated', (tester) async {
+  test('onAppResumed handles attachment immediately when authenticated', () async {
     viewIntentService.consumedAttachment = payload;
     when(
       () => resolver.resolve(payload),
     ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
 
-    unawaited(handler.onAppResumed());
-    await tester.pump();
-    await tester.pump();
-    await tester.pump();
-    await tester.idle();
+    await handler.onAppResumed();
 
     verify(() => resolver.resolve(payload)).called(1);
     // Routes the user to [TabShell, AssetViewer] so back-press lands on the
@@ -222,6 +307,47 @@ void main() {
     expect(routes, hasLength(2));
     expect(routes[0].routeName, TabShellRoute.name);
     expect(routes[1].routeName, AssetViewerRoute.name);
+    final viewerRoute = routes[1] as AssetViewerRoute;
+    final viewerArgs = viewerRoute.args as AssetViewerRouteArgs;
+    expect(viewerArgs.instantTransition, isTrue);
+    expect(viewerArgs.key, isA<UniqueKey>());
+  });
+
+  test('repeated warm intents use fresh asset viewer keys', () async {
+    final secondPayload = ViewIntentPayload(
+      path: '/tmp/second.jpg',
+      mimeType: 'image/jpeg',
+      localAssetId: 'local-2',
+    );
+    final secondAsset = _localAsset(id: 'local-2');
+    final secondTimelineService = await _createReadyTimelineService([secondAsset], TimelineOrigin.deepLink);
+    addTearDown(secondTimelineService.dispose);
+
+    when(
+      () => resolver.resolve(payload),
+    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
+    when(
+      () => resolver.resolve(secondPayload),
+    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: secondAsset, timelineService: secondTimelineService));
+
+    viewIntentService.consumedAttachment = payload;
+    await handler.onAppResumed();
+    viewIntentService.consumedAttachment = secondPayload;
+    await handler.onAppResumed();
+
+    final captured = verify(() => router.replaceAll(captureAny())).captured;
+    expect(captured, hasLength(2));
+    final firstRoutes = captured[0] as List<PageRouteInfo<dynamic>>;
+    final secondRoutes = captured[1] as List<PageRouteInfo<dynamic>>;
+    final firstArgs = firstRoutes[1].args as AssetViewerRouteArgs;
+    final secondArgs = secondRoutes[1].args as AssetViewerRouteArgs;
+    expect(firstArgs.key, isNot(secondArgs.key));
+  });
+
+  test('ordinary asset viewer routes retain the default transition', () {
+    final route = AssetViewerRoute(initialIndex: 0, timelineService: deepLinkTimelineService);
+
+    expect((route.args as AssetViewerRouteArgs).instantTransition, isFalse);
   });
 }
 

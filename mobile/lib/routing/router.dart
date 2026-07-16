@@ -153,13 +153,27 @@ class AppRouter extends RootStackRouter {
       page: AssetViewerRoute.page,
       guards: [_authGuard, _duplicateGuard],
       type: RouteType.custom(
-        customRouteBuilder: <T>(context, child, page) => PageRouteBuilder<T>(
-          fullscreenDialog: page.fullscreenDialog,
-          settings: page,
-          pageBuilder: (_, __, ___) => child,
-          opaque: false,
-          transitionsBuilder: TransitionsBuilders.fadeIn,
-        ),
+        customRouteBuilder: <T>(context, child, page) {
+          final args = page.routeData.argsAs<AssetViewerRouteArgs>();
+          if (args.instantTransition) {
+            return PageRouteBuilder<T>(
+              fullscreenDialog: page.fullscreenDialog,
+              settings: page,
+              pageBuilder: (_, __, ___) => child,
+              opaque: true,
+              transitionDuration: Duration.zero,
+              transitionsBuilder: TransitionsBuilders.fadeIn,
+            );
+          }
+
+          return PageRouteBuilder<T>(
+            fullscreenDialog: page.fullscreenDialog,
+            settings: page,
+            pageBuilder: (_, __, ___) => child,
+            opaque: false,
+            transitionsBuilder: TransitionsBuilders.fadeIn,
+          );
+        },
       ),
     ),
     AutoRoute(page: DriftMemoryRoute.page, guards: [_authGuard, _duplicateGuard]),

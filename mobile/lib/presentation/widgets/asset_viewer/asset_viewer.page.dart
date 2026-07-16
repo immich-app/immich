@@ -32,6 +32,7 @@ class AssetViewerPage extends StatelessWidget {
   final TimelineService timelineService;
   final int? heroOffset;
   final RemoteAlbum? currentAlbum;
+  final bool instantTransition;
 
   const AssetViewerPage({
     super.key,
@@ -39,6 +40,7 @@ class AssetViewerPage extends StatelessWidget {
     required this.timelineService,
     this.heroOffset,
     this.currentAlbum,
+    this.instantTransition = false,
   });
 
   @override

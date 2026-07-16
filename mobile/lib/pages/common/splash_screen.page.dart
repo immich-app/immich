@@ -278,10 +278,12 @@ class SplashScreenPage extends StatefulHookConsumerWidget {
 
 class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   final log = Logger("SplashScreenPage");
+  late final Future<bool> _initialViewIntentCheck;
 
   @override
   void initState() {
     super.initState();
+    _initialViewIntentCheck = ref.read(viewIntentHandlerProvider).init();
     ref
         .read(authProvider.notifier)
         .setOpenApiServiceEndpoint()
@@ -297,71 +299,123 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     log.info("Resuming session at $endpoint");
   }
 
-  void resumeSession() async {
+  void resumeSession() {
+    if (!mounted) {
+      return;
+    }
+
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
     final accessToken = Store.tryGet(StoreKey.accessToken);
 
     if (accessToken != null && serverUrl != null && endpoint != null) {
-      final infoProvider = ref.read(serverInfoProvider.notifier);
-      final wsProvider = ref.read(websocketProvider.notifier);
-      final backgroundManager = ref.read(backgroundSyncProvider);
-      final backupProvider = ref.read(driftBackupProvider.notifier);
-      final viewIntentHandler = ref.read(viewIntentHandlerProvider);
-
-      unawaited(
-        ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
-          (_) async {
-            try {
-              wsProvider.connect();
-              unawaited(infoProvider.getServerInfo());
-
-              bool syncSuccess = false;
-              await Future.wait([
-                backgroundManager.syncLocal(full: true),
-                backgroundManager.syncRemote().then((success) => syncSuccess = success),
-              ]);
-
-              await viewIntentHandler.flushDeferredViewIntent();
-
-              if (syncSuccess) {
-                await Future.wait([
-                  backgroundManager.hashAssets().then((_) {
-                    _resumeBackup(backupProvider);
-                  }),
-                  _resumeBackup(backupProvider),
-                  // TODO: Bring back when the soft freeze issue is addressed
-                  // backgroundManager.syncCloudIds(),
-                ]);
-              } else {
-                await backgroundManager.hashAssets();
-              }
-
-              if (SettingsRepository.instance.appConfig.backup.syncAlbums) {
-                await backgroundManager.syncLinkedAlbum();
-              }
-            } catch (e) {
-              log.severe('Failed establishing connection to the server: $e');
-            }
-          },
-          onError: (exception) => {
-            log.severe('Failed to update auth info with access token: $accessToken'),
-            ref.read(authProvider.notifier).logout(),
-            context.router.replaceAll([const LoginRoute()]),
-          },
-        ),
-      );
+      final authFuture = ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken);
+      final initialRouteFuture = _showDefaultRouteWhenNoViewIntent();
+      unawaited(initialRouteFuture);
+      unawaited(_completeSessionResume(accessToken, authFuture, initialRouteFuture));
     } else {
       log.severe('Missing crucial offline login info - Logging out completely');
       unawaited(ref.read(authProvider.notifier).logout());
       unawaited(context.router.replaceAll([const LoginRoute()]));
+    }
+  }
+
+  Future<void> _showDefaultRouteWhenNoViewIntent() async {
+    final hasInitialViewIntent = await _initialViewIntentCheck;
+    if (!hasInitialViewIntent) {
+      await _replaceSplashWithTabs();
+    }
+  }
+
+  Future<void> _completeSessionResume(
+    String accessToken,
+    Future<bool> authFuture,
+    Future<void> initialRouteFuture,
+  ) async {
+    final bool authenticated;
+    try {
+      authenticated = await authFuture;
+    } catch (error, stackTrace) {
+      log.severe('Failed to update auth info with access token: $accessToken', error, stackTrace);
+      await _showLogin();
       return;
     }
 
-    // clean install - change the default of the flag
-    // current install not using beta timeline
-    if (context.router.current.name == SplashScreenRoute.name) {
-      unawaited(context.replaceRoute(const TabShellRoute()));
+    if (!authenticated) {
+      log.severe('Failed to authenticate using cached credentials');
+      await _showLogin();
+      return;
+    }
+
+    final hasInitialViewIntent = await _initialViewIntentCheck;
+    await initialRouteFuture;
+    if (!mounted) {
+      return;
+    }
+
+    bool openedViewIntent = false;
+    try {
+      openedViewIntent = await ref.read(viewIntentHandlerProvider).flushDeferredViewIntent();
+    } catch (error, stackTrace) {
+      log.warning('Failed to open pending view intent', error, stackTrace);
+    }
+
+    if (hasInitialViewIntent && !openedViewIntent) {
+      await _replaceSplashWithTabs();
+    }
+
+    if (!mounted) {
+      return;
+    }
+
+    final infoProvider = ref.read(serverInfoProvider.notifier);
+    final wsProvider = ref.read(websocketProvider.notifier);
+    final backgroundManager = ref.read(backgroundSyncProvider);
+    final backupProvider = ref.read(driftBackupProvider.notifier);
+
+    try {
+      wsProvider.connect();
+      unawaited(infoProvider.getServerInfo());
+
+      bool syncSuccess = false;
+      await Future.wait([
+        backgroundManager.syncLocal(full: true),
+        backgroundManager.syncRemote().then((success) => syncSuccess = success),
+      ]);
+
+      if (syncSuccess) {
+        await Future.wait([
+          backgroundManager.hashAssets().then((_) {
+            _resumeBackup(backupProvider);
+          }),
+          _resumeBackup(backupProvider),
+          // TODO: Bring back when the soft freeze issue is addressed
+          // backgroundManager.syncCloudIds(),
+        ]);
+      } else {
+        await backgroundManager.hashAssets();
+      }
+
+      if (SettingsRepository.instance.appConfig.backup.syncAlbums) {
+        await backgroundManager.syncLinkedAlbum();
+      }
+    } catch (error, stackTrace) {
+      log.severe('Failed establishing connection to the server', error, stackTrace);
+    }
+  }
+
+  Future<void> _showLogin() async {
+    if (!mounted) {
+      return;
+    }
+
+    unawaited(ref.read(authProvider.notifier).logout());
+    await context.router.replaceAll([const LoginRoute()]);
+  }
+
+  Future<void> _replaceSplashWithTabs() async {
+    if (mounted && context.router.current.name == SplashScreenRoute.name) {
+      await context.replaceRoute(const TabShellRoute());
     }
   }
 

@@ -5,11 +5,11 @@ import 'package:immich_mobile/providers/view_intent/view_intent_handler_android.
 import 'package:immich_mobile/providers/view_intent/view_intent_handler_stub.dart';
 
 abstract class ViewIntentHandler {
-  void init();
+  Future<bool> init();
 
   Future<void> onAppResumed();
 
-  Future<void> flushDeferredViewIntent();
+  Future<bool> flushDeferredViewIntent();
 
   Future<void> handle(ViewIntentPayload attachment);
 }

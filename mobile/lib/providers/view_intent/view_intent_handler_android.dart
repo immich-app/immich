@@ -20,6 +20,9 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   final ViewIntentService _viewIntentService;
   final ViewIntentAssetResolver _viewIntentAssetResolver;
   final AppRouter _router;
+  Future<bool>? _initialCheck;
+  Future<void> _checkTail = Future<void>.value();
+  bool _initialCheckFinished = false;
   static final Logger _logger = Logger('ViewIntentHandler');
 
   AndroidViewIntentHandler(Ref ref)
@@ -29,35 +32,73 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       _router = ref.watch(appRouterProvider);
 
   @override
-  void init() {
+  Future<bool> init() {
     // Covers cold start from a view intent before the first lifecycle "resumed".
-    unawaited(onAppResumed());
+    final cachedCheck = _initialCheck;
+    if (cachedCheck != null) {
+      return cachedCheck;
+    }
+
+    final initialCheck = _enqueueViewIntentCheck();
+    return _initialCheck = initialCheck.whenComplete(() => _initialCheckFinished = true);
   }
 
   @override
-  Future<void> onAppResumed() => _checkForViewIntent();
-
-  @override
-  Future<void> flushDeferredViewIntent() => _flushPending();
-
-  Future<void> _checkForViewIntent() async {
-    final attachment = await _viewIntentService.consumeViewIntent();
-    if (attachment != null) {
-      await handle(attachment);
+  Future<void> onAppResumed() async {
+    final initialCheck = _initialCheck;
+    if (initialCheck == null) {
+      await init();
       return;
     }
 
-    if (_ref.read(viewIntentPendingProvider) == null) {
-      await _viewIntentService.cleanupStaleTempFiles();
+    if (!_initialCheckFinished) {
+      await initialCheck;
+      return;
     }
+
+    await _enqueueViewIntentCheck();
   }
 
-  Future<void> _flushPending() async {
+  @override
+  Future<bool> flushDeferredViewIntent() => _flushPending();
+
+  Future<bool> _enqueueViewIntentCheck() {
+    final check = _checkTail.then((_) => _checkForViewIntent());
+    _checkTail = check.then<void>((_) {});
+    return check;
+  }
+
+  Future<bool> _checkForViewIntent() async {
+    try {
+      final attachment = await _viewIntentService.consumeViewIntent();
+      if (attachment != null) {
+        await handle(attachment);
+        return true;
+      }
+
+      if (_ref.read(viewIntentPendingProvider) == null) {
+        await _viewIntentService.cleanupStaleTempFiles();
+      }
+    } catch (error, stackTrace) {
+      _logger.warning('Failed to process Android view intent', error, stackTrace);
+    }
+
+    return false;
+  }
+
+  Future<bool> _flushPending() async {
+    if (!_ref.read(authProvider).isAuthenticated) {
+      return false;
+    }
+
     final pendingAttachment = _ref.read(viewIntentPendingProvider.notifier).takeIfFresh();
     _logger.info('flushPending, pendingAttachment:$pendingAttachment');
-    if (pendingAttachment != null) {
-      await handle(pendingAttachment);
+    if (pendingAttachment == null) {
+      return false;
     }
+
+    await handle(pendingAttachment);
+    return true;
   }
 
   @override
@@ -98,7 +139,12 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
 
     await _router.replaceAll([
       const TabShellRoute(),
-      AssetViewerRoute(key: UniqueKey(), initialIndex: 0, timelineService: timelineService),
+      AssetViewerRoute(
+        key: UniqueKey(),
+        initialIndex: 0,
+        timelineService: timelineService,
+        instantTransition: true,
+      ),
     ]);
   }
 }

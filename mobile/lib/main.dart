@@ -235,7 +235,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       }
     });
 
-    ref.read(viewIntentHandlerProvider).init();
+    unawaited(ref.read(viewIntentHandlerProvider).init());
     ref.read(shareIntentUploadProvider.notifier).init();
   }
 

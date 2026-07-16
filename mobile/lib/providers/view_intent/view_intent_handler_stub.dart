@@ -5,13 +5,13 @@ class StubViewIntentHandler implements ViewIntentHandler {
   const StubViewIntentHandler();
 
   @override
-  void init() {}
+  Future<bool> init() async => false;
 
   @override
   Future<void> onAppResumed() async {}
 
   @override
-  Future<void> flushDeferredViewIntent() async {}
+  Future<bool> flushDeferredViewIntent() async => false;
 
   @override
   Future<void> handle(ViewIntentPayload attachment) async {}

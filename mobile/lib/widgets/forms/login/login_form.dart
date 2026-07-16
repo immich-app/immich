@@ -176,15 +176,29 @@ class LoginForm extends HookConsumerWidget {
 
     Future<void> handleSyncFlow() async {
       final backgroundManager = ref.read(backgroundSyncProvider);
-      final viewIntentHandler = ref.read(viewIntentHandlerProvider);
 
       await backgroundManager.syncLocal(full: true);
       await backgroundManager.syncRemote();
-      await viewIntentHandler.flushDeferredViewIntent();
       await backgroundManager.hashAssets();
 
       if (SettingsRepository.instance.appConfig.backup.syncAlbums) {
         await backgroundManager.syncLinkedAlbum();
+      }
+    }
+
+    Future<void> navigateAfterLogin() async {
+      final viewIntentHandler = ref.read(viewIntentHandlerProvider);
+      await viewIntentHandler.init();
+
+      bool openedViewIntent = false;
+      try {
+        openedViewIntent = await viewIntentHandler.flushDeferredViewIntent();
+      } catch (error, stackTrace) {
+        log.warning('Failed to open pending view intent', error, stackTrace);
+      }
+
+      if (!openedViewIntent && context.mounted && context.router.current.name != AssetViewerRoute.name) {
+        await context.router.replaceAll([const TabShellRoute()]);
       }
     }
 
@@ -253,10 +267,13 @@ class LoginForm extends HookConsumerWidget {
           if (isSyncRemoteDeletionsMode()) {
             await getManageMediaPermission();
           }
-          unawaited(handleSyncFlow());
+          await navigateAfterLogin();
+          if (!context.mounted) {
+            return;
+          }
           ref.read(websocketProvider.notifier).connect();
           unawaited(ref.read(featureMessageServiceProvider).markSeen());
-          unawaited(context.router.replaceAll([const TabShellRoute()]));
+          unawaited(handleSyncFlow());
           return;
         }
       } catch (error) {
@@ -342,9 +359,12 @@ class LoginForm extends HookConsumerWidget {
             if (isSyncRemoteDeletionsMode()) {
               await getManageMediaPermission();
             }
-            unawaited(handleSyncFlow());
+            await navigateAfterLogin();
+            if (!context.mounted) {
+              return;
+            }
             unawaited(ref.read(featureMessageServiceProvider).markSeen());
-            unawaited(context.router.replaceAll([const TabShellRoute()]));
+            unawaited(handleSyncFlow());
             return;
           }
         } catch (error, stack) {
