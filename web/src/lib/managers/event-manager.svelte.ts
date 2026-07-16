@@ -11,6 +11,7 @@ import type {
   QueueResponseDto,
   ReleaseEventV1,
   SharedLinkResponseDto,
+  StackResponseDto,
   SystemConfigDto,
   TagResponseDto,
   UserAdminResponseDto,
@@ -60,6 +61,11 @@ export type Events = {
   SharedLinkCreate: [SharedLinkResponseDto];
   SharedLinkUpdate: [SharedLinkResponseDto];
   SharedLinkDelete: [SharedLinkResponseDto];
+
+  StackCreate: [StackResponseDto];
+  /** Unstacked, with assets to handle */
+  StackDelete: [{ id: string; assets: AssetResponseDto[] }];
+  StackUpdate: [StackResponseDto];
 
   TagCreate: [TagResponseDto];
   TagUpdate: [TagResponseDto];

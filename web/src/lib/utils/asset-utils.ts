@@ -1,12 +1,8 @@
 import {
   AssetVisibility,
   bulkTagAssets,
-  createStack,
-  deleteAssets,
-  deleteStacks,
   getBaseUrl,
   getDownloadInfo,
-  getStack,
   untagAssets,
   updateAsset,
   updateAssets,
@@ -14,7 +10,6 @@ import {
   type AssetTypeEnum,
   type DownloadInfoDto,
   type ExifResponseDto,
-  type StackResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
@@ -279,84 +274,6 @@ export const getOwnedAssetsWithWarning = (assets: TimelineAsset[], user: UserRes
     toastManager.warning($t('errors.cant_change_metadata_assets_count', { values: { count: numberOfIssues } }));
   }
   return ids;
-};
-
-export type StackResponse = {
-  stack?: StackResponseDto;
-  toDeleteIds: string[];
-};
-
-export const stackAssets = async (assets: { id: string }[], showNotification = true): Promise<StackResponse> => {
-  if (assets.length < 2) {
-    return { stack: undefined, toDeleteIds: [] };
-  }
-
-  const $t = get(t);
-
-  try {
-    const stack = await createStack({ stackCreateDto: { assetIds: assets.map(({ id }) => id) } });
-    if (showNotification) {
-      toastManager.primary({
-        description: $t('stacked_assets_count', { values: { count: stack.assets.length } }),
-        button: {
-          label: $t('view_stack'),
-          onclick: () => navigate({ targetRoute: 'current', assetId: stack.primaryAssetId }),
-        },
-      });
-    }
-
-    return {
-      stack,
-      toDeleteIds: assets.slice(1).map((asset) => asset.id),
-    };
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_stack_assets'));
-    return { stack: undefined, toDeleteIds: [] };
-  }
-};
-
-export const deleteStack = async (stackIds: string[]) => {
-  const ids = [...new Set(stackIds)];
-  if (ids.length === 0) {
-    return;
-  }
-
-  const $t = get(t);
-
-  try {
-    const stacks = await Promise.all(ids.map((id) => getStack({ id })));
-    const count = stacks.reduce((sum, stack) => sum + stack.assets.length, 0);
-
-    await deleteStacks({ bulkIdsDto: { ids: [...ids] } });
-
-    toastManager.primary($t('unstacked_assets_count', { values: { count } }));
-
-    const assets = stacks.flatMap((stack) => stack.assets);
-    for (const asset of assets) {
-      asset.stack = null;
-    }
-
-    return assets;
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_unstack_assets'));
-  }
-};
-
-export const keepThisDeleteOthers = async (keepAsset: AssetResponseDto, stack: StackResponseDto) => {
-  const $t = get(t);
-
-  try {
-    const assetsToDeleteIds = stack.assets.filter((asset) => asset.id !== keepAsset.id).map((asset) => asset.id);
-    await deleteAssets({ assetBulkDeleteDto: { ids: assetsToDeleteIds } });
-    await deleteStacks({ bulkIdsDto: { ids: [stack.id] } });
-
-    toastManager.primary($t('kept_this_deleted_others', { values: { count: assetsToDeleteIds.length } }));
-
-    keepAsset.stack = null;
-    return keepAsset;
-  } catch (error) {
-    handleError(error, $t('errors.failed_to_keep_this_delete_others'));
-  }
 };
 
 export const selectAllAssets = async (timelineManager: TimelineManager, assetInteraction: AssetMultiSelectManager) => {
