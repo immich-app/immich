@@ -87,6 +87,7 @@ export default typescriptEslint.config(
         ...globals.browser,
         ...globals.node,
         NodeJS: true,
+        pannellum: 'readonly',
       },
 
       parser: typescriptEslint.parser,

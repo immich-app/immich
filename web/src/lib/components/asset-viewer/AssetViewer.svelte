@@ -17,7 +17,7 @@
   import { getAssetActions } from '$lib/services/asset.service';
   import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
-  import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
+  import { alwaysLoadOriginalVideo, PanoramaViewerEngine, panoramaViewerEngine } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { getSharedLink, handlePromiseError } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
@@ -440,11 +440,17 @@
       !activityManager.isLoading,
   );
 
+  // The Pannellum panorama viewer doesn't implement OCR box overlays, so the toggle would be a
+  // dead control if shown - hide it entirely for that combination rather than a no-op click target.
+  const isPannellumPanorama = $derived(
+    viewerKind === 'ImagePanaramaViewer' && $panoramaViewerEngine === PanoramaViewerEngine.Pannellum,
+  );
   const showOcrButton = $derived(
     $slideshowState === SlideshowState.None &&
       asset.type === AssetTypeEnum.Image &&
       !assetViewerManager.isShowEditor &&
-      ocrManager.hasOcrData,
+      ocrManager.hasOcrData &&
+      !isPannellumPanorama,
   );
 
   const { Tag, TagPeople } = $derived(getAssetActions($t, asset));
