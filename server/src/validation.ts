@@ -164,7 +164,7 @@ export const isoDateToDate = z
     z.date(),
     {
       decode: (isoString) => new Date(isoString),
-      encode: (date) => DateTime.fromJSDate(date).toFormat('yyyy-MM-dd'),
+      encode: (date) => DateTime.fromJSDate(date, { zone: 'utc' }).toFormat('yyyy-MM-dd'),
     },
   )
   .meta({ example: '2024-01-01' });
