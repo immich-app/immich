@@ -105,7 +105,7 @@ export class VideoFrameService extends BaseService {
       });
 
       try {
-        await this.mediaRepository.runCommand(config.getCommand(asset.videoStream));
+        await this.processRepository.exec('ffmpeg', config.getExtractionCommand(asset.videoStream));
       } catch (error) {
         this.logger.error(`Failed to generate video frames for asset ${asset.id}: ${error}`);
         return this.markFailed(id, parameters, parametersHash);
@@ -144,6 +144,8 @@ export class VideoFrameService extends BaseService {
         path: artifactPath,
         initSegmentSize,
       });
+
+      this.logger.log(`Extracted ${frames.length} frame(s) for video ${asset.id}`);
 
       return JobStatus.Success;
     } finally {

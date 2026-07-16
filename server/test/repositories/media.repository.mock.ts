@@ -21,6 +21,5 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
     }),
     transcode: vitest.fn(),
     getImageMetadata: vitest.fn(),
-    runCommand: vitest.fn().mockResolvedValue(void 0),
   };
 };

@@ -584,7 +584,7 @@ export class VideoFrameExtractionConfig {
     return new VideoFrameExtractionConfig(options);
   }
 
-  getCommand(videoStream: VideoStreamInfo): string[] {
+  getExtractionCommand(videoStream: VideoStreamInfo): string[] {
     const { width, height } = getOutputSize(videoStream, this.options.targetResolution);
     const fps = 1 / this.options.gridInterval;
     const filterComplex = [
@@ -593,6 +593,11 @@ export class VideoFrameExtractionConfig {
     ].join(';');
 
     return [
+      '-nostdin',
+      '-nostats',
+      '-v',
+      'verbose',
+      '-noautorotate',
       '-i',
       this.options.inputPath,
       '-filter_complex',

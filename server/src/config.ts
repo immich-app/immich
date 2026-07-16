@@ -454,7 +454,7 @@ export const defaults = Object.freeze<SystemConfig>({
     deleteDelay: 7,
   },
   videoFrameExtraction: {
-    enabled: false,
+    enabled: true, // TODO: set to false by default before merge
     targetResolution: 640,
     qp: 34,
     gridInterval: 1,

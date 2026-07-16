@@ -105,4 +105,26 @@ export class ProcessRepository {
   fork(...args: Parameters<typeof fork>): ReturnType<typeof fork> {
     return fork(...args);
   }
+
+  /**
+   * Spawns a process and waits for it to complete. Resolves on exit code 0, rejects otherwise.
+   * Captures stderr for error reporting. Used for one-shot commands that don't need streaming.
+   */
+  exec(command: string, args: string[]): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const proc = this.spawn(command, args, { stdio: ['ignore', 'ignore', 'pipe'] });
+
+      let stderr = '';
+      proc.stderr.setEncoding('utf8');
+      proc.stderr.on('data', (chunk: string) => (stderr += chunk));
+
+      proc.on('error', reject);
+      proc.on('close', (code) => {
+        if (code !== 0) {
+          return reject(new Error(`${command} exited with code ${code}: ${stderr.trim()}`));
+        }
+        resolve();
+      });
+    });
+  }
 }

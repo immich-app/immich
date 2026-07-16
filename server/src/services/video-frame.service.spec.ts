@@ -119,7 +119,7 @@ describe(VideoFrameService.name, () => {
 
     it('should skip if an up-to-date extraction already exists', async () => {
       mocks.videoFrame.getExtractionRecord.mockResolvedValue(void 0);
-      mocks.media.runCommand.mockResolvedValue(void 0);
+      mocks.process.exec.mockResolvedValue(void 0);
 
       // first run computes and persists the current parameters hash
       await sut.handleGenerateVideoFrames({ id: asset.id });
@@ -129,20 +129,20 @@ describe(VideoFrameService.name, () => {
         assetId: asset.id,
         ...persisted,
       } as never);
-      mocks.media.runCommand.mockClear();
+      mocks.process.exec.mockClear();
 
       await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Skipped);
 
-      expect(mocks.media.runCommand).not.toHaveBeenCalled();
+      expect(mocks.process.exec).not.toHaveBeenCalled();
     });
 
     it('should generate frames and persist the extraction record', async () => {
       mocks.videoFrame.getExtractionRecord.mockResolvedValue(void 0);
-      mocks.media.runCommand.mockResolvedValue(void 0);
+      mocks.process.exec.mockResolvedValue(void 0);
 
       await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Success);
 
-      expect(mocks.media.runCommand).toHaveBeenCalledWith(expect.any(Array));
+      expect(mocks.process.exec).toHaveBeenCalledWith('ffmpeg', expect.any(Array));
       expect(mocks.videoFrame.upsertFrames).toHaveBeenCalledWith(asset.id, [
         { frameIndex: 0, byteOffset: 813, byteSize: 3843, intervalChange: 0 },
         { frameIndex: 1, byteOffset: 4656, byteSize: 3238, intervalChange: 2.516 },
@@ -156,7 +156,7 @@ describe(VideoFrameService.name, () => {
 
     it('should mark the extraction as failed if ffmpeg fails', async () => {
       mocks.videoFrame.getExtractionRecord.mockResolvedValue(void 0);
-      mocks.media.runCommand.mockRejectedValue(new Error('ffmpeg exited with code 1'));
+      mocks.process.exec.mockRejectedValue(new Error('ffmpeg exited with code 1'));
 
       await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
 
@@ -168,7 +168,7 @@ describe(VideoFrameService.name, () => {
 
     it('should mark the extraction as failed if no frames were extracted', async () => {
       mocks.videoFrame.getExtractionRecord.mockResolvedValue(void 0);
-      mocks.media.runCommand.mockResolvedValue(void 0);
+      mocks.process.exec.mockResolvedValue(void 0);
       vitest.mocked(readFile).mockResolvedValue('#EXTM3U\n#EXT-X-ENDLIST');
 
       await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
