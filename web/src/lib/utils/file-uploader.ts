@@ -15,7 +15,7 @@ import { uploadManager } from '$lib/managers/upload-manager.svelte';
 import { addAssetsToAlbums } from '$lib/services/album.service';
 import { uploadAssetsStore } from '$lib/stores/upload';
 import { UploadState } from '$lib/types';
-import { uploadRequest } from '$lib/utils';
+import { ApiError, supportsStreamingUpload, uploadRequest, uploadRequestStreaming } from '$lib/utils';
 import { ExecutorQueue } from '$lib/utils/executor-queue';
 import { asQueryString } from '$lib/utils/shared-links';
 import { handleError } from './handle-error';
@@ -160,6 +160,42 @@ type FileUploaderParams = {
   deviceAssetId: string;
 };
 
+// Proxies may reject uploads whose body exceeds a fixed size — most notably Cloudflare, which
+// caps request bodies at 100 MB and responds with a 413. Requests streamed without a
+// Content-Length header are exempt from that check, so large uploads use a streaming upload
+// where supported (see supportsStreamingUpload).
+const PROXY_BODY_SIZE_LIMIT = 100 * 1024 * 1024;
+
+async function uploadAssetMedia(
+  url: string,
+  formData: FormData,
+  assetFile: File,
+  onUploadProgress: (progress: { loaded: number; total: number }) => void,
+): Promise<{ data: AssetMediaResponseDto; status: number }> {
+  if (supportsStreamingUpload() && assetFile.size >= PROXY_BODY_SIZE_LIMIT) {
+    try {
+      return await uploadRequestStreaming<AssetMediaResponseDto>({ url, data: formData, onUploadProgress });
+    } catch (error) {
+      // fetch() rejects with a TypeError when the connection cannot stream at all (e.g. Chromium
+      // refuses to stream over HTTP/1.1); a regular upload may still work there
+      if (!(error instanceof TypeError)) {
+        throw error;
+      }
+    }
+  }
+
+  try {
+    return await uploadRequest<AssetMediaResponseDto>({ url, data: formData, onUploadProgress });
+  } catch (error) {
+    // a 413 means a proxy rejected the body for its size before it reached the server;
+    // retry as a streaming upload, which is exempt from that check
+    if (!supportsStreamingUpload() || !(error instanceof ApiError) || error.statusCode !== 413) {
+      throw error;
+    }
+    return await uploadRequestStreaming<AssetMediaResponseDto>({ url, data: formData, onUploadProgress });
+  }
+}
+
 // TODO: should probably use the @api SDK
 async function fileUploader({
   assetFile,
@@ -214,11 +250,12 @@ async function fileUploader({
       const queryParams = asQueryString(authManager.params);
 
       uploadAssetsStore.updateItem(deviceAssetId, { message: $t('asset_uploading') });
-      const response = await uploadRequest<AssetMediaResponseDto>({
-        url: getBaseUrl() + '/assets' + (queryParams ? `?${queryParams}` : ''),
-        data: formData,
-        onUploadProgress: (event) => uploadAssetsStore.updateProgress(deviceAssetId, event.loaded, event.total),
-      });
+      const response = await uploadAssetMedia(
+        getBaseUrl() + '/assets' + (queryParams ? `?${queryParams}` : ''),
+        formData,
+        assetFile,
+        ({ loaded, total }) => uploadAssetsStore.updateProgress(deviceAssetId, loaded, total),
+      );
 
       if (![200, 201].includes(response.status)) {
         throw new Error($t('errors.unable_to_upload_file'));

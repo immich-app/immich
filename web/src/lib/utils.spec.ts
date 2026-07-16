@@ -1,5 +1,5 @@
 import { AssetTypeEnum } from '@immich/sdk';
-import { getAssetUrl, semverToName } from '$lib/utils';
+import { buildMultipartParts, getAssetUrl, semverToName } from '$lib/utils';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
@@ -168,6 +168,37 @@ describe('utils', () => {
 
     it('should append release candidate if set', () => {
       expect(semverToName({ major: 3, minor: 0, patch: 0, prerelease: 0 })).toEqual('v3.0.0-rc.0');
+    });
+  });
+
+  describe('buildMultipartParts', () => {
+    it('should serialize fields and files like multipart/form-data', async () => {
+      const formData = new FormData();
+      formData.append('isFavorite', 'false');
+      formData.append('assetData', new File(['hello world'], 'photo.jpg', { type: 'image/jpeg' }));
+
+      const parts = buildMultipartParts(formData, 'BOUNDARY');
+      const body = new Blob(parts as BlobPart[]);
+      const total = parts.reduce((size, part) => size + (part instanceof Uint8Array ? part.byteLength : part.size), 0);
+
+      expect(total).toBe(body.size);
+      expect(await body.text()).toBe(
+        '--BOUNDARY\r\nContent-Disposition: form-data; name="isFavorite"\r\n\r\nfalse\r\n' +
+          '--BOUNDARY\r\nContent-Disposition: form-data; name="assetData"; filename="photo.jpg"\r\n' +
+          'Content-Type: image/jpeg\r\n\r\nhello world\r\n' +
+          '--BOUNDARY--\r\n',
+      );
+    });
+
+    it('should escape quotes and newlines in filenames and default the content type', async () => {
+      const formData = new FormData();
+      formData.append('assetData', new File(['x'], 'we"ird\r\n.bin'));
+
+      const parts = buildMultipartParts(formData, 'BOUNDARY');
+      const body = await new Blob(parts as BlobPart[]).text();
+
+      expect(body).toContain('filename="we%22ird%0D%0A.bin"');
+      expect(body).toContain('Content-Type: application/octet-stream');
     });
   });
 });

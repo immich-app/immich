@@ -64,7 +64,7 @@ export class AbortError extends Error {
   override name = 'AbortError';
 }
 
-class ApiError extends Error {
+export class ApiError extends Error {
   override name = 'ApiError';
 
   constructor(
@@ -126,6 +126,137 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
     xhr.responseType = 'json';
     xhr.send(data);
   });
+};
+
+interface StreamingUploadRequestOptions {
+  url: string;
+  method?: 'POST' | 'PUT';
+  data: FormData;
+  onUploadProgress?: (progress: { loaded: number; total: number }) => void;
+}
+
+let streamingUploadSupport: boolean | undefined;
+
+export const supportsStreamingUpload = (): boolean => {
+  if (streamingUploadSupport === undefined) {
+    try {
+      let duplexAccessed = false;
+      const hasContentType = new Request('https://localhost/', {
+        body: new ReadableStream(),
+        method: 'POST',
+        get duplex() {
+          duplexAccessed = true;
+          return 'half';
+        },
+      } as RequestInit).headers.has('content-type');
+      streamingUploadSupport = duplexAccessed && !hasContentType;
+    } catch {
+      streamingUploadSupport = false;
+    }
+  }
+
+  return streamingUploadSupport;
+};
+
+const encoder = new TextEncoder();
+
+// per RFC 2388, quotes and newlines in names/filenames are percent-encoded
+const escapeMultipartValue = (value: string) =>
+  value.replaceAll('\r', '%0D').replaceAll('\n', '%0A').replaceAll('"', '%22');
+
+export const buildMultipartParts = (data: FormData, boundary: string): Array<Uint8Array | File> => {
+  const parts: Array<Uint8Array | File> = [];
+  for (const [name, value] of data) {
+    const disposition = `--${boundary}\r\nContent-Disposition: form-data; name="${escapeMultipartValue(name)}"`;
+    if (typeof value === 'string') {
+      parts.push(encoder.encode(`${disposition}\r\n\r\n${value}\r\n`));
+    } else {
+      parts.push(
+        encoder.encode(
+          `${disposition}; filename="${escapeMultipartValue(value.name)}"\r\nContent-Type: ${value.type || 'application/octet-stream'}\r\n\r\n`,
+        ),
+        value,
+        encoder.encode('\r\n'),
+      );
+    }
+  }
+
+  parts.push(encoder.encode(`--${boundary}--\r\n`));
+  return parts;
+};
+
+async function* generateMultipartChunks(parts: Array<Uint8Array | File>) {
+  for (const part of parts) {
+    if (part instanceof Uint8Array) {
+      yield part;
+      continue;
+    }
+
+    const reader = part.stream().getReader();
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      yield value;
+    }
+  }
+}
+
+// Streams the multipart body via fetch() instead of XHR, so the request goes out without a
+// Content-Length header. Proxies that enforce a maximum request body size based on that header
+// (e.g. Cloudflare's 100 MB limit) let streamed requests through — the same mechanism the mobile
+// app relies on for large uploads. Chromium only allows request streaming over HTTP/2 or later;
+// on an HTTP/1.1 connection the fetch rejects with a TypeError before anything is sent.
+export const uploadRequestStreaming = async <T>(
+  options: StreamingUploadRequestOptions,
+): Promise<{ data: T; status: number }> => {
+  const { url, data, onUploadProgress: onProgress } = options;
+
+  // crypto.randomUUID() is unavailable in non-secure contexts (plain-http deployments)
+  const boundary = `----immich-multipart-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
+  const parts = buildMultipartParts(data, boundary);
+  const total = parts.reduce((size, part) => size + (part instanceof Uint8Array ? part.byteLength : part.size), 0);
+  const chunks = generateMultipartChunks(parts);
+  let loaded = 0;
+
+  const body = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      const { done, value } = await chunks.next();
+      if (done) {
+        controller.close();
+        return;
+      }
+
+      loaded += value.byteLength;
+      onProgress?.({ loaded, total });
+      controller.enqueue(value);
+    },
+    cancel() {
+      void chunks.return(undefined);
+    },
+  });
+
+  const abortController = new AbortController();
+  const unsubscribe = trackUpload(() => abortController.abort());
+
+  try {
+    const response = await fetch(url, {
+      method: options.method || 'POST',
+      headers: { 'Content-Type': `multipart/form-data; boundary=${boundary}` },
+      body,
+      signal: abortController.signal,
+      duplex: 'half',
+    } as RequestInit);
+
+    if (response.status < 200 || response.status >= 300) {
+      throw new ApiError(response.statusText, response.status, await response.text());
+    }
+
+    return { data: (await response.json()) as T, status: response.status };
+  } finally {
+    unsubscribe();
+  }
 };
 
 export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions<TBody> | string) => {

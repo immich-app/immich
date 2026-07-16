@@ -69,4 +69,35 @@ describe('fileUploader error handling', () => {
     expect(items.length).toBe(1);
     expect(items[0].state).toBe(UploadState.STARTED);
   });
+
+  describe('proxy body size limits', () => {
+    it('should retry as a streaming upload when a proxy rejects the body with 413', async () => {
+      vi.spyOn(utils, 'supportsStreamingUpload').mockReturnValue(true);
+      const uploadSpy = vi
+        .spyOn(utils, 'uploadRequest')
+        .mockRejectedValue(new utils.ApiError('Payload Too Large', 413, ''));
+      const streamingSpy = vi
+        .spyOn(utils, 'uploadRequestStreaming')
+        .mockResolvedValue({ status: 201, data: mockUploadResponse });
+
+      await fileUploadHandler({ files: [mockFile] });
+
+      expect(uploadSpy).toHaveBeenCalled();
+      expect(streamingSpy).toHaveBeenCalled();
+      const items = get(uploadAssetsStore);
+      expect(items[0].state).toBe(UploadState.DONE);
+    });
+
+    it('should not retry as a streaming upload for other errors', async () => {
+      vi.spyOn(utils, 'supportsStreamingUpload').mockReturnValue(true);
+      vi.spyOn(utils, 'uploadRequest').mockRejectedValue(new utils.ApiError('Internal Server Error', 500, ''));
+      const streamingSpy = vi.spyOn(utils, 'uploadRequestStreaming');
+
+      await fileUploadHandler({ files: [mockFile] });
+
+      expect(streamingSpy).not.toHaveBeenCalled();
+      const items = get(uploadAssetsStore);
+      expect(items[0].state).toBe(UploadState.ERROR);
+    });
+  });
 });
