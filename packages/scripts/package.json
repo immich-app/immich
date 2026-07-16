@@ -27,7 +27,7 @@
     "semver": "^7.8.1"
   },
   "devDependencies": {
-    "@types/node": "^24.13.2",
+    "@types/node": "^24.13.3",
     "@types/semver": "^7.7.1",
     "vite": "^8.0.16",
     "vitest": "^4.1.8"
