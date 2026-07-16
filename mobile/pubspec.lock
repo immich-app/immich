@@ -69,10 +69,10 @@ packages:
     dependency: "direct main"
     description:
       name: background_downloader
-      sha256: aceacec2b2a72ec3a8862ab5895fcbbc71ab33765f3619d57963f3110dd268e3
+      sha256: d27fcaf94f738032f1e6db098230799bf31ae7bf184f173fc9a752fcdae75c0e
       url: "https://pub.dev"
     source: hosted
-    version: "9.5.5"
+    version: "9.5.6"
   bonsoir:
     dependency: "direct overridden"
     description:
@@ -133,10 +133,10 @@ packages:
     dependency: transitive
     description:
       name: build
-      sha256: a156715e7cd728130c592f30552575908aae5b100005fbc1f0fb16b3c03a3d10
+      sha256: "45d14a0fb23e018d8287c32fc98d726ce466b231928ed9b9200f29bd3ccd39ae"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.6"
+    version: "4.0.7"
   build_config:
     dependency: transitive
     description:
@@ -157,10 +157,10 @@ packages:
     dependency: "direct dev"
     description:
       name: build_runner
-      sha256: "1523ce62448ebac2c15a8ba5fbad8acac169788658a7dd2a1c2d9c2a9318b9a6"
+      sha256: "5367e521935b102bdf1e735d2aab461e36b2edca6517662d088dd04cc39f8d16"
       url: "https://pub.dev"
     source: hosted
-    version: "2.15.0"
+    version: "2.15.1"
   built_collection:
     dependency: transitive
     description:
@@ -253,10 +253,10 @@ packages:
     dependency: "direct main"
     description:
       name: connectivity_plus
-      sha256: "62ffa266d9a23b79fb3fcbc206afc00bb979417ba57b1324c546b5aab95ba057"
+      sha256: "25cebb79dfe304022550e0c3c893ae051ded07183d2607f7b88473cb3ade33cb"
       url: "https://pub.dev"
     source: hosted
-    version: "7.1.1"
+    version: "7.3.0"
   connectivity_plus_platform_interface:
     dependency: transitive
     description:
@@ -634,10 +634,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_udid
-      sha256: fc599671cbe8b328e509c961ec121880406ed994dde659cc9ece9c7503cd31c7
+      sha256: f23555e9d34d5a7dc70fdfa3ab8915b401786879d278568b3c0e801af9a14d2e
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.2"
+    version: "4.1.6"
   flutter_web_auth_2:
     dependency: "direct main"
     description:
@@ -852,10 +852,10 @@ packages:
     dependency: "direct main"
     description:
       name: image_picker
-      sha256: "91c025426c2881c551100bce834e201c835a170151545f58d17da5180ca7d9ac"
+      sha256: d8402284df184bc05f4a2210c6c23983b0720f4cd87cbd05c5390a78af602667
       url: "https://pub.dev"
     source: hosted
-    version: "1.2.2"
+    version: "1.2.3"
   image_picker_android:
     dependency: transitive
     description:
@@ -1234,10 +1234,10 @@ packages:
     dependency: "direct main"
     description:
       name: path_provider
-      sha256: "50c5dd5b6e1aaf6fb3a78b33f6aa3afca52bf903a8a5298f53101fdaee55bbcd"
+      sha256: a7f4874f987173da295a61c181b8ee71dab59b332a486b391babf26a1b884825
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.5"
+    version: "2.1.6"
   path_provider_android:
     dependency: transitive
     description:
@@ -1640,18 +1640,18 @@ packages:
     dependency: "direct main"
     description:
       name: sqlite3
-      sha256: "9488c7d2cdb1091c91cacf7e207cff81b28bff8e366f042bad3afe7d34afe189"
+      sha256: "61c7930bebf32c552ac5808c91bf33802e66711c9216090d3b5579c9f862e80c"
       url: "https://pub.dev"
     source: hosted
-    version: "3.3.2"
+    version: "3.4.0"
   sqlite3_connection_pool:
     dependency: "direct main"
     description:
       name: sqlite3_connection_pool
-      sha256: "9d2b3b398b03c96743fd071521fc665be73c33c9cd5c56d87196baff8d8b4398"
+      sha256: ad51972d37bdf82929888e4c85e722bd9a0b5ff8ad389f89b1b00d19603c0d2d
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.6"
+    version: "0.2.7"
   sqlite3_web:
     dependency: transitive
     description:
@@ -1848,10 +1848,10 @@ packages:
     dependency: "direct main"
     description:
       name: uuid
-      sha256: "1fef9e8e11e2991bb773070d4656b7bd5d850967a2456cfc83cf47925ba79489"
+      sha256: "9b129329f58692f6e6578329498a8fe9fbe98f090beb764ffbb8ee2eadd01dcd"
       url: "https://pub.dev"
     source: hosted
-    version: "4.5.3"
+    version: "4.6.0"
   vector_graphics:
     dependency: transitive
     description:
