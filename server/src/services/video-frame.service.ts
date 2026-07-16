@@ -5,10 +5,10 @@ import { join } from 'node:path';
 import { SystemConfig } from 'src/config';
 import { JOBS_ASSET_PAGINATION_SIZE, VIDEO_FRAME_EXTRACTION_VERSION } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnJob } from 'src/decorators';
-import { JobName, JobStatus, QueueName, VideoFrameExtractionStatus } from 'src/enum';
+import { OnEvent, OnJob } from 'src/decorators';
+import { ImmichWorker, JobName, JobStatus, QueueName, VideoFrameExtractionStatus } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import { JobItem, JobOf, VideoInterfaces } from 'src/types';
 import { VideoFrameExtractionConfig } from 'src/utils/media';
 import { parseByteRangePlaylist, parseIntervalChangeScores } from 'src/utils/video-frame';
 
@@ -28,6 +28,13 @@ type VideoFrameExtractionParameters = {
  */
 @Injectable()
 export class VideoFrameService extends BaseService {
+  videoInterfaces: VideoInterfaces = { dri: [], mali: false };
+
+  @OnEvent({ name: 'AppBootstrap', workers: [ImmichWorker.Microservices] })
+  async onBootstrap() {
+    this.videoInterfaces = await this.storageCore.getVideoInterfaces();
+  }
+
   @OnJob({ name: JobName.VideoFrameExtractionQueueAll, queue: QueueName.VideoFrameExtraction })
   async handleQueueGenerateVideoFrames({ force }: JobOf<JobName.VideoFrameExtractionQueueAll>): Promise<JobStatus> {
     const { videoFrameExtraction } = await this.getConfig({ withCache: true });
@@ -57,7 +64,7 @@ export class VideoFrameService extends BaseService {
 
   @OnJob({ name: JobName.VideoFrameExtraction, queue: QueueName.VideoFrameExtraction })
   async handleGenerateVideoFrames({ id }: JobOf<JobName.VideoFrameExtraction>): Promise<JobStatus> {
-    const { videoFrameExtraction } = await this.getConfig({ withCache: true });
+    const { videoFrameExtraction, ffmpeg } = await this.getConfig({ withCache: true });
     if (!videoFrameExtraction.enabled) {
       return JobStatus.Skipped;
     }
@@ -102,6 +109,8 @@ export class VideoFrameService extends BaseService {
         targetResolution: videoFrameExtraction.targetResolution,
         qp: videoFrameExtraction.qp,
         gridInterval: videoFrameExtraction.gridInterval,
+        ffmpeg,
+        videoInterfaces: this.videoInterfaces,
       });
 
       try {

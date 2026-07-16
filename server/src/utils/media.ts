@@ -562,6 +562,10 @@ export type VideoFrameExtractionOptions = {
   qp: number;
   /** Seconds between sampled frames (e.g. `1` for one frame per second). */
   gridInterval: number;
+  /** FFmpeg/hwaccel configuration, used to dispatch to the correct backend. */
+  ffmpeg: SystemConfigFFmpegDto;
+  /** GPU device list discovered at bootstrap, used for device path selection. */
+  videoInterfaces: VideoInterfaces;
 };
 
 /**
@@ -572,19 +576,81 @@ export type VideoFrameExtractionOptions = {
  * (trickplay/seek-bar previews, video semantic search embeddings, etc.), not specific to any one of
  * them.
  *
- * This is currently a software (CPU)-only implementation. Hardware-accelerated variants (vaapi/qsv/
- * nvenc/rkmpp, matching the acceleration matrix used elsewhere for transcoding) are intentionally
- * deferred to a follow-up - wiring each backend's device selection, scale filter, and encoder options
- * correctly is exactly the kind of hardware-specific tuning this phase of work is scoped to avoid.
+ * When `ffmpeg.accel !== Disabled`, the command is dispatched to a hardware-accelerated variant that
+ * reuses Immich's existing hwaccel matrix (vaapi/qsv/nvenc/rkmpp, with HW/SW decode paths and HDR
+ * tonemapping). The scoring branch (`hwdownload,format=nv12,scdet=...`) is backend-agnostic and
+ * works for all GPU surface types.
  */
 export class VideoFrameExtractionConfig {
-  private constructor(private options: VideoFrameExtractionOptions) {}
+  private device: string;
+  private targetRes: number;
+
+  private constructor(private options: VideoFrameExtractionOptions) {
+    this.device = this.getDevice(options.videoInterfaces);
+    this.targetRes = options.targetResolution;
+  }
 
   static create(options: VideoFrameExtractionOptions) {
     return new VideoFrameExtractionConfig(options);
   }
 
+  /**
+   * Resolves the GPU device path, mirroring `BaseHWConfig.getDevice()`.
+   */
+  private getDevice({ dri }: VideoInterfaces) {
+    if (this.options.ffmpeg.preferredHwDevice === 'auto') {
+      return `/dev/dri/${dri.sort().at(-1)!}`;
+    }
+    return this.options.ffmpeg.preferredHwDevice;
+  }
+
+  /**
+   * Returns a scale filter dimension string for the encode branch. Uses the `-2` auto-aspect-ratio
+   * convention common to all GPU scale filters (vaapi/qsv/cuda/rkrga), computed from the video
+   * stream's rotation-aware shorter side.
+   */
+  private getScaleDimension(videoStream: VideoStreamInfo): string {
+    const targetRes = this.options.targetResolution;
+    return isVideoVertical(videoStream) ? `${targetRes}:-2` : `-2:${targetRes}`;
+  }
+
+  /**
+   * Returns whether the video stream needs scaling (all frame extraction must scale to the target
+   * resolution, and odd dimensions are illegal for GPU surfaces).
+   */
+  private shouldScale(videoStream: VideoStreamInfo) {
+    return (
+      Math.min(videoStream.height, videoStream.width) > this.targetRes ||
+      videoStream.height % 2 !== 0 ||
+      videoStream.width % 2 !== 0
+    );
+  }
+
+  /**
+   * Returns whether the encode branch needs HDR → SDR tonemapping.
+   */
+  private shouldToneMap(videoStream: VideoStreamInfo) {
+    return (
+      this.options.ffmpeg.tonemap !== ToneMapping.Disabled &&
+      (videoStream.colorTransfer === ColorTransfer.Smpte2084 ||
+        videoStream.colorTransfer === ColorTransfer.AribStdB67)
+    );
+  }
+
+  /**
+   * Builds the full ffmpeg argument array. Dispatches to a hwaccel variant when the ffmpeg
+   * acceleration config is enabled; otherwise returns the pure-CPU fallback command.
+   */
   getExtractionCommand(videoStream: VideoStreamInfo): string[] {
+    if (this.options.ffmpeg.accel !== TranscodeHardwareAcceleration.Disabled) {
+      return this.getHWExtractionCommand(videoStream);
+    }
+    return this.getSWExtractionCommand(videoStream);
+  }
+
+  // -- Software (CPU) command --------------------------------------------------------
+
+  private getSWExtractionCommand(videoStream: VideoStreamInfo): string[] {
     const { width, height } = getOutputSize(videoStream, this.options.targetResolution);
     const fps = 1 / this.options.gridInterval;
     const filterComplex = [
@@ -632,6 +698,245 @@ export class VideoFrameExtractionConfig {
       'null',
       '-',
     ];
+  }
+
+  // -- Hardware-accelerated command ---------------------------------------------------
+
+  private getHWExtractionCommand(videoStream: VideoStreamInfo): string[] {
+    const inputOptions = this.getHWInputOptions();
+    const encodeFilters = this.getHWEncodeFilters(videoStream);
+    const encodeArgs = this.getHWEncodeArgs();
+
+    const fps = 1 / this.options.gridInterval;
+    const filterComplex = [
+      `[0:v]${encodeFilters},fps=${fps},split[enc][an]`,
+      `[an]hwdownload,format=nv12,scdet=threshold=${VIDEO_FRAME_EXTRACTION_SCDET_THRESHOLD},metadata=print:file=${this.options.scoresPath}[scored]`,
+    ].join(';');
+
+    return [
+      ...inputOptions,
+      ...encodeArgs,
+      '-filter_complex',
+      filterComplex,
+      '-map',
+      '[enc]',
+      '-f',
+      'hls',
+      '-hls_segment_type',
+      'fmp4',
+      '-hls_flags',
+      'single_file',
+      '-hls_time',
+      '0',
+      '-hls_list_size',
+      '0',
+      '-hls_segment_filename',
+      this.options.artifactPath,
+      this.options.playlistPath,
+      '-map',
+      '[scored]',
+      '-f',
+      'null',
+      '-',
+    ];
+  }
+
+  // -- per-backend input init, encode filter, and encoder args -------------------------
+
+  private getHWInputOptions(): string[] {
+    const { accel, accelDecode } = this.options.ffmpeg;
+
+    if (accelDecode) {
+      switch (accel) {
+        case TranscodeHardwareAcceleration.Vaapi: {
+          return ['-nostdin', '-nostats', '-v', 'verbose', '-hwaccel', 'vaapi', '-hwaccel_output_format', 'vaapi', '-hwaccel_device', this.device, '-noautorotate', '-threads', '1', '-i', this.options.inputPath];
+        }
+        case TranscodeHardwareAcceleration.Qsv: {
+          return ['-nostdin', '-nostats', '-v', 'verbose', '-hwaccel', 'qsv', '-hwaccel_output_format', 'qsv', '-async_depth', '4', '-qsv_device', this.device, '-noautorotate', '-threads', '1', '-i', this.options.inputPath];
+        }
+        case TranscodeHardwareAcceleration.Nvenc: {
+          return ['-nostdin', '-nostats', '-v', 'verbose', '-hwaccel', 'cuda', '-hwaccel_output_format', 'cuda', '-noautorotate', '-threads', '1', '-i', this.options.inputPath];
+        }
+        case TranscodeHardwareAcceleration.Rkmpp: {
+          return ['-nostdin', '-nostats', '-v', 'verbose', '-hwaccel', 'rkmpp', '-hwaccel_output_format', 'drm_prime', '-afbc', 'rga', '-noautorotate', '-i', this.options.inputPath];
+        }
+        default: {
+          throw new Error(`Unsupported HW-decode acceleration: ${accel}`);
+        }
+      }
+    }
+
+    // SW decode — init hw device, let filters upload
+    switch (accel) {
+      case TranscodeHardwareAcceleration.Vaapi: {
+        return ['-nostdin', '-nostats', '-v', 'verbose', '-init_hw_device', `vaapi=accel:${this.device}`, '-filter_hw_device', 'accel', '-noautorotate', '-i', this.options.inputPath];
+      }
+      case TranscodeHardwareAcceleration.Qsv: {
+        return ['-nostdin', '-nostats', '-v', 'verbose', '-init_hw_device', `qsv=hw,child_device=${this.device}`, '-filter_hw_device', 'hw', '-noautorotate', '-i', this.options.inputPath];
+      }
+      case TranscodeHardwareAcceleration.Nvenc: {
+        return ['-nostdin', '-nostats', '-v', 'verbose', '-init_hw_device', `cuda=cuda:${this.device}`, '-filter_hw_device', 'cuda', '-noautorotate', '-i', this.options.inputPath];
+      }
+      case TranscodeHardwareAcceleration.Rkmpp: {
+        // RKMPP SW-decode has no filter infrastructure upstream; fall back to CPU path for now.
+        throw new Error('RKMPP software-decode is not supported for video frame extraction');
+      }
+      default: {
+        throw new Error(`Unsupported acceleration: ${accel}`);
+      }
+    }
+  }
+
+  /**
+   * Builds the filter-chain suffix for the encode branch BEFORE `,fps=...,split...`.
+   * For SW-decode paths this starts with `hwupload`; for HW-decode paths the GPU format is already
+   * correct. Tonomapping (when applicable) is inserted between scaling and the fps/split node.
+   */
+  private getHWEncodeFilters(videoStream: VideoStreamInfo): string {
+    const { accel, accelDecode } = this.options.ffmpeg;
+    const dim = this.getScaleDimension(videoStream);
+    const needsScale = this.shouldScale(videoStream);
+    const tonemap = this.shouldToneMap(videoStream);
+
+    type FilterList = string[];
+
+    const vaapi = (): FilterList => {
+      const out: FilterList = [];
+      if (!accelDecode) {out.push('hwupload=extra_hw_frames=64');}
+      if (needsScale || !accelDecode) {out.push(`scale_vaapi=${dim}:mode=hq:out_range=pc:format=nv12`);}
+      if (tonemap) {out.push(
+        'hwmap=derive_device=opencl',
+        `tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:transfer=bt709:range=pc:tonemap=${this.options.ffmpeg.tonemap}:tonemap_mode=lum:peak=100`,
+        'hwmap=derive_device=vaapi:reverse=1,format=vaapi',
+      );}
+      return out;
+    };
+
+    const qsv = (): FilterList => {
+      const out: FilterList = [];
+      if (!accelDecode) {out.push('hwupload=extra_hw_frames=64');}
+      if (needsScale || !accelDecode) {out.push(`scale_qsv=${dim}:mode=hq:format=nv12:async_depth=4`);}
+      if (tonemap) {out.push(
+        'hwmap=derive_device=opencl',
+        `tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:transfer=bt709:range=pc:tonemap=${this.options.ffmpeg.tonemap}:tonemap_mode=lum:peak=100`,
+        'hwmap=derive_device=qsv:reverse=1,format=qsv',
+      );}
+      return out;
+    };
+
+    const nvenc = (): FilterList => {
+      const out: FilterList = [];
+      if (!accelDecode) {out.push('hwupload_cuda');}
+      if (needsScale || !accelDecode) {out.push(`scale_cuda=${dim}`);}
+      if (tonemap) {out.push(
+        `tonemap_cuda=desat=0:matrix=bt709:primaries=bt709:range=pc:tonemap=${this.options.ffmpeg.tonemap}:tonemap_mode=lum:transfer=bt709:peak=100:format=nv12`,
+      );}
+      if (!tonemap && (needsScale || !accelDecode)) {
+        out[out.length - 1] = out.at(-1) + ':format=nv12';
+      }
+      return out;
+    };
+
+    let filters: FilterList;
+    switch (accel) {
+      case TranscodeHardwareAcceleration.Vaapi: {  filters = vaapi(); break;
+      }
+      case TranscodeHardwareAcceleration.Qsv: {    filters = qsv(); break;
+      }
+      case TranscodeHardwareAcceleration.Nvenc: {  filters = nvenc(); break;
+      }
+      case TranscodeHardwareAcceleration.Rkmpp: {  filters = this.rkmppFilters(accelDecode, dim, needsScale, tonemap); break;
+      }
+      default: { throw new Error(`${accel} acceleration is unsupported`);
+      }
+    }
+
+    return filters.join(',');
+  }
+
+  private rkmppFilters(accelDecode: boolean, dim: string, needsScale: boolean, tonemap: boolean): string[] {
+    if (tonemap) {
+      const tonemapArgs = `tonemap=${this.options.ffmpeg.tonemap}`;
+      if (this.options.videoInterfaces.mali) {
+        return [
+          `scale_rkrga=${dim}:format=p010:afbc=1:async_depth=4`,
+          'hwmap=derive_device=opencl:mode=read',
+          `tonemap_opencl=format=nv12:r=pc:p=bt709:t=bt709:m=bt709:${tonemapArgs}:desat=0:tonemap_mode=lum:peak=100`,
+          'hwmap=derive_device=rkmpp:mode=write:reverse=1',
+          'format=drm_prime',
+        ];
+      }
+      return [
+        `scale_rkrga=${dim}:format=p010:afbc=1:async_depth=4`,
+        'hwdownload',
+        'format=p010',
+        `tonemapx=${tonemapArgs}:desat=0:p=bt709:t=bt709:m=bt709:r=pc:peak=100:format=yuv420p`,
+        'hwupload',
+      ];
+    }
+    if (needsScale || !accelDecode) {
+      return [`scale_rkrga=${dim}:format=nv12:afbc=1:async_depth=4`];
+    }
+    return [];
+  }
+
+  private getHWEncodeArgs(): string[] {
+    const { qp } = this.options;
+    const encoder = (() => {
+      switch (this.options.ffmpeg.accel) {
+        case TranscodeHardwareAcceleration.Vaapi: {  return 'h264_vaapi';
+        }
+        case TranscodeHardwareAcceleration.Qsv: {    return 'h264_qsv';
+        }
+        case TranscodeHardwareAcceleration.Nvenc: {  return 'h264_nvenc';
+        }
+        case TranscodeHardwareAcceleration.Rkmpp: {  return 'h264_rkmpp';
+        }
+        default: { return 'libx264';
+        }
+      }
+    })();
+
+    const qpArgs = (() => {
+      switch (this.options.ffmpeg.accel) {
+        case TranscodeHardwareAcceleration.Vaapi: {
+          return ['-qp:v', String(qp), '-global_quality:v', String(qp), '-rc_mode', '1'];
+        }
+        case TranscodeHardwareAcceleration.Qsv: {
+          return ['-q:v', String(qp)];
+        }
+        case TranscodeHardwareAcceleration.Nvenc: {
+          return ['-qp', String(qp)];
+        }
+        case TranscodeHardwareAcceleration.Rkmpp: {
+          return ['-rc_mode', 'CQP', '-qp_init', String(qp)];
+        }
+        default: {
+          return ['-qp', String(qp)];
+        }
+      }
+    })();
+
+    const args: string[] = ['-c:v', encoder, '-g', '1', '-bf', '0', '-an', ...qpArgs, '-low_power', '1'];
+
+    // force IDR frames (not just I-frames) — important for HLS byte-range addressability
+    switch (this.options.ffmpeg.accel) {
+      case TranscodeHardwareAcceleration.Vaapi:
+      case TranscodeHardwareAcceleration.Qsv: {
+        args.push('-idr_interval', '0');
+        break;
+      }
+      case TranscodeHardwareAcceleration.Nvenc: {
+        args.push('-forced-idr', '1');
+        break;
+      }
+      // RKMPP and Disabled have no IDR enforcement flag
+      default: {
+        break;
+      }
+    }
+
+    return args;
   }
 }
 
