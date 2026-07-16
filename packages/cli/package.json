@@ -1,6 +1,6 @@
 {
   "name": "@immich/cli",
-  "version": "3.0.0",
+  "version": "3.0.3",
   "description": "Command Line Interface (CLI) for Immich",
   "repository": {
     "type": "git",

@@ -122,9 +122,14 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
         );
       }
 
-      if (videoAsset.hasLocal && videoAsset.livePhotoVideoId == null) {
-        final id = videoAsset is LocalAsset ? videoAsset.id : (videoAsset as RemoteAsset).localId!;
-        final file = await StorageRepository().getFileForAsset(id);
+      // Attempt to retrieve LocalAsset, falling back to remote if it cannot be found
+      final localAsset = await _localPlaybackAsset(videoAsset);
+
+      if (localAsset != null) {
+        final file = localAsset.isMotionPhoto
+            ? await StorageRepository().getMotionFileForAsset(localAsset)
+            : await StorageRepository().getFileForAsset(localAsset.id);
+
         if (!mounted) {
           return null;
         }
@@ -141,20 +146,56 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
         );
       }
 
-      final remoteId = (videoAsset as RemoteAsset).id;
+      final remoteAsset = videoAsset as RemoteAsset;
 
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
       final isOriginalVideo = ref.read(appConfigProvider).viewer.loadOriginalVideo;
       final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
-      final String videoUrl = videoAsset.livePhotoVideoId != null
-          ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
-          : '$serverEndpoint/assets/$remoteId/$postfixUrl';
+      final String assetId = remoteAsset.livePhotoVideoId ?? remoteAsset.id;
+      final String videoUrl = '$serverEndpoint/assets/$assetId/$postfixUrl';
 
       return VideoSource.init(path: videoUrl, type: VideoSourceType.network, headers: ApiService.getRequestHeaders());
     } catch (error) {
       _log.severe('Error creating video source for asset ${videoAsset.name}: $error');
       return null;
     }
+  }
+
+  Future<LocalAsset?> _localPlaybackAsset(BaseAsset baseAsset) async {
+    if (!baseAsset.hasLocal) {
+      return null;
+    }
+
+    LocalAsset? localAsset;
+
+    if (baseAsset is LocalAsset) {
+      localAsset = baseAsset;
+    } else {
+      final localId = (baseAsset as RemoteAsset).localId;
+      localAsset = localId != null ? await ref.read(assetServiceProvider).getLocalAsset(localId) : null;
+    }
+
+    if (localAsset == null) {
+      _log.severe(
+        'Invariant violation: asset ${baseAsset.name} (${baseAsset.localId}) is marked `hasLocal` but local asset could not be retrieved',
+      );
+
+      return null;
+    }
+
+    // Clients (local) may not correctly recognize a given asset as a motion photo. This allows for a scenario where both remote and local
+    // have the same asset (hash), but only the remote properly recognizes it as a motion asset
+    // If this scenario occurs, fall back to using the remote asset
+    if (baseAsset.isMotionPhoto && !localAsset.isMotionPhoto) {
+      // Platform mismatch for motion photo, use remote instead
+      _log.warning(
+        'Mismatched local and remote motion states on ${baseAsset.name} (${baseAsset.localId}), local = ${localAsset.isMotionPhoto}, remote = ${baseAsset.isMotionPhoto}',
+      );
+
+      return null;
+    }
+
+    return localAsset;
   }
 
   void _onPlaybackReady() async {

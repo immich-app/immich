@@ -636,7 +636,7 @@
     </div>
   {/if}
 
-  {#if stack && withStacked && !assetViewerManager.isShowEditor}
+  {#if stack && withStacked && !assetViewerManager.isShowEditor && $slideshowState === SlideshowState.None}
     {@const stackedAssets = stack.assets}
     <div id="stack-slideshow" class="absolute bottom-0 col-span-4 col-start-1 w-fit max-w-full">
       <div class="no-wrap horizontal-scrollbar relative flex flex-row overflow-x-auto overflow-y-hidden">

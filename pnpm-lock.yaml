@@ -21092,21 +21092,21 @@ snapshots:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
 
-  exiftool-vendored.exe@13.59.0: {}
-
-  exiftool-vendored.pl@13.59.0:
+  exiftool-vendored.exe@13.59.0:
     optional: true
+
+  exiftool-vendored.pl@13.59.0: {}
 
   exiftool-vendored@35.21.0:
     dependencies:
       '@photostructure/tz-lookup': 11.5.0
       '@types/luxon': 3.7.1
       batch-cluster: 17.3.1
-      exiftool-vendored.exe: 13.59.0
+      exiftool-vendored.pl: 13.59.0
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
-      exiftool-vendored.pl: 13.59.0
+      exiftool-vendored.exe: 13.59.0
 
   expand-template@2.0.3:
     optional: true

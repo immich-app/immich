@@ -1,0 +1,56 @@
+name: Update F-Droid Repo
+
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+jobs:
+  update-index:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.release.prerelease }}
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout pubspec for versionCode
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          persist-credentials: false
+          sparse-checkout: mobile/pubspec.yaml
+          sparse-checkout-cone-mode: false
+
+      - name: Update F-Droid repo
+        env:
+          GITLAB_TOKEN: ${{ secrets.FDROID_REPO_TOKEN }}
+          RELEASE: ${{ toJSON(github.event.release) }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          VERSION_CODE=$(yq '.version' mobile/pubspec.yaml | cut -d+ -f2)
+          export VERSION_CODE
+
+          NEW_ENTRY=$(yq -P '
+            [.assets[] | select(.name == "app-release.apk")] as $matches |
+            with(select($matches | length == 0); error("app-release.apk not found in release assets")) |
+            {
+              "url": $matches[0].browser_download_url,
+              "sha256sum": ($matches[0].digest | sub("^sha256:", "")),
+              "date": (.published_at | split("T") | .[0]),
+              "version-code": env(VERSION_CODE)
+            } | .date tag= "!!timestamp"
+          ' <<< "$RELEASE")
+          export NEW_ENTRY
+
+          git clone --depth 1 "https://oauth2:${GITLAB_TOKEN}@gitlab.futo.org/fdroid/repo-v2.git" fdroid-repo
+          cd fdroid-repo
+
+          yq -i '
+            with(select([.apks[] | select(."version-code" == env(VERSION_CODE))] | length > 0); error("version-code already in index")) |
+            .apks = [env(NEW_ENTRY)] + .apks
+          ' apps/Immich/index.yml
+
+          git config user.name "Immich Release Bot"
+          git config user.email "bot@immich.app"
+          git commit -am "Immich: add version-code ${VERSION_CODE} (${TAG})"
+          git push

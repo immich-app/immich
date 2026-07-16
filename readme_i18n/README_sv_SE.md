@@ -36,6 +36,7 @@
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_ar_JO.md">العربية</a>
   <a href="README_th_TH.md">ภาษาไทย</a>
+  <a href="README_ml_IN.md">മലയാളം</a>
 </p>
 
 > [!WARNING]
