@@ -20,7 +20,7 @@ import { AssetTable } from 'src/schema/tables/asset.table';
  * per-frame index of this artifact.
  */
 @Table('video_frame_extraction')
-@UpdatedAtTrigger('video_frame_extraction_updated_at')
+@UpdatedAtTrigger('video_frame_extraction_updatedAt')
 export class VideoFrameExtractionTable {
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', primary: true })
   assetId!: string;
