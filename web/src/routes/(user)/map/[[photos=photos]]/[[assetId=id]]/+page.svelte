@@ -69,7 +69,13 @@
             </div>
           {/await}
         {:then { default: Map }}
-          <Map hash onSelect={onViewAssets} {onClusterSelect} />
+          <Map
+            hash
+            onSelect={onViewAssets}
+            {onClusterSelect}
+            isTimelineOpen={isTimelinePanelVisible}
+            onToggleTimeline={() => (isTimelinePanelVisible = !isTimelinePanelVisible)}
+          />
         {/await}
       </div>
 
