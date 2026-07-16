@@ -17,7 +17,7 @@
   import { getAssetMediaUrl, handlePromiseError } from '$lib/utils';
   import { getMapMarkers, type MapMarkerResponseDto } from '@immich/sdk';
   import { Icon, modalManager, Theme, themeManager } from '@immich/ui';
-  import { mdiCog, mdiMap, mdiMapMarker } from '@mdi/js';
+  import { mdiCog, mdiMap, mdiMapMarker, mdiImageMultiple } from '@mdi/js';
   import type { Feature, GeoJsonProperties, Geometry, Point } from 'geojson';
   import { isEqual, omit } from 'lodash-es';
   import { DateTime, Duration } from 'luxon';
@@ -63,6 +63,9 @@
     onClickPoint?: ({ lat, lng }: { lat: number; lng: number }) => void;
     popup?: import('svelte').Snippet<[{ marker: MapMarkerResponseDto }]>;
     rounded?: boolean;
+    isTimelineOpen?: boolean;
+    onToggleTimeline?: () => void;
+    sheetHeight?: number;
     showSimpleControls?: boolean;
     autoFitBounds?: boolean;
   }
@@ -82,6 +85,9 @@
     onClickPoint = () => {},
     popup,
     rounded = false,
+    isTimelineOpen = false,
+    onToggleTimeline,
+    sheetHeight = 50,
     showSimpleControls = true,
     autoFitBounds = true,
   }: Props = $props();
@@ -103,6 +109,9 @@
   let marker: Marker | null = null;
   let abortController: AbortController;
 
+  let innerWidth = $state(1024);
+  let isMobile = $derived(innerWidth < 768);
+
   const mapTheme = $derived($mapSettings.allowDarkMode ? themeManager.value : Theme.Light);
   const styleUrl = $derived(
     mapTheme === Theme.Dark ? serverConfigManager.value.mapDarkStyleUrl : serverConfigManager.value.mapLightStyleUrl,
@@ -118,6 +127,8 @@
       marker = new Marker().setLngLat([lng, lat]).addTo(map);
     }
   }
+
+  void addClipMapMarker;
 
   function handleAssetClick(assetId: string, map: Map | null) {
     if (!map) {
@@ -309,14 +320,33 @@
     untrack(() => map?.jumpTo({ center, zoom }));
   });
 
+  $effect(() => {
+    const currentMap = map;
+    if (!currentMap) {
+      return;
+    }
+
+    if (isMobile && isTimelineOpen) {
+      const bottomPadding = (sheetHeight / 100) * innerHeight;
+      untrack(() => {
+        currentMap.setPadding({ top: 0, left: 0, right: 0, bottom: bottomPadding });
+      });
+    } else {
+      untrack(() => {
+        currentMap.setPadding({ top: 0, left: 0, right: 0, bottom: 0 });
+      });
+    }
+  });
+
   const onAssetsDelete = async () => {
     mapMarkers = await loadMapMarkers();
   };
 </script>
 
+<svelte:window bind:innerWidth />
+
 <OnEvents {onAssetsDelete} />
 
-<!--  We handle style loading ourselves so we set style blank here -->
 <MapLibre
   {hash}
   style=""
@@ -344,6 +374,21 @@
         <GeolocateControl position="top-left" />
         <ScaleControl />
         <AttributionControl compact={false} />
+      {/if}
+
+      {#if onToggleTimeline}
+        <Control position="top-right">
+          <ControlGroup>
+            <ControlButton title={$t('timeline')} onclick={() => onToggleTimeline?.()}>
+              <Icon
+                title={$t('timeline')}
+                icon={mdiImageMultiple}
+                size="100%"
+                class={isTimelineOpen ? 'text-immich-primary dark:text-immich-primary' : 'text-black/80'}
+              />
+            </ControlButton>
+          </ControlGroup>
+        </Control>
       {/if}
     {/if}
 
