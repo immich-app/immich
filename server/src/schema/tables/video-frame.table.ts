@@ -1,4 +1,13 @@
-import { Column, ForeignKeyColumn, Int8, PrimaryColumn, Table } from '@immich/sql-tools';
+import {
+  Column,
+  CreateDateColumn,
+  ForeignKeyColumn,
+  Generated,
+  Int8,
+  PrimaryColumn,
+  Table,
+  Timestamp,
+} from '@immich/sql-tools';
 import { AssetTable } from 'src/schema/tables/asset.table';
 
 /**
@@ -30,4 +39,7 @@ export class VideoFrameTable {
   /** Raw scdet mafd interval-change score for this frame, for future ML "cull" consumers. */
   @Column({ type: 'real' })
   intervalChange!: number;
+
+  @CreateDateColumn()
+  createdAt!: Generated<Timestamp>;
 }

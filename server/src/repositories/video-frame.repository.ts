@@ -28,7 +28,7 @@ export class VideoFrameRepository {
     return this.db
       .insertInto('video_frame_extraction')
       .values({ assetId, ...record })
-      .onConflict((oc) => oc.column('assetId').doUpdateSet({ ...record, updatedAt: new Date() }))
+      .onConflict((oc) => oc.column('assetId').doUpdateSet(record))
       .execute();
   }
 

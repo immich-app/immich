@@ -7,6 +7,7 @@ import {
   Timestamp,
   UpdateDateColumn,
 } from '@immich/sql-tools';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { VideoFrameExtractionStatus } from 'src/enum';
 import { video_frame_extraction_status_enum } from 'src/schema/enums';
 import { AssetTable } from 'src/schema/tables/asset.table';
@@ -19,6 +20,7 @@ import { AssetTable } from 'src/schema/tables/asset.table';
  * per-frame index of this artifact.
  */
 @Table('video_frame_extraction')
+@UpdatedAtTrigger('video_frame_extraction_updated_at')
 export class VideoFrameExtractionTable {
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', primary: true })
   assetId!: string;
@@ -55,4 +57,7 @@ export class VideoFrameExtractionTable {
 
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
+
+  @UpdateIdColumn({ index: true })
+  updateId!: Generated<string>;
 }
