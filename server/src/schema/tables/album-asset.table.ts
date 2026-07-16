@@ -11,6 +11,7 @@ import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { album_asset_delete_audit } from 'src/schema/functions';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
+import { UserTable } from 'src/schema/tables/user.table';
 
 @Table({ name: 'album_asset' })
 @UpdatedAtTrigger('album_asset_updatedAt')
@@ -26,6 +27,9 @@ export class AlbumAssetTable {
 
   @ForeignKeyColumn(() => AssetTable, { onDelete: 'CASCADE', onUpdate: 'CASCADE', nullable: false, primary: true })
   assetId!: string;
+
+  @ForeignKeyColumn(() => UserTable, { onDelete: 'SET NULL', onUpdate: 'CASCADE', nullable: true, index: true })
+  createdById!: string | null;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;
