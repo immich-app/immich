@@ -10,8 +10,8 @@ describe('asDateString', () => {
     expect(asDateString('2000-01-15')).toBe('2000-01-15');
   });
 
-  it('should return the local calendar date, not the UTC date', () => {
-    const date = new Date(2000, 0, 15); // 15 Jan 2000, local midnight
+  it('should return the UTC calendar date, not the local date', () => {
+    const date = new Date('2000-01-15T00:00:00.000Z'); // UTC midnight, as returned for a Postgres `date` column
     expect(asDateString(date)).toBe('2000-01-15');
   });
 
