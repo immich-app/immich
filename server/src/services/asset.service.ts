@@ -143,6 +143,16 @@ export class AssetService extends BaseService {
     } = dto;
     await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids });
 
+    // Snapshot which of these assets are Locked *before* the update -- if visibility is being
+    // changed away from Locked, those are the ones actually leaving the locked state. Any of them
+    // that belong to an album must be detached from it afterward: locking already keeps album
+    // membership exclusive (a Locked asset belongs to at most one album, and only a locked one),
+    // so once an asset is no longer Locked it can never remain a locked album's member.
+    const unlockingAssetIds =
+      visibility !== undefined && visibility !== AssetVisibility.Locked
+        ? await this.assetRepository.getLockedAssetIds(ids)
+        : new Set<string>();
+
     const assetDto = _.omitBy({ isFavorite, visibility, duplicateId }, _.isUndefined);
     const exifDto = _.omitBy(
       {
@@ -171,6 +181,10 @@ export class AssetService extends BaseService {
 
     if (Object.keys(assetDto).length > 0) {
       await this.assetRepository.updateAll(ids, assetDto);
+    }
+
+    if (unlockingAssetIds.size > 0) {
+      await this.albumRepository.removeAssetsFromLockedAlbums([...unlockingAssetIds]);
     }
 
     if (visibility === AssetVisibility.Locked) {

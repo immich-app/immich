@@ -22,12 +22,13 @@ import { handleError } from '$lib/utils/handle-error';
  * Albums General Management
  * -------------------------
  */
-export const createAlbum = async (name?: string, assetIds?: string[]) => {
+export const createAlbum = async (name?: string, assetIds?: string[], isLocked?: boolean) => {
   try {
     const newAlbum: AlbumResponseDto = await sdk.createAlbum({
       createAlbumDto: {
         albumName: name ?? '',
         assetIds,
+        isLocked,
       },
     });
     eventManager.emit('AlbumCreate', newAlbum);

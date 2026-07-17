@@ -7,7 +7,11 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import AlbumEditModal from '$lib/modals/AlbumEditModal.svelte';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
-  import { handleDeleteAlbum, handleDownloadAlbum } from '$lib/services/album.service';
+  import {
+    handleDeleteAlbum,
+    handleDownloadAlbum,
+    redirectIfLockedAndNotElevated,
+  } from '$lib/services/album.service';
   import {
     AlbumFilter,
     AlbumGroupBy,
@@ -204,11 +208,17 @@
 
     switch (action) {
       case 'edit': {
+        if (await redirectIfLockedAndNotElevated(selectedAlbum)) {
+          break;
+        }
         await modalManager.show(AlbumEditModal, { album: selectedAlbum });
         break;
       }
 
       case 'share': {
+        if (await redirectIfLockedAndNotElevated(selectedAlbum)) {
+          break;
+        }
         await modalManager.show(AlbumOptionsModal, { album: selectedAlbum });
         break;
       }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+  import { redirectIfLockedAndNotElevated } from '$lib/services/album.service';
   import { handleError } from '$lib/utils/handle-error';
   import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';
   import { IconButton, modalManager, toastManager } from '@immich/ui';
@@ -17,10 +18,20 @@
   let { album = $bindable(), onRemove, assetIds, menuItem = false }: Props = $props();
 
   const removeFromAlbum = async () => {
+    // Removing from a locked album is a mutation on locked content, same as unlock/delete -- the
+    // server already rejects it without an elevated session, so redirect to the PIN prompt instead
+    // of letting a raw access error surface. Lands back on the album page, no auto-resume: the
+    // user re-triggers the removal themselves once elevated.
+    if (await redirectIfLockedAndNotElevated(album)) {
+      return;
+    }
+
     const ids = assetIds ?? assetMultiSelectManager.assets.map(({ id }) => id) ?? [];
 
     const isConfirmed = await modalManager.showDialog({
-      prompt: $t('remove_assets_album_confirmation', { values: { count: ids.length } }),
+      prompt: $t(album.isLocked ? 'remove_assets_locked_album_confirmation' : 'remove_assets_album_confirmation', {
+        values: { count: ids.length },
+      }),
     });
 
     if (!isConfirmed) {
