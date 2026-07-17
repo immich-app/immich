@@ -18,14 +18,6 @@ type VideoFrameExtractionParameters = {
   gridInterval: number;
 };
 
-/**
- * Generates the shared, per-video frame-extraction artifact described by the "Trickplay" proposal:
- * a single all-intra fMP4 of downsampled, byte-range-addressable frames sampled at a fixed interval,
- * plus a parallel per-frame visual-change score. This artifact is a generic foundation intended to be
- * reused by multiple future features (trickplay/seek-bar previews, video semantic search embeddings,
- * and other frame-based video analysis) rather than being specific to any one of them - see
- * `VideoFrameRepository` for the read-side API those future consumers are expected to build on.
- */
 @Injectable()
 export class VideoFrameService extends BaseService {
   videoInterfaces: VideoInterfaces = { dri: [], mali: false };
@@ -114,7 +106,23 @@ export class VideoFrameService extends BaseService {
       });
 
       try {
-        await this.processRepository.exec('ffmpeg', config.getExtractionCommand(asset.videoStream));
+        await new Promise<void>((resolve, reject) => {
+          const proc = this.processRepository.spawn('ffmpeg', config.getExtractionCommand(asset.videoStream), {
+            stdio: ['ignore', 'ignore', 'pipe'],
+          });
+
+          let stderr = '';
+          proc.stderr!.setEncoding('utf8');
+          proc.stderr!.on('data', (chunk: string) => (stderr += chunk));
+
+          proc.on('error', reject);
+          proc.on('close', (code) => {
+            if (code !== 0) {
+              return reject(new Error(`ffmpeg exited with code ${code}: ${stderr.trim()}`));
+            }
+            resolve();
+          });
+        });
       } catch (error) {
         this.logger.error(`Failed to generate video frames for asset ${asset.id}: ${error}`);
         return this.markFailed(id, parameters, parametersHash);
