@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/utils/upload_speed_calculator.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
 
@@ -185,6 +186,7 @@ class DriftBackupState {
 
 final driftBackupProvider = StateNotifierProvider<DriftBackupNotifier, DriftBackupState>((ref) {
   return DriftBackupNotifier(
+    ref,
     ref.watch(foregroundUploadServiceProvider),
     ref.watch(backgroundUploadServiceProvider),
     UploadSpeedManager(),
@@ -192,7 +194,7 @@ final driftBackupProvider = StateNotifierProvider<DriftBackupNotifier, DriftBack
 });
 
 class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
-  DriftBackupNotifier(this._foregroundUploadService, this._backgroundUploadService, this._uploadSpeedManager)
+  DriftBackupNotifier(this._ref, this._foregroundUploadService, this._backgroundUploadService, this._uploadSpeedManager)
     : super(
         const DriftBackupState(
           totalCount: 0,
@@ -205,6 +207,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
         ),
       );
 
+  final Ref _ref;
   final ForegroundUploadService _foregroundUploadService;
   final BackgroundUploadService _backgroundUploadService;
   final UploadSpeedManager _uploadSpeedManager;
@@ -256,7 +259,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     state = state.copyWith(isSyncing: isSyncing);
   }
 
-  Future<void> startForegroundBackup(String userId) {
+  Future<void> startForegroundBackup(String userId) async {
     // Cancel any existing backup before starting a new one
     if (_cancelToken != null) {
       stopForegroundBackup();
@@ -266,7 +269,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
     _cancelToken = Completer<void>();
 
-    return _foregroundUploadService.uploadCandidates(
+    await _foregroundUploadService.uploadCandidates(
       userId,
       _cancelToken!,
       callbacks: UploadCallbacks(
@@ -276,6 +279,13 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
         onICloudProgress: _handleICloudProgress,
       ),
     );
+
+    // Once the candidate upload completes, sync remote assets so the UI (like Live Photos) updates
+    try {
+      await _ref.read(backgroundSyncProvider).syncRemote();
+    } catch (e, stack) {
+      _logger.warning("Failed to sync remote assets after backup", e, stack);
+    }
   }
 
   void stopForegroundBackup() {
