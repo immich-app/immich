@@ -999,7 +999,6 @@ export class MetadataService extends BaseService {
       this.logger.verbose(`ExifTag ${tag}='${dateTime}' (rawValue='${dateTime.rawValue}'), dateTimeOriginal='${dateTimeOriginal.toISO()}' for asset ${asset.id}: ${asset.originalPath}`);
       if (((exifTags.zone ?? null) == null) && !dateTime.rawValue?.endsWith('Z')) {
         this.logger.debug(`No timezone information found, using configured TZ='${process.env.TZ}' for asset ${asset.id}: ${asset.originalPath}`);
-        dateTimeOriginal = dateTimeOriginal.setZone('UTC', { keepLocalTime: true });
       }
     } else {
       // FileCreateDate is not available on linux, likely because exiftool hasn't integrated the statx syscall yet
