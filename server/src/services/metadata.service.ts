@@ -990,62 +990,30 @@ export class MetadataService extends BaseService {
     exifTags: ImmichTags,
     stats: Stats,
   ) {
+    let dateTimeOriginal: DateTime;
     const result = firstDateTime(exifTags);
     const tag = result?.tag;
     const dateTime = result?.dateTime;
     if (dateTime) {
-      this.logger.verbose(
-        `Date and time is ${dateTime} using exifTag ${tag} for asset ${asset.id}: ${asset.originalPath}`,
-      );
+      dateTimeOriginal = dateTime.toDateTime();
+      this.logger.verbose(`ExifTag ${tag}='${dateTime}' (rawValue='${dateTime.rawValue}'), dateTimeOriginal='${dateTimeOriginal.toISO()}' for asset ${asset.id}: ${asset.originalPath}`);
+      if (((exifTags.zone ?? null) == null) && !dateTime.rawValue?.endsWith('Z')) {
+        this.logger.debug(`No timezone information found, using configured TZ='${process.env.TZ}' for asset ${asset.id}: ${asset.originalPath}`);
+        dateTimeOriginal = dateTimeOriginal.setZone('UTC', { keepLocalTime: true });
+      }
     } else {
-      this.logger.verbose(`No exif date time information found for asset ${asset.id}: ${asset.originalPath}`);
-    }
-
-    // timezone
-    let timeZone = exifTags.zone ?? null;
-    if (timeZone == null && (dateTime?.rawValue?.endsWith('Z') || dateTime?.rawValue?.endsWith('+00:00'))) {
-      // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
-      // https://github.com/photostructure/exiftool-vendored.js/issues/203
-      timeZone = 'UTC+0';
-    }
-
-    if (timeZone) {
-      this.logger.verbose(
-        `Found timezone ${timeZone} via ${exifTags.zoneSource} for asset ${asset.id}: ${asset.originalPath}`,
-      );
-    } else {
-      this.logger.debug(`No timezone information found for asset ${asset.id}: ${asset.originalPath}`);
-    }
-
-    let dateTimeOriginal = dateTime?.toDateTime();
-
-    // do not let JavaScript use local timezone
-    if (dateTimeOriginal && !dateTime?.hasZone) {
-      dateTimeOriginal = dateTimeOriginal.setZone('UTC', { keepLocalTime: true });
-    }
-
-    // align with whatever timeZone we chose
-    dateTimeOriginal = dateTimeOriginal?.setZone(timeZone ?? 'UTC');
-
-    // store as "local time"
-    let localDateTime = dateTimeOriginal?.setZone('UTC', { keepLocalTime: true });
-
-    if (!localDateTime || !dateTimeOriginal) {
       // FileCreateDate is not available on linux, likely because exiftool hasn't integrated the statx syscall yet
       // birthtime is not available in Docker on macOS, so it appears as 0
-      const earliestDate = DateTime.fromMillis(
-        Math.min(
-          asset.fileCreatedAt.getTime(),
-          stats.birthtimeMs ? Math.min(stats.mtimeMs, stats.birthtimeMs) : stats.mtime.getTime(),
-        ),
-      );
-      this.logger.debug(
-        `No exif date time found, falling back on ${earliestDate.toISO()}, earliest of file creation and modification for asset ${asset.id}: ${asset.originalPath}`,
-      );
-      dateTimeOriginal = localDateTime = earliestDate;
+      dateTimeOriginal = DateTime.fromMillis(Math.min(asset.fileCreatedAt.getTime(), stats.birthtimeMs ? Math.min(stats.mtimeMs, stats.birthtimeMs) : stats.mtime.getTime()));
+      this.logger.verbose(`Earliest dateTimeOriginal='${dateTimeOriginal.toISO()}' for asset ${asset.id}: ${asset.originalPath}`);
     }
 
-    this.logger.verbose(`Found local date time ${localDateTime.toISO()} for asset ${asset.id}: ${asset.originalPath}`);
+    // extract timeZone from dateTimeOriginal
+    const timeZone = `UTC${dateTimeOriginal.toFormat('ZZ')}`;
+
+    // store as "local time"
+    const localDateTime = dateTimeOriginal.setZone('UTC', { keepLocalTime: true });
+    this.logger.debug(`Found localDateTime='${localDateTime.toISO()}' and timeZone='${timeZone}' for asset ${asset.id}: ${asset.originalPath}`);
 
     return {
       timeZone,
