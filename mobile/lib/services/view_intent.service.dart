@@ -26,12 +26,11 @@ class ViewIntentService {
   }
 
   Future<void> setManagedTempFilePath(String path) async {
-    final normalizedPath = _normalizePath(path);
     final previous = _managedTempFilePath;
-    if (previous == normalizedPath) {
+    if (previous == path) {
       return;
     }
-    _managedTempFilePath = normalizedPath;
+    _managedTempFilePath = path;
     if (previous != null) {
       await cleanupTempFile(previous);
     }
@@ -46,24 +45,22 @@ class ViewIntentService {
   }
 
   Future<void> cleanupManagedTempFileIfCurrent(String path) async {
-    final normalizedPath = _normalizePath(path);
-    if (_managedTempFilePath == normalizedPath) {
+    if (_managedTempFilePath == path) {
       _managedTempFilePath = null;
     }
-    await cleanupTempFile(normalizedPath);
+    await cleanupTempFile(path);
   }
 
   Future<void> cleanupTempFile(String path) async {
-    final normalizedPath = _normalizePath(path);
-    if (!_isManagedTempFile(normalizedPath)) {
+    if (!_isManagedTempFile(path)) {
       return;
     }
-    if (_activeUploadPaths.contains(normalizedPath)) {
+    if (_activeUploadPaths.contains(path)) {
       return;
     }
 
     try {
-      final file = File(normalizedPath);
+      final file = File(path);
       if (await file.exists()) {
         await file.delete();
       }
@@ -80,7 +77,7 @@ class ViewIntentService {
           continue;
         }
 
-        final path = _normalizePath(entity.path);
+        final path = entity.path;
         if (!_isManagedTempFile(path) || path == _managedTempFilePath || _activeUploadPaths.contains(path)) {
           continue;
         }
@@ -93,22 +90,19 @@ class ViewIntentService {
   }
 
   void markUploadActive(String path) {
-    _activeUploadPaths.add(_normalizePath(path));
+    _activeUploadPaths.add(path);
   }
 
   Future<void> markUploadInactive(String path) async {
-    final normalizedPath = _normalizePath(path);
-    if (!_activeUploadPaths.remove(normalizedPath)) {
+    if (!_activeUploadPaths.remove(path)) {
       return;
     }
-    if (_managedTempFilePath != normalizedPath) {
-      await cleanupTempFile(normalizedPath);
+    if (_managedTempFilePath != path) {
+      await cleanupTempFile(path);
     }
   }
 
   bool _isManagedTempFile(String path) {
     return p.basename(path).startsWith('view_intent_') && p.basename(p.dirname(path)) == 'cache';
   }
-
-  String _normalizePath(String path) => p.normalize(path);
 }
