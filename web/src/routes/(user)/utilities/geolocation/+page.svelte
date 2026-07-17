@@ -11,6 +11,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import GeolocationPointPickerModal from '$lib/modals/GeolocationPointPickerModal.svelte';
   import GeolocationUpdateConfirmModal from '$lib/modals/GeolocationUpdateConfirmModal.svelte';
+  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import type { LatLng } from '$lib/types';
   import { setQueryValue } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -38,6 +39,8 @@
     withCoordinates: true,
   };
 
+  const isOwnAsset = (asset: TimelineAsset) => asset.ownerId === authManager.user.id;
+
   const handleUpdate = async () => {
     if (!point) {
       return;
@@ -54,7 +57,7 @@
 
     await updateAssets({
       assetBulkUpdateDto: {
-        ids: assetMultiSelectManager.assets.map((asset) => asset.id),
+        ids: assetMultiSelectManager.assets.filter((asset) => isOwnAsset(asset)).map((asset) => asset.id),
         latitude: point.lat,
         longitude: point.lng,
       },
@@ -117,14 +120,16 @@
       asset: TimelineAsset,
     ) => void,
   ) => {
-    if (hasGps(asset)) {
+    if (keyboardManager.shift) {
+      onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
+    } else if (hasGps(asset)) {
       locationUpdated = true;
       setTimeout(() => {
         locationUpdated = false;
       }, 1500);
       point = { lat: asset.latitude, lng: asset.longitude };
       void setQueryValue('at', asset.id);
-    } else {
+    } else if (isOwnAsset(asset)) {
       onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
     }
   };
@@ -199,6 +204,9 @@
     onThumbnailClick={handleThumbnailClick}
   >
     {#snippet customThumbnailLayout(asset: TimelineAsset)}
+      {#if !isOwnAsset(asset)}
+        <div class="pointer-events-none absolute inset-0 rounded-sm bg-black/40"></div>
+      {/if}
       {#if hasGps(asset)}
         <div class="absolute inset-e-3 bottom-1 rounded-xl bg-success px-4 py-1 text-xs text-black transition-colors">
           {asset.city || $t('gps')}

@@ -30,7 +30,7 @@
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      await goto(data.continueUrl);
+      await goto(Route.continue(data.continueUrl, Route.photos()));
     } catch (error) {
       handleError(error, $t('wrong_pin_code'));
       isBadPinCode = true;

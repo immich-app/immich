@@ -1,9 +1,9 @@
 import 'package:collection/collection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/models/config/system_config.dart';
+import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
 import 'package:logging/logging.dart';
@@ -29,23 +29,23 @@ final _kWarnLog = LogMessage(
 void main() {
   late LogService sut;
   late LogRepository mockLogRepo;
-  late MockMetadataRepository mockMetadataRepository;
+  late MockSettingsRepository mockSettingsRepository;
 
   setUp(() async {
     mockLogRepo = MockLogRepository();
-    mockMetadataRepository = MockMetadataRepository();
+    mockSettingsRepository = MockSettingsRepository();
 
     registerFallbackValue(_kInfoLog);
     registerFallbackValue(LogLevel.info);
 
     when(() => mockLogRepo.truncate(limit: any(named: 'limit'))).thenAnswer((_) async => {});
-    when(() => mockMetadataRepository.systemConfig).thenReturn(const SystemConfig(logLevel: LogLevel.fine));
-    when(() => mockMetadataRepository.write<LogLevel, LogLevel>(MetadataKey.logLevel, any())).thenAnswer((_) async {});
+    when(() => mockSettingsRepository.appConfig).thenReturn(const AppConfig(logLevel: LogLevel.fine));
+    when(() => mockSettingsRepository.write<LogLevel, LogLevel>(SettingsKey.logLevel, any())).thenAnswer((_) async {});
     when(() => mockLogRepo.getAll()).thenAnswer((_) async => []);
     when(() => mockLogRepo.insert(any())).thenAnswer((_) async => true);
     when(() => mockLogRepo.insertAll(any())).thenAnswer((_) async => true);
 
-    sut = await LogService.create(logRepository: mockLogRepo, metadataRepository: mockMetadataRepository);
+    sut = await LogService.create(logRepository: mockLogRepo, settingsRepository: mockSettingsRepository);
   });
 
   tearDown(() async {
@@ -59,7 +59,7 @@ void main() {
     });
 
     test('Sets log level based on the metadata repository', () {
-      verify(() => mockMetadataRepository.systemConfig).called(1);
+      verify(() => mockSettingsRepository.appConfig).called(1);
       expect(Logger.root.level, Level.FINE);
     });
   });
@@ -71,7 +71,7 @@ void main() {
 
     test('Updates the log level via metadata repository', () {
       final captured = verify(
-        () => mockMetadataRepository.write<LogLevel, LogLevel>(MetadataKey.logLevel, captureAny()),
+        () => mockSettingsRepository.write<LogLevel, LogLevel>(SettingsKey.logLevel, captureAny()),
       ).captured.firstOrNull;
       expect(captured, LogLevel.shout);
     });
@@ -86,7 +86,7 @@ void main() {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
           logRepository: mockLogRepo,
-          metadataRepository: mockMetadataRepository,
+          settingsRepository: mockSettingsRepository,
           shouldBuffer: true,
         );
 
@@ -104,7 +104,7 @@ void main() {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
           logRepository: mockLogRepo,
-          metadataRepository: mockMetadataRepository,
+          settingsRepository: mockSettingsRepository,
           shouldBuffer: true,
         );
 
@@ -125,7 +125,7 @@ void main() {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
           logRepository: mockLogRepo,
-          metadataRepository: mockMetadataRepository,
+          settingsRepository: mockSettingsRepository,
           shouldBuffer: false,
         );
 
@@ -159,7 +159,7 @@ void main() {
       TestUtils.fakeAsync((time) async {
         sut = await LogService.create(
           logRepository: mockLogRepo,
-          metadataRepository: mockMetadataRepository,
+          settingsRepository: mockSettingsRepository,
           shouldBuffer: true,
         );
 

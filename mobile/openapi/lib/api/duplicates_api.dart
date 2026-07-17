@@ -25,7 +25,7 @@ class DuplicatesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteDuplicateWithHttpInfo(String id,) async {
+  Future<Response> deleteDuplicateWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/duplicates/{id}'
       .replaceAll('{id}', id);
@@ -48,6 +48,7 @@ class DuplicatesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -58,8 +59,8 @@ class DuplicatesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteDuplicate(String id,) async {
-    final response = await deleteDuplicateWithHttpInfo(id,);
+  Future<void> deleteDuplicate(String id, { Future<void>? abortTrigger, }) async {
+    final response = await deleteDuplicateWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -74,7 +75,7 @@ class DuplicatesApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<Response> deleteDuplicatesWithHttpInfo(BulkIdsDto bulkIdsDto,) async {
+  Future<Response> deleteDuplicatesWithHttpInfo(BulkIdsDto bulkIdsDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/duplicates';
 
@@ -96,6 +97,7 @@ class DuplicatesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -106,8 +108,8 @@ class DuplicatesApi {
   /// Parameters:
   ///
   /// * [BulkIdsDto] bulkIdsDto (required):
-  Future<void> deleteDuplicates(BulkIdsDto bulkIdsDto,) async {
-    final response = await deleteDuplicatesWithHttpInfo(bulkIdsDto,);
+  Future<void> deleteDuplicates(BulkIdsDto bulkIdsDto, { Future<void>? abortTrigger, }) async {
+    final response = await deleteDuplicatesWithHttpInfo(bulkIdsDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -118,7 +120,7 @@ class DuplicatesApi {
   /// Retrieve a list of duplicate assets available to the authenticated user.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getAssetDuplicatesWithHttpInfo() async {
+  Future<Response> getAssetDuplicatesWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/duplicates';
 
@@ -140,14 +142,15 @@ class DuplicatesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve duplicates
   ///
   /// Retrieve a list of duplicate assets available to the authenticated user.
-  Future<List<DuplicateResponseDto>?> getAssetDuplicates() async {
-    final response = await getAssetDuplicatesWithHttpInfo();
+  Future<List<DuplicateResponseDto>?> getAssetDuplicates({ Future<void>? abortTrigger, }) async {
+    final response = await getAssetDuplicatesWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -173,7 +176,7 @@ class DuplicatesApi {
   /// Parameters:
   ///
   /// * [DuplicateResolveDto] duplicateResolveDto (required):
-  Future<Response> resolveDuplicatesWithHttpInfo(DuplicateResolveDto duplicateResolveDto,) async {
+  Future<Response> resolveDuplicatesWithHttpInfo(DuplicateResolveDto duplicateResolveDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/duplicates/resolve';
 
@@ -195,6 +198,7 @@ class DuplicatesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -205,8 +209,8 @@ class DuplicatesApi {
   /// Parameters:
   ///
   /// * [DuplicateResolveDto] duplicateResolveDto (required):
-  Future<List<BulkIdResponseDto>?> resolveDuplicates(DuplicateResolveDto duplicateResolveDto,) async {
-    final response = await resolveDuplicatesWithHttpInfo(duplicateResolveDto,);
+  Future<List<BulkIdResponseDto>?> resolveDuplicates(DuplicateResolveDto duplicateResolveDto, { Future<void>? abortTrigger, }) async {
+    final response = await resolveDuplicatesWithHttpInfo(duplicateResolveDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

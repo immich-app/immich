@@ -9,6 +9,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_bu
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 
 /// This delete action has the following behavior:
 /// - Prompt to delete the asset locally
@@ -38,6 +39,8 @@ class DeleteLocalActionButton extends ConsumerWidget {
     if (result.count == 0) {
       return;
     }
+
+    ref.invalidate(localAlbumProvider);
 
     final successMessage = 'delete_local_action_prompt'.t(context: context, args: {'count': result.count.toString()});
 

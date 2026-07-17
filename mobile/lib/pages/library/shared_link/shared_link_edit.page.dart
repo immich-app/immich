@@ -11,6 +11,7 @@ import 'package:immich_mobile/models/shared_link/shared_link.model.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/shared_link.provider.dart';
 import 'package:immich_mobile/services/shared_link.service.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -131,10 +132,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
         textInputAction: TextInputAction.done,
         autofocus: false,
         decoration: InputDecoration(
-          labelText: slugController.text.isNotEmpty ? context.t.custom_url : null,
+          labelText: slugController.text.isNotEmpty ? context.t.shared_link_custom_url_title : null,
           labelStyle: const TextStyle(fontWeight: FontWeight.bold),
           border: const OutlineInputBorder(),
-          hintText: context.t.custom_url,
+          hintText: context.t.shared_link_custom_url_title,
           prefixText: slugController.text.isNotEmpty ? '/s/' : null,
           prefixStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
         ),
@@ -365,11 +366,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
       bool? download;
       bool? upload;
       bool? meta;
-      String? desc;
-      String? password;
+      var password = const Option<String?>.none();
+      var description = const Option<String?>.none();
       String? slug;
-      DateTime? expiry;
-      bool? changeExpiry;
+      var expiry = const Option<DateTime?>.none();
 
       if (allowDownload.value != existingLink!.allowDownload) {
         download = allowDownload.value;
@@ -383,12 +383,14 @@ class SharedLinkEditPage extends HookConsumerWidget {
         meta = showMetadata.value;
       }
 
-      if (descriptionController.text != existingLink!.description) {
-        desc = descriptionController.text;
+      if (descriptionController.text != (existingLink!.description ?? '')) {
+        description = descriptionController.text.isEmpty
+            ? const Option.some(null)
+            : Option.some(descriptionController.text);
       }
 
-      if (passwordController.text != existingLink!.password) {
-        password = passwordController.text;
+      if (passwordController.text != (existingLink!.password ?? '')) {
+        password = passwordController.text.isEmpty ? const Option.some(null) : Option.some(passwordController.text);
       }
 
       if (slugController.text != (existingLink!.slug ?? "")) {
@@ -399,8 +401,7 @@ class SharedLinkEditPage extends HookConsumerWidget {
 
       final newExpiry = expiryAfter.value;
       if (newExpiry?.toUtc() != existingLink!.expiresAt?.toUtc()) {
-        expiry = newExpiry;
-        changeExpiry = true;
+        expiry = newExpiry == null ? const Option.some(null) : Option.some(newExpiry.toUtc());
       }
 
       await ref
@@ -410,11 +411,10 @@ class SharedLinkEditPage extends HookConsumerWidget {
             showMeta: meta,
             allowDownload: download,
             allowUpload: upload,
-            description: desc,
+            description: description,
             password: password,
             slug: slug,
-            expiresAt: expiry?.toUtc(),
-            changeExpiry: changeExpiry,
+            expiresAt: expiry,
           );
       if (!context.mounted) {
         return;

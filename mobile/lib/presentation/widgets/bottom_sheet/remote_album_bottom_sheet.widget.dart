@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/favorite.action.dart';
+import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
@@ -21,7 +22,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_b
 import 'package:immich_mobile/presentation/widgets/action_buttons/unstack_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -56,34 +57,36 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
     final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
     final ownsAlbum = ref.watch(currentUserProvider)?.id == widget.album.ownerId;
 
-    Future<void> addAssetsToAlbum(RemoteAlbum album) async {
-      final selectedAssets = multiselect.selectedAssets;
-      if (selectedAssets.isEmpty) {
+    Future<void> addToAlbum(RemoteAlbum album) async {
+      final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.timeline, album);
+
+      if (!context.mounted) {
         return;
       }
 
-      final addedCount = await ref
-          .read(remoteAlbumProvider.notifier)
-          .addAssets(album.id, selectedAssets.map((e) => (e as RemoteAsset).id).toList());
-
-      if (addedCount != selectedAssets.length) {
+      if (!result.success) {
         ImmichToast.show(
           context: context,
-          msg: 'add_to_album_bottom_sheet_already_exists'.t(context: context, args: {"album": album.name}),
+          msg: 'scaffold_body_error_occurred'.t(context: context),
+          toastType: ToastType.error,
         );
-      } else {
-        ImmichToast.show(
-          context: context,
-          msg: 'add_to_album_bottom_sheet_added'.t(context: context, args: {"album": album.name}),
-        );
+        return;
       }
 
-      ref.read(multiSelectProvider.notifier).reset();
+      ImmichToast.show(
+        context: context,
+        msg: result.count == 0
+            ? 'add_to_album_bottom_sheet_already_exists'.t(context: context, args: {"album": album.name})
+            : 'add_to_album_bottom_sheet_added'.t(context: context, args: {"album": album.name}),
+      );
     }
 
     Future<void> onKeyboardExpand() {
       return sheetController.animateTo(0.85, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
     }
+
+    final assets = multiselect.selectedAssets.toList(growable: false);
+    final actions = [FavoriteAction(assets: assets)];
 
     return BaseBottomSheet(
       controller: sheetController,
@@ -98,7 +101,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
 
           if (ownsAlbum) ...[
             const ArchiveActionButton(source: ActionSource.timeline),
-            const FavoriteActionButton(source: ActionSource.timeline),
+            ...actions.map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
           ],
           const DownloadActionButton(source: ActionSource.timeline),
           if (ownsAlbum) ...[
@@ -118,10 +121,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
           SetAlbumCoverActionButton(source: ActionSource.timeline, albumId: widget.album.id),
       ],
       slivers: ownsAlbum
-          ? [
-              const AddToAlbumHeader(),
-              AlbumSelector(onAlbumSelected: addAssetsToAlbum, onKeyboardExpanded: onKeyboardExpand),
-            ]
+          ? [const AddToAlbumHeader(), AlbumSelector(onAlbumSelected: addToAlbum, onKeyboardExpanded: onKeyboardExpand)]
           : null,
     );
   }

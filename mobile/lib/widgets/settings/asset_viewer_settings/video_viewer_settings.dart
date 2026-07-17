@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
@@ -17,13 +17,13 @@ class VideoViewerSettings extends HookConsumerWidget {
     final useOriginalVideo = useState(viewer.loadOriginalVideo);
 
     useValueChanged<bool, void>(useAutoPlayVideo.value, (_, __) {
-      ref.read(metadataProvider).write(.viewerAutoPlayVideo, useAutoPlayVideo.value);
+      ref.read(settingsProvider).write(.viewerAutoPlayVideo, useAutoPlayVideo.value);
     });
     useValueChanged<bool, void>(useLoopVideo.value, (_, __) {
-      ref.read(metadataProvider).write(.viewerLoopVideo, useLoopVideo.value);
+      ref.read(settingsProvider).write(.viewerLoopVideo, useLoopVideo.value);
     });
     useValueChanged<bool, void>(useOriginalVideo.value, (_, __) {
-      ref.read(metadataProvider).write(.viewerLoadOriginalVideo, useOriginalVideo.value);
+      ref.read(settingsProvider).write(.viewerLoadOriginalVideo, useOriginalVideo.value);
     });
 
     return Column(

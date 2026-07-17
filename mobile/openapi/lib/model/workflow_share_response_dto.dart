@@ -53,12 +53,12 @@ class WorkflowShareResponseDto {
     if (this.description != null) {
       json[r'description'] = this.description;
     } else {
-    //  json[r'description'] = null;
+      json[r'description'] = null;
     }
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
-    //  json[r'name'] = null;
+      json[r'name'] = null;
     }
       json[r'steps'] = this.steps;
       json[r'trigger'] = this.trigger;

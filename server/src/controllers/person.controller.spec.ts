@@ -53,16 +53,6 @@ describe(PersonController.name, () => {
       await request(ctx.getHttpServer()).post('/people');
       expect(ctx.authenticate).toHaveBeenCalled();
     });
-
-    it('should map an empty birthDate to null', async () => {
-      await request(ctx.getHttpServer()).post('/people').send({ birthDate: '' });
-      expect(service.create).toHaveBeenCalledWith(undefined, { birthDate: null });
-    });
-
-    it('should map an empty color to null', async () => {
-      await request(ctx.getHttpServer()).post('/people').send({ color: '' });
-      expect(service.create).toHaveBeenCalledWith(undefined, { color: null });
-    });
   });
 
   describe('DELETE /people', () => {
@@ -151,12 +141,6 @@ describe(PersonController.name, () => {
       expect(body).toEqual(
         errorDto.validationError([{ path: ['isHidden'], message: 'Invalid input: expected boolean, received string' }]),
       );
-    });
-
-    it('should map an empty birthDate to null', async () => {
-      const id = factory.uuid();
-      await request(ctx.getHttpServer()).put(`/people/${id}`).send({ birthDate: '' });
-      expect(service.update).toHaveBeenCalledWith(undefined, id, { birthDate: null });
     });
 
     it('should not accept an invalid birth date (false)', async () => {

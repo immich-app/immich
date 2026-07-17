@@ -1,4 +1,5 @@
-import { ArgumentMetadata, FileValidator, Injectable, ParseUUIDPipe } from '@nestjs/common';
+import { FileValidator, Injectable } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
 import { isIP, isIPRange } from 'validator';
@@ -75,16 +76,6 @@ export function IsNotSiblingOf<
 }
 
 @Injectable()
-export class ParseMeUUIDPipe extends ParseUUIDPipe {
-  async transform(value: string, metadata: ArgumentMetadata) {
-    if (value == 'me') {
-      return value;
-    }
-    return super.transform(value, metadata);
-  }
-}
-
-@Injectable()
 export class FileNotEmptyValidator extends FileValidator {
   constructor(private requiredFields: string[]) {
     super({});
@@ -110,6 +101,12 @@ const UUIDParamSchema = z.object({
 
 export class UUIDParamDto extends createZodDto(UUIDParamSchema) {}
 
+const UUIDv7ParamSchema = z.object({
+  id: z.uuidv7(),
+});
+
+export class UUIDv7ParamDto extends createZodDto(UUIDv7ParamSchema) {}
+
 const UUIDAssetIDParamSchema = z.object({
   id: z.uuidv4(),
   assetId: z.uuidv4(),
@@ -124,11 +121,6 @@ const FilenameParamSchema = z.object({
 });
 
 export class FilenameParamDto extends createZodDto(FilenameParamSchema) {}
-
-export const isValidInteger = (value: number, options: { min?: number; max?: number }): value is number => {
-  const { min = Number.MIN_SAFE_INTEGER, max = Number.MAX_SAFE_INTEGER } = options;
-  return Number.isInteger(value) && value >= min && value <= max;
-};
 
 /**
  * Unified email validation
@@ -150,6 +142,7 @@ export const isoDatetimeToDate = z
   .codec(
     z.iso.datetime({
       error: (iss) => `Invalid input: expected ISO 8601 datetime string, received ${typeof iss.input}`,
+      offset: true,
     }),
     z.date(),
     {
@@ -171,14 +164,10 @@ export const isoDateToDate = z
     z.date(),
     {
       decode: (isoString) => new Date(isoString),
-      encode: (date) => date.toISOString().slice(0, 10),
+      encode: (date) => DateTime.fromJSDate(date).toFormat('yyyy-MM-dd'),
     },
   )
   .meta({ example: '2024-01-01' });
-
-export const isValidTime = z
-  .string()
-  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Invalid input: expected string in HH:mm format, received string');
 
 /**
  * Latitude in range [-90, 90]. Reuse for body or query params.
@@ -250,17 +239,5 @@ export const hexColor = z
   .string()
   .regex(hexColorRegex)
   .transform((val) => (val.startsWith('#') ? val : `#${val}`));
-
-/**
- * Transform empty strings to null. Inner schema passed to this function must accept null.
- * @docs https://zod.dev/api?id=preprocess
- * @example emptyStringToNull(z.string().nullable()).optional() // [encouraged] final schema is optional
- * @example emptyStringToNull(z.string().nullable()) // [encouraged] same as the one above, but final schema is not optional
- * @example emptyStringToNull(z.string().nullish()) // [discouraged] same as the one above, might be confusing
- * @example emptyStringToNull(z.string().optional()) // fails: string schema rejects null
- * @example emptyStringToNull(z.string().nullable()).nullish() // [discouraged] passes, null is duplicated. use the first example instead
- */
-export const emptyStringToNull = <T extends z.ZodTypeAny>(schema: T) =>
-  z.preprocess((val) => (val === '' ? null : val), schema);
 
 export const sanitizeFilename = z.string().transform((val) => sanitize(val.replaceAll('.', '')));

@@ -17,7 +17,7 @@
   const onSubmit = () => onClose(selected);
 </script>
 
-<FormModal title={$t('trigger')} {onClose} {onSubmit} size="small">
+<FormModal title={$t('trigger')} {onClose} {onSubmit} size="medium">
   <div class="flex flex-col gap-2">
     {#each pluginManager.triggers as item (item.trigger)}
       <ListButton selected={selected === item.trigger} onclick={() => (selected = item.trigger)}>

@@ -38,7 +38,6 @@
     Control,
     ControlButton,
     ControlGroup,
-    FullscreenControl,
     GeoJSON,
     GeolocateControl,
     MapLibre,
@@ -208,13 +207,13 @@
     if (relativeDate) {
       const duration = Duration.fromISO(relativeDate);
       return {
-        fileCreatedAfter: duration.isValid ? DateTime.now().minus(duration).toISO() : undefined,
+        fileCreatedAfter: duration.isValid ? DateTime.now().minus(duration).toUTC().toISO() : undefined,
       };
     }
 
     return {
-      fileCreatedAfter: dateAfter?.toUTC().toISO(),
-      fileCreatedBefore: dateBefore?.toUTC().toISO(),
+      fileCreatedAfter: dateAfter,
+      fileCreatedBefore: dateBefore,
     };
   }
 
@@ -243,7 +242,7 @@
   }
 
   const handleSettingsClick = async () => {
-    const settings = await modalManager.show(MapSettingsModal, { settings: { ...$mapSettings } });
+    const settings = await modalManager.show(MapSettingsModal);
     if (settings) {
       const shouldUpdate = !isEqual(omit(settings, 'allowDarkMode'), omit($mapSettings, 'allowDarkMode'));
       $mapSettings = settings;
@@ -310,12 +309,12 @@
     untrack(() => map?.jumpTo({ center, zoom }));
   });
 
-  const onAssetsDelete = async () => {
+  const onAssetsChanged = async () => {
     mapMarkers = await loadMapMarkers();
   };
 </script>
 
-<OnEvents {onAssetsDelete} />
+<OnEvents onAssetsDelete={onAssetsChanged} onAssetsArchive={onAssetsChanged} onAssetsUnarchive={onAssetsChanged} />
 
 <!--  We handle style loading ourselves so we set style blank here -->
 <MapLibre
@@ -343,7 +342,6 @@
 
       {#if !simplified}
         <GeolocateControl position="top-left" />
-        <FullscreenControl position="top-left" />
         <ScaleControl />
         <AttributionControl compact={false} />
       {/if}
@@ -401,13 +399,13 @@
       >
         {#snippet children({ feature }: { feature: Feature })}
           {#if useLocationPin}
-            <Icon icon={mdiMapMarker} size="50px" class="translate-y-[-50%] text-primary" />
+            <Icon icon={mdiMapMarker} size="50px" class="translate-y-[calc(5px-50%)] text-primary" />
           {:else}
             <img
               src={getAssetMediaUrl({ id: feature.properties?.id })}
               class="size-15 rounded-full border-2 border-immich-primary bg-immich-primary object-cover shadow-lg transition-all duration-200 hover:scale-150 hover:border-immich-dark-primary"
               alt={feature.properties?.city && feature.properties.country
-                ? $t('map_marker_for_images', {
+                ? $t('map_marker_for_image', {
                     values: { city: feature.properties.city, country: feature.properties.country },
                   })
                 : $t('map_marker_with_image')}
@@ -415,7 +413,7 @@
           {/if}
           {#if popup}
             <Popup offset={[0, -30]} openOn="click" closeOnClickOutside>
-              {@render popup?.({ marker: asMarker(feature) })}
+              {@render popup({ marker: asMarker(feature) })}
             </Popup>
           {/if}
         {/snippet}

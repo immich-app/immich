@@ -91,7 +91,7 @@
 
   <Breadcrumbs node={tag} icon={mdiTagMultiple} title={$t('tags')} {getLink} />
 
-  <section class="mt-2 h-[calc(100%-(--spacing(20)))] overflow-auto immich-scrollbar">
+  <section class="mt-2 h-[calc(100%-(--spacing(20)))] immich-scrollbar overflow-auto">
     {#if tag.hasAssets}
       <Timeline
         enableRouting={true}

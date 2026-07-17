@@ -1,11 +1,20 @@
 import { HttpException } from '@nestjs/common';
+import { Request } from 'express';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
-export const logGlobalError = (logger: LoggingRepository, error: Error) => {
-  if (error instanceof HttpException) {
+const isRequestAborted = (request: Request) => request.destroyed === true && request.complete === false;
+export const isHttpException = (error: Error): error is HttpException => error instanceof HttpException;
+
+export const onRequestError = (req: Request, error: Error, logger: LoggingRepository) => {
+  if (isHttpException(error)) {
     const status = error.getStatus();
     const response = error.getResponse();
     logger.debug(`HttpException(${status}): ${JSON.stringify(response)}`);
+    return;
+  }
+
+  if (isRequestAborted(req)) {
+    logger.debug(`Client aborted request: ${error}`);
     return;
   }
 

@@ -6,7 +6,7 @@
   import { mdiStar, mdiStarOutline } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  export type Rating = 1 | 2 | 3 | 4 | 5 | null;
+  export type Rating = -1 | 1 | 2 | 3 | 4 | 5 | null;
 
   interface Props {
     count?: number;
@@ -33,6 +33,7 @@
       return;
     }
 
+    ratingSelection = newRating;
     onRating(newRating);
   };
 
@@ -70,7 +71,7 @@
   <div class="flex flex-row" data-testid="star-container">
     {#each { length: count } as _, index (index)}
       {@const value = index + 1}
-      {@const filled = hoverRating === null ? (ratingSelection || 0) >= value : hoverRating >= value}
+      {@const filled = hoverRating === null ? (ratingSelection ?? 0) >= value : hoverRating >= value}
       {@const starId = `${id}-${value}`}
       <!-- svelte-ignore a11y_mouse_events_have_key_events -->
       <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -102,14 +103,7 @@
   </div>
 </fieldset>
 {#if ratingSelection !== null && !readOnly}
-  <button
-    type="button"
-    onclick={() => {
-      ratingSelection = null;
-      handleSelect(ratingSelection);
-    }}
-    class="cursor-pointer text-xs text-primary"
-  >
+  <button type="button" onclick={() => handleSelect(null)} class="cursor-pointer text-xs text-primary">
     {$t('rating_clear')}
   </button>
 {/if}

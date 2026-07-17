@@ -67,6 +67,11 @@ class AlbumPendingUploadsNotifier extends AutoDisposeFamilyNotifier<List<Pending
     _syncKeepAlive();
   }
 
+  void clear() {
+    state = const [];
+    _syncKeepAlive();
+  }
+
   void _syncKeepAlive() {
     if (state.isEmpty) {
       _keepAliveLink?.close();

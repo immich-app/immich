@@ -16,7 +16,7 @@ class PartnerResponseDto {
     required this.avatarColor,
     required this.email,
     required this.id,
-    this.inTimeline,
+    this.inTimeline = const Optional.absent(),
     required this.name,
     required this.profileChangedAt,
     required this.profileImagePath,
@@ -37,7 +37,7 @@ class PartnerResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? inTimeline;
+  Optional<bool?> inTimeline;
 
   /// User name
   String name;
@@ -77,10 +77,9 @@ class PartnerResponseDto {
       json[r'avatarColor'] = this.avatarColor;
       json[r'email'] = this.email;
       json[r'id'] = this.id;
-    if (this.inTimeline != null) {
-      json[r'inTimeline'] = this.inTimeline;
-    } else {
-    //  json[r'inTimeline'] = null;
+    if (this.inTimeline.isPresent) {
+      final value = this.inTimeline.value;
+      json[r'inTimeline'] = value;
     }
       json[r'name'] = this.name;
       json[r'profileChangedAt'] = this.profileChangedAt.toUtc().toIso8601String();
@@ -100,7 +99,7 @@ class PartnerResponseDto {
         avatarColor: UserAvatarColor.fromJson(json[r'avatarColor'])!,
         email: mapValueOfType<String>(json, r'email')!,
         id: mapValueOfType<String>(json, r'id')!,
-        inTimeline: mapValueOfType<bool>(json, r'inTimeline'),
+        inTimeline: json.containsKey(r'inTimeline') ? Optional.present(mapValueOfType<bool>(json, r'inTimeline')) : const Optional.absent(),
         name: mapValueOfType<String>(json, r'name')!,
         profileChangedAt: mapDateTime(json, r'profileChangedAt', r'')!,
         profileImagePath: mapValueOfType<String>(json, r'profileImagePath')!,

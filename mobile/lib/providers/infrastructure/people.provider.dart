@@ -3,6 +3,7 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/services/people.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/people.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/repositories/person_api.repository.dart';
 
 final driftPeopleRepositoryProvider = Provider<DriftPeopleRepository>(
@@ -20,5 +21,6 @@ final driftPeopleAssetProvider = FutureProvider.family<List<DriftPerson>, String
 
 final driftGetAllPeopleProvider = FutureProvider<List<DriftPerson>>((ref) async {
   final service = ref.watch(driftPeopleServiceProvider);
-  return service.getAllPeople();
+  final prefs = await ref.watch(userMetadataPreferencesProvider.future);
+  return service.getAllPeople(minFaces: prefs?.minimumFaces ?? 3);
 });

@@ -100,7 +100,7 @@
 
     <AssetLayout
       {manager}
-      viewerAssets={timelineDay.viewerAssets}
+      viewerAssets={timelineDay.activeViewerAssets}
       height={timelineDay.height}
       width={timelineDay.width}
       {customThumbnailLayout}

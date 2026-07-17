@@ -71,10 +71,13 @@ export const removeUndefinedKeys = <T extends object>(update: T, template: unkno
 };
 
 export const ASSET_CHECKSUM_CONSTRAINT = 'UQ_assets_owner_checksum';
+export const VIDEO_STREAM_SESSION_PK_CONSTRAINT = 'video_stream_session_pkey';
 
-export const isAssetChecksumConstraint = (error: unknown) => {
-  return (error as PostgresError)?.constraint_name === 'UQ_assets_owner_checksum';
-};
+export const isAssetChecksumConstraint = (error: unknown) =>
+  (error as PostgresError)?.constraint_name === ASSET_CHECKSUM_CONSTRAINT;
+
+export const isVideoStreamSessionPkConstraint = (error: unknown) =>
+  (error as PostgresError)?.constraint_name === VIDEO_STREAM_SESSION_PK_CONSTRAINT;
 
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)]);
@@ -298,8 +301,8 @@ export function withTags(eb: ExpressionBuilder<DB, 'asset'>) {
   ).as('tags');
 }
 
-export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt) {
-  return sql<O>`date_trunc(${sql.lit('MONTH')}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
+export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt, size?: 'DAY' | 'MONTH') {
+  return sql<O>`date_trunc(${sql.lit(size ?? 'MONTH')}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: string) {
@@ -370,12 +373,15 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
-  const visibility = options.visibility == null ? AssetVisibility.Timeline : options.visibility;
 
   return kysely
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('asset')
-    .where('asset.visibility', '=', visibility)
+    .$if(!!options.visibility, (qb) =>
+      options.visibility === 'not-locked'
+        ? qb.where('asset.visibility', '!=', AssetVisibility.Locked)
+        : qb.where('asset.visibility', '=', options.visibility!),
+    )
     .$if(!!options.albumIds && options.albumIds.length > 0, (qb) => inAlbums(qb, options.albumIds!))
     .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
     .$if(options.tagIds === null, (qb) =>

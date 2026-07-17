@@ -13,7 +13,7 @@ part of openapi.api;
 class ApiClient {
   ApiClient({this.basePath = '/api', this.authentication,});
 
-  final String basePath;
+  String basePath;
   final Authentication? authentication;
 
   var _client = Client();
@@ -44,8 +44,9 @@ class ApiClient {
     Object? body,
     Map<String, String> headerParams,
     Map<String, String> formParams,
-    String? contentType,
-  ) async {
+    String? contentType, {
+    Future<void>? abortTrigger,
+  }) async {
     await authentication?.applyToParams(queryParams, headerParams);
 
     headerParams.addAll(_defaultHeaderMap);
@@ -63,7 +64,7 @@ class ApiClient {
         body is MultipartFile && (contentType == null ||
         !contentType.toLowerCase().startsWith('multipart/form-data'))
       ) {
-        final request = StreamedRequest(method, uri);
+        final request = AbortableStreamedRequest(method, uri, abortTrigger: abortTrigger);
         request.headers.addAll(headerParams);
         request.contentLength = body.length;
         body.finalize().listen(
@@ -78,7 +79,7 @@ class ApiClient {
       }
 
       if (body is MultipartRequest) {
-        final request = MultipartRequest(method, uri);
+        final request = AbortableMultipartRequest(method, uri, abortTrigger: abortTrigger);
         request.fields.addAll(body.fields);
         request.files.addAll(body.files);
         request.headers.addAll(body.headers);
@@ -92,14 +93,19 @@ class ApiClient {
         : await serializeAsync(body);
       final nullableHeaderParams = headerParams.isEmpty ? null : headerParams;
 
-      switch(method) {
-        case 'POST': return await _client.post(uri, headers: nullableHeaderParams, body: msgBody,);
-        case 'PUT': return await _client.put(uri, headers: nullableHeaderParams, body: msgBody,);
-        case 'DELETE': return await _client.delete(uri, headers: nullableHeaderParams, body: msgBody,);
-        case 'PATCH': return await _client.patch(uri, headers: nullableHeaderParams, body: msgBody,);
-        case 'HEAD': return await _client.head(uri, headers: nullableHeaderParams,);
-        case 'GET': return await _client.get(uri, headers: nullableHeaderParams,);
+      final request = AbortableRequest(method, uri, abortTrigger: abortTrigger);
+      if (nullableHeaderParams != null) {
+        request.headers.addAll(nullableHeaderParams);
       }
+      if (msgBody is String) {
+        request.body = msgBody;
+      } else if (msgBody is List<int>) {
+        request.bodyBytes = msgBody;
+      } else if (msgBody is Map<String, String>) {
+        request.bodyFields = msgBody;
+      }
+      final response = await _client.send(request);
+      return Response.fromStream(response);
     } on SocketException catch (error, trace) {
       throw ApiException.withInner(
         HttpStatus.badRequest,
@@ -136,11 +142,6 @@ class ApiClient {
         trace,
       );
     }
-
-    throw ApiException(
-      HttpStatus.badRequest,
-      'Invalid HTTP operation: $method $path',
-    );
   }
 
   Future<dynamic> deserializeAsync(String value, String targetType, {bool growable = false,}) =>
@@ -324,6 +325,12 @@ class ApiClient {
           return CLIPConfig.fromJson(value);
         case 'CQMode':
           return CQModeTypeTransformer().decode(value);
+        case 'CalendarHeatmapResponseDto':
+          return CalendarHeatmapResponseDto.fromJson(value);
+        case 'CalendarHeatmapResponseDtoSeriesInner':
+          return CalendarHeatmapResponseDtoSeriesInner.fromJson(value);
+        case 'CalendarHeatmapType':
+          return CalendarHeatmapTypeTypeTransformer().decode(value);
         case 'CastResponse':
           return CastResponse.fromJson(value);
         case 'CastUpdate':
@@ -384,8 +391,18 @@ class ApiClient {
           return FoldersResponse.fromJson(value);
         case 'FoldersUpdate':
           return FoldersUpdate.fromJson(value);
+        case 'HlsVideoResolution':
+          return HlsVideoResolutionTypeTransformer().decode(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
+        case 'IntegrityReport':
+          return IntegrityReportTypeTransformer().decode(value);
+        case 'IntegrityReportResponseDto':
+          return IntegrityReportResponseDto.fromJson(value);
+        case 'IntegrityReportResponseDtoItemsInner':
+          return IntegrityReportResponseDtoItemsInner.fromJson(value);
+        case 'IntegrityReportSummaryResponseDto':
+          return IntegrityReportSummaryResponseDto.fromJson(value);
         case 'JobCreateDto':
           return JobCreateDto.fromJson(value);
         case 'JobName':
@@ -520,6 +537,10 @@ class ApiClient {
           return PluginMethodResponseDto.fromJson(value);
         case 'PluginResponseDto':
           return PluginResponseDto.fromJson(value);
+        case 'PluginTemplateResponseDto':
+          return PluginTemplateResponseDto.fromJson(value);
+        case 'PluginTemplateStepResponseDto':
+          return PluginTemplateStepResponseDto.fromJson(value);
         case 'PurchaseResponse':
           return PurchaseResponse.fromJson(value);
         case 'PurchaseUpdate':
@@ -558,6 +579,16 @@ class ApiClient {
           return ReactionLevelTypeTransformer().decode(value);
         case 'ReactionType':
           return ReactionTypeTypeTransformer().decode(value);
+        case 'RecentlyAddedResponse':
+          return RecentlyAddedResponse.fromJson(value);
+        case 'RecentlyAddedUpdate':
+          return RecentlyAddedUpdate.fromJson(value);
+        case 'ReleaseChannel':
+          return ReleaseChannelTypeTransformer().decode(value);
+        case 'ReleaseEventV1':
+          return ReleaseEventV1.fromJson(value);
+        case 'ReleaseType':
+          return ReleaseTypeTypeTransformer().decode(value);
         case 'ReverseGeocodingStateResponseDto':
           return ReverseGeocodingStateResponseDto.fromJson(value);
         case 'RotateParameters':
@@ -680,6 +711,10 @@ class ApiClient {
           return SyncAssetMetadataDeleteV1.fromJson(value);
         case 'SyncAssetMetadataV1':
           return SyncAssetMetadataV1.fromJson(value);
+        case 'SyncAssetOcrDeleteV1':
+          return SyncAssetOcrDeleteV1.fromJson(value);
+        case 'SyncAssetOcrV1':
+          return SyncAssetOcrV1.fromJson(value);
         case 'SyncAssetV1':
           return SyncAssetV1.fromJson(value);
         case 'SyncAssetV2':
@@ -726,6 +761,8 @@ class ApiClient {
           return SystemConfigDto.fromJson(value);
         case 'SystemConfigFFmpegDto':
           return SystemConfigFFmpegDto.fromJson(value);
+        case 'SystemConfigFFmpegRealtimeDto':
+          return SystemConfigFFmpegRealtimeDto.fromJson(value);
         case 'SystemConfigFacesDto':
           return SystemConfigFacesDto.fromJson(value);
         case 'SystemConfigGeneratedFullsizeImageDto':
@@ -734,6 +771,12 @@ class ApiClient {
           return SystemConfigGeneratedImageDto.fromJson(value);
         case 'SystemConfigImageDto':
           return SystemConfigImageDto.fromJson(value);
+        case 'SystemConfigIntegrityChecks':
+          return SystemConfigIntegrityChecks.fromJson(value);
+        case 'SystemConfigIntegrityChecksumJob':
+          return SystemConfigIntegrityChecksumJob.fromJson(value);
+        case 'SystemConfigIntegrityJob':
+          return SystemConfigIntegrityJob.fromJson(value);
         case 'SystemConfigJobDto':
           return SystemConfigJobDto.fromJson(value);
         case 'SystemConfigLibraryDto':

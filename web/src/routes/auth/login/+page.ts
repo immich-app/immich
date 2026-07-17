@@ -8,7 +8,8 @@ import type { PageLoad } from './$types';
 export const load = (async ({ parent, url }) => {
   await parent();
 
-  const continueUrl = url.searchParams.get('continue') || Route.photos();
+  const continueUrl = Route.continue(url.searchParams.get('continue'), Route.photos());
+
   if (authManager.authenticated) {
     redirect(307, continueUrl);
   }

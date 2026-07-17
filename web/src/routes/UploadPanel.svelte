@@ -2,6 +2,7 @@
   import { locale } from '$lib/stores/preferences.store';
   import { uploadAssetsStore } from '$lib/stores/upload';
   import { uploadExecutionQueue } from '$lib/utils/file-uploader';
+  import { acquireWakeLock, releaseWakeLock } from '$lib/utils/wakelock.svelte';
   import { Icon, IconButton, toastManager } from '@immich/ui';
   import { mdiCancel, mdiCloudUploadOutline, mdiCog, mdiWindowMinimize } from '@mdi/js';
   import { t } from 'svelte-i18n';
@@ -15,9 +16,19 @@
 
   let { stats, isDismissible, isUploading, remainingUploads } = uploadAssetsStore;
 
+  let hasRemaining = $derived($remainingUploads > 0);
+
   $effect(() => {
     if ($isUploading) {
       showDetail = true;
+    }
+  });
+
+  $effect(() => {
+    if (hasRemaining) {
+      void acquireWakeLock();
+    } else {
+      void releaseWakeLock();
     }
   });
 </script>
@@ -37,7 +48,7 @@
       }
       uploadAssetsStore.reset();
     }}
-    class="fixed inset-e-16 bottom-6"
+    class="fixed inset-e-16 bottom-6 z-60"
   >
     {#if showDetail}
       <div
@@ -101,7 +112,7 @@
           </div>
         </div>
         {#if showOptions}
-          <div class="mb-4 max-h-100 overflow-y-auto rounded-lg immich-scrollbar">
+          <div class="mb-4 max-h-100 immich-scrollbar overflow-y-auto rounded-lg">
             <div class="flex h-6.5 place-items-center gap-1">
               <label class="immich-form-label" for="upload-concurrency">{$t('upload_concurrency')}</label>
             </div>
@@ -119,7 +130,7 @@
             />
           </div>
         {/if}
-        <div class="flex max-h-[400px] flex-col gap-2 overflow-y-auto rounded-lg immich-scrollbar">
+        <div class="flex max-h-[400px] immich-scrollbar flex-col gap-2 overflow-y-auto rounded-lg">
           {#each $uploadAssetsStore as uploadAsset (uploadAsset.id)}
             <UploadAssetPreview {uploadAsset} />
           {/each}

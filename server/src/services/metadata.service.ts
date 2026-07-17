@@ -305,7 +305,7 @@ export class MetadataService extends BaseService {
       // comments
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       profileDescription: exifTags.ProfileDescription || null,
-      rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, -1, 5),
+      rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, 1, 5),
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
@@ -616,6 +616,17 @@ export class MetadataService extends BaseService {
     // never use duration from sidecar
     delete sidecarTags?.Duration;
 
+    // don't use Exif Orientation for HEIF based images, it's usually missing or invalid.
+    // prefer irot (ExifTool QuickTime:Rotation) mapped to ExifOrientation.
+    if (mimeTypes.isHeifImage(asset.originalPath)) {
+      const orientation = this.getHeifOrientation(mediaTags);
+      if (orientation === null) {
+        delete mediaTags.Orientation;
+      } else {
+        mediaTags.Orientation = orientation;
+      }
+    }
+
     return {
       tags: { ...mediaTags, ...videoResult?.tags, ...sidecarTags },
       audio: videoResult?.audio,
@@ -843,6 +854,13 @@ export class MetadataService extends BaseService {
     // update area coordinates and dimensions in RegionList assuming "normalized" unit as per MWG guidelines
     const adjustedRegionList = regionInfo.RegionList.map((region) => {
       let { X, Y, W, H } = region.Area;
+
+      // EXIF floats with >16 decimals are serialized as strings. Ensure they are numbers.
+      X = Number(X);
+      Y = Number(Y);
+      W = Number(W);
+      H = Number(H);
+
       switch (orientation) {
         case ExifOrientation.MirrorHorizontal: {
           X = 1 - X;
@@ -915,16 +933,21 @@ export class MetadataService extends BaseService {
       const loweredName = region.Name.toLowerCase();
       const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
 
+      const X = Number(region.Area.X);
+      const Y = Number(region.Area.Y);
+      const W = Number(region.Area.W);
+      const H = Number(region.Area.H);
+
       const face = {
         id: this.cryptoRepository.randomUUID(),
         personId,
         assetId: asset.id,
         imageWidth,
         imageHeight,
-        boundingBoxX1: Math.floor((region.Area.X - region.Area.W / 2) * imageWidth),
-        boundingBoxY1: Math.floor((region.Area.Y - region.Area.H / 2) * imageHeight),
-        boundingBoxX2: Math.floor((region.Area.X + region.Area.W / 2) * imageWidth),
-        boundingBoxY2: Math.floor((region.Area.Y + region.Area.H / 2) * imageHeight),
+        boundingBoxX1: Math.floor((X - W / 2) * imageWidth),
+        boundingBoxY1: Math.floor((Y - H / 2) * imageHeight),
+        boundingBoxX2: Math.floor((X + W / 2) * imageWidth),
+        boundingBoxY2: Math.floor((Y + H / 2) * imageHeight),
         sourceType: SourceType.Exif,
       };
 
@@ -1109,5 +1132,27 @@ export class MetadataService extends BaseService {
     }
 
     return { tags, audio, video, packets, format };
+  }
+
+  private getHeifOrientation(exifTags: ImmichTags): ExifOrientation | null {
+    // https://exiftool.org/TagNames/QuickTime.html#ItemPropCont
+    const rotation = typeof exifTags.Rotation === 'number' ? exifTags.Rotation : undefined;
+    switch (rotation) {
+      case 0: {
+        return ExifOrientation.Horizontal;
+      }
+      case 1: {
+        return ExifOrientation.Rotate270CW;
+      }
+      case 2: {
+        return ExifOrientation.Rotate180;
+      }
+      case 3: {
+        return ExifOrientation.Rotate90CW;
+      }
+      default: {
+        return null;
+      }
+    }
   }
 }

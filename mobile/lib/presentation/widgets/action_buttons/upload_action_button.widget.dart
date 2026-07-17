@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -10,6 +11,9 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_bu
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
+import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_ui/immich_ui.dart';
 
@@ -26,7 +30,11 @@ class UploadActionButton extends ConsumerWidget {
     }
 
     final isTimeline = source == ActionSource.timeline;
+    final viewerIntentFilePath = source == ActionSource.viewer ? ref.read(viewIntentFilePathProvider) : null;
     List<LocalAsset>? assets;
+    var isUploadDialogOpen = false;
+    var wasUploadCancelled = false;
+    Future<void>? uploadDialogFuture;
 
     if (source == ActionSource.timeline) {
       assets = ref.read(multiSelectProvider).selectedAssets.whereType<LocalAsset>().toList();
@@ -35,22 +43,50 @@ class UploadActionButton extends ConsumerWidget {
       }
       ref.read(multiSelectProvider.notifier).reset();
     } else {
-      unawaited(
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (dialogContext) => const _UploadProgressDialog(),
-        ),
-      );
+      isUploadDialogOpen = true;
+      uploadDialogFuture =
+          showDialog<void>(
+            context: context,
+            barrierDismissible: false,
+            builder: (dialogContext) => _UploadProgressDialog(
+              onCancel: () {
+                wasUploadCancelled = true;
+              },
+            ),
+          ).whenComplete(() {
+            isUploadDialogOpen = false;
+          });
+      unawaited(uploadDialogFuture);
     }
 
-    final result = await ref.read(actionProvider.notifier).upload(source, assets: assets);
+    var success = false;
+    if (!isTimeline && viewerIntentFilePath != null) {
+      final viewIntentService = ref.read(viewIntentServiceProvider);
+      viewIntentService.markUploadActive(viewerIntentFilePath);
+      var hasError = false;
+      try {
+        await ref
+            .read(foregroundUploadServiceProvider)
+            .uploadShareIntent(
+              [File(viewerIntentFilePath)],
+              onError: (_, _) {
+                hasError = true;
+              },
+            );
+      } finally {
+        await viewIntentService.markUploadInactive(viewerIntentFilePath);
+      }
+      success = !hasError;
+    } else {
+      final result = await ref.read(actionProvider.notifier).upload(source, assets: assets);
+      success = result.success;
+    }
 
-    if (!isTimeline && context.mounted) {
+    if (!isTimeline && context.mounted && isUploadDialogOpen) {
       Navigator.of(context, rootNavigator: true).pop();
     }
 
-    if (context.mounted && !result.success) {
+    if (context.mounted && !success && !wasUploadCancelled) {
       ImmichToast.show(
         context: context,
         msg: 'scaffold_body_error_occurred'.t(context: context),
@@ -73,7 +109,9 @@ class UploadActionButton extends ConsumerWidget {
 }
 
 class _UploadProgressDialog extends ConsumerWidget {
-  const _UploadProgressDialog();
+  final VoidCallback onCancel;
+
+  const _UploadProgressDialog({required this.onCancel});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -103,7 +141,8 @@ class _UploadProgressDialog extends ConsumerWidget {
           onPressed: () {
             ref.read(manualUploadCancelTokenProvider)?.complete();
             ref.read(manualUploadCancelTokenProvider.notifier).state = null;
-            Navigator.of(context).pop();
+            onCancel();
+            Navigator.of(context, rootNavigator: true).pop();
           },
           labelText: 'cancel'.t(context: context),
         ),

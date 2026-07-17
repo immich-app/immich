@@ -9,7 +9,7 @@ import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart'
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class ThumbnailTile extends ConsumerStatefulWidget {
@@ -297,8 +297,7 @@ class _AssetTypeIcons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final remoteAsset = asset is RemoteAsset ? asset as RemoteAsset : null;
-    final isLivePhoto = remoteAsset?.livePhotoVideoId != null;
+    final isLivePhoto = asset.isMotionPhoto;
 
     return Column(
       mainAxisSize: MainAxisSize.min,

@@ -8,31 +8,28 @@ packages:
   - web
   - .github
   - packages/*
-ignoredBuiltDependencies:
-  - '@nestjs/core'
-  - '@parcel/watcher'
-  - '@scarf/scarf'
-  - '@swc/core'
-  - canvas
-  - core-js
-  - core-js-pure
-  - cpu-features
-  - es5-ext
-  - esbuild
-  - msgpackr-extract
-  - postman-code-generators
-  - protobufjs
-  - ssh2
-  - utimes
-onlyBuiltDependencies:
-  - sharp
-  - '@tailwindcss/oxide'
-  - bcrypt
+allowBuilds:
+  '@nestjs/core': false
+  '@parcel/watcher': false
+  '@scarf/scarf': false
+  '@swc/core': false
+  bcrypt: true
+  canvas: false
+  core-js: false
+  cpu-features: false
+  es5-ext: false
+  esbuild: false
+  msgpackr-extract: false
+  protobufjs: false
+  sharp: true
+  ssh2: false
+  utimes: false
+  '@tailwindcss/oxide': true
+  core-js-pure: false
+  postman-code-generators: false
 overrides:
   canvas: 3.2.3
   sharp: ^0.34.5
-  # pending docusaurus 3.10.1
-  webpackbar: ^7.0.0
 packageExtensions:
   nestjs-kysely:
     dependencies:
@@ -60,8 +57,13 @@ packageExtensions:
     dependencies:
       node-addon-api: '*'
       node-gyp: '*'
+  '@nestjs/swagger':
+    peerDependencies:
+      typescript: '*'
 dedupePeerDependents: false
 preferWorkspacePackages: true
 injectWorkspacePackages: true
 shamefullyHoist: false
 verifyDepsBeforeRun: install
+minimumReleaseAgeExclude:
+  - '@immich/ui@0.83.0'

@@ -13,16 +13,16 @@ part of openapi.api;
 class UpdateLibraryDto {
   /// Returns a new [UpdateLibraryDto] instance.
   UpdateLibraryDto({
-    this.exclusionPatterns = const [],
-    this.importPaths = const [],
-    this.name,
+    this.exclusionPatterns = const Optional.present(const []),
+    this.importPaths = const Optional.present(const []),
+    this.name = const Optional.absent(),
   });
 
   /// Exclusion patterns (max 128)
-  List<String> exclusionPatterns;
+  Optional<List<String>?> exclusionPatterns;
 
   /// Import paths (max 128)
-  List<String> importPaths;
+  Optional<List<String>?> importPaths;
 
   /// Library name
   ///
@@ -31,7 +31,7 @@ class UpdateLibraryDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? name;
+  Optional<String?> name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateLibraryDto &&
@@ -51,12 +51,17 @@ class UpdateLibraryDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'exclusionPatterns'] = this.exclusionPatterns;
-      json[r'importPaths'] = this.importPaths;
-    if (this.name != null) {
-      json[r'name'] = this.name;
-    } else {
-    //  json[r'name'] = null;
+    if (this.exclusionPatterns.isPresent) {
+      final value = this.exclusionPatterns.value;
+      json[r'exclusionPatterns'] = value;
+    }
+    if (this.importPaths.isPresent) {
+      final value = this.importPaths.value;
+      json[r'importPaths'] = value;
+    }
+    if (this.name.isPresent) {
+      final value = this.name.value;
+      json[r'name'] = value;
     }
     return json;
   }
@@ -70,13 +75,13 @@ class UpdateLibraryDto {
       final json = value.cast<String, dynamic>();
 
       return UpdateLibraryDto(
-        exclusionPatterns: json[r'exclusionPatterns'] is Iterable
+        exclusionPatterns: json.containsKey(r'exclusionPatterns') ? Optional.present(json[r'exclusionPatterns'] is Iterable
             ? (json[r'exclusionPatterns'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        importPaths: json[r'importPaths'] is Iterable
+            : const []) : const Optional.absent(),
+        importPaths: json.containsKey(r'importPaths') ? Optional.present(json[r'importPaths'] is Iterable
             ? (json[r'importPaths'] as Iterable).cast<String>().toList(growable: false)
-            : const [],
-        name: mapValueOfType<String>(json, r'name'),
+            : const []) : const Optional.absent(),
+        name: json.containsKey(r'name') ? Optional.present(mapValueOfType<String>(json, r'name')) : const Optional.absent(),
       );
     }
     return null;

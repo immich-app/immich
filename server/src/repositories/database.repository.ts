@@ -24,7 +24,7 @@ import { DB } from 'src/schema';
 import { immich_uuid_v7 } from 'src/schema/functions';
 import { ExtensionVersion, VectorExtension } from 'src/types';
 import { vectorIndexQuery } from 'src/utils/database';
-import { isValidInteger } from 'src/validation';
+import z from 'zod';
 
 export let cachedVectorExtension: VectorExtension | undefined;
 export async function getVectorExtension(runner: Kysely<DB>): Promise<VectorExtension> {
@@ -274,6 +274,7 @@ export class DatabaseRepository {
       columns: { ignoreExtra: true },
       functions: { ignoreExtra: false },
       parameters: { ignoreExtra: true },
+      extensions: { ignoreExtra: true },
     });
 
     return drift;
@@ -291,7 +292,13 @@ export class DatabaseRepository {
     `.execute(this.db);
 
     const dimSize = rows[0]?.dimsize;
-    if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
+    if (
+      !z
+        .int()
+        .min(1)
+        .max(2 ** 16)
+        .safeParse(dimSize).success
+    ) {
       this.logger.warn(`Could not retrieve dimension size of column '${column}' in table '${table}', assuming 512`);
       return 512;
     }
@@ -299,7 +306,13 @@ export class DatabaseRepository {
   }
 
   async setDimensionSize(dimSize: number): Promise<void> {
-    if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
+    if (
+      !z
+        .int()
+        .min(1)
+        .max(2 ** 16)
+        .safeParse(dimSize).success
+    ) {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }
 

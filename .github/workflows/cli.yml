@@ -31,25 +31,28 @@ jobs:
         working-directory: ./packages/cli
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
         with:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@cf6e190bacde3d7bda59372a786b36ac7d01536a # use-mise-action-v2.0.1
+        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
       - name: Publish
         if: ${{ github.event_name == 'release' }}
-        run: mise run ci-publish
+        env:
+          NPM_TAG: ${{ github.event.release.prerelease && 'rc' || 'latest' }}
+        run: mise run ci-publish -- --tag "$NPM_TAG"
 
   docker:
     name: Docker
@@ -61,25 +64,26 @@ jobs:
 
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
         with:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: read
 
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4.0.0
+        uses: docker/setup-qemu-action@96fe6ef7f33517b61c61be40b68a1882f3264fb8 # v4.2.0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd # v4.0.0
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           registry: ghcr.io
@@ -94,7 +98,7 @@ jobs:
 
       - name: Generate docker image tags
         id: metadata
-        uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6.0.0
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
         with:
           flavor: |
             latest=false
@@ -102,10 +106,10 @@ jobs:
             name=ghcr.io/${{ github.repository_owner }}/immich-cli
           tags: |
             type=raw,value=${{ steps.package-version.outputs.version }},enable=${{ github.event_name == 'release' }}
-            type=raw,value=latest,enable=${{ github.event_name == 'release' }}
+            type=raw,value=latest,enable=${{ github.event_name == 'release' && !github.event.release.prerelease }}
 
       - name: Build and push image
-        uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7.1.0
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
           file: packages/cli/Dockerfile
           platforms: linux/amd64,linux/arm64

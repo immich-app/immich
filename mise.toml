@@ -16,27 +16,14 @@ config_roots = [
 
 [tools]
 node = "24.15.0"
-flutter = "3.41.9"
-pnpm = "10.33.1"
+pnpm = "11.11.0"
 terragrunt = "1.0.3"
 opentofu = "1.11.6"
-java = "21.0.2"
 "npm:oazapfts" = "7.5.0"
 "github:extism/cli" = "1.6.3"
 "github:webassembly/binaryen" = "version_124"
 "github:extism/js-pdk" = "1.6.0"
-
-[tools."github:CQLabs/homebrew-dcm"]
-version = "1.37.0"
-bin = "dcm"
-postinstall = "chmod +x \"$MISE_TOOL_INSTALL_PATH/dcm\" || true"
-
-[tools."github:CQLabs/homebrew-dcm".platforms]
-linux-x64 = { asset_pattern = "dcm-linux-x64-release.zip" }
-linux-arm64 = { asset_pattern = "dcm-linux-arm-release.zip" }
-macos-x64 = { asset_pattern = "dcm-macos-x64-release.zip" }
-macos-arm64 = { asset_pattern = "dcm-macos-arm-release.zip" }
-windows-x64 = { asset_pattern = "dcm-windows-release.zip" }
+java = "21.0.2"
 
 [tools."github:jellyfin/jellyfin-ffmpeg"]
 version = "7.1.3-6"
@@ -50,11 +37,20 @@ macos-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz"
 [settings]
 experimental = true
 pin = true
+lockfile = true
+
+[tasks.release]
+run = [
+  "pnpm --filter @immich/scripts install --frozen-lockfile",
+  "pnpm --filter @immich/scripts build",
+  "pnpm --filter @immich/scripts cli release {{arg(name='args', var=true)}}",
+  { task = "//:open-api" },
+]
 
 [tasks.plugins]
 run = [
-  "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core install --frozen-lockfile",
-  "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core build"
+  "pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter @immich/plugin-core install --frozen-lockfile",
+  "pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter @immich/plugin-core build",
 ]
 
 [tasks.open-api-typescript]
@@ -72,17 +68,82 @@ run = "bash ./bin/generate-dart-sdk.sh"
 env = { SHARP_IGNORE_GLOBAL_LIBVIPS = true }
 run = [
   { task = "//:plugins" },
-  { task = "//server:build" },
   { task = "//server:install" },
   { task = "//server:build" },
   { task = "//server:sync-open-api" },
-  { task = ":open-api-typescript"},
-  { task = ":open-api-dart"},
+  { task = ":open-api-typescript" },
+  { task = ":open-api-dart" },
 ]
 
 [tasks.sql]
 dir = "server"
 run = "node ./dist/bin/sync-sql.js"
+
+# TODO dev, prod, and e2e should be de-duplicated by using env but for some reason I ran into issues
+[tasks.dev]
+depends = "//:plugins"
+dir = "docker"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.dev.yml up --remove-orphans"
+depends_post = "//:dev-down"
+
+[tasks.dev-update]
+run = { task = "//:dev", args = ["--build", "-V"] }
+
+[tasks.dev-scale]
+run = { task = "//:dev", args = ["--build", "-V", "--scale immich-server=3"] }
+
+[tasks.dev-down]
+dir = "docker"
+run = "docker compose -f ./docker-compose.dev.yml down --remove-orphans"
+
+[tasks.prod]
+depends = "//:plugins"
+dir = "docker"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.prod.yml up --build --remove-orphans"
+depends_post = "//:prod-down"
+
+[tasks.prod-scale]
+run = { task = "//:prod", args = [
+  "--build",
+  "-V",
+  "--scale immich-server=3",
+  "--scale immich-microservices",
+] }
+
+[tasks.prod-down]
+dir = "docker"
+run = "docker compose -f ./docker-compose.prod.yml down --remove-orphans"
+
+[tasks.e2e]
+depends = "//:plugins"
+dir = "e2e"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.yml up --remove-orphans"
+depends_post = "//:e2e-down"
+
+[tasks.e2e-dev]
+depends = "//:plugins"
+dir = "e2e"
+interactive = true
+env = { COMPOSE_BAKE = true }
+run = "docker compose -f ./docker-compose.dev.yml up --remove-orphans"
+depends_post = "//:e2e-dev-down"
+
+[tasks.e2e-update]
+run = { task = "//:e2e", args = ["--build", '-V'] }
+
+[tasks.e2e-down]
+dir = "e2e"
+run = "docker compose -f ./docker-compose.yml down --remove-orphans"
+
+[tasks.e2e-dev-down]
+dir = "e2e"
+run = "docker compose -f ./docker-compose.dev.yml down --remove-orphans"
 
 # SDK tasks
 [tasks."sdk:install"]
@@ -99,3 +160,14 @@ run = "pnpm format"
 
 [tasks."i18n:format-fix"]
 run = "pnpm format:fix"
+
+[tasks.clean]
+run = [
+  "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' +",
+  "find . -name 'dist' -type d -prune -exec rm -rf '{}' +",
+  "find . -name 'build' -type d -prune -exec rm -rf '{}' +",
+  "find . -name '.svelte-kit' -type d -prune -exec rm -rf '{}' +",
+  "find . -name 'coverage' -type d -prune -exec rm -rf '{}' +",
+  "find . -name '.pnpm-store' -type d -prune -exec rm -rf '{}' +",
+  { task = "//:*-down" },
+]

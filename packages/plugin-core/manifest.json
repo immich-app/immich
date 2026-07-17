@@ -5,6 +5,78 @@
   "description": "Core workflow capabilities for Immich",
   "author": "Immich Team",
   "wasmPath": "dist/plugin.wasm",
+  "templates": [
+    {
+      "name": "screenshots-smart-album",
+      "title": "Archive screenshots",
+      "description": "Archive uploads with \"screenshot\" in the filename and optionally add them to an album",
+      "trigger": "AssetCreate",
+      "steps": [
+        {
+          "method": "immich-plugin-core#assetFileFilter",
+          "config": {
+            "pattern": "screenshot",
+            "matchType": "contains",
+            "caseSensitive": false
+          }
+        },
+        {
+          "method": "immich-plugin-core#assetArchive",
+          "config": {
+            "inverse": false
+          }
+        },
+        {
+          "method": "immich-plugin-core#assetAddToAlbums",
+          "config": {
+            "albumName": "Screenshots",
+            "albumIds": []
+          }
+        }
+      ],
+      "uiHints": ["SmartAlbum"]
+    },
+    {
+      "name": "missing-timezone-smart-album",
+      "title": "Missing timezone",
+      "description": "Automatically create an album for assets without a time zone",
+      "trigger": "AssetMetadataExtraction",
+      "steps": [
+        {
+          "method": "immich-plugin-core#assetMissingTimeZoneFilter",
+          "config": {}
+        },
+        {
+          "method": "immich-plugin-core#assetAddToAlbums",
+          "config": {
+            "albumName": "Missing time zone",
+            "albumIds": []
+          }
+        }
+      ],
+      "uiHints": ["SmartAlbum"]
+    },
+    {
+      "name": "location-smart-album",
+      "title": "Location-based album",
+      "description": "Automatically add assets taken in a specific location to an album",
+      "trigger": "AssetMetadataExtraction",
+      "steps": [
+        {
+          "method": "immich-plugin-core#assetLocationFilter",
+          "config": { "region": { "city": "Vancouver", "state": "British Columbia", "country": "Canada" } }
+        },
+        {
+          "method": "immich-plugin-core#assetAddToAlbums",
+          "config": {
+            "albumName": "Vancouver photos & videos",
+            "albumIds": []
+          }
+        }
+      ],
+      "uiHints": ["SmartAlbum"]
+    }
+  ],
   "methods": [
     {
       "name": "assetFileFilter",
@@ -35,52 +107,200 @@
         },
         "required": ["pattern"]
       },
-      "uiHints": ["filter"]
+      "uiHints": ["Filter"]
     },
     {
-      "name": "filterFileType",
-      "title": "Filter by file type",
-      "description": "Filter assets by file type",
+      "name": "assetMissingTimeZoneFilter",
+      "title": "Filter by missing time zone",
+      "description": "Filter assets that have no time zone information",
       "types": ["AssetV1"],
       "schema": {
         "type": "object",
         "properties": {
-          "fileTypes": {
-            "title": "File types",
-            "description": "Allowed file types",
-            "type": "string",
-            "array": true,
-            "enum": ["image", "video"]
+          "inverse": {
+            "type": "boolean",
+            "title": "Inverse",
+            "description": "Missing by default, set to true to filter assets with a time zone",
+            "default": false
           }
-        },
-        "required": ["fileTypes"]
+        }
       },
-      "uiHints": ["filter"]
+      "uiHints": ["Filter"]
     },
     {
-      "name": "filterPerson",
-      "title": "Filter by person",
-      "description": "Filter by detected person",
+      "name": "assetLocationFilter",
+      "title": "Filter assets by geolocation",
+      "description": "Filter assets by where they were taken",
       "types": ["AssetV1"],
       "schema": {
+        "type": "object",
         "properties": {
-          "personIds": {
-            "type": "string",
-            "array": true,
-            "title": "Person IDs",
-            "description": "List of person to match",
-            "uiHint": "personI"
+          "region": {
+            "type": "object",
+            "title": "Region",
+            "description": "Filter by region name",
+            "properties": {
+              "country": {
+                "type": "string",
+                "title": "Country",
+                "description": "Exact name of the country the asset must be taken in"
+              },
+              "state": {
+                "type": "string",
+                "title": "State/province",
+                "description": "Exact name of the state/province the asset must be taken in"
+              },
+              "city": {
+                "type": "string",
+                "title": "City",
+                "description": "Exact name of the city the asset must be taken in"
+              }
+            }
           },
-          "matchAny": {
+          "coordinate": {
+            "type": "object",
+            "title": "Coordinate",
+            "description": "Filter by distance to a coordinate",
+            "properties": {
+              "latitude": {
+                "type": "number",
+                "title": "Latitude",
+                "description": "GPS latitude of a coordinate which the asset must be close to",
+                "minimum": -90,
+                "maximum": 90,
+                "precision": 0.000001
+              },
+              "longitude": {
+                "type": "number",
+                "title": "Longitude",
+                "description": "GPS longitude of a coordinate which the asset must be close to",
+                "minimum": -180,
+                "maximum": 180,
+                "precision": 0.000001
+              },
+              "radius": {
+                "type": "number",
+                "title": "Maximum distance",
+                "description": "How close in kilometres the asset must be to the given point",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      },
+      "uiHints": ["Filter"]
+    },
+    {
+      "name": "assetDateFilter",
+      "title": "Filter by date",
+      "description": "Filter assets by date taken",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "startDate": {
+            "type": "object",
+            "title": "Start date",
+            "description": "Earliest date of assets to include",
+            "properties": {
+              "day": {
+                "type": "number",
+                "title": "Day",
+                "description": "Day of the year to match",
+                "uiHint": {
+                  "order": 1
+                }
+              },
+              "month": {
+                "type": "number",
+                "title": "Month",
+                "description": "Month of the year to match",
+                "uiHint": {
+                  "order": 2
+                }
+              },
+              "year": {
+                "type": "number",
+                "title": "Year",
+                "description": "Year to match",
+                "uiHint": {
+                  "order": 3
+                }
+              }
+            },
+            "uiHint": {
+              "order": 1
+            },
+            "required": ["day", "month", "year"]
+          },
+          "endDate": {
+            "type": "object",
+            "title": "End date",
+            "description": "Latest date of assets to include",
+            "properties": {
+              "day": {
+                "type": "number",
+                "title": "Day",
+                "description": "Day of the year to match",
+                "uiHint": {
+                  "order": 1
+                }
+              },
+              "month": {
+                "type": "number",
+                "title": "Month",
+                "description": "Month of the year to match",
+                "uiHint": {
+                  "order": 2
+                }
+              },
+              "year": {
+                "type": "number",
+                "title": "Year",
+                "description": "Year to match",
+                "uiHint": {
+                  "order": 3
+                }
+              }
+            },
+            "uiHint": {
+              "order": 2
+            },
+            "required": ["day", "month", "year"]
+          },
+          "recurring": {
             "type": "boolean",
-            "title": "Match any",
-            "default": true,
-            "description": "Match any name (true) or require all names (false)"
+            "default": false,
+            "title": "Match recurring dates",
+            "description": "Allow any assets with matching months/days regardless of the year",
+            "uiHint": {
+              "order": 3
+            }
           }
         },
-        "required": ["personIds"]
+        "required": ["recurring", "startDate", "endDate"]
       },
-      "uiHints": ["filter"]
+      "uiHints": ["Filter"]
+    },
+    {
+      "name": "assetTypeFilter",
+      "title": "Filter by asset type",
+      "description": "Filter assets by type",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "allowedTypes": {
+            "title": "Asset types",
+            "description": "Allowed asset types",
+            "type": "string",
+            "array": true,
+            "enum": ["IMAGE", "VIDEO", "AUDIO", "OTHER"]
+          }
+        },
+        "required": ["allowedTypes"]
+      },
+      "uiHints": ["Filter"]
     },
     {
       "name": "assetArchive",
@@ -101,13 +321,16 @@
       "name": "assetLock",
       "title": "Move to locked folder",
       "description": "Change visibility to locked",
-      "types": ["AssetV1"]
-    },
-    {
-      "name": "assetTimeline",
-      "title": "Move to timeline",
-      "description": "Change visibility to timeline",
-      "types": ["AssetV1"]
+      "types": ["AssetV1"],
+      "schema": {
+        "properties": {
+          "inverse": {
+            "title": "Inverse",
+            "description": "When true will unarchive any archived assets",
+            "type": "boolean"
+          }
+        }
+      }
     },
     {
       "name": "assetVisibility",
@@ -157,101 +380,52 @@
             "title": "Album IDs",
             "array": true,
             "description": "Target album IDs",
-            "uiHint": "albumId"
+            "uiHint": {
+              "type": "AlbumId"
+            }
+          },
+          "albumName": {
+            "type": "string",
+            "title": "Album name",
+            "description": "Use an album with this name if one exists, otherwise create a new one"
           }
         },
         "required": ["albumIds"]
       }
     },
     {
-      "name": "noop1",
-      "title": "DEV: Nested properties",
-      "description": "Example configuration with nested properties",
+      "name": "webhook",
+      "title": "Trigger Webhook",
+      "description": "POST/PUT event data to any URL",
       "types": ["AssetV1"],
+      "hostFunctions": true,
+      "allowedHosts": ["*"],
       "schema": {
         "type": "object",
         "properties": {
-          "number1": {
-            "type": "number",
-            "title": "Number 1",
-            "description": "Basic number"
-          },
-          "number2": {
-            "type": "number",
-            "title": "Number 2",
-            "array": true,
-            "description": "List of numbers"
-          },
-          "string1": {
+          "url": {
             "type": "string",
-            "title": "String 1",
-            "description": "Basic string"
+            "title": "URL",
+            "description": "Event data will be PUT/POSTed to this URL as a JSON object"
           },
-          "string2": {
+          "headerName": {
             "type": "string",
-            "title": "String 2",
-            "array": true,
-            "description": "List of strings"
+            "title": "Header name",
+            "description": "The name of an additional header to include with the request (e.g. authentication)"
           },
-          "string3": {
+          "headerValue": {
             "type": "string",
-            "title": "String 3",
-            "enum": ["choice-1", "choice-2"],
-            "description": "Select from a list"
+            "title": "Header value",
+            "description": "The value of the additional header"
           },
-          "nested": {
-            "type": "object",
-            "title": "Nested",
-            "description": "Nested properties for nesting",
-            "properties": {
-              "nested1": {
-                "type": "string",
-                "title": "Nested 1",
-                "description": "Nested string"
-              },
-              "nested2": {
-                "type": "number",
-                "title": "Nested 2",
-                "description": "Nested number"
-              },
-              "nested3": {
-                "type": "object",
-                "title": "Nested 3",
-                "description": "Nested again",
-                "properties": {
-                  "nested4": {
-                    "type": "boolean",
-                    "title": "Nested 4",
-                    "description": "Nested, nested boolean"
-                  }
-                }
-              }
-            }
+          "method": {
+            "type": "string",
+            "title": "Method",
+            "description": "The HTTP method to use in the request",
+            "enum": ["POST", "PUT"]
           }
-        }
-      }
-    },
-    {
-      "name": "noop2",
-      "title": "DEV: Album pickers",
-      "description": "Example configuration with album pickers",
-      "types": ["AssetV1"],
-      "schema": {
-        "properties": {
-          "albumId": {
-            "type": "string",
-            "title": "Album ID",
-            "description": "Target album ID",
-            "uiHint": "albumId"
-          },
-          "albumIds": {
-            "type": "string",
-            "title": "Album IDs",
-            "description": "Target album IDs",
-            "array": true,
-            "uiHint": "albumId"
-          }
-        }
+        },
+        "required": ["url"]
       }
     }
   ]

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
@@ -21,6 +22,7 @@
   // People
   let peopleEnabled = $state(authManager.preferences.people?.enabled ?? false);
   let peopleSidebar = $state(authManager.preferences.people?.sidebarWeb ?? false);
+  let peopleMinFaces = $state(authManager.preferences.people?.minimumFaces ?? serverConfigManager.value.minFaces);
 
   // Ratings
   let ratingsEnabled = $state(authManager.preferences.ratings?.enabled ?? false);
@@ -36,6 +38,9 @@
   // Cast
   let gCastEnabled = $state(authManager.preferences.cast?.gCastEnabled ?? false);
 
+  // Recently added
+  let recentlyAddedSidebar = $state(authManager.preferences.recentlyAdded?.sidebarWeb ?? false);
+
   const handleSave = async () => {
     try {
       const response = await updateMyPreferences({
@@ -43,11 +48,12 @@
           albums: { defaultAssetOrder },
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
           memories: { enabled: memoriesEnabled, duration: memoriesDuration },
-          people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar },
+          people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar, minimumFaces: peopleMinFaces },
           ratings: { enabled: ratingsEnabled },
           sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
           tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
           cast: { gCastEnabled },
+          recentlyAdded: { sidebarWeb: recentlyAddedSidebar },
         },
       });
 
@@ -117,6 +123,9 @@
               <Field label={$t('sidebar')} description={$t('sidebar_display_description')}>
                 <Switch bind:checked={peopleSidebar} />
               </Field>
+              <Field label={$t('minFaces')} description={$t('minFaces_description')}>
+                <NumberInput bind:value={peopleMinFaces} />
+              </Field>
             {/if}
           </div>
         </SettingAccordion>
@@ -161,6 +170,14 @@
           <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('gcast_enabled')} description={$t('gcast_enabled_description')}>
               <Switch bind:checked={gCastEnabled} />
+            </Field>
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion key="recentlyAdded" title={$t('recently_added')} subtitle={$t('recently_added_description')}>
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
+            <Field label={$t('sidebar')} description={$t('sidebar_display_description')}>
+              <Switch bind:checked={recentlyAddedSidebar} />
             </Field>
           </div>
         </SettingAccordion>

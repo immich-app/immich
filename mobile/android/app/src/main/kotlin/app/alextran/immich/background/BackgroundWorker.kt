@@ -69,7 +69,7 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
 
     val notificationChannel = NotificationChannel(
       NOTIFICATION_CHANNEL_ID,
-      NOTIFICATION_CHANNEL_ID,
+      ctx.getString(R.string.background_worker_notification_channel_name),
       NotificationManager.IMPORTANCE_LOW
     )
     notificationManager.createNotificationChannel(notificationChannel)

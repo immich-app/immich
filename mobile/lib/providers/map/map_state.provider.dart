@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/models/map/map_state.model.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 
 final mapStateNotifierProvider = NotifierProvider<MapStateNotifier, MapState>(MapStateNotifier.new);
@@ -27,12 +26,12 @@ class MapStateNotifier extends Notifier<MapState> {
   }
 
   void switchTheme(ThemeMode mode) {
-    ref.read(metadataProvider).write(MetadataKey.mapThemeMode, mode);
+    ref.read(settingsProvider).write(.mapThemeMode, mode);
     state = state.copyWith(themeMode: mode);
   }
 
   void switchFavoriteOnly(bool isFavoriteOnly) {
-    ref.read(metadataProvider).write(MetadataKey.mapShowFavoriteOnly, isFavoriteOnly);
+    ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly);
     state = state.copyWith(showFavoriteOnly: isFavoriteOnly, shouldRefetchMarkers: true);
   }
 
@@ -41,17 +40,17 @@ class MapStateNotifier extends Notifier<MapState> {
   }
 
   void switchIncludeArchived(bool isIncludeArchived) {
-    ref.read(metadataProvider).write(MetadataKey.mapIncludeArchived, isIncludeArchived);
+    ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived);
     state = state.copyWith(includeArchived: isIncludeArchived, shouldRefetchMarkers: true);
   }
 
   void switchWithPartners(bool isWithPartners) {
-    ref.read(metadataProvider).write(MetadataKey.mapWithPartners, isWithPartners);
+    ref.read(settingsProvider).write(.mapWithPartners, isWithPartners);
     state = state.copyWith(withPartners: isWithPartners, shouldRefetchMarkers: true);
   }
 
   void setRelativeTime(int relativeTime) {
-    ref.read(metadataProvider).write(MetadataKey.mapRelativeDate, relativeTime);
+    ref.read(settingsProvider).write(.mapRelativeDate, relativeTime);
     state = state.copyWith(relativeTime: relativeTime, shouldRefetchMarkers: true);
   }
 }

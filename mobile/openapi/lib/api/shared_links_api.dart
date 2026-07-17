@@ -27,7 +27,7 @@ class SharedLinksApi {
   /// * [String] id (required):
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
-  Future<Response> addSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
+  Future<Response> addSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}/assets'
       .replaceAll('{id}', id);
@@ -50,6 +50,7 @@ class SharedLinksApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -62,8 +63,8 @@ class SharedLinksApi {
   /// * [String] id (required):
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
-  Future<List<AssetIdsResponseDto>?> addSharedLinkAssets(String id, AssetIdsDto assetIdsDto,) async {
-    final response = await addSharedLinkAssetsWithHttpInfo(id, assetIdsDto,);
+  Future<List<AssetIdsResponseDto>?> addSharedLinkAssets(String id, AssetIdsDto assetIdsDto, { Future<void>? abortTrigger, }) async {
+    final response = await addSharedLinkAssetsWithHttpInfo(id, assetIdsDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -89,7 +90,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [SharedLinkCreateDto] sharedLinkCreateDto (required):
-  Future<Response> createSharedLinkWithHttpInfo(SharedLinkCreateDto sharedLinkCreateDto,) async {
+  Future<Response> createSharedLinkWithHttpInfo(SharedLinkCreateDto sharedLinkCreateDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links';
 
@@ -111,6 +112,7 @@ class SharedLinksApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -121,8 +123,8 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [SharedLinkCreateDto] sharedLinkCreateDto (required):
-  Future<SharedLinkResponseDto?> createSharedLink(SharedLinkCreateDto sharedLinkCreateDto,) async {
-    final response = await createSharedLinkWithHttpInfo(sharedLinkCreateDto,);
+  Future<SharedLinkResponseDto?> createSharedLink(SharedLinkCreateDto sharedLinkCreateDto, { Future<void>? abortTrigger, }) async {
+    final response = await createSharedLinkWithHttpInfo(sharedLinkCreateDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -149,7 +151,7 @@ class SharedLinksApi {
   ///
   /// * [String] id:
   ///   Filter by shared link ID
-  Future<Response> getAllSharedLinksWithHttpInfo({ String? albumId, String? id, }) async {
+  Future<Response> getAllSharedLinksWithHttpInfo({ String? albumId, String? id, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links';
 
@@ -178,6 +180,7 @@ class SharedLinksApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -192,8 +195,8 @@ class SharedLinksApi {
   ///
   /// * [String] id:
   ///   Filter by shared link ID
-  Future<List<SharedLinkResponseDto>?> getAllSharedLinks({ String? albumId, String? id, }) async {
-    final response = await getAllSharedLinksWithHttpInfo( albumId: albumId, id: id, );
+  Future<List<SharedLinkResponseDto>?> getAllSharedLinks({ String? albumId, String? id, Future<void>? abortTrigger, }) async {
+    final response = await getAllSharedLinksWithHttpInfo(albumId: albumId, id: id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -221,7 +224,7 @@ class SharedLinksApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? slug, }) async {
+  Future<Response> getMySharedLinkWithHttpInfo({ String? key, String? slug, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/me';
 
@@ -250,6 +253,7 @@ class SharedLinksApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -262,8 +266,8 @@ class SharedLinksApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<SharedLinkResponseDto?> getMySharedLink({ String? key, String? slug, }) async {
-    final response = await getMySharedLinkWithHttpInfo( key: key, slug: slug, );
+  Future<SharedLinkResponseDto?> getMySharedLink({ String? key, String? slug, Future<void>? abortTrigger, }) async {
+    final response = await getMySharedLinkWithHttpInfo(key: key, slug: slug, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -286,7 +290,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> getSharedLinkByIdWithHttpInfo(String id,) async {
+  Future<Response> getSharedLinkByIdWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}'
       .replaceAll('{id}', id);
@@ -309,6 +313,7 @@ class SharedLinksApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -319,8 +324,8 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<SharedLinkResponseDto?> getSharedLinkById(String id,) async {
-    final response = await getSharedLinkByIdWithHttpInfo(id,);
+  Future<SharedLinkResponseDto?> getSharedLinkById(String id, { Future<void>? abortTrigger, }) async {
+    final response = await getSharedLinkByIdWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -343,7 +348,7 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> removeSharedLinkWithHttpInfo(String id,) async {
+  Future<Response> removeSharedLinkWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}'
       .replaceAll('{id}', id);
@@ -366,6 +371,7 @@ class SharedLinksApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -376,8 +382,8 @@ class SharedLinksApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> removeSharedLink(String id,) async {
-    final response = await removeSharedLinkWithHttpInfo(id,);
+  Future<void> removeSharedLink(String id, { Future<void>? abortTrigger, }) async {
+    final response = await removeSharedLinkWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -394,7 +400,7 @@ class SharedLinksApi {
   /// * [String] id (required):
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
-  Future<Response> removeSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto,) async {
+  Future<Response> removeSharedLinkAssetsWithHttpInfo(String id, AssetIdsDto assetIdsDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}/assets'
       .replaceAll('{id}', id);
@@ -417,6 +423,7 @@ class SharedLinksApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -429,8 +436,8 @@ class SharedLinksApi {
   /// * [String] id (required):
   ///
   /// * [AssetIdsDto] assetIdsDto (required):
-  Future<List<AssetIdsResponseDto>?> removeSharedLinkAssets(String id, AssetIdsDto assetIdsDto,) async {
-    final response = await removeSharedLinkAssetsWithHttpInfo(id, assetIdsDto,);
+  Future<List<AssetIdsResponseDto>?> removeSharedLinkAssets(String id, AssetIdsDto assetIdsDto, { Future<void>? abortTrigger, }) async {
+    final response = await removeSharedLinkAssetsWithHttpInfo(id, assetIdsDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -460,7 +467,7 @@ class SharedLinksApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<Response> sharedLinkLoginWithHttpInfo(SharedLinkLoginDto sharedLinkLoginDto, { String? key, String? slug, }) async {
+  Future<Response> sharedLinkLoginWithHttpInfo(SharedLinkLoginDto sharedLinkLoginDto, { String? key, String? slug, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/login';
 
@@ -489,6 +496,7 @@ class SharedLinksApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -503,8 +511,8 @@ class SharedLinksApi {
   /// * [String] key:
   ///
   /// * [String] slug:
-  Future<SharedLinkResponseDto?> sharedLinkLogin(SharedLinkLoginDto sharedLinkLoginDto, { String? key, String? slug, }) async {
-    final response = await sharedLinkLoginWithHttpInfo(sharedLinkLoginDto,  key: key, slug: slug, );
+  Future<SharedLinkResponseDto?> sharedLinkLogin(SharedLinkLoginDto sharedLinkLoginDto, { String? key, String? slug, Future<void>? abortTrigger, }) async {
+    final response = await sharedLinkLoginWithHttpInfo(sharedLinkLoginDto, key: key, slug: slug, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -529,7 +537,7 @@ class SharedLinksApi {
   /// * [String] id (required):
   ///
   /// * [SharedLinkEditDto] sharedLinkEditDto (required):
-  Future<Response> updateSharedLinkWithHttpInfo(String id, SharedLinkEditDto sharedLinkEditDto,) async {
+  Future<Response> updateSharedLinkWithHttpInfo(String id, SharedLinkEditDto sharedLinkEditDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/shared-links/{id}'
       .replaceAll('{id}', id);
@@ -552,6 +560,7 @@ class SharedLinksApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -564,8 +573,8 @@ class SharedLinksApi {
   /// * [String] id (required):
   ///
   /// * [SharedLinkEditDto] sharedLinkEditDto (required):
-  Future<SharedLinkResponseDto?> updateSharedLink(String id, SharedLinkEditDto sharedLinkEditDto,) async {
-    final response = await updateSharedLinkWithHttpInfo(id, sharedLinkEditDto,);
+  Future<SharedLinkResponseDto?> updateSharedLink(String id, SharedLinkEditDto sharedLinkEditDto, { Future<void>? abortTrigger, }) async {
+    final response = await updateSharedLinkWithHttpInfo(id, sharedLinkEditDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

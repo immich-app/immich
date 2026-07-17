@@ -42,20 +42,28 @@ class BaseActionButton extends ConsumerWidget {
 
       return IconButton(
         onPressed: onPressed,
+        onLongPress: onLongPressed,
         icon: Icon(iconData, size: iconSize, color: iconColor),
       );
     }
 
     if (menuItem) {
       final iconColor = this.iconColor;
+      final onPressed = this.onPressed;
 
       return MenuItemButton(
+        closeOnActivate: false,
         style: MenuItemButton.styleFrom(
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
         leadingIcon: Icon(iconData, color: iconColor, size: 20),
-        onPressed: onPressed,
+        onPressed: onPressed == null
+            ? null
+            : () {
+                onPressed();
+                MenuController.maybeOf(context)?.close();
+              },
         child: Text(label, style: TextStyle(fontSize: 15, color: iconColor)),
       );
     }

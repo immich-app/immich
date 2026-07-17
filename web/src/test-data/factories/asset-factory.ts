@@ -76,8 +76,8 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
   };
   for (const asset of timelineAsset) {
     const fileCreatedAt = fromTimelinePlainDateTime(asset.fileCreatedAt).toISO();
-    bucketAssets.city.push(asset.city);
-    bucketAssets.country.push(asset.country);
+    bucketAssets.city?.push(asset.city);
+    bucketAssets.country?.push(asset.country);
     bucketAssets.duration.push(asset.duration!);
     bucketAssets.id.push(asset.id);
     bucketAssets.visibility.push(asset.visibility);

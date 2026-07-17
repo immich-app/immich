@@ -14,10 +14,10 @@ class AssetBulkUploadCheckResult {
   /// Returns a new [AssetBulkUploadCheckResult] instance.
   AssetBulkUploadCheckResult({
     required this.action,
-    this.assetId,
+    this.assetId = const Optional.absent(),
     required this.id,
-    this.isTrashed,
-    this.reason,
+    this.isTrashed = const Optional.absent(),
+    this.reason = const Optional.absent(),
   });
 
   AssetUploadAction action;
@@ -29,9 +29,9 @@ class AssetBulkUploadCheckResult {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? assetId;
+  Optional<String?> assetId;
 
-  /// Asset ID
+  /// Client-side identifier echoed from the request to match results to inputs
   String id;
 
   /// Whether existing asset is trashed
@@ -41,7 +41,7 @@ class AssetBulkUploadCheckResult {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isTrashed;
+  Optional<bool?> isTrashed;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -49,7 +49,7 @@ class AssetBulkUploadCheckResult {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  AssetRejectReason? reason;
+  Optional<AssetRejectReason?> reason;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUploadCheckResult &&
@@ -74,21 +74,18 @@ class AssetBulkUploadCheckResult {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'action'] = this.action;
-    if (this.assetId != null) {
-      json[r'assetId'] = this.assetId;
-    } else {
-    //  json[r'assetId'] = null;
+    if (this.assetId.isPresent) {
+      final value = this.assetId.value;
+      json[r'assetId'] = value;
     }
       json[r'id'] = this.id;
-    if (this.isTrashed != null) {
-      json[r'isTrashed'] = this.isTrashed;
-    } else {
-    //  json[r'isTrashed'] = null;
+    if (this.isTrashed.isPresent) {
+      final value = this.isTrashed.value;
+      json[r'isTrashed'] = value;
     }
-    if (this.reason != null) {
-      json[r'reason'] = this.reason;
-    } else {
-    //  json[r'reason'] = null;
+    if (this.reason.isPresent) {
+      final value = this.reason.value;
+      json[r'reason'] = value;
     }
     return json;
   }
@@ -103,10 +100,10 @@ class AssetBulkUploadCheckResult {
 
       return AssetBulkUploadCheckResult(
         action: AssetUploadAction.fromJson(json[r'action'])!,
-        assetId: mapValueOfType<String>(json, r'assetId'),
+        assetId: json.containsKey(r'assetId') ? Optional.present(mapValueOfType<String>(json, r'assetId')) : const Optional.absent(),
         id: mapValueOfType<String>(json, r'id')!,
-        isTrashed: mapValueOfType<bool>(json, r'isTrashed'),
-        reason: AssetRejectReason.fromJson(json[r'reason']),
+        isTrashed: json.containsKey(r'isTrashed') ? Optional.present(mapValueOfType<bool>(json, r'isTrashed')) : const Optional.absent(),
+        reason: json.containsKey(r'reason') ? Optional.present(AssetRejectReason.fromJson(json[r'reason'])) : const Optional.absent(),
       );
     }
     return null;

@@ -3,7 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
@@ -15,10 +15,10 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
     final isPreview = useState(ref.read(appConfigProvider).image.loadPreview);
     final isOriginal = useState(ref.read(appConfigProvider).image.loadOriginal);
     useValueChanged<bool, void>(isPreview.value, (_, __) {
-      ref.read(metadataProvider).write(.imageLoadPreview, isPreview.value);
+      ref.read(settingsProvider).write(.imageLoadPreview, isPreview.value);
     });
     useValueChanged<bool, void>(isOriginal.value, (_, __) {
-      ref.read(metadataProvider).write(.imageLoadOriginal, isOriginal.value);
+      ref.read(settingsProvider).write(.imageLoadOriginal, isOriginal.value);
     });
 
     return Column(

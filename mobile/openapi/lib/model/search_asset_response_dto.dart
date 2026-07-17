@@ -67,7 +67,7 @@ class SearchAssetResponseDto {
     if (this.nextPage != null) {
       json[r'nextPage'] = this.nextPage;
     } else {
-    //  json[r'nextPage'] = null;
+      json[r'nextPage'] = null;
     }
       json[r'total'] = this.total;
     return json;

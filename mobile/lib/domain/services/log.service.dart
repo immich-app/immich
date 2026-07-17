@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
 
@@ -12,10 +12,10 @@ import 'package:logging/logging.dart';
 ///
 /// It listens to Dart's [Logger.root], buffers logs in memory (optionally),
 /// writes them to a persistent [LogRepository], and manages log levels via
-/// [MetadataRepository].
+/// [SettingsRepository].
 class LogService {
   final LogRepository _logRepository;
-  final MetadataRepository _metadataRepository;
+  final SettingsRepository _settingsRepository;
 
   final List<LogMessage> _msgBuffer = [];
 
@@ -38,12 +38,12 @@ class LogService {
 
   static Future<LogService> init({
     required LogRepository logRepository,
-    required MetadataRepository metadataRepository,
+    required SettingsRepository settingsRepository,
     bool shouldBuffer = true,
   }) async {
     _instance ??= await create(
       logRepository: logRepository,
-      metadataRepository: metadataRepository,
+      settingsRepository: settingsRepository,
       shouldBuffer: shouldBuffer,
     );
     return _instance!;
@@ -51,17 +51,17 @@ class LogService {
 
   static Future<LogService> create({
     required LogRepository logRepository,
-    required MetadataRepository metadataRepository,
+    required SettingsRepository settingsRepository,
     bool shouldBuffer = true,
   }) async {
-    final instance = LogService._(logRepository, metadataRepository, shouldBuffer);
+    final instance = LogService._(logRepository, settingsRepository, shouldBuffer);
     await logRepository.truncate(limit: kLogTruncateLimit);
-    final level = instance._metadataRepository.systemConfig.logLevel;
+    final level = instance._settingsRepository.appConfig.logLevel;
     Logger.root.level = Level.LEVELS.elementAtOrNull(level.index) ?? Level.INFO;
     return instance;
   }
 
-  LogService._(this._logRepository, this._metadataRepository, this._shouldBuffer) {
+  LogService._(this._logRepository, this._settingsRepository, this._shouldBuffer) {
     _logSubscription = Logger.root.onRecord.listen(_handleLogRecord);
   }
 
@@ -91,7 +91,7 @@ class LogService {
   }
 
   Future<void> setLogLevel(LogLevel level) async {
-    await _metadataRepository.write(MetadataKey.logLevel, level);
+    await _settingsRepository.write(SettingsKey.logLevel, level);
     Logger.root.level = level.toLevel();
   }
 
@@ -112,10 +112,16 @@ class LogService {
     return _flushBuffer();
   }
 
-  Future<void> dispose() {
+  Future<void> dispose() async {
     _flushTimer?.cancel();
-    _logSubscription.cancel();
-    return _flushBuffer();
+    _flushTimer = null;
+    await _logSubscription.cancel();
+    await _flushBuffer();
+    // Allow a subsequent init() (e.g. when a worker isolate is reused) to
+    // create a fresh instance instead of returning this disposed one.
+    if (identical(_instance, this)) {
+      _instance = null;
+    }
   }
 
   Future<void> _flushBuffer() async {

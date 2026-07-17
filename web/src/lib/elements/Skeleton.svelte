@@ -1,14 +1,17 @@
 <script lang="ts">
+  import { cleanClass } from '$lib';
+
   interface Props {
     height: number;
     title?: string;
     invisible?: boolean;
+    class?: string;
   }
 
-  let { height = 0, title, invisible = false }: Props = $props();
+  let { height = 0, title, invisible = false, class: className }: Props = $props();
 </script>
 
-<div class={['overflow-clip', { invisible }]} style:height={height + 'px'}>
+<div class={cleanClass('overflow-clip', invisible && 'invisible', className)} style:height={height + 'px'}>
   {#if title}
     <div
       class="flex h-6 place-items-center pt-7 pb-5 text-xs font-medium text-immich-fg max-md:pt-5 max-md:pb-3 md:text-sm dark:text-immich-dark-fg"

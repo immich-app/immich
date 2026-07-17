@@ -91,7 +91,7 @@
     </div>
   </main>
   <header>
-    <ControlAppBar showBackButton={false}>
+    <ControlAppBar>
       {#snippet leading()}
         <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
           <Logo variant="inline" />

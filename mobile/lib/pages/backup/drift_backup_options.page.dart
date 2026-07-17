@@ -4,10 +4,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/settings/backup_settings/drift_backup_settings.dart';
 import 'package:logging/logging.dart';
@@ -19,7 +19,7 @@ class DriftBackupOptionsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     bool hasPopped = false;
-    final previousBackup = ref.read(metadataProvider).appConfig.backup;
+    final previousBackup = ref.read(appConfigProvider).backup;
     final previousCellularForVideos = previousBackup.useCellularForVideos;
     final previousCellularForPhotos = previousBackup.useCellularForPhotos;
     return PopScope(
@@ -27,7 +27,7 @@ class DriftBackupOptionsPage extends ConsumerWidget {
         // There is an issue with Flutter where the pop event
         // can be triggered multiple times, so we guard it with _hasPopped
 
-        final currentBackup = ref.read(metadataProvider).appConfig.backup;
+        final currentBackup = ref.read(appConfigProvider).backup;
         final currentCellularForVideos = currentBackup.useCellularForVideos;
         final currentCellularForPhotos = currentBackup.useCellularForPhotos;
 
@@ -45,7 +45,7 @@ class DriftBackupOptionsPage extends ConsumerWidget {
           }
 
           await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
-          final isBackupEnabled = MetadataRepository.instance.appConfig.backup.enabled;
+          final isBackupEnabled = SettingsRepository.instance.appConfig.backup.enabled;
           if (!isBackupEnabled) {
             return;
           }

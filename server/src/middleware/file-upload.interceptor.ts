@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { BadRequestException, CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
@@ -96,7 +96,11 @@ export class FileUploadInterceptor implements NestInterceptor {
 
   private handleFile(request: AuthRequest, file: Express.Multer.File, callback: Callback<Partial<ImmichFile>>) {
     request.on('error', (error) => {
-      this.logger.warn('Request error while uploading file, cleaning up', error);
+      if ('code' in error && error.code === 'ECONNRESET') {
+        this.logger.debug('Upload was cancelled');
+      } else {
+        this.logger.error(`Upload failed with: ${error}`);
+      }
       this.assetService.onUploadError(request, file).catch(this.logger.error);
     });
 
@@ -124,6 +128,9 @@ export class FileUploadInterceptor implements NestInterceptor {
         if (error) {
           hash?.destroy();
           return callback(error);
+        }
+        if (size === 0) {
+          return callback(new BadRequestException('File is empty'));
         }
         callback(null, {
           path,

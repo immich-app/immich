@@ -3,7 +3,6 @@ import { DateTime } from 'luxon';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { asLocalTimeISO } from '$lib/utils/date-time';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
 
 type MemoryIndex = {
@@ -131,7 +130,7 @@ class MemoryManager {
   }
 
   private async load() {
-    const memories = await searchMemories({ $for: asLocalTimeISO(DateTime.now()) });
+    const memories = await searchMemories({ $for: DateTime.now().toFormat('yyyy-MM-dd') });
     this.memories = memories.filter((memory) => memory.assets.length > 0);
   }
 

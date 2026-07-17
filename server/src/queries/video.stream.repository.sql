@@ -7,6 +7,7 @@ from
   "video_stream_session"
 where
   "id" = $1
+  and "expiresAt" > $2
 
 -- VideoStreamRepository.getVariant
 select
@@ -27,11 +28,13 @@ where
 
 -- VideoStreamRepository.getExpiredSessions
 select
-  "id"
+  "video_stream_session"."id",
+  "asset"."ownerId"
 from
   "video_stream_session"
+  inner join "asset" on "asset"."id" = "video_stream_session"."assetId"
 where
-  "expiresAt" <= $1
+  "video_stream_session"."expiresAt" <= $1
 
 -- VideoStreamRepository.extendSession
 update "video_stream_session"
@@ -44,3 +47,253 @@ where
 delete from "video_stream_session"
 where
   "id" = $1
+
+-- VideoStreamRepository.getForMainPlaylist
+select
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_video"."index",
+          "asset_video"."codecName",
+          "asset_video"."profile",
+          "asset_video"."level",
+          "asset_video"."bitrate",
+          "asset_exif"."exifImageWidth" as "width",
+          "asset_exif"."exifImageHeight" as "height",
+          "asset_video"."pixelFormat",
+          "asset_video"."frameCount",
+          "asset_exif"."fps" as "frameRate",
+          "asset_video"."timeBase",
+          case
+            when "asset_exif"."orientation" = '6' then -90
+            when "asset_exif"."orientation" = '8' then 90
+            when "asset_exif"."orientation" = '3' then 180
+            else 0
+          end as "rotation",
+          "asset_video"."colorPrimaries",
+          "asset_video"."colorMatrix",
+          "asset_video"."colorTransfer",
+          "asset_video"."dvProfile",
+          "asset_video"."dvLevel",
+          "asset_video"."dvBlSignalCompatibilityId"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_video"."assetId" is not null
+      ) as obj
+  ) as "videoStream",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_keyframe"."pts" as "keyframePts",
+          "asset_keyframe"."accDuration" as "keyframeAccDuration",
+          "asset_keyframe"."ownDuration" as "keyframeOwnDuration",
+          "asset_keyframe"."totalDuration",
+          "asset_keyframe"."packetCount",
+          "asset_keyframe"."outputFrames"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_keyframe"."assetId" is not null
+      ) as obj
+  ) as "packets"
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  inner join "asset_video" on "asset"."id" = "asset_video"."assetId"
+  inner join "asset_keyframe" on "asset"."id" = "asset_keyframe"."assetId"
+where
+  "asset"."id" = $1
+
+-- VideoStreamRepository.getForMediaPlaylist
+select
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_video"."index",
+          "asset_video"."codecName",
+          "asset_video"."profile",
+          "asset_video"."level",
+          "asset_video"."bitrate",
+          "asset_exif"."exifImageWidth" as "width",
+          "asset_exif"."exifImageHeight" as "height",
+          "asset_video"."pixelFormat",
+          "asset_video"."frameCount",
+          "asset_exif"."fps" as "frameRate",
+          "asset_video"."timeBase",
+          case
+            when "asset_exif"."orientation" = '6' then -90
+            when "asset_exif"."orientation" = '8' then 90
+            when "asset_exif"."orientation" = '3' then 180
+            else 0
+          end as "rotation",
+          "asset_video"."colorPrimaries",
+          "asset_video"."colorMatrix",
+          "asset_video"."colorTransfer",
+          "asset_video"."dvProfile",
+          "asset_video"."dvLevel",
+          "asset_video"."dvBlSignalCompatibilityId"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_video"."assetId" is not null
+      ) as obj
+  ) as "videoStream",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_keyframe"."pts" as "keyframePts",
+          "asset_keyframe"."accDuration" as "keyframeAccDuration",
+          "asset_keyframe"."ownDuration" as "keyframeOwnDuration",
+          "asset_keyframe"."totalDuration",
+          "asset_keyframe"."packetCount",
+          "asset_keyframe"."outputFrames"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_keyframe"."assetId" is not null
+      ) as obj
+  ) as "packets"
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  inner join "video_stream_session" on "asset"."id" = "video_stream_session"."assetId"
+  inner join "asset_video" on "asset"."id" = "asset_video"."assetId"
+  inner join "asset_keyframe" on "asset"."id" = "asset_keyframe"."assetId"
+where
+  "asset"."id" = $1
+  and "video_stream_session"."id" = $2
+  and "video_stream_session"."expiresAt" > $3
+
+-- VideoStreamRepository.getForTranscoding
+select
+  "asset"."originalPath",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_audio"."index",
+          "asset_audio"."codecName",
+          "asset_audio"."profile",
+          "asset_audio"."bitrate"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_audio"."assetId" is not null
+      ) as obj
+  ) as "audioStream",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_video"."index",
+          "asset_video"."codecName",
+          "asset_video"."profile",
+          "asset_video"."level",
+          "asset_video"."bitrate",
+          "asset_exif"."exifImageWidth" as "width",
+          "asset_exif"."exifImageHeight" as "height",
+          "asset_video"."pixelFormat",
+          "asset_video"."frameCount",
+          "asset_exif"."fps" as "frameRate",
+          "asset_video"."timeBase",
+          case
+            when "asset_exif"."orientation" = '6' then -90
+            when "asset_exif"."orientation" = '8' then 90
+            when "asset_exif"."orientation" = '3' then 180
+            else 0
+          end as "rotation",
+          "asset_video"."colorPrimaries",
+          "asset_video"."colorMatrix",
+          "asset_video"."colorTransfer",
+          "asset_video"."dvProfile",
+          "asset_video"."dvLevel",
+          "asset_video"."dvBlSignalCompatibilityId"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_video"."assetId" is not null
+      ) as obj
+  ) as "videoStream",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_video"."formatName",
+          "asset_video"."formatLongName",
+          "asset"."duration",
+          "asset_video"."bitrate"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_video"."assetId" is not null
+      ) as obj
+  ) as "format",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_keyframe"."pts" as "keyframePts",
+          "asset_keyframe"."accDuration" as "keyframeAccDuration",
+          "asset_keyframe"."ownDuration" as "keyframeOwnDuration",
+          "asset_keyframe"."totalDuration",
+          "asset_keyframe"."packetCount",
+          "asset_keyframe"."outputFrames"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_keyframe"."assetId" is not null
+      ) as obj
+  ) as "packets"
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_audio" on "asset"."id" = "asset_audio"."assetId"
+  inner join "asset_video" on "asset"."id" = "asset_video"."assetId"
+  inner join "asset_keyframe" on "asset"."id" = "asset_keyframe"."assetId"
+where
+  "asset"."id" = $1

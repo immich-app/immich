@@ -86,7 +86,7 @@ export class ServerService extends BaseService {
   }
 
   async getFeatures(): Promise<ServerFeaturesDto> {
-    const { reverseGeocoding, metadata, map, machineLearning, trash, oauth, passwordLogin, notifications } =
+    const { reverseGeocoding, metadata, map, machineLearning, trash, oauth, passwordLogin, notifications, ffmpeg } =
       await this.getConfig({ withCache: false });
     const { configFile } = this.configRepository.getEnv();
 
@@ -106,6 +106,7 @@ export class ServerService extends BaseService {
       passwordLogin: passwordLogin.enabled,
       configFile: !!configFile,
       email: notifications.smtp.enabled,
+      realtimeTranscoding: ffmpeg.realtime.enabled,
     };
   }
 
@@ -127,6 +128,7 @@ export class ServerService extends BaseService {
       mapDarkStyleUrl: config.map.darkStyle,
       mapLightStyleUrl: config.map.lightStyle,
       maintenanceMode: false,
+      minFaces: config.machineLearning.facialRecognition.minFaces,
     };
   }
 

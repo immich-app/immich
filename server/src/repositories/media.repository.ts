@@ -3,10 +3,9 @@ import { ExifDateTime, exiftool, WriteTags } from 'exiftool-vendored';
 import ffmpeg, { FfprobeData, FfprobeStream } from 'fluent-ffmpeg';
 import _ from 'lodash';
 import { Duration } from 'luxon';
-import { execFile as execFileCb } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import fs from 'node:fs/promises';
 import { Writable } from 'node:stream';
-import { promisify } from 'node:util';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
 import { Exif } from 'src/database';
@@ -43,8 +42,6 @@ const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
     ffmpeg.ffprobe(input, options, (error, data) => (error ? reject(error) : resolve(data))),
   );
-
-const execFile = promisify(execFileCb);
 
 sharp.concurrency(0);
 sharp.cache({ files: 0 });
@@ -291,33 +288,37 @@ export class MediaRepository {
    * Needed for accurate segments, especially when remuxing, seeking and/or VFR is involved.
    * Scanning packets for keyframes in JS is much faster than -skip_frame nokey since it avoids decoding the video.
    */
-  async probePackets(input: string, streamIndex: number): Promise<VideoPacketInfo | null> {
-    const { stdout } = await execFile('ffprobe', [
-      '-v',
-      'error',
-      '-select_streams',
-      String(streamIndex),
-      '-show_entries',
-      'packet=pts,duration,flags',
-      '-of',
-      'csv=p=0',
-      input,
-    ]);
+  probePackets(input: string, streamIndex: number): Promise<VideoPacketInfo | null> {
+    const ffprobe = spawn(
+      'ffprobe',
+      [
+        '-v',
+        'error',
+        '-select_streams',
+        String(streamIndex),
+        '-show_entries',
+        'packet=pts,duration,flags',
+        '-of',
+        'csv=p=0',
+        input,
+      ],
+      { stdio: ['ignore', 'pipe', 'pipe'] },
+    );
 
     let totalDuration = 0;
     const keyframePts: number[] = [];
     const keyframeAccDuration: number[] = [];
     const keyframeOwnDuration: number[] = [];
     const postDiscard: { pts: number; duration: number }[] = [];
-    for (const line of stdout.split('\n')) {
+    const parseLine = (line: string) => {
       if (!line) {
-        continue;
+        return;
       }
       const [ptsStr, durationStr, flags] = line.split(',');
       const pts = Number.parseInt(ptsStr);
       const duration = Number.parseInt(durationStr);
-      if (Number.isNaN(pts) || Number.isNaN(duration)) {
-        continue;
+      if (Number.isNaN(pts) || Number.isNaN(duration) || !flags) {
+        return;
       }
       // Discarded packets don't contribute to packet count, but still contribute to video duration
       totalDuration += duration;
@@ -332,20 +333,43 @@ export class MediaRepository {
         // Non-keyframes are accounted for in totalDuration.
         keyframeOwnDuration.push(duration);
       }
-    }
-
-    if (postDiscard.length === 0) {
-      return null;
-    }
-
-    return {
-      totalDuration,
-      packetCount: postDiscard.length,
-      outputFrames: this.cfrOutputFrames(postDiscard, postDiscard.length / totalDuration),
-      keyframePts,
-      keyframeAccDuration,
-      keyframeOwnDuration,
     };
+
+    let stderr = '';
+    let remainder = '';
+    ffprobe.stderr.setEncoding('utf8');
+    ffprobe.stderr.on('data', (chunk: string) => (stderr += chunk));
+    ffprobe.stdout.setEncoding('utf8');
+    ffprobe.stdout.on('data', (chunk: string) => {
+      const lines = chunk.split('\n');
+      lines[0] = remainder + lines[0];
+      remainder = lines.pop() as string;
+      for (const line of lines) {
+        parseLine(line);
+      }
+    });
+
+    return new Promise<VideoPacketInfo | null>((resolve, reject) => {
+      ffprobe.on('error', reject);
+      ffprobe.on('close', (code) => {
+        if (code !== 0) {
+          return reject(new Error(`ffprobe exited with code ${code}: ${stderr.trim()}`));
+        }
+        parseLine(remainder);
+        if (postDiscard.length === 0) {
+          return resolve(null);
+        }
+
+        resolve({
+          totalDuration,
+          packetCount: postDiscard.length,
+          outputFrames: this.cfrOutputFrames(postDiscard, postDiscard.length / totalDuration),
+          keyframePts,
+          keyframeAccDuration,
+          keyframeOwnDuration,
+        });
+      });
+    });
   }
 
   transcode(input: string, output: string | Writable, options: TranscodeCommand): Promise<void> {
@@ -387,7 +411,7 @@ export class MediaRepository {
   }
 
   async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
-    const { width = 0, height = 0, hasAlpha = false } = await sharp(input).metadata();
+    const { width = 0, height = 0, hasAlpha = false } = await sharp(input, { unlimited: true }).metadata();
     return { width, height, isTransparent: hasAlpha };
   }
 
@@ -478,8 +502,10 @@ export class MediaRepository {
       case 'av1': {
         return this.parseEnum(Av1Profile, profile);
       }
+      default: {
+        return null;
+      }
     }
-    return null;
   }
 
   private compareStreams(a: FfprobeStream, b: FfprobeStream): number {
@@ -490,18 +516,43 @@ export class MediaRepository {
     return this.parseInt(b.bit_rate) - this.parseInt(a.bit_rate);
   }
 
+  /* Ported from https://code.ffmpeg.org/FFmpeg/FFmpeg/src/commit/5c44245878e235ae64fe87fb9877644856d33d1d/fftools/ffmpeg_filter.c
+   * SPDX-License-Identifier: LGPL-2.1-or-later
+   * Copyright (c) FFmpeg authors and contributors — https://ffmpeg.org/
+   * Modifications: TS port operating on probe-derived packet metadata rather than decoded AVFrames. */
   private cfrOutputFrames(packets: { pts: number; duration: number }[], slotsPerTick: number) {
-    // Packets may be out of PTS order due to B-frames
     packets.sort((a, b) => a.pts - b.pts);
     const firstPts = packets[0].pts;
     let outputFrames = 0;
     let nextPts = 0;
+    const history = [0, 0, 0];
     for (const pkt of packets) {
-      const delta = (pkt.pts - firstPts) * slotsPerTick - nextPts + pkt.duration * slotsPerTick;
-      const nb = delta < -1.1 ? 0 : delta > 1.1 ? Math.round(delta) : 1;
+      const syncIpts = (pkt.pts - firstPts) * slotsPerTick;
+      const duration = pkt.duration * slotsPerTick;
+      let delta0 = syncIpts - nextPts;
+      const delta = delta0 + duration;
+
+      if (delta0 < 0 && delta > 0) {
+        delta0 = 0;
+      }
+
+      let nb = 1;
+      let nbPrev = 0;
+      if (delta < -1.1) {
+        nb = 0;
+      } else if (delta > 1.1) {
+        nb = Math.round(delta);
+        if (delta0 > 1.1) {
+          nbPrev = Math.round(delta0 - 0.6);
+        }
+      }
       outputFrames += nb;
       nextPts += nb;
+      history[2] = history[1];
+      history[1] = history[0];
+      history[0] = nbPrev;
     }
-    return outputFrames;
+    const median = history.sort((a, b) => a - b)[1];
+    return outputFrames + median;
   }
 }

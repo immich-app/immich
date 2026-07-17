@@ -1,17 +1,18 @@
-<script lang="ts">
+<script lang="ts" generics="T extends string | number">
   import { Checkbox, Label } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
 
   interface Props {
-    value: string[];
-    options: { value: string; text: string }[];
+    value: T[];
+    options: { value: T; text: string }[];
     label?: string;
     desc?: string;
     name?: string;
     isEdited?: boolean;
     disabled?: boolean;
+    lockedOptions?: T[];
   }
 
   let {
@@ -22,9 +23,10 @@
     name = '',
     isEdited = false,
     disabled = false,
+    lockedOptions = [],
   }: Props = $props();
 
-  function handleCheckboxChange(option: string) {
+  function handleCheckboxChange(option: T) {
     value = value.includes(option) ? value.filter((item) => item !== option) : [...value, option];
   }
 </script>
@@ -57,7 +59,7 @@
           size="tiny"
           id="{option.value}-checkbox"
           checked={value.includes(option.value)}
-          {disabled}
+          disabled={disabled || lockedOptions.includes(option.value)}
           onCheckedChange={() => handleCheckboxChange(option.value)}
         />
         <Label label={option.text} for="{option.value}-checkbox" size="small" />

@@ -1,4 +1,4 @@
-import { AUDIO_ENCODER } from 'src/constants';
+import { AUDIO_ENCODER, AV1_LEVELS, CodecLevel, H264_LEVELS, HEVC_LEVELS, SUPPORTED_HWA_CODECS } from 'src/constants';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   ColorMatrix,
@@ -13,38 +13,79 @@ import {
 import {
   AudioStreamInfo,
   BitrateDistribution,
+  HlsCommandOptions,
   TranscodeCommand,
-  VideoCodecHWConfig,
   VideoCodecSWConfig,
   VideoFormat,
   VideoInterfaces,
   VideoStreamInfo,
+  VideoTuning,
 } from 'src/types';
+
+export const isVideoRotated = (videoStream: VideoStreamInfo): boolean => Math.abs(videoStream.rotation) === 90;
+
+export const isVideoVertical = (videoStream: VideoStreamInfo): boolean =>
+  videoStream.height > videoStream.width || isVideoRotated(videoStream);
+
+export const getOutputSize = (videoStream: VideoStreamInfo, targetRes: number) => {
+  const factor = Math.max(videoStream.height, videoStream.width) / Math.min(videoStream.height, videoStream.width);
+  let larger = Math.round(targetRes * factor);
+  if (larger % 2 !== 0) {
+    larger -= 1;
+  }
+  return isVideoVertical(videoStream) ? { width: targetRes, height: larger } : { width: larger, height: targetRes };
+};
+
+const pickLevel = (levels: CodecLevel[], frame: number, rate: number) =>
+  levels.find((level) => frame <= level.maxFrame && rate <= level.maxRate) ?? levels.at(-1)!;
+
+export const getCodecString = (codec: VideoCodec, width: number, height: number, fps: number): string => {
+  switch (codec) {
+    case VideoCodec.H264: {
+      const macroblocks = Math.ceil(width / 16) * Math.ceil(height / 16);
+      return `avc1.6400${pickLevel(H264_LEVELS, macroblocks, macroblocks * fps).token}`;
+    }
+    case VideoCodec.Hevc: {
+      const samples = width * height;
+      return `hvc1.1.6.${pickLevel(HEVC_LEVELS, samples, samples * fps).token}.B0`;
+    }
+    case VideoCodec.Av1: {
+      const samples = width * height;
+      return `av01.0.${pickLevel(AV1_LEVELS, samples, samples * fps).token}.08`;
+    }
+    default: {
+      throw new Error(`Codec '${codec}' does not support HLS codec strings`);
+    }
+  }
+};
 
 export class BaseConfig implements VideoCodecSWConfig {
   readonly presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
-  protected constructor(protected config: SystemConfigFFmpegDto) {}
+  protected constructor(
+    protected config: SystemConfigFFmpegDto,
+    protected tune: VideoTuning = { strictGop: false, lowLatency: false },
+  ) {}
 
-  static create(config: SystemConfigFFmpegDto, interfaces: VideoInterfaces): VideoCodecSWConfig {
+  static create(config: SystemConfigFFmpegDto, interfaces: VideoInterfaces, tune?: VideoTuning) {
     if (config.accel === TranscodeHardwareAcceleration.Disabled) {
-      return this.getSWCodecConfig(config);
+      return this.getSWCodecConfig(config, tune);
     }
-    return this.getHWCodecConfig(config, interfaces);
+    return this.getHWCodecConfig(config, interfaces, tune);
   }
 
-  private static getSWCodecConfig(config: SystemConfigFFmpegDto) {
+  private static getSWCodecConfig(config: SystemConfigFFmpegDto, tune?: VideoTuning): VideoCodecSWConfig {
     switch (config.targetVideoCodec) {
       case VideoCodec.H264: {
-        return new H264Config(config);
+        return new H264Config(config, tune);
       }
       case VideoCodec.Hevc: {
-        return new HEVCConfig(config);
+        return new HEVCConfig(config, tune);
       }
       case VideoCodec.Vp9: {
-        return new VP9Config(config);
+        return new VP9Config(config, tune);
       }
       case VideoCodec.Av1: {
-        return new AV1Config(config);
+        return new AV1Config(config, tune);
       }
       default: {
         throw new Error(`Codec '${config.targetVideoCodec}' is unsupported`);
@@ -52,72 +93,122 @@ export class BaseConfig implements VideoCodecSWConfig {
     }
   }
 
-  private static getHWCodecConfig(config: SystemConfigFFmpegDto, interfaces: VideoInterfaces) {
-    let handler: VideoCodecHWConfig;
+  private static getHWCodecConfig(config: SystemConfigFFmpegDto, interfaces: VideoInterfaces, tune?: VideoTuning) {
+    if (!SUPPORTED_HWA_CODECS[config.accel].includes(config.targetVideoCodec)) {
+      throw new Error(
+        `${config.accel.toUpperCase()} acceleration does not support codec '${config.targetVideoCodec.toUpperCase()}'. Supported codecs: ${SUPPORTED_HWA_CODECS[config.accel]}`,
+      );
+    }
+
+    let handler: VideoCodecSWConfig;
     switch (config.accel) {
       case TranscodeHardwareAcceleration.Nvenc: {
         handler = config.accelDecode
-          ? new NvencHwDecodeConfig(config, interfaces)
-          : new NvencSwDecodeConfig(config, interfaces);
+          ? new NvencHwDecodeConfig(config, interfaces, tune)
+          : new NvencSwDecodeConfig(config, interfaces, tune);
         break;
       }
       case TranscodeHardwareAcceleration.Qsv: {
         handler = config.accelDecode
-          ? new QsvHwDecodeConfig(config, interfaces)
-          : new QsvSwDecodeConfig(config, interfaces);
+          ? new QsvHwDecodeConfig(config, interfaces, tune)
+          : new QsvSwDecodeConfig(config, interfaces, tune);
         break;
       }
       case TranscodeHardwareAcceleration.Vaapi: {
         handler = config.accelDecode
-          ? new VaapiHwDecodeConfig(config, interfaces)
-          : new VaapiSwDecodeConfig(config, interfaces);
+          ? new VaapiHwDecodeConfig(config, interfaces, tune)
+          : new VaapiSwDecodeConfig(config, interfaces, tune);
         break;
       }
       case TranscodeHardwareAcceleration.Rkmpp: {
         handler = config.accelDecode
-          ? new RkmppHwDecodeConfig(config, interfaces)
-          : new RkmppSwDecodeConfig(config, interfaces);
+          ? new RkmppHwDecodeConfig(config, interfaces, tune)
+          : new RkmppSwDecodeConfig(config, interfaces, tune);
         break;
       }
       default: {
         throw new Error(`${config.accel.toUpperCase()} acceleration is unsupported`);
       }
     }
-    if (!handler.getSupportedCodecs().includes(config.targetVideoCodec)) {
-      throw new Error(
-        `${config.accel.toUpperCase()} acceleration does not support codec '${config.targetVideoCodec.toUpperCase()}'. Supported codecs: ${handler.getSupportedCodecs()}`,
-      );
-    }
 
     return handler;
   }
 
-  getCommand(
-    target: TranscodeTarget,
-    videoStream: VideoStreamInfo,
-    audioStream?: AudioStreamInfo,
-    format?: VideoFormat,
-  ) {
+  getCommand(target: TranscodeTarget, video: VideoStreamInfo, audio?: AudioStreamInfo, format?: VideoFormat) {
     const options = {
-      inputOptions: this.getBaseInputOptions(videoStream, format),
-      outputOptions: [...this.getBaseOutputOptions(target, videoStream, audioStream), '-v', 'verbose'],
+      inputOptions: this.getBaseInputOptions(video, format),
+      outputOptions: [
+        ...this.getBaseOutputOptions(target, video, audio),
+        ...this.getPresetOptions(),
+        ...this.getBitrateOptions(),
+        ...this.getEncoderOptions(),
+        '-movflags',
+        'faststart',
+        '-fps_mode',
+        'passthrough',
+        '-v',
+        'verbose',
+      ],
       twoPass: this.eligibleForTwoPass(),
-      progress: { frameCount: videoStream.frameCount, percentInterval: 5 },
+      progress: { frameCount: video.frameCount, percentInterval: 5 },
     } as TranscodeCommand;
     if ([TranscodeTarget.All, TranscodeTarget.Video].includes(target)) {
-      const filters = this.getFilterOptions(videoStream);
+      const filters = this.getFilterOptions(video);
       if (filters.length > 0) {
         options.outputOptions.push('-vf', filters.join(','));
       }
     }
 
-    options.outputOptions.push(
+    return options;
+  }
+
+  getHlsCommand(options: HlsCommandOptions, video: VideoStreamInfo, audio?: AudioStreamInfo) {
+    const args: string[] = this.getBaseInputOptions(video);
+    if (options.seekSeconds) {
+      args.push('-ss', String(options.seekSeconds));
+    }
+    args.push(
+      '-nostdin',
+      '-nostats',
+      '-i',
+      options.inputPath,
+      ...this.getBaseOutputOptions(options.target, video, audio),
       ...this.getPresetOptions(),
-      ...this.getOutputThreadOptions(),
       ...this.getBitrateOptions(),
+      ...this.getEncoderOptions(),
+      '-copyts',
+      '-r',
+      `${options.packetCount * options.timeBase}/${options.totalDuration}`,
+      '-avoid_negative_ts',
+      'disabled',
+      '-f',
+      'hls',
+      '-hls_time',
+      String(options.segmentDuration),
+      '-hls_list_size',
+      '0',
+      '-hls_segment_type',
+      'fmp4',
+      '-hls_fmp4_init_filename',
+      options.initFilename,
+      '-hls_segment_options',
+      'movflags=+frag_discont',
+      '-hls_flags',
+      'temp_file',
+      '-hls_segment_filename',
+      options.segmentFilename,
+      '-start_number',
+      String(options.startSegment),
     );
 
-    return options;
+    if ([TranscodeTarget.All, TranscodeTarget.Video].includes(options.target)) {
+      const filters = this.getFilterOptions(video);
+      if (filters.length > 0) {
+        args.push('-vf', filters.join(','));
+      }
+    }
+    args.push(options.playlistFilename);
+    return args;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -129,25 +220,14 @@ export class BaseConfig implements VideoCodecSWConfig {
     const videoCodec = [TranscodeTarget.All, TranscodeTarget.Video].includes(target) ? this.getVideoCodec() : 'copy';
     const audioCodec = [TranscodeTarget.All, TranscodeTarget.Audio].includes(target) ? this.getAudioEncoder() : 'copy';
 
-    const options = [
-      '-c:v',
-      videoCodec,
-      '-c:a',
-      audioCodec,
-      // Makes a second pass moving the moov atom to the
-      // beginning of the file for improved playback speed.
-      '-movflags',
-      'faststart',
-      '-fps_mode',
-      'passthrough',
-      '-map',
-      `0:${videoStream.index}`,
-      '-map_metadata',
-      '-1',
-    ];
-
+    const options = ['-c:v', videoCodec, '-c:a', audioCodec, '-map', `0:${videoStream.index}`, '-map_metadata', '-1'];
     if (audioStream) {
       options.push('-map', `0:${audioStream.index}`);
+      // If there are more than 2 channels sometimes the channel config is broken when re-encoded
+      // TODO: Store the number of channels in the db and then set it during the transcoding: -channel_layout 5.1
+      if ([TranscodeTarget.All, TranscodeTarget.Audio].includes(target)) {
+        options.push('-ac', '2');
+      }
     }
     if (this.getBFrames() > -1) {
       options.push('-bf', `${this.getBFrames()}`);
@@ -157,16 +237,21 @@ export class BaseConfig implements VideoCodecSWConfig {
     }
     if (this.getGopSize() > 0) {
       options.push('-g', `${this.getGopSize()}`);
+      if (this.tune.strictGop) {
+        options.push('-keyint_min', `${this.getGopSize()}`);
+      }
     }
-
-    if (
-      this.config.targetVideoCodec === VideoCodec.Hevc &&
-      (videoCodec !== 'copy' || videoStream.codecName === 'hevc')
-    ) {
+    const isHvc =
+      this.config.targetVideoCodec === VideoCodec.Hevc && (videoCodec !== 'copy' || videoStream.codecName === 'hevc');
+    if (isHvc) {
       options.push('-tag:v', 'hvc1');
     }
 
     return options;
+  }
+
+  getEncoderOptions(): string[] {
+    return [];
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -272,25 +357,7 @@ export class BaseConfig implements VideoCodecSWConfig {
 
   getScaling(videoStream: VideoStreamInfo, mult = 2) {
     const targetResolution = this.getTargetResolution(videoStream);
-    return this.isVideoVertical(videoStream) ? `${targetResolution}:-${mult}` : `-${mult}:${targetResolution}`;
-  }
-
-  getSize(videoStream: VideoStreamInfo) {
-    const smaller = this.getTargetResolution(videoStream);
-    const factor = Math.max(videoStream.height, videoStream.width) / Math.min(videoStream.height, videoStream.width);
-    let larger = Math.round(smaller * factor);
-    if (larger % 2 !== 0) {
-      larger -= 1;
-    }
-    return this.isVideoVertical(videoStream) ? { width: smaller, height: larger } : { width: larger, height: smaller };
-  }
-
-  isVideoRotated(videoStream: VideoStreamInfo) {
-    return Math.abs(videoStream.rotation) === 90;
-  }
-
-  isVideoVertical(videoStream: VideoStreamInfo) {
-    return videoStream.height > videoStream.width || this.isVideoRotated(videoStream);
+    return isVideoVertical(videoStream) ? `${targetResolution}:-${mult}` : `-${mult}:${targetResolution}`;
   }
 
   isBitrateConstrained() {
@@ -353,21 +420,16 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 }
 
-export class BaseHWConfig extends BaseConfig implements VideoCodecHWConfig {
+export class BaseHWConfig extends BaseConfig {
   protected device: string;
-  protected interfaces: VideoInterfaces;
 
   constructor(
     protected config: SystemConfigFFmpegDto,
-    interfaces: VideoInterfaces,
+    protected interfaces: VideoInterfaces,
+    tune?: VideoTuning,
   ) {
-    super(config);
-    this.interfaces = interfaces;
+    super(config, tune);
     this.device = this.getDevice(interfaces);
-  }
-
-  getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.Hevc];
   }
 
   validateDevices(devices: string[]) {
@@ -474,24 +536,32 @@ export class ThumbnailConfig extends BaseConfig {
 }
 
 export class H264Config extends BaseConfig {
-  getOutputThreadOptions() {
-    const options = super.getOutputThreadOptions();
-    if (this.config.threads === 1) {
-      options.push('-x264-params', 'frame-threads=1:pools=none');
+  getEncoderOptions(): string[] {
+    const out = this.getOutputThreadOptions();
+    if (this.tune.strictGop) {
+      out.push('-sc_threshold:v', '0');
     }
-
-    return options;
+    if (this.config.threads === 1) {
+      out.push('-x264-params', 'frame-threads=1:pools=none');
+    }
+    return out;
   }
 }
 
 export class HEVCConfig extends BaseConfig {
-  getOutputThreadOptions() {
-    const options = super.getOutputThreadOptions();
-    if (this.config.threads === 1) {
-      options.push('-x265-params', 'frame-threads=1:pools=none');
+  getEncoderOptions(): string[] {
+    const out: string[] = this.getOutputThreadOptions();
+    const params: string[] = [];
+    if (this.tune.strictGop) {
+      params.push('no-scenecut=1', 'no-open-gop=1');
     }
-
-    return options;
+    if (this.config.threads === 1) {
+      params.push('frame-threads=1', 'pools=none');
+    }
+    if (params.length > 0) {
+      out.push('-x265-params', params.join(':'));
+    }
+    return out;
   }
 }
 
@@ -520,8 +590,8 @@ export class VP9Config extends BaseConfig {
     return [`-${this.useCQP() ? 'q:v' : 'crf'}`, `${this.config.crf}`, '-b:v', `${bitrates.max}${bitrates.unit}`];
   }
 
-  getOutputThreadOptions() {
-    return ['-row-mt', '1', ...super.getOutputThreadOptions()];
+  getEncoderOptions(): string[] {
+    return ['-row-mt', '1', ...this.getOutputThreadOptions()];
   }
 
   eligibleForTwoPass() {
@@ -543,23 +613,22 @@ export class AV1Config extends BaseConfig {
   }
 
   getBitrateOptions() {
-    const options = ['-crf', `${this.config.crf}`];
-    const bitrates = this.getBitrateDistribution();
-    const svtparams = [];
-    if (this.config.threads > 0) {
-      svtparams.push(`lp=${this.config.threads}`);
-    }
-    if (bitrates.max > 0) {
-      svtparams.push(`mbr=${bitrates.max}${bitrates.unit}`);
-    }
-    if (svtparams.length > 0) {
-      options.push('-svtav1-params', svtparams.join(':'));
-    }
-    return options;
+    return ['-crf', `${this.config.crf}`];
   }
 
-  getOutputThreadOptions() {
-    return []; // Already set above with svtav1-params
+  getEncoderOptions(): string[] {
+    const params: string[] = [];
+    if (this.tune.lowLatency) {
+      params.push('hierarchical-levels=3', 'lookahead=0', 'enable-tf=0');
+    }
+    if (this.config.threads > 0) {
+      params.push(`lp=${this.config.threads}`);
+    }
+    const bitrates = this.getBitrateDistribution();
+    if (bitrates.max > 0) {
+      params.push(`mbr=${bitrates.max}${bitrates.unit}`);
+    }
+    return params.length > 0 ? ['-svtav1-params', params.join(':')] : [];
   }
 
   eligibleForTwoPass() {
@@ -570,10 +639,6 @@ export class AV1Config extends BaseConfig {
 export class NvencSwDecodeConfig extends BaseHWConfig {
   getDevice() {
     return '0';
-  }
-
-  getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Av1];
   }
 
   getBaseInputOptions() {
@@ -652,6 +717,14 @@ export class NvencSwDecodeConfig extends BaseHWConfig {
     return [];
   }
 
+  getEncoderOptions(): string[] {
+    const out = this.getOutputThreadOptions();
+    if (this.tune.strictGop) {
+      out.push('-forced-idr', '1');
+    }
+    return out;
+  }
+
   getRefs() {
     const bframes = this.getBFrames();
     if (bframes > 0 && bframes < 3 && this.config.refs < 3) {
@@ -703,8 +776,8 @@ export class NvencHwDecodeConfig extends NvencSwDecodeConfig {
     return ['-threads', '1'];
   }
 
-  getOutputThreadOptions() {
-    return [];
+  getEncoderOptions(): string[] {
+    return this.tune.strictGop ? ['-forced-idr', '1'] : [];
   }
 }
 
@@ -744,13 +817,15 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
     const options = [`-${this.useCQP() ? 'q:v' : 'global_quality:v'}`, `${this.config.crf}`];
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
+      // Workaround for https://github.com/immich-app/immich/issues/29220, to be revisited
+      // QSV seems to ignore -maxrate without -b:v
+      // -b:v alongside global_quality uses QVBR
+      if (!this.useCQP()) {
+        options.push('-b:v', `${bitrates.target}${bitrates.unit}`);
+      }
       options.push('-maxrate', `${bitrates.max}${bitrates.unit}`, '-bufsize', `${bitrates.max * 2}${bitrates.unit}`);
     }
     return options;
-  }
-
-  getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Vp9, VideoCodec.Av1];
   }
 
   // recommended from https://github.com/intel/media-delivery/blob/master/doc/benchmarks/intel-iris-xe-max-graphics/intel-iris-xe-max-graphics.md
@@ -774,6 +849,14 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
 
   getScaling(videoStream: VideoStreamInfo): string {
     return super.getScaling(videoStream, 1);
+  }
+
+  getEncoderOptions(): string[] {
+    const out = this.getOutputThreadOptions();
+    if (this.tune.strictGop) {
+      out.push('-idr_interval', '0');
+    }
+    return out;
   }
 }
 
@@ -888,12 +971,16 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
     return options;
   }
 
-  getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.Hevc, VideoCodec.Vp9, VideoCodec.Av1];
-  }
-
   useCQP() {
     return this.config.cqMode !== CQMode.Icq || this.config.targetVideoCodec === VideoCodec.Vp9;
+  }
+
+  getEncoderOptions(): string[] {
+    const out = this.getOutputThreadOptions();
+    if (this.tune.strictGop) {
+      out.push('-idr_interval', '0');
+    }
+    return out;
   }
 }
 
@@ -986,10 +1073,6 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
     }
     // use CRF value as QP value
     return ['-rc_mode', 'CQP', '-qp_init', `${this.config.crf}`];
-  }
-
-  getSupportedCodecs() {
-    return [VideoCodec.H264, VideoCodec.Hevc];
   }
 
   getVideoCodec(): string {

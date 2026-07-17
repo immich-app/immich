@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
@@ -11,7 +10,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
@@ -130,7 +129,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _apiService.updateHeaders();
 
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-    final headerMap = _ref.read(metadataProvider).systemConfig.network.customHeaders;
+    final headerMap = _ref.read(appConfigProvider).network.customHeaders;
     final customHeaders = headerMap.isEmpty ? null : jsonEncode(headerMap);
     await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
 
@@ -179,19 +178,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> saveWifiName(String wifiName) async {
-    await _ref.read(metadataProvider).write(MetadataKey.networkPreferredWifiName, wifiName);
+    await _ref.read(settingsProvider).write(.networkPreferredWifiName, wifiName);
   }
 
   Future<void> saveLocalEndpoint(String url) async {
-    await _ref.read(metadataProvider).write(MetadataKey.networkLocalEndpoint, url);
+    await _ref.read(settingsProvider).write(.networkLocalEndpoint, url);
+    await _apiService.updateHeaders();
   }
 
   String? getSavedWifiName() {
-    return _ref.read(metadataProvider).systemConfig.network.preferredWifiName;
+    return _ref.read(appConfigProvider).network.preferredWifiName;
   }
 
   String? getSavedLocalEndpoint() {
-    return _ref.read(metadataProvider).systemConfig.network.localEndpoint;
+    return _ref.read(appConfigProvider).network.localEndpoint;
   }
 
   /// Returns the current server endpoint (with /api) URL from the store

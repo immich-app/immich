@@ -25,7 +25,7 @@ export class GCastDestination implements ICastDestination {
   private currentUrl: string | null = null;
 
   async initialize(): Promise<boolean> {
-    if (!authManager.authenticated || authManager.preferences.cast.gCastEnabled) {
+    if (!authManager.authenticated || !authManager.preferences.cast.gCastEnabled) {
       this.isAvailable = false;
       return false;
     }
@@ -171,6 +171,7 @@ export class GCastDestination implements ICastDestination {
   ///
   private onSessionStateChanged(event: cast.framework.SessionStateEventData) {
     switch (event.sessionState) {
+      case cast.framework.SessionState.NO_SESSION:
       case cast.framework.SessionState.SESSION_ENDED: {
         this.session = null;
         break;
@@ -180,6 +181,11 @@ export class GCastDestination implements ICastDestination {
         this.session = event.session.getSessionObj();
         break;
       }
+      case cast.framework.SessionState.SESSION_START_FAILED: {
+        console.error('Google Cast failed to start session:', event.errorCode);
+        break;
+      }
+      // no default
     }
   }
 

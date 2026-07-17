@@ -13,11 +13,11 @@ part of openapi.api;
 class AuthStatusResponseDto {
   /// Returns a new [AuthStatusResponseDto] instance.
   AuthStatusResponseDto({
-    this.expiresAt,
+    this.expiresAt = const Optional.absent(),
     required this.isElevated,
     required this.password,
     required this.pinCode,
-    this.pinExpiresAt,
+    this.pinExpiresAt = const Optional.absent(),
   });
 
   /// Session expiration date
@@ -27,7 +27,7 @@ class AuthStatusResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? expiresAt;
+  Optional<String?> expiresAt;
 
   /// Is elevated session
   bool isElevated;
@@ -45,7 +45,7 @@ class AuthStatusResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? pinExpiresAt;
+  Optional<String?> pinExpiresAt;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AuthStatusResponseDto &&
@@ -69,18 +69,16 @@ class AuthStatusResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt;
-    } else {
-    //  json[r'expiresAt'] = null;
+    if (this.expiresAt.isPresent) {
+      final value = this.expiresAt.value;
+      json[r'expiresAt'] = value;
     }
       json[r'isElevated'] = this.isElevated;
       json[r'password'] = this.password;
       json[r'pinCode'] = this.pinCode;
-    if (this.pinExpiresAt != null) {
-      json[r'pinExpiresAt'] = this.pinExpiresAt;
-    } else {
-    //  json[r'pinExpiresAt'] = null;
+    if (this.pinExpiresAt.isPresent) {
+      final value = this.pinExpiresAt.value;
+      json[r'pinExpiresAt'] = value;
     }
     return json;
   }
@@ -94,11 +92,11 @@ class AuthStatusResponseDto {
       final json = value.cast<String, dynamic>();
 
       return AuthStatusResponseDto(
-        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
+        expiresAt: json.containsKey(r'expiresAt') ? Optional.present(mapValueOfType<String>(json, r'expiresAt')) : const Optional.absent(),
         isElevated: mapValueOfType<bool>(json, r'isElevated')!,
         password: mapValueOfType<bool>(json, r'password')!,
         pinCode: mapValueOfType<bool>(json, r'pinCode')!,
-        pinExpiresAt: mapValueOfType<String>(json, r'pinExpiresAt'),
+        pinExpiresAt: json.containsKey(r'pinExpiresAt') ? Optional.present(mapValueOfType<String>(json, r'pinExpiresAt')) : const Optional.absent(),
       );
     }
     return null;

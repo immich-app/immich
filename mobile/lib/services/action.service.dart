@@ -206,13 +206,22 @@ class ActionService {
       return false;
     }
 
-    // convert dateTime to DateTime object
-    final parsedDateTime = DateTime.parse(dateTime);
-
-    await _assetApiRepository.updateDateTime(remoteIds, parsedDateTime);
-    await _remoteAssetRepository.updateDateTime(remoteIds, parsedDateTime);
+    await applyDateTime(remoteIds, dateTime);
 
     return true;
+  }
+
+  @visibleForTesting
+  Future<void> applyDateTime(List<String> remoteIds, String dateTime) async {
+    final parsedDateTime = DateTime.parse(dateTime);
+    final offset = RegExp(r'[+-]\d{2}:\d{2}$').firstMatch(dateTime)?.group(0);
+
+    await _assetApiRepository.updateDateTime(remoteIds, dateTime);
+    await _remoteAssetRepository.updateDateTime(
+      remoteIds,
+      parsedDateTime,
+      timeZone: offset == null ? null : 'UTC$offset',
+    );
   }
 
   Future<int> removeFromAlbum(List<String> remoteIds, String albumId) async {
@@ -231,7 +240,7 @@ class ActionService {
     return true;
   }
 
-  Future<bool> updateRating(String assetId, int rating) async {
+  Future<bool> updateRating(String assetId, int? rating) async {
     // update remote first, then local to ensure consistency
     await _assetApiRepository.updateRating(assetId, rating);
     await _remoteAssetRepository.updateRating(assetId, rating);
@@ -269,8 +278,20 @@ class ActionService {
     await _assetApiRepository.unStack(stackIds);
   }
 
-  Future<int> shareAssets(List<BaseAsset> assets, BuildContext context, {Completer<void>? cancelCompleter}) {
-    return _assetMediaRepository.shareAssets(assets, context, cancelCompleter: cancelCompleter);
+  Future<int> shareAssets(
+    List<BaseAsset> assets,
+    BuildContext context, {
+    ShareAssetType fileType = ShareAssetType.original,
+    Completer<void>? cancelCompleter,
+    void Function(double progress)? onAssetDownloadProgress,
+  }) {
+    return _assetMediaRepository.shareAssets(
+      assets,
+      context,
+      fileType: fileType,
+      cancelCompleter: cancelCompleter,
+      onAssetDownloadProgress: onAssetDownloadProgress,
+    );
   }
 
   Future<List<bool>> downloadAll(List<RemoteAsset> assets) {

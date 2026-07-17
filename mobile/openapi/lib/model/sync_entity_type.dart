@@ -34,6 +34,8 @@ class SyncEntityType {
   static const assetEditDeleteV1 = SyncEntityType._(r'AssetEditDeleteV1');
   static const assetMetadataV1 = SyncEntityType._(r'AssetMetadataV1');
   static const assetMetadataDeleteV1 = SyncEntityType._(r'AssetMetadataDeleteV1');
+  static const assetOcrV1 = SyncEntityType._(r'AssetOcrV1');
+  static const assetOcrDeleteV1 = SyncEntityType._(r'AssetOcrDeleteV1');
   static const partnerV1 = SyncEntityType._(r'PartnerV1');
   static const partnerDeleteV1 = SyncEntityType._(r'PartnerDeleteV1');
   static const partnerAssetV1 = SyncEntityType._(r'PartnerAssetV1');
@@ -94,6 +96,8 @@ class SyncEntityType {
     assetEditDeleteV1,
     assetMetadataV1,
     assetMetadataDeleteV1,
+    assetOcrV1,
+    assetOcrDeleteV1,
     partnerV1,
     partnerDeleteV1,
     partnerAssetV1,
@@ -189,6 +193,8 @@ class SyncEntityTypeTypeTransformer {
         case r'AssetEditDeleteV1': return SyncEntityType.assetEditDeleteV1;
         case r'AssetMetadataV1': return SyncEntityType.assetMetadataV1;
         case r'AssetMetadataDeleteV1': return SyncEntityType.assetMetadataDeleteV1;
+        case r'AssetOcrV1': return SyncEntityType.assetOcrV1;
+        case r'AssetOcrDeleteV1': return SyncEntityType.assetOcrDeleteV1;
         case r'PartnerV1': return SyncEntityType.partnerV1;
         case r'PartnerDeleteV1': return SyncEntityType.partnerDeleteV1;
         case r'PartnerAssetV1': return SyncEntityType.partnerAssetV1;

@@ -11,7 +11,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
@@ -39,7 +39,7 @@ class BackgroundWorkerFgService {
       _foregroundHostApi.saveNotificationMessage(title, body);
 
   Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) {
-    final backup = MetadataRepository.instance.appConfig.backup;
+    final backup = SettingsRepository.instance.appConfig.backup;
     return _foregroundHostApi.configure(
       BackgroundWorkerSettings(
         minimumDelaySeconds: minimumDelaySeconds ?? backup.triggerDelay,
@@ -61,15 +61,13 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   bool _isCleanedUp = false;
 
-  BackgroundWorkerBgService({required Drift drift, required DriftLogger driftLogger})
-    : _drift = drift,
-      _driftLogger = driftLogger,
-      _backgroundHostApi = BackgroundWorkerBgHostApi() {
-    _ref = ProviderContainer(overrides: [driftProvider.overrideWith(driftOverride(drift))]);
+  BackgroundWorkerBgService({required this._drift, required this._driftLogger})
+    : _backgroundHostApi = BackgroundWorkerBgHostApi() {
+    _ref = ProviderContainer(overrides: [driftProvider.overrideWith(driftOverride(_drift))]);
     BackgroundWorkerFlutterApi.setUp(this);
   }
 
-  bool get _isBackupEnabled => MetadataRepository.instance.appConfig.backup.enabled;
+  bool get _isBackupEnabled => SettingsRepository.instance.appConfig.backup.enabled;
 
   Future<void> init() async {
     try {
@@ -106,6 +104,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   Future<void> onAndroidUpload(int? maxMinutes) async {
     final hashTimeout = Duration(minutes: _isBackupEnabled ? 3 : 6);
     final backupTimeout = maxMinutes != null ? Duration(minutes: maxMinutes - 1) : null;
+    await _optimizeDB();
     return _backgroundLoop(
       hashTimeout: hashTimeout,
       backupTimeout: backupTimeout,
@@ -115,9 +114,40 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   @override
   Future<void> onIosUpload(bool isRefresh, int? maxSeconds) async {
-    final hashTimeout = isRefresh ? const Duration(seconds: 5) : Duration(minutes: _isBackupEnabled ? 3 : 6);
-    final backupTimeout = maxSeconds != null ? Duration(seconds: maxSeconds - 1) : null;
-    return _backgroundLoop(hashTimeout: hashTimeout, backupTimeout: backupTimeout, debugLabel: 'iOS background upload');
+    _logger.info('iOS background upload started with maxSeconds: ${maxSeconds}s');
+    final sw = Stopwatch()..start();
+    try {
+      final budget = maxSeconds != null ? Duration(seconds: maxSeconds - 1) : null;
+
+      final sync = _ref?.read(backgroundSyncProvider);
+      if (sync == null) {
+        return;
+      }
+
+      // Only for Background Processing tasks
+      if (maxSeconds == null) {
+        await _optimizeDB();
+      }
+
+      // Run sync local, sync remote, hash and backup concurrently so the bg
+      // refresh task (20s budget) can make progress on all four instead of
+      // racing them sequentially. Phases are independent at the data layer:
+      // hash and handle_backup read drift state and tolerate stale reads
+      // (server-side dedup catches the rare race). The single budget caps the
+      // whole batch; no phase needs its own timeout.
+      final all = Future.wait<dynamic>([sync.syncLocal(), sync.syncRemote(), sync.hashAssets(), _handleBackup()]);
+      if (budget != null) {
+        await all.timeout(budget, onTimeout: () => <dynamic>[]);
+      } else {
+        await all;
+      }
+    } catch (error, stack) {
+      _logger.severe("Failed to complete iOS background upload", error, stack);
+    } finally {
+      sw.stop();
+      _logger.info("iOS background upload completed in ${sw.elapsed.inSeconds}s");
+      await _cleanup();
+    }
   }
 
   Future<void> _backgroundLoop({
@@ -169,6 +199,14 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
+  Future<void> _optimizeDB() async {
+    try {
+      await (_drift.optimize(allTables: true), _driftLogger.optimize()).wait;
+    } catch (error, stack) {
+      dPrint(() => "Error during background worker optimize: $error, $stack");
+    }
+  }
+
   Future<void> _cleanup() async {
     await runZonedGuarded(_handleCleanup, (error, stack) {
       dPrint(() => "Error during background worker cleanup: $error, $stack");
@@ -190,20 +228,14 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       if (!_cancellationToken.isCompleted) {
         _cancellationToken.complete();
       }
-      final cleanupFutures = [
-        nativeSyncApi?.cancelHashing(),
-        workerManagerPatch.dispose().catchError((_) async {
-          // Discard any errors on the dispose call
-          return;
-        }),
-        LogService.I.dispose(),
-        Store.dispose(),
 
-        backgroundSyncManager?.cancel(),
-        _drift.optimize(allTables: true),
-      ];
-
-      await Future.wait(cleanupFutures.nonNulls);
+      // Workers share one sqlite connection, so DB teardown must wait until every worker has stopped using it.
+      await Future.wait([
+        if (backgroundSyncManager != null) backgroundSyncManager.cancel(),
+        if (nativeSyncApi != null) nativeSyncApi.cancelHashing(),
+      ]);
+      await workerManagerPatch.dispose().catchError((_) async {});
+      await Future.wait([LogService.I.dispose(), Store.dispose()]);
       await _drift.close();
       await _driftLogger.close();
 

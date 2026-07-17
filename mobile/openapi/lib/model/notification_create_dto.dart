@@ -13,20 +13,20 @@ part of openapi.api;
 class NotificationCreateDto {
   /// Returns a new [NotificationCreateDto] instance.
   NotificationCreateDto({
-    this.data = const {},
-    this.description,
-    this.level,
-    this.readAt,
+    this.data = const Optional.present(const {}),
+    this.description = const Optional.absent(),
+    this.level = const Optional.absent(),
+    this.readAt = const Optional.absent(),
     required this.title,
-    this.type,
+    this.type = const Optional.absent(),
     required this.userId,
   });
 
   /// Additional notification data
-  Map<String, Object> data;
+  Optional<Map<String, Object>?> data;
 
   /// Notification description
-  String? description;
+  Optional<String?> description;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -34,10 +34,10 @@ class NotificationCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  NotificationLevel? level;
+  Optional<NotificationLevel?> level;
 
   /// Date when notification was read
-  DateTime? readAt;
+  Optional<DateTime?> readAt;
 
   /// Notification title
   String title;
@@ -48,7 +48,7 @@ class NotificationCreateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  NotificationType? type;
+  Optional<NotificationType?> type;
 
   /// User ID to send notification to
   String userId;
@@ -79,29 +79,28 @@ class NotificationCreateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'data'] = this.data;
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (this.data.isPresent) {
+      final value = this.data.value;
+      json[r'data'] = value;
     }
-    if (this.level != null) {
-      json[r'level'] = this.level;
-    } else {
-    //  json[r'level'] = null;
+    if (this.description.isPresent) {
+      final value = this.description.value;
+      json[r'description'] = value;
     }
-    if (this.readAt != null) {
-      json[r'readAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
-        ? this.readAt!.millisecondsSinceEpoch
-        : this.readAt!.toUtc().toIso8601String();
-    } else {
-    //  json[r'readAt'] = null;
+    if (this.level.isPresent) {
+      final value = this.level.value;
+      json[r'level'] = value;
+    }
+    if (this.readAt.isPresent) {
+      final value = this.readAt.value;
+      json[r'readAt'] = value == null ? null : (_isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')
+        ? value.millisecondsSinceEpoch
+        : value.toUtc().toIso8601String());
     }
       json[r'title'] = this.title;
-    if (this.type != null) {
-      json[r'type'] = this.type;
-    } else {
-    //  json[r'type'] = null;
+    if (this.type.isPresent) {
+      final value = this.type.value;
+      json[r'type'] = value;
     }
       json[r'userId'] = this.userId;
     return json;
@@ -116,12 +115,12 @@ class NotificationCreateDto {
       final json = value.cast<String, dynamic>();
 
       return NotificationCreateDto(
-        data: mapCastOfType<String, Object>(json, r'data') ?? const {},
-        description: mapValueOfType<String>(json, r'description'),
-        level: NotificationLevel.fromJson(json[r'level']),
-        readAt: mapDateTime(json, r'readAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        data: json.containsKey(r'data') ? Optional.present(mapCastOfType<String, Object>(json, r'data')) : const Optional.absent(),
+        description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
+        level: json.containsKey(r'level') ? Optional.present(NotificationLevel.fromJson(json[r'level'])) : const Optional.absent(),
+        readAt: json.containsKey(r'readAt') ? Optional.present(mapDateTime(json, r'readAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')) : const Optional.absent(),
         title: mapValueOfType<String>(json, r'title')!,
-        type: NotificationType.fromJson(json[r'type']),
+        type: json.containsKey(r'type') ? Optional.present(NotificationType.fromJson(json[r'type'])) : const Optional.absent(),
         userId: mapValueOfType<String>(json, r'userId')!,
       );
     }

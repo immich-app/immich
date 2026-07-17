@@ -1,12 +1,13 @@
 import { ShallowDehydrateObject } from 'kysely';
 import { createZodDto } from 'nestjs-zod';
 import { AlbumUser, AuthSharedLink } from 'src/database';
+import { HistoryBuilder } from 'src/decorators';
 import { BulkIdErrorReasonSchema } from 'src/dtos/asset-ids.response.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
 import { AlbumUserRole, AlbumUserRoleSchema, AssetOrder, AssetOrderSchema } from 'src/enum';
 import { MaybeDehydrated } from 'src/types';
-import { asDateString } from 'src/utils/date';
+import { asDateTimeString } from 'src/utils/date';
 import { stringToBool } from 'src/validation';
 import z from 'zod';
 
@@ -65,6 +66,8 @@ const UpdateAlbumSchema = z
 
 const GetAlbumsSchema = z
   .object({
+    id: z.uuidv4().optional().describe('Album ID'),
+    name: z.string().optional().describe('Album name (exact match)'),
     isOwned: stringToBool
       .optional()
       .describe('Filter by ownership: true = only owned, false = only shared-with-me, undefined = no filter'),
@@ -98,21 +101,21 @@ const AlbumUserResponseSchema = z
 
 const ContributorCountResponseSchema = z
   .object({
-    userId: z.string().describe('User ID'),
+    userId: z.uuidv4().describe('User ID'),
     assetCount: z.int().min(0).describe('Number of assets contributed'),
   })
   .meta({ id: 'ContributorCountResponseDto' });
 
 export const AlbumResponseSchema = z
   .object({
-    id: z.string().describe('Album ID'),
+    id: z.uuidv4().describe('Album ID'),
     albumName: z.string().describe('Album name'),
     description: z.string().describe('Album description'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     updatedAt: z.string().meta({ format: 'date-time' }).describe('Last update date'),
-    albumThumbnailAssetId: z.string().nullable().describe('Thumbnail asset ID'),
+    albumThumbnailAssetId: z.uuidv4().nullable().describe('Thumbnail asset ID'),
     shared: z.boolean().describe('Is shared album'),
     albumUsers: z
       .array(AlbumUserResponseSchema)
@@ -138,6 +141,19 @@ export const AlbumResponseSchema = z
   })
   .meta({ id: 'AlbumResponseDto' });
 
+const AlbumUserParamSchema = z.object({
+  id: z.uuidv4().describe('Album ID'),
+  // TODO: disallow 'me' as a shortcut in v4 and type userId as uuidv4
+  userId: z
+    .string()
+    .refine((value) => value === 'me' || z.uuidv4().safeParse(value).success, {
+      error: 'Must be a UUID v4 or "me"',
+    })
+    .describe('Album user ID, or "me" to reference the current user.')
+    .meta(new HistoryBuilder().updated('v3', '"me" as a value is deprecated').getExtensions()),
+});
+
+export class AlbumUserParamDto extends createZodDto(AlbumUserParamSchema) {}
 export class AddUsersDto extends createZodDto(AddUsersSchema) {}
 export class AlbumUserCreateDto extends createZodDto(AlbumUserCreateSchema) {}
 export class CreateAlbumDto extends createZodDto(CreateAlbumSchema) {}
@@ -193,14 +209,14 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
     albumName: entity.albumName,
     description: entity.description,
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
-    createdAt: asDateString(entity.createdAt),
-    updatedAt: asDateString(entity.updatedAt),
+    createdAt: asDateTimeString(entity.createdAt),
+    updatedAt: asDateTimeString(entity.updatedAt),
     id: entity.id,
     albumUsers,
     shared: hasSharedUser || hasSharedLink,
     hasSharedLink,
-    startDate: asDateString(startDate),
-    endDate: asDateString(endDate),
+    startDate: asDateTimeString(startDate),
+    endDate: asDateTimeString(endDate),
     assetCount: entity.assets?.length || 0,
     isActivityEnabled: entity.isActivityEnabled,
     order: entity.order,

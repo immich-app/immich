@@ -2,11 +2,8 @@
   import { afterNavigate, goto } from '$app/navigation';
   import { page } from '$app/state';
   import { shortcuts } from '$lib/actions/shortcut';
-  import MemoryPhotoViewer from './MemoryPhotoViewer.svelte';
-  import MemoryVideoViewer from './MemoryVideoViewer.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
-  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
   import GalleryViewer from '$lib/components/shared-components/gallery-viewer/GalleryViewer.svelte';
   import ArchiveAction from '$lib/components/timeline/actions/ArchiveAction.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
@@ -37,6 +34,7 @@
     mdiChevronLeft,
     mdiChevronRight,
     mdiChevronUp,
+    mdiClose,
     mdiDotsVertical,
     mdiHeart,
     mdiHeartOutline,
@@ -54,6 +52,8 @@
   import { t } from 'svelte-i18n';
   import type { Attachment } from 'svelte/attachments';
   import { Tween } from 'svelte/motion';
+  import MemoryPhotoViewer from './MemoryPhotoViewer.svelte';
+  import MemoryVideoViewer from './MemoryVideoViewer.svelte';
 
   let memoryGallery: HTMLElement | undefined = $state();
   let memoryWrapper: HTMLElement | undefined = $state();
@@ -328,7 +328,7 @@
 
 {#if assetMultiSelectManager.selectionActive}
   <div class="dark sticky top-0 z-1">
-    <AssetSelectControlBar forceDark>
+    <AssetSelectControlBar>
       {@const Actions = getAssetBulkActions($t)}
       <CreateSharedLink />
       <IconButton
@@ -365,22 +365,31 @@
 
 <section
   id="memory-viewer"
-  class="w-full bg-immich-dark-gray"
+  class="dark w-full bg-immich-dark-gray text-white"
   bind:this={memoryWrapper}
   bind:clientHeight={viewport.height}
   bind:clientWidth={viewport.width}
 >
   {#if current}
-    <ControlAppBar onClose={() => goto(Route.photos())} forceDark multiRow>
-      {#snippet leading()}
-        {#if current}
+    <div class="dark grid grid-cols-[100%] p-2 max-md:h-auto max-md:flex-col md:grid-cols-[25%_50%_25%] md:p-4">
+      {#if current}
+        <div class="flex items-center gap-2 md:gap-6">
+          <IconButton
+            shape="round"
+            variant="ghost"
+            color="secondary"
+            icon={mdiClose}
+            aria-label={$t('close')}
+            size="large"
+            onclick={() => goto(Route.photos())}
+          />
           <p class="text-lg">
             {$memoryLaneTitle(current.memory)}
           </p>
-        {/if}
-      {/snippet}
+        </div>
+      {/if}
 
-      <div class="dark flex place-content-center place-items-center gap-2">
+      <div class="dark flex w-full place-content-center place-items-center gap-2">
         <IconButton
           shape="round"
           variant="ghost"
@@ -438,7 +447,7 @@
           </media-mute-button>
         {/if}
       </div>
-    </ControlAppBar>
+    </div>
 
     {#if galleryInView}
       <div
@@ -462,7 +471,7 @@
       </div>
     {/if}
     <!-- Viewer -->
-    <section class="overflow-hidden pt-32 md:pt-20" bind:clientHeight={viewerHeight}>
+    <section class="overflow-hidden pt-6 md:pt-0" bind:clientHeight={viewerHeight}>
       <div
         class="ms-[-100%] box-border flex h-[calc(100vh-224px)] w-[300%] items-center justify-center gap-10 overflow-hidden md:h-[calc(100vh-180px)]"
       >

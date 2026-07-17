@@ -14,13 +14,15 @@ import 'package:immich_mobile/extensions/scroll_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_overlay.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_loading_indicator.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
@@ -94,6 +96,13 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     switch (event) {
       case ViewerShowDetailsEvent():
         _showDetails();
+      case TimelineReloadEvent():
+        final asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
+        if (asset != _asset) {
+          _isZoomed = false;
+          _viewer.setZoomed(false);
+          setState(() => _asset = asset);
+        }
       default:
     }
   }
@@ -241,7 +250,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       return;
     }
 
-    final tapToNavigate = ref.read(metadataProvider).appConfig.viewer.tapToNavigate;
+    final tapToNavigate = ref.read(appConfigProvider).viewer.tapToNavigate;
     if (!tapToNavigate) {
       _viewer.toggleControls();
       return;
@@ -323,14 +332,16 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     required PhotoViewHeroAttributes? heroAttributes,
     required bool isCurrent,
     required bool isPlayingMotionVideo,
+    required String? localFilePath,
   }) {
     final size = context.sizeData;
+    final imageProvider = getFullImageProvider(asset, size: size, localFilePath: localFilePath);
 
     if (asset.isImage && !isPlayingMotionVideo) {
       return PhotoView(
         key: Key(asset.heroTag),
         index: widget.index,
-        imageProvider: getFullImageProvider(asset, size: size),
+        imageProvider: imageProvider,
         heroAttributes: heroAttributes,
         loadingBuilder: (context, progress, index) => const Center(child: ImmichLoadingIndicator()),
         gaplessPlayback: true,
@@ -377,22 +388,21 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       child: NativeVideoViewer(
         key: _NativeVideoViewerKey(asset.heroTag),
         asset: asset,
+        localFilePath: localFilePath,
         isCurrent: isCurrent,
-        image: Image(
-          image: getFullImageProvider(asset, size: size),
-          fit: BoxFit.contain,
-          alignment: Alignment.center,
-        ),
+        image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentHeroTag = ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
+    final currentAsset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
+    final timelineOrigin = ref.read(timelineServiceProvider).origin;
+    final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
     final asset = _asset;
     if (asset == null) {
@@ -406,7 +416,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       displayAsset = stackChildren.elementAt(stackIndex);
     }
 
-    final isCurrent = currentHeroTag == displayAsset.heroTag;
+    final isCurrent = currentAsset != null && currentAsset.refersToSameAsset(displayAsset);
 
     final viewportWidth = MediaQuery.widthOf(context);
     final viewportHeight = MediaQuery.heightOf(context);
@@ -420,6 +430,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     if (_scrollController.hasClients) {
       _scrollController.snapPosition.snapOffset = _snapOffset;
     }
+
+    final viewIntentFilePath = timelineOrigin == TimelineOrigin.deepLink ? ref.watch(viewIntentFilePathProvider) : null;
 
     return Stack(
       children: [
@@ -440,8 +452,18 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                         : null,
                     isCurrent: isCurrent,
                     isPlayingMotionVideo: isPlayingMotionVideo,
+                    localFilePath: viewIntentFilePath,
                   ),
                 ),
+                if (showingOcr && displayAsset.width != null && displayAsset.height != null)
+                  Positioned.fill(
+                    child: OcrOverlay(
+                      asset: displayAsset,
+                      imageSize: Size(displayAsset.width!.toDouble(), displayAsset.height!.toDouble()),
+                      viewportSize: Size(viewportWidth, viewportHeight),
+                      controller: _viewController,
+                    ),
+                  ),
                 IgnorePointer(
                   ignoring: !_showingDetails,
                   child: Column(

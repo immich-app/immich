@@ -15,7 +15,7 @@ SyncUserV1 _createUser({String id = 'user-1'}) {
     name: 'Test User',
     email: 'test@test.com',
     deletedAt: null,
-    avatarColor: null,
+    avatarColor: const Optional.absent(),
     hasProfileImage: false,
     profileChangedAt: DateTime(2024, 1, 1),
   );

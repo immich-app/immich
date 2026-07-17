@@ -25,7 +25,7 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [SessionCreateDto] sessionCreateDto (required):
-  Future<Response> createSessionWithHttpInfo(SessionCreateDto sessionCreateDto,) async {
+  Future<Response> createSessionWithHttpInfo(SessionCreateDto sessionCreateDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sessions';
 
@@ -47,6 +47,7 @@ class SessionsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -57,8 +58,8 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [SessionCreateDto] sessionCreateDto (required):
-  Future<SessionCreateResponseDto?> createSession(SessionCreateDto sessionCreateDto,) async {
-    final response = await createSessionWithHttpInfo(sessionCreateDto,);
+  Future<SessionCreateResponseDto?> createSession(SessionCreateDto sessionCreateDto, { Future<void>? abortTrigger, }) async {
+    final response = await createSessionWithHttpInfo(sessionCreateDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -77,7 +78,7 @@ class SessionsApi {
   /// Delete all sessions for the user. This will not delete the current session.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> deleteAllSessionsWithHttpInfo() async {
+  Future<Response> deleteAllSessionsWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sessions';
 
@@ -99,14 +100,15 @@ class SessionsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Delete all sessions
   ///
   /// Delete all sessions for the user. This will not delete the current session.
-  Future<void> deleteAllSessions() async {
-    final response = await deleteAllSessionsWithHttpInfo();
+  Future<void> deleteAllSessions({ Future<void>? abortTrigger, }) async {
+    final response = await deleteAllSessionsWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -121,7 +123,7 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteSessionWithHttpInfo(String id,) async {
+  Future<Response> deleteSessionWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sessions/{id}'
       .replaceAll('{id}', id);
@@ -144,6 +146,7 @@ class SessionsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -154,8 +157,8 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteSession(String id,) async {
-    final response = await deleteSessionWithHttpInfo(id,);
+  Future<void> deleteSession(String id, { Future<void>? abortTrigger, }) async {
+    final response = await deleteSessionWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -166,7 +169,7 @@ class SessionsApi {
   /// Retrieve a list of sessions for the user.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getSessionsWithHttpInfo() async {
+  Future<Response> getSessionsWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sessions';
 
@@ -188,14 +191,15 @@ class SessionsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve sessions
   ///
   /// Retrieve a list of sessions for the user.
-  Future<List<SessionResponseDto>?> getSessions() async {
-    final response = await getSessionsWithHttpInfo();
+  Future<List<SessionResponseDto>?> getSessions({ Future<void>? abortTrigger, }) async {
+    final response = await getSessionsWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -221,7 +225,7 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> lockSessionWithHttpInfo(String id,) async {
+  Future<Response> lockSessionWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sessions/{id}/lock'
       .replaceAll('{id}', id);
@@ -244,6 +248,7 @@ class SessionsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -254,8 +259,8 @@ class SessionsApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> lockSession(String id,) async {
-    final response = await lockSessionWithHttpInfo(id,);
+  Future<void> lockSession(String id, { Future<void>? abortTrigger, }) async {
+    final response = await lockSessionWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -272,7 +277,7 @@ class SessionsApi {
   /// * [String] id (required):
   ///
   /// * [SessionUpdateDto] sessionUpdateDto (required):
-  Future<Response> updateSessionWithHttpInfo(String id, SessionUpdateDto sessionUpdateDto,) async {
+  Future<Response> updateSessionWithHttpInfo(String id, SessionUpdateDto sessionUpdateDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sessions/{id}'
       .replaceAll('{id}', id);
@@ -295,6 +300,7 @@ class SessionsApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -307,8 +313,8 @@ class SessionsApi {
   /// * [String] id (required):
   ///
   /// * [SessionUpdateDto] sessionUpdateDto (required):
-  Future<SessionResponseDto?> updateSession(String id, SessionUpdateDto sessionUpdateDto,) async {
-    final response = await updateSessionWithHttpInfo(id, sessionUpdateDto,);
+  Future<SessionResponseDto?> updateSession(String id, SessionUpdateDto sessionUpdateDto, { Future<void>? abortTrigger, }) async {
+    final response = await updateSessionWithHttpInfo(id, sessionUpdateDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

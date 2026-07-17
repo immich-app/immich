@@ -12,7 +12,7 @@ from zipfile import BadZipFile
 
 import orjson
 from fastapi import Depends, FastAPI, File, Form, HTTPException
-from fastapi.responses import ORJSONResponse, PlainTextResponse
+from fastapi.responses import PlainTextResponse
 from onnxruntime.capi.onnxruntime_pybind11_state import InvalidProtobuf, NoSuchFile
 from PIL.Image import Image
 from pydantic import ValidationError
@@ -32,6 +32,7 @@ from .schemas import (
     ModelIdentity,
     ModelTask,
     ModelType,
+    ORJSONResponse,
     PipelineRequest,
     T,
 )

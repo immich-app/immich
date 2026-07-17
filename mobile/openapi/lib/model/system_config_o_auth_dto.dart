@@ -167,7 +167,7 @@ class SystemConfigOAuthDto {
     if (this.defaultStorageQuota != null) {
       json[r'defaultStorageQuota'] = this.defaultStorageQuota;
     } else {
-    //  json[r'defaultStorageQuota'] = null;
+      json[r'defaultStorageQuota'] = null;
     }
       json[r'enabled'] = this.enabled;
       json[r'endSessionEndpoint'] = this.endSessionEndpoint;

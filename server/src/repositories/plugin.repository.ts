@@ -81,6 +81,7 @@ export class PluginRepository {
       'plugin.version',
       'plugin.createdAt',
       'plugin.updatedAt',
+      'plugin.templates',
       jsonArrayFrom(
         eb
           .selectFrom('plugin_method')
@@ -100,6 +101,11 @@ export class PluginRepository {
       .$if(!!dto.version, (qb) => qb.where('plugin.version', '=', dto.version!))
       .orderBy('plugin.name')
       .execute();
+  }
+
+  @GenerateSql({ params: [DummyValue.STRING] })
+  getByHash(hash: Buffer) {
+    return this.queryBuilder().where('plugin.sha256hash', '=', hash).executeTakeFirst();
   }
 
   @GenerateSql({ params: [DummyValue.STRING] })
@@ -151,6 +157,8 @@ export class PluginRepository {
             author: eb.ref('excluded.author'),
             version: eb.ref('excluded.version'),
             wasmBytes: eb.ref('excluded.wasmBytes'),
+            templates: eb.ref('excluded.templates'),
+            sha256hash: eb.ref('excluded.sha256hash'),
           })),
         )
         .returning(['id', 'name'])
@@ -182,6 +190,7 @@ export class PluginRepository {
                   description: ref('excluded.description'),
                   types: ref('excluded.types'),
                   hostFunctions: ref('excluded.hostFunctions'),
+                  allowedHosts: ref('excluded.allowedHosts'),
                   uiHints: ref('excluded.uiHints'),
                   schema: ref('excluded.schema'),
                 })),
@@ -216,6 +225,7 @@ export class PluginRepository {
                 error: (message) => logger.error(message),
               } as Console,
               logLevel: asExtismLogLevel(logger.getLogLevel()),
+              enableWasiOutput: true,
             },
           ),
         destroy: (plugin) => plugin.close(),
@@ -231,7 +241,7 @@ export class PluginRepository {
     }
   }
 
-  async callMethod<T>({ pluginKey, methodName }: PluginMethod, input: unknown) {
+  async callMethod<T>({ pluginKey, methodName }: PluginMethod, input: unknown, context?: unknown) {
     const item = this.pluginMap.get(pluginKey);
     if (!item) {
       throw new Error(`No loaded plugin found for ${pluginKey}`);
@@ -242,7 +252,7 @@ export class PluginRepository {
     try {
       const plugin = await pool.acquire();
       try {
-        const result = await plugin.call(methodName, JSON.stringify(input));
+        const result = await plugin.call(methodName, JSON.stringify(input), context);
         return (result ? result.json() : result) as T;
       } finally {
         await pool.release(plugin);

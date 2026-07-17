@@ -55,8 +55,8 @@ export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetRe
     result.duration.push(asset.duration);
     result.projectionType.push(asset.projectionType);
     result.livePhotoVideoId.push(asset.livePhotoVideoId);
-    result.city.push(asset.city);
-    result.country.push(asset.country);
+    result.city?.push(asset.city);
+    result.country?.push(asset.country);
     result.visibility.push(asset.visibility);
   }
 

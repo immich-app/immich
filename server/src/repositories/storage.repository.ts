@@ -10,6 +10,7 @@ import {
   existsSync,
   mkdirSync,
   ReadOptionsWithBuffer,
+  watch,
 } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -276,6 +277,8 @@ export class StorageRepository {
 
     return () => watcher.close();
   }
+
+  watchDir = watch; // Native fs.watch without chokidar overhead
 
   private asGlob(pathToCrawl: string): string {
     const escapedPath = escapePath(pathToCrawl).replaceAll('"', '["]').replaceAll("'", "[']").replaceAll('`', '[`]');

@@ -20,7 +20,7 @@ class SyncApiRepository {
   }
 
   Future<void> deleteSyncAck(List<SyncEntityType> types) {
-    return _api.syncApi.deleteSyncAck(SyncAckDeleteDto(types: types));
+    return _api.syncApi.deleteSyncAck(SyncAckDeleteDto(types: Optional.present(types)));
   }
 
   Future<void> streamChanges(
@@ -29,6 +29,7 @@ class SyncApiRepository {
     Function()? onReset,
     int batchSize = kSyncEventBatchSize,
     http.Client? httpClient,
+    Future<void>? abortSignal,
   }) async {
     final stopwatch = Stopwatch()..start();
     final client = httpClient ?? NetworkRepository.client;
@@ -36,7 +37,7 @@ class SyncApiRepository {
 
     final headers = {'Content-Type': 'application/json', 'Accept': 'application/jsonlines+json'};
 
-    final request = http.Request('POST', Uri.parse(endpoint));
+    final request = http.AbortableRequest('POST', Uri.parse(endpoint), abortTrigger: abortSignal);
     request.headers.addAll(headers);
     request.body = jsonEncode(
       SyncStreamDto(
@@ -73,6 +74,7 @@ class SyncApiRepository {
           serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)
               ? SyncRequestType.assetFacesV2
               : SyncRequestType.assetFacesV1,
+          if (serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)) SyncRequestType.assetOcrV1,
         ],
       ).toJson(),
     );
@@ -203,6 +205,8 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.assetFaceV1: SyncAssetFaceV1.fromJson,
   SyncEntityType.assetFaceV2: SyncAssetFaceV2.fromJson,
   SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,
+  SyncEntityType.assetOcrV1: SyncAssetOcrV1.fromJson,
+  SyncEntityType.assetOcrDeleteV1: SyncAssetOcrDeleteV1.fromJson,
   SyncEntityType.syncCompleteV1: _SyncEmptyDto.fromJson,
 };
 

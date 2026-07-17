@@ -1,16 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/domain/models/metadata_key.dart';
+import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/metadata.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
@@ -72,80 +74,78 @@ Future<void> _migrateTo25() async {
 
 Future<void> _migrateTo26(Drift drift) async {
   final migrator = _StoreMigrator(drift);
-  await migrator.migrateEnumIndex(StoreKey.legacyLogLevel, MetadataKey.logLevel, LogLevel.values);
+  await migrator.migrateEnumIndex(StoreKey.legacyLogLevel, SettingsKey.logLevel, LogLevel.values);
   // Theme
-  await migrator.migrateEnumName(StoreKey.legacyThemeMode, MetadataKey.themeMode, ThemeMode.values);
-  await migrator.migrateEnumName(StoreKey.legacyPrimaryColor, MetadataKey.themePrimaryColor, ImmichColorPreset.values);
-  await migrator.migrateBool(StoreKey.legacyDynamicTheme, MetadataKey.themeDynamic);
-  await migrator.migrateBool(StoreKey.legacyColorfulInterface, MetadataKey.themeColorfulInterface);
+  await migrator.migrateEnumName(StoreKey.legacyThemeMode, SettingsKey.themeMode, ThemeMode.values);
+  await migrator.migrateEnumName(StoreKey.legacyPrimaryColor, SettingsKey.themePrimaryColor, ImmichColorPreset.values);
+  await migrator.migrateBool(StoreKey.legacyDynamicTheme, SettingsKey.themeDynamic);
+  await migrator.migrateBool(StoreKey.legacyColorfulInterface, SettingsKey.themeColorfulInterface);
   // Cleanup
   final cleanupKeepAlbumIds = await migrator.readLegacyStoreString(StoreKey.legacyCleanupKeepAlbumIds.id);
   if (cleanupKeepAlbumIds != null) {
     final ids = cleanupKeepAlbumIds.split(',').where((id) => id.isNotEmpty).toList();
-    migrator.stage(StoreKey.legacyCleanupKeepAlbumIds, MetadataKey.cleanupKeepAlbumIds, ids);
+    migrator.stage(StoreKey.legacyCleanupKeepAlbumIds, SettingsKey.cleanupKeepAlbumIds, ids);
   }
-  await migrator.migrateBool(StoreKey.legacyCleanupKeepFavorites, MetadataKey.cleanupKeepFavorites);
+  await migrator.migrateBool(StoreKey.legacyCleanupKeepFavorites, SettingsKey.cleanupKeepFavorites);
   await migrator.migrateEnumIndex(
     StoreKey.legacyCleanupKeepMediaType,
-    MetadataKey.cleanupKeepMediaType,
+    SettingsKey.cleanupKeepMediaType,
     AssetKeepType.values,
   );
-  await migrator.migrateInt(StoreKey.legacyCleanupCutoffDaysAgo, MetadataKey.cleanupCutoffDaysAgo);
-  await migrator.migrateBool(StoreKey.legacyCleanupDefaultsInitialized, MetadataKey.cleanupDefaultsInitialized);
+  await migrator.migrateInt(StoreKey.legacyCleanupCutoffDaysAgo, SettingsKey.cleanupCutoffDaysAgo);
+  await migrator.migrateBool(StoreKey.legacyCleanupDefaultsInitialized, SettingsKey.cleanupDefaultsInitialized);
   // Map
-  await migrator.migrateBool(StoreKey.legacyMapShowFavoriteOnly, MetadataKey.mapShowFavoriteOnly);
-  await migrator.migrateInt(StoreKey.legacyMapRelativeDate, MetadataKey.mapRelativeDate);
-  await migrator.migrateBool(StoreKey.legacyMapIncludeArchived, MetadataKey.mapIncludeArchived);
-  await migrator.migrateEnumIndex(StoreKey.legacyMapThemeMode, MetadataKey.mapThemeMode, ThemeMode.values);
-  await migrator.migrateBool(StoreKey.legacyMapwithPartners, MetadataKey.mapWithPartners);
+  await migrator.migrateBool(StoreKey.legacyMapShowFavoriteOnly, SettingsKey.mapShowFavoriteOnly);
+  await migrator.migrateInt(StoreKey.legacyMapRelativeDate, SettingsKey.mapRelativeDate);
+  await migrator.migrateBool(StoreKey.legacyMapIncludeArchived, SettingsKey.mapIncludeArchived);
+  await migrator.migrateEnumIndex(StoreKey.legacyMapThemeMode, SettingsKey.mapThemeMode, ThemeMode.values);
+  await migrator.migrateBool(StoreKey.legacyMapwithPartners, SettingsKey.mapWithPartners);
   // Timeline
-  await migrator.migrateInt(StoreKey.legacyTilesPerRow, MetadataKey.timelineTilesPerRow);
+  await migrator.migrateInt(StoreKey.legacyTilesPerRow, SettingsKey.timelineTilesPerRow);
   await migrator.migrateEnumIndex(
     StoreKey.legacyGroupAssetsBy,
-    MetadataKey.timelineGroupAssetsBy,
+    SettingsKey.timelineGroupAssetsBy,
     GroupAssetsBy.values,
   );
-  await migrator.migrateBool(StoreKey.legacyStorageIndicator, MetadataKey.timelineStorageIndicator);
+  await migrator.migrateBool(StoreKey.legacyStorageIndicator, SettingsKey.timelineStorageIndicator);
   // Image
-  await migrator.migrateBool(StoreKey.legacyPreferRemoteImage, MetadataKey.imagePreferRemote);
-  await migrator.migrateBool(StoreKey.legacyLoadOriginal, MetadataKey.imageLoadOriginal);
+  await migrator.migrateBool(StoreKey.legacyPreferRemoteImage, SettingsKey.imagePreferRemote);
+  await migrator.migrateBool(StoreKey.legacyLoadOriginal, SettingsKey.imageLoadOriginal);
   // Viewer
-  await migrator.migrateBool(StoreKey.legacyLoopVideo, MetadataKey.viewerLoopVideo);
-  await migrator.migrateBool(StoreKey.legacyLoadOriginalVideo, MetadataKey.viewerLoadOriginalVideo);
-  await migrator.migrateBool(StoreKey.legacyAutoPlayVideo, MetadataKey.viewerAutoPlayVideo);
-  await migrator.migrateBool(StoreKey.legacyTapToNavigate, MetadataKey.viewerTapToNavigate);
+  await migrator.migrateBool(StoreKey.legacyLoopVideo, SettingsKey.viewerLoopVideo);
+  await migrator.migrateBool(StoreKey.legacyLoadOriginalVideo, SettingsKey.viewerLoadOriginalVideo);
+  await migrator.migrateBool(StoreKey.legacyAutoPlayVideo, SettingsKey.viewerAutoPlayVideo);
+  await migrator.migrateBool(StoreKey.legacyTapToNavigate, SettingsKey.viewerTapToNavigate);
   // Network
-  await migrator.migrateBool(StoreKey.legacyAutoEndpointSwitching, MetadataKey.networkAutoEndpointSwitching);
-  await migrator.migrateString(StoreKey.legacyPreferredWifiName, MetadataKey.networkPreferredWifiName);
-  await migrator.migrateString(StoreKey.legacyLocalEndpoint, MetadataKey.networkLocalEndpoint);
+  await migrator.migrateBool(StoreKey.legacyAutoEndpointSwitching, SettingsKey.networkAutoEndpointSwitching);
+  final preferredWifiName = await migrator.readLegacyStoreString(StoreKey.legacyPreferredWifiName.id);
+  migrator.stage(StoreKey.legacyPreferredWifiName, SettingsKey.networkPreferredWifiName, preferredWifiName);
+  final localEndpoint = await migrator.readLegacyStoreString(StoreKey.legacyLocalEndpoint.id);
+  migrator.stage(StoreKey.legacyLocalEndpoint, SettingsKey.networkLocalEndpoint, localEndpoint);
   await _migrateExternalEndpointList(migrator);
   await _migrateCustomHeaders(migrator);
   // Album
   await _migrateAlbumSortMode(migrator);
-  await migrator.migrateBool(StoreKey.legacySelectedAlbumSortReverse, MetadataKey.albumIsReverse);
-  await migrator.migrateBool(StoreKey.legacyAlbumGridView, MetadataKey.albumIsGrid);
+  await migrator.migrateBool(StoreKey.legacySelectedAlbumSortReverse, SettingsKey.albumIsReverse);
+  await migrator.migrateBool(StoreKey.legacyAlbumGridView, SettingsKey.albumIsGrid);
   // Backup
-  await migrator.migrateBool(StoreKey.legacyEnableBackup, MetadataKey.backupEnabled);
-  await migrator.migrateBool(StoreKey.legacyUseWifiForUploadVideos, MetadataKey.backupUseCellularForVideos);
-  await migrator.migrateBool(StoreKey.legacyUseWifiForUploadPhotos, MetadataKey.backupUseCellularForPhotos);
-  await migrator.migrateBool(StoreKey.legacyBackupRequireCharging, MetadataKey.backupRequireCharging);
-  await migrator.migrateInt(StoreKey.legacyBackupTriggerDelay, MetadataKey.backupTriggerDelay);
-  await migrator.migrateBool(StoreKey.legacySyncAlbums, MetadataKey.backupSyncAlbums);
+  await migrator.migrateBool(StoreKey.legacyEnableBackup, SettingsKey.backupEnabled);
+  await migrator.migrateBool(StoreKey.legacyUseWifiForUploadVideos, SettingsKey.backupUseCellularForVideos);
+  await migrator.migrateBool(StoreKey.legacyUseWifiForUploadPhotos, SettingsKey.backupUseCellularForPhotos);
+  await migrator.migrateBool(StoreKey.legacyBackupRequireCharging, SettingsKey.backupRequireCharging);
+  await migrator.migrateInt(StoreKey.legacyBackupTriggerDelay, SettingsKey.backupTriggerDelay);
+  await migrator.migrateBool(StoreKey.legacySyncAlbums, SettingsKey.backupSyncAlbums);
   await migrator.complete();
 }
 
 Future<void> _migrateAlbumSortMode(_StoreMigrator migrator) async {
   final raw = await migrator.readLegacyStoreInt(StoreKey.legacySelectedAlbumSortOrder.id);
-  if (raw == null) {
+  final mode = AlbumSortMode.values.firstWhereOrNull((e) => raw != null && e.storeIndex == raw);
+  if (mode == null) {
     return;
   }
 
-  final mode = AlbumSortMode.values.firstWhere(
-    (e) => e.storeIndex == raw,
-    orElse: () => MetadataKey.albumSortMode.defaultValue,
-  );
-
-  migrator.stage(StoreKey.legacySelectedAlbumSortOrder, MetadataKey.albumSortMode, mode);
+  migrator.stage(StoreKey.legacySelectedAlbumSortOrder, SettingsKey.albumSortMode, mode);
 }
 
 Future<void> _migrateExternalEndpointList(_StoreMigrator migrator) async {
@@ -169,7 +169,7 @@ Future<void> _migrateExternalEndpointList(_StoreMigrator migrator) async {
     // ignore invalid entries
   }
 
-  migrator.stage(StoreKey.legacyExternalEndpointList, MetadataKey.networkExternalEndpointList, urls);
+  migrator.stage(StoreKey.legacyExternalEndpointList, SettingsKey.networkExternalEndpointList, urls);
 }
 
 Future<void> _migrateCustomHeaders(_StoreMigrator migrator) async {
@@ -192,30 +192,34 @@ Future<void> _migrateCustomHeaders(_StoreMigrator migrator) async {
     // ignore invalid entries
   }
 
-  migrator.stage(StoreKey.legacyCustomHeaders, MetadataKey.networkCustomHeaders, headers);
+  migrator.stage(StoreKey.legacyCustomHeaders, SettingsKey.networkCustomHeaders, headers);
 }
 
 class _StoreMigrator {
   final Drift _db;
-  final Map<MetadataKey<Object>, Object> _cache = {};
+  final Map<SettingsKey, Object?> _cache = {};
   final List<int> _migratedStoreIds = [];
 
   _StoreMigrator(this._db);
 
-  Future<void> migrateEnumIndex<T extends Enum>(StoreKey<int> legacyKey, MetadataKey<T> newKey, List<T> values) async {
+  Future<void> migrateEnumIndex<T extends Enum>(StoreKey<int> legacyKey, SettingsKey<T> newKey, List<T> values) async {
     final index = await readLegacyStoreInt(legacyKey.id);
     if (index == null) {
       return;
     }
 
-    final enumValue = values.elementAtOrNull(index) ?? newKey.defaultValue;
+    final enumValue = values.elementAtOrNull(index);
+    if (enumValue == null) {
+      return;
+    }
+
     _cache[newKey] = enumValue;
     _migratedStoreIds.add(legacyKey.id);
   }
 
   Future<void> migrateEnumName<T extends Enum>(
     StoreKey<String> legacyKey,
-    MetadataKey<T> newKey,
+    SettingsKey<T> newKey,
     List<T> values,
   ) async {
     final name = await readLegacyStoreString(legacyKey.id);
@@ -223,12 +227,16 @@ class _StoreMigrator {
       return;
     }
 
-    final enumValue = values.firstWhere((e) => e.name == name, orElse: () => newKey.defaultValue);
+    final enumValue = values.firstWhereOrNull((e) => e.name == name);
+    if (enumValue == null) {
+      return;
+    }
+
     _cache[newKey] = enumValue;
     _migratedStoreIds.add(legacyKey.id);
   }
 
-  Future<void> migrateBool(StoreKey<bool> legacyKey, MetadataKey<bool> newKey) async {
+  Future<void> migrateBool(StoreKey<bool> legacyKey, SettingsKey<bool> newKey) async {
     final intValue = await readLegacyStoreInt(legacyKey.id);
     if (intValue == null) {
       return;
@@ -239,7 +247,7 @@ class _StoreMigrator {
     _migratedStoreIds.add(legacyKey.id);
   }
 
-  Future<void> migrateInt(StoreKey<int> legacyKey, MetadataKey<int> newKey) async {
+  Future<void> migrateInt(StoreKey<int> legacyKey, SettingsKey<int> newKey) async {
     final intValue = await readLegacyStoreInt(legacyKey.id);
     if (intValue == null) {
       return;
@@ -249,7 +257,7 @@ class _StoreMigrator {
     _migratedStoreIds.add(legacyKey.id);
   }
 
-  Future<void> migrateString(StoreKey<String> legacyKey, MetadataKey<String> newKey) async {
+  Future<void> migrateString(StoreKey<String> legacyKey, SettingsKey<String> newKey) async {
     final value = await readLegacyStoreString(legacyKey.id);
     if (value == null) {
       return;
@@ -259,7 +267,7 @@ class _StoreMigrator {
     _migratedStoreIds.add(legacyKey.id);
   }
 
-  void stage<T extends Object>(StoreKey legacyKey, MetadataKey<T> newKey, T value) {
+  void stage<T, U extends T>(StoreKey legacyKey, SettingsKey<T> newKey, U value) {
     _cache[newKey] = value;
     _migratedStoreIds.add(legacyKey.id);
   }
@@ -267,9 +275,18 @@ class _StoreMigrator {
   Future<void> complete() async {
     await _db.batch((batch) {
       for (final entry in _cache.entries) {
+        if (entry.value == defaultConfig.read(entry.key)) {
+          continue;
+        }
+
+        String? resolvedValue;
+        if (entry.value != null) {
+          resolvedValue = entry.key.encode(entry.value);
+        }
+
         batch.insert(
-          _db.metadataEntity,
-          MetadataEntityCompanion(key: Value(entry.key.key), value: Value(entry.key.encode(entry.value))),
+          _db.settingsEntity,
+          SettingsEntityCompanion(key: Value(entry.key.name), value: Value(resolvedValue)),
           mode: InsertMode.insertOrReplace,
         );
       }

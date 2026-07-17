@@ -4,12 +4,12 @@
   import ServerAboutModal from '$lib/modals/ServerAboutModal.svelte';
   import { userInteraction } from '$lib/stores/user.svelte';
   import { websocketStore } from '$lib/stores/websocket';
-  import type { ReleaseEvent } from '$lib/types';
   import { semverToName } from '$lib/utils';
   import { requestServerInfo } from '$lib/utils/auth';
   import {
     getAboutInfo,
     getVersionHistory,
+    type ReleaseEventV1,
     type ServerAboutResponseDto,
     type ServerVersionHistoryResponseDto,
   } from '@immich/sdk';
@@ -35,11 +35,9 @@
     userInteraction.versions = versions;
   });
   let isMain = $derived(info?.sourceRef === 'main' && info.repository === 'immich-app/immich');
-  let version = $derived(
-    $serverVersion ? `v${$serverVersion.major}.${$serverVersion.minor}.${$serverVersion.patch}` : null,
-  );
+  let version = $derived($serverVersion ? semverToName($serverVersion) : null);
 
-  const getReleaseInfo = (release?: ReleaseEvent) => {
+  const getReleaseInfo = (release?: ReleaseEventV1) => {
     if (!release || !release?.isAvailable || !authManager.user.isAdmin) {
       return;
     }

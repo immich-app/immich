@@ -4,7 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/theme/color_scheme.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
@@ -26,16 +26,16 @@ class PrimaryColorSetting extends HookConsumerWidget {
     }
 
     onUseSystemColorChange(bool newValue) {
-      ref.read(metadataProvider).write(.themeDynamic, newValue);
+      ref.read(settingsProvider).write(.themeDynamic, newValue);
       popBottomSheet();
     }
 
     onPrimaryColorChange(ImmichColorPreset colorPreset) {
-      ref.read(metadataProvider).write(.themePrimaryColor, colorPreset);
+      ref.read(settingsProvider).write(.themePrimaryColor, colorPreset);
 
       //turn off system color setting
       if (themeConfig.dynamicTheme) {
-        ref.read(metadataProvider).write(.themeDynamic, false);
+        ref.read(settingsProvider).write(.themeDynamic, false);
       }
       popBottomSheet();
     }

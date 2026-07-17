@@ -1,4 +1,4 @@
-import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
+import type { QueueResponseDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import type { DateTime } from 'luxon';
 import type { SvelteSet } from 'svelte/reactivity';
@@ -6,14 +6,6 @@ import { MediaType } from '$lib/constants';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 
 export type LatLng = { lng: number; lat: number };
-
-export interface ReleaseEvent {
-  isAvailable: boolean;
-  /** ISO8601 */
-  checkedAt: string;
-  serverVersion: ServerVersionResponseDto;
-  releaseVersion: ServerVersionResponseDto;
-}
 
 export type QueueSnapshot = { timestamp: number; snapshot?: QueueResponseDto[] };
 
@@ -101,10 +93,16 @@ export type JSONSchemaProperty = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   default?: any;
   enum?: string[];
+  minimum?: number;
+  maximum?: number;
+  precision?: number;
   array?: boolean;
   properties?: Record<string, JSONSchemaProperty>;
   required?: string[];
-  uiHint?: 'albumId' | 'assetId' | 'personId';
+  uiHint?: {
+    type?: 'AlbumId' | 'AssetId' | 'PersonId';
+    order?: number;
+  };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

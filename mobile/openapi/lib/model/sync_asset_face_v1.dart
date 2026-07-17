@@ -116,7 +116,7 @@ class SyncAssetFaceV1 {
     if (this.personId != null) {
       json[r'personId'] = this.personId;
     } else {
-    //  json[r'personId'] = null;
+      json[r'personId'] = null;
     }
       json[r'sourceType'] = this.sourceType;
     return json;

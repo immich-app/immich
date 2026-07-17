@@ -1,9 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
 final timelineRepositoryProvider = Provider<DriftTimelineRepository>(
@@ -29,7 +30,7 @@ final timelineServiceProvider = Provider<TimelineService>(
 final timelineFactoryProvider = Provider<TimelineFactory>(
   (ref) => TimelineFactory(
     timelineRepository: ref.watch(timelineRepositoryProvider),
-    metadataRepository: ref.watch(metadataProvider),
+    settingsRepository: ref.watch(settingsProvider),
   ),
 );
 
@@ -39,5 +40,10 @@ final timelineUsersProvider = StreamProvider<List<String>>((ref) {
     return Stream.value([]);
   }
 
-  return ref.watch(timelineRepositoryProvider).watchTimelineUserIds(currentUserId);
+  // Drift re-emits a fresh but content-identical list on unrelated table updates,
+  // which would dispose and rebuild the timeline service mid-load
+  return ref
+      .watch(timelineRepositoryProvider)
+      .watchTimelineUserIds(currentUserId)
+      .distinct(const ListEquality<String>().equals);
 });

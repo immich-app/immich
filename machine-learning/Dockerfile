@@ -1,8 +1,8 @@
 ARG DEVICE=cpu
 
-FROM python:3.11-bookworm@sha256:970c99f886b839fc8829289040c1845dadaf2cae46b37acc7710333158ec29b4 AS builder-cpu
+FROM python:3.11-bookworm@sha256:20ec607c68642c64c73269ce245aa0f060913f4129d15d9687850aa158e6269c AS builder-cpu
 
-FROM python:3.13-slim-trixie@sha256:d168b8d9eb761f4d3fe305ebd04aeb7e7f2de0297cec5fb2f8f6403244621664 AS builder-openvino
+FROM python:3.13-slim-trixie@sha256:f82c96458eedc847b233e582eb31336f4954b39cae020b6dcf5b3ed0e5cbcd74 AS builder-openvino
 
 FROM builder-cpu AS builder-cuda
 
@@ -39,23 +39,23 @@ RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --frozen --extra ${DEVICE} --no-dev --no-editable --no-install-project --compile-bytecode --no-progress --active --link-mode copy
 
-FROM python:3.11-slim-bookworm@sha256:9c6f90801e6b68e772b7c0ca74260cbf7af9f320acec894e26fccdaccfbe3b47 AS prod-cpu
+FROM python:3.11-slim-bookworm@sha256:e2d3af735aff6eeee600b1933bedd99da6645fedf572cc12ef4cc1331f2ceebe AS prod-cpu
 
 ENV LD_PRELOAD=/usr/lib/libmimalloc.so.2 \
     MACHINE_LEARNING_MODEL_ARENA=false
 
-FROM python:3.13-slim-trixie@sha256:d168b8d9eb761f4d3fe305ebd04aeb7e7f2de0297cec5fb2f8f6403244621664 AS prod-openvino
+FROM python:3.13-slim-trixie@sha256:f82c96458eedc847b233e582eb31336f4954b39cae020b6dcf5b3ed0e5cbcd74 AS prod-openvino
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -yqq ocl-icd-libopencl1 wget && \
-    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/v2.32.7/intel-igc-core-2_2.32.7+21184_amd64.deb && \
-    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/v2.32.7/intel-igc-opencl-2_2.32.7+21184_amd64.deb && \
-    wget -nv https://github.com/intel/compute-runtime/releases/download/26.14.37833.4/intel-opencl-icd_26.14.37833.4-0_amd64.deb &&  \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/v2.36.3/intel-igc-core-2_2.36.3+21719_amd64.deb && \
+    wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/v2.36.3/intel-igc-opencl-2_2.36.3+21719_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/26.22.38646.4/intel-opencl-icd_26.22.38646.4-0_amd64.deb &&  \
     wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17537.24/intel-igc-core_1.0.17537.24_amd64.deb && \
     wget -nv https://github.com/intel/intel-graphics-compiler/releases/download/igc-1.0.17537.24/intel-igc-opencl_1.0.17537.24_amd64.deb && \
     wget -nv https://github.com/intel/compute-runtime/releases/download/24.35.30872.36/intel-opencl-icd-legacy1_24.35.30872.36_amd64.deb && \
     # TODO: Figure out how to get renovate to manage this differently versioned libigdgmm file
-    wget -nv https://github.com/intel/compute-runtime/releases/download/26.14.37833.4/libigdgmm12_22.9.0_amd64.deb && \
+    wget -nv https://github.com/intel/compute-runtime/releases/download/26.22.38646.4/libigdgmm12_22.10.0_amd64.deb && \
     dpkg -i *.deb && \
     rm *.deb && \
     apt-get remove wget -yqq && \

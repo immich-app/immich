@@ -8,6 +8,7 @@ import {
   Unique,
   UpdateDateColumn,
 } from '@immich/sql-tools';
+import { PluginTemplate } from 'src/dtos/plugin.dto';
 
 @Unique({ columns: ['name', 'version'] })
 @Table('plugin')
@@ -35,6 +36,12 @@ export class PluginTable {
 
   @Column({ type: 'bytea' })
   wasmBytes!: Buffer;
+
+  @Column({ type: 'jsonb' })
+  templates!: PluginTemplate[];
+
+  @Column({ type: 'bytea' })
+  sha256hash!: Buffer;
 
   @CreateDateColumn()
   createdAt!: Generated<Timestamp>;

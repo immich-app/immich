@@ -192,6 +192,7 @@ export const utils = {
       'user',
       'system_metadata',
       'tag',
+      'integrity_report',
     ];
 
     const truncateTables = tables.filter((table) => table !== 'system_metadata');
@@ -559,8 +560,52 @@ export const utils = {
     mkdirSync(`${testAssetDir}/temp`, { recursive: true });
   },
 
+  putFile(source: string, dest: string) {
+    return executeCommand('docker', ['cp', source, `immich-e2e-server:${dest}`]).promise;
+  },
+
+  async putTextFile(contents: string, dest: string) {
+    const dir = await mkdtemp(join(tmpdir(), 'test-'));
+    const fn = join(dir, 'file');
+    await pipeline(Readable.from(contents), createWriteStream(fn));
+    return executeCommand('docker', ['cp', fn, `immich-e2e-server:${dest}`]).promise;
+  },
+
   async move(source: string, dest: string) {
     return executeCommand('docker', ['exec', 'immich-e2e-server', 'mv', source, dest]).promise;
+  },
+
+  async copyFolder(source: string, dest: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'cp', '-r', source, dest]).promise;
+  },
+
+  async deleteFile(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'rm', path]).promise;
+  },
+
+  async deleteFolder(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'rm', '-r', path]).promise;
+  },
+
+  async truncateFolder(path: string) {
+    return executeCommand('docker', [
+      'exec',
+      'immich-e2e-server',
+      'find',
+      path,
+      '-type',
+      'f',
+      '-exec',
+      'truncate',
+      '-s',
+      '1',
+      '{}',
+      ';',
+    ]).promise;
+  },
+
+  async mkFolder(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'mkdir', '-p', path]).promise;
   },
 
   createBackup: async (accessToken: string) => {
@@ -579,10 +624,8 @@ export const utils = {
 
   resetBackups: async (accessToken: string) => {
     const { backups } = await listDatabaseBackups({ headers: asBearerAuth(accessToken) });
-
-    const backupFiles = backups.map((b) => b.filename);
     await deleteDatabaseBackup(
-      { databaseBackupDeleteDto: { backups: backupFiles } },
+      { databaseBackupDeleteDto: { backups: backups.map((dto) => dto.filename) } },
       { headers: asBearerAuth(accessToken) },
     );
   },

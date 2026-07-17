@@ -128,7 +128,7 @@
     </div>
     {#if innerHeight}
       <div
-        class="relative w-full overflow-y-auto px-2 immich-scrollbar"
+        class="relative w-full immich-scrollbar overflow-y-auto px-2"
         style="height: {divHeight}px;padding-bottom: {chatHeight}px"
       >
         {#each activityManager.activities as reaction, index (reaction.id)}

@@ -11,6 +11,7 @@ import { getKyselyDB } from 'test/utils';
 let defaultDatabase: Kysely<DB>;
 
 const wasmBytes = Buffer.from('some-wasm-binary-data');
+const sha256hash = Buffer.from('some-manifest-hash');
 
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(PluginService, {
@@ -46,7 +47,9 @@ describe(PluginService.name, () => {
           description: 'A test plugin',
           author: 'Test Author',
           version: '1.0.0',
+          templates: [],
           wasmBytes,
+          sha256hash,
         },
         [],
       );
@@ -75,7 +78,9 @@ describe(PluginService.name, () => {
           description: 'A plugin with multiple methods',
           author: 'Test Author',
           version: '1.0.0',
+          templates: [],
           wasmBytes,
+          sha256hash,
         },
         [
           {
@@ -130,7 +135,9 @@ describe(PluginService.name, () => {
           description: 'First plugin',
           author: 'Author 1',
           version: '1.0.0',
+          templates: [],
           wasmBytes,
+          sha256hash,
         },
         [
           {
@@ -150,7 +157,9 @@ describe(PluginService.name, () => {
           description: 'Second plugin',
           author: 'Author 2',
           version: '2.0.0',
+          templates: [],
           wasmBytes,
+          sha256hash,
         },
         [
           {
@@ -183,7 +192,9 @@ describe(PluginService.name, () => {
           description: 'Plugin with multiple methods',
           author: 'Test Author',
           version: '1.0.0',
+          templates: [],
           wasmBytes,
+          sha256hash,
         },
         [
           {
@@ -242,6 +253,8 @@ describe(PluginService.name, () => {
           description: 'A single plugin',
           author: 'Test Author',
           version: '1.0.0',
+          templates: [],
+          sha256hash,
           wasmBytes,
         },
         [

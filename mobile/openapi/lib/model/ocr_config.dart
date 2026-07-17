@@ -85,8 +85,8 @@ class OcrConfig {
       return OcrConfig(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         maxResolution: mapValueOfType<int>(json, r'maxResolution')!,
-        minDetectionScore: (mapValueOfType<num>(json, r'minDetectionScore')!).toDouble(),
-        minRecognitionScore: (mapValueOfType<num>(json, r'minRecognitionScore')!).toDouble(),
+        minDetectionScore: mapValueOfType<double>(json, r'minDetectionScore')!,
+        minRecognitionScore: mapValueOfType<double>(json, r'minRecognitionScore')!,
         modelName: mapValueOfType<String>(json, r'modelName')!,
       );
     }

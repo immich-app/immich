@@ -1,5 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import type { SemVer } from 'semver';
+import { ExtraModel, HistoryBuilder } from 'src/decorators';
 import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
 
@@ -58,15 +59,21 @@ const ServerStorageResponseSchema = z
 
 const ServerVersionResponseSchema = z
   .object({
-    major: z.int().describe('Major version number'),
-    minor: z.int().describe('Minor version number'),
-    patch: z.int().describe('Patch version number'),
+    major: z.int().min(0).describe('Major version number'),
+    minor: z.int().min(0).describe('Minor version number'),
+    patch: z.int().min(0).describe('Patch version number'),
+    prerelease: z
+      .int()
+      .min(0)
+      .nullable()
+      .meta(HistoryBuilder.v3().getExtensions())
+      .describe('Pre-release version number'),
   })
   .meta({ id: 'ServerVersionResponseDto' });
 
 const ServerVersionHistoryResponseSchema = z
   .object({
-    id: z.string().describe('Version history entry ID'),
+    id: z.uuidv4().describe('Version history entry ID'),
     createdAt: isoDatetimeToDate.describe('When this version was first seen'),
     version: z.string().describe('Version string'),
   })
@@ -74,7 +81,7 @@ const ServerVersionHistoryResponseSchema = z
 
 const UsageByUserSchema = z
   .object({
-    userId: z.string().describe('User ID'),
+    userId: z.uuidv4().describe('User ID'),
     userName: z.string().describe('User name'),
     photos: z.int().describe('Number of photos'),
     videos: z.int().describe('Number of videos'),
@@ -117,6 +124,7 @@ const ServerConfigSchema = z
     mapDarkStyleUrl: z.string().describe('Map dark style URL'),
     mapLightStyleUrl: z.string().describe('Map light style URL'),
     maintenanceMode: z.boolean().describe('Whether maintenance mode is active'),
+    minFaces: z.int().describe('People min faces server default'),
   })
   .meta({ id: 'ServerConfigDto' });
 
@@ -137,8 +145,29 @@ const ServerFeaturesSchema = z
     search: z.boolean().describe('Whether search is enabled'),
     email: z.boolean().describe('Whether email notifications are enabled'),
     ocr: z.boolean().describe('Whether OCR is enabled'),
+    realtimeTranscoding: z.boolean().describe('Whether real-time transcoding is enabled'),
   })
   .meta({ id: 'ServerFeaturesDto' });
+
+export enum ReleaseType {
+  Major = 'major',
+  Premajor = 'premajor',
+  Minor = 'minor',
+  Preminor = 'preminor',
+  Patch = 'patch',
+  Prepatch = 'prepatch',
+  Prerelease = 'prerelease',
+}
+
+const ReleaseTypeSchema = z.enum(ReleaseType).meta({ id: 'ReleaseType' }).describe('Release type');
+
+const ReleaseEventV1Schema = z.object({
+  isAvailable: z.boolean().describe('Whether a new version is available'),
+  checkedAt: z.string().describe('When the server last checked for a latest version. As an ISO timestamp'),
+  serverVersion: ServerVersionResponseSchema,
+  releaseVersion: ServerVersionResponseSchema,
+  type: ReleaseTypeSchema.nullable(),
+});
 
 export class ServerPingResponse extends createZodDto(ServerPingResponseSchema) {}
 export class ServerAboutResponseDto extends createZodDto(ServerAboutResponseSchema) {}
@@ -147,7 +176,12 @@ export class ServerStorageResponseDto extends createZodDto(ServerStorageResponse
 
 export class ServerVersionResponseDto extends createZodDto(ServerVersionResponseSchema) {
   static fromSemVer(value: SemVer): z.infer<typeof ServerVersionResponseSchema> {
-    return { major: value.major, minor: value.minor, patch: value.patch };
+    return {
+      major: value.major,
+      minor: value.minor,
+      patch: value.patch,
+      prerelease: (value.prerelease[1] as number) ?? null,
+    };
   }
 }
 
@@ -158,10 +192,5 @@ export class ServerMediaTypesResponseDto extends createZodDto(ServerMediaTypesRe
 export class ServerConfigDto extends createZodDto(ServerConfigSchema) {}
 export class ServerFeaturesDto extends createZodDto(ServerFeaturesSchema) {}
 
-export interface ReleaseNotification {
-  isAvailable: boolean;
-  /** ISO8601 */
-  checkedAt: string;
-  serverVersion: ServerVersionResponseDto;
-  releaseVersion: ServerVersionResponseDto;
-}
+@ExtraModel()
+export class ReleaseEventV1 extends createZodDto(ReleaseEventV1Schema) {}

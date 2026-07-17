@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 import { createZodDto } from 'nestjs-zod';
+import { ExtraModel } from 'src/decorators';
 import { AssetEditActionSchema } from 'src/dtos/editing.dto';
 import {
   AlbumUserRole,
@@ -17,18 +17,9 @@ import {
 import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
 
-export const extraSyncModels: Function[] = [];
-
-const ExtraModel = (): ClassDecorator => {
-  // eslint-disable-next-line unicorn/consistent-function-scoping
-  return (object: Function) => {
-    extraSyncModels.push(object);
-  };
-};
-
 const SyncUserV1Schema = z
   .object({
-    id: z.string().describe('User ID'),
+    id: z.uuidv4().describe('User ID'),
     name: z.string().describe('User name'),
     email: z.string().describe('User email'),
     avatarColor: UserAvatarColorSchema.nullish(),
@@ -49,27 +40,27 @@ const SyncAuthUserV1Schema = SyncUserV1Schema.merge(
   }),
 ).meta({ id: 'SyncAuthUserV1' });
 
-const SyncUserDeleteV1Schema = z.object({ userId: z.string().describe('User ID') }).meta({ id: 'SyncUserDeleteV1' });
+const SyncUserDeleteV1Schema = z.object({ userId: z.uuidv4().describe('User ID') }).meta({ id: 'SyncUserDeleteV1' });
 
 const SyncPartnerV1Schema = z
   .object({
-    sharedById: z.string().describe('Shared by ID'),
-    sharedWithId: z.string().describe('Shared with ID'),
+    sharedById: z.uuidv4().describe('Shared by ID'),
+    sharedWithId: z.uuidv4().describe('Shared with ID'),
     inTimeline: z.boolean().describe('In timeline'),
   })
   .meta({ id: 'SyncPartnerV1' });
 
 const SyncPartnerDeleteV1Schema = z
   .object({
-    sharedById: z.string().describe('Shared by ID'),
-    sharedWithId: z.string().describe('Shared with ID'),
+    sharedById: z.uuidv4().describe('Shared by ID'),
+    sharedWithId: z.uuidv4().describe('Shared with ID'),
   })
   .meta({ id: 'SyncPartnerDeleteV1' });
 
 const SyncAssetV1Schema = z
   .object({
-    id: z.string().describe('Asset ID'),
-    ownerId: z.string().describe('Owner ID'),
+    id: z.uuidv4().describe('Asset ID'),
+    ownerId: z.uuidv4().describe('Owner ID'),
     originalFileName: z.string().describe('Original file name'),
     thumbhash: z.string().nullable().describe('Thumbhash'),
     checksum: z.string().describe('Checksum'),
@@ -93,8 +84,8 @@ const SyncAssetV1Schema = z
 
 const SyncAssetV2Schema = z
   .object({
-    id: z.string().describe('Asset ID'),
-    ownerId: z.string().describe('Owner ID'),
+    id: z.uuidv4().describe('Asset ID'),
+    ownerId: z.uuidv4().describe('Owner ID'),
     originalFileName: z.string().describe('Original file name'),
     thumbhash: z.string().nullable().describe('Thumbhash'),
     checksum: z.string().describe('Checksum'),
@@ -132,12 +123,12 @@ export class SyncAssetV1 extends createZodDto(SyncAssetV1Schema) {}
 export class SyncAssetV2 extends createZodDto(SyncAssetV2Schema) {}
 
 const SyncAssetDeleteV1Schema = z
-  .object({ assetId: z.string().describe('Asset ID') })
+  .object({ assetId: z.uuidv4().describe('Asset ID') })
   .meta({ id: 'SyncAssetDeleteV1' });
 
 const SyncAssetExifV1Schema = z
   .object({
-    assetId: z.string().describe('Asset ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
     description: z.string().nullable().describe('Description'),
     exifImageWidth: z.int().nullable().describe('Exif image width'),
     exifImageHeight: z.int().nullable().describe('Exif image height'),
@@ -167,7 +158,7 @@ const SyncAssetExifV1Schema = z
 
 const SyncAssetMetadataV1Schema = z
   .object({
-    assetId: z.string().describe('Asset ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
     key: z.string().describe('Key'),
     value: z.record(z.string(), z.unknown()).describe('Value'),
   })
@@ -175,15 +166,15 @@ const SyncAssetMetadataV1Schema = z
 
 const SyncAssetMetadataDeleteV1Schema = z
   .object({
-    assetId: z.string().describe('Asset ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
     key: z.string().describe('Key'),
   })
   .meta({ id: 'SyncAssetMetadataDeleteV1' });
 
 const SyncAssetEditV1Schema = z
   .object({
-    id: z.string().describe('Edit ID'),
-    assetId: z.string().describe('Asset ID'),
+    id: z.uuidv4().describe('Edit ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
     action: AssetEditActionSchema,
     parameters: z.record(z.string(), z.unknown()).describe('Edit parameters'),
     sequence: z.int().describe('Edit sequence'),
@@ -191,7 +182,7 @@ const SyncAssetEditV1Schema = z
   .meta({ id: 'SyncAssetEditV1' });
 
 const SyncAssetEditDeleteV1Schema = z
-  .object({ editId: z.string().describe('Edit ID') })
+  .object({ editId: z.uuidv4().describe('Edit ID') })
   .meta({ id: 'SyncAssetEditDeleteV1' });
 
 @ExtraModel()
@@ -208,28 +199,28 @@ export class SyncAssetEditV1 extends createZodDto(SyncAssetEditV1Schema) {}
 class SyncAssetEditDeleteV1 extends createZodDto(SyncAssetEditDeleteV1Schema) {}
 
 const SyncAlbumDeleteV1Schema = z
-  .object({ albumId: z.string().describe('Album ID') })
+  .object({ albumId: z.uuidv4().describe('Album ID') })
   .meta({ id: 'SyncAlbumDeleteV1' });
 
 const SyncAlbumUserDeleteV1Schema = z
   .object({
-    albumId: z.string().describe('Album ID'),
-    userId: z.string().describe('User ID'),
+    albumId: z.uuidv4().describe('Album ID'),
+    userId: z.uuidv4().describe('User ID'),
   })
   .meta({ id: 'SyncAlbumUserDeleteV1' });
 
 const SyncAlbumUserV1Schema = z
   .object({
-    albumId: z.string().describe('Album ID'),
-    userId: z.string().describe('User ID'),
+    albumId: z.uuidv4().describe('Album ID'),
+    userId: z.uuidv4().describe('User ID'),
     role: AlbumUserRoleSchema,
   })
   .meta({ id: 'SyncAlbumUserV1' });
 
 const SyncAlbumV1Schema = z
   .object({
-    id: z.string().describe('Album ID'),
-    ownerId: z.string().describe('Owner ID'),
+    id: z.uuidv4().describe('Album ID'),
+    ownerId: z.uuidv4().describe('Owner ID'),
     name: z.string().describe('Album name'),
     description: z.string().describe('Album description'),
     createdAt: isoDatetimeToDate.describe('Created at'),
@@ -242,7 +233,7 @@ const SyncAlbumV1Schema = z
 
 const SyncAlbumV2Schema = z
   .object({
-    id: z.string().describe('Album ID'),
+    id: z.uuidv4().describe('Album ID'),
     name: z.string().describe('Album name'),
     description: z.string().describe('Album description'),
     createdAt: isoDatetimeToDate.describe('Created at'),
@@ -255,15 +246,15 @@ const SyncAlbumV2Schema = z
 
 const SyncAlbumToAssetV1Schema = z
   .object({
-    albumId: z.string().describe('Album ID'),
-    assetId: z.string().describe('Asset ID'),
+    albumId: z.uuidv4().describe('Album ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
   })
   .meta({ id: 'SyncAlbumToAssetV1' });
 
 const SyncAlbumToAssetDeleteV1Schema = z
   .object({
-    albumId: z.string().describe('Album ID'),
-    assetId: z.string().describe('Asset ID'),
+    albumId: z.uuidv4().describe('Album ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
   })
   .meta({ id: 'SyncAlbumToAssetDeleteV1' });
 
@@ -293,11 +284,11 @@ export function syncAlbumV2ToV1(
 
 const SyncMemoryV1Schema = z
   .object({
-    id: z.string().describe('Memory ID'),
+    id: z.uuidv4().describe('Memory ID'),
     createdAt: isoDatetimeToDate.describe('Created at'),
     updatedAt: isoDatetimeToDate.describe('Updated at'),
     deletedAt: isoDatetimeToDate.nullable().describe('Deleted at'),
-    ownerId: z.string().describe('Owner ID'),
+    ownerId: z.uuidv4().describe('Owner ID'),
     type: MemoryTypeSchema,
     data: z.record(z.string(), z.unknown()).describe('Data'),
     isSaved: z.boolean().describe('Is saved'),
@@ -309,43 +300,43 @@ const SyncMemoryV1Schema = z
   .meta({ id: 'SyncMemoryV1' });
 
 const SyncMemoryDeleteV1Schema = z
-  .object({ memoryId: z.string().describe('Memory ID') })
+  .object({ memoryId: z.uuidv4().describe('Memory ID') })
   .meta({ id: 'SyncMemoryDeleteV1' });
 
 const SyncMemoryAssetV1Schema = z
   .object({
-    memoryId: z.string().describe('Memory ID'),
-    assetId: z.string().describe('Asset ID'),
+    memoryId: z.uuidv4().describe('Memory ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
   })
   .meta({ id: 'SyncMemoryAssetV1' });
 
 const SyncMemoryAssetDeleteV1Schema = z
   .object({
-    memoryId: z.string().describe('Memory ID'),
-    assetId: z.string().describe('Asset ID'),
+    memoryId: z.uuidv4().describe('Memory ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
   })
   .meta({ id: 'SyncMemoryAssetDeleteV1' });
 
 const SyncStackV1Schema = z
   .object({
-    id: z.string().describe('Stack ID'),
+    id: z.uuidv4().describe('Stack ID'),
     createdAt: isoDatetimeToDate.describe('Created at'),
     updatedAt: isoDatetimeToDate.describe('Updated at'),
-    primaryAssetId: z.string().describe('Primary asset ID'),
-    ownerId: z.string().describe('Owner ID'),
+    primaryAssetId: z.uuidv4().describe('Primary asset ID'),
+    ownerId: z.uuidv4().describe('Owner ID'),
   })
   .meta({ id: 'SyncStackV1' });
 
 const SyncStackDeleteV1Schema = z
-  .object({ stackId: z.string().describe('Stack ID') })
+  .object({ stackId: z.uuidv4().describe('Stack ID') })
   .meta({ id: 'SyncStackDeleteV1' });
 
 const SyncPersonV1Schema = z
   .object({
-    id: z.string().describe('Person ID'),
+    id: z.uuidv4().describe('Person ID'),
     createdAt: isoDatetimeToDate.describe('Created at'),
     updatedAt: isoDatetimeToDate.describe('Updated at'),
-    ownerId: z.string().describe('Owner ID'),
+    ownerId: z.uuidv4().describe('Owner ID'),
     name: z.string().describe('Person name'),
     birthDate: isoDatetimeToDate.nullable().describe('Birth date'),
     isHidden: z.boolean().describe('Is hidden'),
@@ -356,13 +347,13 @@ const SyncPersonV1Schema = z
   .meta({ id: 'SyncPersonV1' });
 
 const SyncPersonDeleteV1Schema = z
-  .object({ personId: z.string().describe('Person ID') })
+  .object({ personId: z.uuidv4().describe('Person ID') })
   .meta({ id: 'SyncPersonDeleteV1' });
 
 const SyncAssetFaceV1Schema = z
   .object({
-    id: z.string().describe('Asset face ID'),
-    assetId: z.string().describe('Asset ID'),
+    id: z.uuidv4().describe('Asset face ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
     personId: z.string().nullable().describe('Person ID'),
     imageWidth: z.int().describe('Image width'),
     imageHeight: z.int().describe('Image height'),
@@ -380,12 +371,12 @@ const SyncAssetFaceV2Schema = SyncAssetFaceV1Schema.extend({
 }).meta({ id: 'SyncAssetFaceV2' });
 
 const SyncAssetFaceDeleteV1Schema = z
-  .object({ assetFaceId: z.string().describe('Asset face ID') })
+  .object({ assetFaceId: z.uuidv4().describe('Asset face ID') })
   .meta({ id: 'SyncAssetFaceDeleteV1' });
 
 const SyncUserMetadataV1Schema = z
   .object({
-    userId: z.string().describe('User ID'),
+    userId: z.uuidv4().describe('User ID'),
     key: UserMetadataKeySchema,
     value: z.record(z.string(), z.unknown()).describe('User metadata value'),
   })
@@ -393,7 +384,7 @@ const SyncUserMetadataV1Schema = z
 
 const SyncUserMetadataDeleteV1Schema = z
   .object({
-    userId: z.string().describe('User ID'),
+    userId: z.uuidv4().describe('User ID'),
     key: UserMetadataKeySchema,
   })
   .meta({ id: 'SyncUserMetadataDeleteV1' });
@@ -410,6 +401,41 @@ class SyncMemoryDeleteV1 extends createZodDto(SyncMemoryDeleteV1Schema) {}
 class SyncMemoryAssetV1 extends createZodDto(SyncMemoryAssetV1Schema) {}
 @ExtraModel()
 class SyncMemoryAssetDeleteV1 extends createZodDto(SyncMemoryAssetDeleteV1Schema) {}
+
+const SyncAssetOcrV1Schema = z
+  .object({
+    id: z.uuidv4().describe('OCR entry ID'),
+    assetId: z.uuidv4().describe('Asset ID'),
+
+    x1: z.number().meta({ format: 'double' }).describe('Top-left X coordinate (normalized 0–1)'),
+    y1: z.number().meta({ format: 'double' }).describe('Top-left Y coordinate (normalized 0–1)'),
+    x2: z.number().meta({ format: 'double' }).describe('Top-right X coordinate (normalized 0–1)'),
+    y2: z.number().meta({ format: 'double' }).describe('Top-right Y coordinate (normalized 0–1)'),
+    x3: z.number().meta({ format: 'double' }).describe('Bottom-right X coordinate (normalized 0–1)'),
+    y3: z.number().meta({ format: 'double' }).describe('Bottom-right Y coordinate (normalized 0–1)'),
+    x4: z.number().meta({ format: 'double' }).describe('Bottom-left X coordinate (normalized 0–1)'),
+    y4: z.number().meta({ format: 'double' }).describe('Bottom-left Y coordinate (normalized 0–1)'),
+
+    boxScore: z.number().meta({ format: 'double' }).describe('Confidence score of the bounding box'),
+    textScore: z.number().meta({ format: 'double' }).describe('Confidence score of the recognized text'),
+    text: z.string().describe('Recognized text content'),
+    isVisible: z.boolean().describe('Whether the OCR entry is visible'),
+  })
+  .meta({ id: 'SyncAssetOcrV1' });
+
+const SyncAssetOcrDeleteV1Schema = z
+  .object({
+    id: z.string().describe('Audit row ID of the deleted OCR entry'),
+    assetId: z.string().describe('Original asset ID of the deleted OCR entry'),
+    deletedAt: isoDatetimeToDate.describe('Timestamp when the OCR entry was deleted'),
+  })
+  .meta({ id: 'SyncAssetOcrDeleteV1' });
+
+@ExtraModel()
+class SyncAssetOcrV1 extends createZodDto(SyncAssetOcrV1Schema) {}
+
+@ExtraModel()
+class SyncAssetOcrDeleteV1 extends createZodDto(SyncAssetOcrDeleteV1Schema) {}
 @ExtraModel()
 class SyncStackV1 extends createZodDto(SyncStackV1Schema) {}
 @ExtraModel()
@@ -446,6 +472,8 @@ export type SyncItem = {
   [SyncEntityType.AssetMetadataV1]: SyncAssetMetadataV1;
   [SyncEntityType.AssetMetadataDeleteV1]: SyncAssetMetadataDeleteV1;
   [SyncEntityType.AssetExifV1]: SyncAssetExifV1;
+  [SyncEntityType.AssetOcrV1]: SyncAssetOcrV1;
+  [SyncEntityType.AssetOcrDeleteV1]: SyncAssetOcrDeleteV1;
   [SyncEntityType.AssetEditV1]: SyncAssetEditV1;
   [SyncEntityType.AssetEditDeleteV1]: SyncAssetEditDeleteV1;
   [SyncEntityType.PartnerAssetV2]: SyncAssetV2;

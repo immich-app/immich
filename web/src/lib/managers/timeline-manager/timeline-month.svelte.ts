@@ -15,12 +15,12 @@ import {
   fromTimelinePlainDate,
   fromTimelinePlainDateTime,
   fromTimelinePlainYearMonth,
-  fromISODateTimeUTC,
   getTimes,
   setDifference,
   type TimelineDateTime,
   type TimelineYearMonth,
   getOrderingDate,
+  fromISODateTimeUTC,
 } from '$lib/utils/timeline-util';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
 import { TimelineDay } from './timeline-day.svelte';
@@ -179,8 +179,8 @@ export class TimelineMonth {
       );
 
       const timelineAsset: TimelineAsset = {
-        city: bucketAssets.city[i],
-        country: bucketAssets.country[i],
+        city: bucketAssets.city?.[i] ?? null,
+        country: bucketAssets.country?.[i] ?? null,
         duration: bucketAssets.duration[i],
         id: bucketAssets.id[i],
         visibility: bucketAssets.visibility[i],
@@ -190,7 +190,7 @@ export class TimelineMonth {
         isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
         localDateTime,
-        createdAt: fromISODateTimeUTC(bucketAssets.createdAt[i]).setZone('local'),
+        createdAt: fromISODateTimeUTC(bucketAssets.createdAt[i]).toLocal().toObject(),
         fileCreatedAt,
         ownerId: bucketAssets.ownerId[i],
         projectionType: bucketAssets.projectionType[i],
@@ -254,7 +254,7 @@ export class TimelineMonth {
       addContext.newTimelineDays.add(timelineDay);
     }
 
-    const viewerAsset = new ViewerAsset(timelineDay, timelineAsset);
+    const viewerAsset = new ViewerAsset(timelineAsset);
     timelineDay.viewerAssets.push(viewerAsset);
     addContext.changedTimelineDays.add(timelineDay);
   }

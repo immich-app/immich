@@ -30,25 +30,29 @@ This environment includes the services below. Additional details are available i
 - Redis
 - PostgreSQL development database with exposed port `5432` so you can use any database client to access it
 
-All the services are packaged to run as with single Docker Compose command.
+All the services are packaged to run with a single Docker Compose command.
+
+:::tip mise
+[mise](https://mise.jdx.dev) is used throughout the project to manage tool versions and run tasks. [Install mise](https://mise.jdx.dev/installing-mise.html), then from the repo root run `mise trust` and `mise install` to get all required tools. Tasks for each service can be run from the repo root using `mise //namespace:task` (e.g. `mise //server:lint`). To list all available tasks, run `mise tasks ls --all`.
+:::
 
 ### Server and web apps
 
 1. Clone the project repo.
 2. Run `cp docker/example.env docker/.env`.
 3. Edit `docker/.env` to provide values for the required variable `UPLOAD_LOCATION`.
-4. Install dependencies - `pnpm i`
+4. Install dependencies - `mise x -- pnpm i`
 5. From the root directory, run:
 
 ```bash title="Start development server"
-make dev # required Makefile installed on the system.
+mise dev
 ```
 
 5. Access the dev instance in your browser at http://localhost:3000, or connect via the mobile app.
 
 All the services will be started with hot-reloading enabled for a quick feedback loop.
 
-You can access the web from `http://your-machine-ip:3000` or `http://localhost:3000` and access the server from the mobile app at `http://your-machine-ip:3000/api`
+You can access the web from `http://your-machine-ip:3000` or `http://localhost:3000` and access the server from the mobile app at `http://your-machine-ip:3000`
 
 **Notes:**
 
@@ -56,22 +60,23 @@ You can access the web from `http://your-machine-ip:3000` or `http://localhost:3
 
 #### Connect web to a remote backend
 
-If you only want to do web development connected to an existing, remote backend, follow these steps:
-
-1. Build the Immich SDK - `pnpm --filter @immich/sdk install && pnpm --filter @immich/sdk build`
-2. Enter the web directory - `cd web/`
-3. Install web dependencies - `pnpm i`
-4. Start the web development server
+If you only want to do web development connected to an existing, remote backend, run from the repo root:
 
 ```bash
-IMMICH_SERVER_URL=https://demo.immich.app/ pnpm run dev
+IMMICH_SERVER_URL=https://demo.immich.app/ mise //web:start
+```
+
+This will install all dependencies (including the SDK) and start the dev server in one step. To connect to the hosted demo server specifically, use the shorthand:
+
+```bash
+mise //web:start-demo
 ```
 
 If you're using PowerShell on Windows you may need to set the env var separately like so:
 
 ```powershell
 $env:IMMICH_SERVER_URL = "https://demo.immich.app/"
-pnpm run dev
+mise //web:start
 ```
 
 #### `@immich/ui`
@@ -83,30 +88,59 @@ To see local changes to `@immich/ui` in Immich, do the following:
 3. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yml` file (`../../ui:/usr/src/ui`)
 4. Uncomment the corresponding alias in the `web/vite.config.ts` file (`'@immich/ui': path.resolve(\_\_dirname, '../../ui/packages/ui')`)
 5. Uncomment the import statement in `web/src/app.css` file `@import '../../../ui/packages/ui/dist/theme/default.css';` and comment out `@import '@immich/ui/theme/default.css';`
-6. Start up the stack via `make dev`
+6. Start up the stack via `mise dev`
 7. After making changes in `@immich/ui`, rebuild it (`pnpm run build`)
 
 ### Mobile app
 
 #### Setup
 
-1. [Install mise](https://mise.jdx.dev/installing-mise.html).
-2. Change to the immich (root) directory and trust the mise config with `mise trust`.
-3. Install tools with mise: `mise install`.
-4. Change to the `mobile/` directory.
-5. Run `flutter pub get` to install the dependencies.
-6. Run `make translation` to generate the translation file.
-7. Run `flutter run` to start the app.
+1. Run `mise //mobile:install` to install Flutter dependencies.
+2. Run `mise //mobile:translation` to generate the translation file.
+3. Change to the `mobile/` directory and run `flutter run` to start the app.
+
+##### iOS Code Signing
+
+The Immich Apple Team ID and bundle IDs are specified in `mobile/ios/Signing.xcconfig`. For local development, we provide an override mechanism.
+
+Create `mobile/ios/Signing.local.xcconfig` and populate it with the necessary values needed to build and sign Immich yourself. This local override file is gitignored.
+
+```
+IMMICH_TEAM_ID = ABCDE12345
+IMMICH_BUNDLE_ID_PROD = com.customuniqueid.immich
+IMMICH_BUNDLE_ID_DEV = com.customuniqueid.immichdev
+IMMICH_GROUP_ID = group.com.customuniqueid.immich
+```
+
+The environment values are used across Immich's targets and schemes to prevent redundant edits by contributors.
 
 #### Translation
 
-To add a new translation text, enter the key-value pair in the `i18n/en.json` in the root of the immich project. Then, from the `mobile/` directory, run
+To add a new translation text, enter the key-value pair in the `i18n/en.json` in the root of the immich project. Then run:
 
 ```bash
-make translation
+mise //mobile:translation
 ```
 
 The mobile app asks you what backend to connect to. You can utilize the demo backend (https://demo.immich.app/) if you don't need to change server code or upload photos. Alternatively, you can run the server yourself per the instructions above.
+
+#### UI components and widget previews
+
+Shared design-system widgets (buttons, inputs, forms) live in the
+[`immich_ui` package](https://github.com/immich-app/immich/tree/main/mobile/packages/ui/)
+under `mobile/packages/ui/`. Components are defined in `lib/src/components/`
+and have matching previews in `lib/src/previews/`.
+
+To inspect a component in isolation with a light/dark toggle and hot reload,
+launch [Flutter's Widget Previewer](https://docs.flutter.dev/tools/widget-previewer):
+
+```bash
+cd mobile/packages/ui
+flutter widget-preview start
+```
+
+In VS Code or Android Studio with the Flutter plugin, the previewer
+auto-starts when you open the **Flutter Widget Preview** tab in the sidebar.
 
 ## IDE setup
 

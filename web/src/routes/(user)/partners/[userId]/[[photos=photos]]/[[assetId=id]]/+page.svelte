@@ -47,7 +47,7 @@
     <DownloadAction />
   </AssetSelectControlBar>
 {:else}
-  <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(Route.sharing())}>
+  <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(Route.sharing())}>
     {#snippet leading()}
       <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
         {$t('partner_list_user_photos', { values: { user: data.partner.name } })}

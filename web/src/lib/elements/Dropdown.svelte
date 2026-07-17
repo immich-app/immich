@@ -107,7 +107,7 @@
   {#if showMenu}
     <div
       transition:fly={{ y: -30, duration: 250 }}
-      class="absolute z-1 flex max-h-[70vh] min-w-75 flex-col overflow-y-auto rounded-2xl bg-gray-100 py-2 text-sm font-medium text-black shadow-lg immich-scrollbar dark:bg-gray-700 dark:text-white {className} {getAlignClass(
+      class="absolute z-1 flex max-h-[70vh] min-w-75 immich-scrollbar flex-col overflow-y-auto rounded-2xl bg-gray-100 py-2 text-sm font-medium text-black shadow-lg dark:bg-gray-700 dark:text-white {className} {getAlignClass(
         position,
       )}"
     >

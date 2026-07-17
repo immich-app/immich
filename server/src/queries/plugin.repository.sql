@@ -35,6 +35,7 @@ select
   "plugin"."version",
   "plugin"."createdAt",
   "plugin"."updatedAt",
+  "plugin"."templates",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -47,6 +48,7 @@ select
           "plugin_method"."types",
           "plugin_method"."schema",
           "plugin_method"."hostFunctions",
+          "plugin_method"."allowedHosts",
           "plugin_method"."uiHints",
           "plugin"."name" as "pluginName"
         from
@@ -60,7 +62,7 @@ from
 order by
   "plugin"."name"
 
--- PluginRepository.getByName
+-- PluginRepository.getByHash
 select
   "plugin"."id",
   "plugin"."name",
@@ -70,6 +72,7 @@ select
   "plugin"."version",
   "plugin"."createdAt",
   "plugin"."updatedAt",
+  "plugin"."templates",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -82,6 +85,44 @@ select
           "plugin_method"."types",
           "plugin_method"."schema",
           "plugin_method"."hostFunctions",
+          "plugin_method"."allowedHosts",
+          "plugin_method"."uiHints",
+          "plugin"."name" as "pluginName"
+        from
+          "plugin_method"
+        where
+          "plugin_method"."pluginId" = "plugin"."id"
+      ) as agg
+  ) as "methods"
+from
+  "plugin"
+where
+  "plugin"."sha256hash" = $1
+
+-- PluginRepository.getByName
+select
+  "plugin"."id",
+  "plugin"."name",
+  "plugin"."title",
+  "plugin"."description",
+  "plugin"."author",
+  "plugin"."version",
+  "plugin"."createdAt",
+  "plugin"."updatedAt",
+  "plugin"."templates",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "plugin_method"."name",
+          "plugin_method"."title",
+          "plugin_method"."description",
+          "plugin_method"."types",
+          "plugin_method"."schema",
+          "plugin_method"."hostFunctions",
+          "plugin_method"."allowedHosts",
           "plugin_method"."uiHints",
           "plugin"."name" as "pluginName"
         from
@@ -105,6 +146,7 @@ select
   "plugin"."version",
   "plugin"."createdAt",
   "plugin"."updatedAt",
+  "plugin"."templates",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -117,6 +159,7 @@ select
           "plugin_method"."types",
           "plugin_method"."schema",
           "plugin_method"."hostFunctions",
+          "plugin_method"."allowedHosts",
           "plugin_method"."uiHints",
           "plugin"."name" as "pluginName"
         from
@@ -151,6 +194,7 @@ select
   "plugin_method"."types",
   "plugin_method"."schema",
   "plugin_method"."hostFunctions",
+  "plugin_method"."allowedHosts",
   "plugin_method"."uiHints"
 from
   "plugin_method"

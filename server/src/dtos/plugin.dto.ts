@@ -1,7 +1,8 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { createZodDto } from 'nestjs-zod';
 import { JsonSchemaDto } from 'src/dtos/json-schema.dto';
 import { WorkflowTriggerSchema, WorkflowType, WorkflowTypeSchema } from 'src/enum';
-import { asMethodString } from 'src/utils/workflow';
+import { asPluginKey } from 'src/utils/workflow';
 import z from 'zod';
 
 const PluginSearchSchema = z
@@ -31,7 +32,7 @@ const PluginMethodResponseSchema = z
 
 const PluginResponseSchema = z
   .object({
-    id: z.string().describe('Plugin ID'),
+    id: z.uuidv4().describe('Plugin ID'),
     name: z.string().describe('Plugin name'),
     title: z.string().describe('Plugin title'),
     description: z.string().describe('Plugin description'),
@@ -42,6 +43,25 @@ const PluginResponseSchema = z
     methods: z.array(PluginMethodResponseSchema).describe('Plugin methods'),
   })
   .meta({ id: 'PluginResponseDto' });
+
+const PluginTemplateStepResponseSchema = z
+  .object({
+    method: z.string().describe('Step plugin method'),
+    config: z.record(z.string(), z.unknown()).nullable().describe('Step configuration'),
+    enabled: z.boolean().optional().describe('Whether the step is enabled'),
+  })
+  .meta({ id: 'PluginTemplateStepResponseDto' });
+
+const PluginTemplateResponseSchema = z
+  .object({
+    key: z.string().describe('Template key (unique across all templates)'),
+    title: z.string().describe('Template title'),
+    description: z.string().describe('Template description'),
+    trigger: WorkflowTriggerSchema.describe('Workflow trigger'),
+    steps: z.array(PluginTemplateStepResponseSchema).describe('Workflow steps'),
+    uiHints: z.array(z.string()).describe('Ui hints, for example "smart-album"'),
+  })
+  .meta({ id: 'PluginTemplateResponseDto' });
 
 const PluginMethodSearchSchema = z
   .object({
@@ -61,6 +81,35 @@ export class PluginSearchDto extends createZodDto(PluginSearchSchema) {}
 export class PluginResponseDto extends createZodDto(PluginResponseSchema) {}
 export class PluginMethodSearchDto extends createZodDto(PluginMethodSearchSchema) {}
 export class PluginMethodResponseDto extends createZodDto(PluginMethodResponseSchema) {}
+export class PluginTemplateResponseDto extends createZodDto(PluginTemplateResponseSchema) {}
+
+export type PluginTemplate = {
+  name: string;
+  title: string;
+  description: string;
+  trigger: WorkflowTrigger;
+  steps: Array<{
+    method: string;
+    config?: Record<string, unknown> | null;
+    enabled?: boolean;
+  }>;
+  uiHints: string[];
+};
+
+export const mapTemplate = (plugin: { name: string }, template: PluginTemplate): PluginTemplateResponseDto => {
+  return {
+    key: asPluginKey({ pluginName: plugin.name, name: template.name }),
+    title: template.title,
+    description: template.description,
+    trigger: template.trigger,
+    steps: template.steps.map((step) => ({
+      method: step.method,
+      config: step.config ?? null,
+      enabled: step.enabled,
+    })),
+    uiHints: template.uiHints ?? [],
+  };
+};
 
 type Plugin = {
   id: string;
@@ -101,7 +150,7 @@ export function mapPlugin(plugin: Plugin): PluginResponseDto {
 
 export const mapMethod = (method: PluginMethod): PluginMethodResponseDto => {
   return {
-    key: asMethodString({ pluginName: method.pluginName, methodName: method.name }),
+    key: asPluginKey({ pluginName: method.pluginName, name: method.name }),
     name: method.name,
     title: method.title,
     hostFunctions: method.hostFunctions,

@@ -4,6 +4,11 @@ import Thumbnail from '$lib/components/assets/thumbnail/Thumbnail.svelte';
 import { getTabbable } from '$lib/utils/focus-util';
 import { assetFactory } from '@test-data/factories/asset-factory';
 
+vi.mock('$lib/utils/navigation', () => ({
+  currentUrlReplaceAssetId: vi.fn(),
+  isSharedLinkRoute: vi.fn().mockReturnValue(false),
+}));
+
 vi.hoisted(() => {
   Object.defineProperty(globalThis, 'matchMedia', {
     writable: true,
@@ -26,10 +31,6 @@ vi.hoisted(() => {
 describe('Thumbnail component', () => {
   beforeAll(() => {
     vi.stubGlobal('IntersectionObserver', getIntersectionObserverMock());
-    vi.mock('$lib/utils/navigation', () => ({
-      currentUrlReplaceAssetId: vi.fn(),
-      isSharedLinkRoute: vi.fn().mockReturnValue(false),
-    }));
   });
 
   it('should only contain a single tabbable element (the container)', () => {

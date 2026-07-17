@@ -4,21 +4,20 @@
 
 ### Unit tests
 
-Unit are run by calling `pnpm run test` from the `server/` directory.
-You need to run `pnpm install` (in `server/`) before _once_.
+Unit tests are run with `mise //server:test`.
+You need to run `mise //server:install` before _once_.
 
 ### End to end tests
 
 The e2e tests can be run by first starting up a test production environment via:
 
 ```bash
-make e2e
+mise e2e
 ```
 
 Before you can run the tests, you need to run the following commands _once_:
 
-- `pnpm install`
-- `pnpm --filter @immich/sdk --filter @immich/cli build`
+- `mise //e2e:ci-setup` (installs e2e, SDK, and CLI dependencies)
 - `mise //:open-api`
 
 Once the test environment is running, the e2e tests can be run via:

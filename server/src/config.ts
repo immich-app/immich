@@ -1,8 +1,10 @@
 import { CronExpression } from '@nestjs/schedule';
+import { ReleaseChannel } from 'src/dtos/system-config.dto';
 import {
   AudioCodec,
   Colorspace,
   CQMode,
+  HlsVideoResolution,
   ImageFormat,
   LogLevel,
   OAuthTokenEndpointAuthMethod,
@@ -45,6 +47,27 @@ export type SystemConfig = {
     accel: TranscodeHardwareAcceleration;
     accelDecode: boolean;
     tonemap: ToneMapping;
+    realtime: {
+      enabled: boolean;
+      videoCodecs: VideoCodec[];
+      resolutions: HlsVideoResolution[];
+    };
+  };
+  integrityChecks: {
+    missingFiles: {
+      enabled: boolean;
+      cronExpression: string;
+    };
+    untrackedFiles: {
+      enabled: boolean;
+      cronExpression: string;
+    };
+    checksumFiles: {
+      enabled: boolean;
+      cronExpression: string;
+      timeLimit: number;
+      percentageLimit: number;
+    };
   };
   job: Record<ConcurrentQueueName, { concurrency: number }>;
   logging: {
@@ -135,6 +158,7 @@ export type SystemConfig = {
   };
   newVersionCheck: {
     enabled: boolean;
+    channel: ReleaseChannel;
   };
   nightlyTasks: {
     startTime: string;
@@ -224,6 +248,27 @@ export const defaults = Object.freeze<SystemConfig>({
     tonemap: ToneMapping.Hable,
     accel: TranscodeHardwareAcceleration.Disabled,
     accelDecode: true,
+    realtime: {
+      enabled: false,
+      videoCodecs: [VideoCodec.H264, VideoCodec.Hevc],
+      resolutions: [HlsVideoResolution.p480, HlsVideoResolution.p720, HlsVideoResolution.p1080],
+    },
+  },
+  integrityChecks: {
+    missingFiles: {
+      enabled: true,
+      cronExpression: CronExpression.EVERY_DAY_AT_3AM,
+    },
+    untrackedFiles: {
+      enabled: true,
+      cronExpression: CronExpression.EVERY_DAY_AT_3AM,
+    },
+    checksumFiles: {
+      enabled: true,
+      cronExpression: CronExpression.EVERY_DAY_AT_3AM,
+      timeLimit: 60 * 60 * 1000, // 1 hour
+      percentageLimit: 1, // 100% of assets
+    },
   },
   job: {
     [QueueName.BackgroundTask]: { concurrency: 5 },
@@ -239,6 +284,7 @@ export const defaults = Object.freeze<SystemConfig>({
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
+    [QueueName.IntegrityCheck]: { concurrency: 1 },
     [QueueName.Editor]: { concurrency: 2 },
   },
   logging: {
@@ -344,6 +390,7 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   newVersionCheck: {
     enabled: true,
+    channel: ReleaseChannel.Stable,
   },
   nightlyTasks: {
     startTime: '00:00',

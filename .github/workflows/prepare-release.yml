@@ -3,16 +3,20 @@ name: Prepare new release
 on:
   workflow_dispatch:
     inputs:
-      serverBump:
-        description: 'Bump server version'
+      releaseType:
+        description: 'Release type'
         required: true
         default: 'false'
         type: choice
         options:
           - 'false'
-          - major
           - minor
           - patch
+          - premajor
+          - preminor
+          - prepatch
+          - prerelease
+          - release
       mobileBump:
         description: 'Bump mobile build number'
         required: false
@@ -46,38 +50,46 @@ jobs:
     outputs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
       version: ${{ steps.output.outputs.version }}
+      rc: ${{ steps.output.outputs.rc }}
     permissions: {} # No job-level permissions are needed because it uses the app-token
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
         with:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: write
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           token: ${{ steps.token.outputs.token }}
           persist-credentials: true
           ref: main
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@cf6e190bacde3d7bda59372a786b36ac7d01536a # use-mise-action-v2.0.1
+        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
       # TODO move to mise
       - name: Install uv
-        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
 
       - name: Bump version
         env:
-          SERVER_BUMP: ${{ inputs.serverBump }}
+          RELEASE_TYPE: ${{ inputs.releaseType }}
           MOBILE_BUMP: ${{ inputs.mobileBump }}
-        run: misc/release/pump-version.sh -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
+        run: mise //:release --type "${RELEASE_TYPE}" --mobile "${MOBILE_BUMP}"
 
       - id: output
-        run: echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
+        run: |
+          echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
+          if [[ "$IMMICH_VERSION" =~ -rc\.[0-9]+$ ]]; then
+            echo "rc=true" >> $GITHUB_OUTPUT
+          else
+            echo "rc=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Commit and tag
         id: push-tag
@@ -93,6 +105,7 @@ jobs:
     needs: bump_version
     permissions:
       contents: read
+      pull-requests: write
     secrets:
       KEY_JKS: ${{ secrets.KEY_JKS }}
       ALIAS: ${{ secrets.ALIAS }}
@@ -119,13 +132,15 @@ jobs:
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@1b10c78c7865c340bc4f6099eb2f838309f1e8c3 # v3.1.1
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: write
+          permission-actions: read
 
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: false
@@ -137,9 +152,10 @@ jobs:
           github-token: ${{ steps.generate-token.outputs.token }}
 
       - name: Create draft release
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
         with:
           draft: true
+          prerelease: ${{ needs.bump_version.outputs.rc }}
           tag_name: ${{ needs.bump_version.outputs.version }}
           token: ${{ steps.generate-token.outputs.token }}
           generate_release_notes: true

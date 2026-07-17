@@ -18,7 +18,7 @@ class SessionResponseDto {
     required this.current,
     required this.deviceOS,
     required this.deviceType,
-    this.expiresAt,
+    this.expiresAt = const Optional.absent(),
     required this.id,
     required this.isPendingSyncReset,
     required this.updatedAt,
@@ -46,7 +46,7 @@ class SessionResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? expiresAt;
+  Optional<String?> expiresAt;
 
   /// Session ID
   String id;
@@ -90,16 +90,15 @@ class SessionResponseDto {
     if (this.appVersion != null) {
       json[r'appVersion'] = this.appVersion;
     } else {
-    //  json[r'appVersion'] = null;
+      json[r'appVersion'] = null;
     }
       json[r'createdAt'] = this.createdAt;
       json[r'current'] = this.current;
       json[r'deviceOS'] = this.deviceOS;
       json[r'deviceType'] = this.deviceType;
-    if (this.expiresAt != null) {
-      json[r'expiresAt'] = this.expiresAt;
-    } else {
-    //  json[r'expiresAt'] = null;
+    if (this.expiresAt.isPresent) {
+      final value = this.expiresAt.value;
+      json[r'expiresAt'] = value;
     }
       json[r'id'] = this.id;
       json[r'isPendingSyncReset'] = this.isPendingSyncReset;
@@ -121,7 +120,7 @@ class SessionResponseDto {
         current: mapValueOfType<bool>(json, r'current')!,
         deviceOS: mapValueOfType<String>(json, r'deviceOS')!,
         deviceType: mapValueOfType<String>(json, r'deviceType')!,
-        expiresAt: mapValueOfType<String>(json, r'expiresAt'),
+        expiresAt: json.containsKey(r'expiresAt') ? Optional.present(mapValueOfType<String>(json, r'expiresAt')) : const Optional.absent(),
         id: mapValueOfType<String>(json, r'id')!,
         isPendingSyncReset: mapValueOfType<bool>(json, r'isPendingSyncReset')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,

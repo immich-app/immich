@@ -218,7 +218,7 @@ When the Dev Container starts, it automatically:
    - Debug ports: 9230 (workers), 9231 (API)
 
 :::info
-The Dev Container setup replaces the `make dev` command from the traditional setup. All services start automatically when you open the container.
+The Dev Container setup replaces the `mise dev` command from the traditional setup. All services start automatically when you open the container.
 :::
 
 ### Accessing Services
@@ -252,44 +252,33 @@ To connect the mobile app to your Dev Container:
 
 The Dev Container supports multiple ways to run tests:
 
-#### Using Mise Commands (Recommended)
-
 ```bash
-# Run tests for specific components
-mise run checklist      # in `server/`, `web/`, `packages/cli`
+# Server
+mise //server:test          # unit tests
+mise //server:test-medium   # medium / integration tests
+
+# Web
+mise //web:test             # unit tests
+
+# E2E
+mise //e2e:test             # API tests
+mise //e2e:test-web         # web UI tests (Playwright)
+
+# Run all checks for a component
+mise //server:checklist
+mise //web:checklist
 ```
 
-#### Using PNPM Directly
-
-```bash
-# Server tests
-cd /workspaces/immich/server
-pnpm test               # Run all tests
-pnpm run test:medium    # Medium tests (integration tests)
-pnpm run test:watch     # Watch mode
-pnpm run test:cov       # Coverage report
-
-# Web tests
-cd /workspaces/immich/web
-pnpm test               # Run all tests
-pnpm run test:watch     # Watch mode
-
-# E2E tests
-cd /workspaces/immich/e2e
-pnpm run test           # Run API tests
-pnpm run test:web       # Run web UI tests
-```
-
-### Additional Make Commands
+### Additional Commands
 
 ```bash
 # API generation
-make open-api           # Generate OpenAPI specs
-make open-api-typescript # Generate TypeScript SDK
-make open-api-dart      # Generate Dart SDK
+mise //:open-api             # Generate OpenAPI specs
+mise //:open-api-typescript  # Generate TypeScript SDK
+mise //:open-api-dart        # Generate Dart SDK
 
 # Database
-mise sql                # Sync database schema
+mise //server:sql            # Sync database schema
 ```
 
 ### Debugging

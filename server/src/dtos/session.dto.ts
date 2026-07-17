@@ -18,7 +18,7 @@ const SessionUpdateSchema = z
 
 const SessionResponseSchema = z
   .object({
-    id: z.string().describe('Session ID'),
+    id: z.uuidv4().describe('Session ID'),
     createdAt: z.string().describe('Creation date'),
     updatedAt: z.string().describe('Last update date'),
     expiresAt: z.string().optional().describe('Expiration date'),

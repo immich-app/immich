@@ -12,7 +12,7 @@
 	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
-		<string>group.app.immich.share</string>
+		<string>$(CUSTOM_GROUP_ID)</string>
 	</array>
 </dict>
 </plist>

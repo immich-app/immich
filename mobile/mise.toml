@@ -1,3 +1,19 @@
+[tools]
+"aqua:flutter/flutter" = "3.44.6"
+java = "21.0.2"
+
+[tools."github:CQLabs/homebrew-dcm"]
+version = "1.37.0"
+bin = "dcm"
+postinstall = "chmod +x \"$MISE_TOOL_INSTALL_PATH/dcm\" || true"
+
+[tools."github:CQLabs/homebrew-dcm".platforms]
+linux-x64 = { asset_pattern = "dcm-linux-x64-release.zip" }
+linux-arm64 = { asset_pattern = "dcm-linux-arm-release.zip" }
+macos-x64 = { asset_pattern = "dcm-macos-x64-release.zip" }
+macos-arm64 = { asset_pattern = "dcm-macos-arm-release.zip" }
+windows-x64 = { asset_pattern = "dcm-windows-release.zip" }
+
 [tasks."codegen:dart"]
 alias = "codegen"
 description = "Execute build_runner to auto-generate dart code"
@@ -22,14 +38,8 @@ run = "dart run build_runner watch --delete-conflicting-outputs"
 alias = "pigeon"
 description = "Generate pigeon platform code"
 run = [
-  "dart run pigeon --input pigeon/native_sync_api.dart",
-  "dart run pigeon --input pigeon/local_image_api.dart",
-  "dart run pigeon --input pigeon/remote_image_api.dart",
-  "dart run pigeon --input pigeon/background_worker_api.dart",
-  "dart run pigeon --input pigeon/background_worker_lock_api.dart",
-  "dart run pigeon --input pigeon/connectivity_api.dart",
-  "dart run pigeon --input pigeon/network_api.dart",
-  "dart format lib/platform/native_sync_api.g.dart lib/platform/local_image_api.g.dart lib/platform/remote_image_api.g.dart lib/platform/background_worker_api.g.dart lib/platform/background_worker_lock_api.g.dart lib/platform/connectivity_api.g.dart lib/platform/network_api.g.dart",
+  "ls pigeon/*.dart | xargs -n1 -P4 -I{} dart run pigeon --input {}",
+  "dart format lib/platform/",
 ]
 
 [tasks."codegen:translation"]
@@ -78,13 +88,20 @@ alias = "migration"
 description = "Generate database migrations"
 run = "dart run drift_dev make-migrations"
 
+[tasks.install]
+alias = "install"
+description = "Install flutter dependencies"
+run = "flutter pub get"
+
+[tasks.start]
+alias = "start"
+description = "Start flutter app"
+run = "flutter run"
 
 # Internal tasks
 [tasks."i18n:loader"]
 description = "Generate i18n loader"
 hide = true
-sources = ["i18n/"]
-outputs = "lib/generated/codegen_loader.g.dart"
 run = [
   "dart run easy_localization:generate -S ../i18n",
   "dart format lib/generated/codegen_loader.g.dart",
@@ -93,8 +110,6 @@ run = [
 [tasks."i18n:keys"]
 description = "Generate i18n keys"
 hide = true
-sources = ["i18n/en.json"]
-outputs = "lib/generated/translations.g.dart"
 run = [
   "dart run bin/generate_keys.dart",
   "dart format lib/generated/translations.g.dart",
@@ -123,10 +138,10 @@ run = "dcm fix lib"
 
 [tasks.checklist]
 run = [
-  {task = "codegen:pigeon" },
-  {task = "codegen:dart" },
-  {task = "codegen:translation" },
-  {task = "analyze" },
-  {task = "format" },
-  {task = "test" },
+  { task = "codegen:pigeon" },
+  { task = "codegen:dart" },
+  { task = "codegen:translation" },
+  { task = "analyze" },
+  { task = "format" },
+  { task = "test" },
 ]

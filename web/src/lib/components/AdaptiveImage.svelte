@@ -149,29 +149,35 @@
     return { width: 1, height: 1 };
   });
 
-  const { insetInlineStart, top, rasterWidth, rasterHeight, rasterScale } = $derived.by(() => {
-    const scaleFn = objectFit === 'cover' ? scaleToCover : scaleToFit;
-    const { width, height } = scaleFn(imageDimensions, container);
-    if (maxRasterPixels === 0) {
+  const { insetInlineStart, top, displayWidth, displayHeight, rasterWidth, rasterHeight, rasterScale } = $derived.by(
+    () => {
+      const scaleFn = objectFit === 'cover' ? scaleToCover : scaleToFit;
+      const { width, height } = scaleFn(imageDimensions, container);
+      if (maxRasterPixels === 0) {
+        return {
+          insetInlineStart: (container.width - width) / 2 + 'px',
+          top: (container.height - height) / 2 + 'px',
+          displayWidth: width + 'px',
+          displayHeight: height + 'px',
+          rasterWidth: width + 'px',
+          rasterHeight: height + 'px',
+          rasterScale: 1,
+        };
+      }
+      const nativeRatio = imageDimensions.width / width;
+      const budgetRatio = Math.sqrt(maxRasterPixels / Math.max(width * height, 1));
+      const rasterRatio = Math.max(1, Math.min(nativeRatio, budgetRatio));
       return {
         insetInlineStart: (container.width - width) / 2 + 'px',
         top: (container.height - height) / 2 + 'px',
-        rasterWidth: width + 'px',
-        rasterHeight: height + 'px',
-        rasterScale: 1,
+        displayWidth: width + 'px',
+        displayHeight: height + 'px',
+        rasterWidth: width * rasterRatio + 'px',
+        rasterHeight: height * rasterRatio + 'px',
+        rasterScale: 1 / rasterRatio,
       };
-    }
-    const nativeRatio = imageDimensions.width / width;
-    const budgetRatio = Math.sqrt(maxRasterPixels / Math.max(width * height, 1));
-    const rasterRatio = Math.max(1, Math.min(nativeRatio, budgetRatio));
-    return {
-      insetInlineStart: (container.width - width) / 2 + 'px',
-      top: (container.height - height) / 2 + 'px',
-      rasterWidth: width * rasterRatio + 'px',
-      rasterHeight: height * rasterRatio + 'px',
-      rasterScale: 1 / rasterRatio,
-    };
-  });
+    },
+  );
 
   const { status } = $derived(adaptiveImageLoader);
   const alt = $derived(status.urls.preview ? $getAltText(toTimelineAsset(asset)) : '');
@@ -216,69 +222,78 @@
   {@render backdrop?.()}
 
   <div
-    class="pointer-events-none absolute"
+    class="pointer-events-none absolute overflow-hidden"
     style:inset-inline-start={insetInlineStart}
     style:top
-    style:width={rasterWidth}
-    style:height={rasterHeight}
-    style:transform="scale({rasterScale})"
-    style:transform-origin="0 0"
-    style:will-change={maxRasterPixels > 0 ? 'transform' : undefined}
+    style:width={displayWidth}
+    style:height={displayHeight}
   >
-    {#if show.alphaBackground}
-      <AlphaBackground />
-    {/if}
-
-    {#if show.thumbhash}
-      {#if asset.thumbhash}
-        <!-- Thumbhash / spinner layer  -->
-        <Thumbhash base64ThumbHash={asset.thumbhash} class="absolute size-full" />
-      {:else if show.spinner}
-        <DelayedLoadingSpinner />
+    <div
+      style:width={rasterWidth}
+      style:height={rasterHeight}
+      style:transform="scale({rasterScale})"
+      style:transform-origin="0 0"
+      style:will-change={maxRasterPixels > 0 ? 'transform' : undefined}
+    >
+      {#if show.alphaBackground}
+        <AlphaBackground />
       {/if}
-    {/if}
 
-    {#if show.thumbnail}
-      <ImageLayer
-        {adaptiveImageLoader}
-        width={rasterWidth}
-        height={rasterHeight}
-        quality="thumbnail"
-        src={status.urls.thumbnail}
-        alt=""
-        role="presentation"
-        bind:ref={thumbnailElement}
-      />
-    {/if}
+      {#if show.thumbhash}
+        {#if asset.thumbhash}
+          <!-- Thumbhash / spinner layer  -->
+          <Thumbhash base64ThumbHash={asset.thumbhash} class="absolute size-full" />
+        {:else if show.spinner}
+          <DelayedLoadingSpinner />
+        {/if}
+      {/if}
+
+      {#if show.thumbnail}
+        <ImageLayer
+          {adaptiveImageLoader}
+          width={rasterWidth}
+          height={rasterHeight}
+          quality="thumbnail"
+          src={status.urls.thumbnail}
+          alt=""
+          role="presentation"
+          bind:ref={thumbnailElement}
+        />
+      {/if}
+
+      {#if show.preview}
+        <ImageLayer
+          {adaptiveImageLoader}
+          {alt}
+          width={rasterWidth}
+          height={rasterHeight}
+          quality="preview"
+          src={status.urls.preview}
+          bind:ref={previewElement}
+        />
+      {/if}
+
+      {#if show.original}
+        <ImageLayer
+          {adaptiveImageLoader}
+          {alt}
+          width={rasterWidth}
+          height={rasterHeight}
+          quality="original"
+          src={status.urls.original}
+          bind:ref={originalElement}
+        />
+      {/if}
+    </div>
 
     {#if show.brokenAsset}
-      <BrokenAsset class="absolute size-full text-xl" />
+      <BrokenAsset class="absolute inset-0 z-10 size-full text-xl" />
     {/if}
 
-    {#if show.preview}
-      <ImageLayer
-        {adaptiveImageLoader}
-        {alt}
-        width={rasterWidth}
-        height={rasterHeight}
-        {overlays}
-        quality="preview"
-        src={status.urls.preview}
-        bind:ref={previewElement}
-      />
-    {/if}
-
-    {#if show.original}
-      <ImageLayer
-        {adaptiveImageLoader}
-        {alt}
-        width={rasterWidth}
-        height={rasterHeight}
-        {overlays}
-        quality="original"
-        src={status.urls.original}
-        bind:ref={originalElement}
-      />
+    {#if overlays}
+      <div class="pointer-events-none absolute inset-0">
+        {@render overlays()}
+      </div>
     {/if}
   </div>
 </div>

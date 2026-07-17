@@ -230,6 +230,21 @@ describe('/users', () => {
       const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
       expect(after).toMatchObject({ download: { includeEmbeddedVideos: true } });
     });
+
+    it('should update minimum face count to display people', async () => {
+      const before = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
+      expect(before).toMatchObject({ people: { minimumFaces: 3 } });
+
+      const { status, body } = await request(app)
+        .put('/users/me/preferences')
+        .send({ people: { minimumFaces: 2 } })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ people: { minimumFaces: 2 } });
+
+      const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
+      expect(after).toMatchObject({ people: { minimumFaces: 2 } });
+    });
   });
 
   describe('GET /users/:id', () => {

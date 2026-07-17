@@ -77,7 +77,11 @@ class _RatingBarState extends State<RatingBar> {
       setState(() {
         _currentRating = newRating;
       });
-      widget.onRatingUpdate?.call(newRating.round());
+      if (newRating == 0) {
+        widget.onClearRating?.call();
+      } else {
+        widget.onRatingUpdate?.call(newRating.round());
+      }
     }
   }
 

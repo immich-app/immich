@@ -2,6 +2,7 @@ import { AssetVisibility, LoginResponseDto } from '@immich/sdk';
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { Socket } from 'socket.io-client';
+import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
@@ -9,28 +10,48 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 describe('/map', () => {
   let websocket: Socket;
+  let partnerWebsocket: Socket;
   let admin: LoginResponseDto;
+  let partner: LoginResponseDto;
+  let partnerArchivedAssetId: string;
+  let adminArchivedAssetId: string;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup({ onboarding: false });
+    partner = await utils.userSetup(admin.accessToken, createUserDto.user1);
 
     websocket = await utils.connectWebsocket(admin.accessToken);
+    partnerWebsocket = await utils.connectWebsocket(partner.accessToken);
 
-    const files = ['formats/heic/IMG_2682.heic', 'metadata/gps-position/thompson-springs.jpg'];
+    const adminFiles = ['formats/heic/IMG_2682.heic', 'metadata/gps-position/thompson-springs.jpg'];
+    const adminArchivedFile = 'metadata/dates/datetimeoriginal-gps.jpg';
+    const partnerFile = 'metadata/gps-position/thompson-springs.jpg';
     utils.resetEvents();
-    const uploadFile = async (input: string) => {
+    const uploadFile = async (accessToken: string, input: string) => {
       const filepath = join(testAssetDir, input);
-      const { id } = await utils.createAsset(admin.accessToken, {
+      const { id } = await utils.createAsset(accessToken, {
         assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
       });
       await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
+      return id;
     };
-    await Promise.all(files.map((f) => uploadFile(f)));
+    await Promise.all(adminFiles.map((f) => uploadFile(admin.accessToken, f)));
+    [adminArchivedAssetId, partnerArchivedAssetId] = await Promise.all([
+      uploadFile(admin.accessToken, adminArchivedFile),
+      uploadFile(partner.accessToken, partnerFile),
+    ]);
+
+    await Promise.all([
+      utils.archiveAssets(admin.accessToken, [adminArchivedAssetId]),
+      utils.archiveAssets(partner.accessToken, [partnerArchivedAssetId]),
+      utils.createPartner(partner.accessToken, admin.userId),
+    ]);
   });
 
   afterAll(() => {
     utils.disconnectWebsocket(websocket);
+    utils.disconnectWebsocket(partnerWebsocket);
   });
 
   describe('GET /map/markers', () => {
@@ -40,7 +61,6 @@ describe('/map', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    // TODO archive one of these assets
     it('should get map markers for all non-archived assets', async () => {
       const { status, body } = await request(app)
         .get('/map/markers')
@@ -69,7 +89,28 @@ describe('/map', () => {
       ]);
     });
 
-    // TODO archive one of these assets
+    it('should not expose partner archived asset locations', async () => {
+      const { status, body } = await request(app)
+        .get('/map/markers')
+        .query({ withPartners: true, isArchived: true })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      const ids = body.map((m: { id: string }) => m.id);
+      expect(ids).not.toContain(partnerArchivedAssetId);
+      expect(ids).toContain(adminArchivedAssetId);
+    });
+
+    it('should include own archived asset locations', async () => {
+      const { status, body } = await request(app)
+        .get('/map/markers')
+        .query({ isArchived: true })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body.map((m: { id: string }) => m.id)).toContain(adminArchivedAssetId);
+    });
+
     it('should get all map markers', async () => {
       const { status, body } = await request(app)
         .get('/map/markers')

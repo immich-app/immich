@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -9,6 +11,7 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -51,9 +54,10 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   }
 
   final assetApi = ref.read(apiServiceProvider).assetsApi;
+  final cancellation = ref.read(cancellationProvider);
 
   // Process cloud IDs in paginated batches
-  await _processCloudIdMappingsInBatches(db, currentUser.id, assetApi, canBulkUpdateMetadata, logger);
+  await _processCloudIdMappingsInBatches(db, currentUser.id, assetApi, canBulkUpdateMetadata, logger, cancellation);
 }
 
 Future<void> _processCloudIdMappingsInBatches(
@@ -62,12 +66,17 @@ Future<void> _processCloudIdMappingsInBatches(
   AssetsApi assetsApi,
   bool canBulkUpdate,
   Logger logger,
+  Completer<void> cancellation,
 ) async {
   const pageSize = 20000;
   String? lastLocalId;
   final seenRemoteAssetIds = <String>{};
 
   while (true) {
+    if (cancellation.isCompleted) {
+      logger.warning('Cloud ID migration cancelled. Stopping batch processing.');
+      break;
+    }
     final mappings = await _fetchCloudIdMappings(drift, userId, pageSize, lastLocalId);
     if (mappings.isEmpty) {
       break;
@@ -98,9 +107,9 @@ Future<void> _processCloudIdMappingsInBatches(
 
     if (items.isNotEmpty) {
       if (canBulkUpdate) {
-        await _bulkUpdateCloudIds(assetsApi, items);
+        await _bulkUpdateCloudIds(assetsApi, items, cancellation.future);
       } else {
-        await _sequentialUpdateCloudIds(assetsApi, items);
+        await _sequentialUpdateCloudIds(assetsApi, items, cancellation);
       }
     }
 
@@ -111,20 +120,35 @@ Future<void> _processCloudIdMappingsInBatches(
   }
 }
 
-Future<void> _sequentialUpdateCloudIds(AssetsApi assetsApi, List<AssetMetadataBulkUpsertItemDto> items) async {
+Future<void> _sequentialUpdateCloudIds(
+  AssetsApi assetsApi,
+  List<AssetMetadataBulkUpsertItemDto> items,
+  Completer<void> cancellation,
+) async {
   for (final item in items) {
+    if (cancellation.isCompleted) {
+      break;
+    }
     final upsertItem = AssetMetadataUpsertItemDto(key: item.key, value: item.value);
     try {
-      await assetsApi.updateAssetMetadata(item.assetId, AssetMetadataUpsertDto(items: [upsertItem]));
+      await assetsApi.updateAssetMetadata(
+        item.assetId,
+        AssetMetadataUpsertDto(items: [upsertItem]),
+        abortTrigger: cancellation.future,
+      );
     } catch (error, stack) {
       Logger('migrateCloudIds').warning('Failed to update metadata for asset ${item.assetId}', error, stack);
     }
   }
 }
 
-Future<void> _bulkUpdateCloudIds(AssetsApi assetsApi, List<AssetMetadataBulkUpsertItemDto> items) async {
+Future<void> _bulkUpdateCloudIds(
+  AssetsApi assetsApi,
+  List<AssetMetadataBulkUpsertItemDto> items,
+  Future<void> abortTrigger,
+) async {
   try {
-    await assetsApi.updateBulkAssetMetadata(AssetMetadataBulkUpsertDto(items: items));
+    await assetsApi.updateBulkAssetMetadata(AssetMetadataBulkUpsertDto(items: items), abortTrigger: abortTrigger);
   } catch (error, stack) {
     Logger('migrateCloudIds').warning('Failed to bulk update metadata', error, stack);
   }

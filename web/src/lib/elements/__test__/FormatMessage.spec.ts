@@ -35,7 +35,7 @@ describe('FormatMessage component', () => {
 
   it('throws an error when locale is empty', async () => {
     await locale.set(undefined);
-    expect(() => render(FormatMessage, { key: '' as Translations })).toThrowError();
+    expect(() => render(FormatMessage, { key: '' as Translations })).toThrow();
     await locale.set('en');
   });
 

@@ -8,10 +8,9 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/wm_executor.dart';
 import 'package:logging/logging.dart';
-import 'package:worker_manager/worker_manager.dart';
+import 'package:worker_manager/worker_manager.dart' show Cancelable;
 
 class InvalidIsolateUsageException implements Exception {
   const InvalidIsolateUsageException();
@@ -30,50 +29,27 @@ Cancelable<T?> runInIsolateGentle<T>({
     throw const InvalidIsolateUsageException();
   }
 
-  return workerManagerPatch.executeGentle((cancelledChecker) async {
-    T? result;
-    await runZonedGuarded(
-      () async {
-        BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-        DartPluginRegistrant.ensureInitialized();
+  return workerManagerPatch.executeGentle((onCancel) async {
+    BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+    DartPluginRegistrant.ensureInitialized();
 
-        final (drift, logDb) = await Bootstrap.initDomain(shouldBufferLogs: false, listenStoreUpdates: false);
-        final ref = ProviderContainer(
-          overrides: [
-            cancellationProvider.overrideWithValue(cancelledChecker),
-            driftProvider.overrideWith(driftOverride(drift)),
-          ],
-        );
-
-        Logger log = Logger("IsolateLogger");
-
-        try {
-          result = await computation(ref);
-        } on CanceledError {
-          log.warning("Computation cancelled ${debugLabel == null ? '' : ' for $debugLabel'}");
-        } catch (error, stack) {
-          log.severe("Error in runInIsolateGentle ${debugLabel == null ? '' : ' for $debugLabel'}", error, stack);
-        } finally {
-          try {
-            ref.dispose();
-
-            await Store.dispose();
-            await LogService.I.dispose();
-            await logDb.close();
-            await drift.close();
-          } catch (error, stack) {
-            dPrint(() => "Error closing resources in isolate: $error, $stack");
-          } finally {
-            ref.dispose();
-            // Delay to ensure all resources are released
-            await Future.delayed(const Duration(seconds: 2));
-          }
-        }
-      },
-      (error, stack) {
-        dPrint(() => "Error in isolate $debugLabel zone: $error, $stack");
-      },
+    final log = Logger("IsolateLogger");
+    final (drift, logDb) = await Bootstrap.initDomain(shouldBufferLogs: false, listenStoreUpdates: false);
+    final ref = ProviderContainer(
+      overrides: [cancellationProvider.overrideWithValue(onCancel), driftProvider.overrideWith(driftOverride(drift))],
     );
-    return result;
+
+    try {
+      return await computation(ref);
+    } catch (error, stack) {
+      log.severe("Error in runInIsolateGentle${debugLabel == null ? '' : ' for $debugLabel'}", error, stack);
+      return null;
+    } finally {
+      ref.dispose();
+      await Store.dispose();
+      await LogService.I.dispose();
+      await logDb.close();
+      await drift.close();
+    }
   });
 }

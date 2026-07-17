@@ -97,7 +97,7 @@ class UsageByUserDto {
     if (this.quotaSizeInBytes != null) {
       json[r'quotaSizeInBytes'] = this.quotaSizeInBytes;
     } else {
-    //  json[r'quotaSizeInBytes'] = null;
+      json[r'quotaSizeInBytes'] = null;
     }
       json[r'usage'] = this.usage;
       json[r'usagePhotos'] = this.usagePhotos;

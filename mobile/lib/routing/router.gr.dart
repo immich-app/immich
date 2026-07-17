@@ -827,7 +827,7 @@ class DriftPartnerDetailRoute
     extends PageRouteInfo<DriftPartnerDetailRouteArgs> {
   DriftPartnerDetailRoute({
     Key? key,
-    required PartnerUserDto partner,
+    required Partner partner,
     List<PageRouteInfo>? children,
   }) : super(
          DriftPartnerDetailRoute.name,
@@ -851,7 +851,7 @@ class DriftPartnerDetailRouteArgs {
 
   final Key? key;
 
-  final PartnerUserDto partner;
+  final Partner partner;
 
   @override
   String toString() {
@@ -867,22 +867,6 @@ class DriftPartnerDetailRouteArgs {
 
   @override
   int get hashCode => key.hashCode ^ partner.hashCode;
-}
-
-/// generated route for
-/// [DriftPartnerPage]
-class DriftPartnerRoute extends PageRouteInfo<void> {
-  const DriftPartnerRoute({List<PageRouteInfo>? children})
-    : super(DriftPartnerRoute.name, initialChildren: children);
-
-  static const String name = 'DriftPartnerRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const DriftPartnerPage();
-    },
-  );
 }
 
 /// generated route for
@@ -1457,6 +1441,22 @@ class MapLocationPickerRouteArgs {
 }
 
 /// generated route for
+/// [PartnerPage]
+class PartnerRoute extends PageRouteInfo<void> {
+  const PartnerRoute({List<PageRouteInfo>? children})
+    : super(PartnerRoute.name, initialChildren: children);
+
+  static const String name = 'PartnerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PartnerPage();
+    },
+  );
+}
+
+/// generated route for
 /// [PinAuthPage]
 class PinAuthRoute extends PageRouteInfo<PinAuthRouteArgs> {
   PinAuthRoute({
@@ -1869,6 +1869,22 @@ class TabShellRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const TabShellPage();
+    },
+  );
+}
+
+/// generated route for
+/// [WhatsNewPage]
+class WhatsNewRoute extends PageRouteInfo<void> {
+  const WhatsNewRoute({List<PageRouteInfo>? children})
+    : super(WhatsNewRoute.name, initialChildren: children);
+
+  static const String name = 'WhatsNewRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const WhatsNewPage();
     },
   );
 }

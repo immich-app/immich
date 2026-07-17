@@ -23,14 +23,13 @@ const String kBackupLivePhotoGroup = 'backup_live_photo_group';
 const String kDownloadGroupImage = 'group_image';
 const String kDownloadGroupVideo = 'group_video';
 const String kDownloadGroupLivePhoto = 'group_livephoto';
+const String kShareDownloadGroup = 'group_share';
 
 // Timeline constants
-const int kTimelineNoneSegmentSize = 120;
 const int kTimelineAssetLoadBatchSize = 1024;
 const int kTimelineAssetLoadOppositeSize = 64;
 
 // Widget keys
-const String appShareGroupId = "group.app.immich.share";
 const String kWidgetAuthToken = "widget_auth_token";
 const String kWidgetServerEndpoint = "widget_server_url";
 const String kWidgetCustomHeaders = "widget_custom_headers";

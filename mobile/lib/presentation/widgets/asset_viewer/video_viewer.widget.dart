@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -12,13 +13,14 @@ import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.pro
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/metadata.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:native_video_player/native_video_player.dart';
 
 class NativeVideoViewer extends ConsumerStatefulWidget {
   final BaseAsset asset;
+  final String? localFilePath;
   final bool isCurrent;
   final bool showControls;
   final Widget image;
@@ -26,6 +28,7 @@ class NativeVideoViewer extends ConsumerStatefulWidget {
   const NativeVideoViewer({
     super.key,
     required this.asset,
+    this.localFilePath,
     required this.image,
     this.isCurrent = false,
     this.showControls = true,
@@ -106,9 +109,27 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
 
     try {
-      if (videoAsset.hasLocal && videoAsset.livePhotoVideoId == null) {
-        final id = videoAsset is LocalAsset ? videoAsset.id : (videoAsset as RemoteAsset).localId!;
-        final file = await StorageRepository().getFileForAsset(id);
+      final localFilePath = widget.localFilePath;
+      if (localFilePath != null) {
+        final file = File(localFilePath);
+        if (!await file.exists()) {
+          throw Exception('No file found for the video');
+        }
+
+        return VideoSource.init(
+          path: CurrentPlatform.isAndroid ? file.uri.toString() : file.path,
+          type: VideoSourceType.file,
+        );
+      }
+
+      // Attempt to retrieve LocalAsset, falling back to remote if it cannot be found
+      final localAsset = await _localPlaybackAsset(videoAsset);
+
+      if (localAsset != null) {
+        final file = localAsset.isMotionPhoto
+            ? await StorageRepository().getMotionFileForAsset(localAsset)
+            : await StorageRepository().getFileForAsset(localAsset.id);
+
         if (!mounted) {
           return null;
         }
@@ -125,20 +146,56 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
         );
       }
 
-      final remoteId = (videoAsset as RemoteAsset).id;
+      final remoteAsset = videoAsset as RemoteAsset;
 
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-      final isOriginalVideo = ref.read(metadataProvider).appConfig.viewer.loadOriginalVideo;
+      final isOriginalVideo = ref.read(appConfigProvider).viewer.loadOriginalVideo;
       final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
-      final String videoUrl = videoAsset.livePhotoVideoId != null
-          ? '$serverEndpoint/assets/${videoAsset.livePhotoVideoId}/$postfixUrl'
-          : '$serverEndpoint/assets/$remoteId/$postfixUrl';
+      final String assetId = remoteAsset.livePhotoVideoId ?? remoteAsset.id;
+      final String videoUrl = '$serverEndpoint/assets/$assetId/$postfixUrl';
 
       return VideoSource.init(path: videoUrl, type: VideoSourceType.network, headers: ApiService.getRequestHeaders());
     } catch (error) {
       _log.severe('Error creating video source for asset ${videoAsset.name}: $error');
       return null;
     }
+  }
+
+  Future<LocalAsset?> _localPlaybackAsset(BaseAsset baseAsset) async {
+    if (!baseAsset.hasLocal) {
+      return null;
+    }
+
+    LocalAsset? localAsset;
+
+    if (baseAsset is LocalAsset) {
+      localAsset = baseAsset;
+    } else {
+      final localId = (baseAsset as RemoteAsset).localId;
+      localAsset = localId != null ? await ref.read(assetServiceProvider).getLocalAsset(localId) : null;
+    }
+
+    if (localAsset == null) {
+      _log.severe(
+        'Invariant violation: asset ${baseAsset.name} (${baseAsset.localId}) is marked `hasLocal` but local asset could not be retrieved',
+      );
+
+      return null;
+    }
+
+    // Clients (local) may not correctly recognize a given asset as a motion photo. This allows for a scenario where both remote and local
+    // have the same asset (hash), but only the remote properly recognizes it as a motion asset
+    // If this scenario occurs, fall back to using the remote asset
+    if (baseAsset.isMotionPhoto && !localAsset.isMotionPhoto) {
+      // Platform mismatch for motion photo, use remote instead
+      _log.warning(
+        'Mismatched local and remote motion states on ${baseAsset.name} (${baseAsset.localId}), local = ${localAsset.isMotionPhoto}, remote = ${baseAsset.isMotionPhoto}',
+      );
+
+      return null;
+    }
+
+    return localAsset;
   }
 
   void _onPlaybackReady() async {
@@ -161,7 +218,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       return;
     }
 
-    final autoPlayVideo = ref.read(metadataProvider).appConfig.viewer.autoPlayVideo;
+    final autoPlayVideo = ref.read(appConfigProvider).viewer.autoPlayVideo;
     if (autoPlayVideo || widget.asset.isMotionPhoto) {
       await _notifier.play();
     }
@@ -212,7 +269,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
 
     await _notifier.load(source);
-    final loopVideo = ref.read(metadataProvider).appConfig.viewer.loopVideo;
+    final loopVideo = ref.read(appConfigProvider).viewer.loopVideo;
     await _notifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
     await _notifier.setVolume(1);
   }
@@ -244,7 +301,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     return IgnorePointer(
       child: Stack(
         children: [
-          Center(child: widget.image),
+          if (!_isVideoReady || widget.asset.isMotionPhoto || isCasting) Center(child: widget.image),
           if (!isCasting) ...[
             Visibility.maintain(
               visible: _isVideoReady,

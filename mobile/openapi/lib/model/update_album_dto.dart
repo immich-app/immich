@@ -13,11 +13,11 @@ part of openapi.api;
 class UpdateAlbumDto {
   /// Returns a new [UpdateAlbumDto] instance.
   UpdateAlbumDto({
-    this.albumName,
-    this.albumThumbnailAssetId,
-    this.description,
-    this.isActivityEnabled,
-    this.order,
+    this.albumName = const Optional.absent(),
+    this.albumThumbnailAssetId = const Optional.absent(),
+    this.description = const Optional.absent(),
+    this.isActivityEnabled = const Optional.absent(),
+    this.order = const Optional.absent(),
   });
 
   /// Album name
@@ -27,7 +27,7 @@ class UpdateAlbumDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? albumName;
+  Optional<String?> albumName;
 
   /// Album thumbnail asset ID
   ///
@@ -36,7 +36,7 @@ class UpdateAlbumDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? albumThumbnailAssetId;
+  Optional<String?> albumThumbnailAssetId;
 
   /// Album description
   ///
@@ -45,7 +45,7 @@ class UpdateAlbumDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? description;
+  Optional<String?> description;
 
   /// Enable activity feed
   ///
@@ -54,7 +54,7 @@ class UpdateAlbumDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isActivityEnabled;
+  Optional<bool?> isActivityEnabled;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -62,7 +62,7 @@ class UpdateAlbumDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  AssetOrder? order;
+  Optional<AssetOrder?> order;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateAlbumDto &&
@@ -86,30 +86,25 @@ class UpdateAlbumDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.albumName != null) {
-      json[r'albumName'] = this.albumName;
-    } else {
-    //  json[r'albumName'] = null;
+    if (this.albumName.isPresent) {
+      final value = this.albumName.value;
+      json[r'albumName'] = value;
     }
-    if (this.albumThumbnailAssetId != null) {
-      json[r'albumThumbnailAssetId'] = this.albumThumbnailAssetId;
-    } else {
-    //  json[r'albumThumbnailAssetId'] = null;
+    if (this.albumThumbnailAssetId.isPresent) {
+      final value = this.albumThumbnailAssetId.value;
+      json[r'albumThumbnailAssetId'] = value;
     }
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (this.description.isPresent) {
+      final value = this.description.value;
+      json[r'description'] = value;
     }
-    if (this.isActivityEnabled != null) {
-      json[r'isActivityEnabled'] = this.isActivityEnabled;
-    } else {
-    //  json[r'isActivityEnabled'] = null;
+    if (this.isActivityEnabled.isPresent) {
+      final value = this.isActivityEnabled.value;
+      json[r'isActivityEnabled'] = value;
     }
-    if (this.order != null) {
-      json[r'order'] = this.order;
-    } else {
-    //  json[r'order'] = null;
+    if (this.order.isPresent) {
+      final value = this.order.value;
+      json[r'order'] = value;
     }
     return json;
   }
@@ -123,11 +118,11 @@ class UpdateAlbumDto {
       final json = value.cast<String, dynamic>();
 
       return UpdateAlbumDto(
-        albumName: mapValueOfType<String>(json, r'albumName'),
-        albumThumbnailAssetId: mapValueOfType<String>(json, r'albumThumbnailAssetId'),
-        description: mapValueOfType<String>(json, r'description'),
-        isActivityEnabled: mapValueOfType<bool>(json, r'isActivityEnabled'),
-        order: AssetOrder.fromJson(json[r'order']),
+        albumName: json.containsKey(r'albumName') ? Optional.present(mapValueOfType<String>(json, r'albumName')) : const Optional.absent(),
+        albumThumbnailAssetId: json.containsKey(r'albumThumbnailAssetId') ? Optional.present(mapValueOfType<String>(json, r'albumThumbnailAssetId')) : const Optional.absent(),
+        description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
+        isActivityEnabled: json.containsKey(r'isActivityEnabled') ? Optional.present(mapValueOfType<bool>(json, r'isActivityEnabled')) : const Optional.absent(),
+        order: json.containsKey(r'order') ? Optional.present(AssetOrder.fromJson(json[r'order'])) : const Optional.absent(),
       );
     }
     return null;

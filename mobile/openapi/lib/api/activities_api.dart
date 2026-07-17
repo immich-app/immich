@@ -25,7 +25,7 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [ActivityCreateDto] activityCreateDto (required):
-  Future<Response> createActivityWithHttpInfo(ActivityCreateDto activityCreateDto,) async {
+  Future<Response> createActivityWithHttpInfo(ActivityCreateDto activityCreateDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities';
 
@@ -47,6 +47,7 @@ class ActivitiesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -57,8 +58,8 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [ActivityCreateDto] activityCreateDto (required):
-  Future<ActivityResponseDto?> createActivity(ActivityCreateDto activityCreateDto,) async {
-    final response = await createActivityWithHttpInfo(activityCreateDto,);
+  Future<ActivityResponseDto?> createActivity(ActivityCreateDto activityCreateDto, { Future<void>? abortTrigger, }) async {
+    final response = await createActivityWithHttpInfo(activityCreateDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -81,7 +82,7 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<Response> deleteActivityWithHttpInfo(String id,) async {
+  Future<Response> deleteActivityWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities/{id}'
       .replaceAll('{id}', id);
@@ -104,6 +105,7 @@ class ActivitiesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -114,8 +116,8 @@ class ActivitiesApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<void> deleteActivity(String id,) async {
-    final response = await deleteActivityWithHttpInfo(id,);
+  Future<void> deleteActivity(String id, { Future<void>? abortTrigger, }) async {
+    final response = await deleteActivityWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -141,7 +143,7 @@ class ActivitiesApi {
   ///
   /// * [String] userId:
   ///   Filter by user ID
-  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
+  Future<Response> getActivitiesWithHttpInfo(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities';
 
@@ -177,6 +179,7 @@ class ActivitiesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -198,8 +201,8 @@ class ActivitiesApi {
   ///
   /// * [String] userId:
   ///   Filter by user ID
-  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, }) async {
-    final response = await getActivitiesWithHttpInfo(albumId,  assetId: assetId, level: level, type: type, userId: userId, );
+  Future<List<ActivityResponseDto>?> getActivities(String albumId, { String? assetId, ReactionLevel? level, ReactionType? type, String? userId, Future<void>? abortTrigger, }) async {
+    final response = await getActivitiesWithHttpInfo(albumId, assetId: assetId, level: level, type: type, userId: userId, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -229,7 +232,7 @@ class ActivitiesApi {
   ///
   /// * [String] assetId:
   ///   Asset ID (if activity is for an asset)
-  Future<Response> getActivityStatisticsWithHttpInfo(String albumId, { String? assetId, }) async {
+  Future<Response> getActivityStatisticsWithHttpInfo(String albumId, { String? assetId, Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/activities/statistics';
 
@@ -256,6 +259,7 @@ class ActivitiesApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -270,8 +274,8 @@ class ActivitiesApi {
   ///
   /// * [String] assetId:
   ///   Asset ID (if activity is for an asset)
-  Future<ActivityStatisticsResponseDto?> getActivityStatistics(String albumId, { String? assetId, }) async {
-    final response = await getActivityStatisticsWithHttpInfo(albumId,  assetId: assetId, );
+  Future<ActivityStatisticsResponseDto?> getActivityStatistics(String albumId, { String? assetId, Future<void>? abortTrigger, }) async {
+    final response = await getActivityStatisticsWithHttpInfo(albumId, assetId: assetId, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

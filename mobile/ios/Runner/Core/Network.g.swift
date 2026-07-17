@@ -288,6 +288,7 @@ protocol NetworkApi {
   func hasCertificate() throws -> Bool
   func getClientPointer() throws -> Int64
   func setRequestHeaders(headers: [String: String], serverUrls: [String], token: String?) throws
+  func getAppGroupId() throws -> String
 }
 
 /// Generated setup class from Pigeon to handle messages through the `binaryMessenger`.
@@ -387,6 +388,19 @@ class NetworkApiSetup {
       }
     } else {
       setRequestHeadersChannel.setMessageHandler(nil)
+    }
+    let getAppGroupIdChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NetworkApi.getAppGroupId\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      getAppGroupIdChannel.setMessageHandler { _, reply in
+        do {
+          let result = try api.getAppGroupId()
+          reply(wrapResult(result))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      getAppGroupIdChannel.setMessageHandler(nil)
     }
   }
 }

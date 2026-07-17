@@ -20,10 +20,11 @@ jobs:
       should_run: ${{ steps.check.outputs.should_run }}
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
         with:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: read
 
       - name: Check what should run
         id: check
@@ -33,6 +34,7 @@ jobs:
           filters: |
             mobile:
               - 'mobile/**'
+              - 'i18n/en.json'
           force-filters: |
             - '.github/workflows/static_analysis.yml'
           force-events: 'workflow_dispatch,release'
@@ -49,21 +51,23 @@ jobs:
         working-directory: ./mobile
     steps:
       - id: token
-        uses: immich-app/devtools/actions/create-workflow-token@caa599d954228439ea3e8ce1c3328f41ab120ee6 # create-workflow-token-action-v2.0.0
+        uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
         with:
           client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@cf6e190bacde3d7bda59372a786b36ac7d01536a # use-mise-action-v2.0.1
+        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
         with:
           github_token: ${{ steps.token.outputs.token }}
+          working_directory: ./mobile
 
       - name: Install dependencies
         run: flutter pub get
@@ -71,10 +75,6 @@ jobs:
       - name: Install dependencies for UI package
         run: flutter pub get
         working-directory: ./mobile/packages/ui
-
-      - name: Install dependencies for UI Showcase
-        run: flutter pub get
-        working-directory: ./mobile/packages/ui/showcase
 
       - name: Generate translation files
         run: mise //mobile:codegen:translation
@@ -93,6 +93,8 @@ jobs:
             mobile/**/*.g.dart
             mobile/**/*.gr.dart
             mobile/**/*.drift.dart
+            mobile/**/*.g.swift
+            mobile/**/*.g.kt
 
       - name: Verify files have not changed
         if: steps.verify-changed-files.outputs.files_changed == 'true'

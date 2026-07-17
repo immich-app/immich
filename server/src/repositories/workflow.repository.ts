@@ -45,9 +45,10 @@ export class WorkflowRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  search(dto: WorkflowSearchDto & { ownerId?: string }) {
+  search(dto: WorkflowSearchDto & { userId?: string }) {
     return this.queryBuilder()
-      .$if(!!dto.ownerId, (qb) => qb.where('ownerId', '=', dto.ownerId!))
+      .$if(!!dto.id, (qb) => qb.where('id', '=', dto.id!))
+      .$if(!!dto.userId, (qb) => qb.where('ownerId', '=', dto.userId!))
       .$if(!!dto.trigger, (qb) => qb.where('trigger', '=', dto.trigger!))
       .$if(dto.enabled !== undefined, (qb) => qb.where('enabled', '=', dto.enabled!))
       .orderBy('createdAt', 'desc')
@@ -78,6 +79,7 @@ export class WorkflowRepository {
               'plugin_method.name as methodName',
               'plugin_method.types as types',
               'plugin_method.hostFunctions',
+              'plugin_method.allowedHosts',
             ]),
         ).as('steps'),
       ])
@@ -100,6 +102,10 @@ export class WorkflowRepository {
       }
       return this.replaceAndReturn(tx, id, steps);
     });
+  }
+
+  async updateStep(id: string, dto: Updateable<WorkflowStepTable>) {
+    await this.db.updateTable('workflow_step').where('workflow_step.id', '=', id).set(dto).execute();
   }
 
   private async replaceAndReturn(tx: Kysely<DB>, workflowId: string, steps?: WorkflowStepUpsert[]) {

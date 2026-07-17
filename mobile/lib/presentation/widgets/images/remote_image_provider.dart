@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/painting.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/loaders/image_request.dart';
-import 'package:immich_mobile/infrastructure/repositories/metadata.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/presentation/widgets/images/animated_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
@@ -109,8 +109,8 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
 
   Stream<ImageInfo> _codec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
     final isImage = assetType == AssetType.image;
-    final loadOriginal = isImage && MetadataRepository.instance.appConfig.image.loadOriginal;
-    final loadPreview = isImage && MetadataRepository.instance.appConfig.image.loadPreview;
+    final loadOriginal = isImage && SettingsRepository.instance.appConfig.image.loadOriginal;
+    final loadPreview = isImage && SettingsRepository.instance.appConfig.image.loadPreview;
     yield* initialImageStream(isFinal: !loadOriginal && !loadPreview);
 
     if (isCancelled) {
@@ -150,7 +150,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
       return;
     }
 
-    if (MetadataRepository.instance.appConfig.image.loadPreview) {
+    if (SettingsRepository.instance.appConfig.image.loadPreview) {
       final previewRequest = request = RemoteImageRequest(
         uri: getThumbnailUrlForRemoteId(
           key.assetId,

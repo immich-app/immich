@@ -597,7 +597,7 @@ export const train = {
   packets: {
     totalDuration: 12_290,
     packetCount: 1229,
-    outputFrames: 1303,
+    outputFrames: 1304,
     keyframePts: [
       0, 601, 1201, 1802, 2402, 3003, 3604, 4204, 4805, 5405, 6006, 6607, 7207, 7808, 8408, 9009, 9609, 10_210, 10_811,
       11_411, 12_062, 12_703,

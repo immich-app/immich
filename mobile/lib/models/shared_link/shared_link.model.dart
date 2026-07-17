@@ -73,10 +73,10 @@ class SharedLink {
       slug = dto.slug,
       type = dto.type == SharedLinkType.ALBUM ? SharedLinkSource.album : SharedLinkSource.individual,
       title = dto.type == SharedLinkType.ALBUM
-          ? dto.album?.albumName.toUpperCase() ?? "UNKNOWN SHARE"
+          ? dto.album.orElse(null)?.albumName.toUpperCase() ?? "UNKNOWN SHARE"
           : "INDIVIDUAL SHARE",
       thumbAssetId = dto.type == SharedLinkType.ALBUM
-          ? dto.album?.albumThumbnailAssetId
+          ? dto.album.orElse(null)?.albumThumbnailAssetId
           : dto.assets.isNotEmpty
           ? dto.assets[0].id
           : null;

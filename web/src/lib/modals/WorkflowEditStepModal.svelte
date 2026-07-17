@@ -3,6 +3,7 @@
   import { pluginManager } from '$lib/managers/plugin-manager.svelte';
   import PluginMethodPicker from '$lib/modals/PluginMethodPicker.svelte';
   import { type JSONSchemaProperty, type SchemaConfig } from '$lib/types';
+  import { getWorkflowDefaultConfig } from '$lib/utils/workflow';
   import { WorkflowTrigger, type WorkflowStepDto } from '@immich/sdk';
   import { Button, FormModal, modalManager, Stack, Text, Textarea } from '@immich/ui';
   import { mdiPencilOutline } from '@mdi/js';
@@ -30,12 +31,12 @@
     }
 
     method = selected;
-    config = selected.schema ? {} : null;
+    config = selected.schema ? getWorkflowDefaultConfig(selected.schema as JSONSchemaProperty) : null;
   };
 </script>
 
 {#if method}
-  <FormModal title={$t('step_details')} {onClose} {onSubmit} disabled={!method} size="small">
+  <FormModal title={$t('step_details')} {onClose} {onSubmit} disabled={!method} size="medium">
     <div class="flex items-center justify-between gap-2">
       <div class="grow text-start">
         <Text fontWeight="medium">{method.title}</Text>

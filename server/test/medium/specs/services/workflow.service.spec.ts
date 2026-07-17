@@ -1,5 +1,6 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { Kysely } from 'kysely';
-import { WorkflowTrigger, WorkflowType } from 'src/enum';
+import { WorkflowType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PluginRepository } from 'src/repositories/plugin.repository';
@@ -21,6 +22,7 @@ const setup = (db?: Kysely<DB>) => {
 };
 
 const wasmBytes = Buffer.from('random-wasm-bytes');
+const sha256hash = Buffer.from('some-manifest-hash');
 
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
@@ -41,7 +43,9 @@ describe(WorkflowService.name, () => {
         description: 'A test core plugin for workflow tests',
         author: 'Test Author',
         version: '1.0.0',
+        templates: [],
         wasmBytes,
+        sha256hash,
       },
       [
         {

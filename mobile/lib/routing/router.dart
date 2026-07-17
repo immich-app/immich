@@ -27,7 +27,7 @@ import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/pages/common/tab_shell.page.dart';
 import 'package:immich_mobile/pages/library/folder/folder.page.dart';
 import 'package:immich_mobile/pages/library/locked/pin_auth.page.dart';
-import 'package:immich_mobile/pages/library/partner/drift_partner.page.dart';
+import 'package:immich_mobile/pages/library/partner/partner.page.dart';
 import 'package:immich_mobile/pages/library/shared_link/shared_link.page.dart';
 import 'package:immich_mobile/pages/library/shared_link/shared_link_edit.page.dart';
 import 'package:immich_mobile/pages/login/change_password.page.dart';
@@ -38,6 +38,7 @@ import 'package:immich_mobile/pages/share_intent/share_intent.page.dart';
 import 'package:immich_mobile/presentation/pages/cleanup_preview.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/main_timeline.page.dart';
 import 'package:immich_mobile/presentation/pages/dev/media_stat.page.dart';
+import 'package:immich_mobile/presentation/pages/feature_message/whats_new.page.dart';
 import 'package:immich_mobile/presentation/pages/download_info.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_activities.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_album.page.dart';
@@ -57,8 +58,8 @@ import 'package:immich_mobile/presentation/pages/drift_people_collection.page.da
 import 'package:immich_mobile/presentation/pages/drift_person.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_place.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_place_detail.page.dart';
-import 'package:immich_mobile/presentation/pages/drift_recently_taken.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_recently_added.page.dart';
+import 'package:immich_mobile/presentation/pages/drift_recently_taken.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_remote_album.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_slideshow.page.dart';
 import 'package:immich_mobile/presentation/pages/drift_trash.page.dart';
@@ -131,6 +132,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: ProfilePictureCropRoute.page),
     AutoRoute(page: SettingsRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: SettingsSubRoute.page, guards: [_duplicateGuard]),
+    AutoRoute(page: WhatsNewRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: AppLogRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: AppLogDetailRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: FolderRoute.page, guards: [_authGuard]),
@@ -176,7 +178,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: DriftPlaceRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftPlaceDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftUserSelectionRoute.page, guards: [_authGuard, _duplicateGuard]),
-    AutoRoute(page: DriftPartnerRoute.page, guards: [_authGuard, _duplicateGuard]),
+    AutoRoute(page: PartnerRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: DriftUploadDetailRoute.page, guards: [_authGuard, _duplicateGuard]),
     AutoRoute(page: SyncStatusRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: DriftPeopleCollectionRoute.page, guards: [_authGuard, _duplicateGuard]),

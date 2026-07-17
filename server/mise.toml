@@ -68,6 +68,7 @@ run = [
 [tasks.ci-medium]
 run = [
   { task = ":install" },
+  { task = "//:plugins" },
   { task = "//packages/plugin-core:build" },
   { task = ":test-medium --run" },
 ]

@@ -24,13 +24,15 @@ import { get } from 'svelte/store';
 import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { downloadManager } from '$lib/managers/download-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { downloadRequest, withError } from '$lib/utils';
+import { downloadBlob, downloadRequest, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
 import { asQueryString } from '$lib/utils/shared-links';
+import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { handleError } from './handle-error';
 
 export const tagAssets = async ({
@@ -71,32 +73,6 @@ export const removeTag = async ({
   }
 
   return assetIds;
-};
-
-export const downloadBlob = (data: Blob, filename: string) => {
-  const url = URL.createObjectURL(data);
-
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-
-  URL.revokeObjectURL(url);
-};
-
-export const downloadUrl = (url: string, filename: string) => {
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-
-  URL.revokeObjectURL(url);
 };
 
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
@@ -426,7 +402,12 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
     });
 
     asset.isArchived = data.isArchived;
-    toastManager.primary(asset.isArchived ? $t(`added_to_archive`) : $t(`removed_from_archive`));
+    if (asset.isArchived) {
+      const timelineAsset = toTimelineAsset(asset);
+      showUndoArchiveToast($t('added_to_archive'), [timelineAsset]);
+    } else {
+      toastManager.primary($t('removed_from_archive'));
+    }
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: asset.isArchived } }));
   }
@@ -434,7 +415,45 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
   return asset;
 };
 
-export const archiveAssets = async (assets: { id: string }[], visibility: AssetVisibility) => {
+const showUndoArchiveToast = (description: string, assets: TimelineAsset[]) => {
+  const $t = get(t);
+  toastManager.primary({
+    description,
+    button: (close) => ({
+      label: $t('undo'),
+      onclick: () => {
+        close();
+        void undoArchiveAssets(assets);
+      },
+    }),
+  });
+};
+
+const undoArchiveAssets = async (assets: TimelineAsset[]) => {
+  const $t = get(t);
+  try {
+    const ids = assets.map((a) => a.id);
+    if (ids.length > 0) {
+      await updateAssets({
+        assetBulkUpdateDto: {
+          ids,
+          visibility: AssetVisibility.Timeline,
+        },
+      });
+    }
+
+    for (const asset of assets) {
+      asset.visibility = AssetVisibility.Timeline;
+    }
+    eventManager.emit('AssetsUnarchive', assets);
+    eventManager.emit('AssetsUndoArchive', assets);
+    toastManager.success($t('unarchived_count', { values: { count: assets.length } }));
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: false } }));
+  }
+};
+
+export const archiveAssets = async (assets: TimelineAsset[], visibility: AssetVisibility) => {
   const ids = assets.map(({ id }) => id);
   const $t = get(t);
 
@@ -445,11 +464,11 @@ export const archiveAssets = async (assets: { id: string }[], visibility: AssetV
       });
     }
 
-    toastManager.primary(
-      visibility === AssetVisibility.Archive
-        ? $t('archived_count', { values: { count: ids.length } })
-        : $t('unarchived_count', { values: { count: ids.length } }),
-    );
+    if (visibility === AssetVisibility.Archive) {
+      showUndoArchiveToast($t('archived_count', { values: { count: ids.length } }), assets);
+    } else {
+      toastManager.primary($t('unarchived_count', { values: { count: ids.length } }));
+    }
   } catch (error) {
     handleError(
       error,

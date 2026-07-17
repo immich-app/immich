@@ -55,7 +55,7 @@ class LockedGuard extends AutoRouteGuard {
         return;
       }
 
-      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: securePinCode));
+      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: Optional.present(securePinCode)));
 
       resolver.next(true);
     } on PlatformException catch (error) {

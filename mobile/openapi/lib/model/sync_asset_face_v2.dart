@@ -123,11 +123,11 @@ class SyncAssetFaceV2 {
       json[r'boundingBoxY1'] = this.boundingBoxY1;
       json[r'boundingBoxY2'] = this.boundingBoxY2;
     if (this.deletedAt != null) {
-      json[r'deletedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/')
+      json[r'deletedAt'] = _isEpochMarker(r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')
         ? this.deletedAt!.millisecondsSinceEpoch
         : this.deletedAt!.toUtc().toIso8601String();
     } else {
-    //  json[r'deletedAt'] = null;
+      json[r'deletedAt'] = null;
     }
       json[r'id'] = this.id;
       json[r'imageHeight'] = this.imageHeight;
@@ -136,7 +136,7 @@ class SyncAssetFaceV2 {
     if (this.personId != null) {
       json[r'personId'] = this.personId;
     } else {
-    //  json[r'personId'] = null;
+      json[r'personId'] = null;
     }
       json[r'sourceType'] = this.sourceType;
     return json;
@@ -156,7 +156,7 @@ class SyncAssetFaceV2 {
         boundingBoxX2: mapValueOfType<int>(json, r'boundingBoxX2')!,
         boundingBoxY1: mapValueOfType<int>(json, r'boundingBoxY1')!,
         boundingBoxY2: mapValueOfType<int>(json, r'boundingBoxY2')!,
-        deletedAt: mapDateTime(json, r'deletedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$/'),
+        deletedAt: mapDateTime(json, r'deletedAt', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/'),
         id: mapValueOfType<String>(json, r'id')!,
         imageHeight: mapValueOfType<int>(json, r'imageHeight')!,
         imageWidth: mapValueOfType<int>(json, r'imageWidth')!,

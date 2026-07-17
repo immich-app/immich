@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/notification_permission.provider.dart';
+import 'package:immich_mobile/providers/permission.provider.dart';
 import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -48,6 +48,14 @@ class NotificationSetting extends HookConsumerWidget {
                   showPermissionsDialog();
                 }
               }),
+        )
+      else
+        SettingsButtonListTile(
+          icon: Icons.notifications_active_outlined,
+          title: 'notification_enabled_list_tile_title'.tr(),
+          subtileText: 'notification_enabled_list_tile_content'.tr(),
+          buttonText: 'notification_enabled_list_tile_open_button'.tr(),
+          onButtonTap: () => openAppSettings(),
         ),
     ];
 

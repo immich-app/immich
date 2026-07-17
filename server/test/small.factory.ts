@@ -27,7 +27,7 @@ const authFactory = ({
   user,
 }: {
   apiKey?: Partial<AuthApiKey>;
-  session?: { id: string };
+  session?: { id?: string; hasElevatedPermission?: boolean };
   user?: Omit<
     Partial<UserAdmin>,
     'createdAt' | 'updatedAt' | 'deletedAt' | 'fileCreatedAt' | 'fileModifiedAt' | 'localDateTime' | 'profileChangedAt'
@@ -46,8 +46,8 @@ const authFactory = ({
 
   if (session) {
     auth.session = {
-      id: session.id,
-      hasElevatedPermission: false,
+      id: session.id ?? newUuid(),
+      hasElevatedPermission: session.hasElevatedPermission ?? false,
     };
   }
 
@@ -201,6 +201,7 @@ const assetSidecarWriteFactory = () => {
 const assetOcrFactory = (
   ocr: {
     id?: string;
+    updateId?: string;
     assetId?: string;
     x1?: number;
     y1?: number;
@@ -217,6 +218,7 @@ const assetOcrFactory = (
   } = {},
 ) => ({
   id: newUuid(),
+  updateId: newUuidV7(),
   assetId: newUuid(),
   x1: 0.1,
   y1: 0.2,
