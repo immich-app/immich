@@ -632,8 +632,7 @@ export class VideoFrameExtractionConfig {
   private shouldToneMap(videoStream: VideoStreamInfo) {
     return (
       this.options.ffmpeg.tonemap !== ToneMapping.Disabled &&
-      (videoStream.colorTransfer === ColorTransfer.Smpte2084 ||
-        videoStream.colorTransfer === ColorTransfer.AribStdB67)
+      (videoStream.colorTransfer === ColorTransfer.Smpte2084 || videoStream.colorTransfer === ColorTransfer.AribStdB67)
     );
   }
 
@@ -749,16 +748,78 @@ export class VideoFrameExtractionConfig {
     if (accelDecode) {
       switch (accel) {
         case TranscodeHardwareAcceleration.Vaapi: {
-          return ['-nostdin', '-nostats', '-v', 'verbose', '-hwaccel', 'vaapi', '-hwaccel_output_format', 'vaapi', '-hwaccel_device', this.device, '-noautorotate', '-threads', '1', '-i', this.options.inputPath];
+          return [
+            '-nostdin',
+            '-nostats',
+            '-v',
+            'verbose',
+            '-hwaccel',
+            'vaapi',
+            '-hwaccel_output_format',
+            'vaapi',
+            '-hwaccel_device',
+            this.device,
+            '-noautorotate',
+            '-threads',
+            '1',
+            '-i',
+            this.options.inputPath,
+          ];
         }
         case TranscodeHardwareAcceleration.Qsv: {
-          return ['-nostdin', '-nostats', '-v', 'verbose', '-hwaccel', 'qsv', '-hwaccel_output_format', 'qsv', '-async_depth', '4', '-qsv_device', this.device, '-noautorotate', '-threads', '1', '-i', this.options.inputPath];
+          return [
+            '-nostdin',
+            '-nostats',
+            '-v',
+            'verbose',
+            '-hwaccel',
+            'qsv',
+            '-hwaccel_output_format',
+            'qsv',
+            '-async_depth',
+            '4',
+            '-qsv_device',
+            this.device,
+            '-noautorotate',
+            '-threads',
+            '1',
+            '-i',
+            this.options.inputPath,
+          ];
         }
         case TranscodeHardwareAcceleration.Nvenc: {
-          return ['-nostdin', '-nostats', '-v', 'verbose', '-hwaccel', 'cuda', '-hwaccel_output_format', 'cuda', '-noautorotate', '-threads', '1', '-i', this.options.inputPath];
+          return [
+            '-nostdin',
+            '-nostats',
+            '-v',
+            'verbose',
+            '-hwaccel',
+            'cuda',
+            '-hwaccel_output_format',
+            'cuda',
+            '-noautorotate',
+            '-threads',
+            '1',
+            '-i',
+            this.options.inputPath,
+          ];
         }
         case TranscodeHardwareAcceleration.Rkmpp: {
-          return ['-nostdin', '-nostats', '-v', 'verbose', '-hwaccel', 'rkmpp', '-hwaccel_output_format', 'drm_prime', '-afbc', 'rga', '-noautorotate', '-i', this.options.inputPath];
+          return [
+            '-nostdin',
+            '-nostats',
+            '-v',
+            'verbose',
+            '-hwaccel',
+            'rkmpp',
+            '-hwaccel_output_format',
+            'drm_prime',
+            '-afbc',
+            'rga',
+            '-noautorotate',
+            '-i',
+            this.options.inputPath,
+          ];
         }
         default: {
           throw new Error(`Unsupported HW-decode acceleration: ${accel}`);
@@ -769,13 +830,49 @@ export class VideoFrameExtractionConfig {
     // SW decode — init hw device, let filters upload
     switch (accel) {
       case TranscodeHardwareAcceleration.Vaapi: {
-        return ['-nostdin', '-nostats', '-v', 'verbose', '-init_hw_device', `vaapi=accel:${this.device}`, '-filter_hw_device', 'accel', '-noautorotate', '-i', this.options.inputPath];
+        return [
+          '-nostdin',
+          '-nostats',
+          '-v',
+          'verbose',
+          '-init_hw_device',
+          `vaapi=accel:${this.device}`,
+          '-filter_hw_device',
+          'accel',
+          '-noautorotate',
+          '-i',
+          this.options.inputPath,
+        ];
       }
       case TranscodeHardwareAcceleration.Qsv: {
-        return ['-nostdin', '-nostats', '-v', 'verbose', '-init_hw_device', `qsv=hw,child_device=${this.device}`, '-filter_hw_device', 'hw', '-noautorotate', '-i', this.options.inputPath];
+        return [
+          '-nostdin',
+          '-nostats',
+          '-v',
+          'verbose',
+          '-init_hw_device',
+          `qsv=hw,child_device=${this.device}`,
+          '-filter_hw_device',
+          'hw',
+          '-noautorotate',
+          '-i',
+          this.options.inputPath,
+        ];
       }
       case TranscodeHardwareAcceleration.Nvenc: {
-        return ['-nostdin', '-nostats', '-v', 'verbose', '-init_hw_device', `cuda=cuda:${this.device}`, '-filter_hw_device', 'cuda', '-noautorotate', '-i', this.options.inputPath];
+        return [
+          '-nostdin',
+          '-nostats',
+          '-v',
+          'verbose',
+          '-init_hw_device',
+          `cuda=cuda:${this.device}`,
+          '-filter_hw_device',
+          'cuda',
+          '-noautorotate',
+          '-i',
+          this.options.inputPath,
+        ];
       }
       case TranscodeHardwareAcceleration.Rkmpp: {
         // RKMPP SW-decode has no filter infrastructure upstream; fall back to CPU path for now.
@@ -802,35 +899,53 @@ export class VideoFrameExtractionConfig {
 
     const vaapi = (): FilterList => {
       const out: FilterList = [];
-      if (!accelDecode) {out.push('hwupload=extra_hw_frames=64');}
-      if (needsScale || !accelDecode) {out.push(`scale_vaapi=${dim}:mode=hq:out_range=pc:format=nv12`);}
-      if (tonemap) {out.push(
-        'hwmap=derive_device=opencl',
-        `tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:transfer=bt709:range=pc:tonemap=${this.options.ffmpeg.tonemap}:tonemap_mode=lum:peak=100`,
-        'hwmap=derive_device=vaapi:reverse=1,format=vaapi',
-      );}
+      if (!accelDecode) {
+        out.push('hwupload=extra_hw_frames=64');
+      }
+      if (needsScale || !accelDecode) {
+        out.push(`scale_vaapi=${dim}:mode=hq:out_range=pc:format=nv12`);
+      }
+      if (tonemap) {
+        out.push(
+          'hwmap=derive_device=opencl',
+          `tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:transfer=bt709:range=pc:tonemap=${this.options.ffmpeg.tonemap}:tonemap_mode=lum:peak=100`,
+          'hwmap=derive_device=vaapi:reverse=1,format=vaapi',
+        );
+      }
       return out;
     };
 
     const qsv = (): FilterList => {
       const out: FilterList = [];
-      if (!accelDecode) {out.push('hwupload=extra_hw_frames=64');}
-      if (needsScale || !accelDecode) {out.push(`scale_qsv=${dim}:mode=hq:format=nv12:async_depth=4`);}
-      if (tonemap) {out.push(
-        'hwmap=derive_device=opencl',
-        `tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:transfer=bt709:range=pc:tonemap=${this.options.ffmpeg.tonemap}:tonemap_mode=lum:peak=100`,
-        'hwmap=derive_device=qsv:reverse=1,format=qsv',
-      );}
+      if (!accelDecode) {
+        out.push('hwupload=extra_hw_frames=64');
+      }
+      if (needsScale || !accelDecode) {
+        out.push(`scale_qsv=${dim}:mode=hq:format=nv12:async_depth=4`);
+      }
+      if (tonemap) {
+        out.push(
+          'hwmap=derive_device=opencl',
+          `tonemap_opencl=desat=0:format=nv12:matrix=bt709:primaries=bt709:transfer=bt709:range=pc:tonemap=${this.options.ffmpeg.tonemap}:tonemap_mode=lum:peak=100`,
+          'hwmap=derive_device=qsv:reverse=1,format=qsv',
+        );
+      }
       return out;
     };
 
     const nvenc = (): FilterList => {
       const out: FilterList = [];
-      if (!accelDecode) {out.push('hwupload_cuda');}
-      if (needsScale || !accelDecode) {out.push(`scale_cuda=${dim}`);}
-      if (tonemap) {out.push(
-        `tonemap_cuda=desat=0:matrix=bt709:primaries=bt709:range=pc:tonemap=${this.options.ffmpeg.tonemap}:tonemap_mode=lum:transfer=bt709:peak=100:format=nv12`,
-      );}
+      if (!accelDecode) {
+        out.push('hwupload_cuda');
+      }
+      if (needsScale || !accelDecode) {
+        out.push(`scale_cuda=${dim}`);
+      }
+      if (tonemap) {
+        out.push(
+          `tonemap_cuda=desat=0:matrix=bt709:primaries=bt709:range=pc:tonemap=${this.options.ffmpeg.tonemap}:tonemap_mode=lum:transfer=bt709:peak=100:format=nv12`,
+        );
+      }
       if (!tonemap && (needsScale || !accelDecode)) {
         out[out.length - 1] = out.at(-1) + ':format=nv12';
       }
@@ -839,15 +954,24 @@ export class VideoFrameExtractionConfig {
 
     let filters: FilterList;
     switch (accel) {
-      case TranscodeHardwareAcceleration.Vaapi: {  filters = vaapi(); break;
+      case TranscodeHardwareAcceleration.Vaapi: {
+        filters = vaapi();
+        break;
       }
-      case TranscodeHardwareAcceleration.Qsv: {    filters = qsv(); break;
+      case TranscodeHardwareAcceleration.Qsv: {
+        filters = qsv();
+        break;
       }
-      case TranscodeHardwareAcceleration.Nvenc: {  filters = nvenc(); break;
+      case TranscodeHardwareAcceleration.Nvenc: {
+        filters = nvenc();
+        break;
       }
-      case TranscodeHardwareAcceleration.Rkmpp: {  filters = this.rkmppFilters(accelDecode, dim, needsScale, tonemap); break;
+      case TranscodeHardwareAcceleration.Rkmpp: {
+        filters = this.rkmppFilters(accelDecode, dim, needsScale, tonemap);
+        break;
       }
-      default: { throw new Error(`${accel} acceleration is unsupported`);
+      default: {
+        throw new Error(`${accel} acceleration is unsupported`);
       }
     }
 
@@ -884,15 +1008,20 @@ export class VideoFrameExtractionConfig {
     const { qp } = this.options;
     const encoder = (() => {
       switch (this.options.ffmpeg.accel) {
-        case TranscodeHardwareAcceleration.Vaapi: {  return 'h264_vaapi';
+        case TranscodeHardwareAcceleration.Vaapi: {
+          return 'h264_vaapi';
         }
-        case TranscodeHardwareAcceleration.Qsv: {    return 'h264_qsv';
+        case TranscodeHardwareAcceleration.Qsv: {
+          return 'h264_qsv';
         }
-        case TranscodeHardwareAcceleration.Nvenc: {  return 'h264_nvenc';
+        case TranscodeHardwareAcceleration.Nvenc: {
+          return 'h264_nvenc';
         }
-        case TranscodeHardwareAcceleration.Rkmpp: {  return 'h264_rkmpp';
+        case TranscodeHardwareAcceleration.Rkmpp: {
+          return 'h264_rkmpp';
         }
-        default: { return 'libx264';
+        default: {
+          return 'libx264';
         }
       }
     })();

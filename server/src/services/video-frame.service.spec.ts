@@ -159,7 +159,9 @@ describe(VideoFrameService.name, () => {
       mocks.process.spawn.mockReturnValue({
         ...mockSpawn(1, '', 'ffmpeg stderr'),
         on: vitest.fn((event, cb: any) => {
-          if (event === 'close') {cb(1);}
+          if (event === 'close') {
+            cb(1);
+          }
         }),
       } as any);
 
