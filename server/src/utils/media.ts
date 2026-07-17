@@ -644,12 +644,10 @@ export class VideoFrameExtractionConfig {
     if (this.options.ffmpeg.accel !== TranscodeHardwareAcceleration.Disabled) {
       return this.getHWExtractionCommand(videoStream);
     }
-    return this.getSWExtractionCommand(videoStream);
+    return this.getBasicExtractionCommand(videoStream);
   }
 
-  // -- Software (CPU) command --------------------------------------------------------
-
-  private getSWExtractionCommand(videoStream: VideoStreamInfo): string[] {
+  private getBasicExtractionCommand(videoStream: VideoStreamInfo): string[] {
     const { width, height } = getOutputSize(videoStream, this.options.targetResolution);
     const fps = 1 / this.options.gridInterval;
     const filterComplex = [
@@ -699,8 +697,6 @@ export class VideoFrameExtractionConfig {
     ];
   }
 
-  // -- Hardware-accelerated command ---------------------------------------------------
-
   private getHWExtractionCommand(videoStream: VideoStreamInfo): string[] {
     const inputOptions = this.getHWInputOptions();
     const encodeFilters = this.getHWEncodeFilters(videoStream);
@@ -739,8 +735,6 @@ export class VideoFrameExtractionConfig {
       '-',
     ];
   }
-
-  // -- per-backend input init, encode filter, and encoder args -------------------------
 
   private getHWInputOptions(): string[] {
     const { accel, accelDecode } = this.options.ffmpeg;
@@ -827,7 +821,6 @@ export class VideoFrameExtractionConfig {
       }
     }
 
-    // SW decode — init hw device, let filters upload
     switch (accel) {
       case TranscodeHardwareAcceleration.Vaapi: {
         return [
