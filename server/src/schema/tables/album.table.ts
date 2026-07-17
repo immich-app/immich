@@ -36,8 +36,8 @@ export class AlbumTable {
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
 
-  @Column({ type: 'text', default: '' })
-  description!: Generated<string>;
+  @Column({ type: 'text', nullable: true })
+  description!: Generated<string | null>;
 
   @DeleteDateColumn()
   deletedAt!: Timestamp | null;

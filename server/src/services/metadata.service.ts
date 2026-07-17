@@ -303,7 +303,7 @@ export class MetadataService extends BaseService {
       focalLength: validate(exifTags.FocalLength),
 
       // comments
-      description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
+      description: (exifTags.ImageDescription || exifTags.Description || '').toString().trim() || null,
       profileDescription: exifTags.ProfileDescription || null,
       rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, 1, 5),
 
