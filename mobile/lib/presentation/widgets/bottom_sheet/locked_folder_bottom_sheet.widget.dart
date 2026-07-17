@@ -1,36 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
-import 'package:immich_mobile/presentation/actions/asset_actions.dart';
+import 'package:immich_mobile/presentation/actions/delete.action.dart';
+import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
-import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
-import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class LockedFolderBottomSheet extends ConsumerWidget {
   const LockedFolderBottomSheet({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final scope = ActionScope.from(context, ref);
-    final assets = ref.watch(multiSelectProvider).selectedAssets.toList(growable: false);
-    final actions = AssetActions.from(scope, assets);
-
-    return BaseBottomSheet(
+    return const BaseBottomSheet(
       initialChildSize: 0.25,
       maxChildSize: 0.4,
       shouldCloseOnMinExtent: false,
       actions: [
-        ActionColumnButtonWidget(
-          action: ShareAction(assets: assets, scope: scope),
-        ),
-        ActionColumnButtonWidget(action: TimelineAction(action: actions.download)),
-        ...[
-          actions.delete,
-          LockAction(assets: assets, scope: scope),
-        ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
+        ActionColumnButtonWidget(source: .timeline, action: ShareAction()),
+        TimelineSheetActionWidget(action: DownloadAction()),
+        TimelineSheetActionWidget(action: TrashAction()),
+        TimelineSheetActionWidget(action: DeletePermanentlyAction()),
+        TimelineSheetActionWidget(action: DeleteLocalAction()),
+        TimelineSheetActionWidget(action: LockAction()),
+        TimelineSheetActionWidget(action: UnlockAction()),
       ],
     );
   }

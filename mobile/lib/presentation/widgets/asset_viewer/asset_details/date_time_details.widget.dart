@@ -3,13 +3,11 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -30,7 +28,7 @@ class DateTimeDetails extends ConsumerWidget {
     final asset = this.asset;
     final exifInfo = this.exifInfo;
     final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
-    final editDateTime = EditDateTimeAction(assets: [asset], scope: ActionScope.from(context, ref));
+    const editDateTime = EditDateTimeAction();
 
     return Column(
       children: [
@@ -38,7 +36,7 @@ class DateTimeDetails extends ConsumerWidget {
           title: _getDateTime(context, asset, exifInfo),
           titleStyle: context.textTheme.labelLarge,
           trailing: const Icon(Icons.edit, size: 18),
-          onTap: editDateTime.onAction,
+          onTap: editDateTime.isVisible(ref, [asset]) ? () => editDateTime.onAction(ref, [asset]) : null,
         ),
         if (exifInfo != null) _SheetAssetDescription(exif: exifInfo, isEditable: isOwner),
       ],
@@ -91,7 +89,7 @@ class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> 
       return;
     }
 
-    final editAction = await ref.read(actionProvider.notifier).updateDescription(ActionSource.viewer, newDescription);
+    final editAction = await ref.read(actionProvider.notifier).updateDescription(.viewer, newDescription);
 
     if (!editAction.success) {
       _controller.text = previousDescription ?? '';

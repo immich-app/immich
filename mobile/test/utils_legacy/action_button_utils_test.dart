@@ -979,7 +979,7 @@ void main() {
                 ),
                 _ => _buttonContext(asset: asset),
               };
-              built.add(buttonType.buildButton(buttonContext, buildContext, ref));
+              built.add(buttonType.buildButton(buttonContext, buildContext));
             }
             return const SizedBox.shrink();
           },
@@ -1008,7 +1008,7 @@ void main() {
         presentation,
         Consumer(
           builder: (buildContext, ref, _) {
-            widgets = ActionButtonBuilder.build(context, buildContext, ref);
+            widgets = ActionButtonBuilder.build(context, buildContext);
             return const SizedBox.shrink();
           },
         ),

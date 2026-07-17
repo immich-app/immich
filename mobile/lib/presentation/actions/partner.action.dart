@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
@@ -9,11 +10,18 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
 class PartnerAddAction extends BaseAction {
-  PartnerAddAction({required super.scope}) : super(icon: Icons.person_add_rounded, label: scope.context.t.add_partner);
+  const PartnerAddAction();
 
   @override
-  Future<void> onAction() async {
-    final ActionScope(:context, :ref, :authUser) = scope;
+  IconData icon(_) => Icons.person_add_rounded;
+
+  @override
+  String label(context) => context.t.add_partner;
+
+  @override
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    final context = ref.context;
+    final authUser = currentUser(ref);
     final selected = await showDialog<User>(context: context, builder: (_) => const PartnerSelectionDialog());
     if (selected == null) {
       return;
@@ -24,15 +32,21 @@ class PartnerAddAction extends BaseAction {
 }
 
 class PartnerRemoveAction extends BaseAction {
-  PartnerRemoveAction({required super.scope, required this.sharedWithId, required this.partnerName})
-    : super(icon: Icons.person_remove_rounded, label: scope.context.t.remove);
-
   final String sharedWithId;
   final String partnerName;
 
+  const PartnerRemoveAction({required this.sharedWithId, required this.partnerName});
+
   @override
-  Future<void> onAction() async {
-    final ActionScope(:context, :ref, :authUser) = scope;
+  IconData icon(_) => Icons.person_remove_rounded;
+
+  @override
+  String label(context) => context.t.remove;
+
+  @override
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    final context = ref.context;
+    final authUser = currentUser(ref);
 
     final confirmed = await showDialog<bool>(
       context: context,

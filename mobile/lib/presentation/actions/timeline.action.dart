@@ -1,28 +1,40 @@
+import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
+/// Decorates an action so the multi-select is cleared after it runs.
 class TimelineAction extends BaseAction {
   final BaseAction action;
 
-  TimelineAction({required this.action})
-    : super(scope: action.scope, icon: action.icon, label: action.label, isVisible: action.isVisible);
+  const TimelineAction({required this.action});
 
   @override
-  Future<void> onAction() async {
-    await action.onAction();
-    scope.ref.read(multiSelectProvider.notifier).reset();
+  IconData icon(WidgetRef ref) => action.icon(ref);
+
+  @override
+  String label(BuildContext context) => action.label(context);
+
+  @override
+  bool isVisible(WidgetRef ref, Iterable<BaseAsset> assets) => action.isVisible(ref, assets);
+
+  @override
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    await action.onAction(ref, assets);
+    ref.read(multiSelectProvider.notifier).reset();
   }
 
   @override
-  Future<void> Function()? get onSecondaryAction {
-    final inner = action.onSecondaryAction;
-    if (inner == null) {
+  Future<void> Function(WidgetRef ref, Iterable<BaseAsset> assets)? get onSecondaryAction {
+    final onSecondaryAction = action.onSecondaryAction;
+    if (onSecondaryAction == null) {
       return null;
     }
 
-    return () async {
-      await inner();
-      scope.ref.read(multiSelectProvider.notifier).reset();
+    return (ref, assets) async {
+      await onSecondaryAction(ref, assets);
+      ref.read(multiSelectProvider.notifier).reset();
     };
   }
 }

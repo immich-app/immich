@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
@@ -13,7 +13,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_but
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 
@@ -30,32 +29,26 @@ class ViewerBottomBar extends ConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isInLockedView = ref.watch(inLockedViewProvider);
-    final isInTrash = ref.read(timelineServiceProvider).origin == TimelineOrigin.trash;
+    final isTrashed = asset is RemoteAsset && asset.isTrashed;
 
     final originalTheme = context.themeData;
+    Widget? column(BaseAction action) =>
+        action.isVisible(ref, [asset]) ? ActionColumnButtonWidget(source: .viewer, action: action) : null;
 
-    final assets = [asset];
-    final scope = ActionScope.from(context, ref);
-    final restore = RestoreAction(assets: assets, scope: scope);
-    final delete = DeleteAction(assets: assets, scope: scope);
-    final editImage = EditAssetAction(assets: assets, scope: scope);
-    final upload = UploadAction(assets: assets, scope: scope, showProgress: true);
     final actions = <Widget>[
-      if (restore.isVisible) ActionColumnButtonWidget(action: restore),
-      ActionColumnButtonWidget(
-        action: ShareAction(assets: assets, scope: scope),
-      ),
-      if (editImage.isVisible) ActionColumnButtonWidget(action: editImage),
-
+      ?column(const RestoreAction()),
       if (!isInLockedView) ...[
-        if (!isInTrash) ...[
-          if (upload.isVisible) ActionColumnButtonWidget(action: upload),
+        if (!isTrashed) ...[
+          ?column(const ShareAction()),
+          ?column(const EditAssetAction()),
+          ?column(const UploadAction(source: .viewer)),
           if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
         ],
-
-        if (delete.isVisible) ActionColumnButtonWidget(action: delete),
       ],
-    ];
+      ?column(const TrashAction()),
+      ?column(const DeletePermanentlyAction()),
+      ?column(const DeleteLocalAction()),
+    ].toList();
 
     return AnimatedSwitcher(
       duration: Durations.short4,

@@ -1,14 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
-import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
@@ -169,67 +167,56 @@ enum ActionButtonType {
 
   Widget buildButton(
     ActionButtonContext context,
-    BuildContext buildContext,
-
-    WidgetRef ref, [
+    BuildContext buildContext, [
     bool iconOnly = false,
     bool menuItem = false,
   ]) {
-    final assets = [context.asset];
-    final scope = ActionScope.from(buildContext, ref);
     return switch (this) {
-      ActionButtonType.advancedInfo => ActionMenuItemWidget(
-        action: AssetDebugAction(assets: assets, scope: scope),
+      ActionButtonType.advancedInfo => ActionMenuItemWidget(source: context.source, action: const AssetDebugAction()),
+      ActionButtonType.share => ActionMenuItemWidget(source: context.source, action: const ShareAction()),
+      ActionButtonType.shareLink => ActionMenuItemWidget(source: context.source, action: const ShareLinkAction()),
+      ActionButtonType.slideshow => ActionMenuItemWidget(source: context.source, action: const SlideshowAction()),
+      ActionButtonType.archive => ActionMenuItemWidget(source: context.source, action: const ArchiveAction()),
+      ActionButtonType.restoreTrash => ActionMenuItemWidget(source: context.source, action: const RestoreAction()),
+      ActionButtonType.delete => Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ActionMenuItemWidget(source: context.source, action: const TrashAction()),
+          ActionMenuItemWidget(source: context.source, action: const DeletePermanentlyAction()),
+          ActionMenuItemWidget(source: context.source, action: const DeleteLocalAction()),
+        ],
       ),
-      ActionButtonType.share => ActionMenuItemWidget(
-        action: ShareAction(assets: assets, scope: scope),
-      ),
-      ActionButtonType.shareLink => ActionMenuItemWidget(
-        action: ShareLinkAction(assets: assets, scope: scope),
-      ),
-      ActionButtonType.slideshow => ActionMenuItemWidget(action: SlideshowAction(scope: scope)),
-      ActionButtonType.archive || ActionButtonType.unarchive => ActionMenuItemWidget(
-        action: ArchiveAction(assets: assets, scope: scope),
-      ),
-      ActionButtonType.download => ActionMenuItemWidget(
-        action: DownloadAction(assets: assets, scope: scope),
-      ),
-      ActionButtonType.restoreTrash => ActionMenuItemWidget(
-        action: RestoreAction(assets: assets, scope: scope),
-      ),
-      ActionButtonType.delete => ActionMenuItemWidget(
-        action: DeleteAction(assets: assets, scope: scope),
-      ),
-      ActionButtonType.moveToLockFolder => ActionMenuItemWidget(
-        action: LockAction(assets: assets, scope: scope),
-      ),
+      ActionButtonType.moveToLockFolder => ActionMenuItemWidget(source: context.source, action: const LockAction()),
       ActionButtonType.removeFromLockFolder => ActionMenuItemWidget(
-        action: LockAction(assets: assets, scope: scope),
+        source: context.source,
+        action: const UnlockAction(),
       ),
-      ActionButtonType.deleteLocal => ActionMenuItemWidget(
-        action: CleanupLocalAction(assets: assets, scope: scope),
-      ),
+      ActionButtonType.deleteLocal => ActionMenuItemWidget(source: context.source, action: const CleanupLocalAction()),
       ActionButtonType.upload => ActionMenuItemWidget(
-        action: UploadAction(assets: assets, scope: scope, showProgress: context.source == ActionSource.viewer),
+        source: context.source,
+        action: UploadAction(source: context.source),
       ),
       ActionButtonType.removeFromAlbum => ActionMenuItemWidget(
-        action: RemoveFromAlbumAction(assets: assets, albumId: context.currentAlbum!.id, scope: scope),
+        source: context.source,
+        action: RemoveFromAlbumAction(albumId: context.currentAlbum!.id),
       ),
       ActionButtonType.setAlbumCover => ActionMenuItemWidget(
-        action: SetAlbumCoverAction(assets: assets, albumId: context.currentAlbum!.id, scope: scope),
+        source: context.source,
+        action: SetAlbumCoverAction(albumId: context.currentAlbum!.id),
       ),
       ActionButtonType.likeActivity => LikeActivityActionButton(iconOnly: iconOnly, menuItem: menuItem),
-      ActionButtonType.unstack => ActionMenuItemWidget(
-        action: StackAction(assets: assets, scope: scope),
-      ),
+      ActionButtonType.unstack => ActionMenuItemWidget(source: context.source, action: const UnstackAction()),
       ActionButtonType.openInBrowser => ActionMenuItemWidget(
-        action: OpenInBrowserAction(remoteId: context.asset.remoteId!, origin: context.timelineOrigin, scope: scope),
+        source: context.source,
+        action: OpenInBrowserAction(origin: context.timelineOrigin),
       ),
       ActionButtonType.similarPhotos => ActionMenuItemWidget(
-        action: SimilarPhotosAction(assetId: (context.asset as RemoteAsset).id, scope: scope),
+        source: context.source,
+        action: const SimilarPhotosAction(),
       ),
       ActionButtonType.setProfilePicture => ActionMenuItemWidget(
-        action: SetProfilePictureAction(asset: context.asset, scope: scope),
+        source: context.source,
+        action: const SetProfilePictureAction(),
       ),
       ActionButtonType.openInfo => BaseActionButton(
         label: 'info'.tr(),
@@ -247,7 +234,9 @@ enum ActionButtonType {
           EventStream.shared.emit(ScrollToDateEvent(context.asset.createdAt));
         },
       ),
-      ActionButtonType.cast => ActionMenuItemWidget(action: CastAction(scope: scope)),
+      ActionButtonType.cast => ActionMenuItemWidget(source: context.source, action: const CastAction()),
+      ActionButtonType.download => ActionMenuItemWidget(source: context.source, action: const DownloadAction()),
+      ActionButtonType.unarchive => ActionMenuItemWidget(source: context.source, action: const UnarchiveAction()),
     };
   }
 
@@ -287,14 +276,14 @@ class ActionButtonBuilder {
     ActionButtonType.restoreTrash,
   };
 
-  static List<Widget> build(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+  static List<Widget> build(ActionButtonContext context, BuildContext buildContext) {
     return _actionTypes
         .where((type) => type.shouldShow(context))
-        .map((type) => type.buildButton(context, buildContext, ref))
+        .map((type) => type.buildButton(context, buildContext))
         .toList();
   }
 
-  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext, WidgetRef ref) {
+  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext) {
     final visibleButtons = defaultViewerKebabMenuOrder
         .where((type) => !defaultViewerBottomBarButtons.contains(type) && type.shouldShow(context))
         .toList();
@@ -310,7 +299,7 @@ class ActionButtonBuilder {
       if (lastGroup != null && type.kebabMenuGroup != lastGroup) {
         result.add(const Divider(height: 1));
       }
-      result.add(type.buildButton(context, buildContext, ref, false, true));
+      result.add(type.buildButton(context, buildContext, false, true));
       lastGroup = type.kebabMenuGroup;
     }
 

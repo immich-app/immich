@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
@@ -8,26 +9,31 @@ import 'package:immich_mobile/utils/asset_filter.dart';
 
 class RemoveFromAlbumAction extends BaseAction {
   final String albumId;
-  final List<String> assetIds;
 
-  RemoveFromAlbumAction._({required super.scope, required this.albumId, required this.assetIds, super.isVisible})
-    : super(icon: Icons.remove_circle_outline, label: scope.context.t.remove_from_album);
-
-  factory RemoveFromAlbumAction({
-    required Iterable<BaseAsset> assets,
-    required String albumId,
-    required ActionScope scope,
-  }) {
-    final assetIds = AssetFilter(assets).map((asset) => asset.remoteId).nonNulls.toList(growable: false);
-
-    return RemoveFromAlbumAction._(scope: scope, albumId: albumId, assetIds: assetIds, isVisible: assetIds.isNotEmpty);
-  }
+  const RemoveFromAlbumAction({required this.albumId});
 
   @override
-  Future<void> onAction() async {
-    final ActionScope(:ref, :context) = scope;
+  IconData icon(_) => Icons.remove_circle_outline;
 
-    final count = await ref.read(remoteAlbumServiceProvider).removeAssets(albumId: albumId, assetIds: assetIds);
+  @override
+  String label(context) => context.t.remove_from_album;
+
+  @visibleForTesting
+  Iterable<String> assetsForAction(Iterable<BaseAsset> assets) =>
+      AssetFilter(assets).map((asset) => asset.remoteId).nonNulls;
+
+  @override
+  bool isVisible(WidgetRef ref, Iterable<BaseAsset> assets) => assetsForAction(assets).isNotEmpty;
+
+  @override
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    final context = ref.context;
+    final ids = assetsForAction(assets).toList(growable: false);
+
+    final count = await ref.read(remoteAlbumServiceProvider).removeAssets(albumId: albumId, assetIds: ids);
+    if (!context.mounted) {
+      return;
+    }
     ref.read(toastRepositoryProvider).success(context.t.remove_from_album_action_prompt(count: count));
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
@@ -7,50 +8,67 @@ import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
 
 class StackAction extends BaseAction {
-  final List<String> assetIds;
-  final List<String> stackIds;
-  final bool stack;
+  const StackAction();
 
-  const StackAction._({
-    required this.assetIds,
-    required this.stackIds,
-    required this.stack,
-    required super.scope,
-    required super.icon,
-    required super.label,
-    super.isVisible,
-  });
+  @override
+  IconData icon(_) => Icons.filter_none_rounded;
 
-  factory StackAction({required Iterable<BaseAsset> assets, required ActionScope scope}) {
-    final ownedAssets = AssetFilter(assets).owned(scope.authUser.id);
-    // Stack when any owned asset is not yet stacked; otherwise unstack them all.
-    final stack = ownedAssets.stacked(isStacked: false).isNotEmpty;
-    final assetIds = ownedAssets.map((asset) => asset.id).toList(growable: false);
-    final stackIds = ownedAssets.map((asset) => asset.stackId).nonNulls.toList(growable: false);
+  @override
+  String label(context) => context.t.stack;
 
-    return StackAction._(
-      assetIds: assetIds,
-      stackIds: stackIds,
-      stack: stack,
-      scope: scope,
-      icon: stack ? Icons.filter_none_rounded : Icons.layers_clear_outlined,
-      label: stack ? scope.context.t.stack : scope.context.t.unstack,
-      isVisible: stack ? assetIds.length > 1 : stackIds.isNotEmpty,
-    );
+  @visibleForTesting
+  Iterable<RemoteAsset> assetsForAction(WidgetRef ref, Iterable<BaseAsset> assets) =>
+      AssetFilter(assets).owned(currentUser(ref).id);
+
+  @override
+  bool isVisible(WidgetRef ref, Iterable<BaseAsset> assets) {
+    final owned = AssetFilter(assets).owned(currentUser(ref).id);
+    // elementAtOrNull instead of length check to avoid iterating the entire list
+    return owned.elementAtOrNull(1) != null && owned.stacked(isStacked: false).isNotEmpty;
   }
 
   @override
-  Future<void> onAction() async {
-    final ActionScope(:ref, :context) = scope;
-    if (stack) {
-      await ref.read(assetServiceProvider).stack(scope.authUser.id, assetIds);
-    } else {
-      await ref.read(assetServiceProvider).unstack(stackIds);
-    }
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    final context = ref.context;
+    final authUser = currentUser(ref);
+    final ids = assetsForAction(ref, assets).map((asset) => asset.id).toList(growable: false);
 
-    final message = stack
-        ? context.t.stacked_assets_count(count: assetIds.length)
-        : context.t.unstacked_assets_count(count: assetIds.length);
-    ref.read(toastRepositoryProvider).success(message);
+    await ref.read(assetServiceProvider).stack(authUser.id, ids);
+    if (!context.mounted) {
+      return;
+    }
+    ref.read(toastRepositoryProvider).success(context.t.stacked_assets_count(count: ids.length));
+  }
+}
+
+class UnstackAction extends BaseAction {
+  const UnstackAction();
+
+  @override
+  IconData icon(_) => Icons.layers_clear_outlined;
+
+  @override
+  String label(context) => context.t.unstack;
+
+  @visibleForTesting
+  Iterable<RemoteAsset> assetsForAction(WidgetRef ref, Iterable<BaseAsset> assets) {
+    final owned = AssetFilter(assets).owned(currentUser(ref).id);
+    return owned.stacked(isStacked: false).isEmpty ? owned : const [];
+  }
+
+  @override
+  bool isVisible(WidgetRef ref, Iterable<BaseAsset> assets) => assetsForAction(ref, assets).isNotEmpty;
+
+  @override
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    final context = ref.context;
+    final stacked = assetsForAction(ref, assets).toList(growable: false);
+    final stackIds = stacked.map((asset) => asset.stackId).nonNulls.toList(growable: false);
+
+    await ref.read(assetServiceProvider).unstack(stackIds);
+    if (!context.mounted) {
+      return;
+    }
+    ref.read(toastRepositoryProvider).success(context.t.unstacked_assets_count(count: stackIds.length));
   }
 }

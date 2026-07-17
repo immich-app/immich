@@ -1,6 +1,6 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -12,27 +12,26 @@ import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 
 class ShareAction extends BaseAction {
-  final List<BaseAsset> assets;
-
-  ShareAction._({required this.assets, required super.scope, super.isVisible})
-    : super(
-        icon: CurrentPlatform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded,
-        label: scope.context.t.share,
-      );
-
-  factory ShareAction({required Iterable<BaseAsset> assets, required ActionScope scope}) {
-    final shareable = assets.toList(growable: false);
-    return ._(assets: shareable, scope: scope, isVisible: shareable.isNotEmpty);
-  }
+  const ShareAction();
 
   @override
-  Future<void> onAction() => _share(scope.ref.read(appConfigProvider).share.fileType);
+  IconData icon(_) => CurrentPlatform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded;
 
   @override
-  Future<void> Function()? get onSecondaryAction => _promptQualityAndShare;
+  String label(context) => context.t.share;
 
-  Future<void> _promptQualityAndShare() async {
-    final ActionScope(:context, :ref) = scope;
+  @override
+  bool isVisible(WidgetRef ref, Iterable<BaseAsset> assets) => assets.isNotEmpty;
+
+  @override
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) =>
+      _share(ref, assets, ref.read(appConfigProvider).share.fileType);
+
+  @override
+  Future<void> Function(WidgetRef ref, Iterable<BaseAsset> assets)? get onSecondaryAction => _promptQualityAndShare;
+
+  Future<void> _promptQualityAndShare(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    final context = ref.context;
 
     // only show preview option when at least one of the assets is not a video
     // we cant share previews of videos
@@ -54,11 +53,11 @@ class ShareAction extends BaseAction {
       return;
     }
 
-    await _share(fileType);
+    await _share(ref, assets, fileType);
   }
 
-  Future<void> _share(ShareAssetType fileType) async {
-    final ActionScope(:context, :ref) = scope;
+  Future<void> _share(WidgetRef ref, Iterable<BaseAsset> assets, ShareAssetType fileType) async {
+    final context = ref.context;
     final cancelCompleter = Completer<void>();
     final progress = ValueNotifier<double?>(null);
 
@@ -81,7 +80,7 @@ class ShareAction extends BaseAction {
           ref
               .read(assetMediaRepositoryProvider)
               .shareAssets(
-                assets,
+                assets.toList(growable: false),
                 context,
                 fileType: fileType,
                 cancelCompleter: cancelCompleter,

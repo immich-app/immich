@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
@@ -9,22 +10,24 @@ import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
 
 class DownloadAction extends BaseAction {
-  final List<RemoteAsset> assets;
-
-  DownloadAction._({required this.assets, required super.scope, super.isVisible})
-    : super(icon: Icons.download, label: scope.context.t.download);
-
-  factory DownloadAction({required Iterable<BaseAsset> assets, required ActionScope scope}) {
-    final remote = AssetFilter(assets).remote().toList(growable: false);
-    return ._(assets: remote, scope: scope, isVisible: remote.isNotEmpty);
-  }
+  const DownloadAction();
 
   @override
-  Future<void> onAction() async {
-    final ActionScope(:ref) = scope;
-    final backgroundSync = ref.read(backgroundSyncProvider);
+  IconData icon(_) => Icons.download;
 
-    await ref.read(downloadRepositoryProvider).downloadAllAssets(assets);
+  @override
+  String label(context) => context.t.download;
+
+  @visibleForTesting
+  Iterable<RemoteAsset> assetsForAction(Iterable<BaseAsset> assets) => AssetFilter(assets).remote();
+
+  @override
+  bool isVisible(WidgetRef ref, Iterable<BaseAsset> assets) => assetsForAction(assets).isNotEmpty;
+
+  @override
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    final backgroundSync = ref.read(backgroundSyncProvider);
+    await ref.read(downloadRepositoryProvider).downloadAllAssets(assetsForAction(assets).toList(growable: false));
 
     unawaited(
       Future.delayed(const Duration(seconds: 1), () async {

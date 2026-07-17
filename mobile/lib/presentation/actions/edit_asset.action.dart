@@ -17,26 +17,30 @@ import 'package:immich_mobile/utils/asset_filter.dart';
 import 'package:immich_mobile/utils/semver.dart';
 
 class EditAssetAction extends BaseAction {
-  final Iterable<RemoteAsset> assets;
+  const EditAssetAction();
 
-  EditAssetAction._({required this.assets, required super.scope, super.isVisible})
-    : super(icon: Icons.tune, label: scope.context.t.edit);
+  @override
+  IconData icon(_) => Icons.tune;
 
-  factory EditAssetAction({required Iterable<BaseAsset> assets, required ActionScope scope}) {
-    final editable = AssetFilter(
-      assets,
-    ).owned(scope.authUser.id).where((asset) => asset.isEditable).toList(growable: false);
-    final isSupported = scope.ref.watch(serverInfoProvider).serverVersion >= const SemVer(major: 2, minor: 6, patch: 0);
+  @override
+  String label(context) => context.t.edit;
 
-    return EditAssetAction._(assets: editable, scope: scope, isVisible: isSupported && editable.length == 1);
+  @visibleForTesting
+  Iterable<RemoteAsset> assetsForAction(WidgetRef ref, Iterable<BaseAsset> assets) =>
+      AssetFilter(assets).owned(currentUser(ref).id).where((asset) => asset.isEditable);
+
+  @override
+  bool isVisible(WidgetRef ref, Iterable<BaseAsset> assets) {
+    final supported = ref.watch(serverInfoProvider).serverVersion >= const SemVer(major: 2, minor: 6, patch: 0);
+    return supported && assetsForAction(ref, assets).singleOrNull != null;
   }
 
   @override
-  Future<void> onAction() async {
-    final ActionScope(:context, :ref) = scope;
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    final context = ref.context;
+    final asset = assetsForAction(ref, assets).single;
 
     // TODO(shenlong): Move all EXIF and Apply Edits logic onto the Route
-    final asset = assets.first;
     final repository = ref.read(remoteAssetRepositoryProvider);
     final (edits, exif) = await (repository.getAssetEdits(asset.id), repository.getExif(asset.id)).wait;
     if (exif == null || !context.mounted) {

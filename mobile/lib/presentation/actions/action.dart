@@ -1,36 +1,23 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 
-class ActionScope {
-  final BuildContext context;
-  final WidgetRef ref;
-  final UserDto authUser;
-
-  const ActionScope({required this.context, required this.ref, required this.authUser});
-
-  factory ActionScope.from(BuildContext context, WidgetRef ref) {
-    final authUser = ref.watch(currentUserProvider);
-    if (authUser == null) {
-      throw StateError('Auth user is not available in ActionScope');
-    }
-
-    return ActionScope(context: context, ref: ref, authUser: authUser);
-  }
-}
-
 abstract class BaseAction {
-  final ActionScope scope;
-  final IconData icon;
-  final String label;
-  final bool isVisible;
+  const BaseAction();
 
-  const BaseAction({required this.scope, required this.icon, required this.label, this.isVisible = true});
+  IconData icon(WidgetRef ref);
 
-  Future<void> onAction();
+  String label(BuildContext context);
 
-  Future<void> Function()? get onSecondaryAction => null;
+  bool isVisible(WidgetRef ref, Iterable<BaseAsset> assets) => true;
+
+  @protected
+  @visibleForTesting
+  UserDto currentUser(WidgetRef ref) => ref.read(currentUserProvider)!;
+
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets);
+
+  Future<void> Function(WidgetRef ref, Iterable<BaseAsset> assets)? get onSecondaryAction => null;
 }

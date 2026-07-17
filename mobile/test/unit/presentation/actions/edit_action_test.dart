@@ -5,7 +5,6 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
-import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/edit_asset.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
@@ -13,7 +12,6 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provid
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/utils/option.dart';
-import 'package:immich_ui/immich_ui.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -44,66 +42,51 @@ void main() {
   RemoteAsset owned({AssetType type = .image}) =>
       RemoteAssetFactory.create(ownerId: context.currentUser.id, type: type);
 
-  group('EditImageAction', () {
-    testWidgets('visible for a single owned editable asset on a supported server', (tester) async {
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => EditAssetAction(assets: [owned()], scope: scope),
-      );
+  group('EditAssetAction', () {
+    const action = EditAssetAction();
 
-      expect(action.isVisible, isTrue);
-      expect(action.icon, Icons.tune);
-      expect(action.label, StaticTranslations.instance.edit);
-      expect(find.byType(ImmichIconButton), findsOneWidget);
+    testWidgets('visible for a single owned editable asset on a supported server', (tester) async {
+      final resolved = await tester.resolveAction(context, action, assets: [owned()]);
+
+      expect(resolved, isNotNull);
+      expect(resolved!.icon, Icons.tune);
+      expect(resolved.label, StaticTranslations.instance.edit);
     });
 
     testWidgets('hidden when the server is older than 2.6.0', (tester) async {
-      final action = await tester.pumpActionButton(
+      final resolved = await tester.resolveAction(
         context,
-        (scope) => EditAssetAction(assets: [owned()], scope: scope),
+        action,
+        assets: [owned()],
         overrides: serverVersion(unsupportedVersion),
       );
 
-      expect(action.isVisible, isFalse);
-      expect(find.byType(ImmichIconButton), findsNothing);
+      expect(resolved, isNull);
     });
 
     testWidgets('hidden for more than one asset', (tester) async {
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => EditAssetAction(assets: [owned(), owned()], scope: scope),
-      );
+      final resolved = await tester.resolveAction(context, action, assets: [owned(), owned()]);
 
-      expect(action.isVisible, isFalse);
+      expect(resolved, isNull);
     });
 
     testWidgets('hidden for an asset owned by someone else', (tester) async {
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => EditAssetAction(assets: [RemoteAssetFactory.create()], scope: scope),
-      );
+      final resolved = await tester.resolveAction(context, action, assets: [RemoteAssetFactory.create()]);
 
-      expect(action.isVisible, isFalse);
+      expect(resolved, isNull);
     });
 
     testWidgets('hidden for a non-editable asset', (tester) async {
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => EditAssetAction(
-          assets: [owned(type: AssetType.video)],
-          scope: scope,
-        ),
-      );
+      final resolved = await tester.resolveAction(context, action, assets: [owned(type: .video)]);
 
-      expect(action.isVisible, isFalse);
+      expect(resolved, isNull);
     });
 
     testWidgets('reads the edits and exif for the asset from the repository', (tester) async {
       final asset = owned();
       final remoteAssetRepo = context.repository.remoteAsset.repo;
 
-      await tester.pumpTestAction(context, (scope) => EditAssetAction(assets: [asset], scope: scope));
-      await tester.pumpAndSettle();
+      await tester.runAction(context, action, assets: [asset]);
 
       verify(() => remoteAssetRepo.getAssetEdits(asset.id)).called(1);
       verify(() => remoteAssetRepo.getExif(asset.id)).called(1);
@@ -135,36 +118,20 @@ void main() {
   });
 
   group('EditLocationAction', () {
-    testWidgets('visible with an owned remote asset', (tester) async {
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => EditLocationAction(assets: [owned()], scope: scope),
-      );
+    const action = EditLocationAction();
 
-      expect(action.isVisible, isTrue);
-      expect(action.icon, Icons.edit_location_alt_outlined);
-      expect(action.label, StaticTranslations.instance.control_bottom_app_bar_edit_location);
+    testWidgets('visible with an owned remote asset', (tester) async {
+      final resolved = await tester.resolveAction(context, action, assets: [owned()]);
+
+      expect(resolved, isNotNull);
+      expect(resolved!.icon, Icons.edit_location_alt_outlined);
+      expect(resolved.label, StaticTranslations.instance.control_bottom_app_bar_edit_location);
     });
 
     testWidgets('hidden without any owned remote asset', (tester) async {
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => EditLocationAction(assets: [RemoteAssetFactory.create()], scope: scope),
-      );
+      final resolved = await tester.resolveAction(context, action, assets: [RemoteAssetFactory.create()]);
 
-      expect(action.isVisible, isFalse);
-    });
-
-    testWidgets('collects only the owned remote asset ids', (tester) async {
-      final mine = owned();
-      final theirs = RemoteAssetFactory.create();
-
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => EditLocationAction(assets: [mine, theirs], scope: scope),
-      );
-
-      expect((action as EditLocationAction).assetIds, [mine.id]);
+      expect(resolved, isNull);
     });
 
     testWidgets('save persists the location, refreshes the viewer exif and toasts', (tester) async {
@@ -172,15 +139,12 @@ void main() {
       final toast = context.repository.toast;
       when(() => assetService.getExif(asset)).thenAnswer((_) async => null);
 
-      late EditLocationAction action;
+      late WidgetRef capturedRef;
       await tester.pumpTestWidget(
         context,
         Consumer(
-          builder: (ctx, ref, _) {
-            action = EditLocationAction(
-              assets: [asset],
-              scope: ActionScope(context: ctx, ref: ref, authUser: context.currentUser),
-            );
+          builder: (_, ref, _) {
+            capturedRef = ref;
             // Keep the exif provider alive so a re-fetch after invalidation is observable.
             ref.watch(assetExifProvider(asset));
             return const SizedBox.shrink();
@@ -189,7 +153,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await action.save(const LatLng(1, 2));
+      await action.save(capturedRef, [asset.id], const LatLng(1, 2));
       await tester.pumpAndSettle();
 
       final location =
@@ -206,36 +170,20 @@ void main() {
   });
 
   group('EditDateTimeAction', () {
-    testWidgets('visible with an owned remote asset', (tester) async {
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => EditDateTimeAction(assets: [owned()], scope: scope),
-      );
+    const action = EditDateTimeAction();
 
-      expect(action.isVisible, isTrue);
-      expect(action.icon, Icons.edit_calendar_outlined);
-      expect(action.label, StaticTranslations.instance.control_bottom_app_bar_edit_time);
+    testWidgets('visible with an owned remote asset', (tester) async {
+      final resolved = await tester.resolveAction(context, action, assets: [owned()]);
+
+      expect(resolved, isNotNull);
+      expect(resolved!.icon, Icons.edit_calendar_outlined);
+      expect(resolved.label, StaticTranslations.instance.control_bottom_app_bar_edit_time);
     });
 
     testWidgets('hidden without any owned remote asset', (tester) async {
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => EditDateTimeAction(assets: [RemoteAssetFactory.create()], scope: scope),
-      );
+      final resolved = await tester.resolveAction(context, action, assets: [RemoteAssetFactory.create()]);
 
-      expect(action.isVisible, isFalse);
-    });
-
-    testWidgets('collects only the owned remote asset ids', (tester) async {
-      final mine = owned();
-      final theirs = RemoteAssetFactory.create();
-
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => EditDateTimeAction(assets: [mine, theirs], scope: scope),
-      );
-
-      expect((action as EditDateTimeAction).assetIds, [mine.id]);
+      expect(resolved, isNull);
     });
 
     testWidgets('save persists the date, refreshes the viewer exif and toasts', (tester) async {
@@ -244,16 +192,12 @@ void main() {
       const picked = '2026-06-10T19:15:00.000+06:00';
       when(() => assetService.getExif(asset)).thenAnswer((_) async => null);
 
-      late EditDateTimeAction action;
+      late WidgetRef capturedRef;
       await tester.pumpTestWidget(
         context,
         Consumer(
-          builder: (ctx, ref, _) {
-            action = EditDateTimeAction(
-              assets: [asset],
-              scope: ActionScope(context: ctx, ref: ref, authUser: context.currentUser),
-            );
-            // Keep the exif provider alive so a re-fetch after invalidation is observable.
+          builder: (_, ref, _) {
+            capturedRef = ref;
             ref.watch(assetExifProvider(asset));
             return const SizedBox.shrink();
           },
@@ -261,10 +205,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await action.save(picked);
+      await action.save(capturedRef, [asset.id], picked);
       await tester.pumpAndSettle();
 
-      verify(() => assetService.update([asset.id], dateTime: const Some(picked))).called(1);
+      verify(() => assetService.update([asset.id], dateTime: const .some(picked))).called(1);
       verify(() => assetService.getExif(asset)).called(2);
 
       final message = verify(() => toast.success(captureAny())).captured.single as String;

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -5,26 +7,26 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
-import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
-import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
@@ -91,7 +93,24 @@ class PresentationContext {
   }
 }
 
+typedef ResolvedAction = ({
+  IconData icon,
+  String label,
+  Future<void> Function() onAction,
+  Future<void> Function()? onSecondaryAction,
+});
+
 extension PumpPresentationWidget on WidgetTester {
+  Future<void> pumpUntilFound(Finder finder, {int maxFrames = 10}) async {
+    for (var i = 0; i < maxFrames; i++) {
+      await pump();
+      if (finder.evaluate().isNotEmpty) {
+        return;
+      }
+    }
+    throw StateError('pumpUntilFound: $finder not found within $maxFrames frames');
+  }
+
   Future<void> pumpTestWidget(PresentationContext context, Widget widget, {List<Override> overrides = const []}) async {
     await pumpWidget(
       EasyLocalization(
@@ -120,43 +139,43 @@ extension PumpPresentationWidget on WidgetTester {
     await pumpAndSettle();
   }
 
-  Future<BaseAction> pumpTestAction(
+  Future<ResolvedAction?> resolveAction(
     PresentationContext context,
-    BaseAction Function(ActionScope scope) build, {
+    BaseAction action, {
+    Iterable<BaseAsset> assets = const [],
     List<Override> overrides = const [],
   }) async {
-    final action = await pumpActionButton(context, build, overrides: overrides);
-    await tap(find.byType(ImmichIconButton));
-    await pump();
-    return action;
-  }
-
-  Future<BaseAction> pumpActionButton(
-    PresentationContext context,
-    BaseAction Function(ActionScope scope) build, {
-    List<Override> overrides = const [],
-  }) async {
-    late BaseAction action;
+    ResolvedAction? resolved;
     await pumpTestWidget(
       context,
       Consumer(
-        builder: (innerContext, ref, _) {
-          action = build(ActionScope(context: innerContext, ref: ref, authUser: context.currentUser));
-          return ActionIconButtonWidget(action: action);
+        builder: (_, ref, _) {
+          if (action.isVisible(ref, assets)) {
+            final onSecondaryAction = action.onSecondaryAction;
+            resolved = (
+              icon: action.icon(ref),
+              label: action.label(ref.context),
+              onAction: () => action.onAction(ref, assets),
+              onSecondaryAction: onSecondaryAction == null ? null : () => onSecondaryAction(ref, assets),
+            );
+          }
+          return const SizedBox.shrink();
         },
       ),
       overrides: overrides,
     );
-    return action;
+    return resolved;
   }
 
-  Future<void> pumpUntilFound(Finder finder, {int maxFrames = 10}) async {
-    for (var i = 0; i < maxFrames; i++) {
-      await pump();
-      if (finder.evaluate().isNotEmpty) {
-        return;
-      }
-    }
-    throw StateError('pumpUntilFound: $finder not found within $maxFrames frames');
+  Future<ResolvedAction?> runAction(
+    PresentationContext context,
+    BaseAction action, {
+    Iterable<BaseAsset> assets = const [],
+    List<Override> overrides = const [],
+  }) async {
+    final resolved = await resolveAction(context, action, assets: assets, overrides: overrides);
+    unawaited(resolved?.onAction());
+    await pumpAndSettle();
+    return resolved;
   }
 }

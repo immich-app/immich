@@ -5,7 +5,6 @@ import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/widgets/asset_viewer/detail_panel/exif_map.dart';
@@ -64,7 +63,8 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
       return const SizedBox.shrink();
     }
 
-    final editLocation = EditLocationAction(assets: [asset], scope: ActionScope.from(context, ref));
+    const editLocation = EditLocationAction();
+    final editLocationAction = editLocation.isVisible(ref, [asset]) ? () => editLocation.onAction(ref, [asset]) : null;
     final locationName = _getLocationName(exifInfo);
     final coordinates = "${exifInfo?.latitude?.toStringAsFixed(4)}, ${exifInfo?.longitude?.toStringAsFixed(4)}";
 
@@ -77,7 +77,7 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
             title: 'location'.t(context: context),
             titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
             trailing: hasCoordinates ? const Icon(Icons.edit_location_alt, size: 20) : null,
-            onTap: editLocation.onAction,
+            onTap: editLocationAction,
           ),
           if (hasCoordinates)
             Padding(
@@ -112,7 +112,7 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
                 color: context.primaryColor,
               ),
               leading: const Icon(Icons.location_off),
-              onTap: editLocation.onAction,
+              onTap: editLocationAction,
             ),
         ],
       ),

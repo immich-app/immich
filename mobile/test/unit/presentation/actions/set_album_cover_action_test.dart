@@ -24,28 +24,22 @@ void main() {
 
   RemoteAsset remote() => RemoteAssetFactory.create(ownerId: context.currentUser.id);
 
+  const action = SetAlbumCoverAction(albumId: 'album');
+
   group('SetAlbumCoverAction', () {
     testWidgets('sets the selected asset as the album cover', (tester) async {
       final asset = remote();
-      const albumId = 'album';
-      final action = await tester.pumpTestAction(
-        context,
-        (scope) => SetAlbumCoverAction(assets: [asset], albumId: albumId, scope: scope),
-      );
+      final resolved = await tester.runAction(context, action, assets: [asset]);
 
-      expect(action.icon, Icons.image_outlined);
-      expect(action.label, StaticTranslations.instance.set_as_album_cover);
-      verify(() => albumService.updateAlbum(albumId, thumbnailAssetId: asset.id)).called(1);
+      expect(resolved!.icon, Icons.image_outlined);
+      expect(resolved.label, StaticTranslations.instance.set_as_album_cover);
+      verify(() => albumService.updateAlbum('album', thumbnailAssetId: asset.id)).called(1);
     });
 
     testWidgets('is hidden unless exactly one remote asset is selected', (tester) async {
-      const albumId = 'album';
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => SetAlbumCoverAction(assets: [remote(), remote()], albumId: albumId, scope: scope),
-      );
+      final resolved = await tester.resolveAction(context, action, assets: [remote(), remote()]);
 
-      expect(action.isVisible, isFalse);
+      expect(resolved, isNull);
     });
   });
 }

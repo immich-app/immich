@@ -1,17 +1,14 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
-import 'package:immich_mobile/presentation/actions/asset_actions.dart';
+import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
-import 'package:immich_mobile/presentation/actions/timeline.action.dart';
+import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class LocalAlbumBottomSheet extends ConsumerStatefulWidget {
@@ -39,7 +36,7 @@ class _LocalAlbumBottomSheetState extends ConsumerState<LocalAlbumBottomSheet> {
   @override
   Widget build(BuildContext context) {
     Future<void> addToAlbum(RemoteAlbum album) async {
-      final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.timeline, album);
+      final result = await ref.read(actionProvider.notifier).addToAlbum(.timeline, album);
 
       if (!context.mounted) {
         return;
@@ -62,24 +59,18 @@ class _LocalAlbumBottomSheetState extends ConsumerState<LocalAlbumBottomSheet> {
       return sheetController.animateTo(0.85, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
     }
 
-    final scope = ActionScope.from(context, ref);
-    final assets = ref.watch(multiSelectProvider).selectedAssets.toList(growable: false);
-    final actions = AssetActions.from(scope, assets);
-
     return BaseBottomSheet(
       controller: sheetController,
       initialChildSize: 0.25,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
-      actions: [
-        ActionColumnButtonWidget(
-          action: ShareAction(assets: assets, scope: scope),
-        ),
-        ...[
-          actions.delete,
-          actions.cleanup,
-        ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
-        ActionColumnButtonWidget(action: TimelineAction(action: actions.upload)),
+      actions: const [
+        ActionColumnButtonWidget(source: .timeline, action: ShareAction()),
+        TimelineSheetActionWidget(action: TrashAction()),
+        TimelineSheetActionWidget(action: DeletePermanentlyAction()),
+        TimelineSheetActionWidget(action: DeleteLocalAction()),
+        TimelineSheetActionWidget(action: CleanupLocalAction()),
+        TimelineSheetActionWidget(action: UploadAction(source: .timeline)),
       ],
       slivers: [
         const AddToAlbumHeader(),

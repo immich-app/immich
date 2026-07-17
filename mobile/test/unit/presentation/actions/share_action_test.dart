@@ -11,7 +11,6 @@ import 'package:immich_mobile/domain/models/config/share_config.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
-import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../repository.mocks.dart';
@@ -37,45 +36,43 @@ void main() {
 
   RemoteAsset asset({AssetType type = .image}) => RemoteAssetFactory.create(type: type);
 
+  const action = ShareAction();
+
   group('ShareAction', () {
     testWidgets('visible when there are assets to share', (tester) async {
-      final action = await tester.pumpActionButton(context, (scope) => ShareAction(assets: [asset()], scope: scope));
+      final resolved = await tester.resolveAction(context, action, assets: [asset()]);
 
-      expect(action.isVisible, isTrue);
-      expect(action.onSecondaryAction, isNotNull);
-      expect(action.label, StaticTranslations.instance.share);
-      expect(find.byType(ImmichIconButton), findsOneWidget);
+      expect(resolved, isNotNull);
+      expect(resolved!.onSecondaryAction, isNotNull);
+      expect(resolved.label, StaticTranslations.instance.share);
     });
 
     testWidgets('hidden when the selection is empty', (tester) async {
-      final action = await tester.pumpActionButton(context, (scope) => ShareAction(assets: const [], scope: scope));
+      final resolved = await tester.resolveAction(context, action, assets: const []);
 
-      expect(action.isVisible, isFalse);
-      expect(find.byType(ImmichIconButton), findsNothing);
+      expect(resolved, isNull);
     });
 
     testWidgets('uses the Android share icon on Android', (tester) async {
       debugDefaultTargetPlatformOverride = .android;
-      final action = await tester.pumpActionButton(context, (scope) => ShareAction(assets: [asset()], scope: scope));
+      final resolved = await tester.resolveAction(context, action, assets: [asset()]);
+      expect(resolved!.icon, Icons.share_rounded);
       debugDefaultTargetPlatformOverride = null;
-
-      expect(action.icon, Icons.share_rounded);
     });
 
     testWidgets('uses the iOS share icon on iOS', (tester) async {
       debugDefaultTargetPlatformOverride = .iOS;
-      final action = await tester.pumpActionButton(context, (scope) => ShareAction(assets: [asset()], scope: scope));
+      final resolved = await tester.resolveAction(context, action, assets: [asset()]);
+      expect(resolved!.icon, Icons.ios_share_rounded);
       debugDefaultTargetPlatformOverride = null;
-
-      expect(action.icon, Icons.ios_share_rounded);
     });
   });
 
   group('quality picker', () {
     testWidgets('offers both original and preview for an image', (tester) async {
-      final action = await tester.pumpActionButton(context, (scope) => ShareAction(assets: [asset()], scope: scope));
+      final resolved = await tester.resolveAction(context, action, assets: [asset()]);
 
-      unawaited(action.onSecondaryAction!());
+      unawaited(resolved!.onSecondaryAction!());
       await tester.pumpAndSettle();
 
       expect(find.text(StaticTranslations.instance.share_original), findsOneWidget);
@@ -86,15 +83,9 @@ void main() {
     });
 
     testWidgets('offers only original for a video', (tester) async {
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => ShareAction(
-          assets: [asset(type: .video)],
-          scope: scope,
-        ),
-      );
+      final resolved = await tester.resolveAction(context, action, assets: [asset(type: .video)]);
 
-      unawaited(action.onSecondaryAction!());
+      unawaited(resolved!.onSecondaryAction!());
       await tester.pumpAndSettle();
 
       expect(find.text(StaticTranslations.instance.share_original), findsOneWidget);
@@ -109,11 +100,7 @@ void main() {
     testWidgets('shares the assets at the quality saved in settings', (tester) async {
       final target = asset();
 
-      await tester.pumpTestAction(
-        context,
-        (scope) => ShareAction(assets: [target], scope: scope),
-        overrides: savedQuality(.preview),
-      );
+      await tester.runAction(context, action, assets: [target], overrides: savedQuality(.preview));
       await tester.pump(const .new(milliseconds: 500));
 
       verify(

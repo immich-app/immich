@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
@@ -7,41 +8,61 @@ import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
 
 class FavoriteAction extends BaseAction {
-  final List<String> assetIds;
-  final bool favorite;
+  const FavoriteAction();
 
-  const FavoriteAction._({
-    required this.assetIds,
-    required this.favorite,
-    required super.scope,
-    required super.icon,
-    required super.label,
-    super.isVisible,
-  });
+  @override
+  IconData icon(_) => Icons.favorite_border_rounded;
 
-  factory FavoriteAction({required Iterable<BaseAsset> assets, required ActionScope scope}) {
-    final ownedAssets = AssetFilter(assets).owned(scope.authUser.id);
-    final favorite = ownedAssets.favorite(isFavorite: false).isNotEmpty;
-    final assetIds = ownedAssets.favorite(isFavorite: !favorite).map((asset) => asset.id).toList(growable: false);
+  @override
+  String label(context) => context.t.favorite;
 
-    return FavoriteAction._(
-      assetIds: assetIds,
-      favorite: favorite,
-      scope: scope,
-      icon: favorite ? Icons.favorite_border_rounded : Icons.favorite_rounded,
-      label: favorite ? scope.context.t.favorite : scope.context.t.unfavorite,
-      isVisible: assetIds.isNotEmpty,
-    );
+  @visibleForTesting
+  Iterable<RemoteAsset> assetsForAction(WidgetRef ref, Iterable<BaseAsset> assets) =>
+      AssetFilter(assets).owned(currentUser(ref).id).favorite(isFavorite: false);
+
+  @override
+  bool isVisible(WidgetRef ref, Iterable<BaseAsset> assets) => assetsForAction(ref, assets).isNotEmpty;
+
+  @override
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    final context = ref.context;
+    final ids = assetsForAction(ref, assets).map((asset) => asset.id).toList(growable: false);
+
+    await ref.read(assetServiceProvider).update(ids, isFavorite: const .some(true));
+    if (!context.mounted) {
+      return;
+    }
+    ref.read(toastRepositoryProvider).success(context.t.favorite_action_prompt(count: ids.length));
+  }
+}
+
+class UnfavoriteAction extends BaseAction {
+  const UnfavoriteAction();
+
+  @override
+  IconData icon(_) => Icons.favorite_rounded;
+
+  @override
+  String label(context) => context.t.unfavorite;
+
+  @visibleForTesting
+  Iterable<RemoteAsset> assetsForAction(WidgetRef ref, Iterable<BaseAsset> assets) {
+    final owned = AssetFilter(assets).owned(currentUser(ref).id);
+    return owned.favorite(isFavorite: false).isEmpty ? owned : const [];
   }
 
   @override
-  Future<void> onAction() async {
-    final ActionScope(:ref, :context) = scope;
+  bool isVisible(WidgetRef ref, Iterable<BaseAsset> assets) => assetsForAction(ref, assets).isNotEmpty;
 
-    await ref.read(assetServiceProvider).update(assetIds, isFavorite: .some(favorite));
-    final message = favorite
-        ? context.t.favorite_action_prompt(count: assetIds.length)
-        : context.t.unfavorite_action_prompt(count: assetIds.length);
-    ref.read(toastRepositoryProvider).success(message);
+  @override
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    final context = ref.context;
+    final ids = assetsForAction(ref, assets).map((asset) => asset.id).toList(growable: false);
+
+    await ref.read(assetServiceProvider).update(ids, isFavorite: const .some(false));
+    if (!context.mounted) {
+      return;
+    }
+    ref.read(toastRepositoryProvider).success(context.t.unfavorite_action_prompt(count: ids.length));
   }
 }

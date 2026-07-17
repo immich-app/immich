@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
@@ -12,30 +13,33 @@ import 'package:immich_mobile/utils/asset_filter.dart';
 import 'package:immich_ui/immich_ui.dart';
 
 class UploadAction extends BaseAction {
-  final List<LocalAsset> assets;
+  final ActionSource source;
 
-  final bool showProgress;
-
-  UploadAction._({required this.assets, required this.showProgress, required super.scope, super.isVisible})
-    : super(icon: Icons.backup_outlined, label: scope.context.t.upload);
-
-  factory UploadAction({required Iterable<BaseAsset> assets, required ActionScope scope, bool showProgress = false}) {
-    final local = AssetFilter(assets).backedUp(isBackedUp: false).local().toList(growable: false);
-    return ._(assets: local, scope: scope, showProgress: showProgress, isVisible: local.isNotEmpty);
-  }
+  const UploadAction({required this.source});
 
   @override
-  Future<void> onAction() async {
-    if (assets.isEmpty) {
+  IconData icon(_) => Icons.backup_outlined;
+
+  @override
+  String label(context) => context.t.upload;
+
+  @visibleForTesting
+  Iterable<LocalAsset> assetsForAction(Iterable<BaseAsset> assets) =>
+      AssetFilter(assets).backedUp(isBackedUp: false).local();
+
+  @override
+  bool isVisible(WidgetRef ref, Iterable<BaseAsset> assets) => assetsForAction(assets).isNotEmpty;
+
+  @override
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    final context = ref.context;
+    final localAssets = assetsForAction(assets).toList(growable: false);
+
+    if (source != ActionSource.viewer) {
+      await upload(ref, localAssets);
       return;
     }
 
-    if (!showProgress) {
-      await upload();
-      return;
-    }
-
-    final context = scope.context;
     var isDialogOpen = true;
     unawaited(
       showDialog<void>(
@@ -45,7 +49,7 @@ class UploadAction extends BaseAction {
       ).whenComplete(() => isDialogOpen = false),
     );
 
-    await upload();
+    await upload(ref, localAssets);
 
     if (isDialogOpen && context.mounted) {
       Navigator.of(context, rootNavigator: true).pop();
@@ -53,8 +57,8 @@ class UploadAction extends BaseAction {
   }
 
   @visibleForTesting
-  Future<void> upload() async {
-    final ActionScope(:context, :ref) = scope;
+  Future<void> upload(WidgetRef ref, List<LocalAsset> assets) async {
+    final context = ref.context;
     final progress = ref.read(assetUploadProgressProvider.notifier);
     final cancelToken = Completer<void>();
     ref.read(manualUploadCancelTokenProvider.notifier).state = cancelToken;

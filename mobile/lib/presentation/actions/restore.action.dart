@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
@@ -7,23 +8,30 @@ import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
 
 class RestoreAction extends BaseAction {
-  final List<String> assetIds;
-
-  RestoreAction._({required super.scope, required this.assetIds, super.isVisible})
-    : super(icon: Icons.history_rounded, label: scope.context.t.restore);
-
-  factory RestoreAction({required Iterable<BaseAsset> assets, required ActionScope scope}) {
-    final assetIds = AssetFilter(
-      assets,
-    ).owned(scope.authUser.id).trashed().map((asset) => asset.id).toList(growable: false);
-
-    return RestoreAction._(assetIds: assetIds, scope: scope, isVisible: assetIds.isNotEmpty);
-  }
+  const RestoreAction();
 
   @override
-  Future<void> onAction() async {
-    final ActionScope(:ref, :context) = scope;
-    await ref.read(assetServiceProvider).restoreTrash(assetIds);
-    ref.read(toastRepositoryProvider).success(context.t.assets_restored_count(count: assetIds.length));
+  IconData icon(_) => Icons.history_rounded;
+
+  @override
+  String label(context) => context.t.restore;
+
+  @visibleForTesting
+  Iterable<RemoteAsset> assetsForAction(WidgetRef ref, Iterable<BaseAsset> assets) =>
+      AssetFilter(assets).owned(currentUser(ref).id).trashed();
+
+  @override
+  bool isVisible(WidgetRef ref, Iterable<BaseAsset> assets) => assetsForAction(ref, assets).isNotEmpty;
+
+  @override
+  Future<void> onAction(WidgetRef ref, Iterable<BaseAsset> assets) async {
+    final context = ref.context;
+    final ids = assetsForAction(ref, assets).map((asset) => asset.id).toList(growable: false);
+
+    await ref.read(assetServiceProvider).restoreTrash(ids);
+    if (!context.mounted) {
+      return;
+    }
+    ref.read(toastRepositoryProvider).success(context.t.assets_restored_count(count: ids.length));
   }
 }

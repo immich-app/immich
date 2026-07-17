@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/download.action.dart';
-import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../repository.mocks.dart';
@@ -22,31 +21,28 @@ void main() {
     context.dispose();
   });
 
+  const action = DownloadAction();
+
   group('DownloadAction', () {
     testWidgets('visible when there is a remote asset to download', (tester) async {
-      final action = await tester.pumpActionButton(
-        context,
-        (scope) => DownloadAction(assets: [RemoteAssetFactory.create()], scope: scope),
-      );
+      final resolved = await tester.resolveAction(context, action, assets: [RemoteAssetFactory.create()]);
 
-      expect(action.isVisible, isTrue);
-      expect(action.icon, Icons.download);
-      expect(action.label, StaticTranslations.instance.download);
-      expect(find.byType(ImmichIconButton), findsOneWidget);
+      expect(resolved, isNotNull);
+      expect(resolved!.icon, Icons.download);
+      expect(resolved.label, StaticTranslations.instance.download);
     });
 
     testWidgets('hidden when the selection has no remote assets', (tester) async {
-      final action = await tester.pumpActionButton(context, (scope) => DownloadAction(assets: const [], scope: scope));
+      final resolved = await tester.resolveAction(context, action, assets: const []);
 
-      expect(action.isVisible, isFalse);
-      expect(find.byType(ImmichIconButton), findsNothing);
+      expect(resolved, isNull);
     });
 
     testWidgets('enqueues the downloads and re-syncs shortly after', (tester) async {
       final target = RemoteAssetFactory.create();
       final backgroundSync = context.service.backgroundSync;
 
-      await tester.pumpTestAction(context, (scope) => DownloadAction(assets: [target], scope: scope));
+      await tester.runAction(context, action, assets: [target]);
 
       verify(() => downloadRepo.downloadAllAssets(any(that: contains(target)))).called(1);
 

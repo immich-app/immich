@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
-import 'package:immich_ui/immich_ui.dart';
 
 import '../../factories/remote_asset_factory.dart';
 import '../presentation_context.dart';
@@ -19,33 +18,30 @@ void main() {
     context.dispose();
   });
 
+  const action = AssetDebugAction();
+
   group('AssetDebugAction', () {
     testWidgets('visible for a single asset when advanced troubleshooting is on', (tester) async {
-      await tester.pumpActionButton(
-        context,
-        (scope) => AssetDebugAction(assets: [RemoteAssetFactory.create()], scope: scope),
-      );
+      final resolved = await tester.resolveAction(context, action, assets: [RemoteAssetFactory.create()]);
 
-      expect(find.byType(ImmichIconButton), findsOneWidget);
+      expect(resolved, isNotNull);
     });
 
     testWidgets('hidden for multiple assets', (tester) async {
-      await tester.pumpActionButton(
+      final resolved = await tester.resolveAction(
         context,
-        (scope) => AssetDebugAction(assets: [RemoteAssetFactory.create(), RemoteAssetFactory.create()], scope: scope),
+        action,
+        assets: [RemoteAssetFactory.create(), RemoteAssetFactory.create()],
       );
 
-      expect(find.byType(ImmichIconButton), findsNothing);
+      expect(resolved, isNull);
     });
 
     testWidgets('hidden when advanced troubleshooting is off', (tester) async {
       await StoreService.I.put(StoreKey.advancedTroubleshooting, false);
-      await tester.pumpActionButton(
-        context,
-        (scope) => AssetDebugAction(assets: [RemoteAssetFactory.create()], scope: scope),
-      );
+      final resolved = await tester.resolveAction(context, action, assets: [RemoteAssetFactory.create()]);
 
-      expect(find.byType(ImmichIconButton), findsNothing);
+      expect(resolved, isNull);
     });
   });
 }

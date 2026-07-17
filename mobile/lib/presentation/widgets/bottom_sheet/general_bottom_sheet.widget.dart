@@ -1,18 +1,24 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
-import 'package:immich_mobile/presentation/actions/asset_actions.dart';
+import 'package:immich_mobile/presentation/actions/archive.action.dart';
+import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
+import 'package:immich_mobile/presentation/actions/delete.action.dart';
+import 'package:immich_mobile/presentation/actions/download.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
+import 'package:immich_mobile/presentation/actions/favorite.action.dart';
+import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
-import 'package:immich_mobile/presentation/actions/timeline.action.dart';
+import 'package:immich_mobile/presentation/actions/stack.action.dart';
+import 'package:immich_mobile/presentation/actions/tag.action.dart';
+import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class GeneralBottomSheet extends ConsumerStatefulWidget {
@@ -39,10 +45,8 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final multiselect = ref.watch(multiSelectProvider);
-
     Future<void> addToAlbum(RemoteAlbum album) async {
-      final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.timeline, album);
+      final result = await ref.read(actionProvider.notifier).addToAlbum(.timeline, album);
 
       if (!context.mounted) {
         return;
@@ -64,39 +68,33 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
       return sheetController.animateTo(0.85, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
     }
 
-    final scope = ActionScope.from(context, ref);
-    final assets = multiselect.selectedAssets.toList(growable: false);
-    final actions = AssetActions.from(scope, assets);
-
     return BaseBottomSheet(
       controller: sheetController,
       initialChildSize: widget.minChildSize ?? 0.15,
       minChildSize: widget.minChildSize,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
-      actions: [
-        ...[
-          actions.debug,
-          actions.favorite,
-          actions.archive,
-          actions.delete,
-          actions.cleanup,
-          actions.stack,
-          actions.lock,
-          actions.editDateTime,
-          actions.editLocation,
-          actions.download,
-          actions.tag,
-        ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
-        ActionColumnButtonWidget(
-          action: ShareAction(assets: assets, scope: scope),
-        ),
-        if (multiselect.hasRemote) ...[
-          ActionColumnButtonWidget(
-            action: ShareLinkAction(assets: assets, scope: scope),
-          ),
-        ],
-        ActionColumnButtonWidget(action: TimelineAction(action: actions.upload)),
+      actions: const [
+        ActionColumnButtonWidget(source: .timeline, action: ShareAction()),
+        ActionColumnButtonWidget(source: .timeline, action: ShareLinkAction()),
+        TimelineSheetActionWidget(action: AssetDebugAction()),
+        TimelineSheetActionWidget(action: FavoriteAction()),
+        TimelineSheetActionWidget(action: UnfavoriteAction()),
+        TimelineSheetActionWidget(action: ArchiveAction()),
+        TimelineSheetActionWidget(action: UnarchiveAction()),
+        TimelineSheetActionWidget(action: TrashAction()),
+        TimelineSheetActionWidget(action: DeletePermanentlyAction()),
+        TimelineSheetActionWidget(action: DeleteLocalAction()),
+        TimelineSheetActionWidget(action: CleanupLocalAction()),
+        TimelineSheetActionWidget(action: StackAction()),
+        TimelineSheetActionWidget(action: UnstackAction()),
+        TimelineSheetActionWidget(action: LockAction()),
+        TimelineSheetActionWidget(action: UnlockAction()),
+        TimelineSheetActionWidget(action: EditDateTimeAction()),
+        TimelineSheetActionWidget(action: EditLocationAction()),
+        TimelineSheetActionWidget(action: DownloadAction()),
+        TimelineSheetActionWidget(action: TagAction()),
+        TimelineSheetActionWidget(action: UploadAction(source: .timeline)),
       ],
       slivers: [
         const AddToAlbumHeader(),
