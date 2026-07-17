@@ -54,11 +54,11 @@ const methods = wrapper<Manifest>({
   },
 
   assetFileFilter: ({ data, config }) => {
-    const { pattern, matchType = 'contains', caseSensitive = false } = config;
+    const { pattern, matchType = 'contains', caseSensitive = false, usePath = false } = config;
 
     const { asset } = data;
 
-    const fileName = asset.originalFileName || '';
+    const fileName = usePath ? asset.originalPath : asset.originalFileName;
     const searchName = caseSensitive ? fileName : fileName.toLowerCase();
     const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
 
