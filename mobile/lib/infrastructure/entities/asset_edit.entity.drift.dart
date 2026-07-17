@@ -44,16 +44,7 @@ final class $$AssetEditEntityTableReferences
   static i5.$RemoteAssetEntityTable _assetIdTable(i0.GeneratedDatabase db) =>
       i6.ReadDatabaseContainer(db)
           .resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i6.ReadDatabaseContainer(db)
-                  .resultSet<i1.$AssetEditEntityTable>('asset_edit_entity')
-                  .assetId,
-              i6.ReadDatabaseContainer(
-                db,
-              ).resultSet<i5.$RemoteAssetEntityTable>('remote_asset_entity').id,
-            ),
-          );
+          .createAlias('asset_edit_entity__asset_id__remote_asset_entity__id');
 
   i5.$$RemoteAssetEntityTableProcessedTableManager get assetId {
     final $_column = $_itemColumn<String>('asset_id')!;
