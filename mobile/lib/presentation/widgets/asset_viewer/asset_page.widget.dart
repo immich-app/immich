@@ -403,8 +403,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   @override
   Widget build(BuildContext context) {
-    final (currentAsset, initialThumbnail) = ref.watch(
-      assetViewerProvider.select((s) => (s.currentAsset, s.initialThumbnail)),
+    final (currentAsset, thumbnailSize) = ref.watch(
+      assetViewerProvider.select((s) => (s.currentAsset, s.thumbnailSize)),
     );
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
@@ -461,7 +461,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                     isCurrent: isCurrent,
                     isPlayingMotionVideo: isPlayingMotionVideo,
                     localFilePath: viewIntentFilePath,
-                    remoteThumbnailSize: initialThumbnail?.tag == displayAsset.heroTag ? initialThumbnail!.size : null,
+                    remoteThumbnailSize: thumbnailSize,
                   ),
                 ),
                 if (showingOcr && displayAsset.width != null && displayAsset.height != null)

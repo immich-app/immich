@@ -10,7 +10,6 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail_tile.widget.dart';
-import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/fixed/row.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/header.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
@@ -213,7 +212,7 @@ class _AssetTileWidget extends ConsumerWidget {
     int assetIndex,
     BaseAsset asset,
     int? heroOffset,
-    Size? remoteSize,
+    Size remoteSize,
   ) async {
     final multiSelectState = ref.read(multiSelectProvider);
 
@@ -262,8 +261,7 @@ class _AssetTileWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final resolution = getThumbnailResolution(size, MediaQuery.devicePixelRatioOf(context));
-    final remoteSize = resolution == Size.zero ? null : resolution;
+    final remoteSize = size * MediaQuery.devicePixelRatioOf(context);
 
     final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
 

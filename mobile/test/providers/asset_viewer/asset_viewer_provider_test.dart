@@ -109,19 +109,19 @@ void main() {
       expect(container.read(assetViewerProvider).currentAsset, updatedTwo);
     });
 
-    test('keeps the tapped tile size scoped to its asset', () {
+    test('keeps the tapped tile size while swiping', () {
       final first = RemoteAssetFactory.create();
       final second = RemoteAssetFactory.create();
       final notifier = container.read(assetViewerProvider.notifier);
 
       notifier.setAsset(first, thumbnailSize: const Size.square(642));
-      expect(container.read(assetViewerProvider).initialThumbnail, (tag: first.heroTag, size: const Size.square(642)));
+      expect(container.read(assetViewerProvider).thumbnailSize, const Size.square(642));
 
       notifier.setAsset(second);
-      expect(container.read(assetViewerProvider).initialThumbnail?.tag, first.heroTag);
+      expect(container.read(assetViewerProvider).thumbnailSize, const Size.square(642));
 
       notifier.reset();
-      expect(container.read(assetViewerProvider).initialThumbnail, isNull);
+      expect(container.read(assetViewerProvider).thumbnailSize, isNull);
     });
   });
 }

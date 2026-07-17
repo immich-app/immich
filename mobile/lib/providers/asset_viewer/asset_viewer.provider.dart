@@ -13,7 +13,9 @@ class AssetViewerState {
   final bool isZoomed;
   final bool showingOcr;
   final BaseAsset? currentAsset;
-  final ({String tag, Size size})? initialThumbnail;
+
+  /// Physical thumbnail size retained while paging through the viewer.
+  final Size? thumbnailSize;
   final int stackIndex;
 
   const AssetViewerState({
@@ -23,7 +25,7 @@ class AssetViewerState {
     this.isZoomed = false,
     this.showingOcr = false,
     this.currentAsset,
-    this.initialThumbnail,
+    this.thumbnailSize,
     this.stackIndex = 0,
   });
 
@@ -34,7 +36,7 @@ class AssetViewerState {
     bool? isZoomed,
     bool? showingOcr,
     BaseAsset? currentAsset,
-    ({String tag, Size size})? initialThumbnail,
+    Size? thumbnailSize,
     int? stackIndex,
   }) {
     return AssetViewerState(
@@ -44,7 +46,7 @@ class AssetViewerState {
       isZoomed: isZoomed ?? this.isZoomed,
       showingOcr: showingOcr ?? this.showingOcr,
       currentAsset: currentAsset ?? this.currentAsset,
-      initialThumbnail: initialThumbnail ?? this.initialThumbnail,
+      thumbnailSize: thumbnailSize ?? this.thumbnailSize,
       stackIndex: stackIndex ?? this.stackIndex,
     );
   }
@@ -69,7 +71,7 @@ class AssetViewerState {
         other.isZoomed == isZoomed &&
         other.showingOcr == showingOcr &&
         other.currentAsset == currentAsset &&
-        other.initialThumbnail == initialThumbnail &&
+        other.thumbnailSize == thumbnailSize &&
         other.stackIndex == stackIndex;
   }
 
@@ -81,7 +83,7 @@ class AssetViewerState {
       isZoomed.hashCode ^
       showingOcr.hashCode ^
       currentAsset.hashCode ^
-      initialThumbnail.hashCode ^
+      thumbnailSize.hashCode ^
       stackIndex.hashCode;
 }
 
@@ -104,12 +106,7 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     if (asset == state.currentAsset) {
       return;
     }
-    state = state.copyWith(
-      currentAsset: asset,
-      initialThumbnail: thumbnailSize == null ? null : (tag: asset.heroTag, size: thumbnailSize),
-      stackIndex: 0,
-      showingOcr: false,
-    );
+    state = state.copyWith(currentAsset: asset, thumbnailSize: thumbnailSize, stackIndex: 0, showingOcr: false);
     _watchCurrentAsset(asset);
   }
 

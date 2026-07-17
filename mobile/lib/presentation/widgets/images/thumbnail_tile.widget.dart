@@ -27,6 +27,8 @@ class ThumbnailTile extends ConsumerStatefulWidget {
 
   final BaseAsset? asset;
   final Size size;
+
+  /// Physical size to decode for remote thumbnails.
   final Size? remoteSize;
   final BoxFit fit;
   final bool showStorageIndicator;

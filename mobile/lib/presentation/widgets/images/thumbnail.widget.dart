@@ -25,7 +25,9 @@ class Thumbnail extends StatefulWidget {
     required String remoteId,
     required String thumbhash,
     this.fit = BoxFit.cover,
-    Size size = Size.zero,
+
+    /// Physical size to decode, or null for the source size.
+    Size? size,
     super.key,
   }) : imageProvider = RemoteImageProvider.thumbnail(assetId: remoteId, thumbhash: thumbhash, size: size),
        thumbhashProvider = null;
@@ -33,9 +35,11 @@ class Thumbnail extends StatefulWidget {
   Thumbnail.fromAsset({
     required BaseAsset? asset,
     this.fit = BoxFit.cover,
+
+    /// Decode size for local thumbnails. This does not affect the widget size.
     Size size = kThumbnailResolution,
 
-    /// The physical decode size for remote thumbnails. This does not affect the widget size.
+    /// Physical size to decode for remote thumbnails.
     Size? remoteSize,
     super.key,
   }) : thumbhashProvider = switch (asset) {

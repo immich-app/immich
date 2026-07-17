@@ -47,7 +47,7 @@ void main() {
   }
 
   test('passes the requested decode size to the platform', () async {
-    final request = RemoteImageRequest(uri: 'https://example.test/thumbnail', size: const ui.Size(320, 180));
+    final request = RemoteImageRequest(uri: 'https://example.test/thumbnail', size: const ui.Size(319.1, 179.1));
 
     await request.load((_, {getTargetSize}) => throw UnimplementedError());
 
@@ -57,14 +57,23 @@ void main() {
     expect(args[4], 180);
   });
 
+  test('leaves requests without a size unbounded', () async {
+    final request = RemoteImageRequest(uri: 'https://example.test/thumbnail');
+
+    await request.load((_, {getTargetSize}) => throw UnimplementedError());
+
+    expect(args[3], isNull);
+    expect(args[4], isNull);
+  });
+
   test('leaves encoded animation requests unbounded', () async {
     final request = RemoteImageRequest(uri: 'https://example.test/animation', size: const ui.Size(320, 180));
 
     await request.loadCodec();
 
     expect(args[2], isTrue);
-    expect(args[3], 0);
-    expect(args[4], 0);
+    expect(args[3], isNull);
+    expect(args[4], isNull);
   });
 
   test('keeps portrait cover quality in a wide tile', () async {
@@ -96,5 +105,13 @@ void main() {
     final large = RemoteImageProvider(url: 'https://example.test/thumbnail', size: const ui.Size.square(320));
 
     expect(small, isNot(large));
+  });
+
+  test('shares the cache key when no decode size is set', () {
+    final first = RemoteImageProvider(url: 'https://example.test/thumbnail');
+    final second = RemoteImageProvider(url: 'https://example.test/thumbnail');
+
+    expect(first, second);
+    expect(first.hashCode, second.hashCode);
   });
 }

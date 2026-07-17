@@ -200,12 +200,7 @@ ImageProvider? getThumbnailImageProvider(
   final assetId = asset is RemoteAsset ? asset.id : (asset as LocalAsset).remoteId;
   final thumbhash = asset is RemoteAsset ? asset.thumbHash ?? "" : "";
   return assetId != null
-      ? RemoteImageProvider.thumbnail(
-          assetId: assetId,
-          thumbhash: thumbhash,
-          edited: edited,
-          size: remoteSize ?? Size.zero,
-        )
+      ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash, edited: edited, size: remoteSize)
       : null;
 }
 

@@ -35,7 +35,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     kCGImageSourceCreateThumbnailFromImageAlways: true
   ]
 
-  func requestImage(url: String, requestId: Int64, preferEncoded: Bool, width: Int64, height: Int64, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
+  func requestImage(url: String, requestId: Int64, preferEncoded: Bool, width: Int64?, height: Int64?, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
     var urlRequest = URLRequest(url: URL(string: url)!)
     urlRequest.cachePolicy = .returnCacheDataElseLoad
 
@@ -50,7 +50,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     task.resume()
   }
 
-  private static func handleCompletion(request: RemoteImageRequest, encoded: Bool, width: Int64, height: Int64, data: Data?, response: URLResponse?, error: Error?) {
+  private static func handleCompletion(request: RemoteImageRequest, encoded: Bool, width: Int64?, height: Int64?, data: Data?, response: URLResponse?, error: Error?) {
     if request.isCancelled {
       return request.completion(ImageProcessing.cancelledResult)
     }
@@ -94,7 +94,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       }
 
       var options = decodeOptions
-      if let maxPixelSize = targetMaxPixelSize(imageSource: imageSource, width: width, height: height) {
+      if let maxPixelSize = targetThumbnailRenderSize(imageSource: imageSource, width: width, height: height) {
         options[kCGImageSourceThumbnailMaxPixelSize] = maxPixelSize
       }
 
@@ -130,8 +130,11 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     }
   }
 
-  private static func targetMaxPixelSize(imageSource: CGImageSource, width: Int64, height: Int64) -> Int? {
-    guard width > 0,
+  /// Returns the longest rendered edge needed to cover the requested size.
+  private static func targetThumbnailRenderSize(imageSource: CGImageSource, width: Int64?, height: Int64?) -> Int? {
+    guard let width,
+          let height,
+          width > 0,
           height > 0,
           let properties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [CFString: Any],
           let pixelWidth = properties[kCGImagePropertyPixelWidth] as? NSNumber,
@@ -139,9 +142,17 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
       return nil
     }
 
-    let orientation = (properties[kCGImagePropertyOrientation] as? NSNumber)?.intValue ?? 1
-    let sourceWidth = (5...8).contains(orientation) ? pixelHeight.doubleValue : pixelWidth.doubleValue
-    let sourceHeight = (5...8).contains(orientation) ? pixelWidth.doubleValue : pixelHeight.doubleValue
+    let orientation = (properties[kCGImagePropertyOrientation] as? NSNumber)
+      .flatMap { CGImagePropertyOrientation(rawValue: $0.uint32Value) } ?? .up
+    let swapsDimensions: Bool
+    switch orientation {
+    case .leftMirrored, .right, .rightMirrored, .left:
+      swapsDimensions = true
+    default:
+      swapsDimensions = false
+    }
+    let sourceWidth = swapsDimensions ? pixelHeight.doubleValue : pixelWidth.doubleValue
+    let sourceHeight = swapsDimensions ? pixelWidth.doubleValue : pixelHeight.doubleValue
     let fillScale = max(Double(width) / sourceWidth, Double(height) / sourceHeight)
     let scale = min(1, fillScale)
     return scale < 1 ? Int(ceil(max(sourceWidth * scale, sourceHeight * scale))) : nil

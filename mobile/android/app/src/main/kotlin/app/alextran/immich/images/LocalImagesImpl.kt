@@ -33,6 +33,7 @@ data class Request(
   val callback: (Result<Map<String, Long>?>) -> Unit
 )
 
+/** Set [exactSize] to decode at the smallest size that covers [target] without upscaling. */
 @RequiresApi(Build.VERSION_CODES.Q)
 inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0), exactSize: Boolean = false): Bitmap {
   return ImageDecoder.decodeBitmap(this) { decoder, info, _ ->

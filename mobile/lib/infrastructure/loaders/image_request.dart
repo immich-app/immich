@@ -40,7 +40,7 @@ abstract class ImageRequest {
   Future<(ui.Codec, ui.ImageDescriptor)?> _codecFromEncodedPlatformImage(
     int address,
     int length, {
-    ui.Size size = ui.Size.zero,
+    ui.Size? size,
   }) async {
     final pointer = Pointer<Uint8>.fromAddress(address);
     if (_isCancelled) {
@@ -78,7 +78,7 @@ abstract class ImageRequest {
     return (codec, descriptor);
   }
 
-  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length, {ui.Size size = ui.Size.zero}) async {
+  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length, {ui.Size? size}) async {
     final result = await _codecFromEncodedPlatformImage(address, length, size: size);
     if (result == null) {
       return null;
@@ -102,8 +102,8 @@ abstract class ImageRequest {
     return frame;
   }
 
-  (int, int)? _targetSize(int width, int height, ui.Size size) {
-    if (size.width <= 0 || size.height <= 0) {
+  (int, int)? _targetSize(int width, int height, ui.Size? size) {
+    if (size == null || size.width <= 0 || size.height <= 0) {
       return null;
     }
 

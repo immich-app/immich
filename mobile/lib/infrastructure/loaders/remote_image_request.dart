@@ -2,9 +2,11 @@ part of 'image_request.dart';
 
 class RemoteImageRequest extends ImageRequest {
   final String uri;
-  final ui.Size size;
 
-  RemoteImageRequest({required this.uri, this.size = ui.Size.zero});
+  /// Physical size to decode, or null for the source size.
+  final ui.Size? size;
+
+  RemoteImageRequest({required this.uri, this.size});
 
   @override
   Future<ImageInfo?> load(ImageDecoderCallback decode, {double scale = 1.0}) async {
@@ -16,8 +18,8 @@ class RemoteImageRequest extends ImageRequest {
       uri,
       requestId: requestId,
       preferEncoded: false,
-      width: size.width.ceil(),
-      height: size.height.ceil(),
+      width: size?.width.ceil(),
+      height: size?.height.ceil(),
     );
     // Android falls back to encoded data if native decoding fails, so check for both shapes of the response.
     final frame = switch (info) {
@@ -35,7 +37,13 @@ class RemoteImageRequest extends ImageRequest {
       return null;
     }
 
-    final info = await remoteImageApi.requestImage(uri, requestId: requestId, preferEncoded: true, width: 0, height: 0);
+    final info = await remoteImageApi.requestImage(
+      uri,
+      requestId: requestId,
+      preferEncoded: true,
+      width: null,
+      height: null,
+    );
     if (info == null) {
       return null;
     }

@@ -64,6 +64,7 @@ class AssetViewer extends ConsumerStatefulWidget {
   @override
   ConsumerState createState() => _AssetViewerState();
 
+  /// Sets the asset and thumbnail size before opening the viewer.
   static void setAsset(WidgetRef ref, BaseAsset asset, {Size? thumbnailSize}) {
     ref.read(assetViewerProvider.notifier).reset();
 
@@ -72,10 +73,6 @@ class AssetViewer extends ConsumerStatefulWidget {
       ref.read(assetViewerProvider.notifier).setControls(false);
     }
 
-    _setAsset(ref, asset, thumbnailSize: thumbnailSize);
-  }
-
-  static void _setAsset(WidgetRef ref, BaseAsset asset, {Size? thumbnailSize}) {
     ref.read(assetViewerProvider.notifier).setAsset(asset, thumbnailSize: thumbnailSize);
   }
 }
@@ -162,7 +159,11 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _onAssetInit(Duration timeStamp) {
-    _preloader.preload(widget.initialIndex, context.sizeData);
+    _preloader.preload(
+      widget.initialIndex,
+      context.sizeData,
+      thumbnailSize: ref.read(assetViewerProvider).thumbnailSize,
+    );
     _handleCasting();
   }
 
@@ -174,8 +175,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
-    AssetViewer._setAsset(ref, asset);
-    _preloader.preload(index, context.sizeData);
+    ref.read(assetViewerProvider.notifier).setAsset(asset);
+    _preloader.preload(index, context.sizeData, thumbnailSize: ref.read(assetViewerProvider).thumbnailSize);
     _handleCasting();
     _stackChildrenKeepAlive?.close();
     _stackChildrenKeepAlive = ref.read(stackChildrenNotifier(asset).notifier).ref.keepAlive();

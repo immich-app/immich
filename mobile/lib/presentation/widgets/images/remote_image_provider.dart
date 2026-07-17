@@ -13,16 +13,14 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
     with CancellableImageProviderMixin<RemoteImageProvider> {
   final String url;
   final bool edited;
-  final Size size;
 
-  RemoteImageProvider({required this.url, this.edited = true, this.size = Size.zero});
+  /// Physical size to decode, or null for the source size.
+  final Size? size;
 
-  RemoteImageProvider.thumbnail({
-    required String assetId,
-    required String thumbhash,
-    this.edited = true,
-    this.size = Size.zero,
-  }) : url = getThumbnailUrlForRemoteId(assetId, thumbhash: thumbhash, edited: edited);
+  RemoteImageProvider({required this.url, this.edited = true, this.size});
+
+  RemoteImageProvider.thumbnail({required String assetId, required String thumbhash, this.edited = true, this.size})
+    : url = getThumbnailUrlForRemoteId(assetId, thumbhash: thumbhash, edited: edited);
 
   @override
   Future<RemoteImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -68,6 +66,8 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   final AssetType assetType;
   final bool isAnimated;
   final bool edited;
+
+  /// Physical size of the thumbnail shown before the preview.
   final Size? thumbnailSize;
 
   RemoteFullImageProvider({
@@ -91,11 +91,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
         stream: _animatedCodec(key, decode),
         scale: 1.0,
         initialImage: getInitialImage(
-          RemoteImageProvider.thumbnail(
-            assetId: key.assetId,
-            thumbhash: key.thumbhash,
-            size: key.thumbnailSize ?? Size.zero,
-          ),
+          RemoteImageProvider.thumbnail(assetId: key.assetId, thumbhash: key.thumbhash, size: key.thumbnailSize),
         ),
         informationCollector: () => <DiagnosticsNode>[
           DiagnosticsProperty<ImageProvider>('Image provider', this),
@@ -113,7 +109,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
           assetId: key.assetId,
           thumbhash: key.thumbhash,
           edited: key.edited,
-          size: key.thumbnailSize ?? Size.zero,
+          size: key.thumbnailSize,
         ),
       ),
       informationCollector: () => <DiagnosticsNode>[

@@ -60,12 +60,13 @@ class RemoteImageApi {
 
   final String pigeonVar_messageChannelSuffix;
 
+  /// Width and height are the physical decode size, or null for the source size.
   Future<Map<String, int>?> requestImage(
     String url, {
     required int requestId,
     required bool preferEncoded,
-    required int width,
-    required int height,
+    int? width,
+    int? height,
   }) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.RemoteImageApi.requestImage$pigeonVar_messageChannelSuffix';
