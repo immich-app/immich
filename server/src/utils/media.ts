@@ -600,7 +600,10 @@ export class VideoFrameExtractionConfig {
         gopSize: 1,
         bframes: 0,
       };
-      this.delegate = BaseConfig.create(overrideConfig, videoInterfaces, { strictGop: true, lowLatency: false }) as BaseConfig;
+      this.delegate = BaseConfig.create(overrideConfig, videoInterfaces, {
+        strictGop: true,
+        lowLatency: false,
+      }) as BaseConfig;
     }
   }
 
