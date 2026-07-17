@@ -26,6 +26,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
   FocusNode albumTitleTextFieldFocusNode = FocusNode();
   FocusNode albumDescriptionTextFieldFocusNode = FocusNode();
   bool isAlbumTitleTextFieldFocus = false;
+  bool isCreatingAlbum = false;
   Set<BaseAsset> selectedAssets = {};
 
   @override
@@ -167,7 +168,12 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
   }
 
   Future<void> createAlbum() async {
+    if (isCreatingAlbum) {
+      return;
+    }
+
     onBackgroundTapped();
+    setState(() => isCreatingAlbum = true);
 
     final title = _getEffectiveTitle().trim();
 
@@ -186,6 +192,10 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
     } catch (_) {
       if (context.mounted) {
         ImmichToast.show(context: context, toastType: ToastType.error, msg: 'errors.failed_to_create_album'.t());
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isCreatingAlbum = false);
       }
     }
   }
@@ -246,12 +256,12 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
         title: const Text('create_album').t(),
         actions: [
           TextButton(
-            onPressed: _canCreateAlbum ? createAlbum : null,
+            onPressed: _canCreateAlbum && !isCreatingAlbum ? createAlbum : null,
             child: Text(
               'create'.t(),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: _canCreateAlbum ? context.primaryColor : context.themeData.disabledColor,
+                color: _canCreateAlbum && !isCreatingAlbum ? context.primaryColor : context.themeData.disabledColor,
               ),
             ),
           ),
