@@ -58,6 +58,7 @@ abstract final class TestUtils {
       type: domain.AssetType.image,
       createdAt: DateTime(2024, 1, 1),
       updatedAt: DateTime(2024, 1, 1),
+      uploadedAt: DateTime(2024, 1, 1),
       durationMs: 0,
       isFavorite: false,
       width: width,

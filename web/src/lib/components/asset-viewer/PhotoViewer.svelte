@@ -6,10 +6,10 @@
   import Thumbhash from '$lib/components/Thumbhash.svelte';
   import OcrBoundingBox from '$lib/components/asset-viewer/OcrBoundingBox.svelte';
   import AssetViewerEvents from '$lib/components/AssetViewerEvents.svelte';
-  import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
+  import { assetViewerManager, type Faces } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
+  import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
-  import { boundingBoxesArray, type Faces } from '$lib/stores/people.store';
   import { SlideshowLook, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
   import { canCopyImageToClipboard, copyImageToClipboard } from '$lib/utils/asset-utils';
@@ -50,12 +50,13 @@
     untrack(() => {
       assetViewerManager.resetZoomState();
       visibleImageReady = false;
-      $boundingBoxesArray = [];
+      assetViewerManager.clearHighlightedFaces();
     });
   });
 
   onDestroy(() => {
-    $boundingBoxesArray = [];
+    assetViewerManager.clearHighlightedFaces();
+    assetViewerManager.hideHiddenPeople();
   });
 
   let containerWidth = $state(0);
@@ -74,15 +75,13 @@
     return scaleToFit(getNaturalSize(assetViewerManager.imgRef), { width: containerWidth, height: containerHeight });
   });
 
-  const highlightedBoxes = $derived(getBoundingBox($boundingBoxesArray, overlaySize));
+  const highlightedBoxes = $derived(getBoundingBox(assetViewerManager.highlightedFaces, overlaySize));
   const isHighlighting = $derived(highlightedBoxes.length > 0);
 
   let visibleBoxes = $state<BoundingBox[]>([]);
-  let visibleBoundingBoxes = $state<Faces[]>([]);
   $effect(() => {
     if (isHighlighting) {
       visibleBoxes = highlightedBoxes;
-      visibleBoundingBoxes = $boundingBoxesArray;
     }
   });
 
@@ -159,45 +158,45 @@
   const faceToNameMap = $derived.by(() => {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity
     const map = new Map<Faces, string>();
-    for (const person of asset.people ?? []) {
-      for (const face of person.faces ?? []) {
-        map.set(face, person.name);
+    for (const face of faceManager.data) {
+      if (!face.person) {
+        continue;
       }
+      if (face.person.isHidden && !assetViewerManager.isShowingHiddenPeople) {
+        continue;
+      }
+      map.set(face, face.person.name);
     }
     return map;
   });
 
   const faces = $derived(Array.from(faceToNameMap.keys()));
 
-  const handleImageMouseMove = (event: MouseEvent) => {
-    $boundingBoxesArray = [];
-    if (!assetViewerManager.imgRef || !element || assetViewerManager.isFaceEditMode || ocrManager.showOverlay) {
-      return;
+  const boundingBoxes = $derived.by(() => {
+    if (assetViewerManager.isFaceEditMode || ocrManager.showOverlay) {
+      return [];
     }
 
-    const natural = getNaturalSize(assetViewerManager.imgRef);
-    const scaled = scaleToFit(natural, container);
-    const { currentZoom, currentPositionX, currentPositionY } = assetViewerManager.zoomState;
+    const knownBoxes = getBoundingBox(faces, overlaySize);
+    const result = knownBoxes.map((box, index) => ({
+      ...box,
+      face: faces[index],
+      name: faceToNameMap.get(faces[index]),
+    }));
 
-    const contentOffsetX = (container.width - scaled.width) / 2;
-    const contentOffsetY = (container.height - scaled.height) / 2;
-
-    const containerRect = element.getBoundingClientRect();
-    const mouseX = (event.clientX - containerRect.left - contentOffsetX * currentZoom - currentPositionX) / currentZoom;
-    const mouseY = (event.clientY - containerRect.top - contentOffsetY * currentZoom - currentPositionY) / currentZoom;
-
-    const faceBoxes = getBoundingBox(faces, overlaySize);
-
-    for (const [index, box] of faceBoxes.entries()) {
-      if (mouseX >= box.left && mouseX <= box.left + box.width && mouseY >= box.top && mouseY <= box.top + box.height) {
-        $boundingBoxesArray.push(faces[index]);
-      }
+    if (assetViewerManager.highlightedFaces.length === 0) {
+      return result;
     }
-  };
 
-  const handleImageMouseLeave = () => {
-    $boundingBoxesArray = [];
-  };
+    const knownIds = new Set(faces.map((f) => f.id));
+    const unassignedFaces = assetViewerManager.highlightedFaces.filter((f) => !knownIds.has(f.id));
+    const unassignedBoxes = getBoundingBox(unassignedFaces, overlaySize);
+    for (let i = 0; i < unassignedBoxes.length; i++) {
+      result.push({ ...unassignedBoxes[i], face: unassignedFaces[i], name: undefined });
+    }
+
+    return result;
+  });
 </script>
 
 <AssetViewerEvents {onCopy} {onZoom} {onFaceEditModeChange} />
@@ -213,13 +212,11 @@
 
 <div
   bind:this={element}
-  class="relative h-full w-full select-none"
+  class="relative size-full select-none"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
   role="presentation"
   ondblclick={onZoom}
-  onmousemove={handleImageMouseMove}
-  onmouseleave={handleImageMouseLeave}
   use:zoomImageAction={{ zoomTarget: adaptiveImage }}
   {...useSwipe((event) => onSwipe?.(event))}
 >
@@ -242,15 +239,15 @@
   >
     {#snippet backdrop()}
       {#if blurredSlideshow}
-        <Thumbhash base64ThumbHash={asset.thumbhash!} class="absolute top-0 left-0 inset-s-0 h-dvh w-dvw" />
+        <Thumbhash base64ThumbHash={asset.thumbhash!} class="absolute inset-s-0 top-0 left-0 h-dvh w-dvw" />
       {/if}
     {/snippet}
     {#snippet overlays()}
       <div
-        class="absolute inset-0 pointer-events-none transition-opacity duration-150"
+        class="pointer-events-none absolute inset-0 transition-opacity duration-150"
         style:opacity={isHighlighting ? 1 : 0}
       >
-        <svg class="absolute inset-0 w-full h-full">
+        <svg class="absolute inset-0 size-full">
           <defs>
             <mask id="face-dim-mask">
               <rect width="100%" height="100%" fill="white" />
@@ -261,22 +258,27 @@
           </defs>
           <rect width="100%" height="100%" fill="rgba(0,0,0,0.4)" mask="url(#face-dim-mask)" />
         </svg>
-        {#each visibleBoxes as boundingbox, index (boundingbox.id)}
-          <div
-            class="absolute border-solid border-white border-3 rounded-lg"
-            style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
-          ></div>
-          {#if faceToNameMap.get(visibleBoundingBoxes[index])}
+      </div>
+      {#each boundingBoxes as boundingbox (boundingbox.id)}
+        {@const isActive = assetViewerManager.highlightedFaces.some((f) => f.id === boundingbox.id)}
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
+        <div
+          class="pointer-events-auto absolute rounded-lg {isActive && 'border-3 border-solid border-white'}"
+          style="top: {boundingbox.top}px; left: {boundingbox.left}px; height: {boundingbox.height}px; width: {boundingbox.width}px;"
+          onpointerenter={() => assetViewerManager.setHighlightedFaces([boundingbox.face])}
+          onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
+        >
+          {#if isActive && boundingbox.name}
             <div
-              class="absolute bg-white/90 text-black px-2 py-1 rounded text-sm font-medium whitespace-nowrap pointer-events-none shadow-lg"
-              style="top: {boundingbox.top + boundingbox.height + 4}px; left: {boundingbox.left +
-                boundingbox.width}px; transform: translateX(-100%);"
+              aria-hidden="true"
+              class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"
+              style="top: {boundingbox.height + 4}px; right: 0;"
             >
-              {faceToNameMap.get(visibleBoundingBoxes[index])}
+              {boundingbox.name}
             </div>
           {/if}
-        {/each}
-      </div>
+        </div>
+      {/each}
 
       {#each ocrBoxes as ocrBox (ocrBox.id)}
         <OcrBoundingBox {ocrBox} />

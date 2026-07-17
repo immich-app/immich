@@ -40,7 +40,9 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
     }
 
     for (final item in uploadingItems) {
-      if (_taskSlotAssignments.containsKey(item.taskId)) continue;
+      if (_taskSlotAssignments.containsKey(item.taskId)) {
+        continue;
+      }
 
       for (int i = 0; i < _maxSlots; i++) {
         if (slots[i] == null) {

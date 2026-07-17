@@ -41,7 +41,9 @@ class DownloadInfo {
 
   @override
   bool operator ==(covariant DownloadInfo other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.fileName == fileName && other.progress == progress && other.status == status;
   }
@@ -71,7 +73,9 @@ class DownloadState {
 
   @override
   bool operator ==(covariant DownloadState other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     final mapEquals = const DeepCollectionEquality().equals;
 
     return other.downloadStatus == downloadStatus &&

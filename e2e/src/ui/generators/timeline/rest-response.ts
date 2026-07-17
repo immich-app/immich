@@ -28,6 +28,7 @@ export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetRe
     ownerId: [],
     ratio: [],
     thumbhash: [],
+    createdAt: [],
     fileCreatedAt: [],
     localOffsetHours: [],
     isFavorite: [],
@@ -54,8 +55,8 @@ export function toColumnarFormat(assets: MockTimelineAsset[]): TimeBucketAssetRe
     result.duration.push(asset.duration);
     result.projectionType.push(asset.projectionType);
     result.livePhotoVideoId.push(asset.livePhotoVideoId);
-    result.city.push(asset.city);
-    result.country.push(asset.country);
+    result.city?.push(asset.city);
+    result.country?.push(asset.country);
     result.visibility.push(asset.visibility);
   }
 
@@ -338,7 +339,6 @@ export function toAssetResponseDto(asset: MockTimelineAsset, owner?: UserRespons
     livePhotoVideoId: asset.livePhotoVideoId,
     tags: [],
     people: [],
-    unassignedFaces: [],
     stack: asset.stack,
     isOffline: false,
     hasMetadata: true,

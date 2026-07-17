@@ -27,7 +27,9 @@ class ThumbHashProvider extends CancellableImageProvider<ThumbHashProvider>
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     if (other is ThumbHashProvider) {
       return thumbHash == other.thumbHash;
     }

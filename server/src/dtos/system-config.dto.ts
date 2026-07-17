@@ -1,3 +1,4 @@
+import { validateCronExpression } from 'cron';
 import { createZodDto } from 'nestjs-zod';
 import { SystemConfig } from 'src/config';
 import {
@@ -7,10 +8,10 @@ import {
   OcrConfigSchema,
 } from 'src/dtos/model-config.dto';
 import {
-  AudioCodec,
   AudioCodecSchema,
   ColorspaceSchema,
   CQModeSchema,
+  HlsVideoResolutionSchema,
   ImageFormatSchema,
   LogLevelSchema,
   OAuthTokenEndpointAuthMethodSchema,
@@ -20,7 +21,6 @@ import {
   VideoCodecSchema,
   VideoContainerSchema,
 } from 'src/enum';
-import { isValidTime } from 'src/validation';
 import z from 'zod';
 
 /** Coerces 'true'/'false' strings to boolean, but also allows booleans. */
@@ -44,16 +44,54 @@ const JobSettingsSchema = z
 
 const cronExpressionSchema = z
   .string()
-  .regex(/(((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7}/, 'Invalid cron expression')
+  .superRefine((value, ctx) => {
+    const validated = validateCronExpression(value);
+    if (!validated.valid) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `Invalid cron expression. ${validated.error?.message ?? ''}`,
+        input: value,
+      });
+    }
+  })
   .describe('Cron expression');
 
 const DatabaseBackupSchema = z
   .object({
     enabled: configBool.describe('Enabled'),
     cronExpression: cronExpressionSchema,
-    keepLastAmount: z.number().min(1).describe('Keep last amount'),
+    keepLastAmount: z.int().min(1).describe('Keep last amount'),
   })
   .meta({ id: 'DatabaseBackupConfig' });
+
+const SystemConfigIntegrityJobSchema = z
+  .object({
+    enabled: z.boolean().describe('Enabled'),
+    cronExpression: cronExpressionSchema.describe('Cron expression for when the integrity check should run'),
+  })
+  .describe('Integrity job config')
+  .meta({ id: 'SystemConfigIntegrityJob' });
+
+const SystemConfigIntegrityChecksumJobSchema = SystemConfigIntegrityJobSchema.extend({
+  timeLimit: z.int().nonnegative().describe('How long the integrity checksum job may run for'),
+  percentageLimit: z
+    .float32()
+    .nonnegative()
+    .max(1)
+    .describe('Percentage limit of the integrity checksum job')
+    .meta({ format: 'double' }),
+})
+  .describe('Integrity checksum job config')
+  .meta({ id: 'SystemConfigIntegrityChecksumJob' });
+
+const SystemConfigIntegrityChecksSchema = z
+  .object({
+    missingFiles: SystemConfigIntegrityJobSchema,
+    untrackedFiles: SystemConfigIntegrityJobSchema,
+    checksumFiles: SystemConfigIntegrityChecksumJobSchema,
+  })
+  .describe('Integrity checks config')
+  .meta({ id: 'SystemConfigIntegrityChecks' });
 
 const SystemConfigBackupsSchema = z.object({ database: DatabaseBackupSchema }).meta({ id: 'SystemConfigBackupsDto' });
 
@@ -65,10 +103,7 @@ const SystemConfigFFmpegSchema = z
     targetVideoCodec: VideoCodecSchema,
     acceptedVideoCodecs: z.array(VideoCodecSchema).describe('Accepted video codecs'),
     targetAudioCodec: AudioCodecSchema,
-    acceptedAudioCodecs: z
-      .array(AudioCodecSchema)
-      .transform((value): AudioCodec[] => value.map((v) => (v === AudioCodec.Libopus ? AudioCodec.Opus : v)))
-      .describe('Accepted audio codecs'),
+    acceptedAudioCodecs: z.array(AudioCodecSchema).describe('Accepted audio codecs'),
     acceptedContainers: z.array(VideoContainerSchema).describe('Accepted containers'),
     targetResolution: z.string().describe('Target resolution'),
     maxBitrate: z.string().describe('Max bitrate'),
@@ -83,6 +118,13 @@ const SystemConfigFFmpegSchema = z
     accel: TranscodeHardwareAccelerationSchema,
     accelDecode: configBool.describe('Accelerated decode'),
     tonemap: ToneMappingSchema,
+    realtime: z
+      .object({
+        enabled: configBool.describe('Enable real-time HLS transcoding (alpha)'),
+        videoCodecs: z.array(VideoCodecSchema).describe('Video codecs to use for real-time HLS transcoding'),
+        resolutions: z.array(HlsVideoResolutionSchema).describe('Resolutions to use for real-time HLS transcoding'),
+      })
+      .meta({ id: 'SystemConfigFFmpegRealtimeDto' }),
   })
   .meta({ id: 'SystemConfigFFmpegDto' });
 
@@ -102,6 +144,7 @@ const SystemConfigJobSchema = z
     ocr: JobSettingsSchema,
     workflow: JobSettingsSchema,
     editor: JobSettingsSchema,
+    integrityCheck: JobSettingsSchema,
   })
   .meta({ id: 'SystemConfigJobDto' });
 
@@ -130,8 +173,8 @@ const SystemConfigLoggingSchema = z
 const MachineLearningAvailabilityChecksSchema = z
   .object({
     enabled: configBool.describe('Enabled'),
-    timeout: z.number(),
-    interval: z.number(),
+    timeout: z.int(),
+    interval: z.int(),
   })
   .meta({ id: 'MachineLearningAvailabilityChecksDto' });
 
@@ -155,13 +198,25 @@ const SystemConfigMapSchema = z
   })
   .meta({ id: 'SystemConfigMapDto' });
 
+export enum ReleaseChannel {
+  Stable = 'stable',
+  ReleaseCandidate = 'releaseCandidate',
+}
+
+const ReleaseChannelSchema = z.enum(ReleaseChannel).describe('Release channel').meta({ id: 'ReleaseChannel' });
+
 const SystemConfigNewVersionCheckSchema = z
-  .object({ enabled: configBool.describe('Enabled') })
+  .object({ enabled: configBool.describe('Enabled'), channel: ReleaseChannelSchema })
   .meta({ id: 'SystemConfigNewVersionCheckDto' });
 
 const SystemConfigNightlyTasksSchema = z
   .object({
-    startTime: isValidTime.describe('Start time'),
+    startTime: z.iso
+      .time({
+        precision: -1,
+        error: (iss) => `Invalid input: expected string in HH:MM format, received ${typeof iss.input}`,
+      })
+      .describe('Start time (HH:MM)'),
     databaseCleanup: configBool.describe('Database cleanup'),
     missingThumbnails: configBool.describe('Missing thumbnails'),
     clusterNewFaces: configBool.describe('Cluster new faces'),
@@ -180,7 +235,7 @@ const SystemConfigOAuthSchema = z
     tokenEndpointAuthMethod: OAuthTokenEndpointAuthMethodSchema,
     timeout: z.int().min(1).describe('Timeout'),
     allowInsecureRequests: configBool.describe('Allow insecure requests'),
-    defaultStorageQuota: z.number().min(0).nullable().describe('Default storage quota'),
+    defaultStorageQuota: z.int().min(0).nullable().describe('Default storage quota'),
     enabled: configBool.describe('Enabled'),
     issuerUrl: z
       .string()
@@ -254,7 +309,7 @@ const SystemConfigSmtpTransportSchema = z
   .object({
     ignoreCert: configBool.describe('Whether to ignore SSL certificate errors'),
     host: z.string().describe('SMTP server hostname'),
-    port: z.number().min(0).max(65_535).describe('SMTP server port'),
+    port: z.int().min(0).max(65_535).describe('SMTP server port'),
     secure: configBool.describe('Whether to use secure connection (TLS/SSL)'),
     username: z.string().describe('SMTP username'),
     password: z.string().describe('SMTP password'),
@@ -374,6 +429,7 @@ export const SystemConfigSchema = z
     templates: SystemConfigTemplatesSchema,
     server: SystemConfigServerSchema,
     user: SystemConfigUserSchema,
+    integrityChecks: SystemConfigIntegrityChecksSchema,
   })
   .describe('System configuration')
   .meta({ id: 'SystemConfigDto' });

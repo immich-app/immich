@@ -57,9 +57,9 @@
 <OnEvents {onBackupDeleteStatus} />
 
 <Card class="dark:bg-dark-900">
-  <CardBody class="pt-3 pb-4 px-6">
-    <Stack gap={3} class="grow min-w-0">
-      <div class="flex justify-between items-center gap-3">
+  <CardBody class="px-6 pt-3 pb-4">
+    <Stack gap={3} class="min-w-0 grow">
+      <div class="flex items-center justify-between gap-3">
         <HStack gap={2} class="min-w-0">
           {#if status === BackupFileStatus.OK}
             <Icon icon={mdiCheckCircle} size="18" class="text-success" />
@@ -76,7 +76,7 @@
           {/if}
           {#if relativeTime}
             <div class="flex items-center gap-2">
-              <div class="w-1 h-1 bg-light-500"></div>
+              <div class="size-1 bg-light-500"></div>
               <Text size="tiny" color="muted">{relativeTime}</Text>
             </div>
           {/if}
@@ -97,7 +97,7 @@
 
       <HStack>
         <Icon icon={mdiDatabaseRefreshOutline} size="16" color="gray" />
-        <Text size="small" class="break-all font-mono">{filename}</Text>
+        <Text size="small" class="font-mono break-all">{filename}</Text>
       </HStack>
 
       {#if status === BackupFileStatus.UnknownVersion}

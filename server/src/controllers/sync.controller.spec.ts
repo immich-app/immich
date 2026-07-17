@@ -35,7 +35,11 @@ describe(SyncController.name, () => {
         .post('/sync/stream')
         .send({ types: ['invalid'] });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest([expect.stringContaining('[types.0] Invalid option: expected one of')]));
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['types', 0], message: expect.stringContaining('Invalid option: expected one of') },
+        ]),
+      );
       expect(ctx.authenticate).toHaveBeenCalled();
     });
   });
@@ -57,7 +61,9 @@ describe(SyncController.name, () => {
       const acks = Array.from({ length: 1001 }, (_, i) => `ack-${i}`);
       const { status, body } = await request(ctx.getHttpServer()).post('/sync/ack').send({ acks });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[acks] Too big: expected array to have <=1000 items']));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['acks'], message: 'Too big: expected array to have <=1000 items' }]),
+      );
       expect(ctx.authenticate).toHaveBeenCalled();
     });
   });
@@ -73,7 +79,11 @@ describe(SyncController.name, () => {
         .delete('/sync/ack')
         .send({ types: ['invalid'] });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest([expect.stringContaining('[types.0] Invalid option: expected one of')]));
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['types', 0], message: expect.stringContaining('Invalid option: expected one of') },
+        ]),
+      );
       expect(ctx.authenticate).toHaveBeenCalled();
     });
   });

@@ -16,7 +16,7 @@
 {#if downloadManager.isDownloading}
   <div
     transition:fly={{ x: -100, duration: 350 }}
-    class="fixed bottom-10 start-2 max-h-67.5 w-79 z-60 rounded-2xl border dark:border-white/10 p-4 shadow-lg bg-subtle"
+    class="fixed inset-s-2 bottom-10 z-60 max-h-67.5 w-79 rounded-2xl border bg-subtle p-4 shadow-lg dark:border-white/10"
   >
     <Heading size="tiny">{$t('downloading')}</Heading>
     <div class="my-2 mb-2 flex max-h-50 flex-col overflow-y-auto text-sm">
@@ -34,14 +34,14 @@
               <div class="h-2.5 w-full rounded-full bg-neutral-200 dark:bg-neutral-600">
                 <div class="h-2.5 rounded-full bg-primary" style={`width: ${download.percentage}%`}></div>
               </div>
-              <p class="min-w-16 whitespace-nowrap text-right">
+              <p class="min-w-16 text-right whitespace-nowrap">
                 <span class="text-primary">
                   {(download.percentage / 100).toLocaleString($locale, { style: 'percent' })}
                 </span>
               </p>
             </div>
           </div>
-          <div class="absolute end-4">
+          <div class="absolute inset-e-4">
             <IconButton
               color="secondary"
               variant="outline"

@@ -185,7 +185,7 @@ where
 group by
   "album_asset"."albumId"
 
--- AlbumRepository.getOwned
+-- AlbumRepository.getAll
 select
   "album".*,
   (
@@ -242,172 +242,55 @@ from
   "album"
   inner join "album_user" on "album_user"."albumId" = "album"."id"
   and "album_user"."userId" = $2
-  and "album_user"."role" = 'owner'
 where
   "album"."deletedAt" is null
-order by
-  "album"."createdAt" desc
-
--- AlbumRepository.getShared
-select
-  "album".*,
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "album_user"."role",
-          (
-            select
-              to_json(obj)
-            from
-              (
-                select
-                  "id",
-                  "name",
-                  "email",
-                  "avatarColor",
-                  "profileImagePath",
-                  "profileChangedAt"
-                from
-                  (
-                    select
-                      1
-                  ) as "dummy"
-              ) as obj
-          ) as "user"
-        from
-          "album_user"
-          inner join "user" on "user"."id" = "album_user"."userId"
-        where
-          "album_user"."albumId" = "album"."id"
-        order by
-          "album_user"."role",
-          "album_user"."userId" = $1 desc,
-          "user"."name" asc
-      ) as agg
-  ) as "albumUsers",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "shared_link".*
-        from
-          "shared_link"
-        where
-          "shared_link"."albumId" = "album"."id"
-      ) as agg
-  ) as "sharedLinks"
-from
-  "album"
-  inner join (
-    select
-      "album_user"."albumId" as "id"
-    from
-      "album_user"
-    where
-      "album_user"."userId" = $2
-      and "album_user"."albumId" in (
-        select
-          "album_user"."albumId"
-        from
-          "album_user"
-        where
-          "album_user"."role" != 'owner'
-      )
-    union
-    select
-      "shared_link"."albumId" as "id"
-    from
-      "shared_link"
-    where
-      "shared_link"."userId" = $3
-      and "shared_link"."albumId" is not null
-  ) as "matching" on "matching"."id" = "album"."id"
-  inner join "album_user" on "album_user"."albumId" = "album"."id"
   and "album_user"."role" = 'owner'
-where
-  "album"."deletedAt" is null
-order by
-  "album"."createdAt" desc
-
--- AlbumRepository.getNotShared
-select
-  "album".*,
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "shared_link".*
-        from
-          "shared_link"
-        where
-          "shared_link"."albumId" = "album"."id"
-      ) as agg
-  ) as "sharedLinks",
-  (
-    select
-      coalesce(json_agg(agg), '[]')
-    from
-      (
-        select
-          "album_user"."role",
-          (
-            select
-              to_json(obj)
-            from
-              (
-                select
-                  "id",
-                  "name",
-                  "email",
-                  "avatarColor",
-                  "profileImagePath",
-                  "profileChangedAt"
-                from
-                  (
-                    select
-                      1
-                  ) as "dummy"
-              ) as obj
-          ) as "user"
-        from
-          "album_user"
-          inner join "user" on "user"."id" = "album_user"."userId"
-        where
-          "album_user"."albumId" = "album"."id"
-        order by
-          "album_user"."role",
-          "album_user"."userId" = $1 desc,
-          "user"."name" asc
-      ) as agg
-  ) as "albumUsers"
-from
-  "album"
-  inner join "album_user" on "album_user"."albumId" = "album"."id"
-  and "album_user"."userId" = $2
-  and "album_user"."role" = 'owner'
-where
-  "album"."deletedAt" is null
-  and not exists (
-    select
-    from
-      "album_user" as "au"
-    where
-      "au"."albumId" = "album"."id"
-      and "au"."role" != 'owner'
+  and (
+    exists (
+      select
+      from
+        "album_user" as "au"
+      where
+        "au"."albumId" = "album"."id"
+        and "au"."role" != 'owner'
+    )
+    or exists (
+      select
+      from
+        "shared_link"
+      where
+        "shared_link"."albumId" = "album"."id"
+    )
   )
-  and not exists (
-    select
-    from
-      "shared_link"
-    where
-      "shared_link"."albumId" = "album"."id"
+order by
+  "album"."createdAt" desc
+
+-- AlbumRepository.getAllIds
+select
+  "album"."id"
+from
+  "album"
+  inner join "album_user" on "album_user"."albumId" = "album"."id"
+  and "album_user"."userId" = $1
+where
+  "album"."deletedAt" is null
+  and "album_user"."role" = 'owner'
+  and (
+    exists (
+      select
+      from
+        "album_user" as "au"
+      where
+        "au"."albumId" = "album"."id"
+        and "au"."role" != 'owner'
+    )
+    or exists (
+      select
+      from
+        "shared_link"
+      where
+        "shared_link"."albumId" = "album"."id"
+    )
   )
 order by
   "album"."createdAt" desc

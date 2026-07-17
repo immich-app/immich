@@ -16,7 +16,7 @@
   let { color, disabled = false, onClick = () => {}, children }: Props = $props();
 
   const styles = tv({
-    base: 'flex h-full w-full flex-col place-content-center place-items-center gap-2 px-8 py-2 text-xs text-gray-600 transition-colors dark:text-gray-200 ',
+    base: 'flex size-full flex-col place-content-center place-items-center gap-2 px-8 py-2 text-xs text-gray-600 transition-colors dark:text-gray-200',
     variants: {
       color: {
         'light-gray': 'bg-gray-300/80 dark:bg-gray-700',

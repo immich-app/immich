@@ -100,13 +100,13 @@
 </script>
 
 <button
-  class="min-h-20 p-2 py-3 hover:bg-immich-primary/10 dark:hover:bg-immich-dark-primary/10 border-b border-gray-200 dark:border-immich-dark-gray w-full"
+  class="min-h-20 w-full border-b border-gray-200 p-2 py-3 hover:bg-immich-primary/10 dark:border-immich-dark-gray dark:hover:bg-immich-dark-primary/10"
   type="button"
   onclick={() => onclick(notification)}
   title={notification.createdAt}
 >
   <div class="grid grid-cols-[56px_1fr_32px] items-center gap-2">
-    <div class="flex place-items-center place-content-center">
+    <div class="flex place-content-center place-items-center">
       <IconButton
         icon={getIconType(notification.type)}
         color={getAlertColor(notification.level)}
@@ -118,7 +118,7 @@
     </div>
 
     <Stack class="text-left" gap={1}>
-      <Text size="tiny" class="text-black dark:text-white text-base" fontWeight="semi-bold">{notification.title}</Text>
+      <Text size="tiny" class="text-base text-black dark:text-white" fontWeight="semi-bold">{notification.title}</Text>
       {#if notification.description}
         <Text class="overflow-hidden text-gray-600 dark:text-gray-300">{notification.description}</Text>
       {/if}
@@ -127,7 +127,7 @@
     </Stack>
 
     {#if !notification.readAt}
-      <div class="w-2 h-2 rounded-full bg-primary text-right justify-self-center"></div>
+      <div class="size-2 justify-self-center rounded-full bg-primary text-right"></div>
     {/if}
   </div>
 </button>

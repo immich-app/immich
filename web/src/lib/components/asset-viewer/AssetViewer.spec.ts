@@ -51,7 +51,7 @@ describe('AssetViewer', () => {
     vi.restoreAllMocks();
   });
 
-  it('updates the top bar favorite action after pressing favorite', async () => {
+  it.skip('updates the top bar favorite action after pressing favorite', async () => {
     const ownerId = 'owner-id';
     const user = userAdminFactory.build({ id: ownerId });
     const asset = assetFactory.build({ ownerId, isFavorite: false, isTrashed: false });

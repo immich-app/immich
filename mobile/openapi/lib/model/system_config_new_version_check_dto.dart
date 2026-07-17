@@ -13,26 +13,32 @@ part of openapi.api;
 class SystemConfigNewVersionCheckDto {
   /// Returns a new [SystemConfigNewVersionCheckDto] instance.
   SystemConfigNewVersionCheckDto({
+    required this.channel,
     required this.enabled,
   });
+
+  ReleaseChannel channel;
 
   /// Enabled
   bool enabled;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigNewVersionCheckDto &&
+    other.channel == channel &&
     other.enabled == enabled;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (channel.hashCode) +
     (enabled.hashCode);
 
   @override
-  String toString() => 'SystemConfigNewVersionCheckDto[enabled=$enabled]';
+  String toString() => 'SystemConfigNewVersionCheckDto[channel=$channel, enabled=$enabled]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+      json[r'channel'] = this.channel;
       json[r'enabled'] = this.enabled;
     return json;
   }
@@ -46,6 +52,7 @@ class SystemConfigNewVersionCheckDto {
       final json = value.cast<String, dynamic>();
 
       return SystemConfigNewVersionCheckDto(
+        channel: ReleaseChannel.fromJson(json[r'channel'])!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
       );
     }
@@ -94,6 +101,7 @@ class SystemConfigNewVersionCheckDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'channel',
     'enabled',
   };
 }

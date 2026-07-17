@@ -94,8 +94,12 @@ class SnapScrollPhysics extends ScrollPhysics {
   bool get allowUserScrolling => false;
 
   static double target(ScrollMetrics position, double velocity, double snapOffset) {
-    if (velocity > _minFlingVelocity) return snapOffset;
-    if (velocity < -_minFlingVelocity) return position.pixels < snapOffset ? 0.0 : snapOffset;
+    if (velocity > _minFlingVelocity) {
+      return snapOffset;
+    }
+    if (velocity < -_minFlingVelocity) {
+      return position.pixels < snapOffset ? 0.0 : snapOffset;
+    }
     return position.pixels < minSnapDistance ? 0.0 : snapOffset;
   }
 }

@@ -136,7 +136,9 @@ class QuickDatePicker extends HookWidget {
             menuStyle: MenuStyle(maximumSize: WidgetStateProperty.all(Size(size.width, size.height * 0.5))),
             dropdownMenuEntries: _recentYears.map((e) => DropdownMenuEntry(value: e, label: e.toString())).toList(),
             onSelected: (year) {
-              if (year == null) return;
+              if (year == null) {
+                return;
+              }
               onSelect(YearFilter(year));
             },
           ),
@@ -179,7 +181,9 @@ class QuickDatePicker extends HookWidget {
         child: SingleChildScrollView(
           child: RadioGroup(
             onChanged: (value) {
-              if (value == null) return;
+              if (value == null) {
+                return;
+              }
               final _ = switch (value) {
                 _QuickPickerType.custom => onRequestPicker(),
                 _QuickPickerType.last1Month => onSelect(RecentMonthRangeFilter(1)),

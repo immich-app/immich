@@ -4,7 +4,7 @@ import 'local_asset.entity.dart';
 import 'local_album.entity.dart';
 import 'local_album_asset.entity.dart';
 
-mergedAsset: 
+mergedAsset:
 SELECT
 	rae.id as remote_id,
 	(SELECT lae.id FROM local_asset_entity lae WHERE lae.checksum = rae.checksum LIMIT 1) as local_id,
@@ -27,7 +27,8 @@ SELECT
 	NULL as longitude,
 	NULL as adjustmentTime,
 	rae.is_edited,
-	0 as playback_style
+	0 as playback_style,
+	rae.uploaded_at
 FROM
 	remote_asset_entity rae
 LEFT JOIN
@@ -65,7 +66,8 @@ SELECT
 	lae.longitude,
 	lae.adjustment_time,
 	0 as is_edited,
-	lae.playback_style
+	lae.playback_style,
+	NULL as uploaded_at
 FROM
 	local_asset_entity lae
 WHERE NOT EXISTS (

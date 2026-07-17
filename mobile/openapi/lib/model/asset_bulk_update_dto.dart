@@ -13,17 +13,17 @@ part of openapi.api;
 class AssetBulkUpdateDto {
   /// Returns a new [AssetBulkUpdateDto] instance.
   AssetBulkUpdateDto({
-    this.dateTimeOriginal,
-    this.dateTimeRelative,
-    this.description,
-    this.duplicateId,
+    this.dateTimeOriginal = const Optional.absent(),
+    this.dateTimeRelative = const Optional.absent(),
+    this.description = const Optional.absent(),
+    this.duplicateId = const Optional.absent(),
     this.ids = const [],
-    this.isFavorite,
-    this.latitude,
-    this.longitude,
-    this.rating,
-    this.timeZone,
-    this.visibility,
+    this.isFavorite = const Optional.absent(),
+    this.latitude = const Optional.absent(),
+    this.longitude = const Optional.absent(),
+    this.rating = const Optional.absent(),
+    this.timeZone = const Optional.absent(),
+    this.visibility = const Optional.absent(),
   });
 
   /// Original date and time
@@ -33,16 +33,19 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? dateTimeOriginal;
+  Optional<String?> dateTimeOriginal;
 
-  /// Relative time offset in seconds
+  /// Relative time offset in minutes
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
   /// does not include a default value (using the "default:" property), however, the generated
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? dateTimeRelative;
+  Optional<int?> dateTimeRelative;
 
   /// Asset description
   ///
@@ -51,10 +54,10 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? description;
+  Optional<String?> description;
 
   /// Duplicate ID
-  String? duplicateId;
+  Optional<String?> duplicateId;
 
   /// Asset IDs to update
   List<String> ids;
@@ -66,7 +69,7 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isFavorite;
+  Optional<bool?> isFavorite;
 
   /// Latitude coordinate
   ///
@@ -78,7 +81,7 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? latitude;
+  Optional<num?> latitude;
 
   /// Longitude coordinate
   ///
@@ -90,13 +93,13 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  num? longitude;
+  Optional<num?> longitude;
 
-  /// Rating in range [1-5], or null for unrated
+  /// Rating in range [1-5] (starred), -1 (rejected), or null (unrated)
   ///
   /// Minimum value: -1
   /// Maximum value: 5
-  int? rating;
+  Optional<int?> rating;
 
   /// Time zone (IANA timezone)
   ///
@@ -105,7 +108,7 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? timeZone;
+  Optional<String?> timeZone;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -113,7 +116,7 @@ class AssetBulkUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  AssetVisibility? visibility;
+  Optional<AssetVisibility?> visibility;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetBulkUpdateDto &&
@@ -149,56 +152,46 @@ class AssetBulkUpdateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.dateTimeOriginal != null) {
-      json[r'dateTimeOriginal'] = this.dateTimeOriginal;
-    } else {
-    //  json[r'dateTimeOriginal'] = null;
+    if (this.dateTimeOriginal.isPresent) {
+      final value = this.dateTimeOriginal.value;
+      json[r'dateTimeOriginal'] = value;
     }
-    if (this.dateTimeRelative != null) {
-      json[r'dateTimeRelative'] = this.dateTimeRelative;
-    } else {
-    //  json[r'dateTimeRelative'] = null;
+    if (this.dateTimeRelative.isPresent) {
+      final value = this.dateTimeRelative.value;
+      json[r'dateTimeRelative'] = value;
     }
-    if (this.description != null) {
-      json[r'description'] = this.description;
-    } else {
-    //  json[r'description'] = null;
+    if (this.description.isPresent) {
+      final value = this.description.value;
+      json[r'description'] = value;
     }
-    if (this.duplicateId != null) {
-      json[r'duplicateId'] = this.duplicateId;
-    } else {
-    //  json[r'duplicateId'] = null;
+    if (this.duplicateId.isPresent) {
+      final value = this.duplicateId.value;
+      json[r'duplicateId'] = value;
     }
       json[r'ids'] = this.ids;
-    if (this.isFavorite != null) {
-      json[r'isFavorite'] = this.isFavorite;
-    } else {
-    //  json[r'isFavorite'] = null;
+    if (this.isFavorite.isPresent) {
+      final value = this.isFavorite.value;
+      json[r'isFavorite'] = value;
     }
-    if (this.latitude != null) {
-      json[r'latitude'] = this.latitude;
-    } else {
-    //  json[r'latitude'] = null;
+    if (this.latitude.isPresent) {
+      final value = this.latitude.value;
+      json[r'latitude'] = value;
     }
-    if (this.longitude != null) {
-      json[r'longitude'] = this.longitude;
-    } else {
-    //  json[r'longitude'] = null;
+    if (this.longitude.isPresent) {
+      final value = this.longitude.value;
+      json[r'longitude'] = value;
     }
-    if (this.rating != null) {
-      json[r'rating'] = this.rating;
-    } else {
-    //  json[r'rating'] = null;
+    if (this.rating.isPresent) {
+      final value = this.rating.value;
+      json[r'rating'] = value;
     }
-    if (this.timeZone != null) {
-      json[r'timeZone'] = this.timeZone;
-    } else {
-    //  json[r'timeZone'] = null;
+    if (this.timeZone.isPresent) {
+      final value = this.timeZone.value;
+      json[r'timeZone'] = value;
     }
-    if (this.visibility != null) {
-      json[r'visibility'] = this.visibility;
-    } else {
-    //  json[r'visibility'] = null;
+    if (this.visibility.isPresent) {
+      final value = this.visibility.value;
+      json[r'visibility'] = value;
     }
     return json;
   }
@@ -212,19 +205,19 @@ class AssetBulkUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return AssetBulkUpdateDto(
-        dateTimeOriginal: mapValueOfType<String>(json, r'dateTimeOriginal'),
-        dateTimeRelative: num.parse('${json[r'dateTimeRelative']}'),
-        description: mapValueOfType<String>(json, r'description'),
-        duplicateId: mapValueOfType<String>(json, r'duplicateId'),
+        dateTimeOriginal: json.containsKey(r'dateTimeOriginal') ? Optional.present(mapValueOfType<String>(json, r'dateTimeOriginal')) : const Optional.absent(),
+        dateTimeRelative: json.containsKey(r'dateTimeRelative') ? Optional.present(json[r'dateTimeRelative'] == null ? null : int.parse('${json[r'dateTimeRelative']}')) : const Optional.absent(),
+        description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
+        duplicateId: json.containsKey(r'duplicateId') ? Optional.present(mapValueOfType<String>(json, r'duplicateId')) : const Optional.absent(),
         ids: json[r'ids'] is Iterable
             ? (json[r'ids'] as Iterable).cast<String>().toList(growable: false)
             : const [],
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        latitude: num.parse('${json[r'latitude']}'),
-        longitude: num.parse('${json[r'longitude']}'),
-        rating: mapValueOfType<int>(json, r'rating'),
-        timeZone: mapValueOfType<String>(json, r'timeZone'),
-        visibility: AssetVisibility.fromJson(json[r'visibility']),
+        isFavorite: json.containsKey(r'isFavorite') ? Optional.present(mapValueOfType<bool>(json, r'isFavorite')) : const Optional.absent(),
+        latitude: json.containsKey(r'latitude') ? Optional.present(json[r'latitude'] == null ? null : num.parse('${json[r'latitude']}')) : const Optional.absent(),
+        longitude: json.containsKey(r'longitude') ? Optional.present(json[r'longitude'] == null ? null : num.parse('${json[r'longitude']}')) : const Optional.absent(),
+        rating: json.containsKey(r'rating') ? Optional.present(json[r'rating'] == null ? null : int.parse('${json[r'rating']}')) : const Optional.absent(),
+        timeZone: json.containsKey(r'timeZone') ? Optional.present(mapValueOfType<String>(json, r'timeZone')) : const Optional.absent(),
+        visibility: json.containsKey(r'visibility') ? Optional.present(AssetVisibility.fromJson(json[r'visibility'])) : const Optional.absent(),
       );
     }
     return null;

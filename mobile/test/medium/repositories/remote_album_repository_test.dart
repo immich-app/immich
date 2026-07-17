@@ -17,6 +17,121 @@ void main() {
     await ctx.dispose();
   });
 
+  group('addAssets', () {
+    test('sets the first added asset as thumbnail when the album has no thumbnail', () async {
+      final user = await ctx.newUser();
+      final album = await ctx.newRemoteAlbum(ownerId: user.id);
+      final asset = await ctx.newRemoteAsset(ownerId: user.id);
+
+      await sut.addAssets(album.id, [asset.id]);
+
+      final updated = await sut.get(album.id);
+      expect(updated?.thumbnailAssetId, asset.id);
+      expect(updated?.assetCount, 1);
+    });
+
+    test('preserves an existing thumbnail when adding assets', () async {
+      final user = await ctx.newUser();
+      final thumbnail = await ctx.newRemoteAsset(ownerId: user.id);
+      final album = await ctx.newRemoteAlbum(ownerId: user.id, thumbnailAssetId: thumbnail.id);
+      final asset = await ctx.newRemoteAsset(ownerId: user.id);
+
+      await sut.addAssets(album.id, [asset.id]);
+
+      final updated = await sut.get(album.id);
+      expect(updated?.thumbnailAssetId, thumbnail.id);
+      expect(updated?.assetCount, 1);
+    });
+  });
+
+  group('getAll', () {
+    test('returns album when all of its assets are trashed', () async {
+      final user = await ctx.newUser();
+      final album = await ctx.newRemoteAlbum(ownerId: user.id);
+      final asset1 = await ctx.newRemoteAsset(ownerId: user.id, deletedAt: DateTime(2025, 1, 1));
+      final asset2 = await ctx.newRemoteAsset(ownerId: user.id, deletedAt: DateTime(2025, 1, 1));
+      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: asset1.id);
+      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: asset2.id);
+
+      final albums = await sut.getAll();
+
+      expect(albums, hasLength(1));
+      expect(albums.first.id, album.id);
+      expect(albums.first.assetCount, 0);
+    });
+
+    test('excludes trashed assets from assetCount', () async {
+      final user = await ctx.newUser();
+      final album = await ctx.newRemoteAlbum(ownerId: user.id);
+      final active1 = await ctx.newRemoteAsset(ownerId: user.id);
+      final active2 = await ctx.newRemoteAsset(ownerId: user.id);
+      final trashed = await ctx.newRemoteAsset(ownerId: user.id, deletedAt: DateTime(2025, 1, 1));
+      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: active1.id);
+      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: active2.id);
+      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: trashed.id);
+
+      final albums = await sut.getAll();
+
+      expect(albums, hasLength(1));
+      expect(albums.first.assetCount, 2);
+    });
+
+    test('returns album without assets', () async {
+      final user = await ctx.newUser();
+      final album = await ctx.newRemoteAlbum(ownerId: user.id);
+
+      final albums = await sut.getAll();
+
+      expect(albums, hasLength(1));
+      expect(albums.first.id, album.id);
+      expect(albums.first.assetCount, 0);
+    });
+  });
+
+  group('get', () {
+    test('returns the album when all of its assets are trashed', () async {
+      final user = await ctx.newUser();
+      final album = await ctx.newRemoteAlbum(ownerId: user.id);
+      final asset = await ctx.newRemoteAsset(ownerId: user.id, deletedAt: DateTime(2025, 1, 1));
+      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: asset.id);
+
+      final result = await sut.get(album.id);
+
+      expect(result, isNotNull);
+      expect(result?.id, album.id);
+      expect(result?.assetCount, 0);
+    });
+  });
+
+  group('getAlbumsContainingAsset', () {
+    test('excludes trashed assets from assetCount', () async {
+      final user = await ctx.newUser();
+      final album = await ctx.newRemoteAlbum(ownerId: user.id);
+      final asset = await ctx.newRemoteAsset(ownerId: user.id);
+      final trashed = await ctx.newRemoteAsset(ownerId: user.id, deletedAt: DateTime(2025, 1, 1));
+      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: asset.id);
+      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: trashed.id);
+
+      final albums = await sut.getAlbumsContainingAsset(asset.id);
+
+      expect(albums, hasLength(1));
+      expect(albums.first.id, album.id);
+      expect(albums.first.assetCount, 1);
+    });
+
+    test('returns albums for a trashed asset', () async {
+      final user = await ctx.newUser();
+      final album = await ctx.newRemoteAlbum(ownerId: user.id);
+      final trashed = await ctx.newRemoteAsset(ownerId: user.id, deletedAt: DateTime(2025, 1, 1));
+      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: trashed.id);
+
+      final albums = await sut.getAlbumsContainingAsset(trashed.id);
+
+      expect(albums, hasLength(1));
+      expect(albums.first.assetCount, 0);
+    });
+  });
+
   group('getSortedAlbumIds', () {
     late String userId;
 
@@ -33,7 +148,7 @@ void main() {
     test('returns single album when only one album exists', () async {
       final album = await ctx.newRemoteAlbum(ownerId: userId);
       final asset = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 1));
-      await ctx.insertRemoteAlbumAsset(albumId: album.id, assetId: asset.id);
+      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: asset.id);
 
       final result = await sut.getSortedAlbumIds([album.id], aggregation: AssetDateAggregation.start);
       expect(result, [album.id]);
@@ -44,22 +159,22 @@ void main() {
       final album1 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset1 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 10));
       final asset2 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 20));
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset2.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset2.id);
 
       // Album 2: Assets from Jan 5 to Jan 15 (start: Jan 5)
       final album2 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset3 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 5));
       final asset4 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 15));
-      await ctx.insertRemoteAlbumAsset(albumId: album2.id, assetId: asset3.id);
-      await ctx.insertRemoteAlbumAsset(albumId: album2.id, assetId: asset4.id);
+      await ctx.newRemoteAlbumAsset(albumId: album2.id, assetId: asset3.id);
+      await ctx.newRemoteAlbumAsset(albumId: album2.id, assetId: asset4.id);
 
       // Album 3: Assets from Jan 25 to Jan 30 (start: Jan 25)
       final album3 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset5 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 25));
       final asset6 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 30));
-      await ctx.insertRemoteAlbumAsset(albumId: album3.id, assetId: asset5.id);
-      await ctx.insertRemoteAlbumAsset(albumId: album3.id, assetId: asset6.id);
+      await ctx.newRemoteAlbumAsset(albumId: album3.id, assetId: asset5.id);
+      await ctx.newRemoteAlbumAsset(albumId: album3.id, assetId: asset6.id);
 
       final result = await sut.getSortedAlbumIds([
         album1.id,
@@ -76,22 +191,22 @@ void main() {
       final album1 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset1 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 10));
       final asset2 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 20));
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset2.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset2.id);
 
       // Album 2: Assets from Jan 5 to Jan 15 (end: Jan 15)
       final album2 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset3 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 5));
       final asset4 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 15));
-      await ctx.insertRemoteAlbumAsset(albumId: album2.id, assetId: asset3.id);
-      await ctx.insertRemoteAlbumAsset(albumId: album2.id, assetId: asset4.id);
+      await ctx.newRemoteAlbumAsset(albumId: album2.id, assetId: asset3.id);
+      await ctx.newRemoteAlbumAsset(albumId: album2.id, assetId: asset4.id);
 
       // Album 3: Assets from Jan 25 to Jan 30 (end: Jan 30)
       final album3 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset5 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 25));
       final asset6 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 30));
-      await ctx.insertRemoteAlbumAsset(albumId: album3.id, assetId: asset5.id);
-      await ctx.insertRemoteAlbumAsset(albumId: album3.id, assetId: asset6.id);
+      await ctx.newRemoteAlbumAsset(albumId: album3.id, assetId: asset5.id);
+      await ctx.newRemoteAlbumAsset(albumId: album3.id, assetId: asset6.id);
 
       final result = await sut.getSortedAlbumIds([
         album1.id,
@@ -106,11 +221,11 @@ void main() {
     test('handles albums with single asset', () async {
       final album1 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset1 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 15));
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
 
       final album2 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset2 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 10));
-      await ctx.insertRemoteAlbumAsset(albumId: album2.id, assetId: asset2.id);
+      await ctx.newRemoteAlbumAsset(albumId: album2.id, assetId: asset2.id);
 
       final result = await sut.getSortedAlbumIds([album1.id, album2.id], aggregation: AssetDateAggregation.start);
 
@@ -121,15 +236,15 @@ void main() {
       // Create 3 albums
       final album1 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset1 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 10));
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
 
       final album2 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset2 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 5));
-      await ctx.insertRemoteAlbumAsset(albumId: album2.id, assetId: asset2.id);
+      await ctx.newRemoteAlbumAsset(albumId: album2.id, assetId: asset2.id);
 
       final album3 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset3 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 15));
-      await ctx.insertRemoteAlbumAsset(albumId: album3.id, assetId: asset3.id);
+      await ctx.newRemoteAlbumAsset(albumId: album3.id, assetId: asset3.id);
 
       // Only request album1 and album3
       final result = await sut.getSortedAlbumIds([album1.id, album3.id], aggregation: AssetDateAggregation.start);
@@ -143,11 +258,11 @@ void main() {
 
       final album1 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset1 = await ctx.newRemoteAsset(ownerId: userId, createdAt: sameDate);
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
 
       final album2 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset2 = await ctx.newRemoteAsset(ownerId: userId, createdAt: sameDate);
-      await ctx.insertRemoteAlbumAsset(albumId: album2.id, assetId: asset2.id);
+      await ctx.newRemoteAlbumAsset(albumId: album2.id, assetId: asset2.id);
 
       final result = await sut.getSortedAlbumIds([album1.id, album2.id], aggregation: AssetDateAggregation.start);
 
@@ -159,15 +274,15 @@ void main() {
     test('handles albums across different years', () async {
       final album1 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset1 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2023, 12, 25));
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
 
       final album2 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset2 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 5));
-      await ctx.insertRemoteAlbumAsset(albumId: album2.id, assetId: asset2.id);
+      await ctx.newRemoteAlbumAsset(albumId: album2.id, assetId: asset2.id);
 
       final album3 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset3 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2025, 1, 1));
-      await ctx.insertRemoteAlbumAsset(albumId: album3.id, assetId: asset3.id);
+      await ctx.newRemoteAlbumAsset(albumId: album3.id, assetId: asset3.id);
 
       final result = await sut.getSortedAlbumIds([
         album1.id,
@@ -186,15 +301,15 @@ void main() {
       final asset3 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 15));
       final asset4 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 20));
       final asset5 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 25));
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset2.id);
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset3.id);
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset4.id);
-      await ctx.insertRemoteAlbumAsset(albumId: album1.id, assetId: asset5.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset1.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset2.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset3.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset4.id);
+      await ctx.newRemoteAlbumAsset(albumId: album1.id, assetId: asset5.id);
 
       final album2 = await ctx.newRemoteAlbum(ownerId: userId);
       final asset6 = await ctx.newRemoteAsset(ownerId: userId, createdAt: DateTime(2024, 1, 1));
-      await ctx.insertRemoteAlbumAsset(albumId: album2.id, assetId: asset6.id);
+      await ctx.newRemoteAlbumAsset(albumId: album2.id, assetId: asset6.id);
 
       final resultStart = await sut.getSortedAlbumIds([album1.id, album2.id], aggregation: AssetDateAggregation.start);
 

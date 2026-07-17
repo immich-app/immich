@@ -52,6 +52,7 @@ class JobName {
   static const librarySyncFilesQueueAll = JobName._(r'LibrarySyncFilesQueueAll');
   static const librarySyncFiles = JobName._(r'LibrarySyncFiles');
   static const libraryScanQueueAll = JobName._(r'LibraryScanQueueAll');
+  static const hlsSessionCleanup = JobName._(r'HlsSessionCleanup');
   static const memoryCleanup = JobName._(r'MemoryCleanup');
   static const memoryGenerate = JobName._(r'MemoryGenerate');
   static const notificationsCleanup = JobName._(r'NotificationsCleanup');
@@ -77,7 +78,17 @@ class JobName {
   static const versionCheck = JobName._(r'VersionCheck');
   static const ocrQueueAll = JobName._(r'OcrQueueAll');
   static const ocr = JobName._(r'Ocr');
-  static const workflowRun = JobName._(r'WorkflowRun');
+  static const workflowAssetTrigger = JobName._(r'WorkflowAssetTrigger');
+  static const integrityUntrackedFilesQueueAll = JobName._(r'IntegrityUntrackedFilesQueueAll');
+  static const integrityUntrackedFiles = JobName._(r'IntegrityUntrackedFiles');
+  static const integrityUntrackedRefresh = JobName._(r'IntegrityUntrackedRefresh');
+  static const integrityMissingFilesQueueAll = JobName._(r'IntegrityMissingFilesQueueAll');
+  static const integrityMissingFiles = JobName._(r'IntegrityMissingFiles');
+  static const integrityMissingFilesRefresh = JobName._(r'IntegrityMissingFilesRefresh');
+  static const integrityChecksumFiles = JobName._(r'IntegrityChecksumFiles');
+  static const integrityChecksumFilesRefresh = JobName._(r'IntegrityChecksumFilesRefresh');
+  static const integrityDeleteReportType = JobName._(r'IntegrityDeleteReportType');
+  static const integrityDeleteReports = JobName._(r'IntegrityDeleteReports');
 
   /// List of all possible values in this [enum][JobName].
   static const values = <JobName>[
@@ -110,6 +121,7 @@ class JobName {
     librarySyncFilesQueueAll,
     librarySyncFiles,
     libraryScanQueueAll,
+    hlsSessionCleanup,
     memoryCleanup,
     memoryGenerate,
     notificationsCleanup,
@@ -135,7 +147,17 @@ class JobName {
     versionCheck,
     ocrQueueAll,
     ocr,
-    workflowRun,
+    workflowAssetTrigger,
+    integrityUntrackedFilesQueueAll,
+    integrityUntrackedFiles,
+    integrityUntrackedRefresh,
+    integrityMissingFilesQueueAll,
+    integrityMissingFiles,
+    integrityMissingFilesRefresh,
+    integrityChecksumFiles,
+    integrityChecksumFilesRefresh,
+    integrityDeleteReportType,
+    integrityDeleteReports,
   ];
 
   static JobName? fromJson(dynamic value) => JobNameTypeTransformer().decode(value);
@@ -203,6 +225,7 @@ class JobNameTypeTransformer {
         case r'LibrarySyncFilesQueueAll': return JobName.librarySyncFilesQueueAll;
         case r'LibrarySyncFiles': return JobName.librarySyncFiles;
         case r'LibraryScanQueueAll': return JobName.libraryScanQueueAll;
+        case r'HlsSessionCleanup': return JobName.hlsSessionCleanup;
         case r'MemoryCleanup': return JobName.memoryCleanup;
         case r'MemoryGenerate': return JobName.memoryGenerate;
         case r'NotificationsCleanup': return JobName.notificationsCleanup;
@@ -228,7 +251,17 @@ class JobNameTypeTransformer {
         case r'VersionCheck': return JobName.versionCheck;
         case r'OcrQueueAll': return JobName.ocrQueueAll;
         case r'Ocr': return JobName.ocr;
-        case r'WorkflowRun': return JobName.workflowRun;
+        case r'WorkflowAssetTrigger': return JobName.workflowAssetTrigger;
+        case r'IntegrityUntrackedFilesQueueAll': return JobName.integrityUntrackedFilesQueueAll;
+        case r'IntegrityUntrackedFiles': return JobName.integrityUntrackedFiles;
+        case r'IntegrityUntrackedRefresh': return JobName.integrityUntrackedRefresh;
+        case r'IntegrityMissingFilesQueueAll': return JobName.integrityMissingFilesQueueAll;
+        case r'IntegrityMissingFiles': return JobName.integrityMissingFiles;
+        case r'IntegrityMissingFilesRefresh': return JobName.integrityMissingFilesRefresh;
+        case r'IntegrityChecksumFiles': return JobName.integrityChecksumFiles;
+        case r'IntegrityChecksumFilesRefresh': return JobName.integrityChecksumFilesRefresh;
+        case r'IntegrityDeleteReportType': return JobName.integrityDeleteReportType;
+        case r'IntegrityDeleteReports': return JobName.integrityDeleteReports;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

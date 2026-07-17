@@ -2,8 +2,16 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/models/user_metadata.model.dart';
 import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/mapper.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_metadata.repository.dart';
+
+class UserRepository {
+  final Drift _db;
+  const UserRepository(this._db);
+
+  Stream<Iterable<User>> getAll() => _db.select(_db.userEntity).map(mapToUser).watch();
+}
 
 class DriftAuthUserRepository extends DriftDatabaseRepository {
   final Drift _db;
@@ -12,7 +20,9 @@ class DriftAuthUserRepository extends DriftDatabaseRepository {
   Future<UserDto?> get(String id) async {
     final user = await _db.managers.authUserEntity.filter((user) => user.id.equals(id)).getSingleOrNull();
 
-    if (user == null) return null;
+    if (user == null) {
+      return null;
+    }
 
     final query = _db.userMetadataEntity.select()..where((e) => e.userId.equals(id));
     final metadata = await query.map((row) => row.toDto()).get();

@@ -50,6 +50,8 @@ Some basic examples:
 - `**/Raw/**` will exclude all files in any directory named `Raw`
 - `**/*.{tif,jpg}` will exclude all files with the extension `.tif` or `.jpg`
 
+Note that `*` is a wildcard matching zero or more characters (i.e., withinin a filename or single directory name). `**` matches zero or more subdirectories, recursively. It also includes any/all files within a subdirectory, i.e., when used at the end of a pattern. For example, `**/exclude_me/**` will exclude all files in any directory named `exclude_me`, as well as all files in any subdirectories of `exclude_me`, recursively.
+
 Special characters such as @ should be escaped, for instance:
 
 - `**/\@eaDir/**` will exclude all files in any directory named `@eaDir`

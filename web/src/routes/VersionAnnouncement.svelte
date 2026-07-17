@@ -2,8 +2,8 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import VersionAnnouncementModal from '$lib/modals/VersionAnnouncementModal.svelte';
-  import type { ReleaseEvent } from '$lib/types';
-  import { getReleaseType, semverToName } from '$lib/utils';
+  import { semverToName } from '$lib/utils';
+  import { ReleaseType, type ReleaseEventV1 } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
 
   let modal = $state<{
@@ -11,16 +11,20 @@
     close: () => Promise<void>;
   }>();
 
-  const onReleaseEvent = async (release: ReleaseEvent) => {
+  const onReleaseEvent = async (release: ReleaseEventV1) => {
     if (!release.isAvailable || !authManager.user.isAdmin) {
       return;
     }
 
     const releaseVersion = semverToName(release.releaseVersion);
     const serverVersion = semverToName(release.serverVersion);
-    const type = getReleaseType(release.serverVersion, release.releaseVersion);
 
-    if (type === 'none' || type === 'patch' || localStorage.getItem('appVersion') === releaseVersion) {
+    if (
+      !release.type ||
+      release.type === ReleaseType.Patch ||
+      release.type === ReleaseType.Prepatch ||
+      localStorage.getItem('appVersion') === releaseVersion
+    ) {
       return;
     }
 

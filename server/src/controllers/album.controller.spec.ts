@@ -25,15 +25,19 @@ describe(AlbumController.name, () => {
     });
 
     it('should reject an invalid shared param', async () => {
-      const { status, body } = await request(ctx.getHttpServer()).get('/albums?shared=invalid');
+      const { status, body } = await request(ctx.getHttpServer()).get('/albums?isShared=invalid');
       expect(status).toEqual(400);
-      expect(body).toEqual(factory.responses.badRequest(['[shared] Invalid option: expected one of "true"|"false"']));
+      expect(body).toEqual(
+        factory.responses.validationError([
+          { path: ['isShared'], message: 'Invalid option: expected one of "true"|"false"' },
+        ]),
+      );
     });
 
     it('should reject an invalid assetId param', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get('/albums?assetId=invalid');
       expect(status).toEqual(400);
-      expect(body).toEqual(factory.responses.badRequest(['[assetId] Invalid UUID']));
+      expect(body).toEqual(factory.responses.validationError([{ path: ['assetId'], message: 'Invalid UUID' }]));
     });
   });
 

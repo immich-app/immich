@@ -120,7 +120,7 @@ describe('/users', () => {
         .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
 
       expect(status).toBe(400);
-      expect(body).toMatchObject(errorDto.badRequest('Email already in use by another account'));
+      expect(body).toMatchObject(errorDto.badRequest('Email is not available'));
     });
 
     it('should update my email', async () => {
@@ -179,7 +179,9 @@ describe('/users', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(['[download.archiveSize] Invalid input: expected int, received number']),
+        errorDto.validationError([
+          { path: ['download', 'archiveSize'], message: 'Invalid input: expected int, received number' },
+        ]),
       );
     });
 
@@ -207,7 +209,9 @@ describe('/users', () => {
 
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(['[download.includeEmbeddedVideos] Invalid input: expected boolean, received number']),
+        errorDto.validationError([
+          { path: ['download', 'includeEmbeddedVideos'], message: 'Invalid input: expected boolean, received number' },
+        ]),
       );
     });
 
@@ -225,6 +229,21 @@ describe('/users', () => {
 
       const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
       expect(after).toMatchObject({ download: { includeEmbeddedVideos: true } });
+    });
+
+    it('should update minimum face count to display people', async () => {
+      const before = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
+      expect(before).toMatchObject({ people: { minimumFaces: 3 } });
+
+      const { status, body } = await request(app)
+        .put('/users/me/preferences')
+        .send({ people: { minimumFaces: 2 } })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ people: { minimumFaces: 2 } });
+
+      const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
+      expect(after).toMatchObject({ people: { minimumFaces: 2 } });
     });
   });
 

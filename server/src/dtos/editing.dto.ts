@@ -21,10 +21,10 @@ const MirrorAxisSchema = z.enum(['horizontal', 'vertical']).describe('Axis to mi
 
 const CropParametersSchema = z
   .object({
-    x: z.number().min(0).describe('Top-Left X coordinate of crop'),
-    y: z.number().min(0).describe('Top-Left Y coordinate of crop'),
-    width: z.number().min(1).describe('Width of the crop'),
-    height: z.number().min(1).describe('Height of the crop'),
+    x: z.int().min(0).describe('Top-Left X coordinate of crop'),
+    y: z.int().min(0).describe('Top-Left Y coordinate of crop'),
+    width: z.int().min(1).describe('Width of the crop'),
+    height: z.int().min(1).describe('Height of the crop'),
   })
   .meta({ id: 'CropParameters' });
 

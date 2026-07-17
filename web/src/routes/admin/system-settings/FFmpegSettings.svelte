@@ -12,6 +12,7 @@
   import {
     AudioCodec,
     CQMode,
+    HlsVideoResolution,
     ToneMapping,
     TranscodeHWAccel,
     TranscodePolicy,
@@ -88,6 +89,7 @@
               desc={$t('admin.transcoding_accepted_video_codecs_description')}
               bind:value={configToEdit.ffmpeg.acceptedVideoCodecs}
               name="videoCodecs"
+              lockedOptions={[configToEdit.ffmpeg.targetVideoCodec]}
               options={[
                 { value: VideoCodec.H264, text: 'H.264' },
                 { value: VideoCodec.Hevc, text: 'HEVC' },
@@ -106,6 +108,7 @@
               desc={$t('admin.transcoding_accepted_audio_codecs_description')}
               bind:value={configToEdit.ffmpeg.acceptedAudioCodecs}
               name="audioCodecs"
+              lockedOptions={[configToEdit.ffmpeg.targetAudioCodec]}
               options={[
                 { value: AudioCodec.Aac, text: 'AAC' },
                 { value: AudioCodec.Mp3, text: 'MP3' },
@@ -385,6 +388,58 @@
               bind:value={configToEdit.ffmpeg.gopSize}
               isEdited={configToEdit.ffmpeg.gopSize !== config.ffmpeg.gopSize}
               {disabled}
+            />
+          </div>
+        </SettingAccordion>
+
+        <SettingAccordion
+          key="realtime-transcoding"
+          title={$t('admin.transcoding_realtime')}
+          subtitle={$t('admin.transcoding_realtime_description')}
+        >
+          <div class="ms-4 mt-4 flex flex-col gap-4">
+            <SettingSwitch
+              title={$t('admin.transcoding_realtime_enabled')}
+              subtitle={$t('admin.transcoding_realtime_enabled_description')}
+              bind:checked={configToEdit.ffmpeg.realtime.enabled}
+              isEdited={configToEdit.ffmpeg.realtime.enabled !== config.ffmpeg.realtime.enabled}
+              {disabled}
+            />
+
+            <SettingCheckboxes
+              label={$t('admin.transcoding_realtime_video_codecs')}
+              desc={$t('admin.transcoding_realtime_video_codecs_description')}
+              disabled={disabled || !configToEdit.ffmpeg.realtime.enabled}
+              bind:value={configToEdit.ffmpeg.realtime.videoCodecs}
+              name="realtimeVideoCodecs"
+              options={[
+                { value: VideoCodec.H264, text: 'H.264' },
+                { value: VideoCodec.Hevc, text: 'HEVC' },
+                { value: VideoCodec.Av1, text: 'AV1' },
+              ]}
+              isEdited={!isEqual(
+                sortBy(configToEdit.ffmpeg.realtime.videoCodecs),
+                sortBy(config.ffmpeg.realtime.videoCodecs),
+              )}
+            />
+
+            <SettingCheckboxes
+              label={$t('admin.transcoding_realtime_resolutions')}
+              desc={$t('admin.transcoding_realtime_resolutions_description')}
+              disabled={disabled || !configToEdit.ffmpeg.realtime.enabled}
+              bind:value={configToEdit.ffmpeg.realtime.resolutions}
+              name="realtimeResolutions"
+              options={[
+                { value: HlsVideoResolution.$480, text: '480p' },
+                { value: HlsVideoResolution.$720, text: '720p' },
+                { value: HlsVideoResolution.$1080, text: '1080p' },
+                { value: HlsVideoResolution.$1440, text: '1440p' },
+                { value: HlsVideoResolution.$2160, text: '2160p' },
+              ]}
+              isEdited={!isEqual(
+                sortBy(configToEdit.ffmpeg.realtime.resolutions),
+                sortBy(config.ffmpeg.realtime.resolutions),
+              )}
             />
           </div>
         </SettingAccordion>

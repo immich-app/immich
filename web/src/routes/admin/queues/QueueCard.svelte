@@ -2,13 +2,12 @@
   import { cleanClass } from '$lib';
   import QueueCardBadge from './QueueCardBadge.svelte';
   import QueueCardButton from './QueueCardButton.svelte';
-  import Badge from '$lib/elements/Badge.svelte';
   import { Route } from '$lib/route';
   import { asQueueItem } from '$lib/services/queue.service';
   import { locale } from '$lib/stores/preferences.store';
   import { transformToTitleCase } from '$lib/utils';
   import { QueueCommand, type QueueCommandDto, type QueueResponseDto } from '@immich/sdk';
-  import { Icon, IconButton, Link } from '@immich/ui';
+  import { Badge, Icon, IconButton, Link } from '@immich/ui';
   import {
     mdiAlertCircle,
     mdiAllInclusive,
@@ -44,7 +43,7 @@
   const commonClasses = 'flex place-items-center justify-between w-full py-2 sm:py-4 pe-4 ps-6';
 </script>
 
-<div class="flex flex-col overflow-hidden rounded-2xl bg-gray-100 dark:bg-immich-dark-gray sm:flex-row sm:rounded-9">
+<div class="sm:rounded-9 flex flex-col overflow-hidden rounded-2xl bg-gray-100 sm:flex-row dark:bg-immich-dark-gray">
   <div class="flex w-full flex-col">
     {#if queue.isPaused}
       <QueueCardBadge color="warning">{$t('paused')}</QueueCardBadge>
@@ -67,34 +66,23 @@
         />
         <div class="flex gap-2">
           {#if statistics.failed > 0}
-            <Badge>
-              <div class="flex flex-row gap-1">
-                <span class="text-sm">
-                  {$t('admin.jobs_failed', { values: { jobCount: statistics.failed.toLocaleString($locale) } })}
-                </span>
-                <IconButton
-                  color="primary"
-                  icon={mdiClose}
-                  aria-label={$t('clear_message')}
-                  size="tiny"
-                  shape="round"
-                  onclick={() => onCommand({ command: QueueCommand.ClearFailed, force: false })}
-                />
-              </div>
+            <Badge
+              onClose={() => onCommand({ command: QueueCommand.ClearFailed, force: false })}
+              translations={{ close: $t('clear_message') }}
+            >
+              {$t('admin.jobs_failed', { values: { jobCount: statistics.failed.toLocaleString($locale) } })}
             </Badge>
           {/if}
           {#if statistics.delayed > 0}
             <Badge>
-              <span class="text-sm">
-                {$t('admin.jobs_delayed', { values: { jobCount: statistics.delayed.toLocaleString($locale) } })}
-              </span>
+              {$t('admin.jobs_delayed', { values: { jobCount: statistics.delayed.toLocaleString($locale) } })}
             </Badge>
           {/if}
         </div>
       </div>
 
       {#if subtitle}
-        <div class="whitespace-pre-line text-sm dark:text-white">{subtitle}</div>
+        <div class="text-sm whitespace-pre-line dark:text-white">{subtitle}</div>
       {/if}
 
       {#if description}

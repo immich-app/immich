@@ -11,7 +11,7 @@
 </script>
 
 <UserPageLayout title={data.meta.title}>
-  <div class="w-full max-w-xl m-auto">
+  <div class="m-auto w-full max-w-xl">
     <div class="mt-5">
       <UtilitiesMenu />
     </div>

@@ -7,19 +7,18 @@
 
   type Props = {
     children?: Snippet;
-    forceDark?: boolean;
   };
 
-  let { children, forceDark }: Props = $props();
+  let { children }: Props = $props();
 
   const onClose = () => assetMultiSelectManager.clear();
 
   const assets = $derived(assetMultiSelectManager.assets);
 </script>
 
-<ControlAppBar {onClose} {forceDark} backIcon={mdiClose} tailwindClasses="bg-white shadow-md">
+<ControlAppBar {onClose} backIcon={mdiClose}>
   {#snippet leading()}
-    <div class="font-medium {forceDark ? 'text-immich-dark-primary' : 'text-primary'}">
+    <div class="font-medium text-primary">
       <p class="block sm:hidden">{assets.length}</p>
       <p class="hidden sm:block">{$t('selected_count', { values: { count: assets.length } })}</p>
     </div>

@@ -10,13 +10,22 @@ import { Server, Socket } from 'socket.io';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { NotificationDto } from 'src/dtos/notification.dto';
-import { ReleaseNotification, ServerVersionResponseDto } from 'src/dtos/server.dto';
-import { SyncAssetEditV1, SyncAssetExifV1, SyncAssetV1 } from 'src/dtos/sync.dto';
+import { ReleaseEventV1, ServerVersionResponseDto } from 'src/dtos/server.dto';
+import { SyncAssetEditV1, SyncAssetExifV1, SyncAssetV2 } from 'src/dtos/sync.dto';
 import { AppRestartEvent, ArgsOf, EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { handlePromiseError } from 'src/utils/misc';
 
-export const serverEvents = ['ConfigUpdate', 'AppRestart'] as const;
+export const serverEvents = [
+  'ConfigUpdate',
+  'AppRestart',
+  'HlsSegmentRequest',
+  'HlsSegmentResult',
+  'HlsHeartbeat',
+  'HlsSessionRequest',
+  'HlsSessionResult',
+  'HlsSessionEnd',
+] as const;
 export type ServerEvents = (typeof serverEvents)[number];
 
 export interface ClientEventMap {
@@ -31,13 +40,13 @@ export interface ClientEventMap {
   on_person_thumbnail: [string];
   on_server_version: [ServerVersionResponseDto];
   on_config_update: [];
-  on_new_release: [ReleaseNotification];
+  on_new_release: [ReleaseEventV1];
   on_notification: [NotificationDto];
   on_session_delete: [string];
 
-  AssetUploadReadyV1: [{ asset: SyncAssetV1; exif: SyncAssetExifV1 }];
+  AssetUploadReadyV2: [{ asset: SyncAssetV2; exif: SyncAssetExifV1 }];
   AppRestartV1: [AppRestartEvent];
-  AssetEditReadyV1: [{ asset: SyncAssetV1; edit: SyncAssetEditV1[] }];
+  AssetEditReadyV2: [{ asset: SyncAssetV2; edit: SyncAssetEditV1[] }];
 }
 
 export type AuthFn = (client: Socket) => Promise<AuthDto>;

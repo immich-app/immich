@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { OnAction } from '$lib/components/asset-viewer/actions/action';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
   import { AssetAction } from '$lib/constants';
   import { handleError } from '$lib/utils/handle-error';
@@ -6,7 +7,6 @@
   import { toastManager } from '@immich/ui';
   import { mdiFaceManProfile } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import type { OnAction } from './action';
 
   interface Props {
     asset: AssetResponseDto;

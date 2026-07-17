@@ -83,8 +83,8 @@ export class AssetTable {
   @Column({ type: 'boolean', default: false })
   isFavorite!: Generated<boolean>;
 
-  @Column({ type: 'character varying', nullable: true })
-  duration!: string | null;
+  @Column({ type: 'integer', nullable: true })
+  duration!: number | null;
 
   @Column({ type: 'bytea', index: true })
   checksum!: Buffer; // sha1 checksum
@@ -98,7 +98,7 @@ export class AssetTable {
   @UpdateDateColumn()
   updatedAt!: Generated<Timestamp>;
 
-  @CreateDateColumn()
+  @CreateDateColumn({ index: true })
   createdAt!: Generated<Timestamp>;
 
   @Column({ index: true })

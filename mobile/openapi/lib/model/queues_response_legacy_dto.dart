@@ -19,6 +19,7 @@ class QueuesResponseLegacyDto {
     required this.editor,
     required this.faceDetection,
     required this.facialRecognition,
+    required this.integrityCheck,
     required this.library_,
     required this.metadataExtraction,
     required this.migration,
@@ -44,6 +45,8 @@ class QueuesResponseLegacyDto {
   QueueResponseLegacyDto faceDetection;
 
   QueueResponseLegacyDto facialRecognition;
+
+  QueueResponseLegacyDto integrityCheck;
 
   QueueResponseLegacyDto library_;
 
@@ -77,6 +80,7 @@ class QueuesResponseLegacyDto {
     other.editor == editor &&
     other.faceDetection == faceDetection &&
     other.facialRecognition == facialRecognition &&
+    other.integrityCheck == integrityCheck &&
     other.library_ == library_ &&
     other.metadataExtraction == metadataExtraction &&
     other.migration == migration &&
@@ -99,6 +103,7 @@ class QueuesResponseLegacyDto {
     (editor.hashCode) +
     (faceDetection.hashCode) +
     (facialRecognition.hashCode) +
+    (integrityCheck.hashCode) +
     (library_.hashCode) +
     (metadataExtraction.hashCode) +
     (migration.hashCode) +
@@ -113,7 +118,7 @@ class QueuesResponseLegacyDto {
     (workflow.hashCode);
 
   @override
-  String toString() => 'QueuesResponseLegacyDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, editor=$editor, faceDetection=$faceDetection, facialRecognition=$facialRecognition, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
+  String toString() => 'QueuesResponseLegacyDto[backgroundTask=$backgroundTask, backupDatabase=$backupDatabase, duplicateDetection=$duplicateDetection, editor=$editor, faceDetection=$faceDetection, facialRecognition=$facialRecognition, integrityCheck=$integrityCheck, library_=$library_, metadataExtraction=$metadataExtraction, migration=$migration, notifications=$notifications, ocr=$ocr, search=$search, sidecar=$sidecar, smartSearch=$smartSearch, storageTemplateMigration=$storageTemplateMigration, thumbnailGeneration=$thumbnailGeneration, videoConversion=$videoConversion, workflow=$workflow]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -123,6 +128,7 @@ class QueuesResponseLegacyDto {
       json[r'editor'] = this.editor;
       json[r'faceDetection'] = this.faceDetection;
       json[r'facialRecognition'] = this.facialRecognition;
+      json[r'integrityCheck'] = this.integrityCheck;
       json[r'library'] = this.library_;
       json[r'metadataExtraction'] = this.metadataExtraction;
       json[r'migration'] = this.migration;
@@ -153,6 +159,7 @@ class QueuesResponseLegacyDto {
         editor: QueueResponseLegacyDto.fromJson(json[r'editor'])!,
         faceDetection: QueueResponseLegacyDto.fromJson(json[r'faceDetection'])!,
         facialRecognition: QueueResponseLegacyDto.fromJson(json[r'facialRecognition'])!,
+        integrityCheck: QueueResponseLegacyDto.fromJson(json[r'integrityCheck'])!,
         library_: QueueResponseLegacyDto.fromJson(json[r'library'])!,
         metadataExtraction: QueueResponseLegacyDto.fromJson(json[r'metadataExtraction'])!,
         migration: QueueResponseLegacyDto.fromJson(json[r'migration'])!,
@@ -218,6 +225,7 @@ class QueuesResponseLegacyDto {
     'editor',
     'faceDetection',
     'facialRecognition',
+    'integrityCheck',
     'library',
     'metadataExtraction',
     'migration',

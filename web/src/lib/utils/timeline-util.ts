@@ -1,4 +1,4 @@
-import { AssetTypeEnum, type AssetResponseDto } from '@immich/sdk';
+import { AssetTypeEnum, AssetOrderBy, type AssetResponseDto } from '@immich/sdk';
 import { DateTime, type LocaleOptions } from 'luxon';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
@@ -128,7 +128,7 @@ export function formatGroupTitle(_date: DateTime): string {
 
   // Yesterday
   if (today.minus({ days: 1 }).hasSame(date, 'day')) {
-    return date.toRelativeCalendar({ locale: get(locale) });
+    return date.toRelativeCalendar({ locale: get(locale), unit: 'days' });
   }
 
   // Last week
@@ -165,7 +165,11 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   const people = assetResponse.people?.map((person) => person.name) || [];
 
   const localDateTime = fromISODateTimeUTCToObject(assetResponse.localDateTime);
-  const fileCreatedAt = fromISODateTimeToObject(assetResponse.fileCreatedAt, assetResponse.exifInfo?.timeZone ?? 'UTC');
+  // Keep this consistent with the bucket loader (getTimes), which stores fileCreatedAt as UTC
+  // components. The timeline sorts assets within a day by fileCreatedAt, so a mismatched
+  // representation here would place re-inserted assets (e.g. undo archive) in the wrong spot.
+  const fileCreatedAt = fromISODateTimeUTCToObject(assetResponse.fileCreatedAt);
+  const createdAt = fromISODateTimeUTCToObject(assetResponse.createdAt);
 
   return {
     id: assetResponse.id,
@@ -174,6 +178,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     ratio,
     thumbhash: assetResponse.thumbhash,
     localDateTime,
+    createdAt,
     fileCreatedAt,
     isFavorite: assetResponse.isFavorite,
     visibility: assetResponse.visibility,
@@ -236,3 +241,6 @@ export function setDifference<T>(setA: Set<T>, setB: Set<T>): SvelteSet<T> {
   }
   return result;
 }
+
+export const getOrderingDate = (asset: TimelineAsset, order: AssetOrderBy) =>
+  order === AssetOrderBy.CreatedAt ? asset.createdAt : asset.localDateTime;

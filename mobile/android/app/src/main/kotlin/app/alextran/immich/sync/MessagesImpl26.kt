@@ -4,7 +4,11 @@ import android.content.Context
 
 
 class NativeSyncApiImpl26(context: Context) : NativeSyncApiImplBase(context), NativeSyncApi {
-  override fun shouldFullSync(): Boolean {
+  override fun shouldFullSync(callback: (Result<Boolean>) -> Unit) {
+    runSync(callback) { shouldFullSync() }
+  }
+
+  private fun shouldFullSync(): Boolean {
     return true
   }
 
@@ -18,7 +22,11 @@ class NativeSyncApiImpl26(context: Context) : NativeSyncApiImplBase(context), Na
     // No-op for Android 10 and below
   }
 
-  override fun getMediaChanges(): SyncDelta {
+  override fun getMediaChanges(callback: (Result<SyncDelta>) -> Unit) {
+    runSync(callback) { getMediaChanges() }
+  }
+
+  private fun getMediaChanges(): SyncDelta {
     throw IllegalStateException("Method not supported on this Android version.")
   }
 

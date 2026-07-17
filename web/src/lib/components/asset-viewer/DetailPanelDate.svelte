@@ -38,7 +38,7 @@
 {#if dateTime}
   <button
     type="button"
-    class="flex w-full text-start justify-between place-items-start gap-4 py-4"
+    class="flex w-full place-items-start justify-between gap-4 py-4 text-start"
     onclick={handleChangeDate}
     title={isOwner ? $t('edit_date') : ''}
     class:hover:text-primary={isOwner}
@@ -75,7 +75,7 @@
     {/if}
   </button>
 {:else if !dateTime && isOwner}
-  <div class="flex justify-between place-items-start gap-4 py-4">
+  <div class="flex place-items-start justify-between gap-4 py-4">
     <div class="flex gap-4">
       <Icon icon={mdiCalendar} size="24" />
     </div>

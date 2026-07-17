@@ -35,7 +35,7 @@
 <div class="flex place-items-center justify-between">
   <div class="me-2">
     <div class="flex h-6.5 place-items-center gap-1">
-      <label class="font-medium text-primary text-sm" for={switchId}>
+      <label class="text-sm font-medium text-primary" for={switchId}>
         {title}
       </label>
       {#if isEdited}

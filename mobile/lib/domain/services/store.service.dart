@@ -54,7 +54,13 @@ class StoreService {
   /// Disposes the store and cancels the subscription. To reuse the store call init() again
   Future<void> dispose() async {
     await _storeUpdateSubscription?.cancel();
+    _storeUpdateSubscription = null;
     _cache.clear();
+    // Allow a subsequent init() (e.g. when a worker isolate is reused) to
+    // create a fresh instance instead of returning this disposed one.
+    if (identical(_instance, this)) {
+      _instance = null;
+    }
   }
 
   /// Returns the cached value for [key], or `null`
@@ -72,7 +78,9 @@ class StoreService {
 
   /// Stores the [value] for the [key]. Skips write if value hasn't changed.
   Future<void> put<U extends StoreKey<T>, T>(U key, T value) async {
-    if (_cache[key.id] == value) return;
+    if (_cache[key.id] == value) {
+      return;
+    }
     await _storeRepository.upsert(key, value);
     _cache[key.id] = value;
   }

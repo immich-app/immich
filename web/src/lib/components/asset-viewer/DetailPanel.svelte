@@ -10,9 +10,8 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
-  import { boundingBoxesArray } from '$lib/stores/people.store';
   import { locale } from '$lib/stores/preferences.store';
-  import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
   import { handleError } from '$lib/utils/handle-error';
@@ -24,27 +23,17 @@
     type AlbumResponseDto,
     type AssetResponseDto,
   } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, Text } from '@immich/ui';
-  import {
-    mdiCamera,
-    mdiCameraIris,
-    mdiClose,
-    mdiEye,
-    mdiEyeOff,
-    mdiImageOutline,
-    mdiInformationOutline,
-    mdiPencil,
-    mdiPlus,
-  } from '@mdi/js';
-  import { DateTime } from 'luxon';
+  import { Icon, IconButton, Link, LoadingSpinner, Text } from '@immich/ui';
+  import { mdiCamera, mdiCameraIris, mdiClose, mdiImageOutline, mdiInformationOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
   import { slide } from 'svelte/transition';
-  import ImageThumbnail from '../assets/thumbnail/ImageThumbnail.svelte';
   import PersonSidePanel from '../faces-page/PersonSidePanel.svelte';
   import OnEvents from '../OnEvents.svelte';
   import UserAvatar from '../shared-components/UserAvatar.svelte';
   import AlbumListItemDetails from './AlbumListItemDetails.svelte';
+  import DetailPanelPeople from '$lib/components/asset-viewer/DetailPanelPeople.svelte';
+  import { faceManager } from '$lib/stores/face.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -54,9 +43,6 @@
   let { asset, currentAlbum = null }: Props = $props();
 
   let isOwner = $derived(authManager.authenticated && authManager.user.id === asset.ownerId);
-  let people = $derived(asset.people || []);
-  let unassignedFaces = $derived(asset.unassignedFaces || []);
-  let showingHiddenPeople = $state(false);
   let latlng = $derived(
     (() => {
       const lat = asset.exifInfo?.latitude;
@@ -112,6 +98,8 @@
   const handleRefreshPeople = async () => {
     asset = await getAssetInfo({ id: asset.id });
     assetViewerManager.closeEditFacesPanel();
+    faceManager.clear();
+    await faceManager.getAssetFaces(asset.id);
   };
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {
@@ -141,7 +129,7 @@
     </div>
 
     {#if asset.isOffline}
-      <section class="px-4 py-4">
+      <section class="p-4">
         <div role="alert">
           <div class="rounded-t bg-red-500 px-4 py-2 font-bold text-white">
             {$t('asset_offline')}
@@ -155,7 +143,7 @@
               {/if}
             </p>
           </div>
-          <div class="rounded-b bg-red-500 px-4 py-2 text-white text-sm">
+          <div class="rounded-b bg-red-500 px-4 py-2 text-sm text-white">
             <p>{asset.originalPath}</p>
           </div>
         </div>
@@ -164,110 +152,9 @@
 
     <DetailPanelDescription {asset} {isOwner} />
     <DetailPanelRating {asset} {isOwner} />
+    <DetailPanelPeople {asset} {isOwner} {previousRoute} />
 
-    {#if !authManager.isSharedLink && isOwner}
-      <section class="px-4 pt-4 text-sm">
-        <div class="flex h-10 w-full items-center justify-between">
-          <Text size="small" color="muted">{$t('people')}</Text>
-          <div class="flex gap-2 items-center">
-            {#if people.some((person) => person.isHidden)}
-              <IconButton
-                aria-label={$t('show_hidden_people')}
-                icon={showingHiddenPeople ? mdiEyeOff : mdiEye}
-                size="medium"
-                shape="round"
-                color="secondary"
-                variant="ghost"
-                onclick={() => (showingHiddenPeople = !showingHiddenPeople)}
-              />
-            {/if}
-            <IconButton
-              aria-label={$t('tag_people')}
-              icon={mdiPlus}
-              size="medium"
-              shape="round"
-              color="secondary"
-              variant="ghost"
-              onclick={() => assetViewerManager.toggleFaceEditMode()}
-            />
-
-            {#if people.length > 0 || unassignedFaces.length > 0}
-              <IconButton
-                aria-label={$t('edit_people')}
-                icon={mdiPencil}
-                size="medium"
-                shape="round"
-                color="secondary"
-                variant="ghost"
-                onclick={() => assetViewerManager.openEditFacesPanel()}
-              />
-            {/if}
-          </div>
-        </div>
-
-        <div class="mt-2 flex flex-wrap gap-2">
-          {#each people as person, index (person.id)}
-            {#if showingHiddenPeople || !person.isHidden}
-              {@const isHighlighted = people[index].faces.some((f) => $boundingBoxesArray.some((b) => b.id === f.id))}
-              <a
-                class="group w-22 outline-none"
-                href={Route.viewPerson(person, { previousRoute })}
-                onfocus={() => ($boundingBoxesArray = people[index].faces)}
-                onblur={() => ($boundingBoxesArray = [])}
-                onmouseover={() => ($boundingBoxesArray = people[index].faces)}
-                onmouseleave={() => ($boundingBoxesArray = [])}
-              >
-                <div class="relative">
-                  <ImageThumbnail
-                    curve
-                    shadow
-                    url={getPeopleThumbnailUrl(person)}
-                    altText={person.name}
-                    title={person.name}
-                    widthStyle="90px"
-                    heightStyle="90px"
-                    hidden={person.isHidden}
-                    highlighted={isHighlighted}
-                    class="group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-immich-primary dark:group-focus-visible:outline-immich-dark-primary"
-                  />
-                </div>
-                <p class="mt-1 truncate font-medium" title={person.name}>{person.name}</p>
-                {#if person.birthDate}
-                  {@const personBirthDate = DateTime.fromISO(person.birthDate)}
-                  {@const age = Math.floor(DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'years').years)}
-                  {@const ageInMonths = Math.floor(
-                    DateTime.fromISO(asset.localDateTime).diff(personBirthDate, 'months').months,
-                  )}
-                  {#if age >= 0}
-                    <p
-                      class="font-light"
-                      title={personBirthDate.toLocaleString(
-                        {
-                          month: 'long',
-                          day: 'numeric',
-                          year: 'numeric',
-                        },
-                        { locale: $locale },
-                      )}
-                    >
-                      {#if ageInMonths <= 11}
-                        {$t('age_months', { values: { months: ageInMonths } })}
-                      {:else if ageInMonths > 12 && ageInMonths <= 23}
-                        {$t('age_year_months', { values: { months: ageInMonths - 12 } })}
-                      {:else}
-                        {$t('age_years', { values: { years: age } })}
-                      {/if}
-                    </p>
-                  {/if}
-                {/if}
-              </a>
-            {/if}
-          {/each}
-        </div>
-      </section>
-    {/if}
-
-    <div class="px-4 py-4">
+    <div class="p-4">
       {#if asset.exifInfo}
         <div class="flex h-10 w-full items-center justify-between text-sm">
           <Text size="small" color="muted">{$t('details')}</Text>
@@ -282,7 +169,7 @@
         <div><Icon icon={mdiImageOutline} size="24" /></div>
 
         <div>
-          <p class="break-all flex place-items-center gap-2 whitespace-pre-wrap">
+          <p class="flex place-items-center gap-2 break-all whitespace-pre-wrap">
             {asset.originalFileName}
             {#if isOwner}
               <IconButton
@@ -297,7 +184,7 @@
             {/if}
           </p>
           {#if assetViewerManager.isShowAssetPath}
-            <p class="text-xs opacity-50 break-all pb-2 hover:text-primary" transition:slide={{ duration: 250 }}>
+            <p class="pb-2 text-xs break-all opacity-50 hover:text-primary" transition:slide={{ duration: 250 }}>
               <!-- eslint-disable-next-line svelte/no-navigation-without-resolve this is supposed to be treated as an absolute/external link -->
               <a href={getAssetFolderHref(asset)} title={$t('go_to_folder')} class="whitespace-pre-wrap">
                 {asset.originalPath}
@@ -367,7 +254,7 @@
                 <a
                   href={Route.search({ lensModel: asset.exifInfo.lensModel })}
                   title="{$t('search_for')} {asset.exifInfo.lensModel}"
-                  class="hover:text-primary line-clamp-1"
+                  class="line-clamp-1 hover:text-primary"
                 >
                   {asset.exifInfo.lensModel}
                 </a>
@@ -396,7 +283,7 @@
       {#await import('$lib/components/shared-components/map/Map.svelte')}
         {#await delay(timeToLoadTheMap) then}
           <!-- show the loading spinner only if loading the map takes too much time -->
-          <div class="flex items-center justify-center h-full w-full">
+          <div class="flex size-full items-center justify-center">
             <LoadingSpinner />
           </div>
         {/await}
@@ -423,14 +310,13 @@
           {#snippet popup({ marker })}
             {@const { lat, lon } = marker}
             <div class="flex flex-col items-center gap-1">
-              <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
-              <a
+              <Text fontWeight="bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</Text>
+              <Link
                 href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
-                target="_blank"
-                class="font-medium text-primary underline focus:outline-none"
+                class="text-primary"
               >
                 {$t('open_in_openstreetmap')}
-              </a>
+              </Link>
             </div>
           {/snippet}
         </Map>
@@ -439,14 +325,14 @@
   {/if}
 
   {#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
-    <section class="px-6 dark:text-immich-dark-fg mt-4">
+    <section class="mt-4 px-6 dark:text-immich-dark-fg">
       <Text size="small" color="muted">{$t('shared_by')}</Text>
       <div class="flex gap-4 pt-4">
         <div>
           <UserAvatar user={asset.owner} size="md" />
         </div>
 
-        <div class="mb-auto mt-auto">
+        <div class="my-auto">
           <p>
             {asset.owner.name}
           </p>
@@ -457,24 +343,24 @@
 
   {#await albums then albums}
     {#if albums.length > 0}
-      <section class="px-6 py-6 dark:text-immich-dark-fg">
+      <section class="p-6 dark:text-immich-dark-fg">
         <div class="pb-4">
           <Text size="small" color="muted">{$t('appears_in')}</Text>
         </div>
         {#each albums as album (album.id)}
           <a href={Route.viewAlbum(album)}>
-            <div class="flex gap-4 pt-2 hover:cursor-pointer items-center">
+            <div class="flex items-center gap-4 pt-2 hover:cursor-pointer">
               <div>
                 <img
                   alt={album.albumName}
-                  class="h-12.5 w-12.5 rounded object-cover"
+                  class="size-12.5 rounded-sm object-cover"
                   src={album.albumThumbnailAssetId &&
                     getAssetMediaUrl({ id: album.albumThumbnailAssetId, size: AssetMediaSize.Preview })}
                   draggable="false"
                 />
               </div>
 
-              <div class="mb-auto mt-auto">
+              <div class="my-auto">
                 <p class="dark:text-immich-dark-primary">{album.albumName}</p>
                 <div class="flex flex-col gap-0 text-sm">
                   <div>

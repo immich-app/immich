@@ -30,10 +30,10 @@
 </script>
 
 {#if isOwner}
-  <section class="px-4 mt-10">
+  <section class="mt-10 px-4">
     <Textarea
       bind:value={description}
-      class="max-h-40 pl-0 outline-none border-b border-gray-500 bg-transparent ring-0 focus:ring-0 resize-none focus:border-b-2 focus:border-immich-primary dark:focus:border-immich-dark-primary dark:bg-transparent"
+      class="max-h-40 resize-none border-b border-gray-500 bg-transparent pl-0 ring-0 outline-none focus:border-b-2 focus:border-immich-primary focus:ring-0 dark:bg-transparent dark:focus:border-immich-dark-primary"
       rows={1}
       grow
       shape="rectangle"
@@ -47,7 +47,7 @@
     />
   </section>
 {:else if description}
-  <section class="px-4 mt-6">
-    <p class="wrap-break-word whitespace-pre-line w-full text-black dark:text-white text-base">{description}</p>
+  <section class="mt-6 px-4">
+    <p class="w-full text-base wrap-break-word whitespace-pre-line text-black dark:text-white">{description}</p>
   </section>
 {/if}

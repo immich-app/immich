@@ -1,4 +1,4 @@
-import { AssetOrder, type TimeBucketAssetResponseDto } from '@immich/sdk';
+import { AssetOrder, AssetOrderBy, type TimeBucketAssetResponseDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { SvelteSet } from 'svelte/reactivity';
 import { get } from 'svelte/store';
@@ -19,6 +19,8 @@ import {
   setDifference,
   type TimelineDateTime,
   type TimelineYearMonth,
+  getOrderingDate,
+  fromISODateTimeUTC,
 } from '$lib/utils/timeline-util';
 import { GroupInsertionCache } from './group-insertion-cache.svelte';
 import { TimelineDay } from './timeline-day.svelte';
@@ -37,6 +39,7 @@ export class TimelineMonth {
 
   #initialCount: number = 0;
   #sortOrder: AssetOrder = AssetOrder.Desc;
+  #orderBy: AssetOrderBy = AssetOrderBy.TakenAt;
   percent: number = $state(0);
 
   assetsCount: number = $derived(
@@ -56,10 +59,12 @@ export class TimelineMonth {
     initialCount: number,
     loaded: boolean,
     order: AssetOrder = AssetOrder.Desc,
+    orderBy: AssetOrderBy = AssetOrderBy.TakenAt,
   ) {
     this.timelineManager = timelineManager;
     this.#initialCount = initialCount;
     this.#sortOrder = order;
+    this.#orderBy = orderBy;
 
     this.yearMonth = { year: yearMonth.year, month: yearMonth.month };
     this.title = formatTimelineMonthTitle(fromTimelinePlainYearMonth(yearMonth));
@@ -174,8 +179,8 @@ export class TimelineMonth {
       );
 
       const timelineAsset: TimelineAsset = {
-        city: bucketAssets.city[i],
-        country: bucketAssets.country[i],
+        city: bucketAssets.city?.[i] ?? null,
+        country: bucketAssets.country?.[i] ?? null,
         duration: bucketAssets.duration[i],
         id: bucketAssets.id[i],
         visibility: bucketAssets.visibility[i],
@@ -185,6 +190,7 @@ export class TimelineMonth {
         isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
         localDateTime,
+        createdAt: fromISODateTimeUTC(bucketAssets.createdAt[i]).toLocal().toObject(),
         fileCreatedAt,
         ownerId: bucketAssets.ownerId[i],
         projectionType: bucketAssets.projectionType[i],
@@ -229,26 +235,26 @@ export class TimelineMonth {
   }
 
   addTimelineAsset(timelineAsset: TimelineAsset, addContext: GroupInsertionCache) {
-    const { localDateTime } = timelineAsset;
+    const dateTime = getOrderingDate(timelineAsset, this.#orderBy);
 
     const { year, month } = this.yearMonth;
-    if (month !== localDateTime.month || year !== localDateTime.year) {
+    if (month !== dateTime.month || year !== dateTime.year) {
       addContext.unprocessedAssets.push(timelineAsset);
       return;
     }
 
-    let timelineDay = addContext.getTimelineDay(localDateTime) || this.findTimelineDayByDay(localDateTime.day);
+    let timelineDay = addContext.getTimelineDay(dateTime) || this.findTimelineDayByDay(dateTime.day);
     if (timelineDay) {
-      addContext.setTimelineDay(timelineDay, localDateTime);
+      addContext.setTimelineDay(timelineDay, dateTime);
     } else {
-      const groupTitle = formatGroupTitle(fromTimelinePlainDate(localDateTime));
-      timelineDay = new TimelineDay(this, this.timelineDays.length, localDateTime.day, groupTitle);
+      const groupTitle = formatGroupTitle(fromTimelinePlainDate(dateTime));
+      timelineDay = new TimelineDay(this, this.timelineDays.length, dateTime.day, groupTitle, this.#orderBy);
       this.timelineDays.push(timelineDay);
-      addContext.setTimelineDay(timelineDay, localDateTime);
+      addContext.setTimelineDay(timelineDay, dateTime);
       addContext.newTimelineDays.add(timelineDay);
     }
 
-    const viewerAsset = new ViewerAsset(timelineDay, timelineAsset);
+    const viewerAsset = new ViewerAsset(timelineAsset);
     timelineDay.viewerAssets.push(viewerAsset);
     addContext.changedTimelineDays.add(timelineDay);
   }
@@ -372,7 +378,7 @@ export class TimelineMonth {
     let closest = undefined;
     let smallestDiff = Infinity;
     for (const current of this.assetsIterator()) {
-      const currentAssetDate = fromTimelinePlainDateTime(current.localDateTime);
+      const currentAssetDate = fromTimelinePlainDateTime(getOrderingDate(current, this.#orderBy));
       const diff = Math.abs(targetDate.diff(currentAssetDate).as('milliseconds'));
       if (diff < smallestDiff) {
         smallestDiff = diff;

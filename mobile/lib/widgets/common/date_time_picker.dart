@@ -190,7 +190,9 @@ class _TimeZoneOffset implements Comparable<_TimeZoneOffset> {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other is _TimeZoneOffset && other.display == display && other.offsetInMilliseconds == offsetInMilliseconds;
   }

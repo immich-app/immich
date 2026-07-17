@@ -105,7 +105,11 @@ describe(`/oauth`, () => {
     it(`should throw an error if a redirect uri is not provided`, async () => {
       const { status, body } = await request(app).post('/oauth/authorize').send({});
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[redirectUri] Invalid input: expected string, received undefined']));
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['redirectUri'], message: 'Invalid input: expected string, received undefined' },
+        ]),
+      );
     });
 
     it('should return a redirect uri', async () => {
@@ -164,13 +168,17 @@ describe(`/oauth`, () => {
     it(`should throw an error if a url is not provided`, async () => {
       const { status, body } = await request(app).post('/oauth/callback').send({});
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[url] Invalid input: expected string, received undefined']));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['url'], message: 'Invalid input: expected string, received undefined' }]),
+      );
     });
 
     it(`should throw an error if the url is empty`, async () => {
       const { status, body } = await request(app).post('/oauth/callback').send({ url: '' });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[url] Too small: expected string to have >=1 characters']));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['url'], message: 'Too small: expected string to have >=1 characters' }]),
+      );
     });
 
     it(`should throw an error if the state is not provided`, async () => {
@@ -332,9 +340,7 @@ describe(`/oauth`, () => {
       const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
       expect(status).toBe(500);
       expect(body).toMatchObject({
-        error: 'Internal Server Error',
         message: 'Failed to finish oauth',
-        statusCode: 500,
       });
     });
 
@@ -353,7 +359,7 @@ describe(`/oauth`, () => {
         const callbackParams = await loginWithOAuth('oauth-no-auto-register');
         const { status, body } = await request(app).post('/oauth/callback').send(callbackParams);
         expect(status).toBe(400);
-        expect(body).toEqual(errorDto.badRequest('User does not exist and auto registering is disabled.'));
+        expect(body).toEqual(errorDto.badRequest('OAuth authentication failed'));
       });
 
       it('should link to an existing user by email', async () => {
@@ -377,7 +383,11 @@ describe(`/oauth`, () => {
     it(`should throw an error if the logout_token is not provided`, async () => {
       const { status, body } = await request(app).post('/oauth/backchannel-logout').send({});
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['[logout_token] Invalid input: expected string, received undefined']));
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['logout_token'], message: 'Invalid input: expected string, received undefined' },
+        ]),
+      );
     });
 
     it(`should throw an error if an invalid logout token is provided`, async () => {
@@ -495,11 +505,10 @@ describe(`/oauth`, () => {
     });
 
     it('should reject OAuth discovery over HTTP', async () => {
-      const { status, body } = await request(app)
+      const { status } = await request(app)
         .post('/oauth/authorize')
         .send({ redirectUri: 'http://127.0.0.1:2285/auth/login' });
       expect(status).toBe(500);
-      expect(body).toMatchObject({ statusCode: 500 });
     });
   });
 });

@@ -49,8 +49,12 @@ class LocalAlbum {
 
   @override
   bool operator ==(Object other) {
-    if (other is! LocalAlbum) return false;
-    if (identical(this, other)) return true;
+    if (other is! LocalAlbum) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.id == id &&
         other.name == name &&

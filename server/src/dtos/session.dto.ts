@@ -4,7 +4,7 @@ import z from 'zod';
 
 const SessionCreateSchema = z
   .object({
-    duration: z.number().min(1).optional().describe('Session duration in seconds'),
+    duration: z.int().min(1).optional().describe('Session duration in seconds'),
     deviceType: z.string().optional().describe('Device type'),
     deviceOS: z.string().optional().describe('Device OS'),
   })
@@ -18,7 +18,7 @@ const SessionUpdateSchema = z
 
 const SessionResponseSchema = z
   .object({
-    id: z.string().describe('Session ID'),
+    id: z.uuidv4().describe('Session ID'),
     createdAt: z.string().describe('Creation date'),
     updatedAt: z.string().describe('Last update date'),
     expiresAt: z.string().optional().describe('Expiration date'),

@@ -33,7 +33,7 @@
 <OnEvents {onApiKeyCreate} {onApiKeyUpdate} {onApiKeyDelete} />
 
 <section class="my-4">
-  <div class="sm:ms-8 flex flex-col gap-2" in:fade={{ duration: 500 }}>
+  <div class="flex flex-col gap-2 sm:ms-8" in:fade={{ duration: 500 }}>
     <div class="mb-2 flex justify-end">
       <Button leadingIcon={Create.icon} shape="round" size="small" onclick={() => Create.onAction(Create)}>
         {Create.title}
@@ -56,7 +56,7 @@
               <TableCell>{key.name}</TableCell>
               <TableCell>
                 <Text
-                  class="font-mono overflow-hidden line-clamp-3"
+                  class="line-clamp-3 overflow-hidden font-mono"
                   size="small"
                   title={JSON.stringify(key.permissions, null, 2)}>{key.permissions}</Text
                 >

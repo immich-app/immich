@@ -1,18 +1,16 @@
 <script lang="ts">
-  import DateInput from '$lib/elements/DateInput.svelte';
-  import type { MapSettings } from '$lib/stores/preferences.store';
-  import { Button, Field, FormModal, Select, Stack, Switch } from '@immich/ui';
-  import { Duration } from 'luxon';
+  import { mapSettings, type MapSettings } from '$lib/stores/preferences.store';
+  import { Button, DatePicker, Field, FormModal, Select, Stack, Switch } from '@immich/ui';
+  import { DateTime, Duration } from 'luxon';
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
 
   type Props = {
-    settings: MapSettings;
     onClose: (settings?: MapSettings) => void;
   };
 
-  let { settings: initialValues, onClose }: Props = $props();
-  let settings = $state(initialValues);
+  let { onClose }: Props = $props();
+  let settings = $state({ ...$mapSettings });
 
   let customDateRange = $state(!!settings.dateAfter || !!settings.dateBefore);
 
@@ -41,29 +39,28 @@
 
     {#if customDateRange}
       <div in:fly={{ y: 10, duration: 200 }} class="flex flex-col gap-4">
-        <div class="flex items-center justify-between gap-8">
-          <label class="immich-form-label shrink-0 text-sm" for="date-after">{$t('date_after')}</label>
-          <DateInput
-            class="immich-form-input w-40"
-            type="date"
-            id="date-after"
-            max={settings.dateBefore}
-            bind:value={settings.dateAfter}
+        <Field label={$t('date_after')}>
+          <DatePicker
+            value={DateTime.fromISO(settings.dateAfter ?? '')}
+            maxDate={DateTime.fromISO(settings.dateBefore ?? '')}
+            onChange={(date) => (settings.dateAfter = date?.toUTC().toISO() ?? undefined)}
           />
-        </div>
-        <div class="flex items-center justify-between gap-8">
-          <label class="immich-form-label shrink-0 text-sm" for="date-before">{$t('date_before')}</label>
-          <DateInput class="immich-form-input w-40" type="date" id="date-before" bind:value={settings.dateBefore} />
-        </div>
-        <div class="flex justify-center text-xs">
+        </Field>
+        <Field label={$t('date_before')}>
+          <DatePicker
+            value={DateTime.fromISO(settings.dateBefore ?? '')}
+            onChange={(date) => (settings.dateBefore = date?.toUTC().toISO() ?? undefined)}
+          />
+        </Field>
+        <div class="flex justify-center">
           <Button
             color="primary"
             size="small"
             variant="ghost"
             onclick={() => {
               customDateRange = false;
-              settings.dateAfter = '';
-              settings.dateBefore = '';
+              settings.dateAfter = undefined;
+              settings.dateBefore = undefined;
             }}
           >
             {$t('remove_custom_date_range')}
@@ -71,7 +68,7 @@
         </div>
       </div>
     {:else}
-      <div in:fly={{ y: -10, duration: 200 }} class="flex flex-col gap-1">
+      <div in:fly={{ y: -10, duration: 200 }} class="flex flex-col gap-2">
         <Field label={$t('date_range')}>
           <Select
             bind:value={settings.relativeDate}
@@ -82,40 +79,38 @@
               },
               {
                 label: $t('past_durations.hours', { values: { hours: 24 } }),
-                value: Duration.fromObject({ hours: 24 }).toISO() || '',
+                value: Duration.fromObject({ hours: 24 }).toISO(),
               },
               {
                 label: $t('past_durations.days', { values: { days: 7 } }),
-                value: Duration.fromObject({ days: 7 }).toISO() || '',
+                value: Duration.fromObject({ days: 7 }).toISO(),
               },
               {
                 label: $t('past_durations.days', { values: { days: 30 } }),
-                value: Duration.fromObject({ days: 30 }).toISO() || '',
+                value: Duration.fromObject({ days: 30 }).toISO(),
               },
               {
                 label: $t('past_durations.years', { values: { years: 1 } }),
-                value: Duration.fromObject({ years: 1 }).toISO() || '',
+                value: Duration.fromObject({ years: 1 }).toISO(),
               },
               {
                 label: $t('past_durations.years', { values: { years: 3 } }),
-                value: Duration.fromObject({ years: 3 }).toISO() || '',
+                value: Duration.fromObject({ years: 3 }).toISO(),
               },
             ]}
           />
         </Field>
-        <div class="text-xs">
-          <Button
-            color="primary"
-            size="small"
-            variant="ghost"
-            onclick={() => {
-              customDateRange = true;
-              settings.relativeDate = '';
-            }}
-          >
-            {$t('use_custom_date_range')}
-          </Button>
-        </div>
+        <Button
+          color="primary"
+          size="small"
+          variant="ghost"
+          onclick={() => {
+            customDateRange = true;
+            settings.relativeDate = '';
+          }}
+        >
+          {$t('use_custom_date_range')}
+        </Button>
       </div>
     {/if}
   </Stack>

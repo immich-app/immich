@@ -26,11 +26,11 @@
   type="button"
   onclick={() => onNewAlbum(searchQuery)}
   use:scrollIntoViewIfSelected
-  class="flex w-full items-center gap-4 px-6 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl"
+  class="flex w-full items-center gap-4 rounded-xl px-6 py-2 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700"
   class:bg-gray-200={selected}
   class:dark:bg-gray-700={selected}
 >
-  <div class="flex h-12 w-12 items-center justify-center">
+  <div class="flex size-12 items-center justify-center">
     <Icon icon={mdiPlus} size="30" />
   </div>
   <p class="">

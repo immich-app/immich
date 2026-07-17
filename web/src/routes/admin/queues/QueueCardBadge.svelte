@@ -10,7 +10,7 @@
   let { color, children }: Props = $props();
 
   const styles = tv({
-    base: 'w-full p-2 text-center text-sm ',
+    base: 'w-full p-2 text-center text-sm',
     variants: {
       color: {
         success: 'bg-green-500/70 text-gray-900 dark:bg-green-700/90 dark:text-gray-100',

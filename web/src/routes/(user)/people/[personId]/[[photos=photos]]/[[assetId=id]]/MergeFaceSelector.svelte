@@ -84,7 +84,7 @@
 
 <section
   transition:fly={{ y: 500, duration: 100, easing: quintOut }}
-  class="absolute start-0 top-0 h-full w-full bg-light"
+  class="absolute inset-s-0 top-0 size-full bg-light"
 >
   <ControlAppBar onClose={onBack}>
     {#snippet leading()}
@@ -115,7 +115,7 @@
 
           {#if hasSelection}
             <div class="relative h-full">
-              <div class="flex flex-col h-full justify-between">
+              <div class="flex h-full flex-col justify-between">
                 <div class="flex h-full items-center justify-center">
                   <Icon icon={mdiCallMerge} size="48" class="rotate-90 dark:text-white" />
                 </div>

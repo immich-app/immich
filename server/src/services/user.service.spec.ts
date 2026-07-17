@@ -179,7 +179,7 @@ describe(UserService.name, () => {
     it('should throw an error if the user does not exist', async () => {
       mocks.user.get.mockResolvedValue(void 0);
 
-      await expect(sut.getProfileImage(userStub.admin.id)).rejects.toBeInstanceOf(BadRequestException);
+      await expect(sut.getProfileImage(userStub.admin.id)).rejects.toBeInstanceOf(NotFoundException);
 
       expect(mocks.user.get).toHaveBeenCalledWith(userStub.admin.id, {});
     });

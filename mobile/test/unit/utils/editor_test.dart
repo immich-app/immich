@@ -43,9 +43,7 @@ void main() {
     });
 
     test('should handle a single 90° rotation', () {
-      final edits = <AssetEdit>[
-        RotateEdit(RotateParameters(angle: 90)),
-      ];
+      final edits = <AssetEdit>[RotateEdit(RotateParameters(angle: 90))];
 
       final result = normalizeTransformEdits(edits);
       final normalizedEdits = normalizedToEdits(result);
@@ -54,9 +52,7 @@ void main() {
     });
 
     test('should handle a single 180° rotation', () {
-      final edits = <AssetEdit>[
-        RotateEdit(RotateParameters(angle: 180)),
-      ];
+      final edits = <AssetEdit>[RotateEdit(RotateParameters(angle: 180))];
 
       final result = normalizeTransformEdits(edits);
       final normalizedEdits = normalizedToEdits(result);
@@ -65,9 +61,7 @@ void main() {
     });
 
     test('should handle a single 270° rotation', () {
-      final edits = <AssetEdit>[
-        RotateEdit(RotateParameters(angle: 270)),
-      ];
+      final edits = <AssetEdit>[RotateEdit(RotateParameters(angle: 270))];
 
       final result = normalizeTransformEdits(edits);
       final normalizedEdits = normalizedToEdits(result);
@@ -76,9 +70,7 @@ void main() {
     });
 
     test('should handle a single horizontal mirror', () {
-      final edits = <AssetEdit>[
-        MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)),
-      ];
+      final edits = <AssetEdit>[MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal))];
 
       final result = normalizeTransformEdits(edits);
       final normalizedEdits = normalizedToEdits(result);
@@ -87,9 +79,7 @@ void main() {
     });
 
     test('should handle a single vertical mirror', () {
-      final edits = <AssetEdit>[
-        MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical)),
-      ];
+      final edits = <AssetEdit>[MirrorEdit(MirrorParameters(axis: MirrorAxis.vertical))];
 
       final result = normalizeTransformEdits(edits);
       final normalizedEdits = normalizedToEdits(result);

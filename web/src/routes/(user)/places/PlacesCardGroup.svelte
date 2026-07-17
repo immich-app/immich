@@ -24,11 +24,11 @@
     <button
       type="button"
       onclick={() => togglePlacesGroupCollapsing(group.id)}
-      class="w-fit mt-2 pt-2 pe-2 mb-2 dark:text-immich-dark-fg"
+      class="my-2 w-fit pe-2 pt-2 dark:text-immich-dark-fg"
       aria-expanded={!isCollapsed}
     >
-      <Icon icon={mdiChevronRight} size="24" class="inline-block -mt-2.5 transition-all duration-250 {iconRotation}" />
-      <span class="font-bold text-3xl text-black dark:text-white">{group.name}</span>
+      <Icon icon={mdiChevronRight} size="24" class="-mt-2.5 inline-block transition-all duration-250 {iconRotation}" />
+      <span class="text-3xl font-bold text-black dark:text-white">{group.name}</span>
       <span class="ms-1.5">({$t('places_count', { values: { count: places.length } })})</span>
     </button>
     <hr class="dark:border-immich-dark-gray" />
@@ -47,12 +47,12 @@
             <img
               src={getAssetMediaUrl({ id: item.id, size: AssetMediaSize.Thumbnail })}
               alt={city}
-              class="object-cover w-39 h-39"
+              class="size-39 object-cover"
               loading="lazy"
             />
           </div>
           <span
-            class="absolute bottom-2 w-full text-ellipsis px-1 text-center text-sm font-medium capitalize text-white backdrop-blur-[1px] hover:cursor-pointer"
+            class="absolute bottom-2 w-full px-1 text-center text-sm font-medium text-ellipsis text-white capitalize backdrop-blur-[1px] hover:cursor-pointer"
           >
             {city}
           </span>

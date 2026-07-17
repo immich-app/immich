@@ -53,17 +53,3 @@ export function updateTimelineMonthViewportProximity(timelineManager: TimelineMa
     timelineManager.clearDeferredLayout(month);
   }
 }
-
-export function calculateViewerAssetViewportProximity(
-  timelineManager: TimelineManager,
-  positionTop: number,
-  positionHeight: number,
-) {
-  const headerHeight = timelineManager.headerHeight;
-  return calculateViewportProximity(
-    positionTop,
-    positionTop + positionHeight,
-    timelineManager.visibleWindow.top - headerHeight,
-    timelineManager.visibleWindow.bottom + headerHeight,
-  );
-}

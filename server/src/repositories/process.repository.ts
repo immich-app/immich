@@ -1,12 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ChildProcessWithoutNullStreams, fork, spawn, SpawnOptionsWithoutStdio } from 'node:child_process';
+import { fork, spawn, SpawnOptionsWithoutStdio } from 'node:child_process';
 import { Duplex } from 'node:stream';
 
 @Injectable()
 export class ProcessRepository {
-  spawn(command: string, args?: readonly string[], options?: SpawnOptionsWithoutStdio): ChildProcessWithoutNullStreams {
-    return spawn(command, args, options);
-  }
+  spawn = spawn;
 
   spawnDuplexStream(command: string, args?: readonly string[], options?: SpawnOptionsWithoutStdio): Duplex {
     let stdinClosed = false;

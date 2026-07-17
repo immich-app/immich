@@ -78,7 +78,7 @@
 </script>
 
 <figure
-  class="{sizeClass} {colorClass} {interactiveClass} overflow-hidden shadow-md rounded-full"
+  class="{sizeClass} {colorClass} {interactiveClass} overflow-hidden rounded-full shadow-md"
   title={noTitle ? undefined : title}
 >
   {#if user.profileImagePath}
@@ -86,14 +86,14 @@
       bind:this={img}
       src={getProfileImageUrl(user)}
       alt={$t('profile_image_of_user', { values: { user: title } })}
-      class="h-full w-full object-cover"
+      class="size-full object-cover"
       class:hidden={showFallback}
       draggable="false"
     />
   {/if}
   {#if showFallback}
     <span
-      class="uppercase flex h-full w-full select-none items-center justify-center font-medium"
+      class="flex size-full items-center justify-center font-medium uppercase select-none"
       class:text-xs={size === 'sm'}
       class:text-lg={size === 'lg'}
       class:text-xl={size === 'xl'}

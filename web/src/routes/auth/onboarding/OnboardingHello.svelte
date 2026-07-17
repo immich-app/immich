@@ -12,10 +12,10 @@
 
 <div class="gap-4">
   <Logo variant="icon" size="giant" class="mb-2" />
-  <p class="font-medium mb-6 text-6xl text-primary">
+  <p class="mb-6 text-6xl font-medium text-primary">
     {$t('onboarding_welcome_user', { values: { user: authManager.user.name } })}
   </p>
-  <p class="text-3xl pb-6 font-light">
+  <p class="pb-6 text-3xl font-light">
     {userRole == OnboardingRole.SERVER
       ? $t('onboarding_server_welcome_description')
       : $t('onboarding_user_welcome_description')}

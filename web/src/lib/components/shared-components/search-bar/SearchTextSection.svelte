@@ -6,7 +6,7 @@
 
   interface Props {
     query: string | undefined;
-    queryType?: 'smart' | 'metadata' | 'description' | 'ocr';
+    queryType?: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr';
   }
 
   let { query = $bindable(), queryType = $bindable('smart') }: Props = $props();
@@ -15,7 +15,7 @@
 <section>
   <fieldset>
     <Text class="mb-2" fontWeight="medium">{$t('search_type')}</Text>
-    <div class="flex flex-wrap gap-x-5 gap-y-2 my-2">
+    <div class="my-2 flex flex-wrap gap-x-5 gap-y-2">
       {#if featureFlagsManager.value.smartSearch}
         <RadioButton name="query-type" id="context-radio" label={$t('context')} bind:group={queryType} value="smart" />
       {/if}
@@ -32,6 +32,13 @@
         label={$t('description')}
         bind:group={queryType}
         value="description"
+      />
+      <RadioButton
+        name="query-type"
+        id="full-path-radio"
+        label={$t('full_path_or_folder')}
+        bind:group={queryType}
+        value="fullPath"
       />
       {#if featureFlagsManager.value.ocr}
         <RadioButton name="query-type" id="ocr-radio" label={$t('ocr')} bind:group={queryType} value="ocr" />
@@ -50,6 +57,10 @@
   {:else if queryType === 'description'}
     <Field label={$t('search_by_description')}>
       <Input type="text" placeholder={$t('search_by_description_example')} bind:value={query} />
+    </Field>
+  {:else if queryType === 'fullPath'}
+    <Field label={$t('search_by_full_path')}>
+      <Input type="text" placeholder={$t('search_by_full_path_example')} bind:value={query} />
     </Field>
   {:else if queryType === 'ocr'}
     <Field label={$t('search_by_ocr')}>

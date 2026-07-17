@@ -37,7 +37,7 @@ class SimilarPhotosActionButton extends ConsumerWidget {
           date: SearchDateFilter(),
           display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
           rating: SearchRatingFilter(),
-          mediaType: AssetType.image,
+          mediaType: AssetType.other,
         ),
       );
 

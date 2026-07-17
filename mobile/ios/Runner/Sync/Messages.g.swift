@@ -526,17 +526,19 @@ class MessagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable {
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol NativeSyncApi {
-  func shouldFullSync() throws -> Bool
-  func getMediaChanges() throws -> SyncDelta
+  func shouldFullSync(completion: @escaping (Result<Bool, Error>) -> Void)
+  func getMediaChanges(completion: @escaping (Result<SyncDelta, Error>) -> Void)
   func checkpointSync() throws
   func clearSyncCheckpoint() throws
-  func getAssetIdsForAlbum(albumId: String) throws -> [String]
-  func getAlbums() throws -> [PlatformAlbum]
+  func getAssetIdsForAlbum(albumId: String, completion: @escaping (Result<[String], Error>) -> Void)
+  func getAlbums(completion: @escaping (Result<[PlatformAlbum], Error>) -> Void)
   func getAssetsCountSince(albumId: String, timestamp: Int64) throws -> Int64
-  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?) throws -> [PlatformAsset]
+  func getAssetsForAlbum(albumId: String, updatedTimeCond: Int64?, completion: @escaping (Result<[PlatformAsset], Error>) -> Void)
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
+  func cancelSync() throws
   func getTrashedAssets() throws -> [String: [PlatformAsset]]
+  func restoreFromTrashById(mediaId: String, type: Int64, completion: @escaping (Result<Bool, Error>) -> Void)
   func getCloudIdForAssetIds(assetIds: [String]) throws -> [CloudIdResult]
 }
 
@@ -554,26 +556,28 @@ class NativeSyncApiSetup {
     let shouldFullSyncChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.shouldFullSync\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       shouldFullSyncChannel.setMessageHandler { _, reply in
-        do {
-          let result = try api.shouldFullSync()
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        api.shouldFullSync { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
       shouldFullSyncChannel.setMessageHandler(nil)
     }
-    let getMediaChangesChannel = taskQueue == nil
-      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    let getMediaChangesChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getMediaChanges\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       getMediaChangesChannel.setMessageHandler { _, reply in
-        do {
-          let result = try api.getMediaChanges()
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        api.getMediaChanges { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
@@ -605,33 +609,33 @@ class NativeSyncApiSetup {
     } else {
       clearSyncCheckpointChannel.setMessageHandler(nil)
     }
-    let getAssetIdsForAlbumChannel = taskQueue == nil
-      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetIdsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetIdsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    let getAssetIdsForAlbumChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetIdsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       getAssetIdsForAlbumChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let albumIdArg = args[0] as! String
-        do {
-          let result = try api.getAssetIdsForAlbum(albumId: albumIdArg)
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        api.getAssetIdsForAlbum(albumId: albumIdArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
       getAssetIdsForAlbumChannel.setMessageHandler(nil)
     }
-    let getAlbumsChannel = taskQueue == nil
-      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAlbums\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAlbums\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    let getAlbumsChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAlbums\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       getAlbumsChannel.setMessageHandler { _, reply in
-        do {
-          let result = try api.getAlbums()
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        api.getAlbums { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
@@ -655,19 +659,19 @@ class NativeSyncApiSetup {
     } else {
       getAssetsCountSinceChannel.setMessageHandler(nil)
     }
-    let getAssetsForAlbumChannel = taskQueue == nil
-      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
+    let getAssetsForAlbumChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getAssetsForAlbum\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       getAssetsForAlbumChannel.setMessageHandler { message, reply in
         let args = message as! [Any?]
         let albumIdArg = args[0] as! String
         let updatedTimeCondArg: Int64? = nilOrValue(args[1])
-        do {
-          let result = try api.getAssetsForAlbum(albumId: albumIdArg, updatedTimeCond: updatedTimeCondArg)
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
+        api.getAssetsForAlbum(albumId: albumIdArg, updatedTimeCond: updatedTimeCondArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
         }
       }
     } else {
@@ -706,6 +710,19 @@ class NativeSyncApiSetup {
     } else {
       cancelHashingChannel.setMessageHandler(nil)
     }
+    let cancelSyncChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.cancelSync\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      cancelSyncChannel.setMessageHandler { _, reply in
+        do {
+          try api.cancelSync()
+          reply(wrapResult(nil))
+        } catch {
+          reply(wrapError(error))
+        }
+      }
+    } else {
+      cancelSyncChannel.setMessageHandler(nil)
+    }
     let getTrashedAssetsChannel = taskQueue == nil
       ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
       : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
@@ -720,6 +737,24 @@ class NativeSyncApiSetup {
       }
     } else {
       getTrashedAssetsChannel.setMessageHandler(nil)
+    }
+    let restoreFromTrashByIdChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.restoreFromTrashById\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
+    if let api = api {
+      restoreFromTrashByIdChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let mediaIdArg = args[0] as! String
+        let typeArg = args[1] as! Int64
+        api.restoreFromTrashById(mediaId: mediaIdArg, type: typeArg) { result in
+          switch result {
+          case .success(let res):
+            reply(wrapResult(res))
+          case .failure(let error):
+            reply(wrapError(error))
+          }
+        }
+      }
+    } else {
+      restoreFromTrashByIdChannel.setMessageHandler(nil)
     }
     let getCloudIdForAssetIdsChannel = taskQueue == nil
       ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)

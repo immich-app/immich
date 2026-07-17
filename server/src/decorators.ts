@@ -190,15 +190,19 @@ type CustomExtensions = {
 };
 
 enum ApiState {
-  'Stable' = 'Stable',
-  'Alpha' = 'Alpha',
-  'Beta' = 'Beta',
-  'Internal' = 'Internal',
-  'Deprecated' = 'Deprecated',
+  Stable = 'Stable',
+  Alpha = 'Alpha',
+  Beta = 'Beta',
+  Internal = 'Internal',
+  Deprecated = 'Deprecated',
 }
 export class HistoryBuilder {
   private hasDeprecated = false;
   private items: HistoryEntry[] = [];
+
+  static v3() {
+    return new HistoryBuilder().added('v3.0.0');
+  }
 
   added(version: string, description?: string) {
     return this.push({ version, state: 'Added', description });
@@ -261,3 +265,13 @@ export class HistoryBuilder {
     return this;
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+export const extraModels: Function[] = [];
+
+export const ExtraModel = (): ClassDecorator => {
+  // eslint-disable-next-line unicorn/consistent-function-scoping, @typescript-eslint/no-unsafe-function-type
+  return (object: Function) => {
+    extraModels.push(object);
+  };
+};

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import DateInput from '$lib/elements/DateInput.svelte';
   import { handleUpdatePersonBirthDate } from '$lib/services/person.service';
   import { type PersonResponseDto } from '@immich/sdk';
-  import { Button, FormModal, Text } from '@immich/ui';
+  import { Button, DatePicker, Field, FormModal, HelperText } from '@immich/ui';
   import { mdiCake } from '@mdi/js';
+  import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
 
   type Props = {
@@ -12,32 +12,25 @@
   };
 
   let { person, onClose }: Props = $props();
-  let birthDate = $derived(person.birthDate ?? '');
+  let birthDate = $derived(person.birthDate ? DateTime.fromISO(person.birthDate) : undefined);
 
   const onSubmit = async () => {
-    const success = await handleUpdatePersonBirthDate(person, birthDate);
+    const success = await handleUpdatePersonBirthDate(person, birthDate?.toISODate() ?? null);
     if (success) {
       onClose();
     }
   };
-
-  const todayFormatted = new Date().toISOString().split('T')[0];
 </script>
 
 <FormModal title={$t('set_date_of_birth')} size="small" icon={mdiCake} {onClose} {onSubmit}>
-  <Text size="small">{$t('birthdate_set_description')}</Text>
-  <div class="my-4 flex flex-col gap-2">
-    <DateInput
-      class="immich-form-input"
-      id="birthDate"
-      name="birthDate"
-      type="date"
-      bind:value={birthDate}
-      max={todayFormatted}
-    />
+  <div class="my-2 flex flex-col gap-2">
+    <Field label={$t('date_of_birth')}>
+      <DatePicker bind:value={birthDate} maxDate={DateTime.now()} />
+      <HelperText>{$t('birthdate_set_description')}</HelperText>
+    </Field>
     {#if person.birthDate}
       <div class="flex justify-end">
-        <Button shape="round" color="secondary" size="small" onclick={() => (birthDate = '')}>
+        <Button shape="round" color="secondary" size="small" onclick={() => (birthDate = undefined)}>
           {$t('clear')}
         </Button>
       </div>

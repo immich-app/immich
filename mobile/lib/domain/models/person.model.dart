@@ -69,7 +69,9 @@ class PersonDto {
 
   @override
   bool operator ==(covariant PersonDto other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.id == id &&
         other.birthDate == birthDate &&
@@ -160,7 +162,9 @@ class DriftPerson {
 
   @override
   bool operator ==(covariant DriftPerson other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.id == id &&
         other.createdAt == createdAt &&

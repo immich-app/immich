@@ -8,7 +8,9 @@ class Marker {
 
   @override
   bool operator ==(covariant Marker other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.location == location && other.assetId == assetId;
   }

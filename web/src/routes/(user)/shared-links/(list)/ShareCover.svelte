@@ -15,7 +15,7 @@
   let { sharedLink, preload = false, class: className = '' }: Props = $props();
 </script>
 
-<div class="relative shrink-0 size-22">
+<div class="relative size-22 shrink-0">
   {#if sharedLink?.album}
     <AlbumCover album={sharedLink.album} class={className} {preload} />
   {:else if sharedLink.assets[0]}

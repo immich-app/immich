@@ -9,6 +9,7 @@ import 'package:immich_mobile/infrastructure/repositories/remote_album.repositor
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/remote_album.provider.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
+import 'package:immich_mobile/services/foreground_upload.service.dart';
 
 final localAlbumRepository = Provider<DriftLocalAlbumRepository>(
   (ref) => DriftLocalAlbumRepository(ref.watch(driftProvider)),
@@ -33,7 +34,11 @@ final remoteAlbumRepository = Provider<DriftRemoteAlbumRepository>(
 );
 
 final remoteAlbumServiceProvider = Provider<RemoteAlbumService>(
-  (ref) => RemoteAlbumService(ref.watch(remoteAlbumRepository), ref.watch(driftAlbumApiRepositoryProvider)),
+  (ref) => RemoteAlbumService(
+    ref.watch(remoteAlbumRepository),
+    ref.watch(driftAlbumApiRepositoryProvider),
+    ref.watch(foregroundUploadServiceProvider),
+  ),
   dependencies: [remoteAlbumRepository],
 );
 

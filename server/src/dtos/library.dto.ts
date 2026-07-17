@@ -62,8 +62,8 @@ const ValidateLibraryResponseSchema = z
 
 const LibraryResponseSchema = z
   .object({
-    id: z.string().describe('Library ID'),
-    ownerId: z.string().describe('Owner user ID'),
+    id: z.uuidv4().describe('Library ID'),
+    ownerId: z.uuidv4().describe('Owner user ID'),
     name: z.string().describe('Library name'),
     assetCount: z.int().describe('Number of assets'),
     importPaths: z.array(z.string()).describe('Import paths'),

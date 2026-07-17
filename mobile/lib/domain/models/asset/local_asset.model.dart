@@ -25,7 +25,6 @@ class LocalAsset extends BaseAsset {
     super.height,
     super.durationMs,
     super.isFavorite = false,
-    super.livePhotoVideoId,
     this.orientation = 0,
     required this.playbackStyle,
     this.adjustmentTime,
@@ -74,8 +73,12 @@ class LocalAsset extends BaseAsset {
   // Not checking for remoteId here
   @override
   bool operator ==(Object other) {
-    if (other is! LocalAsset) return false;
-    if (identical(this, other)) return true;
+    if (other is! LocalAsset) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
     return super == other &&
         id == other.id &&
         cloudId == other.cloudId &&

@@ -15,6 +15,7 @@
   import NavigateToDateModal from '$lib/modals/NavigateToDateModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
+  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
@@ -45,10 +46,7 @@
 
     await deleteAssets(
       force,
-      (assetIds) => {
-        timelineManager.removeAssets(assetIds);
-        eventManager.emit('AssetsDelete', assetIds);
-      },
+      (assetIds) => timelineManager.removeAssets(assetIds),
       selectedAssets,
       force ? undefined : (assets) => timelineManager.upsertAssets(assets),
     );
@@ -76,32 +74,8 @@
     assetInteraction.clear();
   };
 
-  let shiftKeyIsDown = $state(false);
-
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (searchStore.isSearchEnabled) {
-      return;
-    }
-
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = true;
-    }
-  };
-
-  const onKeyUp = (event: KeyboardEvent) => {
-    if (searchStore.isSearchEnabled) {
-      return;
-    }
-
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = false;
-    }
-  };
-
   const onSelectStart = (e: Event) => {
-    if (assetInteraction.selectionActive && shiftKeyIsDown) {
+    if (!searchStore.isSearchEnabled && assetInteraction.selectionActive && keyboardManager.shift) {
       e.preventDefault();
     }
   };
@@ -174,4 +148,4 @@
   });
 </script>
 
-<svelte:document onkeydown={onKeyDown} onkeyup={onKeyUp} onselectstart={onSelectStart} use:shortcuts={shortcutList} />
+<svelte:document onselectstart={onSelectStart} use:shortcuts={shortcutList} />

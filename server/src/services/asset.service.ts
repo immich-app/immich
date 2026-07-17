@@ -517,13 +517,13 @@ export class AssetService extends BaseService {
     );
 
     if (Object.keys(writes).length > 0) {
-      await this.assetRepository.upsertExif(
-        updateLockedColumns({
+      await this.assetRepository.upsertExif({
+        exif: updateLockedColumns({
           assetId: id,
           ...writes,
         }),
-        { lockedPropertiesBehavior: 'append' },
-      );
+        lockedPropertiesBehavior: 'append',
+      });
       await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id } });
     }
   }

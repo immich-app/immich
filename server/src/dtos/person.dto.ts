@@ -7,22 +7,24 @@ import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { SourceTypeSchema } from 'src/enum';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { ImageDimensions, MaybeDehydrated } from 'src/types';
-import { asBirthDateString, asDateString } from 'src/utils/date';
+import { asDateString, asDateTimeString } from 'src/utils/date';
 import { transformFaceBoundingBox } from 'src/utils/transform';
-import { emptyStringToNull, hexColor, stringToBool } from 'src/validation';
+import { hexColor, stringToBool } from 'src/validation';
 import z from 'zod';
 
 const PersonCreateSchema = z
   .object({
     name: z.string().optional().describe('Person name'),
-    // Note: the mobile app cannot currently set the birth date to null.
-    birthDate: emptyStringToNull(z.string().meta({ format: 'date' }).nullable())
+    birthDate: z
+      .string()
+      .meta({ format: 'date' })
+      .nullable()
       .optional()
       .refine((val) => (val ? new Date(val) <= new Date() : true), { error: 'Birth date cannot be in the future' })
       .describe('Person date of birth'),
     isHidden: z.boolean().optional().describe('Person visibility (hidden)'),
     isFavorite: z.boolean().optional().describe('Mark as favorite'),
-    color: emptyStringToNull(hexColor.nullable()).optional().describe('Person color (hex)'),
+    color: hexColor.nullable().optional().describe('Person color (hex)'),
   })
   .meta({ id: 'PersonCreateDto' });
 
@@ -31,7 +33,7 @@ const PersonUpdateSchema = PersonCreateSchema.extend({
 }).meta({ id: 'PersonUpdateDto' });
 
 const PeopleUpdateItemSchema = PersonUpdateSchema.extend({
-  id: z.string().describe('Person ID'),
+  id: z.uuidv4().describe('Person ID'),
 }).meta({ id: 'PeopleUpdateItem' });
 
 const PeopleUpdateSchema = z
@@ -51,14 +53,14 @@ const PersonSearchSchema = z
     withHidden: stringToBool.optional().describe('Include hidden people'),
     closestPersonId: z.uuidv4().optional().describe('Closest person ID for similarity search'),
     closestAssetId: z.uuidv4().optional().describe('Closest asset ID for similarity search'),
-    page: z.coerce.number().min(1).default(1).describe('Page number for pagination'),
-    size: z.coerce.number().min(1).max(1000).default(500).describe('Number of items per page'),
+    page: z.coerce.number().int().min(1).default(1).describe('Page number for pagination'),
+    size: z.coerce.number().int().min(1).max(1000).default(500).describe('Number of items per page'),
   })
   .meta({ id: 'PersonSearchDto' });
 
-const PersonResponseSchema = z
+export const PersonResponseSchema = z
   .object({
-    id: z.string().describe('Person ID'),
+    id: z.uuidv4().describe('Person ID'),
     name: z.string().describe('Person name'),
     // TODO: use `isoDateToDate` when using `ZodSerializerDto` on the controllers.
     birthDate: z.string().meta({ format: 'date' }).describe('Person date of birth').nullable(),
@@ -91,7 +93,7 @@ export class MergePersonDto extends createZodDto(MergePersonSchema) {}
 export class PersonSearchDto extends createZodDto(PersonSearchSchema) {}
 export class PersonResponseDto extends createZodDto(PersonResponseSchema) {}
 
-export const AssetFaceWithoutPersonResponseSchema = z
+export const AssetFaceResponseSchema = z
   .object({
     id: z.uuidv4().describe('Face ID'),
     imageHeight: z.int().min(0).describe('Image height in pixels'),
@@ -101,21 +103,10 @@ export const AssetFaceWithoutPersonResponseSchema = z
     boundingBoxY1: z.int().describe('Bounding box Y1 coordinate'),
     boundingBoxY2: z.int().describe('Bounding box Y2 coordinate'),
     sourceType: SourceTypeSchema.optional(),
+    person: PersonResponseSchema.nullable(),
   })
-  .describe('Asset face without person')
-  .meta({ id: 'AssetFaceWithoutPersonResponseDto' });
-
-class AssetFaceWithoutPersonResponseDto extends createZodDto(AssetFaceWithoutPersonResponseSchema) {}
-
-export const PersonWithFacesResponseSchema = PersonResponseSchema.extend({
-  faces: z.array(AssetFaceWithoutPersonResponseSchema),
-}).meta({ id: 'PersonWithFacesResponseDto' });
-
-export class PersonWithFacesResponseDto extends createZodDto(PersonWithFacesResponseSchema) {}
-
-const AssetFaceResponseSchema = AssetFaceWithoutPersonResponseSchema.extend({
-  person: PersonResponseSchema.nullable(),
-}).meta({ id: 'AssetFaceResponseDto' });
+  .describe('Asset face with person')
+  .meta({ id: 'AssetFaceResponseDto' });
 
 export class AssetFaceResponseDto extends createZodDto(AssetFaceResponseSchema) {}
 
@@ -184,20 +175,20 @@ export function mapPerson(person: MaybeDehydrated<Person>): PersonResponseDto {
   return {
     id: person.id,
     name: person.name,
-    birthDate: asBirthDateString(person.birthDate),
+    birthDate: asDateString(person.birthDate),
     thumbnailPath: person.thumbnailPath,
     isHidden: person.isHidden,
     isFavorite: person.isFavorite,
     color: person.color ?? undefined,
-    updatedAt: asDateString(person.updatedAt),
+    updatedAt: asDateTimeString(person.updatedAt),
   };
 }
 
-export function mapFacesWithoutPerson(
+function mapFacesWithoutPerson(
   face: MaybeDehydrated<Selectable<AssetFaceTable>>,
   edits?: AssetEditActionItem[],
   assetDimensions?: ImageDimensions,
-): AssetFaceWithoutPersonResponseDto {
+) {
   return {
     id: face.id,
     ...transformFaceBoundingBox(

@@ -4,7 +4,7 @@ import z from 'zod';
 
 const DuplicateResponseSchema = z
   .object({
-    duplicateId: z.string().describe('Duplicate group ID'),
+    duplicateId: z.uuidv4().describe('Duplicate group ID'),
     assets: z.array(AssetResponseSchema).describe('Duplicate assets'),
     suggestedKeepAssetIds: z.array(z.uuidv4()).describe('Suggested asset IDs to keep based on file size and EXIF data'),
   })

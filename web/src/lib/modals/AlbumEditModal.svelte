@@ -25,10 +25,10 @@
 </script>
 
 <FormModal icon={mdiRenameOutline} title={$t('edit_album')} size="medium" {onClose} {onSubmit}>
-  <div class="flex items-center gap-8 m-4">
-    <AlbumCover {album} class="h-50 w-50 shadow-lg hidden sm:flex" />
+  <div class="m-4 flex items-center gap-8">
+    <AlbumCover {album} class="hidden size-50 shadow-lg sm:flex" />
 
-    <div class="grow flex flex-col gap-4">
+    <div class="flex grow flex-col gap-4">
       <Field label={$t('name')}>
         <Input bind:value={albumName} />
       </Field>

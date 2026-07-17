@@ -71,7 +71,7 @@
                     </p>
                   {/each}
                 </div>
-                <p class="mb-1 mt-1 flex">{shortcut.action}</p>
+                <p class="my-1 flex">{shortcut.action}</p>
               </div>
             {/each}
           </div>
@@ -93,7 +93,7 @@
                   {/each}
                 </div>
                 <div class="flex items-center gap-2">
-                  <p class="mb-1 mt-1 flex">{shortcut.action}</p>
+                  <p class="my-1 flex">{shortcut.action}</p>
                   {#if shortcut.info}
                     <Icon icon={mdiInformationOutline} title={shortcut.info} />
                   {/if}

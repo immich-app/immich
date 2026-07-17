@@ -7,16 +7,19 @@ import {
   HttpStatus,
   Next,
   Param,
+  Patch,
   Post,
   Put,
+  Query,
   Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
-import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { NextFunction, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto } from 'src/dtos/user-preferences.dto';
@@ -60,14 +63,36 @@ export class UserController {
     return this.service.getMe(auth);
   }
 
+  @Get('me/calendar-heatmap')
+  @Authenticated({ permission: Permission.UserRead })
+  @Endpoint({
+    summary: 'Retrieve calendar heatmap activity',
+    description: 'Retrieve activity counts for a specified period, in a calendar heatmap format.',
+    history: new HistoryBuilder().added('v3').stable('v3'),
+  })
+  getMyCalendarHeatmap(@Auth() auth: AuthDto, @Query() dto: CalendarHeatmapDto): Promise<CalendarHeatmapResponseDto> {
+    return this.service.getCalendarHeatmap(auth, dto);
+  }
+
   @Put('me')
   @Authenticated({ permission: Permission.UserUpdate })
   @Endpoint({
     summary: 'Update current user',
     description: 'Update the current user making the API request.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateMyUser' }),
   })
   updateMyUser(@Auth() auth: AuthDto, @Body() dto: UserUpdateMeDto): Promise<UserAdminResponseDto> {
+    return this.service.updateMe(auth, dto);
+  }
+
+  @Patch('me')
+  @ApiExcludeEndpoint()
+  @Authenticated({ permission: Permission.UserUpdate })
+  updateMyUserV3(@Auth() auth: AuthDto, @Body() dto: UserUpdateMeDto): Promise<UserAdminResponseDto> {
     return this.service.updateMe(auth, dto);
   }
 
@@ -87,9 +112,23 @@ export class UserController {
   @Endpoint({
     summary: 'Update my preferences',
     description: 'Update the preferences of the current user.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3', { replacementId: 'updateMyPreferences' }),
   })
   updateMyPreferences(
+    @Auth() auth: AuthDto,
+    @Body() dto: UserPreferencesUpdateDto,
+  ): Promise<UserPreferencesResponseDto> {
+    return this.service.updateMyPreferences(auth, dto);
+  }
+
+  @Patch('me/preferences')
+  @ApiExcludeEndpoint()
+  @Authenticated({ permission: Permission.UserPreferenceUpdate })
+  updateMyPreferencesV3(
     @Auth() auth: AuthDto,
     @Body() dto: UserPreferencesUpdateDto,
   ): Promise<UserPreferencesResponseDto> {

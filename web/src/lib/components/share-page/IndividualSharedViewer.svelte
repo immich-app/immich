@@ -18,7 +18,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import { getAssetInfo, type SharedLinkResponseDto } from '@immich/sdk';
   import { IconButton, Logo, toastManager } from '@immich/ui';
-  import { mdiArrowLeft, mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
+  import { mdiDownload, mdiFileImagePlusOutline, mdiSelectAll } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import ControlAppBar from '../shared-components/ControlAppBar.svelte';
   import GalleryViewer from '../shared-components/gallery-viewer/GalleryViewer.svelte';
@@ -69,16 +69,17 @@
         await goto(Route.photos());
         break;
       }
+      // no default
     }
   };
 </script>
 
 {#if sharedLink?.allowUpload || assets.length > 1}
-  <main class="mt-24 mb-40 mx-4 isolate" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
+  <main class="isolate mx-4 mt-24 mb-40" bind:clientHeight={viewport.height} bind:clientWidth={viewport.width}>
     <GalleryViewer {assets} assetInteraction={assetMultiSelectManager} {viewport} allowDeletion={false} />
   </main>
 
-  <header class="fixed top-0 inset-s-0 w-full">
+  <header class="fixed inset-s-0 top-0 w-full">
     {#if assetMultiSelectManager.selectionActive}
       <AssetSelectControlBar>
         <IconButton
@@ -97,7 +98,7 @@
         {/if}
       </AssetSelectControlBar>
     {:else}
-      <ControlAppBar onClose={() => goto(Route.photos())} backIcon={mdiArrowLeft} showBackButton={false}>
+      <ControlAppBar>
         {#snippet leading()}
           <a data-sveltekit-preload-data="hover" class="ms-4" href="/">
             <Logo variant={mediaQueryManager.maxMd ? 'icon' : 'inline'} class="min-w-10" />

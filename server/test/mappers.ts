@@ -4,6 +4,7 @@ import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { ActivityTable } from 'src/schema/tables/activity.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { PartnerTable } from 'src/schema/tables/partner.table';
+import { AudioStreamInfo, VideoFormat, VideoStreamInfo } from 'src/types';
 import { AlbumFactory } from 'test/factories/album.factory';
 import { AssetFaceFactory } from 'test/factories/asset-face.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
@@ -155,6 +156,9 @@ export const getForGenerateThumbnail = (asset: ReturnType<AssetFactory['build']>
   files: asset.files.map((file) => getDehydrated(file)),
   exifInfo: getDehydrated(asset.exifInfo),
   edits: asset.edits.map(({ action, parameters }) => ({ action, parameters })) as AssetEditActionItem[],
+  videoStream: null as (VideoStreamInfo & { timeBase: number }) | null,
+  audioStream: null as AudioStreamInfo | null,
+  format: null as VideoFormat | null,
 });
 
 export const getForAssetFace = (face: ReturnType<AssetFaceFactory['build']>) => ({

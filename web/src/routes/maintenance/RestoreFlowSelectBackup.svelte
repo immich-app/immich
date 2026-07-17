@@ -14,7 +14,7 @@
 </script>
 
 <Heading size="large" color="primary" tag="h1">{$t('maintenance_restore_from_backup')}</Heading>
-<Scrollable class="max-h-120 bg-white dark:bg-black p-4 rounded-2xl border border-light-300 w-full">
+<Scrollable class="max-h-120 w-full rounded-2xl border border-light-300 bg-white p-4 dark:bg-black">
   <MaintenanceBackupsList {expectedVersion} />
 </Scrollable>
 <HStack>

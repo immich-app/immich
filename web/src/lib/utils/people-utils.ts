@@ -1,5 +1,5 @@
 import { AssetTypeEnum, type AssetFaceResponseDto } from '@immich/sdk';
-import type { Faces } from '$lib/stores/people.store';
+import type { Faces } from '$lib/managers/asset-viewer-manager.svelte';
 import { getAssetMediaUrl } from '$lib/utils';
 import { mapNormalizedRectToContent, type Rect, type Size } from '$lib/utils/container-utils';
 

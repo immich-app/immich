@@ -14,7 +14,7 @@
   <fieldset>
     <Text class="mb-2" fontWeight="medium">{$t('display_options')}</Text>
 
-    <div class="flex flex-wrap gap-x-5 gap-y-2 mt-1">
+    <div class="mt-1 flex flex-wrap gap-x-5 gap-y-2">
       <div class="flex items-center gap-2">
         <Checkbox id="not-in-album-checkbox" size="tiny" bind:checked={filters.isNotInAlbum} />
         <Label label={$t('not_in_any_album')} for="not-in-album-checkbox" class="text-sm font-normal" />

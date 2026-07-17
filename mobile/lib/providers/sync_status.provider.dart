@@ -56,7 +56,9 @@ class SyncStatusState {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     return other is SyncStatusState &&
         other.remoteSyncStatus == remoteSyncStatus &&
         other.localSyncStatus == localSyncStatus &&

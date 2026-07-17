@@ -46,9 +46,9 @@
 {#if !imageLoaded}
   <DelayedLoadingSpinner />
 {:else if imageLoaded}
-  <div transition:fade={{ duration: assetViewerFadeDuration }} class="h-full w-full">
+  <div transition:fade={{ duration: assetViewerFadeDuration }} class="size-full">
     <img
-      class="h-full w-full rounded-2xl object-contain transition-all"
+      class="size-full rounded-2xl object-contain transition-all"
       src={assetFileUrl}
       alt={$getAltText(asset)}
       draggable="false"

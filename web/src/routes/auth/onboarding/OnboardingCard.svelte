@@ -30,16 +30,16 @@
 
 <div
   id="onboarding-card"
-  class="flex w-full max-w-4xl flex-col gap-4 rounded-3xl border-2 border-gray-500 px-8 py-8 dark:border-gray-700 dark:bg-immich-dark-gray text-black dark:text-immich-dark-fg bg-gray-50"
+  class="flex w-full max-w-4xl flex-col gap-4 rounded-3xl border-2 border-gray-500 bg-gray-50 p-8 text-black dark:border-gray-700 dark:bg-immich-dark-gray dark:text-immich-dark-fg"
   in:fade={{ duration: 250 }}
 >
   {#if title || icon}
-    <div class="flex gap-2 items-center justify-center w-fit">
+    <div class="flex w-fit items-center justify-center gap-2">
       {#if icon}
         <Icon {icon} size="30" class="text-primary" />
       {/if}
       {#if title}
-        <p class="text-xl text-primary font-medium">
+        <p class="text-xl font-medium text-primary">
           {title}
         </p>
       {/if}
@@ -49,11 +49,11 @@
 
   <div class="flex pt-4">
     {#if previousTitle}
-      <div class="w-full flex place-content-start">
+      <div class="flex w-full place-content-start">
         <Button
           shape="round"
           leadingIcon={mdiArrowLeft}
-          class="flex gap-2 place-content-center"
+          class="flex place-content-center gap-2"
           onclick={() => {
             onLeave?.();
             onPrevious?.();

@@ -2,15 +2,15 @@ import 'dart:async';
 import 'dart:ffi';
 import 'dart:ui' as ui;
 
+import 'package:ffi/ffi.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ffi/ffi.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 
 part 'local_image_request.dart';
-part 'thumbhash_image_request.dart';
 part 'remote_image_request.dart';
+part 'thumbhash_image_request.dart';
 
 abstract class ImageRequest {
   static int _nextRequestId = 0;
@@ -74,7 +74,9 @@ abstract class ImageRequest {
 
   Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length) async {
     final result = await _codecFromEncodedPlatformImage(address, length);
-    if (result == null) return null;
+    if (result == null) {
+      return null;
+    }
 
     final (codec, descriptor) = result;
     if (_isCancelled) {

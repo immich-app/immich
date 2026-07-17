@@ -6,10 +6,15 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { getNextAsset, getPreviousAsset } from '$lib/utils/asset-utils';
+  import {
+    computeDifferingMetadataFields,
+    countDifferingMetadataItems,
+    type DifferingMetadataFields,
+  } from '$lib/utils/duplicate-utils';
   import { navigate } from '$lib/utils/navigation';
   import { getAssetInfo, type AssetResponseDto } from '@immich/sdk';
-  import { Button } from '@immich/ui';
-  import { mdiCheck, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
+  import { Button, Icon } from '@immich/ui';
+  import { mdiCheck, mdiChevronDown, mdiChevronUp, mdiImageMultipleOutline, mdiTrashCanOutline } from '@mdi/js';
   import { onDestroy, onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { SvelteSet } from 'svelte/reactivity';
@@ -17,14 +22,21 @@
   interface Props {
     assets: AssetResponseDto[];
     suggestedKeepAssetIds: string[];
+    showMore: boolean;
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
-  let { assets, suggestedKeepAssetIds, onResolve, onStack }: Props = $props();
+  let { assets, suggestedKeepAssetIds, onResolve, onStack, showMore = $bindable() }: Props = $props();
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
+
+  const InitialVisibleCount = 5;
+
+  const differingMetadataFields: DifferingMetadataFields = $derived(computeDifferingMetadataFields(assets));
+  const differingCount = $derived(countDifferingMetadataItems(differingMetadataFields));
+  const hasMore = $derived(differingCount > InitialVisibleCount);
 
   onMount(() => {
     if (suggestedKeepAssetIds.length > 0) {
@@ -105,8 +117,8 @@
   ]}
 />
 
-<div class="rounded-3xl border dark:border-2 border-gray-300 dark:border-gray-700 max-w-256 mx-auto mb-4 py-6 px-0.2">
-  <div class="flex flex-wrap gap-y-6 mb-4 px-6 w-full place-content-end justify-between">
+<div class="px-0.2 mx-auto mb-4 max-w-5xl rounded-3xl border border-gray-300 py-6 dark:border-2 dark:border-gray-700">
+  <div class="mb-4 flex w-full flex-wrap place-content-end justify-between gap-y-6 px-6">
     <!-- MARK ALL BUTTONS -->
     <div class="flex text-xs text-black">
       <Button class="rounded-s-full" size="small" color="primary" leadingIcon={mdiCheck} onclick={onSelectAll}
@@ -128,7 +140,7 @@
           size="small"
           leadingIcon={mdiCheck}
           color="success"
-          class="flex place-items-center rounded-s-full gap-2"
+          class="flex place-items-center gap-2 rounded-s-full"
           onclick={handleResolve}
         >
           {$t('keep_all')}
@@ -158,12 +170,31 @@
   </div>
 
   <div class="overflow-x-auto p-2">
-    <div class="flex flex-nowrap gap-1 place-items-start justify-center min-w-full w-fit mx-auto">
+    <div class="mx-auto flex w-fit min-w-full flex-nowrap place-items-start justify-center gap-1">
       {#each assets as asset (asset.id)}
-        <DuplicateAsset {assets} {asset} {onSelectAsset} isSelected={selectedAssetIds.has(asset.id)} {onViewAsset} />
+        <DuplicateAsset
+          {asset}
+          {onSelectAsset}
+          isSelected={selectedAssetIds.has(asset.id)}
+          {onViewAsset}
+          {differingMetadataFields}
+          {showMore}
+          initialVisibleCount={InitialVisibleCount}
+        />
       {/each}
     </div>
   </div>
+
+  {#if hasMore}
+    <div class="flex justify-center pb-2">
+      <Button size="small" variant="ghost" color="secondary" onclick={() => (showMore = !showMore)}>
+        <Icon icon={showMore ? mdiChevronUp : mdiChevronDown} size="18" class="me-1" />
+        {showMore
+          ? $t('show_less')
+          : $t('show_more_fields', { values: { count: differingCount - InitialVisibleCount } })}
+      </Button>
+    </div>
+  {/if}
 </div>
 
 {#if assetViewerManager.isViewing}

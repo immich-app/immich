@@ -21,7 +21,7 @@
 </script>
 
 <AuthPageLayout>
-  <div class="flex flex-col place-items-center text-center gap-12">
+  <div class="flex flex-col place-items-center gap-12 text-center">
     <Heading size="large" color="primary" tag="h1">{$t('welcome_to_immich')}</Heading>
     <Stack>
       <Button href={Route.register()} size="large" shape="round">

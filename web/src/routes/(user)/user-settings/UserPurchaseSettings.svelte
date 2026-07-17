@@ -118,17 +118,17 @@
       <!-- PRODUCT KEY INFO CARD -->
       {#if isServerProduct}
         <div
-          class="bg-gray-50 border border-immich-dark-primary/20 dark:bg-immich-dark-primary/15 p-6 pe-12 rounded-xl flex place-content-center gap-4"
+          class="flex place-content-center gap-4 rounded-xl border border-immich-dark-primary/20 bg-gray-50 p-6 pe-12 dark:bg-immich-dark-primary/15"
         >
           <Icon icon={mdiKey} size="56" class="text-primary" />
 
           <div>
-            <p class="text-primary font-semibold text-lg">
+            <p class="text-lg font-semibold text-primary">
               {$t('purchase_server_title')}
             </p>
 
             {#if authManager.user.isAdmin && serverPurchaseInfo?.activatedAt}
-              <p class="dark:text-white text-sm mt-1 col-start-2">
+              <p class="col-start-2 mt-1 text-sm dark:text-white">
                 {$t('purchase_activated_time', {
                   values: {
                     date: new Date(serverPurchaseInfo.activatedAt).toLocaleString($locale, dateFormats.settings),
@@ -142,7 +142,7 @@
         </div>
 
         {#if authManager.user.isAdmin}
-          <div class="text-right mt-4">
+          <div class="mt-4 text-right">
             <Button shape="round" size="small" color="danger" onclick={removeServerProductKey}
               >{$t('purchase_button_remove_key')}</Button
             >
@@ -150,16 +150,16 @@
         {/if}
       {:else}
         <div
-          class="bg-gray-50 border border-immich-dark-primary/20 dark:bg-immich-dark-primary/15 p-6 pe-12 rounded-xl flex place-content-center gap-4"
+          class="flex place-content-center gap-4 rounded-xl border border-immich-dark-primary/20 bg-gray-50 p-6 pe-12 dark:bg-immich-dark-primary/15"
         >
           <Icon icon={mdiKey} size="56" class="text-primary" />
 
           <div>
-            <p class="text-primary font-semibold text-lg">
+            <p class="text-lg font-semibold text-primary">
               {$t('purchase_individual_title')}
             </p>
             {#if authManager.user.license?.activatedAt}
-              <p class="dark:text-white text-sm mt-1 col-start-2">
+              <p class="col-start-2 mt-1 text-sm dark:text-white">
                 {$t('purchase_activated_time', {
                   values: {
                     date: new Date(authManager.user.license?.activatedAt).toLocaleString($locale, dateFormats.settings),
@@ -170,7 +170,7 @@
           </div>
         </div>
 
-        <div class="text-right mt-4">
+        <div class="mt-4 text-right">
           <Button shape="round" size="small" color="danger" onclick={removeIndividualProductKey}
             >{$t('purchase_button_remove_key')}</Button
           >

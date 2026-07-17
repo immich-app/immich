@@ -20,7 +20,10 @@ class MaintenanceDetectInstallStorageFolderDto {
   });
 
   /// Number of files in the folder
-  num files;
+  ///
+  /// Minimum value: -9007199254740991
+  /// Maximum value: 9007199254740991
+  int files;
 
   StorageFolder folder;
 
@@ -66,7 +69,7 @@ class MaintenanceDetectInstallStorageFolderDto {
       final json = value.cast<String, dynamic>();
 
       return MaintenanceDetectInstallStorageFolderDto(
-        files: num.parse('${json[r'files']}'),
+        files: mapValueOfType<int>(json, r'files')!,
         folder: StorageFolder.fromJson(json[r'folder'])!,
         readable: mapValueOfType<bool>(json, r'readable')!,
         writable: mapValueOfType<bool>(json, r'writable')!,

@@ -1,17 +1,18 @@
-<script lang="ts">
+<script lang="ts" generics="T extends string | number">
   import { Checkbox, Label } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { quintOut } from 'svelte/easing';
   import { fly } from 'svelte/transition';
 
   interface Props {
-    value: string[];
-    options: { value: string; text: string }[];
+    value: T[];
+    options: { value: T; text: string }[];
     label?: string;
     desc?: string;
     name?: string;
     isEdited?: boolean;
     disabled?: boolean;
+    lockedOptions?: T[];
   }
 
   let {
@@ -22,16 +23,17 @@
     name = '',
     isEdited = false,
     disabled = false,
+    lockedOptions = [],
   }: Props = $props();
 
-  function handleCheckboxChange(option: string) {
+  function handleCheckboxChange(option: T) {
     value = value.includes(option) ? value.filter((item) => item !== option) : [...value, option];
   }
 </script>
 
 <div class="mb-4 w-full">
   <div class="flex h-6.5 place-items-center gap-1">
-    <label class="font-medium text-primary text-sm" for="{name}-select">
+    <label class="text-sm font-medium text-primary" for="{name}-select">
       {label}
     </label>
 
@@ -46,18 +48,18 @@
   </div>
 
   {#if desc}
-    <p class="immich-form-label pb-2 text-sm" id="{name}-desc">
+    <p class="pb-2 text-sm immich-form-label" id="{name}-desc">
       {desc}
     </p>
   {/if}
   <div class="flex flex-col gap-2">
     {#each options as option (option.value)}
-      <div class="flex gap-2 items-center">
+      <div class="flex items-center gap-2">
         <Checkbox
           size="tiny"
           id="{option.value}-checkbox"
           checked={value.includes(option.value)}
-          {disabled}
+          disabled={disabled || lockedOptions.includes(option.value)}
           onCheckedChange={() => handleCheckboxChange(option.value)}
         />
         <Label label={option.text} for="{option.value}-checkbox" size="small" />

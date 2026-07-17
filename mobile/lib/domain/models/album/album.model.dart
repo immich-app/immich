@@ -61,8 +61,12 @@ class RemoteAlbum {
 
   @override
   bool operator ==(Object other) {
-    if (other is! RemoteAlbum) return false;
-    if (identical(this, other)) return true;
+    if (other is! RemoteAlbum) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
     return id == other.id &&
         name == other.name &&
         ownerId == other.ownerId &&

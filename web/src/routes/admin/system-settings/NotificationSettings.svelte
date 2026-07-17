@@ -140,7 +140,7 @@
               isEdited={configToEdit.notifications.smtp.from !== config.notifications.smtp.from}
             />
 
-            <div class="flex gap-2 place-items-center">
+            <div class="flex place-items-center gap-2">
               <Button
                 size="small"
                 shape="round"

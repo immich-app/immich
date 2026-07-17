@@ -26,7 +26,11 @@
   },
   "[svelte]": {
     "editor.defaultFormatter": "svelte.svelte-vscode",
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "tailwindCSS.lint.suggestCanonicalClasses": "ignore"
+  },
+  "svelte.plugin.svelte.compilerWarnings": {
+    "state_referenced_locally": "ignore"
   },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
@@ -56,6 +60,7 @@
   "explorer.fileNesting.patterns": {
     "*.dart": "${capture}.g.dart,${capture}.gr.dart,${capture}.drift.dart",
     "*.ts": "${capture}.spec.ts,${capture}.mock.ts",
+    "*.js": "${capture}.spec.js,${capture}.mock.js",
     "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock, pnpm-workspace.yaml, .pnpmfile.cjs"
   },
   "search.exclude": {

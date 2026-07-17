@@ -6,14 +6,14 @@ import 'package:device_info_plus/device_info_plus.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
-import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/utils/url_helper.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
 class ApiService {
-  late ApiClient _apiClient;
+  final ApiClient _apiClient = ApiClient(basePath: '');
 
   late UsersApi usersApi;
   late AuthenticationApi authenticationApi;
@@ -54,7 +54,7 @@ class ApiService {
   }
 
   setEndpoint(String endpoint) {
-    _apiClient = ApiClient(basePath: endpoint);
+    _apiClient.basePath = endpoint;
     _apiClient.client = NetworkRepository.client;
     usersApi = UsersApi(_apiClient);
     authenticationApi = AuthenticationApi(_apiClient);
@@ -177,28 +177,21 @@ class ApiService {
     if (serverEndpoint != null && serverEndpoint.isNotEmpty) {
       urls.add(serverEndpoint);
     }
-    final localEndpoint = Store.tryGet(StoreKey.localEndpoint);
+    final network = SettingsRepository.instance.appConfig.network;
+    final localEndpoint = network.localEndpoint;
     if (localEndpoint != null && localEndpoint.isNotEmpty) {
       urls.add(localEndpoint);
     }
-    final externalJson = Store.tryGet(StoreKey.externalEndpointList);
-    if (externalJson != null) {
-      final List<dynamic> list = jsonDecode(externalJson);
-      for (final entry in list) {
-        final url = AuxilaryEndpoint.fromJson(entry).url;
-        if (url.isNotEmpty) urls.add(url);
+    for (final url in network.externalEndpointList) {
+      if (url.isNotEmpty) {
+        urls.add(url);
       }
     }
     return urls;
   }
 
   static Map<String, String> getRequestHeaders() {
-    var customHeadersStr = Store.get(StoreKey.customHeaders, "");
-    if (customHeadersStr.isEmpty) {
-      return const {};
-    }
-
-    return (jsonDecode(customHeadersStr) as Map).cast<String, String>();
+    return SettingsRepository.instance.appConfig.network.customHeaders;
   }
 
   ApiClient get apiClient => _apiClient;

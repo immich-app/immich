@@ -25,7 +25,7 @@
   style:height
 >
   <div class="hidden @min-[75px]:block">
-    <Icon icon={mdiImageBrokenVariant} size="7em" class="max-w-full min-w-6 min-h-6" />
+    <Icon icon={mdiImageBrokenVariant} size="7em" class="min-h-6 max-w-full min-w-6" />
   </div>
   {#if !hideMessage}
     <span class="text-center text-xs @min-[100px]:text-sm @min-[150px]:text-base">{$t('error_loading_image')}</span>

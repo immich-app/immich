@@ -38,15 +38,13 @@
 <a href="README_ar_JO.md">العربية</a>
 <a href="README_vi_VN.md">Tiếng Việt</a>
 <a href="README_th_TH.md">ภาษาไทย</a>
+  <a href="README_ml_IN.md">മലയാളം</a>
 
 </p>
 
-## Tuyên bố miễn trừ trách nhiệm
-
-- ⚠️ Dự án đang được phát triển **rất tích cực**.
-- ⚠️ Dự kiến ​​sẽ có lỗi và thay đổi đột ngột.
-- ⚠️ **Không sử dụng ứng dụng như là cách duy nhất để lưu trữ ảnh và video của bạn.**
-- ⚠️ Luôn tuân thủ kế hoạch sao lưu [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) cho những bức ảnh và video quý giá của bạn!
+> [!WARNING]
+> ⚠️ Luôn tuân thủ kế hoạch sao lưu [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) cho những bức ảnh và video quý giá của bạn!
+>
 
 > [!NOTE]
 > Bạn có thể tìm thấy tài liệu chính, bao gồm hướng dẫn cài đặt, tại https://immich.app/.

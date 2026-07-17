@@ -13,7 +13,7 @@ part of openapi.api;
 class PeopleResponseDto {
   /// Returns a new [PeopleResponseDto] instance.
   PeopleResponseDto({
-    this.hasNextPage,
+    this.hasNextPage = const Optional.absent(),
     required this.hidden,
     this.people = const [],
     required this.total,
@@ -26,7 +26,7 @@ class PeopleResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? hasNextPage;
+  Optional<bool?> hasNextPage;
 
   /// Number of hidden people
   ///
@@ -62,10 +62,9 @@ class PeopleResponseDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.hasNextPage != null) {
-      json[r'hasNextPage'] = this.hasNextPage;
-    } else {
-    //  json[r'hasNextPage'] = null;
+    if (this.hasNextPage.isPresent) {
+      final value = this.hasNextPage.value;
+      json[r'hasNextPage'] = value;
     }
       json[r'hidden'] = this.hidden;
       json[r'people'] = this.people;
@@ -82,7 +81,7 @@ class PeopleResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PeopleResponseDto(
-        hasNextPage: mapValueOfType<bool>(json, r'hasNextPage'),
+        hasNextPage: json.containsKey(r'hasNextPage') ? Optional.present(mapValueOfType<bool>(json, r'hasNextPage')) : const Optional.absent(),
         hidden: mapValueOfType<int>(json, r'hidden')!,
         people: PersonResponseDto.listFromJson(json[r'people']),
         total: mapValueOfType<int>(json, r'total')!,

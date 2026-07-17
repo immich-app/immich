@@ -1,17 +1,36 @@
 import { defaultProvider, screencastManager, themeManager, ThemePreference, type ActionItem } from '@immich/ui';
 import {
   mdiAccountMultipleOutline,
+  mdiAccountOutline,
+  mdiArchiveArrowDownOutline,
   mdiBookshelf,
   mdiCog,
+  mdiContentDuplicate,
+  mdiCrosshairsGps,
+  mdiFolderOutline,
+  mdiHeartOutline,
+  mdiImageAlbum,
+  mdiImageMultipleOutline,
+  mdiImageSizeSelectLarge,
   mdiKeyboard,
+  mdiLink,
+  mdiLockOutline,
+  mdiMagnify,
+  mdiMapMarkerOutline,
+  mdiMapOutline,
   mdiServer,
+  mdiStateMachine,
   mdiSync,
+  mdiTagMultipleOutline,
   mdiThemeLightDark,
+  mdiToolboxOutline,
+  mdiTrashCanOutline,
 } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { authManager } from '$lib/managers/auth-manager.svelte';
+import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
 import { Route } from '$lib/route';
 import { copyToClipboard } from '$lib/utils';
 
@@ -49,7 +68,138 @@ export const getPagesProvider = ($t: MessageFormatter) => {
     },
   ].map((route) => ({ ...route, $if: () => authManager.authenticated && authManager.user.isAdmin }));
 
-  return defaultProvider({ name: $t('page'), actions: adminPages });
+  const userPages: ActionItem[] = [
+    {
+      title: $t('photos'),
+      icon: mdiImageMultipleOutline,
+      onAction: () => goto(Route.photos()),
+    },
+    {
+      title: $t('explore'),
+      icon: mdiMagnify,
+      onAction: () => goto(Route.explore()),
+      $if: () => authManager.authenticated && featureFlagsManager.value.search,
+    },
+
+    {
+      title: $t('map'),
+      icon: mdiMapOutline,
+      onAction: () => goto(Route.map()),
+      $if: () => authManager.authenticated && featureFlagsManager.value.map,
+    },
+    {
+      title: $t('people'),
+      description: $t('people_feature_description'),
+      icon: mdiAccountOutline,
+      onAction: () => goto(Route.people()),
+      $if: () => authManager.authenticated && authManager.preferences.people.enabled,
+    },
+    {
+      title: $t('places'),
+      icon: mdiMapMarkerOutline,
+      onAction: () => goto(Route.places()),
+    },
+    {
+      title: $t('shared_links'),
+      icon: mdiLink,
+      onAction: () => goto(Route.sharedLinks()),
+      $if: () => authManager.authenticated && authManager.preferences.sharedLinks.enabled,
+    },
+    {
+      title: $t('recently_added'),
+      icon: mdiMagnify,
+      onAction: () => goto(Route.recentlyAdded()),
+      $if: () => authManager.authenticated,
+    },
+    {
+      title: $t('sharing'),
+      icon: mdiAccountMultipleOutline,
+      onAction: () => goto(Route.sharing()),
+      $if: () => authManager.authenticated,
+    },
+    {
+      title: $t('favorites'),
+      icon: mdiHeartOutline,
+      onAction: () => goto(Route.favorites()),
+      $if: () => authManager.authenticated,
+    },
+    {
+      title: $t('albums'),
+      description: $t('albums_feature_description'),
+      icon: mdiImageAlbum,
+      onAction: () => goto(Route.albums()),
+      $if: () => authManager.authenticated,
+    },
+    {
+      title: $t('tags'),
+      description: $t('tag_feature_description'),
+      icon: mdiTagMultipleOutline,
+      onAction: () => goto(Route.tags()),
+      $if: () => authManager.authenticated && authManager.preferences.tags.enabled,
+    },
+    {
+      title: $t('folders'),
+      description: $t('folders_feature_description'),
+      icon: mdiFolderOutline,
+      onAction: () => goto(Route.folders()),
+      $if: () => authManager.authenticated && authManager.preferences.folders.enabled,
+    },
+    {
+      title: $t('utilities'),
+      icon: mdiToolboxOutline,
+      onAction: () => goto(Route.utilities()),
+      $if: () => authManager.authenticated,
+    },
+    {
+      title: $t('archive'),
+      icon: mdiArchiveArrowDownOutline,
+      onAction: () => goto(Route.archive()),
+      $if: () => authManager.authenticated,
+    },
+    {
+      title: $t('locked_folder'),
+      icon: mdiLockOutline,
+      onAction: () => goto(Route.locked()),
+      $if: () => authManager.authenticated,
+    },
+    {
+      title: $t('trash'),
+      icon: mdiTrashCanOutline,
+      onAction: () => goto(Route.trash()),
+      $if: () => authManager.authenticated && featureFlagsManager.value.trash,
+    },
+    {
+      title: $t('admin.user_settings'),
+      icon: mdiCog,
+      onAction: () => goto(Route.userSettings()),
+      $if: () => authManager.authenticated,
+    },
+  ].map((route) => ({ $if: () => authManager.authenticated, ...route }));
+
+  const utilityPages: ActionItem[] = [
+    {
+      title: $t('review_duplicates'),
+      icon: mdiContentDuplicate,
+      onAction: () => goto(Route.duplicatesUtility()),
+    },
+    {
+      title: $t('review_large_files'),
+      icon: mdiImageSizeSelectLarge,
+      onAction: () => goto(Route.largeFileUtility()),
+    },
+    {
+      title: $t('manage_geolocation'),
+      icon: mdiCrosshairsGps,
+      onAction: () => goto(Route.geolocationUtility()),
+    },
+    {
+      title: $t('workflows'),
+      icon: mdiStateMachine,
+      onAction: () => goto(Route.workflows()),
+    },
+  ].map((route) => ({ ...route, $if: () => authManager.authenticated }));
+
+  return defaultProvider({ name: $t('page'), actions: [...userPages, ...utilityPages, ...adminPages] });
 };
 
 const getMyImmichLink = () => {

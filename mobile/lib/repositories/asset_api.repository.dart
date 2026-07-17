@@ -24,27 +24,43 @@ class AssetApiRepository extends ApiRepository {
   AssetApiRepository(this._api, this._stacksApi, this._trashApi);
 
   Future<void> delete(List<String> ids, bool force) async {
-    return _api.deleteAssets(AssetBulkDeleteDto(ids: ids, force: force));
+    return _api.deleteAssets(AssetBulkDeleteDto(ids: ids, force: Optional.present(force)));
   }
 
   Future<void> restoreTrash(List<String> ids) async {
     await _trashApi.restoreAssets(BulkIdsDto(ids: ids));
   }
 
+  Future<int> emptyTrash() async {
+    final response = await _trashApi.emptyTrash();
+    return response?.count ?? 0;
+  }
+
+  Future<int> restoreAllTrash() async {
+    final response = await _trashApi.restoreTrash();
+    return response?.count ?? 0;
+  }
+
   Future<void> updateVisibility(List<String> ids, AssetVisibilityEnum visibility) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, visibility: _mapVisibility(visibility)));
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, visibility: Optional.present(_mapVisibility(visibility))));
   }
 
   Future<void> updateFavorite(List<String> ids, bool isFavorite) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, isFavorite: isFavorite));
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, isFavorite: Optional.present(isFavorite)));
   }
 
   Future<void> updateLocation(List<String> ids, LatLng location) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, latitude: location.latitude, longitude: location.longitude));
+    return _api.updateAssets(
+      AssetBulkUpdateDto(
+        ids: ids,
+        latitude: Optional.present(location.latitude),
+        longitude: Optional.present(location.longitude),
+      ),
+    );
   }
 
-  Future<void> updateDateTime(List<String> ids, DateTime dateTime) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, dateTimeOriginal: dateTime.toIso8601String()));
+  Future<void> updateDateTime(List<String> ids, String dateTime) async {
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, dateTimeOriginal: Optional.present(dateTime)));
   }
 
   Future<StackResponse> stack(List<String> ids) async {
@@ -72,15 +88,15 @@ class AssetApiRepository extends ApiRepository {
     final response = await checkNull(_api.getAssetInfo(assetId));
 
     // we need to get the MIME of the thumbnail once that gets added to the API
-    return response.originalMimeType;
+    return response.originalMimeType.orElse(null);
   }
 
   Future<void> updateDescription(String assetId, String description) {
-    return _api.updateAsset(assetId, UpdateAssetDto(description: description));
+    return _api.updateAsset(assetId, UpdateAssetDto(description: Optional.present(description)));
   }
 
-  Future<void> updateRating(String assetId, int rating) {
-    return _api.updateAsset(assetId, UpdateAssetDto(rating: rating));
+  Future<void> updateRating(String assetId, int? rating) {
+    return _api.updateAsset(assetId, UpdateAssetDto(rating: Optional.present(rating)));
   }
 
   Future<AssetEditsResponseDto?> editAsset(String assetId, List<AssetEdit> edits) {

@@ -31,7 +31,7 @@
   };
 </script>
 
-<div class="flex flex-col h-dvh w-dvw">
+<div class="flex h-dvh w-dvw flex-col">
   <section>
     <div class="flex place-items-center border-b px-6 py-4 dark:border-b-immich-dark-gray">
       <Link href="/photos">
@@ -40,11 +40,11 @@
     </div>
   </section>
 
-  <div class="flex flex-1 w-full place-content-center place-items-center overflow-hidden bg-black/30">
+  <div class="flex w-full flex-1 place-content-center place-items-center overflow-hidden bg-black/30">
     <div class="max-w-[95vw]">
       <Card color="secondary">
         <CardHeader class="flex-row justify-between gap-12">
-          <CardTitle tag="h1" size="medium" class="text-primary flex place-items-center gap-4">
+          <CardTitle tag="h1" size="medium" class="flex place-items-center gap-4 text-primary">
             <Icon icon={mdiAlarmLight} color="red" size="32" />
             {$t('error_title')}
           </CardTitle>

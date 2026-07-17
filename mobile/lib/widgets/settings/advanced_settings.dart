@@ -7,9 +7,10 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
-import 'package:immich_mobile/repositories/local_files_manager.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
@@ -30,8 +31,12 @@ class AdvancedSettings extends HookConsumerWidget {
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final isManageMediaSupported = useState(false);
     final manageMediaAndroidPermission = useState(false);
-    final levelId = useAppSettingsState(AppSettingsEnum.logLevel);
-    final preferRemote = useAppSettingsState(AppSettingsEnum.preferRemoteImage);
+    final levelId = useState<int>(ref.read(appConfigProvider).logLevel.index);
+    final preferRemote = useState(ref.read(appConfigProvider).image.preferRemote);
+    useValueChanged(
+      preferRemote.value,
+      (_, __) => ref.read(settingsProvider).write(.imagePreferRemote, preferRemote.value),
+    );
     final readonlyModeEnabled = useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
 
     final logLevel = Level.LEVELS[levelId.value].name;
@@ -52,9 +57,7 @@ class AdvancedSettings extends HookConsumerWidget {
       () async {
         isManageMediaSupported.value = await checkAndroidVersion();
         if (isManageMediaSupported.value) {
-          manageMediaAndroidPermission.value = await ref
-              .read(localFilesManagerRepositoryProvider)
-              .hasManageMediaPermission();
+          manageMediaAndroidPermission.value = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
         }
       }();
       return null;
@@ -77,7 +80,7 @@ class AdvancedSettings extends HookConsumerWidget {
               subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
               onChanged: (value) async {
                 if (value) {
-                  final result = await ref.read(localFilesManagerRepositoryProvider).requestManageMediaPermission();
+                  final result = await ref.read(permissionRepositoryProvider).requestManageMediaPermission();
                   manageLocalMediaAndroid.value = result;
                   manageMediaAndroidPermission.value = result;
                 }
@@ -91,7 +94,7 @@ class AdvancedSettings extends HookConsumerWidget {
                   ? const Color.fromARGB(255, 243, 188, 106)
                   : null,
               onActionTap: () async {
-                final result = await ref.read(localFilesManagerRepositoryProvider).manageMediaPermission();
+                final result = await ref.read(permissionRepositoryProvider).manageMediaPermission();
                 manageMediaAndroidPermission.value = result;
               },
             ),

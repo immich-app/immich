@@ -27,7 +27,8 @@ class DatabaseBackupConfig {
   /// Keep last amount
   ///
   /// Minimum value: 1
-  num keepLastAmount;
+  /// Maximum value: 9007199254740991
+  int keepLastAmount;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DatabaseBackupConfig &&
@@ -64,7 +65,7 @@ class DatabaseBackupConfig {
       return DatabaseBackupConfig(
         cronExpression: mapValueOfType<String>(json, r'cronExpression')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        keepLastAmount: num.parse('${json[r'keepLastAmount']}'),
+        keepLastAmount: mapValueOfType<int>(json, r'keepLastAmount')!,
       );
     }
     return null;

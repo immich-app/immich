@@ -41,8 +41,8 @@ export class DuplicateController {
   @Authenticated({ permission: Permission.DuplicateDelete })
   @HttpCode(HttpStatus.NO_CONTENT)
   @Endpoint({
-    summary: 'Delete a duplicate',
-    description: 'Delete a single duplicate asset specified by its ID.',
+    summary: 'Dismiss a duplicate group',
+    description: 'Dismiss a duplicate group by its ID, unlinking all assets in the group without deleting them.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
   deleteDuplicate(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {

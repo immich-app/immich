@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { serverConfigManager } from '$lib/managers/server-config-manager.svelte';
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
@@ -21,6 +22,7 @@
   // People
   let peopleEnabled = $state(authManager.preferences.people?.enabled ?? false);
   let peopleSidebar = $state(authManager.preferences.people?.sidebarWeb ?? false);
+  let peopleMinFaces = $state(authManager.preferences.people?.minimumFaces ?? serverConfigManager.value.minFaces);
 
   // Ratings
   let ratingsEnabled = $state(authManager.preferences.ratings?.enabled ?? false);
@@ -36,6 +38,9 @@
   // Cast
   let gCastEnabled = $state(authManager.preferences.cast?.gCastEnabled ?? false);
 
+  // Recently added
+  let recentlyAddedSidebar = $state(authManager.preferences.recentlyAdded?.sidebarWeb ?? false);
+
   const handleSave = async () => {
     try {
       const response = await updateMyPreferences({
@@ -43,11 +48,12 @@
           albums: { defaultAssetOrder },
           folders: { enabled: foldersEnabled, sidebarWeb: foldersSidebar },
           memories: { enabled: memoriesEnabled, duration: memoriesDuration },
-          people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar },
+          people: { enabled: peopleEnabled, sidebarWeb: peopleSidebar, minimumFaces: peopleMinFaces },
           ratings: { enabled: ratingsEnabled },
           sharedLinks: { enabled: sharedLinksEnabled, sidebarWeb: sharedLinkSidebar },
           tags: { enabled: tagsEnabled, sidebarWeb: tagsSidebar },
           cast: { gCastEnabled },
+          recentlyAdded: { sidebarWeb: recentlyAddedSidebar },
         },
       });
 
@@ -66,9 +72,9 @@
 <section class="my-4">
   <div in:fade={{ duration: 500 }}>
     <form autocomplete="off" {onsubmit}>
-      <div class="sm:ms-4 md:ms-8 flex flex-col">
+      <div class="flex flex-col sm:ms-4 md:ms-8">
         <SettingAccordion key="albums" title={$t('albums')} subtitle={$t('albums_feature_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('albums_default_sort_order')} description={$t('albums_default_sort_order_description')}>
               <Select
                 options={[
@@ -82,7 +88,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="folders" title={$t('folders')} subtitle={$t('folders_feature_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={foldersEnabled} />
             </Field>
@@ -96,7 +102,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="memories" title={$t('time_based_memories')} subtitle={$t('photos_from_previous_years')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={memoriesEnabled} />
             </Field>
@@ -108,7 +114,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="people" title={$t('people')} subtitle={$t('people_feature_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={peopleEnabled} />
             </Field>
@@ -117,12 +123,15 @@
               <Field label={$t('sidebar')} description={$t('sidebar_display_description')}>
                 <Switch bind:checked={peopleSidebar} />
               </Field>
+              <Field label={$t('minFaces')} description={$t('minFaces_description')}>
+                <NumberInput bind:value={peopleMinFaces} />
+              </Field>
             {/if}
           </div>
         </SettingAccordion>
 
         <SettingAccordion key="rating" title={$t('rating')} subtitle={$t('rating_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={ratingsEnabled} />
             </Field>
@@ -130,7 +139,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="shared-links" title={$t('shared_links')} subtitle={$t('shared_links_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={sharedLinksEnabled} />
             </Field>
@@ -144,7 +153,7 @@
         </SettingAccordion>
 
         <SettingAccordion key="tags" title={$t('tags')} subtitle={$t('tag_feature_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('enable')}>
               <Switch bind:checked={tagsEnabled} />
             </Field>
@@ -158,14 +167,22 @@
         </SettingAccordion>
 
         <SettingAccordion key="cast" title={$t('cast')} subtitle={$t('cast_description')}>
-          <div class="sm:ms-4 mt-4 flex flex-col gap-4">
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
             <Field label={$t('gcast_enabled')} description={$t('gcast_enabled_description')}>
               <Switch bind:checked={gCastEnabled} />
             </Field>
           </div>
         </SettingAccordion>
 
-        <div class="flex justify-end mt-4">
+        <SettingAccordion key="recentlyAdded" title={$t('recently_added')} subtitle={$t('recently_added_description')}>
+          <div class="mt-4 flex flex-col gap-4 sm:ms-4">
+            <Field label={$t('sidebar')} description={$t('sidebar_display_description')}>
+              <Switch bind:checked={recentlyAddedSidebar} />
+            </Field>
+          </div>
+        </SettingAccordion>
+
+        <div class="mt-4 flex justify-end">
           <Button shape="round" type="submit" size="small" onclick={() => handleSave()}>{$t('save')}</Button>
         </div>
       </div>

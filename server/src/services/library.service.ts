@@ -275,6 +275,12 @@ export class LibraryService extends BaseService {
 
     this.logger.log(`Imported ${assetIds.length} ${progressMessage} file(s) into library ${job.libraryId}`);
 
+    await Promise.all(
+      assetIds.map((assetId) =>
+        this.eventRepository.emit('AssetCreate', { asset: { id: assetId, ownerId: library.ownerId } }),
+      ),
+    );
+
     await this.queuePostSyncJobs(assetIds);
 
     return JobStatus.Success;
@@ -498,6 +504,9 @@ export class LibraryService extends BaseService {
       const stat = stats[i];
       const action = this.checkExistingAsset(asset, stat);
       switch (action) {
+        case AssetSyncResult.DO_NOTHING: {
+          break;
+        }
         case AssetSyncResult.OFFLINE: {
           if (asset.status === AssetStatus.Trashed) {
             trashedAssetIdsToOffline.push(asset.id);

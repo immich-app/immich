@@ -66,11 +66,11 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="notification-panel"
-  class="absolute right-6 top-17.5 z-1 w-[min(360px,100vw-50px)] rounded-3xl bg-gray-100 border border-gray-200 shadow-lg dark:border dark:border-light dark:bg-immich-dark-gray text-light"
+  class="absolute top-17.5 right-6 z-1 w-[min(360px,100vw-50px)] rounded-3xl border border-gray-200 bg-gray-100 text-light shadow-lg dark:border dark:border-light dark:bg-immich-dark-gray"
   use:focusTrap
 >
   <Stack class="max-h-125">
-    <div class="flex justify-between items-center mt-4 mx-4">
+    <div class="mx-4 mt-4 flex items-center justify-between">
       <Text size="medium" color="secondary" fontWeight="semi-bold">{$t('notifications')}</Text>
       <div>
         <Button
@@ -88,7 +88,7 @@
 
     {#if noUnreadNotifications}
       <Stack
-        class="py-12 flex flex-col place-items-center place-content-center text-gray-700 dark:text-gray-300"
+        class="flex flex-col place-content-center place-items-center py-12 text-gray-700 dark:text-gray-300"
         gap={1}
       >
         <Icon icon={mdiBellOutline} size="20"></Icon>

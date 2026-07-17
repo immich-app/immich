@@ -4,6 +4,7 @@ import {
   AssetVisibility,
   deleteAssets,
   LoginResponseDto,
+  SharedLinkType,
   updateAsset,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
@@ -260,17 +261,6 @@ describe('/search', () => {
         }),
       },
       {
-        should: "should search city ('')",
-        deferred: () => ({
-          dto: {
-            city: '',
-            visibility: AssetVisibility.Timeline,
-            includeNull: true,
-          },
-          assets: [assetLast],
-        }),
-      },
-      {
         should: 'should search city (null)',
         deferred: () => ({
           dto: {
@@ -292,18 +282,6 @@ describe('/search', () => {
         }),
       },
       {
-        should: "should search state ('')",
-        deferred: () => ({
-          dto: {
-            state: '',
-            visibility: AssetVisibility.Timeline,
-            withExif: true,
-            includeNull: true,
-          },
-          assets: [assetLast, assetNotocactus],
-        }),
-      },
-      {
         should: 'should search state (null)',
         deferred: () => ({
           dto: {
@@ -322,17 +300,6 @@ describe('/search', () => {
             includeNull: true,
           },
           assets: [assetFalcon],
-        }),
-      },
-      {
-        should: "should search country ('')",
-        deferred: () => ({
-          dto: {
-            country: '',
-            visibility: AssetVisibility.Timeline,
-            includeNull: true,
-          },
-          assets: [assetLast],
         }),
       },
       {
@@ -391,6 +358,32 @@ describe('/search', () => {
         expect(body.assets.items).toHaveLength(assets.length);
       });
     }
+
+    it('should reject shared link access without an album filter', async () => {
+      const album = await utils.createAlbum(admin.accessToken, { albumName: 'foo' });
+      const sharedLink = await utils.createSharedLink(admin.accessToken, {
+        type: SharedLinkType.Album,
+        albumId: album.id,
+      });
+      const { status, body } = await request(app).post(`/search/metadata?key=${sharedLink.key}`).send({});
+      expect(status).toBe(400);
+      expect(body).toEqual({ message: 'Shared link access is only allowed in combination with an albumIds filter' });
+    });
+
+    it('should allow shared link access for albums', async () => {
+      const asset = await utils.createAsset(admin.accessToken);
+      const album = await utils.createAlbum(admin.accessToken, { albumName: 'foo', assetIds: [asset.id] });
+      const sharedLink = await utils.createSharedLink(admin.accessToken, {
+        type: SharedLinkType.Album,
+        albumId: album.id,
+      });
+
+      const { status, body } = await request(app)
+        .post(`/search/metadata?key=${sharedLink.key}`)
+        .send({ albumIds: [album.id] });
+      expect(status).toBe(200);
+      expect(body.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
+    });
   });
 
   describe('POST /search/random', () => {
@@ -441,7 +434,18 @@ describe('/search', () => {
         .get('/search/explore')
         .set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
-      expect(body).toEqual([{ fieldName: 'exifInfo.city', items: [] }]);
+      expect(Array.isArray(body)).toBe(true);
+      expect(body).toEqual(expect.arrayContaining([{ fieldName: 'exifInfo.city', items: [] }]));
+      expect(body).toEqual(
+        expect.arrayContaining([
+          {
+            fieldName: 'createdAt',
+            items: expect.arrayContaining([
+              expect.objectContaining({ data: expect.objectContaining({ id: assetLast.id }) }),
+            ]),
+          },
+        ]),
+      );
     });
   });
 

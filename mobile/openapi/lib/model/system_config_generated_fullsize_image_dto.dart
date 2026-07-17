@@ -15,7 +15,7 @@ class SystemConfigGeneratedFullsizeImageDto {
   SystemConfigGeneratedFullsizeImageDto({
     required this.enabled,
     required this.format,
-    this.progressive,
+    this.progressive = const Optional.absent(),
     required this.quality,
   });
 
@@ -31,7 +31,7 @@ class SystemConfigGeneratedFullsizeImageDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? progressive;
+  Optional<bool?> progressive;
 
   /// Quality
   ///
@@ -61,10 +61,9 @@ class SystemConfigGeneratedFullsizeImageDto {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
       json[r'format'] = this.format;
-    if (this.progressive != null) {
-      json[r'progressive'] = this.progressive;
-    } else {
-    //  json[r'progressive'] = null;
+    if (this.progressive.isPresent) {
+      final value = this.progressive.value;
+      json[r'progressive'] = value;
     }
       json[r'quality'] = this.quality;
     return json;
@@ -81,7 +80,7 @@ class SystemConfigGeneratedFullsizeImageDto {
       return SystemConfigGeneratedFullsizeImageDto(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
         format: ImageFormat.fromJson(json[r'format'])!,
-        progressive: mapValueOfType<bool>(json, r'progressive'),
+        progressive: json.containsKey(r'progressive') ? Optional.present(mapValueOfType<bool>(json, r'progressive')) : const Optional.absent(),
         quality: mapValueOfType<int>(json, r'quality')!,
       );
     }

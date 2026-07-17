@@ -15,9 +15,9 @@ class AssetResponseDto {
   AssetResponseDto({
     required this.checksum,
     required this.createdAt,
-    this.duplicateId,
+    this.duplicateId = const Optional.absent(),
     required this.duration,
-    this.exifInfo,
+    this.exifInfo = const Optional.absent(),
     required this.fileCreatedAt,
     required this.fileModifiedAt,
     required this.hasMetadata,
@@ -28,21 +28,20 @@ class AssetResponseDto {
     required this.isFavorite,
     required this.isOffline,
     required this.isTrashed,
-    this.libraryId,
-    this.livePhotoVideoId,
+    this.libraryId = const Optional.absent(),
+    this.livePhotoVideoId = const Optional.absent(),
     required this.localDateTime,
     required this.originalFileName,
-    this.originalMimeType,
+    this.originalMimeType = const Optional.absent(),
     required this.originalPath,
-    this.owner,
+    this.owner = const Optional.absent(),
     required this.ownerId,
-    this.people = const [],
-    this.resized,
-    this.stack,
-    this.tags = const [],
+    this.people = const Optional.present(const []),
+    this.resized = const Optional.absent(),
+    this.stack = const Optional.absent(),
+    this.tags = const Optional.present(const []),
     required this.thumbhash,
     required this.type,
-    this.unassignedFaces = const [],
     required this.updatedAt,
     required this.visibility,
     required this.width,
@@ -55,10 +54,13 @@ class AssetResponseDto {
   DateTime createdAt;
 
   /// Duplicate group ID
-  String? duplicateId;
+  Optional<String?> duplicateId;
 
-  /// Video/gif duration in hh:mm:ss.SSS format (null for static images)
-  String? duration;
+  /// Video/gif duration in milliseconds (null for static images)
+  ///
+  /// Minimum value: 0
+  /// Maximum value: 2147483647
+  int? duration;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -66,7 +68,7 @@ class AssetResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  ExifResponseDto? exifInfo;
+  Optional<ExifResponseDto?> exifInfo;
 
   /// The actual UTC timestamp when the file was created/captured, preserving timezone information. This is the authoritative timestamp for chronological sorting within timeline groups. Combined with timezone data, this can be used to determine the exact moment the photo was taken.
   DateTime fileCreatedAt;
@@ -80,7 +82,8 @@ class AssetResponseDto {
   /// Asset height
   ///
   /// Minimum value: 0
-  num? height;
+  /// Maximum value: 9007199254740991
+  int? height;
 
   /// Asset ID
   String id;
@@ -101,10 +104,10 @@ class AssetResponseDto {
   bool isTrashed;
 
   /// Library ID
-  String? libraryId;
+  Optional<String?> libraryId;
 
   /// Live photo video ID
-  String? livePhotoVideoId;
+  Optional<String?> livePhotoVideoId;
 
   /// The local date and time when the photo/video was taken, derived from EXIF metadata. This represents the photographer's local time regardless of timezone, stored as a timezone-agnostic timestamp. Used for timeline grouping by \"local\" days and months.
   DateTime localDateTime;
@@ -119,7 +122,7 @@ class AssetResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? originalMimeType;
+  Optional<String?> originalMimeType;
 
   /// Original file path
   String originalPath;
@@ -130,12 +133,12 @@ class AssetResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  UserResponseDto? owner;
+  Optional<UserResponseDto?> owner;
 
   /// Owner user ID
   String ownerId;
 
-  List<PersonWithFacesResponseDto> people;
+  Optional<List<PersonResponseDto>?> people;
 
   /// Is resized
   ///
@@ -144,18 +147,16 @@ class AssetResponseDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? resized;
+  Optional<bool?> resized;
 
-  AssetStackResponseDto? stack;
+  Optional<AssetStackResponseDto?> stack;
 
-  List<TagResponseDto> tags;
+  Optional<List<TagResponseDto>?> tags;
 
   /// Thumbhash for thumbnail generation (base64) also used as the c query param for thumbnail cache busting.
   String? thumbhash;
 
   AssetTypeEnum type;
-
-  List<AssetFaceWithoutPersonResponseDto> unassignedFaces;
 
   /// The UTC timestamp when the asset record was last updated in the database. This is automatically maintained by the database and reflects when any field in the asset was last modified.
   DateTime updatedAt;
@@ -165,7 +166,8 @@ class AssetResponseDto {
   /// Asset width
   ///
   /// Minimum value: 0
-  num? width;
+  /// Maximum value: 9007199254740991
+  int? width;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AssetResponseDto &&
@@ -198,7 +200,6 @@ class AssetResponseDto {
     _deepEquality.equals(other.tags, tags) &&
     other.thumbhash == thumbhash &&
     other.type == type &&
-    _deepEquality.equals(other.unassignedFaces, unassignedFaces) &&
     other.updatedAt == updatedAt &&
     other.visibility == visibility &&
     other.width == width;
@@ -235,32 +236,29 @@ class AssetResponseDto {
     (tags.hashCode) +
     (thumbhash == null ? 0 : thumbhash!.hashCode) +
     (type.hashCode) +
-    (unassignedFaces.hashCode) +
     (updatedAt.hashCode) +
     (visibility.hashCode) +
     (width == null ? 0 : width!.hashCode);
 
   @override
-  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, height=$height, id=$id, isArchived=$isArchived, isEdited=$isEdited, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, unassignedFaces=$unassignedFaces, updatedAt=$updatedAt, visibility=$visibility, width=$width]';
+  String toString() => 'AssetResponseDto[checksum=$checksum, createdAt=$createdAt, duplicateId=$duplicateId, duration=$duration, exifInfo=$exifInfo, fileCreatedAt=$fileCreatedAt, fileModifiedAt=$fileModifiedAt, hasMetadata=$hasMetadata, height=$height, id=$id, isArchived=$isArchived, isEdited=$isEdited, isFavorite=$isFavorite, isOffline=$isOffline, isTrashed=$isTrashed, libraryId=$libraryId, livePhotoVideoId=$livePhotoVideoId, localDateTime=$localDateTime, originalFileName=$originalFileName, originalMimeType=$originalMimeType, originalPath=$originalPath, owner=$owner, ownerId=$ownerId, people=$people, resized=$resized, stack=$stack, tags=$tags, thumbhash=$thumbhash, type=$type, updatedAt=$updatedAt, visibility=$visibility, width=$width]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'checksum'] = this.checksum;
       json[r'createdAt'] = this.createdAt.toUtc().toIso8601String();
-    if (this.duplicateId != null) {
-      json[r'duplicateId'] = this.duplicateId;
-    } else {
-    //  json[r'duplicateId'] = null;
+    if (this.duplicateId.isPresent) {
+      final value = this.duplicateId.value;
+      json[r'duplicateId'] = value;
     }
     if (this.duration != null) {
       json[r'duration'] = this.duration;
     } else {
-    //  json[r'duration'] = null;
+      json[r'duration'] = null;
     }
-    if (this.exifInfo != null) {
-      json[r'exifInfo'] = this.exifInfo;
-    } else {
-    //  json[r'exifInfo'] = null;
+    if (this.exifInfo.isPresent) {
+      final value = this.exifInfo.value;
+      json[r'exifInfo'] = value;
     }
       json[r'fileCreatedAt'] = this.fileCreatedAt.toUtc().toIso8601String();
       json[r'fileModifiedAt'] = this.fileModifiedAt.toUtc().toIso8601String();
@@ -268,7 +266,7 @@ class AssetResponseDto {
     if (this.height != null) {
       json[r'height'] = this.height;
     } else {
-    //  json[r'height'] = null;
+      json[r'height'] = null;
     }
       json[r'id'] = this.id;
       json[r'isArchived'] = this.isArchived;
@@ -276,55 +274,54 @@ class AssetResponseDto {
       json[r'isFavorite'] = this.isFavorite;
       json[r'isOffline'] = this.isOffline;
       json[r'isTrashed'] = this.isTrashed;
-    if (this.libraryId != null) {
-      json[r'libraryId'] = this.libraryId;
-    } else {
-    //  json[r'libraryId'] = null;
+    if (this.libraryId.isPresent) {
+      final value = this.libraryId.value;
+      json[r'libraryId'] = value;
     }
-    if (this.livePhotoVideoId != null) {
-      json[r'livePhotoVideoId'] = this.livePhotoVideoId;
-    } else {
-    //  json[r'livePhotoVideoId'] = null;
+    if (this.livePhotoVideoId.isPresent) {
+      final value = this.livePhotoVideoId.value;
+      json[r'livePhotoVideoId'] = value;
     }
       json[r'localDateTime'] = this.localDateTime.toUtc().toIso8601String();
       json[r'originalFileName'] = this.originalFileName;
-    if (this.originalMimeType != null) {
-      json[r'originalMimeType'] = this.originalMimeType;
-    } else {
-    //  json[r'originalMimeType'] = null;
+    if (this.originalMimeType.isPresent) {
+      final value = this.originalMimeType.value;
+      json[r'originalMimeType'] = value;
     }
       json[r'originalPath'] = this.originalPath;
-    if (this.owner != null) {
-      json[r'owner'] = this.owner;
-    } else {
-    //  json[r'owner'] = null;
+    if (this.owner.isPresent) {
+      final value = this.owner.value;
+      json[r'owner'] = value;
     }
       json[r'ownerId'] = this.ownerId;
-      json[r'people'] = this.people;
-    if (this.resized != null) {
-      json[r'resized'] = this.resized;
-    } else {
-    //  json[r'resized'] = null;
+    if (this.people.isPresent) {
+      final value = this.people.value;
+      json[r'people'] = value;
     }
-    if (this.stack != null) {
-      json[r'stack'] = this.stack;
-    } else {
-    //  json[r'stack'] = null;
+    if (this.resized.isPresent) {
+      final value = this.resized.value;
+      json[r'resized'] = value;
     }
-      json[r'tags'] = this.tags;
+    if (this.stack.isPresent) {
+      final value = this.stack.value;
+      json[r'stack'] = value;
+    }
+    if (this.tags.isPresent) {
+      final value = this.tags.value;
+      json[r'tags'] = value;
+    }
     if (this.thumbhash != null) {
       json[r'thumbhash'] = this.thumbhash;
     } else {
-    //  json[r'thumbhash'] = null;
+      json[r'thumbhash'] = null;
     }
       json[r'type'] = this.type;
-      json[r'unassignedFaces'] = this.unassignedFaces;
       json[r'updatedAt'] = this.updatedAt.toUtc().toIso8601String();
       json[r'visibility'] = this.visibility;
     if (this.width != null) {
       json[r'width'] = this.width;
     } else {
-    //  json[r'width'] = null;
+      json[r'width'] = null;
     }
     return json;
   }
@@ -340,41 +337,36 @@ class AssetResponseDto {
       return AssetResponseDto(
         checksum: mapValueOfType<String>(json, r'checksum')!,
         createdAt: mapDateTime(json, r'createdAt', r'')!,
-        duplicateId: mapValueOfType<String>(json, r'duplicateId'),
-        duration: mapValueOfType<String>(json, r'duration'),
-        exifInfo: ExifResponseDto.fromJson(json[r'exifInfo']),
+        duplicateId: json.containsKey(r'duplicateId') ? Optional.present(mapValueOfType<String>(json, r'duplicateId')) : const Optional.absent(),
+        duration: mapValueOfType<int>(json, r'duration'),
+        exifInfo: json.containsKey(r'exifInfo') ? Optional.present(ExifResponseDto.fromJson(json[r'exifInfo'])) : const Optional.absent(),
         fileCreatedAt: mapDateTime(json, r'fileCreatedAt', r'')!,
         fileModifiedAt: mapDateTime(json, r'fileModifiedAt', r'')!,
         hasMetadata: mapValueOfType<bool>(json, r'hasMetadata')!,
-        height: json[r'height'] == null
-            ? null
-            : num.parse('${json[r'height']}'),
+        height: mapValueOfType<int>(json, r'height'),
         id: mapValueOfType<String>(json, r'id')!,
         isArchived: mapValueOfType<bool>(json, r'isArchived')!,
         isEdited: mapValueOfType<bool>(json, r'isEdited')!,
         isFavorite: mapValueOfType<bool>(json, r'isFavorite')!,
         isOffline: mapValueOfType<bool>(json, r'isOffline')!,
         isTrashed: mapValueOfType<bool>(json, r'isTrashed')!,
-        libraryId: mapValueOfType<String>(json, r'libraryId'),
-        livePhotoVideoId: mapValueOfType<String>(json, r'livePhotoVideoId'),
+        libraryId: json.containsKey(r'libraryId') ? Optional.present(mapValueOfType<String>(json, r'libraryId')) : const Optional.absent(),
+        livePhotoVideoId: json.containsKey(r'livePhotoVideoId') ? Optional.present(mapValueOfType<String>(json, r'livePhotoVideoId')) : const Optional.absent(),
         localDateTime: mapDateTime(json, r'localDateTime', r'')!,
         originalFileName: mapValueOfType<String>(json, r'originalFileName')!,
-        originalMimeType: mapValueOfType<String>(json, r'originalMimeType'),
+        originalMimeType: json.containsKey(r'originalMimeType') ? Optional.present(mapValueOfType<String>(json, r'originalMimeType')) : const Optional.absent(),
         originalPath: mapValueOfType<String>(json, r'originalPath')!,
-        owner: UserResponseDto.fromJson(json[r'owner']),
+        owner: json.containsKey(r'owner') ? Optional.present(UserResponseDto.fromJson(json[r'owner'])) : const Optional.absent(),
         ownerId: mapValueOfType<String>(json, r'ownerId')!,
-        people: PersonWithFacesResponseDto.listFromJson(json[r'people']),
-        resized: mapValueOfType<bool>(json, r'resized'),
-        stack: AssetStackResponseDto.fromJson(json[r'stack']),
-        tags: TagResponseDto.listFromJson(json[r'tags']),
+        people: json.containsKey(r'people') ? Optional.present(PersonResponseDto.listFromJson(json[r'people'])) : const Optional.absent(),
+        resized: json.containsKey(r'resized') ? Optional.present(mapValueOfType<bool>(json, r'resized')) : const Optional.absent(),
+        stack: json.containsKey(r'stack') ? Optional.present(AssetStackResponseDto.fromJson(json[r'stack'])) : const Optional.absent(),
+        tags: json.containsKey(r'tags') ? Optional.present(TagResponseDto.listFromJson(json[r'tags'])) : const Optional.absent(),
         thumbhash: mapValueOfType<String>(json, r'thumbhash'),
         type: AssetTypeEnum.fromJson(json[r'type'])!,
-        unassignedFaces: AssetFaceWithoutPersonResponseDto.listFromJson(json[r'unassignedFaces']),
         updatedAt: mapDateTime(json, r'updatedAt', r'')!,
         visibility: AssetVisibility.fromJson(json[r'visibility'])!,
-        width: json[r'width'] == null
-            ? null
-            : num.parse('${json[r'width']}'),
+        width: mapValueOfType<int>(json, r'width'),
       );
     }
     return null;

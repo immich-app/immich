@@ -4,7 +4,7 @@ import { HistoryBuilder } from 'src/decorators';
 import { AlbumResponseSchema } from 'src/dtos/album.dto';
 import { AssetResponseSchema } from 'src/dtos/asset-response.dto';
 import { AssetOrder, AssetOrderSchema, AssetTypeSchema, AssetVisibilitySchema } from 'src/enum';
-import { emptyStringToNull, isoDatetimeToDate, stringToBool } from 'src/validation';
+import { isoDatetimeToDate, stringToBool } from 'src/validation';
 import z from 'zod';
 
 const BaseSearchSchema = z.object({
@@ -23,19 +23,19 @@ const BaseSearchSchema = z.object({
   trashedAfter: isoDatetimeToDate.optional().describe('Filter by trash date (after)'),
   takenBefore: isoDatetimeToDate.optional().describe('Filter by taken date (before)'),
   takenAfter: isoDatetimeToDate.optional().describe('Filter by taken date (after)'),
-  city: emptyStringToNull(z.string().nullable()).optional().describe('Filter by city name'),
-  state: emptyStringToNull(z.string().nullable()).optional().describe('Filter by state/province name'),
-  country: emptyStringToNull(z.string().nullable()).optional().describe('Filter by country name'),
-  make: emptyStringToNull(z.string().nullable()).optional().describe('Filter by camera make'),
-  model: emptyStringToNull(z.string().nullable()).optional().describe('Filter by camera model'),
-  lensModel: emptyStringToNull(z.string().nullable()).optional().describe('Filter by lens model'),
+  city: z.string().nullable().optional().describe('Filter by city name'),
+  state: z.string().nullable().optional().describe('Filter by state/province name'),
+  country: z.string().nullable().optional().describe('Filter by country name'),
+  make: z.string().nullable().optional().describe('Filter by camera make'),
+  model: z.string().nullable().optional().describe('Filter by camera model'),
+  lensModel: z.string().nullable().optional().describe('Filter by lens model'),
   isNotInAlbum: z.boolean().optional().describe('Filter assets not in any album'),
   personIds: z.array(z.uuidv4()).optional().describe('Filter by person IDs'),
   tagIds: z.array(z.uuidv4()).nullish().describe('Filter by tag IDs'),
   albumIds: z.array(z.uuidv4()).optional().describe('Filter by album IDs'),
   rating: z
-    .number()
-    .min(-1)
+    .int()
+    .min(1)
     .max(5)
     .nullish()
     .describe('Filter by rating [1-5], or null for unrated')
@@ -44,6 +44,7 @@ const BaseSearchSchema = z.object({
         .added('v1')
         .stable('v2')
         .updated('v2.6.0', 'Using -1 as a rating is deprecated and will be removed in the next major version.')
+        .updated('v3', 'Using -1 as a rating is no longer valid.')
         .getExtensions(),
     }),
   ocr: z.string().optional().describe('Filter by OCR text content'),
@@ -52,7 +53,7 @@ const BaseSearchSchema = z.object({
 const BaseSearchWithResultsSchema = BaseSearchSchema.extend({
   withDeleted: z.boolean().optional().describe('Include deleted assets'),
   withExif: z.boolean().optional().describe('Include EXIF data in response'),
-  size: z.number().min(1).max(1000).optional().describe('Number of results to return'),
+  size: z.int().min(1).max(1000).optional().describe('Number of results to return'),
 });
 
 const RandomSearchSchema = BaseSearchWithResultsSchema.extend({
@@ -62,7 +63,7 @@ const RandomSearchSchema = BaseSearchWithResultsSchema.extend({
 
 const LargeAssetSearchSchema = BaseSearchWithResultsSchema.extend({
   minFileSize: z.coerce.number().int().min(0).optional().describe('Minimum file size in bytes'),
-  size: z.coerce.number().min(1).max(1000).optional().describe('Number of results to return'),
+  size: z.coerce.number().int().min(1).max(1000).optional().describe('Number of results to return'),
 }).meta({ id: 'LargeAssetSearchDto' });
 
 const MetadataSearchSchema = RandomSearchSchema.extend({
@@ -75,7 +76,7 @@ const MetadataSearchSchema = RandomSearchSchema.extend({
   thumbnailPath: z.string().optional().describe('Filter by thumbnail file path'),
   encodedVideoPath: z.string().optional().describe('Filter by encoded video file path'),
   order: AssetOrderSchema.default(AssetOrder.Desc).optional().describe('Sort order'),
-  page: z.number().min(1).optional().describe('Page number'),
+  page: z.int().min(1).optional().describe('Page number'),
 }).meta({ id: 'MetadataSearchDto' });
 
 const StatisticsSearchSchema = BaseSearchSchema.extend({
@@ -86,7 +87,7 @@ const SmartSearchSchema = BaseSearchWithResultsSchema.extend({
   query: z.string().trim().optional().describe('Natural language search query'),
   queryAssetId: z.uuidv4().optional().describe('Asset ID to use as search reference'),
   language: z.string().optional().describe('Search language code'),
-  page: z.number().min(1).optional().describe('Page number'),
+  page: z.int().min(1).optional().describe('Page number'),
 }).meta({ id: 'SmartSearchDto' });
 
 const SearchPlacesSchema = z
@@ -186,7 +187,11 @@ const SearchAlbumResponseSchema = z
 
 const SearchAssetResponseSchema = z
   .object({
-    total: z.int().min(0).describe('Total number of matching assets'),
+    total: z
+      .int()
+      .min(0)
+      .describe('Total number of matching assets')
+      .meta(new HistoryBuilder().deprecated('v3.0.0').getExtensions()),
     count: z.int().min(0).describe('Number of assets in this page'),
     items: z.array(AssetResponseSchema),
     facets: z.array(SearchFacetResponseSchema),

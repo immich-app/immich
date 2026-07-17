@@ -1,6 +1,7 @@
 <script lang="ts">
   import { browser } from '$app/environment';
   import { focusTrap } from '$lib/actions/focus-trap';
+  import { shortcuts } from '$lib/actions/shortcut';
   import type { Action, OnAction, PreAction } from '$lib/components/asset-viewer/actions/action';
   import NextAssetAction from '$lib/components/asset-viewer/actions/NextAssetAction.svelte';
   import PreviousAssetAction from '$lib/components/asset-viewer/actions/PreviousAssetAction.svelte';
@@ -13,7 +14,9 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getAssetActions } from '$lib/services/asset.service';
+  import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
@@ -21,6 +24,7 @@
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { navigate } from '$lib/utils/navigation';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -48,6 +52,7 @@
   import OcrButton from './OcrButton.svelte';
   import PhotoViewer from './PhotoViewer.svelte';
   import SlideshowBar from './SlideshowBar.svelte';
+  import SlideshowMetadataOverlay from './SlideshowMetadataOverlay.svelte';
   import VideoViewer from './VideoWrapperViewer.svelte';
 
   export type AssetCursor = {
@@ -67,7 +72,7 @@
     preAction?: PreAction;
     onAction?: OnAction;
     onUndoDelete?: OnUndoDelete;
-    onClose?: (asset: AssetResponseDto) => void;
+    onClose?: (assetId: string) => void;
     onRemoveFromAlbum?: (assetIds: string[]) => void;
     onRandom?: () => Promise<{ id: string } | undefined>;
   }
@@ -107,11 +112,11 @@
   let sharedLink = getSharedLink();
   let fullscreenElement = $state<Element>();
 
-  let playOriginalVideo = $state($alwaysLoadOriginalVideo);
+  let isPlayingOriginalVideo = $state($alwaysLoadOriginalVideo);
   let slideshowStartAssetId = $state<string>();
 
   const setPlayOriginalVideo = (value: boolean) => {
-    playOriginalVideo = value;
+    isPlayingOriginalVideo = value;
   };
 
   const refreshStack = async () => {
@@ -144,6 +149,15 @@
     if (asset.id === updatedAsset.id) {
       cursor = { ...cursor, current: updatedAsset };
     }
+  };
+
+  const onAssetsUndoArchive = async (assets: TimelineAsset[]) => {
+    if (assets.length === 0) {
+      return;
+    }
+    const restoredAsset = assets[0];
+    await assetViewerManager.setAssetId(restoredAsset.id);
+    await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
   };
 
   onMount(() => {
@@ -179,7 +193,7 @@
   });
 
   const closeViewer = () => {
-    onClose?.(asset);
+    onClose?.(asset.id);
   };
 
   const closeEditor = async () => {
@@ -244,6 +258,22 @@
 
       await handleStopSlideshow();
     }, $t('error_while_navigating'));
+  };
+
+  const navigateStack = (direction: 'previous' | 'next') => {
+    if (!stack || !withStacked || assetViewerManager.isShowEditor) {
+      return;
+    }
+    const assets = stack.assets;
+    const currentIndex = assets.findIndex(({ id }) => id === asset.id);
+    if (currentIndex === -1) {
+      return;
+    }
+    const nextIndex = direction === 'previous' ? currentIndex - 1 : currentIndex + 1;
+    if (nextIndex < 0 || nextIndex >= assets.length) {
+      return;
+    }
+    cursor.current = assets[nextIndex];
   };
 
   /**
@@ -315,6 +345,7 @@
       case AssetAction.SET_PERSON_FEATURED_PHOTO: {
         const assetInfo = await getAssetInfo({ id: asset.id });
         cursor.current = { ...asset, people: assetInfo.people };
+        eventManager.emit('AssetUpdate', cursor.current);
         break;
       }
       case AssetAction.RATING: {
@@ -331,6 +362,7 @@
         closeViewer();
         break;
       }
+      // no default
     }
 
     onAction?.(action);
@@ -358,11 +390,14 @@
   const refresh = async () => {
     await refreshStack();
     ocrManager.clear();
+    faceManager.clear();
     if (!sharedLink) {
       if (previewStackedAsset) {
         await ocrManager.getAssetOcr(previewStackedAsset.id);
+        await faceManager.getAssetFaces(previewStackedAsset.id);
       }
       await ocrManager.getAssetOcr(asset.id);
+      await faceManager.getAssetFaces(asset.id);
     }
   };
 
@@ -451,13 +486,19 @@
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
-<OnEvents {onAssetUpdate} />
+<OnEvents {onAssetUpdate} {onAssetsUndoArchive} />
 
-<svelte:document bind:fullscreenElement />
+<svelte:document
+  bind:fullscreenElement
+  use:shortcuts={[
+    { shortcut: { key: 'ArrowUp' }, onShortcut: () => navigateStack('previous') },
+    { shortcut: { key: 'ArrowDown' }, onShortcut: () => navigateStack('next') },
+  ]}
+/>
 
 <section
   id="immich-asset-viewer"
-  class="fixed start-0 top-0 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
+  class="fixed inset-s-0 top-0 grid size-full grid-cols-4 grid-rows-[64px_1fr] overflow-hidden bg-black"
   use:focusTrap
   bind:this={assetViewerHtmlElement}
 >
@@ -469,14 +510,12 @@
         {album}
         {person}
         {stack}
-        showSlideshow={true}
         preAction={handlePreAction}
         onAction={handleAction}
         {onUndoDelete}
-        onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
-        onClose={onClose ? () => onClose(asset) : undefined}
+        onClose={onClose ? () => onClose(stack?.primaryAssetId ?? asset.id) : undefined}
         {onRemoveFromAlbum}
-        {playOriginalVideo}
+        {isPlayingOriginalVideo}
         {setPlayOriginalVideo}
       />
     </div>
@@ -496,13 +535,13 @@
   {/if}
 
   {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && !assetViewerManager.isFaceEditMode && previousAsset}
-    <div class="my-auto col-span-1 col-start-1 row-span-full row-start-1 justify-self-start">
+    <div class="col-span-1 col-start-1 row-span-full row-start-1 my-auto justify-self-start">
       <PreviousAssetAction onPreviousAsset={() => navigateAsset('previous')} />
     </div>
   {/if}
 
   <!-- Asset Viewer -->
-  <div data-viewer-content class="z-[-1] relative col-start-1 col-span-4 row-start-1 row-span-full">
+  <div data-viewer-content class="relative z-[-1] col-span-4 col-start-1 row-span-full row-start-1">
     {#if viewerKind === 'StackVideoViewer'}
       <VideoViewer
         asset={previewStackedAsset!}
@@ -514,7 +553,7 @@
         onClose={closeViewer}
         onVideoEnded={() => navigateAsset()}
         onVideoStarted={handleVideoStarted}
-        {playOriginalVideo}
+        playOriginalVideo={isPlayingOriginalVideo}
       />
     {:else if viewerKind === 'LiveVideoViewer'}
       <VideoViewer
@@ -526,7 +565,7 @@
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
         onVideoEnded={() => (assetViewerManager.isPlayingMotionPhoto = false)}
-        {playOriginalVideo}
+        playOriginalVideo={isPlayingOriginalVideo}
       />
     {:else if viewerKind === 'ImagePanaramaViewer'}
       <ImagePanoramaViewer {asset} />
@@ -540,17 +579,18 @@
         cacheKey={asset.thumbhash}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
+        extendedControls
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
         onClose={closeViewer}
         onVideoEnded={() => navigateAsset()}
         onVideoStarted={handleVideoStarted}
-        {playOriginalVideo}
+        playOriginalVideo={isPlayingOriginalVideo}
       />
     {/if}
 
     {#if showActivityStatus}
-      <div class="absolute bottom-0 end-0 mb-20 me-8">
+      <div class="absolute inset-e-0 bottom-0 me-8 mb-20">
         <ActivityStatus
           disabled={!album?.isActivityEnabled}
           isLiked={activityManager.isLiked}
@@ -562,14 +602,18 @@
     {/if}
 
     {#if showOcrButton}
-      <div class="absolute bottom-0 end-0 mb-6 me-6 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)]">
+      <div class="absolute inset-e-0 bottom-0 me-6 mb-6 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)]">
         <OcrButton />
       </div>
+    {/if}
+
+    {#if $slideshowState !== SlideshowState.None}
+      <SlideshowMetadataOverlay {asset} />
     {/if}
   </div>
 
   {#if $slideshowState === SlideshowState.None && showNavigation && !assetViewerManager.isShowEditor && !assetViewerManager.isFaceEditMode && nextAsset}
-    <div class="my-auto col-span-1 col-start-4 row-span-full row-start-1 justify-self-end">
+    <div class="col-span-1 col-start-4 row-span-full row-start-1 my-auto justify-self-end">
       <NextAssetAction onNextAsset={() => navigateAsset('next')} />
     </div>
   {/if}
@@ -579,7 +623,7 @@
       transition:fly={{ duration: 150 }}
       id="detail-panel"
       class={[
-        'row-start-1 row-span-4 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray bg-light',
+        'row-span-4 row-start-1 overflow-y-auto bg-light transition-all dark:border-l dark:border-s-immich-dark-gray',
         showDetailPanel ? 'w-90' : 'w-100',
       ]}
       translate="yes"
@@ -592,13 +636,13 @@
     </div>
   {/if}
 
-  {#if stack && withStacked && !assetViewerManager.isShowEditor}
+  {#if stack && withStacked && !assetViewerManager.isShowEditor && $slideshowState === SlideshowState.None}
     {@const stackedAssets = stack.assets}
-    <div id="stack-slideshow" class="absolute bottom-0 w-full col-span-4 col-start-1 pointer-events-none">
-      <div class="relative flex flex-row no-wrap overflow-x-auto overflow-y-hidden horizontal-scrollbar">
+    <div id="stack-slideshow" class="absolute bottom-0 col-span-4 col-start-1 w-fit max-w-full">
+      <div class="no-wrap horizontal-scrollbar relative flex flex-row overflow-x-auto overflow-y-hidden">
         {#each stackedAssets as stackedAsset (stackedAsset.id)}
           <div
-            class={['inline-block px-1 relative transition-all pb-2 pointer-events-auto']}
+            class={['relative inline-block px-1 pb-2 transition-all']}
             style:bottom={stackedAsset.id === asset.id ? '0' : '-10px'}
           >
             <Thumbnail
@@ -618,8 +662,8 @@
             />
 
             {#if stackedAsset.id === asset.id}
-              <div class="w-full flex place-items-center place-content-center">
-                <div class="w-2 h-2 bg-white rounded-full flex mt-0.5"></div>
+              <div class="flex w-full place-content-center place-items-center">
+                <div class="mt-0.5 flex size-2 rounded-full bg-white"></div>
               </div>
             {/if}
           </div>
@@ -632,7 +676,7 @@
     <div
       transition:fly={{ duration: 150 }}
       id="activity-panel"
-      class="row-start-1 row-span-5 w-90 md:w-115 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
+      class="row-span-5 row-start-1 w-90 overflow-y-auto transition-all md:w-115 dark:border-l dark:border-s-immich-dark-gray"
       translate="yes"
     >
       <ActivityViewer

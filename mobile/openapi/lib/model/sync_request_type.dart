@@ -28,16 +28,20 @@ class SyncRequestType {
   static const albumUsersV1 = SyncRequestType._(r'AlbumUsersV1');
   static const albumToAssetsV1 = SyncRequestType._(r'AlbumToAssetsV1');
   static const albumAssetsV1 = SyncRequestType._(r'AlbumAssetsV1');
+  static const albumAssetsV2 = SyncRequestType._(r'AlbumAssetsV2');
   static const albumAssetExifsV1 = SyncRequestType._(r'AlbumAssetExifsV1');
   static const assetsV1 = SyncRequestType._(r'AssetsV1');
+  static const assetsV2 = SyncRequestType._(r'AssetsV2');
   static const assetExifsV1 = SyncRequestType._(r'AssetExifsV1');
   static const assetEditsV1 = SyncRequestType._(r'AssetEditsV1');
   static const assetMetadataV1 = SyncRequestType._(r'AssetMetadataV1');
+  static const assetOcrV1 = SyncRequestType._(r'AssetOcrV1');
   static const authUsersV1 = SyncRequestType._(r'AuthUsersV1');
   static const memoriesV1 = SyncRequestType._(r'MemoriesV1');
   static const memoryToAssetsV1 = SyncRequestType._(r'MemoryToAssetsV1');
   static const partnersV1 = SyncRequestType._(r'PartnersV1');
   static const partnerAssetsV1 = SyncRequestType._(r'PartnerAssetsV1');
+  static const partnerAssetsV2 = SyncRequestType._(r'PartnerAssetsV2');
   static const partnerAssetExifsV1 = SyncRequestType._(r'PartnerAssetExifsV1');
   static const partnerStacksV1 = SyncRequestType._(r'PartnerStacksV1');
   static const stacksV1 = SyncRequestType._(r'StacksV1');
@@ -54,16 +58,20 @@ class SyncRequestType {
     albumUsersV1,
     albumToAssetsV1,
     albumAssetsV1,
+    albumAssetsV2,
     albumAssetExifsV1,
     assetsV1,
+    assetsV2,
     assetExifsV1,
     assetEditsV1,
     assetMetadataV1,
+    assetOcrV1,
     authUsersV1,
     memoriesV1,
     memoryToAssetsV1,
     partnersV1,
     partnerAssetsV1,
+    partnerAssetsV2,
     partnerAssetExifsV1,
     partnerStacksV1,
     stacksV1,
@@ -115,16 +123,20 @@ class SyncRequestTypeTypeTransformer {
         case r'AlbumUsersV1': return SyncRequestType.albumUsersV1;
         case r'AlbumToAssetsV1': return SyncRequestType.albumToAssetsV1;
         case r'AlbumAssetsV1': return SyncRequestType.albumAssetsV1;
+        case r'AlbumAssetsV2': return SyncRequestType.albumAssetsV2;
         case r'AlbumAssetExifsV1': return SyncRequestType.albumAssetExifsV1;
         case r'AssetsV1': return SyncRequestType.assetsV1;
+        case r'AssetsV2': return SyncRequestType.assetsV2;
         case r'AssetExifsV1': return SyncRequestType.assetExifsV1;
         case r'AssetEditsV1': return SyncRequestType.assetEditsV1;
         case r'AssetMetadataV1': return SyncRequestType.assetMetadataV1;
+        case r'AssetOcrV1': return SyncRequestType.assetOcrV1;
         case r'AuthUsersV1': return SyncRequestType.authUsersV1;
         case r'MemoriesV1': return SyncRequestType.memoriesV1;
         case r'MemoryToAssetsV1': return SyncRequestType.memoryToAssetsV1;
         case r'PartnersV1': return SyncRequestType.partnersV1;
         case r'PartnerAssetsV1': return SyncRequestType.partnerAssetsV1;
+        case r'PartnerAssetsV2': return SyncRequestType.partnerAssetsV2;
         case r'PartnerAssetExifsV1': return SyncRequestType.partnerAssetExifsV1;
         case r'PartnerStacksV1': return SyncRequestType.partnerStacksV1;
         case r'StacksV1': return SyncRequestType.stacksV1;

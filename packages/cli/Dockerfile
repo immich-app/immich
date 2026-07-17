@@ -1,0 +1,12 @@
+FROM node:24.1.0-alpine3.20@sha256:8fe019e0d57dbdce5f5c27c0b63d2775cf34b00e3755a7dea969802d7e0c2b25 AS core
+
+WORKDIR /usr/src/app
+COPY package* pnpm* .pnpmfile.cjs ./
+COPY ./packages ./packages/
+RUN corepack enable pnpm && \
+  pnpm --filter @immich/sdk --filter @immich/cli install --frozen-lockfile && \
+  pnpm --filter @immich/sdk --filter @immich/cli build
+
+WORKDIR /import
+
+ENTRYPOINT ["node", "/usr/src/app/packages/cli/dist"]

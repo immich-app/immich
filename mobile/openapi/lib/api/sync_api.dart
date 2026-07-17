@@ -25,7 +25,7 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncAckDeleteDto] syncAckDeleteDto (required):
-  Future<Response> deleteSyncAckWithHttpInfo(SyncAckDeleteDto syncAckDeleteDto,) async {
+  Future<Response> deleteSyncAckWithHttpInfo(SyncAckDeleteDto syncAckDeleteDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/ack';
 
@@ -47,6 +47,7 @@ class SyncApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -57,8 +58,8 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncAckDeleteDto] syncAckDeleteDto (required):
-  Future<void> deleteSyncAck(SyncAckDeleteDto syncAckDeleteDto,) async {
-    final response = await deleteSyncAckWithHttpInfo(syncAckDeleteDto,);
+  Future<void> deleteSyncAck(SyncAckDeleteDto syncAckDeleteDto, { Future<void>? abortTrigger, }) async {
+    final response = await deleteSyncAckWithHttpInfo(syncAckDeleteDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -69,7 +70,7 @@ class SyncApi {
   /// Retrieve the synchronization acknowledgments for the current session.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getSyncAckWithHttpInfo() async {
+  Future<Response> getSyncAckWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/ack';
 
@@ -91,14 +92,15 @@ class SyncApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Retrieve acknowledgements
   ///
   /// Retrieve the synchronization acknowledgments for the current session.
-  Future<List<SyncAckDto>?> getSyncAck() async {
-    final response = await getSyncAckWithHttpInfo();
+  Future<List<SyncAckDto>?> getSyncAck({ Future<void>? abortTrigger, }) async {
+    final response = await getSyncAckWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -124,7 +126,7 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncStreamDto] syncStreamDto (required):
-  Future<Response> getSyncStreamWithHttpInfo(SyncStreamDto syncStreamDto,) async {
+  Future<Response> getSyncStreamWithHttpInfo(SyncStreamDto syncStreamDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/stream';
 
@@ -146,6 +148,7 @@ class SyncApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -156,8 +159,8 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncStreamDto] syncStreamDto (required):
-  Future<void> getSyncStream(SyncStreamDto syncStreamDto,) async {
-    final response = await getSyncStreamWithHttpInfo(syncStreamDto,);
+  Future<void> getSyncStream(SyncStreamDto syncStreamDto, { Future<void>? abortTrigger, }) async {
+    final response = await getSyncStreamWithHttpInfo(syncStreamDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -172,7 +175,7 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncAckSetDto] syncAckSetDto (required):
-  Future<Response> sendSyncAckWithHttpInfo(SyncAckSetDto syncAckSetDto,) async {
+  Future<Response> sendSyncAckWithHttpInfo(SyncAckSetDto syncAckSetDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/sync/ack';
 
@@ -194,6 +197,7 @@ class SyncApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -204,8 +208,8 @@ class SyncApi {
   /// Parameters:
   ///
   /// * [SyncAckSetDto] syncAckSetDto (required):
-  Future<void> sendSyncAck(SyncAckSetDto syncAckSetDto,) async {
-    final response = await sendSyncAckWithHttpInfo(syncAckSetDto,);
+  Future<void> sendSyncAck(SyncAckSetDto syncAckSetDto, { Future<void>? abortTrigger, }) async {
+    final response = await sendSyncAckWithHttpInfo(syncAckSetDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

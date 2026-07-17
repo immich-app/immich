@@ -10,6 +10,9 @@ class RemoteAsset extends BaseAsset {
   final AssetVisibility visibility;
   final String ownerId;
   final String? stackId;
+  final String? livePhotoVideoId;
+  final DateTime? uploadedAt;
+  final DateTime? deletedAt;
 
   const RemoteAsset({
     required this.id,
@@ -20,19 +23,38 @@ class RemoteAsset extends BaseAsset {
     required super.type,
     required super.createdAt,
     required super.updatedAt,
+    this.uploadedAt,
     super.width,
     super.height,
     super.durationMs,
     super.isFavorite = false,
     this.thumbHash,
     this.visibility = AssetVisibility.timeline,
-    super.livePhotoVideoId,
+    this.livePhotoVideoId,
     this.stackId,
     required super.isEdited,
+    this.deletedAt,
   }) : localAssetId = localId;
 
   @override
   String? get localId => localAssetId;
+
+  @override
+  AssetPlaybackStyle get playbackStyle {
+    if (isVideo) {
+      return AssetPlaybackStyle.video;
+    }
+    if (livePhotoVideoId != null) {
+      return AssetPlaybackStyle.livePhoto;
+    }
+    if (isImage && durationMs != null && durationMs! > 0) {
+      return AssetPlaybackStyle.imageAnimated;
+    }
+    if (isImage) {
+      return AssetPlaybackStyle.image;
+    }
+    return AssetPlaybackStyle.unknown;
+  }
 
   @override
   String? get remoteId => id;
@@ -46,6 +68,12 @@ class RemoteAsset extends BaseAsset {
   @override
   bool get isEditable => isImage && !isMotionPhoto && !isAnimatedImage;
 
+  bool get isTrashed => deletedAt != null;
+
+  bool get isStacked => stackId != null;
+
+  bool get isArchived => visibility == .archive;
+
   @override
   String toString() {
     return '''Asset {
@@ -55,6 +83,7 @@ class RemoteAsset extends BaseAsset {
     type: $type,
     createdAt: $createdAt,
     updatedAt: $updatedAt,
+    uploadedAt: ${uploadedAt ?? "<NA>"},
     width: ${width ?? "<NA>"},
     height: ${height ?? "<NA>"},
     durationMs: ${durationMs ?? "<NA>"},
@@ -71,14 +100,21 @@ class RemoteAsset extends BaseAsset {
   // Not checking for localId here
   @override
   bool operator ==(Object other) {
-    if (other is! RemoteAsset) return false;
-    if (identical(this, other)) return true;
+    if (other is! RemoteAsset) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
     return super == other &&
         id == other.id &&
         ownerId == other.ownerId &&
         thumbHash == other.thumbHash &&
         visibility == other.visibility &&
-        stackId == other.stackId;
+        stackId == other.stackId &&
+        livePhotoVideoId == other.livePhotoVideoId &&
+        uploadedAt == other.uploadedAt &&
+        deletedAt == other.deletedAt;
   }
 
   @override
@@ -89,7 +125,10 @@ class RemoteAsset extends BaseAsset {
       localId.hashCode ^
       thumbHash.hashCode ^
       visibility.hashCode ^
-      stackId.hashCode;
+      stackId.hashCode ^
+      livePhotoVideoId.hashCode ^
+      uploadedAt.hashCode ^
+      deletedAt.hashCode;
 
   RemoteAsset copyWith({
     String? id,
@@ -100,6 +139,7 @@ class RemoteAsset extends BaseAsset {
     AssetType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? uploadedAt,
     int? width,
     int? height,
     int? durationMs,
@@ -109,6 +149,7 @@ class RemoteAsset extends BaseAsset {
     String? livePhotoVideoId,
     String? stackId,
     bool? isEdited,
+    DateTime? deletedAt,
   }) {
     return RemoteAsset(
       id: id ?? this.id,
@@ -119,6 +160,7 @@ class RemoteAsset extends BaseAsset {
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      uploadedAt: uploadedAt ?? this.uploadedAt,
       width: width ?? this.width,
       height: height ?? this.height,
       durationMs: durationMs ?? this.durationMs,
@@ -128,6 +170,7 @@ class RemoteAsset extends BaseAsset {
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       stackId: stackId ?? this.stackId,
       isEdited: isEdited ?? this.isEdited,
+      deletedAt: deletedAt ?? this.deletedAt,
     );
   }
 }
@@ -144,6 +187,8 @@ class RemoteAssetExif extends RemoteAsset {
     required super.type,
     required super.createdAt,
     required super.updatedAt,
+    super.uploadedAt,
+    super.deletedAt,
     super.width,
     super.height,
     super.durationMs,
@@ -158,8 +203,12 @@ class RemoteAssetExif extends RemoteAsset {
 
   @override
   bool operator ==(Object other) {
-    if (other is! RemoteAssetExif) return false;
-    if (identical(this, other)) return true;
+    if (other is! RemoteAssetExif) {
+      return false;
+    }
+    if (identical(this, other)) {
+      return true;
+    }
     return super == other && exifInfo == other.exifInfo;
   }
 
@@ -176,6 +225,8 @@ class RemoteAssetExif extends RemoteAsset {
     AssetType? type,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? uploadedAt,
+    DateTime? deletedAt,
     int? width,
     int? height,
     int? durationMs,
@@ -196,6 +247,8 @@ class RemoteAssetExif extends RemoteAsset {
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      uploadedAt: uploadedAt ?? this.uploadedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
       width: width ?? this.width,
       height: height ?? this.height,
       durationMs: durationMs ?? this.durationMs,

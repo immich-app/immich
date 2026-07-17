@@ -1,11 +1,21 @@
 [tasks.install]
 run = "pnpm install --filter immich-e2e --frozen-lockfile"
 
+[tasks.build]
+dir = "{{ config_root }}"
+run = "docker compose build"
+
 [tasks.test]
+depends = ["//e2e:build", "//e2e:ci-setup"]
 env._.path = "./node_modules/.bin"
 run = "vitest --run"
 
+[tasks.playwright-install]
+env._.path = "./node_modules/.bin"
+run = "playwright install"
+
 [tasks."test-web"]
+depends = ["//e2e:build", "//e2e:ci-setup", "//e2e:playwright-install"]
 env._.path = "./node_modules/.bin"
 run = "playwright test"
 
@@ -27,3 +37,23 @@ run = { task = "lint --fix" }
 [tasks.check]
 env._.path = "./node_modules/.bin"
 run = "tsc --noEmit"
+
+
+[tasks.ci-setup]
+depends = [
+  "//:sdk:install",
+  "//:sdk:build",
+  "//packages/cli:install",
+  "//packages/cli:build",
+]
+run = { task = ":install" }
+
+
+[tasks.ci-unit]
+depends = ["//:sdk:install", "//:sdk:build"]
+run = [
+  { task = ":install" },
+  { task = ":format" },
+  { task = ":lint" },
+  { task = ":check" },
+]

@@ -52,7 +52,7 @@ Scroll to the bottom of the "**Details**" section and find the `IP Address` list
 
 ## Step 4 - Configure Firewall Settings
 
-Once your project completes the build process, your containers will start. In order to be able to access Immich from your browser, you need to configure the firewall settings for your Synology NAS.
+Once your project completes the build process, your containers will start. In order to be able to access Immich from your browser, you need to configure the firewall settings for your Synology NAS to allow communication between the Immich containers.
 
 Open "**Control Panel**" on your Synology NAS, and select "**Security**". Navigate to "**Firewall**"
 
@@ -74,6 +74,7 @@ Read the [Post Installation](/install/post-install.mdx) steps and [upgrade instr
 
 <details>
   <summary>Updating Immich using Container Manager</summary>
+
 Check the post installation and upgrade instructions at the links above before proceeding with this section.
 
 ## Step 1. Backup
@@ -110,7 +111,7 @@ Go to **Project**, select **Action** then **Build**. This will download, unpack,
 
 ## Step 5. Update firewall rule
 
-The default behavior is to automatically start the containers once installed. If `immich_server` runs for a few seconds and then stops, it may be because the firewall rule no longer matches the server IP address.
+Without a fixed subnet, the default behavior is to automatically start the containers once installed. If `immich_server` runs for a few seconds and then stops, it may be because the firewall rule no longer matches the server IP address.
 
 Go to the **Container** section. Click on `immich_server` and scroll down on **General** to find the IP address.
 ![Container IP](../../static/img/synology-container-ip.png)
@@ -122,5 +123,68 @@ Go to Synology **Control Panel**. Select **Security** and **Firewall**.
 In this example, the IP addresses mismatch and the firewall rule needs to be edited to match above.
 
 ![Edit IP](../../static/img/synology-fw-ipedit.png)
+
+To prevent future firewall issues, you may set a fixed subnet. [See Set Fixed Subnet](#set-fixed-subnet) for instructions.
+
+</details>
+
+<details id="set-fixed-subnet">
+  <summary>Set Fixed Subnet</summary>
+
+Docker by default assigns dynamic subnets to bridge networks which can change when rebuilding containers and can cause firewall rules to break. To avoid this, define a fixed subnet in your `docker-compose.yml`:
+
+## Step 1. Determine current subnet
+
+Go to the **Container** section. Click on `immich_server` and scroll down on **General** to find the IP address.
+![Container IP](../../static/img/synology-container-ip.png)
+
+## Step 2. Add network configuration
+
+Add the following network configuration at the end of your `docker-compose.yml` file:
+
+```yaml
+networks:
+  immich-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+```
+
+If your docker container is running on a different subnet then update accordingly.
+
+## Step 3. Add network to each service
+
+Add the network to each service (immich-server, immich-machine-learning, redis, database):
+
+```yaml
+services:
+  immich-server:
+    # other config options
+    networks:
+      - immich-network
+
+  immich-machine-learning:
+    # other config options
+    networks:
+      - immich-network
+
+  redis:
+    # other config options
+    networks:
+      - immich-network
+
+  database:
+    # other config options
+    networks:
+      - immich-network
+```
+
+Save your changes. Synology will ask if you want to save changes only or rebuild containers. Select rebuild containers.
+
+## Step 4. Update Firewall Rules, if necessary
+
+If your firewall rules were not already set for this subnet, the firewall rules will need to be updated. See [Step 4 - Configure Firewall Settings](#step-4---configure-firewall-settings).
 
 </details>

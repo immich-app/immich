@@ -34,6 +34,7 @@ linter:
     unrelated_type_equality_checks: true
     prefer_const_constructors: true
     always_use_package_imports: true
+    always_put_control_body_on_new_line: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
@@ -50,6 +51,7 @@ analyzer:
   #   - custom_lint
   errors:
     unawaited_futures: warning
+    always_put_control_body_on_new_line: warning
 
 custom_lint:
   rules:

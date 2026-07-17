@@ -13,12 +13,12 @@
   let { onDone }: Props = $props();
 </script>
 
-<div class="m-auto w-3/4 text-center flex flex-col place-content-center place-items-center my-6">
+<div class="m-auto my-6 flex w-3/4 flex-col place-content-center place-items-center text-center">
   <Icon icon={mdiPartyPopper} class="text-primary" size="96" />
-  <p class="text-4xl mt-8 font-bold">{$t('purchase_activated_title')}</p>
-  <p class="text-lg mt-6">{$t('purchase_activated_subtitle')}</p>
+  <p class="mt-8 text-4xl font-bold">{$t('purchase_activated_title')}</p>
+  <p class="mt-6 text-lg">{$t('purchase_activated_subtitle')}</p>
 
-  <div class="mb-4 w-full mt-6 border rounded-xl p-4 bg-gray-50 dark:bg-gray-900 dark:border-gray-600">
+  <div class="mt-6 mb-4 w-full rounded-xl border bg-gray-50 p-4 dark:border-gray-600 dark:bg-gray-900">
     <SettingSwitch
       title={$t('show_supporter_badge')}
       subtitle={$t('show_supporter_badge_description')}

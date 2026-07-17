@@ -35,28 +35,26 @@
   <a href="README_sv_SE.md">Svenska</a>
   <a href="README_ar_JO.md">العربية</a>
   <a href="README_th_TH.md">ภาษาไทย</a>
+  <a href="README_ml_IN.md">മലയാളം</a>
 </p>
 
-## Disclaimer
+> [!WARNING]
+> ⚠️ Volg altijd het [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan voor je kostbare foto's en video's!
+>
 
-- ⚠️ Het project wordt momenteel **zeer actief** ontwikkeld.
-- ⚠️ Verwacht bugs en ingrijpende wijzigingen.
-- ⚠️ **Gebruik de app niet als de enige manier om uw foto's en video's op te slaan.**
-- ⚠️ Volg altijd het [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) backup plan voor je kostbare foto's en video's!
+> [!NOTE]
+> De belangrijkste documentatie, inclusief installatie handleidingen, zijn te vinden op https://immich.app/.
 
 ## Inhoud
 
-- [Officiële documentatie](https://docs.immich.app)
-- [Toekomstplannen](https://github.com/orgs/immich-app/projects/1)
-- [Demo](#demo)
-- [Functies](#functies)
+- [Officiële documentatie](https://docs.immich.app/)
 - [Introductie](https://docs.immich.app/overview/introduction)
 - [Installatie](https://docs.immich.app/install/requirements)
+- [Toekomstplannen](https://immich.app/roadmap)
+- [Demo](#demo)
+- [Functies](#functies)
+- [Vertalingen](https://docs.immich.app/developer/translations)
 - [Richtlijnen voor bijdragen](https://docs.immich.app/overview/support-the-project)
-
-## Documentatie
-
-De belangrijkste documentatie, inclusief installatie handleidingen, zijn te vinden op https://immich.app/.
 
 ## Demo
 

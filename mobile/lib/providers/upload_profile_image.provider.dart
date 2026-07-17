@@ -46,7 +46,9 @@ class UploadProfileImageState {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other is UploadProfileImageState && other.status == status && other.profileImagePath == profileImagePath;
   }

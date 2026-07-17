@@ -113,7 +113,7 @@
 </script>
 
 <!-- Filter Albums by Sharing Status (All, Owned, Shared) -->
-<div class="hidden xl:block h-10">
+<div class="hidden h-10 xl:block">
   <GroupTab
     label={$t('show_albums')}
     filters={Object.values(albumFilterNames)}
@@ -123,7 +123,7 @@
 </div>
 
 <!-- Search Albums -->
-<div class="hidden xl:block h-10 xl:w-60 2xl:w-80">
+<div class="hidden h-10 xl:block xl:w-60 2xl:w-80">
   <SearchBar placeholder={$t('search_albums')} bind:name={searchQuery} showLoadingSpinner={false} />
 </div>
 
@@ -166,7 +166,7 @@
 {#if getSelectedAlbumGroupOption($albumViewSettings) !== AlbumGroupBy.None}
   <span in:fly={{ x: -50, duration: 250 }}>
     <!-- Expand Album Groups -->
-    <div class="hidden xl:flex gap-0">
+    <div class="hidden gap-0 xl:flex">
       <div class="block">
         <IconButton
           title={$t('expand_all')}

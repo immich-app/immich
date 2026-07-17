@@ -27,6 +27,7 @@ typedef $$RemoteAssetEntityTableCreateCompanionBuilder =
       i0.Value<DateTime?> localDateTime,
       i0.Value<String?> thumbHash,
       i0.Value<DateTime?> deletedAt,
+      i0.Value<DateTime?> uploadedAt,
       i0.Value<String?> livePhotoVideoId,
       required i2.AssetVisibility visibility,
       i0.Value<String?> stackId,
@@ -49,6 +50,7 @@ typedef $$RemoteAssetEntityTableUpdateCompanionBuilder =
       i0.Value<DateTime?> localDateTime,
       i0.Value<String?> thumbHash,
       i0.Value<DateTime?> deletedAt,
+      i0.Value<DateTime?> uploadedAt,
       i0.Value<String?> livePhotoVideoId,
       i0.Value<i2.AssetVisibility> visibility,
       i0.Value<String?> stackId,
@@ -72,16 +74,7 @@ final class $$RemoteAssetEntityTableReferences
   static i5.$UserEntityTable _ownerIdTable(i0.GeneratedDatabase db) =>
       i6.ReadDatabaseContainer(db)
           .resultSet<i5.$UserEntityTable>('user_entity')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i6.ReadDatabaseContainer(db)
-                  .resultSet<i1.$RemoteAssetEntityTable>('remote_asset_entity')
-                  .ownerId,
-              i6.ReadDatabaseContainer(
-                db,
-              ).resultSet<i5.$UserEntityTable>('user_entity').id,
-            ),
-          );
+          .createAlias('remote_asset_entity__owner_id__user_entity__id');
 
   i5.$$UserEntityTableProcessedTableManager get ownerId {
     final $_column = $_itemColumn<String>('owner_id')!;
@@ -174,6 +167,11 @@ class $$RemoteAssetEntityTableFilterComposer
 
   i0.ColumnFilters<DateTime> get deletedAt => $composableBuilder(
     column: $table.deletedAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<DateTime> get uploadedAt => $composableBuilder(
+    column: $table.uploadedAt,
     builder: (column) => i0.ColumnFilters(column),
   );
 
@@ -305,6 +303,11 @@ class $$RemoteAssetEntityTableOrderingComposer
     builder: (column) => i0.ColumnOrderings(column),
   );
 
+  i0.ColumnOrderings<DateTime> get uploadedAt => $composableBuilder(
+    column: $table.uploadedAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
+
   i0.ColumnOrderings<String> get livePhotoVideoId => $composableBuilder(
     column: $table.livePhotoVideoId,
     builder: (column) => i0.ColumnOrderings(column),
@@ -412,6 +415,11 @@ class $$RemoteAssetEntityTableAnnotationComposer
   i0.GeneratedColumn<DateTime> get deletedAt =>
       $composableBuilder(column: $table.deletedAt, builder: (column) => column);
 
+  i0.GeneratedColumn<DateTime> get uploadedAt => $composableBuilder(
+    column: $table.uploadedAt,
+    builder: (column) => column,
+  );
+
   i0.GeneratedColumn<String> get livePhotoVideoId => $composableBuilder(
     column: $table.livePhotoVideoId,
     builder: (column) => column,
@@ -507,6 +515,7 @@ class $$RemoteAssetEntityTableTableManager
                 i0.Value<DateTime?> localDateTime = const i0.Value.absent(),
                 i0.Value<String?> thumbHash = const i0.Value.absent(),
                 i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
+                i0.Value<DateTime?> uploadedAt = const i0.Value.absent(),
                 i0.Value<String?> livePhotoVideoId = const i0.Value.absent(),
                 i0.Value<i2.AssetVisibility> visibility =
                     const i0.Value.absent(),
@@ -528,6 +537,7 @@ class $$RemoteAssetEntityTableTableManager
                 localDateTime: localDateTime,
                 thumbHash: thumbHash,
                 deletedAt: deletedAt,
+                uploadedAt: uploadedAt,
                 livePhotoVideoId: livePhotoVideoId,
                 visibility: visibility,
                 stackId: stackId,
@@ -550,6 +560,7 @@ class $$RemoteAssetEntityTableTableManager
                 i0.Value<DateTime?> localDateTime = const i0.Value.absent(),
                 i0.Value<String?> thumbHash = const i0.Value.absent(),
                 i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
+                i0.Value<DateTime?> uploadedAt = const i0.Value.absent(),
                 i0.Value<String?> livePhotoVideoId = const i0.Value.absent(),
                 required i2.AssetVisibility visibility,
                 i0.Value<String?> stackId = const i0.Value.absent(),
@@ -570,6 +581,7 @@ class $$RemoteAssetEntityTableTableManager
                 localDateTime: localDateTime,
                 thumbHash: thumbHash,
                 deletedAt: deletedAt,
+                uploadedAt: uploadedAt,
                 livePhotoVideoId: livePhotoVideoId,
                 visibility: visibility,
                 stackId: stackId,
@@ -645,9 +657,9 @@ typedef $$RemoteAssetEntityTableProcessedTableManager =
       i1.RemoteAssetEntityData,
       i0.PrefetchHooks Function({bool ownerId})
     >;
-i0.Index get idxRemoteAssetOwnerChecksum => i0.Index(
-  'idx_remote_asset_owner_checksum',
-  'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_checksum ON remote_asset_entity (owner_id, checksum)',
+i0.Index get uQRemoteAssetsOwnerChecksum => i0.Index(
+  'UQ_remote_assets_owner_checksum',
+  'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)',
 );
 
 class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
@@ -818,6 +830,18 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
         type: i0.DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const i0.VerificationMeta _uploadedAtMeta = const i0.VerificationMeta(
+    'uploadedAt',
+  );
+  @override
+  late final i0.GeneratedColumn<DateTime> uploadedAt =
+      i0.GeneratedColumn<DateTime>(
+        'uploaded_at',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   static const i0.VerificationMeta _livePhotoVideoIdMeta =
       const i0.VerificationMeta('livePhotoVideoId');
   @override
@@ -894,6 +918,7 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
     localDateTime,
     thumbHash,
     deletedAt,
+    uploadedAt,
     livePhotoVideoId,
     visibility,
     stackId,
@@ -998,6 +1023,12 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
         deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
       );
     }
+    if (data.containsKey('uploaded_at')) {
+      context.handle(
+        _uploadedAtMeta,
+        uploadedAt.isAcceptableOrUnknown(data['uploaded_at']!, _uploadedAtMeta),
+      );
+    }
     if (data.containsKey('live_photo_video_id')) {
       context.handle(
         _livePhotoVideoIdMeta,
@@ -1095,6 +1126,10 @@ class $RemoteAssetEntityTable extends i3.RemoteAssetEntity
         i0.DriftSqlType.dateTime,
         data['${effectivePrefix}deleted_at'],
       ),
+      uploadedAt: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}uploaded_at'],
+      ),
       livePhotoVideoId: attachedDatabase.typeMapping.read(
         i0.DriftSqlType.string,
         data['${effectivePrefix}live_photo_video_id'],
@@ -1153,6 +1188,7 @@ class RemoteAssetEntityData extends i0.DataClass
   final DateTime? localDateTime;
   final String? thumbHash;
   final DateTime? deletedAt;
+  final DateTime? uploadedAt;
   final String? livePhotoVideoId;
   final i2.AssetVisibility visibility;
   final String? stackId;
@@ -1173,6 +1209,7 @@ class RemoteAssetEntityData extends i0.DataClass
     this.localDateTime,
     this.thumbHash,
     this.deletedAt,
+    this.uploadedAt,
     this.livePhotoVideoId,
     required this.visibility,
     this.stackId,
@@ -1211,6 +1248,9 @@ class RemoteAssetEntityData extends i0.DataClass
     }
     if (!nullToAbsent || deletedAt != null) {
       map['deleted_at'] = i0.Variable<DateTime>(deletedAt);
+    }
+    if (!nullToAbsent || uploadedAt != null) {
+      map['uploaded_at'] = i0.Variable<DateTime>(uploadedAt);
     }
     if (!nullToAbsent || livePhotoVideoId != null) {
       map['live_photo_video_id'] = i0.Variable<String>(livePhotoVideoId);
@@ -1252,6 +1292,7 @@ class RemoteAssetEntityData extends i0.DataClass
       localDateTime: serializer.fromJson<DateTime?>(json['localDateTime']),
       thumbHash: serializer.fromJson<String?>(json['thumbHash']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+      uploadedAt: serializer.fromJson<DateTime?>(json['uploadedAt']),
       livePhotoVideoId: serializer.fromJson<String?>(json['livePhotoVideoId']),
       visibility: i1.$RemoteAssetEntityTable.$convertervisibility.fromJson(
         serializer.fromJson<int>(json['visibility']),
@@ -1281,6 +1322,7 @@ class RemoteAssetEntityData extends i0.DataClass
       'localDateTime': serializer.toJson<DateTime?>(localDateTime),
       'thumbHash': serializer.toJson<String?>(thumbHash),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+      'uploadedAt': serializer.toJson<DateTime?>(uploadedAt),
       'livePhotoVideoId': serializer.toJson<String?>(livePhotoVideoId),
       'visibility': serializer.toJson<int>(
         i1.$RemoteAssetEntityTable.$convertervisibility.toJson(visibility),
@@ -1306,6 +1348,7 @@ class RemoteAssetEntityData extends i0.DataClass
     i0.Value<DateTime?> localDateTime = const i0.Value.absent(),
     i0.Value<String?> thumbHash = const i0.Value.absent(),
     i0.Value<DateTime?> deletedAt = const i0.Value.absent(),
+    i0.Value<DateTime?> uploadedAt = const i0.Value.absent(),
     i0.Value<String?> livePhotoVideoId = const i0.Value.absent(),
     i2.AssetVisibility? visibility,
     i0.Value<String?> stackId = const i0.Value.absent(),
@@ -1328,6 +1371,7 @@ class RemoteAssetEntityData extends i0.DataClass
         : this.localDateTime,
     thumbHash: thumbHash.present ? thumbHash.value : this.thumbHash,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    uploadedAt: uploadedAt.present ? uploadedAt.value : this.uploadedAt,
     livePhotoVideoId: livePhotoVideoId.present
         ? livePhotoVideoId.value
         : this.livePhotoVideoId,
@@ -1358,6 +1402,9 @@ class RemoteAssetEntityData extends i0.DataClass
           : this.localDateTime,
       thumbHash: data.thumbHash.present ? data.thumbHash.value : this.thumbHash,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      uploadedAt: data.uploadedAt.present
+          ? data.uploadedAt.value
+          : this.uploadedAt,
       livePhotoVideoId: data.livePhotoVideoId.present
           ? data.livePhotoVideoId.value
           : this.livePhotoVideoId,
@@ -1387,6 +1434,7 @@ class RemoteAssetEntityData extends i0.DataClass
           ..write('localDateTime: $localDateTime, ')
           ..write('thumbHash: $thumbHash, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('uploadedAt: $uploadedAt, ')
           ..write('livePhotoVideoId: $livePhotoVideoId, ')
           ..write('visibility: $visibility, ')
           ..write('stackId: $stackId, ')
@@ -1412,6 +1460,7 @@ class RemoteAssetEntityData extends i0.DataClass
     localDateTime,
     thumbHash,
     deletedAt,
+    uploadedAt,
     livePhotoVideoId,
     visibility,
     stackId,
@@ -1436,6 +1485,7 @@ class RemoteAssetEntityData extends i0.DataClass
           other.localDateTime == this.localDateTime &&
           other.thumbHash == this.thumbHash &&
           other.deletedAt == this.deletedAt &&
+          other.uploadedAt == this.uploadedAt &&
           other.livePhotoVideoId == this.livePhotoVideoId &&
           other.visibility == this.visibility &&
           other.stackId == this.stackId &&
@@ -1459,6 +1509,7 @@ class RemoteAssetEntityCompanion
   final i0.Value<DateTime?> localDateTime;
   final i0.Value<String?> thumbHash;
   final i0.Value<DateTime?> deletedAt;
+  final i0.Value<DateTime?> uploadedAt;
   final i0.Value<String?> livePhotoVideoId;
   final i0.Value<i2.AssetVisibility> visibility;
   final i0.Value<String?> stackId;
@@ -1479,6 +1530,7 @@ class RemoteAssetEntityCompanion
     this.localDateTime = const i0.Value.absent(),
     this.thumbHash = const i0.Value.absent(),
     this.deletedAt = const i0.Value.absent(),
+    this.uploadedAt = const i0.Value.absent(),
     this.livePhotoVideoId = const i0.Value.absent(),
     this.visibility = const i0.Value.absent(),
     this.stackId = const i0.Value.absent(),
@@ -1500,6 +1552,7 @@ class RemoteAssetEntityCompanion
     this.localDateTime = const i0.Value.absent(),
     this.thumbHash = const i0.Value.absent(),
     this.deletedAt = const i0.Value.absent(),
+    this.uploadedAt = const i0.Value.absent(),
     this.livePhotoVideoId = const i0.Value.absent(),
     required i2.AssetVisibility visibility,
     this.stackId = const i0.Value.absent(),
@@ -1526,6 +1579,7 @@ class RemoteAssetEntityCompanion
     i0.Expression<DateTime>? localDateTime,
     i0.Expression<String>? thumbHash,
     i0.Expression<DateTime>? deletedAt,
+    i0.Expression<DateTime>? uploadedAt,
     i0.Expression<String>? livePhotoVideoId,
     i0.Expression<int>? visibility,
     i0.Expression<String>? stackId,
@@ -1547,6 +1601,7 @@ class RemoteAssetEntityCompanion
       if (localDateTime != null) 'local_date_time': localDateTime,
       if (thumbHash != null) 'thumb_hash': thumbHash,
       if (deletedAt != null) 'deleted_at': deletedAt,
+      if (uploadedAt != null) 'uploaded_at': uploadedAt,
       if (livePhotoVideoId != null) 'live_photo_video_id': livePhotoVideoId,
       if (visibility != null) 'visibility': visibility,
       if (stackId != null) 'stack_id': stackId,
@@ -1570,6 +1625,7 @@ class RemoteAssetEntityCompanion
     i0.Value<DateTime?>? localDateTime,
     i0.Value<String?>? thumbHash,
     i0.Value<DateTime?>? deletedAt,
+    i0.Value<DateTime?>? uploadedAt,
     i0.Value<String?>? livePhotoVideoId,
     i0.Value<i2.AssetVisibility>? visibility,
     i0.Value<String?>? stackId,
@@ -1591,6 +1647,7 @@ class RemoteAssetEntityCompanion
       localDateTime: localDateTime ?? this.localDateTime,
       thumbHash: thumbHash ?? this.thumbHash,
       deletedAt: deletedAt ?? this.deletedAt,
+      uploadedAt: uploadedAt ?? this.uploadedAt,
       livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
       visibility: visibility ?? this.visibility,
       stackId: stackId ?? this.stackId,
@@ -1646,6 +1703,9 @@ class RemoteAssetEntityCompanion
     if (deletedAt.present) {
       map['deleted_at'] = i0.Variable<DateTime>(deletedAt.value);
     }
+    if (uploadedAt.present) {
+      map['uploaded_at'] = i0.Variable<DateTime>(uploadedAt.value);
+    }
     if (livePhotoVideoId.present) {
       map['live_photo_video_id'] = i0.Variable<String>(livePhotoVideoId.value);
     }
@@ -1683,6 +1743,7 @@ class RemoteAssetEntityCompanion
           ..write('localDateTime: $localDateTime, ')
           ..write('thumbHash: $thumbHash, ')
           ..write('deletedAt: $deletedAt, ')
+          ..write('uploadedAt: $uploadedAt, ')
           ..write('livePhotoVideoId: $livePhotoVideoId, ')
           ..write('visibility: $visibility, ')
           ..write('stackId: $stackId, ')
@@ -1693,10 +1754,6 @@ class RemoteAssetEntityCompanion
   }
 }
 
-i0.Index get uQRemoteAssetsOwnerChecksum => i0.Index(
-  'UQ_remote_assets_owner_checksum',
-  'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum ON remote_asset_entity (owner_id, checksum) WHERE(library_id IS NULL)',
-);
 i0.Index get uQRemoteAssetsOwnerLibraryChecksum => i0.Index(
   'UQ_remote_assets_owner_library_checksum',
   'CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_library_checksum ON remote_asset_entity (owner_id, library_id, checksum) WHERE(library_id IS NOT NULL)',
@@ -1709,11 +1766,11 @@ i0.Index get idxRemoteAssetStackId => i0.Index(
   'idx_remote_asset_stack_id',
   'CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)',
 );
-i0.Index get idxRemoteAssetLocalDateTimeDay => i0.Index(
-  'idx_remote_asset_local_date_time_day',
-  'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_day ON remote_asset_entity (STRFTIME(\'%Y-%m-%d\', local_date_time))',
+i0.Index get idxRemoteAssetOwnerVisibilityDeletedCreated => i0.Index(
+  'idx_remote_asset_owner_visibility_deleted_created',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)',
 );
-i0.Index get idxRemoteAssetLocalDateTimeMonth => i0.Index(
-  'idx_remote_asset_local_date_time_month',
-  'CREATE INDEX IF NOT EXISTS idx_remote_asset_local_date_time_month ON remote_asset_entity (STRFTIME(\'%Y-%m\', local_date_time))',
+i0.Index get idxRemoteAssetUploaded => i0.Index(
+  'idx_remote_asset_uploaded',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_uploaded ON remote_asset_entity (uploaded_at)',
 );

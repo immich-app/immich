@@ -827,7 +827,7 @@ class DriftPartnerDetailRoute
     extends PageRouteInfo<DriftPartnerDetailRouteArgs> {
   DriftPartnerDetailRoute({
     Key? key,
-    required PartnerUserDto partner,
+    required Partner partner,
     List<PageRouteInfo>? children,
   }) : super(
          DriftPartnerDetailRoute.name,
@@ -851,7 +851,7 @@ class DriftPartnerDetailRouteArgs {
 
   final Key? key;
 
-  final PartnerUserDto partner;
+  final Partner partner;
 
   @override
   String toString() {
@@ -867,22 +867,6 @@ class DriftPartnerDetailRouteArgs {
 
   @override
   int get hashCode => key.hashCode ^ partner.hashCode;
-}
-
-/// generated route for
-/// [DriftPartnerPage]
-class DriftPartnerRoute extends PageRouteInfo<void> {
-  const DriftPartnerRoute({List<PageRouteInfo>? children})
-    : super(DriftPartnerRoute.name, initialChildren: children);
-
-  static const String name = 'DriftPartnerRoute';
-
-  static PageInfo page = PageInfo(
-    name,
-    builder: (data) {
-      return const DriftPartnerPage();
-    },
-  );
 }
 
 /// generated route for
@@ -1048,6 +1032,22 @@ class DriftPlaceRouteArgs {
 }
 
 /// generated route for
+/// [DriftRecentlyAddedPage]
+class DriftRecentlyAddedRoute extends PageRouteInfo<void> {
+  const DriftRecentlyAddedRoute({List<PageRouteInfo>? children})
+    : super(DriftRecentlyAddedRoute.name, initialChildren: children);
+
+  static const String name = 'DriftRecentlyAddedRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftRecentlyAddedPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftRecentlyTakenPage]
 class DriftRecentlyTakenRoute extends PageRouteInfo<void> {
   const DriftRecentlyTakenRoute({List<PageRouteInfo>? children})
@@ -1077,6 +1077,53 @@ class DriftSearchRoute extends PageRouteInfo<void> {
       return const DriftSearchPage();
     },
   );
+}
+
+/// generated route for
+/// [DriftSlideshowPage]
+class DriftSlideshowRoute extends PageRouteInfo<DriftSlideshowRouteArgs> {
+  DriftSlideshowRoute({
+    Key? key,
+    required TimelineService timeline,
+    List<PageRouteInfo>? children,
+  }) : super(
+         DriftSlideshowRoute.name,
+         args: DriftSlideshowRouteArgs(key: key, timeline: timeline),
+         initialChildren: children,
+       );
+
+  static const String name = 'DriftSlideshowRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<DriftSlideshowRouteArgs>();
+      return DriftSlideshowPage(key: args.key, timeline: args.timeline);
+    },
+  );
+}
+
+class DriftSlideshowRouteArgs {
+  const DriftSlideshowRouteArgs({this.key, required this.timeline});
+
+  final Key? key;
+
+  final TimelineService timeline;
+
+  @override
+  String toString() {
+    return 'DriftSlideshowRouteArgs{key: $key, timeline: $timeline}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! DriftSlideshowRouteArgs) return false;
+    return key == other.key && timeline == other.timeline;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ timeline.hashCode;
 }
 
 /// generated route for
@@ -1391,6 +1438,22 @@ class MapLocationPickerRouteArgs {
 
   @override
   int get hashCode => key.hashCode ^ initialLatLng.hashCode;
+}
+
+/// generated route for
+/// [PartnerPage]
+class PartnerRoute extends PageRouteInfo<void> {
+  const PartnerRoute({List<PageRouteInfo>? children})
+    : super(PartnerRoute.name, initialChildren: children);
+
+  static const String name = 'PartnerRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const PartnerPage();
+    },
+  );
 }
 
 /// generated route for
@@ -1806,6 +1869,22 @@ class TabShellRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const TabShellPage();
+    },
+  );
+}
+
+/// generated route for
+/// [WhatsNewPage]
+class WhatsNewRoute extends PageRouteInfo<void> {
+  const WhatsNewRoute({List<PageRouteInfo>? children})
+    : super(WhatsNewRoute.name, initialChildren: children);
+
+  static const String name = 'WhatsNewRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const WhatsNewPage();
     },
   );
 }

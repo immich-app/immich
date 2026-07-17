@@ -3,17 +3,20 @@ import type {
   AlbumUserRole,
   ApiKeyResponseDto,
   AssetResponseDto,
+  IntegrityReport,
+  JobCreateDto,
   LibraryResponseDto,
   LoginResponseDto,
   PersonResponseDto,
   QueueResponseDto,
+  ReleaseEventV1,
   SharedLinkResponseDto,
   SystemConfigDto,
   TagResponseDto,
   UserAdminResponseDto,
   WorkflowResponseDto,
 } from '@immich/sdk';
-import type { ReleaseEvent } from '$lib/types';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { BaseEventManager } from '$lib/utils/base-event-manager.svelte';
 import type { TreeNode } from '$lib/utils/tree-utils';
 
@@ -33,6 +36,8 @@ export type Events = {
 
   AssetUpdate: [AssetResponseDto];
   AssetsArchive: [string[]];
+  AssetsUnarchive: [TimelineAsset[]];
+  AssetsUndoArchive: [TimelineAsset[]];
   AssetsDelete: [string[]];
   AssetEditsApplied: [string];
   AssetsTag: [string[]];
@@ -78,6 +83,11 @@ export type Events = {
 
   SystemConfigUpdate: [SystemConfigDto];
 
+  IntegrityReportDeleteStatus: [{ type?: IntegrityReport; id?: string; isDeleting: boolean }];
+  IntegrityReportDeleted: [{ type?: IntegrityReport; id?: string }];
+
+  JobCreate: [{ dto: JobCreateDto }];
+
   LibraryCreate: [LibraryResponseDto];
   LibraryUpdate: [LibraryResponseDto];
   LibraryDelete: [{ id: string }];
@@ -86,7 +96,7 @@ export type Events = {
   WorkflowUpdate: [WorkflowResponseDto];
   WorkflowDelete: [WorkflowResponseDto];
 
-  ReleaseEvent: [ReleaseEvent];
+  ReleaseEvent: [ReleaseEventV1];
 
   WebsocketConnect: [];
 };

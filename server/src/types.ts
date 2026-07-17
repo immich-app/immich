@@ -1,30 +1,41 @@
+import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { ShallowDehydrateObject } from 'kysely';
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
-import { Asset, AssetFile } from 'src/database';
+import { AssetFile } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import {
+  AacProfile,
   AssetOrder,
   AssetType,
+  Av1Profile,
+  ColorMatrix,
+  ColorPrimaries,
+  ColorTransfer,
+  DvProfile,
+  DvSignalCompatibility,
   ExifOrientation,
+  H264Profile,
+  HevcProfile,
   ImageFormat,
+  IntegrityReport,
   JobName,
   MemoryType,
-  PluginTriggerType,
   QueueName,
   StorageFolder,
   SyncEntityType,
   SystemMetadataKey,
   TranscodeTarget,
   UserMetadataKey,
-  VideoCodec,
+  WorkflowType,
 } from 'src/enum';
 
-export type DeepPartial<T> =
-  T extends Record<string, unknown>
+export type DeepPartial<T> = T extends Date
+  ? T
+  : T extends Record<string, unknown>
     ? { [K in keyof T]?: DeepPartial<T[K]> }
     : T extends Array<infer R>
       ? DeepPartial<R>[]
@@ -80,20 +91,43 @@ export interface VideoStreamInfo {
   height: number;
   width: number;
   rotation: number;
-  codecName?: string;
+  codecName: string | null;
+  profile: H264Profile | HevcProfile | Av1Profile | null;
+  level: number | null;
   frameCount: number;
-  isHDR: boolean;
+  frameRate: number | null;
+  timeBase: number | null;
   bitrate: number;
   pixelFormat: string;
-  colorPrimaries?: string;
-  colorSpace?: string;
-  colorTransfer?: string;
+  colorPrimaries: ColorPrimaries;
+  colorMatrix: ColorMatrix;
+  colorTransfer: ColorTransfer;
+  dvProfile: DvProfile | null;
+  dvLevel: number | null;
+  dvBlSignalCompatibilityId: DvSignalCompatibility | null;
 }
 
 export interface AudioStreamInfo {
   index: number;
-  codecName?: string;
+  codecName: string | null;
+  profile: AacProfile | null;
   bitrate: number;
+}
+
+/** Packet-derived video data needed for accurate HLS playlists. */
+export interface VideoPacketInfo {
+  /** Sum of source packet duration across all packets (includes discard). */
+  totalDuration: number;
+  /** Post-discard packet count. */
+  packetCount: number;
+  /** Output CFR frame count at `packetCount / format.duration`. */
+  outputFrames: number;
+  /** All keyframe PTS in source ticks, including pre-roll discard keyframes. */
+  keyframePts: number[];
+  /** Cumulative packet duration through each keyframe, inclusive. */
+  keyframeAccDuration: number[];
+  /** Each keyframe's own packet duration (needed for VFR). */
+  keyframeOwnDuration: number[];
 }
 
 export interface VideoFormat {
@@ -128,6 +162,25 @@ export interface TranscodeCommand {
   };
 }
 
+export interface VideoTuning {
+  strictGop: boolean;
+  lowLatency: boolean;
+}
+
+export interface HlsCommandOptions {
+  initFilename: string;
+  inputPath: string;
+  packetCount: number;
+  playlistFilename: string;
+  seekSeconds?: number;
+  segmentDuration: number;
+  segmentFilename: string;
+  startSegment: number;
+  target: TranscodeTarget;
+  timeBase: number;
+  totalDuration: number;
+}
+
 export interface BitrateDistribution {
   max: number;
   target: number;
@@ -143,14 +196,11 @@ export interface ImageBuffer {
 export interface VideoCodecSWConfig {
   getCommand(
     target: TranscodeTarget,
-    videoStream: VideoStreamInfo,
-    audioStream: AudioStreamInfo,
+    video: VideoStreamInfo,
+    audio?: AudioStreamInfo,
     format?: VideoFormat,
   ): TranscodeCommand;
-}
-
-export interface VideoCodecHWConfig extends VideoCodecSWConfig {
-  getSupportedCodecs(): Array<VideoCodec>;
+  getHlsCommand(options: HlsCommandOptions, video: VideoStreamInfo, audio?: AudioStreamInfo): string[];
 }
 
 export interface ProbeOptions {
@@ -256,21 +306,46 @@ export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
   recipientId: string;
 }
 
-export interface WorkflowData {
-  [PluginTriggerType.AssetCreate]: {
-    userId: string;
-    asset: Asset;
-  };
-  [PluginTriggerType.PersonRecognized]: {
-    personId: string;
-    assetId: string;
-  };
+export type IWorkflowJob<T extends WorkflowType = WorkflowType> = {
+  id: string;
+  trigger: WorkflowTrigger;
+  type: T;
+};
+
+export interface IIntegrityJob {
+  refreshOnly?: boolean;
 }
 
-export interface IWorkflowJob<T extends PluginTriggerType = PluginTriggerType> {
-  id: string;
-  type: T;
-  event: WorkflowData[T];
+export interface IIntegrityDeleteReportTypeJob {
+  type?: IntegrityReport;
+}
+
+export interface IIntegrityDeleteReportsJob {
+  reports: {
+    id: string;
+    assetId: string | null;
+    fileAssetId: string | null;
+    path: string;
+  }[];
+}
+
+export interface IIntegrityUntrackedFilesJob {
+  type: 'asset' | 'asset_file';
+  paths: string[];
+}
+
+export interface IIntegrityMissingFilesJob {
+  items: ({ path: string; reportId: string | null } & (
+    { assetId: string; fileAssetId: null } | { assetId: null; fileAssetId: string }
+  ))[];
+}
+
+export interface IIntegrityPathWithReportJob {
+  items: { path: string; reportId: string | null }[];
+}
+
+export interface IIntegrityPathWithChecksumJob {
+  items: { path: string; reportId: string | null; checksum?: string | null }[];
 }
 
 export interface JobCounts {
@@ -348,6 +423,7 @@ export type JobItem =
 
   // Cleanup
   | { name: JobName.SessionCleanup; data?: IBaseJob }
+  | { name: JobName.HlsSessionCleanup; data?: IBaseJob }
 
   // Tags
   | { name: JobName.TagCleanup; data?: IBaseJob }
@@ -381,7 +457,19 @@ export type JobItem =
   | { name: JobName.Ocr; data: IEntityJob }
 
   // Workflow
-  | { name: JobName.WorkflowRun; data: IWorkflowJob }
+  | { name: JobName.WorkflowAssetTrigger; data: { workflowId: string; assetId: string } }
+
+  // Integrity
+  | { name: JobName.IntegrityUntrackedFilesQueueAll; data?: IIntegrityJob }
+  | { name: JobName.IntegrityUntrackedFiles; data: IIntegrityUntrackedFilesJob }
+  | { name: JobName.IntegrityUntrackedFilesRefresh; data: IIntegrityPathWithReportJob }
+  | { name: JobName.IntegrityMissingFilesQueueAll; data?: IIntegrityJob }
+  | { name: JobName.IntegrityMissingFiles; data: IIntegrityPathWithReportJob }
+  | { name: JobName.IntegrityMissingFilesRefresh; data: IIntegrityPathWithReportJob }
+  | { name: JobName.IntegrityChecksumFiles; data?: IIntegrityJob }
+  | { name: JobName.IntegrityChecksumFilesRefresh; data?: IIntegrityPathWithChecksumJob }
+  | { name: JobName.IntegrityDeleteReportType; data: IIntegrityDeleteReportTypeJob }
+  | { name: JobName.IntegrityDeleteReports; data: IIntegrityDeleteReportsJob }
 
   // Editor
   | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };
@@ -392,10 +480,6 @@ export interface ExtensionVersion {
   name: VectorExtension;
   availableVersion: string | null;
   installedVersion: string | null;
-}
-
-export interface VectorUpdateResult {
-  restartRequired: boolean;
 }
 
 export interface ImmichFile extends Express.Multer.File {
@@ -468,8 +552,7 @@ export interface MemoryData {
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
 export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
 export type MaintenanceModeState =
-  | { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto }
-  | { isMaintenanceMode: false };
+  { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto } | { isMaintenanceMode: false };
 export type MemoriesState = {
   /** memories have already been created through this date */
   lastOnThisDayDate: string;
@@ -487,6 +570,7 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.SystemFlags]: DeepPartial<SystemFlags>;
   [SystemMetadataKey.VersionCheckState]: VersionCheckMetadata;
   [SystemMetadataKey.MemoriesState]: MemoriesState;
+  [SystemMetadataKey.IntegrityChecksumCheckpoint]: { date?: string };
 }
 
 export type UserPreferences = {
@@ -504,6 +588,7 @@ export type UserPreferences = {
   people: {
     enabled: boolean;
     sidebarWeb: boolean;
+    minimumFaces: number;
   };
   ratings: {
     enabled: boolean;
@@ -532,6 +617,9 @@ export type UserPreferences = {
   cast: {
     gCastEnabled: boolean;
   };
+  recentlyAdded: {
+    sidebarWeb: boolean;
+  };
 };
 
 export type UserMetadataItem<T extends keyof UserMetadata = UserMetadataKey> = {
@@ -546,3 +634,20 @@ export interface UserMetadata extends Record<UserMetadataKey, Record<string, any
 }
 
 export type MaybeDehydrated<T> = T | ShallowDehydrateObject<T>;
+
+export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';
+
+export type JSONSchemaProperty = {
+  type: JSONSchemaType;
+  description?: string;
+  default?: any;
+  enum?: string[];
+  array?: boolean;
+  properties?: Record<string, JSONSchemaProperty>;
+  required?: string[];
+};
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+export interface ClassConstructor<T = any> extends Function {
+  new (...args: any[]): T;
+}

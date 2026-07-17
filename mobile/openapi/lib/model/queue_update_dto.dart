@@ -13,7 +13,7 @@ part of openapi.api;
 class QueueUpdateDto {
   /// Returns a new [QueueUpdateDto] instance.
   QueueUpdateDto({
-    this.isPaused,
+    this.isPaused = const Optional.absent(),
   });
 
   /// Whether to pause the queue
@@ -23,7 +23,7 @@ class QueueUpdateDto {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isPaused;
+  Optional<bool?> isPaused;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is QueueUpdateDto &&
@@ -39,10 +39,9 @@ class QueueUpdateDto {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.isPaused != null) {
-      json[r'isPaused'] = this.isPaused;
-    } else {
-    //  json[r'isPaused'] = null;
+    if (this.isPaused.isPresent) {
+      final value = this.isPaused.value;
+      json[r'isPaused'] = value;
     }
     return json;
   }
@@ -56,7 +55,7 @@ class QueueUpdateDto {
       final json = value.cast<String, dynamic>();
 
       return QueueUpdateDto(
-        isPaused: mapValueOfType<bool>(json, r'isPaused'),
+        isPaused: json.containsKey(r'isPaused') ? Optional.present(mapValueOfType<bool>(json, r'isPaused')) : const Optional.absent(),
       );
     }
     return null;

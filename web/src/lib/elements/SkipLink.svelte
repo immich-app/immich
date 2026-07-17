@@ -56,7 +56,7 @@
   };
 </script>
 
-<div class="absolute top-2 start-2 transition-transform {isFocused ? 'translate-y-0' : '-translate-y-10 sr-only'}">
+<div class="absolute inset-s-2 top-2 transition-transform {isFocused ? 'translate-y-0' : 'sr-only -translate-y-10'}">
   <Button
     size="small"
     onclick={moveFocus}

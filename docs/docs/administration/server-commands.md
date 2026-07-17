@@ -13,8 +13,11 @@ The `immich-server` docker image comes preinstalled with an administrative CLI (
 | `enable-oauth-login`       | Enable OAuth login                                            |
 | `disable-oauth-login`      | Disable OAuth login                                           |
 | `list-users`               | List Immich users                                             |
+| `grant-admin`              | Grant admin privileges to a user (by email)                   |
+| `revoke-admin`             | Revoke admin privileges from a user (by email)                |
 | `version`                  | Print Immich version                                          |
 | `change-media-location`    | Change database file paths to align with a new media location |
+| `schema-check`             | Verify database migrations and check for schema drift         |
 
 ## How to run a command
 
@@ -87,7 +90,7 @@ immich-admin list-users
 [
   {
     id: 'e65e6f88-2a30-4dbe-8dd9-1885f4889b53',
-    email: 'immich@example.com.com',
+    email: 'immich@example.com',
     name: 'Immich Admin',
     storageLabel: 'admin',
     externalPath: null,
@@ -100,6 +103,22 @@ immich-admin list-users
     oauthId: '',
   }
 ]
+```
+
+Grant Admin
+
+```
+immich-admin grant-admin
+? Please enter the user email:  user@example.com
+Admin access has been granted to user@example.com
+```
+
+Revoke Admin
+
+```
+immich-admin revoke-admin
+? Please enter the user email:  user@example.com
+Admin access has been revoked from user@example.com
 ```
 
 Print Immich Version
@@ -125,4 +144,13 @@ immich-admin change-media-location
 
 Database file paths updated successfully! 🎉
 ...
+```
+
+Schema Check
+
+```
+immich-admin schema-check
+Migrations are up to date
+
+No schema drift detected
 ```

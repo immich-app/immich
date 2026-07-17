@@ -70,7 +70,7 @@
 <div id="location-selection">
   <Text fontWeight="medium">{$t('place')}</Text>
 
-  <div class="grid grid-auto-fit-40 gap-5 mt-1">
+  <div class="mt-1 grid grid-auto-fit-40 gap-5">
     <div class="w-full">
       <Combobox
         label={$t('country')}

@@ -60,9 +60,9 @@
   });
 </script>
 
-<div class="flex flex-col items-center justify-center w-full h-full p-8" bind:this={canvasContainer}>
+<div class="flex size-full flex-col items-center justify-center p-8" bind:this={canvasContainer}>
   <div
-    class="crop-area max-w-full max-h-full transition-transform motion-reduce:transition-none"
+    class="crop-area max-h-full max-w-full transition-transform motion-reduce:transition-none"
     class:rotated={transformManager.normalizedRotation % 180 > 0}
     style:rotate={transformManager.imageRotation + 'deg'}
     bind:this={transformManager.cropAreaEl}
@@ -72,12 +72,12 @@
       draggable="false"
       src={imageSrc}
       alt={$getAltText(toTimelineAsset(asset))}
-      class="h-full select-none transition-transform motion-reduce:transition-none"
+      class="h-full transition-transform select-none motion-reduce:transition-none"
       style:transform={imageTransform}
     />
     <div
       class={[
-        'overlay w-full h-full absolute top-0 transition-colors motion-reduce:transition-none pointer-events-none',
+        'overlay pointer-events-none absolute top-0 size-full transition-colors motion-reduce:transition-none',
         transformManager.isInteracting ? 'bg-black/30' : 'bg-black/56',
       ]}
       bind:this={transformManager.overlayEl}
@@ -86,7 +86,7 @@
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class={[
-          'grid w-full h-full cursor-move transition-opacity motion-reduce:transition-none',
+          'grid size-full cursor-move transition-opacity motion-reduce:transition-none',
           transformManager.isInteracting ? 'opacity-100' : 'opacity-0',
         ]}
         onmousedown={(e) => transformManager.handleMouseDownOn(e, ResizeBoundary.None)}

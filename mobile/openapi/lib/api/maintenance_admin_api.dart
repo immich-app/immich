@@ -16,12 +16,62 @@ class MaintenanceAdminApi {
 
   final ApiClient apiClient;
 
+  /// Delete integrity report item
+  ///
+  /// Delete a given report item and perform corresponding deletion (e.g. trash asset, delete file)
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> deleteIntegrityReportWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/integrity/report/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Delete integrity report item
+  ///
+  /// Delete a given report item and perform corresponding deletion (e.g. trash asset, delete file)
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<void> deleteIntegrityReport(String id, { Future<void>? abortTrigger, }) async {
+    final response = await deleteIntegrityReportWithHttpInfo(id, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Detect existing install
   ///
   /// Collect integrity checks and other heuristics about local data.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> detectPriorInstallWithHttpInfo() async {
+  Future<Response> detectPriorInstallWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/maintenance/detect-install';
 
@@ -43,14 +93,15 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Detect existing install
   ///
   /// Collect integrity checks and other heuristics about local data.
-  Future<MaintenanceDetectInstallResponseDto?> detectPriorInstall() async {
-    final response = await detectPriorInstallWithHttpInfo();
+  Future<MaintenanceDetectInstallResponseDto?> detectPriorInstall({ Future<void>? abortTrigger, }) async {
+    final response = await detectPriorInstallWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -64,12 +115,254 @@ class MaintenanceAdminApi {
     return null;
   }
 
+  /// Get integrity report by type
+  ///
+  /// Get all flagged items by integrity report type
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [IntegrityReport] type (required):
+  ///
+  /// * [String] cursor:
+  ///   Cursor for pagination
+  ///
+  /// * [int] limit:
+  ///   Number of items per page
+  Future<Response> getIntegrityReportWithHttpInfo(IntegrityReport type, { String? cursor, int? limit, Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/integrity/report';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (cursor != null) {
+      queryParams.addAll(_queryParams('', 'cursor', cursor));
+    }
+    if (limit != null) {
+      queryParams.addAll(_queryParams('', 'limit', limit));
+    }
+      queryParams.addAll(_queryParams('', 'type', type));
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Get integrity report by type
+  ///
+  /// Get all flagged items by integrity report type
+  ///
+  /// Parameters:
+  ///
+  /// * [IntegrityReport] type (required):
+  ///
+  /// * [String] cursor:
+  ///   Cursor for pagination
+  ///
+  /// * [int] limit:
+  ///   Number of items per page
+  Future<IntegrityReportResponseDto?> getIntegrityReport(IntegrityReport type, { String? cursor, int? limit, Future<void>? abortTrigger, }) async {
+    final response = await getIntegrityReportWithHttpInfo(type, cursor: cursor, limit: limit, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'IntegrityReportResponseDto',) as IntegrityReportResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Export integrity report by type as CSV
+  ///
+  /// Get all integrity report entries for a given type as a CSV
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [IntegrityReport] type (required):
+  Future<Response> getIntegrityReportCsvWithHttpInfo(IntegrityReport type, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/integrity/report/{type}/csv'
+      .replaceAll('{type}', type.toString());
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Export integrity report by type as CSV
+  ///
+  /// Get all integrity report entries for a given type as a CSV
+  ///
+  /// Parameters:
+  ///
+  /// * [IntegrityReport] type (required):
+  Future<MultipartFile?> getIntegrityReportCsv(IntegrityReport type, { Future<void>? abortTrigger, }) async {
+    final response = await getIntegrityReportCsvWithHttpInfo(type, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
+    
+    }
+    return null;
+  }
+
+  /// Download flagged file
+  ///
+  /// Download the untracked/broken file if one exists
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<Response> getIntegrityReportFileWithHttpInfo(String id, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/integrity/report/{id}/file'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Download flagged file
+  ///
+  /// Download the untracked/broken file if one exists
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  Future<MultipartFile?> getIntegrityReportFile(String id, { Future<void>? abortTrigger, }) async {
+    final response = await getIntegrityReportFileWithHttpInfo(id, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'MultipartFile',) as MultipartFile;
+    
+    }
+    return null;
+  }
+
+  /// Get integrity report summary
+  ///
+  /// Get a count of the items flagged in each integrity report
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getIntegrityReportSummaryWithHttpInfo({ Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/admin/integrity/summary';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Get integrity report summary
+  ///
+  /// Get a count of the items flagged in each integrity report
+  Future<IntegrityReportSummaryResponseDto?> getIntegrityReportSummary({ Future<void>? abortTrigger, }) async {
+    final response = await getIntegrityReportSummaryWithHttpInfo(abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'IntegrityReportSummaryResponseDto',) as IntegrityReportSummaryResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Get maintenance mode status
   ///
   /// Fetch information about the currently running maintenance action.
   ///
   /// Note: This method returns the HTTP [Response].
-  Future<Response> getMaintenanceStatusWithHttpInfo() async {
+  Future<Response> getMaintenanceStatusWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/maintenance/status';
 
@@ -91,14 +384,15 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
   /// Get maintenance mode status
   ///
   /// Fetch information about the currently running maintenance action.
-  Future<MaintenanceStatusResponseDto?> getMaintenanceStatus() async {
-    final response = await getMaintenanceStatusWithHttpInfo();
+  Future<MaintenanceStatusResponseDto?> getMaintenanceStatus({ Future<void>? abortTrigger, }) async {
+    final response = await getMaintenanceStatusWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -121,7 +415,7 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [MaintenanceLoginDto] maintenanceLoginDto (required):
-  Future<Response> maintenanceLoginWithHttpInfo(MaintenanceLoginDto maintenanceLoginDto,) async {
+  Future<Response> maintenanceLoginWithHttpInfo(MaintenanceLoginDto maintenanceLoginDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/maintenance/login';
 
@@ -143,6 +437,7 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -153,8 +448,8 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [MaintenanceLoginDto] maintenanceLoginDto (required):
-  Future<MaintenanceAuthDto?> maintenanceLogin(MaintenanceLoginDto maintenanceLoginDto,) async {
-    final response = await maintenanceLoginWithHttpInfo(maintenanceLoginDto,);
+  Future<MaintenanceAuthDto?> maintenanceLogin(MaintenanceLoginDto maintenanceLoginDto, { Future<void>? abortTrigger, }) async {
+    final response = await maintenanceLoginWithHttpInfo(maintenanceLoginDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -177,7 +472,7 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [SetMaintenanceModeDto] setMaintenanceModeDto (required):
-  Future<Response> setMaintenanceModeWithHttpInfo(SetMaintenanceModeDto setMaintenanceModeDto,) async {
+  Future<Response> setMaintenanceModeWithHttpInfo(SetMaintenanceModeDto setMaintenanceModeDto, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
     final apiPath = r'/admin/maintenance';
 
@@ -199,6 +494,7 @@ class MaintenanceAdminApi {
       headerParams,
       formParams,
       contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
     );
   }
 
@@ -209,8 +505,8 @@ class MaintenanceAdminApi {
   /// Parameters:
   ///
   /// * [SetMaintenanceModeDto] setMaintenanceModeDto (required):
-  Future<void> setMaintenanceMode(SetMaintenanceModeDto setMaintenanceModeDto,) async {
-    final response = await setMaintenanceModeWithHttpInfo(setMaintenanceModeDto,);
+  Future<void> setMaintenanceMode(SetMaintenanceModeDto setMaintenanceModeDto, { Future<void>? abortTrigger, }) async {
+    final response = await setMaintenanceModeWithHttpInfo(setMaintenanceModeDto, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

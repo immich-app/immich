@@ -33,9 +33,9 @@ env._.path = "./node_modules/.bin"
 run = "tsc --noEmit"
 
 [tasks.sql]
-run = "node ./dist/bin/sync-open-api.js"
+run = "node ./dist/bin/sync-sql.js"
 
-[tasks."open-api"]
+[tasks."sync-open-api"]
 run = "node ./dist/bin/sync-open-api.js"
 
 [tasks.migrations]
@@ -55,12 +55,26 @@ run = [
 env._.path = "./node_modules/.bin"
 run = "email dev -p 3050 --dir src/emails"
 
-[tasks.checklist]
+[tasks.ci-unit]
 run = [
   { task = ":install" },
+  { task = "//:plugins" },
   { task = ":format" },
   { task = ":lint" },
   { task = ":check" },
-  { task = ":test-medium --run" },
   { task = ":test --run" },
+]
+
+[tasks.ci-medium]
+run = [
+  { task = ":install" },
+  { task = "//:plugins" },
+  { task = "//packages/plugin-core:build" },
+  { task = ":test-medium --run" },
+]
+
+[tasks.checklist]
+run = [
+  { task = ":ci-unit" },
+  { task = ":ci-medium" },
 ]

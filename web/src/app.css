@@ -1,38 +1,8 @@
 @import 'tailwindcss';
 @import '@immich/ui/theme/default.css';
+
 @source "../node_modules/@immich/ui";
 /* @import '../../../ui/packages/ui/dist/theme/default.css'; */
-
-@utility immich-form-input {
-  @apply bg-gray-100 ring-1 ring-gray-200 transition outline-none focus-within:ring-1 disabled:cursor-not-allowed dark:bg-gray-800 dark:ring-neutral-900 flex w-full items-center rounded-lg disabled:bg-gray-300 disabled:text-dark dark:disabled:bg-gray-900 dark:disabled:text-gray-200 flex-1 py-2.5 text-base pl-4 pr-4;
-}
-
-@utility immich-form-label {
-  @apply font-medium text-gray-500 dark:text-gray-300;
-}
-
-@utility immich-scrollbar {
-  /* width */
-  scrollbar-width: thin;
-}
-
-@utility scrollbar-hidden {
-  /* Hidden scrollbar */
-  /* width */
-  scrollbar-width: none;
-}
-
-@utility scrollbar-stable {
-  scrollbar-gutter: stable both-edges;
-}
-
-@utility grid-auto-fit-* {
-  grid-template-columns: repeat(auto-fit, minmax(min(calc(var(--spacing) * --value(number)), 100%), 1fr));
-}
-
-@utility grid-auto-fill-* {
-  grid-template-columns: repeat(auto-fill, minmax(min(calc(var(--spacing) * --value(number)), 100%), 1fr));
-}
 
 @custom-variant dark (&:where(.dark, .dark *):not(.light));
 
@@ -61,6 +31,37 @@
   --breakpoint-md: 767px;
   --breakpoint-sm: 639px;
   --breakpoint-sidebar: 850px;
+}
+
+@utility immich-form-input {
+  @apply bg-gray-100 ring-1 ring-gray-200 transition outline-none focus-within:ring-primary focus-within:ring-1 disabled:cursor-not-allowed dark:bg-gray-800 dark:ring-neutral-900 dark:focus-within:ring-primary flex w-full items-center rounded-lg disabled:bg-gray-300 disabled:text-dark dark:disabled:bg-gray-900 dark:disabled:text-gray-200 flex-1 py-2.5 text-base pl-4 pr-4;
+}
+
+@utility immich-form-label {
+  @apply font-medium text-gray-500 dark:text-gray-300;
+}
+
+@utility immich-scrollbar {
+  /* width */
+  scrollbar-width: thin;
+}
+
+@utility scrollbar-hidden {
+  /* Hidden scrollbar */
+  /* width */
+  scrollbar-width: none;
+}
+
+@utility scrollbar-stable {
+  scrollbar-gutter: stable both-edges;
+}
+
+@utility grid-auto-fit-* {
+  grid-template-columns: repeat(auto-fit, minmax(min(calc(var(--spacing) * --value(number)), 100%), 1fr));
+}
+
+@utility grid-auto-fill-* {
+  grid-template-columns: repeat(auto-fill, minmax(min(calc(var(--spacing) * --value(number)), 100%), 1fr));
 }
 
 @layer base {
@@ -158,7 +159,9 @@
   }
 
   .text-white-shadow {
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    text-shadow:
+      0 0 4px rgba(0, 0, 0, 0.9),
+      0 1px 3px rgba(0, 0, 0, 0.8);
   }
 
   .icon-white-drop-shadow {
@@ -168,7 +171,7 @@
 
 .maplibregl-popup {
   .maplibregl-popup-tip {
-    @apply border-t-subtle! translate-y-[-1px];
+    @apply border-t-subtle! -translate-y-px;
   }
 
   .maplibregl-popup-content {

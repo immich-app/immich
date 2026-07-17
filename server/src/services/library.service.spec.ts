@@ -576,6 +576,10 @@ describe(LibraryService.name, () => {
         }),
       ]);
 
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', {
+        asset: { id: asset.id, ownerId: library.ownerId },
+      });
+
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.SidecarCheck,

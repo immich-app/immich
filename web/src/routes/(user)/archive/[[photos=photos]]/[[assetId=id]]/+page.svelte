@@ -53,7 +53,7 @@
     onEscape={handleEscape}
   >
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_archived_assets_message')} class="mt-10 mx-auto" />
+      <EmptyPlaceholder text={$t('no_archived_assets_message')} class="mx-auto mt-10" />
     {/snippet}
   </Timeline>
 </UserPageLayout>

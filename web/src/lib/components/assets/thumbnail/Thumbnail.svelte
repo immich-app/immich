@@ -5,7 +5,6 @@
   import { mediaQueryManager } from '$lib/stores/media-query-manager.svelte';
   import { locale, playVideoThumbnailOnHover } from '$lib/stores/preferences.store';
   import { getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
-  import { timeToSeconds } from '$lib/utils/date-time';
   import { moveFocus } from '$lib/utils/focus-util';
   import { currentUrlReplaceAssetId } from '$lib/utils/navigation';
   import { getAltText } from '$lib/utils/thumbnail-util';
@@ -79,6 +78,7 @@
   let mouseOver = $state(false);
   let loaded = $state(false);
   let thumbError = $state(false);
+  let skipFade = $state(false);
 
   let width = $derived(thumbnailSize || thumbnailWidth || 235);
   let height = $derived(thumbnailSize || thumbnailHeight || 235);
@@ -206,11 +206,7 @@
 </script>
 
 <div
-  class={[
-    'group focus-visible:outline-none flex overflow-hidden transition-[background-color,border-radius]',
-    backgroundColorClass,
-    { 'rounded-xl': selected },
-  ]}
+  class={['group flex overflow-hidden focus-visible:outline-none', backgroundColorClass, { 'rounded-xl': selected }]}
   style:width="{width}px"
   style:height="{height}px"
   onmouseenter={onMouseEnter}
@@ -238,48 +234,45 @@
   role="link"
 >
   <div
-    class={['group absolute top-0 bottom-0', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
+    class={['group absolute inset-y-0', { 'cursor-not-allowed': disabled, 'cursor-pointer': !disabled }]}
     style:width="inherit"
     style:height="inherit"
   >
     <div
       class={[
-        'absolute h-full w-full select-none bg-transparent transition-transform',
+        'absolute size-full bg-transparent transition-transform select-none',
         { 'scale-[0.85]': selected },
         { 'rounded-xl': selected },
       ]}
     >
       <ImageThumbnail
-        class={[
-          'absolute group-focus-visible:rounded-lg transition-[border-radius]',
-          { 'rounded-xl': selected },
-          imageClass,
-        ]}
-        brokenAssetClass={[
-          'z-1 absolute group-focus-visible:rounded-lg transition-[border-radius]',
-          { 'rounded-xl': selected },
-          brokenAssetClass,
-        ]}
+        class={['absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, imageClass]}
+        brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', selected && 'rounded-2xl', brokenAssetClass]}
         url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
         heightStyle="{height}px"
         curve={selected}
-        onComplete={(errored) => ((loaded = true), (thumbError = errored))}
+        onComplete={(errored) => {
+          const rect = element?.getBoundingClientRect();
+          skipFade = !rect || rect.bottom < 0 || rect.top > window.innerHeight;
+          loaded = true;
+          thumbError = errored;
+        }}
       />
       {#if asset.isVideo}
-        <div class="absolute h-full w-full pointer-events-none group-focus-visible:rounded-lg">
+        <div class="pointer-events-none absolute size-full group-focus-visible:rounded-lg">
           <VideoThumbnail
             class="group-focus-visible:rounded-lg"
             url={getAssetPlaybackUrl({ id: asset.id, cacheKey: asset.thumbhash })}
             enablePlayback={mouseOver && $playVideoThumbnailOnHover}
             curve={selected}
-            durationInSeconds={asset.duration ? timeToSeconds(asset.duration) : 0}
+            durationInSeconds={asset.duration ? asset.duration / 1000 : 0}
             playbackOnIconHover={!$playVideoThumbnailOnHover}
           />
         </div>
       {:else if asset.isImage && asset.livePhotoVideoId}
-        <div class="absolute h-full w-full pointer-events-none group-focus-visible:rounded-lg">
+        <div class="pointer-events-none absolute size-full group-focus-visible:rounded-lg">
           <VideoThumbnail
             class="group-focus-visible:rounded-lg"
             url={getAssetPlaybackUrl({ id: asset.livePhotoVideoId, cacheKey: asset.thumbhash })}
@@ -293,7 +286,7 @@
         </div>
       {:else if asset.isImage && asset.duration && mouseOver}
         <!-- GIF -->
-        <div class="absolute h-full w-full pointer-events-none">
+        <div class="pointer-events-none absolute size-full">
           <ImageThumbnail
             class={imageClass}
             {brokenAssetClass}
@@ -310,7 +303,10 @@
         <Thumbhash
           base64ThumbHash={asset.thumbhash}
           data-testid="thumbhash"
-          class={['absolute top-0 object-cover group-focus-visible:rounded-lg', { 'rounded-xl': selected }]}
+          class={[
+            'absolute top-0 object-cover group-focus-visible:rounded-lg',
+            { 'rounded-xl': selected, hidden: skipFade },
+          ]}
           style="width: {width}px; height: {height}px"
           draggable="false"
           fadeOut
@@ -318,12 +314,12 @@
       {/if}
 
       <!-- icon overlay -->
-      <div class="z-2 absolute inset-0">
+      <div class="absolute inset-0 z-2">
         <!-- Gradient overlay on hover -->
         {#if !usingMobileDevice && !disabled && !asset.isVideo}
           <div
             class={[
-              'absolute h-full w-full bg-linear-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100 ',
+              'absolute size-full bg-linear-to-b from-black/25 via-[transparent_25%] opacity-0 transition-opacity group-hover:opacity-100',
               { 'rounded-xl group-focus-visible:rounded-lg': selected },
             ]}
           ></div>
@@ -333,36 +329,33 @@
         {#if dimmed && !mouseOver}
           <div
             id="a"
-            class={[
-              'z-2  absolute h-full w-full bg-gray-700/40 group-focus-visible:rounded-lg',
-              { 'rounded-xl': selected },
-            ]}
+            class={['absolute z-2 size-full bg-gray-700/40 group-focus-visible:rounded-lg', { 'rounded-xl': selected }]}
           ></div>
         {/if}
 
         <!-- Favorite asset star -->
         {#if !authManager.isSharedLink && asset.isFavorite}
-          <div class="z-2 absolute bottom-2 inset-s-2">
+          <div class="absolute inset-s-2 bottom-2 z-2">
             <Icon data-icon-favorite icon={mdiHeart} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if !!assetOwner}
-          <div class="z-2 absolute bottom-1 inset-e-2 max-w-[50%]">
-            <p class="text-xs font-medium text-white drop-shadow-lg max-w-full truncate">
+          <div class="absolute inset-e-2 bottom-1 z-2 max-w-[50%]">
+            <p class="text-white-shadow max-w-full truncate p-1 text-xs font-medium text-white">
               {assetOwner.name}
             </p>
           </div>
         {/if}
 
         {#if !authManager.isSharedLink && showArchiveIcon && asset.visibility === AssetVisibility.Archive}
-          <div class={['z-2 absolute inset-s-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
+          <div class={['absolute inset-s-2 z-2', asset.isFavorite ? 'bottom-10' : 'bottom-2']}>
             <Icon data-icon-archive icon={mdiArchiveArrowDownOutline} size="24" class="text-white" />
           </div>
         {/if}
 
         {#if asset.isImage && asset.projectionType === ProjectionType.EQUIRECTANGULAR}
-          <div class="z-2 absolute inset-e-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+          <div class="absolute inset-e-0 top-0 z-2 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
               <Icon icon={mdiRotate360} size="24" />
             </span>
@@ -370,7 +363,7 @@
         {/if}
 
         {#if asset.isImage && asset.duration}
-          <div class="z-2 absolute inset-e-0 top-0 flex place-items-center gap-1 text-xs font-medium text-white">
+          <div class="absolute inset-e-0 top-0 z-2 flex place-items-center gap-1 text-xs font-medium text-white">
             <span class="pe-2 pt-2">
               <Icon icon={mouseOver ? mdiMotionPauseOutline : mdiFileGifBox} size="24" />
             </span>
@@ -381,11 +374,11 @@
         {#if asset.stack && showStackedIcon}
           <div
             class={[
-              'z-2 absolute flex place-items-center gap-1 text-xs font-medium text-white',
-              asset.isImage && !asset.livePhotoVideoId ? 'top-0 inset-e-0' : 'top-7 inset-e-1',
+              'absolute z-2 flex place-items-center gap-1 text-xs font-medium text-white',
+              asset.isImage && !asset.livePhotoVideoId ? 'inset-e-0 top-0' : 'inset-e-1 top-7',
             ]}
           >
-            <span class="pe-2 pt-2 flex place-items-center gap-1">
+            <span class="flex place-items-center gap-1 pe-2 pt-2">
               <p>{asset.stack.assetCount.toLocaleString($locale)}</p>
               <Icon icon={mdiCameraBurst} size="24" />
             </span>
@@ -396,7 +389,7 @@
       <!-- lazy show the url on mouse over-->
       {#if !usingMobileDevice && mouseOver && !disableLinkMouseOver}
         <a
-          class="z-2 absolute w-full top-0 bottom-0"
+          class="absolute inset-y-0 z-2 w-full"
           style:cursor="unset"
           href={currentUrlReplaceAssetId(asset.id)}
           onclick={(evt) => evt.preventDefault()}
@@ -409,7 +402,7 @@
 
     {#if selectionCandidate}
       <div
-        class={['z-2 absolute top-0 h-full w-full bg-immich-primary opacity-40', { 'rounded-xl': selected }]}
+        class={['absolute top-0 z-2 size-full bg-immich-primary opacity-40', { 'rounded-xl': selected }]}
         in:fade={{ duration: 100 }}
         out:fade={{ duration: 100 }}
       ></div>
@@ -447,7 +440,7 @@
           e.preventDefault();
           onPreview?.($state.snapshot(asset));
         }}
-        class="absolute z-2 bottom-1 end-1 rounded-full bg-black/25 p-1.5 hover:bg-black/50 focus:outline-none transition-colors"
+        class="absolute inset-e-1 bottom-1 z-2 rounded-full bg-black/25 p-1.5 transition-colors hover:bg-black/50 focus:outline-none"
         in:fade={{ duration: 100 }}
         tabindex={-1}
         aria-label="Preview asset"
@@ -459,7 +452,7 @@
     <!-- Outline on focus -->
     <div
       class={[
-        'pointer-events-none absolute z-1 size-full outline-immich-primary dark:outline-immich-dark-primary group-focus-visible:outline-4 group-focus-visible:-outline-offset-4',
+        'pointer-events-none absolute z-1 size-full outline-immich-primary group-focus-visible:outline-4 group-focus-visible:-outline-offset-4 dark:outline-immich-dark-primary',
         { 'rounded-xl': selected },
       ]}
       data-outline

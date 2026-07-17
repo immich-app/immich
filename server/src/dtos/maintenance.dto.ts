@@ -29,7 +29,7 @@ const MaintenanceStatusResponseSchema = z
   .object({
     active: z.boolean(),
     action: MaintenanceActionSchema,
-    progress: z.number().optional(),
+    progress: z.int().optional(),
     task: z.string().optional(),
     error: z.string().optional(),
   })
@@ -40,7 +40,7 @@ const MaintenanceDetectInstallStorageFolderSchema = z
     folder: StorageFolderSchema,
     readable: z.boolean().describe('Whether the folder is readable'),
     writable: z.boolean().describe('Whether the folder is writable'),
-    files: z.number().describe('Number of files in the folder'),
+    files: z.int().describe('Number of files in the folder'),
   })
   .meta({ id: 'MaintenanceDetectInstallStorageFolderDto' });
 

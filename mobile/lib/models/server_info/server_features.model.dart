@@ -50,7 +50,9 @@ class ServerFeatures {
 
   @override
   bool operator ==(covariant ServerFeatures other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.trash == trash &&
         other.map == map &&

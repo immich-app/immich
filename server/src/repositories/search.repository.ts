@@ -8,7 +8,7 @@ import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { anyUuid, searchAssetBuilder, withExifInner } from 'src/utils/database';
 import { paginationHelper } from 'src/utils/pagination';
-import { isValidInteger } from 'src/validation';
+import z from 'zod';
 
 export interface SearchAssetIdOptions {
   checksum?: Buffer;
@@ -117,7 +117,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchAlbumOptions &
   SearchOcrOptions;
 
-export type AssetSearchOptions = BaseAssetSearchOptions & SearchRelationOptions;
+export type AssetSearchOptions = Omit<BaseAssetSearchOptions, 'visibility'> &
+  SearchRelationOptions & { visibility?: AssetVisibility | 'not-locked' };
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
@@ -125,11 +126,11 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchEmbeddingOptions &
   SearchExifOptions &
   SearchOneToOneRelationOptions &
-  SearchStatusOptions &
+  Omit<SearchStatusOptions, 'visibility'> &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
-  SearchOcrOptions;
+  SearchOcrOptions & { visibility?: AssetVisibility | 'not-locked' };
 
 export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 
@@ -278,7 +279,7 @@ export class SearchRepository {
     ],
   })
   searchSmart(pagination: SearchPaginationOptions, options: SmartSearchOptions) {
-    if (!isValidInteger(pagination.size, { min: 1, max: 1000 })) {
+    if (!z.int().min(1).max(1000).safeParse(pagination.size).success) {
       throw new Error(`Invalid value for 'size': ${pagination.size}`);
     }
 
@@ -313,7 +314,7 @@ export class SearchRepository {
     ],
   })
   searchFaces({ userIds, embedding, numResults, maxDistance, hasPerson, minBirthDate }: FaceEmbeddingSearch) {
-    if (!isValidInteger(numResults, { min: 1, max: 1000 })) {
+    if (!z.int().min(1).max(1000).safeParse(numResults).success) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
 

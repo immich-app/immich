@@ -31,7 +31,7 @@
   in:fade={{ duration: 100 }}
   out:fade={{ duration: 100 }}
   id="account-info-panel"
-  class="absolute z-1 end-6 top-19 w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
+  class="absolute inset-e-6 top-19 z-1 w-[min(360px,100vw-50px)] rounded-3xl bg-gray-200 shadow-lg dark:border dark:border-immich-dark-gray dark:bg-immich-dark-gray"
   use:focusTrap
 >
   <div
@@ -39,7 +39,7 @@
   >
     <div class="relative">
       <UserAvatar user={authManager.user} size="xl" />
-      <div class="absolute bottom-0 end-0 rounded-full w-6 h-6">
+      <div class="absolute inset-e-0 bottom-0 size-6 rounded-full">
         <IconButton
           color="primary"
           icon={mdiPencil}
@@ -68,9 +68,9 @@
         color="secondary"
         variant="ghost"
         shape="round"
-        class="border dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 hover:bg-immich-primary/10 dark:text-white"
+        class="border hover:bg-immich-primary/10 dark:border-immich-dark-gray dark:bg-gray-500 dark:text-white dark:hover:bg-immich-dark-primary/50"
       >
-        <div class="flex place-content-center place-items-center text-center gap-2 px-2">
+        <div class="flex place-content-center place-items-center gap-2 px-2 text-center">
           <Icon icon={mdiCog} size="18" aria-hidden />
           {$t('account_settings')}
         </div>
@@ -84,9 +84,9 @@
           size="small"
           color="secondary"
           aria-current={page.url.pathname.includes('/admin') ? 'page' : undefined}
-          class="border dark:border-immich-dark-gray dark:bg-gray-500 dark:hover:bg-immich-dark-primary/50 hover:bg-immich-primary/10 dark:text-white"
+          class="border hover:bg-immich-primary/10 dark:border-immich-dark-gray dark:bg-gray-500 dark:text-white dark:hover:bg-immich-dark-primary/50"
         >
-          <div class="flex place-content-center place-items-center text-center gap-2 px-2">
+          <div class="flex place-content-center place-items-center gap-2 px-2 text-center">
             <Icon icon={mdiWrench} size="18" aria-hidden />
             {$t('administration')}
           </div>
@@ -106,7 +106,7 @@
 
     <button
       type="button"
-      class="text-center mt-4 underline text-xs text-primary"
+      class="mt-4 text-center text-xs text-primary underline"
       onclick={async () => {
         onClose?.();
         if (info) {

@@ -39,7 +39,7 @@
 <div
   in:fade={{ duration: 250 }}
   out:fade={{ duration: 100 }}
-  class="flex flex-col rounded-xl text-xs p-2 gap-1 border border-gray-300 dark:border-subtle bg-primary/10"
+  class="flex flex-col gap-1 rounded-xl border border-gray-300 bg-primary/10 p-2 text-xs dark:border-subtle"
 >
   <div class="flex items-center gap-2">
     <div class="flex items-center justify-center">
@@ -93,9 +93,9 @@
   </div>
 
   {#if uploadAsset.state === UploadState.STARTED}
-    <div class="text-black relative mt-[5px] h-4.5 w-full rounded-md bg-gray-300 dark:bg-gray-700">
+    <div class="relative mt-[5px] h-4.5 w-full rounded-md bg-gray-300 text-black dark:bg-gray-700">
       <div class="h-4.5 rounded-md bg-immich-primary transition-all" style={`width: ${uploadAsset.progress}%`}></div>
-      <p class="absolute top-0.5 h-full w-full text-center text-white text-[10px]">
+      <p class="absolute top-0.5 size-full text-center text-[10px] text-white">
         {#if uploadAsset.message === $t('asset_hashing')}
           {uploadAsset.message}
         {:else}

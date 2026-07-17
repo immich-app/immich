@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -8,15 +10,15 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
+import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
-import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
-import 'package:immich_mobile/utils/hash.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -127,7 +129,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _apiService.updateHeaders();
 
     final serverEndpoint = Store.get(StoreKey.serverEndpoint);
-    final customHeaders = Store.tryGet(StoreKey.customHeaders);
+    final headerMap = _ref.read(appConfigProvider).network.customHeaders;
+    final customHeaders = headerMap.isEmpty ? null : jsonEncode(headerMap);
     await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
@@ -144,7 +147,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         // Due to the flow of the code, this will always happen on first login
         user = serverUser;
         await Store.put(StoreKey.deviceId, deviceId);
-        await Store.put(StoreKey.deviceIdHash, fastHash(deviceId));
       }
     } on ApiException catch (error, stackTrace) {
       if (error.code == 401) {
@@ -176,19 +178,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> saveWifiName(String wifiName) async {
-    await Store.put(StoreKey.preferredWifiName, wifiName);
+    await _ref.read(settingsProvider).write(.networkPreferredWifiName, wifiName);
   }
 
   Future<void> saveLocalEndpoint(String url) async {
-    await Store.put(StoreKey.localEndpoint, url);
+    await _ref.read(settingsProvider).write(.networkLocalEndpoint, url);
+    await _apiService.updateHeaders();
   }
 
   String? getSavedWifiName() {
-    return Store.tryGet(StoreKey.preferredWifiName);
+    return _ref.read(appConfigProvider).network.preferredWifiName;
   }
 
   String? getSavedLocalEndpoint() {
-    return Store.tryGet(StoreKey.localEndpoint);
+    return _ref.read(appConfigProvider).network.localEndpoint;
   }
 
   /// Returns the current server endpoint (with /api) URL from the store

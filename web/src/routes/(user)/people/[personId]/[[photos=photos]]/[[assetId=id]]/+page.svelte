@@ -5,9 +5,6 @@
   import { listNavigation } from '$lib/actions/list-navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import EditNameInput from './EditNameInput.svelte';
-  import MergeFaceSelector from './MergeFaceSelector.svelte';
-  import UnmergeFaceSelector from './UnmergeFaceSelector.svelte';
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
@@ -39,6 +36,7 @@
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { isExternalUrl } from '$lib/utils/navigation';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
   import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
@@ -54,6 +52,9 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
+  import EditNameInput from './EditNameInput.svelte';
+  import MergeFaceSelector from './MergeFaceSelector.svelte';
+  import UnmergeFaceSelector from './UnmergeFaceSelector.svelte';
 
   interface Props {
     data: PageData;
@@ -62,6 +63,8 @@
   let { data }: Props = $props();
 
   let numberOfAssets = $derived(data.statistics.assets);
+  let person = $derived(data.person);
+  let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   let timelineManager = $state<TimelineManager>() as TimelineManager;
   const options = $derived({ visibility: AssetVisibility.Timeline, personId: data.person.id });
@@ -74,7 +77,7 @@
   let potentialMergePeople: PersonResponseDto[] = $state([]);
   let isSuggestionSelectedByUser = $state(false);
 
-  let personName = '';
+  let personName = $derived(person.name);
   let suggestedPeople: PersonResponseDto[] = $state([]);
 
   /**
@@ -187,7 +190,6 @@
     isEditingName = false;
     if (person.id !== person2.id) {
       potentialMergePeople = [];
-      personName = person.name;
       personMerge1 = person;
       personMerge2 = person2;
       isSuggestionSelectedByUser = true;
@@ -235,8 +237,10 @@
 
     const result = await searchPerson({ name: personName, withHidden: true });
 
+    const normalizedPersonName = normalizeSearchString(personName);
     const existingPerson = result.find(
-      ({ name, id }: PersonResponseDto) => name.toLowerCase() === personName.toLowerCase() && id !== person.id && name,
+      ({ name, id }: PersonResponseDto) =>
+        normalizeSearchString(name) === normalizedPersonName && id !== person.id && name,
     );
     if (existingPerson) {
       personMerge2 = existingPerson;
@@ -244,8 +248,8 @@
       potentialMergePeople = result
         .filter(
           (person: PersonResponseDto) =>
-            personMerge2?.name.toLowerCase() === person.name.toLowerCase() &&
-            person.id !== personMerge2.id &&
+            normalizeSearchString(personMerge2?.name ?? '') === normalizeSearchString(person.name) &&
+            person.id !== personMerge2?.id &&
             person.id !== personMerge1?.id &&
             !person.isHidden,
         )
@@ -275,10 +279,6 @@
     timelineManager.upsertAssets(assets);
     await updateAssetCount();
   };
-
-  let person = $derived(data.person);
-
-  let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
   const handleSetVisibility = (assetIds: string[]) => {
     timelineManager.removeAssets(assetIds);
@@ -329,10 +329,11 @@
   onPersonAssetDelete={handlePersonAssetDelete}
   onAssetsDelete={updateAssetCount}
   onAssetsArchive={updateAssetCount}
+  onAssetsUnarchive={updateAssetCount}
 />
 
 <main
-  class="relative z-0 h-dvh overflow-hidden px-2 md:px-6 md:pt-(--navbar-height-md) pt-(--navbar-height)"
+  class="relative z-0 h-dvh overflow-hidden px-2 pt-(--navbar-height) md:px-6 md:pt-(--navbar-height-md)"
   use:scrollMemoryClearer={{
     routeStartsWith: Route.people(),
     beforeClear: () => {
@@ -355,14 +356,14 @@
       {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
         <!-- Person information block -->
         <div
-          class="relative w-fit p-4 sm:px-6 pt-12"
+          class="relative w-fit p-4 pt-12 sm:px-6"
           use:clickOutside={{
             onOutclick: handleCancelEditName,
             onEscape: handleCancelEditName,
           }}
           use:listNavigation={suggestionContainer}
         >
-          <section class="flex w-64 sm:w-96 place-items-center border-black">
+          <section class="flex w-64 place-items-center border-black sm:w-96">
             {#if isEditingName}
               <EditNameInput
                 {person}
@@ -388,8 +389,8 @@
                     widthStyle="3.375rem"
                     heightStyle="3.375rem"
                   />
-                  <div class="flex flex-col justify-center text-start px-4 text-primary">
-                    <p class="w-40 sm:w-72 font-medium truncate">{person.name || $t('add_a_name')}</p>
+                  <div class="flex flex-col justify-center px-4 text-start text-primary">
+                    <p class="w-40 truncate font-medium sm:w-72">{person.name || $t('add_a_name')}</p>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
                       {$t('assets_count', { values: { count: numberOfAssets } })}
                     </p>
@@ -415,10 +416,10 @@
             {/if}
           </section>
           {#if isEditingName}
-            <div class="absolute w-64 sm:w-96 z-1">
+            <div class="absolute z-1 w-64 sm:w-96">
               {#if isSearchingPeople}
                 <div
-                  class="flex border h-14 rounded-b-lg border-gray-400 dark:border-immich-dark-gray place-items-center bg-gray-200 p-2 dark:bg-gray-700"
+                  class="flex h-14 place-items-center rounded-b-lg border border-gray-400 bg-gray-200 p-2 dark:border-immich-dark-gray dark:bg-gray-700"
                 >
                   <div class="flex w-full place-items-center">
                     <LoadingSpinner />
@@ -429,7 +430,7 @@
                   {#each suggestedPeople as person, index (person.id)}
                     <button
                       type="button"
-                      class="flex w-full border border-gray-200 dark:border-immich-dark-gray h-14 place-items-center bg-gray-100 p-2 dark:bg-gray-700 hover:bg-gray-300 hover:dark:bg-[#232932] focus:bg-gray-300 focus:dark:bg-[#232932] {index ===
+                      class="flex h-14 w-full place-items-center border border-gray-200 bg-gray-100 p-2 hover:bg-gray-300 focus:bg-gray-300 dark:border-immich-dark-gray dark:bg-gray-700 hover:dark:bg-[#232932] focus:dark:bg-[#232932] {index ===
                       suggestedPeople.length - 1
                         ? 'rounded-b-lg border-b'
                         : ''}"
@@ -496,7 +497,7 @@
     </AssetSelectControlBar>
   {:else}
     {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
-      <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
+      <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
         {#snippet trailing()}
           <ContextMenuButton
             items={[SelectFeaturePhoto, HidePerson, ShowPerson, SetDateOfBirth, Merge, Favorite, Unfavorite]}

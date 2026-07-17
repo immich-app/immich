@@ -1,6 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { BBoxSchema } from 'src/dtos/bbox.dto';
-import { AssetOrderSchema, AssetVisibilitySchema } from 'src/enum';
+import { AssetOrderBySchema, AssetOrderSchema, AssetVisibilitySchema } from 'src/enum';
 import { stringToBool } from 'src/validation';
 import z from 'zod';
 
@@ -22,6 +22,9 @@ const TimeBucketQueryBaseSchema = z
     withPartners: stringToBool.optional().describe('Include assets shared by partners'),
     order: AssetOrderSchema.optional().describe(
       'Sort order for assets within time buckets (ASC for oldest first, DESC for newest first)',
+    ),
+    orderBy: AssetOrderBySchema.optional().describe(
+      'Date to group and order assets by (takenAt for date taken, createdAt for date added to Immich)',
     ),
     visibility: AssetVisibilitySchema.optional().describe(
       'Filter by asset visibility status (ARCHIVE, TIMELINE, HIDDEN, LOCKED)',
@@ -82,6 +85,9 @@ const TimeBucketAssetResponseSchema = z
     thumbhash: z
       .array(z.string().nullable())
       .describe('Array of BlurHash strings for generating asset previews (base64 encoded)'),
+    createdAt: z
+      .array(z.string())
+      .describe('Array of UTC timestamps when each asset was originally uploaded to Immich'),
     fileCreatedAt: z.array(z.string()).describe('Array of file creation timestamps in UTC'),
     localOffsetHours: z
       .array(z.number())
@@ -89,8 +95,8 @@ const TimeBucketAssetResponseSchema = z
         "Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.",
       ),
     duration: z
-      .array(z.string().nullable())
-      .describe('Array of video/gif durations in hh:mm:ss.SSS format (null for static images)'),
+      .array(z.int32().min(0).nullable())
+      .describe('Array of video/gif durations in milliseconds (null for static images)'),
     stack: z
       .array(stackTupleSchema)
       .optional()
@@ -101,8 +107,8 @@ const TimeBucketAssetResponseSchema = z
     livePhotoVideoId: z
       .array(z.string().nullable())
       .describe('Array of live photo video asset IDs (null for non-live photos)'),
-    city: z.array(z.string().nullable()).describe('Array of city names extracted from EXIF GPS data'),
-    country: z.array(z.string().nullable()).describe('Array of country names extracted from EXIF GPS data'),
+    city: z.array(z.string().nullable()).optional().describe('Array of city names extracted from EXIF GPS data'),
+    country: z.array(z.string().nullable()).optional().describe('Array of country names extracted from EXIF GPS data'),
     latitude: z
       .array(z.number().nullable())
       .optional()

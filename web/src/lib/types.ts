@@ -1,4 +1,4 @@
-import type { QueueResponseDto, ServerVersionResponseDto } from '@immich/sdk';
+import type { QueueResponseDto } from '@immich/sdk';
 import type { ActionItem } from '@immich/ui';
 import type { DateTime } from 'luxon';
 import type { SvelteSet } from 'svelte/reactivity';
@@ -6,14 +6,6 @@ import { MediaType } from '$lib/constants';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 
 export type LatLng = { lng: number; lat: number };
-
-export interface ReleaseEvent {
-  isAvailable: boolean;
-  /** ISO8601 */
-  checkedAt: string;
-  serverVersion: ServerVersionResponseDto;
-  releaseVersion: ServerVersionResponseDto;
-}
 
 export type QueueSnapshot = { timestamp: number; snapshot?: QueueResponseDto[] };
 
@@ -80,7 +72,7 @@ export type SearchLocationFilter = {
 export type SearchFilter = {
   query: string;
   ocr?: string;
-  queryType: 'smart' | 'metadata' | 'description' | 'ocr';
+  queryType: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr';
   personIds: SvelteSet<string>;
   tagIds: SvelteSet<string> | null;
   location: SearchLocationFilter;
@@ -91,3 +83,27 @@ export type SearchFilter = {
   mediaType: MediaType;
   rating?: number | null;
 };
+
+export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'object';
+
+export type JSONSchemaProperty = {
+  type: JSONSchemaType;
+  title?: string;
+  description?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  default?: any;
+  enum?: string[];
+  minimum?: number;
+  maximum?: number;
+  precision?: number;
+  array?: boolean;
+  properties?: Record<string, JSONSchemaProperty>;
+  required?: string[];
+  uiHint?: {
+    type?: 'AlbumId' | 'AssetId' | 'PersonId';
+    order?: number;
+  };
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type SchemaConfig = any;

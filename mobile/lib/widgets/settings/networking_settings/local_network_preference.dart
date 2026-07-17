@@ -8,24 +8,29 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/network.provider.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class LocalNetworkPreference extends HookConsumerWidget {
   const LocalNetworkPreference({super.key, required this.enabled});
 
   final bool enabled;
 
-  Future<String?> _showEditDialog(BuildContext context, String title, String hintText, String initialValue) {
+  Future<String?> _showEditDialog(
+    BuildContext context,
+    String title,
+    String hintText,
+    String initialValue, {
+    bool isUrlField = false,
+  }) {
     final controller = TextEditingController(text: initialValue);
 
     return showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(title),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: InputDecoration(border: const OutlineInputBorder(), hintText: hintText),
-        ),
+        content: isUrlField
+            ? ImmichURLInput(controller: controller, autofocus: true, keyboardAction: .done, hintText: hintText)
+            : ImmichTextInput(controller: controller, autofocus: true, keyboardAction: .done, hintText: hintText),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -81,6 +86,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
         "server_endpoint".tr(),
         "http://local-ip:2283",
         localEndpointText.value,
+        isUrlField: true,
       );
 
       if (localEndpoint != null) {

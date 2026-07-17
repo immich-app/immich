@@ -1,10 +1,8 @@
 <script lang="ts">
   import { goto, invalidate, onNavigate } from '$app/navigation';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
-  import AlbumDescription from './AlbumDescription.svelte';
   import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
-  import AlbumTitle from './AlbumTitle.svelte';
   import ActivityStatus from '$lib/components/asset-viewer/ActivityStatus.svelte';
   import ActivityViewer from '$lib/components/asset-viewer/ActivityViewer.svelte';
   import HeaderActionButton from '$lib/components/HeaderActionButton.svelte';
@@ -37,7 +35,6 @@
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import AlbumOptionsModal from '$lib/modals/AlbumOptionsModal.svelte';
-  import SharedLinkCreateModal from '$lib/modals/SharedLinkCreateModal.svelte';
   import { Route } from '$lib/route';
   import {
     getAlbumActions,
@@ -66,6 +63,7 @@
     mdiArrowLeft,
     mdiCogOutline,
     mdiDeleteOutline,
+    mdiDotsHorizontal,
     mdiDotsVertical,
     mdiDownload,
     mdiImageOutline,
@@ -78,6 +76,8 @@
   import { t } from 'svelte-i18n';
   import { fly } from 'svelte/transition';
   import type { PageData } from './$types';
+  import AlbumDescription from './AlbumDescription.svelte';
+  import AlbumTitle from './AlbumTitle.svelte';
 
   interface Props {
     data: PageData;
@@ -339,7 +339,7 @@
 
 <div class="flex overflow-hidden" use:scrollMemoryClearer={{ routeStartsWith: Route.albums() }}>
   <div class="relative w-full shrink">
-    <main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
+    <main class="relative h-dvh overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6">
       <Timeline
         enableRouting={viewMode === AlbumPageViewMode.SELECT_ASSETS ? false : true}
         {album}
@@ -373,38 +373,41 @@
               <!-- ALBUM SHARING -->
               {#if album.albumUsers.length > 1 || (album.hasSharedLink && isOwned)}
                 <div class="my-3 flex gap-x-1">
-                  <!-- link -->
-                  {#if album.hasSharedLink && isOwned}
-                    <IconButton
-                      aria-label={$t('create_link_to_share')}
-                      color="secondary"
-                      size="medium"
-                      shape="round"
-                      icon={mdiLink}
-                      onclick={() => modalManager.show(SharedLinkCreateModal, { albumId: album.id })}
-                    />
-                  {/if}
-
-                  <!-- users with write access (collaborators) -->
-                  {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor || role === AlbumUserRole.Owner) as { user } (user.id)}
-                    <button type="button" onclick={() => modalManager.show(AlbumOptionsModal, { album })}>
+                  <button
+                    class="flex gap-x-1"
+                    type="button"
+                    onclick={() => modalManager.show(AlbumOptionsModal, { album, readOnly: !isOwned })}
+                  >
+                    <!-- owner & users with write access (collaborators) -->
+                    {#each album.albumUsers.filter(({ role }) => role === AlbumUserRole.Editor || role === AlbumUserRole.Owner) as { user } (user.id)}
                       <UserAvatar {user} size="md" />
-                    </button>
-                  {/each}
+                    {/each}
 
-                  <!-- display ellipsis if there are readonly users too -->
-                  {#if albumHasViewers}
-                    <IconButton
-                      shape="round"
-                      aria-label={$t('view_all_users')}
-                      color="secondary"
-                      size="medium"
-                      icon={mdiDotsVertical}
-                      onclick={() => modalManager.show(AlbumOptionsModal, { album })}
-                    />
+                    <!-- display ellipsis if there are readonly users too -->
+                    {#if albumHasViewers}
+                      <IconButton
+                        shape="round"
+                        aria-label={$t('view_all_users')}
+                        color="secondary"
+                        size="medium"
+                        icon={mdiDotsHorizontal}
+                      />
+                    {/if}
+
+                    {#if album.hasSharedLink && isOwned}
+                      <IconButton
+                        aria-label={$t('shared_link_manage_links')}
+                        color="secondary"
+                        size="medium"
+                        shape="round"
+                        icon={mdiLink}
+                      />
+                    {/if}
+                  </button>
+
+                  {#if isOwned}
+                    <ActionButton action={Share} />
                   {/if}
-
-                  <ActionButton action={Share} />
                 </div>
               {/if}
               <AlbumDescription
@@ -416,13 +419,13 @@
           {/if}
 
           {#if album.assetCount === 0}
-            <section id="empty-album" class=" mt-50 flex place-content-center place-items-center">
+            <section id="empty-album" class="mt-50 flex place-content-center place-items-center">
               <div class="w-75">
-                <p class="uppercase text-xs dark:text-immich-dark-fg">{$t('add_photos')}</p>
+                <p class="text-xs uppercase dark:text-immich-dark-fg">{$t('add_photos')}</p>
                 <button
                   type="button"
                   onclick={() => (viewMode = AlbumPageViewMode.SELECT_ASSETS)}
-                  class="mt-5 bg-subtle flex w-full place-items-center gap-6 rounded-2xl border px-8 py-8 text-immich-fg transition-all hover:bg-gray-100 dark:hover:bg-gray-500/20 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+                  class="mt-5 flex w-full place-items-center gap-6 rounded-2xl border bg-subtle p-8 text-immich-fg transition-all hover:bg-gray-100 hover:text-immich-primary dark:border-none dark:text-immich-dark-fg dark:hover:bg-gray-500/20 dark:hover:text-immich-dark-primary"
                 >
                   <span class="text-primary">
                     <Icon icon={mdiPlus} size="24" />
@@ -436,7 +439,7 @@
       </Timeline>
 
       {#if showActivityStatus}
-        <div class="absolute z-2 bottom-0 end-0 mb-6 me-12">
+        <div class="absolute inset-e-0 bottom-0 z-2 me-12 mb-6">
           <ActivityStatus
             disabled={!album.isActivityEnabled}
             isLiked={activityManager.isLiked}
@@ -496,7 +499,7 @@
       </AssetSelectControlBar>
     {:else}
       {#if viewMode === AlbumPageViewMode.VIEW}
-        <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(Route.albums())}>
+        <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(Route.albums())}>
           {#snippet trailing()}
             <ActionButton action={Cast} />
 
@@ -617,7 +620,7 @@
       <div
         transition:fly={{ duration: 150 }}
         id="activity-panel"
-        class="z-2 w-90 md:w-115 overflow-y-auto transition-all dark:border-l dark:border-s-immich-dark-gray"
+        class="z-2 w-90 overflow-y-auto transition-all md:w-115 dark:border-l dark:border-s-immich-dark-gray"
         translate="yes"
       >
         <ActivityViewer disabled={!album.isActivityEnabled} albumUsers={album.albumUsers} albumId={album.id} />

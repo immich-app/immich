@@ -58,7 +58,9 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
   }
 
   Future<void> _handleDone() async {
-    if (_isLoading) return;
+    if (_isLoading) {
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -72,7 +74,9 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
           .read(uploadProfileImageProvider.notifier)
           .upload(xFile, fileName: 'profile-picture.png');
 
-      if (!context.mounted) return;
+      if (!context.mounted) {
+        return;
+      }
 
       if (success) {
         final profileImagePath = ref.read(uploadProfileImageProvider).profileImagePath;
@@ -102,7 +106,9 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
         );
       }
     } catch (e) {
-      if (!context.mounted) return;
+      if (!context.mounted) {
+        return;
+      }
 
       ImmichToast.show(
         context: context,

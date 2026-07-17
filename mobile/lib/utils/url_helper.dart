@@ -24,6 +24,17 @@ String? getServerUrl() {
   );
 }
 
+String? buildSharedLinkUrl({required String? baseUrl, required String key, String? slug}) {
+  if (baseUrl == null || baseUrl.isEmpty) {
+    return null;
+  }
+
+  final normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : '$baseUrl/';
+  final path = (slug != null && slug.isNotEmpty) ? 's/$slug' : 'share/$key';
+
+  return '$normalizedBaseUrl$path';
+}
+
 /// Converts a Unicode URL to its ASCII-compatible encoding (Punycode).
 ///
 /// This is especially useful for internationalized domain names (IDNs),
@@ -42,13 +53,17 @@ String? getServerUrl() {
 ///
 String punycodeEncodeUrl(String serverUrl) {
   final serverUri = Uri.tryParse(serverUrl);
-  if (serverUri == null || serverUri.host.isEmpty) return '';
+  if (serverUri == null || serverUri.host.isEmpty) {
+    return '';
+  }
 
   final encodedHost = Uri.decodeComponent(serverUri.host)
       .split('.')
       .map((segment) {
         // If segment is already ASCII, then return as it is.
-        if (segment.runes.every((c) => c < 0x80)) return segment;
+        if (segment.runes.every((c) => c < 0x80)) {
+          return segment;
+        }
         return 'xn--${punycodeEncode(segment)}';
       })
       .join('.');
@@ -75,7 +90,9 @@ String punycodeEncodeUrl(String serverUrl) {
 ///
 String? punycodeDecodeUrl(String? serverUrl) {
   final serverUri = serverUrl != null ? Uri.tryParse(serverUrl) : null;
-  if (serverUri == null || serverUri.host.isEmpty) return null;
+  if (serverUri == null || serverUri.host.isEmpty) {
+    return null;
+  }
 
   final decodedHost = serverUri.host
       .split('.')

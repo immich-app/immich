@@ -33,7 +33,7 @@
 
 <Modal title={$t('select_avatar_color')} size="small" {onClose}>
   <ModalBody>
-    <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 place-items-center">
+    <div class="grid grid-cols-2 place-items-center gap-4 sm:grid-cols-5">
       {#each colors as color (color)}
         <button type="button" onclick={() => onSave(color)}>
           <UserAvatar

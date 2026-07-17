@@ -13,20 +13,20 @@ part of openapi.api;
 class PeopleUpdateItem {
   /// Returns a new [PeopleUpdateItem] instance.
   PeopleUpdateItem({
-    this.birthDate,
-    this.color,
-    this.featureFaceAssetId,
+    this.birthDate = const Optional.absent(),
+    this.color = const Optional.absent(),
+    this.featureFaceAssetId = const Optional.absent(),
     required this.id,
-    this.isFavorite,
-    this.isHidden,
-    this.name,
+    this.isFavorite = const Optional.absent(),
+    this.isHidden = const Optional.absent(),
+    this.name = const Optional.absent(),
   });
 
   /// Person date of birth
-  DateTime? birthDate;
+  Optional<DateTime?> birthDate;
 
   /// Person color (hex)
-  String? color;
+  Optional<String?> color;
 
   /// Asset ID used for feature face thumbnail
   ///
@@ -35,7 +35,7 @@ class PeopleUpdateItem {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? featureFaceAssetId;
+  Optional<String?> featureFaceAssetId;
 
   /// Person ID
   String id;
@@ -47,7 +47,7 @@ class PeopleUpdateItem {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isFavorite;
+  Optional<bool?> isFavorite;
 
   /// Person visibility (hidden)
   ///
@@ -56,7 +56,7 @@ class PeopleUpdateItem {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? isHidden;
+  Optional<bool?> isHidden;
 
   /// Person name
   ///
@@ -65,7 +65,7 @@ class PeopleUpdateItem {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  String? name;
+  Optional<String?> name;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PeopleUpdateItem &&
@@ -93,36 +93,30 @@ class PeopleUpdateItem {
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-    if (this.birthDate != null) {
-      json[r'birthDate'] = _dateFormatter.format(this.birthDate!.toUtc());
-    } else {
-    //  json[r'birthDate'] = null;
+    if (this.birthDate.isPresent) {
+      final value = this.birthDate.value;
+      json[r'birthDate'] = value == null ? null : _dateFormatter.format(value.toUtc());
     }
-    if (this.color != null) {
-      json[r'color'] = this.color;
-    } else {
-    //  json[r'color'] = null;
+    if (this.color.isPresent) {
+      final value = this.color.value;
+      json[r'color'] = value;
     }
-    if (this.featureFaceAssetId != null) {
-      json[r'featureFaceAssetId'] = this.featureFaceAssetId;
-    } else {
-    //  json[r'featureFaceAssetId'] = null;
+    if (this.featureFaceAssetId.isPresent) {
+      final value = this.featureFaceAssetId.value;
+      json[r'featureFaceAssetId'] = value;
     }
       json[r'id'] = this.id;
-    if (this.isFavorite != null) {
-      json[r'isFavorite'] = this.isFavorite;
-    } else {
-    //  json[r'isFavorite'] = null;
+    if (this.isFavorite.isPresent) {
+      final value = this.isFavorite.value;
+      json[r'isFavorite'] = value;
     }
-    if (this.isHidden != null) {
-      json[r'isHidden'] = this.isHidden;
-    } else {
-    //  json[r'isHidden'] = null;
+    if (this.isHidden.isPresent) {
+      final value = this.isHidden.value;
+      json[r'isHidden'] = value;
     }
-    if (this.name != null) {
-      json[r'name'] = this.name;
-    } else {
-    //  json[r'name'] = null;
+    if (this.name.isPresent) {
+      final value = this.name.value;
+      json[r'name'] = value;
     }
     return json;
   }
@@ -136,13 +130,13 @@ class PeopleUpdateItem {
       final json = value.cast<String, dynamic>();
 
       return PeopleUpdateItem(
-        birthDate: mapDateTime(json, r'birthDate', r''),
-        color: mapValueOfType<String>(json, r'color'),
-        featureFaceAssetId: mapValueOfType<String>(json, r'featureFaceAssetId'),
+        birthDate: json.containsKey(r'birthDate') ? Optional.present(mapDateTime(json, r'birthDate', r'')) : const Optional.absent(),
+        color: json.containsKey(r'color') ? Optional.present(mapValueOfType<String>(json, r'color')) : const Optional.absent(),
+        featureFaceAssetId: json.containsKey(r'featureFaceAssetId') ? Optional.present(mapValueOfType<String>(json, r'featureFaceAssetId')) : const Optional.absent(),
         id: mapValueOfType<String>(json, r'id')!,
-        isFavorite: mapValueOfType<bool>(json, r'isFavorite'),
-        isHidden: mapValueOfType<bool>(json, r'isHidden'),
-        name: mapValueOfType<String>(json, r'name'),
+        isFavorite: json.containsKey(r'isFavorite') ? Optional.present(mapValueOfType<bool>(json, r'isFavorite')) : const Optional.absent(),
+        isHidden: json.containsKey(r'isHidden') ? Optional.present(mapValueOfType<bool>(json, r'isHidden')) : const Optional.absent(),
+        name: json.containsKey(r'name') ? Optional.present(mapValueOfType<String>(json, r'name')) : const Optional.absent(),
       );
     }
     return null;

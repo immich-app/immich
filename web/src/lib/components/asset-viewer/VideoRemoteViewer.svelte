@@ -68,12 +68,12 @@
   }
 </script>
 
-<span class="flex items-center space-x-2 text-gray-200 text-2xl font-bold">
+<span class="flex items-center space-x-2 text-2xl font-bold text-gray-200">
   <Icon icon={mdiCastConnected} class="text-primary" size="36" />
   <span>{$t('connected_to')} {castManager.receiverName}</span>
 </span>
 
-<img src={poster} alt="poster" class="rounded-xl m-4" />
+<img src={poster} alt="poster" class="m-4 rounded-xl" />
 
 <div class="flex place-content-center place-items-center">
   {#if castManager.castState == CastState.BUFFERING}
@@ -97,6 +97,6 @@
     max={castManager.duration}
     value={castManager.currentTime ?? 0}
     onchange={handleSeek}
-    class="w-full h-4 bg-primary"
+    class="h-4 w-full bg-primary"
   />
 </div>

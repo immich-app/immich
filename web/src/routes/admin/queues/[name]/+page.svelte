@@ -41,7 +41,7 @@
 >
   <div>
     <Container size="large" center>
-      <div class="mb-1 mt-4 flex items-center gap-2">
+      <div class="mt-4 mb-1 flex items-center gap-2">
         <Heading tag="h1" size="large">{item.title}</Heading>
         {#if queue.isPaused}
           <Badge color="warning">
@@ -51,7 +51,7 @@
       </div>
       <Text color="muted" class="mb-4">{item.subtitle}</Text>
 
-      <div class="flex gap-1 mb-4">
+      <div class="mb-4 flex gap-1">
         <Badge>{$t('active_count', { values: { count: queue.statistics.active } })}</Badge>
         <Badge>{$t('waiting_count', { values: { count: queue.statistics.waiting + queue.statistics.paused } })}</Badge>
         {#if queue.statistics.failed > 0}

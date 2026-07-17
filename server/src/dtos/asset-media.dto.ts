@@ -38,7 +38,7 @@ export enum UploadFieldName {
 const AssetMediaBaseSchema = z.object({
   fileCreatedAt: isoDatetimeToDate.describe('File creation date'),
   fileModifiedAt: isoDatetimeToDate.describe('File modification date'),
-  duration: z.string().optional().describe('Duration (for videos)'),
+  duration: z.coerce.number().int().min(0).optional().describe('Duration in milliseconds (for videos)'),
   filename: z.string().optional().describe('Filename'),
   /** The properties below are added to correctly generate the API docs and client SDKs. Validation should be handled in the controller. */
   [UploadFieldName.ASSET_DATA]: z.any().describe('Asset file data').meta({ type: 'string', format: 'binary' }),
@@ -58,7 +58,7 @@ const AssetMediaCreateSchema = AssetMediaBaseSchema.extend({
 
 const AssetBulkUploadCheckItemSchema = z
   .object({
-    id: z.string().describe('Asset ID'),
+    id: z.string().describe('Client-side identifier echoed in the response to match results to inputs (e.g. filename)'),
     checksum: z.string().describe('Base64 or hex encoded SHA1 hash'),
   })
   .meta({ id: 'AssetBulkUploadCheckItem' });

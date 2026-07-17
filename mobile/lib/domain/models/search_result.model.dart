@@ -12,7 +12,9 @@ class SearchResult {
 
   @override
   bool operator ==(covariant SearchResult other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
     final listEquals = const DeepCollectionEquality().equals;
 
     return listEquals(other.assets, assets) && other.nextPage == nextPage;

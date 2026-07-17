@@ -13,20 +13,16 @@ part of openapi.api;
 class PluginResponseDto {
   /// Returns a new [PluginResponseDto] instance.
   PluginResponseDto({
-    this.actions = const [],
     required this.author,
     required this.createdAt,
     required this.description,
-    this.filters = const [],
     required this.id,
+    this.methods = const [],
     required this.name,
     required this.title,
     required this.updatedAt,
     required this.version,
   });
-
-  /// Plugin actions
-  List<PluginActionResponseDto> actions;
 
   /// Plugin author
   String author;
@@ -37,11 +33,11 @@ class PluginResponseDto {
   /// Plugin description
   String description;
 
-  /// Plugin filters
-  List<PluginFilterResponseDto> filters;
-
   /// Plugin ID
   String id;
+
+  /// Plugin methods
+  List<PluginMethodResponseDto> methods;
 
   /// Plugin name
   String name;
@@ -57,12 +53,11 @@ class PluginResponseDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is PluginResponseDto &&
-    _deepEquality.equals(other.actions, actions) &&
     other.author == author &&
     other.createdAt == createdAt &&
     other.description == description &&
-    _deepEquality.equals(other.filters, filters) &&
     other.id == id &&
+    _deepEquality.equals(other.methods, methods) &&
     other.name == name &&
     other.title == title &&
     other.updatedAt == updatedAt &&
@@ -71,28 +66,26 @@ class PluginResponseDto {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (actions.hashCode) +
     (author.hashCode) +
     (createdAt.hashCode) +
     (description.hashCode) +
-    (filters.hashCode) +
     (id.hashCode) +
+    (methods.hashCode) +
     (name.hashCode) +
     (title.hashCode) +
     (updatedAt.hashCode) +
     (version.hashCode);
 
   @override
-  String toString() => 'PluginResponseDto[actions=$actions, author=$author, createdAt=$createdAt, description=$description, filters=$filters, id=$id, name=$name, title=$title, updatedAt=$updatedAt, version=$version]';
+  String toString() => 'PluginResponseDto[author=$author, createdAt=$createdAt, description=$description, id=$id, methods=$methods, name=$name, title=$title, updatedAt=$updatedAt, version=$version]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'actions'] = this.actions;
       json[r'author'] = this.author;
       json[r'createdAt'] = this.createdAt;
       json[r'description'] = this.description;
-      json[r'filters'] = this.filters;
       json[r'id'] = this.id;
+      json[r'methods'] = this.methods;
       json[r'name'] = this.name;
       json[r'title'] = this.title;
       json[r'updatedAt'] = this.updatedAt;
@@ -109,12 +102,11 @@ class PluginResponseDto {
       final json = value.cast<String, dynamic>();
 
       return PluginResponseDto(
-        actions: PluginActionResponseDto.listFromJson(json[r'actions']),
         author: mapValueOfType<String>(json, r'author')!,
         createdAt: mapValueOfType<String>(json, r'createdAt')!,
         description: mapValueOfType<String>(json, r'description')!,
-        filters: PluginFilterResponseDto.listFromJson(json[r'filters']),
         id: mapValueOfType<String>(json, r'id')!,
+        methods: PluginMethodResponseDto.listFromJson(json[r'methods']),
         name: mapValueOfType<String>(json, r'name')!,
         title: mapValueOfType<String>(json, r'title')!,
         updatedAt: mapValueOfType<String>(json, r'updatedAt')!,
@@ -166,12 +158,11 @@ class PluginResponseDto {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'actions',
     'author',
     'createdAt',
     'description',
-    'filters',
     'id',
+    'methods',
     'name',
     'title',
     'updatedAt',

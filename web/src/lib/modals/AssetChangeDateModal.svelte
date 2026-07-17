@@ -61,9 +61,9 @@
   disabled={!date.isValid || !selectedOption}
   size="small"
 >
-  <Label for="datetime" class="block mb-1">{$t('date_and_time')}</Label>
+  <Label for="datetime" class="mb-1 block">{$t('date_and_time')}</Label>
   <DateInput
-    class="immich-form-input w-full mb-2"
+    class="mb-2 immich-form-input w-full"
     id="datetime"
     type="datetime-local"
     bind:value={() => selectedDate, updateSelectedDate}

@@ -53,7 +53,7 @@
   onclick={handleClick}
   onmouseover={() => ($selectedIdStore = id)}
   onmouseleave={() => ($selectedIdStore = undefined)}
-  class="w-full p-4 text-start text-sm font-medium {textColor} focus:outline-none focus:ring-2 focus:ring-inset cursor-pointer border-gray-200 flex gap-2 items-center {isActive
+  class="w-full p-4 text-start text-sm font-medium {textColor} flex cursor-pointer items-center gap-2 border-gray-200 focus:ring-2 focus:outline-none focus:ring-inset {isActive
     ? activeColor
     : 'bg-slate-100'}"
   role="menuitem"
@@ -65,7 +65,7 @@
     <div class="flex justify-between">
       {text}
       {#if shortcutLabel}
-        <span class="text-gray-500 ps-4">
+        <span class="ps-4 text-gray-500">
           {shortcutLabel}
         </span>
       {/if}

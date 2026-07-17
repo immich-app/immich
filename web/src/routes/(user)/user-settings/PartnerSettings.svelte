@@ -120,8 +120,8 @@
 <section class="my-4">
   {#if partners.length > 0}
     {#each partners as partner (partner.user.id)}
-      <div class="rounded-2xl border border-gray-200 dark:border-gray-800 mt-6 bg-slate-50 dark:bg-gray-900 p-5">
-        <div class="flex gap-4 rounded-lg pb-4 transition-all justify-between">
+      <div class="mt-6 rounded-2xl border border-gray-200 bg-slate-50 p-5 dark:border-gray-800 dark:bg-gray-900">
+        <div class="flex justify-between gap-4 rounded-lg pb-4 transition-all">
           <div class="flex gap-4">
             <UserAvatar user={partner.user} size="md" />
             <div class="text-start">
@@ -147,7 +147,7 @@
           {/if}
         </div>
 
-        <div class="dark:text-gray-200 text-immich-dark-gray">
+        <div class="text-immich-dark-gray dark:text-gray-200">
           <!-- I am sharing my assets with this user -->
           {#if partner.sharedByMe}
             <hr class="my-4 border border-gray-200 dark:border-gray-700" />
@@ -158,11 +158,11 @@
               >{$t('partner_can_access', { values: { partner: partner.user.name } })}</Text
             >
             <ul class="text-sm">
-              <li class="flex gap-2 place-items-center py-1 mt-2">
+              <li class="mt-2 flex place-items-center gap-2 py-1">
                 <Icon icon={mdiCheck} />
                 {$t('partner_can_access_assets')}
               </li>
-              <li class="flex gap-2 place-items-center py-1">
+              <li class="flex place-items-center gap-2 py-1">
                 <Icon icon={mdiCheck} />
                 {$t('partner_can_access_location')}
               </li>
@@ -188,7 +188,7 @@
     {/each}
   {/if}
 
-  <div class="flex justify-end mt-5">
+  <div class="mt-5 flex justify-end">
     <Button shape="round" size="small" onclick={() => handleCreatePartners()}>{$t('add_partner')}</Button>
   </div>
 </section>

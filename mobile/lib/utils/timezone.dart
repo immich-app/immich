@@ -24,7 +24,9 @@ import 'package:timezone/timezone.dart';
     RegExp re = RegExp(r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$', caseSensitive: false);
     final m = re.firstMatch(timeZone);
     if (m != null) {
-      final duration = Duration(hours: int.parse(m.group(1) ?? '0'), minutes: int.parse(m.group(2) ?? '0'));
+      final hours = int.parse(m.group(1) ?? '0');
+      final minutes = int.parse(m.group(2) ?? '0');
+      final duration = Duration(hours: hours, minutes: hours.isNegative ? -minutes : minutes);
       dt = dt.add(duration);
       return (dt, duration);
     }

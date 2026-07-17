@@ -57,7 +57,7 @@ class DuplicateDetectionConfig {
 
       return DuplicateDetectionConfig(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        maxDistance: (mapValueOfType<num>(json, r'maxDistance')!).toDouble(),
+        maxDistance: mapValueOfType<double>(json, r'maxDistance')!,
       );
     }
     return null;

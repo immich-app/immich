@@ -24,7 +24,7 @@ mobile/lib/infrastructure/repositories/db.repository.steps.dart linguist-generat
 mobile/test/drift/main/generated/** -diff -merge
 mobile/test/drift/main/generated/** linguist-generated=true
 
-open-api/typescript-sdk/fetch-client.ts -diff -merge
-open-api/typescript-sdk/fetch-client.ts linguist-generated=true
+packages/sdk/fetch-client.ts -diff -merge
+packages/sdk/fetch-client.ts linguist-generated=true
 
 *.sh text eol=lf
