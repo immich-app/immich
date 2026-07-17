@@ -535,55 +535,22 @@ export class ThumbnailConfig extends BaseConfig {
   }
 }
 
-/**
- * Scene change detection (scdet) `threshold` option only gates its own internal scene-cut flag (`lavfi.scd.score`), which we
- * deliberately don't read - we only read the raw, unthresholded `lavfi.scd.mafd` change score. The
- * value is kept high to avoid scdet's forced-keyframe side effect, which is moot anyway since we
- * already force an all-intra encode via `-g 1`.
- */
-const VIDEO_FRAME_EXTRACTION_SCDET_THRESHOLD = 100;
-
-export type VideoFrameExtractionOptions = {
-  /** Path to the source video file. */
+type VideoFrameExtractionOptions = {
   inputPath: string;
-  /**
-   * Path the single, durable, byte-range-addressable fMP4 artifact should be written to. The fMP4
-   * init segment is embedded in-band at the start of this same file (byte offset 0) by ffmpeg's HLS
-   * muxer when using `single_file` mode - there is no separate init segment file.
-   */
   artifactPath: string;
-  /** Path for the ephemeral `.m3u8` byte-range playlist, parsed and discarded after generation. */
   playlistPath: string;
-  /** Path for the ephemeral scdet scores text file, parsed and discarded after generation. */
   scoresPath: string;
-  /** Target short-side resolution (px) of extracted frames. */
   targetResolution: number;
-  /** Fixed quantizer for the all-intra encode. */
   qp: number;
-  /** Seconds between sampled frames (e.g. `1` for one frame per second). */
-  gridInterval: number;
-  /** FFmpeg/hwaccel configuration, used to dispatch to the correct backend. */
+  frameInterval: number;
   ffmpeg: SystemConfigFFmpegDto;
-  /** GPU device list discovered at bootstrap, used for device path selection. */
   videoInterfaces: VideoInterfaces;
 };
 
-/**
- * Builds the ffmpeg command for the shared video-frame-extraction artifact: a single all-intra fMP4
- * of downsampled frames sampled at a fixed interval, plus a parallel branch that scores each sampled
- * frame's visual change (scdet mafd) without a second decode pass. See the "Trickplay" proposal for
- * background - this artifact is a generic foundation intended for multiple future consumers
- * (trickplay/seek-bar previews, video semantic search embeddings, etc.), not specific to any one of
- * them.
- *
- * When `ffmpeg.accel !== Disabled`, the command is dispatched to a hardware-accelerated variant that
- * reuses Immich's existing hwaccel matrix (vaapi/qsv/nvenc/rkmpp, with HW/SW decode paths and HDR
- * tonemapping). The scoring branch (`hwdownload,format=nv12,scdet=...`) is backend-agnostic and
- * works for all GPU surface types.
- */
 export class VideoFrameExtractionConfig {
-  /** Reuses Immich's existing hwaccel matrix — see `transcoding.service.ts` for the same pattern. */
   private delegate: BaseConfig | null;
+  private readonly scdetThreshold = 100; // Deliberately high, we ignore the scores
+  private readonly gopSize = 1; // We want all-intra frames
 
   private constructor(private options: VideoFrameExtractionOptions) {
     const { ffmpeg, videoInterfaces } = options;
@@ -597,7 +564,6 @@ export class VideoFrameExtractionConfig {
         crf: options.qp,
         cqMode: CQMode.Cqp,
         maxBitrate: '0',
-        gopSize: 1,
         bframes: 0,
       };
       this.delegate = BaseConfig.create(overrideConfig, videoInterfaces, {
@@ -615,15 +581,15 @@ export class VideoFrameExtractionConfig {
     if (this.options.ffmpeg.accel !== TranscodeHardwareAcceleration.Disabled) {
       return this.getHWExtractionCommand(videoStream);
     }
-    return this.getBasicExtractionCommand(videoStream);
+    return this.getSWExtractionCommand(videoStream);
   }
 
-  private getBasicExtractionCommand(videoStream: VideoStreamInfo): string[] {
+  private getSWExtractionCommand(videoStream: VideoStreamInfo): string[] {
     const { width, height } = getOutputSize(videoStream, this.options.targetResolution);
-    const fps = 1 / this.options.gridInterval;
+    const fps = 1 / this.options.frameInterval;
     const filterComplex = [
       `[0:v]scale=${width}:${height},fps=${fps},split[enc][an]`,
-      `[an]scdet=threshold=${VIDEO_FRAME_EXTRACTION_SCDET_THRESHOLD},metadata=print:file=${this.options.scoresPath}[scored]`,
+      `[an]scdet=threshold=${this.scdetThreshold},metadata=print:file=${this.options.scoresPath}[scored]`,
     ].join(';');
 
     return [
@@ -641,7 +607,7 @@ export class VideoFrameExtractionConfig {
       '-c:v',
       'libx264',
       '-g',
-      '1',
+      String(this.gopSize),
       '-qp',
       String(this.options.qp),
       '-bf',
@@ -668,14 +634,12 @@ export class VideoFrameExtractionConfig {
     ];
   }
 
-  /** Hardware-accelerated command — delegates filter/encoder/QP logic to Immich's existing
-   *  hwaccel matrix rather than reimplementing it. */
   private getHWExtractionCommand(videoStream: VideoStreamInfo): string[] {
     const d = this.delegate!;
-    const fps = 1 / this.options.gridInterval;
+    const fps = 1 / this.options.frameInterval;
     const filterComplex = [
       `[0:v]${d.getFilterOptions(videoStream).join(',')},fps=${fps},split[enc][an]`,
-      `[an]hwdownload,format=nv12,scdet=threshold=${VIDEO_FRAME_EXTRACTION_SCDET_THRESHOLD},metadata=print:file=${this.options.scoresPath}[scored]`,
+      `[an]hwdownload,format=nv12,scdet=threshold=${this.scdetThreshold},metadata=print:file=${this.options.scoresPath}[scored]`,
     ].join(';');
 
     return [

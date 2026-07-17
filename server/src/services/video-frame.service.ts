@@ -100,7 +100,7 @@ export class VideoFrameService extends BaseService {
         scoresPath,
         targetResolution: videoFrameExtraction.targetResolution,
         qp: videoFrameExtraction.qp,
-        gridInterval: videoFrameExtraction.gridInterval,
+        frameInterval: videoFrameExtraction.gridInterval,
         ffmpeg,
         videoInterfaces: this.videoInterfaces,
       });
