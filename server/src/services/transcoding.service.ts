@@ -14,7 +14,7 @@ import {
 } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { DatabaseLock, ImmichWorker, JobName, QueueName, TranscodeTarget } from 'src/enum';
+import { AudioCodec, DatabaseLock, ImmichWorker, JobName, QueueName, TranscodeTarget } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { VideoInterfaces } from 'src/types';
@@ -219,6 +219,9 @@ export class TranscodingService extends BaseService {
         {
           ...ffmpeg,
           targetVideoCodec: variant.codec,
+          // The HLS manifest always advertises AAC (see hls.service.ts), so the actual
+          // output must match regardless of the configured audio codec.
+          targetAudioCodec: AudioCodec.Aac,
           targetResolution: String(variant.resolution),
           maxBitrate: `${Math.round(variant.bitrate / 1000)}k`,
           gopSize: gop,

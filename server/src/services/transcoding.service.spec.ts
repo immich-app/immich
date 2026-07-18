@@ -5,6 +5,7 @@ import {
   HLS_INACTIVITY_TIMEOUT_MS,
   HLS_LEASE_DURATION_MS,
 } from 'src/constants';
+import { AudioCodec } from 'src/enum';
 import { TranscodingService } from 'src/services/transcoding.service';
 import { VIDEO_STREAM_SESSION_PK_CONSTRAINT } from 'src/utils/database';
 import { eiffelTower, train, waterfall } from 'test/fixtures/media.stub';
@@ -485,6 +486,19 @@ describe(TranscodingService.name, () => {
       await sut.onSegmentRequest({ sessionId, assetId, variantIndex, segmentIndex: 0 });
 
       expect(mocks.process.spawn.mock.calls[0][1].toSorted()).toEqual(expected);
+    });
+
+    it('always encodes audio as AAC, regardless of the configured target audio codec', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { realtime: { enabled: true }, targetAudioCodec: AudioCodec.Mp3 },
+      });
+      mocks.process.spawn.mockReturnValue(mockSpawn(0, '', ''));
+
+      await sut.onSessionRequest({ sessionId, assetId, ownerId });
+      await sut.onSegmentRequest({ sessionId, assetId, variantIndex: 0, segmentIndex: 0 });
+
+      const args = mocks.process.spawn.mock.calls[0][1] as string[];
+      expect(args).toEqual(expect.arrayContaining(['-c:a', 'aac']));
     });
   });
 
