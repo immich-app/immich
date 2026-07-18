@@ -27,7 +27,7 @@ import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { downloadBlob, downloadRequest, withError } from '$lib/utils';
+import { downloadUrlPost, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
@@ -92,7 +92,7 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
   for (let index = 0; index < downloadInfo.archives.length; index++) {
     const archive = downloadInfo.archives[index];
     const suffix = downloadInfo.archives.length > 1 ? `+${index + 1}` : '';
-    const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}.zip`);
+    const archiveName = `${fileName}${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}`;
     const queryParams = asQueryString(authManager.params);
 
     let downloadKey = `${archiveName} `;
@@ -100,27 +100,20 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
       downloadKey = `${archiveName} (${index + 1}/${downloadInfo.archives.length})`;
     }
 
-    const abort = new AbortController();
-    downloadManager.add(downloadKey, archive.size, abort);
+    const url = getBaseUrl() + '/download/archive' + (queryParams ? `?${queryParams}` : '');
+    const payload = { assetIds: archive.assetIds, edited: true, archiveName };
 
     try {
-      // TODO use sdk once it supports progress events
-      const { data } = await downloadRequest({
-        method: 'POST',
-        url: getBaseUrl() + '/download/archive' + (queryParams ? `?${queryParams}` : ''),
-        data: { assetIds: archive.assetIds, edited: true },
-        signal: abort.signal,
-        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
-      });
-
-      downloadBlob(data, archiveName);
+      if (downloadInfo.archives.length > 1) {
+        downloadManager.add(downloadKey, url, payload, archive.size);
+      } else {
+        downloadUrlPost(url, payload);
+        // TODO show notification/toast
+      }
     } catch (error) {
       const $t = get(t);
       handleError(error, $t('errors.unable_to_download_files'));
-      downloadManager.clear(downloadKey);
       return;
-    } finally {
-      setTimeout(() => downloadManager.clear(downloadKey), 5000);
     }
   }
 };

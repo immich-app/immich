@@ -1,44 +1,39 @@
-export interface DownloadProgress {
-  progress: number;
+export interface DownloadState {
+  url: string;
+  payload: unknown;
   total: number;
-  percentage: number;
-  abort: AbortController | null;
+  downloaded: boolean;
 }
 
 class DownloadManager {
-  assets = $state<Record<string, DownloadProgress>>({});
+  assets = $state<Record<string, DownloadState>>({});
 
   isDownloading = $derived(Object.keys(this.assets).length > 0);
 
-  #update(key: string, value: Partial<DownloadProgress> | null) {
+  #update(key: string, value: Partial<DownloadState> | null) {
     if (value === null) {
       delete this.assets[key];
       return;
     }
 
     if (!this.assets[key]) {
-      this.assets[key] = { progress: 0, total: 0, percentage: 0, abort: null };
+      this.assets[key] = { url: "", payload: undefined, total: 0, downloaded: false };
     }
 
     const item = this.assets[key];
     Object.assign(item, value);
-    item.percentage = Math.min(Math.floor((item.progress / item.total) * 100), 100);
   }
 
-  add(key: string, total: number, abort?: AbortController) {
-    this.#update(key, { total, abort });
+  add(key: string, url: string, payload: unknown, total: number) {
+    this.#update(key, { url, payload, total });
   }
 
   clear(key: string) {
     this.#update(key, null);
   }
 
-  update(key: string, progress: number, total?: number) {
-    const download: Partial<DownloadProgress> = { progress };
-    if (total !== undefined) {
-      download.total = total;
-    }
-    this.#update(key, download);
+  markDownloaded(key: string) {
+    this.#update(key, { downloaded: true });
   }
 }
 

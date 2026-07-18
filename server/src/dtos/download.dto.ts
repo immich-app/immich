@@ -27,6 +27,7 @@ const DownloadResponseSchema = z
 
 const DownloadArchiveSchema = AssetIdsSchema.extend({
   edited: z.boolean().optional().describe('Download edited asset if available'),
+  archiveName: z.string().optional().describe('The name of the archive to download, without extension'),
 }).meta({ id: 'DownloadArchiveDto' });
 
 export class DownloadInfoDto extends createZodDto(DownloadInfoSchema) {}

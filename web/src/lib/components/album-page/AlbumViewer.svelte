@@ -99,7 +99,7 @@
     <AssetSelectControlBar>
       <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
       {#if sharedLink.allowDownload}
-        <DownloadAction filename="{album.albumName}.zip" />
+        <DownloadAction filename={album.albumName} />
       {/if}
     </AssetSelectControlBar>
   {:else}

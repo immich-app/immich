@@ -284,7 +284,7 @@ export const handleDeleteAlbum = async (album: AlbumResponseDto, options?: { pro
 };
 
 export const handleDownloadAlbum = async (album: AlbumResponseDto) => {
-  await downloadArchive(`${album.albumName}.zip`, { albumId: album.id });
+  await downloadArchive(album.albumName, { albumId: album.id });
 };
 
 export const handleConfirmAlbumDelete = async (album: AlbumResponseDto) => {
