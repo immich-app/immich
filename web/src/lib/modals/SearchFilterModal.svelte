@@ -35,6 +35,8 @@
     return value === null ? undefined : value;
   }
 
+  const emptyStringToNull = (value: string | undefined): string | null | undefined => (value === '' ? null : value);
+
   function storeQueryType(type: SearchFilter['queryType']) {
     localStorage.setItem('searchQueryType', type);
   }
@@ -137,8 +139,8 @@
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
       description: filter.queryType === 'description' ? query : undefined,
       originalPath: filter.queryType === 'fullPath' ? filter.query.trim() || undefined : undefined,
-      country: filter.location.country,
-      state: filter.location.state,
+      country: emptyStringToNull(filter.location.country),
+      state: emptyStringToNull(filter.location.state),
       city: filter.location.city,
       make: filter.camera.make,
       model: filter.camera.model,
