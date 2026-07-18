@@ -7,6 +7,7 @@ import {
   AlbumsAddAssetsDto,
   AlbumsAddAssetsResponseDto,
   AlbumStatisticsResponseDto,
+  AlbumUserParamDto,
   CreateAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
@@ -18,7 +19,7 @@ import { MapMarkerResponseDto } from 'src/dtos/map.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AlbumService } from 'src/services/album.service';
-import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
+import { UUIDParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Albums)
 @Controller('albums')
@@ -175,8 +176,7 @@ export class AlbumController {
   })
   updateAlbumUser(
     @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
+    @Param() { id, userId }: AlbumUserParamDto,
     @Body() dto: UpdateAlbumUserDto,
   ): Promise<void> {
     return this.service.updateUser(auth, id, userId, dto);
@@ -190,11 +190,7 @@ export class AlbumController {
     description: 'Remove a user from an album. Use an ID of "me" to leave a shared album.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  removeUserFromAlbum(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
-  ): Promise<void> {
+  removeUserFromAlbum(@Auth() auth: AuthDto, @Param() { id, userId }: AlbumUserParamDto): Promise<void> {
     return this.service.removeUser(auth, id, userId);
   }
 }

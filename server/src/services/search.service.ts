@@ -118,7 +118,11 @@ export class SearchService extends BaseService {
     }
 
     const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
-    const items = await this.searchRepository.searchRandom(dto.size || 250, { ...dto, userIds });
+    const items = await this.searchRepository.searchRandom(dto.size || 250, {
+      ...dto,
+      visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+      userIds,
+    });
     return items.map((item) => mapAsset(item, { auth }));
   }
 
