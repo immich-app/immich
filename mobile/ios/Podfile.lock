@@ -12,11 +12,7 @@ PODS:
     - Flutter
   - fluttertoast (0.0.2):
     - Flutter
-  - home_widget (0.0.1):
-    - Flutter
   - native_video_player (1.0.0):
-    - Flutter
-  - permission_handler_apple (9.3.0):
     - Flutter
   - share_handler_ios (0.0.14):
     - Flutter
@@ -34,9 +30,7 @@ DEPENDENCIES:
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
-  - home_widget (from `.symlinks/plugins/home_widget/ios`)
   - native_video_player (from `.symlinks/plugins/native_video_player/ios`)
-  - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - share_handler_ios (from `.symlinks/plugins/share_handler_ios/ios`)
   - share_handler_ios_models (from `.symlinks/plugins/share_handler_ios/ios/Models`)
 
@@ -53,12 +47,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_secure_storage/ios"
   fluttertoast:
     :path: ".symlinks/plugins/fluttertoast/ios"
-  home_widget:
-    :path: ".symlinks/plugins/home_widget/ios"
   native_video_player:
     :path: ".symlinks/plugins/native_video_player/ios"
-  permission_handler_apple:
-    :path: ".symlinks/plugins/permission_handler_apple/ios"
   share_handler_ios:
     :path: ".symlinks/plugins/share_handler_ios/ios"
   share_handler_ios_models:
@@ -71,12 +61,10 @@ SPEC CHECKSUMS:
   flutter_local_notifications: ad39620c743ea4c15127860f4b5641649a988100
   flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
   fluttertoast: 2c67e14dce98bbdb200df9e1acf610d7a6264ea1
-  home_widget: f169fc41fd807b4d46ab6615dc44d62adbf9f64f
   native_video_player: b65c58951ede2f93d103a25366bdebca95081265
-  permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   share_handler_ios: e2244e990f826b2c8eaa291ac3831569438ba0fb
   share_handler_ios_models: fc638c9b4330dc7f082586c92aee9dfa0b87b871
 
-PODFILE CHECKSUM: 938abbae4114b9c2140c550a2a0d8f7c674f5dfe
+PODFILE CHECKSUM: 3c43a700a4bffb4120bf696cad263aefd4bb3c8c
 
 COCOAPODS: 1.16.2

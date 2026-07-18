@@ -41,16 +41,7 @@ final class $$LocalAlbumAssetEntityTableReferences
       i4.ReadDatabaseContainer(db)
           .resultSet<i3.$LocalAssetEntityTable>('local_asset_entity')
           .createAlias(
-            i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i1.$LocalAlbumAssetEntityTable>(
-                    'local_album_asset_entity',
-                  )
-                  .assetId,
-              i4.ReadDatabaseContainer(
-                db,
-              ).resultSet<i3.$LocalAssetEntityTable>('local_asset_entity').id,
-            ),
+            'local_album_asset_entity__asset_id__local_asset_entity__id',
           );
 
   i3.$$LocalAssetEntityTableProcessedTableManager get assetId {
@@ -75,16 +66,7 @@ final class $$LocalAlbumAssetEntityTableReferences
       i4.ReadDatabaseContainer(db)
           .resultSet<i5.$LocalAlbumEntityTable>('local_album_entity')
           .createAlias(
-            i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i1.$LocalAlbumAssetEntityTable>(
-                    'local_album_asset_entity',
-                  )
-                  .albumId,
-              i4.ReadDatabaseContainer(
-                db,
-              ).resultSet<i5.$LocalAlbumEntityTable>('local_album_entity').id,
-            ),
+            'local_album_asset_entity__album_id__local_album_entity__id',
           );
 
   i5.$$LocalAlbumEntityTableProcessedTableManager get albumId {
