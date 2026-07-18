@@ -132,10 +132,20 @@ const sidecar: Record<string, string[]> = {
 
 const types = { ...image, ...video, ...sidecar };
 
-const isType = (filename: string, record: Record<string, string[]>) =>
-  Object.hasOwn(record, extname(filename).toLowerCase());
+const getExtension = (filename: string) => {
+  const extension = extname(filename);
+  if (!extension && filename.startsWith('.') && filename.indexOf('.', 1) === -1) {
+    return filename;
+  }
+  return extension;
+};
 
-const lookup = (filename: string) => types[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
+const isType = (filename: string, r: Record<string, string[]>) => {
+  console.log(`ext: ${getExtension(filename)}`);
+  return getExtension(filename).toLowerCase() in r;
+};
+
+const lookup = (filename: string) => types[getExtension(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
 const toExtension = (mimeType: string) => {
   return (
     extensionOverrides[mimeType] || Object.entries(types).find(([, mimeTypes]) => mimeTypes.includes(mimeType))?.[0]
@@ -158,7 +168,7 @@ export const mimeTypes = {
   isProfile: (filename: string) => isType(filename, profile),
   isSidecar: (filename: string) => isType(filename, sidecar),
   isVideo: (filename: string) => isType(filename, video),
-  canBeTransparent: (filename: string) => transparentCapableExtensions.has(extname(filename).toLowerCase()),
+  canBeTransparent: (filename: string) => transparentCapableExtensions.has(getExtension(filename).toLowerCase()),
   isRaw: (filename: string) => isType(filename, raw),
   lookup,
   /** return an extension (including a leading `.`) for a mime-type */
