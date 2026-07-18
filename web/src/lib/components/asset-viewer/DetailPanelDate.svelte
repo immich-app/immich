@@ -8,12 +8,23 @@
   import { Icon, modalManager } from '@immich/ui';
   import { mdiCalendar, mdiPencil } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { onMount } from 'svelte';
+  import { websocketEvents } from '$lib/stores/websocket';
 
   type Props = {
     asset: AssetResponseDto;
   };
 
-  const { asset }: Props = $props();
+  onMount(() => {
+    return websocketEvents.on('on_asset_update', (assetUpdate) => {
+      if (assetUpdate.id === asset.id) {
+        asset = assetUpdate;
+      }
+    });
+  });
+
+  let { asset: initialState }: Props = $props();
+  let asset: AssetResponseDto = $state(initialState);
 
   const timeZone = $derived(asset.exifInfo?.timeZone ?? undefined);
   const modernOffset = $derived(
