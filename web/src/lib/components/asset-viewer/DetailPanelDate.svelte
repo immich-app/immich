@@ -23,8 +23,8 @@
     });
   });
 
-  let { asset: initialState }: Props = $props();
-  let asset: AssetResponseDto = $state(initialState);
+  let { asset: initialAsset }: Props = $props();
+  let asset: AssetResponseDto = $state(initialAsset);
 
   const timeZone = $derived(asset.exifInfo?.timeZone ?? undefined);
   const modernOffset = $derived(
