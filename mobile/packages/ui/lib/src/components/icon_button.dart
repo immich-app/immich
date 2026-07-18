@@ -7,6 +7,7 @@ import 'package:immich_ui/src/internal.dart';
 class ImmichIconButton extends StatefulWidget {
   final IconData icon;
   final FutureOr<void> Function() onPressed;
+  final FutureOr<void> Function()? onLongPress;
   final ImmichVariant variant;
   final ImmichColor color;
   final bool disabled;
@@ -16,6 +17,7 @@ class ImmichIconButton extends StatefulWidget {
     super.key,
     required this.icon,
     required this.onPressed,
+    this.onLongPress,
     this.color = .primary,
     this.variant = .filled,
     this.disabled = false,
@@ -30,10 +32,10 @@ class _ImmichIconButtonState extends State<ImmichIconButton> {
   bool _loading = false;
   bool get _isLoading => widget.loading ?? _loading;
 
-  Future<void> _onPressed() async {
+  Future<void> _run(FutureOr<void> Function() action) async {
     setState(() => _loading = true);
     try {
-      await widget.onPressed();
+      await action();
     } finally {
       if (mounted) {
         setState(() => _loading = false);
@@ -66,6 +68,9 @@ class _ImmichIconButtonState extends State<ImmichIconButton> {
           },
         };
 
+    final handlerDisabled = widget.disabled || _isLoading;
+    final onLongPress = widget.onLongPress;
+
     return IconButton(
       icon: _isLoading
           ? const SizedBox.square(
@@ -73,7 +78,8 @@ class _ImmichIconButtonState extends State<ImmichIconButton> {
               child: CircularProgressIndicator(strokeWidth: ImmichBorderWidth.md),
             )
           : Icon(widget.icon),
-      onPressed: widget.disabled || _isLoading ? null : _onPressed,
+      onPressed: handlerDisabled ? null : () => _run(widget.onPressed),
+      onLongPress: handlerDisabled || onLongPress == null ? null : () => _run(onLongPress),
       style: IconButton.styleFrom(backgroundColor: background, foregroundColor: foreground),
     );
   }

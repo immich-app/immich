@@ -8,8 +8,6 @@ import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/asset_actions.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
@@ -87,10 +85,10 @@ class _ArchiveBottomSheetState extends ConsumerState<ArchiveBottomSheet> {
             actions.cleanup,
             actions.stack,
             actions.lock,
+            actions.editDateTime,
+            actions.editLocation,
           ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
           if (multiselect.onlyRemote) const DownloadActionButton(source: ActionSource.timeline),
-          const EditDateTimeActionButton(source: ActionSource.timeline),
-          const EditLocationActionButton(source: ActionSource.timeline),
         ],
       ],
       slivers: [

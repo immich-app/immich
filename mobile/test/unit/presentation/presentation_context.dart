@@ -49,6 +49,8 @@ class PresentationContext {
   List<Override> get overrides => [
     currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
     assetServiceProvider.overrideWithValue(service.asset.service),
+    remoteAssetRepositoryProvider.overrideWithValue(repository.remoteAsset.repo),
+    remoteExifRepositoryProvider.overrideWithValue(repository.remoteExif.repo),
     partnerServiceProvider.overrideWithValue(service.partner.service),
     remoteAlbumServiceProvider.overrideWithValue(service.album.service),
     cleanupServiceProvider.overrideWithValue(service.cleanup.service),

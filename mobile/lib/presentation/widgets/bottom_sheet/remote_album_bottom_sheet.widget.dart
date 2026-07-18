@@ -10,8 +10,6 @@ import 'package:immich_mobile/presentation/actions/remove_from_album.action.dart
 import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
@@ -100,13 +98,11 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
               actions.cleanup,
               actions.stack,
               actions.lock,
+              actions.editDateTime,
+              actions.editLocation,
             ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
           ],
           const DownloadActionButton(source: ActionSource.timeline),
-          if (ownsAlbum) ...[
-            const EditDateTimeActionButton(source: ActionSource.timeline),
-            const EditLocationActionButton(source: ActionSource.timeline),
-          ],
         ],
         if (ownsAlbum)
           ActionColumnButtonWidget(

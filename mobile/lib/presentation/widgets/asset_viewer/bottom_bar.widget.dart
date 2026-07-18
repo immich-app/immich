@@ -6,9 +6,9 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_asset.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_toggle_button.widget.dart';
@@ -16,8 +16,6 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
 
 class ViewerBottomBar extends ConsumerWidget {
@@ -33,7 +31,6 @@ class ViewerBottomBar extends ConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isInLockedView = ref.watch(inLockedViewProvider);
-    final serverInfo = ref.watch(serverInfoProvider);
     final isInTrash = ref.read(timelineServiceProvider).origin == TimelineOrigin.trash;
 
     final originalTheme = context.themeData;
@@ -42,6 +39,7 @@ class ViewerBottomBar extends ConsumerWidget {
     final scope = ActionScope.from(context, ref);
     final restore = RestoreAction(assets: assets, scope: scope);
     final delete = DeleteAction(assets: assets, scope: scope);
+    final editImage = EditAssetAction(assets: assets, scope: scope);
     final actions = <Widget>[
       if (restore.isVisible) ActionColumnButtonWidget(action: restore),
       const ShareActionButton(source: ActionSource.viewer),
@@ -49,9 +47,7 @@ class ViewerBottomBar extends ConsumerWidget {
       if (!isInLockedView) ...[
         if (!isInTrash) ...[
           if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
-          // edit sync was added in 2.6.0
-          if (asset.isEditable && serverInfo.serverVersion >= const SemVer(major: 2, minor: 6, patch: 0))
-            const EditImageActionButton(),
+          if (editImage.isVisible) ActionColumnButtonWidget(action: editImage),
           if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
         ],
 
