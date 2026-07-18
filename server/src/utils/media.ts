@@ -564,7 +564,6 @@ export class VideoFrameExtractionConfig {
         crf: options.qp,
         cqMode: CQMode.Cqp,
         maxBitrate: '0',
-        bframes: 0,
       };
       this.delegate = BaseConfig.create(overrideConfig, videoInterfaces, {
         strictGop: true,
@@ -578,10 +577,10 @@ export class VideoFrameExtractionConfig {
   }
 
   getExtractionCommand(videoStream: VideoStreamInfo): string[] {
-    if (this.options.ffmpeg.accel !== TranscodeHardwareAcceleration.Disabled) {
-      return this.getHWExtractionCommand(videoStream);
+    if (this.options.ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
+      return this.getSWExtractionCommand(videoStream);
     }
-    return this.getSWExtractionCommand(videoStream);
+    return this.getHWExtractionCommand(videoStream);
   }
 
   private getSWExtractionCommand(videoStream: VideoStreamInfo): string[] {
@@ -636,12 +635,19 @@ export class VideoFrameExtractionConfig {
 
   private getHWExtractionCommand(videoStream: VideoStreamInfo): string[] {
     const d = this.delegate!;
+    const { accel } = this.options.ffmpeg;
     const fps = 1 / this.options.frameInterval;
     const filterComplex = [
       `[0:v]${d.getFilterOptions(videoStream).join(',')},fps=${fps},split[enc][an]`,
       `[an]hwdownload,format=nv12,scdet=threshold=${this.scdetThreshold},metadata=print:file=${this.options.scoresPath}[scored]`,
     ].join(';');
 
+    const encodeArgs = [...d.getBitrateOptions(), ...d.getEncoderOptions()];
+    if (accel === TranscodeHardwareAcceleration.Vaapi || accel === TranscodeHardwareAcceleration.Qsv) {
+      encodeArgs.push('-low_power', '1');
+    }
+
+    // TODO: Verify with Immich developers if `-noautorotate` is needed for SW-decode paths (VAAPI/QSV/NVENC SwDecodeConfig)
     return [
       '-nostdin',
       '-nostats',
@@ -656,8 +662,11 @@ export class VideoFrameExtractionConfig {
       '[enc]',
       '-c:v',
       d.getVideoCodec(),
-      ...d.getBitrateOptions(),
-      ...d.getEncoderOptions(),
+      '-g',
+      String(this.gopSize),
+      '-bf',
+      '0',
+      ...encodeArgs,
       '-an',
       '-f',
       'hls',
