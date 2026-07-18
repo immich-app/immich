@@ -14,7 +14,7 @@ class SystemConfigVideoFrameExtractionDto {
   /// Returns a new [SystemConfigVideoFrameExtractionDto] instance.
   SystemConfigVideoFrameExtractionDto({
     required this.enabled,
-    required this.gridInterval,
+    required this.frameInterval,
     required this.qp,
     required this.targetResolution,
   });
@@ -25,7 +25,7 @@ class SystemConfigVideoFrameExtractionDto {
   /// Seconds between sampled frames
   ///
   /// Minimum value: 0.01
-  double gridInterval;
+  double frameInterval;
 
   /// Fixed quantizer used for the all-intra frame encode
   ///
@@ -42,7 +42,7 @@ class SystemConfigVideoFrameExtractionDto {
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigVideoFrameExtractionDto &&
     other.enabled == enabled &&
-    other.gridInterval == gridInterval &&
+    other.frameInterval == frameInterval &&
     other.qp == qp &&
     other.targetResolution == targetResolution;
 
@@ -50,17 +50,17 @@ class SystemConfigVideoFrameExtractionDto {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (enabled.hashCode) +
-    (gridInterval.hashCode) +
+    (frameInterval.hashCode) +
     (qp.hashCode) +
     (targetResolution.hashCode);
 
   @override
-  String toString() => 'SystemConfigVideoFrameExtractionDto[enabled=$enabled, gridInterval=$gridInterval, qp=$qp, targetResolution=$targetResolution]';
+  String toString() => 'SystemConfigVideoFrameExtractionDto[enabled=$enabled, frameInterval=$frameInterval, qp=$qp, targetResolution=$targetResolution]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
-      json[r'gridInterval'] = this.gridInterval;
+      json[r'frameInterval'] = this.frameInterval;
       json[r'qp'] = this.qp;
       json[r'targetResolution'] = this.targetResolution;
     return json;
@@ -76,7 +76,7 @@ class SystemConfigVideoFrameExtractionDto {
 
       return SystemConfigVideoFrameExtractionDto(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        gridInterval: mapValueOfType<double>(json, r'gridInterval')!,
+        frameInterval: mapValueOfType<double>(json, r'frameInterval')!,
         qp: mapValueOfType<int>(json, r'qp')!,
         targetResolution: mapValueOfType<int>(json, r'targetResolution')!,
       );
@@ -127,7 +127,7 @@ class SystemConfigVideoFrameExtractionDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'enabled',
-    'gridInterval',
+    'frameInterval',
     'qp',
     'targetResolution',
   };

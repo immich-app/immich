@@ -218,7 +218,7 @@ export type SystemConfig = {
     enabled: boolean;
     targetResolution: number;
     qp: number;
-    gridInterval: number;
+    frameInterval: number;
   };
 };
 
@@ -457,6 +457,6 @@ export const defaults = Object.freeze<SystemConfig>({
     enabled: true, // TODO: set to false by default before merge
     targetResolution: 640,
     qp: 34,
-    gridInterval: 1,
+    frameInterval: 1,
   },
 });

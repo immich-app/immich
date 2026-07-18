@@ -13,7 +13,7 @@ import { AssetTable } from 'src/schema/tables/asset.table';
 /**
  * A single sampled frame within a video's frame-extraction artifact (see `VideoFrameExtractionTable`).
  * Rows are kept intentionally minimal - the frame's timestamp is derivable from
- * `frameIndex / gridInterval` and is not stored, and no embedding data lives here; this table is a
+ * `frameIndex / frameInterval` and is not stored, and no embedding data lives here; this table is a
  * generic, consumer-agnostic index of byte-range-addressable frames, shared by future trickplay
  * playback and video semantic search features alike.
  */

@@ -15,7 +15,7 @@ import { parseByteRangePlaylist, parseIntervalChangeScores } from 'src/utils/vid
 type VideoFrameExtractionParameters = {
   targetResolution: number;
   qp: number;
-  gridInterval: number;
+  frameInterval: number;
 };
 
 @Injectable()
@@ -69,7 +69,7 @@ export class VideoFrameService extends BaseService {
     const parameters: VideoFrameExtractionParameters = {
       targetResolution: videoFrameExtraction.targetResolution,
       qp: videoFrameExtraction.qp,
-      gridInterval: videoFrameExtraction.gridInterval,
+      frameInterval: videoFrameExtraction.frameInterval,
     };
     const parametersHash = this.getParametersHash(videoFrameExtraction);
 
@@ -100,7 +100,7 @@ export class VideoFrameService extends BaseService {
         scoresPath,
         targetResolution: videoFrameExtraction.targetResolution,
         qp: videoFrameExtraction.qp,
-        frameInterval: videoFrameExtraction.gridInterval,
+        frameInterval: videoFrameExtraction.frameInterval,
         ffmpeg,
         videoInterfaces: this.videoInterfaces,
       });
@@ -185,9 +185,9 @@ export class VideoFrameService extends BaseService {
   }
 
   private getParametersHash(config: SystemConfig['videoFrameExtraction']): string {
-    const { targetResolution, qp, gridInterval } = config;
+    const { targetResolution, qp, frameInterval } = config;
     return this.cryptoRepository
-      .hashSha256(JSON.stringify({ version: VIDEO_FRAME_EXTRACTION_VERSION, targetResolution, qp, gridInterval }))
+      .hashSha256(JSON.stringify({ version: VIDEO_FRAME_EXTRACTION_VERSION, targetResolution, qp, frameInterval }))
       .toString('hex');
   }
 }

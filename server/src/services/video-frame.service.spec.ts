@@ -21,7 +21,7 @@ const videoFrameExtractionConfig: SystemConfig['videoFrameExtraction'] = {
   enabled: true,
   targetResolution: 640,
   qp: 34,
-  gridInterval: 1,
+  frameInterval: 1,
 };
 
 const playlist = [

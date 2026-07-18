@@ -32,7 +32,7 @@ export class VideoFrameExtractionTable {
   @Column({ type: 'integer' })
   version!: number;
 
-  /** The exact generation parameters used (resolution, qp, gridInterval, codec, hwaccel, etc.), for introspection. */
+  /** The exact generation parameters used (resolution, qp, frameInterval, codec, hwaccel, etc.), for introspection. */
   @Column({ type: 'jsonb' })
   parameters!: Record<string, unknown>;
 

@@ -26678,7 +26678,7 @@
             "description": "Enable video frame extraction",
             "type": "boolean"
           },
-          "gridInterval": {
+          "frameInterval": {
             "description": "Seconds between sampled frames",
             "format": "double",
             "minimum": 0.01,
@@ -26699,7 +26699,7 @@
         },
         "required": [
           "enabled",
-          "gridInterval",
+          "frameInterval",
           "qp",
           "targetResolution"
         ],

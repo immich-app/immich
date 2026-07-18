@@ -2621,7 +2621,7 @@ export type SystemConfigVideoFrameExtractionDto = {
     /** Enable video frame extraction */
     enabled: boolean;
     /** Seconds between sampled frames */
-    gridInterval: number;
+    frameInterval: number;
     /** Fixed quantizer used for the all-intra frame encode */
     qp: number;
     /** Target short-side resolution (px) of extracted frames */

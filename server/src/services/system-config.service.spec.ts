@@ -256,7 +256,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     enabled: false,
     targetResolution: 640,
     qp: 34,
-    gridInterval: 1,
+    frameInterval: 1,
   },
 });
 

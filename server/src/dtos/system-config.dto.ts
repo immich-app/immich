@@ -412,7 +412,7 @@ const SystemConfigVideoFrameExtractionSchema = z
     enabled: configBool.describe('Enable video frame extraction'),
     targetResolution: z.int().min(1).describe('Target short-side resolution (px) of extracted frames'),
     qp: z.int().min(0).max(51).describe('Fixed quantizer used for the all-intra frame encode'),
-    gridInterval: z.number().meta({ format: 'double' }).min(0.01).describe('Seconds between sampled frames'),
+    frameInterval: z.number().meta({ format: 'double' }).min(0.01).describe('Seconds between sampled frames'),
   })
   .meta({ id: 'SystemConfigVideoFrameExtractionDto' });
 
