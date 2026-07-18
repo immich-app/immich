@@ -42,6 +42,7 @@ class SearchApiRepository extends ApiRepository {
           isFavorite: filter.display.isFavorite ? const Optional.present(true) : const Optional.absent(),
           isNotInAlbum: filter.display.isNotInAlbum ? const Optional.present(true) : const Optional.absent(),
           personIds: Optional.present(filter.people.map((e) => e.id).toList()),
+          personMatchMode: _personMatchMode(filter),
           tagIds: filter.tagIds == null ? const Optional.absent() : Optional.present(filter.tagIds!),
           type: type == null ? const Optional.absent() : Optional.present(type),
           page: Optional.present(page),
@@ -75,12 +76,21 @@ class SearchApiRepository extends ApiRepository {
         isFavorite: filter.display.isFavorite ? const Optional.present(true) : const Optional.absent(),
         isNotInAlbum: filter.display.isNotInAlbum ? const Optional.present(true) : const Optional.absent(),
         personIds: Optional.present(filter.people.map((e) => e.id).toList()),
+        personMatchMode: _personMatchMode(filter),
         tagIds: filter.tagIds == null ? const Optional.absent() : Optional.present(filter.tagIds!),
         type: type == null ? const Optional.absent() : Optional.present(type),
         page: Optional.present(page),
         size: const Optional.present(1000),
       ),
     );
+  }
+
+  /// Only send OR mode when multiple people are selected; server defaults to AND.
+  Optional<PersonMatchMode?> _personMatchMode(SearchFilter filter) {
+    if (filter.people.length > 1 && filter.personMatchMode == SearchPersonMatchMode.any) {
+      return const Optional.present(PersonMatchMode.any);
+    }
+    return const Optional.absent();
   }
 
   Future<List<String>?> getSearchSuggestions(

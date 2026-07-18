@@ -37,6 +37,7 @@ class MetadataSearchDto {
     this.originalPath = const Optional.absent(),
     this.page = const Optional.absent(),
     this.personIds = const Optional.present(const []),
+    this.personMatchMode = const Optional.absent(),
     this.previewPath = const Optional.absent(),
     this.rating = const Optional.absent(),
     this.size = const Optional.absent(),
@@ -227,6 +228,9 @@ class MetadataSearchDto {
   /// Filter by person IDs
   Optional<List<String>?> personIds;
 
+  /// Match all selected people (AND) or any selected person (OR). Defaults to all.
+  Optional<PersonMatchMode?> personMatchMode;
+
   /// Filter by preview file path
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -401,6 +405,7 @@ class MetadataSearchDto {
     other.originalPath == originalPath &&
     other.page == page &&
     _deepEquality.equals(other.personIds, personIds) &&
+    other.personMatchMode == personMatchMode &&
     other.previewPath == previewPath &&
     other.rating == rating &&
     other.size == size &&
@@ -447,6 +452,7 @@ class MetadataSearchDto {
     (originalPath == null ? 0 : originalPath!.hashCode) +
     (page == null ? 0 : page!.hashCode) +
     (personIds.hashCode) +
+    (personMatchMode == null ? 0 : personMatchMode!.hashCode) +
     (previewPath == null ? 0 : previewPath!.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
     (size == null ? 0 : size!.hashCode) +
@@ -467,7 +473,7 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, personMatchMode=$personMatchMode, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -570,6 +576,10 @@ class MetadataSearchDto {
     if (this.personIds.isPresent) {
       final value = this.personIds.value;
       json[r'personIds'] = value;
+    }
+    if (this.personMatchMode.isPresent) {
+      final value = this.personMatchMode.value;
+      json[r'personMatchMode'] = value;
     }
     if (this.previewPath.isPresent) {
       final value = this.previewPath.value;
@@ -695,6 +705,7 @@ class MetadataSearchDto {
         personIds: json.containsKey(r'personIds') ? Optional.present(json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const []) : const Optional.absent(),
+        personMatchMode: json.containsKey(r'personMatchMode') ? Optional.present(PersonMatchMode.fromJson(json[r'personMatchMode'])) : const Optional.absent(),
         previewPath: json.containsKey(r'previewPath') ? Optional.present(mapValueOfType<String>(json, r'previewPath')) : const Optional.absent(),
         rating: json.containsKey(r'rating') ? Optional.present(json[r'rating'] == null ? null : int.parse('${json[r'rating']}')) : const Optional.absent(),
         size: json.containsKey(r'size') ? Optional.present(json[r'size'] == null ? null : int.parse('${json[r'size']}')) : const Optional.absent(),

@@ -125,20 +125,34 @@ class DriftSearchPage extends HookConsumerWidget {
 
     showPeoplePicker() {
       var people = filter.value.people;
+      var personMatchMode = filter.value.personMatchMode;
 
       handleOnSelect(Set<PersonDto> value) {
         people = value;
       }
 
+      handleMatchModeSelect(SearchPersonMatchMode value) {
+        personMatchMode = value;
+      }
+
       handleClear() {
         peopleCurrentFilterWidget.value = null;
-        search(filter.value.copyWith(people: {}));
+        search(filter.value.copyWith(people: {}, personMatchMode: SearchPersonMatchMode.all));
       }
 
       handleApply() {
-        final label = people.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', ');
+        final names = people.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', ');
+        final matchLabel = people.length > 1 && personMatchMode == SearchPersonMatchMode.any
+            ? ' (${'person_match_any'.t(context: context)})'
+            : '';
+        final label = names.isNotEmpty ? '$names$matchLabel' : '';
         peopleCurrentFilterWidget.value = label.isNotEmpty ? Text(label, style: context.textTheme.labelLarge) : null;
-        search(filter.value.copyWith(people: people));
+        search(
+          filter.value.copyWith(
+            people: people,
+            personMatchMode: people.length > 1 ? personMatchMode : SearchPersonMatchMode.all,
+          ),
+        );
       }
 
       showFilterBottomSheet(
@@ -151,7 +165,12 @@ class DriftSearchPage extends HookConsumerWidget {
             expanded: true,
             onSearch: handleApply,
             onClear: handleClear,
-            child: PeoplePicker(onSelect: handleOnSelect, filter: filter.value.people),
+            child: PeoplePicker(
+              onSelect: handleOnSelect,
+              onMatchModeSelect: handleMatchModeSelect,
+              filter: filter.value.people,
+              matchMode: filter.value.personMatchMode,
+            ),
           ),
         ),
       );

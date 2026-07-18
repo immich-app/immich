@@ -225,6 +225,9 @@ class SearchDisplayFilters {
   int get hashCode => isNotInAlbum.hashCode ^ isArchive.hashCode ^ isFavorite.hashCode;
 }
 
+/// Match all selected people (AND) or any selected person (OR).
+enum SearchPersonMatchMode { all, any }
+
 class SearchFilter {
   String? context;
   String? filename;
@@ -234,6 +237,7 @@ class SearchFilter {
   String? assetId;
   List<String>? tagIds;
   Set<PersonDto> people;
+  SearchPersonMatchMode personMatchMode;
   SearchLocationFilter location;
   SearchCameraFilter camera;
   SearchDateFilter date;
@@ -252,6 +256,7 @@ class SearchFilter {
     this.assetId,
     this.tagIds,
     required this.people,
+    this.personMatchMode = SearchPersonMatchMode.all,
     required this.location,
     required this.camera,
     required this.date,
@@ -290,6 +295,7 @@ class SearchFilter {
     String? ocr,
     String? assetId,
     Set<PersonDto>? people,
+    SearchPersonMatchMode? personMatchMode,
     List<String>? tagIds,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
@@ -306,6 +312,7 @@ class SearchFilter {
       ocr: ocr ?? this.ocr,
       assetId: assetId ?? this.assetId,
       people: people ?? this.people,
+      personMatchMode: personMatchMode ?? this.personMatchMode,
       location: location ?? this.location,
       camera: camera ?? this.camera,
       date: date ?? this.date,
@@ -318,7 +325,7 @@ class SearchFilter {
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, tagIds: $tagIds, camera: $camera, date: $date, display: $display, rating: $rating, mediaType: $mediaType, assetId: $assetId)';
+    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, personMatchMode: $personMatchMode, location: $location, tagIds: $tagIds, camera: $camera, date: $date, display: $display, rating: $rating, mediaType: $mediaType, assetId: $assetId)';
   }
 
   @override
@@ -334,6 +341,7 @@ class SearchFilter {
         other.ocr == ocr &&
         other.assetId == assetId &&
         other.people == people &&
+        other.personMatchMode == personMatchMode &&
         other.tagIds == tagIds &&
         other.location == location &&
         other.camera == camera &&
@@ -352,6 +360,7 @@ class SearchFilter {
         ocr.hashCode ^
         assetId.hashCode ^
         people.hashCode ^
+        personMatchMode.hashCode ^
         tagIds.hashCode ^
         location.hashCode ^
         camera.hashCode ^

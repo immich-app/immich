@@ -6,6 +6,8 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
@@ -13,10 +15,18 @@ import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
 class PeoplePicker extends HookConsumerWidget {
-  const PeoplePicker({super.key, required this.onSelect, this.filter});
+  const PeoplePicker({
+    super.key,
+    required this.onSelect,
+    this.onMatchModeSelect,
+    this.filter,
+    this.matchMode = SearchPersonMatchMode.all,
+  });
 
   final Function(Set<PersonDto>) onSelect;
+  final Function(SearchPersonMatchMode)? onMatchModeSelect;
   final Set<PersonDto>? filter;
+  final SearchPersonMatchMode matchMode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,6 +35,7 @@ class PeoplePicker extends HookConsumerWidget {
     final searchQuery = useState('');
     final people = ref.watch(getAllPeopleProvider);
     final selectedPeople = useState<Set<PersonDto>>(filter ?? {});
+    final selectedMatchMode = useState(matchMode);
 
     return Column(
       children: [
@@ -38,6 +49,37 @@ class PeoplePicker extends HookConsumerWidget {
             hintText: 'filter_people'.tr(),
           ),
         ),
+        if (selectedPeople.value.length > 1) ...[
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'person_match_mode'.t(context: context),
+                style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+          RadioGroup(
+            onChanged: (value) {
+              selectedMatchMode.value = value!;
+              onMatchModeSelect?.call(value);
+            },
+            groupValue: selectedMatchMode.value,
+            child: Column(
+              children: [
+                RadioListTile(
+                  title: Text('person_match_all'.t(context: context)),
+                  value: SearchPersonMatchMode.all,
+                ),
+                RadioListTile(
+                  title: Text('person_match_any'.t(context: context)),
+                  value: SearchPersonMatchMode.any,
+                ),
+              ],
+            ),
+          ),
+        ],
         Padding(
           padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 0),
           child: Divider(color: context.colorScheme.surfaceContainerHighest, thickness: 1),

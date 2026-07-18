@@ -31,6 +31,7 @@ class SmartSearchDto {
     this.ocr = const Optional.absent(),
     this.page = const Optional.absent(),
     this.personIds = const Optional.present(const []),
+    this.personMatchMode = const Optional.absent(),
     this.query = const Optional.absent(),
     this.queryAssetId = const Optional.absent(),
     this.rating = const Optional.absent(),
@@ -165,6 +166,9 @@ class SmartSearchDto {
 
   /// Filter by person IDs
   Optional<List<String>?> personIds;
+
+  /// Match all selected people (AND) or any selected person (OR). Defaults to all.
+  Optional<PersonMatchMode?> personMatchMode;
 
   /// Natural language search query
   ///
@@ -316,6 +320,7 @@ class SmartSearchDto {
     other.ocr == ocr &&
     other.page == page &&
     _deepEquality.equals(other.personIds, personIds) &&
+    other.personMatchMode == personMatchMode &&
     other.query == query &&
     other.queryAssetId == queryAssetId &&
     other.rating == rating &&
@@ -354,6 +359,7 @@ class SmartSearchDto {
     (ocr == null ? 0 : ocr!.hashCode) +
     (page == null ? 0 : page!.hashCode) +
     (personIds.hashCode) +
+    (personMatchMode == null ? 0 : personMatchMode!.hashCode) +
     (query == null ? 0 : query!.hashCode) +
     (queryAssetId == null ? 0 : queryAssetId!.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
@@ -372,7 +378,7 @@ class SmartSearchDto {
     (withExif == null ? 0 : withExif!.hashCode);
 
   @override
-  String toString() => 'SmartSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, language=$language, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, page=$page, personIds=$personIds, query=$query, queryAssetId=$queryAssetId, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif]';
+  String toString() => 'SmartSearchDto[albumIds=$albumIds, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, language=$language, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, page=$page, personIds=$personIds, personMatchMode=$personMatchMode, query=$query, queryAssetId=$queryAssetId, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -451,6 +457,10 @@ class SmartSearchDto {
     if (this.personIds.isPresent) {
       final value = this.personIds.value;
       json[r'personIds'] = value;
+    }
+    if (this.personMatchMode.isPresent) {
+      final value = this.personMatchMode.value;
+      json[r'personMatchMode'] = value;
     }
     if (this.query.isPresent) {
       final value = this.query.value;
@@ -562,6 +572,7 @@ class SmartSearchDto {
         personIds: json.containsKey(r'personIds') ? Optional.present(json[r'personIds'] is Iterable
             ? (json[r'personIds'] as Iterable).cast<String>().toList(growable: false)
             : const []) : const Optional.absent(),
+        personMatchMode: json.containsKey(r'personMatchMode') ? Optional.present(PersonMatchMode.fromJson(json[r'personMatchMode'])) : const Optional.absent(),
         query: json.containsKey(r'query') ? Optional.present(mapValueOfType<String>(json, r'query')) : const Optional.absent(),
         queryAssetId: json.containsKey(r'queryAssetId') ? Optional.present(mapValueOfType<String>(json, r'queryAssetId')) : const Optional.absent(),
         rating: json.containsKey(r'rating') ? Optional.present(json[r'rating'] == null ? null : int.parse('${json[r'rating']}')) : const Optional.absent(),
