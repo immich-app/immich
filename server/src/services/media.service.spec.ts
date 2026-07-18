@@ -3493,12 +3493,13 @@ describe(MediaService.name, () => {
       expect(mocks.media.transcode).not.toHaveBeenCalled();
     });
 
-    it('should set options for rkmpp', async () => {
+    it('should set options for rkmpp without crop', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.matroskaContainer });
       mocks.systemMetadata.get.mockResolvedValue({
         ffmpeg: { accel: TranscodeHardwareAcceleration.Rkmpp, accelDecode: true },
       });
       await sut.handleVideoConversion({ id: 'video-id' });
+      expect(mocks.media.probe).not.toHaveBeenCalled();
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
         expect.any(String),
@@ -3537,6 +3538,34 @@ describe(MediaService.name, () => {
             'CQP',
             '-qp_init',
             '23',
+          ]),
+          twoPass: false,
+        }),
+      );
+    });
+
+    it('should crop with vpp_rkrga when rkmpp hardware decoding is enabled', async () => {
+      const croppedVideoStream = {
+        ...asset.videoStream,
+        width: 1920,
+        height: 1440,
+        crop: { top: 66, bottom: 66, left: 88, right: 88 },
+      };
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, videoStream: croppedVideoStream });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Rkmpp, accelDecode: true, transcode: TranscodePolicy.All },
+      });
+
+      await sut.handleVideoConversion({ id: 'video-id' });
+
+      expect(mocks.media.probe).not.toHaveBeenCalled();
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          inputOptions: expect.arrayContaining(['-apply_cropping', 'codec']),
+          outputOptions: expect.arrayContaining([
+            'vpp_rkrga=cw=1744:ch=1308:cx=88:cy=66:w=-2:h=720:format=nv12:afbc=1:async_depth=4',
           ]),
           twoPass: false,
         }),

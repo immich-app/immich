@@ -21,7 +21,7 @@ import { AssetFileType, AssetOrderBy, AssetVisibility, DatabaseExtension, ExifOr
 import { AssetSearchBuilderOptions } from 'src/repositories/search.repository';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
-import { AudioStreamInfo, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types';
+import { AudioStreamInfo, FrameCrop, VectorExtension, VideoFormat, VideoPacketInfo, VideoStreamInfo } from 'src/types';
 
 export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyConfig => {
   return {
@@ -144,10 +144,30 @@ export function withVideoStream(eb: ExpressionBuilder<DB, 'asset_exif' | 'asset_
         'asset_video.colorPrimaries',
         'asset_video.colorMatrix',
         'asset_video.colorTransfer',
-        'asset_video.dvProfile',
-        'asset_video.dvLevel',
-        'asset_video.dvBlSignalCompatibilityId',
-      ])
+          'asset_video.dvProfile',
+          'asset_video.dvLevel',
+          'asset_video.dvBlSignalCompatibilityId',
+          sql<FrameCrop | null>`
+            case
+              when "asset_video"."cropTop" is not null
+                and "asset_video"."cropBottom" is not null
+                and "asset_video"."cropLeft" is not null
+                and "asset_video"."cropRight" is not null
+                and (
+                  "asset_video"."cropTop" > 0
+                  or "asset_video"."cropBottom" > 0
+                  or "asset_video"."cropLeft" > 0
+                  or "asset_video"."cropRight" > 0
+                )
+                then json_build_object(
+                  'top', "asset_video"."cropTop",
+                  'bottom', "asset_video"."cropBottom",
+                  'left', "asset_video"."cropLeft",
+                  'right', "asset_video"."cropRight"
+                )
+              else null
+            end`.as('crop'),
+        ])
       .where('asset_video.assetId', 'is not', sql.lit(null)),
   ).$castTo<(VideoStreamInfo & { timeBase: number }) | null>();
 }

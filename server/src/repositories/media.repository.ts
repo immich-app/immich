@@ -27,6 +27,7 @@ import {
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
   DecodeToBufferOptions,
+  FrameCrop,
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
   ImageDimensions,
@@ -55,6 +56,61 @@ type ProgressEvent = {
   targetSize: number;
   timemark: string;
   percent?: number;
+};
+
+interface FfprobeFrameCroppingSideData {
+  side_data_type: 'Frame Cropping';
+  crop_top: number;
+  crop_bottom: number;
+  crop_left: number;
+  crop_right: number;
+}
+
+const isUnknownArray = (value: unknown): value is readonly unknown[] => Array.isArray(value);
+
+const isFrameCroppingSideData = (value: unknown): value is FfprobeFrameCroppingSideData => {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  return (
+    'side_data_type' in value &&
+    value.side_data_type === 'Frame Cropping' &&
+    'crop_top' in value &&
+    typeof value.crop_top === 'number' &&
+    Number.isInteger(value.crop_top) &&
+    value.crop_top >= 0 &&
+    'crop_bottom' in value &&
+    typeof value.crop_bottom === 'number' &&
+    Number.isInteger(value.crop_bottom) &&
+    value.crop_bottom >= 0 &&
+    'crop_left' in value &&
+    typeof value.crop_left === 'number' &&
+    Number.isInteger(value.crop_left) &&
+    value.crop_left >= 0 &&
+    'crop_right' in value &&
+    typeof value.crop_right === 'number' &&
+    Number.isInteger(value.crop_right) &&
+    value.crop_right >= 0
+  );
+};
+
+const parseFrameCrop = (stream: FfprobeStream): FrameCrop | null => {
+  if (!('side_data_list' in stream) || !isUnknownArray(stream.side_data_list)) {
+    return null;
+  }
+
+  const crop = stream.side_data_list.find(isFrameCroppingSideData);
+  if (!crop || [crop.crop_top, crop.crop_bottom, crop.crop_left, crop.crop_right].every((value) => value === 0)) {
+    return null;
+  }
+
+  return {
+    top: crop.crop_top,
+    bottom: crop.crop_bottom,
+    left: crop.crop_left,
+    right: crop.crop_right,
+  };
 };
 
 export type ExtractResult = {
@@ -252,6 +308,7 @@ export class MediaRepository {
             index: stream.index,
             height,
             width: dar ? Math.round(height * dar) : this.parseInt(stream.width),
+            crop: parseFrameCrop(stream),
             codecName: stream.codec_name === 'h265' ? 'hevc' : (stream.codec_name ?? null),
             profile: this.parseVideoProfile(stream.codec_name, stream.profile as string | undefined) ?? null,
             level: this.parseOptionalInt(stream.level),
