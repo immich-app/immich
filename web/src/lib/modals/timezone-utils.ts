@@ -136,16 +136,8 @@ export function getPreferredTimeZone(
 }
 
 export function toDatetime(selectedDate: string, selectedZone: ZoneOption) {
-  const dtComponents = DateTime.fromISO(selectedDate, { zone: 'utc' });
-
-  // Determine the modern, DST-aware offset for the selected IANA zone
-  const { offsetMinutes } = getModernOffsetForZoneAndDate(selectedZone.value, selectedDate);
-
-  // Construct the final ISO string with a fixed-offset zone.
-  const fixedOffsetZone = `UTC${offsetMinutes >= 0 ? '+' : ''}${Duration.fromObject({ minutes: offsetMinutes }).toFormat('hh:mm')}`;
-
   // Create a DateTime object in this fixed-offset zone, preserving the local time.
-  return DateTime.fromObject(dtComponents.toObject(), { zone: fixedOffsetZone });
+  return DateTime.fromISO(selectedDate, { zone: selectedZone.value });
 }
 
 export function toIsoDate(selectedDate: string, selectedZone: ZoneOption) {
