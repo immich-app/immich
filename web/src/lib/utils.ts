@@ -294,21 +294,21 @@ export const downloadUrl = (url: string, filename: string) => {
 };
 
 export const downloadUrlPost = (url: string, data: unknown) => {
-  const form = document.createElement("form");
-  form.method = "post";
+  const form = document.createElement('form');
+  form.method = 'post';
   form.action = url;
-  form.target = "_blank";
+  form.target = '_blank';
 
-  const inputJson = document.createElement("input");
-  inputJson.type = "hidden";
-  inputJson.name = "json";
+  const inputJson = document.createElement('input');
+  inputJson.type = 'hidden';
+  inputJson.name = 'json';
   inputJson.value = JSON.stringify(data);
-  form.appendChild(inputJson);
+  form.append(inputJson);
 
-  document.body.appendChild(form);
+  document.body.append(form);
   form.submit();
   form.remove();
-}
+};
 
 export const downloadBlob = (data: Blob, filename: string) => downloadUrl(URL.createObjectURL(data), filename);
 
@@ -318,7 +318,7 @@ export const downloadJson = (data: unknown, filename: string) => {
   downloadBlob(blob, downloadKey);
 
   const $t = get(t);
-  toastManager.info($t('downloading_filename', {values: {filename}}));
+  toastManager.info($t('downloading_filename', { values: { filename } }));
 };
 
 export const oauth = {

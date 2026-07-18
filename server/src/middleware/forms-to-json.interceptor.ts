@@ -1,11 +1,6 @@
-import {
-  Injectable,
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
-} from '@nestjs/common';
-import { Observable } from 'rxjs';
+import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { Request } from 'express';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class FormsToJsonInterceptor implements NestInterceptor {
@@ -18,6 +13,7 @@ export class FormsToJsonInterceptor implements NestInterceptor {
         req.body = JSON.parse(req?.body?.json);
         req.headers['content-type'] = 'application/json';
       } catch {
+        // ignore if failed to parse
       }
     }
 

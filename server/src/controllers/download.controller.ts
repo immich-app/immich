@@ -1,6 +1,6 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, Res, StreamableFile, UseInterceptors } from '@nestjs/common';
-import { Response } from 'express';
 import { ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadArchiveDto, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
@@ -38,11 +38,15 @@ export class DownloadController {
       'Download a ZIP archive containing the specified assets. The assets must have been previously requested via the "getDownloadInfo" endpoint.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  downloadArchive(@Res({ passthrough: true }) res: Response, @Auth() auth: AuthDto, @Body() dto: DownloadArchiveDto): Promise<StreamableFile> {
+  downloadArchive(
+    @Res({ passthrough: true }) res: Response,
+    @Auth() auth: AuthDto,
+    @Body() dto: DownloadArchiveDto,
+  ): Promise<StreamableFile> {
     if (dto.archiveName) {
       res.set({
         'Content-Disposition': `attachment; filename*=UTF-8''${encodeURIComponent(dto.archiveName)}.zip`,
-      })
+      });
     }
     return this.service.downloadArchive(auth, dto).then(asStreamableFile);
   }

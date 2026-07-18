@@ -15,7 +15,7 @@
 
   const closePanel = () => {
     downloadManager.clearAll();
-  }
+  };
 </script>
 
 {#if downloadManager.isDownloading}
@@ -25,13 +25,13 @@
   >
     <div class="flex items-center justify-between gap-2">
       <Heading size="tiny">{$t('prepared_archives')}</Heading>
-      <CloseButton class="w-8" size="small" onclick={closePanel}/>
+      <CloseButton class="w-8" size="small" onclick={closePanel} />
     </div>
     <div class="my-2 mb-2 flex max-h-50 flex-col overflow-y-auto text-sm">
       {#each Object.keys(downloadManager.assets) as downloadKey (downloadKey)}
         {@const download = downloadManager.assets[downloadKey]}
         <div class="mb-2 flex place-items-center gap-2" transition:slide>
-          <div class="grow min-w-0">
+          <div class="min-w-0 grow">
             <div class="flex place-items-center justify-between gap-2 text-xs font-medium">
               <p class="truncate">{downloadKey}</p>
               {#if download.total}

@@ -17,7 +17,7 @@ class DownloadManager {
     }
 
     if (!this.assets[key]) {
-      this.assets[key] = { url: "", payload: undefined, total: 0, downloaded: false };
+      this.assets[key] = { url: '', payload: undefined, total: 0, downloaded: false };
     }
 
     const item = this.assets[key];

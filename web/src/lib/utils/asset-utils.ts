@@ -27,6 +27,7 @@ import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { locale } from '$lib/stores/preferences.store';
 import { downloadUrlPost, withError } from '$lib/utils';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
@@ -34,7 +35,6 @@ import { navigate } from '$lib/utils/navigation';
 import { asQueryString } from '$lib/utils/shared-links';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { handleError } from './handle-error';
-import { locale } from '$lib/stores/preferences.store';
 
 export const tagAssets = async ({
   assetIds,
@@ -111,7 +111,12 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
         downloadUrlPost(url, payload);
         const $t = await getFormatter();
         const $locale = get(locale);
-        toastManager.primary($t('downloading_archive_filename_size', { values: { size: getByteUnitString(archive.size, $locale), filename: archiveName } }), { timeout: 10000 });
+        toastManager.primary(
+          $t('downloading_archive_filename_size', {
+            values: { size: getByteUnitString(archive.size, $locale), filename: archiveName },
+          }),
+          { timeout: 10_000 },
+        );
       }
     } catch (error) {
       const $t = get(t);
