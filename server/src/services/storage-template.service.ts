@@ -20,7 +20,7 @@ import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobOf, StorageAsset } from 'src/types';
 import { getAssetFile } from 'src/utils/asset.util';
-import { getLivePhotoMotionFilename } from 'src/utils/file';
+import { getFilenameExtension, getLivePhotoMotionFilename } from 'src/utils/file';
 
 const storageTokens = {
   secondOptions: ['s', 'ss', 'SSS'],
@@ -267,10 +267,10 @@ export class StorageTemplateService extends BaseService {
     const { storageLabel, filename } = metadata;
 
     try {
-      const filenameWithoutExtension = path.basename(filename, path.extname(filename));
+      const filenameWithoutExtension = path.basename(filename, getFilenameExtension(filename));
 
       const source = asset.originalPath;
-      let extension = path.extname(source).split('.').pop() as string;
+      let extension = getFilenameExtension(source).split('.').pop() as string;
       const sanitized = sanitize(path.basename(filenameWithoutExtension, `.${extension}`));
       extension = extension?.toLowerCase();
       const rootPath = StorageCore.getLibraryFolder({ id: asset.ownerId, storageLabel });

@@ -1,23 +1,24 @@
 import { HttpException, NotFoundException, StreamableFile } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { access, constants } from 'node:fs/promises';
-import { basename, extname } from 'node:path';
+import { basename } from 'node:path';
 import { promisify } from 'node:util';
 import { CacheControl } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { ImmichReadStream } from 'src/repositories/storage.repository';
+import { getExtension } from 'src/utils/mime-types';
 import { isConnectionAborted } from 'src/utils/misc';
 
 export function getFileNameWithoutExtension(path: string): string {
-  return basename(path, extname(path));
+  return basename(path, getExtension(path));
 }
 
-export function getFilenameExtension(path: string): string {
-  return extname(path);
+export function getFilenameExtension(filename: string): string {
+  return getExtension(filename);
 }
 
 export function getLivePhotoMotionFilename(stillName: string, motionName: string) {
-  return getFileNameWithoutExtension(stillName) + extname(motionName);
+  return getFileNameWithoutExtension(stillName) + getExtension(motionName);
 }
 
 export class ImmichFileResponse {

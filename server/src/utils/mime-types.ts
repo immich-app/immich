@@ -132,7 +132,7 @@ const sidecar: Record<string, string[]> = {
 
 const types = { ...image, ...video, ...sidecar };
 
-const getExtension = (filename: string) => {
+export const getExtension = (filename: string) => {
   const extension = extname(filename);
   if (!extension && filename.startsWith('.') && filename.indexOf('.', 1) === -1) {
     return filename;
@@ -140,10 +140,8 @@ const getExtension = (filename: string) => {
   return extension;
 };
 
-const isType = (filename: string, r: Record<string, string[]>) => {
-  console.log(`ext: ${getExtension(filename)}`);
-  return getExtension(filename).toLowerCase() in r;
-};
+const isType = (filename: string, r: Record<string, string[]>) =>
+  Object.hasOwn(r, getExtension(filename).toLowerCase());
 
 const lookup = (filename: string) => types[getExtension(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
 const toExtension = (mimeType: string) => {
