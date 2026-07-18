@@ -89,6 +89,53 @@ describe(SearchService.name, () => {
 
       expect(result).toEqual({ total: 0 });
     });
+
+    it('should AND multiple personIds by default (personMatchMode all)', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { person: personA } = await ctx.newPerson({ ownerId: user.id });
+      const { person: personB } = await ctx.newPerson({ ownerId: user.id });
+
+      const { asset: both } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAssetFace({ assetId: both.id, personId: personA.id });
+      await ctx.newAssetFace({ assetId: both.id, personId: personB.id });
+
+      const { asset: onlyA } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAssetFace({ assetId: onlyA.id, personId: personA.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      await expect(
+        sut.searchStatistics(auth, { personIds: [personA.id, personB.id] }),
+      ).resolves.toEqual({ total: 1 });
+
+      await expect(
+        sut.searchStatistics(auth, { personIds: [personA.id, personB.id], personMatchMode: 'all' }),
+      ).resolves.toEqual({ total: 1 });
+    });
+
+    it('should OR multiple personIds when personMatchMode is any', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { person: personA } = await ctx.newPerson({ ownerId: user.id });
+      const { person: personB } = await ctx.newPerson({ ownerId: user.id });
+
+      const { asset: both } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAssetFace({ assetId: both.id, personId: personA.id });
+      await ctx.newAssetFace({ assetId: both.id, personId: personB.id });
+
+      const { asset: onlyA } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAssetFace({ assetId: onlyA.id, personId: personA.id });
+
+      const { asset: onlyB } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newAssetFace({ assetId: onlyB.id, personId: personB.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      await expect(
+        sut.searchStatistics(auth, { personIds: [personA.id, personB.id], personMatchMode: 'any' }),
+      ).resolves.toEqual({ total: 3 });
+    });
   });
 
   describe('withStacked option', () => {

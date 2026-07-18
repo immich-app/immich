@@ -10,7 +10,7 @@
   import SearchTextSection from '$lib/components/shared-components/search-bar/SearchTextSection.svelte';
   import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import type { SearchFilter } from '$lib/types';
+  import type { PersonMatchMode, SearchFilter } from '$lib/types';
   import { asLocalTimeISO, parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
   import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
@@ -63,6 +63,8 @@
       queryType: defaultQueryType(),
       queryAssetId: 'queryAssetId' in searchQuery ? searchQuery.queryAssetId : undefined,
       personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
+      personMatchMode:
+        'personMatchMode' in searchQuery && searchQuery.personMatchMode === 'any' ? 'any' : ('all' as PersonMatchMode),
       tagIds:
         'tagIds' in searchQuery
           ? searchQuery.tagIds === null
@@ -106,6 +108,7 @@
       ocr: undefined,
       queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
+      personMatchMode: 'all',
       tagIds: new SvelteSet(),
       location: {},
       camera: {},
@@ -130,7 +133,10 @@
 
     const query = filter.query || undefined;
 
-    let payload: SmartSearchDto | MetadataSearchDto = {
+    // personMatchMode is added to the API DTO; SDK types regenerate via `mise open-api`.
+    type SearchPayload = (SmartSearchDto | MetadataSearchDto) & { personMatchMode?: PersonMatchMode };
+
+    const payload: SearchPayload = {
       query: filter.queryType === 'smart' ? query : undefined,
       queryAssetId: filter.queryAssetId || undefined,
       ocr: filter.queryType === 'ocr' ? query : undefined,
@@ -153,6 +159,8 @@
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,
       personIds: filter.personIds.size > 0 ? [...filter.personIds] : undefined,
+      // Omit when default AND so older servers / URL state stay unchanged.
+      personMatchMode: filter.personIds.size > 1 && filter.personMatchMode === 'any' ? 'any' : undefined,
       tagIds: filter.tagIds === null ? null : filter.tagIds.size > 0 ? [...filter.tagIds] : undefined,
       type,
       rating: filter.rating,
@@ -183,7 +191,7 @@
     <form id={formId} autocomplete="off" {onsubmit} {onreset}>
       <div class="flex flex-col gap-5 pb-10" tabindex="-1">
         <!-- PEOPLE -->
-        <SearchPeopleSection bind:selectedPeople={filter.personIds} />
+        <SearchPeopleSection bind:selectedPeople={filter.personIds} bind:personMatchMode={filter.personMatchMode} />
 
         <!-- TEXT -->
         <SearchTextSection bind:query={filter.query} bind:queryType={filter.queryType} />

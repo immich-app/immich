@@ -10343,6 +10343,19 @@
             }
           },
           {
+            "name": "personMatchMode",
+            "required": false,
+            "in": "query",
+            "description": "Match all selected people (AND) or any selected person (OR). Defaults to all.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "any"
+              ]
+            }
+          },
+          {
             "name": "rating",
             "required": false,
             "in": "query",
@@ -20189,6 +20202,14 @@
             },
             "type": "array"
           },
+          "personMatchMode": {
+            "description": "Match all selected people (AND) or any selected person (OR). Defaults to all.",
+            "enum": [
+              "all",
+              "any"
+            ],
+            "type": "string"
+          },
           "previewPath": {
             "description": "Filter by preview file path",
             "type": "string"
@@ -21884,6 +21905,14 @@
             },
             "type": "array"
           },
+          "personMatchMode": {
+            "description": "Match all selected people (AND) or any selected person (OR). Defaults to all.",
+            "enum": [
+              "all",
+              "any"
+            ],
+            "type": "string"
+          },
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
@@ -23374,6 +23403,14 @@
             },
             "type": "array"
           },
+          "personMatchMode": {
+            "description": "Match all selected people (AND) or any selected person (OR). Defaults to all.",
+            "enum": [
+              "all",
+              "any"
+            ],
+            "type": "string"
+          },
           "query": {
             "description": "Natural language search query",
             "type": "string"
@@ -23652,6 +23689,14 @@
               "type": "string"
             },
             "type": "array"
+          },
+          "personMatchMode": {
+            "description": "Match all selected people (AND) or any selected person (OR). Defaults to all.",
+            "enum": [
+              "all",
+              "any"
+            ],
+            "type": "string"
           },
           "rating": {
             "description": "Filter by rating [1-5], or null for unrated",

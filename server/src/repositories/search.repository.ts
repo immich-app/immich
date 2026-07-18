@@ -86,6 +86,8 @@ export interface SearchOcrOptions {
 
 export interface SearchPeopleOptions {
   personIds?: string[];
+  /** `all` = AND (default); `any` = OR */
+  personMatchMode?: 'all' | 'any';
 }
 
 export interface SearchTagOptions {

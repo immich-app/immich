@@ -69,11 +69,14 @@ export type SearchLocationFilter = {
   city?: string;
 };
 
+export type PersonMatchMode = 'all' | 'any';
+
 export type SearchFilter = {
   query: string;
   ocr?: string;
   queryType: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr';
   personIds: SvelteSet<string>;
+  personMatchMode: PersonMatchMode;
   tagIds: SvelteSet<string> | null;
   location: SearchLocationFilter;
   queryAssetId?: string;

@@ -234,7 +234,11 @@ export function withFacesAndPeople(
   ).as('faces');
 }
 
-export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: string[]) {
+export function hasPeople<O>(
+  qb: SelectQueryBuilder<DB, 'asset', O>,
+  personIds: string[],
+  personMatchMode: 'all' | 'any' = 'all',
+) {
   return qb.innerJoin(
     (eb) =>
       eb
@@ -244,7 +248,10 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personIds: 
         .where('deletedAt', 'is', null)
         .where('isVisible', 'is', true)
         .groupBy('assetId')
-        .having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length)
+        // AND: require every selected person. OR (`any`): any matching person is enough.
+        .$if(personMatchMode !== 'any', (qb) =>
+          qb.having((eb) => eb.fn.count('personId').distinct(), '=', personIds.length),
+        )
         .as('has_people'),
     (join) => join.onRef('has_people.assetId', '=', 'asset.id'),
   );
@@ -387,7 +394,9 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(options.tagIds === null, (qb) =>
       qb.where((eb) => eb.not(eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('assetId', '=', 'asset.id')))),
     )
-    .$if(!!options.personIds && options.personIds.length > 0, (qb) => hasPeople(qb, options.personIds!))
+    .$if(!!options.personIds && options.personIds.length > 0, (qb) =>
+      hasPeople(qb, options.personIds!, options.personMatchMode ?? 'all'),
+    )
     .$if(!!options.createdBefore, (qb) => qb.where('asset.createdAt', '<=', options.createdBefore!))
     .$if(!!options.createdAfter, (qb) => qb.where('asset.createdAt', '>=', options.createdAfter!))
     .$if(!!options.updatedBefore, (qb) => qb.where('asset.updatedAt', '<=', options.updatedBefore!))

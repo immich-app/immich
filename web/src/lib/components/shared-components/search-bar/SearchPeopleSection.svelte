@@ -1,7 +1,9 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import SingleGridRow from '$lib/components/shared-components/SingleGridRow.svelte';
+  import RadioButton from '$lib/elements/RadioButton.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
+  import type { PersonMatchMode } from '$lib/types';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
@@ -13,9 +15,10 @@
 
   interface Props {
     selectedPeople: SvelteSet<string>;
+    personMatchMode: PersonMatchMode;
   }
 
-  let { selectedPeople = $bindable() }: Props = $props();
+  let { selectedPeople = $bindable(), personMatchMode = $bindable('all' as PersonMatchMode) }: Props = $props();
 
   let peoplePromise = getPeople();
   let showAllPeople = $state(false);
@@ -77,6 +80,28 @@
         <Text class="py-3" fontWeight="medium">{$t('people')}</Text>
         <SearchBar bind:name placeholder={$t('filter_people')} showLoadingSpinner={false} />
       </div>
+
+      {#if selectedPeople.size > 1}
+        <fieldset class="mt-1 mb-2">
+          <Text class="mb-1" fontWeight="medium">{$t('person_match_mode')}</Text>
+          <div class="mt-1 flex flex-wrap gap-x-5 gap-y-2">
+            <RadioButton
+              name="person-match-mode"
+              id="person-match-all"
+              bind:group={personMatchMode}
+              label={$t('person_match_all')}
+              value="all"
+            />
+            <RadioButton
+              name="person-match-mode"
+              id="person-match-any"
+              bind:group={personMatchMode}
+              label={$t('person_match_any')}
+              value="any"
+            />
+          </div>
+        </fieldset>
+      {/if}
 
       <SingleGridRow
         class="space-between mt-2 grid immich-scrollbar grid-auto-fill-20 gap-1 overflow-y-auto"
