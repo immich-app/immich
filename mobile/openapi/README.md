@@ -669,6 +669,7 @@ Class | Method | HTTP request | Description
  - [SystemConfigThemeDto](doc//SystemConfigThemeDto.md)
  - [SystemConfigTrashDto](doc//SystemConfigTrashDto.md)
  - [SystemConfigUserDto](doc//SystemConfigUserDto.md)
+ - [SystemConfigVideoFrameExtractionDto](doc//SystemConfigVideoFrameExtractionDto.md)
  - [TagBulkAssetsDto](doc//TagBulkAssetsDto.md)
  - [TagBulkAssetsResponseDto](doc//TagBulkAssetsResponseDto.md)
  - [TagCreateDto](doc//TagCreateDto.md)

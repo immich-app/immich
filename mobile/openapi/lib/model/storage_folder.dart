@@ -29,6 +29,7 @@ class StorageFolder {
   static const profile = StorageFolder._(r'profile');
   static const thumbs = StorageFolder._(r'thumbs');
   static const backups = StorageFolder._(r'backups');
+  static const videoFrames = StorageFolder._(r'video-frames');
 
   /// List of all possible values in this [enum][StorageFolder].
   static const values = <StorageFolder>[
@@ -38,6 +39,7 @@ class StorageFolder {
     profile,
     thumbs,
     backups,
+    videoFrames,
   ];
 
   static StorageFolder? fromJson(dynamic value) => StorageFolderTypeTransformer().decode(value);
@@ -82,6 +84,7 @@ class StorageFolderTypeTransformer {
         case r'profile': return StorageFolder.profile;
         case r'thumbs': return StorageFolder.thumbs;
         case r'backups': return StorageFolder.backups;
+        case r'video-frames': return StorageFolder.videoFrames;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

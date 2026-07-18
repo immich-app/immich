@@ -42,6 +42,7 @@ class QueueName {
   static const workflow = QueueName._(r'workflow');
   static const integrityCheck = QueueName._(r'integrityCheck');
   static const editor = QueueName._(r'editor');
+  static const videoFrameExtraction = QueueName._(r'videoFrameExtraction');
 
   /// List of all possible values in this [enum][QueueName].
   static const values = <QueueName>[
@@ -64,6 +65,7 @@ class QueueName {
     workflow,
     integrityCheck,
     editor,
+    videoFrameExtraction,
   ];
 
   static QueueName? fromJson(dynamic value) => QueueNameTypeTransformer().decode(value);
@@ -121,6 +123,7 @@ class QueueNameTypeTransformer {
         case r'workflow': return QueueName.workflow;
         case r'integrityCheck': return QueueName.integrityCheck;
         case r'editor': return QueueName.editor;
+        case r'videoFrameExtraction': return QueueName.videoFrameExtraction;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

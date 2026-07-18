@@ -1247,6 +1247,7 @@ export type QueuesResponseLegacyDto = {
     storageTemplateMigration: QueueResponseLegacyDto;
     thumbnailGeneration: QueueResponseLegacyDto;
     videoConversion: QueueResponseLegacyDto;
+    videoFrameExtraction: QueueResponseLegacyDto;
     workflow: QueueResponseLegacyDto;
 };
 export type JobCreateDto = {
@@ -2412,6 +2413,7 @@ export type SystemConfigJobDto = {
     smartSearch: JobSettingsDto;
     thumbnailGeneration: JobSettingsDto;
     videoConversion: JobSettingsDto;
+    videoFrameExtraction: JobSettingsDto;
     workflow: JobSettingsDto;
 };
 export type SystemConfigLibraryScanDto = {
@@ -2615,6 +2617,16 @@ export type SystemConfigUserDto = {
     /** Delete delay */
     deleteDelay: number;
 };
+export type SystemConfigVideoFrameExtractionDto = {
+    /** Enable video frame extraction */
+    enabled: boolean;
+    /** Seconds between sampled frames */
+    gridInterval: number;
+    /** Fixed quantizer used for the all-intra frame encode */
+    qp: number;
+    /** Target short-side resolution (px) of extracted frames */
+    targetResolution: number;
+};
 export type SystemConfigDto = {
     backup: SystemConfigBackupsDto;
     ffmpeg: SystemConfigFFmpegDto;
@@ -2638,6 +2650,7 @@ export type SystemConfigDto = {
     theme: SystemConfigThemeDto;
     trash: SystemConfigTrashDto;
     user: SystemConfigUserDto;
+    videoFrameExtraction: SystemConfigVideoFrameExtractionDto;
 };
 export type SystemConfigTemplateStorageOptionDto = {
     /** Available day format options for storage template */
@@ -7113,7 +7126,8 @@ export enum StorageFolder {
     Upload = "upload",
     Profile = "profile",
     Thumbs = "thumbs",
-    Backups = "backups"
+    Backups = "backups",
+    VideoFrames = "video-frames"
 }
 export enum NotificationLevel {
     Success = "success",
@@ -7397,7 +7411,8 @@ export enum QueueName {
     Ocr = "ocr",
     Workflow = "workflow",
     IntegrityCheck = "integrityCheck",
-    Editor = "editor"
+    Editor = "editor",
+    VideoFrameExtraction = "videoFrameExtraction"
 }
 export enum QueueCommand {
     Start = "start",
@@ -7499,7 +7514,9 @@ export enum JobName {
     IntegrityChecksumFiles = "IntegrityChecksumFiles",
     IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh",
     IntegrityDeleteReportType = "IntegrityDeleteReportType",
-    IntegrityDeleteReports = "IntegrityDeleteReports"
+    IntegrityDeleteReports = "IntegrityDeleteReports",
+    VideoFrameExtractionQueueAll = "VideoFrameExtractionQueueAll",
+    VideoFrameExtraction = "VideoFrameExtraction"
 }
 export enum SearchSuggestionType {
     Country = "country",
