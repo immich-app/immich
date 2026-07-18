@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
@@ -33,6 +34,7 @@ class RepositoryMocks {
 
   final nativeApi = NativeSyncApiStub(MockNativeSyncApi());
   final assetApi = AssetApiRepositoryStub(MockAssetApiRepository());
+  final assetMedia = AssetMediaRepositoryStub(MockAssetMediaRepository());
 
   RepositoryMocks() {
     resetAll();
@@ -49,6 +51,7 @@ class RepositoryMocks {
     reset(albumApi);
     nativeApi.reset();
     assetApi.reset();
+    assetMedia.reset();
     reset(toast);
     _stubLocalAlbumRepository();
     _stubLocalAssetRepository();
@@ -56,6 +59,7 @@ class RepositoryMocks {
     _stubRemoteExifRepository();
     _stubNativeSyncApi();
     _stubAssetApiRepository();
+    _stubAssetMediaRepository();
   }
 
   void _stubRemoteAssetRepository() {
@@ -84,6 +88,10 @@ class RepositoryMocks {
 
   void _stubAssetApiRepository() {
     when(assetApi.update).thenAnswer((_) async => {});
+  }
+
+  void _stubAssetMediaRepository() {
+    when(assetMedia.shareAssets).thenAnswer((_) async => 1);
   }
 }
 
@@ -161,7 +169,12 @@ void _registerFallbacks() {
   registerFallbackValue(const Option<LatLng>.none());
   registerFallbackValue(const Option<String>.none());
   registerFallbackValue(const Option<DateTime>.none());
+  registerFallbackValue(<BaseAsset>[]);
+  registerFallbackValue(ShareAssetType.original);
+  registerFallbackValue(_FakeBuildContext());
 }
+
+class _FakeBuildContext extends Fake implements BuildContext {}
 
 extension type const Stub<T extends Mock>(T mockedClass) {
   void reset() => mock.reset(mockedClass);
@@ -314,5 +327,16 @@ extension type const AssetApiRepositoryStub(MockAssetApiRepository api) implemen
         visibility: any(named: 'visibility'),
         dateTimeOriginal: any(named: 'dateTimeOriginal'),
         location: any(named: 'location'),
+      );
+}
+
+extension type const AssetMediaRepositoryStub(MockAssetMediaRepository api) implements Stub<MockAssetMediaRepository> {
+  Future<int> Function() get shareAssets =>
+      () => api.shareAssets(
+        any(),
+        any(),
+        fileType: any(named: 'fileType'),
+        cancelCompleter: any(named: 'cancelCompleter'),
+        onAssetDownloadProgress: any(named: 'onAssetDownloadProgress'),
       );
 }

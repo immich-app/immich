@@ -26,8 +26,8 @@ import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -180,11 +180,11 @@ enum ActionButtonType {
       ActionButtonType.advancedInfo => ActionMenuItemWidget(
         action: AssetDebugAction(assets: [context.asset], scope: scope),
       ),
-      ActionButtonType.share => ShareActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
-      ActionButtonType.shareLink => ShareLinkActionButton(
-        source: context.source,
-        iconOnly: iconOnly,
-        menuItem: menuItem,
+      ActionButtonType.share => ActionMenuItemWidget(
+        action: ShareAction(assets: [context.asset], scope: scope),
+      ),
+      ActionButtonType.shareLink => ActionMenuItemWidget(
+        action: ShareLinkAction(assets: [context.asset], scope: scope),
       ),
       ActionButtonType.slideshow => ActionMenuItemWidget(action: SlideshowAction(scope: scope)),
       ActionButtonType.archive || ActionButtonType.unarchive => ActionMenuItemWidget(

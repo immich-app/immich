@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/tag.service.dart';
@@ -19,7 +17,6 @@ import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/tag_picker.dart';
 
 final actionServiceProvider = Provider<ActionService>(
@@ -58,10 +55,6 @@ class ActionService {
     this._downloadRepository,
     this._tagService,
   );
-
-  Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
-    unawaited(context.pushRoute(SharedLinkEditRoute(assetsList: remoteIds)));
-  }
 
   Future<void> moveToLockFolder(List<String> remoteIds, List<String> localIds) async {
     await _assetApiRepository.updateVisibility(remoteIds, .locked);
@@ -156,22 +149,6 @@ class ActionService {
   Future<void> unStack(List<String> stackIds) async {
     await _remoteAssetRepository.unStack(stackIds);
     await _assetApiRepository.unStack(stackIds);
-  }
-
-  Future<int> shareAssets(
-    List<BaseAsset> assets,
-    BuildContext context, {
-    ShareAssetType fileType = ShareAssetType.original,
-    Completer<void>? cancelCompleter,
-    void Function(double progress)? onAssetDownloadProgress,
-  }) {
-    return _assetMediaRepository.shareAssets(
-      assets,
-      context,
-      fileType: fileType,
-      cancelCompleter: cancelCompleter,
-      onAssetDownloadProgress: onAssetDownloadProgress,
-    );
   }
 
   Future<List<bool>> downloadAll(List<RemoteAsset> assets) {

@@ -6,11 +6,11 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/asset_actions.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/bulk_tag_assets_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
@@ -72,7 +72,8 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
     }
 
     final scope = ActionScope.from(context, ref);
-    final actions = AssetActions.from(scope, multiselect.selectedAssets.toList(growable: false));
+    final assets = multiselect.selectedAssets.toList(growable: false);
+    final actions = AssetActions.from(scope, assets);
 
     return BaseBottomSheet(
       controller: sheetController,
@@ -92,9 +93,13 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
           actions.editDateTime,
           actions.editLocation,
         ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
-        const ShareActionButton(source: ActionSource.timeline),
+        ActionColumnButtonWidget(
+          action: ShareAction(assets: assets, scope: scope),
+        ),
         if (multiselect.hasRemote) ...[
-          const ShareLinkActionButton(source: ActionSource.timeline),
+          ActionColumnButtonWidget(
+            action: ShareLinkAction(assets: assets, scope: scope),
+          ),
           if (multiselect.onlyRemote) const DownloadActionButton(source: ActionSource.timeline),
           if (tagsEnabled) const BulkTagAssetsActionButton(source: ActionSource.timeline),
         ],
