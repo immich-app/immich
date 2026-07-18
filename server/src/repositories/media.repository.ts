@@ -66,8 +66,6 @@ interface FfprobeFrameCroppingSideData {
   crop_right: number;
 }
 
-const isUnknownArray = (value: unknown): value is readonly unknown[] => Array.isArray(value);
-
 const isFrameCroppingSideData = (value: unknown): value is FfprobeFrameCroppingSideData => {
   if (typeof value !== 'object' || value === null) {
     return false;
@@ -95,21 +93,24 @@ const isFrameCroppingSideData = (value: unknown): value is FfprobeFrameCroppingS
   );
 };
 
+// ffprobe reports clean-aperture cropping as "Frame Cropping" side data. fluent-ffmpeg flattens each
+// side_data entry onto the stream object instead of exposing a side_data_list array, so the crop
+// fields live directly on the stream.
 const parseFrameCrop = (stream: FfprobeStream): FrameCrop | null => {
-  if (!('side_data_list' in stream) || !isUnknownArray(stream.side_data_list)) {
+  if (!isFrameCroppingSideData(stream)) {
     return null;
   }
 
-  const crop = stream.side_data_list.find(isFrameCroppingSideData);
-  if (!crop || [crop.crop_top, crop.crop_bottom, crop.crop_left, crop.crop_right].every((value) => value === 0)) {
+  const { crop_top, crop_bottom, crop_left, crop_right } = stream;
+  if (crop_top === 0 && crop_bottom === 0 && crop_left === 0 && crop_right === 0) {
     return null;
   }
 
   return {
-    top: crop.crop_top,
-    bottom: crop.crop_bottom,
-    left: crop.crop_left,
-    right: crop.crop_right,
+    top: crop_top,
+    bottom: crop_bottom,
+    left: crop_left,
+    right: crop_right,
   };
 };
 
