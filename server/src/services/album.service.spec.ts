@@ -783,7 +783,7 @@ describe(AlbumService.name, () => {
         },
         owner.id,
       );
-      expect(mocks.album.addAssetIds).toHaveBeenCalledWith(album.id, [asset1.id, asset2.id, asset3.id]);
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith(album.id, [asset1.id, asset2.id, asset3.id], owner.id);
     });
 
     it('should not set the thumbnail if the album has one already', async () => {
@@ -838,7 +838,7 @@ describe(AlbumService.name, () => {
         },
         user.id,
       );
-      expect(mocks.album.addAssetIds).toHaveBeenCalledWith(album.id, [asset1.id, asset2.id, asset3.id]);
+      expect(mocks.album.addAssetIds).toHaveBeenCalledWith(album.id, [asset1.id, asset2.id, asset3.id], user.id);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: album.id,
         userIds: album.albumUsers.map(({ user }) => user.id),
@@ -983,14 +983,17 @@ describe(AlbumService.name, () => {
         },
         owner.id,
       );
-      expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumId: album1.id, assetId: asset1.id },
-        { albumId: album1.id, assetId: asset2.id },
-        { albumId: album1.id, assetId: asset3.id },
-        { albumId: album2.id, assetId: asset1.id },
-        { albumId: album2.id, assetId: asset2.id },
-        { albumId: album2.id, assetId: asset3.id },
-      ]);
+      expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith(
+        [
+          { albumId: album1.id, assetId: asset1.id },
+          { albumId: album1.id, assetId: asset2.id },
+          { albumId: album1.id, assetId: asset3.id },
+          { albumId: album2.id, assetId: asset1.id },
+          { albumId: album2.id, assetId: asset2.id },
+          { albumId: album2.id, assetId: asset3.id },
+        ],
+        owner.id,
+      );
     });
 
     it('should not set the thumbnail if the album has one already', async () => {
@@ -1032,14 +1035,17 @@ describe(AlbumService.name, () => {
         },
         owner.id,
       );
-      expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumId: album1.id, assetId: asset1.id },
-        { albumId: album1.id, assetId: asset2.id },
-        { albumId: album1.id, assetId: asset3.id },
-        { albumId: album2.id, assetId: asset1.id },
-        { albumId: album2.id, assetId: asset2.id },
-        { albumId: album2.id, assetId: asset3.id },
-      ]);
+      expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith(
+        [
+          { albumId: album1.id, assetId: asset1.id },
+          { albumId: album1.id, assetId: asset2.id },
+          { albumId: album1.id, assetId: asset3.id },
+          { albumId: album2.id, assetId: asset1.id },
+          { albumId: album2.id, assetId: asset2.id },
+          { albumId: album2.id, assetId: asset3.id },
+        ],
+        owner.id,
+      );
     });
 
     it('should allow a shared user to add assets', async () => {
@@ -1082,14 +1088,17 @@ describe(AlbumService.name, () => {
         },
         user.id,
       );
-      expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumId: album1.id, assetId: asset1.id },
-        { albumId: album1.id, assetId: asset2.id },
-        { albumId: album1.id, assetId: asset3.id },
-        { albumId: album2.id, assetId: asset1.id },
-        { albumId: album2.id, assetId: asset2.id },
-        { albumId: album2.id, assetId: asset3.id },
-      ]);
+      expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith(
+        [
+          { albumId: album1.id, assetId: asset1.id },
+          { albumId: album1.id, assetId: asset2.id },
+          { albumId: album1.id, assetId: asset3.id },
+          { albumId: album2.id, assetId: asset1.id },
+          { albumId: album2.id, assetId: asset2.id },
+          { albumId: album2.id, assetId: asset3.id },
+        ],
+        user.id,
+      );
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: album1.id,
         userIds: album1.albumUsers.map(({ user }) => user.id),
@@ -1168,14 +1177,17 @@ describe(AlbumService.name, () => {
         },
         owner.id,
       );
-      expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumId: album1.id, assetId: asset1.id },
-        { albumId: album1.id, assetId: asset2.id },
-        { albumId: album1.id, assetId: asset3.id },
-        { albumId: album2.id, assetId: asset1.id },
-        { albumId: album2.id, assetId: asset2.id },
-        { albumId: album2.id, assetId: asset3.id },
-      ]);
+      expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith(
+        [
+          { albumId: album1.id, assetId: asset1.id },
+          { albumId: album1.id, assetId: asset2.id },
+          { albumId: album1.id, assetId: asset3.id },
+          { albumId: album2.id, assetId: asset1.id },
+          { albumId: album2.id, assetId: asset2.id },
+          { albumId: album2.id, assetId: asset3.id },
+        ],
+        owner.id,
+      );
       expect(mocks.access.asset.checkPartnerAccess).toHaveBeenCalledWith(
         owner.id,
         new Set([asset1.id, asset2.id, asset3.id]),
@@ -1213,11 +1225,14 @@ describe(AlbumService.name, () => {
         },
         owner.id,
       );
-      expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith([
-        { albumId: album2.id, assetId: asset1.id },
-        { albumId: album2.id, assetId: asset2.id },
-        { albumId: album2.id, assetId: asset3.id },
-      ]);
+      expect(mocks.album.addAssetIdsToAlbums).toHaveBeenCalledWith(
+        [
+          { albumId: album2.id, assetId: asset1.id },
+          { albumId: album2.id, assetId: asset2.id },
+          { albumId: album2.id, assetId: asset3.id },
+        ],
+        owner.id,
+      );
     });
 
     it('should skip all duplicate assets', async () => {
