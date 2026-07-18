@@ -28,8 +28,8 @@ class DownloadManager {
     this.#update(key, { url, payload, total });
   }
 
-  clear(key: string) {
-    this.#update(key, null);
+  clearAll() {
+    this.assets = {};
   }
 
   markDownloaded(key: string) {

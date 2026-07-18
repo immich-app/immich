@@ -315,11 +315,10 @@ export const downloadBlob = (data: Blob, filename: string) => downloadUrl(URL.cr
 export const downloadJson = (data: unknown, filename: string) => {
   const blob = new Blob([JSON.stringify(data, jsonReplacer, 2)], { type: 'application/json' });
   const downloadKey = filename;
-  // downloadManager.add(downloadKey, blob.size);
-  // downloadManager.update(downloadKey, blob.size);
   downloadBlob(blob, downloadKey);
-  // setTimeout(() => downloadManager.clear(downloadKey), 5000);
-  // TODO show notification instead?
+
+  const $t = get(t);
+  toastManager.info($t('downloading_filename', {values: {filename}}));
 };
 
 export const oauth = {

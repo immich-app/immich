@@ -34,6 +34,7 @@ import { navigate } from '$lib/utils/navigation';
 import { asQueryString } from '$lib/utils/shared-links';
 import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { handleError } from './handle-error';
+import { locale } from '$lib/stores/preferences.store';
 
 export const tagAssets = async ({
   assetIds,
@@ -108,7 +109,9 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
         downloadManager.add(downloadKey, url, payload, archive.size);
       } else {
         downloadUrlPost(url, payload);
-        // TODO show notification/toast
+        const $t = await getFormatter();
+        const $locale = get(locale);
+        toastManager.primary($t('downloading_archive_filename_size', { values: { size: getByteUnitString(archive.size, $locale), filename: archiveName } }), { timeout: 10000 });
       }
     } catch (error) {
       const $t = get(t);
