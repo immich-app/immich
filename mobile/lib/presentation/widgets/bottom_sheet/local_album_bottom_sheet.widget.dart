@@ -3,12 +3,16 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/asset_actions.dart';
+import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class LocalAlbumBottomSheet extends ConsumerStatefulWidget {
@@ -59,15 +63,22 @@ class _LocalAlbumBottomSheetState extends ConsumerState<LocalAlbumBottomSheet> {
       return sheetController.animateTo(0.85, duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
     }
 
+    final scope = ActionScope.from(context, ref);
+    final assets = ref.watch(multiSelectProvider).selectedAssets.toList(growable: false);
+    final actions = AssetActions.from(scope, assets);
+
     return BaseBottomSheet(
       controller: sheetController,
       initialChildSize: 0.25,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
-      actions: const [
-        ShareActionButton(source: ActionSource.timeline),
-        DeleteLocalActionButton(source: ActionSource.timeline),
-        UploadActionButton(source: ActionSource.timeline),
+      actions: [
+        const ShareActionButton(source: ActionSource.timeline),
+        ...[
+          actions.delete,
+          actions.cleanup,
+        ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
+        const UploadActionButton(source: ActionSource.timeline),
       ],
       slivers: [
         const AddToAlbumHeader(),

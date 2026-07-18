@@ -18,8 +18,7 @@ class SetAlbumCoverAction extends BaseAction {
     required String albumId,
     required ActionScope scope,
   }) {
-    final assetIds = AssetFilter(assets).remote().map((asset) => asset.id).toList(growable: false);
-
+    final assetIds = AssetFilter(assets).map((asset) => asset.remoteId).nonNulls.toList(growable: false);
     return SetAlbumCoverAction._(scope: scope, albumId: albumId, assetIds: assetIds, isVisible: assetIds.length == 1);
   }
 

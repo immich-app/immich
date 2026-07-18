@@ -6,25 +6,19 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart' show assetExifProvider;
 import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
-import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart';
 
 final actionProvider = NotifierProvider<ActionNotifier, void>(ActionNotifier.new, dependencies: [multiSelectProvider]);
 
@@ -125,18 +119,6 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> trash(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-
-    try {
-      await _service.trash(ids);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to trash assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
   Future<ActionResult> emptyTrash(String userId) async {
     try {
       final count = await _service.emptyTrash(userId);
@@ -207,50 +189,6 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: deletedCount, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to delete assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult?> editLocation(ActionSource source, BuildContext context) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    try {
-      final isEdited = await _service.editLocation(ids, context);
-      if (!isEdited) {
-        return null;
-      }
-
-      // This must be called since editing location
-      // does not update the currentAsset which means
-      // the exif provider will not be refreshed automatically
-      if (source == ActionSource.viewer) {
-        final currentAsset = ref.read(assetViewerProvider).currentAsset;
-        if (currentAsset != null) {
-          ref.invalidate(assetExifProvider(currentAsset));
-        }
-      }
-
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to edit location for assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult?> editDateTime(ActionSource source, BuildContext context) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    try {
-      final isEdited = await _service.editDateTime(ids, context);
-      if (!isEdited) {
-        return null;
-      }
-
-      if (source == ActionSource.viewer) {
-        ref.invalidate(assetExifProvider);
-      }
-
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to edit date and time for assets', error, stack);
       return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
@@ -464,37 +402,6 @@ class ActionNotifier extends Notifier<void> {
       Future.delayed(const Duration(seconds: 2), () {
         progressNotifier.clear();
       });
-    }
-  }
-
-  Future<ActionResult> applyEdits(ActionSource source, List<AssetEdit> edits) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-
-    if (ids.length != 1) {
-      _logger.warning('applyEdits called with multiple assets, expected single asset');
-      return ActionResult(count: ids.length, success: false, error: 'Expected single asset for applying edits');
-    }
-
-    Future<void> editReady;
-    if (ref.read(serverInfoProvider).serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)) {
-      editReady = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV2", (dynamic data) {
-        final eventAsset = SyncAssetV2.fromJson(data["asset"]);
-        return eventAsset?.id == ids.first;
-      }, const Duration(seconds: 10));
-    } else {
-      editReady = ref.read(websocketProvider.notifier).waitForEvent("AssetEditReadyV1", (dynamic data) {
-        final eventAsset = SyncAssetV1.fromJson(data["asset"]);
-        return eventAsset?.id == ids.first;
-      }, const Duration(seconds: 10));
-    }
-
-    try {
-      await _service.applyEdits(ids.first, edits);
-      await editReady;
-      return const ActionResult(count: 1, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to apply edits to assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 }

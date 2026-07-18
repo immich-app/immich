@@ -52,7 +52,7 @@ void main() {
         final offlinePhoto = LocalAssetFactory.create();
         final remotePhoto = RemoteAssetFactory.create();
 
-        final AssetFilter<LocalAsset> syncedPhotos = AssetFilter(<BaseAsset>[
+        final AssetFilter<BaseAsset> syncedPhotos = AssetFilter(<BaseAsset>[
           syncedPhoto,
           offlinePhoto,
           remotePhoto,

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_trash_action_button.widget.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 class TrashBottomBar extends ConsumerWidget {
@@ -27,13 +26,9 @@ class TrashBottomBar extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              const DeleteTrashActionButton(source: ActionSource.timeline),
-              ActionColumnButtonWidget(
-                action: TimelineAction(
-                  action: RestoreAction(assets: assets, scope: scope),
-                ),
-              ),
-            ],
+              DeleteAction(assets: assets, scope: scope),
+              RestoreAction(assets: assets, scope: scope),
+            ].map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))).toList(growable: false),
           ),
         ),
       ),
