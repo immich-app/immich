@@ -35,7 +35,9 @@ export const isVideoVertical = (videoStream: VideoStreamInfo): boolean =>
   videoStream.height > videoStream.width || isVideoRotated(videoStream);
 
 const hasFrameCrop = (videoStream: VideoStreamInfo): boolean =>
-  !!videoStream.crop && Object.values(videoStream.crop).some((value) => value > 0);
+  [videoStream.cropTop, videoStream.cropBottom, videoStream.cropLeft, videoStream.cropRight].some(
+    (value) => value !== null && value > 0,
+  );
 
 export const getOutputSize = (videoStream: VideoStreamInfo, targetRes: number) => {
   const factor = Math.max(videoStream.height, videoStream.width) / Math.min(videoStream.height, videoStream.width);
@@ -1050,6 +1052,10 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
     return false;
   }
 
+  getBaseInputOptions(): string[] {
+    return [];
+  }
+
   getPresetOptions() {
     switch (this.config.targetVideoCodec) {
       case VideoCodec.H264: {
@@ -1082,9 +1088,9 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
 }
 
 export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
-  getBaseInputOptions(videoStream: VideoStreamInfo) {
+  getBaseInputOptions(videoStream?: VideoStreamInfo): string[] {
     const options = ['-hwaccel', 'rkmpp', '-hwaccel_output_format', 'drm_prime', '-afbc', 'rga', '-noautorotate'];
-    return hasFrameCrop(videoStream) ? ['-apply_cropping', 'codec', ...options] : options;
+    return videoStream !== undefined && hasFrameCrop(videoStream) ? ['-apply_cropping', 'codec', ...options] : options;
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -1110,8 +1116,11 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
       ];
     }
     if (this.shouldScale(videoStream)) {
-      if (hasFrameCrop(videoStream) && videoStream.crop) {
-        const { top, bottom, left, right } = videoStream.crop;
+      if (hasFrameCrop(videoStream)) {
+        const top = videoStream.cropTop ?? 0;
+        const bottom = videoStream.cropBottom ?? 0;
+        const left = videoStream.cropLeft ?? 0;
+        const right = videoStream.cropRight ?? 0;
         const width = videoStream.width - left - right;
         const height = videoStream.height - top - bottom;
         const scaling = this.getScaling({ ...videoStream, width, height }).replace(':', ':h=');
