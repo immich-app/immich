@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -68,11 +68,22 @@ void main() {
       verify(() => assetService.updateFavorite([stale.id], true)).called(1);
     });
 
-    testWidgets('shows a confirmation snackbar on success', (tester) async {
-      await tester.pumpTestAction(context, FavoriteAction(assets: [owned()]));
-      await tester.pumpUntilFound(find.byType(SnackBar));
+    testWidgets('reports the favorite count through the toast repository', (tester) async {
+      final toast = context.repository.toast;
 
-      expect(find.byType(SnackBar), findsOneWidget);
+      await tester.pumpTestAction(context, FavoriteAction(assets: [owned(), owned()]));
+
+      final message = verify(() => toast.success(captureAny())).captured.single as String;
+      expect(message, StaticTranslations.instance.favorite_action_prompt(count: 2));
+    });
+
+    testWidgets('reports the unfavorite count through the toast repository', (tester) async {
+      final toast = context.repository.toast;
+
+      await tester.pumpTestAction(context, FavoriteAction(assets: [owned(isFavorite: true), owned(isFavorite: true)]));
+
+      final message = verify(() => toast.success(captureAny())).captured.single as String;
+      expect(message, StaticTranslations.instance.unfavorite_action_prompt(count: 2));
     });
   });
 }

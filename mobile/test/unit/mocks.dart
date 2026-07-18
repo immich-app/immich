@@ -18,6 +18,7 @@ class RepositoryMocks {
   final localAlbum = LocalAlbumRepositoryStub(MockLocalAlbumRepository());
   final localAsset = LocalAssetRepositoryStub(MockDriftLocalAssetRepository());
   final trashedAsset = MockTrashedLocalAssetRepository();
+  final toast = MockToastRepository();
 
   final nativeApi = NativeSyncApiStub(MockNativeSyncApi());
 
@@ -31,6 +32,7 @@ class RepositoryMocks {
     localAsset.reset();
     reset(trashedAsset);
     nativeApi.reset();
+    reset(toast);
     _stubLocalAlbumRepository();
     _stubLocalAssetRepository();
     _stubNativeSyncApi();
@@ -89,6 +91,7 @@ class ServiceMocks {
 
   void _stubAssetService() {
     when(asset.updateFavorite).thenAnswer((_) async {});
+    when(asset.restoreTrash).thenAnswer((_) async {});
   }
 }
 
@@ -167,6 +170,9 @@ extension type const UserServiceStub(MockUserService service) implements Stub<Mo
 extension type const AssetServiceStub(MockAssetService service) implements Stub<MockAssetService> {
   Future<void> Function() get updateFavorite =>
       () => service.updateFavorite(any(), any());
+
+  Future<void> Function() get restoreTrash =>
+      () => service.restoreTrash(any());
 }
 
 extension type const NativeSyncApiStub(MockNativeSyncApi api) implements Stub<MockNativeSyncApi> {

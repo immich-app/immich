@@ -156,28 +156,6 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> favorite(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    try {
-      await _service.favorite(ids);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to favorite assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> unFavorite(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    try {
-      await _service.unFavorite(ids);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to unfavorite assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
   Future<ActionResult> archive(ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
     try {
@@ -231,17 +209,6 @@ class ActionNotifier extends Notifier<void> {
       return ActionResult(count: ids.length, success: true);
     } catch (error, stack) {
       _logger.severe('Failed to trash assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> restoreTrash(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    try {
-      await _service.restoreTrash(ids);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to restore trash assets', error, stack);
       return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }

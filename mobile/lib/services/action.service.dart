@@ -68,16 +68,6 @@ class ActionService {
     unawaited(context.pushRoute(SharedLinkEditRoute(assetsList: remoteIds)));
   }
 
-  Future<void> favorite(List<String> remoteIds) async {
-    await _assetApiRepository.updateFavorite(remoteIds, true);
-    await _remoteAssetRepository.updateFavorite(remoteIds, true);
-  }
-
-  Future<void> unFavorite(List<String> remoteIds) async {
-    await _assetApiRepository.updateFavorite(remoteIds, false);
-    await _remoteAssetRepository.updateFavorite(remoteIds, false);
-  }
-
   Future<void> archive(List<String> remoteIds) async {
     await _assetApiRepository.updateVisibility(remoteIds, .archive);
     await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.archive);
@@ -106,11 +96,6 @@ class ActionService {
   Future<void> trash(List<String> remoteIds) async {
     await _assetApiRepository.delete(remoteIds, false);
     await _remoteAssetRepository.trash(remoteIds);
-  }
-
-  Future<void> restoreTrash(List<String> ids) async {
-    await _assetApiRepository.restoreTrash(ids);
-    await _remoteAssetRepository.restoreTrash(ids);
   }
 
   Future<int> emptyTrash(String userId) async {
