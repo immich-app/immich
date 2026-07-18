@@ -3,6 +3,7 @@
   import AssetChangeDateModal from '$lib/modals/AssetChangeDateModal.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import { fromISODateTime, fromISODateTimeUTC, toTimelineAsset } from '$lib/utils/timeline-util';
+  import { getModernOffsetForZoneAndDate } from '$lib/modals/timezone-utils';
   import { type AssetResponseDto } from '@immich/sdk';
   import { Icon, modalManager } from '@immich/ui';
   import { mdiCalendar, mdiPencil } from '@mdi/js';
@@ -15,6 +16,11 @@
   const { asset }: Props = $props();
 
   const timeZone = $derived(asset.exifInfo?.timeZone ?? undefined);
+  const modernOffset = $derived(
+    timeZone && asset.exifInfo?.dateTimeOriginal
+      ? getModernOffsetForZoneAndDate(timeZone, asset.exifInfo.dateTimeOriginal).offsetFormat
+      : undefined,
+  );
   const dateTime = $derived(
     timeZone && asset.exifInfo?.dateTimeOriginal
       ? fromISODateTime(asset.exifInfo.dateTimeOriginal, timeZone)
@@ -59,11 +65,13 @@
                 hour: 'numeric',
                 minute: '2-digit',
                 second: '2-digit',
-                timeZoneName: timeZone ? 'longOffset' : undefined,
               },
               { locale: $locale },
             )}
           </p>
+          {#if modernOffset}
+            GMT{modernOffset}
+          {/if}
         </div>
       </div>
     </div>
