@@ -8,6 +8,7 @@ class ImmichColumnButton extends StatefulWidget {
   final IconData icon;
   final String label;
   final FutureOr<void> Function() onPressed;
+  final FutureOr<void> Function()? onLongPress;
   final bool disabled;
   final bool? loading;
 
@@ -16,6 +17,7 @@ class ImmichColumnButton extends StatefulWidget {
     required this.icon,
     required this.label,
     required this.onPressed,
+    this.onLongPress,
     this.disabled = false,
     this.loading,
   });
@@ -28,10 +30,10 @@ class _ImmichColumnButtonState extends State<ImmichColumnButton> {
   bool _loading = false;
   bool get _isLoading => widget.loading ?? _loading;
 
-  Future<void> _onPressed() async {
+  Future<void> _run(FutureOr<void> Function() action) async {
     setState(() => _loading = true);
     try {
-      await widget.onPressed();
+      await action();
     } finally {
       if (mounted) {
         setState(() => _loading = false);
@@ -42,9 +44,12 @@ class _ImmichColumnButtonState extends State<ImmichColumnButton> {
   @override
   Widget build(BuildContext context) {
     final foreground = context.colorOverride ?? Theme.of(context).colorScheme.onSurface;
+    final handlerDisabled = widget.disabled || _isLoading;
+    final onLongPress = widget.onLongPress;
 
     return TextButton(
-      onPressed: widget.disabled || _isLoading ? null : _onPressed,
+      onPressed: handlerDisabled ? null : () => _run(widget.onPressed),
+      onLongPress: handlerDisabled || onLongPress == null ? null : () => _run(onLongPress),
       style: TextButton.styleFrom(
         foregroundColor: foreground,
         padding: const .symmetric(horizontal: ImmichSpacing.sm, vertical: ImmichSpacing.md),

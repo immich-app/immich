@@ -12,4 +12,17 @@ class TimelineAction extends BaseAction {
     await action.onAction();
     scope.ref.read(multiSelectProvider.notifier).reset();
   }
+
+  @override
+  Future<void> Function()? get onSecondaryAction {
+    final inner = action.onSecondaryAction;
+    if (inner == null) {
+      return null;
+    }
+
+    return () async {
+      await inner();
+      scope.ref.read(multiSelectProvider.notifier).reset();
+    };
+  }
 }
