@@ -86,18 +86,14 @@ export interface GenerateThumbnailsOptions {
   thumbnail?: ImageOptions;
 }
 
-export interface FrameCrop {
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-}
-
 export interface VideoStreamInfo {
   index: number;
   height: number;
   width: number;
-  crop?: FrameCrop | null;
+  cropTop: number | null;
+  cropBottom: number | null;
+  cropLeft: number | null;
+  cropRight: number | null;
   rotation: number;
   codecName: string | null;
   profile: H264Profile | HevcProfile | Av1Profile | null;

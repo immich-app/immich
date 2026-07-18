@@ -689,7 +689,10 @@ describe(MetadataService.name, () => {
         videoStreams: [
           {
             ...videoInfoStub.videoStreamHDR10.videoStreams[0],
-            crop: { top: 66, bottom: 66, left: 88, right: 88 },
+            cropTop: 66,
+            cropBottom: 66,
+            cropLeft: 88,
+            cropRight: 88,
           },
         ],
       });

@@ -97,18 +97,18 @@ describe(MediaRepository.name, () => {
 
       const { videoStreams } = await sut.probe('/asset.mp4');
 
-      expect(videoStreams[0].crop).toEqual({ top: 66, bottom: 66, left: 88, right: 88 });
+      expect(videoStreams[0]).toMatchObject({ cropTop: 66, cropBottom: 66, cropLeft: 88, cropRight: 88 });
     });
 
-    it('returns a null crop when there is no frame cropping side data', async () => {
+    it('returns null crop offsets when there is no frame cropping side data', async () => {
       mockFfprobe(videoStream);
 
       const { videoStreams } = await sut.probe('/asset.mp4');
 
-      expect(videoStreams[0].crop).toBeNull();
+      expect(videoStreams[0]).toMatchObject({ cropTop: null, cropBottom: null, cropLeft: null, cropRight: null });
     });
 
-    it('returns a null crop when every frame cropping offset is zero', async () => {
+    it('reads raw frame cropping offsets when every offset is zero', async () => {
       mockFfprobe({
         ...videoStream,
         side_data_type: 'Frame Cropping',
@@ -120,7 +120,7 @@ describe(MediaRepository.name, () => {
 
       const { videoStreams } = await sut.probe('/asset.mp4');
 
-      expect(videoStreams[0].crop).toBeNull();
+      expect(videoStreams[0]).toMatchObject({ cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0 });
     });
   });
 

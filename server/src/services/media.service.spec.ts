@@ -3549,7 +3549,10 @@ describe(MediaService.name, () => {
         ...asset.videoStream,
         width: 1920,
         height: 1440,
-        crop: { top: 66, bottom: 66, left: 88, right: 88 },
+        cropTop: 66,
+        cropBottom: 66,
+        cropLeft: 88,
+        cropRight: 88,
       };
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, videoStream: croppedVideoStream });
       mocks.systemMetadata.get.mockResolvedValue({

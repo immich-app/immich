@@ -269,28 +269,10 @@ select
           "asset_video"."dvProfile",
           "asset_video"."dvLevel",
           "asset_video"."dvBlSignalCompatibilityId",
-          case
-            when "asset_video"."cropTop" is not null
-            and "asset_video"."cropBottom" is not null
-            and "asset_video"."cropLeft" is not null
-            and "asset_video"."cropRight" is not null
-            and (
-              "asset_video"."cropTop" > 0
-              or "asset_video"."cropBottom" > 0
-              or "asset_video"."cropLeft" > 0
-              or "asset_video"."cropRight" > 0
-            ) then json_build_object(
-              'top',
-              "asset_video"."cropTop",
-              'bottom',
-              "asset_video"."cropBottom",
-              'left',
-              "asset_video"."cropLeft",
-              'right',
-              "asset_video"."cropRight"
-            )
-            else null
-          end as "crop"
+          "asset_video"."cropTop",
+          "asset_video"."cropBottom",
+          "asset_video"."cropLeft",
+          "asset_video"."cropRight"
         from
           (
             select
@@ -683,28 +665,10 @@ select
           "asset_video"."dvProfile",
           "asset_video"."dvLevel",
           "asset_video"."dvBlSignalCompatibilityId",
-          case
-            when "asset_video"."cropTop" is not null
-            and "asset_video"."cropBottom" is not null
-            and "asset_video"."cropLeft" is not null
-            and "asset_video"."cropRight" is not null
-            and (
-              "asset_video"."cropTop" > 0
-              or "asset_video"."cropBottom" > 0
-              or "asset_video"."cropLeft" > 0
-              or "asset_video"."cropRight" > 0
-            ) then json_build_object(
-              'top',
-              "asset_video"."cropTop",
-              'bottom',
-              "asset_video"."cropBottom",
-              'left',
-              "asset_video"."cropLeft",
-              'right',
-              "asset_video"."cropRight"
-            )
-            else null
-          end as "crop"
+          "asset_video"."cropTop",
+          "asset_video"."cropBottom",
+          "asset_video"."cropLeft",
+          "asset_video"."cropRight"
         from
           (
             select

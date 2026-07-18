@@ -27,7 +27,6 @@ import {
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
   DecodeToBufferOptions,
-  FrameCrop,
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
   ImageDimensions,
@@ -56,62 +55,6 @@ type ProgressEvent = {
   targetSize: number;
   timemark: string;
   percent?: number;
-};
-
-interface FfprobeFrameCroppingSideData {
-  side_data_type: 'Frame Cropping';
-  crop_top: number;
-  crop_bottom: number;
-  crop_left: number;
-  crop_right: number;
-}
-
-const isFrameCroppingSideData = (value: unknown): value is FfprobeFrameCroppingSideData => {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-
-  return (
-    'side_data_type' in value &&
-    value.side_data_type === 'Frame Cropping' &&
-    'crop_top' in value &&
-    typeof value.crop_top === 'number' &&
-    Number.isInteger(value.crop_top) &&
-    value.crop_top >= 0 &&
-    'crop_bottom' in value &&
-    typeof value.crop_bottom === 'number' &&
-    Number.isInteger(value.crop_bottom) &&
-    value.crop_bottom >= 0 &&
-    'crop_left' in value &&
-    typeof value.crop_left === 'number' &&
-    Number.isInteger(value.crop_left) &&
-    value.crop_left >= 0 &&
-    'crop_right' in value &&
-    typeof value.crop_right === 'number' &&
-    Number.isInteger(value.crop_right) &&
-    value.crop_right >= 0
-  );
-};
-
-// ffprobe reports clean-aperture cropping as "Frame Cropping" side data. fluent-ffmpeg flattens each
-// side_data entry onto the stream object instead of exposing a side_data_list array, so the crop
-// fields live directly on the stream.
-const parseFrameCrop = (stream: FfprobeStream): FrameCrop | null => {
-  if (!isFrameCroppingSideData(stream)) {
-    return null;
-  }
-
-  const { crop_top, crop_bottom, crop_left, crop_right } = stream;
-  if (crop_top === 0 && crop_bottom === 0 && crop_left === 0 && crop_right === 0) {
-    return null;
-  }
-
-  return {
-    top: crop_top,
-    bottom: crop_bottom,
-    left: crop_left,
-    right: crop_right,
-  };
 };
 
 export type ExtractResult = {
@@ -309,7 +252,10 @@ export class MediaRepository {
             index: stream.index,
             height,
             width: dar ? Math.round(height * dar) : this.parseInt(stream.width),
-            crop: parseFrameCrop(stream),
+            cropTop: this.parseOptionalInt(stream.crop_top),
+            cropBottom: this.parseOptionalInt(stream.crop_bottom),
+            cropLeft: this.parseOptionalInt(stream.crop_left),
+            cropRight: this.parseOptionalInt(stream.crop_right),
             codecName: stream.codec_name === 'h265' ? 'hevc' : (stream.codec_name ?? null),
             profile: this.parseVideoProfile(stream.codec_name, stream.profile as string | undefined) ?? null,
             level: this.parseOptionalInt(stream.level),
