@@ -18650,6 +18650,10 @@
       },
       "DownloadArchiveDto": {
         "properties": {
+          "archiveName": {
+            "description": "The name of the archive to download, without extension",
+            "type": "string"
+          },
           "assetIds": {
             "description": "Asset IDs",
             "items": {
