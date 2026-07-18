@@ -88,10 +88,18 @@ export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' |
   TransformOptions;
 export type GenerateThumbhashOptions = ImageColorOptions & Pick<TransformOptions, 'edits'>;
 
+export interface FrameCrop {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+}
+
 export interface VideoStreamInfo {
   index: number;
   height: number;
   width: number;
+  crop?: FrameCrop | null;
   rotation: number;
   codecName: string | null;
   profile: H264Profile | HevcProfile | Av1Profile | null;
