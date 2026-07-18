@@ -1,4 +1,4 @@
-import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
+import { BadRequestException, CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { Reflector } from '@nestjs/core';
 import { transformException } from '@nestjs/platform-express/multer/multer/multer.utils';
@@ -128,6 +128,9 @@ export class FileUploadInterceptor implements NestInterceptor {
         if (error) {
           hash?.destroy();
           return callback(error);
+        }
+        if (size === 0) {
+          return callback(new BadRequestException('File is empty'));
         }
         callback(null, {
           path,
