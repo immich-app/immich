@@ -647,13 +647,12 @@ export class VideoFrameExtractionConfig {
       encodeArgs.push('-low_power', '1');
     }
 
-    // TODO: Verify with Immich developers if `-noautorotate` is needed for SW-decode paths (VAAPI/QSV/NVENC SwDecodeConfig)
     return [
       '-nostdin',
       '-nostats',
       '-v',
       'verbose',
-      ...d.getBaseInputOptions(videoStream),
+      ...d.getBaseInputOptions(videoStream), // -noautorotate only added for hw decoding, just like the rest of the functions in this file
       '-i',
       this.options.inputPath,
       '-filter_complex',
