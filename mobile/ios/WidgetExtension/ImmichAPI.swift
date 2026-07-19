@@ -203,7 +203,12 @@ class ImmichAPI {
 
   func fetchMemory(for date: Date) async throws -> [MemoryResult] {
     // get URL
-    let memoryParams = [URLQueryItem(name: "for", value: date.ISO8601Format())]
+    // /memories expects a date-only value (YYYY-MM-DD) since server v3.0.3 (#29907).
+    // Use the local calendar day so evening users don't get tomorrow's memories.
+    let localDay = date.formatted(
+      Date.ISO8601FormatStyle(timeZone: .current).year().month().day().dateSeparator(.dash)
+    )
+    let memoryParams = [URLQueryItem(name: "for", value: localDay)]
     guard
       let searchURL = buildRequestURL(
         serverConfig: serverConfig,
