@@ -9,7 +9,7 @@
   import { downloadUrlPost } from '$lib/utils';
 
   const startDownload = (downloadKey: string, download: DownloadState) => {
-    downloadUrlPost(download.url, download.payload);
+    downloadUrlPost(download.url, download.assetIds, download.archiveName);
     downloadManager.markDownloaded(downloadKey);
   };
 

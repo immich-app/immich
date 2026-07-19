@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpStatus, Post, Res, StreamableFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Res, StreamableFile } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
@@ -6,7 +6,6 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { DownloadArchiveDto, DownloadInfoDto, DownloadResponseDto } from 'src/dtos/download.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated, FileResponse } from 'src/middleware/auth.guard';
-import { FormsToJsonInterceptor } from 'src/middleware/forms-to-json.interceptor';
 import { DownloadService } from 'src/services/download.service';
 import { asStreamableFile } from 'src/utils/file';
 
@@ -31,7 +30,6 @@ export class DownloadController {
   @Authenticated({ permission: Permission.AssetDownload, sharedLink: true })
   @FileResponse()
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(FormsToJsonInterceptor)
   @Endpoint({
     summary: 'Download asset archive',
     description:

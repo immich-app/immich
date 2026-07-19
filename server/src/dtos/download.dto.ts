@@ -26,7 +26,18 @@ const DownloadResponseSchema = z
   .meta({ id: 'DownloadResponseDto' });
 
 const DownloadArchiveSchema = AssetIdsSchema.extend({
-  edited: z.boolean().optional().describe('Download edited asset if available'),
+  edited: z
+    .preprocess((val) => {
+      if (val === 'true') {
+        return true;
+      }
+      if (val === 'false') {
+        return false;
+      }
+      return val;
+    }, z.boolean())
+    .optional()
+    .describe('Download edited asset if available'),
   archiveName: z.string().optional().describe('The name of the archive to download, without extension'),
 }).meta({ id: 'DownloadArchiveDto' });
 

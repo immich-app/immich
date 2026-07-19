@@ -102,13 +102,12 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
     }
 
     const url = getBaseUrl() + '/download/archive' + (queryParams ? `?${queryParams}` : '');
-    const payload = { assetIds: archive.assetIds, edited: true, archiveName };
 
     try {
       if (downloadInfo.archives.length > 1) {
-        downloadManager.add(downloadKey, url, payload, archive.size);
+        downloadManager.add(downloadKey, url, archive.assetIds, archiveName, archive.size);
       } else {
-        downloadUrlPost(url, payload);
+        downloadUrlPost(url, archive.assetIds, archiveName);
         const $t = await getFormatter();
         const $locale = get(locale);
         toastManager.primary(

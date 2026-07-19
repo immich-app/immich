@@ -293,17 +293,26 @@ export const downloadUrl = (url: string, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
-export const downloadUrlPost = (url: string, data: unknown) => {
+export const downloadUrlPost = (url: string, assetIds: string[], archiveName: string) => {
   const form = document.createElement('form');
   form.method = 'post';
   form.action = url;
   form.target = '_blank';
 
-  const inputJson = document.createElement('input');
-  inputJson.type = 'hidden';
-  inputJson.name = 'json';
-  inputJson.value = JSON.stringify(data);
-  form.append(inputJson);
+  function mkInput(name: string, value: string) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.append(input);
+  }
+
+  for (const assetId of assetIds) {
+    mkInput('assetIds', assetId);
+  }
+
+  mkInput('archiveName', archiveName);
+  mkInput('edited', 'true');
 
   document.body.append(form);
   form.submit();
