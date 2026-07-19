@@ -29,6 +29,41 @@ where
 order by
   "activity"."createdAt" asc
 
+-- ActivityRepository.searchAssetAdditions
+select
+  "album_asset"."albumId",
+  "album_asset"."assetId",
+  "album_asset"."createdAt",
+  "asset"."type" as "assetType",
+  to_json("user") as "user"
+from
+  "album_asset"
+  inner join "asset" on "asset"."id" = "album_asset"."assetId"
+  and "asset"."deletedAt" is null
+  and "asset"."visibility" != 'locked'
+  inner join "user" as "user2" on "user2"."id" = coalesce("album_asset"."createdById", "asset"."ownerId")
+  and "user2"."deletedAt" is null
+  inner join lateral (
+    select
+      "user2"."id",
+      "user2"."name",
+      "user2"."email",
+      "user2"."avatarColor",
+      "user2"."profileImagePath",
+      "user2"."profileChangedAt"
+    from
+      (
+        select
+          1
+      ) as "dummy"
+  ) as "user" on true
+where
+  "album_asset"."albumId" = $1
+order by
+  "album_asset"."createdAt" asc,
+  "user2"."id" asc,
+  "asset"."fileCreatedAt" asc
+
 -- ActivityRepository.create
 insert into
   "activity" ("albumId", "userId")

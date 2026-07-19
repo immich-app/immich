@@ -46,6 +46,36 @@ export class ActivityRepository {
       .execute();
   }
 
+  @GenerateSql({ params: [{ albumId: DummyValue.UUID }] })
+  searchAssetAdditions({ albumId, assetId, userId }: { albumId: string; assetId?: string; userId?: string }) {
+    return this.db
+      .selectFrom('album_asset')
+      .select(['album_asset.albumId', 'album_asset.assetId', 'album_asset.createdAt'])
+      .innerJoin('asset', (join) =>
+        join
+          .onRef('asset.id', '=', 'album_asset.assetId')
+          .on('asset.deletedAt', 'is', null)
+          .on('asset.visibility', '!=', sql.lit(AssetVisibility.Locked)),
+      )
+      .innerJoin('user as user2', (join) =>
+        join
+          .on('user2.id', '=', sql`coalesce("album_asset"."createdById", "asset"."ownerId")`)
+          .on('user2.deletedAt', 'is', null),
+      )
+      .innerJoinLateral(
+        (eb) => eb.selectFrom(dummy).select(columns.userWithPrefix).as('user'),
+        (join) => join.onTrue(),
+      )
+      .select((eb) => [eb.ref('asset.type').as('assetType'), eb.fn.toJson('user').as('user')])
+      .where('album_asset.albumId', '=', albumId)
+      .$if(!!assetId, (qb) => qb.where('album_asset.assetId', '=', assetId!))
+      .$if(!!userId, (qb) => qb.where('user2.id', '=', userId!))
+      .orderBy('album_asset.createdAt', 'asc')
+      .orderBy('user2.id', 'asc')
+      .orderBy('asset.fileCreatedAt', 'asc')
+      .execute();
+  }
+
   @GenerateSql({ params: [{ albumId: DummyValue.UUID, userId: DummyValue.UUID }] })
   async create(activity: Insertable<ActivityTable>) {
     return this.db
