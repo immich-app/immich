@@ -1,3 +1,5 @@
+import { SvelteMap } from 'svelte/reactivity';
+
 export interface DownloadState {
   url: string;
   payload: unknown;
@@ -6,34 +8,23 @@ export interface DownloadState {
 }
 
 class DownloadManager {
-  assets = $state<Record<string, DownloadState>>({});
+  assets = new SvelteMap<string, DownloadState>();
 
-  isDownloading = $derived(Object.keys(this.assets).length > 0);
-
-  #update(key: string, value: Partial<DownloadState> | null) {
-    if (value === null) {
-      delete this.assets[key];
-      return;
-    }
-
-    if (!this.assets[key]) {
-      this.assets[key] = { url: '', payload: undefined, total: 0, downloaded: false };
-    }
-
-    const item = this.assets[key];
-    Object.assign(item, value);
-  }
+  isDownloading = $derived(this.assets.size > 0);
 
   add(key: string, url: string, payload: unknown, total: number) {
-    this.#update(key, { url, payload, total });
+    this.assets.set(key, { url, payload, total, downloaded: false });
   }
 
   clearAll() {
-    this.assets = {};
+    this.assets.clear();
   }
 
   markDownloaded(key: string) {
-    this.#update(key, { downloaded: true });
+    const state = this.assets.get(key);
+    if (state) {
+      this.assets.set(key, { ...state, downloaded: true });
+    }
   }
 }
 

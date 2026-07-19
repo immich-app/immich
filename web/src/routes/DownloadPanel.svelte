@@ -28,8 +28,7 @@
       <CloseButton class="w-8" size="small" onclick={closePanel} />
     </div>
     <div class="my-2 mb-2 flex max-h-50 flex-col overflow-y-auto text-sm">
-      {#each Object.keys(downloadManager.assets) as downloadKey (downloadKey)}
-        {@const download = downloadManager.assets[downloadKey]}
+      {#each downloadManager.assets as [downloadKey, download] (downloadKey)}
         <div class="mb-2 flex place-items-center gap-2" transition:slide>
           <div class="min-w-0 grow">
             <div class="flex place-items-center justify-between gap-2 text-xs font-medium">
