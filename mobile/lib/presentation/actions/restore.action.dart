@@ -28,10 +28,16 @@ class RestoreAction extends BaseAction {
     final context = ref.context;
     final ids = assetsForAction(ref, assets).map((asset) => asset.id).toList(growable: false);
 
-    await ref.read(assetServiceProvider).restoreTrash(ids);
+    final assetService = ref.read(assetServiceProvider);
+    await assetService.restoreTrash(ids);
     if (!context.mounted) {
       return;
     }
-    ref.read(toastRepositoryProvider).success(context.t.assets_restored_count(count: ids.length));
+    ref
+        .read(toastRepositoryProvider)
+        .success(
+          context.t.assets_restored_count(count: ids.length),
+          toast: .new(onUndo: () async => await assetService.trash(ids)),
+        );
   }
 }
