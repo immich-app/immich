@@ -134,7 +134,7 @@ const types = { ...image, ...video, ...sidecar };
 
 export const getExtension = (filename: string) => {
   const extension = extname(filename);
-  if (!extension && filename.startsWith('.') && filename.indexOf('.', 1) === -1) {
+  if (!extension && filename.startsWith('.') && !filename.includes('.', 1)) {
     return filename;
   }
   return extension;
