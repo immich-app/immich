@@ -443,7 +443,6 @@ export class AssetRepository {
   }
 
   create(asset: Insertable<AssetTable>) {
-    console.log(asset);
     return this.db.insertInto('asset').values(asset).returningAll().executeTakeFirstOrThrow();
   }
 
