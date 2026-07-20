@@ -27,11 +27,17 @@ class ArchiveAction extends BaseAction {
     final context = ref.context;
 
     final ids = assetsForAction(ref, assets).map((asset) => asset.id).toList(growable: false);
-    await ref.read(assetServiceProvider).update(ids, visibility: const .some(.archive));
+    final assetService = ref.read(assetServiceProvider);
+    await assetService.update(ids, visibility: const .some(.archive));
     if (!context.mounted) {
       return;
     }
-    ref.read(toastRepositoryProvider).success(context.t.archive_action_prompt(count: ids.length));
+    ref
+        .read(toastRepositoryProvider)
+        .success(
+          context.t.archive_action_prompt(count: ids.length),
+          toast: .new(onUndo: () async => await assetService.update(ids, visibility: const .some(.timeline))),
+        );
   }
 }
 
@@ -58,10 +64,16 @@ class UnarchiveAction extends BaseAction {
     final context = ref.context;
 
     final ids = assetsForAction(ref, assets).map((asset) => asset.id).toList(growable: false);
-    await ref.read(assetServiceProvider).update(ids, visibility: const .some(.timeline));
+    final assetService = ref.read(assetServiceProvider);
+    await assetService.update(ids, visibility: const .some(.timeline));
     if (!context.mounted) {
       return;
     }
-    ref.read(toastRepositoryProvider).success(context.t.unarchive_action_prompt(count: ids.length));
+    ref
+        .read(toastRepositoryProvider)
+        .success(
+          context.t.unarchive_action_prompt(count: ids.length),
+          toast: .new(onUndo: () async => await assetService.update(ids, visibility: const .some(.archive))),
+        );
   }
 }

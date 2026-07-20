@@ -45,12 +45,18 @@ class TrashAction extends BaseAction {
     }
 
     final ids = remoteIds.toList(growable: false);
-    await ref.read(assetServiceProvider).trash(ids);
+    final assetService = ref.read(assetServiceProvider);
+    await assetService.trash(ids);
 
     if (!context.mounted) {
       return;
     }
-    ref.read(toastRepositoryProvider).success(context.t.trash_action_prompt(count: ids.length));
+    ref
+        .read(toastRepositoryProvider)
+        .success(
+          context.t.trash_action_prompt(count: ids.length),
+          toast: .new(onUndo: () async => await assetService.restoreTrash(ids)),
+        );
   }
 }
 
