@@ -1,6 +1,6 @@
 [tools]
 "aqua:flutter/flutter" = "3.44.6" # keep in sync with ../mobile/mise.toml
-rust = "1.92.0" # keep in sync with rust-toolchain.toml (the build hook uses rustup)
+rust = { version = "1.92.0", components = "rustfmt,clippy" } # keep in sync with rust-toolchain.toml (the build hook uses rustup)
 
 [tasks.build]
 description = "Build all native core crates (host)"

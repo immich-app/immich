@@ -28,3 +28,6 @@ url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/wind
 [[tools.rust]]
 version = "1.92.0"
 backend = "core:rust"
+
+[tools.rust.options]
+components = "clippy,rustfmt"

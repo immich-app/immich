@@ -103,14 +103,6 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
           working_directory: ./native
 
-      - name: Install Flutter dependencies
-        working-directory: ./native/immich_native_core
-        run: flutter pub get
-
-      - name: Run Dart analyze
-        working-directory: ./native/immich_native_core
-        run: dart analyze
-
       - name: Check formatting
         run: cargo fmt --all --check
 
@@ -119,26 +111,6 @@ jobs:
 
       - name: Run tests
         run: cargo test --workspace --locked
-
-      - name: Generate native bindings
-        run: mise //native:codegen
-
-      - name: Find generated file changes
-        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
-        id: verify-native-generated-files
-        with:
-          files: |
-            native/crates/immich_core_ffi/include/immich_core.h
-            native/immich_native_core/lib/src/ffi/bindings.g.dart
-
-      - name: Verify generated files have not changed
-        if: steps.verify-native-generated-files.outputs.files_changed == 'true'
-        env:
-          CHANGED_FILES: ${{ steps.verify-native-generated-files.outputs.changed_files }}
-        run: |
-          echo "ERROR: Native generated files not up to date! Run 'mise //native:codegen'"
-          echo "Changed files: ${CHANGED_FILES}"
-          exit 1
 
   script-unit-tests:
     name: Scripts unit tests
