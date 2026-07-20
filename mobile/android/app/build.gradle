@@ -89,13 +89,6 @@ flutter {
 }
 
 dependencies {
-  constraints {
-    implementation("androidx.glance:glance-appwidget") {
-      version { strictly libs.versions.glance.get() }
-      because 'home_widget requests 1.+ which can resolve to pre-releases incompatible with our compileSdk/AGP'
-    }
-  }
-
   implementation libs.okhttp
   implementation libs.cronet.embedded
   implementation libs.media3.datasource.okhttp

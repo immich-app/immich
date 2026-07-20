@@ -407,7 +407,7 @@ export class DatabaseBackupService {
         progressCb?.('restore', progress);
       });
 
-      await pipeline(sqlStream, progressSource, psql, progressSink);
+      await pipeline(sqlStream, createSqlOwnerTransformStream(databaseUsername), progressSource, psql, progressSink);
 
       try {
         progressCb?.('migrations', 0.9);
@@ -571,4 +571,70 @@ function createSqlProgressStreams(cb: (progress: number) => void) {
   });
 
   return [source, sink];
+}
+
+function createSqlOwnerTransformStream(databaseUsername: string) {
+  const OWNER_MARKER_START = new TextEncoder().encode('OWNER TO ');
+  const DATA_MARKER_START = new TextEncoder().encode('FROM stdin');
+  const LINE_END = new TextEncoder().encode(';');
+
+  const owner = new TextEncoder().encode(databaseUsername);
+
+  let ownerSequenceIndex = 0;
+
+  let replacingOwnerIndex = 0;
+  let replacingOwner = false;
+
+  let readingDataIndex = 0;
+
+  let dataPart = false;
+
+  return new PassThrough({
+    transform(chunk, _encoding, callback) {
+      let result = chunk;
+      if (!dataPart) {
+        for (let index = 0; index < result.length; index++) {
+          if (replacingOwner) {
+            if (result[index] === LINE_END[0]) {
+              result = Buffer.concat([result.slice(0, index), owner.slice(replacingOwnerIndex), result.slice(index)]);
+              replacingOwnerIndex = owner.length;
+            } else {
+              result[index] = owner[replacingOwnerIndex];
+              replacingOwnerIndex++;
+            }
+          }
+
+          if (replacingOwnerIndex === owner.length) {
+            replacingOwner = false;
+          }
+
+          if (result[index] === OWNER_MARKER_START[ownerSequenceIndex]) {
+            ownerSequenceIndex++;
+          } else {
+            ownerSequenceIndex = 0;
+          }
+
+          if (ownerSequenceIndex === OWNER_MARKER_START.length) {
+            ownerSequenceIndex = 0;
+            replacingOwner = true;
+            replacingOwnerIndex = 0;
+          }
+
+          if (result[index] === DATA_MARKER_START[readingDataIndex]) {
+            readingDataIndex++;
+          } else {
+            readingDataIndex = 0;
+          }
+
+          if (readingDataIndex === DATA_MARKER_START.length) {
+            dataPart = true;
+            break;
+          }
+        }
+      }
+
+      this.push(result);
+      callback();
+    },
+  });
 }

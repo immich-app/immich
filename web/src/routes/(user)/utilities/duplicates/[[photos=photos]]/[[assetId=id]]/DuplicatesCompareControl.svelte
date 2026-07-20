@@ -22,11 +22,12 @@
   interface Props {
     assets: AssetResponseDto[];
     suggestedKeepAssetIds: string[];
+    showMore: boolean;
     onResolve: (duplicateAssetIds: string[], trashIds: string[]) => void;
     onStack: (assets: AssetResponseDto[]) => void;
   }
 
-  let { assets, suggestedKeepAssetIds, onResolve, onStack }: Props = $props();
+  let { assets, suggestedKeepAssetIds, onResolve, onStack, showMore = $bindable() }: Props = $props();
   // eslint-disable-next-line svelte/no-unnecessary-state-wrap
   let selectedAssetIds = $state(new SvelteSet<string>());
   let trashCount = $derived(assets.length - selectedAssetIds.size);
@@ -36,7 +37,6 @@
   const differingMetadataFields: DifferingMetadataFields = $derived(computeDifferingMetadataFields(assets));
   const differingCount = $derived(countDifferingMetadataItems(differingMetadataFields));
   const hasMore = $derived(differingCount > InitialVisibleCount);
-  let showMore = $state(false);
 
   onMount(() => {
     if (suggestedKeepAssetIds.length > 0) {
