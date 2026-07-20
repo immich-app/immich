@@ -985,7 +985,7 @@ extension on api.UserMetadataKey {
 }
 
 extension on UserAvatarColor {
-  AvatarColor? toAvatarColor() => AvatarColor.values.firstWhereOrNull((c) => c.name == value);
+  AvatarColor? toAvatarColor() => AvatarColor.values.firstWhereOrNull((c) => c.name == toString());
 }
 
 extension on api.AssetEditAction {

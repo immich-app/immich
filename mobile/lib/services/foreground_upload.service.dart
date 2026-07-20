@@ -342,7 +342,7 @@ class ForegroundUploadService {
           file: livePhotoFile,
           originalFileName: livePhotoTitle,
           // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
-          fields: {...fields, 'visibility': AssetVisibility.hidden.value},
+          fields: {...fields, 'visibility': AssetVisibility.hidden.toString()},
           cancelToken: cancelToken,
           onProgress: onProgress != null
               ? (bytes, totalBytes) => onProgress(asset.localId!, livePhotoTitle, bytes, totalBytes)
