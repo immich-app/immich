@@ -24,6 +24,20 @@ describe('Route', () => {
     });
   });
 
+  describe(Route.viewSharedLink.name, () => {
+    it('should work with key', () => {
+      expect(Route.viewSharedLink({ key: 'uuid-key' })).toBe('/share/uuid-key');
+    });
+
+    it('should work with key and slug', () => {
+      expect(Route.viewSharedLink({ key: 'uuid-key', slug: 'custom-slug' })).toBe('/s/custom-slug');
+    });
+
+    it('should URI encode slug', () => {
+      expect(Route.viewSharedLink({ key: 'uuid-key', slug: 'albums/the-moon?' })).toBe('/s/albums%2Fthe-moon%3F');
+    });
+  });
+
   describe(Route.tags.name, () => {
     it('should work', () => {
       expect(Route.tags()).toBe('/tags');

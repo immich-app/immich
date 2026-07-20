@@ -196,4 +196,19 @@ describe(SearchService.name, () => {
       expect(suggestions).toEqual(['Canon', null]);
     });
   });
+
+  describe('searchRandom', () => {
+    it('should filter out locked assets in a default session', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const response = await sut.searchRandom(auth, {});
+
+      expect(response.length).toBe(0);
+    });
+  });
 });

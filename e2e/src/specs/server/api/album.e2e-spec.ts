@@ -796,5 +796,22 @@ describe('/albums', () => {
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Not found or no album.share access'));
     });
+
+    it('should not allow an editor to change the role of an owner', async () => {
+      const album = await utils.createAlbum(user1.accessToken, {
+        albumName: 'testAlbum',
+        albumUsers: [{ userId: user2.userId, role: AlbumUserRole.Editor }],
+      });
+
+      expect(album.albumUsers[1].role).toEqual(AlbumUserRole.Editor);
+
+      const { status, body } = await request(app)
+        .put(`/albums/${album.id}/user/${user1.userId}`)
+        .set('Authorization', `Bearer ${user2.accessToken}`)
+        .send({ role: AlbumUserRole.Editor });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest('User is owner'));
+    });
   });
 });
