@@ -251,7 +251,7 @@ export type Person = {
   color: string | null;
   faceAssetId: string | null;
   isHidden: boolean;
-  thumbnailPath: string;
+  thumbnailPath: string | null;
 };
 
 export type AssetFace = {
