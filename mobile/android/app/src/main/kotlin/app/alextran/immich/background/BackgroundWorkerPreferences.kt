@@ -9,12 +9,14 @@ class BackgroundWorkerPreferences(private val ctx: Context) {
     const val SHARED_PREF_NAME = "Immich::BackgroundWorker"
     private const val SHARED_PREF_MIN_DELAY_KEY = "BackgroundWorker::minDelaySeconds"
     private const val SHARED_PREF_REQUIRE_CHARGING_KEY = "BackgroundWorker::requireCharging"
+    private const val SHARED_PREF_REQUIRE_UNMETERED_KEY = "BackgroundWorker::requireUnmetered"
     private const val SHARED_PREF_LOCK_KEY = "BackgroundWorker::isLocked"
     private const val SHARED_PREF_NOTIF_TITLE_KEY = "BackgroundWorker::notificationTitle"
     private const val SHARED_PREF_NOTIF_MSG_KEY = "BackgroundWorker::notificationMessage"
 
     private const val DEFAULT_MIN_DELAY_SECONDS = 30L
     private const val DEFAULT_REQUIRE_CHARGING = false
+    private const val DEFAULT_REQUIRE_UNMETERED = true
     private const val DEFAULT_NOTIF_TITLE = "Uploading media"
     private const val DEFAULT_NOTIF_MSG = "Checking for new assets…"
   }
@@ -27,6 +29,7 @@ class BackgroundWorkerPreferences(private val ctx: Context) {
     sp.edit {
       putLong(SHARED_PREF_MIN_DELAY_KEY, settings.minimumDelaySeconds)
       putBoolean(SHARED_PREF_REQUIRE_CHARGING_KEY, settings.requiresCharging)
+      putBoolean(SHARED_PREF_REQUIRE_UNMETERED_KEY, settings.requiresUnmetered)
     }
   }
 
@@ -38,6 +41,10 @@ class BackgroundWorkerPreferences(private val ctx: Context) {
       requiresCharging = sp.getBoolean(
         SHARED_PREF_REQUIRE_CHARGING_KEY,
         DEFAULT_REQUIRE_CHARGING
+      ),
+      requiresUnmetered = sp.getBoolean(
+        SHARED_PREF_REQUIRE_UNMETERED_KEY,
+        DEFAULT_REQUIRE_UNMETERED
       ),
     )
   }
@@ -66,4 +73,3 @@ class BackgroundWorkerPreferences(private val ctx: Context) {
     return sp.getBoolean(SHARED_PREF_LOCK_KEY, true)
   }
 }
-

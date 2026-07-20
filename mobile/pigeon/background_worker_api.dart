@@ -13,14 +13,19 @@ import 'package:pigeon/pigeon.dart';
 )
 class BackgroundWorkerSettings {
   final bool requiresCharging;
+  final bool requiresUnmetered;
   final int minimumDelaySeconds;
 
-  const BackgroundWorkerSettings({required this.requiresCharging, required this.minimumDelaySeconds});
+  const BackgroundWorkerSettings({
+    required this.requiresCharging,
+    required this.requiresUnmetered,
+    required this.minimumDelaySeconds,
+  });
 }
 
 @HostApi()
 abstract class BackgroundWorkerFgHostApi {
-  void enable();
+  void enable(BackgroundWorkerSettings settings);
 
   void saveNotificationMessage(String title, String body);
 

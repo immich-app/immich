@@ -33,22 +33,25 @@ class BackgroundWorkerFgService {
   const BackgroundWorkerFgService(this._foregroundHostApi);
 
   // TODO: Move this call to native side once old timeline is removed
-  Future<void> enable() => _foregroundHostApi.enable();
+  Future<void> enable() => _foregroundHostApi.enable(_currentSettings());
 
   Future<void> saveNotificationMessage(String title, String body) =>
       _foregroundHostApi.saveNotificationMessage(title, body);
 
-  Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) {
-    final backup = SettingsRepository.instance.appConfig.backup;
-    return _foregroundHostApi.configure(
-      BackgroundWorkerSettings(
-        minimumDelaySeconds: minimumDelaySeconds ?? backup.triggerDelay,
-        requiresCharging: requireCharging ?? backup.requireCharging,
-      ),
-    );
-  }
+  Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) => _foregroundHostApi.configure(
+    _currentSettings(minimumDelaySeconds: minimumDelaySeconds, requireCharging: requireCharging),
+  );
 
   Future<void> disable() => _foregroundHostApi.disable();
+
+  BackgroundWorkerSettings _currentSettings({int? minimumDelaySeconds, bool? requireCharging}) {
+    final backup = SettingsRepository.instance.appConfig.backup;
+    return BackgroundWorkerSettings(
+      minimumDelaySeconds: minimumDelaySeconds ?? backup.triggerDelay,
+      requiresCharging: requireCharging ?? backup.requireCharging,
+      requiresUnmetered: !(backup.useCellularForPhotos || backup.useCellularForVideos),
+    );
+  }
 }
 
 class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {

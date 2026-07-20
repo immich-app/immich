@@ -198,19 +198,22 @@ class FlutterError (
 /** Generated class from Pigeon that represents data sent in messages. */
 data class BackgroundWorkerSettings (
   val requiresCharging: Boolean,
+  val requiresUnmetered: Boolean,
   val minimumDelaySeconds: Long
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): BackgroundWorkerSettings {
       val requiresCharging = pigeonVar_list[0] as Boolean
-      val minimumDelaySeconds = pigeonVar_list[1] as Long
-      return BackgroundWorkerSettings(requiresCharging, minimumDelaySeconds)
+      val requiresUnmetered = pigeonVar_list[1] as Boolean
+      val minimumDelaySeconds = pigeonVar_list[2] as Long
+      return BackgroundWorkerSettings(requiresCharging, requiresUnmetered, minimumDelaySeconds)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
       requiresCharging,
+      requiresUnmetered,
       minimumDelaySeconds,
     )
   }
@@ -222,12 +225,13 @@ data class BackgroundWorkerSettings (
       return true
     }
     val other = other as BackgroundWorkerSettings
-    return BackgroundWorkerPigeonUtils.deepEquals(this.requiresCharging, other.requiresCharging) && BackgroundWorkerPigeonUtils.deepEquals(this.minimumDelaySeconds, other.minimumDelaySeconds)
+    return BackgroundWorkerPigeonUtils.deepEquals(this.requiresCharging, other.requiresCharging) && BackgroundWorkerPigeonUtils.deepEquals(this.requiresUnmetered, other.requiresUnmetered) && BackgroundWorkerPigeonUtils.deepEquals(this.minimumDelaySeconds, other.minimumDelaySeconds)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
     result = 31 * result + BackgroundWorkerPigeonUtils.deepHash(this.requiresCharging)
+    result = 31 * result + BackgroundWorkerPigeonUtils.deepHash(this.requiresUnmetered)
     result = 31 * result + BackgroundWorkerPigeonUtils.deepHash(this.minimumDelaySeconds)
     return result
   }
@@ -256,7 +260,7 @@ private open class BackgroundWorkerPigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface BackgroundWorkerFgHostApi {
-  fun enable()
+  fun enable(settings: BackgroundWorkerSettings)
   fun saveNotificationMessage(title: String, body: String)
   fun configure(settings: BackgroundWorkerSettings)
   fun disable()
@@ -273,9 +277,11 @@ interface BackgroundWorkerFgHostApi {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enable$separatedMessageChannelSuffix", codec)
         if (api != null) {
-          channel.setMessageHandler { _, reply ->
+          channel.setMessageHandler { message, reply ->
+            val args = message as List<Any?>
+            val settingsArg = args[0] as BackgroundWorkerSettings
             val wrapped: List<Any?> = try {
-              api.enable()
+              api.enable(settingsArg)
               listOf(null)
             } catch (exception: Throwable) {
               BackgroundWorkerPigeonUtils.wrapError(exception)

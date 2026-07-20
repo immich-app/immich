@@ -163,22 +163,26 @@ func deepHashBackgroundWorker(value: Any?, hasher: inout Hasher) {
 /// Generated class from Pigeon that represents data sent in messages.
 struct BackgroundWorkerSettings: Hashable {
   var requiresCharging: Bool
+  var requiresUnmetered: Bool
   var minimumDelaySeconds: Int64
 
 
   // swift-format-ignore: AlwaysUseLowerCamelCase
   static func fromList(_ pigeonVar_list: [Any?]) -> BackgroundWorkerSettings? {
     let requiresCharging = pigeonVar_list[0] as! Bool
-    let minimumDelaySeconds = pigeonVar_list[1] as! Int64
+    let requiresUnmetered = pigeonVar_list[1] as! Bool
+    let minimumDelaySeconds = pigeonVar_list[2] as! Int64
 
     return BackgroundWorkerSettings(
       requiresCharging: requiresCharging,
+      requiresUnmetered: requiresUnmetered,
       minimumDelaySeconds: minimumDelaySeconds
     )
   }
   func toList() -> [Any?] {
     return [
       requiresCharging,
+      requiresUnmetered,
       minimumDelaySeconds,
     ]
   }
@@ -186,12 +190,13 @@ struct BackgroundWorkerSettings: Hashable {
     if Swift.type(of: lhs) != Swift.type(of: rhs) {
       return false
     }
-    return deepEqualsBackgroundWorker(lhs.requiresCharging, rhs.requiresCharging) && deepEqualsBackgroundWorker(lhs.minimumDelaySeconds, rhs.minimumDelaySeconds)
+    return deepEqualsBackgroundWorker(lhs.requiresCharging, rhs.requiresCharging) && deepEqualsBackgroundWorker(lhs.requiresUnmetered, rhs.requiresUnmetered) && deepEqualsBackgroundWorker(lhs.minimumDelaySeconds, rhs.minimumDelaySeconds)
   }
 
   func hash(into hasher: inout Hasher) {
     hasher.combine("BackgroundWorkerSettings")
     deepHashBackgroundWorker(value: requiresCharging, hasher: &hasher)
+    deepHashBackgroundWorker(value: requiresUnmetered, hasher: &hasher)
     deepHashBackgroundWorker(value: minimumDelaySeconds, hasher: &hasher)
   }
 }
@@ -234,7 +239,7 @@ class BackgroundWorkerPigeonCodec: FlutterStandardMessageCodec, @unchecked Senda
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol BackgroundWorkerFgHostApi {
-  func enable() throws
+  func enable(settings: BackgroundWorkerSettings) throws
   func saveNotificationMessage(title: String, body: String) throws
   func configure(settings: BackgroundWorkerSettings) throws
   func disable() throws
@@ -248,9 +253,11 @@ class BackgroundWorkerFgHostApiSetup {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
     let enableChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enable\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
-      enableChannel.setMessageHandler { _, reply in
+      enableChannel.setMessageHandler { message, reply in
+        let args = message as! [Any?]
+        let settingsArg = args[0] as! BackgroundWorkerSettings
         do {
-          try api.enable()
+          try api.enable(settings: settingsArg)
           reply(wrapResult(nil))
         } catch {
           reply(wrapError(error))

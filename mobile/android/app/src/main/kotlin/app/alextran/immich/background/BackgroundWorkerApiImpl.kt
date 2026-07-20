@@ -7,9 +7,15 @@ import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.MoreExecutors
 import io.flutter.embedding.engine.FlutterEngineCache
 import java.util.concurrent.TimeUnit
 
@@ -18,9 +24,8 @@ private const val TAG = "BackgroundWorkerApiImpl"
 class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
   private val ctx: Context = context.applicationContext
 
-  override fun enable() {
-    enqueueMediaObserver(ctx)
-    enqueuePeriodicWorker(ctx)
+  override fun enable(settings: BackgroundWorkerSettings) {
+    applySettings(settings)
   }
 
   override fun saveNotificationMessage(title: String, body: String) {
@@ -28,9 +33,14 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
   }
 
   override fun configure(settings: BackgroundWorkerSettings) {
+    applySettings(settings)
+  }
+
+  private fun applySettings(settings: BackgroundWorkerSettings) {
     BackgroundWorkerPreferences(ctx).updateSettings(settings)
     enqueueMediaObserver(ctx)
     enqueuePeriodicWorker(ctx)
+    refreshQueuedBackgroundWorker(ctx)
   }
 
   override fun disable() {
@@ -95,15 +105,40 @@ class BackgroundWorkerApiImpl(context: Context) : BackgroundWorkerFgHostApi {
     }
 
     fun enqueueBackgroundWorker(ctx: Context) {
-      val constraints = Constraints.Builder().setRequiresBatteryNotLow(true).build()
-      val work = OneTimeWorkRequestBuilder<BackgroundWorker>()
-        .setConstraints(constraints)
-        .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
-        .build()
+      val work = backgroundWorkerRequestBuilder(ctx).build()
       WorkManager.getInstance(ctx)
         .enqueueUniqueWork(BACKGROUND_WORKER_NAME, ExistingWorkPolicy.KEEP, work)
 
       Log.i(TAG, "Enqueued background worker with name: $BACKGROUND_WORKER_NAME")
+    }
+
+    private fun backgroundWorkerRequestBuilder(ctx: Context): OneTimeWorkRequest.Builder {
+      val settings = BackgroundWorkerPreferences(ctx).getSettings()
+      val constraints = Constraints.Builder()
+        .setRequiredNetworkType(if (settings.requiresUnmetered) NetworkType.UNMETERED else NetworkType.CONNECTED)
+        .setRequiresBatteryNotLow(true)
+        .build()
+      return OneTimeWorkRequestBuilder<BackgroundWorker>()
+        .setConstraints(constraints)
+        .setBackoffCriteria(BackoffPolicy.EXPONENTIAL, 1, TimeUnit.MINUTES)
+    }
+
+    private fun refreshQueuedBackgroundWorker(ctx: Context) {
+      val workManager = WorkManager.getInstance(ctx)
+      Futures.addCallback(
+        workManager.getWorkInfosForUniqueWork(BACKGROUND_WORKER_NAME),
+        object : FutureCallback<List<WorkInfo>> {
+          override fun onSuccess(infos: List<WorkInfo>?) {
+            val info = infos?.firstOrNull { it.state == WorkInfo.State.ENQUEUED } ?: return
+            workManager.updateWork(backgroundWorkerRequestBuilder(ctx).setId(info.id).build())
+          }
+
+          override fun onFailure(t: Throwable) {
+            Log.w(TAG, "Failed to update background worker", t)
+          }
+        },
+        MoreExecutors.directExecutor(),
+      )
     }
 
     fun isBackgroundWorkerRunning(): Boolean {

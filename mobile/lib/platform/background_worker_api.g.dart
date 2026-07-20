@@ -97,14 +97,20 @@ int _deepHash(Object? value) {
 }
 
 class BackgroundWorkerSettings {
-  BackgroundWorkerSettings({required this.requiresCharging, required this.minimumDelaySeconds});
+  BackgroundWorkerSettings({
+    required this.requiresCharging,
+    required this.requiresUnmetered,
+    required this.minimumDelaySeconds,
+  });
 
   bool requiresCharging;
+
+  bool requiresUnmetered;
 
   int minimumDelaySeconds;
 
   List<Object?> _toList() {
-    return <Object?>[requiresCharging, minimumDelaySeconds];
+    return <Object?>[requiresCharging, requiresUnmetered, minimumDelaySeconds];
   }
 
   Object encode() {
@@ -113,7 +119,11 @@ class BackgroundWorkerSettings {
 
   static BackgroundWorkerSettings decode(Object result) {
     result as List<Object?>;
-    return BackgroundWorkerSettings(requiresCharging: result[0]! as bool, minimumDelaySeconds: result[1]! as int);
+    return BackgroundWorkerSettings(
+      requiresCharging: result[0]! as bool,
+      requiresUnmetered: result[1]! as bool,
+      minimumDelaySeconds: result[2]! as int,
+    );
   }
 
   @override
@@ -126,6 +136,7 @@ class BackgroundWorkerSettings {
       return true;
     }
     return _deepEquals(requiresCharging, other.requiresCharging) &&
+        _deepEquals(requiresUnmetered, other.requiresUnmetered) &&
         _deepEquals(minimumDelaySeconds, other.minimumDelaySeconds);
   }
 
@@ -173,7 +184,7 @@ class BackgroundWorkerFgHostApi {
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<void> enable() async {
+  Future<void> enable(BackgroundWorkerSettings settings) async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enable$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -181,7 +192,7 @@ class BackgroundWorkerFgHostApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[settings]);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(pigeonVar_replyList, pigeonVar_channelName, isNullValid: true);
