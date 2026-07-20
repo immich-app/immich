@@ -99,6 +99,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       case TimelineReloadEvent():
         final asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
         if (asset != _asset) {
+          _isZoomed = false;
+          _viewer.setZoomed(false);
           setState(() => _asset = asset);
         }
       default:
@@ -395,7 +397,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentHeroTag = ref.watch(assetViewerProvider.select((s) => s.currentAsset?.heroTag));
+    final currentAsset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
@@ -414,7 +416,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       displayAsset = stackChildren.elementAt(stackIndex);
     }
 
-    final isCurrent = currentHeroTag == displayAsset.heroTag;
+    final isCurrent = currentAsset != null && currentAsset.refersToSameAsset(displayAsset);
 
     final viewportWidth = MediaQuery.widthOf(context);
     final viewportHeight = MediaQuery.heightOf(context);

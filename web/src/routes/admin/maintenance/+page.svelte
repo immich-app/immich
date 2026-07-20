@@ -16,7 +16,7 @@
     type JobCreateDto,
     type QueuesResponseLegacyDto,
   } from '@immich/sdk';
-  import { Button, HStack, Text } from '@immich/ui';
+  import { Button, Container, HStack, Text } from '@immich/ui';
   import { mdiRefresh } from '@mdi/js';
   import { onMount } from 'svelte';
   import { t, type Translations } from 'svelte-i18n';
@@ -108,8 +108,8 @@
 <OnEvents {onJobCreate} />
 
 <AdminPageLayout breadcrumbs={[{ title: data.meta.title }]} actions={[StartMaintenance]}>
-  <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-4 sm:w-5/6 md:w-[850px]">
+  <Container size="large" center class="my-4 flex flex-col gap-6">
+    <section class="w-full pb-4">
       <HStack>
         <Text size="small">{$t('admin.maintenance_integrity_report')}</Text>
         <Button
@@ -177,10 +177,8 @@
         {/each}
       </div>
     </section>
-  </section>
 
-  <section id="setting-content" class="flex place-content-center sm:mx-4">
-    <section class="w-full pb-28 sm:w-5/6 md:w-212.5">
+    <section class="w-full pb-28">
       <Text size="small">{$t('admin.maintenance_backup_management')}</Text>
 
       <SettingAccordion
@@ -192,5 +190,5 @@
         <MaintenanceBackupsList backups={data.backups} expectedVersion={data.expectedVersion} />
       </SettingAccordion>
     </section>
-  </section>
+  </Container>
 </AdminPageLayout>

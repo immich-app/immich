@@ -165,7 +165,10 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
   const people = assetResponse.people?.map((person) => person.name) || [];
 
   const localDateTime = fromISODateTimeUTCToObject(assetResponse.localDateTime);
-  const fileCreatedAt = fromISODateTimeToObject(assetResponse.fileCreatedAt, assetResponse.exifInfo?.timeZone ?? 'UTC');
+  // Keep this consistent with the bucket loader (getTimes), which stores fileCreatedAt as UTC
+  // components. The timeline sorts assets within a day by fileCreatedAt, so a mismatched
+  // representation here would place re-inserted assets (e.g. undo archive) in the wrong spot.
+  const fileCreatedAt = fromISODateTimeUTCToObject(assetResponse.fileCreatedAt);
   const createdAt = fromISODateTimeUTCToObject(assetResponse.createdAt);
 
   return {

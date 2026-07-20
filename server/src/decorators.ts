@@ -190,11 +190,11 @@ type CustomExtensions = {
 };
 
 enum ApiState {
-  'Stable' = 'Stable',
-  'Alpha' = 'Alpha',
-  'Beta' = 'Beta',
-  'Internal' = 'Internal',
-  'Deprecated' = 'Deprecated',
+  Stable = 'Stable',
+  Alpha = 'Alpha',
+  Beta = 'Beta',
+  Internal = 'Internal',
+  Deprecated = 'Deprecated',
 }
 export class HistoryBuilder {
   private hasDeprecated = false;

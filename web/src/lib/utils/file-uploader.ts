@@ -63,6 +63,8 @@ export const openFilePicker = async (options: FilePickerParam = {}) => {
       fileSelector.addEventListener(
         'change',
         (e: Event) => {
+          fileSelector.remove();
+
           const target = e.target as HTMLInputElement;
           if (!target.files) {
             return;
@@ -74,6 +76,11 @@ export const openFilePicker = async (options: FilePickerParam = {}) => {
         { passive: true },
       );
 
+      fileSelector.addEventListener('cancel', () => fileSelector.remove(), { passive: true });
+
+      // Safari requires the file selector to be mounted
+      fileSelector.hidden = true;
+      document.body.append(fileSelector);
       fileSelector.click();
     } catch (error) {
       console.log('Error selecting file', error);

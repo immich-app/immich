@@ -61,6 +61,17 @@ sealed class BaseAsset {
   bool get isLocalOnly => storage == AssetState.local;
   bool get isRemoteOnly => storage == AssetState.remote;
 
+  // Same asset even if localId is known on one side but not the other (heroTag isn't stable then)
+  bool refersToSameAsset(BaseAsset other) {
+    if (remoteId != null && other.remoteId != null) {
+      return remoteId == other.remoteId;
+    }
+    if (localId != null && other.localId != null) {
+      return localId == other.localId;
+    }
+    return checksum != null && checksum == other.checksum;
+  }
+
   bool get isEditable => false;
 
   // Overridden in subclasses

@@ -119,7 +119,7 @@ export class IntegrityRepository {
   }
 
   @GenerateSql({ params: [], stream: true })
-  streamAssetPaths() {
+  streamAssetPathsForMissingFiles() {
     return this.db
       .selectFrom((eb) =>
         eb
@@ -143,7 +143,7 @@ export class IntegrityRepository {
       )
       .leftJoin('integrity_report', (join) =>
         join
-          .on('integrity_report.type', '=', IntegrityReport.UntrackedFile)
+          .on('integrity_report.type', '=', IntegrityReport.MissingFile)
           .on((eb) =>
             eb.or([
               eb('integrity_report.assetId', '=', eb.ref('allPaths.assetId')),
@@ -154,8 +154,7 @@ export class IntegrityRepository {
       .select(['allPaths.path as path', 'allPaths.assetId', 'allPaths.fileAssetId', 'integrity_report.id as reportId'])
       .stream() as AsyncIterableIterator<
       { path: string; reportId: string | null } & (
-        | { assetId: string; fileAssetId: null }
-        | { assetId: null; fileAssetId: string }
+        { assetId: string; fileAssetId: null } | { assetId: null; fileAssetId: string }
       )
     >;
   }
