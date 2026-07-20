@@ -60,13 +60,6 @@ export const openFilePicker = async (options: FilePickerParam = {}) => {
         fileSelector.accept = extensions.join(',');
       }
 
-      // The input must be attached to the DOM before opening the native picker.
-      // On iOS Safari the page is suspended while the picker is open, and a detached
-      // input can be garbage collected before its `change` event fires — which happens
-      // when the picker is slow to return files (e.g. downloading originals from iCloud
-      // or large selections), causing the upload to silently never start.
-      fileSelector.style.cssText = 'position:fixed;top:-9999px;left:-9999px';
-
       fileSelector.addEventListener(
         'change',
         (e: Event) => {
@@ -83,9 +76,10 @@ export const openFilePicker = async (options: FilePickerParam = {}) => {
         { passive: true },
       );
 
-      // Remove the element again when the picker is dismissed without a selection
       fileSelector.addEventListener('cancel', () => fileSelector.remove(), { passive: true });
 
+      // Safari requires the file selector to be mounted
+      fileSelector.hidden = true;
       document.body.append(fileSelector);
       fileSelector.click();
     } catch (error) {
