@@ -21,7 +21,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
 import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
-import { vectorIndexQuery } from 'src/utils/database';
+import { ExtensionUpdatePermissionError, vectorIndexQuery } from 'src/utils/database';
 import { isValidInteger } from 'src/validation';
 
 export let cachedVectorExtension: VectorExtension | undefined;
@@ -137,6 +137,18 @@ export class DatabaseRepository {
     const diff = semver.diff(installedVersion, targetVersion);
     if (!diff) {
       return { restartRequired: false };
+    }
+
+    // `ALTER EXTENSION ... UPDATE` requires ownership of the extension. Check that first: failing
+    // after the indexes are dropped would leave the database with no vector indexes, since the
+    // rebuild below is only reached on success.
+    const { rows: owners } = await sql<{ owner: string; canUpdate: boolean }>`
+      SELECT pg_get_userbyid(extowner) AS owner, pg_has_role(current_user, extowner, 'USAGE') AS "canUpdate"
+      FROM pg_extension
+      WHERE extname = ${extension}
+    `.execute(this.db);
+    if (owners.length > 0 && !owners[0].canUpdate) {
+      throw new ExtensionUpdatePermissionError(extension, owners[0].owner);
     }
 
     await Promise.all([

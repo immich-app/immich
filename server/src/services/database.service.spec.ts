@@ -273,6 +273,49 @@ describe(DatabaseService.name, () => {
         expect(mocks.database.runMigrations).not.toHaveBeenCalled();
       });
 
+      it(`should continue if the ${extension} extension upgrade is denied but the installed version is supported`, async () => {
+        mocks.database.getExtensionVersions.mockResolvedValue([
+          {
+            name: extension,
+            availableVersion: updateInRange,
+            installedVersion: minVersionInRange,
+          },
+        ]);
+        mocks.database.updateVectorExtension.mockRejectedValue(
+          Object.assign(new Error(`must be owner of extension ${extension}`), { code: '42501' }),
+        );
+
+        await expect(sut.onBootstrap()).resolves.toBeUndefined();
+
+        expect(mocks.logger.warn.mock.calls).toEqual(
+          expect.arrayContaining([
+            expect.arrayContaining([
+              expect.stringContaining(`Continuing with ${extensionName} ${minVersionInRange}`),
+            ]),
+          ]),
+        );
+        expect(mocks.logger.fatal).not.toHaveBeenCalled();
+        expect(mocks.database.reindexVectorsIfNeeded).toHaveBeenCalledWith([VectorIndex.Clip, VectorIndex.Face]);
+        expect(mocks.database.runMigrations).toHaveBeenCalledTimes(1);
+      });
+
+      it(`should raise error if the ${extension} extension upgrade is denied and the installed version is unsupported`, async () => {
+        mocks.database.getExtensionVersions.mockResolvedValue([
+          {
+            name: extension,
+            availableVersion: updateInRange,
+            installedVersion: versionBelowRange,
+          },
+        ]);
+        mocks.database.updateVectorExtension.mockRejectedValue(
+          Object.assign(new Error(`must be owner of extension ${extension}`), { code: '42501' }),
+        );
+
+        await expect(sut.onBootstrap()).rejects.toThrow(`must be owner of extension ${extension}`);
+
+        expect(mocks.database.runMigrations).not.toHaveBeenCalled();
+      });
+
       it(`should warn if ${extension} extension update requires restart`, async () => {
         mocks.database.getExtensionVersions.mockResolvedValue([
           {

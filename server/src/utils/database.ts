@@ -157,6 +157,24 @@ export const isAssetChecksumConstraint = (error: unknown) => {
   return (error as PostgresError)?.constraint_name === 'UQ_assets_owner_checksum';
 };
 
+/**
+ * Thrown before any destructive work when the current role does not own a vector extension and
+ * therefore cannot run `ALTER EXTENSION ... UPDATE`. Managed Postgres providers commonly install
+ * extensions as a superuser that is not available to the application role.
+ */
+export class ExtensionUpdatePermissionError extends Error {
+  constructor(extension: string, owner: string) {
+    super(
+      `Insufficient privileges to update the ${extension} extension: it is owned by '${owner}'. ` +
+        `Run 'ALTER EXTENSION ${extension} UPDATE' as a superuser, or ask your database provider to run it.`,
+    );
+  }
+}
+
+export const isInsufficientPrivilege = (error: unknown) => {
+  return error instanceof ExtensionUpdatePermissionError || (error as PostgresError)?.code === '42501';
+};
+
 export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)]);
 }

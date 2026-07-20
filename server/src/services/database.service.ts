@@ -5,6 +5,7 @@ import { OnEvent } from 'src/decorators';
 import { BootstrapEventPriority, DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { VectorExtension } from 'src/types';
+import { isInsufficientPrivilege } from 'src/utils/database';
 
 type CreateFailedArgs = { name: string; extension: string };
 type UpdateFailedArgs = { name: string; extension: string; availableVersion: string };
@@ -98,7 +99,7 @@ export class DatabaseService extends BaseService {
       }
 
       if (installedVersion && semver.gt(availableVersion, installedVersion)) {
-        await this.updateExtension(extension, availableVersion);
+        await this.updateExtension(extension, availableVersion, installedVersion);
       } else if (installedVersion && !semver.satisfies(installedVersion, extensionRange)) {
         throw new Error(messages.outOfRange({ name, extension, version: installedVersion, range: extensionRange }));
       } else if (installedVersion && semver.lt(availableVersion, installedVersion)) {
@@ -142,7 +143,7 @@ export class DatabaseService extends BaseService {
     }
   }
 
-  private async updateExtension(extension: VectorExtension, availableVersion: string) {
+  private async updateExtension(extension: VectorExtension, availableVersion: string, installedVersion: string) {
     this.logger.log(`Updating ${EXTENSION_NAMES[extension]} extension to ${availableVersion}`);
     try {
       const { restartRequired } = await this.databaseRepository.updateVectorExtension(extension, availableVersion);
@@ -151,6 +152,18 @@ export class DatabaseService extends BaseService {
       }
     } catch (error) {
       this.logger.warn(messages.updateFailed({ name: EXTENSION_NAMES[extension], extension, availableVersion }));
+
+      // Updating to availableVersion is opportunistic. Managed Postgres providers install extensions
+      // as a superuser the application role cannot assume, so this update can never succeed there.
+      // Keep running on the installed version while it is still supported instead of failing forever.
+      const range = this.databaseRepository.getExtensionVersionRange(extension);
+      if (isInsufficientPrivilege(error) && semver.satisfies(installedVersion, range)) {
+        this.logger.warn(
+          `Continuing with ${EXTENSION_NAMES[extension]} ${installedVersion}, which is within the supported range '${range}'.`,
+        );
+        return;
+      }
+
       throw error;
     }
   }
