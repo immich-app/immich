@@ -7354,7 +7354,8 @@ export enum AssetMediaSize {
     Original = "original",
     Fullsize = "fullsize",
     Preview = "preview",
-    Thumbnail = "thumbnail"
+    Thumbnail = "thumbnail",
+    Micro = "micro"
 }
 export enum SourceType {
     MachineLearning = "machine-learning",

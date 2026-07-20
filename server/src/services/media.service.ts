@@ -57,6 +57,11 @@ interface UpsertFileOptions {
 
 type ThumbnailAsset = NonNullable<Awaited<ReturnType<AssetJobRepository['getForGenerateThumbnailJob']>>>;
 
+/// Fixed edge (px) for the micro thumbnail used by dense, zoomed-out grids. Small
+/// enough that fetching/decoding thousands of them stays cheap; it reuses the
+/// thumbnail's configured format and quality, only smaller.
+const MICRO_THUMBNAIL_SIZE = 128;
+
 @Injectable()
 export class MediaService extends BaseService {
   videoInterfaces: VideoInterfaces = { dri: [], mali: false };
@@ -330,16 +335,27 @@ export class MediaService extends BaseService {
       isProgressive: !!image.thumbnail.progressive && thumbnailFormat !== ImageFormat.Webp,
       isTransparent,
     });
+    // A very small thumbnail for dense zoomed-out grids; a smaller variant of the
+    // thumbnail (same format/quality), so it stays tiny to fetch and decode.
+    const microFile = this.getImageFile(asset, {
+      fileType: AssetFileType.Micro,
+      format: thumbnailFormat,
+      isEdited: useEdits,
+      isProgressive: false,
+      isTransparent,
+    });
     this.storageCore.ensureFolders(previewFile.path);
 
     // generate final images
     const baseOptions = { colorspace, processInvalidImages: false, raw: info, edits: useEdits ? asset.edits : [] };
     const thumbnailOptions = { ...image.thumbnail, ...baseOptions, format: thumbnailFormat };
+    const microOptions = { ...image.thumbnail, ...baseOptions, format: thumbnailFormat, size: MICRO_THUMBNAIL_SIZE };
     const previewOptions = { ...image.preview, ...baseOptions, format: previewFormat };
     const promises = [
       this.mediaRepository.generateThumbhash(data, baseOptions),
       this.mediaRepository.generateThumbnail(data, thumbnailOptions, thumbnailFile.path),
       this.mediaRepository.generateThumbnail(data, previewOptions, previewFile.path),
+      this.mediaRepository.generateThumbnail(data, microOptions, microFile.path),
     ];
 
     let fullsizeFile: UpsertFileOptions | undefined;
@@ -398,7 +414,9 @@ export class MediaService extends BaseService {
     const fullsizeDimensions = useEdits ? getOutputDimensions(asset.edits, decodedDimensions) : decodedDimensions;
 
     return {
-      files: fullsizeFile ? [previewFile, thumbnailFile, fullsizeFile] : [previewFile, thumbnailFile],
+      files: fullsizeFile
+        ? [previewFile, thumbnailFile, microFile, fullsizeFile]
+        : [previewFile, thumbnailFile, microFile],
       thumbhash: outputs[0] as Buffer,
       fullsizeDimensions,
     };
@@ -520,6 +538,13 @@ export class MediaService extends BaseService {
       isProgressive: false,
       isTransparent: false,
     });
+    const microFile = this.getImageFile(asset, {
+      fileType: AssetFileType.Micro,
+      format: image.thumbnail.format,
+      isEdited: false,
+      isProgressive: false,
+      isTransparent: false,
+    });
     this.storageCore.ensureFolders(previewFile.path);
 
     const { videoStream, format } = asset;
@@ -529,11 +554,14 @@ export class MediaService extends BaseService {
 
     const previewConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.preview.size.toString() });
     const thumbConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: image.thumbnail.size.toString() });
+    const microConfig = ThumbnailConfig.create({ ...ffmpeg, targetResolution: MICRO_THUMBNAIL_SIZE.toString() });
     const previewOptions = previewConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
     const thumbnailOptions = thumbConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
+    const microOptions = microConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
 
     await this.mediaRepository.transcode(asset.originalPath, previewFile.path, previewOptions);
     await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, thumbnailOptions);
+    await this.mediaRepository.transcode(asset.originalPath, microFile.path, microOptions);
 
     const thumbhash = await this.mediaRepository.generateThumbhash(previewFile.path, {
       colorspace: image.colorspace,
@@ -541,7 +569,7 @@ export class MediaService extends BaseService {
     });
 
     return {
-      files: [previewFile, thumbnailFile],
+      files: [previewFile, thumbnailFile, microFile],
       thumbhash,
       fullsizeDimensions: { width: videoStream.width, height: videoStream.height },
     };

@@ -17568,7 +17568,8 @@
           "original",
           "fullsize",
           "preview",
-          "thumbnail"
+          "thumbnail",
+          "micro"
         ],
         "type": "string"
       },

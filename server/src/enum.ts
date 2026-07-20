@@ -58,6 +58,11 @@ export enum AssetFileType {
   FullSize = 'fullsize',
   Preview = 'preview',
   Thumbnail = 'thumbnail',
+  /**
+   * A very small thumbnail for dense, zoomed-out grids where the regular
+   * thumbnail would be needlessly large to fetch and decode.
+   */
+  Micro = 'micro',
   Sidecar = 'sidecar',
   EncodedVideo = 'encoded_video',
 }
