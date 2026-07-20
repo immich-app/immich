@@ -1,27 +1,24 @@
 import 'package:flutter/material.dart';
 
 class ImmichTranslations {
-  late String submit;
-  late String password;
+  final String submit;
+  final String password;
+  final String undo;
 
-  ImmichTranslations({String? submit, String? password}) {
-    this.submit = submit ?? 'Submit';
-    this.password = password ?? 'Password';
-  }
+  const ImmichTranslations({String? submit, String? password, String? undo})
+    : submit = submit ?? 'Submit',
+      password = password ?? 'Password',
+      undo = undo ?? 'Undo';
 }
 
 class ImmichTranslationProvider extends InheritedWidget {
   final ImmichTranslations? translations;
 
-  const ImmichTranslationProvider({
-    super.key,
-    this.translations,
-    required super.child,
-  });
+  const ImmichTranslationProvider({super.key, this.translations, required super.child});
 
   static ImmichTranslations of(BuildContext context) {
     final provider = context.dependOnInheritedWidgetOfExactType<ImmichTranslationProvider>();
-    return provider?.translations ?? ImmichTranslations();
+    return provider?.translations ?? const ImmichTranslations();
   }
 
   @override
