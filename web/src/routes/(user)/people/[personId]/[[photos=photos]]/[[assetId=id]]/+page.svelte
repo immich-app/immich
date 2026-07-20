@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { afterNavigate, goto, invalidateAll } from '$app/navigation';
+  import { goto, invalidateAll } from '$app/navigation';
   import { page } from '$app/stores';
   import { clickOutside } from '$lib/actions/click-outside';
   import { listNavigation } from '$lib/actions/list-navigation';
@@ -35,8 +35,8 @@
   import { websocketEvents } from '$lib/stores/websocket';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { isExternalUrl } from '$lib/utils/navigation';
   import { normalizeSearchString } from '$lib/utils/string-utils';
+  import { navigateBack } from '$lib/utils/navigation';
   import { AssetVisibility, searchPerson, updatePerson, type PersonResponseDto } from '@immich/sdk';
   import {
     ActionButton,
@@ -71,7 +71,6 @@
 
   let viewMode: PersonPageViewMode = $state(PersonPageViewMode.VIEW_ASSETS);
   let isEditingName = $state(false);
-  let previousRoute = $state<string>(Route.explore());
   let personMerge1: PersonResponseDto | undefined = $state();
   let personMerge2: PersonResponseDto | undefined = $state();
   let potentialMergePeople: PersonResponseDto[] = $state([]);
@@ -92,10 +91,6 @@
 
   onMount(() => {
     const action = $page.url.searchParams.get(QueryParameter.ACTION);
-    const getPreviousRoute = $page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE);
-    if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
-      previousRoute = getPreviousRoute;
-    }
     if (action == 'merge') {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;
     }
@@ -113,20 +108,13 @@
       return;
     }
 
-    await goto(previousRoute);
+    await navigateBack(Route.people());
     return;
   };
 
   const updateAssetCount = async () => {
     await invalidateAll();
   };
-
-  afterNavigate(({ from }) => {
-    // Prevent setting previousRoute to the current page.
-    if (from?.url && from.route.id !== $page.route.id) {
-      previousRoute = from.url.href;
-    }
-  });
 
   const handleUnmerge = () => {
     timelineManager.removeAssets(assetMultiSelectManager.assets.map((a) => a.id));
@@ -291,7 +279,7 @@
     }
 
     if (response.isHidden) {
-      await goto(previousRoute);
+      await navigateBack(Route.people());
       return;
     }
 
@@ -497,7 +485,7 @@
     </AssetSelectControlBar>
   {:else}
     {#if viewMode === PersonPageViewMode.VIEW_ASSETS}
-      <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(previousRoute)}>
+      <ControlAppBar backIcon={mdiArrowLeft} onClose={() => navigateBack(Route.people())}>
         {#snippet trailing()}
           <ContextMenuButton
             items={[SelectFeaturePhoto, HidePerson, ShowPerson, SetDateOfBirth, Merge, Favorite, Unfavorite]}

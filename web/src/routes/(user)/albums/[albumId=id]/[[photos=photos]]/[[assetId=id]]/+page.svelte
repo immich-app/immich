@@ -47,7 +47,7 @@
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
-  import { isAlbumsRoute, navigate, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
+  import { isAlbumsRoute, navigate, navigateBack, type AssetGridRouteSearchParams } from '$lib/utils/navigation';
   import { AlbumUserRole, AssetVisibility, getAlbumInfo, updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
   import {
     ActionButton,
@@ -129,7 +129,7 @@
       assetMultiSelectManager.clear();
       return;
     }
-    await goto(Route.albums());
+    await navigateBack(Route.albums());
   };
 
   const refreshAlbum = async () => {
@@ -275,7 +275,7 @@
 
   const onAlbumDelete = async ({ id }: AlbumResponseDto) => {
     if (id === album.id) {
-      await goto(Route.albums());
+      await navigateBack(Route.albums());
       viewMode = AlbumPageViewMode.VIEW;
     }
   };
@@ -499,7 +499,7 @@
       </AssetSelectControlBar>
     {:else}
       {#if viewMode === AlbumPageViewMode.VIEW}
-        <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(Route.albums())}>
+        <ControlAppBar backIcon={mdiArrowLeft} onClose={() => navigateBack(Route.albums())}>
           {#snippet trailing()}
             <ActionButton action={Cast} />
 
