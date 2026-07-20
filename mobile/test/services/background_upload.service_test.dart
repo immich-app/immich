@@ -118,7 +118,23 @@ void main() {
       expect(task, isNotNull);
       // For live photos, extension should be changed to match the video file
       expect(task!.fields['filename'], equals('OriginalLivePhoto.mov'));
+      expect(task.fields['visibility'], equals('hidden'));
       verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
+    });
+
+    test('should not set visibility for a regular photo', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/file.jpg');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'Regular.jpg');
+
+      final task = await sut.getUploadTask(asset);
+      expect(task, isNotNull);
+      expect(task!.fields.containsKey('visibility'), isFalse);
     });
   });
 
@@ -140,7 +156,7 @@ void main() {
       expect(task, isNotNull);
       expect(task!.fields['filename'], equals('OriginalLivePhoto.HEIC'));
       expect(task.fields['livePhotoVideoId'], equals('video-id-123'));
-      expect(task.fields['visibility'], equals('hidden'));
+      expect(task.fields.containsKey('visibility'), isFalse);
       verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
     });
 
@@ -334,7 +350,7 @@ void main() {
       expect(task, isNotNull);
       expect(task!.fields.containsKey('metadata'), isTrue);
       expect(task.fields['livePhotoVideoId'], equals('video-123'));
-      expect(task.fields['visibility'], equals('hidden'));
+      expect(task.fields.containsKey('visibility'), isFalse);
 
       final metadata = jsonDecode(task.fields['metadata']!) as List;
       expect(metadata, hasLength(1));

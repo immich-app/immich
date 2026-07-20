@@ -1,6 +1,10 @@
 import { writable } from 'svelte/store';
 import { getAlbumDateRange, getShortDateRange } from './date-time';
 
+vitest.mock('$lib/stores/preferences.store', () => ({
+  locale: writable('en'),
+}));
+
 describe('getShortDateRange', () => {
   beforeEach(() => {
     vi.stubEnv('TZ', 'UTC');
@@ -41,10 +45,6 @@ describe('getShortDateRange', () => {
 describe('getAlbumDate', () => {
   beforeAll(() => {
     process.env.TZ = 'UTC';
-
-    vitest.mock('$lib/stores/preferences.store', () => ({
-      locale: writable('en'),
-    }));
   });
 
   it('should work with only a start date', () => {

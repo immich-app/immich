@@ -70,7 +70,7 @@ describe('TimelineManager', () => {
     });
 
     it('should load months in viewport', () => {
-      expect(sdkMock.getTimeBuckets).toBeCalledTimes(1);
+      expect(sdkMock.getTimeBuckets).toHaveBeenCalledOnce();
       expect(sdkMock.getTimeBucket).toHaveBeenCalledTimes(2);
     });
 
@@ -133,13 +133,13 @@ describe('TimelineManager', () => {
     it('loads a month', async () => {
       expect(getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(0);
       await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
-      expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
+      expect(sdkMock.getTimeBucket).toHaveBeenCalledOnce();
       expect(getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
 
     it('ignores invalid months', async () => {
       await timelineManager.loadTimelineMonth({ year: 2023, month: 1 });
-      expect(sdkMock.getTimeBucket).toBeCalledTimes(0);
+      expect(sdkMock.getTimeBucket).not.toHaveBeenCalled();
     });
 
     it('cancels month loading', async () => {
@@ -147,7 +147,7 @@ describe('TimelineManager', () => {
       void timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
       const abortSpy = vi.spyOn(month!.loader!.cancelToken!, 'abort');
       month?.cancel();
-      expect(abortSpy).toBeCalledTimes(1);
+      expect(abortSpy).toHaveBeenCalledOnce();
       await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
       expect(getTimelineMonthByDate(timelineManager, { year: 2024, month: 1 })?.getAssets().length).toEqual(3);
     });
@@ -157,10 +157,10 @@ describe('TimelineManager', () => {
         timelineManager.loadTimelineMonth({ year: 2024, month: 1 }),
         timelineManager.loadTimelineMonth({ year: 2024, month: 1 }),
       ]);
-      expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
+      expect(sdkMock.getTimeBucket).toHaveBeenCalledOnce();
 
       await timelineManager.loadTimelineMonth({ year: 2024, month: 1 });
-      expect(sdkMock.getTimeBucket).toBeCalledTimes(1);
+      expect(sdkMock.getTimeBucket).toHaveBeenCalledOnce();
     });
 
     it('allows loading a canceled month', async () => {
@@ -283,7 +283,7 @@ describe('TimelineManager', () => {
       const asset = deriveLocalDateTimeFromFileCreatedAt(timelineAssetFactory.build());
       timelineManager.upsertAssets([asset]);
 
-      expect(updateAssetsSpy).toBeCalledWith([asset]);
+      expect(updateAssetsSpy).toHaveBeenCalledWith([asset]);
       expect(timelineManager.assetCount).toEqual(1);
     });
 
@@ -642,8 +642,8 @@ describe('TimelineManager', () => {
       const previousMonthSpy = vi.spyOn(previousMonth!.loader!, 'execute');
       const previous = await timelineManager.getLaterAsset(a);
       expect(previous).toEqual(b);
-      expect(loadTimelineMonthSpy).toBeCalledTimes(0);
-      expect(previousMonthSpy).toBeCalledTimes(0);
+      expect(loadTimelineMonthSpy).not.toHaveBeenCalled();
+      expect(previousMonthSpy).not.toHaveBeenCalled();
     });
 
     it('skips removed assets', async () => {
