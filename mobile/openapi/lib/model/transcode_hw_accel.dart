@@ -11,35 +11,32 @@
 part of openapi.api;
 
 /// Transcode hardware acceleration
-class TranscodeHWAccel {
-  /// Instantiate a new enum with the provided [value].
-  const TranscodeHWAccel._(this.value);
+enum TranscodeHWAccel {
+  nvenc._(r'nvenc'),
+  qsv._(r'qsv'),
+  vaapi._(r'vaapi'),
+  rkmpp._(r'rkmpp'),
+  disabled._(r'disabled'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const TranscodeHWAccel._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const nvenc = TranscodeHWAccel._(r'nvenc');
-  static const qsv = TranscodeHWAccel._(r'qsv');
-  static const vaapi = TranscodeHWAccel._(r'vaapi');
-  static const rkmpp = TranscodeHWAccel._(r'rkmpp');
-  static const disabled = TranscodeHWAccel._(r'disabled');
-
-  /// List of all possible values in this [enum][TranscodeHWAccel].
-  static const values = <TranscodeHWAccel>[
-    nvenc,
-    qsv,
-    vaapi,
-    rkmpp,
-    disabled,
-  ];
-
+  /// Returns the instance of [TranscodeHWAccel] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static TranscodeHWAccel? fromJson(dynamic value) => TranscodeHWAccelTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [TranscodeHWAccel]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<TranscodeHWAccel> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <TranscodeHWAccel>[];
     if (json is List && json.isNotEmpty) {
@@ -61,9 +58,11 @@ class TranscodeHWAccelTypeTransformer {
 
   const TranscodeHWAccelTypeTransformer._();
 
-  String encode(TranscodeHWAccel data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(TranscodeHWAccel data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a TranscodeHWAccel.
+  /// Returns the instance of [TranscodeHWAccel] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -72,6 +71,9 @@ class TranscodeHWAccelTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   TranscodeHWAccel? decode(dynamic data, {bool allowNull = true}) {
+    if (data is TranscodeHWAccel) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'nvenc': return TranscodeHWAccel.nvenc;
@@ -88,7 +90,7 @@ class TranscodeHWAccelTypeTransformer {
     return null;
   }
 
-  /// Singleton [TranscodeHWAccelTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static TranscodeHWAccelTypeTransformer? _instance;
 }
 

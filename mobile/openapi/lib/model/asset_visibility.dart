@@ -11,33 +11,31 @@
 part of openapi.api;
 
 /// Asset visibility
-class AssetVisibility {
-  /// Instantiate a new enum with the provided [value].
-  const AssetVisibility._(this.value);
+enum AssetVisibility {
+  archive._(r'archive'),
+  timeline._(r'timeline'),
+  hidden._(r'hidden'),
+  locked._(r'locked'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const AssetVisibility._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const archive = AssetVisibility._(r'archive');
-  static const timeline = AssetVisibility._(r'timeline');
-  static const hidden = AssetVisibility._(r'hidden');
-  static const locked = AssetVisibility._(r'locked');
-
-  /// List of all possible values in this [enum][AssetVisibility].
-  static const values = <AssetVisibility>[
-    archive,
-    timeline,
-    hidden,
-    locked,
-  ];
-
+  /// Returns the instance of [AssetVisibility] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static AssetVisibility? fromJson(dynamic value) => AssetVisibilityTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [AssetVisibility]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<AssetVisibility> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetVisibility>[];
     if (json is List && json.isNotEmpty) {
@@ -59,9 +57,11 @@ class AssetVisibilityTypeTransformer {
 
   const AssetVisibilityTypeTransformer._();
 
-  String encode(AssetVisibility data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(AssetVisibility data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a AssetVisibility.
+  /// Returns the instance of [AssetVisibility] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -70,6 +70,9 @@ class AssetVisibilityTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   AssetVisibility? decode(dynamic data, {bool allowNull = true}) {
+    if (data is AssetVisibility) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'archive': return AssetVisibility.archive;
@@ -85,7 +88,7 @@ class AssetVisibilityTypeTransformer {
     return null;
   }
 
-  /// Singleton [AssetVisibilityTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static AssetVisibilityTypeTransformer? _instance;
 }
 

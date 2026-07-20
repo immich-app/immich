@@ -11,31 +11,30 @@
 part of openapi.api;
 
 /// User metadata key
-class UserMetadataKey {
-  /// Instantiate a new enum with the provided [value].
-  const UserMetadataKey._(this.value);
+enum UserMetadataKey {
+  preferences._(r'preferences'),
+  license._(r'license'),
+  onboarding._(r'onboarding'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const UserMetadataKey._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const preferences = UserMetadataKey._(r'preferences');
-  static const license = UserMetadataKey._(r'license');
-  static const onboarding = UserMetadataKey._(r'onboarding');
-
-  /// List of all possible values in this [enum][UserMetadataKey].
-  static const values = <UserMetadataKey>[
-    preferences,
-    license,
-    onboarding,
-  ];
-
+  /// Returns the instance of [UserMetadataKey] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static UserMetadataKey? fromJson(dynamic value) => UserMetadataKeyTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [UserMetadataKey]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<UserMetadataKey> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <UserMetadataKey>[];
     if (json is List && json.isNotEmpty) {
@@ -57,9 +56,11 @@ class UserMetadataKeyTypeTransformer {
 
   const UserMetadataKeyTypeTransformer._();
 
-  String encode(UserMetadataKey data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(UserMetadataKey data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a UserMetadataKey.
+  /// Returns the instance of [UserMetadataKey] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -68,6 +69,9 @@ class UserMetadataKeyTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   UserMetadataKey? decode(dynamic data, {bool allowNull = true}) {
+    if (data is UserMetadataKey) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'preferences': return UserMetadataKey.preferences;
@@ -82,7 +86,7 @@ class UserMetadataKeyTypeTransformer {
     return null;
   }
 
-  /// Singleton [UserMetadataKeyTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static UserMetadataKeyTypeTransformer? _instance;
 }
 
