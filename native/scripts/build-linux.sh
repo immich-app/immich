@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
-# Cross-build the napi addon for Linux server (x86_64 + aarch64) via zigbuild
-# (no Docker) and stage as .node under dist/server/<target>/.
-# In CI you'd build these natively per-arch instead; this is local convenience.
+# Requires cargo-zigbuild and Zig on PATH.
 set -euo pipefail
 cd "$(dirname "$0")/.."
+
+if ! command -v cargo-zigbuild >/dev/null; then
+    echo "cargo-zigbuild is required" >&2
+    exit 1
+fi
 
 CRATE=immich_core_napi
 

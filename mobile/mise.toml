@@ -1,10 +1,7 @@
 [tools]
 "aqua:flutter/flutter" = "3.44.6"
 java = "21.0.2"
-# immich_native_core builds from source via a dart build hook that drives rustup.
-# mise bootstraps rustup + this toolchain; keep in sync with the crate's rust-toolchain.toml.
-# targets are preinstalled here because mise exports RUSTUP_TOOLCHAIN, which makes
-# rustup ignore the crate's rust-toolchain.toml (and its target list) at build time.
+# RUSTUP_TOOLCHAIN makes build hooks ignore rust-toolchain.toml targets.
 rust = { version = "1.92.0", targets = "armv7-linux-androideabi,aarch64-linux-android,x86_64-linux-android,aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios" }
 
 [tools."github:CQLabs/homebrew-dcm"]

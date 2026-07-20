@@ -38,15 +38,20 @@ class LocalImageApiImpl: LocalImageApi {
 
   func getThumbhash(thumbhash: String, completion: @escaping (Result<[String : Int64], any Error>) -> Void) {
     ImageProcessing.queue.addOperation {
-      guard let data = Data(base64Encoded: thumbhash), let decode = NativeCore.thumbhashDecode
-      else { return completion(.failure(PigeonError(code: "", message: "Invalid base64 string: \(thumbhash)", details: nil)))}
+      guard let data = Data(base64Encoded: thumbhash) else {
+        return completion(.failure(PigeonError(code: "invalid-base64", message: "Invalid base64 thumbhash", details: nil)))
+      }
+      guard let decode = NativeCore.thumbhashDecode else {
+        return completion(.failure(PigeonError(code: "native-core-unavailable", message: "Native thumbhash decoder is unavailable", details: nil)))
+      }
 
       var info = [UInt32](repeating: 0, count: 3)
       let pointer = data.withUnsafeBytes { bytes in
         decode(bytes.bindMemory(to: UInt8.self).baseAddress, UInt(bytes.count), &info)
       }
-      guard let pointer
-      else { return completion(.failure(PigeonError(code: "", message: "Invalid thumbhash: \(thumbhash)", details: nil)))}
+      guard let pointer else {
+        return completion(.failure(PigeonError(code: "invalid-thumbhash", message: "Invalid thumbhash", details: nil)))
+      }
 
       completion(.success([
         "pointer": Int64(Int(bitPattern: pointer)),

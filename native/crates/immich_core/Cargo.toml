@@ -6,8 +6,8 @@ license.workspace = true
 
 [features]
 default = ["image", "thumbhash"]
-image = [] # pure pixel math, no deps
-thumbhash = [] # placeholder decode, no deps
+image = []
+thumbhash = []
 
 [lints]
 workspace = true

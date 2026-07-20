@@ -34,9 +34,7 @@ platform :ios do
     )
   end
   
-  # Xcode script phases don't inherit MISE_TRUSTED_CONFIG_PATHS, and the mise shim
-  # for rustup refuses untrusted configs, which kills the native assets build hook.
-  # `mise trust` persists trust to disk so it survives into the xcode environment.
+  # Xcode build phases need mise trust saved to disk.
   def trust_mise_configs
     return unless system("command -v mise > /dev/null 2>&1")
     sh("mise trust ../../../mise.toml")

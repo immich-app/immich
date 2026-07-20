@@ -6,7 +6,6 @@ const val INITIAL_BUFFER_SIZE = 32 * 1024
 
 object NativeBuffer {
   init {
-    // All native code lives in the shared Rust core (built by the Flutter build hook).
     System.loadLibrary("immich_core_ffi")
   }
 
@@ -33,8 +32,12 @@ class NativeByteBuffer(initialCapacity: Int) {
 
   inline fun ensureHeadroom() {
     if (offset == capacity) {
-      capacity *= 2
-      pointer = NativeBuffer.realloc(pointer, capacity)
+      check(capacity <= Int.MAX_VALUE / 2) { "Native buffer capacity overflow" }
+      val newCapacity = capacity * 2
+      val newPointer = NativeBuffer.realloc(pointer, newCapacity)
+      check(newPointer != 0L) { "Native buffer realloc failed" }
+      pointer = newPointer
+      capacity = newCapacity
     }
   }
 

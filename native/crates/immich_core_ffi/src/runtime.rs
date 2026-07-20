@@ -1,8 +1,4 @@
-//! The shared tokio runtime for every async task the core ever runs. One static
-//! multi-thread runtime, created lazily on first use and reused for the process
-//! lifetime — FFI entry points must never build per-call or scoped runtimes.
-//! When the first async capability gets an FFI surface, this can graduate to an
-//! explicit init/shutdown lifecycle.
+//! Shared Tokio runtime for FFI work.
 
 use std::sync::LazyLock;
 use tokio::runtime::{Builder, Runtime};
@@ -16,8 +12,7 @@ static RUNTIME: LazyLock<Runtime> = LazyLock::new(|| {
         .unwrap_or_else(|e| panic!("immich-core runtime failed to start: {e}"))
 });
 
-/// The process-wide runtime. Spawn long-lived work with `runtime().spawn(...)`;
-/// FFI callers that must wait use `runtime().block_on(...)` off the UI thread.
+/// Returns the process-wide runtime.
 pub fn runtime() -> &'static Runtime {
     &RUNTIME
 }
@@ -36,7 +31,6 @@ mod tests {
         let first = runtime().block_on(async { 21 * 2 });
         assert_eq!(first, 42);
 
-        // spawned work runs on the same shared runtime and can be awaited again
         let handle = runtime().spawn(async {
             tokio::time::sleep(std::time::Duration::from_millis(5)).await;
             7

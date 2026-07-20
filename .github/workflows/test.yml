@@ -59,6 +59,10 @@ jobs:
               - 'mise.toml'
             mobile:
               - 'mobile/**'
+              - 'native/**'
+              - 'mise.toml'
+            native:
+              - 'native/**'
               - 'mise.toml'
             machine-learning:
               - 'machine-learning/**'
@@ -68,6 +72,73 @@ jobs:
           force-filters: |
             - '.github/workflows/test.yml'
           force-events: 'workflow_dispatch'
+
+  native-tests:
+    name: Test & Lint Native Core
+    needs: pre-job
+    if: ${{ fromJSON(needs.pre-job.outputs.should_run).native == true }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: ./native
+    steps:
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
+        with:
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: read
+
+      - name: Checkout code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+          token: ${{ steps.token.outputs.token }}
+
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        with:
+          github_token: ${{ steps.token.outputs.token }}
+          working_directory: ./native
+
+      - name: Install Flutter dependencies
+        working-directory: ./native/immich_native_core
+        run: flutter pub get
+
+      - name: Run Dart analyze
+        working-directory: ./native/immich_native_core
+        run: dart analyze
+
+      - name: Check formatting
+        run: cargo fmt --all --check
+
+      - name: Run Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Run tests
+        run: cargo test --workspace --locked
+
+      - name: Generate native bindings
+        run: mise //native:codegen
+
+      - name: Find generated file changes
+        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
+        id: verify-native-generated-files
+        with:
+          files: |
+            native/crates/immich_core_ffi/include/immich_core.h
+            native/immich_native_core/lib/src/ffi/bindings.g.dart
+
+      - name: Verify generated files have not changed
+        if: steps.verify-native-generated-files.outputs.files_changed == 'true'
+        env:
+          CHANGED_FILES: ${{ steps.verify-native-generated-files.outputs.changed_files }}
+        run: |
+          echo "ERROR: Native generated files not up to date! Run 'mise //native:codegen'"
+          echo "Changed files: ${CHANGED_FILES}"
+          exit 1
 
   script-unit-tests:
     name: Scripts unit tests

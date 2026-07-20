@@ -6,23 +6,11 @@ members = [
     "crates/immich_core_napi",
 ]
 
-# shared logic lives in immich_core (no binding deps). each binding crate is a
-# thin wrapper that picks its own crate-type: immich_core_ffi -> cdylib/staticlib,
-# the C ABI consumed by dart (ffigen), swift (C interop) and kotlin (JNI shim);
-# immich_core_napi -> cdylib (.node) for the node server.
-# capabilities (image, ...) are cargo features on immich_core so both
-# bindings opt into the same set. crate-type can't be feature-gated, which is why
-# the bindings are separate crates rather than one crate with feature flags.
-
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
 license = "AGPL-3.0-only"
 
-# single source of truth for all external dep versions. inner crates reference
-# these with `{ workspace = true }` and never hardcode a version.
-# default-features = false MUST live here (workspace level) — cargo ignores it if
-# set only on the inner crate. inner crates then add the minimal features they need.
 [workspace.dependencies]
 tokio = { version = "1", default-features = false, features = [
     "rt-multi-thread",
@@ -35,14 +23,10 @@ napi-derive = "3"
 napi-build = "2"
 cbindgen = { version = "0.29", default-features = false }
 
-# enforced by `mise run lint` (clippy -D warnings); the boundary crate also
-# #![deny]s unwrap/expect.
 [workspace.lints.clippy]
 undocumented_unsafe_blocks = "deny"
 
-# NB: no `panic = "abort"` — the FFI boundary relies on catch_unwind, which is a
-# no-op under abort. default unwind is what lets a boundary panic become a null
-# return instead of taking down the host (Flutter app / node server).
+# FFI panic guards require the default unwind strategy.
 [profile.release]
 opt-level = 3
 lto = true

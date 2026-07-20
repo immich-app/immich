@@ -1,6 +1,3 @@
-//! Logcat sink — `__android_log_write` from liblog (an NDK system library, like
-//! jnigraphics). Errors show up as `E/immich_core` in logcat.
-
 use std::ffi::CString;
 
 const ANDROID_LOG_ERROR: i32 = 6;

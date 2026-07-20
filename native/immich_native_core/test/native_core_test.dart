@@ -1,6 +1,3 @@
-// Host FFI roundtrip — `flutter test` builds the hook for the host platform and
-// resolves the @Native symbols, no device needed. Calls the generated bindings
-// directly (the package's actual surface); device runs: mobile/integration_test.
 import 'dart:convert';
 import 'dart:ffi';
 import 'dart:typed_data';
@@ -21,10 +18,9 @@ Uint8List _px1010102(int r, int g, int b, int a) {
 typedef _ImageFn =
     bool Function(Pointer<Uint8> src, int dstLen, Pointer<Uint8> dst);
 
-// malloc src+dst, run the native call, return the dst bytes (or null if it declined).
 Uint8List? _withBuffers(Uint8List src, int dstLen, _ImageFn call) {
-  final srcPtr = malloc<Uint8>(src.length);
-  final dstPtr = malloc<Uint8>(dstLen);
+  final srcPtr = calloc<Uint8>(src.length);
+  final dstPtr = calloc<Uint8>(dstLen);
   try {
     srcPtr.asTypedList(src.length).setAll(0, src);
     if (!call(srcPtr, dstLen, dstPtr)) {
@@ -32,13 +28,13 @@ Uint8List? _withBuffers(Uint8List src, int dstLen, _ImageFn call) {
     }
     return Uint8List.fromList(dstPtr.asTypedList(dstLen));
   } finally {
-    malloc.free(srcPtr);
-    malloc.free(dstPtr);
+    calloc.free(srcPtr);
+    calloc.free(dstPtr);
   }
 }
 
 void main() {
-  test('core loads: version roundtrips through the C string contract', () {
+  test('loads the core', () {
     final ptr = immich_core_version();
     expect(ptr, isNot(equals(nullptr)));
     final version = ptr.cast<Utf8>().toDartString();
@@ -46,7 +42,7 @@ void main() {
     expect(version, isNotEmpty);
   });
 
-  test('orientation swaps dims exactly for the 90/270/transpose family', () {
+  test('reports swapped orientations', () {
     for (final o in [5, 6, 7, 8]) {
       expect(immich_core_orientation_swaps_dims(o), isTrue, reason: 'o=$o');
     }
@@ -55,8 +51,7 @@ void main() {
     }
   });
 
-  test('exif rotate: 180 reverses pixels, 90 swaps dims', () {
-    // 2x1 image: red, green (RGBA).
+  test('rotates RGBA pixels', () {
     final src = Uint8List.fromList([255, 0, 0, 255, 0, 255, 0, 255]);
     final r180 = _withBuffers(
       src,
@@ -64,7 +59,7 @@ void main() {
       (s, len, d) =>
           immich_core_rotate_rgba8888(s, src.length, 8, 2, 1, 3, d, len),
     );
-    expect(r180, [0, 255, 0, 255, 255, 0, 0, 255]); // green, red
+    expect(r180, [0, 255, 0, 255, 255, 0, 0, 255]);
 
     final r90 = _withBuffers(
       src,
@@ -72,7 +67,7 @@ void main() {
       (s, len, d) =>
           immich_core_rotate_rgba8888(s, src.length, 8, 2, 1, 6, d, len),
     );
-    expect(r90, isNotNull); // 90 -> 1x2, same byte count
+    expect(r90, isNotNull);
   });
 
   test('rotate declines bad sizes instead of writing', () {
@@ -86,8 +81,8 @@ void main() {
     expect(tooSmall, isNull);
   });
 
-  test('10-bit convert matches the on-device Skia ground truth', () {
-    // 179->45 and 111->28 pin round(v*255/1023); a plain >>2 would give 44/27.
+  test('converts RGBA_1010102 pixels', () {
+    // 179 and 111 distinguish rounded scaling from `>> 2`.
     final src = Uint8List.fromList([
       ..._px1010102(1023, 0, 0, 3),
       ..._px1010102(179, 111, 0, 3),
@@ -114,7 +109,7 @@ void main() {
     expect(badStride, isNull);
   });
 
-  test('thumbhash decodes via the core into a malloc buffer', () {
+  test('decodes a thumbhash', () {
     final hash = base64Decode('1QcSHQRnh493V4dIh4eXh1h4kJUI');
     final hashPtr = malloc<Uint8>(hash.length);
     final info = malloc<Uint32>(3);
@@ -132,7 +127,6 @@ void main() {
       expect(pixels.toSet().length, greaterThan(2));
       malloc.free(ptr);
 
-      // malformed hash: null return, info untouched
       expect(immich_core_thumbhash_decode(hashPtr, 4, info), equals(nullptr));
     } finally {
       malloc.free(hashPtr);

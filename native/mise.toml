@@ -1,4 +1,5 @@
 [tools]
+"aqua:flutter/flutter" = "3.44.6" # keep in sync with ../mobile/mise.toml
 rust = "1.92.0" # keep in sync with rust-toolchain.toml (the build hook uses rustup)
 
 [tasks.build]
@@ -17,11 +18,16 @@ run = "cargo fmt --all"
 description = "Clippy (warnings = errors)"
 run = "cargo clippy --workspace --all-targets -- -D warnings"
 
-# Regen the committed cbindgen header + ffigen @Native bindings.
 [tasks."codegen:ffigen"]
 alias = "codegen"
 description = "Generate the C header (cbindgen) + Dart @Native bindings (ffigen)"
 sources = [
+    "Cargo.toml",
+    "Cargo.lock",
+    "crates/immich_core/Cargo.toml",
+    "crates/immich_core_ffi/Cargo.toml",
+    "crates/immich_core_ffi/rust-toolchain.toml",
+    "crates/immich_core_ffi/build.rs",
     "crates/immich_core_ffi/src/**/*.rs",
     "crates/immich_core_ffi/cbindgen.toml",
     "immich_native_core/ffigen.yaml",
@@ -31,12 +37,10 @@ outputs = [
     "immich_native_core/lib/src/ffi/bindings.g.dart",
 ]
 run = [
-    "cargo build -p immich_core_ffi",
+    "cargo build --locked -p immich_core_ffi",
     "cd immich_native_core && dart run ffigen --config ffigen.yaml && dart format lib/src/ffi/bindings.g.dart",
 ]
 
-# Host FFI roundtrip through the real build hook — no device. Builds the Rust crate
-# via rustup + resolves the @Native code asset.
 [tasks."test:flutter"]
 description = "Host FFI roundtrip via the build hook (flutter test)"
 dir = "immich_native_core"
@@ -56,7 +60,7 @@ run = [
 [tasks."smoke:dart"]
 description = "Host dart:ffi ABI roundtrip (raw DynamicLibrary on the cdylib)"
 depends = ["build:dart"]
-run = "dart run smoke/dart_smoke.dart target/debug/libimmich_core_ffi.dylib"
+run = "dart run smoke/dart_smoke.dart"
 
 [tasks."smoke:node"]
 description = "Host napi roundtrip"

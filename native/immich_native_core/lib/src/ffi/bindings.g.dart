@@ -7,8 +7,7 @@ library;
 
 import 'dart:ffi' as ffi;
 
-/// Native core version as a NUL-terminated UTF-8 string.
-/// Free the result with [`immich_core_free_string`].
+/// Returns the version as a C string. Free it with [`immich_core_free_string`].
 @ffi.Native<ffi.Pointer<ffi.Char> Function()>()
 external ffi.Pointer<ffi.Char> immich_core_version();
 
@@ -19,20 +18,14 @@ external ffi.Pointer<ffi.Char> immich_core_version();
 @ffi.Native<ffi.Void Function(ffi.Pointer<ffi.Char>)>()
 external void immich_core_free_string(ffi.Pointer<ffi.Char> ptr);
 
-/// Whether the EXIF `orientation` swaps width and height (the 90/270/transpose
-/// family) — callers use it to size and report the rotated output dims.
+/// Returns whether an EXIF orientation swaps width and height.
 @ffi.Native<ffi.Bool Function(ffi.Int32)>()
 external bool immich_core_orientation_swaps_dims(int orientation);
 
-/// Rotate an RGBA8888 image to the given EXIF `orientation`. `src` is `sh` rows of
-/// `src_stride` bytes; `dst` is the caller's densely-packed `dw*dh*4` output (dims
-/// swap for 90/270/transpose). Returns false (a safe no-op) on null pointers or
-/// inconsistent sizes so the caller can fall back. The platform side owns the
-/// bitmap lock + the dst allocation; this only fills dst.
+/// Rotates RGBA8888 buffers. Invalid input or a failed operation returns false; discard `dst`.
 ///
 /// # Safety
-/// `src` must be valid for reads of `src_len` bytes, `dst` for writes of `dst_len`,
-/// and the two ranges must not overlap.
+/// `src` and `dst` must be valid for their lengths, initialized, and must not overlap.
 @ffi.Native<
   ffi.Bool Function(
     ffi.Pointer<ffi.Uint8>,
@@ -56,15 +49,10 @@ external bool immich_core_rotate_rgba8888(
   int dst_len,
 );
 
-/// Convert an RGBA_1010102 image (`src`, `sh` rows of `src_stride` bytes) to
-/// RGBA8888 in the caller's densely-packed `w*h*4` `dst`, matching Skia's
-/// `Bitmap.copy(ARGB_8888)`. Returns false (a safe no-op) on null pointers or
-/// inconsistent sizes so the caller can fall back. The platform side owns the
-/// bitmap lock + the dst allocation; this only fills dst.
+/// Converts RGBA_1010102 to RGBA8888. Invalid input or a failed operation returns false; discard `dst`.
 ///
 /// # Safety
-/// `src` must be valid for reads of `src_len` bytes, `dst` for writes of `dst_len`,
-/// and the two ranges must not overlap.
+/// `src` and `dst` must be valid for their lengths, initialized, and must not overlap.
 @ffi.Native<
   ffi.Bool Function(
     ffi.Pointer<ffi.Uint8>,
@@ -86,14 +74,11 @@ external bool immich_core_rgba1010102_to_rgba8888(
   int dst_len,
 );
 
-/// Decode a ThumbHash into a freshly malloc'd RGBA8888 buffer (not premultiplied
-/// by alpha) and fill `out_info` with {width, height, rowBytes}. The caller owns
-/// the buffer and releases it with `free`. Returns null on a malformed hash,
-/// leaving `out_info` untouched.
+/// Decodes a ThumbHash into a libc buffer and writes width, height, and row bytes to `out_info`.
+/// Free the buffer with `free`; malformed hashes return null.
 ///
 /// # Safety
-/// `hash` must be valid for reads of `hash_len` bytes and `out_info` for writes
-/// of three u32 values.
+/// `hash` must be valid for `hash_len` bytes and `out_info` for three u32 writes.
 @ffi.Native<
   ffi.Pointer<ffi.Uint8> Function(
     ffi.Pointer<ffi.Uint8>,

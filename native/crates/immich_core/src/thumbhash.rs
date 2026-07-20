@@ -1,8 +1,4 @@
-//! ThumbHash placeholder decoding (https://evanw.me/blog/thumbhash), replacing the
-//! per-platform ports (ThumbHash.java, Thumbhash.swift) with one implementation.
-//! Those two disagreed on output rounding (java rounds, swift truncates) and
-//! crashed on truncated hashes; this one is bounds-checked and rounds like the
-//! java/android behavior, so both platforms now render identical placeholders.
+//! ThumbHash placeholder decoding.
 //
 // Ported from Evan Wallace's reference implementation:
 // Copyright (c) 2023 Evan Wallace
@@ -27,7 +23,6 @@ struct Header {
     h: usize,
 }
 
-// Coefficient count for one channel — mirrors the reference iteration order.
 fn ac_len(nx: usize, ny: usize) -> usize {
     let mut n = 0;
     for cy in 0..ny {
@@ -40,9 +35,6 @@ fn ac_len(nx: usize, ny: usize) -> usize {
     n
 }
 
-// Parses and validates the header, including that every AC nibble the channels
-// will read actually exists — a truncated hash decodes to None instead of the
-// out-of-bounds crash of the old java/swift ports.
 fn parse(hash: &[u8]) -> Option<Header> {
     if hash.len() < 5 {
         return None;
@@ -70,8 +62,7 @@ fn parse(hash: &[u8]) -> Option<Header> {
     } else {
         7
     };
-    // The rendered size comes from the *unclamped* aspect ratio (reference quirk);
-    // a zero component would make a zero-sized image, so reject it as malformed.
+    // The format computes size before clamping the component counts.
     if lx_raw == 0 || ly_raw == 0 {
         return None;
     }
@@ -113,8 +104,6 @@ fn parse(hash: &[u8]) -> Option<Header> {
     })
 }
 
-// Reads one channel's coefficients from the shared nibble stream
-// (boost saturation by 1.25x for P/Q is applied by the caller via `scale`).
 fn decode_channel(
     hash: &[u8],
     ac_start: usize,
@@ -137,15 +126,12 @@ fn decode_channel(
     ac
 }
 
-/// Decoded placeholder size for `hash` — `None` if the hash is malformed.
+/// Returns the decoded size, or None for a malformed hash.
 pub fn dims(hash: &[u8]) -> Option<(u32, u32)> {
     parse(hash).map(|hdr| (hdr.w as u32, hdr.h as u32))
 }
 
-/// Render `hash` as RGBA8888 (not premultiplied) into the caller's `dst`, which
-/// must hold at least `w*h*4` bytes for the size reported by [`dims`]. Returns
-/// false without touching `dst` on a malformed hash or short buffer — same
-/// caller-owns-dst contract as the `image` module.
+/// Decodes a hash into a caller-owned RGBA8888 buffer.
 pub fn to_rgba(hash: &[u8], dst: &mut [u8]) -> bool {
     let Some(hdr) = parse(hash) else {
         return false;
@@ -184,7 +170,6 @@ pub fn to_rgba(hash: &[u8], dst: &mut [u8]) -> bool {
             let mut q = hdr.q_dc;
             let mut a = hdr.a_dc;
 
-            // DCT coefficients in f64 then narrowed, like the android port.
             for (cx, f) in fx.iter_mut().enumerate() {
                 *f = (std::f64::consts::PI / hdr.w as f64 * (x as f64 + 0.5) * cx as f64).cos()
                     as f32;
@@ -250,9 +235,7 @@ fn to_u8(v: f32) -> u8 {
 mod tests {
     use super::*;
 
-    // Ground truth captured from the shipping Thumbhash.swift on 2026-07-10 (see
-    // the PR notes): swift truncates the final float->u8 step while this port
-    // rounds like the java one, so vectors match within 1 per channel.
+    // Captured from the old Swift decoder; channel values may differ by one.
     const OPAQUE_B64: &str = "1QcSHQRnh493V4dIh4eXh1h4kJUI";
     const ALPHA_B64: &str = "1QeSHQR6Z4ePd1eHSIeHl4dYeJCVCIQ8WuEpd7M=";
     const OPAQUE_RGBA_HEX: &str = "404d71ff424f72ff475375ff4d5878ff545d7cff5b6480ff626984ff686e87ff6d7389ff71758bff72778bff72778bff\
@@ -405,7 +388,6 @@ mod tests {
          000803ff010904ff020a04ff030b05ff";
 
     fn b64(s: &str) -> Vec<u8> {
-        // tiny standalone base64 (test-only, avoids a dep)
         const T: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         let mut out = Vec::new();
         let mut buf = 0u32;
@@ -469,9 +451,6 @@ mod tests {
 
     #[test]
     fn rejects_truncated_hashes_at_every_length() {
-        // Every prefix must either parse AND decode in-bounds, or be cleanly
-        // rejected — the old java/swift ports crashed here. The transition must
-        // be a single boundary: rejected below it, accepted from it on.
         let hash = b64(ALPHA_B64);
         let mut first_ok = None;
         for len in 0..=hash.len() {
@@ -490,7 +469,6 @@ mod tests {
             }
         }
         let first_ok = first_ok.expect("full hash must parse");
-        // the header alone (alpha flag set, no AC data) can never be enough
         assert!(first_ok > 6, "accepted a bare header at {first_ok}");
     }
 

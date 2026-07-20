@@ -1,28 +1,17 @@
-# The build hook (native_toolchain_rust) drives cargo via rustup and auto-installs
-# this toolchain + targets. Pin a version (never bare stable/beta) for reproducible
-# builds. Keep the channel in sync with mise.toml's rust pin.
-#
-# Full default target set from native_toolchain_rust: the hook validates the HOST
-# triple too (any dart/flutter command builds a host code asset), so linux + windows
-# must stay in for CI runners and contributor machines, not just the app targets.
+# Keep this version in sync with native/mise.toml.
 [toolchain]
 channel = "1.92.0"
 targets = [
-  # Android
   "armv7-linux-androideabi",
   "aarch64-linux-android",
   "x86_64-linux-android",
-  # iOS (device + simulator)
   "aarch64-apple-ios",
   "aarch64-apple-ios-sim",
   "x86_64-apple-ios",
-  # Windows
   "aarch64-pc-windows-msvc",
   "x86_64-pc-windows-msvc",
-  # Linux
   "aarch64-unknown-linux-gnu",
   "x86_64-unknown-linux-gnu",
-  # macOS
   "aarch64-apple-darwin",
   "x86_64-apple-darwin",
 ]

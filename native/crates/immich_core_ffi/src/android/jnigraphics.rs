@@ -1,6 +1,3 @@
-//! The three stable-ABI bitmap calls from libjnigraphics.so (ships in every NDK
-//! sysroot). Hand-declared instead of pulling the ndk crate for three functions.
-
 use jni::sys::jobject;
 
 #[repr(C)]

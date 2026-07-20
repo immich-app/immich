@@ -1,9 +1,3 @@
-//! Failure visibility. Every FFI boundary converts a panic into a sentinel the
-//! caller silently falls back on — right for the caller, but it would bury the
-//! failure. [`ensure_panic_hook`] installs a process-wide hook (once) that writes
-//! the panic message and location to the platform log first: logcat on Android,
-//! the unified log (Console.app) on iOS, stderr elsewhere.
-
 use std::sync::Once;
 
 #[cfg(target_os = "android")]

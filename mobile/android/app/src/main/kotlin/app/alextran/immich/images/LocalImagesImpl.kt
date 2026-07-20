@@ -13,6 +13,7 @@ import android.provider.MediaStore.Video
 import android.util.Size
 import androidx.annotation.RequiresApi
 import androidx.exifinterface.media.ExifInterface
+import app.alextran.immich.BuildConfig
 import app.alextran.immich.NativeBuffer
 import app.alextran.immich.NativeImage
 import kotlin.math.*
@@ -49,17 +50,23 @@ fun Bitmap.toNativeBuffer(): Map<String, Long>  {
   // Dart reads the buffer as rgba8888, but 10-bit sources decode to RGBA_1010102, which garbles
   // colors when copied verbatim. Convert those straight into the output buffer in native code -
   // one pass, no intermediate ARGB_8888 bitmap.
-  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && config == Bitmap.Config.RGBA_1010102) {
+  val source1010102 =
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && config == Bitmap.Config.RGBA_1010102
+  if (source1010102) {
     val info = IntArray(3)
     val pointer = NativeImage.convert1010102(this, info)
     if (pointer != 0L) {
       recycle()
-      return mapOf(
-        "pointer" to pointer,
-        "width" to info[0].toLong(),
-        "height" to info[1].toLong(),
-        "rowBytes" to info[2].toLong()
-      )
+      return buildMap {
+        put("pointer", pointer)
+        put("width", info[0].toLong())
+        put("height", info[1].toLong())
+        put("rowBytes", info[2].toLong())
+        if (BuildConfig.DEBUG) {
+          put("source1010102", 1L)
+          put("converted1010102", 1L)
+        }
+      }
     }
     // native convert declined (OOM/lock) -> fall through to the Skia copy path below.
   }
@@ -70,12 +77,16 @@ fun Bitmap.toNativeBuffer(): Map<String, Long>  {
   try {
     val buffer = NativeBuffer.wrap(pointer, size)
     bitmap.copyPixelsToBuffer(buffer)
-    return mapOf(
-      "pointer" to pointer,
-      "width" to bitmap.width.toLong(),
-      "height" to bitmap.height.toLong(),
-      "rowBytes" to (bitmap.width * 4).toLong()
-    )
+    return buildMap {
+      put("pointer", pointer)
+      put("width", bitmap.width.toLong())
+      put("height", bitmap.height.toLong())
+      put("rowBytes", (bitmap.width * 4).toLong())
+      if (BuildConfig.DEBUG) {
+        put("source1010102", if (source1010102) 1L else 0L)
+        put("converted1010102", 0L)
+      }
+    }
   } catch (e: Throwable) {
     NativeBuffer.free(pointer)
     throw e

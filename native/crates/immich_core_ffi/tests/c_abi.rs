@@ -1,9 +1,3 @@
-//! Exercises the extern "C" surface exactly as a foreign caller (dart/swift/kotlin)
-//! would: raw pointers in, sentinel returns on bad input, caller-owned buffers. The
-//! android JNI module is excluded — those functions need a live JVM and are covered
-//! by mobile/integration_test/native_jni_test.dart on device.
-// unsafe-without-SAFETY-comments allowed here: every call simulates a raw foreign
-// caller, including deliberately invalid inputs the guards must reject.
 #![allow(clippy::unwrap_used, clippy::undocumented_unsafe_blocks)]
 
 use std::ffi::CStr;
@@ -15,7 +9,6 @@ use immich_core_ffi::{
     immich_core_version,
 };
 
-// "1QcSHQRnh493V4dIh4eXh1h4kJUI" decoded — the classic 23x32 opaque sample.
 const THUMBHASH: [u8; 21] = [
     0xd5, 0x07, 0x12, 0x1d, 0x04, 0x67, 0x87, 0x8f, 0x77, 0x57, 0x87, 0x48, 0x87, 0x87, 0x97, 0x87,
     0x58, 0x78, 0x90, 0x95, 0x08,
@@ -48,7 +41,6 @@ fn swaps_dims_matches_the_exif_family() {
 
 #[test]
 fn rotate_180_matches_expected_bytes() {
-    // 2x1: red, green -> 180 -> green, red
     let src: [u8; 8] = [255, 0, 0, 255, 0, 255, 0, 255];
     let mut dst = [0u8; 8];
     let ok = unsafe {
@@ -60,7 +52,6 @@ fn rotate_180_matches_expected_bytes() {
 
 #[test]
 fn rotate_90_swaps_output_dims() {
-    // 2x1 -> 90 -> 1x2: first output row is the right-hand src pixel
     let src: [u8; 8] = [255, 0, 0, 255, 0, 255, 0, 255];
     let mut dst = [0u8; 8];
     let ok = unsafe {
@@ -75,7 +66,6 @@ fn rotate_rejects_bad_input_without_touching_dst() {
     let src = [0u8; 16];
     let mut dst = [0xAAu8; 16];
     unsafe {
-        // null src / null dst
         assert!(!immich_core_rotate_rgba8888(
             ptr::null(),
             16,
@@ -96,7 +86,6 @@ fn rotate_rejects_bad_input_without_touching_dst() {
             ptr::null_mut(),
             16
         ));
-        // src_len shorter than stride*h, dst_len shorter than w*h*4
         assert!(!immich_core_rotate_rgba8888(
             src.as_ptr(),
             8,
@@ -123,7 +112,7 @@ fn rotate_rejects_bad_input_without_touching_dst() {
 
 #[test]
 fn convert_matches_skia_ground_truth() {
-    // (1023 -> 255) and the round-vs-shift discriminators (179 -> 45, 111 -> 28).
+    // 179 and 111 distinguish rounded scaling from `>> 2`.
     let px = |r: u32, g: u32, b: u32, a: u32| -> [u8; 4] {
         ((r & 0x3FF) | ((g & 0x3FF) << 10) | ((b & 0x3FF) << 20) | ((a & 0x3) << 30)).to_le_bytes()
     };
@@ -195,7 +184,6 @@ fn thumbhash_decodes_into_a_malloc_buffer() {
 
     let len = (info[0] * info[1] * 4) as usize;
     let pixels = unsafe { std::slice::from_raw_parts(ptr, len) };
-    // opaque hash: every pixel fully opaque, image not a single flat color
     assert!(pixels.chunks_exact(4).all(|px| px[3] == 255));
     assert!(pixels.chunks_exact(4).any(|px| px[0] != pixels[0]));
     unsafe { libc::free(ptr as *mut libc::c_void) };
@@ -212,7 +200,6 @@ fn thumbhash_rejects_bad_input() {
                 .is_null()
         );
     }
-    // failed decodes never touched the out params
     assert_eq!(info, [7, 7, 7]);
 }
 

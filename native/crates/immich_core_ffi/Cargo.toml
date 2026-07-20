@@ -4,18 +4,12 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 
-# native_toolchain_rust requires cdylib (the bundled lib) + staticlib (iOS). It
-# derives the artifact name from [package].name, so no [lib] name override here.
-# "lib" additionally lets tests/ link the crate as a normal rust dependency.
+# The build hook uses cdylib, iOS uses staticlib, and tests use lib.
 [lib]
 crate-type = ["lib", "cdylib", "staticlib"]
 
-# features pinned explicitly so the cbindgen header + ffigen bindings always
-# match the exported symbols regardless of default-feature drift.
 [dependencies]
 immich_core = { path = "../immich_core", default-features = false, features = ["image", "thumbhash"] }
-# libc everywhere: returned buffers live on the libc heap so every consumer frees
-# them with plain free (dart malloc.free / kotlin NativeBuffer.free / swift free).
 libc = { workspace = true }
 tokio = { workspace = true }
 

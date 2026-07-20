@@ -1,4 +1,3 @@
-// Server-side roundtrip: load the napi addon and call into the shared core.
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);

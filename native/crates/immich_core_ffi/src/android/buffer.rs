@@ -1,16 +1,3 @@
-//! `NativeBuffer` — the libc-heap allocator Kotlin and Dart share. Ports of the
-//! former native_buffer.c, preserving its exact contracts.
-//!
-//! `jint` sizes/offsets sign-extend through `as usize` exactly like C's
-//! `int` → `size_t` conversion, so negative inputs stay huge-and-failing (malloc
-//! returns NULL) rather than becoming new behavior.
-//!
-//! The env-using calls run inside `EnvUnowned::with_env`, which upgrades the
-//! FFI-safe native-method env to a real `Env` and wraps the closure in
-//! `catch_unwind` — so a JNI error or a panic maps to the sentinel (0/null) and
-//! the caller falls back, never unwinding into the JVM. The pure allocator calls
-//! don't touch the env and contain no panicking code, so they run directly.
-
 use jni::objects::{JClass, JObject};
 use jni::sys::{jint, jlong, jobject};
 use jni::{EnvUnowned, Outcome};
@@ -21,8 +8,7 @@ pub extern "system" fn Java_app_alextran_immich_NativeBuffer_allocate<'local>(
     _class: JClass<'local>,
     size: jint,
 ) -> jlong {
-    // SAFETY: plain libc allocation; a negative size sign-extends huge and malloc
-    // returns NULL, which flows back to Kotlin as 0 — same as the C it replaces.
+    // SAFETY: malloc accepts the converted size and returns null on failure.
     unsafe { libc::malloc(size as usize) as jlong }
 }
 
@@ -32,8 +18,7 @@ pub extern "system" fn Java_app_alextran_immich_NativeBuffer_free<'local>(
     _class: JClass<'local>,
     address: jlong,
 ) {
-    // SAFETY: `address` came from allocate/realloc above (libc heap), or is 0,
-    // which libc free accepts as a no-op.
+    // SAFETY: callers pass a libc allocation from this module, or null.
     unsafe { libc::free(address as usize as *mut libc::c_void) }
 }
 
@@ -44,9 +29,7 @@ pub extern "system" fn Java_app_alextran_immich_NativeBuffer_realloc<'local>(
     address: jlong,
     size: jint,
 ) -> jlong {
-    // SAFETY: exact libc realloc semantics — NULL acts as malloc, OOM returns NULL
-    // without freeing the original. The grown pointer is later freed by Dart, so it
-    // must stay on the libc heap.
+    // SAFETY: callers pass a libc allocation from this module, or null.
     unsafe { libc::realloc(address as usize as *mut libc::c_void, size as usize) as jlong }
 }
 
@@ -60,8 +43,7 @@ pub extern "system" fn Java_app_alextran_immich_NativeBuffer_wrap<'local>(
     crate::log::ensure_panic_hook();
     let outcome = env
         .with_env(|env| -> jni::errors::Result<jobject> {
-            // SAFETY: `address`/`capacity` describe a live allocation from allocate or
-            // realloc; the ByteBuffer only borrows it and Kotlin controls the lifetime.
+            // SAFETY: Kotlin keeps this allocation live while the buffer is used.
             let buffer = unsafe {
                 env.new_direct_byte_buffer(address as usize as *mut u8, capacity as usize)
             }?;
@@ -90,9 +72,7 @@ pub extern "system" fn Java_app_alextran_immich_NativeBuffer_createGlobalRef<'lo
             if obj.is_null() {
                 return Ok(0);
             }
-            // The caller owns the reference for the process lifetime (it backs a
-            // never-released singleton), so hand out the raw ref and leak the wrapper
-            // via into_raw — dropping the Global would delete the ref under Kotlin.
+            // This reference backs a process-wide singleton.
             Ok(env.new_global_ref(&obj)?.into_raw() as jlong)
         })
         .into_outcome();
