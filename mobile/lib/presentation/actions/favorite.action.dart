@@ -11,7 +11,7 @@ class FavoriteAction extends BaseAction {
   const FavoriteAction();
 
   @override
-  IconData icon(_) => Icons.favorite_border_rounded;
+  IconData get icon => Icons.favorite_border_rounded;
 
   @override
   String label(context) => context.t.favorite;
@@ -40,7 +40,7 @@ class UnfavoriteAction extends BaseAction {
   const UnfavoriteAction();
 
   @override
-  IconData icon(_) => Icons.favorite_rounded;
+  IconData get icon => Icons.favorite_rounded;
 
   @override
   String label(context) => context.t.unfavorite;

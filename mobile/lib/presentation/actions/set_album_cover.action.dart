@@ -13,7 +13,7 @@ class SetAlbumCoverAction extends BaseAction {
   const SetAlbumCoverAction({required this.albumId});
 
   @override
-  IconData icon(_) => Icons.image_outlined;
+  IconData get icon => Icons.image_outlined;
 
   @override
   String label(context) => context.t.set_as_album_cover;

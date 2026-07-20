@@ -14,7 +14,7 @@ class EditDateTimeAction extends BaseAction {
   const EditDateTimeAction();
 
   @override
-  IconData icon(_) => Icons.edit_calendar_outlined;
+  IconData get icon => Icons.edit_calendar_outlined;
 
   @override
   String label(context) => context.t.control_bottom_app_bar_edit_time;

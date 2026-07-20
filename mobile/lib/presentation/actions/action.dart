@@ -7,7 +7,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 abstract class BaseAction {
   const BaseAction();
 
-  IconData icon(WidgetRef ref);
+  IconData get icon;
 
   String label(BuildContext context);
 

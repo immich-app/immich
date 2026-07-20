@@ -20,7 +20,7 @@ class EditAssetAction extends BaseAction {
   const EditAssetAction();
 
   @override
-  IconData icon(_) => Icons.tune;
+  IconData get icon => Icons.tune;
 
   @override
   String label(context) => context.t.edit;

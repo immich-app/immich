@@ -19,7 +19,7 @@ class _FakeAction extends BaseAction {
   bool? selectionDuringOnAction;
 
   @override
-  IconData icon(_) => Icons.bolt;
+  IconData get icon => Icons.bolt;
 
   @override
   String label(_) => 'fake';

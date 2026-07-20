@@ -11,7 +11,7 @@ class LockAction extends BaseAction {
   const LockAction();
 
   @override
-  IconData icon(_) => Icons.lock_rounded;
+  IconData get icon => Icons.lock_rounded;
 
   @override
   String label(context) => context.t.move_to_locked_folder;
@@ -40,7 +40,7 @@ class UnlockAction extends BaseAction {
   const UnlockAction();
 
   @override
-  IconData icon(_) => Icons.lock_open_rounded;
+  IconData get icon => Icons.lock_open_rounded;
 
   @override
   String label(context) => context.t.remove_from_locked_folder;

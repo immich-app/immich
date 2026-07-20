@@ -65,6 +65,7 @@ enum ActionButtonType {
   share,
   shareLink,
   cast,
+  unCast,
   setAlbumCover,
   similarPhotos,
   setProfilePicture,
@@ -160,7 +161,8 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.archive &&
             context.timelineOrigin != TimelineOrigin.localAlbum &&
             context.isOwner,
-      ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
+      ActionButtonType.cast => context.asset.hasRemote,
+      ActionButtonType.unCast => context.isCasting,
       ActionButtonType.slideshow => true,
     };
   }
@@ -235,6 +237,7 @@ enum ActionButtonType {
         },
       ),
       ActionButtonType.cast => ActionMenuItemWidget(source: context.source, action: const CastAction()),
+      ActionButtonType.unCast => ActionMenuItemWidget(source: context.source, action: const UnCastAction()),
       ActionButtonType.download => ActionMenuItemWidget(source: context.source, action: const DownloadAction()),
       ActionButtonType.unarchive => ActionMenuItemWidget(source: context.source, action: const UnarchiveAction()),
     };

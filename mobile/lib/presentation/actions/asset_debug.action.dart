@@ -13,7 +13,7 @@ class AssetDebugAction extends BaseAction {
   const AssetDebugAction();
 
   @override
-  IconData icon(_) => Icons.help_outline_rounded;
+  IconData get icon => Icons.help_outline_rounded;
 
   @override
   String label(context) => context.t.troubleshoot;

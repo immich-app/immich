@@ -15,7 +15,7 @@ class SimilarPhotosAction extends BaseAction {
   const SimilarPhotosAction();
 
   @override
-  IconData icon(_) => Icons.compare;
+  IconData get icon => Icons.compare;
 
   @override
   String label(context) => context.t.view_similar_photos;

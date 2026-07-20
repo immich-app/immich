@@ -16,7 +16,7 @@ class _RecordingAction extends BaseAction {
   const _RecordingAction({required this.onTap, this.onLong, this.visible = true});
 
   @override
-  IconData icon(_) => Icons.bug_report_outlined;
+  IconData get icon => Icons.bug_report_outlined;
 
   @override
   String label(_) => 'test';

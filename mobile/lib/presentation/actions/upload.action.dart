@@ -18,7 +18,7 @@ class UploadAction extends BaseAction {
   const UploadAction({required this.source});
 
   @override
-  IconData icon(_) => Icons.backup_outlined;
+  IconData get icon => Icons.backup_outlined;
 
   @override
   String label(context) => context.t.upload;

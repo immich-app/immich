@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -15,7 +16,7 @@ class ShareAction extends BaseAction {
   const ShareAction();
 
   @override
-  IconData icon(_) => CurrentPlatform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded;
+  IconData get icon => CurrentPlatform.isAndroid ? Icons.share_rounded : Icons.ios_share_rounded;
 
   @override
   String label(context) => context.t.share;

@@ -13,7 +13,7 @@ class PartnerAddAction extends BaseAction {
   const PartnerAddAction();
 
   @override
-  IconData icon(_) => Icons.person_add_rounded;
+  IconData get icon => Icons.person_add_rounded;
 
   @override
   String label(context) => context.t.add_partner;
@@ -38,7 +38,7 @@ class PartnerRemoveAction extends BaseAction {
   const PartnerRemoveAction({required this.sharedWithId, required this.partnerName});
 
   @override
-  IconData icon(_) => Icons.person_remove_rounded;
+  IconData get icon => Icons.person_remove_rounded;
 
   @override
   String label(context) => context.t.remove;

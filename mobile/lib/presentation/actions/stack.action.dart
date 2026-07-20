@@ -11,7 +11,7 @@ class StackAction extends BaseAction {
   const StackAction();
 
   @override
-  IconData icon(_) => Icons.filter_none_rounded;
+  IconData get icon => Icons.filter_none_rounded;
 
   @override
   String label(context) => context.t.stack;
@@ -45,7 +45,7 @@ class UnstackAction extends BaseAction {
   const UnstackAction();
 
   @override
-  IconData icon(_) => Icons.layers_clear_outlined;
+  IconData get icon => Icons.layers_clear_outlined;
 
   @override
   String label(context) => context.t.unstack;

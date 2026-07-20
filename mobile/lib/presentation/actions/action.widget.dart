@@ -45,7 +45,7 @@ class _ActionWidget extends ConsumerWidget {
 
     final secondaryAction = action.onSecondaryAction;
     return builder((
-      icon: action.icon(ref),
+      icon: action.icon,
       label: action.label(context),
       onAction: () => _guard(() => action.onAction(ref, assets)),
       onSecondaryAction: secondaryAction == null ? null : () => _guard(() => secondaryAction(ref, assets)),

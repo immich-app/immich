@@ -11,7 +11,7 @@ class RestoreAction extends BaseAction {
   const RestoreAction();
 
   @override
-  IconData icon(_) => Icons.history_rounded;
+  IconData get icon => Icons.history_rounded;
 
   @override
   String label(context) => context.t.restore;

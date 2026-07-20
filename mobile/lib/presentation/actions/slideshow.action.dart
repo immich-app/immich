@@ -13,7 +13,7 @@ class SlideshowAction extends BaseAction {
   const SlideshowAction();
 
   @override
-  IconData icon(_) => Icons.slideshow;
+  IconData get icon => Icons.slideshow;
 
   @override
   String label(context) => context.t.slideshow;

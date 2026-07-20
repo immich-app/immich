@@ -14,7 +14,7 @@ class EditLocationAction extends BaseAction {
   const EditLocationAction();
 
   @override
-  IconData icon(_) => Icons.edit_location_alt_outlined;
+  IconData get icon => Icons.edit_location_alt_outlined;
 
   @override
   String label(context) => context.t.control_bottom_app_bar_edit_location;

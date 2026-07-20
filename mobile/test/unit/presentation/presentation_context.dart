@@ -153,7 +153,7 @@ extension PumpPresentationWidget on WidgetTester {
           if (action.isVisible(ref, assets)) {
             final onSecondaryAction = action.onSecondaryAction;
             resolved = (
-              icon: action.icon(ref),
+              icon: action.icon,
               label: action.label(ref.context),
               onAction: () => action.onAction(ref, assets),
               onSecondaryAction: onSecondaryAction == null ? null : () => onSecondaryAction(ref, assets),

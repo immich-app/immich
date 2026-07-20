@@ -13,7 +13,7 @@ class ShareLinkAction extends BaseAction {
   const ShareLinkAction();
 
   @override
-  IconData icon(_) => Icons.link_rounded;
+  IconData get icon => Icons.link_rounded;
 
   @override
   String label(context) => context.t.share_link;

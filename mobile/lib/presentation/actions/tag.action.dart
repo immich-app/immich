@@ -13,7 +13,7 @@ class TagAction extends BaseAction {
   const TagAction();
 
   @override
-  IconData icon(_) => Icons.sell_outlined;
+  IconData get icon => Icons.sell_outlined;
 
   @override
   String label(context) => context.t.control_bottom_app_bar_add_tags;

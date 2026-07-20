@@ -10,7 +10,7 @@ class ArchiveAction extends BaseAction {
   const ArchiveAction();
 
   @override
-  IconData icon(_) => Icons.archive_outlined;
+  IconData get icon => Icons.archive_outlined;
 
   @override
   String label(context) => context.t.archive;
@@ -39,7 +39,7 @@ class UnarchiveAction extends BaseAction {
   const UnarchiveAction();
 
   @override
-  IconData icon(_) => Icons.unarchive_outlined;
+  IconData get icon => Icons.unarchive_outlined;
 
   @override
   String label(context) => context.t.unarchive;

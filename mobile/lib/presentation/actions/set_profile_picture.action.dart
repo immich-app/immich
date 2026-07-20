@@ -12,7 +12,7 @@ class SetProfilePictureAction extends BaseAction {
   const SetProfilePictureAction();
 
   @override
-  IconData icon(_) => Icons.account_circle_outlined;
+  IconData get icon => Icons.account_circle_outlined;
 
   @override
   String label(context) => context.t.set_as_profile_picture;

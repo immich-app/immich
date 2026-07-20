@@ -13,7 +13,7 @@ class OpenInBrowserAction extends BaseAction {
   const OpenInBrowserAction({required this.origin});
 
   @override
-  IconData icon(_) => Icons.open_in_browser;
+  IconData get icon => Icons.open_in_browser;
 
   @override
   String label(context) => context.t.open_in_browser;

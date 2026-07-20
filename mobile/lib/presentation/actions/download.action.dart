@@ -13,7 +13,7 @@ class DownloadAction extends BaseAction {
   const DownloadAction();
 
   @override
-  IconData icon(_) => Icons.download;
+  IconData get icon => Icons.download;
 
   @override
   String label(context) => context.t.download;

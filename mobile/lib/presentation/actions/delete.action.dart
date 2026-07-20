@@ -16,7 +16,7 @@ class TrashAction extends BaseAction {
   const TrashAction();
 
   @override
-  IconData icon(_) => Icons.delete_outline;
+  IconData get icon => Icons.delete_outline;
 
   @override
   String label(context) => context.t.trash;
@@ -58,7 +58,7 @@ class DeletePermanentlyAction extends BaseAction {
   const DeletePermanentlyAction();
 
   @override
-  IconData icon(_) => Icons.delete_outline;
+  IconData get icon => Icons.delete_outline;
 
   @override
   String label(context) => context.t.delete;
@@ -109,7 +109,7 @@ class DeleteLocalAction extends BaseAction {
   const DeleteLocalAction();
 
   @override
-  IconData icon(_) => Icons.delete_outline;
+  IconData get icon => Icons.delete_outline;
 
   @override
   String label(context) => context.t.delete;
@@ -151,7 +151,7 @@ class CleanupLocalAction extends BaseAction {
   const CleanupLocalAction();
 
   @override
-  IconData icon(_) => Icons.no_cell_outlined;
+  IconData get icon => Icons.no_cell_outlined;
 
   @override
   String label(context) => context.t.control_bottom_app_bar_delete_from_local;

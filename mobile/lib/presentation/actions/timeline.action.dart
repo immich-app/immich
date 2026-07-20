@@ -11,7 +11,7 @@ class TimelineAction extends BaseAction {
   const TimelineAction({required this.action});
 
   @override
-  IconData icon(WidgetRef ref) => action.icon(ref);
+  IconData get icon => action.icon;
 
   @override
   String label(BuildContext context) => action.label(context);

@@ -13,7 +13,7 @@ class RemoveFromAlbumAction extends BaseAction {
   const RemoveFromAlbumAction({required this.albumId});
 
   @override
-  IconData icon(_) => Icons.remove_circle_outline;
+  IconData get icon => Icons.remove_circle_outline;
 
   @override
   String label(context) => context.t.remove_from_album;
