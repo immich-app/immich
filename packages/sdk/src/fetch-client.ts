@@ -30,10 +30,14 @@ export type UserResponseDto = {
 export type ActivityResponseDto = {
     /** Asset ID (if activity is for an asset) */
     assetId: string | null;
+    /** Asset type (for asset_added activities) */
+    assetType?: (AssetTypeEnum) | null;
     /** Comment text (for comment activities) */
     comment?: string | null;
     /** Creation date */
     createdAt: string;
+    /** Grouping key shared by additions made in one batch (for asset_added activities) */
+    groupId?: string | null;
     /** Activity ID */
     id: string;
     "type": ReactionType;
@@ -3731,12 +3735,13 @@ export type SyncUserV1 = {
 /**
  * List all activities
  */
-export function getActivities({ albumId, assetId, level, $type, userId }: {
+export function getActivities({ albumId, assetId, level, $type, userId, withAdditions }: {
     albumId: string;
     assetId?: string;
     level?: ReactionLevel;
     $type?: ReactionType;
     userId?: string;
+    withAdditions?: boolean;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
@@ -3746,7 +3751,8 @@ export function getActivities({ albumId, assetId, level, $type, userId }: {
         assetId,
         level,
         "type": $type,
-        userId
+        userId,
+        withAdditions
     }))}`, {
         ...opts
     }));
@@ -7751,7 +7757,14 @@ export enum ReactionLevel {
 }
 export enum ReactionType {
     Comment = "comment",
-    Like = "like"
+    Like = "like",
+    AssetAdded = "asset_added"
+}
+export enum AssetTypeEnum {
+    Image = "IMAGE",
+    Video = "VIDEO",
+    Audio = "AUDIO",
+    Other = "OTHER"
 }
 export enum UserAvatarColor {
     Primary = "primary",
@@ -8098,12 +8111,6 @@ export enum AssetJobName {
     RefreshMetadata = "refresh-metadata",
     RegenerateThumbnail = "regenerate-thumbnail",
     TranscodeVideo = "transcode-video"
-}
-export enum AssetTypeEnum {
-    Image = "IMAGE",
-    Video = "VIDEO",
-    Audio = "AUDIO",
-    Other = "OTHER"
 }
 export enum AssetEditAction {
     Crop = "crop",
