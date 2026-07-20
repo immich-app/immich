@@ -126,7 +126,13 @@ export async function retrieveRange(timelineManager: TimelineManager, start: Ass
   }
   const assetOrder: AssetOrder = timelineManager.getAssetOrder();
   const orderBy: AssetOrderBy = timelineManager.getOrderBy();
-  if (plainDateTimeCompare(assetOrder === AssetOrder.Desc, getOrderingDate(startAsset, orderBy), getOrderingDate(endAsset, orderBy)) < 0) {
+  if (
+    plainDateTimeCompare(
+      assetOrder === AssetOrder.Desc,
+      getOrderingDate(startAsset, orderBy),
+      getOrderingDate(endAsset, orderBy),
+    ) < 0
+  ) {
     [startAsset, endAsset] = [endAsset, startAsset];
     // eslint-disable-next-line no-useless-assignment
     [startTimelineMonth, endTimelineMonth] = [endTimelineMonth, startTimelineMonth];
