@@ -7,6 +7,7 @@ import {
   ActivitySearchDto,
   ActivityStatisticsResponseDto,
   mapActivity,
+  mapAssetAddition,
   MaybeDuplicate,
   ReactionLevel,
   ReactionType,
@@ -19,14 +20,38 @@ import { BaseService } from 'src/services/base.service';
 export class ActivityService extends BaseService {
   async getAll(auth: AuthDto, dto: ActivitySearchDto): Promise<ActivityResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
-    const activities = await this.activityRepository.search({
-      userId: dto.userId,
-      albumId: dto.albumId,
-      assetId: dto.level === ReactionLevel.ALBUM ? null : dto.assetId,
-      isLiked: dto.type && dto.type === ReactionType.LIKE,
-    });
 
-    return activities.map((activity) => mapActivity(activity));
+    const includeReactions = dto.type !== ReactionType.ASSET_ADDED;
+
+    const isAlbumLevel = dto.level === ReactionLevel.ALBUM;
+    const assetId = isAlbumLevel ? undefined : dto.assetId;
+
+    // asset_added is opt-in (withAdditions or the type filter) so that old clients never see it
+    const includeAssetAdditions =
+      dto.type === ReactionType.ASSET_ADDED || (!dto.type && !!dto.withAdditions && !assetId);
+
+    const [reactions, additions] = await Promise.all([
+      includeReactions
+        ? this.activityRepository.search({
+            userId: dto.userId,
+            albumId: dto.albumId,
+            assetId: isAlbumLevel ? null : dto.assetId,
+            isLiked: dto.type && dto.type === ReactionType.LIKE,
+          })
+        : [],
+      includeAssetAdditions
+        ? this.activityRepository.searchAssetAdditions({ albumId: dto.albumId, assetId, userId: dto.userId })
+        : [],
+    ]);
+
+    const results = [
+      ...reactions.map((activity) => mapActivity(activity)),
+      ...additions.map((row) => mapAssetAddition(row)),
+    ];
+
+    results.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+    return results;
   }
 
   async getStatistics(auth: AuthDto, dto: ActivityDto): Promise<ActivityStatisticsResponseDto> {
