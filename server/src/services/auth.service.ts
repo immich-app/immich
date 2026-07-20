@@ -627,7 +627,7 @@ export class AuthService extends BaseService {
   private getRoleClaim(profile: OAuthProfile, roleClaim: string): 'admin' | 'user' | undefined {
     const value = profile[roleClaim as keyof OAuthProfile];
     const roles = Array.isArray(value) ? value : [value];
-    const isRole = (role: string) => roles.some((item) => item === role);
+    const isRole = (role: string) => roles.includes(role);
 
     if (isRole('admin')) {
       return 'admin';
