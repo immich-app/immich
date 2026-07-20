@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
@@ -16,17 +17,23 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
+import 'package:immich_mobile/presentation/widgets/feature_message/feature_message_dialog.widget.dart';
+import 'package:immich_mobile/presentation/widgets/memory/memory_lane.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
+import 'package:immich_mobile/presentation/widgets/timeline/timeline_scroll.provider.dart';
+import 'package:immich_mobile/providers/feature_message.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
+import 'package:immich_mobile/widgets/common/page_chrome/types.dart';
+import 'package:immich_mobile/widgets/common/primary_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
 class Timeline extends ConsumerWidget {
@@ -37,7 +44,7 @@ class Timeline extends ConsumerWidget {
     this.bottomSliverWidget,
     this.showStorageIndicator = false,
     this.withStack = false,
-    this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
+    this.appBar = const PrimaryAppBar(floating: true, pinned: false, snap: false),
     this.bottomSheet = const GeneralBottomSheet(minChildSize: 0.23),
     this.groupBy,
     this.withScrubber = true,
@@ -746,5 +753,227 @@ class CustomScaleGestureRecognizer extends ScaleGestureRecognizer {
   @override
   void rejectGesture(int pointer) {
     acceptGesture(pointer);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// PageChrome (Photos) path
+//
+// The shared `PageChrome` owns the Scaffold + scroll view + app bar. The
+// timeline contributes a [PageChromeContent] via [timelineChromeProvider],
+// read inside [timelineChromeScope] (which overrides `timelineArgsProvider`
+// from the real layout constraints). The controller/observer/scroll logic
+// lives in [timelineScrollProvider] so the chrome can read the controller
+// before it builds the scroll view (same frame).
+// ---------------------------------------------------------------------------
+
+/// Wraps the chrome body in the timeline's `ProviderScope`, overriding
+/// `timelineArgsProvider` from the actual scroll-view constraints via a
+/// `LayoutBuilder` (built during layout, so the value is real, not a guess).
+Widget timelineChromeScope(BuildContext context, Widget child) {
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      return Consumer(
+        builder: (context, ref, _) {
+          final columnCount = ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow));
+          return ProviderScope(
+            overrides: [
+              timelineArgsProvider.overrideWithValue(
+                TimelineArgs(
+                  maxWidth: constraints.maxWidth,
+                  maxHeight: constraints.maxHeight,
+                  columnCount: columnCount,
+                  showStorageIndicator: true,
+                ),
+              ),
+            ],
+            child: _TimelineChromePopScope(child: child),
+          );
+        },
+      );
+    },
+  );
+}
+
+/// Pops out of multiselect (instead of the route) while a selection is active.
+class _TimelineChromePopScope extends ConsumerWidget {
+  final Widget child;
+
+  const _TimelineChromePopScope({required this.child});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    return PopScope(
+      canPop: !isMultiSelectEnabled,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && isMultiSelectEnabled) {
+          ref.read(multiSelectProvider.notifier).reset();
+        }
+      },
+      child: child,
+    );
+  }
+}
+
+final timelineChromeProvider = Provider<PageChromeContent>((ref) {
+  final scroll = ref.watch(timelineScrollProvider.notifier);
+  final physics = ref.watch(timelineScrollProvider.select((s) => s.physics));
+  final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
+  final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
+
+  return PageChromeContent(
+    controller: scroll.controller,
+    physics: physics,
+    scrollCacheExtent: ScrollCacheExtent.pixels(maxHeight * 2),
+    appBar: isSelectionMode
+        ? const SelectionSliverAppBar()
+        : const PrimaryAppBar(floating: true, pinned: false, snap: false),
+    slivers: const [_TimelineChromeContent()],
+    viewportBuilder: (scrollView) => _TimelineChromeViewport(scrollView: scrollView),
+    floatingActionButton: const DownloadStatusFloatingButton(),
+    overlays: const [_TimelineChromeOverlays()],
+  );
+}, dependencies: [timelineServiceProvider, timelineArgsProvider, timelineScrollProvider, multiSelectProvider]);
+
+/// The timeline's content slivers (memory lane, the segmented grid, bottom
+/// padding). Mounted by the chrome inside its scroll view, so the ambient
+/// `PrimaryScrollController` is the chrome's controller.
+class _TimelineChromeContent extends ConsumerWidget {
+  const _TimelineChromeContent();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // A reload event forces the grid to rebuild.
+    ref.listen(timelineSegmentProvider, (_, __) {});
+
+    final asyncSegments = ref.watch(timelineSegmentProvider);
+    final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final hasMemories = ref.watch(driftMemoryFutureProvider.select((state) => state.value?.isNotEmpty ?? false));
+
+    return asyncSegments.when(
+      loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+      error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+      data: (segments) {
+        final childCount = (segments.lastOrNull?.lastIndex ?? -1) + 1;
+        const bottomSheetOpenModifier = 120.0;
+        final contentBottomPadding = context.padding.bottom + (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
+
+        return SliverMainAxisGroup(
+          slivers: [
+            if (hasMemories) const SliverToBoxAdapter(child: DriftMemoryLane()),
+            _SliverSegmentedList(
+              segments: segments,
+              delegate: SliverChildBuilderDelegate((ctx, index) {
+                if (index >= childCount) {
+                  return null;
+                }
+                final segment = segments.findByIndex(index);
+                return segment?.builder(ctx, index) ?? const SizedBox.shrink();
+              }, childCount: childCount, addAutomaticKeepAlives: false, addRepaintBoundaries: false),
+            ),
+            SliverPadding(padding: EdgeInsets.only(bottom: contentBottomPadding)),
+          ],
+        );
+      },
+    );
+  }
+}
+
+/// Wraps the shared scroll view in the pinch-to-scale gesture, drag selection
+/// region and the scrubber.
+class _TimelineChromeViewport extends ConsumerWidget {
+  final CustomScrollView scrollView;
+
+  const _TimelineChromeViewport({required this.scrollView});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final scroll = ref.read(timelineScrollProvider.notifier);
+    final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+    final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
+    final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final hasMemories = ref.watch(driftMemoryFutureProvider.select((state) => state.value?.isNotEmpty ?? false));
+    final segments = ref.watch(timelineSegmentProvider).valueOrNull ?? const [];
+
+    final topPadding = context.padding.top + kToolbarHeight + 10;
+    const bottomSheetOpenModifier = 120.0;
+    final contentBottomPadding = context.padding.bottom + (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
+    final scrubberBottomPadding = contentBottomPadding + kScrubberThumbHeight;
+
+    final timeline = Scrubber(
+      layoutSegments: segments,
+      timelineHeight: maxHeight,
+      topPadding: topPadding,
+      bottomPadding: scrubberBottomPadding,
+      monthSegmentSnappingOffset: hasMemories ? 200 : 0,
+      hasAppBar: true,
+      child: scrollView,
+    );
+
+    return RawGestureDetector(
+      gestures: {
+        CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
+          () => CustomScaleGestureRecognizer(),
+          (CustomScaleGestureRecognizer recognizer) {
+            recognizer.onStart = (_) => scroll.onScaleStart();
+            recognizer.onUpdate = (details) => scroll.onScaleUpdate(details.scale, segments);
+          },
+        ),
+      },
+      child: TimelineDragRegion(
+        onStart: !isReadonlyModeEnabled ? scroll.setDragStartIndex : null,
+        onAssetEnter: scroll.handleDragAssetEnter,
+        onEnd: !isReadonlyModeEnabled ? scroll.stopDrag : null,
+        onScroll: scroll.dragScroll,
+        onScrollStart: scroll.onScrollStart,
+        child: timeline,
+      ),
+    );
+  }
+}
+
+/// The multiselect status button + bottom sheet stacked on top of the timeline.
+class _TimelineChromeOverlays extends HookConsumerWidget {
+  const _TimelineChromeOverlays();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Show the "what's new" feature message once, when the timeline mounts.
+    useEffect(() {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!context.mounted) {
+          return;
+        }
+        final service = ref.read(featureMessageServiceProvider);
+        if (!service.shouldShow()) {
+          return;
+        }
+        await service.markSeen();
+        if (!context.mounted) {
+          return;
+        }
+        await showFeatureMessageDialog(context);
+      });
+      return null;
+    }, const []);
+
+    final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
+    final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final isVisible = !isSelectionMode && isMultiSelectEnabled;
+    if (!isVisible) {
+      return const SizedBox.shrink();
+    }
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned(
+          top: MediaQuery.paddingOf(context).top,
+          left: 25,
+          child: const SizedBox(height: kToolbarHeight, child: Center(child: _MultiSelectStatusButton())),
+        ),
+        const GeneralBottomSheet(minChildSize: 0.23),
+      ],
+    );
   }
 }

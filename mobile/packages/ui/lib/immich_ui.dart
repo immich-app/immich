@@ -1,4 +1,5 @@
 export 'src/color_override.dart';
+export 'src/components/app_bar/app_bar.dart';
 export 'src/components/close_button.dart';
 export 'src/components/column_button.dart';
 export 'src/components/form.dart';

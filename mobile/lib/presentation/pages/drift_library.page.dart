@@ -16,27 +16,23 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
-import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
+import 'package:immich_mobile/widgets/common/page_chrome/tab_page.dart';
+import 'package:immich_mobile/widgets/common/page_chrome/types.dart';
+import 'package:immich_mobile/widgets/common/primary_app_bar.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 @RoutePage()
-class DriftLibraryPage extends ConsumerWidget {
+class DriftLibraryPage extends TabPage {
   const DriftLibraryPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return const Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          ImmichSliverAppBar(snap: false, floating: false, pinned: true, showUploadButton: false),
-          _ActionButtonGrid(),
-          _CollectionCards(),
-          _QuickAccessButtonList(),
-        ],
-      ),
+  ProviderListenable<PageChromeContent> get content => Provider<PageChromeContent>((ref) {
+    return const PageChromeContent(
+      appBar: PrimaryAppBar(snap: false, floating: false, pinned: true, showUploadButton: false),
+      slivers: [_ActionButtonGrid(), _CollectionCards(), _QuickAccessButtonList()],
     );
-  }
+  });
 }
 
 class _ActionButtonGrid extends ConsumerWidget {

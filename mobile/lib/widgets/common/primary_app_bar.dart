@@ -20,17 +20,23 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/asset_viewer/cast_dialog.dart';
 import 'package:immich_mobile/widgets/common/app_bar_dialog/app_bar_dialog.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
+import 'package:immich_ui/immich_ui.dart';
 
-class ImmichSliverAppBar extends ConsumerWidget {
+/// The app's standard app bar. Composes Immich-specific indicators (sync,
+/// backup, profile, cast) and the multiselect dim behaviour onto the generic
+/// [ImmichSliverAppBar] primitive from the ui package.
+class PrimaryAppBar extends ConsumerWidget {
   final List<Widget>? actions;
   final bool showUploadButton;
   final bool floating;
   final bool pinned;
   final bool snap;
   final Widget? title;
+  final Widget? leading;
+  final bool automaticallyImplyLeading;
   final double? expandedHeight;
 
-  const ImmichSliverAppBar({
+  const PrimaryAppBar({
     super.key,
     this.actions,
     this.showUploadButton = true,
@@ -38,6 +44,8 @@ class ImmichSliverAppBar extends ConsumerWidget {
     this.pinned = false,
     this.snap = true,
     this.title,
+    this.leading,
+    this.automaticallyImplyLeading = false,
     this.expandedHeight,
   });
 
@@ -47,38 +55,27 @@ class ImmichSliverAppBar extends ConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
 
-    return SliverIgnorePointer(
-      ignoring: isMultiSelectEnabled,
-      sliver: SliverAnimatedOpacity(
-        duration: Durations.medium1,
-        opacity: isMultiSelectEnabled ? 0 : 1,
-        sliver: SliverAppBar(
-          backgroundColor: context.colorScheme.surface,
-          surfaceTintColor: context.colorScheme.surfaceTint,
-          elevation: 0,
-          scrolledUnderElevation: 1.0,
-          floating: floating,
-          pinned: pinned,
-          snap: snap,
-          expandedHeight: expandedHeight,
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(bottom: Radius.circular(5))),
-          automaticallyImplyLeading: false,
-          centerTitle: false,
-          title: title ?? const _ImmichLogoWithText(),
-          actions: [
-            const _SyncStatusIndicator(),
-            if (isCasting && !isReadonlyModeEnabled)
-              IconButton(
-                onPressed: () => showDialog(context: context, builder: (context) => const CastDialog()),
-                icon: Icon(isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded),
-              ),
-            if (actions != null) ...actions!,
-            if (showUploadButton && !isReadonlyModeEnabled) const _BackupIndicator(),
-            const _ProfileIndicator(),
-            const SizedBox(width: 8),
-          ],
-        ),
-      ),
+    return ImmichSliverAppBar(
+      floating: floating,
+      pinned: pinned,
+      snap: snap,
+      expandedHeight: expandedHeight,
+      dimmed: isMultiSelectEnabled,
+      automaticallyImplyLeading: automaticallyImplyLeading,
+      leading: leading,
+      title: title ?? const _ImmichLogoWithText(),
+      actions: [
+        const _SyncStatusIndicator(),
+        if (isCasting && !isReadonlyModeEnabled)
+          IconButton(
+            onPressed: () => showDialog(context: context, builder: (context) => const CastDialog()),
+            icon: Icon(isCasting ? Icons.cast_connected_rounded : Icons.cast_rounded),
+          ),
+        if (actions != null) ...actions!,
+        if (showUploadButton && !isReadonlyModeEnabled) const _BackupIndicator(),
+        const _ProfileIndicator(),
+        const SizedBox(width: 8),
+      ],
     );
   }
 }
