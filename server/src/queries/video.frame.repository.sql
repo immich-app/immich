@@ -24,8 +24,7 @@ set
   "status" = $6,
   "version" = $7,
   "parameters" = $8,
-  "parametersHash" = $9,
-  "updatedAt" = $10
+  "parametersHash" = $9
 
 -- VideoFrameRepository.upsertFrames
 begin
