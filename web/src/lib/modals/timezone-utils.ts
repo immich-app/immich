@@ -1,4 +1,4 @@
-import { DateTime, Duration } from 'luxon';
+import { DateTime } from 'luxon';
 
 export type ZoneOption = {
   /**
@@ -136,7 +136,6 @@ export function getPreferredTimeZone(
 }
 
 export function toDatetime(selectedDate: string, selectedZone: ZoneOption) {
-  // Create a DateTime object in this fixed-offset zone, preserving the local time.
   return DateTime.fromISO(selectedDate, { zone: selectedZone.value });
 }
 
