@@ -87,6 +87,18 @@ describe(TimelineService.name, () => {
       );
     });
 
+    it('should return error if time bucket is requested with locked visibility for partner', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+
+      const auth = factory.auth({ user, session: { hasElevatedPermission: true } });
+
+      const response = sut.getTimeBuckets(auth, { userId: partner.id, visibility: AssetVisibility.Locked });
+      await expect(response).rejects.toThrow("You may not access another user's locked timeline");
+    });
+
     it('should not allow access for unrelated shared links', async () => {
       const { sut } = setup();
       const auth = factory.auth({ sharedLink: {} });

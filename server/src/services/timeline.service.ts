@@ -60,6 +60,9 @@ export class TimelineService extends BaseService {
       if (dto.visibility === AssetVisibility.Archive) {
         await this.requireAccess({ auth, permission: Permission.ArchiveRead, ids: [dto.userId] });
       }
+      if (dto.visibility === AssetVisibility.Locked && dto.userId !== auth.user.id) {
+        throw new BadRequestException("You may not access another user's locked timeline");
+      }
     }
 
     if (dto.tagId) {
