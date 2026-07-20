@@ -4,7 +4,14 @@ import path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { describe, expect, it, MockedFunction, vi } from 'vitest';
 
-import { AssetRejectReason, AssetUploadAction, checkBulkUpload, defaults, getSupportedMediaTypes } from '@immich/sdk';
+import {
+  AssetRejectReason,
+  AssetUploadAction,
+  AssetVisibility,
+  checkBulkUpload,
+  defaults,
+  getSupportedMediaTypes,
+} from '@immich/sdk';
 import createFetchMock from 'vitest-fetch-mock';
 
 import {
@@ -101,6 +108,20 @@ describe('uploadFiles', () => {
     });
 
     await expect(uploadFiles([testFilePath], { concurrency: 1 })).resolves.toEqual([]);
+  });
+
+  it('uploads assets with the specified visibility', async () => {
+    fetchMocker.doMockIf(new RegExp(`${baseUrl}/assets$`), function () {
+      return {
+        status: 200,
+        body: JSON.stringify({ id: 'fc5621b1-86f6-44a1-9905-403e607df9f5', status: 'created' }),
+      };
+    });
+
+    await uploadFiles([testFilePath], { concurrency: 1, visibility: AssetVisibility.Hidden });
+
+    const formData = fetchMocker.mock.calls[0]?.[1]?.body as FormData;
+    expect(formData.get('visibility')).toBe('hidden');
   });
 });
 

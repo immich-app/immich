@@ -1,11 +1,11 @@
 export const enum ByteUnit {
-  'B' = 'B',
-  'KiB' = 'KiB',
-  'MiB' = 'MiB',
-  'GiB' = 'GiB',
-  'TiB' = 'TiB',
-  'PiB' = 'PiB',
-  'EiB' = 'EiB',
+  B = 'B',
+  KiB = 'KiB',
+  MiB = 'MiB',
+  GiB = 'GiB',
+  TiB = 'TiB',
+  PiB = 'PiB',
+  EiB = 'EiB',
 }
 
 const byteUnits = [ByteUnit.B, ByteUnit.KiB, ByteUnit.MiB, ByteUnit.GiB, ByteUnit.TiB, ByteUnit.PiB, ByteUnit.EiB];

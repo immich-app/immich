@@ -1,4 +1,4 @@
-import { AssetOrder, getAssetInfo, getTimeBuckets, AssetOrderBy, type AssetResponseDto } from '@immich/sdk';
+import { AssetOrder, AssetOrderBy, getAssetInfo, getTimeBuckets, type AssetResponseDto } from '@immich/sdk';
 import { clamp, isEqual } from 'lodash-es';
 import { SvelteDate, SvelteSet } from 'svelte/reactivity';
 import { VirtualScrollManager } from '$lib/managers/VirtualScrollManager/VirtualScrollManager.svelte';
@@ -114,7 +114,15 @@ export class TimelineManager extends VirtualScrollManager {
 
     this.#unsubscribes.push(
       eventManager.on({
-        AssetUpdate: (asset: AssetResponseDto) => this.#updateAssets([toTimelineAsset(asset)]),
+        AssetUpdate: (asset: AssetResponseDto) => {
+          const timelineAsset = toTimelineAsset(asset);
+          if (this.#options.albumId || this.#options.personId) {
+            this.#updateAssets([timelineAsset]);
+          } else {
+            this.upsertAssets([timelineAsset]);
+          }
+        },
+        AssetsUnarchive: (assets) => this.upsertAssets(assets),
       }),
     );
   }

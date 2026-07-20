@@ -2702,6 +2702,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Album ID",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -2712,6 +2713,14 @@
             "name": "userId",
             "required": true,
             "in": "path",
+            "description": "Album user ID, or \"me\" to reference the current user.",
+            "x-immich-history": [
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "\"me\" as a value is deprecated"
+              }
+            ],
             "schema": {
               "type": "string"
             }
@@ -2762,6 +2771,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Album ID",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -2772,6 +2782,14 @@
             "name": "userId",
             "required": true,
             "in": "path",
+            "description": "Album user ID, or \"me\" to reference the current user.",
+            "x-immich-history": [
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "\"me\" as a value is deprecated"
+              }
+            ],
             "schema": {
               "type": "string"
             }
@@ -16223,7 +16241,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "3.0.2",
+    "version": "3.0.3",
     "contact": {}
   },
   "tags": [
