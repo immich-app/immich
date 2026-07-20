@@ -147,6 +147,10 @@ export function withVideoStream(eb: ExpressionBuilder<DB, 'asset_exif' | 'asset_
         'asset_video.dvProfile',
         'asset_video.dvLevel',
         'asset_video.dvBlSignalCompatibilityId',
+        'asset_video.cropTop',
+        'asset_video.cropBottom',
+        'asset_video.cropLeft',
+        'asset_video.cropRight',
       ])
       .where('asset_video.assetId', 'is not', sql.lit(null)),
   ).$castTo<(VideoStreamInfo & { timeBase: number }) | null>();

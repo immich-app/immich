@@ -27,6 +27,11 @@ export const isVideoRotated = (videoStream: VideoStreamInfo): boolean => Math.ab
 export const isVideoVertical = (videoStream: VideoStreamInfo): boolean =>
   videoStream.height > videoStream.width || isVideoRotated(videoStream);
 
+const hasFrameCrop = (videoStream: VideoStreamInfo): boolean =>
+  [videoStream.cropTop, videoStream.cropBottom, videoStream.cropLeft, videoStream.cropRight].some(
+    (value) => value !== null && value > 0,
+  );
+
 export const getOutputSize = (videoStream: VideoStreamInfo, targetRes: number) => {
   const factor = Math.max(videoStream.height, videoStream.width) / Math.min(videoStream.height, videoStream.width);
   let larger = Math.round(targetRes * factor);
@@ -1081,8 +1086,9 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
 }
 
 export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
-  getBaseInputOptions() {
-    return ['-hwaccel', 'rkmpp', '-hwaccel_output_format', 'drm_prime', '-afbc', 'rga', '-noautorotate'];
+  getBaseInputOptions(videoStream?: VideoStreamInfo): string[] {
+    const options = ['-hwaccel', 'rkmpp', '-hwaccel_output_format', 'drm_prime', '-afbc', 'rga', '-noautorotate'];
+    return videoStream !== undefined && hasFrameCrop(videoStream) ? ['-apply_cropping', 'codec', ...options] : options;
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
@@ -1107,6 +1113,18 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
         'hwupload',
       ];
     } else if (this.shouldScale(videoStream)) {
+      if (hasFrameCrop(videoStream)) {
+        const top = videoStream.cropTop ?? 0;
+        const bottom = videoStream.cropBottom ?? 0;
+        const left = videoStream.cropLeft ?? 0;
+        const right = videoStream.cropRight ?? 0;
+        const width = videoStream.width - left - right;
+        const height = videoStream.height - top - bottom;
+        const scaling = this.getScaling({ ...videoStream, width, height }).replace(':', ':h=');
+        return [
+          `vpp_rkrga=cw=${width}:ch=${height}:cx=${left}:cy=${top}:w=${scaling}:format=nv12:afbc=1:async_depth=4`,
+        ];
+      }
       return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1:async_depth=4`];
     }
     return [];

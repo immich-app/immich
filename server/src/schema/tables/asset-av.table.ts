@@ -71,6 +71,18 @@ export class AssetVideoTable {
 
   @Column({ type: 'text' })
   pixelFormat!: string;
+
+  @Column({ type: 'integer', nullable: true })
+  cropTop!: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  cropBottom!: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  cropLeft!: number | null;
+
+  @Column({ type: 'integer', nullable: true })
+  cropRight!: number | null;
 }
 
 @Table('asset_keyframe')

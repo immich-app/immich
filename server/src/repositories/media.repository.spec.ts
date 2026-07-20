@@ -1,3 +1,4 @@
+import ffmpeg, { FfprobeData } from 'fluent-ffmpeg';
 import sharp from 'sharp';
 import { AssetFace } from 'src/database';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
@@ -61,12 +62,66 @@ const buildTestQuadImage = async () => {
   return image.png().toBuffer();
 };
 
+const mockFfprobe = (stream: Record<string, unknown>) =>
+  vi.spyOn(ffmpeg, 'ffprobe').mockImplementation((...args: unknown[]) => {
+    const callback = args.at(-1) as (error: Error | null, data: FfprobeData) => void;
+    callback(null, { format: {}, streams: [stream] } as unknown as FfprobeData);
+  });
+
 describe(MediaRepository.name, () => {
   let sut: MediaRepository;
 
   beforeEach(() => {
     // eslint-disable-next-line no-sparse-arrays
     sut = new MediaRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
+  });
+
+  describe('probe', () => {
+    const videoStream = {
+      index: 0,
+      codec_type: 'video',
+      codec_name: 'h264',
+      width: 1920,
+      height: 1440,
+    };
+
+    it('reads the frame cropping side data that fluent-ffmpeg flattens onto the stream', async () => {
+      mockFfprobe({
+        ...videoStream,
+        side_data_type: 'Frame Cropping',
+        crop_top: 66,
+        crop_bottom: 66,
+        crop_left: 88,
+        crop_right: 88,
+      });
+
+      const { videoStreams } = await sut.probe('/asset.mp4');
+
+      expect(videoStreams[0]).toMatchObject({ cropTop: 66, cropBottom: 66, cropLeft: 88, cropRight: 88 });
+    });
+
+    it('returns null crop offsets when there is no frame cropping side data', async () => {
+      mockFfprobe(videoStream);
+
+      const { videoStreams } = await sut.probe('/asset.mp4');
+
+      expect(videoStreams[0]).toMatchObject({ cropTop: null, cropBottom: null, cropLeft: null, cropRight: null });
+    });
+
+    it('reads raw frame cropping offsets when every offset is zero', async () => {
+      mockFfprobe({
+        ...videoStream,
+        side_data_type: 'Frame Cropping',
+        crop_top: 0,
+        crop_bottom: 0,
+        crop_left: 0,
+        crop_right: 0,
+      });
+
+      const { videoStreams } = await sut.probe('/asset.mp4');
+
+      expect(videoStreams[0]).toMatchObject({ cropTop: 0, cropBottom: 0, cropLeft: 0, cropRight: 0 });
+    });
   });
 
   describe('applyEdits (single actions)', () => {

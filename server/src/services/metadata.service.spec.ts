@@ -681,6 +681,38 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should persist frame crop metadata from the video probe', async () => {
+      const asset = AssetFactory.create({ type: AssetType.Video });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mocks.media.probe.mockResolvedValue({
+        ...videoInfoStub.videoStreamHDR10,
+        videoStreams: [
+          {
+            ...videoInfoStub.videoStreamHDR10.videoStreams[0],
+            cropTop: 66,
+            cropBottom: 66,
+            cropLeft: 88,
+            cropRight: 88,
+          },
+        ],
+      });
+      mocks.media.probePackets.mockResolvedValue(emptyPackets);
+      mockReadTags({});
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
+        expect.objectContaining({
+          video: expect.objectContaining({
+            cropTop: 66,
+            cropBottom: 66,
+            cropLeft: 88,
+            cropRight: 88,
+          }),
+        }),
+      );
+    });
+
     it('should persist Dolby Vision fields', async () => {
       const asset = AssetFactory.create({ type: AssetType.Video });
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));

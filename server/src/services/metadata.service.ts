@@ -345,6 +345,10 @@ export class MetadataService extends BaseService {
             formatName: format.formatName,
             formatLongName: format.formatLongName,
             pixelFormat: video.pixelFormat,
+            cropTop: video.cropTop,
+            cropBottom: video.cropBottom,
+            cropLeft: video.cropLeft,
+            cropRight: video.cropRight,
           }
         : undefined;
 

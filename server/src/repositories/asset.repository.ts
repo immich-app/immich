@@ -225,6 +225,10 @@ export class AssetRepository {
               formatName: ref('asset_video.formatName'),
               formatLongName: ref('asset_video.formatLongName'),
               pixelFormat: ref('asset_video.pixelFormat'),
+              cropTop: ref('asset_video.cropTop'),
+              cropBottom: ref('asset_video.cropBottom'),
+              cropLeft: ref('asset_video.cropLeft'),
+              cropRight: ref('asset_video.cropRight'),
             })),
           ),
       );

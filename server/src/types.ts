@@ -90,6 +90,10 @@ export interface VideoStreamInfo {
   index: number;
   height: number;
   width: number;
+  cropTop: number | null;
+  cropBottom: number | null;
+  cropLeft: number | null;
+  cropRight: number | null;
   rotation: number;
   codecName: string | null;
   profile: H264Profile | HevcProfile | Av1Profile | null;
