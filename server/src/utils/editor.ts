@@ -1,4 +1,5 @@
 import { AssetFace } from 'src/database';
+import { AssetEditActionItem, CropParameters, MirrorAxis } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { ImageDimensions } from 'src/types';
 
@@ -7,6 +8,110 @@ type BoundingBox = {
   y1: number;
   x2: number;
   y2: number;
+};
+
+export type ExtractRectangle = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+};
+
+export const splitRotation = (angle: number) => {
+  let straightenAngle = angle % 90;
+  if (straightenAngle > 45) {
+    straightenAngle -= 90;
+  }
+  if (straightenAngle < -45) {
+    straightenAngle += 90;
+  }
+  if (Math.abs(straightenAngle) < 1e-10) {
+    straightenAngle = 0;
+  }
+
+  const quarterTurn = (((Math.round((angle - straightenAngle) / 90) * 90) % 360) + 360) % 360;
+  return { quarterTurn, straightenAngle };
+};
+
+export const getEffectiveStraightenRotation = (angle: number, edits: AssetEditActionItem[] = []) => {
+  const { quarterTurn, straightenAngle } = splitRotation(angle);
+  const mirrorCount = edits.filter((edit) => edit.action === 'mirror').length;
+  return quarterTurn + (mirrorCount % 2 === 1 ? -straightenAngle : straightenAngle);
+};
+
+export const getStraightenScale = ({ width, height }: ImageDimensions, straightenAngle: number) => {
+  if (straightenAngle === 0 || !Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    return 1;
+  }
+
+  const radians = (Math.abs(straightenAngle) * Math.PI) / 180;
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+  const newWidthRatio = (width * cos + height * sin) / width;
+  const newHeightRatio = (width * sin + height * cos) / height;
+  return Math.max(newWidthRatio, newHeightRatio, 1);
+};
+
+export const getRotatedCanvasDimensions = ({ width, height }: ImageDimensions, angle: number): ImageDimensions => {
+  const radians = (angle * Math.PI) / 180;
+  const cos = Math.abs(Math.cos(radians));
+  const sin = Math.abs(Math.sin(radians));
+
+  return {
+    width: Math.round(width * cos + height * sin),
+    height: Math.round(width * sin + height * cos),
+  };
+};
+
+export const getStraightenExtractRectangle = (
+  crop: CropParameters,
+  imageSize: ImageDimensions,
+  angle: number,
+  edits: AssetEditActionItem[] = [],
+  clamp = true,
+): ExtractRectangle => {
+  const { quarterTurn, straightenAngle } = splitRotation(angle);
+  const mirrorEdits = edits.filter((edit) => edit.action === 'mirror');
+  const effectiveAngle = getEffectiveStraightenRotation(angle, edits);
+  const target = getRotatedCanvasDimensions(imageSize, effectiveAngle);
+  const straightenScale = getStraightenScale(imageSize, straightenAngle);
+  const centerRotation = mirrorEdits.length % 2 === 1 ? (360 - quarterTurn) % 360 : quarterTurn;
+  const centerRotationRadians = (centerRotation * Math.PI) / 180;
+  const centerRotationCos = Math.cos(centerRotationRadians);
+  const centerRotationSin = Math.sin(centerRotationRadians);
+
+  const cropWidth = crop.width / straightenScale;
+  const cropHeight = crop.height / straightenScale;
+  const finalWidth = quarterTurn === 90 || quarterTurn === 270 ? cropHeight : cropWidth;
+  const finalHeight = quarterTurn === 90 || quarterTurn === 270 ? cropWidth : cropHeight;
+
+  const centerX = imageSize.width / 2;
+  const centerY = imageSize.height / 2;
+  const cropCenterX = crop.x + crop.width / 2;
+  const cropCenterY = crop.y + crop.height / 2;
+  const dx = (cropCenterX - centerX) / straightenScale;
+  const dy = (cropCenterY - centerY) / straightenScale;
+
+  let left = target.width / 2 + (dx * centerRotationCos - dy * centerRotationSin) - finalWidth / 2;
+  let top = target.height / 2 + (dx * centerRotationSin + dy * centerRotationCos) - finalHeight / 2;
+
+  for (const edit of mirrorEdits) {
+    if (edit.parameters.axis === MirrorAxis.Horizontal) {
+      left = target.width - left - finalWidth;
+    } else if (edit.parameters.axis === MirrorAxis.Vertical) {
+      top = target.height - top - finalHeight;
+    }
+  }
+
+  const width = clamp ? Math.max(1, Math.min(Math.round(finalWidth), target.width)) : finalWidth;
+  const height = clamp ? Math.max(1, Math.min(Math.round(finalHeight), target.height)) : finalHeight;
+
+  return {
+    left: clamp ? Math.max(0, Math.min(Math.round(left), target.width - width)) : left,
+    top: clamp ? Math.max(0, Math.min(Math.round(top), target.height - height)) : top,
+    width,
+    height,
+  };
 };
 
 export const boundingBoxOverlap = (boxA: BoundingBox, boxB: BoundingBox) => {

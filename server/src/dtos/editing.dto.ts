@@ -17,12 +17,18 @@ export enum MirrorAxis {
   Vertical = 'vertical',
 }
 
+const MAX_ROTATION_DEGREES = 360;
+
 const MirrorAxisSchema = z.enum(['horizontal', 'vertical']).describe('Axis to mirror along').meta({ id: 'MirrorAxis' });
 
 const CropParametersSchema = z
   .object({
-    x: z.int().min(0).describe('Top-Left X coordinate of crop'),
-    y: z.int().min(0).describe('Top-Left Y coordinate of crop'),
+    x: z
+      .int()
+      .describe('Top-Left X coordinate of crop. Can be negative for straightened crops before bounds validation'),
+    y: z
+      .int()
+      .describe('Top-Left Y coordinate of crop. Can be negative for straightened crops before bounds validation'),
     width: z.int().min(1).describe('Width of the crop'),
     height: z.int().min(1).describe('Height of the crop'),
   })
@@ -30,12 +36,7 @@ const CropParametersSchema = z
 
 const RotateParametersSchema = z
   .object({
-    angle: z
-      .number()
-      .refine((v) => [0, 90, 180, 270].includes(v), {
-        error: 'Angle must be one of the following values: 0, 90, 180, 270',
-      })
-      .describe('Rotation angle in degrees'),
+    angle: z.number().min(-MAX_ROTATION_DEGREES).max(MAX_ROTATION_DEGREES).describe('Rotation angle in degrees'),
   })
   .meta({ id: 'RotateParameters' });
 

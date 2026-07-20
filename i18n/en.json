@@ -936,6 +936,8 @@
   "editor_reset_all_changes": "Reset changes",
   "editor_rotate_left": "Rotate 90° counterclockwise",
   "editor_rotate_right": "Rotate 90° clockwise",
+  "editor_straighten": "Straighten",
+  "editor_straighten_reset": "Reset angle",
   "email": "Email",
   "email_notifications": "Email notifications",
   "empty_folder": "This folder is empty",

@@ -1,6 +1,6 @@
 import { AssetEditAction, MirrorAxis } from '@immich/sdk';
 import type { EditActions } from '$lib/managers/edit/edit-manager.svelte';
-import { buildAffineFromEdits, normalizeTransformEdits } from '$lib/utils/editor';
+import { buildAffineFromEdits, normalizeTransformEdits, splitRotation } from '$lib/utils/editor';
 
 type NormalizedParameters = {
   rotation: number;
@@ -90,6 +90,7 @@ describe('edit normalization', () => {
     const result = normalizeTransformEdits(edits);
     const normalizedEdits = normalizedToEdits(result);
 
+    expect(result).toEqual({ rotation: 0, mirrorHorizontal: true, mirrorVertical: false });
     expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
   });
 
@@ -99,6 +100,7 @@ describe('edit normalization', () => {
     const result = normalizeTransformEdits(edits);
     const normalizedEdits = normalizedToEdits(result);
 
+    expect(result).toEqual({ rotation: 0, mirrorHorizontal: false, mirrorVertical: true });
     expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
   });
 
@@ -322,5 +324,22 @@ describe('edit normalization', () => {
     const normalizedEdits = normalizedToEdits(result);
 
     expect(compareEditAffines(normalizedEdits, edits)).toBe(true);
+  });
+});
+
+describe('splitRotation', () => {
+  it('removes floating point residue from quarter-turn rotations', () => {
+    expect(splitRotation(-90.000_000_000_000_01)).toEqual({ quarterTurn: 270, straightenAngle: 0 });
+    expect(splitRotation(90.000_000_000_000_01)).toEqual({ quarterTurn: 90, straightenAngle: 0 });
+  });
+
+  it('keeps real straighten angles', () => {
+    expect(splitRotation(100)).toEqual({ quarterTurn: 90, straightenAngle: 10 });
+    expect(splitRotation(263)).toEqual({ quarterTurn: 270, straightenAngle: -7 });
+  });
+
+  it('keeps exact 45 degree boundaries as straighten angles', () => {
+    expect(splitRotation(45)).toEqual({ quarterTurn: 0, straightenAngle: 45 });
+    expect(splitRotation(-45)).toEqual({ quarterTurn: 0, straightenAngle: -45 });
   });
 });

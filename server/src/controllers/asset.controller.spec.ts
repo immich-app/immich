@@ -442,6 +442,31 @@ describe(AssetController.name, () => {
       );
     });
 
+    it('should reject rotate angles outside the supported range', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/assets/${factory.uuid()}/edits`)
+        .send({
+          edits: [
+            {
+              action: 'rotate',
+              parameters: {
+                angle: 361,
+              },
+            },
+          ],
+        });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        factory.responses.validationError([
+          {
+            path: ['edits', 0, 'parameters', 'angle'],
+            message: 'Too big: expected number to be <=360',
+          },
+        ]),
+      );
+    });
+
     it('should require at least one edit', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .put(`/assets/${factory.uuid()}/edits`)
