@@ -5,13 +5,15 @@ import {
   mapWorkflow,
   mapWorkflowShare,
   WorkflowCreateDto,
+  WorkflowGetLogsDto,
+  WorkflowLogEntryDto,
   WorkflowResponseDto,
   WorkflowSearchDto,
   WorkflowShareResponseDto,
   WorkflowTriggerResponseDto,
   WorkflowUpdateDto,
 } from 'src/dtos/workflow.dto';
-import { Permission } from 'src/enum';
+import { Permission, WorkflowResult } from 'src/enum';
 import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository';
 import { BaseService } from 'src/services/base.service';
 import { getWorkflowTriggers, isMethodCompatible, resolveMethod } from 'src/utils/workflow';
@@ -80,6 +82,23 @@ export class WorkflowService extends BaseService {
   async delete(auth: AuthDto, id: string): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.WorkflowDelete, ids: [id] });
     await this.workflowRepository.delete(id);
+  }
+
+  async getLogs(auth: AuthDto, id: string, dto: WorkflowGetLogsDto): Promise<WorkflowLogEntryDto[]> {
+    await this.requireAccess({ auth, permission: Permission.WorkflowLogs, ids: [id] });
+    const logs = await this.workflowRepository.getLogs(id, dto);
+    return logs.map((entry) => ({
+      id: entry.id,
+      at: entry.createdAt.toISOString(),
+      result: entry.error ? WorkflowResult.Error : entry.halted ? WorkflowResult.Halted : WorkflowResult.Completed,
+      triggerDataId: entry.triggerDataId ?? undefined,
+      lastStep: entry.step
+        ? {
+            index: entry.step.order,
+            method: `${entry.step.pluginId}#${entry.step.methodName}`,
+          }
+        : undefined,
+    }));
   }
 
   private async resolveAndValidateSteps<T extends { method: string }>(steps: T[], trigger: WorkflowTrigger) {

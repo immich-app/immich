@@ -214,6 +214,9 @@ String parameterToString(dynamic value) {
   if (value is VideoContainer) {
     return VideoContainerTypeTransformer().encode(value).toString();
   }
+  if (value is WorkflowResult) {
+    return WorkflowResultTypeTransformer().encode(value).toString();
+  }
   if (value is WorkflowTrigger) {
     return WorkflowTriggerTypeTransformer().encode(value).toString();
   }

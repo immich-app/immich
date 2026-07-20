@@ -15,6 +15,7 @@ class WorkflowUpdateDto {
   WorkflowUpdateDto({
     this.description = const Optional.absent(),
     this.enabled = const Optional.absent(),
+    this.logging = const Optional.absent(),
     this.name = const Optional.absent(),
     this.steps = const Optional.present(const []),
     this.trigger = const Optional.absent(),
@@ -31,6 +32,15 @@ class WorkflowUpdateDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   Optional<bool?> enabled;
+
+  /// Workflow logs run results
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<bool?> logging;
 
   /// Workflow name
   Optional<String?> name;
@@ -49,6 +59,7 @@ class WorkflowUpdateDto {
   bool operator ==(Object other) => identical(this, other) || other is WorkflowUpdateDto &&
     other.description == description &&
     other.enabled == enabled &&
+    other.logging == logging &&
     other.name == name &&
     _deepEquality.equals(other.steps, steps) &&
     other.trigger == trigger;
@@ -58,12 +69,13 @@ class WorkflowUpdateDto {
     // ignore: unnecessary_parenthesis
     (description == null ? 0 : description!.hashCode) +
     (enabled == null ? 0 : enabled!.hashCode) +
+    (logging == null ? 0 : logging!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (steps.hashCode) +
     (trigger == null ? 0 : trigger!.hashCode);
 
   @override
-  String toString() => 'WorkflowUpdateDto[description=$description, enabled=$enabled, name=$name, steps=$steps, trigger=$trigger]';
+  String toString() => 'WorkflowUpdateDto[description=$description, enabled=$enabled, logging=$logging, name=$name, steps=$steps, trigger=$trigger]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -74,6 +86,10 @@ class WorkflowUpdateDto {
     if (this.enabled.isPresent) {
       final value = this.enabled.value;
       json[r'enabled'] = value;
+    }
+    if (this.logging.isPresent) {
+      final value = this.logging.value;
+      json[r'logging'] = value;
     }
     if (this.name.isPresent) {
       final value = this.name.value;
@@ -101,6 +117,7 @@ class WorkflowUpdateDto {
       return WorkflowUpdateDto(
         description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
         enabled: json.containsKey(r'enabled') ? Optional.present(mapValueOfType<bool>(json, r'enabled')) : const Optional.absent(),
+        logging: json.containsKey(r'logging') ? Optional.present(mapValueOfType<bool>(json, r'logging')) : const Optional.absent(),
         name: json.containsKey(r'name') ? Optional.present(mapValueOfType<String>(json, r'name')) : const Optional.absent(),
         steps: json.containsKey(r'steps') ? Optional.present(WorkflowStepDto.listFromJson(json[r'steps'])) : const Optional.absent(),
         trigger: json.containsKey(r'trigger') ? Optional.present(WorkflowTrigger.fromJson(json[r'trigger'])) : const Optional.absent(),

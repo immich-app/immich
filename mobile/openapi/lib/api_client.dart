@@ -909,8 +909,14 @@ class ApiClient {
           return VideoContainerTypeTransformer().decode(value);
         case 'WorkflowCreateDto':
           return WorkflowCreateDto.fromJson(value);
+        case 'WorkflowLogEntryDto':
+          return WorkflowLogEntryDto.fromJson(value);
+        case 'WorkflowLogEntryDtoLastStep':
+          return WorkflowLogEntryDtoLastStep.fromJson(value);
         case 'WorkflowResponseDto':
           return WorkflowResponseDto.fromJson(value);
+        case 'WorkflowResult':
+          return WorkflowResultTypeTransformer().decode(value);
         case 'WorkflowShareResponseDto':
           return WorkflowShareResponseDto.fromJson(value);
         case 'WorkflowShareStepDto':

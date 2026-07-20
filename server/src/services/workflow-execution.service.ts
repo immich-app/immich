@@ -36,7 +36,7 @@ const dummy = () => {
 };
 
 type ExecuteOptions<T extends WorkflowType> = {
-  read: (type: T) => Promise<{ authUserId: string; data: WorkflowEventData<T> }>;
+  read: (type: T) => Promise<{ authUserId: string; data: WorkflowEventData<T>; entityId?: string }>;
   write: (auth: AuthDto, changes: WorkflowChanges<T>) => Promise<void>;
 };
 
@@ -331,6 +331,7 @@ export class WorkflowExecutionService extends BaseService {
               return {
                 data: { asset } as any,
                 authUserId: asset.ownerId,
+                entityId: asset.id,
               };
             },
             write: async (auth, changes) => {
@@ -398,11 +399,12 @@ export class WorkflowExecutionService extends BaseService {
       return;
     }
 
-    try {
-      const { read, write } = handler;
-      const readResult = await read(type);
-      let data = readResult.data;
-      for (const step of workflow.steps) {
+    const { read, write } = handler;
+    const readResult = await read(type);
+    let data = readResult.data;
+
+    for (const step of workflow.steps) {
+      try {
         const payload: WorkflowEventPayload<typeof type> = {
           trigger: workflow.trigger,
           type,
@@ -453,14 +455,45 @@ export class WorkflowExecutionService extends BaseService {
 
         const shouldContinue = result?.workflow?.continue ?? true;
         if (!shouldContinue) {
-          break;
-        }
-      }
+          if (workflow.logging) {
+            await this.workflowRepository.log({
+              workflowId,
+              error: false,
+              halted: true,
+              workflowStepId: step.id,
+              triggerDataId: readResult.entityId,
+            });
+          }
 
-      this.logger.debug(`Workflow ${workflowId} executed successfully`);
-    } catch (error) {
-      this.logger.error(`Error executing workflow ${workflowId}:`, error);
-      return JobStatus.Failed;
+          this.logger.debug(`Workflow ${workflowId} stopped on step ${step.id}`);
+          return;
+        }
+      } catch (error) {
+        this.logger.error(`Error executing workflow ${workflowId}:`, error);
+
+        if (workflow.logging) {
+          await this.workflowRepository.log({
+            workflowId,
+            error: true,
+            halted: false,
+            workflowStepId: step.id,
+            triggerDataId: readResult.entityId,
+          });
+        }
+
+        return JobStatus.Failed;
+      }
     }
+
+    if (workflow.logging) {
+      await this.workflowRepository.log({
+        workflowId,
+        error: false,
+        halted: false,
+        triggerDataId: readResult.entityId,
+      });
+    }
+
+    this.logger.debug(`Workflow ${workflowId} executed successfully`);
   }
 }
