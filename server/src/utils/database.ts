@@ -605,16 +605,14 @@ const encodedVideoFileBase = (eb: ExpressionBuilder<DB, 'asset' | 'asset_exif'>)
     .where('asset_file.type', '=', AssetFileType.EncodedVideo)
     .where('asset_file.isEdited', '=', false);
 
-function existsEncodedVideoPath(eb: AssetExpressionBuilder, f: StringFilter) {
-  const ops = [
-    ['=', f.eq],
-    ['!=', f.ne],
-    ['in', f.in],
-    ['not in', f.notIn],
-  ] as const;
-  return ops
-    .filter(([, v]) => v !== undefined)
-    .map(([op, v]) => eb.exists((eb2) => encodedVideoFileBase(eb2).where('asset_file.path', op, v!)));
+function existsEncodedVideoPath(eb: AssetExpressionBuilder, filter: StringFilter) {
+  return eb.exists(
+    encodedVideoFileBase(eb)
+      .$if(filter.eq !== undefined, (qb) => qb.where('asset_file.path', '=', filter.eq!))
+      .$if(filter.ne !== undefined, (qb) => qb.where('asset_file.path', '!=', filter.ne!))
+      .$if(filter.in !== undefined, (qb) => qb.where('asset_file.path', 'in', filter.in!))
+      .$if(filter.notIn !== undefined, (qb) => qb.where('asset_file.path', 'not in', filter.notIn!)),
+  );
 }
 
 function existsAnyAlbumId(eb: AssetExpressionBuilder, ids: string[]) {
@@ -880,7 +878,7 @@ function buildBranchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterB
     ...idsPredicates(eb, existsAnyPersonId, existsAllPersonIds, branch.personIds),
     ...idsPredicates(eb, existsAnyTagId, existsAllTagIds, branch.tagIds),
     ...checksumPredicates(eb, branch.checksum),
-    ...(branch.encodedVideoPath ? existsEncodedVideoPath(eb, branch.encodedVideoPath) : []),
+    ...(branch.encodedVideoPath ? [existsEncodedVideoPath(eb, branch.encodedVideoPath)] : []),
   ];
 }
 
