@@ -101,7 +101,7 @@
       e.preventDefault();
     };
     element.addEventListener('click', click);
-    element.addEventListener('pointerdown', start, true);
+    element.addEventListener('pointerdown', start, { capture: true });
     element.addEventListener('pointerup', clearLongPressTimer, { capture: true, passive: true });
     return {
       destroy: () => {

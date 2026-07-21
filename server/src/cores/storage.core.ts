@@ -202,20 +202,20 @@ export class StorageCore {
     let move = await this.moveRepository.getByEntity(entityId, pathType);
     if (move) {
       this.logger.log(`Attempting to finish incomplete move: ${move.oldPath} => ${move.newPath}`);
-      const oldPathExists = await this.storageRepository.checkFileExists(move.oldPath);
-      const newPathExists = await this.storageRepository.checkFileExists(move.newPath);
-      const newPathCheck = newPathExists ? move.newPath : null;
-      const actualPath = oldPathExists ? move.oldPath : newPathCheck;
+      const isOldPathExists = await this.storageRepository.checkFileExists(move.oldPath);
+      const isNewPathExists = await this.storageRepository.checkFileExists(move.newPath);
+      const newPathCheck = isNewPathExists ? move.newPath : null;
+      const actualPath = isOldPathExists ? move.oldPath : newPathCheck;
       if (!actualPath) {
         this.logger.warn('Unable to complete move. File does not exist at either location.');
         return;
       }
 
-      const fileAtNewLocation = actualPath === move.newPath;
-      this.logger.log(`Found file at ${fileAtNewLocation ? 'new' : 'old'} location`);
+      const isFileAtNewLocation = actualPath === move.newPath;
+      this.logger.log(`Found file at ${isFileAtNewLocation ? 'new' : 'old'} location`);
 
       if (
-        fileAtNewLocation &&
+        isFileAtNewLocation &&
         !(await this.verifyNewPathContentsMatchesExpected(move.oldPath, move.newPath, assetInfo))
       ) {
         this.logger.fatal(
@@ -349,7 +349,7 @@ export class StorageCore {
   }
 
   static getNestedPath(folder: StorageFolder, ownerId: string, filename: string): string {
-    return join(this.getNestedFolder(folder, ownerId, filename), filename);
+    return join(StorageCore.getNestedFolder(folder, ownerId, filename), filename);
   }
 
   static getTempPathInDir(dir: string): string {

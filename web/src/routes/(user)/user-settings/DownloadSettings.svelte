@@ -11,7 +11,7 @@
   import { fade } from 'svelte/transition';
 
   let archiveSize = $state(convertFromBytes(authManager.preferences.download.archiveSize || 4, ByteUnit.GiB));
-  let includeEmbeddedVideos = $state(authManager.preferences.download.includeEmbeddedVideos || false);
+  let includeEmbeddedVideos = $state(authManager.preferences.download.includeEmbeddedVideos);
 
   const handleSave = async () => {
     try {
