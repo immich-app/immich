@@ -47,7 +47,7 @@ class DriftAlbumApiRepository extends ApiRepository {
     return (removed: removed, failed: failed);
   }
 
-  Future<({List<String> added, List<String> failed})> addAssets(
+  Future<({List<String> added, Map<BulkIdErrorReason, int> failureReasons})> addAssets(
     String albumId,
     Iterable<String> assetIds, {
     Future<void>? abortTrigger,
@@ -55,16 +55,18 @@ class DriftAlbumApiRepository extends ApiRepository {
     final response = await checkNull(
       _api.addAssetsToAlbum(albumId, BulkIdsDto(ids: assetIds.toList()), abortTrigger: abortTrigger),
     );
-    final List<String> added = [], failed = [];
+    final List<String> added = [];
+    final Map<BulkIdErrorReason, int> failureReasons = {};
     for (final dto in response) {
       if (dto.success) {
         added.add(dto.id);
       } else {
-        failed.add(dto.id);
+        final reason = dto.error.orElse(null) ?? BulkIdErrorReason.unknown;
+        failureReasons[reason] = (failureReasons[reason] ?? 0) + 1;
       }
     }
 
-    return (added: added, failed: failed);
+    return (added: added, failureReasons: failureReasons);
   }
 
   Future<RemoteAlbum> updateAlbum(

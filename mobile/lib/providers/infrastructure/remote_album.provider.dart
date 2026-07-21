@@ -14,6 +14,7 @@ import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart' show BulkIdErrorReason;
 
 class RemoteAlbumState {
   final List<RemoteAlbum> albums;
@@ -200,12 +201,15 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     return _remoteAlbumService.getAssets(albumId);
   }
 
-  Future<int> addAssets(String albumId, List<String> assetIds) async {
-    final added = await _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
-    if (added > 0) {
+  Future<({int added, Map<BulkIdErrorReason, int> failureReasons})> addAssets(
+    String albumId,
+    List<String> assetIds,
+  ) async {
+    final result = await _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
+    if (result.added > 0) {
       await _refreshAlbumInState(albumId);
     }
-    return added;
+    return result;
   }
 
   /// Links a freshly-uploaded local asset to an album using its new remote ID,

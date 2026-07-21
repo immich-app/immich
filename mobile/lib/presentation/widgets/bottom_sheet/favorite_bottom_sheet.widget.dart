@@ -52,7 +52,7 @@ class FavoriteBottomSheet extends ConsumerWidget {
         );
       }
 
-      if (addedCount != remoteAssets.length) {
+      if (addedCount.added != remoteAssets.length) {
         ImmichToast.show(
           context: context,
           msg: 'add_to_album_bottom_sheet_already_exists'.t(args: {"album": album.name}),

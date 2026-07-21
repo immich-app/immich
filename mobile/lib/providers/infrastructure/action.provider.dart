@@ -34,14 +34,24 @@ final actionProvider = NotifierProvider<ActionNotifier, void>(ActionNotifier.new
 
 class ActionResult {
   final int count;
+  final Map<BulkIdErrorReason, int> failureReasons;
   final bool success;
   final String? error;
   final List<String> remoteAssetIds;
 
-  const ActionResult({required this.count, required this.success, this.error, this.remoteAssetIds = const []});
+  const ActionResult({
+    required this.count,
+    this.failureReasons = const {},
+    required this.success,
+    this.error,
+    this.remoteAssetIds = const [],
+  });
+
+  int get duplicate => failureReasons[BulkIdErrorReason.duplicate] ?? 0;
 
   @override
-  String toString() => 'ActionResult(count: $count, success: $success, error: $error, remoteAssetIds: $remoteAssetIds)';
+  String toString() =>
+      'ActionResult(count: $count, failureReasons: $failureReasons, success: $success, error: $error, remoteAssetIds: $remoteAssetIds)';
 }
 
 class ActionNotifier extends Notifier<void> {
@@ -393,9 +403,12 @@ class ActionNotifier extends Notifier<void> {
     final albumNotifier = ref.read(remoteAlbumProvider.notifier);
 
     int addedRemote = 0;
+    Map<BulkIdErrorReason, int> remoteFailures = {};
     if (remoteIds.isNotEmpty) {
       try {
-        addedRemote = await albumNotifier.addAssets(album.id, remoteIds);
+        final result = await albumNotifier.addAssets(album.id, remoteIds);
+        addedRemote = result.added;
+        remoteFailures = result.failureReasons;
       } catch (error, stack) {
         _logger.severe('Failed to add assets to album ${album.id}', error, stack);
         return ActionResult(count: 0, success: false, error: error.toString());
@@ -409,7 +422,7 @@ class ActionNotifier extends Notifier<void> {
     }
 
     if (localAssets.isEmpty) {
-      return ActionResult(count: addedRemote, success: true);
+      return ActionResult(count: addedRemote, failureReasons: remoteFailures, success: true);
     }
 
     final uploadResult = await upload(
@@ -422,6 +435,7 @@ class ActionNotifier extends Notifier<void> {
 
     return ActionResult(
       count: addedRemote + uploadResult.count,
+      failureReasons: remoteFailures,
       success: uploadResult.success,
       error: uploadResult.error,
     );

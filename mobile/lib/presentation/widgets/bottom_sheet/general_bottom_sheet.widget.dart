@@ -28,6 +28,7 @@ import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/utils/album_toast.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class GeneralBottomSheet extends ConsumerStatefulWidget {
@@ -71,12 +72,8 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
         ImmichToast.show(context: context, msg: 'scaffold_body_error_occurred'.tr(), toastType: ToastType.error);
         return;
       }
-      ImmichToast.show(
-        context: context,
-        msg: result.count == 0
-            ? 'add_to_album_bottom_sheet_already_exists'.tr(namedArgs: {'album': album.name})
-            : 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
-      );
+      final (msg, toastType) = resolveAlbumAddToast(result, album.name, context);
+      ImmichToast.show(context: context, msg: msg, toastType: toastType);
     }
 
     Future<void> onKeyboardExpand() {
