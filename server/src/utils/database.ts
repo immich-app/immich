@@ -519,7 +519,12 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
     .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null));
 }
 
-const EXIF_FILTER_FIELDS = new Set<keyof SearchFilterBranch>([
+type ExifFilterField = Extract<
+  keyof SearchFilterBranch,
+  'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel' | 'description' | 'rating' | 'fileSizeInBytes'
+>;
+
+const EXIF_FILTER_FIELDS = new Set<ExifFilterField>([
   'city',
   'state',
   'country',
@@ -531,20 +536,19 @@ const EXIF_FILTER_FIELDS = new Set<keyof SearchFilterBranch>([
   'fileSizeInBytes',
 ]);
 
-const EXIF_ORDER_FIELDS = new Set<SearchOrderField>([SearchOrderField.FileSizeInBytes, SearchOrderField.Rating]);
+type ExifOrderField = SearchOrderField.FileSizeInBytes | SearchOrderField.Rating;
+
+const EXIF_ORDER_FIELDS = new Set<ExifOrderField>([SearchOrderField.FileSizeInBytes, SearchOrderField.Rating]);
 
 function branchNeedsExifJoin(branch: SearchFilterBranch): boolean {
-  for (const key of Object.keys(branch) as (keyof SearchFilterBranch)[]) {
-    if (EXIF_FILTER_FIELDS.has(key)) {
-      return true;
-    }
-  }
-  return false;
+  const exifFields: ReadonlySet<string> = EXIF_FILTER_FIELDS;
+  return Object.keys(branch).some((key) => exifFields.has(key));
 }
 
 function exifJoinRequired(filter: SearchFilter, orderField: SearchOrderField): boolean {
+  const exifOrderFields: ReadonlySet<SearchOrderField> = EXIF_ORDER_FIELDS;
   return (
-    EXIF_ORDER_FIELDS.has(orderField) ||
+    exifOrderFields.has(orderField) ||
     branchNeedsExifJoin(filter) ||
     (filter.or?.some((branch) => branchNeedsExifJoin(branch)) ?? false)
   );
