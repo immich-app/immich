@@ -175,12 +175,12 @@ class RemoteAlbumService {
     return _repository.getAssets(albumId);
   }
 
-  Future<int> addAssets({required String albumId, required List<String> assetIds}) async {
+  Future<({int added, int failed})> addAssets({required String albumId, required List<String> assetIds}) async {
     final album = await _albumApiRepository.addAssets(albumId, assetIds);
 
     await _repository.addAssets(albumId, album.added);
 
-    return album.added.length;
+    return (added: album.added.length, failed: album.failed.length);
   }
 
   /// !TODO The name here is not clear as we have addAssets method above,
@@ -196,7 +196,7 @@ class RemoteAlbumService {
   }) async {
     int addedCount = 0;
     if (candidates.remoteAssetIds.isNotEmpty) {
-      addedCount += await addAssets(albumId: albumId, assetIds: candidates.remoteAssetIds);
+      addedCount += (await addAssets(albumId: albumId, assetIds: candidates.remoteAssetIds)).added;
     }
     if (candidates.localAssetsToUpload.isNotEmpty) {
       addedCount += await _uploadAndAddLocals(

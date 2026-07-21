@@ -34,11 +34,19 @@ class ActionResult {
   final bool success;
   final String? error;
   final List<String> remoteAssetIds;
+  final int failedCount;
 
-  const ActionResult({required this.count, required this.success, this.error, this.remoteAssetIds = const []});
+  const ActionResult({
+    required this.count,
+    required this.success,
+    this.error,
+    this.remoteAssetIds = const [],
+    this.failedCount = 0,
+  });
 
   @override
-  String toString() => 'ActionResult(count: $count, success: $success, error: $error, remoteAssetIds: $remoteAssetIds)';
+  String toString() =>
+      'ActionResult(count: $count, success: $success, error: $error, remoteAssetIds: $remoteAssetIds, failedCount: $failedCount)';
 }
 
 class ActionNotifier extends Notifier<void> {
@@ -366,9 +374,12 @@ class ActionNotifier extends Notifier<void> {
     final albumNotifier = ref.read(remoteAlbumProvider.notifier);
 
     int addedRemote = 0;
+    int failedRemote = 0;
     if (remoteIds.isNotEmpty) {
       try {
-        addedRemote = await albumNotifier.addAssets(album.id, remoteIds);
+        final result = await albumNotifier.addAssets(album.id, remoteIds);
+        addedRemote = result.added;
+        failedRemote = result.failed;
       } catch (error, stack) {
         _logger.severe('Failed to add assets to album ${album.id}', error, stack);
         return ActionResult(count: 0, success: false, error: error.toString());
@@ -382,7 +393,7 @@ class ActionNotifier extends Notifier<void> {
     }
 
     if (localAssets.isEmpty) {
-      return ActionResult(count: addedRemote, success: true);
+      return ActionResult(count: addedRemote, success: true, failedCount: failedRemote);
     }
 
     final uploadResult = await upload(
@@ -397,6 +408,7 @@ class ActionNotifier extends Notifier<void> {
       count: addedRemote + uploadResult.count,
       success: uploadResult.success,
       error: uploadResult.error,
+      failedCount: failedRemote,
     );
   }
 
