@@ -174,6 +174,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return;
     }
 
+    // The viewer is closing; don't flip the current asset now. Flipping it swaps
+    // the grid tile hero keys mid pop and animates the close on two tiles (#23779).
+    if (!mounted || !(ModalRoute.of(context)?.isActive ?? true)) {
+      return;
+    }
+
     AssetViewer._setAsset(ref, asset);
     _preloader.preload(index, context.sizeData);
     _handleCasting();

@@ -46,6 +46,7 @@ export default typescriptEslint.config([
       'unicorn/no-process-exit': 'off',
       'unicorn/import-style': 'off',
       'unicorn/consistent-class-member-order': 'off',
+      'unicorn/prefer-simple-condition-first': 'off',
       curly: 2,
       // prefer the typescript-eslint type-aware version
       'unicorn/require-array-sort-compare': 'off',

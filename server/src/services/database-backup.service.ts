@@ -214,7 +214,6 @@ export class DatabaseBackupService {
       bin: `/usr/lib/postgresql/${databaseMajorVersion}/bin/${bin}`,
       args,
       databaseUsername,
-      // eslint-disable-next-line unicorn/prefer-minimal-ternary
       databasePassword: isUrlConnection ? new URL(databaseConfig.url).password : databaseConfig.password,
       databaseVersion,
       databaseMajorVersion,
