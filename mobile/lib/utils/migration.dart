@@ -19,6 +19,7 @@ import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
@@ -38,7 +39,7 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
   if (storedVersion == null) {
     await FeatureMessageService(SettingsRepository.instance).markSeen();
-}
+  }
   if (version < 27) {
     await _migrateTo27(drift);
   }

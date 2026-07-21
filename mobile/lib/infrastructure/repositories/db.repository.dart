@@ -122,7 +122,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 32;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -274,52 +274,59 @@ class Drift extends $Drift {
                   v23.trashedLocalAssetEntity.durationMs,
                 );
 
-            await localAssetEntity.update().write(
-              LocalAssetEntityCompanion.custom(durationMs: v23.localAssetEntity.durationMs * const Constant(1000)),
-            );
-            await remoteAssetEntity.update().write(
-              RemoteAssetEntityCompanion.custom(durationMs: v23.remoteAssetEntity.durationMs * const Constant(1000)),
-            );
-            await trashedLocalAssetEntity.update().write(
-              TrashedLocalAssetEntityCompanion.custom(
-                durationMs: v23.trashedLocalAssetEntity.durationMs * const Constant(1000),
-              ),
-            );
-          },
-          from23To24: (m, v24) async {
-            await customStatement('DROP INDEX IF EXISTS idx_remote_album_owner_id');
-            await m.alterTable(TableMigration(v24.remoteAlbumEntity));
-          },
-          from24To25: (m, v25) async {
-            await m.createTable(v25.metadata);
-            await customStatement('DROP INDEX IF EXISTS idx_remote_asset_owner_checksum');
-            await customStatement('DROP INDEX IF EXISTS idx_remote_asset_local_date_time_day');
-            await customStatement('DROP INDEX IF EXISTS idx_remote_asset_local_date_time_month');
-            await m.createIndex(v25.idxRemoteAssetOwnerVisibilityDeletedCreated);
-            await m.createIndex(v25.idxRemoteExifCity);
-            await m.createIndex(v25.idxAssetFaceVisiblePerson);
-          },
-          from25To26: (m, v26) async {
-            await m.addColumn(v26.remoteAssetEntity, v26.remoteAssetEntity.uploadedAt);
-          },
-          from26To27: (m, v27) async {
-            await customStatement('ALTER TABLE metadata RENAME TO settings');
-          },
-          from27To28: (m, v28) async {
-            await m.createIndex(v28.idxLocalAssetCreatedAt);
-          },
-          from28To29: (m, v29) async {
-            await m.createTable(v29.assetOcrEntity);
-            await m.createIndex(v29.idxAssetOcrAssetId);
-          },
-          from29To30: (m, v30) async {
-            await m.alterTable(TableMigration(v30.settings));
-          },
-          from30To31: (m, v31) async {
-            await m.createTable(v31.session);
-          },
-        ),
-      );
+                await localAssetEntity.update().write(
+                  LocalAssetEntityCompanion.custom(durationMs: v23.localAssetEntity.durationMs * const Constant(1000)),
+                );
+                await remoteAssetEntity.update().write(
+                  RemoteAssetEntityCompanion.custom(
+                    durationMs: v23.remoteAssetEntity.durationMs * const Constant(1000),
+                  ),
+                );
+                await trashedLocalAssetEntity.update().write(
+                  TrashedLocalAssetEntityCompanion.custom(
+                    durationMs: v23.trashedLocalAssetEntity.durationMs * const Constant(1000),
+                  ),
+                );
+              },
+              from23To24: (m, v24) async {
+                await customStatement('DROP INDEX IF EXISTS idx_remote_album_owner_id');
+                await m.alterTable(TableMigration(v24.remoteAlbumEntity));
+              },
+              from24To25: (m, v25) async {
+                await m.createTable(v25.metadata);
+                await customStatement('DROP INDEX IF EXISTS idx_remote_asset_owner_checksum');
+                await customStatement('DROP INDEX IF EXISTS idx_remote_asset_local_date_time_day');
+                await customStatement('DROP INDEX IF EXISTS idx_remote_asset_local_date_time_month');
+                await m.createIndex(v25.idxRemoteAssetOwnerVisibilityDeletedCreated);
+                await m.createIndex(v25.idxRemoteExifCity);
+                await m.createIndex(v25.idxAssetFaceVisiblePerson);
+              },
+              from25To26: (m, v26) async {
+                await m.addColumn(v26.remoteAssetEntity, v26.remoteAssetEntity.uploadedAt);
+              },
+              from26To27: (m, v27) async {
+                await customStatement('ALTER TABLE metadata RENAME TO settings');
+              },
+              from27To28: (m, v28) async {
+                await m.createIndex(v28.idxLocalAssetCreatedAt);
+              },
+              from28To29: (m, v29) async {
+                await m.createTable(v29.assetOcrEntity);
+                await m.createIndex(v29.idxAssetOcrAssetId);
+              },
+              from29To30: (m, v30) async {
+                await m.alterTable(TableMigration(v30.settings));
+              },
+              from30To31: (m, v31) async {
+                await m.createIndex(v31.idxRemoteAssetUploaded);
+                // await m.createTable(v31.session);
+              },
+              from31To32: (m, v32) async {
+                await m.createTable(v32.session);
+              },
+            ),
+          ),
+        );
 
         if (kDebugMode) {
           // Fail if the migration broke foreign keys

@@ -11,8 +11,7 @@ String getThumbnailUrlForRemoteId(
   bool edited = true,
   String? thumbhash,
 }) {
-  final url =
-      '${SessionRepository.instance.session.serverEndpoint!}/assets/$id/thumbnail?size=${type.value}&edited=$edited';
+  final url = '${SessionRepository.instance.session.serverEndpoint!}/assets/$id/thumbnail?size=$type&edited=$edited';
   return thumbhash != null ? '$url&c=${Uri.encodeComponent(thumbhash)}' : url;
 }
 
