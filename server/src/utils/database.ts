@@ -554,35 +554,31 @@ function exifJoinRequired(filter: SearchFilter, orderField: SearchOrderField): b
 
 type AssetExpressionBuilder = ExpressionBuilder<DB, 'asset' | 'asset_exif'>;
 
-function existsAlbumLink(eb: AssetExpressionBuilder, present: boolean) {
-  const expression = eb.exists((eb) => eb.selectFrom('album_asset').whereRef('album_asset.assetId', '=', 'asset.id'));
-  return present ? expression : eb.not(expression);
+function existsAlbums(eb: AssetExpressionBuilder) {
+  return eb.exists((eb) => eb.selectFrom('album_asset').whereRef('album_asset.assetId', '=', 'asset.id'));
 }
 
-function existsPersonLink(eb: AssetExpressionBuilder, present: boolean) {
-  const expression = eb.exists((eb) =>
+function existsPeople(eb: AssetExpressionBuilder) {
+  return eb.exists((eb) =>
     eb
       .selectFrom('asset_face')
       .whereRef('asset_face.assetId', '=', 'asset.id')
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', '=', true),
   );
-  return present ? expression : eb.not(expression);
 }
 
-function existsTagLink(eb: AssetExpressionBuilder, present: boolean) {
-  const expression = eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('tag_asset.assetId', '=', 'asset.id'));
-  return present ? expression : eb.not(expression);
+function existsTags(eb: AssetExpressionBuilder) {
+  return eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('tag_asset.assetId', '=', 'asset.id'));
 }
 
-function existsEncodedVideo(eb: AssetExpressionBuilder, present: boolean) {
-  const expression = eb.exists((eb) =>
+function existsEncodedVideo(eb: AssetExpressionBuilder) {
+  return eb.exists((eb) =>
     eb
       .selectFrom('asset_file')
       .whereRef('asset_file.assetId', '=', 'asset.id')
       .where('asset_file.type', '=', AssetFileType.EncodedVideo),
   );
-  return present ? expression : eb.not(expression);
 }
 
 function existsOcrMatch(eb: AssetExpressionBuilder, matches: string) {
@@ -881,10 +877,10 @@ function buildBranchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterB
     ...(branch.isFavorite ? [eb('asset.isFavorite', '=', branch.isFavorite.eq)] : []),
     ...(branch.isOffline ? [eb('asset.isOffline', '=', branch.isOffline.eq)] : []),
     ...(branch.isMotion ? [eb('asset.livePhotoVideoId', branch.isMotion.eq ? 'is not' : 'is', null)] : []),
-    ...(branch.isEncoded ? [existsEncodedVideo(eb, branch.isEncoded.eq)] : []),
-    ...(branch.hasAlbums ? [existsAlbumLink(eb, branch.hasAlbums.eq)] : []),
-    ...(branch.hasPeople ? [existsPersonLink(eb, branch.hasPeople.eq)] : []),
-    ...(branch.hasTags ? [existsTagLink(eb, branch.hasTags.eq)] : []),
+    ...(branch.isEncoded ? [branch.isEncoded.eq ? existsEncodedVideo(eb) : eb.not(existsEncodedVideo(eb))] : []),
+    ...(branch.hasAlbums ? [branch.hasAlbums.eq ? existsAlbums(eb) : eb.not(existsAlbums(eb))] : []),
+    ...(branch.hasPeople ? [branch.hasPeople.eq ? existsPeople(eb) : eb.not(existsPeople(eb))] : []),
+    ...(branch.hasTags ? [branch.hasTags.eq ? existsTags(eb) : eb.not(existsTags(eb))] : []),
     ...stringEqNeInPredicates(eb, 'asset_exif.city', branch.city),
     ...stringEqNeInPredicates(eb, 'asset_exif.state', branch.state),
     ...stringEqNeInPredicates(eb, 'asset_exif.country', branch.country),
