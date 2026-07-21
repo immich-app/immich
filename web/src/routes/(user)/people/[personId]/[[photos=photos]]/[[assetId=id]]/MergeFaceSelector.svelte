@@ -37,6 +37,7 @@
   onMount(handleSearch);
 
   const handleSwapPeople = async () => {
+    // eslint-disable-next-line unicorn/no-unreadable-array-destructuring
     [person, selectedPeople[0]] = [selectedPeople[0], person];
     await goto(Route.viewPerson(person, { previousRoute: Route.people(), action: 'merge' }));
   };

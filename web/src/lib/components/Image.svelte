@@ -19,12 +19,14 @@
   let destroyed = false;
 
   $effect(() => {
-    if (src !== undefined && capturedSource === undefined) {
-      capturedSource = src;
-      untrack(() => {
-        onStart?.();
-      });
+    if (src === undefined || capturedSource !== undefined) {
+      return;
     }
+
+    capturedSource = src;
+    untrack(() => {
+      onStart?.();
+    });
   });
 
   onDestroy(() => {

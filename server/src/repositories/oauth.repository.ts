@@ -68,7 +68,7 @@ export class OAuthRepository {
       params.code_challenge_method = 'S256';
     }
 
-    const url = buildAuthorizationUrl(client, params).toString();
+    const url = buildAuthorizationUrl(client, params).href;
 
     return { url, state, codeVerifier };
   }
@@ -173,6 +173,7 @@ export class OAuthRepository {
       // Validate specific Logout Token claims (RFC 8963):
       // "events" claim must exist and contain the backchannel-logout event
       const events = payload.events as Record<string, any> | undefined;
+      // eslint-disable-next-line unicorn/prefer-https
       if (!events || !events['http://schemas.openid.net/event/backchannel-logout']) {
         throw new Error('Missing backchannel-logout event claim');
       }

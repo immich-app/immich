@@ -109,7 +109,7 @@ class AuthManager {
 
       await goto(redirectUri);
     } else {
-      globalThis.location.href = redirectUri;
+      location.assign(redirectUri);
     }
   }
 

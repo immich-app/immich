@@ -16,7 +16,7 @@ class DownloadManager {
       return;
     }
 
-    if (!this.assets[key]) {
+    if (!Object.hasOwn(this.assets, key)) {
       this.assets[key] = { progress: 0, total: 0, percentage: 0, abort: null };
     }
 

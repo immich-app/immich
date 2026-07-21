@@ -74,10 +74,12 @@
   const { ResetPassword, ResetPinCode, Update, Delete, Restore } = $derived(getUserAdminActions($t, user));
 
   const onUpdate = async (update: UserAdminResponseDto) => {
-    if (update.id === user.id) {
-      data.user = update;
-      await invalidateAll();
+    if (update.id !== user.id) {
+      return;
     }
+
+    data.user = update;
+    await invalidateAll();
   };
 
   const onUserAdminDeleted = async ({ id }: { id: string }) => {

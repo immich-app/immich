@@ -27,7 +27,7 @@ export class TimelineService extends BaseService {
 
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
     const { userId, ...options } = dto;
-    let userIds: string[] | undefined = undefined;
+    let userIds: string[] | undefined;
 
     if (userId) {
       userIds = [userId];
@@ -52,7 +52,7 @@ export class TimelineService extends BaseService {
     if (dto.albumId) {
       await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
     } else {
-      dto.userId = dto.userId || auth.user.id;
+      dto.userId ||= auth.user.id;
     }
 
     if (dto.userId) {
@@ -74,12 +74,12 @@ export class TimelineService extends BaseService {
     }
 
     if (dto.withPartners) {
-      const requestedLocked = dto.visibility === AssetVisibility.Locked;
-      const requestedArchived = dto.visibility === AssetVisibility.Archive || dto.visibility === undefined;
-      const requestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
-      const requestedTrash = dto.isTrashed === true;
+      const isRequestedLocked = dto.visibility === AssetVisibility.Locked;
+      const isRequestedArchived = dto.visibility === AssetVisibility.Archive || dto.visibility === undefined;
+      const isRequestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
+      const isRequestedTrash = dto.isTrashed === true;
 
-      if (requestedLocked || requestedArchived || requestedFavorite || requestedTrash) {
+      if (isRequestedLocked || isRequestedArchived || isRequestedFavorite || isRequestedTrash) {
         throw new BadRequestException(
           'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
         );

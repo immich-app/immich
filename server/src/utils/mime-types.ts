@@ -132,7 +132,8 @@ const sidecar: Record<string, string[]> = {
 
 const types = { ...image, ...video, ...sidecar };
 
-const isType = (filename: string, r: Record<string, string[]>) => extname(filename).toLowerCase() in r;
+const isType = (filename: string, record: Record<string, string[]>) =>
+  Object.hasOwn(record, extname(filename).toLowerCase());
 
 const lookup = (filename: string) => types[extname(filename).toLowerCase()]?.[0] ?? 'application/octet-stream';
 const toExtension = (mimeType: string) => {

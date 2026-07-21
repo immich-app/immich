@@ -163,8 +163,8 @@ const assetEntity = Object.freeze({
   duration: null,
   files: [] as AssetFile[],
   exifInfo: {
-    latitude: 49.533_547,
-    longitude: 10.703_075,
+    latitude: 49.533547,
+    longitude: 10.703075,
   },
   livePhotoVideoId: null,
 } as MapAsset);

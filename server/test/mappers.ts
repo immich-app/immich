@@ -68,7 +68,6 @@ export const getDehydrated = <T extends Record<string, unknown>>(entity: T) => {
   for (const [key, value] of Object.entries(copiedEntity)) {
     if (value instanceof Date) {
       Object.assign(copiedEntity, { [key]: value.toISOString() });
-      continue;
     }
   }
 

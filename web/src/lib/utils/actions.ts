@@ -68,19 +68,21 @@ const undoDeleteAssets = async (onUndoDelete: OnUndoDelete, assets: TimelineAsse
  * @param {StackResponse} stackResponse - The stack response containing the stack and assets to delete.
  */
 export function updateStackedAssetInTimeline(timelineManager: TimelineManager, { stack, toDeleteIds }: StackResponse) {
-  if (stack != undefined) {
-    timelineManager.update(
-      [stack.primaryAssetId],
-      (asset) =>
-        (asset.stack = {
-          id: stack.id,
-          primaryAssetId: stack.primaryAssetId,
-          assetCount: stack.assets.length,
-        }),
-    );
-
-    timelineManager.removeAssets(toDeleteIds);
+  if (stack == undefined) {
+    return;
   }
+
+  timelineManager.update(
+    [stack.primaryAssetId],
+    (asset) =>
+      (asset.stack = {
+        id: stack.id,
+        primaryAssetId: stack.primaryAssetId,
+        assetCount: stack.assets.length,
+      }),
+  );
+
+  timelineManager.removeAssets(toDeleteIds);
 }
 
 /**

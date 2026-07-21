@@ -45,10 +45,8 @@
   }
 
   const asFilter = (searchQuery: SmartSearchDto | MetadataSearchDto): SearchFilter => {
-    let query = '';
-    if ('query' in searchQuery && searchQuery.query) {
-      query = searchQuery.query;
-    }
+    let query = 'query' in searchQuery && searchQuery.query ? searchQuery.query : '';
+
     if ('originalFileName' in searchQuery && searchQuery.originalFileName) {
       query = searchQuery.originalFileName;
     }

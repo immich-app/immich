@@ -65,9 +65,9 @@ export class AuthService extends BaseService {
     const user = await this.userRepository.getByEmail(dto.email, { withPassword: true });
     // Always run bcrypt so response time is constant regardless of whether the email
     // is registered, preventing timing-based user enumeration.
-    const authenticated = this.cryptoRepository.compareBcrypt(dto.password, user?.password ?? LOGIN_DUMMY_HASH);
+    const isAuthenticated = this.cryptoRepository.compareBcrypt(dto.password, user?.password ?? LOGIN_DUMMY_HASH);
 
-    if (!user || !user.password || !authenticated) {
+    if (!user || !user.password || !isAuthenticated) {
       this.logger.warn(`Failed login attempt for user ${dto.email} from ip address ${details.clientIp}`);
       throw new UnauthorizedException('Incorrect email or password');
     }
@@ -124,8 +124,8 @@ export class AuthService extends BaseService {
   async changePassword(auth: AuthDto, dto: ChangePasswordDto): Promise<UserAdminResponseDto> {
     const { password, newPassword } = dto;
     const user = await this.userRepository.getForChangePassword(auth.user.id);
-    const valid = this.validateSecret(password, user.password);
-    if (!valid) {
+    const isValid = this.validateSecret(password, user.password);
+    if (!isValid) {
       throw new BadRequestException('Wrong password');
     }
 
@@ -271,7 +271,7 @@ export class AuthService extends BaseService {
   }
 
   getMobileRedirect(url: string) {
-    return `${MOBILE_REDIRECT}?${url.split('?')[1] || ''}`;
+    return `${MOBILE_REDIRECT}?${url.split('?', 2)[1] || ''}`;
   }
 
   async authorize(dto: OAuthConfigDto) {
@@ -625,7 +625,7 @@ export class AuthService extends BaseService {
     url: string,
   ) {
     if (mobileOverrideEnabled && mobileRedirectUri) {
-      return url.replace(/app\.immich:\/+oauth-callback/, mobileRedirectUri);
+      return url.replace(/app\.immich:\/+oauth-callback/, () => mobileRedirectUri);
     }
     return url;
   }

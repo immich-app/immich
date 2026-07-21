@@ -36,18 +36,20 @@ export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyCon
       }),
     }),
     log(event) {
-      if (event.level === 'error') {
-        if (isAssetChecksumConstraint(event.error)) {
-          return;
-        }
-
-        console.error('Query failed :', {
-          durationMs: event.queryDurationMillis,
-          error: event.error,
-          sql: event.query.sql,
-          params: event.query.parameters,
-        });
+      if (event.level !== 'error') {
+        return;
       }
+
+      if (isAssetChecksumConstraint(event.error)) {
+        return;
+      }
+
+      console.error('Query failed :', {
+        durationMs: event.queryDurationMillis,
+        error: event.error,
+        sql: event.query.sql,
+        params: event.query.parameters,
+      });
     },
   };
 };
@@ -523,6 +525,6 @@ export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: V
 export const updateLockedColumns = <T extends Record<string, unknown> & { lockedProperties?: LockableProperty[] }>(
   exif: T,
 ) => {
-  exif.lockedProperties = lockableProperties.filter((property) => property in exif);
+  exif.lockedProperties = lockableProperties.filter((property) => Object.hasOwn(exif, property));
   return exif;
 };

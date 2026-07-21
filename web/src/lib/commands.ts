@@ -232,7 +232,7 @@ export const getSettingsProvider = ($t: MessageFormatter) => {
     {
       title: $t('my_immich_title'),
       description: $t('my_immich_description'),
-      onAction: () => copyToClipboard(getMyImmichLink().toString()),
+      onAction: () => copyToClipboard(getMyImmichLink().href),
       shortcuts: { ctrl: true, shift: true, key: 'm' },
     },
   ];

@@ -131,7 +131,7 @@ export class AssetMediaController {
       const [_, reqSearch] = req.url.split('?');
       const redirSearchParams = new URLSearchParams(reqSearch);
       redirSearchParams.delete('size');
-      return res.redirect('original' + '?' + redirSearchParams.toString());
+      return res.redirect('original?' + redirSearchParams.toString());
     }
 
     const viewThumbnailRes = await this.service.viewThumbnail(auth, id, dto);
