@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Kysely, OrderByDirection, Selectable, ShallowDehydrateObject, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
+import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { MapAsset } from 'src/dtos/asset-response.dto';
 import { SearchFilter, SearchOrder } from 'src/dtos/search.dto';
 import { AssetStatus, AssetType, AssetVisibility, VectorIndex } from 'src/enum';
 import { probes } from 'src/repositories/database.repository';
@@ -221,9 +223,9 @@ export class SearchRepository {
   async searchMetadata(pagination: SearchPaginationOptions, options: AssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
     const items = await searchAssetBuilderLegacy(this.db, options)
-      .selectAll('asset')
+      .select(columns.searchAsset)
       .orderBy('asset.fileCreatedAt', orderDirection)
-      .orderBy('asset.id', "asc")
+      .orderBy('asset.id', 'asc')
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute();
@@ -261,7 +263,7 @@ export class SearchRepository {
   })
   async searchRandom(size: number, options: AssetSearchOptions) {
     return searchAssetBuilderLegacy(this.db, options)
-      .selectAll('asset')
+      .select(columns.searchAsset)
       .orderBy(sql`random()`)
       .limit(size)
       .execute();
@@ -282,7 +284,7 @@ export class SearchRepository {
   searchLargeAssets(size: number, options: LargeAssetSearchOptions) {
     const orderDirection = (options.orderDirection?.toLowerCase() || 'desc') as OrderByDirection;
     return searchAssetBuilderLegacy(this.db, options)
-      .selectAll('asset')
+      .select(columns.searchAsset)
       .$call(withExifInner)
       .where('asset_exif.fileSizeInByte', '>', options.minFileSize || 0)
       .orderBy('asset_exif.fileSizeInByte', orderDirection)
@@ -311,7 +313,7 @@ export class SearchRepository {
     return this.db.transaction().execute(async (trx) => {
       await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
       const items = await searchAssetBuilderLegacy(trx, options)
-        .selectAll('asset')
+        .select(columns.searchAsset)
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
         .orderBy('asset.id', 'asc')
@@ -443,7 +445,7 @@ export class SearchRepository {
       .selectFrom('asset')
       .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
       .innerJoin('cte', 'asset.id', 'cte.assetId')
-      .selectAll('asset')
+      .select(columns.searchAsset)
       .select((eb) =>
         eb
           .fn('to_jsonb', [eb.table('asset_exif')])
@@ -517,9 +519,12 @@ export class SearchRepository {
   }
 
   @GenerateSql(...searchMetadataV3Examples)
-  async searchMetadataV3(pagination: AssetSearchPaginationV3Options, options: AssetSearchBuilderV3Options) {
+  async searchMetadataV3(
+    pagination: AssetSearchPaginationV3Options,
+    options: AssetSearchBuilderV3Options,
+  ): Promise<MapAsset[]> {
     return await searchAssetBuilder(this.db, options)
-      .selectAll('asset')
+      .select(columns.searchAsset)
       .limit(pagination.size + 1)
       .execute();
   }
