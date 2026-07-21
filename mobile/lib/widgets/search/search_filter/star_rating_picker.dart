@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
+import 'package:immich_mobile/utils/option.dart';
 
 class StarRatingPicker extends HookWidget {
   const StarRatingPicker({super.key, required this.onSelect, this.filter});
@@ -13,12 +14,12 @@ class StarRatingPicker extends HookWidget {
     final selectedRating = useState(filter);
 
     return RadioGroup(
-      groupValue: selectedRating.value?.rating,
+      groupValue: selectedRating.value?.rating.fold((v) => v ?? 0, () => null),
       onChanged: (int? newValue) {
         if (newValue == null) {
           return;
         }
-        final newFilter = SearchRatingFilter(rating: newValue);
+        final newFilter = SearchRatingFilter(rating: Option.some(newValue == 0 ? null : newValue));
         selectedRating.value = newFilter;
         onSelect(newFilter);
       },

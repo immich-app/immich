@@ -61,10 +61,12 @@
 
   const hideControlsAfterDelay = () => {
     timer = setTimeout(() => {
-      if (!isOverControls) {
-        showControls = false;
-        setCursorStyle('none');
+      if (isOverControls) {
+        return;
       }
+
+      showControls = false;
+      setCursorStyle('none');
     }, 2500);
   };
 
@@ -77,10 +79,12 @@
     });
 
     unsubscribeStop = stopProgress.subscribe((value) => {
-      if (value) {
-        progressBar?.restart();
-        stopControlsHideTimer();
+      if (!value) {
+        return;
       }
+
+      progressBar?.restart();
+      stopControlsHideTimer();
     });
   });
 

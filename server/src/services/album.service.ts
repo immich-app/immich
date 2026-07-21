@@ -98,17 +98,13 @@ export class AlbumService extends BaseService {
   }
 
   async create(auth: AuthDto, dto: CreateAlbumDto): Promise<AlbumResponseDto> {
-    const albumUsers = dto.albumUsers || [];
+    const albumUsers = (dto.albumUsers || []).filter(({ userId }) => userId !== auth.user.id);
 
     for (const { userId } of albumUsers) {
       const exists = await this.userRepository.get(userId, {});
       if (!exists) {
         this.logger.debug('Album creation failed: user not found');
         throw new BadRequestException('Invalid user');
-      }
-
-      if (userId == auth.user.id) {
-        throw new BadRequestException('Cannot share album with owner');
       }
     }
 
@@ -230,7 +226,7 @@ export class AlbumService extends BaseService {
     const events: { id: string; recipients: string[] }[] = [];
     for (const albumId of allowedAlbumIds) {
       const existingAssetIds = await this.albumRepository.getAssetIds(albumId, [...allowedAssetIds]);
-      const notPresentAssetIds = [...allowedAssetIds].filter((id) => !existingAssetIds.has(id));
+      const notPresentAssetIds = [...allowedAssetIds.difference(existingAssetIds)];
       if (notPresentAssetIds.length === 0) {
         continue;
       }
@@ -292,9 +288,9 @@ export class AlbumService extends BaseService {
         throw new BadRequestException('Cannot add another owner');
       }
 
-      const exists = album.albumUsers.find(({ user: { id } }) => id === userId);
+      const exists = album.albumUsers.some(({ user: { id } }) => id === userId);
       if (exists) {
-        throw new BadRequestException('User already added');
+        continue;
       }
 
       const user = await this.userRepository.get(userId, {});
@@ -307,7 +303,7 @@ export class AlbumService extends BaseService {
       await this.eventRepository.emit('AlbumInvite', { id, userId, senderName: auth.user.name });
     }
 
-    return this.findOrFail(id, auth.user.id, { withAssets: true }).then(mapAlbum);
+    return mapAlbum(await this.findOrFail(id, auth.user.id, { withAssets: true }));
   }
 
   async removeUser(auth: AuthDto, id: string, userId: string | 'me'): Promise<void> {
@@ -339,6 +335,14 @@ export class AlbumService extends BaseService {
 
   async updateUser(auth: AuthDto, id: string, userId: string, dto: UpdateAlbumUserDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.AlbumShare, ids: [id] });
+
+    const album = await this.findOrFail(id, userId, { withAssets: false });
+    const owner = album.albumUsers[0];
+
+    if (owner.user.id === userId) {
+      throw new BadRequestException('User is owner');
+    }
+
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
   }
 

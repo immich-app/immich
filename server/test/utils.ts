@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-this-outside-of-class */
 import { createPostgres, DatabaseConnectionParams } from '@immich/sql-tools';
 import { CallHandler, ExecutionContext, Provider } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
@@ -33,6 +34,7 @@ import { DownloadRepository } from 'src/repositories/download.repository';
 import { DuplicateRepository } from 'src/repositories/duplicate.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
+import { IntegrityRepository } from 'src/repositories/integrity.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -106,6 +108,7 @@ export const controllerSetup = async (controller: new (...args: any[]) => unknow
       await new Promise<void>((resolve, reject) => {
         const next: NextFunction = (error) => (error ? reject(transformException(error)) : resolve());
         const maybePromise = handler(context.getRequest(), context.getResponse(), next);
+
         Promise.resolve(maybePromise).catch((error) => reject(error));
       });
 
@@ -175,7 +178,7 @@ export const automock = <T>(
   },
 ): AutoMocked<T> => {
   const mock: Record<string, unknown> = {};
-  const strict = options?.strict ?? true;
+  const isStrict = options?.strict ?? true;
   const args = options?.args ?? [];
 
   const mocks: Mock[] = [];
@@ -196,7 +199,7 @@ export const automock = <T>(
 
       const target = instance[property as keyof T];
       if (typeof target === 'function') {
-        const mockImplementation = mockFn(label, { strict });
+        const mockImplementation = mockFn(label, { strict: isStrict });
         mock[property] = mockImplementation;
         mocks.push(mockImplementation);
         continue;
@@ -234,6 +237,7 @@ export type ServiceOverrides = {
   duplicateRepository: DuplicateRepository;
   email: EmailRepository;
   event: EventRepository;
+  integrityReport: IntegrityRepository;
   job: JobRepository;
   library: LibraryRepository;
   logger: LoggingRepository;
@@ -316,6 +320,7 @@ export const getMocks = () => {
     email: automock(EmailRepository, { args: [loggerMock] }),
     // eslint-disable-next-line no-sparse-arrays
     event: automock(EventRepository, { args: [, , loggerMock], strict: false }),
+    integrityReport: automock(IntegrityRepository, { strict: false }),
     job: newJobRepositoryMock(),
     apiKey: automock(ApiKeyRepository),
     library: automock(LibraryRepository, { strict: false }),
@@ -385,6 +390,7 @@ export const newTestService = <T extends BaseService>(
     overrides.duplicateRepository || (mocks.duplicateRepository as As<DuplicateRepository>),
     overrides.email || (mocks.email as As<EmailRepository>),
     overrides.event || (mocks.event as As<EventRepository>),
+    overrides.integrityReport || (mocks.integrityReport as As<IntegrityRepository>),
     overrides.job || (mocks.job as As<JobRepository>),
     overrides.library || (mocks.library as As<LibraryRepository>),
     overrides.machineLearning || (mocks.machineLearning as As<MachineLearningRepository>),
@@ -450,7 +456,7 @@ const pngFactory = newPngFactory();
 
 const templateName = 'mich';
 
-const withDatabase = (url: string, name: string) => url.replace(`/${templateName}`, `/${name}`);
+const withDatabase = (url: string, name: string) => url.replace(`/${templateName}`, () => `/${name}`);
 
 export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
   const testUrl = process.env.IMMICH_TEST_POSTGRES_URL!;
@@ -540,7 +546,44 @@ export const mockDuplex =
     return duplex;
   };
 
-export async function* makeStream<T>(items: T[] = []): AsyncIterableIterator<T> {
+export const mockFork = vitest.fn((exitCode: number, stdout: string, stderr: string, error?: unknown) => {
+  const stdoutStream = new Readable({
+    read() {
+      this.push(stdout); // write mock data to stdout
+      this.push(null); // end stream
+    },
+  });
+
+  return {
+    stdout: stdoutStream,
+    stderr: new Readable({
+      read() {
+        this.push(stderr); // write mock data to stderr
+        this.push(null); // end stream
+      },
+    }),
+    stdin: new Writable({
+      write(chunk, encoding, callback) {
+        callback();
+      },
+    }),
+    exitCode,
+    on: vitest.fn((event, callback: any) => {
+      if (event === 'close') {
+        stdoutStream.once('end', () => callback(0));
+      }
+      if (event === 'error' && error) {
+        stdoutStream.once('end', () => callback(error));
+      }
+      if (event === 'exit') {
+        stdoutStream.once('end', () => callback(exitCode));
+      }
+    }),
+    kill: vitest.fn(),
+  } as unknown as ChildProcessWithoutNullStreams;
+});
+
+export async function* makeStream<T>(items: T[] = []): AsyncGenerator<T> {
   for (const item of items) {
     await Promise.resolve();
     yield item;

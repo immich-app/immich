@@ -20,7 +20,10 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   const DriftRemoteAlbumRepository(this._db) : super(_db);
 
   Future<List<RemoteAlbum>> getAll({Set<SortRemoteAlbumsBy> sortBy = const {SortRemoteAlbumsBy.updatedAt}}) {
-    final assetCount = _db.remoteAlbumAssetEntity.assetId.count(distinct: true);
+    // Count non-trashed assets via the joined asset table. Filtering trashed assets in the
+    // join condition (instead of the where clause) keeps albums whose assets are all trashed
+    // in the result, the same way truly empty albums are kept
+    final assetCount = _db.remoteAssetEntity.id.count(distinct: true);
 
     final query = _db.remoteAlbumEntity.select().join([
       leftOuterJoin(
@@ -30,7 +33,8 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       ),
       leftOuterJoin(
         _db.remoteAssetEntity,
-        _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId),
+        _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
+            _db.remoteAssetEntity.deletedAt.isNull(),
         useColumns: false,
       ),
       leftOuterJoin(
@@ -47,7 +51,6 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       ),
     ]);
     query
-      ..where(_db.remoteAssetEntity.deletedAt.isNull())
       ..addColumns([assetCount])
       ..addColumns([_db.userEntity.name, _db.userEntity.id])
       ..addColumns([_db.remoteAlbumUserEntity.userId.count(distinct: true)])
@@ -79,7 +82,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
   }
 
   Future<RemoteAlbum?> get(String albumId) {
-    final assetCount = _db.remoteAlbumAssetEntity.assetId.count(distinct: true);
+    final assetCount = _db.remoteAssetEntity.id.count(distinct: true);
 
     final query =
         _db.remoteAlbumEntity.select().join([
@@ -90,7 +93,8 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
             ),
             leftOuterJoin(
               _db.remoteAssetEntity,
-              _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId),
+              _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
+                  _db.remoteAssetEntity.deletedAt.isNull(),
               useColumns: false,
             ),
             leftOuterJoin(
@@ -106,7 +110,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
               useColumns: false,
             ),
           ])
-          ..where(_db.remoteAlbumEntity.id.equals(albumId) & _db.remoteAssetEntity.deletedAt.isNull())
+          ..where(_db.remoteAlbumEntity.id.equals(albumId))
           ..addColumns([assetCount])
           ..addColumns([_db.userEntity.name, _db.userEntity.id])
           ..addColumns([_db.remoteAlbumUserEntity.userId.count(distinct: true)])
@@ -515,7 +519,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       return [];
     }
 
-    final assetCount = _db.remoteAlbumAssetEntity.assetId.count(distinct: true);
+    final assetCount = _db.remoteAssetEntity.id.count(distinct: true);
     final query =
         _db.remoteAlbumEntity.select().join([
             leftOuterJoin(
@@ -525,7 +529,8 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
             ),
             leftOuterJoin(
               _db.remoteAssetEntity,
-              _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId),
+              _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
+                  _db.remoteAssetEntity.deletedAt.isNull(),
               useColumns: false,
             ),
             leftOuterJoin(
@@ -541,7 +546,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
               useColumns: false,
             ),
           ])
-          ..where(_db.remoteAlbumEntity.id.isIn(albumIds) & _db.remoteAssetEntity.deletedAt.isNull())
+          ..where(_db.remoteAlbumEntity.id.isIn(albumIds))
           ..addColumns([assetCount])
           ..addColumns([_db.remoteAlbumUserEntity.userId.count(distinct: true)])
           ..addColumns([_db.userEntity.name, _db.userEntity.id])

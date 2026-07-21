@@ -13,6 +13,7 @@
   import AssetDeleteConfirmModal from '$lib/modals/AssetDeleteConfirmModal.svelte';
   import ShortcutsModal from '$lib/modals/ShortcutsModal.svelte';
   import { Route } from '$lib/route';
+  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import { showDeleteModal } from '$lib/stores/preferences.store';
   import { handlePromiseError } from '$lib/utils';
   import { deleteAssets } from '$lib/utils/actions';
@@ -85,7 +86,6 @@
     return top + pageHeaderOffset < window.bottom && top + geometry.getHeight(index) > window.top;
   };
 
-  let shiftKeyIsDown = $state(false);
   let lastAssetMouseEvent: TimelineAsset | null = $state(null);
   let scrollTop = $state(0);
 
@@ -109,32 +109,19 @@
 
   let lastEndReachedHeight = 0;
   $effect(() => {
-    if (geometry.containerHeight - slidingWindow.bottom <= viewport.height) {
-      const contentHeight = geometry.containerHeight;
-      if (lastEndReachedHeight !== contentHeight) {
-        debouncedOnEndReached();
-        lastEndReachedHeight = contentHeight;
-      }
+    if (geometry.containerHeight - slidingWindow.bottom > viewport.height) {
+      return;
+    }
+
+    const contentHeight = geometry.containerHeight;
+    if (lastEndReachedHeight !== contentHeight) {
+      debouncedOnEndReached();
+      lastEndReachedHeight = contentHeight;
     }
   });
 
   const selectAllAssets = () => {
     assetInteraction.selectAssets(assets.map((a) => toTimelineAsset(a)));
-  };
-
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === 'Shift') {
-      event.preventDefault();
-
-      shiftKeyIsDown = true;
-    }
-  };
-
-  const onKeyUp = (event: KeyboardEvent) => {
-    if (event.key === 'Shift') {
-      event.preventDefault();
-      shiftKeyIsDown = false;
-    }
   };
 
   const handleSelectAssets = (asset: TimelineAsset) => {
@@ -168,7 +155,7 @@
   };
 
   const selectAssetCandidates = (endAsset: TimelineAsset) => {
-    if (!shiftKeyIsDown) {
+    if (!keyboardManager.shift) {
       return;
     }
 
@@ -188,7 +175,7 @@
   };
 
   const onSelectStart = (event: Event) => {
-    if (assetInteraction.selectionActive && shiftKeyIsDown) {
+    if (assetInteraction.selectionActive && keyboardManager.shift) {
       event.preventDefault();
     }
   };
@@ -316,6 +303,7 @@
         }
         break;
       }
+      // no default
     }
   };
 
@@ -332,13 +320,13 @@
   });
 
   $effect(() => {
-    if (!shiftKeyIsDown) {
+    if (!keyboardManager.shift) {
       assetInteraction.clearCandidates();
     }
   });
 
   $effect(() => {
-    if (shiftKeyIsDown && lastAssetMouseEvent) {
+    if (keyboardManager.shift && lastAssetMouseEvent) {
       selectAssetCandidates(lastAssetMouseEvent);
     }
   });
@@ -350,13 +338,7 @@
   });
 </script>
 
-<svelte:document
-  onkeydown={onKeyDown}
-  onkeyup={onKeyUp}
-  onselectstart={onSelectStart}
-  use:shortcuts={shortcutList}
-  onscroll={() => updateSlidingWindow()}
-/>
+<svelte:document onselectstart={onSelectStart} use:shortcuts={shortcutList} onscroll={() => updateSlidingWindow()} />
 
 {#if assets.length > 0}
   <div

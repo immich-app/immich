@@ -17,7 +17,15 @@ import { InjectKysely } from 'nestjs-kysely';
 import { LockableProperty, Stack } from 'src/database';
 import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { AssetFileType, AssetOrder, AssetOrderBy, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
+import {
+  AssetFileType,
+  AssetOrder,
+  AssetOrderBy,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  CalendarHeatmapType,
+} from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetAudioTable, AssetKeyframeTable, AssetVideoTable } from 'src/schema/tables/asset-av.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -705,6 +713,32 @@ export class AssetRepository {
       .$if(!!isTrashed, (qb) => qb.where('asset.status', '!=', AssetStatus.Deleted))
       .where('deletedAt', isTrashed ? 'is not' : 'is', null)
       .executeTakeFirstOrThrow();
+  }
+
+  @GenerateSql({
+    params: [DummyValue.UUID, { from: DummyValue.DATE, to: DummyValue.DATE, type: CalendarHeatmapType.Upload }],
+  })
+  getCalendarHeatmap(ownerId: string, dto: { from: Date; to: Date; type: CalendarHeatmapType }) {
+    const dateColumns: Record<CalendarHeatmapType, { order: AssetOrderBy; column: 'createdAt' | 'localDateTime' }> = {
+      [CalendarHeatmapType.Upload]: { order: AssetOrderBy.CreatedAt, column: 'createdAt' },
+      [CalendarHeatmapType.Taken]: { order: AssetOrderBy.TakenAt, column: 'localDateTime' },
+    } as const;
+
+    const { order, column } = dateColumns[dto.type];
+
+    const date = truncatedDate<Date>(order, 'DAY');
+
+    return this.db
+      .selectFrom('asset')
+      .select(date.as('date'))
+      .select((eb) => eb.fn.countAll<number>().as('count'))
+      .where('ownerId', '=', asUuid(ownerId))
+      .where(column, '>=', dto.from)
+      .where(column, '<', dto.to)
+      .where('deletedAt', 'is', null)
+      .groupBy(date)
+      .orderBy('date', 'asc')
+      .execute();
   }
 
   @GenerateSql({ params: [{}] })

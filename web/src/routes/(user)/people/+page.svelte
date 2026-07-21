@@ -13,6 +13,7 @@
   import { Route } from '$lib/route';
   import { locale } from '$lib/stores/preferences.store';
   import { websocketEvents } from '$lib/stores/websocket';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
   import { handlePromiseError } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
   import { clearQueryParam } from '$lib/utils/navigation';
@@ -70,7 +71,7 @@
         if (pagesToLoad) {
           handlePromiseError(
             Promise.all(
-              Array.from({ length: pagesToLoad }).map((_, i) => {
+              Array.from({ length: pagesToLoad }, (_, i) => {
                 return getAllPeople({ withHidden: true, page: startingPage + i });
               }),
             ).then((pages) => {
@@ -237,8 +238,8 @@
         potentialMergePeople = people
           .filter(
             (person: PersonResponseDto) =>
-              personMerge2?.name.toLowerCase() === person.name.toLowerCase() &&
-              person.id !== personMerge2.id &&
+              normalizeSearchString(personMerge2?.name ?? '') === normalizeSearchString(person.name) &&
+              person.id !== personMerge2?.id &&
               person.id !== personMerge1?.id &&
               !person.isHidden,
           )
@@ -269,8 +270,9 @@
 
   const findPeopleWithSimilarName = async (name: string, personId: string) => {
     const searchResult = await searchPerson({ name, withHidden: true });
+    const normalizedName = normalizeSearchString(name);
     return searchResult.find(
-      (person) => person.name.toLowerCase() === name.toLowerCase() && person.id !== personId && person.name,
+      (person) => normalizeSearchString(person.name) === normalizedName && person.id !== personId && person.name,
     );
   };
 

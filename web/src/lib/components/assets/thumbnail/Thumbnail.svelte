@@ -167,7 +167,7 @@
       e.preventDefault();
     };
     element.addEventListener('click', click);
-    element.addEventListener('pointerdown', start, true);
+    element.addEventListener('pointerdown', start, { capture: true });
     element.addEventListener('pointerup', clearLongPressTimer, { capture: true, passive: true });
     return {
       destroy: () => {
@@ -215,8 +215,7 @@
   onkeydown={(evt) => {
     if (evt.key === 'Enter') {
       callClickHandlers();
-    }
-    if (evt.key === 'x') {
+    } else if (evt.key === 'x') {
       onSelect?.(asset);
     }
     if (document.activeElement === element && evt.key === 'Escape') {
@@ -247,7 +246,7 @@
     >
       <ImageThumbnail
         class={['absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, imageClass]}
-        brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', { 'rounded-xl': selected }, brokenAssetClass]}
+        brokenAssetClass={['z-1 absolute group-focus-visible:rounded-lg', selected && 'rounded-2xl', brokenAssetClass]}
         url={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Thumbnail, cacheKey: asset.thumbhash })}
         altText={$getAltText(asset)}
         widthStyle="{width}px"
@@ -342,7 +341,7 @@
 
         {#if !!assetOwner}
           <div class="absolute inset-e-2 bottom-1 z-2 max-w-[50%]">
-            <p class="max-w-full truncate text-xs font-medium text-white drop-shadow-lg">
+            <p class="text-white-shadow max-w-full truncate p-1 text-xs font-medium text-white">
               {assetOwner.name}
             </p>
           </div>

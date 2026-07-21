@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
-import { extname } from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { AuthSharedLink } from 'src/database';
@@ -92,8 +91,7 @@ export class AssetMediaService extends BaseService {
   getUploadFilename({ auth, fieldName, file, body }: UploadRequest): string {
     requireUploadAccess(auth);
 
-    const extension = extname(body.filename || file.originalName);
-
+    const extension = getFilenameExtension(body.filename || file.originalName);
     const lookup = {
       [UploadFieldName.ASSET_DATA]: extension,
       [UploadFieldName.SIDECAR_DATA]: '.xmp',
@@ -342,9 +340,20 @@ export class AssetMediaService extends BaseService {
   }
 
   private async addToSharedLink(sharedLink: AuthSharedLink, assetId: string) {
-    await (sharedLink.albumId
-      ? this.albumRepository.addAssetIds(sharedLink.albumId, [assetId])
-      : this.sharedLinkRepository.addAssets(sharedLink.id, [assetId]));
+    if (!sharedLink.albumId) {
+      await this.sharedLinkRepository.addAssets(sharedLink.id, [assetId]);
+      return;
+    }
+
+    const album = await this.albumRepository.getById(sharedLink.albumId, { withAssets: false });
+    if (!album) {
+      return;
+    }
+
+    await this.albumRepository.addAssetIds(album.id, [assetId]);
+    for (const { user } of album.albumUsers) {
+      await this.eventRepository.emit('AlbumUpdate', { id: album.id, recipientId: user.id });
+    }
   }
 
   private requireQuota(auth: AuthDto, size: number) {

@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-top-level-assignment-in-function */
 import {
   AssetMediaCreateDto,
   AssetMediaResponseDto,
@@ -177,7 +178,7 @@ export const utils = {
   resetDatabase: async (tables?: string[]) => {
     client = await utils.connectDatabase();
 
-    tables = tables || [
+    tables ||= [
       // TODO e2e test for deleting a stack, since it is quite complex
       'stack',
       'library',
@@ -192,6 +193,7 @@ export const utils = {
       'user',
       'system_metadata',
       'tag',
+      'integrity_report',
     ];
 
     const truncateTables = tables.filter((table) => table !== 'system_metadata');
@@ -303,7 +305,7 @@ export const utils = {
   },
 
   adminSetup: async (options?: AdminSetupOptions) => {
-    options = options || { onboarding: true };
+    options ||= { onboarding: true };
 
     await signUpAdmin({ signUpDto: signupDto.admin });
     const response = await login({ loginCredentialDto: loginDto.admin });
@@ -544,6 +546,7 @@ export const utils = {
       {
         headers: asBearerAuth(accessToken),
         fetch: (...args: Parameters<typeof fetch>) =>
+          // eslint-disable-next-line unicorn/no-invalid-argument-count, unicorn/prefer-await
           fetch(...args).then((response) => {
             setCookie = response.headers.getSetCookie();
             return response;
@@ -559,8 +562,52 @@ export const utils = {
     mkdirSync(`${testAssetDir}/temp`, { recursive: true });
   },
 
+  putFile(source: string, dest: string) {
+    return executeCommand('docker', ['cp', source, `immich-e2e-server:${dest}`]).promise;
+  },
+
+  async putTextFile(contents: string, dest: string) {
+    const dir = await mkdtemp(join(tmpdir(), 'test-'));
+    const fn = join(dir, 'file');
+    await pipeline(Readable.from(contents), createWriteStream(fn));
+    return executeCommand('docker', ['cp', fn, `immich-e2e-server:${dest}`]).promise;
+  },
+
   async move(source: string, dest: string) {
     return executeCommand('docker', ['exec', 'immich-e2e-server', 'mv', source, dest]).promise;
+  },
+
+  async copyFolder(source: string, dest: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'cp', '-r', source, dest]).promise;
+  },
+
+  async deleteFile(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'rm', path]).promise;
+  },
+
+  async deleteFolder(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'rm', '-r', path]).promise;
+  },
+
+  async truncateFolder(path: string) {
+    return executeCommand('docker', [
+      'exec',
+      'immich-e2e-server',
+      'find',
+      path,
+      '-type',
+      'f',
+      '-exec',
+      'truncate',
+      '-s',
+      '1',
+      '{}',
+      ';',
+    ]).promise;
+  },
+
+  async mkFolder(path: string) {
+    return executeCommand('docker', ['exec', 'immich-e2e-server', 'mkdir', '-p', path]).promise;
   },
 
   createBackup: async (accessToken: string) => {
@@ -579,10 +626,8 @@ export const utils = {
 
   resetBackups: async (accessToken: string) => {
     const { backups } = await listDatabaseBackups({ headers: asBearerAuth(accessToken) });
-
-    const backupFiles = backups.map((b) => b.filename);
     await deleteDatabaseBackup(
-      { databaseBackupDeleteDto: { backups: backupFiles } },
+      { databaseBackupDeleteDto: { backups: backups.map((dto) => dto.filename) } },
       { headers: asBearerAuth(accessToken) },
     );
   },
@@ -631,7 +676,7 @@ export const utils = {
 
   cliLogin: async (accessToken: string) => {
     const key = await utils.createApiKey(accessToken, [Permission.All]);
-    await immichCli(['login', app, `${key.secret}`]);
+    await immichCli(['login', app, key.secret]);
     return key.secret;
   },
 
@@ -663,6 +708,7 @@ export const utils = {
   },
 };
 
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 utils.initSdk();
 
 if (!existsSync(`${testAssetDir}/albums`)) {

@@ -218,7 +218,7 @@ When the Dev Container starts, it automatically:
    - Debug ports: 9230 (workers), 9231 (API)
 
 :::info
-The Dev Container setup replaces the `make dev` command from the traditional setup. All services start automatically when you open the container.
+The Dev Container setup replaces the `mise dev` command from the traditional setup. All services start automatically when you open the container.
 :::
 
 ### Accessing Services

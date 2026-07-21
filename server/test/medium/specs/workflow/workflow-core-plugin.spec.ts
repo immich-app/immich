@@ -2,7 +2,7 @@ import { WorkflowStepConfig, WorkflowTrigger } from '@immich/plugin-sdk';
 import { Kysely } from 'kysely';
 import { readFileSync } from 'node:fs';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
-import { AssetVisibility, LogLevel } from 'src/enum';
+import { AssetType, AssetVisibility, LogLevel } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -21,7 +21,7 @@ import { MediumTestContext } from 'test/medium.factory';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { getKyselyDB } from 'test/utils';
 
-let initialized = false;
+let isInitialized = false;
 
 class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
   constructor(database: Kysely<DB>) {
@@ -44,7 +44,7 @@ class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
   }
 
   async init() {
-    if (initialized) {
+    if (isInitialized) {
       return;
     }
 
@@ -57,7 +57,7 @@ class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
     await this.sut.onPluginSync();
     await this.sut.onPluginLoad();
 
-    initialized = true;
+    isInitialized = true;
   }
 }
 
@@ -330,6 +330,163 @@ describe('core plugin', () => {
       await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeTruthy();
 
       await expect(ctx.get(AlbumRepository).getAssetIds(album.id, [asset.id])).resolves.not.toContain(asset.id);
+    });
+  });
+
+  describe('assetLocationFilter', () => {
+    it('should favorite an asset within a given radius', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, latitude: 49.27335322114536, longitude: -123.10387144078764 });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetMetadataExtraction,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetLocationFilter',
+            config: { coordinate: { latitude: 49.28882167994929, longitude: -123.1111530988137, radius: 2 } },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
+    });
+
+    it('should not favorite asset outside a given radius', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, latitude: 49.26126605257035, longitude: -123.24895939078196 });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetMetadataExtraction,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetLocationFilter',
+            config: { coordinate: { latitude: 49.28882167994929, longitude: -123.1111530988137, radius: 10 } },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: false });
+    });
+
+    it('should favorite asset by location name', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, city: 'Vancouver' });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetMetadataExtraction,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetLocationFilter',
+            config: { region: { city: 'Vancouver' } },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
+    });
+  });
+
+  describe('assetTypeFilter', () => {
+    it('should favorite asset if it is a video', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetTypeFilter',
+            config: { allowedTypes: ['VIDEO'] },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toMatchObject({ isFavorite: true });
+    });
+  });
+
+  describe('assetDateFilter', () => {
+    it('should favorite assets created during the first 7 days of a specific year and month', async () => {
+      const { user } = await ctx.newUser();
+      const [{ asset: asset1 }, { asset: asset2 }] = await Promise.all([
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2000-04-01') }),
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2000-04-07T23:59:59Z') }),
+      ]);
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetDateFilter',
+            config: {
+              startDate: { day: 1, month: 4, year: 2000 },
+              endDate: { day: 7, month: 4, year: 2000 },
+              recurring: false,
+            },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset1.id });
+      await expect(ctx.get(AssetRepository).getById(asset1.id)).resolves.toMatchObject({ isFavorite: true });
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset2.id });
+      await expect(ctx.get(AssetRepository).getById(asset2.id)).resolves.toMatchObject({ isFavorite: true });
+    });
+  });
+
+  describe('webhook', () => {
+    it('should trigger a webhook on asset upload', async () => {
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+
+      const fetchMock = vi.fn(() => Promise.resolve({ ok: true, status: 200, text: () => Promise.resolve('') }));
+      vi.stubGlobal('fetch', fetchMock);
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#webhook',
+            config: { url: 'http://localhost', method: 'POST' },
+          },
+        ],
+      });
+
+      await expect(ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset.id })).resolves.toBeUndefined();
+      expect(fetchMock).toHaveBeenCalled();
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
     });
   });
 });

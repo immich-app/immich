@@ -11,37 +11,42 @@
 part of openapi.api;
 
 /// Manual job name
-class ManualJobName {
-  /// Instantiate a new enum with the provided [value].
-  const ManualJobName._(this.value);
+enum ManualJobName {
+  personCleanup._(r'person-cleanup'),
+  tagCleanup._(r'tag-cleanup'),
+  userCleanup._(r'user-cleanup'),
+  memoryCleanup._(r'memory-cleanup'),
+  memoryCreate._(r'memory-create'),
+  backupDatabase._(r'backup-database'),
+  integrityMissingFiles._(r'integrity-missing-files'),
+  integrityUntrackedFiles._(r'integrity-untracked-files'),
+  integrityChecksumMismatch._(r'integrity-checksum-mismatch'),
+  integrityMissingFilesRefresh._(r'integrity-missing-files-refresh'),
+  integrityUntrackedFilesRefresh._(r'integrity-untracked-files-refresh'),
+  integrityChecksumMismatchRefresh._(r'integrity-checksum-mismatch-refresh'),
+  integrityMissingFilesDeleteAll._(r'integrity-missing-files-delete-all'),
+  integrityUntrackedFilesDeleteAll._(r'integrity-untracked-files-delete-all'),
+  integrityChecksumMismatchDeleteAll._(r'integrity-checksum-mismatch-delete-all'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const ManualJobName._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const personCleanup = ManualJobName._(r'person-cleanup');
-  static const tagCleanup = ManualJobName._(r'tag-cleanup');
-  static const userCleanup = ManualJobName._(r'user-cleanup');
-  static const memoryCleanup = ManualJobName._(r'memory-cleanup');
-  static const memoryCreate = ManualJobName._(r'memory-create');
-  static const backupDatabase = ManualJobName._(r'backup-database');
-
-  /// List of all possible values in this [enum][ManualJobName].
-  static const values = <ManualJobName>[
-    personCleanup,
-    tagCleanup,
-    userCleanup,
-    memoryCleanup,
-    memoryCreate,
-    backupDatabase,
-  ];
-
+  /// Returns the instance of [ManualJobName] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static ManualJobName? fromJson(dynamic value) => ManualJobNameTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [ManualJobName]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<ManualJobName> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ManualJobName>[];
     if (json is List && json.isNotEmpty) {
@@ -63,9 +68,11 @@ class ManualJobNameTypeTransformer {
 
   const ManualJobNameTypeTransformer._();
 
-  String encode(ManualJobName data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(ManualJobName data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a ManualJobName.
+  /// Returns the instance of [ManualJobName] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -74,6 +81,9 @@ class ManualJobNameTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   ManualJobName? decode(dynamic data, {bool allowNull = true}) {
+    if (data is ManualJobName) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'person-cleanup': return ManualJobName.personCleanup;
@@ -82,6 +92,15 @@ class ManualJobNameTypeTransformer {
         case r'memory-cleanup': return ManualJobName.memoryCleanup;
         case r'memory-create': return ManualJobName.memoryCreate;
         case r'backup-database': return ManualJobName.backupDatabase;
+        case r'integrity-missing-files': return ManualJobName.integrityMissingFiles;
+        case r'integrity-untracked-files': return ManualJobName.integrityUntrackedFiles;
+        case r'integrity-checksum-mismatch': return ManualJobName.integrityChecksumMismatch;
+        case r'integrity-missing-files-refresh': return ManualJobName.integrityMissingFilesRefresh;
+        case r'integrity-untracked-files-refresh': return ManualJobName.integrityUntrackedFilesRefresh;
+        case r'integrity-checksum-mismatch-refresh': return ManualJobName.integrityChecksumMismatchRefresh;
+        case r'integrity-missing-files-delete-all': return ManualJobName.integrityMissingFilesDeleteAll;
+        case r'integrity-untracked-files-delete-all': return ManualJobName.integrityUntrackedFilesDeleteAll;
+        case r'integrity-checksum-mismatch-delete-all': return ManualJobName.integrityChecksumMismatchDeleteAll;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -91,7 +110,7 @@ class ManualJobNameTypeTransformer {
     return null;
   }
 
-  /// Singleton [ManualJobNameTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static ManualJobNameTypeTransformer? _instance;
 }
 

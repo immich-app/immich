@@ -119,7 +119,9 @@ describe(`immich upload`, () => {
           const baseDir = `/tmp/upload/`;
 
           const testPaths = Object.keys(files).map((filePath) => `${baseDir}/${filePath}`);
-          testPaths.map((filePath) => utils.createImageFile(filePath));
+          for (const filePath of testPaths) {
+            utils.createImageFile(filePath);
+          }
 
           const commandLine = paths.map((argument) => `${baseDir}/${argument}`);
 
@@ -135,7 +137,9 @@ describe(`immich upload`, () => {
           const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });
           expect(assets.total).toBe(expectedCount);
 
-          testPaths.map((filePath) => utils.removeImageFile(filePath));
+          for (const filePath of testPaths) {
+            utils.removeImageFile(filePath);
+          }
         });
       }
     });

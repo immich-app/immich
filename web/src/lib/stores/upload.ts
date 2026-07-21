@@ -23,7 +23,7 @@ function createUploadStore() {
 
   const addItem = (newAsset: UploadAsset) => {
     uploadAssets.update(($assets) => {
-      const duplicate = $assets.find((asset) => asset.id === newAsset.id);
+      const duplicate = $assets.some((asset) => asset.id === newAsset.id);
       if (duplicate) {
         return $assets.map((asset) => (asset.id === newAsset.id ? newAsset : asset));
       }
@@ -96,6 +96,13 @@ function createUploadStore() {
             }
 
             case UploadState.DONE: {
+              break;
+            }
+
+            case UploadState.PENDING:
+            case UploadState.STARTED:
+            case undefined: {
+              console.error('Cannot remove uploads in progress');
               break;
             }
           }

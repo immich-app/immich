@@ -1,15 +1,22 @@
 <script lang="ts">
+  import { getHeatmapRange } from '$lib';
+  import CalendarHeatmap from '$lib/components/CalendarHeatmap.svelte';
+  import Skeleton from '$lib/elements/Skeleton.svelte';
   import { locale } from '$lib/stores/preferences.store';
   import {
     AssetVisibility,
+    CalendarHeatmapType,
     getAlbumStatistics,
     getAssetStatistics,
+    getMyCalendarHeatmap,
     type AlbumStatisticsResponseDto,
     type AssetStatsResponseDto,
   } from '@immich/sdk';
   import { Heading, Table, TableBody, TableCell, TableHeader, TableHeading, TableRow } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
+
+  // always start on Sunday
 
   let timelineStats: AssetStatsResponseDto = $state({
     videos: 0,
@@ -95,4 +102,28 @@
       </TableRow>
     </TableBody>
   </Table>
+
+  <div class="hidden lg:block">
+    <Heading size="tiny" class="mt-8">{$t('uploads')}</Heading>
+    {#await getMyCalendarHeatmap({ ...getHeatmapRange(), $type: CalendarHeatmapType.Upload })}
+      <Skeleton height={80} class="mt-2 rounded-lg" />
+    {:then data}
+      <CalendarHeatmap
+        {data}
+        itemLabel={(item) => $t('upload_day_count', { values: item })}
+        totalLabel={(count) => $t('uploads_count', { values: { count } })}
+      />
+    {/await}
+
+    <Heading size="tiny" class="mt-8">{$t('assets')}</Heading>
+    {#await getMyCalendarHeatmap({ ...getHeatmapRange(), $type: CalendarHeatmapType.Taken })}
+      <Skeleton height={80} class="mt-2 rounded-lg" />
+    {:then data}
+      <CalendarHeatmap
+        {data}
+        itemLabel={(item) => $t('asset_day_count', { values: item })}
+        totalLabel={(count) => $t('assets_count', { values: { count } })}
+      />
+    {/await}
+  </div>
 </section>

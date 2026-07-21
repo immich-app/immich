@@ -4,20 +4,7 @@ The Immich mobile app is a Flutter-based solution leveraging the Isar Database f
 
 ## Setup
 
-1. [Install mise](https://mise.jdx.dev/installing-mise.html).
-2. Change to the immich directory and trust the mise config with `mise trust`.
-3. Install tools with mise: `mise install`.
-4. Run `flutter pub get` to install the dependencies.
-5. Run `make translation` to generate the translation file.
-6. Run `flutter run` to start the app.
-
-## Translation
-
-To add a new translation text, enter the key-value pair in the `i18n/en.json` in the root of the immich project. Then, from the `mobile/` directory, run
-
-```bash
-make translation
-```
+See [setup](https://docs.immich.app/developer/setup) for how to set up the mobile build environment.
 
 ## Static Analysis
 

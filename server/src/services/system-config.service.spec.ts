@@ -5,6 +5,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  HlsVideoResolution,
   ImageFormat,
   LogLevel,
   OAuthTokenEndpointAuthMethod,
@@ -42,6 +43,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     [QueueName.Notification]: { concurrency: 5 },
     [QueueName.Ocr]: { concurrency: 1 },
     [QueueName.Workflow]: { concurrency: 5 },
+    [QueueName.IntegrityCheck]: { concurrency: 1 },
     [QueueName.Editor]: { concurrency: 2 },
   },
   backup: {
@@ -75,6 +77,24 @@ const updatedConfig = Object.freeze<SystemConfig>({
     tonemap: ToneMapping.Hable,
     realtime: {
       enabled: false,
+      videoCodecs: [VideoCodec.H264, VideoCodec.Hevc],
+      resolutions: [HlsVideoResolution.p480, HlsVideoResolution.p720, HlsVideoResolution.p1080],
+    },
+  },
+  integrityChecks: {
+    untrackedFiles: {
+      enabled: true,
+      cronExpression: '0 03 * * *',
+    },
+    missingFiles: {
+      enabled: true,
+      cronExpression: '0 03 * * *',
+    },
+    checksumFiles: {
+      enabled: true,
+      cronExpression: '0 03 * * *',
+      timeLimit: 60 * 60 * 1000,
+      percentageLimit: 1,
     },
   },
   logging: {
@@ -302,14 +322,14 @@ describe(SystemConfigService.name, () => {
     it('should accept valid cron expressions', async () => {
       mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
       mocks.systemMetadata.readFile.mockResolvedValue(
-        JSON.stringify({ library: { scan: { cronExpression: '0 0 * * *' } } }),
+        JSON.stringify({ library: { scan: { cronExpression: '0 0 */3 * *' } } }),
       );
 
       await expect(sut.getSystemConfig()).resolves.toMatchObject({
         library: {
           scan: {
             enabled: true,
-            cronExpression: '0 0 * * *',
+            cronExpression: '0 0 */3 * *',
           },
         },
       });

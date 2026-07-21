@@ -91,12 +91,14 @@ describe('/server', () => {
     it('should respond with the server version', async () => {
       const { status, body } = await request(app).get('/server/version');
       expect(status).toBe(200);
-      expect(body).toEqual({
-        major: expect.any(Number),
-        minor: expect.any(Number),
-        patch: expect.any(Number),
-        prerelease: null,
-      });
+      expect(body).toEqual(
+        expect.objectContaining({
+          major: expect.any(Number),
+          minor: expect.any(Number),
+          patch: expect.any(Number),
+        }),
+      );
+      expect(Object.keys(body)).toEqual(expect.arrayContaining(['major', 'minor', 'patch', 'prerelease']));
     });
   });
 

@@ -44,7 +44,7 @@ class RatingDetails extends ConsumerWidget {
               await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, rating.round());
             },
             onClearRating: () async {
-              await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, 0);
+              await ref.read(actionProvider.notifier).updateRating(ActionSource.viewer, null);
             },
           ),
         ],

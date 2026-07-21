@@ -11,29 +11,28 @@
 part of openapi.api;
 
 /// Workflow type
-class WorkflowType {
-  /// Instantiate a new enum with the provided [value].
-  const WorkflowType._(this.value);
+enum WorkflowType {
+  assetV1._(r'AssetV1'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const WorkflowType._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const assetV1 = WorkflowType._(r'AssetV1');
-  static const assetPersonV1 = WorkflowType._(r'AssetPersonV1');
-
-  /// List of all possible values in this [enum][WorkflowType].
-  static const values = <WorkflowType>[
-    assetV1,
-    assetPersonV1,
-  ];
-
+  /// Returns the instance of [WorkflowType] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static WorkflowType? fromJson(dynamic value) => WorkflowTypeTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [WorkflowType]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<WorkflowType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <WorkflowType>[];
     if (json is List && json.isNotEmpty) {
@@ -55,9 +54,11 @@ class WorkflowTypeTypeTransformer {
 
   const WorkflowTypeTypeTransformer._();
 
-  String encode(WorkflowType data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(WorkflowType data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a WorkflowType.
+  /// Returns the instance of [WorkflowType] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -66,10 +67,12 @@ class WorkflowTypeTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   WorkflowType? decode(dynamic data, {bool allowNull = true}) {
+    if (data is WorkflowType) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'AssetV1': return WorkflowType.assetV1;
-        case r'AssetPersonV1': return WorkflowType.assetPersonV1;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
@@ -79,7 +82,7 @@ class WorkflowTypeTypeTransformer {
     return null;
   }
 
-  /// Singleton [WorkflowTypeTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static WorkflowTypeTypeTransformer? _instance;
 }
 

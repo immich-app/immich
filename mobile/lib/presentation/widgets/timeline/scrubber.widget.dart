@@ -221,6 +221,10 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       return;
     }
 
+    if (_scrubberHeight <= 0) {
+      return;
+    }
+
     if (_thumbAnimationController.status != AnimationStatus.forward) {
       _thumbAnimationController.forward();
     }

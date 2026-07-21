@@ -36,18 +36,20 @@ export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyCon
       }),
     }),
     log(event) {
-      if (event.level === 'error') {
-        if (isAssetChecksumConstraint(event.error)) {
-          return;
-        }
-
-        console.error('Query failed :', {
-          durationMs: event.queryDurationMillis,
-          error: event.error,
-          sql: event.query.sql,
-          params: event.query.parameters,
-        });
+      if (event.level !== 'error') {
+        return;
       }
+
+      if (isAssetChecksumConstraint(event.error)) {
+        return;
+      }
+
+      console.error('Query failed :', {
+        durationMs: event.queryDurationMillis,
+        error: event.error,
+        sql: event.query.sql,
+        params: event.query.parameters,
+      });
     },
   };
 };
@@ -301,8 +303,8 @@ export function withTags(eb: ExpressionBuilder<DB, 'asset'>) {
   ).as('tags');
 }
 
-export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt) {
-  return sql<O>`date_trunc(${sql.lit('MONTH')}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
+export function truncatedDate<O>(order: AssetOrderBy = AssetOrderBy.TakenAt, size?: 'DAY' | 'MONTH') {
+  return sql<O>`date_trunc(${sql.lit(size ?? 'MONTH')}, ${sql.ref(order === AssetOrderBy.CreatedAt ? 'asset.createdAt' : 'localDateTime')} AT TIME ZONE 'UTC') AT TIME ZONE 'UTC'`;
 }
 
 export function withTagId<O>(qb: SelectQueryBuilder<DB, 'asset', O>, tagId: string) {
@@ -373,12 +375,15 @@ const joinDeduplicationPlugin = new DeduplicateJoinsPlugin();
 
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderOptions) {
   options.withDeleted ||= !!(options.trashedAfter || options.trashedBefore || options.isOffline);
-  const visibility = options.visibility == null ? AssetVisibility.Timeline : options.visibility;
 
   return kysely
     .withPlugin(joinDeduplicationPlugin)
     .selectFrom('asset')
-    .where('asset.visibility', '=', visibility)
+    .$if(!!options.visibility, (qb) =>
+      options.visibility === 'not-locked'
+        ? qb.where('asset.visibility', '!=', AssetVisibility.Locked)
+        : qb.where('asset.visibility', '=', options.visibility!),
+    )
     .$if(!!options.albumIds && options.albumIds.length > 0, (qb) => inAlbums(qb, options.albumIds!))
     .$if(!!options.tagIds && options.tagIds.length > 0, (qb) => hasTags(qb, options.tagIds!))
     .$if(options.tagIds === null, (qb) =>
@@ -520,6 +525,6 @@ export function vectorIndexQuery({ vectorExtension, table, indexName, lists }: V
 export const updateLockedColumns = <T extends Record<string, unknown> & { lockedProperties?: LockableProperty[] }>(
   exif: T,
 ) => {
-  exif.lockedProperties = lockableProperties.filter((property) => property in exif);
+  exif.lockedProperties = lockableProperties.filter((property) => Object.hasOwn(exif, property));
   return exif;
 };

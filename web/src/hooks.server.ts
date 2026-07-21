@@ -6,7 +6,7 @@ import GoogleSansCode from '$lib/assets/fonts/GoogleSansCode/GoogleSansCode.ttf?
 export const handle = (async ({ event, resolve }) => {
   return resolve(event, {
     transformPageChunk: ({ html }) => {
-      return html.replace('%app.font%', GoogleSans).replace('%app.monofont%', GoogleSansCode);
+      return html.replace('%app.font%', () => GoogleSans).replace('%app.monofont%', () => GoogleSansCode);
     },
   });
 }) satisfies Handle;

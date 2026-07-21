@@ -108,8 +108,8 @@ class ExifResponseDto {
 
   /// Rating
   ///
-  /// Minimum value: -9007199254740991
-  /// Maximum value: 9007199254740991
+  /// Minimum value: 1
+  /// Maximum value: 5
   Optional<int?> rating;
 
   /// State/province name

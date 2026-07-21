@@ -143,7 +143,7 @@ export class DatabaseBackupService {
 
         databaseUsername = parsedUrl.username || parsedUrl.searchParams.get('user');
 
-        url = parsedUrl.toString();
+        url = parsedUrl.href;
       }
 
       // assume typical values if we can't parse URL or not present
@@ -163,6 +163,9 @@ export class DatabaseBackupService {
       );
 
       switch (bin) {
+        case 'pg_dump': {
+          break;
+        }
         case 'pg_dumpall': {
           args.push('--database');
           break;
@@ -225,7 +228,7 @@ export class DatabaseBackupService {
 
     this.logger.log(`Database Backup Starting. Database Version: ${databaseMajorVersion}`);
 
-    const filename = `${filenamePrefix}immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${databaseVersion.split(' ')[0]}.sql.gz`;
+    const filename = `${filenamePrefix}immich-db-backup-${DateTime.now().toFormat("yyyyLLdd'T'HHmmss")}-v${serverVersion.toString()}-pg${databaseVersion.split(' ', 1)[0]}.sql.gz`;
     const backupFilePath = path.join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
     const temporaryFilePath = `${backupFilePath}.tmp`;
 
@@ -246,6 +249,7 @@ export class DatabaseBackupService {
       this.logger.error(`Database Backup Failure: ${error}`);
       await this.storageRepository
         .unlink(temporaryFilePath)
+
         .catch((error) => this.logger.error(`Failed to delete failed backup file: ${error}`));
       throw error;
     }
@@ -351,7 +355,7 @@ export class DatabaseBackupService {
   ): Promise<void> {
     this.logger.debug(`Database Restore Started`);
 
-    let complete = false;
+    let isComplete = false;
     try {
       if (!isValidDatabaseBackupName(filename)) {
         throw new Error('Invalid backup file format!');
@@ -396,7 +400,7 @@ export class DatabaseBackupService {
       });
 
       const [progressSource, progressSink] = createSqlProgressStreams((progress) => {
-        if (complete) {
+        if (isComplete) {
           return;
         }
 
@@ -404,7 +408,7 @@ export class DatabaseBackupService {
         progressCb?.('restore', progress);
       });
 
-      await pipeline(sqlStream, progressSource, psql, progressSink);
+      await pipeline(sqlStream, createSqlOwnerTransformStream(databaseUsername), progressSource, psql, progressSink);
 
       try {
         progressCb?.('migrations', 0.9);
@@ -434,7 +438,7 @@ export class DatabaseBackupService {
         });
 
         const [progressSource, progressSink] = createSqlProgressStreams((progress) => {
-          if (complete) {
+          if (isComplete) {
             return;
           }
 
@@ -450,7 +454,7 @@ export class DatabaseBackupService {
       this.logger.error(`Database Restore Failure: ${error}`);
       throw error;
     } finally {
-      complete = true;
+      isComplete = true;
     }
 
     this.logger.log(`Database Restore Success`);
@@ -504,7 +508,7 @@ function createSqlProgressStreams(cb: (progress: number) => void) {
   const STDIN_START_MARKER = new TextEncoder().encode('FROM stdin');
   const STDIN_END_MARKER = new TextEncoder().encode(String.raw`\.`);
 
-  let readingStdin = false;
+  let isReadingStdin = false;
   let sequenceIdx = 0;
 
   let linesSent = 0;
@@ -529,19 +533,19 @@ function createSqlProgressStreams(cb: (progress: number) => void) {
   const source = new PassThrough({
     transform(chunk, _encoding, callback) {
       for (const byte of chunk) {
-        if (!readingStdin && byte === 10 && lastByte !== 10) {
+        if (!isReadingStdin && byte === 10 && lastByte !== 10) {
           linesSent += 1;
         }
 
         lastByte = byte;
 
-        const sequence = readingStdin ? STDIN_END_MARKER : STDIN_START_MARKER;
+        const sequence = isReadingStdin ? STDIN_END_MARKER : STDIN_START_MARKER;
         if (sequence[sequenceIdx] === byte) {
           sequenceIdx += 1;
 
           if (sequence.length === sequenceIdx) {
             sequenceIdx = 0;
-            readingStdin = !readingStdin;
+            isReadingStdin = !isReadingStdin;
           }
         } else {
           sequenceIdx = 0;
@@ -549,6 +553,7 @@ function createSqlProgressStreams(cb: (progress: number) => void) {
       }
 
       cbDebounced();
+      // eslint-disable-next-line unicorn/no-this-outside-of-class
       this.push(chunk);
       callback();
     },
@@ -568,4 +573,71 @@ function createSqlProgressStreams(cb: (progress: number) => void) {
   });
 
   return [source, sink];
+}
+
+function createSqlOwnerTransformStream(databaseUsername: string) {
+  const OWNER_MARKER_START = new TextEncoder().encode('OWNER TO ');
+  const DATA_MARKER_START = new TextEncoder().encode('FROM stdin');
+  const LINE_END = new TextEncoder().encode(';');
+
+  const owner = new TextEncoder().encode(databaseUsername);
+
+  let ownerSequenceIndex = 0;
+
+  let replacingOwnerIndex = 0;
+  let replacingOwner = false;
+
+  let readingDataIndex = 0;
+
+  let dataPart = false;
+
+  return new PassThrough({
+    transform(chunk, _encoding, callback) {
+      let result = chunk;
+      if (!dataPart) {
+        for (let index = 0; index < result.length; index++) {
+          if (replacingOwner) {
+            if (result[index] === LINE_END[0]) {
+              result = Buffer.concat([result.slice(0, index), owner.slice(replacingOwnerIndex), result.slice(index)]);
+              replacingOwnerIndex = owner.length;
+            } else {
+              result[index] = owner[replacingOwnerIndex];
+              replacingOwnerIndex++;
+            }
+          }
+
+          if (replacingOwnerIndex === owner.length) {
+            replacingOwner = false;
+          }
+
+          if (result[index] === OWNER_MARKER_START[ownerSequenceIndex]) {
+            ownerSequenceIndex++;
+          } else {
+            ownerSequenceIndex = 0;
+          }
+
+          if (ownerSequenceIndex === OWNER_MARKER_START.length) {
+            ownerSequenceIndex = 0;
+            replacingOwner = true;
+            replacingOwnerIndex = 0;
+          }
+
+          if (result[index] === DATA_MARKER_START[readingDataIndex]) {
+            readingDataIndex++;
+          } else {
+            readingDataIndex = 0;
+          }
+
+          if (readingDataIndex === DATA_MARKER_START.length) {
+            dataPart = true;
+            break;
+          }
+        }
+      }
+
+      // eslint-disable-next-line unicorn/no-this-outside-of-class
+      this.push(result);
+      callback();
+    },
+  });
 }

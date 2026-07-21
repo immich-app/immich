@@ -117,9 +117,7 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
 };
 
 const getLensModel = (exifTags: ImmichTags): string | null => {
-  const lensModel = String(
-    exifTags.LensID ?? exifTags.LensType ?? exifTags.LensSpec ?? exifTags.LensModel ?? '',
-  ).trim();
+  const lensModel = (exifTags.LensID ?? exifTags.LensType ?? exifTags.LensSpec ?? exifTags.LensModel ?? '').trim();
   if (lensModel === '----') {
     return null;
   }
@@ -286,7 +284,7 @@ export class MetadataService extends BaseService {
       exifImageHeight: validate(height),
       exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
-      projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
+      projectionType: exifTags.ProjectionType ? exifTags.ProjectionType.toUpperCase() : null,
       bitsPerSample: this.getBitsPerSample(exifTags),
       colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
@@ -295,7 +293,7 @@ export class MetadataService extends BaseService {
         exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null),
       model:
         exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? (exifTags.DeviceModelName || null),
-      fps: video?.frameRate ?? validate(Number.parseFloat(exifTags.VideoFrameRate!)),
+      fps: video?.frameRate ?? validate(Number(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
       lensModel: getLensModel(exifTags),
@@ -305,7 +303,7 @@ export class MetadataService extends BaseService {
       // comments
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       profileDescription: exifTags.ProfileDescription || null,
-      rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, -1, 5),
+      rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, 1, 5),
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
@@ -326,7 +324,7 @@ export class MetadataService extends BaseService {
         : undefined;
 
     const videoData =
-      format?.formatName && format?.formatLongName && video?.codecName && video?.timeBase
+      format?.formatName && format.formatLongName && video?.codecName && video?.timeBase
         ? {
             assetId: asset.id,
             bitrate: video.bitrate,
@@ -362,8 +360,8 @@ export class MetadataService extends BaseService {
         : undefined;
 
     const isSidewards = exifTags.Orientation && this.isOrientationSidewards(exifTags.Orientation);
-    const assetWidth = isSidewards ? validate(height) : validate(width);
-    const assetHeight = isSidewards ? validate(width) : validate(height);
+    const assetWidth = validate(isSidewards ? height : width);
+    const assetHeight = validate(isSidewards ? width : height);
 
     const tasks = new Tasks();
 
@@ -445,8 +443,8 @@ export class MetadataService extends BaseService {
 
     let sidecarPath = null;
     for (const candidate of this.getSidecarCandidates(asset)) {
-      const exists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
-      if (!exists) {
+      const isExists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
+      if (!isExists) {
         continue;
       }
 
@@ -615,6 +613,17 @@ export class MetadataService extends BaseService {
 
     // never use duration from sidecar
     delete sidecarTags?.Duration;
+
+    // don't use Exif Orientation for HEIF based images, it's usually missing or invalid.
+    // prefer irot (ExifTool QuickTime:Rotation) mapped to ExifOrientation.
+    if (mimeTypes.isHeifImage(asset.originalPath)) {
+      const orientation = this.getHeifOrientation(mediaTags);
+      if (orientation === null) {
+        delete mediaTags.Orientation;
+      } else {
+        mediaTags.Orientation = orientation;
+      }
+    }
 
     return {
       tags: { ...mediaTags, ...videoResult?.tags, ...sidecarTags },
@@ -795,8 +804,8 @@ export class MetadataService extends BaseService {
       }
 
       // write extracted motion video to disk, especially if the encoded-video folder has been deleted
-      const existsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
-      if (!existsOnDisk) {
+      const isExistsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
+      if (!isExistsOnDisk) {
         this.storageCore.ensureFolders(motionAsset.originalPath);
         await this.storageRepository.createFile(motionAsset.originalPath, video);
         this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
@@ -843,6 +852,13 @@ export class MetadataService extends BaseService {
     // update area coordinates and dimensions in RegionList assuming "normalized" unit as per MWG guidelines
     const adjustedRegionList = regionInfo.RegionList.map((region) => {
       let { X, Y, W, H } = region.Area;
+
+      // EXIF floats with >16 decimals are serialized as strings. Ensure they are numbers.
+      X = Number(X);
+      Y = Number(Y);
+      W = Number(W);
+      H = Number(H);
+
       switch (orientation) {
         case ExifOrientation.MirrorHorizontal: {
           X = 1 - X;
@@ -915,16 +931,21 @@ export class MetadataService extends BaseService {
       const loweredName = region.Name.toLowerCase();
       const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
 
+      const X = Number(region.Area.X);
+      const Y = Number(region.Area.Y);
+      const W = Number(region.Area.W);
+      const H = Number(region.Area.H);
+
       const face = {
         id: this.cryptoRepository.randomUUID(),
         personId,
         assetId: asset.id,
         imageWidth,
         imageHeight,
-        boundingBoxX1: Math.floor((region.Area.X - region.Area.W / 2) * imageWidth),
-        boundingBoxY1: Math.floor((region.Area.Y - region.Area.H / 2) * imageHeight),
-        boundingBoxX2: Math.floor((region.Area.X + region.Area.W / 2) * imageWidth),
-        boundingBoxY2: Math.floor((region.Area.Y + region.Area.H / 2) * imageHeight),
+        boundingBoxX1: Math.floor((X - W / 2) * imageWidth),
+        boundingBoxY1: Math.floor((Y - H / 2) * imageHeight),
+        boundingBoxX2: Math.floor((X + W / 2) * imageWidth),
+        boundingBoxY2: Math.floor((Y + H / 2) * imageHeight),
         sourceType: SourceType.Exif,
       };
 
@@ -1064,6 +1085,7 @@ export class MetadataService extends BaseService {
 
   private getDuration(tags: ImmichTags): number | null {
     const duration = tags.Duration;
+    // eslint-disable-next-line unicorn/prefer-number-coercion
     const seconds = typeof duration === 'number' ? duration : Number.parseFloat(duration as string);
     return Number.isFinite(seconds) ? Math.round(Duration.fromObject({ seconds }).toMillis()) : null;
   }
@@ -1109,5 +1131,27 @@ export class MetadataService extends BaseService {
     }
 
     return { tags, audio, video, packets, format };
+  }
+
+  private getHeifOrientation(exifTags: ImmichTags): ExifOrientation | null {
+    // https://exiftool.org/TagNames/QuickTime.html#ItemPropCont
+    const rotation = typeof exifTags.Rotation === 'number' ? exifTags.Rotation : undefined;
+    switch (rotation) {
+      case 0: {
+        return ExifOrientation.Horizontal;
+      }
+      case 1: {
+        return ExifOrientation.Rotate270CW;
+      }
+      case 2: {
+        return ExifOrientation.Rotate180;
+      }
+      case 3: {
+        return ExifOrientation.Rotate90CW;
+      }
+      default: {
+        return null;
+      }
+    }
   }
 }

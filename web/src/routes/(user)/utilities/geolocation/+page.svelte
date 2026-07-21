@@ -11,6 +11,7 @@
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import GeolocationPointPickerModal from '$lib/modals/GeolocationPointPickerModal.svelte';
   import GeolocationUpdateConfirmModal from '$lib/modals/GeolocationUpdateConfirmModal.svelte';
+  import { keyboardManager } from '$lib/stores/keyboard-manager.svelte';
   import type { LatLng } from '$lib/types';
   import { setQueryValue } from '$lib/utils/navigation';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -121,10 +122,12 @@
     }
   };
   const handleEscape = () => {
-    if (assetMultiSelectManager.selectionActive) {
-      assetMultiSelectManager.clear();
+    if (!assetMultiSelectManager.selectionActive) {
       return;
     }
+
+    assetMultiSelectManager.clear();
+    return;
   };
 
   type AssetPoint = { latitude: number; longitude: number };
@@ -143,7 +146,9 @@
       asset: TimelineAsset,
     ) => void,
   ) => {
-    if (hasGps(asset)) {
+    if (keyboardManager.shift) {
+      onClick(timelineManager, timelineDay.getAssets(), timelineDay.groupTitle, asset);
+    } else if (hasGps(asset)) {
       locationUpdated = true;
       setTimeout(() => {
         locationUpdated = false;

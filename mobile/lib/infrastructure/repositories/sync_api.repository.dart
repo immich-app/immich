@@ -74,6 +74,7 @@ class SyncApiRepository {
           serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)
               ? SyncRequestType.assetFacesV2
               : SyncRequestType.assetFacesV1,
+          if (serverVersion >= const SemVer(major: 3, minor: 0, patch: 0)) SyncRequestType.assetOcrV1,
         ],
       ).toJson(),
     );
@@ -204,6 +205,8 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.assetFaceV1: SyncAssetFaceV1.fromJson,
   SyncEntityType.assetFaceV2: SyncAssetFaceV2.fromJson,
   SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,
+  SyncEntityType.assetOcrV1: SyncAssetOcrV1.fromJson,
+  SyncEntityType.assetOcrDeleteV1: SyncAssetOcrDeleteV1.fromJson,
   SyncEntityType.syncCompleteV1: _SyncEmptyDto.fromJson,
 };
 

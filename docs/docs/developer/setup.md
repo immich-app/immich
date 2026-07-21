@@ -30,7 +30,7 @@ This environment includes the services below. Additional details are available i
 - Redis
 - PostgreSQL development database with exposed port `5432` so you can use any database client to access it
 
-All the services are packaged to run as with single Docker Compose command.
+All the services are packaged to run with a single Docker Compose command.
 
 :::tip mise
 [mise](https://mise.jdx.dev) is used throughout the project to manage tool versions and run tasks. [Install mise](https://mise.jdx.dev/installing-mise.html), then from the repo root run `mise trust` and `mise install` to get all required tools. Tasks for each service can be run from the repo root using `mise //namespace:task` (e.g. `mise //server:lint`). To list all available tasks, run `mise tasks ls --all`.
@@ -41,18 +41,18 @@ All the services are packaged to run as with single Docker Compose command.
 1. Clone the project repo.
 2. Run `cp docker/example.env docker/.env`.
 3. Edit `docker/.env` to provide values for the required variable `UPLOAD_LOCATION`.
-4. Install dependencies - `pnpm i`
+4. Install dependencies - `mise x -- pnpm i`
 5. From the root directory, run:
 
 ```bash title="Start development server"
-make dev # required Makefile installed on the system.
+mise dev
 ```
 
 5. Access the dev instance in your browser at http://localhost:3000, or connect via the mobile app.
 
 All the services will be started with hot-reloading enabled for a quick feedback loop.
 
-You can access the web from `http://your-machine-ip:3000` or `http://localhost:3000` and access the server from the mobile app at `http://your-machine-ip:3000/api`
+You can access the web from `http://your-machine-ip:3000` or `http://localhost:3000` and access the server from the mobile app at `http://your-machine-ip:3000`
 
 **Notes:**
 
@@ -88,7 +88,7 @@ To see local changes to `@immich/ui` in Immich, do the following:
 3. Uncomment the corresponding volume in web service of the `docker/docker-compose.dev.yml` file (`../../ui:/usr/src/ui`)
 4. Uncomment the corresponding alias in the `web/vite.config.ts` file (`'@immich/ui': path.resolve(\_\_dirname, '../../ui/packages/ui')`)
 5. Uncomment the import statement in `web/src/app.css` file `@import '../../../ui/packages/ui/dist/theme/default.css';` and comment out `@import '@immich/ui/theme/default.css';`
-6. Start up the stack via `make dev`
+6. Start up the stack via `mise dev`
 7. After making changes in `@immich/ui`, rebuild it (`pnpm run build`)
 
 ### Mobile app
@@ -98,6 +98,21 @@ To see local changes to `@immich/ui` in Immich, do the following:
 1. Run `mise //mobile:install` to install Flutter dependencies.
 2. Run `mise //mobile:translation` to generate the translation file.
 3. Change to the `mobile/` directory and run `flutter run` to start the app.
+
+##### iOS Code Signing
+
+The Immich Apple Team ID and bundle IDs are specified in `mobile/ios/Signing.xcconfig`. For local development, we provide an override mechanism.
+
+Create `mobile/ios/Signing.local.xcconfig` and populate it with the necessary values needed to build and sign Immich yourself. This local override file is gitignored.
+
+```
+IMMICH_TEAM_ID = ABCDE12345
+IMMICH_BUNDLE_ID_PROD = com.customuniqueid.immich
+IMMICH_BUNDLE_ID_DEV = com.customuniqueid.immichdev
+IMMICH_GROUP_ID = group.com.customuniqueid.immich
+```
+
+The environment values are used across Immich's targets and schemes to prevent redundant edits by contributors.
 
 #### Translation
 

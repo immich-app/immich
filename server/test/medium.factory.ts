@@ -30,6 +30,7 @@ import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
+import { IntegrityRepository } from 'src/repositories/integrity.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
@@ -137,7 +138,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   get<T>(key: ClassConstructor<T>): T {
-    if (!this.repoCache[key.name]) {
+    if (!Object.hasOwn(this.repoCache, key.name)) {
       const real = newRealRepository(key, this.options.database);
       this.repoCache[key.name] = real;
     }
@@ -312,11 +313,11 @@ export class SyncTestContext extends MediumTestContext<SyncService> {
     });
   }
 
-  async syncStream(auth: AuthDto, types: SyncRequestType[], reset?: boolean) {
+  async syncStream(auth: AuthDto, types: SyncRequestType[], shouldReset?: boolean) {
     const stream = mediumFactory.syncStream();
     // Wait for 2ms to ensure all updates are available and account for setTimeout inaccuracy
     await wait(2);
-    await this.sut.stream(auth, stream, { types, reset });
+    await this.sut.stream(auth, stream, { types, reset: shouldReset });
 
     return stream.getResponse();
   }
@@ -415,6 +416,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case AssetRepository:
     case AssetEditRepository:
     case AssetJobRepository:
+    case IntegrityRepository:
     case MemoryRepository:
     case NotificationRepository:
     case OcrRepository:
@@ -483,6 +485,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case ConfigRepository:
     case CryptoRepository:
     case MemoryRepository:
+    case IntegrityRepository:
     case NotificationRepository:
     case OcrRepository:
     case PartnerRepository:
@@ -747,6 +750,8 @@ const tagInsert = (tag: Partial<Insertable<TagTable>>) => {
 class CustomWritable extends Writable {
   private data = '';
 
+  // determined by Writable interface
+  // eslint-disable-next-line unicorn/prefer-private-class-fields
   _write(chunk: any, encoding: string, callback: () => void) {
     this.data += chunk.toString();
     callback();

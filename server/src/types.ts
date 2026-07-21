@@ -21,6 +21,7 @@ import {
   H264Profile,
   HevcProfile,
   ImageFormat,
+  IntegrityReport,
   JobName,
   MemoryType,
   QueueName,
@@ -311,6 +312,42 @@ export type IWorkflowJob<T extends WorkflowType = WorkflowType> = {
   type: T;
 };
 
+export interface IIntegrityJob {
+  refreshOnly?: boolean;
+}
+
+export interface IIntegrityDeleteReportTypeJob {
+  type?: IntegrityReport;
+}
+
+export interface IIntegrityDeleteReportsJob {
+  reports: {
+    id: string;
+    assetId: string | null;
+    fileAssetId: string | null;
+    path: string;
+  }[];
+}
+
+export interface IIntegrityUntrackedFilesJob {
+  type: 'asset' | 'asset_file';
+  paths: string[];
+}
+
+export interface IIntegrityMissingFilesJob {
+  items: ({ path: string; reportId: string | null } & (
+    { assetId: string; fileAssetId: null } | { assetId: null; fileAssetId: string }
+  ))[];
+}
+
+export interface IIntegrityPathWithReportJob {
+  items: { path: string; reportId: string | null }[];
+}
+
+export interface IIntegrityPathWithChecksumJob {
+  items: { path: string; reportId: string | null; checksum?: string | null }[];
+}
+
 export interface JobCounts {
   active: number;
   completed: number;
@@ -422,6 +459,18 @@ export type JobItem =
   // Workflow
   | { name: JobName.WorkflowAssetTrigger; data: { workflowId: string; assetId: string } }
 
+  // Integrity
+  | { name: JobName.IntegrityUntrackedFilesQueueAll; data?: IIntegrityJob }
+  | { name: JobName.IntegrityUntrackedFiles; data: IIntegrityUntrackedFilesJob }
+  | { name: JobName.IntegrityUntrackedFilesRefresh; data: IIntegrityPathWithReportJob }
+  | { name: JobName.IntegrityMissingFilesQueueAll; data?: IIntegrityJob }
+  | { name: JobName.IntegrityMissingFiles; data: IIntegrityPathWithReportJob }
+  | { name: JobName.IntegrityMissingFilesRefresh; data: IIntegrityPathWithReportJob }
+  | { name: JobName.IntegrityChecksumFiles; data?: IIntegrityJob }
+  | { name: JobName.IntegrityChecksumFilesRefresh; data?: IIntegrityPathWithChecksumJob }
+  | { name: JobName.IntegrityDeleteReportType; data: IIntegrityDeleteReportTypeJob }
+  | { name: JobName.IntegrityDeleteReports; data: IIntegrityDeleteReportsJob }
+
   // Editor
   | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };
 
@@ -503,8 +552,7 @@ export interface MemoryData {
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
 export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
 export type MaintenanceModeState =
-  | { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto }
-  | { isMaintenanceMode: false };
+  { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto } | { isMaintenanceMode: false };
 export type MemoriesState = {
   /** memories have already been created through this date */
   lastOnThisDayDate: string;
@@ -522,6 +570,7 @@ export interface SystemMetadata extends Record<SystemMetadataKey, Record<string,
   [SystemMetadataKey.SystemFlags]: DeepPartial<SystemFlags>;
   [SystemMetadataKey.VersionCheckState]: VersionCheckMetadata;
   [SystemMetadataKey.MemoriesState]: MemoriesState;
+  [SystemMetadataKey.IntegrityChecksumCheckpoint]: { date?: string };
 }
 
 export type UserPreferences = {
@@ -567,6 +616,9 @@ export type UserPreferences = {
   };
   cast: {
     gCastEnabled: boolean;
+  };
+  recentlyAdded: {
+    sidebarWeb: boolean;
   };
 };
 

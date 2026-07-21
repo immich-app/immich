@@ -4,10 +4,13 @@
   import { assetViewerFadeDuration } from '$lib/constants';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { castManager } from '$lib/managers/cast-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
+  import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
   import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
   import { getAssetHlsSessionUrl, getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
-  import { Icon, LoadingSpinner } from '@immich/ui';
+  import { Icon, LoadingSpinner, shortcuts } from '@immich/ui';
   import {
     mdiCheck,
     mdiChevronLeft,
@@ -21,9 +24,9 @@
     mdiVolumeMedium,
     mdiVolumeMute,
   } from '@mdi/js';
-  import Hls, { AbrController, Events, type FragLoadedData, type FragLoadingData, type HlsConfig } from 'hls.js';
   import 'hls-video-element';
   import type HlsVideoElement from 'hls-video-element';
+  import Hls, { AbrController, Events, type FragLoadedData, type FragLoadingData, type HlsConfig } from 'hls.js';
   import 'media-chrome/media-control-bar';
   import 'media-chrome/media-controller';
   import 'media-chrome/media-fullscreen-button';
@@ -31,7 +34,6 @@
   import 'media-chrome/media-play-button';
   import 'media-chrome/media-playback-rate-button';
   import 'media-chrome/media-time-display';
-  import './immich-time-range';
   import 'media-chrome/media-volume-range';
   import 'media-chrome/menu/media-playback-rate-menu';
   import 'media-chrome/menu/media-rendition-menu';
@@ -42,8 +44,7 @@
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import { fade } from 'svelte/transition';
-  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
-  import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
+  import './immich-time-range';
 
   interface Props {
     asset: AssetResponseDto;
@@ -150,6 +151,15 @@
       },
     },
     useMediaCapabilities: false,
+    xhrSetup: (xhr: XMLHttpRequest, url: string) => {
+      const authenticatedUrl = new URL(url, location.origin);
+      for (const [key, value] of Object.entries(authManager.params)) {
+        if (value) {
+          authenticatedUrl.searchParams.set(key, value as string);
+        }
+      }
+      xhr.open('GET', authenticatedUrl.href);
+    },
   };
 
   const releaseSession = () => {
@@ -298,8 +308,7 @@
   const onSwipe = (event: SwipeCustomEvent) => {
     if (event.detail.direction === 'left') {
       onNextAsset();
-    }
-    if (event.detail.direction === 'right') {
+    } else if (event.detail.direction === 'right') {
       onPreviousAsset();
     }
   };
@@ -317,6 +326,27 @@
   // so manually emit events on seek to update it immediately.
   const onSeeking = (event: Event) => event.currentTarget?.dispatchEvent(new Event('timeupdate'));
 </script>
+
+<svelte:body
+  use:shortcuts={[
+    {
+      shortcut: { key: ' ' },
+      onShortcut: () => (videoPlayer?.paused ? videoPlayer?.play() : videoPlayer?.pause()),
+    },
+    {
+      shortcut: { shift: true, key: 'ArrowLeft' },
+      onShortcut: () =>
+        videoPlayer ? (videoPlayer.currentTime = Math.max(videoPlayer.currentTime - 0.4, 0)) : undefined,
+    },
+    {
+      shortcut: { shift: true, key: 'ArrowRight' },
+      onShortcut: () =>
+        videoPlayer
+          ? (videoPlayer.currentTime = Math.min(videoPlayer.currentTime + 0.4, videoPlayer.duration))
+          : undefined,
+    },
+  ]}
+/>
 
 {#if showVideo}
   <div
@@ -358,10 +388,12 @@
             onended={onVideoEnded}
             onseeking={onSeeking}
             onplaying={(e: Event) => {
-              if (!hasFocused) {
-                (e.currentTarget as HTMLElement).focus();
-                hasFocused = true;
+              if (hasFocused) {
+                return;
               }
+
+              (e.currentTarget as HTMLElement).focus();
+              hasFocused = true;
             }}
             onclose={onClose}
             poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}
@@ -381,10 +413,12 @@
             onended={onVideoEnded}
             onseeking={onSeeking}
             onplaying={(e) => {
-              if (!hasFocused) {
-                e.currentTarget.focus();
-                hasFocused = true;
+              if (hasFocused) {
+                return;
               }
+
+              e.currentTarget.focus();
+              hasFocused = true;
             }}
             onclose={onClose}
             poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}

@@ -23,6 +23,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
 @RoutePage()
@@ -80,6 +81,12 @@ class AssetViewer extends ConsumerStatefulWidget {
 }
 
 class _AssetViewerState extends ConsumerState<AssetViewer> {
+  static const _viewerOverlayStyle = SystemUiOverlayStyle(
+    statusBarIconBrightness: Brightness.light,
+    statusBarBrightness: Brightness.dark,
+    systemNavigationBarIconBrightness: Brightness.light,
+  );
+
   late final _heroOffset = widget.heroOffset ?? TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
   late final _pageController = PageController(initialPage: widget.initialIndex);
   late final _preloader = AssetPreloader(timelineService: ref.read(timelineServiceProvider), mounted: () => mounted);
@@ -128,7 +135,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _reloadSubscription?.cancel();
     _stackChildrenKeepAlive?.close();
 
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    unawaited(restoreEdgeToEdge());
 
     super.dispose();
   }
@@ -164,6 +171,12 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
     if (asset == null) {
+      return;
+    }
+
+    // The viewer is closing; don't flip the current asset now. Flipping it swaps
+    // the grid tile hero keys mid pop and animates the close on two tiles (#23779).
+    if (!mounted || !(ModalRoute.of(context)?.isActive ?? true)) {
       return;
     }
 
@@ -251,10 +264,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
   }
 
   void _setSystemUIMode(bool controls, bool details) {
-    final mode = !controls || (CurrentPlatform.isIOS && details)
-        ? SystemUiMode.immersiveSticky
-        : SystemUiMode.edgeToEdge;
-    unawaited(SystemChrome.setEnabledSystemUIMode(mode));
+    final immersive = !controls || (CurrentPlatform.isIOS && details);
+    unawaited(immersive ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky) : restoreEdgeToEdge());
   }
 
   @override
@@ -281,49 +292,52 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       _setSystemUIMode(controls, details);
     });
 
-    return Scaffold(
-      backgroundColor: backgroundColor,
-      resizeToAvoidBottomInset: false,
-      appBar: const ViewerTopAppBar(),
-      extendBody: true,
-      extendBodyBehindAppBar: true,
-      floatingActionButton: IgnorePointer(
-        ignoring: !showingControls,
-        child: AnimatedOpacity(
-          opacity: showingControls ? 1.0 : 0.0,
-          duration: Durations.short2,
-          child: const DownloadStatusFloatingButton(),
-        ),
-      ),
-      bottomNavigationBar: const ViewerBottomAppBar(),
-      body: Stack(
-        children: [
-          NotificationListener<ScrollEndNotification>(
-            onNotification: _onScrollEnd,
-            child: PhotoViewGestureDetectorScope(
-              axis: Axis.horizontal,
-              child: PageView.builder(
-                controller: _pageController,
-                physics: isZoomed
-                    ? const NeverScrollableScrollPhysics()
-                    : CurrentPlatform.isIOS
-                    ? const FastScrollPhysics()
-                    : const FastClampingScrollPhysics(),
-                itemCount: _totalAssets,
-                itemBuilder: (context, index) =>
-                    AssetPage(index: index, heroOffset: _heroOffset, onTapNavigate: _onTapNavigate),
-              ),
-            ),
+    return AnnotatedRegion(
+      value: _viewerOverlayStyle,
+      child: Scaffold(
+        backgroundColor: backgroundColor,
+        resizeToAvoidBottomInset: false,
+        appBar: const ViewerTopAppBar(),
+        extendBody: true,
+        extendBodyBehindAppBar: true,
+        floatingActionButton: IgnorePointer(
+          ignoring: !showingControls,
+          child: AnimatedOpacity(
+            opacity: showingControls ? 1.0 : 0.0,
+            duration: Durations.short2,
+            child: const DownloadStatusFloatingButton(),
           ),
-          if (!CurrentPlatform.isIOS)
-            IgnorePointer(
-              child: AnimatedContainer(
-                duration: Durations.short2,
-                color: Colors.black.withValues(alpha: showingDetails ? 0.6 : 0.0),
-                height: context.padding.top,
+        ),
+        bottomNavigationBar: const ViewerBottomAppBar(),
+        body: Stack(
+          children: [
+            NotificationListener<ScrollEndNotification>(
+              onNotification: _onScrollEnd,
+              child: PhotoViewGestureDetectorScope(
+                axis: Axis.horizontal,
+                child: PageView.builder(
+                  controller: _pageController,
+                  physics: isZoomed
+                      ? const NeverScrollableScrollPhysics()
+                      : CurrentPlatform.isIOS
+                      ? const FastScrollPhysics()
+                      : const FastClampingScrollPhysics(),
+                  itemCount: _totalAssets,
+                  itemBuilder: (context, index) =>
+                      AssetPage(index: index, heroOffset: _heroOffset, onTapNavigate: _onTapNavigate),
+                ),
               ),
             ),
-        ],
+            if (!CurrentPlatform.isIOS)
+              IgnorePointer(
+                child: AnimatedContainer(
+                  duration: Durations.short2,
+                  color: Colors.black.withValues(alpha: showingDetails ? 0.6 : 0.0),
+                  height: context.padding.top,
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

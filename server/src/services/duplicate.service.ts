@@ -156,51 +156,51 @@ export class DuplicateService extends BaseService {
       }
     }
 
-    const assetAlbumMap = await this.albumRepository.getByAssetIds(auth.user.id, [...groupAssetIds]);
+    // Only merge metadata into the keeper when exactly one asset can absorb trashed duplicates.
+    if (idsToKeep.length === 1 && idsToTrash.length > 0) {
+      const assetAlbumMap = await this.albumRepository.getByAssetIds(auth.user.id, [...groupAssetIds]);
 
-    const { assetUpdate, exifUpdate, mergedAlbumIds, mergedTagIds, mergedTagValues } = this.getSyncMergeResult(
-      duplicateGroup.assets,
-      assetAlbumMap,
-    );
+      const { assetUpdate, exifUpdate, mergedAlbumIds, mergedTagIds, mergedTagValues } = this.getSyncMergeResult(
+        duplicateGroup.assets,
+        assetAlbumMap,
+      );
 
-    if (mergedAlbumIds.length > 0) {
-      const allowedAlbumIds = await this.checkAccess({
-        auth,
-        permission: Permission.AlbumAssetCreate,
-        ids: mergedAlbumIds,
-      });
+      if (mergedAlbumIds.length > 0) {
+        const allowedAlbumIds = await this.checkAccess({
+          auth,
+          permission: Permission.AlbumAssetCreate,
+          ids: mergedAlbumIds,
+        });
 
-      const allowedShareIds = await this.checkAccess({
-        auth,
-        permission: Permission.AssetShare,
-        ids: idsToKeep,
-      });
+        const allowedShareIds = await this.checkAccess({
+          auth,
+          permission: Permission.AssetShare,
+          ids: idsToKeep,
+        });
 
-      if (allowedAlbumIds.size > 0 && allowedShareIds.size > 0) {
-        await this.albumRepository.addAssetIdsToAlbums(
-          [...allowedAlbumIds].flatMap((albumId) => [...allowedShareIds].map((assetId) => ({ albumId, assetId }))),
-        );
+        if (allowedAlbumIds.size > 0 && allowedShareIds.size > 0) {
+          await this.albumRepository.addAssetIdsToAlbums(
+            [...allowedAlbumIds].flatMap((albumId) => [...allowedShareIds].map((assetId) => ({ albumId, assetId }))),
+          );
+        }
       }
-    }
 
-    if (mergedTagIds.length > 0) {
-      const allowedTagIds = await this.checkAccess({
-        auth,
-        permission: Permission.TagAsset,
-        ids: mergedTagIds,
-      });
+      if (mergedTagIds.length > 0) {
+        const allowedTagIds = await this.checkAccess({
+          auth,
+          permission: Permission.TagAsset,
+          ids: mergedTagIds,
+        });
 
-      if (allowedTagIds.size > 0) {
-        // Replace tags for each keeper asset to ensure all merged tags are applied
-        await Promise.all(idsToKeep.map((assetId) => this.tagRepository.replaceAssetTags(assetId, [...allowedTagIds])));
+        if (allowedTagIds.size > 0) {
+          await Promise.all(
+            idsToKeep.map((assetId) => this.tagRepository.replaceAssetTags(assetId, [...allowedTagIds])),
+          );
 
-        // Update asset_exif.tags so the subsequent SidecarWrite + MetadataExtraction
-        // cycle preserves the merged tags (updateAllExif locks the property automatically)
-        await this.assetRepository.updateAllExif(idsToKeep, { tags: mergedTagValues });
+          await this.assetRepository.updateAllExif(idsToKeep, { tags: mergedTagValues });
+        }
       }
-    }
 
-    if (idsToKeep.length > 0) {
       const hasExifUpdate = Object.keys(exifUpdate).length > 0;
       const hasTagUpdate = mergedTagIds.length > 0;
 
@@ -213,20 +213,22 @@ export class DuplicateService extends BaseService {
       }
 
       await this.assetRepository.updateAll(idsToKeep, { duplicateId: null, ...assetUpdate });
+    } else if (idsToKeep.length > 0) {
+      await this.assetRepository.updateAll(idsToKeep, { duplicateId: null });
     }
 
     if (idsToTrash.length > 0) {
       // TODO: this is duplicated with AssetService.deleteAssets
       const { trash } = await this.getConfig({ withCache: true });
-      const force = !trash.enabled;
+      const isForce = !trash.enabled;
 
       await this.assetRepository.updateAll(idsToTrash, {
         deletedAt: new Date(),
-        status: force ? AssetStatus.Deleted : AssetStatus.Trashed,
+        status: isForce ? AssetStatus.Deleted : AssetStatus.Trashed,
         duplicateId: null,
       });
 
-      await this.eventRepository.emit(force ? 'AssetDeleteAll' : 'AssetTrashAll', {
+      await this.eventRepository.emit(isForce ? 'AssetDeleteAll' : 'AssetTrashAll', {
         assetIds: idsToTrash,
         userId: auth.user.id,
       });

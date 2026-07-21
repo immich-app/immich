@@ -6,7 +6,7 @@
   import { groupBy } from 'lodash-es';
   import PlacesCardGroup from './PlacesCardGroup.svelte';
 
-  import { type PlacesGroup, getSelectedPlacesGroupOption } from '$lib/utils/places-utils';
+  import { type PlacesGroup } from '$lib/utils/places-utils';
   import { Icon } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
@@ -56,11 +56,8 @@
         // We make sure empty albums stay at the end of the list
         if (a === unknownCountry) {
           return 1;
-        } else if (b === unknownCountry) {
-          return -1;
-        } else {
-          return a.localeCompare(b);
         }
+        return b === unknownCountry ? -1 : a.localeCompare(b);
       });
 
       return sortedByCountryName.map(([country, places]) => ({
@@ -78,9 +75,8 @@
       : places;
   });
 
-  const placesGroupOption: string = $derived(getSelectedPlacesGroupOption(userSettings));
-  const groupingFunction = $derived(groupOptions[placesGroupOption] ?? groupOptions[PlacesGroupBy.None]);
-  const groupedPlaces: PlacesGroup[] = $derived(groupingFunction(filteredPlaces));
+  const groupingFunction = $derived(groupOptions[userSettings.groupBy] ?? groupOptions[PlacesGroupBy.None]);
+  const groupedPlaces = $derived(groupingFunction(filteredPlaces));
 
   $effect(() => {
     searchResultCount = filteredPlaces.length;
@@ -93,7 +89,7 @@
 
 {#if places.length > 0}
   <!-- Album Cards -->
-  {#if placesGroupOption === PlacesGroupBy.None}
+  {#if userSettings.groupBy === PlacesGroupBy.None}
     <PlacesCardGroup places={groupedPlaces[0].places} />
   {:else}
     {#each groupedPlaces as placeGroup (placeGroup.id)}

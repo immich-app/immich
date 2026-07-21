@@ -5,6 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/search/people.provider.dart';
@@ -44,16 +45,19 @@ class PeoplePicker extends HookConsumerWidget {
         Expanded(
           child: people.widgetWhen(
             onData: (people) {
+              final filtered = people
+                  .where(
+                    (person) => person.name.toLowerCase().removeDiacritics().contains(
+                      searchQuery.value.toLowerCase().removeDiacritics(),
+                    ),
+                  )
+                  .toList();
               return ListView.builder(
                 shrinkWrap: true,
-                itemCount: people
-                    .where((person) => person.name.toLowerCase().contains(searchQuery.value.toLowerCase()))
-                    .length,
+                itemCount: filtered.length,
                 padding: const EdgeInsets.all(8),
                 itemBuilder: (context, index) {
-                  final person = people
-                      .where((person) => person.name.toLowerCase().contains(searchQuery.value.toLowerCase()))
-                      .toList()[index];
+                  final person = filtered[index];
                   final isSelected = selectedPeople.value.contains(person);
 
                   return Padding(

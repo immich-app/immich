@@ -314,7 +314,7 @@ export class AlbumRepository {
     albumUsers: AlbumUserCreateDto[],
     authUserId: string,
   ) {
-    if (!albumUsers.some((u) => u.role === AlbumUserRole.Owner)) {
+    if (albumUsers.every((u) => u.role !== AlbumUserRole.Owner)) {
       throw new Error('Album must have an owner');
     }
 

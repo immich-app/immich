@@ -23,7 +23,7 @@
     type AlbumResponseDto,
     type AssetResponseDto,
   } from '@immich/sdk';
-  import { Icon, IconButton, LoadingSpinner, Text } from '@immich/ui';
+  import { Icon, IconButton, Link, LoadingSpinner, Text } from '@immich/ui';
   import { mdiCamera, mdiCameraIris, mdiClose, mdiImageOutline, mdiInformationOutline } from '@mdi/js';
   import { onDestroy } from 'svelte';
   import { t } from 'svelte-i18n';
@@ -33,6 +33,7 @@
   import UserAvatar from '../shared-components/UserAvatar.svelte';
   import AlbumListItemDetails from './AlbumListItemDetails.svelte';
   import DetailPanelPeople from '$lib/components/asset-viewer/DetailPanelPeople.svelte';
+  import { faceManager } from '$lib/stores/face.svelte';
 
   interface Props {
     asset: AssetResponseDto;
@@ -97,6 +98,8 @@
   const handleRefreshPeople = async () => {
     asset = await getAssetInfo({ id: asset.id });
     assetViewerManager.closeEditFacesPanel();
+    faceManager.clear();
+    await faceManager.getAssetFaces(asset.id);
   };
 
   const getAssetFolderHref = (asset: AssetResponseDto) => {
@@ -188,9 +191,9 @@
               </a>
             </p>
           {/if}
-          {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
+          {#if (asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageWidth) || asset.exifInfo?.fileSizeInByte}
             <div class="flex gap-2 text-sm">
-              {#if asset.exifInfo?.exifImageHeight && asset.exifInfo?.exifImageWidth}
+              {#if asset.exifInfo?.exifImageHeight && asset.exifInfo.exifImageWidth}
                 {#if getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)}
                   <p>
                     {getMegapixel(asset.exifInfo.exifImageHeight, asset.exifInfo.exifImageWidth)} MP
@@ -307,14 +310,13 @@
           {#snippet popup({ marker })}
             {@const { lat, lon } = marker}
             <div class="flex flex-col items-center gap-1">
-              <p class="font-bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</p>
-              <a
+              <Text fontWeight="bold">{lat.toPrecision(6)}, {lon.toPrecision(6)}</Text>
+              <Link
                 href="https://www.openstreetmap.org/?mlat={lat}&mlon={lon}&zoom=13#map=15/{lat}/{lon}"
-                target="_blank"
-                class="font-medium text-primary underline focus:outline-none"
+                class="text-primary"
               >
                 {$t('open_in_openstreetmap')}
-              </a>
+              </Link>
             </div>
           {/snippet}
         </Map>

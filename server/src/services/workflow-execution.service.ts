@@ -42,6 +42,10 @@ type ExecuteOptions<T extends WorkflowType> = {
 
 type AssetTrigger = { userId: string; assetId: string; trigger: WorkflowTrigger };
 
+type HostContext = {
+  allowedHosts: string[];
+};
+
 export class WorkflowExecutionService extends BaseService {
   private jwtSecret!: string;
 
@@ -66,20 +70,49 @@ export class WorkflowExecutionService extends BaseService {
 
     const albumService = BaseService.create(AlbumService, this);
 
-    const searchAlbums = this.wrap<[dto: GetAlbumsDto]>((authDto, args) => albumService.getAll(authDto, ...args));
-    const createAlbum = this.wrap<[dto: CreateAlbumDto]>((authDto, args) => albumService.create(authDto, ...args));
-    const addAssetsToAlbum = this.wrap<[id: string, dto: BulkIdsDto]>((authDto, args) =>
+    const searchAlbums = this.wrap<[dto: GetAlbumsDto]>((authDto, ctx, args) => albumService.getAll(authDto, ...args));
+    const createAlbum = this.wrap<[dto: CreateAlbumDto]>((authDto, ctx, args) => albumService.create(authDto, ...args));
+    const addAssetsToAlbum = this.wrap<[id: string, dto: BulkIdsDto]>((authDto, ctx, args) =>
       albumService.addAssets(authDto, ...args),
     );
-    const addAssetsToAlbums = this.wrap<[dto: AlbumsAddAssetsDto]>((authDto, args) =>
+    const addAssetsToAlbums = this.wrap<[dto: AlbumsAddAssetsDto]>((authDto, ctx, args) =>
       albumService.addAssetsToAlbums(authDto, ...args),
     );
+    const httpRequest = this.wrap<
+      [
+        url: string,
+        options?: {
+          method?: string;
+          headers?: Record<string, string>;
+          body?: string;
+        },
+      ]
+    >(async (authDto, context, args) => {
+      const hostname = new URL(args[0]).hostname;
+
+      for (const pattern of context.allowedHosts) {
+        const regex = new RegExp(pattern.replaceAll('.', String.raw`\.`).replaceAll('*', '.*'));
+        if (regex.test(hostname)) {
+          // eslint-disable-next-line unicorn/no-invalid-argument-count
+          const res = await fetch(...args);
+
+          return {
+            ok: res.ok,
+            status: res.status,
+            body: await res.text(),
+          };
+        }
+      }
+
+      throw new Error('Hostname did not match any listed in methods[].allowedHosts in the plugin manifest');
+    });
 
     const functions = {
       searchAlbums,
       createAlbum,
       addAssetsToAlbum,
       addAssetsToAlbums,
+      httpRequest,
     };
 
     const stubs: typeof functions = {
@@ -87,12 +120,13 @@ export class WorkflowExecutionService extends BaseService {
       createAlbum: dummy,
       addAssetsToAlbum: dummy,
       addAssetsToAlbums: dummy,
+      httpRequest: dummy,
     };
 
     const plugins = await this.pluginRepository.getForLoad();
     for (const { id, name, version, wasmBytes, methods } of plugins) {
-      const method = methods.some(({ hostFunctions }) => !hostFunctions);
-      if (method) {
+      const isMethod = methods.some(({ hostFunctions }) => !hostFunctions);
+      if (isMethod) {
         const label = `${name}@${version}`;
         const key = this.getPluginKey({ id, hostFunctions: false });
         try {
@@ -103,8 +137,8 @@ export class WorkflowExecutionService extends BaseService {
         }
       }
 
-      const methodWithFunction = methods.some(({ hostFunctions }) => hostFunctions);
-      if (methodWithFunction) {
+      const isMethodWithFunction = methods.some(({ hostFunctions }) => hostFunctions);
+      if (isMethodWithFunction) {
         const label = `${name}@${version}/worker`;
         const key = this.getPluginKey({ id, hostFunctions: true });
         try {
@@ -121,7 +155,7 @@ export class WorkflowExecutionService extends BaseService {
     return id + (hostFunctions ? '/worker' : '');
   }
 
-  private wrap<T>(fn: (authDto: AuthDto, args: T) => Promise<unknown>) {
+  private wrap<T>(fn: (authDto: AuthDto, context: HostContext, args: T) => Promise<unknown>) {
     return async (plugin: CurrentPlugin, offset: bigint) => {
       try {
         const handle = plugin.read(offset);
@@ -136,8 +170,9 @@ export class WorkflowExecutionService extends BaseService {
           throw new Error('authToken is required');
         }
 
+        const context = plugin.hostContext<HostContext>();
         const authDto = this.validate(authToken);
-        const response = await fn(authDto, args);
+        const response = await fn(authDto, context, args);
 
         return plugin.store(JSON.stringify({ success: true, response }));
       } catch (error: Error | any) {
@@ -347,8 +382,8 @@ export class WorkflowExecutionService extends BaseService {
     // TODO infer from steps
     let type: T | undefined;
     for (const targetType of Object.values(WorkflowType)) {
-      const missing = workflow.steps.some((step) => !step.types.includes(targetType));
-      if (!missing) {
+      const isMissing = workflow.steps.some((step) => !step.types.includes(targetType));
+      if (!isMissing) {
         type = targetType as unknown as T;
         break;
       }
@@ -369,7 +404,7 @@ export class WorkflowExecutionService extends BaseService {
       const readResult = await read(type);
       let data = readResult.data;
       for (const step of workflow.steps) {
-        const payload: WorkflowEventPayload = {
+        const payload: WorkflowEventPayload<typeof type> = {
           trigger: workflow.trigger,
           type,
           config: step.config ?? {},
@@ -379,6 +414,10 @@ export class WorkflowExecutionService extends BaseService {
             stepId: step.id,
           },
           data,
+        };
+
+        const context: HostContext = {
+          allowedHosts: step.allowedHosts,
         };
 
         if (step.methodName.startsWith('noop')) {
@@ -391,6 +430,7 @@ export class WorkflowExecutionService extends BaseService {
             methodName: step.methodName,
           },
           payload,
+          context,
         );
         if (result?.changes) {
           await write(

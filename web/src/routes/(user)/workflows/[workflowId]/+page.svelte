@@ -6,6 +6,7 @@
   import WorkflowTriggerPicker from '$lib/modals/WorkflowTriggerPicker.svelte';
   import { Route } from '$lib/route';
   import { getWorkflowActions, handleUpdateWorkflow } from '$lib/services/workflow.service';
+  import { generateId } from '$lib/utils/generate-id';
   import { getTriggerDescription, getTriggerName } from '$lib/utils/workflow';
   import type { WorkflowResponseDto, WorkflowUpdateDto } from '@immich/sdk';
   import {
@@ -44,6 +45,7 @@
   } from '@mdi/js';
   import { cloneDeep, isEqual } from 'lodash-es';
   import { t } from 'svelte-i18n';
+  import { flip } from 'svelte/animate';
   import type { PageData } from './$types';
   import WorkflowJsonEditor from './WorkflowJsonEditor.svelte';
   import WorkflowStepCard from './WorkflowStepCard.svelte';
@@ -61,36 +63,46 @@
 
   let { data }: Props = $props();
 
-  let { id, enabled, name, description, trigger } = $derived(data.workflow);
-  let steps = $state(data.workflow.steps);
-  let savedWorkflow = $state(cloneDeep(data.workflow));
+  let { id, enabled, name, description, trigger } = $state(data.workflow);
+  let steps = $state(data.workflow.steps.map((step) => ({ ...step, id: generateId() })));
+  let savedWorkflow = $derived(cloneDeep(data.workflow));
   let allowNavigation = $state(false);
   let isShowingNavigationDialog = $state(false);
   let isSaving = $state(false);
   let editMode = $state<EditMode>('visual');
+  let dragSourceId: string | undefined;
 
   const workflowSummary = $derived({ name, description, trigger, steps });
-  const workflowJsonContent = $derived<WorkflowJsonContent>({ name, description, enabled, trigger, steps });
+  const workflowJsonContent = $derived<WorkflowJsonContent>({
+    name,
+    description,
+    enabled,
+    trigger,
+    steps: steps.map(({ id: _, ...step }) => step),
+  });
 
   const hasChanges = $derived(
     enabled !== savedWorkflow.enabled ||
       name !== savedWorkflow.name ||
       description !== savedWorkflow.description ||
       !isEqual(trigger, savedWorkflow.trigger) ||
-      !isEqual(steps, savedWorkflow.steps),
+      !isEqual(
+        steps.map(({ id: _, ...step }) => step),
+        savedWorkflow.steps,
+      ),
   );
 
   const handleAddStep = async () => {
     const step = await modalManager.show(WorkflowAddStepModal, { trigger });
     if (step) {
-      steps.push(step);
+      steps.push({ ...step, id: generateId() });
     }
   };
 
   const handleInsertStep = async (index: number) => {
     const step = await modalManager.show(WorkflowAddStepModal, { trigger });
     if (step) {
-      steps = [...steps.slice(0, index), step, ...steps.slice(index)];
+      steps = [...steps.slice(0, index), { ...step, id: generateId() }, ...steps.slice(index)];
     }
   };
 
@@ -102,20 +114,53 @@
 
     const result = await modalManager.show(WorkflowEditStepModal, { trigger, step: cloneDeep(step) });
     if (result) {
-      steps[index] = result;
+      steps[index] = { ...result, id: generateId() };
     }
   };
 
-  const handleDrop = (index: number, event: DragEvent) => {
-    if (!event.dataTransfer) {
+  const handleDrop = (event: DragEvent) => {
+    if (!event.dataTransfer || !dragSourceId) {
       return;
     }
 
-    const from = Number(event.dataTransfer.getData('text/plain'));
+    const ghostIndex = steps.findIndex(({ id }) => id === 'ghost');
+    if (ghostIndex === -1) {
+      return;
+    }
 
+    const from = steps.findIndex(({ id }) => id === dragSourceId);
     const next = [...steps];
-    const [moved] = next.splice(from, 1);
-    next.splice(index, 0, moved);
+    const [step] = next.splice(from, 1);
+    next[ghostIndex > from ? ghostIndex - 1 : ghostIndex] = step;
+    steps = next;
+    dragSourceId = undefined;
+  };
+
+  const handleDragOver = (index: number, event: DragEvent, boundingRect: DOMRect) => {
+    if (!event.dataTransfer || !dragSourceId) {
+      return;
+    }
+
+    const fromIndex = steps.findIndex(({ id }) => dragSourceId === id);
+    const ghostIndex = steps.findIndex(({ id }) => id === 'ghost');
+    const shiftedIndex = event.clientY > boundingRect.top + boundingRect.height / 2 ? index + 1 : index;
+
+    if (index === fromIndex || shiftedIndex === fromIndex) {
+      if (ghostIndex !== -1) {
+        steps.splice(ghostIndex, 1);
+      }
+      return;
+    }
+
+    if (
+      (ghostIndex !== -1 && Math.abs(shiftedIndex - ghostIndex) <= (ghostIndex > shiftedIndex ? 0 : 1)) ||
+      Math.abs(shiftedIndex - fromIndex) <= (fromIndex > shiftedIndex ? 0 : 1)
+    ) {
+      return;
+    }
+
+    const next = steps.filter(({ id }) => id !== 'ghost');
+    next.splice(shiftedIndex, 0, { ...steps[fromIndex], id: 'ghost' });
     steps = next;
   };
 
@@ -131,7 +176,7 @@
     name = content.name;
     description = content.description;
     trigger = content.trigger;
-    steps = cloneDeep(content.steps);
+    steps = cloneDeep(content.steps).map((step) => ({ ...step, id: generateId() }));
   };
 
   const onClose = () => goto(Route.workflows());
@@ -144,11 +189,13 @@
   };
 
   const onWorkflowUpdate = async (response: WorkflowResponseDto) => {
-    if (id === response.id) {
-      data.workflow = response;
-      savedWorkflow = cloneDeep(response);
-      await invalidate('workflow:data');
+    if (id !== response.id) {
+      return;
     }
+
+    data.workflow = response;
+    savedWorkflow = cloneDeep(response);
+    await invalidate('workflow:data');
   };
 
   const onWorkflowDelete = async (response: WorkflowResponseDto) => {
@@ -207,12 +254,16 @@
     }
 
     void confirmNavigation().then((confirmed) => {
-      if (confirmed) {
-        allowNavigation = true;
-        void goto(to.url);
+      if (!confirmed) {
+        return;
       }
+
+      allowNavigation = true;
+      void goto(to.url);
     });
   });
+
+  $effect(() => console.log(steps));
 
   const { Download, Duplicate, CopyJson, Delete } = $derived(
     getWorkflowActions($t, { ...savedWorkflow, name, description, enabled, trigger, steps }),
@@ -344,15 +395,20 @@
           </CardHeader>
         </Card>
 
-        {#each steps as step, index (step.method + index)}
-          <WorkflowStepCard
-            {step}
-            {index}
-            onEdit={handleEditStep}
-            onDelete={handleDeleteStep}
-            onInsertBefore={handleInsertStep}
-            onDrop={handleDrop}
-          />
+        {#each steps as step, index (step.id)}
+          <div class="w-full" animate:flip={{ duration: 120 }}>
+            <WorkflowStepCard
+              {step}
+              {index}
+              onEdit={handleEditStep}
+              onDelete={handleDeleteStep}
+              onInsertBefore={handleInsertStep}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+              onDragEnd={handleDrop}
+              onDragStart={(event) => (dragSourceId = event.dataTransfer?.getData('text/plain'))}
+            />
+          </div>
         {/each}
 
         <Button

@@ -27,23 +27,23 @@ export const getShortDateRange = (startTimestamp: string, endTimestamp: string) 
       // Same year and month.
       // e.g.: aug. 2024
       return endDateLocalized;
-    } else {
-      // Same year but different month.
-      // e.g.: jul. - sept. 2024
-      const startMonthLocalized = startDate.toLocaleString({
-        month: 'short',
-      });
-      return `${startMonthLocalized} - ${endDateLocalized}`;
     }
-  } else {
-    // Different year.
-    // e.g.: feb. 2021 - sept. 2024
-    const startDateLocalized = startDate.toLocaleString({
+
+    // Same year but different month.
+    // e.g.: jul. - sept. 2024
+    const startMonthLocalized = startDate.toLocaleString({
       month: 'short',
-      year: 'numeric',
     });
-    return `${startDateLocalized} - ${endDateLocalized}`;
+    return `${startMonthLocalized} - ${endDateLocalized}`;
   }
+
+  // Different year.
+  // e.g.: feb. 2021 - sept. 2024
+  const startDateLocalized = startDate.toLocaleString({
+    month: 'short',
+    year: 'numeric',
+  });
+  return `${startDateLocalized} - ${endDateLocalized}`;
 };
 
 const formatDate = (date?: string) => {
@@ -78,3 +78,12 @@ export const getAlbumDateRange = (album: { startDate?: string; endDate?: string 
  */
 export const asLocalTimeISO = (date: DateTime<true>) =>
   (date.setZone('utc', { keepLocalTime: true }) as DateTime<true>).toISO();
+
+const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+
+type DayOfWeek = (typeof days)[number];
+export const dayOfWeek = (day: DayOfWeek, options?: { locale?: string; style?: 'long' | 'short' | 'narrow' }) => {
+  const fmt = new Intl.DateTimeFormat(options?.locale, { weekday: options?.style ?? 'long', timeZone: 'UTC' });
+  // 2021-08-01 is a Sunday
+  return fmt.format(new Date(Date.UTC(2021, 7, 1 + days.indexOf(day))));
+};

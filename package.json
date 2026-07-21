@@ -1,13 +1,14 @@
 {
   "name": "immich-monorepo",
-  "version": "2.7.5",
+  "version": "3.0.3",
   "description": "Monorepo for Immich",
+  "type": "module",
   "private": true,
   "scripts": {
     "format": "prettier --cache --check i18n/",
     "format:fix": "prettier --cache --write --list-different i18n"
   },
-  "packageManager": "pnpm@10.33.4+sha512.1c67b3b359b2d408119ba1ed289f34b8fc3c6873412bec6fd264fbdc82489e510fcbecb9ce9d22dae7f3b76269d8441046014bdca53b9979cd7a561ad631b800",
+  "packageManager": "pnpm@11.13.1",
   "engines": {
     "pnpm": ">=10.0.0"
   },

@@ -12,7 +12,9 @@ import android.provider.MediaStore.Images
 import android.provider.MediaStore.Video
 import android.util.Size
 import androidx.annotation.RequiresApi
+import androidx.exifinterface.media.ExifInterface
 import app.alextran.immich.NativeBuffer
+import app.alextran.immich.NativeImage
 import kotlin.math.*
 import java.io.IOException
 import java.util.concurrent.Executors
@@ -44,22 +46,41 @@ inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0)): Bitmap {
 }
 
 fun Bitmap.toNativeBuffer(): Map<String, Long>  {
-  val size = width * height * 4
+  // Dart reads the buffer as rgba8888, but 10-bit sources decode to RGBA_1010102, which garbles
+  // colors when copied verbatim. Convert those straight into the output buffer in native code -
+  // one pass, no intermediate ARGB_8888 bitmap.
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && config == Bitmap.Config.RGBA_1010102) {
+    val info = IntArray(3)
+    val pointer = NativeImage.convert1010102(this, info)
+    if (pointer != 0L) {
+      recycle()
+      return mapOf(
+        "pointer" to pointer,
+        "width" to info[0].toLong(),
+        "height" to info[1].toLong(),
+        "rowBytes" to info[2].toLong()
+      )
+    }
+    // native convert declined (OOM/lock) -> fall through to the Skia copy path below.
+  }
+  // Other non-8888 configs (e.g. HDR F16) still need Skia's convert; 8-bit is copied as-is.
+  val bitmap = toArgb8888()
+  val size = bitmap.width * bitmap.height * 4
   val pointer = NativeBuffer.allocate(size)
   try {
     val buffer = NativeBuffer.wrap(pointer, size)
-    copyPixelsToBuffer(buffer)
+    bitmap.copyPixelsToBuffer(buffer)
     return mapOf(
       "pointer" to pointer,
-      "width" to width.toLong(),
-      "height" to height.toLong(),
-      "rowBytes" to (width * 4).toLong()
+      "width" to bitmap.width.toLong(),
+      "height" to bitmap.height.toLong(),
+      "rowBytes" to (bitmap.width * 4).toLong()
     )
-  } catch (e: Exception) {
+  } catch (e: Throwable) {
     NativeBuffer.free(pointer)
     throw e
   } finally {
-    recycle()
+    bitmap.recycle()
   }
 }
 
@@ -181,35 +202,56 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
     val id = assetId.toLong()
 
     signal.throwIfCanceled()
-    val bitmap = if (isVideo) {
-      decodeVideoThumbnail(id, size, signal)
-    } else {
-      decodeImage(id, size, signal)
-    }
-
     try {
-      signal.throwIfCanceled()
-      val res = bitmap.toNativeBuffer()
-      signal.throwIfCanceled()
+      val res = if (isVideo) {
+        decodeVideoThumbnail(id, size, signal).toNativeBuffer()
+      } else {
+        val (bitmap, orientation) = decodeImage(id, size, signal)
+        signal.throwIfCanceled()
+        if (orientation == ExifInterface.ORIENTATION_NORMAL || orientation == ExifInterface.ORIENTATION_UNDEFINED) {
+          bitmap.toNativeBuffer()
+        } else {
+          rotateToNativeBuffer(bitmap, orientation)
+        }
+      }
+      // Don't re-check cancellation here: res owns a malloc'd buffer, and bailing to CANCELLED would
+      // orphan it. Deliver it; Dart frees the buffer itself if the request was cancelled meanwhile.
       callback(Result.success(res))
     } catch (e: Exception) {
       callback(if (e is OperationCanceledException) CANCELLED else Result.failure(e))
     }
   }
 
-  private fun decodeImage(id: Long, size: Size, signal: CancellationSignal): Bitmap {
+  // Returns the decoded bitmap plus the EXIF orientation that still needs applying. Only Q+ raw
+  // decodes come back unrotated (ImageDecoder / loadThumbnail skip EXIF for raw like DNG); every
+  // other path already orients itself, so it reports ORIENTATION_NORMAL.
+  private fun decodeImage(id: Long, size: Size, signal: CancellationSignal): Pair<Bitmap, Int> {
     signal.throwIfCanceled()
     val uri = ContentUris.withAppendedId(Images.Media.EXTERNAL_CONTENT_URI, id)
+    val handleRaw = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && isRawMime(uri)
+    val orientation = if (handleRaw) rawOrientation(uri) else ExifInterface.ORIENTATION_NORMAL
+
     if (size.width <= 0 || size.height <= 0 || size.width > 768 || size.height > 768) {
-      return decodeSource(uri, size, signal)
+      // A "load original" request is unsized -> a full-res decode (a sized > 768 just samples to target).
+      return decodeSource(uri, size, signal) to orientation
     }
 
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+    val bitmap = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
       resolver.loadThumbnail(uri, size, signal)
     } else {
       signal.setOnCancelListener { Images.Thumbnails.cancelThumbnailRequest(resolver, id) }
       Images.Thumbnails.getThumbnail(resolver, id, Images.Thumbnails.MINI_KIND, OPTIONS)
     }
+    return bitmap to orientation
+  }
+
+  private fun isRawMime(uri: Uri): Boolean {
+    val mime = resolver.getType(uri) ?: return false
+    return mime.startsWith("image/x-") || mime == "image/dng"
+  }
+
+  private fun rawOrientation(uri: Uri): Int {
+    return resolver.openInputStream(uri)?.use { readOrientation(it) } ?: ExifInterface.ORIENTATION_NORMAL
   }
 
   private fun decodeVideoThumbnail(id: Long, target: Size, signal: CancellationSignal): Bitmap {

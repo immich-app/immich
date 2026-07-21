@@ -4,7 +4,6 @@
 
   // eslint-disable-next-line svelte/prefer-svelte-reactivity
   const albumNameCache = new Map<string, Promise<string>>();
-
   const getAlbumName = (id: string): Promise<string> => {
     let albumName = albumNameCache.get(id);
     if (!albumName) {
@@ -20,7 +19,7 @@
 <script lang="ts">
   import { pluginManager } from '$lib/managers/plugin-manager.svelte';
   import type { JSONSchemaProperty } from '$lib/types';
-  import type { WorkflowStepDto } from '@immich/sdk';
+  import { type WorkflowStepDto } from '@immich/sdk';
   import { Badge, Card, CardBody, CardDescription, CardHeader, CardTitle, Icon, IconButton } from '@immich/ui';
   import {
     mdiAutoFix,
@@ -35,15 +34,18 @@
   import WorkflowStepDragImage from './WorkflowStepDragImage.svelte';
 
   type Props = {
-    step: WorkflowStepDto;
+    step: WorkflowStepDto & { id: string };
     index: number;
     onEdit: (index: number) => void;
     onDelete: (index: number) => void;
     onInsertBefore: (index: number) => void;
-    onDrop: (index: number, event: DragEvent) => void;
+    onDragOver: (index: number, event: DragEvent, boundingRect: DOMRect) => void;
+    onDrop: (event: DragEvent) => void;
+    onDragEnd: (event: DragEvent) => void;
+    onDragStart: (event: DragEvent) => void;
   };
 
-  let { step, index, onEdit, onDelete, onInsertBefore, onDrop }: Props = $props();
+  let { step, index, onEdit, onDelete, onInsertBefore, onDragOver, onDrop, onDragEnd, onDragStart }: Props = $props();
 
   const method = $derived(pluginManager.getMethod(step.method));
   const isFilter = $derived(method?.uiHints?.includes('Filter') ?? false);
@@ -51,12 +53,12 @@
   const configEntries = $derived(
     Object.entries(step.config ?? {}).filter(([, value]) => value !== null && value !== undefined && value !== ''),
   );
+  const isGhost = $derived(step.id === 'ghost');
 
-  const getUiHint = (key: string) => schema?.properties?.[key]?.uiHint;
+  const getUiHint = (key: string) => schema?.properties?.[key]?.uiHint?.type;
   const toIds = (value: unknown): string[] => (Array.isArray(value) ? value.map(String) : [String(value)]);
   let dragImage = $state<Element>();
   let isDropTarget = $state(false);
-  let hoverDrag = $state(false);
 
   const truncate = (input: string, max = 24) => (input.length > max ? input.slice(0, max - 1) + '…' : input);
 
@@ -93,7 +95,7 @@
     }
 
     event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('text/plain', String(index));
+    event.dataTransfer.setData('text/plain', step.id);
 
     mount(WorkflowStepDragImage, {
       target: document.body,
@@ -107,31 +109,23 @@
 
     dragImage = document.body.querySelector('#workflow-step-drag-image')!;
     event.dataTransfer.setDragImage(dragImage, 16, 22);
+    onDragStart(event);
   };
 
-  const handleDrop = (index: number, event: DragEvent) => {
-    if (!event.dataTransfer) {
+  const handleDragOver = (event: DragEvent & { currentTarget: HTMLElement }) => {
+    event.preventDefault();
+    if (isGhost) {
       return;
     }
-    event.preventDefault();
-
-    const from = Number(event.dataTransfer.getData('text/plain'));
-    if (from === index) {
-      return;
-    }
-
-    onDrop(index, event);
-  };
-
-  const handleDragOver = (event: DragEvent) => {
-    event.preventDefault();
     isDropTarget = true;
+    onDragOver(index, event, event.currentTarget.getBoundingClientRect());
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (event: DragEvent) => {
     dragImage?.remove();
     dragImage = undefined;
     isDropTarget = false;
+    onDragEnd(event);
   };
 </script>
 
@@ -157,13 +151,13 @@
     class:scale-[0.99]={!!dragImage}
     ondragover={handleDragOver}
     ondragleave={() => (isDropTarget = false)}
-    ondrop={(event) => handleDrop(index, event)}
+    ondrop={onDrop}
     role="listitem"
   >
     <Card
       class="shadow-none transition-colors {isDropTarget
         ? 'border-primary ring-2 ring-primary-200'
-        : hoverDrag
+        : isGhost
           ? 'border-dashed border-primary'
           : ''}"
     >
@@ -174,8 +168,6 @@
             class="flex shrink-0 cursor-grab items-center justify-center rounded-md border border-transparent p-1 text-light-400 select-none hover:border-primary-200 hover:bg-primary-50 hover:text-primary active:cursor-grabbing"
             aria-label={$t('drag_to_reorder')}
             draggable="true"
-            onmouseenter={() => (hoverDrag = true)}
-            onmouseleave={() => (hoverDrag = false)}
             ondragstart={(event) => handleDragStart(index, event)}
             ondragend={handleDragEnd}
             title={$t('drag_to_reorder')}

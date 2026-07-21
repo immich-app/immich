@@ -1,5 +1,5 @@
 [tools]
-"aqua:flutter/flutter" = "3.44.1"
+"aqua:flutter/flutter" = "3.44.6"
 java = "21.0.2"
 
 [tools."github:CQLabs/homebrew-dcm"]
@@ -102,8 +102,6 @@ run = "flutter run"
 [tasks."i18n:loader"]
 description = "Generate i18n loader"
 hide = true
-sources = ["i18n/"]
-outputs = "lib/generated/codegen_loader.g.dart"
 run = [
   "dart run easy_localization:generate -S ../i18n",
   "dart format lib/generated/codegen_loader.g.dart",
@@ -112,8 +110,6 @@ run = [
 [tasks."i18n:keys"]
 description = "Generate i18n keys"
 hide = true
-sources = ["i18n/en.json"]
-outputs = "lib/generated/translations.g.dart"
 run = [
   "dart run bin/generate_keys.dart",
   "dart format lib/generated/translations.g.dart",

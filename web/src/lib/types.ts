@@ -93,10 +93,16 @@ export type JSONSchemaProperty = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   default?: any;
   enum?: string[];
+  minimum?: number;
+  maximum?: number;
+  precision?: number;
   array?: boolean;
   properties?: Record<string, JSONSchemaProperty>;
   required?: string[];
-  uiHint?: 'AlbumId' | 'AssetId' | 'PersonId';
+  uiHint?: {
+    type?: 'AlbumId' | 'AssetId' | 'PersonId';
+    order?: number;
+  };
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

@@ -11,17 +11,20 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/services/feature_message.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
 const int targetVersion = 26;
 
 Future<void> migrateDatabaseIfNeeded(Drift drift) async {
-  final int version = Store.get(StoreKey.version, targetVersion);
+  final int? storedVersion = Store.tryGet(StoreKey.version);
+  final version = storedVersion ?? targetVersion;
 
   if (version < 25) {
     await _migrateTo25();
@@ -29,6 +32,10 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
   if (version < 26) {
     await _migrateTo26(drift);
+  }
+
+  if (storedVersion == null) {
+    await FeatureMessageService(SettingsRepository.instance).markSeen();
   }
 
   await Store.put(StoreKey.version, targetVersion);
@@ -118,8 +125,10 @@ Future<void> _migrateTo26(Drift drift) async {
   await migrator.migrateBool(StoreKey.legacyTapToNavigate, SettingsKey.viewerTapToNavigate);
   // Network
   await migrator.migrateBool(StoreKey.legacyAutoEndpointSwitching, SettingsKey.networkAutoEndpointSwitching);
-  await migrator.migrateString(StoreKey.legacyPreferredWifiName, SettingsKey.networkPreferredWifiName);
-  await migrator.migrateString(StoreKey.legacyLocalEndpoint, SettingsKey.networkLocalEndpoint);
+  final preferredWifiName = await migrator.readLegacyStoreString(StoreKey.legacyPreferredWifiName.id);
+  migrator.stage(StoreKey.legacyPreferredWifiName, SettingsKey.networkPreferredWifiName, preferredWifiName);
+  final localEndpoint = await migrator.readLegacyStoreString(StoreKey.legacyLocalEndpoint.id);
+  migrator.stage(StoreKey.legacyLocalEndpoint, SettingsKey.networkLocalEndpoint, localEndpoint);
   await _migrateExternalEndpointList(migrator);
   await _migrateCustomHeaders(migrator);
   // Album
@@ -195,7 +204,7 @@ Future<void> _migrateCustomHeaders(_StoreMigrator migrator) async {
 
 class _StoreMigrator {
   final Drift _db;
-  final Map<SettingsKey<Object>, Object> _cache = {};
+  final Map<SettingsKey, Object?> _cache = {};
   final List<int> _migratedStoreIds = [];
 
   _StoreMigrator(this._db);
@@ -265,7 +274,7 @@ class _StoreMigrator {
     _migratedStoreIds.add(legacyKey.id);
   }
 
-  void stage<T extends Object>(StoreKey legacyKey, SettingsKey<T> newKey, T value) {
+  void stage<T, U extends T>(StoreKey legacyKey, SettingsKey<T> newKey, U value) {
     _cache[newKey] = value;
     _migratedStoreIds.add(legacyKey.id);
   }
@@ -276,9 +285,15 @@ class _StoreMigrator {
         if (entry.value == defaultConfig.read(entry.key)) {
           continue;
         }
+
+        String? resolvedValue;
+        if (entry.value != null) {
+          resolvedValue = entry.key.encode(entry.value);
+        }
+
         batch.insert(
           _db.settingsEntity,
-          SettingsEntityCompanion(key: Value(entry.key.name), value: Value(entry.key.encode(entry.value))),
+          SettingsEntityCompanion(key: Value(entry.key.name), value: Value(resolvedValue)),
           mode: InsertMode.insertOrReplace,
         );
       }

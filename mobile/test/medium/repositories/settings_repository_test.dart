@@ -1,4 +1,3 @@
-import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
@@ -61,6 +60,39 @@ void main() {
     });
   });
 
+  group('null values', () {
+    test('writing null to a nullable key clears the row and reverts the cache to null', () async {
+      await sut.write(SettingsKey.networkPreferredWifiName, 'home-wifi');
+      expect(sut.appConfig.network.preferredWifiName, 'home-wifi');
+      expect(await ctx.db.select(ctx.db.settingsEntity).get(), hasLength(1));
+
+      await sut.write(SettingsKey.networkPreferredWifiName, null);
+
+      expect(await ctx.db.select(ctx.db.settingsEntity).get(), isEmpty);
+      expect(sut.appConfig.network.preferredWifiName, isNull);
+    });
+
+    test('writing null to an already-null key is a no-op', () async {
+      await sut.write(SettingsKey.networkPreferredWifiName, null);
+      expect(await ctx.db.select(ctx.db.settingsEntity).get(), isEmpty);
+    });
+
+    test('a stored NULL value column decodes to null on refresh', () async {
+      await ctx.db
+          .into(ctx.db.settingsEntity)
+          .insert(
+            SettingsEntityCompanion.insert(
+              key: SettingsKey.networkPreferredWifiName.name,
+              value: const .new(null),
+              updatedAt: .new(DateTime.now()),
+            ),
+          );
+
+      await SettingsRepository.instance.refresh();
+      expect(sut.appConfig.network.preferredWifiName, isNull);
+    });
+  });
+
   group('delete', () {});
 
   group('sync', () {
@@ -70,8 +102,8 @@ void main() {
           .insert(
             SettingsEntityCompanion.insert(
               key: SettingsKey.themeMode.name,
-              value: ThemeMode.dark.name,
-              updatedAt: Value(DateTime.now()),
+              value: .new(ThemeMode.dark.name),
+              updatedAt: .new(DateTime.now()),
             ),
           );
 
@@ -98,8 +130,8 @@ void main() {
           .insert(
             SettingsEntityCompanion.insert(
               key: 'app-config.unknown.future-key',
-              value: 'whatever',
-              updatedAt: Value(DateTime.now()),
+              value: const .new('unknown'),
+              updatedAt: .new(DateTime.now()),
             ),
           );
 

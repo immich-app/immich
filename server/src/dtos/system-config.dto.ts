@@ -1,3 +1,4 @@
+import { validateCronExpression } from 'cron';
 import { createZodDto } from 'nestjs-zod';
 import { SystemConfig } from 'src/config';
 import {
@@ -10,6 +11,7 @@ import {
   AudioCodecSchema,
   ColorspaceSchema,
   CQModeSchema,
+  HlsVideoResolutionSchema,
   ImageFormatSchema,
   LogLevelSchema,
   OAuthTokenEndpointAuthMethodSchema,
@@ -19,7 +21,6 @@ import {
   VideoCodecSchema,
   VideoContainerSchema,
 } from 'src/enum';
-import { isValidTime } from 'src/validation';
 import z from 'zod';
 
 /** Coerces 'true'/'false' strings to boolean, but also allows booleans. */
@@ -43,7 +44,16 @@ const JobSettingsSchema = z
 
 const cronExpressionSchema = z
   .string()
-  .regex(/(((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*) ?){5,7}/, 'Invalid cron expression')
+  .superRefine((value, ctx) => {
+    const validated = validateCronExpression(value);
+    if (!validated.valid) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `Invalid cron expression. ${validated.error?.message ?? ''}`,
+        input: value,
+      });
+    }
+  })
   .describe('Cron expression');
 
 const DatabaseBackupSchema = z
@@ -53,6 +63,35 @@ const DatabaseBackupSchema = z
     keepLastAmount: z.int().min(1).describe('Keep last amount'),
   })
   .meta({ id: 'DatabaseBackupConfig' });
+
+const SystemConfigIntegrityJobSchema = z
+  .object({
+    enabled: z.boolean().describe('Enabled'),
+    cronExpression: cronExpressionSchema.describe('Cron expression for when the integrity check should run'),
+  })
+  .describe('Integrity job config')
+  .meta({ id: 'SystemConfigIntegrityJob' });
+
+const SystemConfigIntegrityChecksumJobSchema = SystemConfigIntegrityJobSchema.extend({
+  timeLimit: z.int().nonnegative().describe('How long the integrity checksum job may run for'),
+  percentageLimit: z
+    .float32()
+    .nonnegative()
+    .max(1)
+    .describe('Percentage limit of the integrity checksum job')
+    .meta({ format: 'double' }),
+})
+  .describe('Integrity checksum job config')
+  .meta({ id: 'SystemConfigIntegrityChecksumJob' });
+
+const SystemConfigIntegrityChecksSchema = z
+  .object({
+    missingFiles: SystemConfigIntegrityJobSchema,
+    untrackedFiles: SystemConfigIntegrityJobSchema,
+    checksumFiles: SystemConfigIntegrityChecksumJobSchema,
+  })
+  .describe('Integrity checks config')
+  .meta({ id: 'SystemConfigIntegrityChecks' });
 
 const SystemConfigBackupsSchema = z.object({ database: DatabaseBackupSchema }).meta({ id: 'SystemConfigBackupsDto' });
 
@@ -82,6 +121,8 @@ const SystemConfigFFmpegSchema = z
     realtime: z
       .object({
         enabled: configBool.describe('Enable real-time HLS transcoding (alpha)'),
+        videoCodecs: z.array(VideoCodecSchema).describe('Video codecs to use for real-time HLS transcoding'),
+        resolutions: z.array(HlsVideoResolutionSchema).describe('Resolutions to use for real-time HLS transcoding'),
       })
       .meta({ id: 'SystemConfigFFmpegRealtimeDto' }),
   })
@@ -103,6 +144,7 @@ const SystemConfigJobSchema = z
     ocr: JobSettingsSchema,
     workflow: JobSettingsSchema,
     editor: JobSettingsSchema,
+    integrityCheck: JobSettingsSchema,
   })
   .meta({ id: 'SystemConfigJobDto' });
 
@@ -169,7 +211,12 @@ const SystemConfigNewVersionCheckSchema = z
 
 const SystemConfigNightlyTasksSchema = z
   .object({
-    startTime: isValidTime.describe('Start time'),
+    startTime: z.iso
+      .time({
+        precision: -1,
+        error: (iss) => `Invalid input: expected string in HH:MM format, received ${typeof iss.input}`,
+      })
+      .describe('Start time (HH:MM)'),
     databaseCleanup: configBool.describe('Database cleanup'),
     missingThumbnails: configBool.describe('Missing thumbnails'),
     clusterNewFaces: configBool.describe('Cluster new faces'),
@@ -382,6 +429,7 @@ export const SystemConfigSchema = z
     templates: SystemConfigTemplatesSchema,
     server: SystemConfigServerSchema,
     user: SystemConfigUserSchema,
+    integrityChecks: SystemConfigIntegrityChecksSchema,
   })
   .describe('System configuration')
   .meta({ id: 'SystemConfigDto' });
