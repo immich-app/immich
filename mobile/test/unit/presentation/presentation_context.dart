@@ -11,6 +11,7 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
@@ -80,7 +81,8 @@ class PresentationContext {
     if (_db == null) {
       final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
       await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
-      await StoreService.I.put(StoreKey.serverEndpoint, serverEndpoint);
+      await SessionRepository.ensureInitialized(db);
+      await SessionRepository.instance.write(.serverEndpoint, serverEndpoint);
       _db = db;
     }
     await SettingsRepository.ensureInitialized(_db!);
