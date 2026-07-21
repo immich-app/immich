@@ -17,6 +17,7 @@ import { PostgresJSDialect } from 'kysely-postgres-js';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { Notice, PostgresError } from 'postgres';
 import { columns, lockableProperties, LockableProperty, Person } from 'src/database';
+import { DummyValue, GenerateSqlQueries } from 'src/decorators';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import {
   DateFilter,
@@ -959,6 +960,164 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       applySearchOrder(qb as SelectQueryBuilder<DB, 'asset' | 'asset_exif', unknown>, orderField, orderDirection),
     );
 }
+
+export const searchMetadataV3Examples: GenerateSqlQueries[] = [
+  { name: 'baseline', params: [{ size: 100 }, { userIds: [DummyValue.UUID] }] },
+  { name: 'empty', params: [{ size: 100 }, {}] },
+  {
+    name: 'or-exif-only',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { or: [{ city: { eq: DummyValue.STRING } }] } }],
+  },
+  {
+    name: 'string-eq-null',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { city: { eq: null } } }],
+  },
+  {
+    name: 'string-pattern-like',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { description: { like: DummyValue.STRING } } }],
+  },
+  {
+    name: 'string-pattern-notLike',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { description: { notLike: DummyValue.STRING } } }],
+  },
+  {
+    name: 'string-pattern-startsWith',
+    params: [
+      { size: 100 },
+      { userIds: [DummyValue.UUID], filter: { originalFileName: { startsWith: DummyValue.STRING } } },
+    ],
+  },
+  {
+    name: 'string-similarity-ocr',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { ocr: { matches: DummyValue.STRING } } }],
+  },
+  {
+    name: 'ids-any',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { albumIds: { any: [DummyValue.UUID] } } }],
+  },
+  {
+    name: 'ids-all',
+    params: [
+      { size: 100 },
+      { userIds: [DummyValue.UUID], filter: { personIds: { all: [DummyValue.UUID, DummyValue.UUID] } } },
+    ],
+  },
+  {
+    name: 'ids-all-single',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { albumIds: { all: [DummyValue.UUID] } } }],
+  },
+  {
+    name: 'ids-none',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { tagIds: { none: [DummyValue.UUID] } } }],
+  },
+  {
+    name: 'ids-tags-all',
+    params: [
+      { size: 100 },
+      { userIds: [DummyValue.UUID], filter: { tagIds: { all: [DummyValue.UUID, DummyValue.UUID] } } },
+    ],
+  },
+  {
+    name: 'has-albums-false',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { hasAlbums: { eq: false } } }],
+  },
+  {
+    name: 'is-encoded',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { isEncoded: { eq: true } } }],
+  },
+  {
+    name: 'number-range',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { fileSizeInBytes: { gte: 100, lte: 1000 } } }],
+  },
+  {
+    name: 'date-eq',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { takenAt: { eq: DummyValue.DATE } } }],
+  },
+  {
+    name: 'date-range',
+    params: [
+      { size: 100 },
+      {
+        userIds: [DummyValue.UUID],
+        filter: { takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE } },
+      },
+    ],
+  },
+  {
+    name: 'order-fileSize-noExif',
+    params: [
+      { size: 100 },
+      {
+        userIds: [DummyValue.UUID],
+        order: { field: SearchOrderField.FileSizeInBytes, direction: AssetOrder.Desc },
+        withExif: false,
+      },
+    ],
+  },
+  {
+    name: 'order-rating-withExif',
+    params: [
+      { size: 100 },
+      {
+        userIds: [DummyValue.UUID],
+        order: { field: SearchOrderField.Rating, direction: AssetOrder.Asc },
+        withExif: true,
+      },
+    ],
+  },
+  {
+    name: 'or-branches',
+    params: [
+      { size: 100 },
+      {
+        userIds: [DummyValue.UUID],
+        filter: {
+          or: [{ isFavorite: { eq: true } }, { personIds: { any: [DummyValue.UUID] } }],
+        },
+      },
+    ],
+  },
+  {
+    name: 'or-with-top-level',
+    params: [
+      { size: 100 },
+      {
+        userIds: [DummyValue.UUID],
+        filter: {
+          takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE },
+          or: [{ isFavorite: { eq: true } }, { albumIds: { any: [DummyValue.UUID] } }],
+        },
+      },
+    ],
+  },
+];
+
+export const searchStatisticsV3Examples: GenerateSqlQueries[] = [
+  { name: 'baseline', params: [{ userIds: [DummyValue.UUID] }] },
+  {
+    name: 'with-filter',
+    params: [
+      {
+        userIds: [DummyValue.UUID],
+        filter: {
+          takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE },
+          fileSizeInBytes: { gte: 100 },
+        },
+      },
+    ],
+  },
+  {
+    name: 'with-or',
+    params: [
+      {
+        userIds: [DummyValue.UUID],
+        filter: {
+          or: [{ isFavorite: { eq: true } }, { hasAlbums: { eq: false } }],
+        },
+      },
+    ],
+  },
+];
 
 export type ReindexVectorIndexOptions = { indexName: string; lists?: number };
 
