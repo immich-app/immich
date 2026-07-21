@@ -223,6 +223,7 @@ export class SearchRepository {
     const items = await searchAssetBuilderLegacy(this.db, options)
       .selectAll('asset')
       .orderBy('asset.fileCreatedAt', orderDirection)
+      .orderBy('asset.id', "asc")
       .limit(pagination.size + 1)
       .offset((pagination.page - 1) * pagination.size)
       .execute();
@@ -313,6 +314,7 @@ export class SearchRepository {
         .selectAll('asset')
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
+        .orderBy('asset.id', 'asc')
         .limit(pagination.size + 1)
         .offset((pagination.page - 1) * pagination.size)
         .execute();
