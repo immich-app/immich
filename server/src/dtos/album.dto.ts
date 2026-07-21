@@ -171,7 +171,7 @@ export type MapAlbumDto = {
   assets?: ShallowDehydrateObject<MapAsset>[];
   sharedLinks?: ShallowDehydrateObject<AuthSharedLink>[];
   albumName: string;
-  description: string;
+  description: string | null;
   albumThumbnailAssetId: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -207,7 +207,8 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
 
   return {
     albumName: entity.albumName,
-    description: entity.description,
+    // TODO: return null instead of '' in v4
+    description: entity.description ?? '',
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
     createdAt: asDateTimeString(entity.createdAt),
     updatedAt: asDateTimeString(entity.updatedAt),

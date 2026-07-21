@@ -275,17 +275,18 @@ describe(AlbumService.name, () => {
       ]);
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
 
+      const description = 'album description';
       await sut.create(AuthFactory.create(owner), {
         albumName: album.albumName,
         albumUsers: [albumUser],
-        description: album.description,
+        description,
         assetIds: [assetId],
       });
 
       expect(mocks.album.create).toHaveBeenCalledWith(
         {
           albumName: album.albumName,
-          description: album.description,
+          description,
           order: 'asc',
           albumThumbnailAssetId: assetId,
         },
@@ -328,16 +329,17 @@ describe(AlbumService.name, () => {
       mocks.user.getMetadata.mockResolvedValue([]);
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([assetId]));
 
+      const description = 'album description';
       await sut.create(AuthFactory.create(owner), {
         albumName: album.albumName,
-        description: album.description,
+        description,
         assetIds: [assetId, 'asset-2'],
       });
 
       expect(mocks.album.create).toHaveBeenCalledWith(
         {
           albumName: album.albumName,
-          description: album.description,
+          description,
           order: 'desc',
           albumThumbnailAssetId: assetId,
         },
