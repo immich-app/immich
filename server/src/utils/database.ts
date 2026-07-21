@@ -598,16 +598,13 @@ function existsOcrMatch(eb: AssetExpressionBuilder, matches: string) {
   );
 }
 
-const encodedVideoFileBase = (eb: ExpressionBuilder<DB, 'asset' | 'asset_exif'>) =>
-  eb
-    .selectFrom('asset_file')
-    .whereRef('asset_file.assetId', '=', 'asset.id')
-    .where('asset_file.type', '=', AssetFileType.EncodedVideo)
-    .where('asset_file.isEdited', '=', false);
-
 function existsEncodedVideoPath(eb: AssetExpressionBuilder, filter: StringFilter) {
   return eb.exists(
-    encodedVideoFileBase(eb)
+    eb
+      .selectFrom('asset_file')
+      .whereRef('asset_file.assetId', '=', 'asset.id')
+      .where('asset_file.type', '=', AssetFileType.EncodedVideo)
+      .where('asset_file.isEdited', '=', false)
       .$if(filter.eq !== undefined, (qb) => qb.where('asset_file.path', '=', filter.eq!))
       .$if(filter.ne !== undefined, (qb) => qb.where('asset_file.path', '!=', filter.ne!))
       .$if(filter.in !== undefined, (qb) => qb.where('asset_file.path', 'in', filter.in!))
