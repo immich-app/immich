@@ -165,7 +165,7 @@
     "typescript-eslint": "^8.28.0",
     "unplugin-swc": "^1.4.5",
     "vite-tsconfig-paths": "^6.0.0",
-    "vitest": "^3.0.0"
+    "vitest": "^4.0.0"
   },
   "overrides": {
     "sharp": "^0.34.5"
