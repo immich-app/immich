@@ -4,7 +4,7 @@ import type { Manifest } from '../dist/index.d.ts';
 
 type MatchValueConfig = {
   pattern: string;
-  matchType?: 'contains' | 'exact' | 'regex' | 'startsWith' | 'greaterThan' | 'lessThan';
+  matchType?: 'contains' | 'exact' | 'regex' | 'startsWith';
   caseSensitive?: boolean;
 };
 
@@ -30,20 +30,6 @@ const matchValueResult = (value: string, config: MatchValueConfig) => {
       const flags = caseSensitive ? '' : 'i';
       const regex = new RegExp(searchPattern, flags);
       return { workflow: { continue: regex.test(value) } };
-    }
-
-    case 'greaterThan': {
-      if (Number.isNaN(Number.parseFloat(searchName)) || Number.isNaN(Number.parseFloat(searchPattern))) {
-        return { workflow: { continue: searchName > searchPattern } };
-      }
-      return { workflow: { continue: Number.parseFloat(searchName) > Number.parseFloat(searchPattern) } };
-    }
-
-    case 'lessThan': {
-      if (Number.isNaN(Number.parseFloat(searchName)) || Number.isNaN(Number.parseFloat(searchPattern))) {
-        return { workflow: { continue: searchName < searchPattern } };
-      }
-      return { workflow: { continue: Number.parseFloat(searchName) < Number.parseFloat(searchPattern) } };
     }
 
     default: {
