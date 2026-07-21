@@ -76,14 +76,17 @@ export class AuthService extends BaseService {
   }
 
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
+    let oauthBearerToken: string | undefined;
     if (auth.session) {
+      const session = await this.sessionRepository.get(auth.session.id);
+      oauthBearerToken = session?.oauthBearerToken ?? undefined;
       await this.sessionRepository.delete(auth.session.id);
       await this.eventRepository.emit('SessionDelete', { sessionId: auth.session.id });
     }
 
     return {
       successful: true,
-      redirectUri: await this.getLogoutEndpoint(authType),
+      redirectUri: await this.getLogoutEndpoint(authType, oauthBearerToken),
     };
   }
 
@@ -306,12 +309,11 @@ export class AuthService extends BaseService {
     }
 
     const url = this.resolveRedirectUri(oauth, dto.url);
-    const { profile, sid: oauthSid } = await this.oauthRepository.getProfileAndOAuthSid(
-      oauth,
-      url,
-      expectedState,
-      codeVerifier,
-    );
+    const {
+      profile,
+      sid: oauthSid,
+      idToken: oauthBearerToken,
+    } = await this.oauthRepository.getProfileAndOAuthSid(oauth, url, expectedState, codeVerifier);
     const normalizedEmail = profile.email ? profile.email.trim().toLowerCase() : undefined;
     const { autoRegister, defaultStorageQuota, storageLabelClaim, storageQuotaClaim, roleClaim } = oauth;
     this.logger.debug(`Logging in with OAuth: ${JSON.stringify(profile)}`);
@@ -378,7 +380,7 @@ export class AuthService extends BaseService {
       await this.syncProfilePicture(user, profile.picture);
     }
 
-    return this.createLoginResponse(user, loginDetails, oauthSid);
+    return this.createLoginResponse(user, loginDetails, oauthSid, oauthBearerToken);
   }
 
   private async syncProfilePicture(user: UserAdmin, url: string) {
@@ -419,6 +421,7 @@ export class AuthService extends BaseService {
     const {
       profile: { sub: oauthId },
       sid,
+      idToken,
     } = await this.oauthRepository.getProfileAndOAuthSid(oauth, dto.url, expectedState, codeVerifier);
     const duplicate = await this.userRepository.getByOAuthId(oauthId);
     if (duplicate && duplicate.id !== auth.user.id) {
@@ -426,8 +429,11 @@ export class AuthService extends BaseService {
       throw new BadRequestException('This OAuth account has already been linked to another user.');
     }
 
-    if (auth.session && sid) {
-      await this.sessionRepository.update(auth.session.id, { oauthSid: sid });
+    if (auth.session && (sid || idToken)) {
+      await this.sessionRepository.update(auth.session.id, {
+        oauthSid: sid,
+        oauthBearerToken: idToken,
+      });
     }
 
     const user = await this.userRepository.update(auth.user.id, { oauthId });
@@ -436,14 +442,14 @@ export class AuthService extends BaseService {
 
   async unlink(auth: AuthDto): Promise<UserAdminResponseDto> {
     if (auth.session) {
-      await this.sessionRepository.update(auth.session.id, { oauthSid: null });
+      await this.sessionRepository.update(auth.session.id, { oauthSid: null, oauthBearerToken: null });
     }
 
     const user = await this.userRepository.update(auth.user.id, { oauthId: '' });
     return mapUserAdmin(user);
   }
 
-  private async getLogoutEndpoint(authType: AuthType): Promise<string> {
+  private async getLogoutEndpoint(authType: AuthType, oauthBearerToken?: string | null): Promise<string> {
     if (authType !== AuthType.OAuth) {
       return LOGIN_URL;
     }
@@ -453,11 +459,20 @@ export class AuthService extends BaseService {
       return LOGIN_URL;
     }
 
-    if (config.oauth.endSessionEndpoint) {
-      return config.oauth.endSessionEndpoint;
+    const endSessionEndpoint =
+      config.oauth.endSessionEndpoint || (await this.oauthRepository.getLogoutEndpoint(config.oauth));
+
+    if (!endSessionEndpoint) {
+      return LOGIN_URL;
     }
 
-    return (await this.oauthRepository.getLogoutEndpoint(config.oauth)) || LOGIN_URL;
+    const url = new URL(endSessionEndpoint);
+
+    if (oauthBearerToken) {
+      url.searchParams.set('id_token_hint', oauthBearerToken);
+    }
+
+    return url.href;
   }
 
   private getBearerToken(headers: IncomingHttpHeaders): string | null {
@@ -599,7 +614,12 @@ export class AuthService extends BaseService {
     await this.sessionRepository.update(auth.session.id, { pinExpiresAt: null });
   }
 
-  private async createLoginResponse(user: UserAdmin, loginDetails: LoginDetails, oauthSid?: string) {
+  private async createLoginResponse(
+    user: UserAdmin,
+    loginDetails: LoginDetails,
+    oauthSid?: string,
+    oauthBearerToken?: string,
+  ) {
     const token = this.cryptoRepository.randomBytesAsText(32);
     const hashed = this.cryptoRepository.hashSha256(token);
 
@@ -610,6 +630,7 @@ export class AuthService extends BaseService {
       appVersion: loginDetails.appVersion,
       userId: user.id,
       oauthSid: oauthSid ?? null,
+      oauthBearerToken: oauthBearerToken ?? null,
     });
 
     return mapLoginResponse(user, token);
