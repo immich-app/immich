@@ -328,8 +328,6 @@ class SyncStreamService {
         return _syncStreamRepository.updateAssetOcrV1(data.cast());
       case SyncEntityType.assetOcrDeleteV1:
         return _syncStreamRepository.deleteAssetOcrV1(data.cast());
-      default:
-        _logger.warning("Unknown sync data type: $type");
     }
   }
 

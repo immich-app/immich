@@ -11,31 +11,30 @@
 part of openapi.api;
 
 /// User status
-class UserStatus {
-  /// Instantiate a new enum with the provided [value].
-  const UserStatus._(this.value);
+enum UserStatus {
+  active._(r'active'),
+  removing._(r'removing'),
+  deleted._(r'deleted'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const UserStatus._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const active = UserStatus._(r'active');
-  static const removing = UserStatus._(r'removing');
-  static const deleted = UserStatus._(r'deleted');
-
-  /// List of all possible values in this [enum][UserStatus].
-  static const values = <UserStatus>[
-    active,
-    removing,
-    deleted,
-  ];
-
+  /// Returns the instance of [UserStatus] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static UserStatus? fromJson(dynamic value) => UserStatusTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [UserStatus]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<UserStatus> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <UserStatus>[];
     if (json is List && json.isNotEmpty) {
@@ -57,9 +56,11 @@ class UserStatusTypeTransformer {
 
   const UserStatusTypeTransformer._();
 
-  String encode(UserStatus data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(UserStatus data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a UserStatus.
+  /// Returns the instance of [UserStatus] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -68,6 +69,9 @@ class UserStatusTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   UserStatus? decode(dynamic data, {bool allowNull = true}) {
+    if (data is UserStatus) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'active': return UserStatus.active;
@@ -82,7 +86,7 @@ class UserStatusTypeTransformer {
     return null;
   }
 
-  /// Singleton [UserStatusTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static UserStatusTypeTransformer? _instance;
 }
 
