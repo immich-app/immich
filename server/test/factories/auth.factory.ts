@@ -35,7 +35,7 @@ export class AuthFactory {
   }
 
   session(dto: Partial<AuthDto['session']> = {}) {
-    this.#session = { id: newUuid(), hasElevatedPermission: false, oauthBearerToken: null, ...dto };
+    this.#session = { id: newUuid(), hasElevatedPermission: false, ...dto };
     return this;
   }
 

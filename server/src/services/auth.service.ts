@@ -76,14 +76,17 @@ export class AuthService extends BaseService {
   }
 
   async logout(auth: AuthDto, authType: AuthType): Promise<LogoutResponseDto> {
+    let oauthBearerToken: string | undefined;
     if (auth.session) {
+      const session = await this.sessionRepository.get(auth.session.id);
+      oauthBearerToken = session?.oauthBearerToken ?? undefined;
       await this.sessionRepository.delete(auth.session.id);
       await this.eventRepository.emit('SessionDelete', { sessionId: auth.session.id });
     }
 
     return {
       successful: true,
-      redirectUri: await this.getLogoutEndpoint(authType, auth.session?.oauthBearerToken),
+      redirectUri: await this.getLogoutEndpoint(authType, oauthBearerToken),
     };
   }
 
@@ -428,8 +431,8 @@ export class AuthService extends BaseService {
 
     if (auth.session && (sid || idToken)) {
       await this.sessionRepository.update(auth.session.id, {
-        oauthSid: sid ?? null,
-        oauthBearerToken: idToken ?? null,
+        oauthSid: sid,
+        oauthBearerToken: idToken,
       });
     }
 
@@ -456,16 +459,20 @@ export class AuthService extends BaseService {
       return LOGIN_URL;
     }
 
-    const logoutEndpoint =
-      config.oauth.endSessionEndpoint || (await this.oauthRepository.getLogoutEndpoint(config.oauth)) || LOGIN_URL;
-    if (!oauthBearerToken || logoutEndpoint === LOGIN_URL) {
-      return logoutEndpoint;
+    const endSessionEndpoint =
+      config.oauth.endSessionEndpoint || (await this.oauthRepository.getLogoutEndpoint(config.oauth));
+
+    if (!endSessionEndpoint) {
+      return LOGIN_URL;
     }
 
-    const url = new URL(logoutEndpoint);
-    url.searchParams.set('id_token_hint', oauthBearerToken);
+    const url = new URL(endSessionEndpoint);
 
-    return url.toString();
+    if (oauthBearerToken) {
+      url.searchParams.set('id_token_hint', oauthBearerToken);
+    }
+
+    return url.href;
   }
 
   private getBearerToken(headers: IncomingHttpHeaders): string | null {
@@ -579,7 +586,6 @@ export class AuthService extends BaseService {
         session: {
           id: session.id,
           hasElevatedPermission,
-          oauthBearerToken: session.oauthBearerToken,
         },
       };
     }

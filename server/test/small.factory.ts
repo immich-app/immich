@@ -43,7 +43,6 @@ const authFactory = ({
     auth.session = {
       id: session.id ?? newUuid(),
       hasElevatedPermission: session.hasElevatedPermission ?? false,
-      oauthBearerToken: session.oauthBearerToken ?? null,
     };
   }
 

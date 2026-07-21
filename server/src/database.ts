@@ -197,7 +197,6 @@ export type Album = Selectable<AlbumTable> & {
 export type AuthSession = {
   id: string;
   hasElevatedPermission: boolean;
-  oauthBearerToken: string | null;
 };
 
 export type Partner = {
@@ -342,13 +341,7 @@ export const columns = {
   ],
   authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
   authApiKey: ['api_key.id', 'api_key.permissions'],
-  authSession: [
-    'session.id',
-    'session.updatedAt',
-    'session.pinExpiresAt',
-    'session.appVersion',
-    'session.oauthBearerToken',
-  ],
+  authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion'],
   user: userColumns,
   userWithPrefix: userWithPrefixColumns,
   userAdmin: [

@@ -160,14 +160,20 @@ describe(AuthService.name, () => {
 
       await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
         successful: true,
-        redirectUri: 'http://end-session-endpoint',
+        redirectUri: 'http://end-session-endpoint/',
       });
     });
 
     it('should include the id token hint for OAuth sessions', async () => {
-      const auth = AuthFactory.from().session({ oauthBearerToken: 'id-token' }).build();
+      const auth = AuthFactory.from().session().build();
 
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.enabled);
+      mocks.session.get.mockResolvedValue({
+        id: auth.session!.id,
+        expiresAt: null,
+        oauthBearerToken: 'id-token',
+        pinExpiresAt: null,
+      });
       mocks.session.delete.mockResolvedValue();
 
       await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
@@ -185,7 +191,7 @@ describe(AuthService.name, () => {
 
       await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
         successful: true,
-        redirectUri: 'http://custom-logout-url',
+        redirectUri: 'http://custom-logout-url/',
       });
     });
 
@@ -198,7 +204,7 @@ describe(AuthService.name, () => {
 
       await expect(sut.logout(auth, AuthType.OAuth)).resolves.toEqual({
         successful: true,
-        redirectUri: 'http://end-session-endpoint',
+        redirectUri: 'http://end-session-endpoint/',
       });
     });
 
@@ -213,6 +219,12 @@ describe(AuthService.name, () => {
 
     it('should delete the access token', async () => {
       const auth = { user: { id: '123' }, session: { id: 'token123' } } as AuthDto;
+      mocks.session.get.mockResolvedValue({
+        id: auth.session!.id,
+        expiresAt: null,
+        oauthBearerToken: null,
+        pinExpiresAt: null,
+      });
       mocks.session.delete.mockResolvedValue();
 
       await expect(sut.logout(auth, AuthType.Password)).resolves.toEqual({
@@ -347,7 +359,6 @@ describe(AuthService.name, () => {
         pinExpiresAt: null,
         appVersion: null,
         oauthSid: null,
-        oauthBearerToken: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -363,7 +374,6 @@ describe(AuthService.name, () => {
         session: {
           id: session.id,
           hasElevatedPermission: false,
-          oauthBearerToken: null,
         },
       });
     });
@@ -516,7 +526,6 @@ describe(AuthService.name, () => {
         pinExpiresAt: null,
         appVersion: null,
         oauthSid: null,
-        oauthBearerToken: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -532,7 +541,6 @@ describe(AuthService.name, () => {
         session: {
           id: session.id,
           hasElevatedPermission: false,
-          oauthBearerToken: null,
         },
       });
     });
@@ -547,7 +555,6 @@ describe(AuthService.name, () => {
         pinExpiresAt: null,
         appVersion: null,
         oauthSid: null,
-        oauthBearerToken: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
@@ -571,7 +578,6 @@ describe(AuthService.name, () => {
         pinExpiresAt: null,
         appVersion: null,
         oauthSid: null,
-        oauthBearerToken: null,
       };
 
       mocks.session.getByToken.mockResolvedValue(sessionWithToken);
