@@ -35,7 +35,7 @@
     return value === null ? undefined : value;
   }
 
-  const emptyStringToNull = (value: string | undefined): string | null | undefined => (value === '' ? null : value);
+  const emptyStringToNull = (value: string | undefined) => (value === '' ? null : value);
 
   function storeQueryType(type: SearchFilter['queryType']) {
     localStorage.setItem('searchQueryType', type);
