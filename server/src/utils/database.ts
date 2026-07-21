@@ -689,24 +689,44 @@ function idPredicates(
     .map(([v, op, nullOp]) => (v === null ? eb(column, nullOp, null) : eb(column, op, asUuid(v!))));
 }
 
-type EnumColumn = {
-  'asset.type': AssetType;
-  'asset.visibility': AssetVisibility;
-};
-
-function enumPredicates<C extends keyof EnumColumn>(
+function typePredicates(
   eb: AssetExpressionBuilder,
-  column: C,
-  filter: { eq?: EnumColumn[C]; ne?: EnumColumn[C]; in?: EnumColumn[C][]; notIn?: EnumColumn[C][] } = {},
+  filter: { eq?: AssetType; ne?: AssetType; in?: AssetType[]; notIn?: AssetType[] } = {},
 ) {
-  // cast: kysely's `eb` doesn't distribute its column-value narrowing through the generic
-  const ops = [
-    ['=', filter.eq],
-    ['!=', filter.ne],
-    ['in', filter.in],
-    ['not in', filter.notIn],
-  ] as const;
-  return ops.filter(([, v]) => v !== undefined).map(([op, v]) => eb(column, op, v as never));
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq !== undefined) {
+    predicates.push(eb('asset.type', '=', filter.eq));
+  }
+  if (filter.ne !== undefined) {
+    predicates.push(eb('asset.type', '!=', filter.ne));
+  }
+  if (filter.in !== undefined) {
+    predicates.push(eb('asset.type', 'in', filter.in));
+  }
+  if (filter.notIn !== undefined) {
+    predicates.push(eb('asset.type', 'not in', filter.notIn));
+  }
+  return predicates;
+}
+
+function visibilityPredicates(
+  eb: AssetExpressionBuilder,
+  filter: { eq?: AssetVisibility; ne?: AssetVisibility; in?: AssetVisibility[]; notIn?: AssetVisibility[] } = {},
+) {
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq !== undefined) {
+    predicates.push(eb('asset.visibility', '=', filter.eq));
+  }
+  if (filter.ne !== undefined) {
+    predicates.push(eb('asset.visibility', '!=', filter.ne));
+  }
+  if (filter.in !== undefined) {
+    predicates.push(eb('asset.visibility', 'in', filter.in));
+  }
+  if (filter.notIn !== undefined) {
+    predicates.push(eb('asset.visibility', 'not in', filter.notIn));
+  }
+  return predicates;
 }
 
 type StringColumn =
@@ -846,8 +866,8 @@ function buildBranchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterB
   return [
     ...idPredicates(eb, 'asset.id', branch.id),
     ...idPredicates(eb, 'asset.libraryId', branch.libraryId),
-    ...enumPredicates(eb, 'asset.type', branch.type),
-    ...enumPredicates(eb, 'asset.visibility', branch.visibility),
+    ...typePredicates(eb, branch.type),
+    ...visibilityPredicates(eb, branch.visibility),
     ...(branch.isFavorite ? [eb('asset.isFavorite', '=', branch.isFavorite.eq)] : []),
     ...(branch.isOffline ? [eb('asset.isOffline', '=', branch.isOffline.eq)] : []),
     ...(branch.isMotion ? [eb('asset.livePhotoVideoId', branch.isMotion.eq ? 'is not' : 'is', null)] : []),
