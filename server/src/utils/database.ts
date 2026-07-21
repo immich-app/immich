@@ -944,7 +944,11 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!options.withExif && needsExifJoin, withExifInner)
     .$if(!!options.withExif && !needsExifJoin, withExif)
     .$if(!!options.userIds && options.userIds.length > 0, (qb) =>
-      qb.where('asset.ownerId', '=', anyUuid(options.userIds!)),
+      qb.where(
+        'asset.ownerId',
+        'in',
+        options.userIds!.map((id) => sql.lit(id)),
+      ),
     )
     .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
     .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
