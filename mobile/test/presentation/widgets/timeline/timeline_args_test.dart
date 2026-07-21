@@ -25,6 +25,8 @@ class _FrozenBucketService implements TimelineService {
 }
 
 class _EmptyBucketService implements TimelineService {
+  const _EmptyBucketService();
+
   @override
   Stream<List<Bucket>> Function() get watchBuckets =>
       () => Stream.value(const []);

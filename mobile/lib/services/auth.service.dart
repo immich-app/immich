@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/session.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
@@ -55,7 +57,7 @@ class AuthService {
   Future<String> validateServerUrl(String url) async {
     final validUrl = await _apiService.resolveAndSetEndpoint(url);
     await _apiService.setDeviceInfoHeader();
-    await Store.put(StoreKey.serverUrl, validUrl);
+    await SessionRepository.instance.write(SessionKey.serverUrl, validUrl);
 
     return validUrl;
   }
@@ -119,7 +121,7 @@ class AuthService {
     await Future.wait([
       _authRepository.clearLocalData(),
       Store.delete(StoreKey.currentUser),
-      Store.delete(StoreKey.accessToken),
+      SessionRepository.instance.clear([SessionKey.accessToken]),
       SettingsRepository.instance.clear(const [
         .networkAutoEndpointSwitching,
         .networkPreferredWifiName,

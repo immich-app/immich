@@ -1,9 +1,8 @@
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:openapi/api.dart';
 
 String getOriginalUrlForRemoteId(final String id, {bool edited = true}) {
-  return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/original?edited=$edited';
+  return '${SessionRepository.instance.session.serverEndpoint!}/assets/$id/original?edited=$edited';
 }
 
 String getThumbnailUrlForRemoteId(
@@ -12,14 +11,14 @@ String getThumbnailUrlForRemoteId(
   bool edited = true,
   String? thumbhash,
 }) {
-  final url = '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail?size=${type.toString()}&edited=$edited';
+  final url = '${SessionRepository.instance.session.serverEndpoint!}/assets/$id/thumbnail?size=$type&edited=$edited';
   return thumbhash != null ? '$url&c=${Uri.encodeComponent(thumbhash)}' : url;
 }
 
 String getPlaybackUrlForRemoteId(final String id) {
-  return '${Store.get(StoreKey.serverEndpoint)}/assets/$id/video/playback?';
+  return '${SessionRepository.instance.session.serverEndpoint!}/assets/$id/video/playback?';
 }
 
 String getFaceThumbnailUrl(final String personId) {
-  return '${Store.get(StoreKey.serverEndpoint)}/people/$personId/thumbnail';
+  return '${SessionRepository.instance.session.serverEndpoint!}/people/$personId/thumbnail';
 }

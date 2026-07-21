@@ -6,9 +6,6 @@ enum StoreKey<T> {
   version<int>._(0),
   currentUser<UserDto>._(2),
   deviceId<String>._(4),
-  serverUrl<String>._(10),
-  accessToken<String>._(11),
-  serverEndpoint<String>._(12),
   advancedTroubleshooting<bool>._(114),
   enableHapticFeedback<bool>._(126),
 
@@ -19,6 +16,9 @@ enum StoreKey<T> {
   syncMigrationStatus<String>._(1013),
 
   // Legacy keys that have been migrated to the new metadata store
+  legacyServerUrl<String>._(10),
+  legacyAccessToken<String>._(11),
+  legacyServerEndpoint<String>._(12),
   legacyBackupRequireCharging<bool>._(7),
   legacyBackupTriggerDelay<int>._(8),
   legacySyncAlbums<bool>._(131),
