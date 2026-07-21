@@ -854,6 +854,9 @@ importers:
       happy-dom:
         specifier: ^20.0.0
         version: 20.10.6
+      hash-wasm:
+        specifier: ^4.12.0
+        version: 4.12.0
       hls-video-element:
         specifier: ^1.5.11
         version: 1.5.11
@@ -8241,6 +8244,9 @@ packages:
   has-yarn@3.0.0:
     resolution: {integrity: sha512-IrsVwUHhEULx3R8f/aA8AHuEzAorplsab/v8HBzEiIukwq5i/EC+xmOW+HfP1OaDP+2JkgT1yILHN2O3UFIbcA==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  hash-wasm@4.12.0:
+    resolution: {integrity: sha512-+/2B2rYLb48I/evdOIhP+K/DD2ca2fgBjp6O+GBEnCDk2e4rpeXIK8GvIyRPjTezgmWn9gmKwkQjjx6BtqDHVQ==}
 
   hasown@2.0.4:
     resolution: {integrity: sha512-T2UbfbBEF32wiepXIsMlTW9+dDYC6wMh/t/vYA4tuOMKqWz/n3vr1NFSxQiyP+zk2mXsoMA/i/7qV6LKut1t1A==}
@@ -21572,6 +21578,8 @@ snapshots:
   has-unicode@2.0.1: {}
 
   has-yarn@3.0.0: {}
+
+  hash-wasm@4.12.0: {}
 
   hasown@2.0.4:
     dependencies:
