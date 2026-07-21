@@ -329,6 +329,7 @@
   onPersonAssetDelete={handlePersonAssetDelete}
   onAssetsDelete={updateAssetCount}
   onAssetsArchive={updateAssetCount}
+  onAssetsUnarchive={updateAssetCount}
 />
 
 <main

@@ -103,6 +103,12 @@
             "default": false,
             "title": "Case sensitive",
             "description": "Whether matching should be case-sensitive"
+          },
+          "usePath": {
+            "type": "boolean",
+            "default": false,
+            "title": "Use path",
+            "description": "Match the full path on the server instead of the original filename"
           }
         },
         "required": ["pattern"]

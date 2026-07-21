@@ -653,13 +653,13 @@ describe(AuthService.name, () => {
 
   describe('getMobileRedirect', () => {
     it('should pass along the query params', () => {
-      expect(sut.getMobileRedirect('http://immich.app?code=123&state=456')).toEqual(
+      expect(sut.getMobileRedirect('https://immich.app?code=123&state=456')).toEqual(
         'app.immich:///oauth-callback?code=123&state=456',
       );
     });
 
     it('should work if called without query params', () => {
-      expect(sut.getMobileRedirect('http://immich.app')).toEqual('app.immich:///oauth-callback?');
+      expect(sut.getMobileRedirect('https://immich.app')).toEqual('app.immich:///oauth-callback?');
     });
   });
 
@@ -979,7 +979,7 @@ describe(AuthService.name, () => {
       });
       expect(mocks.oauth.getProfilePicture).toHaveBeenCalledWith(profile.picture);
       expect(mocks.media.generateThumbnail).toHaveBeenCalledWith(
-        Buffer.from(pictureBytes.buffer),
+        Buffer.from(pictureBytes.buffer, pictureBytes.byteOffset, pictureBytes.byteLength),
         expect.objectContaining({ format: 'webp', processInvalidImages: false }),
         expect.stringContaining(`/data/profile/${user.id}/${fileId}.webp`),
       );

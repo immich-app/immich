@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -685,16 +684,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 }
 
-List<Bucket> _generateBuckets(int count) {
-  final buckets = List.filled(
-    (count / kTimelineNoneSegmentSize).ceil(),
-    const Bucket(assetCount: kTimelineNoneSegmentSize),
-  );
-  if (count % kTimelineNoneSegmentSize != 0) {
-    buckets[buckets.length - 1] = Bucket(assetCount: count % kTimelineNoneSegmentSize);
-  }
-  return buckets;
-}
+List<Bucket> _generateBuckets(int count) => count == 0 ? const [] : [Bucket(assetCount: count)];
 
 extension on Expression<DateTime> {
   Expression<String> dateFmt(GroupAssetsBy groupBy, {bool toLocal = false}) {

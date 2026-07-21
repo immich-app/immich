@@ -81,11 +81,8 @@
         // We make sure empty albums stay at the end of the list
         if (a === unknownYear) {
           return 1;
-        } else if (b === unknownYear) {
-          return -1;
-        } else {
-          return (Number.parseInt(a) - Number.parseInt(b)) * sortSign;
         }
+        return b === unknownYear ? -1 : (Number.parseInt(a) - Number.parseInt(b)) * sortSign;
       });
 
       return sortedByYear.map(([year, albums]) => ({
@@ -106,13 +103,14 @@
         // of the list
         if (ownerIdA === currentUserId) {
           return -sortSign;
-        } else if (ownerIdB === currentUserId) {
-          return sortSign;
-        } else {
-          const ownerA = albumsA[0].albumUsers[0].user;
-          const ownerB = albumsB[0].albumUsers[0].user;
-          return ownerA.name.localeCompare(ownerB.name, $locale) * sortSign;
         }
+        if (ownerIdB === currentUserId) {
+          return sortSign;
+        }
+
+        const ownerA = albumsA[0].albumUsers[0].user;
+        const ownerB = albumsB[0].albumUsers[0].user;
+        return ownerA.name.localeCompare(ownerB.name, $locale) * sortSign;
       });
 
       return sortedByOwnerNames.map(([ownerId, albums]) => ({

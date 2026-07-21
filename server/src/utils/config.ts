@@ -29,10 +29,12 @@ export const getConfig = async (repos: RepoDeps, { withCache }: { withCache: boo
   if (!withCache || !config) {
     const timestamp = lastUpdated;
     await asyncLock.acquire(DatabaseLock[DatabaseLock.GetSystemConfig], async () => {
-      if (timestamp === lastUpdated) {
-        config = await buildConfig(repos);
-        lastUpdated = Date.now();
+      if (timestamp !== lastUpdated) {
+        return;
       }
+
+      config = await buildConfig(repos);
+      lastUpdated = Date.now();
     });
   }
 
@@ -45,7 +47,7 @@ export const updateConfig = async (repos: RepoDeps, newConfig: SystemConfig): Pr
   const partialConfig: DeepPartial<SystemConfig> = {};
   for (const property of getKeysDeep(defaults)) {
     const newValue = _.get(newConfig, property);
-    const isEmpty = newValue === undefined || newValue === null || newValue === '';
+    const isEmpty = [undefined, null, ''].includes(newValue);
     const defaultValue = _.get(defaults, property);
     const isEqual = newValue === defaultValue || _.isEqual(newValue, defaultValue);
 
@@ -64,7 +66,7 @@ export const updateConfig = async (repos: RepoDeps, newConfig: SystemConfig): Pr
 const loadFromFile = async ({ metadataRepo, logger }: RepoDeps, filepath: string) => {
   try {
     const file = await metadataRepo.readFile(filepath);
-    return loadYaml(file.toString()) as unknown;
+    return loadYaml(file) as unknown;
   } catch (error: Error | any) {
     logger.error(`Unable to load configuration file: ${filepath}`);
     logger.error(error);
@@ -107,9 +109,8 @@ const buildConfig = async (repos: RepoDeps) => {
     }
     if (configFile) {
       throw new Error(messages.join('\n'));
-    } else {
-      logger.error('Validation error', messages);
     }
+    logger.error('Validation error', messages);
   }
 
   const config = (result.success ? result.data : rawConfig) as SystemConfig;
@@ -117,10 +118,10 @@ const buildConfig = async (repos: RepoDeps) => {
   if (config.server.externalDomain.length > 0) {
     const domain = new URL(config.server.externalDomain);
 
-    let externalDomain = domain.origin;
-    if (domain.password && domain.username) {
-      externalDomain = `${domain.protocol}//${domain.username}:${domain.password}@${domain.host}`;
-    }
+    const externalDomain =
+      domain.password && domain.username
+        ? `${domain.protocol}//${domain.username}:${domain.password}@${domain.host}`
+        : domain.origin;
 
     config.server.externalDomain = externalDomain;
   }

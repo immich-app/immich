@@ -159,11 +159,11 @@ export const handleNavigateUserAdmin = async (user: UserAdminResponseDto) => {
 const generatePassword = (length: number = 16) => {
   let generatedPassword = '';
 
-  const characterSet = '0123456789' + 'abcdefghijklmnopqrstuvwxyz' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZ' + ',.-{}+!#$%/()=?';
+  const characterSet = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ,.-{}+!#$%/()=?';
 
   for (let i = 0; i < length; i++) {
     let randomNumber = crypto.getRandomValues(new Uint32Array(1))[0];
-    randomNumber = randomNumber / 2 ** 32;
+    randomNumber /= 2 ** 32;
     randomNumber = Math.floor(randomNumber * characterSet.length);
 
     generatedPassword += characterSet[randomNumber];

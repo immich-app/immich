@@ -59,7 +59,7 @@ class DriftAlbumApiRepository extends ApiRepository {
     for (final dto in response) {
       if (dto.success) {
         added.add(dto.id);
-      } else {
+      } else if (dto.error.orElse(null) != BulkIdErrorReason.duplicate) {
         failed.add(dto.id);
       }
     }

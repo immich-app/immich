@@ -139,7 +139,7 @@ const methods = wrapper<Manifest>({
   assetDateFilter: ({ config, data }) => {
     const assetDate = new Date(data.asset.localDateTime);
     let startDate = new Date(config.startDate.year, config.startDate.month - 1, config.startDate.day);
-    let endDate = new Date(config.endDate.year, config.endDate.month - 1, config.endDate.day);
+    let endDate = new Date(config.endDate.year, config.endDate.month - 1, config.endDate.day + 1);
 
     if (config.recurring) {
       startDate.setFullYear(assetDate.getFullYear());
@@ -154,7 +154,7 @@ const methods = wrapper<Manifest>({
       }
     }
 
-    return { workflow: { continue: assetDate >= startDate && assetDate <= endDate } };
+    return { workflow: { continue: assetDate >= startDate && assetDate < endDate } };
   },
 
   assetLock: ({ config, data }) => {

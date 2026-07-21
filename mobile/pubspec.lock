@@ -366,18 +366,18 @@ packages:
     dependency: "direct main"
     description:
       name: drift
-      sha256: "8033500116b24398fba0cca0369cc31678cd627c01e41753a61186911cea743e"
+      sha256: "6cc0b623c0e83f7080524d8396e9301b1d78b9c66a4fdceeb0f798211303254c"
       url: "https://pub.dev"
     source: hosted
-    version: "2.33.0"
+    version: "2.34.0"
   drift_dev:
     dependency: "direct dev"
     description:
       name: drift_dev
-      sha256: b3dd5b75e30522a91da8abda9f5bb17230cb038097f6d15fa75d42bb563428aa
+      sha256: "9cfff1576b49725da0d32c040651a41ae195e8c4af8d8da301593e41d7abc2f7"
       url: "https://pub.dev"
     source: hosted
-    version: "2.33.0"
+    version: "2.34.0"
   drift_sqlite_async:
     dependency: "direct main"
     description:
@@ -772,10 +772,10 @@ packages:
     dependency: "direct main"
     description:
       name: home_widget
-      sha256: "908d033514a981f829fd98213909e11a428104327be3b422718aa643ac9d084a"
+      sha256: fece84c7464099873c3ace38394ad7053509a4b0e36e57a1105a6aa31f47f23c
       url: "https://pub.dev"
     source: hosted
-    version: "0.8.1"
+    version: "0.9.3"
   hooks:
     dependency: transitive
     description:
@@ -1056,26 +1056,26 @@ packages:
     dependency: "direct main"
     description:
       name: maplibre_gl
-      sha256: "5c7b1008396b2a321bada7d986ed60f9423406fbc7bd16f7ce91b385dfa054cd"
+      sha256: b676f124a2fcf88c4dafedc7b462155e6396d61ce7af46354b4de11b45c9812f
       url: "https://pub.dev"
     source: hosted
-    version: "0.22.0"
+    version: "0.26.2"
   maplibre_gl_platform_interface:
     dependency: transitive
     description:
       name: maplibre_gl_platform_interface
-      sha256: "08ee0a2d0853ea945a0ab619d52c0c714f43144145cd67478fc6880b52f37509"
+      sha256: "1f0ca8a99f03fa9434618ee21f4e42dd615830a7dd973e632b11c73ffec993a8"
       url: "https://pub.dev"
     source: hosted
-    version: "0.22.0"
+    version: "0.26.2"
   maplibre_gl_web:
     dependency: transitive
     description:
       name: maplibre_gl_web
-      sha256: "2b13d4b1955a9a54e38a718f2324e56e4983c080fc6de316f6f4b5458baacb58"
+      sha256: bbf022f29ceef26d73f63e584819fbd02fbaf4eb1facf5234206c78936cf8f1c
       url: "https://pub.dev"
     source: hosted
-    version: "0.22.0"
+    version: "0.26.2"
   matcher:
     dependency: transitive
     description:
@@ -2014,4 +2014,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.12.0 <4.0.0"
-  flutter: "3.44.1"
+  flutter: "3.44.6"

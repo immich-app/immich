@@ -11,29 +11,29 @@
 part of openapi.api;
 
 /// Asset sorting property
-class AssetOrderBy {
-  /// Instantiate a new enum with the provided [value].
-  const AssetOrderBy._(this.value);
+enum AssetOrderBy {
+  takenAt._(r'takenAt'),
+  createdAt._(r'createdAt'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const AssetOrderBy._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const takenAt = AssetOrderBy._(r'takenAt');
-  static const createdAt = AssetOrderBy._(r'createdAt');
-
-  /// List of all possible values in this [enum][AssetOrderBy].
-  static const values = <AssetOrderBy>[
-    takenAt,
-    createdAt,
-  ];
-
+  /// Returns the instance of [AssetOrderBy] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static AssetOrderBy? fromJson(dynamic value) => AssetOrderByTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [AssetOrderBy]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<AssetOrderBy> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetOrderBy>[];
     if (json is List && json.isNotEmpty) {
@@ -55,9 +55,11 @@ class AssetOrderByTypeTransformer {
 
   const AssetOrderByTypeTransformer._();
 
-  String encode(AssetOrderBy data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(AssetOrderBy data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a AssetOrderBy.
+  /// Returns the instance of [AssetOrderBy] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -66,6 +68,9 @@ class AssetOrderByTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   AssetOrderBy? decode(dynamic data, {bool allowNull = true}) {
+    if (data is AssetOrderBy) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'takenAt': return AssetOrderBy.takenAt;
@@ -79,7 +84,7 @@ class AssetOrderByTypeTransformer {
     return null;
   }
 
-  /// Singleton [AssetOrderByTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static AssetOrderByTypeTransformer? _instance;
 }
 

@@ -76,8 +76,11 @@ export class MediaService extends BaseService {
       jobs = [];
     };
 
-    const fullsizeEnabled = config.image.fullsize.enabled;
-    for await (const asset of this.assetJobRepository.streamForThumbnailJob({ force, fullsizeEnabled })) {
+    const isFullsizeEnabled = config.image.fullsize.enabled;
+    for await (const asset of this.assetJobRepository.streamForThumbnailJob({
+      force,
+      fullsizeEnabled: isFullsizeEnabled,
+    })) {
       if (force || !asset.isEdited) {
         jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
       }
@@ -272,13 +275,14 @@ export class MediaService extends BaseService {
   }
 
   private async extractOriginalImage(asset: ThumbnailAsset, image: SystemConfig['image'], useEdits = false) {
-    const extractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
-    const extracted = extractEmbedded ? await this.extractImage(asset.originalPath, image.preview.size) : null;
-    const generateFullsize =
+    const isExtractEmbedded = image.extractEmbedded && mimeTypes.isRaw(asset.originalFileName);
+    const extracted = isExtractEmbedded ? await this.extractImage(asset.originalPath, image.preview.size) : null;
+    const isGenerateFullsize =
       ((image.fullsize.enabled || asset.exifInfo.projectionType === 'EQUIRECTANGULAR') &&
         !mimeTypes.isWebSupportedImage(asset.originalPath)) ||
       useEdits;
-    const convertFullsize = generateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
+    const isConvertFullsize =
+      isGenerateFullsize && (!extracted || !mimeTypes.isWebSupportedImage(` .${extracted.format}`));
 
     const thumbSource = extracted ? extracted.buffer : asset.originalPath;
     const { data, info, colorspace } = await this.decodeImage(
@@ -286,7 +290,7 @@ export class MediaService extends BaseService {
       // only specify orientation to extracted images which don't have EXIF orientation data
       // or it can double rotate the image
       extracted ? asset.exifInfo : { ...asset.exifInfo, orientation: null },
-      convertFullsize ? undefined : image.preview.size,
+      isConvertFullsize ? undefined : image.preview.size,
     );
 
     let isTransparent = false;
@@ -299,8 +303,8 @@ export class MediaService extends BaseService {
       data,
       info,
       colorspace,
-      convertFullsize,
-      generateFullsize,
+      convertFullsize: isConvertFullsize,
+      generateFullsize: isGenerateFullsize,
       isTransparent,
     };
   }
@@ -620,20 +624,20 @@ export class MediaService extends BaseService {
         return JobStatus.Failed;
       }
 
-      let partialFallbackSuccess = false;
+      let isPartialFallbackSuccess = false;
       if (ffmpeg.accelDecode) {
         try {
           this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()}-accelerated encoding and software decoding`);
           ffmpeg = { ...ffmpeg, accelDecode: false };
           const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
           await this.mediaRepository.transcode(input, output, command);
-          partialFallbackSuccess = true;
+          isPartialFallbackSuccess = true;
         } catch (error: any) {
           this.logger.error(`Error occurred during transcoding: ${error.message}`);
         }
       }
 
-      if (!partialFallbackSuccess) {
+      if (!isPartialFallbackSuccess) {
         this.logger.error(`Retrying with ${ffmpeg.accel.toUpperCase()} acceleration disabled`);
         ffmpeg = { ...ffmpeg, accel: TranscodeHardwareAcceleration.Disabled };
         const command = BaseConfig.create(ffmpeg, this.videoInterfaces).getCommand(target, videoStream, audioStream);
@@ -700,9 +704,9 @@ export class MediaService extends BaseService {
   }
 
   private isVideoTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream: VideoStreamInfo): boolean {
-    const scalingEnabled = ffmpegConfig.targetResolution !== 'original';
+    const isScalingEnabled = ffmpegConfig.targetResolution !== 'original';
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
-    const isLargerThanTargetRes = scalingEnabled && Math.min(stream.height, stream.width) > targetRes;
+    const isLargerThanTargetRes = isScalingEnabled && Math.min(stream.height, stream.width) > targetRes;
     const maxBitrate = this.parseBitrateToBps(ffmpegConfig.maxBitrate);
     const isLargerThanTargetBitrate = maxBitrate > 0 && stream.bitrate > maxBitrate;
 
@@ -757,13 +761,13 @@ export class MediaService extends BaseService {
   }): boolean {
     if (colorspace || profileDescription) {
       return [colorspace, profileDescription].some((s) => s?.toLowerCase().includes('srgb'));
-    } else if (bitsPerSample) {
+    }
+    if (bitsPerSample) {
       // assume sRGB for 8-bit images with no color profile or colorspace metadata
       return bitsPerSample === 8;
-    } else {
-      // assume sRGB for images with no relevant metadata
-      return true;
     }
+    // assume sRGB for images with no relevant metadata
+    return true;
   }
 
   private parseBitrateToBps(bitrateString: string) {
@@ -776,11 +780,11 @@ export class MediaService extends BaseService {
 
     if (bitrateString.toLowerCase().endsWith('k')) {
       return bitrateValue * 1000; // Kilobits per second to bits per second
-    } else if (bitrateString.toLowerCase().endsWith('m')) {
-      return bitrateValue * 1_000_000; // Megabits per second to bits per second
-    } else {
-      return bitrateValue;
     }
+    if (bitrateString.toLowerCase().endsWith('m')) {
+      return bitrateValue * 1_000_000; // Megabits per second to bits per second
+    }
+    return bitrateValue;
   }
 
   private async shouldUseExtractedImage(extractedPathOrBuffer: string | Buffer, targetSize: number) {

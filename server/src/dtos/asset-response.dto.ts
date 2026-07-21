@@ -175,7 +175,7 @@ const peopleFromFaces = (faces?: MaybeDehydrated<AssetFace>[]): PersonResponseDt
     }
   }
 
-  return [...peopleMap.values()];
+  return peopleMap.values().toArray();
 };
 
 const mapStack = (entity: { stack?: Stack | null }) => {
