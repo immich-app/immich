@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:background_downloader/background_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/download/download_state.model.dart';
@@ -16,77 +14,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
           taskProgress: <String, DownloadInfo>{},
         ),
       ) {
-    // TODO(agg23): These callbacks were overriden and never actually ran. Fix/remove as necessary
-    // _downloadService.onImageDownloadStatus = _downloadImageCallback;
-    // _downloadService.onVideoDownloadStatus = _downloadVideoCallback;
-    // _downloadService.onLivePhotoDownloadStatus = _downloadLivePhotoCallback;
     _downloadService.onTaskProgress = _taskProgressCallback;
-  }
-
-  void _updateDownloadStatus(String taskId, TaskStatus status) {
-    if (status == TaskStatus.canceled) {
-      return;
-    }
-
-    state = state.copyWith(
-      taskProgress: <String, DownloadInfo>{}
-        ..addAll(state.taskProgress)
-        ..addAll({
-          taskId: DownloadInfo(
-            progress: state.taskProgress[taskId]?.progress ?? 0,
-            fileName: state.taskProgress[taskId]?.fileName ?? '',
-            status: status,
-          ),
-        }),
-    );
-  }
-
-  // Download live photo callback
-  // ignore: unused_element
-  void _downloadLivePhotoCallback(TaskStatusUpdate update) {
-    _updateDownloadStatus(update.task.taskId, update.status);
-
-    switch (update.status) {
-      case TaskStatus.complete:
-        if (update.task.metaData.isEmpty) {
-          return;
-        }
-        _onDownloadComplete(update.task.taskId);
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  // Download image callback
-  // ignore: unused_element
-  void _downloadImageCallback(TaskStatusUpdate update) {
-    _updateDownloadStatus(update.task.taskId, update.status);
-
-    switch (update.status) {
-      case TaskStatus.complete:
-        _onDownloadComplete(update.task.taskId);
-        break;
-
-      default:
-        break;
-    }
-  }
-
-  // Download video callback
-  // ignore: unused_element
-  void _downloadVideoCallback(TaskStatusUpdate update) {
-    _updateDownloadStatus(update.task.taskId, update.status);
-
-    switch (update.status) {
-      case TaskStatus.complete:
-        _onDownloadComplete(update.task.taskId);
-        break;
-
-      default:
-        break;
-    }
   }
 
   void _taskProgressCallback(TaskProgressUpdate update) {
@@ -107,20 +35,6 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
           ),
         }),
     );
-  }
-
-  void _onDownloadComplete(String id) {
-    Future.delayed(const Duration(seconds: 2), () {
-      state = state.copyWith(
-        taskProgress: <String, DownloadInfo>{}
-          ..addAll(state.taskProgress)
-          ..remove(id),
-      );
-
-      if (state.taskProgress.isEmpty) {
-        state = state.copyWith(showProgress: false);
-      }
-    });
   }
 
   void cancelDownload(String id) async {
