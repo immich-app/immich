@@ -524,7 +524,7 @@ type ExifFilterField = Extract<
   'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel' | 'description' | 'rating' | 'fileSizeInBytes'
 >;
 
-const EXIF_FILTER_FIELDS = new Set<ExifFilterField>([
+const EXIF_FILTER_FIELDS: ReadonlySet<string> = new Set<ExifFilterField>([
   'city',
   'state',
   'country',
@@ -538,19 +538,17 @@ const EXIF_FILTER_FIELDS = new Set<ExifFilterField>([
 
 type ExifOrderField = SearchOrderField.FileSizeInBytes | SearchOrderField.Rating;
 
-const EXIF_ORDER_FIELDS = new Set<ExifOrderField>([SearchOrderField.FileSizeInBytes, SearchOrderField.Rating]);
+const EXIF_ORDER_FIELDS: ReadonlySet<SearchOrderField> = new Set<ExifOrderField>([
+  SearchOrderField.FileSizeInBytes,
+  SearchOrderField.Rating,
+]);
 
-function branchNeedsExifJoin(branch: SearchFilterBranch): boolean {
-  const exifFields: ReadonlySet<string> = EXIF_FILTER_FIELDS;
-  return Object.keys(branch).some((key) => exifFields.has(key));
-}
-
+// the asset_exif join is only added when a filter or the order actually references an exif column
 function exifJoinRequired(filter: SearchFilter, orderField: SearchOrderField): boolean {
-  const exifOrderFields: ReadonlySet<SearchOrderField> = EXIF_ORDER_FIELDS;
+  const branches = [filter, ...(filter.or ?? [])];
   return (
-    exifOrderFields.has(orderField) ||
-    branchNeedsExifJoin(filter) ||
-    (filter.or?.some((branch) => branchNeedsExifJoin(branch)) ?? false)
+    EXIF_ORDER_FIELDS.has(orderField) ||
+    branches.some((branch) => Object.keys(branch).some((key) => EXIF_FILTER_FIELDS.has(key)))
   );
 }
 
