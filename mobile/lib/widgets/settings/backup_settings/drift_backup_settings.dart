@@ -255,11 +255,11 @@ class _BackupDelaySlider extends ConsumerWidget {
     _ => 600,
   };
 
-  static String formatBackupDelaySliderValue(int v) => switch (v) {
-    0 => 'setting_notifications_notify_seconds'.tr(namedArgs: {'count': '5'}),
-    1 => 'setting_notifications_notify_seconds'.tr(namedArgs: {'count': '30'}),
-    2 => 'setting_notifications_notify_minutes'.tr(namedArgs: {'count': '2'}),
-    _ => 'setting_notifications_notify_minutes'.tr(namedArgs: {'count': '10'}),
+  static String formatBackupDelaySliderValue(BuildContext context, int v) => switch (v) {
+    0 => 'setting_notifications_notify_seconds'.t(context: context, args: {'count': 5}),
+    1 => 'setting_notifications_notify_seconds'.t(context: context, args: {'count': 30}),
+    2 => 'setting_notifications_notify_minutes'.t(context: context, args: {'count': 2}),
+    _ => 'setting_notifications_notify_minutes'.t(context: context, args: {'count': 10}),
   };
 
   @override
@@ -273,7 +273,7 @@ class _BackupDelaySlider extends ConsumerWidget {
           padding: const EdgeInsets.only(left: 24.0, top: 8.0),
           child: Text(
             'backup_controller_page_background_delay'.tr(
-              namedArgs: {'duration': formatBackupDelaySliderValue(currentValue)},
+              namedArgs: {'duration': formatBackupDelaySliderValue(context, currentValue)},
             ),
             style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
           ),
@@ -291,7 +291,7 @@ class _BackupDelaySlider extends ConsumerWidget {
           max: 3.0,
           min: 0.0,
           divisions: 3,
-          label: formatBackupDelaySliderValue(currentValue),
+          label: formatBackupDelaySliderValue(context, currentValue),
         ),
       ],
     );
