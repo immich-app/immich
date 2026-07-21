@@ -269,6 +269,10 @@ describe(AssetMediaService.name, () => {
         'random-uuid.jpg',
       );
     });
+
+    it('should accept filenames with just an extension', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.ASSET_DATA, '.jpg'))).toEqual('random-uuid.jpg');
+    });
   });
 
   describe('getUploadFolder', () => {

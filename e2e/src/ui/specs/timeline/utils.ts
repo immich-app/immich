@@ -7,7 +7,7 @@ export const sleep = (ms: number) => {
 };
 
 export const padYearMonth = (yearMonth: string) => {
-  const [year, month] = yearMonth.split('-');
+  const [year, month] = yearMonth.split('-', 2);
   return `${year}-${month.padStart(2, '0')}`;
 };
 

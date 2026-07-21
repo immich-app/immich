@@ -49,6 +49,7 @@ export default typescriptEslint.config([
       'unicorn/isolated-functions': 'off',
       'unicorn/prefer-promise-with-resolvers': 'off',
       'unicorn/no-declarations-before-early-exit': 'off',
+      'unicorn/prefer-simple-condition-first': 'off',
       curly: 2,
       'prettier/prettier': 0,
       'unicorn/name-replacements': 'off',

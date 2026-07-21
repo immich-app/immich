@@ -176,7 +176,7 @@
 
 {#if showControls}
   <div
-    class="dark m-4 flex gap-2"
+    class="dark m-4 flex gap-2 rounded-3xl bg-black/40 px-2 backdrop-blur-sm"
     onmouseenter={() => (isOverControls = true)}
     onmouseleave={() => (isOverControls = false)}
     transition:fly={{ duration: 150 }}

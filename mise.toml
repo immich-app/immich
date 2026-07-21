@@ -16,7 +16,7 @@ config_roots = [
 
 [tools]
 node = "24.15.0"
-pnpm = "11.11.0"
+pnpm = "11.13.1"
 terragrunt = "1.0.3"
 opentofu = "1.11.6"
 "npm:oazapfts" = "7.5.0"

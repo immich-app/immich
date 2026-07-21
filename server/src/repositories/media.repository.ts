@@ -313,7 +313,7 @@ export class MediaRepository {
       if (!line) {
         return;
       }
-      const [ptsStr, durationStr, flags] = line.split(',');
+      const [ptsStr, durationStr, flags] = line.split(',', 3);
       const pts = Number.parseInt(ptsStr);
       const duration = Number.parseInt(durationStr);
       if (Number.isNaN(pts) || Number.isNaN(duration) || !flags) {

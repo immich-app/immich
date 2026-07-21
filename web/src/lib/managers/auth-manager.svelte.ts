@@ -124,7 +124,7 @@ class AuthManager {
     }
 
     for (const cookie of document.cookie.split('; ')) {
-      const [name] = cookie.split('=');
+      const [name] = cookie.split('=', 1);
       if (name === 'immich_is_authenticated') {
         return true;
       }

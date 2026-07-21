@@ -35,7 +35,7 @@
     }
 
     if (isRotated) {
-      let [width, height] = ratio.value.split(':');
+      let [width, height] = ratio.value.split(':', 2);
       return `${height}:${width}`;
     }
     return ratio.value;

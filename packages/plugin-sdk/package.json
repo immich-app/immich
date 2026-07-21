@@ -27,14 +27,14 @@
   "keywords": [],
   "author": "",
   "license": "GNU Affero General Public License version 3",
-  "packageManager": "pnpm@11.11.0",
+  "packageManager": "pnpm@11.13.1",
   "devDependencies": {
     "@extism/js-pdk": "^1.1.1",
     "@immich/sdk": "workspace:*",
     "@types/node": "^24.13.3",
     "esbuild": "^0.28.0",
     "tsc-alias": "^1.8.16",
-    "typescript": "^6.0.0"
+    "typescript": "^7.0.0"
   },
   "peerDependencies": {
     "@extism/js-pdk": "^1.1.1"
