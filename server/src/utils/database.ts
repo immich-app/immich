@@ -680,13 +680,14 @@ function idPredicates(
   column: 'asset.id' | 'asset.libraryId',
   filter: IdFilter | IdFilterNullable = {},
 ) {
-  const ops = [
-    [filter.eq, '=', 'is'],
-    [filter.ne, '!=', 'is not'],
-  ] as const;
-  return ops
-    .filter(([v]) => v !== undefined)
-    .map(([v, op, nullOp]) => (v === null ? eb(column, nullOp, null) : eb(column, op, asUuid(v!))));
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq !== undefined) {
+    predicates.push(filter.eq === null ? eb(column, 'is', null) : eb(column, '=', asUuid(filter.eq)));
+  }
+  if (filter.ne !== undefined) {
+    predicates.push(filter.ne === null ? eb(column, 'is not', null) : eb(column, '!=', asUuid(filter.ne)));
+  }
+  return predicates;
 }
 
 function typePredicates(
@@ -745,42 +746,38 @@ function stringEqNeInPredicates(
   column: StringColumn,
   filter: StringFilterNullable | StringPatternFilter = {},
 ) {
-  const nullableOps = [
-    [filter.eq, '=', 'is'],
-    [filter.ne, '!=', 'is not'],
-  ] as const;
-  const arrayOps = [
-    ['in', filter.in],
-    ['not in', filter.notIn],
-  ] as const;
-  return [
-    ...nullableOps.flatMap(([v, op, nullOp]) => {
-      if (v === undefined) {
-        return [];
-      }
-      return v === null ? [eb(column, nullOp, null)] : [eb(column, op, v)];
-    }),
-    ...arrayOps.flatMap(([op, v]) => (v === undefined ? [] : [eb(column, op, v)])),
-  ];
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq !== undefined) {
+    predicates.push(filter.eq === null ? eb(column, 'is', null) : eb(column, '=', filter.eq));
+  }
+  if (filter.ne !== undefined) {
+    predicates.push(filter.ne === null ? eb(column, 'is not', null) : eb(column, '!=', filter.ne));
+  }
+  if (filter.in !== undefined) {
+    predicates.push(eb(column, 'in', filter.in));
+  }
+  if (filter.notIn !== undefined) {
+    predicates.push(eb(column, 'not in', filter.notIn));
+  }
+  return predicates;
 }
 
 function stringPatternPredicates(eb: AssetExpressionBuilder, column: StringColumn, filter: StringPatternFilter = {}) {
   const ref = sql.ref(column);
-  return [
-    ...stringEqNeInPredicates(eb, column, filter),
-    ...(filter.like === undefined
-      ? []
-      : [sql<SqlBool>`f_unaccent(${ref}) ilike ('%' || f_unaccent(${filter.like}) || '%')`]),
-    ...(filter.notLike === undefined
-      ? []
-      : [sql<SqlBool>`f_unaccent(${ref}) not ilike ('%' || f_unaccent(${filter.notLike}) || '%')`]),
-    ...(filter.startsWith === undefined
-      ? []
-      : [sql<SqlBool>`f_unaccent(${ref}) ilike (f_unaccent(${filter.startsWith}) || '%')`]),
-    ...(filter.endsWith === undefined
-      ? []
-      : [sql<SqlBool>`f_unaccent(${ref}) ilike ('%' || f_unaccent(${filter.endsWith}))`]),
-  ];
+  const predicates = stringEqNeInPredicates(eb, column, filter);
+  if (filter.like !== undefined) {
+    predicates.push(sql<SqlBool>`f_unaccent(${ref}) ilike ('%' || f_unaccent(${filter.like}) || '%')`);
+  }
+  if (filter.notLike !== undefined) {
+    predicates.push(sql<SqlBool>`f_unaccent(${ref}) not ilike ('%' || f_unaccent(${filter.notLike}) || '%')`);
+  }
+  if (filter.startsWith !== undefined) {
+    predicates.push(sql<SqlBool>`f_unaccent(${ref}) ilike (f_unaccent(${filter.startsWith}) || '%')`);
+  }
+  if (filter.endsWith !== undefined) {
+    predicates.push(sql<SqlBool>`f_unaccent(${ref}) ilike ('%' || f_unaccent(${filter.endsWith}))`);
+  }
+  return predicates;
 }
 
 type NumberColumn = 'asset_exif.rating' | 'asset_exif.fileSizeInByte';
@@ -790,76 +787,86 @@ function numberPredicates(
   column: NumberColumn,
   filter: NumberFilter | NumberFilterNullable = {},
 ) {
-  const nullableOps = [
-    [filter.eq, '=', 'is'],
-    [filter.ne, '!=', 'is not'],
-  ] as const;
-  const plainOps = [
-    ['<', filter.lt],
-    ['<=', filter.lte],
-    ['>', filter.gt],
-    ['>=', filter.gte],
-    ['in', filter.in],
-    ['not in', filter.notIn],
-  ] as const;
-  return [
-    ...nullableOps.flatMap(([v, op, nullOp]) => {
-      if (v === undefined) {
-        return [];
-      }
-      return v === null ? [eb(column, nullOp, null)] : [eb(column, op, v)];
-    }),
-    ...plainOps.flatMap(([op, v]) => (v === undefined ? [] : [eb(column, op, v)])),
-  ];
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq !== undefined) {
+    predicates.push(filter.eq === null ? eb(column, 'is', null) : eb(column, '=', filter.eq));
+  }
+  if (filter.ne !== undefined) {
+    predicates.push(filter.ne === null ? eb(column, 'is not', null) : eb(column, '!=', filter.ne));
+  }
+  if (filter.lt !== undefined) {
+    predicates.push(eb(column, '<', filter.lt));
+  }
+  if (filter.lte !== undefined) {
+    predicates.push(eb(column, '<=', filter.lte));
+  }
+  if (filter.gt !== undefined) {
+    predicates.push(eb(column, '>', filter.gt));
+  }
+  if (filter.gte !== undefined) {
+    predicates.push(eb(column, '>=', filter.gte));
+  }
+  if (filter.in !== undefined) {
+    predicates.push(eb(column, 'in', filter.in));
+  }
+  if (filter.notIn !== undefined) {
+    predicates.push(eb(column, 'not in', filter.notIn));
+  }
+  return predicates;
 }
 
 type DateColumn = 'asset.fileCreatedAt' | 'asset.createdAt' | 'asset.updatedAt' | 'asset.deletedAt';
 
 function datePredicates(eb: AssetExpressionBuilder, column: DateColumn, filter: DateFilter | DateFilterNullable = {}) {
-  const nullableOps = [
-    [filter.eq, '=', 'is'],
-    [filter.ne, '!=', 'is not'],
-  ] as const;
-  const plainOps = [
-    ['>', filter.gt],
-    ['>=', filter.gte],
-    ['<', filter.lt],
-    ['<=', filter.lte],
-  ] as const;
-  return [
-    ...nullableOps.flatMap(([v, op, nullOp]) => {
-      if (v === undefined) {
-        return [];
-      }
-      return v === null ? [eb(column, nullOp, null)] : [eb(column, op, v)];
-    }),
-    ...plainOps.flatMap(([op, v]) => (v === undefined ? [] : [eb(column, op, v)])),
-  ];
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq !== undefined) {
+    predicates.push(filter.eq === null ? eb(column, 'is', null) : eb(column, '=', filter.eq));
+  }
+  if (filter.ne !== undefined) {
+    predicates.push(filter.ne === null ? eb(column, 'is not', null) : eb(column, '!=', filter.ne));
+  }
+  if (filter.gt !== undefined) {
+    predicates.push(eb(column, '>', filter.gt));
+  }
+  if (filter.gte !== undefined) {
+    predicates.push(eb(column, '>=', filter.gte));
+  }
+  if (filter.lt !== undefined) {
+    predicates.push(eb(column, '<', filter.lt));
+  }
+  if (filter.lte !== undefined) {
+    predicates.push(eb(column, '<=', filter.lte));
+  }
+  return predicates;
 }
 
 function checksumPredicates(eb: AssetExpressionBuilder, filter: StringFilter = {}) {
-  const scalarOps = [
-    ['=', filter.eq],
-    ['!=', filter.ne],
-  ] as const;
-  const arrayOps = [
-    ['in', filter.in],
-    ['not in', filter.notIn],
-  ] as const;
-  return [
-    ...scalarOps.flatMap(([op, v]) => (v === undefined ? [] : [eb('asset.checksum', op, fromChecksum(v))])),
-    ...arrayOps.flatMap(([op, v]) =>
-      v === undefined
-        ? []
-        : [
-            eb(
-              'asset.checksum',
-              op,
-              v.map((c) => fromChecksum(c)),
-            ),
-          ],
-    ),
-  ];
+  const predicates: Expression<SqlBool>[] = [];
+  if (filter.eq !== undefined) {
+    predicates.push(eb('asset.checksum', '=', fromChecksum(filter.eq)));
+  }
+  if (filter.ne !== undefined) {
+    predicates.push(eb('asset.checksum', '!=', fromChecksum(filter.ne)));
+  }
+  if (filter.in !== undefined) {
+    predicates.push(
+      eb(
+        'asset.checksum',
+        'in',
+        filter.in.map((checksum) => fromChecksum(checksum)),
+      ),
+    );
+  }
+  if (filter.notIn !== undefined) {
+    predicates.push(
+      eb(
+        'asset.checksum',
+        'not in',
+        filter.notIn.map((checksum) => fromChecksum(checksum)),
+      ),
+    );
+  }
+  return predicates;
 }
 
 function buildBranchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch) {
