@@ -1,7 +1,7 @@
 import { HttpException, NotFoundException, StreamableFile } from '@nestjs/common';
 import { NextFunction, Response } from 'express';
 import { access, constants } from 'node:fs/promises';
-import { extname, basename } from 'node:path';
+import { basename, extname } from 'node:path';
 import { promisify } from 'node:util';
 import { CacheControl } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -18,7 +18,7 @@ export function getFilenameExtension(path: string) {
     return path;
   }
   return extension;
-};
+}
 
 export function getLivePhotoMotionFilename(stillName: string, motionName: string) {
   return getFileNameWithoutExtension(stillName) + getFilenameExtension(motionName);
