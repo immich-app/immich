@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class MapState {
@@ -109,19 +111,17 @@ class MapStateNotifier extends Notifier<MapState> {
   }
 
   void setCustomTimeRange(TimeRange range) {
-    ref
-        .read(appSettingsServiceProvider)
-        .setSetting(AppSettingsEnum.mapCustomFrom, range.from == null ? "" : range.from!.toIso8601String());
-    ref
-        .read(appSettingsServiceProvider)
-        .setSetting(AppSettingsEnum.mapCustomTo, range.to == null ? "" : range.to!.toIso8601String());
+    ref.read(settingsProvider).write(.mapCustomFrom, range.from);
+    ref.read(settingsProvider).write(.mapCustomTo, range.to);
     state = state.copyWith(timeRange: range);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   Option<DateTime> parseDateOption(String s) {
     try {
-      if (s.trim().isEmpty) return const Option.none();
+      if (s.trim().isEmpty) {
+        return const Option.none();
+      }
       return Option.some(DateTime.parse(s));
     } catch (_) {
       return const Option.none();
@@ -138,8 +138,7 @@ class MapStateNotifier extends Notifier<MapState> {
       withPartners: mapConfig.withPartners,
       relativeDays: mapConfig.relativeDays,
       bounds: LatLngBounds(northeast: const LatLng(0, 0), southwest: const LatLng(0, 0)),
-      relativeDays: appSettingsService.getSetting(AppSettingsEnum.mapRelativeDate),
-      timeRange: TimeRange(from: customFrom, to: customTo),
+      timeRange: TimeRange(from: mapConfig.customFrom, to: mapConfig.customTo),
     );
   }
 }

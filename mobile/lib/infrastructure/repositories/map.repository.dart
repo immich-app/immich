@@ -28,16 +28,16 @@ class DriftMapRepository extends DriftDatabaseRepository {
       }
 
       final timeRange = options.timeRange;
-      final hasCustomRange = timeRange.from.isSome || timeRange.to.isSome;
+      final hasCustomRange = timeRange.from != null || timeRange.to != null;
 
       if (hasCustomRange) {
-        timeRange.from.ifPresent((from) {
-          condition = condition & _db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(from);
-        });
+        if (timeRange.from != null) {
+          condition = condition & _db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(timeRange.from!);
+        }
 
-        timeRange.to.ifPresent((to) {
-          condition = condition & _db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(to);
-        });
+        if (timeRange.to != null) {
+          condition = condition & _db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(timeRange.to!);
+        }
       } else if (options.relativeDays > 0) {
         final cutoffDate = DateTime.now().toUtc().subtract(Duration(days: options.relativeDays));
         condition = condition & _db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(cutoffDate);

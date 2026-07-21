@@ -24,7 +24,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
     super.initState();
     final mapState = ref.read(mapStateProvider);
     final timeRange = mapState.timeRange;
-    useCustomRange = timeRange.from.isSome || timeRange.to.isSome;
+    useCustomRange = timeRange.from != null || timeRange.to != null;
   }
 
   @override
@@ -69,7 +69,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
                 MapTimeRange(
                   timeRange: mapState.timeRange,
                   onChanged: (range) {
-                    ref.read(mapStateProvider.notifier).setTimeRange(range);
+                    ref.read(mapStateProvider.notifier).setCustomTimeRange(range);
                   },
                 ),
                 Align(
@@ -78,7 +78,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
                     onPressed: () => setState(() {
                       useCustomRange = false;
                       ref.read(mapStateProvider.notifier).setRelativeTime(0);
-                      ref.read(mapStateProvider.notifier).setTimeRange(const TimeRange());
+                      ref.read(mapStateProvider.notifier).setCustomTimeRange(const TimeRange());
                     }),
                     child: Text(context.t.remove_custom_date_range),
                   ),
@@ -94,7 +94,7 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
                     onPressed: () => setState(() {
                       useCustomRange = true;
                       ref.read(mapStateProvider.notifier).setRelativeTime(0);
-                      ref.read(mapStateProvider.notifier).setTimeRange(const TimeRange());
+                      ref.read(mapStateProvider.notifier).setCustomTimeRange(const TimeRange());
                     }),
                     child: Text(context.t.use_custom_date_range),
                   ),

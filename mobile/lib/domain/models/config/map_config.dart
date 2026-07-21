@@ -7,17 +7,17 @@ class MapConfig {
   final bool includeArchived;
   final ThemeMode themeMode;
   final bool withPartners;
-  final Option<DateTime> customFrom;
-  final Option<DateTime> customTo;
+  final DateTime? customFrom;
+  final DateTime? customTo;
 
   const MapConfig({
     this.relativeDays = 0,
     this.favoritesOnly = false,
     this.includeArchived = false,
-    this.themeMode = ThemeMode.system,
+    this.themeMode = .system,
     this.withPartners = false,
-    this.customFrom = const Option.none(),
-    this.customTo = const Option.none(),
+    this.customFrom,
+    this.customTo,
   });
 
   MapConfig copyWith({
@@ -34,8 +34,8 @@ class MapConfig {
     includeArchived: includeArchived ?? this.includeArchived,
     themeMode: themeMode ?? this.themeMode,
     withPartners: withPartners ?? this.withPartners,
-    customFrom: customFrom ?? this.customFrom,
-    customTo: customTo ?? this.customTo,
+    customFrom: customFrom.patch(this.customFrom),
+    customTo: customTo.patch(this.customTo),
   );
 
   @override

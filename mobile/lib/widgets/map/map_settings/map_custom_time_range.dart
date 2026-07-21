@@ -18,17 +18,16 @@ class MapTimeRange extends StatelessWidget {
         ListTile(
           title: Text(context.t.date_after),
           subtitle: Text(
-            timeRange.from.fold(
-              (from) => DateFormat.yMMMd(context.locale.toLanguageTag()).add_jm().format(from),
-              () => context.t.not_set,
-            ),
+            timeRange.from != null
+                ? DateFormat.yMMMd(context.locale.toLanguageTag()).add_jm().format(timeRange.from!)
+                : context.t.not_set,
           ),
-          trailing: timeRange.from.isSome
+          trailing: timeRange.from != null
               ? IconButton(icon: const Icon(Icons.close), onPressed: () => onChanged(timeRange.clearFrom()))
               : null,
           onTap: () async {
-            final initial = timeRange.from.unwrapOrNull ?? DateTime.now();
-            final currentTo = timeRange.to.unwrapOrNull;
+            final initial = timeRange.from ?? DateTime.now();
+            final currentTo = timeRange.to;
 
             final picked = await showDatePicker(
               context: context,
@@ -45,17 +44,16 @@ class MapTimeRange extends StatelessWidget {
         ListTile(
           title: Text(context.t.date_before),
           subtitle: Text(
-            timeRange.to.fold<String>(
-              (to) => DateFormat.yMMMd(context.locale.toLanguageTag()).add_jm().format(to),
-              () => context.t.not_set,
-            ),
+            timeRange.to != null
+                ? DateFormat.yMMMd(context.locale.toLanguageTag()).add_jm().format(timeRange.to!)
+                : context.t.not_set,
           ),
-          trailing: timeRange.to.isSome
+          trailing: timeRange.to != null
               ? IconButton(icon: const Icon(Icons.close), onPressed: () => onChanged(timeRange.clearTo()))
               : null,
           onTap: () async {
-            final initial = timeRange.to.unwrapOrNull ?? DateTime.now();
-            final currentFrom = timeRange.from.unwrapOrNull;
+            final initial = timeRange.to ?? DateTime.now();
+            final currentFrom = timeRange.from;
 
             final picked = await showDatePicker(
               context: context,
