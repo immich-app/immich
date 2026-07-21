@@ -329,9 +329,11 @@ export class AuthService extends BaseService {
       }
     }
 
+	// grab the role from the OIDC submission, for use in the next couple of blocks
+	const role = this.getRoleClaim(profile, roleClaim) ?? 'user';
+	  
     // sync role from the IdP on every login for existing users
     if (user) {
-      const role = this.getRoleClaim(profile, roleClaim);
       if (role !== undefined && (role === 'admin') !== user.isAdmin) {
         user = await this.userRepository.update(user.id, { isAdmin: role === 'admin' });
       }
@@ -362,7 +364,6 @@ export class AuthService extends BaseService {
         default: defaultStorageQuota,
         isValid: (value: unknown) => Number(value) >= 0,
       });
-      const role = this.getRoleClaim(profile, roleClaim) ?? 'user';
 
       user = await this.createUser({
         name:
@@ -635,7 +636,6 @@ export class AuthService extends BaseService {
     if (isRole('user')) {
       return 'user';
     }
-    return undefined;
   }
 
   private resolveRedirectUri(
