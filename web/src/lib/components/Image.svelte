@@ -50,7 +50,7 @@
     }
 
     if (isFirefox && ref) {
-      ref.decode().then(completeLoad, completeLoad);
+      ref.decode().then(completeLoad).catch(completeLoad);
       return;
     }
 

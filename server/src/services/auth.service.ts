@@ -461,7 +461,7 @@ export class AuthService extends BaseService {
   }
 
   private getBearerToken(headers: IncomingHttpHeaders): string | null {
-    const [type, token] = (headers.authorization || '').split(' ');
+    const [type, token] = (headers.authorization || '').split(' ', 2);
     if (type.toLowerCase() === 'bearer') {
       return token;
     }

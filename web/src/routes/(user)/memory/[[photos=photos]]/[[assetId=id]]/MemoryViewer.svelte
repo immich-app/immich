@@ -281,8 +281,9 @@
   };
 
   afterNavigate(({ from, to }) => {
-    memoryManager.ready().then(
-      () => {
+    memoryManager
+      .ready()
+      .then(() => {
         let target;
         if (to?.params?.assetId) {
           target = to;
@@ -294,11 +295,10 @@
 
         init(target);
         initPlayer();
-      },
-      (error) => {
+      })
+      .catch((error) => {
         console.error(`Error loading memories: ${error}`);
-      },
-    );
+      });
   });
 
   $effect(() => {

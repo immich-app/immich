@@ -146,6 +146,7 @@ export default typescriptEslint.config(
       'unicorn/no-non-function-verb-prefix': 'off',
       'unicorn/prefer-minimal-ternary': 'off',
       'unicorn/no-empty-file': 'off',
+      'unicorn/prefer-simple-condition-first': 'off',
       // prefer the typescript-eslint type-aware version
       'unicorn/require-array-sort-compare': 'off',
       '@typescript-eslint/require-array-sort-compare': 'error',
