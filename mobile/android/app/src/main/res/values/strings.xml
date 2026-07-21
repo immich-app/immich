@@ -5,6 +5,8 @@
 
   <string name="memory_widget_description">See memories from Immich.</string>
   <string name="random_widget_description">View a random image from your library or a specific album.</string>
+  <string name="dynamic_wallpaper_title">Immich</string>
+  <string name="dynamic_wallpaper_description">Show selected Immich photos as a live wallpaper.</string>
 
   <string name="bg_downloader_notification_channel_name">Uploads and downloads</string>
   <string name="bg_downloader_notification_channel_description">Progress updates for uploads and downloads</string>

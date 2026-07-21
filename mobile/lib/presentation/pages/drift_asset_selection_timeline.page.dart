@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
 
 @RoutePage()
 class DriftAssetSelectionTimelinePage extends ConsumerWidget {
@@ -23,6 +24,40 @@ class DriftAssetSelectionTimelinePage extends ConsumerWidget {
         timelineServiceProvider.overrideWith((ref) {
           final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
           final timelineService = ref.watch(timelineFactoryProvider).main(timelineUsers);
+          ref.onDispose(timelineService.dispose);
+          return timelineService;
+        }),
+      ],
+      child: const Timeline(showStorageIndicator: true),
+    );
+  }
+}
+
+@RoutePage()
+class DynamicWallpaperAssetSelectionTimelinePage extends ConsumerWidget {
+  final Set<BaseAsset> initialSelectedAssets;
+  final List<String> peopleFilterIds;
+  const DynamicWallpaperAssetSelectionTimelinePage({
+    super.key,
+    this.initialSelectedAssets = const {},
+    this.peopleFilterIds = const [],
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ProviderScope(
+      overrides: [
+        multiSelectProvider.overrideWith(
+          () => MultiSelectNotifier(
+            MultiSelectState(selectedAssets: initialSelectedAssets, lockedSelectionAssets: const {}, forceEnable: true),
+          ),
+        ),
+        timelineServiceProvider.overrideWith((ref) {
+          final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
+          final user = ref.watch(currentUserProvider);
+          final timelineService = peopleFilterIds.isNotEmpty && user != null
+              ? ref.watch(timelineFactoryProvider).people(user.id, peopleFilterIds)
+              : ref.watch(timelineFactoryProvider).main(timelineUsers);
           ref.onDispose(timelineService.dispose);
           return timelineService;
         }),

@@ -3,12 +3,14 @@ package app.alextran.immich.widget
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import app.alextran.immich.images.ExifBitmapUtils
 import app.alextran.immich.widget.model.*
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import es.antonborri.home_widget.HomeWidgetPlugin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
@@ -106,6 +108,35 @@ class ImmichAPI(cfg: ServerConfig) {
     val data = connection.getInputStream().readBytes()
     BitmapFactory.decodeByteArray(data, 0, data.size)
       ?: throw Exception("Invalid image data")
+  }
+
+  suspend fun fetchPreviewImage(assetId: String): Bitmap = withContext(Dispatchers.IO) {
+    val url = buildRequestURL("/assets/$assetId/thumbnail", listOf("size" to "preview", "edited" to "true"))
+    val connection = (url.openConnection() as HttpURLConnection).apply {
+      requestMethod = "GET"
+      applyCustomHeaders()
+    }
+    val data = connection.getInputStream().readBytes()
+    BitmapFactory.decodeByteArray(data, 0, data.size)
+      ?: throw Exception("Invalid image data")
+  }
+
+  suspend fun fetchOriginalImage(assetId: String, targetWidth: Int, targetHeight: Int): Bitmap = withContext(Dispatchers.IO) {
+    val url = buildRequestURL("/assets/$assetId/original", listOf("edited" to "true"))
+    val connection = (url.openConnection() as HttpURLConnection).apply {
+      requestMethod = "GET"
+      applyCustomHeaders()
+    }
+    val tempFile = File.createTempFile("immich-original-", ".image")
+    try {
+      connection.inputStream.use { input ->
+        tempFile.outputStream().use { output -> input.copyTo(output) }
+      }
+      ExifBitmapUtils.decodeSampledBitmap(tempFile, targetWidth, targetHeight) ?: throw Exception("Invalid image data")
+    } finally {
+      connection.disconnect()
+      tempFile.delete()
+    }
   }
 
   suspend fun fetchAlbums(): List<Album> = withContext(Dispatchers.IO) {

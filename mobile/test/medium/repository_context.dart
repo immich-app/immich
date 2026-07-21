@@ -217,6 +217,17 @@ class MediumRepositoryContext {
   }
 
   Future<AssetFaceEntityData> newFace({String? assetId, String? personId, int? imageWidth, int? imageHeight}) {
+    return newFaceWithState(assetId: assetId, personId: personId, imageWidth: imageWidth, imageHeight: imageHeight);
+  }
+
+  Future<AssetFaceEntityData> newFaceWithState({
+    String? assetId,
+    String? personId,
+    int? imageWidth,
+    int? imageHeight,
+    bool? isVisible,
+    DateTime? deletedAt,
+  }) {
     imageWidth ??= TestUtils.randInt(999) + 2;
     imageHeight ??= TestUtils.randInt(999) + 2;
 
@@ -239,6 +250,8 @@ class MediumRepositoryContext {
             boundingBoxX2: .new(x2),
             boundingBoxY2: .new(y2),
             sourceType: const .new('machine-learning'),
+            isVisible: .new(isVisible ?? true),
+            deletedAt: .new(deletedAt),
           ),
         );
   }

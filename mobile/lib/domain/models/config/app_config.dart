@@ -4,6 +4,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/config/album_config.dart';
 import 'package:immich_mobile/domain/models/config/backup_config.dart';
 import 'package:immich_mobile/domain/models/config/cleanup_config.dart';
+import 'package:immich_mobile/domain/models/config/dynamic_wallpaper_config.dart';
 import 'package:immich_mobile/domain/models/config/feature_message_config.dart';
 import 'package:immich_mobile/domain/models/config/image_config.dart';
 import 'package:immich_mobile/domain/models/config/map_config.dart';
@@ -34,6 +35,7 @@ class AppConfig {
   final BackupConfig backup;
   final NetworkConfig network;
   final ShareConfig share;
+  final DynamicWallpaperConfig dynamicWallpaper;
   final FeatureMessageConfig featureMessage;
 
   const AppConfig({
@@ -49,6 +51,7 @@ class AppConfig {
     this.backup = const .new(),
     this.network = const .new(),
     this.share = const .new(),
+    this.dynamicWallpaper = const .new(),
     this.featureMessage = const .new(),
   });
 
@@ -65,6 +68,7 @@ class AppConfig {
     BackupConfig? backup,
     NetworkConfig? network,
     ShareConfig? share,
+    DynamicWallpaperConfig? dynamicWallpaper,
     FeatureMessageConfig? featureMessage,
   }) => .new(
     logLevel: logLevel ?? this.logLevel,
@@ -79,6 +83,7 @@ class AppConfig {
     backup: backup ?? this.backup,
     network: network ?? this.network,
     share: share ?? this.share,
+    dynamicWallpaper: dynamicWallpaper ?? this.dynamicWallpaper,
     featureMessage: featureMessage ?? this.featureMessage,
   );
 
@@ -98,6 +103,7 @@ class AppConfig {
           other.backup == backup &&
           other.network == network &&
           other.share == share &&
+          other.dynamicWallpaper == dynamicWallpaper &&
           other.featureMessage == featureMessage);
 
   @override
@@ -114,6 +120,7 @@ class AppConfig {
     backup,
     network,
     share,
+    dynamicWallpaper,
     featureMessage,
   );
 
@@ -166,6 +173,8 @@ class AppConfig {
             .slideshowDuration => slideshow.duration,
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
+            .dynamicWallpaperAssetIds => dynamicWallpaper.assetIds,
+            .dynamicWallpaperAssetLayouts => dynamicWallpaper.assetLayouts,
             .featureMessageSeenRelease => featureMessage.seenRelease,
           })
           as T;
@@ -220,6 +229,12 @@ class AppConfig {
       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
+      .dynamicWallpaperAssetIds => copyWith(
+        dynamicWallpaper: dynamicWallpaper.copyWith(assetIds: value as List<String>),
+      ),
+      .dynamicWallpaperAssetLayouts => copyWith(
+        dynamicWallpaper: dynamicWallpaper.copyWith(assetLayouts: value as Map<String, DynamicWallpaperAssetLayout>),
+      ),
       .featureMessageSeenRelease => copyWith(featureMessage: featureMessage.copyWith(seenRelease: value as SemVer)),
     };
   }
