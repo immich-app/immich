@@ -12,10 +12,10 @@ export function getFileNameWithoutExtension(path: string): string {
   return basename(path, getFilenameExtension(path));
 }
 
-export function getFilenameExtension(filename: string) {
-  const extension = extname(filename);
-  if (!extension && filename.startsWith('.') && !filename.includes('.', 1)) {
-    return filename;
+export function getFilenameExtension(path: string) {
+  const extension = extname(path);
+  if (!extension && path.startsWith('.') && !path.includes('.', 1)) {
+    return path;
   }
   return extension;
 };
