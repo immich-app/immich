@@ -56,7 +56,7 @@ FROM builder AS plugins
 
 ARG TARGETPLATFORM
 
-COPY --from=ghcr.io/jdx/mise:2026.7.7@sha256:ead960a5f0d2834a78e4640b8e1579d0fcf08cc52a16810dba33b06abf13282e /usr/local/bin/mise /usr/local/bin/mise
+COPY --from=ghcr.io/jdx/mise:2026.7.11@sha256:6599c81b0da6206cbf5151df97a36794d70aaec4574ceb92d13783b42080b055 /usr/local/bin/mise /usr/local/bin/mise
 
 WORKDIR /app
 COPY ./mise.toml ./mise.toml
