@@ -31,9 +31,9 @@
   const formId = generateId();
 
   // combobox and all the search components have terrible support for value | null so we use empty string instead.
-  function withNullAsUndefined<T>(value: T | null) {
-    return value === null ? undefined : value;
-  }
+  const withNullAsEmptyString = <T,>(value: T | null) => (value === null ? '' : value);
+
+  const emptyStringToNull = (value: string | undefined) => (value === '' ? null : value);
 
   function storeQueryType(type: SearchFilter['queryType']) {
     localStorage.setItem('searchQueryType', type);
@@ -70,14 +70,14 @@
             : new SvelteSet(searchQuery.tagIds)
           : new SvelteSet(),
       location: {
-        country: withNullAsUndefined(searchQuery.country),
-        state: withNullAsUndefined(searchQuery.state),
-        city: withNullAsUndefined(searchQuery.city),
+        country: withNullAsEmptyString(searchQuery.country),
+        state: withNullAsEmptyString(searchQuery.state),
+        city: withNullAsEmptyString(searchQuery.city),
       },
       camera: {
-        make: withNullAsUndefined(searchQuery.make),
-        model: withNullAsUndefined(searchQuery.model),
-        lensModel: withNullAsUndefined(searchQuery.lensModel),
+        make: withNullAsEmptyString(searchQuery.make),
+        model: withNullAsEmptyString(searchQuery.model),
+        lensModel: withNullAsEmptyString(searchQuery.lensModel),
       },
       date: {
         takenAfter: searchQuery.takenAfter ? toStartOfDayDate(searchQuery.takenAfter) : undefined,
@@ -137,11 +137,11 @@
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
       description: filter.queryType === 'description' ? query : undefined,
       originalPath: filter.queryType === 'fullPath' ? filter.query.trim() || undefined : undefined,
-      country: filter.location.country,
-      state: filter.location.state,
-      city: filter.location.city,
-      make: filter.camera.make,
-      model: filter.camera.model,
+      country: emptyStringToNull(filter.location.country),
+      state: emptyStringToNull(filter.location.state),
+      city: emptyStringToNull(filter.location.city),
+      make: emptyStringToNull(filter.camera.make),
+      model: emptyStringToNull(filter.camera.model),
       lensModel: filter.camera.lensModel,
       takenAfter: filter.date.takenAfter
         ? asLocalTimeISO(filter.date.takenAfter.startOf('day') as DateTime<true>)
