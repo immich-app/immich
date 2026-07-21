@@ -221,6 +221,9 @@ class _Map extends StatelessWidget {
           // Get continuous movement events for bounds tracking
           trackCameraPosition: true,
           styleString: style,
+          // We don't currently use annotations and MapLibre_gl has insufficient guards around instantiation
+          // of annotation controllers (resulting in map crashs about missing styles), so we disable them
+          annotationOrder: const [],
           onMapCreated: onMapCreated,
           onStyleLoadedCallback: onMapReady,
           attributionButtonPosition: AttributionButtonPosition.topRight,
