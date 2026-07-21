@@ -600,6 +600,7 @@ class ActionNotifier extends Notifier<void> {
         count: successCount,
         success: isSuccess,
         error: isSuccess ? null : 'Failed to upload ${assetsToUpload.length - successCount} assets',
+        remoteAssetIds: remoteAssetIds,
       );
     } catch (error, stack) {
       _logger.severe('Failed manually upload assets', error, stack);

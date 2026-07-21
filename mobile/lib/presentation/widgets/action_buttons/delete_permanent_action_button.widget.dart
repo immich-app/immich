@@ -1,12 +1,15 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/asset_grid/permanent_delete_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -44,7 +47,11 @@ class DeletePermanentActionButton extends ConsumerWidget {
       return;
     }
 
-    if (source == ActionSource.viewer) {
+    final isViewer = source == ActionSource.viewer;
+    final isViewIntentTrashDelete =
+        isViewer && ref.read(timelineServiceProvider).origin == TimelineOrigin.deepLinkTrash;
+
+    if (isViewer && !isViewIntentTrashDelete) {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
 
@@ -63,6 +70,10 @@ class DeletePermanentActionButton extends ConsumerWidget {
         gravity: ToastGravity.BOTTOM,
         toastType: result.success ? ToastType.success : ToastType.error,
       );
+
+      if (result.success && isViewIntentTrashDelete) {
+        await context.maybePop();
+      }
     }
   }
 
