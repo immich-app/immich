@@ -33,12 +33,27 @@ data class Request(
   val callback: (Result<Map<String, Long>?>) -> Unit
 )
 
+/** Set [exactSize] to decode at the smallest size that covers [target] without upscaling. */
 @RequiresApi(Build.VERSION_CODES.Q)
-inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0)): Bitmap {
+inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0), exactSize: Boolean = false): Bitmap {
   return ImageDecoder.decodeBitmap(this) { decoder, info, _ ->
     if (target.width > 0 && target.height > 0) {
-      val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))
-      decoder.setTargetSampleSize(sample)
+      if (exactSize) {
+        val fillScale = max(
+          target.width.toDouble() / info.size.width,
+          target.height.toDouble() / info.size.height
+        )
+        val scale = min(1.0, fillScale)
+        if (scale < 1) {
+          decoder.setTargetSize(
+            max(1, ceil(info.size.width * scale).toInt()),
+            max(1, ceil(info.size.height * scale).toInt())
+          )
+        }
+      } else {
+        val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))
+        decoder.setTargetSampleSize(sample)
+      }
     }
     decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
     decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))

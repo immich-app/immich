@@ -25,17 +25,22 @@ class Thumbnail extends StatefulWidget {
     required String remoteId,
     required String thumbhash,
     this.fit = BoxFit.cover,
-    Size size = kThumbnailResolution,
+
+    /// Physical size to decode, or null for the source size.
+    Size? size,
     super.key,
-  }) : imageProvider = RemoteImageProvider.thumbnail(assetId: remoteId, thumbhash: thumbhash),
+  }) : imageProvider = RemoteImageProvider.thumbnail(assetId: remoteId, thumbhash: thumbhash, size: size),
        thumbhashProvider = null;
 
   Thumbnail.fromAsset({
     required BaseAsset? asset,
     this.fit = BoxFit.cover,
 
-    /// The logical UI size of the thumbnail. This is only used to determine the ideal image resolution and does not affect the widget size.
+    /// Decode size for local thumbnails. This does not affect the widget size.
     Size size = kThumbnailResolution,
+
+    /// Physical size to decode for remote thumbnails.
+    Size? remoteSize,
     super.key,
   }) : thumbhashProvider = switch (asset) {
          RemoteAsset() when asset.thumbHash != null && asset.localId == null => ThumbHashProvider(
@@ -43,7 +48,7 @@ class Thumbnail extends StatefulWidget {
          ),
          _ => null,
        },
-       imageProvider = asset == null ? null : getThumbnailImageProvider(asset, size: size);
+       imageProvider = asset == null ? null : getThumbnailImageProvider(asset, size: size, remoteSize: remoteSize);
 
   @override
   State<Thumbnail> createState() => _ThumbnailState();

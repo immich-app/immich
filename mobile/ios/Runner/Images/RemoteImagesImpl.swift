@@ -1,5 +1,6 @@
 import Accelerate
 import Flutter
+import ImageIO
 import MobileCoreServices
 import Photos
 
@@ -27,21 +28,21 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
     renderingIntent: .perceptual
   )!
-  private static let decodeOptions = [
+  private static let decodeOptions: [NSString: Any] = [
     kCGImageSourceShouldCache: false,
     kCGImageSourceShouldCacheImmediately: true,
     kCGImageSourceCreateThumbnailWithTransform: true,
     kCGImageSourceCreateThumbnailFromImageAlways: true
-  ] as CFDictionary
+  ]
 
-  func requestImage(url: String, requestId: Int64, preferEncoded: Bool, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
+  func requestImage(url: String, requestId: Int64, preferEncoded: Bool, width: Int64?, height: Int64?, completion: @escaping (Result<[String : Int64]?, any Error>) -> Void) {
     var urlRequest = URLRequest(url: URL(string: url)!)
     urlRequest.cachePolicy = .returnCacheDataElseLoad
 
     let request = RemoteImageRequest(id: requestId, completion: completion)
 
     let task = URLSessionManager.shared.session.dataTask(with: urlRequest) { data, response, error in
-      Self.handleCompletion(request: request, encoded: preferEncoded, data: data, response: response, error: error)
+      Self.handleCompletion(request: request, encoded: preferEncoded, width: width, height: height, data: data, response: response, error: error)
     }
 
     request.task = task
@@ -49,7 +50,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     task.resume()
   }
 
-  private static func handleCompletion(request: RemoteImageRequest, encoded: Bool, data: Data?, response: URLResponse?, error: Error?) {
+  private static func handleCompletion(request: RemoteImageRequest, encoded: Bool, width: Int64?, height: Int64?, data: Data?, response: URLResponse?, error: Error?) {
     if request.isCancelled {
       return request.completion(ImageProcessing.cancelledResult)
     }
@@ -87,8 +88,17 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
         return request.completion(ImageProcessing.cancelledResult)
       }
 
-      guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil),
-            let cgImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, decodeOptions) else {
+      guard let imageSource = CGImageSourceCreateWithData(data as CFData, nil) else {
+        registry.remove(requestId: request.id)
+        return request.completion(.failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
+      }
+
+      var options = decodeOptions
+      if let maxPixelSize = targetThumbnailRenderSize(imageSource: imageSource, width: width, height: height) {
+        options[kCGImageSourceThumbnailMaxPixelSize] = maxPixelSize
+      }
+
+      guard let cgImage = CGImageSourceCreateThumbnailAtIndex(imageSource, 0, options as CFDictionary) else {
         registry.remove(requestId: request.id)
         return request.completion(.failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
       }
@@ -118,6 +128,34 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
         return request.completion(.failure(PigeonError(code: "", message: "Failed to convert image for request: \(error)", details: nil)))
       }
     }
+  }
+
+  /// Returns the longest rendered edge needed to cover the requested size.
+  private static func targetThumbnailRenderSize(imageSource: CGImageSource, width: Int64?, height: Int64?) -> Int? {
+    guard let width,
+          let height,
+          width > 0,
+          height > 0,
+          let properties = CGImageSourceCopyPropertiesAtIndex(imageSource, 0, nil) as? [CFString: Any],
+          let pixelWidth = properties[kCGImagePropertyPixelWidth] as? NSNumber,
+          let pixelHeight = properties[kCGImagePropertyPixelHeight] as? NSNumber else {
+      return nil
+    }
+
+    let orientation = (properties[kCGImagePropertyOrientation] as? NSNumber)
+      .flatMap { CGImagePropertyOrientation(rawValue: $0.uint32Value) } ?? .up
+    let swapsDimensions: Bool
+    switch orientation {
+    case .leftMirrored, .right, .rightMirrored, .left:
+      swapsDimensions = true
+    default:
+      swapsDimensions = false
+    }
+    let sourceWidth = swapsDimensions ? pixelHeight.doubleValue : pixelWidth.doubleValue
+    let sourceHeight = swapsDimensions ? pixelWidth.doubleValue : pixelHeight.doubleValue
+    let fillScale = max(Double(width) / sourceWidth, Double(height) / sourceHeight)
+    let scale = min(1, fillScale)
+    return scale < 1 ? Int(ceil(max(sourceWidth * scale, sourceHeight * scale))) : nil
   }
 
   func cancelRequest(requestId: Int64) {

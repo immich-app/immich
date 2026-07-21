@@ -144,19 +144,6 @@ class _FixedSegmentRow extends ConsumerWidget {
     TimelineService timelineService,
     bool isDynamicLayout,
   ) {
-    final children = [
-      for (int i = 0; i < assets.length; i++)
-        TimelineAssetIndexWrapper(
-          assetIndex: assetIndex + i,
-          segmentIndex: 0, // For simplicity, using 0 for now
-          child: _AssetTileWidget(
-            key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
-            asset: assets[i],
-            assetIndex: assetIndex + i,
-          ),
-        ),
-    ];
-
     final widths = List.filled(assets.length, tileHeight);
 
     if (isDynamicLayout) {
@@ -186,6 +173,20 @@ class _FixedSegmentRow extends ConsumerWidget {
       }
     }
 
+    final children = [
+      for (int i = 0; i < assets.length; i++)
+        TimelineAssetIndexWrapper(
+          assetIndex: assetIndex + i,
+          segmentIndex: 0, // For simplicity, using 0 for now
+          child: _AssetTileWidget(
+            key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
+            asset: assets[i],
+            assetIndex: assetIndex + i,
+            size: Size(widths[i], tileHeight),
+          ),
+        ),
+    ];
+
     return TimelineDragRegion(
       child: TimelineRow(
         height: tileHeight,
@@ -201,10 +202,18 @@ class _FixedSegmentRow extends ConsumerWidget {
 class _AssetTileWidget extends ConsumerWidget {
   final BaseAsset asset;
   final int assetIndex;
+  final Size size;
 
-  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex});
+  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex, required this.size});
 
-  Future _handleOnTap(BuildContext ctx, WidgetRef ref, int assetIndex, BaseAsset asset, int? heroOffset) async {
+  Future _handleOnTap(
+    BuildContext ctx,
+    WidgetRef ref,
+    int assetIndex,
+    BaseAsset asset,
+    int? heroOffset,
+    Size remoteSize,
+  ) async {
     final multiSelectState = ref.read(multiSelectProvider);
 
     if (multiSelectState.forceEnable || multiSelectState.isEnabled) {
@@ -212,7 +221,7 @@ class _AssetTileWidget extends ConsumerWidget {
     } else {
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
-      AssetViewer.setAsset(ref, asset);
+      AssetViewer.setAsset(ref, asset, thumbnailSize: remoteSize);
       unawaited(
         ctx.pushRoute(
           AssetViewerRoute(
@@ -252,6 +261,8 @@ class _AssetTileWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final remoteSize = size * MediaQuery.devicePixelRatioOf(context);
+
     final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
 
     final lockSelection = _getLockSelectionStatus(ref);
@@ -261,10 +272,11 @@ class _AssetTileWidget extends ConsumerWidget {
 
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
+        onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset, remoteSize),
         onLongPress: () => lockSelection || isReadonlyModeEnabled ? null : _handleOnLongPress(ref, asset),
         child: ThumbnailTile(
           asset,
+          remoteSize: remoteSize,
           lockSelection: lockSelection,
           showStorageIndicator: showStorageIndicator,
           showStackIndicator: showStackIndicator,

@@ -70,7 +70,8 @@ class RemoteImagesPigeonCodec: FlutterStandardMessageCodec, @unchecked Sendable 
 
 /// Generated protocol from Pigeon that represents a handler of messages from Flutter.
 protocol RemoteImageApi {
-  func requestImage(url: String, requestId: Int64, preferEncoded: Bool, completion: @escaping (Result<[String: Int64]?, Error>) -> Void)
+  /// Width and height are the physical decode size, or null for the source size.
+  func requestImage(url: String, requestId: Int64, preferEncoded: Bool, width: Int64?, height: Int64?, completion: @escaping (Result<[String: Int64]?, Error>) -> Void)
   func cancelRequest(requestId: Int64) throws
   func clearCache(completion: @escaping (Result<Int64, Error>) -> Void)
 }
@@ -81,6 +82,7 @@ class RemoteImageApiSetup {
   /// Sets up an instance of `RemoteImageApi` to handle messages through the `binaryMessenger`.
   static func setUp(binaryMessenger: FlutterBinaryMessenger, api: RemoteImageApi?, messageChannelSuffix: String = "") {
     let channelSuffix = messageChannelSuffix.count > 0 ? ".\(messageChannelSuffix)" : ""
+    /// Width and height are the physical decode size, or null for the source size.
     let requestImageChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.RemoteImageApi.requestImage\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
     if let api = api {
       requestImageChannel.setMessageHandler { message, reply in
@@ -88,7 +90,9 @@ class RemoteImageApiSetup {
         let urlArg = args[0] as! String
         let requestIdArg = args[1] as! Int64
         let preferEncodedArg = args[2] as! Bool
-        api.requestImage(url: urlArg, requestId: requestIdArg, preferEncoded: preferEncodedArg) { result in
+        let widthArg: Int64? = nilOrValue(args[3])
+        let heightArg: Int64? = nilOrValue(args[4])
+        api.requestImage(url: urlArg, requestId: requestIdArg, preferEncoded: preferEncodedArg, width: widthArg, height: heightArg) { result in
           switch result {
           case .success(let res):
             reply(wrapResult(res))

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -12,6 +13,9 @@ class AssetViewerState {
   final bool isZoomed;
   final bool showingOcr;
   final BaseAsset? currentAsset;
+
+  /// Physical thumbnail size retained while paging through the viewer.
+  final Size? thumbnailSize;
   final int stackIndex;
 
   const AssetViewerState({
@@ -21,6 +25,7 @@ class AssetViewerState {
     this.isZoomed = false,
     this.showingOcr = false,
     this.currentAsset,
+    this.thumbnailSize,
     this.stackIndex = 0,
   });
 
@@ -31,6 +36,7 @@ class AssetViewerState {
     bool? isZoomed,
     bool? showingOcr,
     BaseAsset? currentAsset,
+    Size? thumbnailSize,
     int? stackIndex,
   }) {
     return AssetViewerState(
@@ -40,6 +46,7 @@ class AssetViewerState {
       isZoomed: isZoomed ?? this.isZoomed,
       showingOcr: showingOcr ?? this.showingOcr,
       currentAsset: currentAsset ?? this.currentAsset,
+      thumbnailSize: thumbnailSize ?? this.thumbnailSize,
       stackIndex: stackIndex ?? this.stackIndex,
     );
   }
@@ -64,6 +71,7 @@ class AssetViewerState {
         other.isZoomed == isZoomed &&
         other.showingOcr == showingOcr &&
         other.currentAsset == currentAsset &&
+        other.thumbnailSize == thumbnailSize &&
         other.stackIndex == stackIndex;
   }
 
@@ -75,6 +83,7 @@ class AssetViewerState {
       isZoomed.hashCode ^
       showingOcr.hashCode ^
       currentAsset.hashCode ^
+      thumbnailSize.hashCode ^
       stackIndex.hashCode;
 }
 
@@ -93,11 +102,11 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     state = const AssetViewerState();
   }
 
-  void setAsset(BaseAsset asset) {
+  void setAsset(BaseAsset asset, {Size? thumbnailSize}) {
     if (asset == state.currentAsset) {
       return;
     }
-    state = state.copyWith(currentAsset: asset, stackIndex: 0, showingOcr: false);
+    state = state.copyWith(currentAsset: asset, thumbnailSize: thumbnailSize, stackIndex: 0, showingOcr: false);
     _watchCurrentAsset(asset);
   }
 
