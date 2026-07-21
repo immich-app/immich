@@ -832,9 +832,9 @@ where
       "asset_face"
     where
       "asset_face"."assetId" = "asset"."id"
-      and "asset_face"."personId" = any ($2::uuid[])
       and "asset_face"."deletedAt" is null
-      and "asset_face"."isVisible" = $3
+      and "asset_face"."isVisible" = $2
+      and "asset_face"."personId" = any ($3::uuid[])
     group by
       "asset_face"."assetId"
     having
@@ -1338,9 +1338,9 @@ where
         "asset_face"
       where
         "asset_face"."assetId" = "asset"."id"
-        and "asset_face"."personId" = any ($3::uuid[])
         and "asset_face"."deletedAt" is null
-        and "asset_face"."isVisible" = $4
+        and "asset_face"."isVisible" = $3
+        and "asset_face"."personId" = any ($4::uuid[])
     )
   )
 order by
