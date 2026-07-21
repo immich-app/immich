@@ -607,9 +607,9 @@ function existsEncodedVideoPath(eb: AssetExpressionBuilder, f: StringFilter) {
     ['in', f.in],
     ['not in', f.notIn],
   ] as const;
-  return ops.flatMap(([op, v]) =>
-    v === undefined ? [] : [eb.exists((eb2) => encodedVideoFileBase(eb2).where('asset_file.path', op, v))],
-  );
+  return ops
+    .filter(([, v]) => v !== undefined)
+    .map(([op, v]) => eb.exists((eb2) => encodedVideoFileBase(eb2).where('asset_file.path', op, v!)));
 }
 
 type Membership = 'album' | 'person' | 'tag';
@@ -712,12 +712,9 @@ function idPredicates(
     [filter.eq, '=', 'is'],
     [filter.ne, '<>', 'is not'],
   ] as const;
-  return ops.flatMap(([v, op, nullOp]) => {
-    if (v === undefined) {
-      return [];
-    }
-    return v === null ? [eb(column, nullOp, null)] : [eb(column, op, asUuid(v))];
-  });
+  return ops
+    .filter(([v]) => v !== undefined)
+    .map(([v, op, nullOp]) => (v === null ? eb(column, nullOp, null) : eb(column, op, asUuid(v!))));
 }
 
 type EnumColumn = {
@@ -737,7 +734,7 @@ function enumPredicates<C extends keyof EnumColumn>(
     ['in', filter.in],
     ['not in', filter.notIn],
   ] as const;
-  return ops.flatMap(([op, v]) => (v === undefined ? [] : [eb(column, op, v as never)]));
+  return ops.filter(([, v]) => v !== undefined).map(([op, v]) => eb(column, op, v as never));
 }
 
 type StringColumn =
