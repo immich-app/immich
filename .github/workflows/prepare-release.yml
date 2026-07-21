@@ -3,6 +3,11 @@ name: Prepare new release
 on:
   workflow_dispatch:
     inputs:
+      sourceBranch:
+        description: 'Branch to release from'
+        required: false
+        default: 'main'
+        type: string
       releaseType:
         description: 'Release type'
         required: true
@@ -65,7 +70,7 @@ jobs:
         with:
           token: ${{ steps.token.outputs.token }}
           persist-credentials: true
-          ref: main
+          ref: ${{ inputs.sourceBranch }}
 
       - name: Setup Mise
         uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
