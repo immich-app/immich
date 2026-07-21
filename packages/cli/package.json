@@ -38,7 +38,7 @@
     "mock-fs": "^5.2.0",
     "prettier": "^3.7.4",
     "prettier-plugin-organize-imports": "^4.0.0",
-    "typescript": "^6.0.0",
+    "typescript": "^7.0.0",
     "typescript-eslint": "^8.58.0",
     "vite": "^8.0.0",
     "vitest": "^4.0.0",

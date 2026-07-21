@@ -51,7 +51,7 @@
     "sharp": "^0.34.5",
     "socket.io-client": "^4.7.4",
     "supertest": "^7.0.0",
-    "typescript": "^6.0.0",
+    "typescript": "^7.0.0",
     "typescript-eslint": "^8.28.0",
     "utimes": "^5.2.1",
     "vitest": "^4.0.0"
