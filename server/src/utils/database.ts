@@ -954,7 +954,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       if (filter.or && filter.or.length > 0) {
         top.push(eb.or(filter.or.map((branch) => eb.and(buildBranchPredicates(eb, branch)))));
       }
-      return top.length > 0 ? eb.and(top) : eb.val(true);
+      return top.length > 0 ? eb.and(top) : eb.lit(true);
     })
     .$call((qb) =>
       // cast: `.$if(needsExifJoin, ...)` doesn't carry the join into the type; `exifJoinRequired` guarantees it at runtime.

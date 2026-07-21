@@ -205,7 +205,7 @@ class AlbumAssetSync extends BaseSync {
           .case()
           .when('asset.ownerId', '=', userId)
           .then(eb.ref('asset.isFavorite'))
-          .else(eb.val(false))
+          .else(eb.lit(false))
           .end()
           .as('isFavorite'),
       )
@@ -225,7 +225,7 @@ class AlbumAssetSync extends BaseSync {
           .case()
           .when('asset.ownerId', '=', userId)
           .then(eb.ref('asset.isFavorite'))
-          .else(eb.val(false))
+          .else(eb.lit(false))
           .end()
           .as('isFavorite'),
       )
@@ -248,7 +248,7 @@ class AlbumAssetSync extends BaseSync {
           .case()
           .when('asset.ownerId', '=', userId)
           .then(eb.ref('asset.isFavorite'))
-          .else(eb.val(false))
+          .else(eb.lit(false))
           .end()
           .as('isFavorite'),
       )
