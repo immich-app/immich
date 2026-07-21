@@ -72,8 +72,6 @@
       width: 112,
       height: 112,
       objectCaching: true,
-      // keep the stroke width uniform while scaling; without this the cached
-      // bitmap is stretched during the transform and only re-rendered at the end
       noScaleCache: false,
       rx: 8,
       ry: 8,
