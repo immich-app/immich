@@ -603,7 +603,7 @@ const encodedVideoFileBase = (eb: ExpressionBuilder<DB, 'asset' | 'asset_exif'>)
 function existsEncodedVideoPath(eb: AssetExpressionBuilder, f: StringFilter) {
   const ops = [
     ['=', f.eq],
-    ['<>', f.ne],
+    ['!=', f.ne],
     ['in', f.in],
     ['not in', f.notIn],
   ] as const;
@@ -710,7 +710,7 @@ function idPredicates(
 ) {
   const ops = [
     [filter.eq, '=', 'is'],
-    [filter.ne, '<>', 'is not'],
+    [filter.ne, '!=', 'is not'],
   ] as const;
   return ops
     .filter(([v]) => v !== undefined)
@@ -730,7 +730,7 @@ function enumPredicates<C extends keyof EnumColumn>(
   // cast: kysely's `eb` doesn't distribute its column-value narrowing through the generic
   const ops = [
     ['=', filter.eq],
-    ['<>', filter.ne],
+    ['!=', filter.ne],
     ['in', filter.in],
     ['not in', filter.notIn],
   ] as const;
@@ -755,7 +755,7 @@ function stringEqNeInPredicates(
 ) {
   const nullableOps = [
     [filter.eq, '=', 'is'],
-    [filter.ne, '<>', 'is not'],
+    [filter.ne, '!=', 'is not'],
   ] as const;
   const arrayOps = [
     ['in', filter.in],
@@ -800,7 +800,7 @@ function numberPredicates(
 ) {
   const nullableOps = [
     [filter.eq, '=', 'is'],
-    [filter.ne, '<>', 'is not'],
+    [filter.ne, '!=', 'is not'],
   ] as const;
   const plainOps = [
     ['<', filter.lt],
@@ -826,7 +826,7 @@ type DateColumn = 'asset.fileCreatedAt' | 'asset.createdAt' | 'asset.updatedAt' 
 function datePredicates(eb: AssetExpressionBuilder, column: DateColumn, filter: DateFilter | DateFilterNullable = {}) {
   const nullableOps = [
     [filter.eq, '=', 'is'],
-    [filter.ne, '<>', 'is not'],
+    [filter.ne, '!=', 'is not'],
   ] as const;
   const plainOps = [
     ['>', filter.gt],
@@ -848,7 +848,7 @@ function datePredicates(eb: AssetExpressionBuilder, column: DateColumn, filter: 
 function checksumPredicates(eb: AssetExpressionBuilder, filter: StringFilter = {}) {
   const scalarOps = [
     ['=', filter.eq],
-    ['<>', filter.ne],
+    ['!=', filter.ne],
   ] as const;
   const arrayOps = [
     ['in', filter.in],
