@@ -869,7 +869,9 @@ function checksumPredicates(eb: AssetExpressionBuilder, filter: StringFilter = {
   return predicates;
 }
 
-function buildBranchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch) {
+// predicates are collected as expressions rather than chained `where` calls so the same
+// helpers can build each `or` branch, which must compose into eb.and/eb.or
+function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch) {
   return [
     ...idPredicates(eb, 'asset.id', branch.id),
     ...idPredicates(eb, 'asset.libraryId', branch.libraryId),
@@ -945,11 +947,11 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
     .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
     .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
     .where((eb) => {
-      const top = buildBranchPredicates(eb, filter);
+      const predicates = branchPredicates(eb, filter);
       if (filter.or && filter.or.length > 0) {
-        top.push(eb.or(filter.or.map((branch) => eb.and(buildBranchPredicates(eb, branch)))));
+        predicates.push(eb.or(filter.or.map((branch) => eb.and(branchPredicates(eb, branch)))));
       }
-      return top.length > 0 ? eb.and(top) : eb.lit(true);
+      return predicates.length > 0 ? eb.and(predicates) : eb.lit(true);
     })
     .$call((qb) =>
       // cast: `.$if(needsExifJoin, ...)` doesn't carry the join into the type; `exifJoinRequired` guarantees it at runtime.
