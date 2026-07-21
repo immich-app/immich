@@ -226,7 +226,7 @@ export class AlbumService extends BaseService {
     const events: { id: string; recipients: string[] }[] = [];
     for (const albumId of allowedAlbumIds) {
       const existingAssetIds = await this.albumRepository.getAssetIds(albumId, [...allowedAssetIds]);
-      const notPresentAssetIds = [...allowedAssetIds].filter((id) => !existingAssetIds.has(id));
+      const notPresentAssetIds = [...allowedAssetIds.difference(existingAssetIds)];
       if (notPresentAssetIds.length === 0) {
         continue;
       }
@@ -288,7 +288,7 @@ export class AlbumService extends BaseService {
         throw new BadRequestException('Cannot add another owner');
       }
 
-      const exists = album.albumUsers.find(({ user: { id } }) => id === userId);
+      const exists = album.albumUsers.some(({ user: { id } }) => id === userId);
       if (exists) {
         continue;
       }
@@ -303,7 +303,7 @@ export class AlbumService extends BaseService {
       await this.eventRepository.emit('AlbumInvite', { id, userId, senderName: auth.user.name });
     }
 
-    return this.findOrFail(id, auth.user.id, { withAssets: true }).then(mapAlbum);
+    return mapAlbum(await this.findOrFail(id, auth.user.id, { withAssets: true }));
   }
 
   async removeUser(auth: AuthDto, id: string, userId: string | 'me'): Promise<void> {

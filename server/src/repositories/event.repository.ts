@@ -213,11 +213,11 @@ export class EventRepository {
   private addHandler<T extends EmitEvent>(item: Item<T>): void {
     const event = item.event;
 
-    if (!this.emitHandlers[event]) {
+    if (!Object.hasOwn(this.emitHandlers, event)) {
       this.emitHandlers[event] = [];
     }
 
-    this.emitHandlers[event].push(item);
+    this.emitHandlers[event]!.push(item);
   }
 
   emit<T extends EmitEvent>(event: T, ...args: ArgsOf<T>): Promise<void> {

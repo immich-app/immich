@@ -156,10 +156,12 @@
   };
 
   const onEnter = (event: KeyboardEvent) => {
-    if (selectedId) {
-      event.preventDefault();
-      searchHistoryBox?.selectActiveOption();
+    if (!selectedId) {
+      return;
     }
+
+    event.preventDefault();
+    searchHistoryBox?.selectActiveOption();
   };
 
   const onInput = () => {

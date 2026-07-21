@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-OPENAPI_GENERATOR_VERSION=v7.22.0
+OPENAPI_GENERATOR_VERSION=v7.24.0
 
 set -euo pipefail
 
@@ -23,7 +23,6 @@ patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api_client.dart <./patch/
 patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api.dart <./patch/api.dart.patch
 patch --no-backup-if-mismatch -u ../mobile/openapi/pubspec.yaml <./patch/pubspec_immich_mobile.yaml.patch
 patch --no-backup-if-mismatch -u ../mobile/openapi/lib/model/asset_edit_action_item_dto.dart <./patch/asset_edit_action_item_dto.dart.patch
-patch --no-backup-if-mismatch -u ../mobile/openapi/lib/model/time_bucket_asset_response_dto.dart <./patch/time_bucket_asset_response_dto.dart.patch
 # Don't include analysis_options.yaml for the generated openapi files
 # so that language servers can properly exclude the mobile/openapi directory
 rm ../mobile/openapi/analysis_options.yaml

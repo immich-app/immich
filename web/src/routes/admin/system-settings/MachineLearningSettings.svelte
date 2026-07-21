@@ -63,7 +63,7 @@
             size="small"
             shape="round"
             leadingIcon={mdiPlus}
-            onclick={() => configToEdit.machineLearning.urls.push('')}
+            onclick={() => void configToEdit.machineLearning.urls.push('')}
             disabled={disabled || !configToEdit.machineLearning.enabled}>{$t('add_url')}</Button
           >
         </div>

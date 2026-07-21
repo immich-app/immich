@@ -13,7 +13,7 @@ export const makeMockWatcher =
   ({ items, close }: MockWatcherOptions) =>
   (paths: string[], options: ChokidarOptions, events: Partial<WatchEvents>) => {
     events.onReady?.();
-    for (const item of items || []) {
+    for (const item of items ?? []) {
       switch (item.event) {
         case 'add': {
           events.onAdd?.(item.value);
