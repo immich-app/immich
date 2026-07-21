@@ -49,7 +49,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
     super.dispose();
   }
 
-  bool get _canCreateAlbum => albumTitleController.text.trim().isNotEmpty;
+  bool get _canCreateAlbum => albumTitleController.text.trim().isNotEmpty && !isCreatingAlbum;
 
   String _getEffectiveTitle() {
     return albumTitleController.text.isNotEmpty
@@ -256,12 +256,12 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
         title: const Text('create_album').t(),
         actions: [
           TextButton(
-            onPressed: _canCreateAlbum && !isCreatingAlbum ? createAlbum : null,
+            onPressed: _canCreateAlbum ? createAlbum : null,
             child: Text(
               'create'.t(),
               style: TextStyle(
                 fontWeight: FontWeight.bold,
-                color: _canCreateAlbum && !isCreatingAlbum ? context.primaryColor : context.themeData.disabledColor,
+                color: _canCreateAlbum ? context.primaryColor : context.themeData.disabledColor,
               ),
             ),
           ),
