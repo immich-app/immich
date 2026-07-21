@@ -554,22 +554,29 @@ function exifJoinRequired(filter: SearchFilter, orderField: SearchOrderField): b
 
 type AssetExpressionBuilder = ExpressionBuilder<DB, 'asset' | 'asset_exif'>;
 
+const albumAssets = (eb: AssetExpressionBuilder) =>
+  eb.selectFrom('album_asset').whereRef('album_asset.assetId', '=', 'asset.id');
+
+const visibleFaces = (eb: AssetExpressionBuilder) =>
+  eb
+    .selectFrom('asset_face')
+    .whereRef('asset_face.assetId', '=', 'asset.id')
+    .where('asset_face.deletedAt', 'is', null)
+    .where('asset_face.isVisible', '=', true);
+
+const tagAssets = (eb: AssetExpressionBuilder) =>
+  eb.selectFrom('tag_asset').whereRef('tag_asset.assetId', '=', 'asset.id');
+
 function existsAlbums(eb: AssetExpressionBuilder) {
-  return eb.exists((eb) => eb.selectFrom('album_asset').whereRef('album_asset.assetId', '=', 'asset.id'));
+  return eb.exists(albumAssets(eb));
 }
 
 function existsPeople(eb: AssetExpressionBuilder) {
-  return eb.exists((eb) =>
-    eb
-      .selectFrom('asset_face')
-      .whereRef('asset_face.assetId', '=', 'asset.id')
-      .where('asset_face.deletedAt', 'is', null)
-      .where('asset_face.isVisible', '=', true),
-  );
+  return eb.exists(visibleFaces(eb));
 }
 
 function existsTags(eb: AssetExpressionBuilder) {
-  return eb.exists((eb) => eb.selectFrom('tag_asset').whereRef('tag_asset.assetId', '=', 'asset.id'));
+  return eb.exists(tagAssets(eb));
 }
 
 function existsEncodedVideo(eb: AssetExpressionBuilder) {
@@ -610,93 +617,65 @@ function existsEncodedVideoPath(eb: AssetExpressionBuilder, f: StringFilter) {
     .map(([op, v]) => eb.exists((eb2) => encodedVideoFileBase(eb2).where('asset_file.path', op, v!)));
 }
 
-type Membership = 'album' | 'person' | 'tag';
-
-function idsAnyExists(eb: AssetExpressionBuilder, membership: Membership, ids: string[]) {
-  switch (membership) {
-    case 'album': {
-      return eb.exists((eb) =>
-        eb
-          .selectFrom('album_asset')
-          .whereRef('album_asset.assetId', '=', 'asset.id')
-          .where('album_asset.albumId', '=', anyUuid(ids)),
-      );
-    }
-    case 'person': {
-      return eb.exists((eb) =>
-        eb
-          .selectFrom('asset_face')
-          .whereRef('asset_face.assetId', '=', 'asset.id')
-          .where('asset_face.personId', '=', anyUuid(ids))
-          .where('asset_face.deletedAt', 'is', null)
-          .where('asset_face.isVisible', '=', true),
-      );
-    }
-    case 'tag': {
-      return eb.exists((eb) =>
-        eb
-          .selectFrom('tag_asset')
-          .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
-          .whereRef('tag_asset.assetId', '=', 'asset.id')
-          .where('tag_closure.id_ancestor', '=', anyUuid(ids)),
-      );
-    }
-  }
+function existsAnyAlbumId(eb: AssetExpressionBuilder, ids: string[]) {
+  return eb.exists(albumAssets(eb).where('album_asset.albumId', '=', anyUuid(ids)));
 }
 
-function idsAllExists(eb: AssetExpressionBuilder, membership: Membership, ids: string[]) {
-  switch (membership) {
-    case 'album': {
-      return eb.exists((eb) =>
-        eb
-          .selectFrom('album_asset')
-          .select('album_asset.assetId')
-          .whereRef('album_asset.assetId', '=', 'asset.id')
-          .where('album_asset.albumId', '=', anyUuid(ids))
-          .groupBy('album_asset.assetId')
-          .having((eb) => eb.fn.count('album_asset.albumId').distinct(), '=', ids.length),
-      );
-    }
-    case 'person': {
-      return eb.exists((eb) =>
-        eb
-          .selectFrom('asset_face')
-          .select('asset_face.assetId')
-          .whereRef('asset_face.assetId', '=', 'asset.id')
-          .where('asset_face.personId', '=', anyUuid(ids))
-          .where('asset_face.deletedAt', 'is', null)
-          .where('asset_face.isVisible', '=', true)
-          .groupBy('asset_face.assetId')
-          .having((eb) => eb.fn.count('asset_face.personId').distinct(), '=', ids.length),
-      );
-    }
-    case 'tag': {
-      return eb.exists((eb) =>
-        eb
-          .selectFrom('tag_asset')
-          .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
-          .select('tag_asset.assetId')
-          .whereRef('tag_asset.assetId', '=', 'asset.id')
-          .where('tag_closure.id_ancestor', '=', anyUuid(ids))
-          .groupBy('tag_asset.assetId')
-          .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '>=', ids.length),
-      );
-    }
-  }
+function existsAllAlbumIds(eb: AssetExpressionBuilder, ids: string[]) {
+  return eb.exists(
+    albumAssets(eb)
+      .select('album_asset.assetId')
+      .where('album_asset.albumId', '=', anyUuid(ids))
+      .groupBy('album_asset.assetId')
+      .having((eb) => eb.fn.count('album_asset.albumId').distinct(), '=', ids.length),
+  );
 }
 
-function idsPredicates(eb: AssetExpressionBuilder, membership: Membership, filter: IdsFilter = {}) {
+function existsAnyPersonId(eb: AssetExpressionBuilder, ids: string[]) {
+  return eb.exists(visibleFaces(eb).where('asset_face.personId', '=', anyUuid(ids)));
+}
+
+function existsAllPersonIds(eb: AssetExpressionBuilder, ids: string[]) {
+  return eb.exists(
+    visibleFaces(eb)
+      .select('asset_face.assetId')
+      .where('asset_face.personId', '=', anyUuid(ids))
+      .groupBy('asset_face.assetId')
+      .having((eb) => eb.fn.count('asset_face.personId').distinct(), '=', ids.length),
+  );
+}
+
+function existsAnyTagId(eb: AssetExpressionBuilder, ids: string[]) {
+  return eb.exists(
+    tagAssets(eb)
+      .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
+      .where('tag_closure.id_ancestor', '=', anyUuid(ids)),
+  );
+}
+
+function existsAllTagIds(eb: AssetExpressionBuilder, ids: string[]) {
+  return eb.exists(
+    tagAssets(eb)
+      .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
+      .select('tag_asset.assetId')
+      .where('tag_closure.id_ancestor', '=', anyUuid(ids))
+      .groupBy('tag_asset.assetId')
+      .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '>=', ids.length),
+  );
+}
+
+type ExistsIds = (eb: AssetExpressionBuilder, ids: string[]) => Expression<SqlBool>;
+
+function idsPredicates(eb: AssetExpressionBuilder, existsAny: ExistsIds, existsAll: ExistsIds, filter: IdsFilter = {}) {
   const predicates: Expression<SqlBool>[] = [];
   if (filter.any) {
-    predicates.push(idsAnyExists(eb, membership, filter.any));
+    predicates.push(existsAny(eb, filter.any));
   }
   if (filter.all) {
-    predicates.push(
-      filter.all.length === 1 ? idsAnyExists(eb, membership, filter.all) : idsAllExists(eb, membership, filter.all),
-    );
+    predicates.push(filter.all.length === 1 ? existsAny(eb, filter.all) : existsAll(eb, filter.all));
   }
   if (filter.none) {
-    predicates.push(eb.not(idsAnyExists(eb, membership, filter.none)));
+    predicates.push(eb.not(existsAny(eb, filter.none)));
   }
   return predicates;
 }
@@ -897,9 +876,9 @@ function buildBranchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterB
     ...datePredicates(eb, 'asset.createdAt', branch.createdAt),
     ...datePredicates(eb, 'asset.updatedAt', branch.updatedAt),
     ...datePredicates(eb, 'asset.deletedAt', branch.trashedAt),
-    ...idsPredicates(eb, 'album', branch.albumIds),
-    ...idsPredicates(eb, 'person', branch.personIds),
-    ...idsPredicates(eb, 'tag', branch.tagIds),
+    ...idsPredicates(eb, existsAnyAlbumId, existsAllAlbumIds, branch.albumIds),
+    ...idsPredicates(eb, existsAnyPersonId, existsAllPersonIds, branch.personIds),
+    ...idsPredicates(eb, existsAnyTagId, existsAllTagIds, branch.tagIds),
     ...checksumPredicates(eb, branch.checksum),
     ...(branch.encodedVideoPath ? existsEncodedVideoPath(eb, branch.encodedVideoPath) : []),
   ];
