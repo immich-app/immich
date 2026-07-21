@@ -128,7 +128,7 @@ export class AssetMediaController {
       this.logger.deprecate(
         'Calling the thumbnail endpoint with size=original is deprecated. Use the :id/original endpoint instead',
       );
-      const [_, reqSearch] = req.url.split('?');
+      const [_, reqSearch] = req.url.split('?', 2);
       const redirSearchParams = new URLSearchParams(reqSearch);
       redirSearchParams.delete('size');
       return res.redirect('original?' + redirSearchParams.toString());
@@ -142,7 +142,7 @@ export class AssetMediaController {
       // viewThumbnailRes is a AssetMediaRedirectResponse
       // which redirects to the original asset or a specific size to make better use of caching
       const { targetSize } = viewThumbnailRes;
-      const [reqPath, reqSearch] = req.url.split('?');
+      const [reqPath, reqSearch] = req.url.split('?', 2);
       let redirPath: string;
       const redirSearchParams = new URLSearchParams(reqSearch);
       if (targetSize === 'original') {

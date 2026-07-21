@@ -172,7 +172,7 @@ export const mimeTypes = {
       return AssetType.Image;
     }
 
-    if (contentType.startsWith('video/') || contentType === 'application/mxf') {
+    if (contentType === 'application/mxf' || contentType.startsWith('video/')) {
       return AssetType.Video;
     }
 

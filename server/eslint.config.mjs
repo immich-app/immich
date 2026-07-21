@@ -64,6 +64,7 @@ export default typescriptEslint.config([
       'unicorn/consistent-boolean-name': 'off',
       'unicorn/no-computed-property-existence-check': 'off',
       'unicorn/no-non-function-verb-prefix': 'off',
+      'unicorn/prefer-simple-condition-first': 'off',
       // prefer the typescript-eslint type-aware version
       'unicorn/require-array-sort-compare': 'off',
       '@typescript-eslint/require-array-sort-compare': 'error',

@@ -834,7 +834,7 @@ class TransformManager implements EditToolManager {
       return;
     }
 
-    const [widthRatio, heightRatio] = aspectRatio.split(':');
+    const [widthRatio, heightRatio] = aspectRatio.split(':', 2);
     this.setAspectRatio(`${heightRatio}:${widthRatio}`);
   }
 
