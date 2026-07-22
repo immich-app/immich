@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/partner.action.dart';
 import 'package:immich_mobile/presentation/widgets/people/partner_user_avatar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
@@ -33,7 +33,7 @@ class PartnerPage extends ConsumerWidget {
         title: Text(context.t.partners),
         elevation: 0,
         centerTitle: false,
-        actions: const [ActionIconButtonWidget(action: PartnerAddAction())],
+        actions: const [PartnerAddAction(display: ActionDisplay.iconButton)],
       ),
       body: sharedByAsync.when(
         data: (partners) => PartnerSharedByList(partners: partners.toList(growable: false)),
@@ -60,7 +60,7 @@ class _EmptyPartners extends StatelessWidget {
           ),
           const Align(
             alignment: .center,
-            child: ActionButtonWidget(action: PartnerAddAction()),
+            child: PartnerAddAction(),
           ),
         ],
       ),
@@ -88,8 +88,10 @@ class PartnerSharedByList extends StatelessWidget {
           leading: PartnerUserAvatar(userId: partner.id, name: partner.name),
           title: Text(partner.name),
           subtitle: Text(partner.email),
-          trailing: ActionIconButtonWidget(
-            action: PartnerRemoveAction(sharedWithId: partner.id, partnerName: partner.name),
+          trailing: PartnerRemoveAction(
+            sharedWithId: partner.id,
+            partnerName: partner.name,
+            display: ActionDisplay.iconButton,
           ),
         );
       },

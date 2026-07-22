@@ -1,69 +1,76 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Action;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/widgets/people/partner_user_avatar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
-class PartnerAddAction extends BaseAction {
-  const PartnerAddAction();
+class PartnerAddAction extends ActionWidget {
+  const PartnerAddAction({super.key, super.display});
 
   @override
-  IconData get icon => Icons.person_add_rounded;
+  Action resolve(BuildContext context, WidgetRef ref) {
+    return Action(
+      icon: Icons.person_add_rounded,
+      label: context.t.add_partner,
+      onAction: () async {
+        final authUser = ref.read(currentUserProvider);
+        if (authUser == null) {
+          return;
+        }
 
-  @override
-  String label(ActionScope scope) => scope.context.t.add_partner;
+        final selected = await showDialog<User>(context: context, builder: (_) => const PartnerSelectionDialog());
+        if (selected == null) {
+          return;
+        }
 
-  @override
-  Future<void> onAction(ActionScope scope) async {
-    final ActionScope(:context, :ref, :authUser) = scope;
-    final selected = await showDialog<User>(context: context, builder: (_) => const PartnerSelectionDialog());
-    if (selected == null) {
-      return;
-    }
-
-    await ref.read(partnerServiceProvider).create(sharedById: authUser.id, sharedWithId: selected.id);
+        await ref.read(partnerServiceProvider).create(sharedById: authUser.id, sharedWithId: selected.id);
+      },
+    );
   }
 }
 
-class PartnerRemoveAction extends BaseAction {
-  const PartnerRemoveAction({required this.sharedWithId, required this.partnerName});
-
+class PartnerRemoveAction extends ActionWidget {
   final String sharedWithId;
   final String partnerName;
 
-  @override
-  IconData get icon => Icons.person_remove_rounded;
+  const PartnerRemoveAction({super.key, super.display, required this.sharedWithId, required this.partnerName});
 
   @override
-  String label(ActionScope scope) => scope.context.t.remove;
+  Action resolve(BuildContext context, WidgetRef ref) {
+    return Action(
+      icon: Icons.person_remove_rounded,
+      label: context.t.remove,
+      onAction: () async {
+        final authUser = ref.read(currentUserProvider);
+        if (authUser == null) {
+          return;
+        }
 
-  @override
-  Future<void> onAction(ActionScope scope) async {
-    final ActionScope(:context, :ref, :authUser) = scope;
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (_) => ConfirmDialog(
+            title: context.t.stop_photo_sharing,
+            content: context.t.partner_page_stop_sharing_content(partner: partnerName),
+          ),
+        );
+        if (confirmed != true) {
+          return;
+        }
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => ConfirmDialog(
-        title: context.t.stop_photo_sharing,
-        content: context.t.partner_page_stop_sharing_content(partner: partnerName),
-      ),
+        await ref.read(partnerServiceProvider).delete(sharedById: authUser.id, sharedWithId: sharedWithId);
+      },
     );
-    if (confirmed != true) {
-      return;
-    }
-
-    await ref.read(partnerServiceProvider).delete(sharedById: authUser.id, sharedWithId: sharedWithId);
   }
 }
 
 @visibleForTesting
 final candidatesStateProvider = StreamProvider.autoDispose<Iterable<User>>((ref) {
   final currentUser = ref.watch(currentUserProvider);
-  // TODO: Refactor with a route guard to avoid this check in every provider
   if (currentUser == null) {
     return const Stream.empty();
   }

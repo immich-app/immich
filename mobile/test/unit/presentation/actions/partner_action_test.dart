@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/partner.action.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -31,7 +32,7 @@ void main() {
     testWidgets('creates a partner for the selected candidate', (tester) async {
       final candidate = UserFactory.create();
 
-      await tester.pumpTestAction(context, const PartnerAddAction(), overrides: overrides(candidates: [candidate]));
+      await tester.pumpTestAction(context, const PartnerAddAction(display: ActionDisplay.iconButton), overrides: overrides(candidates: [candidate]));
       await tester.pumpUntilFound(find.text(candidate.name));
       await tester.tap(find.text(candidate.name));
       await tester.pumpAndSettle();
@@ -42,7 +43,7 @@ void main() {
     testWidgets('creates nothing when the selection dialog is dismissed', (tester) async {
       await tester.pumpTestAction(
         context,
-        const PartnerAddAction(),
+        const PartnerAddAction(display: ActionDisplay.iconButton),
         overrides: overrides(candidates: [UserFactory.create()]),
       );
       await tester.sendKeyEvent(LogicalKeyboardKey.escape); // dismiss without selecting
@@ -57,7 +58,7 @@ void main() {
       final partner = UserFactory.create();
       await tester.pumpTestAction(
         context,
-        PartnerRemoveAction(sharedWithId: partner.id, partnerName: partner.name),
+        PartnerRemoveAction(sharedWithId: partner.id, partnerName: partner.name, display: ActionDisplay.iconButton),
         overrides: overrides(),
       );
       await tester.tap(find.byType(TextButton).last); // confirm
@@ -70,7 +71,7 @@ void main() {
       final partner = UserFactory.create();
       await tester.pumpTestAction(
         context,
-        PartnerRemoveAction(sharedWithId: partner.id, partnerName: partner.name),
+        PartnerRemoveAction(sharedWithId: partner.id, partnerName: partner.name, display: ActionDisplay.iconButton),
         overrides: overrides(),
       );
       await tester.tap(find.byType(TextButton).first); // cancel
