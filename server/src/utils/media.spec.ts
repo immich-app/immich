@@ -6,17 +6,6 @@ import { VideoFrameExtractionConfig } from 'src/utils/media';
 import { probeStub } from 'test/fixtures/media.stub';
 import { describe, expect, it } from 'vitest';
 
-/**
- * Characterization tests for `VideoFrameExtractionConfig.getExtractionCommand()`.
- *
- * These assert the *entire* ffmpeg argument array via `toEqual`, not `expect.any(Array)` or partial
- * matching. The point is to pin down *correct* behavior (hand-verified against the source in
- * `media.ts` and ffmpeg semantics), so that any future coupling-induced drift from `BaseConfig`/backend
- * class changes fails loudly with a precise diff. This is the class of test that would have caught the
- * `-g`/`-bf` ordering bug and the unconditional `-low_power` bug found during development via manual
- * review — neither was caught by the service-level spec, which only asserts `expect.any(Array)`.
- */
-
 const inputPath = '/original/asset.mp4';
 const artifactPath = '/artifacts/asset.m4s';
 const playlistPath = '/tmp/frames.m3u8';
