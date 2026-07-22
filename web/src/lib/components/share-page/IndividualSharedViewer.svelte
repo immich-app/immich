@@ -35,10 +35,12 @@
   let assets = $derived(sharedLink.assets);
 
   dragAndDropFilesStore.subscribe((value) => {
-    if (value.isDragging && value.files.length > 0) {
-      handlePromiseError(handleUploadAssets(value.files));
-      dragAndDropFilesStore.set({ isDragging: false, files: [] });
+    if (!(value.isDragging && value.files.length > 0)) {
+      return;
     }
+
+    handlePromiseError(handleUploadAssets(value.files));
+    dragAndDropFilesStore.set({ isDragging: false, files: [] });
   });
 
   const downloadAssets = async () => {

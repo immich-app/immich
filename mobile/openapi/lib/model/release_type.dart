@@ -11,39 +11,34 @@
 part of openapi.api;
 
 
-class ReleaseType {
-  /// Instantiate a new enum with the provided [value].
-  const ReleaseType._(this.value);
+enum ReleaseType {
+  major._(r'major'),
+  premajor._(r'premajor'),
+  minor._(r'minor'),
+  preminor._(r'preminor'),
+  patch_._(r'patch'),
+  prepatch._(r'prepatch'),
+  prerelease._(r'prerelease'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const ReleaseType._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const major = ReleaseType._(r'major');
-  static const premajor = ReleaseType._(r'premajor');
-  static const minor = ReleaseType._(r'minor');
-  static const preminor = ReleaseType._(r'preminor');
-  static const patch_ = ReleaseType._(r'patch');
-  static const prepatch = ReleaseType._(r'prepatch');
-  static const prerelease = ReleaseType._(r'prerelease');
-
-  /// List of all possible values in this [enum][ReleaseType].
-  static const values = <ReleaseType>[
-    major,
-    premajor,
-    minor,
-    preminor,
-    patch_,
-    prepatch,
-    prerelease,
-  ];
-
+  /// Returns the instance of [ReleaseType] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static ReleaseType? fromJson(dynamic value) => ReleaseTypeTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [ReleaseType]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<ReleaseType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ReleaseType>[];
     if (json is List && json.isNotEmpty) {
@@ -65,9 +60,11 @@ class ReleaseTypeTypeTransformer {
 
   const ReleaseTypeTypeTransformer._();
 
-  String encode(ReleaseType data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(ReleaseType data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a ReleaseType.
+  /// Returns the instance of [ReleaseType] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -76,6 +73,9 @@ class ReleaseTypeTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   ReleaseType? decode(dynamic data, {bool allowNull = true}) {
+    if (data is ReleaseType) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'major': return ReleaseType.major;
@@ -94,7 +94,7 @@ class ReleaseTypeTypeTransformer {
     return null;
   }
 
-  /// Singleton [ReleaseTypeTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static ReleaseTypeTypeTransformer? _instance;
 }
 

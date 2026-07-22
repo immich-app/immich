@@ -35,7 +35,8 @@
         let formattedAge;
         if (ageInYears < 0) {
           return { formattedBirthDate: undefined, formattedAge: undefined, ...person };
-        } else if (ageInMonths < 12) {
+        }
+        if (ageInMonths < 12) {
           formattedAge = $t('age_months', { values: { months: ageInMonths } });
         } else if (ageInMonths > 12 && ageInMonths < 24) {
           formattedAge = $t('age_year_months', { values: { months: ageInMonths - 12 } });

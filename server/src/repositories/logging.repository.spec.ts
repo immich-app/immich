@@ -26,7 +26,7 @@ describe(LoggingRepository.name, () => {
 
         const logger = new MyConsoleLogger(clsMock, { color: true });
 
-        expect(logger.formatContext('context')).toBe('\u001B[33m[Api:context]\u001B[39m ');
+        expect(logger.formatContext('context')).toBe('\u{1B}[33m[Api:context]\u{1B}[39m ');
       });
 
       it('should not use colors when color is false', () => {

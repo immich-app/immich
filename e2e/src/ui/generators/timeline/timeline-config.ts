@@ -143,7 +143,7 @@ export function validateTimelineConfig(config: TimelineConfig): void {
   }
 
   // Validate seed if provided
-  if (config.seed !== undefined && (config.seed < 0 || !Number.isInteger(config.seed))) {
+  if (config.seed !== undefined && (config.seed < 0 || !Number.isSafeInteger(config.seed))) {
     throw new Error('Seed must be a non-negative integer');
   }
 

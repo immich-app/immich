@@ -35,7 +35,7 @@ const exec = promisify(execCallback);
 const maybeFirstLine = async (command: string): Promise<string> => {
   try {
     const { stdout } = await exec(command);
-    return stdout.trim().split('\n')[0] || '';
+    return stdout.trim().split('\n', 1)[0] || '';
   } catch {
     return '';
   }
@@ -111,6 +111,7 @@ export class ServerInfoRepository {
 
       const lockfile: BuildLockfile | undefined = await readFile(resourcePaths.lockFile)
         .then((buffer) => JSON.parse(buffer.toString()))
+
         .catch(() => this.logger.warn(`Failed to read ${resourcePaths.lockFile}`));
 
       const [nodejsVersion, ffmpegVersion, magickVersion, exiftoolVersion] = await Promise.all([

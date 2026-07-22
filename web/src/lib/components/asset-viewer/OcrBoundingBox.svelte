@@ -20,6 +20,7 @@
   const handleSelectStart = (event: Event) => {
     const target = event.currentTarget as HTMLElement;
     requestAnimationFrame(() => {
+      // eslint-disable-next-line unicorn/no-unnecessary-global-this
       const selection = globalThis.getSelection();
       if (selection) {
         selection.selectAllChildren(target);
