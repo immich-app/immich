@@ -623,42 +623,23 @@ function idPredicates(
   return predicates;
 }
 
-function typePredicates(
+function enumPredicates<T extends AssetType | AssetVisibility>(
   eb: AssetExpressionBuilder,
-  filter: { eq?: AssetType; ne?: AssetType; in?: AssetType[]; notIn?: AssetType[] } = {},
+  column: 'asset.type' | 'asset.visibility',
+  filter: { eq?: T; ne?: T; in?: T[]; notIn?: T[] } = {},
 ) {
   const predicates: Expression<SqlBool>[] = [];
   if (filter.eq !== undefined) {
-    predicates.push(eb('asset.type', '=', filter.eq));
+    predicates.push(eb(column, '=', filter.eq));
   }
   if (filter.ne !== undefined) {
-    predicates.push(eb('asset.type', '!=', filter.ne));
+    predicates.push(eb(column, '!=', filter.ne));
   }
   if (filter.in !== undefined) {
-    predicates.push(eb('asset.type', 'in', filter.in));
+    predicates.push(eb(column, 'in', filter.in));
   }
   if (filter.notIn !== undefined) {
-    predicates.push(eb('asset.type', 'not in', filter.notIn));
-  }
-  return predicates;
-}
-
-function visibilityPredicates(
-  eb: AssetExpressionBuilder,
-  filter: { eq?: AssetVisibility; ne?: AssetVisibility; in?: AssetVisibility[]; notIn?: AssetVisibility[] } = {},
-) {
-  const predicates: Expression<SqlBool>[] = [];
-  if (filter.eq !== undefined) {
-    predicates.push(eb('asset.visibility', '=', filter.eq));
-  }
-  if (filter.ne !== undefined) {
-    predicates.push(eb('asset.visibility', '!=', filter.ne));
-  }
-  if (filter.in !== undefined) {
-    predicates.push(eb('asset.visibility', 'in', filter.in));
-  }
-  if (filter.notIn !== undefined) {
-    predicates.push(eb('asset.visibility', 'not in', filter.notIn));
+    predicates.push(eb(column, 'not in', filter.notIn));
   }
   return predicates;
 }
@@ -818,8 +799,8 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
   return [
     ...idPredicates(eb, 'asset.id', branch.id),
     ...idPredicates(eb, 'asset.libraryId', branch.libraryId),
-    ...typePredicates(eb, branch.type),
-    ...visibilityPredicates(eb, branch.visibility),
+    ...enumPredicates(eb, 'asset.type', branch.type),
+    ...enumPredicates(eb, 'asset.visibility', branch.visibility),
     ...(branch.isFavorite ? [eb('asset.isFavorite', '=', branch.isFavorite.eq)] : []),
     ...(branch.isOffline ? [eb('asset.isOffline', '=', branch.isOffline.eq)] : []),
     ...(branch.isMotion ? [eb('asset.livePhotoVideoId', branch.isMotion.eq ? 'is not' : 'is', null)] : []),
