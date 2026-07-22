@@ -79,6 +79,8 @@ export const getKyselyConfig = (connection: DatabaseConnectionParams): KyselyCon
   };
 };
 
+const uniqueIds = (ids: string[]) => [...new Set(ids)];
+
 export const asUuid = (id: string | Expression<string>) => sql<string>`${id}::uuid`;
 
 export const anyUuid = (ids: string[]) => sql<string>`any(${`{${ids}}`}::uuid[])`;
@@ -539,15 +541,16 @@ function albumIdsPredicates(eb: AssetExpressionBuilder, { any, all, none }: IdsF
     predicates.push(eb.exists(albumAssets(eb).where('album_asset.albumId', '=', anyUuid(any))));
   }
   if (all) {
+    const ids = uniqueIds(all);
     predicates.push(
-      all.length === 1
-        ? eb.exists(albumAssets(eb).where('album_asset.albumId', '=', anyUuid(all)))
+      ids.length === 1
+        ? eb.exists(albumAssets(eb).where('album_asset.albumId', '=', anyUuid(ids)))
         : eb.exists(
             albumAssets(eb)
               .select('album_asset.assetId')
-              .where('album_asset.albumId', '=', anyUuid(all))
+              .where('album_asset.albumId', '=', anyUuid(ids))
               .groupBy('album_asset.assetId')
-              .having((eb) => eb.fn.count('album_asset.albumId').distinct(), '=', all.length),
+              .having((eb) => eb.fn.count('album_asset.albumId').distinct(), '=', ids.length),
           ),
     );
   }
@@ -563,15 +566,16 @@ function personIdsPredicates(eb: AssetExpressionBuilder, { any, all, none }: Ids
     predicates.push(eb.exists(visibleFaces(eb).where('asset_face.personId', '=', anyUuid(any))));
   }
   if (all) {
+    const ids = uniqueIds(all);
     predicates.push(
-      all.length === 1
-        ? eb.exists(visibleFaces(eb).where('asset_face.personId', '=', anyUuid(all)))
+      ids.length === 1
+        ? eb.exists(visibleFaces(eb).where('asset_face.personId', '=', anyUuid(ids)))
         : eb.exists(
             visibleFaces(eb)
               .select('asset_face.assetId')
-              .where('asset_face.personId', '=', anyUuid(all))
+              .where('asset_face.personId', '=', anyUuid(ids))
               .groupBy('asset_face.assetId')
-              .having((eb) => eb.fn.count('asset_face.personId').distinct(), '=', all.length),
+              .having((eb) => eb.fn.count('asset_face.personId').distinct(), '=', ids.length),
           ),
     );
   }
@@ -591,14 +595,15 @@ function tagIdsPredicates(eb: AssetExpressionBuilder, { any, all, none }: IdsFil
     predicates.push(eb.exists(descendantTagAssets(any)));
   }
   if (all) {
+    const ids = uniqueIds(all);
     predicates.push(
-      all.length === 1
-        ? eb.exists(descendantTagAssets(all))
+      ids.length === 1
+        ? eb.exists(descendantTagAssets(ids))
         : eb.exists(
-            descendantTagAssets(all)
+            descendantTagAssets(ids)
               .select('tag_asset.assetId')
               .groupBy('tag_asset.assetId')
-              .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '>=', all.length),
+              .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '>=', ids.length),
           ),
     );
   }
@@ -952,7 +957,7 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
     name: 'ids-all',
     params: [
       { size: 100 },
-      { userIds: [DummyValue.UUID], filter: { personIds: { all: [DummyValue.UUID, DummyValue.UUID] } } },
+      { userIds: [DummyValue.UUID], filter: { personIds: { all: [DummyValue.UUID, DummyValue.UUID_1] } } },
     ],
   },
   {
@@ -967,7 +972,7 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
     name: 'ids-tags-all',
     params: [
       { size: 100 },
-      { userIds: [DummyValue.UUID], filter: { tagIds: { all: [DummyValue.UUID, DummyValue.UUID] } } },
+      { userIds: [DummyValue.UUID], filter: { tagIds: { all: [DummyValue.UUID, DummyValue.UUID_1] } } },
     ],
   },
   {
