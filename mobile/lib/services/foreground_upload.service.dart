@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' hide AssetVisibility;
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
@@ -19,6 +20,7 @@ import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
 
@@ -99,7 +101,7 @@ class ForegroundUploadService {
           final requireWifi = _shouldRequireWiFi(asset);
           return requireWifi && !hasWifi;
         },
-        processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+        processItem: (asset) => uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
       );
     }
   }
@@ -125,7 +127,7 @@ class ForegroundUploadService {
         continue;
       }
 
-      await _uploadSingleAsset(asset, cancelToken, callbacks: callbacks);
+      await uploadSingleAsset(asset, cancelToken, callbacks: callbacks);
     }
   }
 
@@ -142,7 +144,7 @@ class ForegroundUploadService {
     await _executeWithWorkerPool<LocalAsset>(
       items: localAssets,
       cancelToken: cancelToken,
-      processItem: (asset) => _uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+      processItem: (asset) => uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
     );
   }
 
@@ -232,7 +234,8 @@ class ForegroundUploadService {
     await Future.wait(workerFutures);
   }
 
-  Future<void> _uploadSingleAsset(
+  @visibleForTesting
+  Future<void> uploadSingleAsset(
     LocalAsset asset,
     Completer<void>? cancelToken, {
     required UploadCallbacks callbacks,
@@ -306,17 +309,10 @@ class ForegroundUploadService {
         return;
       }
 
-      String fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
-
-      /// Handle special file name from DJI or Fusion app
-      /// If the file name has no extension, likely due to special renaming template by specific apps
-      /// we append the original extension from the asset name
-      final hasExtension = p.extension(fileName).isNotEmpty;
-      if (!hasExtension) {
-        fileName = p.setExtension(fileName, p.extension(asset.name));
-      }
-
-      final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
+      final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+      // Some apps (e.g. DJI/Fusion) return names without an extension; fall back to the asset name for those.
+      final extension = p.extension(file.path).isNotEmpty ? p.extension(file.path) : p.extension(asset.name);
+      final originalFileName = p.setExtension(fileName, extension);
       final deviceId = Store.get(StoreKey.deviceId);
 
       final fields = {
@@ -338,7 +334,8 @@ class ForegroundUploadService {
         final livePhotoResult = await _uploadRepository.uploadFile(
           file: livePhotoFile,
           originalFileName: livePhotoTitle,
-          fields: fields,
+          // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
+          fields: {...fields, 'visibility': AssetVisibility.hidden.toString()},
           cancelToken: cancelToken,
           onProgress: onProgress != null
               ? (bytes, totalBytes) => onProgress(asset.localId!, livePhotoTitle, bytes, totalBytes)

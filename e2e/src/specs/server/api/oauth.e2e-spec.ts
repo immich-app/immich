@@ -44,7 +44,7 @@ const loginWithOAuth = async (sub: OAuthUser | string, redirectUri?: string) => 
   });
 
   // login
-  const response1 = await redirect(url.replace(authServer.internal, authServer.external));
+  const response1 = await redirect(url.replace(authServer.internal, () => authServer.external));
   const response2 = await request(authServer.external + response1.location)
     .post('')
     .set('Cookie', response1.cookies)

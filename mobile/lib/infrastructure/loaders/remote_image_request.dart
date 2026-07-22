@@ -12,7 +12,7 @@ class RemoteImageRequest extends ImageRequest {
     }
 
     final info = await remoteImageApi.requestImage(uri, requestId: requestId, preferEncoded: false);
-    // Android always returns encoded data, so we need to check for both shapes of the response.
+    // Android falls back to encoded data if native decoding fails, so check for both shapes of the response.
     final frame = switch (info) {
       {'pointer': int pointer, 'length': int length} => await _fromEncodedPlatformImage(pointer, length),
       {'pointer': int pointer, 'width': int width, 'height': int height, 'rowBytes': int rowBytes} =>

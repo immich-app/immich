@@ -37,7 +37,7 @@ export type ZoneOption = {
   valid: boolean;
 };
 
-const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+const userTimeZone = new Intl.DateTimeFormat().resolvedOptions().timeZone;
 const knownTimezones = Intl.supportedValuesOf('timeZone');
 
 export function getTimezones(selectedDate: string) {

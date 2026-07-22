@@ -43,15 +43,16 @@ class ConnectivityApiImpl: ConnectivityApi {
       capabilities.append(.vpn)
     }
     
-    // Determine if connection is unmetered:
-    // - Must be on WiFi (not cellular)
-    // - Must not be expensive (rules out personal hotspot)
-    // - Must not be constrained (Low Data Mode)
-    // Note: VPN over cellular should still be considered metered
+    // Determine if connection is unmetered from the OS metered flags rather than
+    // the interface type, so wired ethernet (iPhone USB adapters, Apple Silicon
+    // Macs) is treated as unmetered like Wi-Fi:
+    // - Not on cellular
+    // - Not expensive (also rules out cellular and personal hotspot)
+    // - Not constrained (Low Data Mode)
+    // Note: VPN over cellular stays metered because the path is still expensive.
     let isOnCellular = path.usesInterfaceType(.cellular)
-    let isOnWifi = path.usesInterfaceType(.wifi)
-    
-    if isOnWifi && !isOnCellular && !path.isExpensive && !path.isConstrained {
+
+    if !isOnCellular && !path.isExpensive && !path.isConstrained {
       capabilities.append(.unmetered)
     }
     

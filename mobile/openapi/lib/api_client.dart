@@ -97,9 +97,9 @@ class ApiClient {
       if (nullableHeaderParams != null) {
         request.headers.addAll(nullableHeaderParams);
       }
-      if (msgBody is String) {
+      if (msgBody is String && msgBody.isNotEmpty) {
         request.body = msgBody;
-      } else if (msgBody is List<int>) {
+      } else if (msgBody is List<int> && msgBody.isNotEmpty) {
         request.bodyBytes = msgBody;
       } else if (msgBody is Map<String, String>) {
         request.bodyFields = msgBody;
@@ -391,6 +391,8 @@ class ApiClient {
           return FoldersResponse.fromJson(value);
         case 'FoldersUpdate':
           return FoldersUpdate.fromJson(value);
+        case 'HlsVideoResolution':
+          return HlsVideoResolutionTypeTransformer().decode(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
         case 'IntegrityReport':

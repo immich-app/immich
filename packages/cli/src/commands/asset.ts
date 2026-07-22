@@ -4,6 +4,7 @@ import {
   AssetMediaResponseDto,
   AssetMediaStatus,
   AssetUploadAction,
+  AssetVisibility,
   Permission,
   addAssetsToAlbum,
   checkBulkUpload,
@@ -39,6 +40,7 @@ export interface UploadOptionsDto {
   deleteDuplicates?: boolean;
   album?: boolean;
   albumName?: string;
+  visibility?: AssetVisibility;
   includeHidden?: boolean;
   concurrency: number;
   progress?: boolean;
@@ -54,6 +56,7 @@ class UploadFile extends File {
     super([], basename(filepath));
   }
 
+  // @ts-expect-error size is already a property on the new File interface
   get size() {
     return this._size;
   }
@@ -306,10 +309,8 @@ export const checkForDuplicates = async (files: string[], { concurrency, skipHas
   return { newFiles, duplicates };
 };
 
-export const uploadFiles = async (
-  files: string[],
-  { dryRun, concurrency, progress }: UploadOptionsDto,
-): Promise<Asset[]> => {
+export const uploadFiles = async (files: string[], options: UploadOptionsDto): Promise<Asset[]> => {
+  const { dryRun, concurrency, progress } = options;
   if (files.length === 0) {
     console.log('All assets were already uploaded, nothing to do.');
     return [];
@@ -358,7 +359,7 @@ export const uploadFiles = async (
         throw new Error(`Stats not found for ${filepath}`);
       }
 
-      const response = await uploadFile(filepath, stats);
+      const response = await uploadFile(filepath, stats, options);
       newAssets.push({ id: response.id, filepath });
       if (response.status === AssetMediaStatus.Duplicate) {
         duplicateCount++;
@@ -400,7 +401,11 @@ export const uploadFiles = async (
   return newAssets;
 };
 
-const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaResponseDto> => {
+const uploadFile = async (
+  input: string,
+  stats: Stats,
+  { visibility }: UploadOptionsDto,
+): Promise<AssetMediaResponseDto> => {
   const { baseUrl, headers } = defaults;
 
   const formData = new FormData();
@@ -409,6 +414,9 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
   formData.append('fileSize', String(stats.size));
   formData.append('isFavorite', 'false');
   formData.append('assetData', new UploadFile(input, stats.size));
+  if (visibility) {
+    formData.append('visibility', visibility);
+  }
 
   const sidecarPath = findSidecar(input);
   if (sidecarPath) {
@@ -433,7 +441,7 @@ const uploadFile = async (input: string, stats: Stats): Promise<AssetMediaRespon
     throw new Error(await response.text());
   }
 
-  return response.json();
+  return response.json() as Promise<AssetMediaResponseDto>;
 };
 
 export const findSidecar = (filepath: string): string | undefined => {
@@ -570,7 +578,7 @@ const updateAlbums = async (assets: Asset[], options: UploadOptionsDto) => {
   albumUpdateProgress.start(assets.length, 0);
 
   try {
-    for (const [albumId, assets] of albumToAssets.entries()) {
+    for (const [albumId, assets] of albumToAssets) {
       for (const assetBatch of chunk(assets, Math.min(1000 * concurrency, 65_000))) {
         await addAssetsToAlbum({ id: albumId, bulkIdsDto: { ids: assetBatch } });
         albumUpdateProgress.increment(assetBatch.length);

@@ -56,11 +56,8 @@
         // We make sure empty albums stay at the end of the list
         if (a === unknownCountry) {
           return 1;
-        } else if (b === unknownCountry) {
-          return -1;
-        } else {
-          return a.localeCompare(b);
         }
+        return b === unknownCountry ? -1 : a.localeCompare(b);
       });
 
       return sortedByCountryName.map(([country, places]) => ({

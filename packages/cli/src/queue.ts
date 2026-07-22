@@ -52,10 +52,7 @@ export class Queue<T, R> {
   }
 
   get tasks(): Task<T, R>[] {
-    const tasks: Task<T, R>[] = [];
-    for (const task of this.store.values()) {
-      tasks.push(task);
-    }
+    const tasks: Task<T, R>[] = this.store.values().toArray();
     return tasks;
   }
 

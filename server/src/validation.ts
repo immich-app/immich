@@ -1,4 +1,5 @@
-import { ArgumentMetadata, FileValidator, Injectable, ParseUUIDPipe } from '@nestjs/common';
+import { FileValidator, Injectable } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
 import { isIP, isIPRange } from 'validator';
@@ -11,10 +12,7 @@ function isIPOrRange(value: string, options?: IsIPRangeOptions): boolean {
   if (isIPRange(value)) {
     return true;
   }
-  if (!requireCIDR && isIP(value)) {
-    return true;
-  }
-  return false;
+  return !requireCIDR && isIP(value);
 }
 
 /**
@@ -44,7 +42,7 @@ export function nonEmptyPartial<T extends z.ZodRawShape>(shape: T) {
     .object(shape)
     .partial()
     .refine((data) => Object.values(data as Record<string, unknown>).some((value) => value !== undefined), {
-      message: 'At least one field must be provided',
+      message: `At least one of the following fields is required: ${Object.keys(shape).join(', ')}`,
     });
 }
 
@@ -62,7 +60,7 @@ export function IsNotSiblingOf<
   TKey extends z.infer<ReturnType<TSchema['keyof']>> & keyof z.infer<TSchema>,
 >(_schema: TSchema, property: TKey, siblings: TKey[]) {
   type T = z.infer<TSchema>;
-  const message = `${String(property)} cannot exist alongside ${siblings.join(' or ')}`;
+  const message = `${property} cannot exist alongside ${siblings.join(' or ')}`;
   return z.custom<T>().refine(
     (data) => {
       if (data[property] === undefined) {
@@ -72,16 +70,6 @@ export function IsNotSiblingOf<
     },
     { message },
   );
-}
-
-@Injectable()
-export class ParseMeUUIDPipe extends ParseUUIDPipe {
-  async transform(value: string, metadata: ArgumentMetadata) {
-    if (value == 'me') {
-      return value;
-    }
-    return super.transform(value, metadata);
-  }
 }
 
 @Injectable()
@@ -173,12 +161,7 @@ export const isoDateToDate = z
     z.date(),
     {
       decode: (isoString) => new Date(isoString),
-      encode: (date) => {
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-      },
+      encode: (date) => DateTime.fromJSDate(date).toFormat('yyyy-MM-dd'),
     },
   )
   .meta({ example: '2024-01-01' });

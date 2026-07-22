@@ -1,12 +1,14 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart';
-import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart' hide AssetEditAction;
 import 'package:immich_mobile/domain/models/stack.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/repositories/api.repository.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
-import 'package:openapi/api.dart';
+import 'package:openapi/api.dart' as api show AssetVisibility;
+import 'package:openapi/api.dart' hide AssetVisibility;
 
 final assetApiRepositoryProvider = Provider(
   (ref) => AssetApiRepository(
@@ -41,7 +43,7 @@ class AssetApiRepository extends ApiRepository {
     return response?.count ?? 0;
   }
 
-  Future<void> updateVisibility(List<String> ids, AssetVisibilityEnum visibility) async {
+  Future<void> updateVisibility(List<String> ids, AssetVisibility visibility) async {
     return _api.updateAssets(AssetBulkUpdateDto(ids: ids, visibility: Optional.present(_mapVisibility(visibility))));
   }
 
@@ -77,11 +79,11 @@ class AssetApiRepository extends ApiRepository {
     return _api.downloadAssetWithHttpInfo(id, edited: edited);
   }
 
-  _mapVisibility(AssetVisibilityEnum visibility) => switch (visibility) {
-    AssetVisibilityEnum.timeline => AssetVisibility.timeline,
-    AssetVisibilityEnum.hidden => AssetVisibility.hidden,
-    AssetVisibilityEnum.locked => AssetVisibility.locked,
-    AssetVisibilityEnum.archive => AssetVisibility.archive,
+  api.AssetVisibility _mapVisibility(AssetVisibility visibility) => switch (visibility) {
+    AssetVisibility.timeline => api.AssetVisibility.timeline,
+    AssetVisibility.hidden => api.AssetVisibility.hidden,
+    AssetVisibility.locked => api.AssetVisibility.locked,
+    AssetVisibility.archive => api.AssetVisibility.archive,
   };
 
   Future<String?> getAssetMIMEType(String assetId) async {
@@ -105,6 +107,20 @@ class AssetApiRepository extends ApiRepository {
 
   Future<void> removeEdits(String assetId) async {
     return _api.removeAssetEdits(assetId);
+  }
+
+  Future<void> update(
+    List<String> remoteIds, {
+    Option<bool> isFavorite = const .none(),
+    Option<AssetVisibility> visibility = const .none(),
+  }) {
+    return _api.updateAssets(
+      AssetBulkUpdateDto(
+        ids: remoteIds,
+        isFavorite: isFavorite.toOptional(),
+        visibility: visibility.map(_mapVisibility).toOptional(),
+      ),
+    );
   }
 }
 

@@ -2,6 +2,42 @@ import { wrapper } from '@immich/plugin-sdk';
 import { AssetVisibility } from '@immich/sdk';
 import type { Manifest } from '../dist/index.d.ts';
 
+type MatchValueConfig = {
+  pattern: string;
+  matchType?: 'contains' | 'exact' | 'regex' | 'startsWith';
+  caseSensitive?: boolean;
+};
+
+const matchValueResult = (value: string, config: MatchValueConfig) => {
+  const { pattern, matchType = 'contains', caseSensitive = false } = config;
+  const searchName = caseSensitive ? value : value.toLowerCase();
+  const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
+
+  switch (matchType) {
+    case 'contains': {
+      return { workflow: { continue: searchName.includes(searchPattern) } };
+    }
+
+    case 'exact': {
+      return { workflow: { continue: searchName === searchPattern } };
+    }
+
+    case 'startsWith': {
+      return { workflow: { continue: searchName.startsWith(searchPattern) } };
+    }
+
+    case 'regex': {
+      const flags = caseSensitive ? '' : 'i';
+      const regex = new RegExp(searchPattern, flags);
+      return { workflow: { continue: regex.test(value) } };
+    }
+
+    default: {
+      return {};
+    }
+  }
+};
+
 const methods = wrapper<Manifest>({
   assetAddToAlbums: ({ config, data, functions }) => {
     const assetId = data.asset.id;
@@ -53,39 +89,7 @@ const methods = wrapper<Manifest>({
     }
   },
 
-  assetFileFilter: ({ data, config }) => {
-    const { pattern, matchType = 'contains', caseSensitive = false } = config;
-
-    const { asset } = data;
-
-    const fileName = asset.originalFileName || '';
-    const searchName = caseSensitive ? fileName : fileName.toLowerCase();
-    const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
-
-    switch (matchType) {
-      case 'contains': {
-        return { workflow: { continue: searchName.includes(searchPattern) } };
-      }
-
-      case 'exact': {
-        return { workflow: { continue: searchName === searchPattern } };
-      }
-
-      case 'startsWith': {
-        return { workflow: { continue: searchName.startsWith(searchPattern) } };
-      }
-
-      case 'regex': {
-        const flags = caseSensitive ? '' : 'i';
-        const regex = new RegExp(searchPattern, flags);
-        return { workflow: { continue: regex.test(fileName) } };
-      }
-
-      default: {
-        return {};
-      }
-    }
-  },
+  assetFileFilter: ({ data, config }) => matchValueResult(data.asset.originalFileName || '', config),
 
   assetLocationFilter: ({ config, data }) => {
     if (
@@ -96,10 +100,10 @@ const methods = wrapper<Manifest>({
       return { workflow: { continue: false } };
     }
 
-    const configLat = Number.parseFloat(config.coordinate?.latitude ?? '');
-    const configLon = Number.parseFloat(config.coordinate?.longitude ?? '');
+    const configLat = config.coordinate?.latitude;
+    const configLon = config.coordinate?.longitude;
 
-    if (Number.isNaN(configLat) || Number.isNaN(configLat)) {
+    if (configLat === undefined || configLon === undefined) {
       return { workflow: { continue: true } };
     }
 
@@ -122,6 +126,35 @@ const methods = wrapper<Manifest>({
     );
 
     return { workflow: { continue: earthDiameter * delta <= (config.coordinate?.radius ?? 0) } };
+  },
+
+  assetExifFilter: ({ config, data }) => {
+    if (!data.asset.exifInfo || data.asset.exifInfo[config.property] === null) {
+      return { workflow: { continue: false } };
+    }
+
+    return matchValueResult(String(data.asset.exifInfo[config.property]), config);
+  },
+
+  assetDateFilter: ({ config, data }) => {
+    const assetDate = new Date(data.asset.localDateTime);
+    let startDate = new Date(config.startDate.year, config.startDate.month - 1, config.startDate.day);
+    let endDate = new Date(config.endDate.year, config.endDate.month - 1, config.endDate.day + 1);
+
+    if (config.recurring) {
+      startDate.setFullYear(assetDate.getFullYear());
+      endDate.setFullYear(assetDate.getFullYear());
+
+      if (endDate < startDate) {
+        if (assetDate > endDate) {
+          endDate.setFullYear(endDate.getFullYear() + 1);
+        } else {
+          startDate.setFullYear(startDate.getFullYear() - 1);
+        }
+      }
+    }
+
+    return { workflow: { continue: assetDate >= startDate && assetDate < endDate } };
   },
 
   assetLock: ({ config, data }) => {
@@ -151,13 +184,13 @@ const methods = wrapper<Manifest>({
   }),
 
   webhook: ({ config, data, functions, type, trigger }) => {
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
+    const headers: Record<string, string> = {};
 
     if (config.headerName && config.headerValue) {
       headers[config.headerName] = config.headerValue;
     }
+
+    headers['Content-Type'] = 'application/json';
 
     functions.httpRequest(config.url, {
       method: config.method ?? 'POST',
@@ -179,6 +212,8 @@ const {
   assetFavorite,
   assetFileFilter,
   assetLocationFilter,
+  assetExifFilter,
+  assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
   assetTypeFilter,
@@ -195,6 +230,8 @@ export {
   assetFavorite,
   assetFileFilter,
   assetLocationFilter,
+  assetExifFilter,
+  assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
   assetTypeFilter,

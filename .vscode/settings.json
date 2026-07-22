@@ -29,9 +29,6 @@
     "editor.formatOnSave": true,
     "tailwindCSS.lint.suggestCanonicalClasses": "ignore"
   },
-  "svelte.plugin.svelte.compilerWarnings": {
-    "state_referenced_locally": "ignore"
-  },
   "[typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": true
@@ -43,37 +40,40 @@
   "eslint.useFlatConfig": true,
   "eslint.validate": ["javascript", "typescript", "svelte"],
   "eslint.workingDirectories": [
-    { "directory": "cli", "changeProcessCWD": true },
-    { "directory": "e2e", "changeProcessCWD": true },
-    { "directory": "server", "changeProcessCWD": true },
-    { "directory": "web", "changeProcessCWD": true }
+    { "changeProcessCWD": true, "directory": "cli" },
+    { "changeProcessCWD": true, "directory": "e2e" },
+    { "changeProcessCWD": true, "directory": "server" },
+    { "changeProcessCWD": true, "directory": "web" }
   ],
-  "files.watcherExclude": {
-    "**/.jj/**": true,
-    "**/.git/**": true,
-    "**/node_modules/**": true,
-    "**/build/**": true,
-    "**/dist/**": true,
-    "**/.svelte-kit/**": true
-  },
   "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     "*.dart": "${capture}.g.dart,${capture}.gr.dart,${capture}.drift.dart",
-    "*.ts": "${capture}.spec.ts,${capture}.mock.ts",
     "*.js": "${capture}.spec.js,${capture}.mock.js",
+    "*.ts": "${capture}.spec.ts,${capture}.mock.ts",
     "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock, pnpm-workspace.yaml, .pnpmfile.cjs"
   },
+  "files.watcherExclude": {
+    "**/.git/**": true,
+    "**/.jj/**": true,
+    "**/.svelte-kit/**": true,
+    "**/build/**": true,
+    "**/dist/**": true,
+    "**/node_modules/**": true
+  },
+  "js/ts.preferences.importModuleSpecifier": "non-relative",
   "search.exclude": {
-    "**/node_modules": true,
+    "**/.svelte-kit": true,
     "**/build": true,
     "**/dist": true,
-    "**/.svelte-kit": true,
+    "**/node_modules": true,
     "**/open-api/typescript-sdk/src": true
   },
   "svelte.enable-ts-plugin": true,
+  "svelte.plugin.svelte.compilerWarnings": {
+    "state_referenced_locally": "ignore"
+  },
   "tailwindCSS.experimental.configFile": {
     "web/src/app.css": "web/src/**"
   },
-  "js/ts.preferences.importModuleSpecifier": "non-relative",
   "vitest.maximumConfigs": 10
 }

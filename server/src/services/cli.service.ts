@@ -45,7 +45,6 @@ export class CliService extends BaseService {
 
       if (!filesSet.has(name) && rowsSet.has(name)) {
         migrations.push({ name, status: 'deleted' });
-        continue;
       }
     }
 
@@ -59,17 +58,23 @@ export class CliService extends BaseService {
     return users.map((user) => mapUserAdmin(user));
   }
 
-  async resetAdminPassword(ask: (admin: UserAdminResponseDto) => Promise<string | undefined>) {
+  async resetAdminPassword(
+    ask: (admin: UserAdminResponseDto) => Promise<{ newPassword: string | undefined; invalidateSessions: boolean }>,
+  ) {
     const admin = await this.userRepository.getAdmin();
     if (!admin) {
       throw new Error('Admin account does not exist');
     }
 
-    const providedPassword = await ask(mapUserAdmin(admin));
+    const { newPassword: providedPassword, invalidateSessions } = await ask(mapUserAdmin(admin));
     const password = providedPassword || this.cryptoRepository.randomBytesAsText(24);
     const hashedPassword = await this.cryptoRepository.hashBcrypt(password, SALT_ROUNDS);
 
     await this.userRepository.update(admin.id, { password: hashedPassword });
+
+    if (invalidateSessions) {
+      await this.sessionRepository.invalidateAll({ userId: admin.id });
+    }
 
     return { admin, password, provided: !!providedPassword };
   }
@@ -87,9 +92,9 @@ export class CliService extends BaseService {
   }
 
   async disableMaintenanceMode(): Promise<{ alreadyDisabled: boolean }> {
-    const currentState = await this.systemMetadataRepository
-      .get(SystemMetadataKey.MaintenanceMode)
-      .then((state) => state ?? { isMaintenanceMode: false as const });
+    const currentState = (await this.systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode)) ?? {
+      isMaintenanceMode: false as const,
+    };
 
     if (!currentState.isMaintenanceMode) {
       return {
@@ -114,9 +119,9 @@ export class CliService extends BaseService {
       username: 'cli-admin',
     };
 
-    const state = await this.systemMetadataRepository
-      .get(SystemMetadataKey.MaintenanceMode)
-      .then((state) => state ?? { isMaintenanceMode: false as const });
+    const state = (await this.systemMetadataRepository.get(SystemMetadataKey.MaintenanceMode)) ?? {
+      isMaintenanceMode: false as const,
+    };
 
     if (state.isMaintenanceMode) {
       return {
@@ -182,11 +187,7 @@ export class CliService extends BaseService {
       this.userRepository.getFileSamples(),
     ]);
 
-    const paths = [];
-
-    for (const person of people) {
-      paths.push(person.thumbnailPath);
-    }
+    const paths = Array.from(people, (person) => person.thumbnailPath);
 
     for (const user of users) {
       paths.push(user.profileImagePath);

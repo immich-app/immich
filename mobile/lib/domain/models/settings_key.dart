@@ -1,17 +1,16 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/value_codec.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/utils/semver.dart';
 
 enum SettingsKey<T> {
   // Theme
-  themePrimaryColor<ImmichColorPreset>(codec: _EnumCodec(ImmichColorPreset.values)),
-  themeMode<ThemeMode>(codec: _EnumCodec(ThemeMode.values)),
+  themePrimaryColor<ImmichColorPreset>(codec: EnumCodec(ImmichColorPreset.values)),
+  themeMode<ThemeMode>(codec: EnumCodec(ThemeMode.values)),
   themeDynamic<bool>(),
   themeColorfulInterface<bool>(),
 
@@ -27,13 +26,13 @@ enum SettingsKey<T> {
 
   // Network
   networkAutoEndpointSwitching<bool>(),
+  networkExternalEndpointList<List<String>>(codec: ListCodec(PrimitiveCodec.string)),
+  networkCustomHeaders<Map<String, String>>(codec: MapCodec(PrimitiveCodec.string, PrimitiveCodec.string)),
   networkPreferredWifiName<String?>(),
   networkLocalEndpoint<String?>(),
-  networkExternalEndpointList<List<String>>(codec: _ListCodec(_PrimitiveCodec.string)),
-  networkCustomHeaders<Map<String, String>>(codec: _MapCodec(_PrimitiveCodec.string, _PrimitiveCodec.string)),
 
   // Album
-  albumSortMode<AlbumSortMode>(codec: _EnumCodec(AlbumSortMode.values)),
+  albumSortMode<AlbumSortMode>(codec: EnumCodec(AlbumSortMode.values)),
   albumIsReverse<bool>(),
   albumIsGrid<bool>(),
 
@@ -47,195 +46,45 @@ enum SettingsKey<T> {
 
   // Timeline
   timelineTilesPerRow<int>(),
-  timelineGroupAssetsBy<GroupAssetsBy>(codec: _EnumCodec(GroupAssetsBy.values)),
+  timelineGroupAssetsBy<GroupAssetsBy>(codec: EnumCodec(GroupAssetsBy.values)),
   timelineStorageIndicator<bool>(),
 
   // Log
-  logLevel<LogLevel>(codec: _EnumCodec(LogLevel.values)),
+  logLevel<LogLevel>(codec: EnumCodec(LogLevel.values)),
 
   // Map
   mapShowFavoriteOnly<bool>(),
   mapRelativeDate<int>(),
   mapIncludeArchived<bool>(),
-  mapThemeMode<ThemeMode>(codec: _EnumCodec(ThemeMode.values)),
+  mapThemeMode<ThemeMode>(codec: EnumCodec(ThemeMode.values)),
   mapWithPartners<bool>(),
 
   // Cleanup
   cleanupKeepFavorites<bool>(),
-  cleanupKeepMediaType<AssetKeepType>(codec: _EnumCodec(AssetKeepType.values)),
-  cleanupKeepAlbumIds<List<String>>(codec: _ListCodec(_PrimitiveCodec.string)),
+  cleanupKeepMediaType<AssetKeepType>(codec: EnumCodec(AssetKeepType.values)),
+  cleanupKeepAlbumIds<List<String>>(codec: ListCodec(PrimitiveCodec.string)),
   cleanupCutoffDaysAgo<int>(),
   cleanupDefaultsInitialized<bool>(),
 
   // Share
-  shareFileType<ShareAssetType>(codec: _EnumCodec(ShareAssetType.values)),
+  shareFileType<ShareAssetType>(codec: EnumCodec(ShareAssetType.values)),
 
   // Slideshow
   slideshowRepeat<bool>(),
   slideshowDuration<int>(),
-  slideshowLook<SlideshowLook>(codec: _EnumCodec(SlideshowLook.values)),
-  slideshowDirection<SlideshowDirection>(codec: _EnumCodec(SlideshowDirection.values)),
+  slideshowLook<SlideshowLook>(codec: EnumCodec(SlideshowLook.values)),
+  slideshowDirection<SlideshowDirection>(codec: EnumCodec(SlideshowDirection.values)),
 
   // Feature message
-  featureMessageSeenRelease<SemVer>(codec: _SemVerCodec());
+  featureMessageSeenRelease<SemVer>(codec: SemVerCodec());
 
-  final _SettingsCodec<T>? _codecOverride;
+  final ValueCodec<T>? _codecOverride;
 
-  const SettingsKey({_SettingsCodec<T>? codec}) : _codecOverride = codec;
+  const SettingsKey({ValueCodec<T>? codec}) : _codecOverride = codec;
 
-  _SettingsCodec<T> get _codec => _codecOverride ?? _SettingsCodec.forType(T);
+  ValueCodec<T> get _codec => _codecOverride ?? ValueCodec.forType(T);
 
   String encode(T value) => _codec.encode(value);
 
   T decode(String raw) => _codec.decode(raw);
-}
-
-sealed class _SettingsCodec<T> {
-  const _SettingsCodec();
-
-  String encode(T value);
-  T decode(String raw);
-
-  static final Map<Type, _SettingsCodec<Object>> _primitives = {
-    ..._register<int>(_PrimitiveCodec.integer),
-    ..._register<double>(_PrimitiveCodec.real),
-    ..._register<bool>(_PrimitiveCodec.boolean),
-    ..._register<String>(_PrimitiveCodec.string),
-    ..._register<DateTime>(const _DateTimeCodec()),
-  };
-
-  static Map<Type, _SettingsCodec<Object>> _register<T>(_SettingsCodec<Object> codec) => {
-    T: codec,
-    // Reifies the nullable type T so it can be used as a key in the _primitives map
-    _typeOf<T?>(): codec,
-  };
-
-  static Type _typeOf<T>() => T;
-
-  static _SettingsCodec<T> forType<T>(Type runtimeType) {
-    final codec = _primitives[runtimeType];
-    if (codec == null) {
-      throw StateError('No primitive codec for $runtimeType. Provide an explicit codec when defining the SettingsKey.');
-    }
-    return codec as _SettingsCodec<T>;
-  }
-}
-
-final class _EnumCodec<T extends Enum> extends _SettingsCodec<T> {
-  final List<T> values;
-
-  const _EnumCodec(this.values);
-
-  @override
-  String encode(T value) => value.name;
-
-  @override
-  T decode(String raw) => values.firstWhere((v) => v.name == raw);
-}
-
-final class _DateTimeCodec extends _SettingsCodec<DateTime> {
-  const _DateTimeCodec();
-
-  @override
-  String encode(DateTime value) => value.toIso8601String();
-
-  @override
-  DateTime decode(String raw) => DateTime.parse(raw);
-}
-
-final class _SemVerCodec extends _SettingsCodec<SemVer> {
-  const _SemVerCodec();
-
-  @override
-  String encode(SemVer value) => value.toString();
-
-  @override
-  SemVer decode(String raw) => SemVer.fromString(raw);
-}
-
-final class _MapCodec<K extends Object, V extends Object> extends _SettingsCodec<Map<K, V>> {
-  final _SettingsCodec<K> _keyCodec;
-  final _SettingsCodec<V> _valueCodec;
-
-  const _MapCodec(this._keyCodec, this._valueCodec);
-
-  @override
-  String encode(Map<K, V> value) {
-    final entries = <String, String>{};
-    value.forEach((k, v) => entries[_keyCodec.encode(k)] = _valueCodec.encode(v));
-    return jsonEncode(entries);
-  }
-
-  @override
-  Map<K, V> decode(String raw) {
-    try {
-      final decoded = jsonDecode(raw);
-      if (decoded is! Map) {
-        return {};
-      }
-      final result = <K, V>{};
-      for (final entry in decoded.entries) {
-        final rawKey = entry.key;
-        final rawValue = entry.value;
-        if (rawKey is! String || rawValue is! String) {
-          return {};
-        }
-        final k = _keyCodec.decode(rawKey);
-        final v = _valueCodec.decode(rawValue);
-        result[k] = v;
-      }
-      return result;
-    } on FormatException {
-      return {};
-    }
-  }
-}
-
-final class _ListCodec<T extends Object> extends _SettingsCodec<List<T>> {
-  final _SettingsCodec<T> _elementCodec;
-
-  const _ListCodec(this._elementCodec);
-
-  @override
-  String encode(List<T> value) => jsonEncode(value.map(_elementCodec.encode).toList());
-
-  @override
-  List<T> decode(String raw) {
-    try {
-      final decoded = jsonDecode(raw);
-      if (decoded is! List) {
-        return [];
-      }
-      final result = <T>[];
-      for (final item in decoded) {
-        if (item is! String) {
-          return [];
-        }
-        final element = _elementCodec.decode(item);
-        result.add(element);
-      }
-      return result;
-    } on FormatException {
-      return [];
-    }
-  }
-}
-
-final class _PrimitiveCodec<T extends Object> extends _SettingsCodec<T> {
-  final T Function(String) _parse;
-
-  const _PrimitiveCodec._(this._parse);
-
-  @override
-  String encode(T value) => value.toString();
-
-  @override
-  T decode(String raw) => _parse(raw);
-
-  static const integer = _PrimitiveCodec<int>._(int.parse);
-  static const real = _PrimitiveCodec<double>._(double.parse);
-  static const boolean = _PrimitiveCodec<bool>._(bool.parse);
-  static const string = _PrimitiveCodec<String>._(_identity);
-
-  static String _identity(String s) => s;
 }

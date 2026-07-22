@@ -65,6 +65,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
         child: ClipRRect(
           borderRadius: const BorderRadius.all(Radius.circular(16.0)),
           child: ScrollDatePicker(
+            viewType: datePickerColumnOrder(DateFormat.yMd(context.locale.toLanguageTag()).pattern),
             options: DatePickerOptions(
               backgroundColor: context.colorScheme.surfaceContainerHigh,
               itemExtent: 50,
@@ -117,4 +118,19 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
       ],
     );
   }
+}
+
+List<DatePickerViewType>? datePickerColumnOrder(String? pattern) {
+  if (pattern == null) {
+    return null;
+  }
+  final positions = {
+    DatePickerViewType.year: pattern.indexOf('y'),
+    DatePickerViewType.month: pattern.indexOf('M'),
+    DatePickerViewType.day: pattern.indexOf('d'),
+  };
+  if (positions.values.any((position) => position < 0)) {
+    return null;
+  }
+  return positions.keys.toList()..sort((a, b) => positions[a]!.compareTo(positions[b]!));
 }
