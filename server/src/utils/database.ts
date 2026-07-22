@@ -567,110 +567,77 @@ const visibleFaces = (eb: AssetExpressionBuilder) =>
 const tagAssets = (eb: AssetExpressionBuilder) =>
   eb.selectFrom('tag_asset').whereRef('tag_asset.assetId', '=', 'asset.id');
 
-function existsAlbums(eb: AssetExpressionBuilder) {
-  return eb.exists(albumAssets(eb));
-}
-
-function existsPeople(eb: AssetExpressionBuilder) {
-  return eb.exists(visibleFaces(eb));
-}
-
-function existsTags(eb: AssetExpressionBuilder) {
-  return eb.exists(tagAssets(eb));
-}
-
-function existsEncodedVideo(eb: AssetExpressionBuilder) {
-  return eb.exists((eb) =>
-    eb
-      .selectFrom('asset_file')
-      .whereRef('asset_file.assetId', '=', 'asset.id')
-      .where('asset_file.type', '=', AssetFileType.EncodedVideo),
-  );
-}
-
-function existsOcrMatch(eb: AssetExpressionBuilder, matches: string) {
-  const tokens = tokenizeForSearch(matches).join(' ');
-  return eb.exists((eb) =>
-    eb
-      .selectFrom('ocr_search')
-      .whereRef('ocr_search.assetId', '=', 'asset.id')
-      .where(sql<SqlBool>`f_unaccent(ocr_search.text) %>> f_unaccent(${tokens})`),
-  );
-}
-
-function existsEncodedVideoPath(eb: AssetExpressionBuilder, filter: StringFilter) {
-  return eb.exists(
-    eb
-      .selectFrom('asset_file')
-      .whereRef('asset_file.assetId', '=', 'asset.id')
-      .where('asset_file.type', '=', AssetFileType.EncodedVideo)
-      .where('asset_file.isEdited', '=', false)
-      .$if(filter.eq !== undefined, (qb) => qb.where('asset_file.path', '=', filter.eq!))
-      .$if(filter.ne !== undefined, (qb) => qb.where('asset_file.path', '!=', filter.ne!))
-      .$if(filter.in !== undefined, (qb) => qb.where('asset_file.path', 'in', filter.in!))
-      .$if(filter.notIn !== undefined, (qb) => qb.where('asset_file.path', 'not in', filter.notIn!)),
-  );
-}
-
-function existsAnyAlbumId(eb: AssetExpressionBuilder, ids: string[]) {
-  return eb.exists(albumAssets(eb).where('album_asset.albumId', '=', anyUuid(ids)));
-}
-
-function existsAllAlbumIds(eb: AssetExpressionBuilder, ids: string[]) {
-  return eb.exists(
-    albumAssets(eb)
-      .select('album_asset.assetId')
-      .where('album_asset.albumId', '=', anyUuid(ids))
-      .groupBy('album_asset.assetId')
-      .having((eb) => eb.fn.count('album_asset.albumId').distinct(), '=', ids.length),
-  );
-}
-
-function existsAnyPersonId(eb: AssetExpressionBuilder, ids: string[]) {
-  return eb.exists(visibleFaces(eb).where('asset_face.personId', '=', anyUuid(ids)));
-}
-
-function existsAllPersonIds(eb: AssetExpressionBuilder, ids: string[]) {
-  return eb.exists(
-    visibleFaces(eb)
-      .select('asset_face.assetId')
-      .where('asset_face.personId', '=', anyUuid(ids))
-      .groupBy('asset_face.assetId')
-      .having((eb) => eb.fn.count('asset_face.personId').distinct(), '=', ids.length),
-  );
-}
-
-function existsAnyTagId(eb: AssetExpressionBuilder, ids: string[]) {
-  return eb.exists(
-    tagAssets(eb)
-      .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
-      .where('tag_closure.id_ancestor', '=', anyUuid(ids)),
-  );
-}
-
-function existsAllTagIds(eb: AssetExpressionBuilder, ids: string[]) {
-  return eb.exists(
-    tagAssets(eb)
-      .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
-      .select('tag_asset.assetId')
-      .where('tag_closure.id_ancestor', '=', anyUuid(ids))
-      .groupBy('tag_asset.assetId')
-      .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '>=', ids.length),
-  );
-}
-
-type ExistsIds = (eb: AssetExpressionBuilder, ids: string[]) => Expression<SqlBool>;
-
-function idsPredicates(eb: AssetExpressionBuilder, existsAny: ExistsIds, existsAll: ExistsIds, filter: IdsFilter = {}) {
+function albumIdsPredicates(eb: AssetExpressionBuilder, { any, all, none }: IdsFilter = {}) {
   const predicates: Expression<SqlBool>[] = [];
-  if (filter.any) {
-    predicates.push(existsAny(eb, filter.any));
+  if (any) {
+    predicates.push(eb.exists(albumAssets(eb).where('album_asset.albumId', '=', anyUuid(any))));
   }
-  if (filter.all) {
-    predicates.push(filter.all.length === 1 ? existsAny(eb, filter.all) : existsAll(eb, filter.all));
+  if (all) {
+    predicates.push(
+      all.length === 1
+        ? eb.exists(albumAssets(eb).where('album_asset.albumId', '=', anyUuid(all)))
+        : eb.exists(
+            albumAssets(eb)
+              .select('album_asset.assetId')
+              .where('album_asset.albumId', '=', anyUuid(all))
+              .groupBy('album_asset.assetId')
+              .having((eb) => eb.fn.count('album_asset.albumId').distinct(), '=', all.length),
+          ),
+    );
   }
-  if (filter.none) {
-    predicates.push(eb.not(existsAny(eb, filter.none)));
+  if (none) {
+    predicates.push(eb.not(eb.exists(albumAssets(eb).where('album_asset.albumId', '=', anyUuid(none)))));
+  }
+  return predicates;
+}
+
+function personIdsPredicates(eb: AssetExpressionBuilder, { any, all, none }: IdsFilter = {}) {
+  const predicates: Expression<SqlBool>[] = [];
+  if (any) {
+    predicates.push(eb.exists(visibleFaces(eb).where('asset_face.personId', '=', anyUuid(any))));
+  }
+  if (all) {
+    predicates.push(
+      all.length === 1
+        ? eb.exists(visibleFaces(eb).where('asset_face.personId', '=', anyUuid(all)))
+        : eb.exists(
+            visibleFaces(eb)
+              .select('asset_face.assetId')
+              .where('asset_face.personId', '=', anyUuid(all))
+              .groupBy('asset_face.assetId')
+              .having((eb) => eb.fn.count('asset_face.personId').distinct(), '=', all.length),
+          ),
+    );
+  }
+  if (none) {
+    predicates.push(eb.not(eb.exists(visibleFaces(eb).where('asset_face.personId', '=', anyUuid(none)))));
+  }
+  return predicates;
+}
+
+function tagIdsPredicates(eb: AssetExpressionBuilder, { any, all, none }: IdsFilter = {}) {
+  const descendantTagAssets = (ids: string[]) =>
+    tagAssets(eb)
+      .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
+      .where('tag_closure.id_ancestor', '=', anyUuid(ids));
+  const predicates: Expression<SqlBool>[] = [];
+  if (any) {
+    predicates.push(eb.exists(descendantTagAssets(any)));
+  }
+  if (all) {
+    predicates.push(
+      all.length === 1
+        ? eb.exists(descendantTagAssets(all))
+        : eb.exists(
+            descendantTagAssets(all)
+              .select('tag_asset.assetId')
+              .groupBy('tag_asset.assetId')
+              .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '>=', all.length),
+          ),
+    );
+  }
+  if (none) {
+    predicates.push(eb.not(eb.exists(descendantTagAssets(none))));
   }
   return predicates;
 }
@@ -872,6 +839,16 @@ function checksumPredicates(eb: AssetExpressionBuilder, filter: StringFilter = {
 // predicates are collected as expressions rather than chained `where` calls so the same
 // helpers can build each `or` branch, which must compose into eb.and/eb.or
 function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch) {
+  const { encodedVideoPath } = branch;
+  const albumExists = eb.exists(albumAssets(eb));
+  const personExists = eb.exists(visibleFaces(eb));
+  const tagExists = eb.exists(tagAssets(eb));
+  const encodedVideoExists = eb.exists(
+    eb
+      .selectFrom('asset_file')
+      .whereRef('asset_file.assetId', '=', 'asset.id')
+      .where('asset_file.type', '=', AssetFileType.EncodedVideo),
+  );
   return [
     ...idPredicates(eb, 'asset.id', branch.id),
     ...idPredicates(eb, 'asset.libraryId', branch.libraryId),
@@ -880,10 +857,10 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
     ...(branch.isFavorite ? [eb('asset.isFavorite', '=', branch.isFavorite.eq)] : []),
     ...(branch.isOffline ? [eb('asset.isOffline', '=', branch.isOffline.eq)] : []),
     ...(branch.isMotion ? [eb('asset.livePhotoVideoId', branch.isMotion.eq ? 'is not' : 'is', null)] : []),
-    ...(branch.isEncoded ? [branch.isEncoded.eq ? existsEncodedVideo(eb) : eb.not(existsEncodedVideo(eb))] : []),
-    ...(branch.hasAlbums ? [branch.hasAlbums.eq ? existsAlbums(eb) : eb.not(existsAlbums(eb))] : []),
-    ...(branch.hasPeople ? [branch.hasPeople.eq ? existsPeople(eb) : eb.not(existsPeople(eb))] : []),
-    ...(branch.hasTags ? [branch.hasTags.eq ? existsTags(eb) : eb.not(existsTags(eb))] : []),
+    ...(branch.isEncoded ? [branch.isEncoded.eq ? encodedVideoExists : eb.not(encodedVideoExists)] : []),
+    ...(branch.hasAlbums ? [branch.hasAlbums.eq ? albumExists : eb.not(albumExists)] : []),
+    ...(branch.hasPeople ? [branch.hasPeople.eq ? personExists : eb.not(personExists)] : []),
+    ...(branch.hasTags ? [branch.hasTags.eq ? tagExists : eb.not(tagExists)] : []),
     ...stringEqNeInPredicates(eb, 'asset_exif.city', branch.city),
     ...stringEqNeInPredicates(eb, 'asset_exif.state', branch.state),
     ...stringEqNeInPredicates(eb, 'asset_exif.country', branch.country),
@@ -893,18 +870,45 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
     ...stringPatternPredicates(eb, 'asset_exif.description', branch.description),
     ...stringPatternPredicates(eb, 'asset.originalFileName', branch.originalFileName),
     ...stringPatternPredicates(eb, 'asset.originalPath', branch.originalPath),
-    ...(branch.ocr ? [existsOcrMatch(eb, branch.ocr.matches)] : []),
+    ...(branch.ocr
+      ? [
+          eb.exists(
+            eb
+              .selectFrom('ocr_search')
+              .whereRef('ocr_search.assetId', '=', 'asset.id')
+              .where(
+                sql<SqlBool>`f_unaccent(ocr_search.text) %>> f_unaccent(${tokenizeForSearch(branch.ocr.matches).join(' ')})`,
+              ),
+          ),
+        ]
+      : []),
     ...numberPredicates(eb, 'asset_exif.rating', branch.rating),
     ...numberPredicates(eb, 'asset_exif.fileSizeInByte', branch.fileSizeInBytes),
     ...datePredicates(eb, 'asset.fileCreatedAt', branch.takenAt),
     ...datePredicates(eb, 'asset.createdAt', branch.createdAt),
     ...datePredicates(eb, 'asset.updatedAt', branch.updatedAt),
     ...datePredicates(eb, 'asset.deletedAt', branch.trashedAt),
-    ...idsPredicates(eb, existsAnyAlbumId, existsAllAlbumIds, branch.albumIds),
-    ...idsPredicates(eb, existsAnyPersonId, existsAllPersonIds, branch.personIds),
-    ...idsPredicates(eb, existsAnyTagId, existsAllTagIds, branch.tagIds),
+    ...albumIdsPredicates(eb, branch.albumIds),
+    ...personIdsPredicates(eb, branch.personIds),
+    ...tagIdsPredicates(eb, branch.tagIds),
     ...checksumPredicates(eb, branch.checksum),
-    ...(branch.encodedVideoPath ? [existsEncodedVideoPath(eb, branch.encodedVideoPath)] : []),
+    ...(encodedVideoPath
+      ? [
+          eb.exists(
+            eb
+              .selectFrom('asset_file')
+              .whereRef('asset_file.assetId', '=', 'asset.id')
+              .where('asset_file.type', '=', AssetFileType.EncodedVideo)
+              .where('asset_file.isEdited', '=', false)
+              .$if(encodedVideoPath.eq !== undefined, (qb) => qb.where('asset_file.path', '=', encodedVideoPath.eq!))
+              .$if(encodedVideoPath.ne !== undefined, (qb) => qb.where('asset_file.path', '!=', encodedVideoPath.ne!))
+              .$if(encodedVideoPath.in !== undefined, (qb) => qb.where('asset_file.path', 'in', encodedVideoPath.in!))
+              .$if(encodedVideoPath.notIn !== undefined, (qb) =>
+                qb.where('asset_file.path', 'not in', encodedVideoPath.notIn!),
+              ),
+          ),
+        ]
+      : []),
   ];
 }
 
