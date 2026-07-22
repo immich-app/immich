@@ -242,8 +242,9 @@
   $effect(() => {
     // reactive on `assetFileUrl` changes
     if (videoPlayer && assetFileUrl) {
-      if (!(videoPlayer as any)._logVolumeApplied) {
-        (videoPlayer as any)._logVolumeApplied = true;
+      const player = videoPlayer as HTMLVideoElement & { _logVolumeApplied?: boolean };
+      if (!player._logVolumeApplied) {
+        player._logVolumeApplied = true;
         const originalDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'volume')!;
         let currentUiVolume = videoPlayer.volume;
         Object.defineProperty(videoPlayer, 'volume', {
