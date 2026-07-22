@@ -59,7 +59,13 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<RemoteAsset?> getByChecksum(String checksum) {
-    final query = _db.remoteAssetEntity.select()..where((row) => row.checksum.equals(checksum));
+    final query = _db.remoteAssetEntity.select()
+      ..where(
+        (row) =>
+            row.checksum.equals(checksum) &
+            row.ownerId.isInQuery(_db.selectOnly(_db.authUserEntity)..addColumns([_db.authUserEntity.id])),
+      )
+      ..limit(1);
 
     return query.map((row) => row.toDto()).getSingleOrNull();
   }

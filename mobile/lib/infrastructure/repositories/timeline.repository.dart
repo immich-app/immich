@@ -136,11 +136,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
               _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
               useColumns: false,
             ),
-            leftOuterJoin(
-              _db.remoteAssetEntity,
-              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-              useColumns: false,
-            ),
           ])
           ..addColumns([assetCountExp, dateExp])
           ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
@@ -164,7 +159,10 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
             ),
             leftOuterJoin(
               _db.remoteAssetEntity,
-              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum) &
+                  _db.remoteAssetEntity.ownerId.isInQuery(
+                    _db.selectOnly(_db.authUserEntity)..addColumns([_db.authUserEntity.id]),
+                  ),
               useColumns: false,
             ),
           ])
