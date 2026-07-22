@@ -42,13 +42,10 @@ class WebsocketState {
 }
 
 class WebsocketNotifier extends StateNotifier<WebsocketState> {
-  WebsocketNotifier(this._ref, {Socket Function(dynamic, dynamic)? createSocket})
-    : _createSocket = createSocket ?? io,
-      super(const WebsocketState(socket: null, isConnected: false));
+  WebsocketNotifier(this._ref) : super(const WebsocketState(socket: null, isConnected: false));
 
   final _log = Logger('WebsocketNotifier');
   final Ref _ref;
-  final Socket Function(dynamic, dynamic) _createSocket;
 
   final Debouncer _batchDebouncer = Debouncer(
     interval: const Duration(seconds: 5),
@@ -63,11 +60,12 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     super.dispose();
   }
 
-  /// Connects websocket to server unless a socket already exists
+  /// Connects websocket to server unless an active socket already exists
   void connect() {
-    if (state.socket != null) {
+    if (state.socket?.active == true) {
       return;
     }
+    state.socket?.dispose();
     final authenticationState = _ref.read(authProvider);
 
     if (authenticationState.isAuthenticated) {
@@ -75,7 +73,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
         dPrint(() => "Attempting to connect to websocket");
         // Configure socket transports must be specified
-        Socket socket = _createSocket(
+        Socket socket = io(
           endpoint.origin,
           OptionBuilder()
               .setPath("${endpoint.path}/socket.io")
@@ -88,7 +86,6 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
               .build(),
         );
 
-        // Hold the socket now so disconnect() can tear it down even if it never connects
         state = WebsocketState(isConnected: false, socket: socket);
 
         socket.onConnect((_) {
