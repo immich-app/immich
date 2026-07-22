@@ -109,14 +109,16 @@
   );
 
   export function addClipMapMarker(lng: number, lat: number) {
-    if (map) {
-      if (marker) {
-        marker.remove();
-      }
-
-      center = { lng, lat };
-      marker = new Marker().setLngLat([lng, lat]).addTo(map);
+    if (!map) {
+      return;
     }
+
+    if (marker) {
+      marker.remove();
+    }
+
+    center = { lng, lat };
+    marker = new Marker().setLngLat([lng, lat]).addTo(map);
   }
 
   function handleAssetClick(assetId: string, map: Map | null) {
@@ -159,17 +161,19 @@
   }
 
   function handleMapClick(event: MapMouseEvent) {
-    if (clickable) {
-      const { lng, lat } = event.lngLat;
-      onClickPoint({ lng, lat });
+    if (!clickable) {
+      return;
+    }
 
-      if (marker) {
-        marker.remove();
-      }
+    const { lng, lat } = event.lngLat;
+    onClickPoint({ lng, lat });
 
-      if (map) {
-        marker = new Marker().setLngLat([lng, lat]).addTo(map);
-      }
+    if (marker) {
+      marker.remove();
+    }
+
+    if (map) {
+      marker = new Marker().setLngLat([lng, lat]).addTo(map);
     }
   }
 
@@ -254,13 +258,16 @@
   };
 
   afterNavigate(() => {
-    if (map) {
-      map.resize();
+    if (!map) {
+      return;
+    }
 
-      if (globalThis.location.hash) {
-        const hashChangeEvent = new HashChangeEvent('hashchange');
-        globalThis.dispatchEvent(hashChangeEvent);
-      }
+    map.resize();
+
+    if (location.hash) {
+      const hashChangeEvent = new HashChangeEvent('hashchange');
+      // eslint-disable-next-line unicorn/no-unnecessary-global-this
+      globalThis.dispatchEvent(hashChangeEvent);
     }
   });
 

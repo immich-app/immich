@@ -11,39 +11,34 @@
 part of openapi.api;
 
 /// Storage folder
-class StorageFolder {
-  /// Instantiate a new enum with the provided [value].
-  const StorageFolder._(this.value);
+enum StorageFolder {
+  encodedVideo._(r'encoded-video'),
+  library_._(r'library'),
+  upload._(r'upload'),
+  profile._(r'profile'),
+  thumbs._(r'thumbs'),
+  backups._(r'backups'),
+  videoFrames._(r'video-frames'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const StorageFolder._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const encodedVideo = StorageFolder._(r'encoded-video');
-  static const library_ = StorageFolder._(r'library');
-  static const upload = StorageFolder._(r'upload');
-  static const profile = StorageFolder._(r'profile');
-  static const thumbs = StorageFolder._(r'thumbs');
-  static const backups = StorageFolder._(r'backups');
-  static const videoFrames = StorageFolder._(r'video-frames');
-
-  /// List of all possible values in this [enum][StorageFolder].
-  static const values = <StorageFolder>[
-    encodedVideo,
-    library_,
-    upload,
-    profile,
-    thumbs,
-    backups,
-    videoFrames,
-  ];
-
+  /// Returns the instance of [StorageFolder] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static StorageFolder? fromJson(dynamic value) => StorageFolderTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [StorageFolder]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<StorageFolder> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <StorageFolder>[];
     if (json is List && json.isNotEmpty) {
@@ -65,9 +60,11 @@ class StorageFolderTypeTransformer {
 
   const StorageFolderTypeTransformer._();
 
-  String encode(StorageFolder data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(StorageFolder data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a StorageFolder.
+  /// Returns the instance of [StorageFolder] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -76,6 +73,9 @@ class StorageFolderTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   StorageFolder? decode(dynamic data, {bool allowNull = true}) {
+    if (data is StorageFolder) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'encoded-video': return StorageFolder.encodedVideo;
@@ -94,7 +94,7 @@ class StorageFolderTypeTransformer {
     return null;
   }
 
-  /// Singleton [StorageFolderTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static StorageFolderTypeTransformer? _instance;
 }
 

@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-top-level-assignment-in-function */
 import {
   AssetMediaCreateDto,
   AssetMediaResponseDto,
@@ -177,7 +178,7 @@ export const utils = {
   resetDatabase: async (tables?: string[]) => {
     client = await utils.connectDatabase();
 
-    tables = tables || [
+    tables ||= [
       // TODO e2e test for deleting a stack, since it is quite complex
       'stack',
       'library',
@@ -304,7 +305,7 @@ export const utils = {
   },
 
   adminSetup: async (options?: AdminSetupOptions) => {
-    options = options || { onboarding: true };
+    options ||= { onboarding: true };
 
     await signUpAdmin({ signUpDto: signupDto.admin });
     const response = await login({ loginCredentialDto: loginDto.admin });
@@ -545,6 +546,7 @@ export const utils = {
       {
         headers: asBearerAuth(accessToken),
         fetch: (...args: Parameters<typeof fetch>) =>
+          // eslint-disable-next-line unicorn/no-invalid-argument-count, unicorn/prefer-await
           fetch(...args).then((response) => {
             setCookie = response.headers.getSetCookie();
             return response;
@@ -674,7 +676,7 @@ export const utils = {
 
   cliLogin: async (accessToken: string) => {
     const key = await utils.createApiKey(accessToken, [Permission.All]);
-    await immichCli(['login', app, `${key.secret}`]);
+    await immichCli(['login', app, key.secret]);
     return key.secret;
   },
 
@@ -706,6 +708,7 @@ export const utils = {
   },
 };
 
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 utils.initSdk();
 
 if (!existsSync(`${testAssetDir}/albums`)) {

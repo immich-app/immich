@@ -280,15 +280,17 @@ export class AssetService extends BaseService {
 
     let chunk: Array<{ id: string; isOffline: boolean }> = [];
     const queueChunk = async () => {
-      if (chunk.length > 0) {
-        await this.jobRepository.queueAll(
-          chunk.map(({ id, isOffline }) => ({
-            name: JobName.AssetDelete,
-            data: { id, deleteOnDisk: !isOffline },
-          })),
-        );
-        chunk = [];
+      if (chunk.length === 0) {
+        return;
       }
+
+      await this.jobRepository.queueAll(
+        chunk.map(({ id, isOffline }) => ({
+          name: JobName.AssetDelete,
+          data: { id, deleteOnDisk: !isOffline },
+        })),
+      );
+      chunk = [];
     };
 
     const assets = this.assetJobRepository.streamForDeletedJob(trashedBefore);

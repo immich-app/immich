@@ -92,13 +92,13 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
   for (let index = 0; index < downloadInfo.archives.length; index++) {
     const archive = downloadInfo.archives[index];
     const suffix = downloadInfo.archives.length > 1 ? `+${index + 1}` : '';
-    const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}.zip`);
+    const archiveName = fileName.replace('.zip', () => `${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}.zip`);
     const queryParams = asQueryString(authManager.params);
 
-    let downloadKey = `${archiveName} `;
-    if (downloadInfo.archives.length > 1) {
-      downloadKey = `${archiveName} (${index + 1}/${downloadInfo.archives.length})`;
-    }
+    const downloadKey =
+      downloadInfo.archives.length > 1
+        ? `${archiveName} (${index + 1}/${downloadInfo.archives.length})`
+        : `${archiveName} `;
 
     const abort = new AbortController();
     downloadManager.add(downloadKey, archive.size, abort);
@@ -131,7 +131,7 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
  */
 export function getFilenameExtension(filename: string): string {
   const lastIndex = Math.max(0, filename.lastIndexOf('.'));
-  const startIndex = (lastIndex || Number.POSITIVE_INFINITY) + 1;
+  const startIndex = (lastIndex || Infinity) + 1;
   return filename.slice(startIndex).toLowerCase();
 }
 
@@ -144,11 +144,11 @@ export function getAssetFilename(asset: AssetResponseDto): string {
 }
 
 function isRotated90CW(orientation: number) {
-  return orientation === 5 || orientation === 6 || orientation === 90;
+  return [5, 6, 90].includes(orientation);
 }
 
 function isRotated270CW(orientation: number) {
-  return orientation === 7 || orientation === 8 || orientation === -90;
+  return [7, 8, -90].includes(orientation);
 }
 
 export function isFlipped(orientation?: string | null) {
@@ -245,6 +245,7 @@ async function addSupportedMimeTypes(): Promise<void> {
   heicImg.src =
     'data:image/heic;base64,AAAAGGZ0eXBoZWljAAAAAG1pZjFoZWljAAABrW1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAHBpY3QAAAAAAAAAAAAAAAAAAAAADnBpdG0AAAAAAAIAAAAQaWRhdAAAAAAAAQABAAAAOGlsb2MBAAAAREAAAgABAAAAAAAAAc0AAQAAAAAAAAAsAAIAAQAAAAAAAAABAAAAAAAAAAgAAAA4aWluZgAAAAAAAgAAABVpbmZlAgAAAQABAABodmMxAAAAABVpbmZlAgAAAAACAABncmlkAAAAANhpcHJwAAAAtmlwY28AAAB2aHZjQwEDcAAAAAAAAAAAAB7wAPz9+PgAAA8DIAABABhAAQwB//8DcAAAAwCQAAADAAADAB66AkAhAAEAKkIBAQNwAAADAJAAAAMAAAMAHqAggQWW6q6a5uBAQMCAAAADAIAAAAMAhCIAAQAGRAHBc8GJAAAAFGlzcGUAAAAAAAAAAQAAAAEAAAAUaXNwZQAAAAAAAABAAAAAQAAAABBwaXhpAAAAAAMICAgAAAAaaXBtYQAAAAAAAAACAAECgQMAAgIChAAAABppcmVmAAAAAAAAAA5kaW1nAAIAAQABAAAANG1kYXQAAAAoKAGvCchMZYA50NoPIfzz81Qfsm577GJt3lf8kLAr+NbNIoeRR7JeYA=='; // Small valid HEIC/HEIF image
 }
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 void addSupportedMimeTypes();
 
 /**
