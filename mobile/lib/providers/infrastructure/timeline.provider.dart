@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
@@ -14,6 +15,8 @@ final timelineRepositoryProvider = Provider<DriftTimelineRepository>(
 final timelineArgsProvider = Provider.autoDispose<TimelineArgs>(
   (ref) => throw UnimplementedError('Will be overridden through a ProviderScope.'),
 );
+
+final assetOriginFilterProvider = StateProvider<AssetOriginFilter>((ref) => AssetOriginFilter.all);
 
 final timelineServiceProvider = Provider<TimelineService>(
   (ref) {
