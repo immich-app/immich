@@ -144,7 +144,6 @@ export interface AssetSearchBuilderV3Options {
 }
 
 export interface AssetSearchPaginationV3Options {
-  cursor?: string;
   size: number;
 }
 
@@ -525,7 +524,7 @@ export class SearchRepository {
   ): Promise<MapAsset[]> {
     return await searchAssetBuilder(this.db, options)
       .select(columns.searchAsset)
-      .limit(pagination.size + 1)
+      .limit(pagination.size)
       .execute();
   }
 
