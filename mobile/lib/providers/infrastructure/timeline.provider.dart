@@ -16,7 +16,8 @@ final assetOriginFilterProvider = StateProvider<AssetOriginFilter>((ref) => Asse
 final timelineServiceProvider = Provider<TimelineService>(
   (ref) {
     final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
-    final timelineService = ref.watch(timelineFactoryProvider).main(timelineUsers);
+    final filter = ref.watch(assetOriginFilterProvider);
+    final timelineService = ref.watch(timelineFactoryProvider).main(timelineUsers, filter);
     ref.onDispose(timelineService.dispose);
     return timelineService;
   },
