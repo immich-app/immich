@@ -916,6 +916,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
           }
         }
       })
+      .orderBy('asset.id', orderDirection)
   );
 }
 

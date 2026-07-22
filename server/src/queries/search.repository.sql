@@ -451,7 +451,8 @@ where
   "asset"."ownerId" = any ($1::uuid[])
   and true
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $2
 
@@ -491,7 +492,8 @@ from
 where
   true
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $1
 
@@ -532,7 +534,8 @@ where
   "asset"."ownerId" = any ($1::uuid[])
   and "asset_exif"."city" = $2
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $3
 
@@ -573,7 +576,8 @@ where
   "asset"."ownerId" = any ($1::uuid[])
   and "asset_exif"."city" is null
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $2
 
@@ -614,7 +618,8 @@ where
   "asset"."ownerId" = any ($1::uuid[])
   and f_unaccent ("asset_exif"."description") ilike ('%' || f_unaccent ($2) || '%')
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $3
 
@@ -655,7 +660,8 @@ where
   "asset"."ownerId" = any ($1::uuid[])
   and f_unaccent ("asset_exif"."description") not ilike ('%' || f_unaccent ($2) || '%')
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $3
 
@@ -696,7 +702,8 @@ where
   "asset"."ownerId" = any ($1::uuid[])
   and f_unaccent ("asset"."originalFileName") ilike (f_unaccent ($2) || '%')
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $3
 
@@ -744,7 +751,8 @@ where
       and f_unaccent (ocr_search.text) %>> f_unaccent ($2)
   )
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $3
 
@@ -792,7 +800,8 @@ where
       and "album_asset"."albumId" = any ($2::uuid[])
   )
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $3
 
@@ -847,7 +856,8 @@ where
       count(distinct "asset_face"."personId") = $4
   )
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $5
 
@@ -895,7 +905,8 @@ where
       and "album_asset"."albumId" = any ($2::uuid[])
   )
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $3
 
@@ -944,7 +955,8 @@ where
       and "tag_closure"."id_ancestor" = any ($2::uuid[])
   )
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $3
 
@@ -998,7 +1010,8 @@ where
       count(distinct "tag_closure"."id_ancestor") >= $3
   )
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $4
 
@@ -1045,7 +1058,8 @@ where
       "album_asset"."assetId" = "asset"."id"
   )
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $2
 
@@ -1093,7 +1107,8 @@ where
       and "asset_file"."type" = $2
   )
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $3
 
@@ -1137,7 +1152,8 @@ where
     and "asset_exif"."fileSizeInByte" >= $3
   )
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $4
 
@@ -1178,7 +1194,8 @@ where
   "asset"."ownerId" = any ($1::uuid[])
   and "asset"."fileCreatedAt" = $2
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $3
 
@@ -1222,7 +1239,8 @@ where
     and "asset"."fileCreatedAt" < $3
   )
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $4
 
@@ -1263,7 +1281,8 @@ where
   "asset"."ownerId" = any ($1::uuid[])
   and true
 order by
-  "asset_exif"."fileSizeInByte" desc nulls last
+  "asset_exif"."fileSizeInByte" desc nulls last,
+  "asset"."id" desc
 limit
   $2
 
@@ -1305,7 +1324,8 @@ where
   "asset"."ownerId" = any ($1::uuid[])
   and true
 order by
-  "asset_exif"."rating" asc nulls last
+  "asset_exif"."rating" asc nulls last,
+  "asset"."id" asc
 limit
   $2
 
@@ -1358,7 +1378,8 @@ where
     )
   )
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $5
 
@@ -1413,7 +1434,8 @@ where
     )
   )
 order by
-  "asset"."fileCreatedAt" desc
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
 limit
   $6
 
