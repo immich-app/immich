@@ -649,10 +649,10 @@ function idPredicates(
 ) {
   const predicates: Expression<SqlBool>[] = [];
   if (filter.eq !== undefined) {
-    predicates.push(filter.eq === null ? eb(column, 'is', null) : eb(column, '=', asUuid(filter.eq)));
+    predicates.push(filter.eq === null ? eb(column, 'is', null) : eb(column, '=', filter.eq));
   }
   if (filter.ne !== undefined) {
-    predicates.push(filter.ne === null ? eb(column, 'is not', null) : eb(column, '!=', asUuid(filter.ne)));
+    predicates.push(filter.ne === null ? eb(column, 'is not', null) : eb(column, '!=', filter.ne));
   }
   return predicates;
 }
