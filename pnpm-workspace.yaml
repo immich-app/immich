@@ -30,9 +30,6 @@ allowBuilds:
   postman-code-generators: false
 dedupePeerDependents: false
 injectWorkspacePackages: true
-minimumReleaseAgeExclude:
-  - '@immich/ui@0.81.1'
-  - '@futo-org/*'
 overrides:
   canvas: 3.2.3
   sharp: ^0.34.5
@@ -69,3 +66,6 @@ packageExtensions:
 preferWorkspacePackages: true
 shamefullyHoist: false
 verifyDepsBeforeRun: install
+minimumReleaseAgeExclude:
+  - '@immich/ui@0.83.0'
+  - '@futo-org/*'

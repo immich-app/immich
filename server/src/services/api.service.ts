@@ -20,16 +20,9 @@ export const render = (index: string, meta: OpenGraphTags) => {
     <meta property="og:type" content="website" />
     <meta property="og:title" content="${title}" />
     <meta property="og:description" content="${description}" />
-    ${imageUrl ? `<meta property="og:image" content="${imageUrl}" />` : ''}
+    ${imageUrl ? `<meta property="og:image" content="${imageUrl}" />` : ''}`;
 
-    <!-- Twitter Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="${title}" />
-    <meta name="twitter:description" content="${description}" />
-
-    ${imageUrl ? `<meta name="twitter:image" content="${imageUrl}" />` : ''}`;
-
-  return index.replace('<!-- metadata:tags -->', tags);
+  return index.replace('<!-- metadata:tags -->', () => tags);
 };
 
 @Injectable()

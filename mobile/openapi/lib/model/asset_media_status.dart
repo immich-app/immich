@@ -11,29 +11,29 @@
 part of openapi.api;
 
 /// Upload status
-class AssetMediaStatus {
-  /// Instantiate a new enum with the provided [value].
-  const AssetMediaStatus._(this.value);
+enum AssetMediaStatus {
+  created._(r'created'),
+  duplicate._(r'duplicate'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const AssetMediaStatus._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const created = AssetMediaStatus._(r'created');
-  static const duplicate = AssetMediaStatus._(r'duplicate');
-
-  /// List of all possible values in this [enum][AssetMediaStatus].
-  static const values = <AssetMediaStatus>[
-    created,
-    duplicate,
-  ];
-
+  /// Returns the instance of [AssetMediaStatus] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static AssetMediaStatus? fromJson(dynamic value) => AssetMediaStatusTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [AssetMediaStatus]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<AssetMediaStatus> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetMediaStatus>[];
     if (json is List && json.isNotEmpty) {
@@ -55,9 +55,11 @@ class AssetMediaStatusTypeTransformer {
 
   const AssetMediaStatusTypeTransformer._();
 
-  String encode(AssetMediaStatus data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(AssetMediaStatus data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a AssetMediaStatus.
+  /// Returns the instance of [AssetMediaStatus] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -66,6 +68,9 @@ class AssetMediaStatusTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   AssetMediaStatus? decode(dynamic data, {bool allowNull = true}) {
+    if (data is AssetMediaStatus) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'created': return AssetMediaStatus.created;
@@ -79,7 +84,7 @@ class AssetMediaStatusTypeTransformer {
     return null;
   }
 
-  /// Singleton [AssetMediaStatusTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static AssetMediaStatusTypeTransformer? _instance;
 }
 

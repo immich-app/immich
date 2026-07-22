@@ -663,6 +663,7 @@ describe(AlbumService.name, () => {
       const album = AlbumFactory.from().albumUser({ userId: user.id }).build();
       const { user: owner } = album.albumUsers.find(({ role }) => role === AlbumUserRole.Owner)!;
       mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([album.id]));
+      mocks.album.getById.mockResolvedValue(getForAlbum(album));
       mocks.albumUser.update.mockResolvedValue();
 
       await sut.updateUser(AuthFactory.create(owner), album.id, user.id, { role: AlbumUserRole.Viewer });
@@ -840,7 +841,8 @@ describe(AlbumService.name, () => {
       expect(mocks.album.addAssetIds).toHaveBeenCalledWith(album.id, [asset1.id, asset2.id, asset3.id]);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: album.id,
-        recipientId: owner.id,
+        userIds: album.albumUsers.map(({ user }) => user.id),
+        recipientIds: [owner.id],
       });
     });
 
@@ -1090,11 +1092,13 @@ describe(AlbumService.name, () => {
       ]);
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: album1.id,
-        recipientId: owner1.id,
+        userIds: album1.albumUsers.map(({ user }) => user.id),
+        recipientIds: [owner1.id],
       });
       expect(mocks.event.emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: album2.id,
-        recipientId: owner2.id,
+        userIds: album2.albumUsers.map(({ user }) => user.id),
+        recipientIds: [owner2.id],
       });
     });
 

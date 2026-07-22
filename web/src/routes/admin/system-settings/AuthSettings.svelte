@@ -24,7 +24,7 @@
     // click runs before bind
     const previouslyEnabled = configToEdit.oauth.mobileOverrideEnabled;
     if (!previouslyEnabled && !configToEdit.oauth.mobileRedirectUri) {
-      configToEdit.oauth.mobileRedirectUri = globalThis.location.origin + '/api/oauth/mobile-redirect';
+      configToEdit.oauth.mobileRedirectUri = location.origin + '/api/oauth/mobile-redirect';
     }
   };
 
@@ -102,7 +102,7 @@
                 bind:value={configToEdit.oauth.issuerUrl}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.issuerUrl === config.oauth.issuerUrl)}
+                isEdited={configToEdit.oauth.issuerUrl !== config.oauth.issuerUrl}
               />
 
               <SettingInputField
@@ -111,7 +111,7 @@
                 bind:value={configToEdit.oauth.clientId}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.clientId === config.oauth.clientId)}
+                isEdited={configToEdit.oauth.clientId !== config.oauth.clientId}
               />
 
               <SettingInputField
@@ -120,7 +120,7 @@
                 description={$t('admin.oauth_client_secret_description')}
                 bind:value={configToEdit.oauth.clientSecret}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.clientSecret === config.oauth.clientSecret)}
+                isEdited={configToEdit.oauth.clientSecret !== config.oauth.clientSecret}
               />
 
               {#if configToEdit.oauth.clientSecret}
@@ -128,7 +128,7 @@
                   label="token_endpoint_auth_method"
                   bind:value={configToEdit.oauth.tokenEndpointAuthMethod}
                   disabled={disabled || !configToEdit.oauth.enabled || !configToEdit.oauth.clientSecret}
-                  isEdited={!(configToEdit.oauth.tokenEndpointAuthMethod === config.oauth.tokenEndpointAuthMethod)}
+                  isEdited={configToEdit.oauth.tokenEndpointAuthMethod !== config.oauth.tokenEndpointAuthMethod}
                   options={[
                     { value: OAuthTokenEndpointAuthMethod.ClientSecretPost, text: 'client_secret_post' },
                     { value: OAuthTokenEndpointAuthMethod.ClientSecretBasic, text: 'client_secret_basic' },
@@ -143,7 +143,7 @@
                 bind:value={configToEdit.oauth.scope}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.scope === config.oauth.scope)}
+                isEdited={configToEdit.oauth.scope !== config.oauth.scope}
               />
 
               <SettingInputField
@@ -152,7 +152,7 @@
                 bind:value={configToEdit.oauth.signingAlgorithm}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.signingAlgorithm === config.oauth.signingAlgorithm)}
+                isEdited={configToEdit.oauth.signingAlgorithm !== config.oauth.signingAlgorithm}
               />
 
               <SettingInputField
@@ -161,7 +161,7 @@
                 bind:value={configToEdit.oauth.profileSigningAlgorithm}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.profileSigningAlgorithm === config.oauth.profileSigningAlgorithm)}
+                isEdited={configToEdit.oauth.profileSigningAlgorithm !== config.oauth.profileSigningAlgorithm}
               />
 
               <SettingInputField
@@ -171,7 +171,7 @@
                 bind:value={configToEdit.oauth.prompt}
                 required={false}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.prompt === config.oauth.prompt)}
+                isEdited={configToEdit.oauth.prompt !== config.oauth.prompt}
               />
 
               <SettingInputField
@@ -181,7 +181,7 @@
                 bind:value={configToEdit.oauth.endSessionEndpoint}
                 required={false}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.endSessionEndpoint === config.oauth.endSessionEndpoint)}
+                isEdited={configToEdit.oauth.endSessionEndpoint !== config.oauth.endSessionEndpoint}
               />
 
               <SettingInputField
@@ -191,7 +191,7 @@
                 required={true}
                 bind:value={configToEdit.oauth.timeout}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.timeout === config.oauth.timeout)}
+                isEdited={configToEdit.oauth.timeout !== config.oauth.timeout}
               />
 
               <SettingSwitch
@@ -199,7 +199,7 @@
                 subtitle={$t('admin.oauth_allow_insecure_requests_description')}
                 bind:checked={configToEdit.oauth.allowInsecureRequests}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.allowInsecureRequests === config.oauth.allowInsecureRequests)}
+                isEdited={configToEdit.oauth.allowInsecureRequests !== config.oauth.allowInsecureRequests}
               />
 
               <SettingInputField
@@ -209,7 +209,7 @@
                 bind:value={configToEdit.oauth.storageLabelClaim}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.storageLabelClaim === config.oauth.storageLabelClaim)}
+                isEdited={configToEdit.oauth.storageLabelClaim !== config.oauth.storageLabelClaim}
               />
 
               <SettingInputField
@@ -219,7 +219,7 @@
                 bind:value={configToEdit.oauth.roleClaim}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.roleClaim === config.oauth.roleClaim)}
+                isEdited={configToEdit.oauth.roleClaim !== config.oauth.roleClaim}
               />
 
               <SettingInputField
@@ -229,7 +229,7 @@
                 bind:value={configToEdit.oauth.storageQuotaClaim}
                 required={true}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.storageQuotaClaim === config.oauth.storageQuotaClaim)}
+                isEdited={configToEdit.oauth.storageQuotaClaim !== config.oauth.storageQuotaClaim}
               />
 
               <SettingInputField
@@ -239,7 +239,7 @@
                 bind:value={configToEdit.oauth.defaultStorageQuota}
                 required={false}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.defaultStorageQuota === config.oauth.defaultStorageQuota)}
+                isEdited={configToEdit.oauth.defaultStorageQuota !== config.oauth.defaultStorageQuota}
               />
 
               <SettingInputField
@@ -248,7 +248,7 @@
                 bind:value={configToEdit.oauth.buttonText}
                 required={false}
                 disabled={disabled || !configToEdit.oauth.enabled}
-                isEdited={!(configToEdit.oauth.buttonText === config.oauth.buttonText)}
+                isEdited={configToEdit.oauth.buttonText !== config.oauth.buttonText}
               />
 
               <SettingSwitch
@@ -282,7 +282,7 @@
                   bind:value={configToEdit.oauth.mobileRedirectUri}
                   required={true}
                   disabled={disabled || !configToEdit.oauth.enabled}
-                  isEdited={!(configToEdit.oauth.mobileRedirectUri === config.oauth.mobileRedirectUri)}
+                  isEdited={configToEdit.oauth.mobileRedirectUri !== config.oauth.mobileRedirectUri}
                 />
               {/if}
             {/if}

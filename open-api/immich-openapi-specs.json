@@ -2702,6 +2702,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Album ID",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -2712,6 +2713,14 @@
             "name": "userId",
             "required": true,
             "in": "path",
+            "description": "Album user ID, or \"me\" to reference the current user.",
+            "x-immich-history": [
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "\"me\" as a value is deprecated"
+              }
+            ],
             "schema": {
               "type": "string"
             }
@@ -2762,6 +2771,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Album ID",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -2772,6 +2782,14 @@
             "name": "userId",
             "required": true,
             "in": "path",
+            "description": "Album user ID, or \"me\" to reference the current user.",
+            "x-immich-history": [
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "\"me\" as a value is deprecated"
+              }
+            ],
             "schema": {
               "type": "string"
             }
@@ -7139,9 +7157,9 @@
             "in": "query",
             "description": "Filter by date",
             "schema": {
-              "format": "date-time",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-              "example": "2024-01-01T00:00:00.000Z",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
               "type": "string"
             }
           },
@@ -7308,9 +7326,9 @@
             "in": "query",
             "description": "Filter by date",
             "schema": {
-              "format": "date-time",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-              "example": "2024-01-01T00:00:00.000Z",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
               "type": "string"
             }
           },
@@ -10552,7 +10570,24 @@
       "post": {
         "description": "Search for assets based on various metadata criteria.",
         "operationId": "searchAssets",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -17270,7 +17305,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "3.0.0-rc.2",
+    "version": "3.0.3",
     "contact": {}
   },
   "tags": [
@@ -20403,6 +20438,17 @@
           }
         },
         "type": "object"
+      },
+      "HlsVideoResolution": {
+        "description": "HLS video resolution",
+        "enum": [
+          480,
+          720,
+          1080,
+          1440,
+          2160
+        ],
+        "type": "integer"
       },
       "ImageFormat": {
         "description": "Image format",
@@ -23546,6 +23592,27 @@
           "like"
         ],
         "type": "string"
+      },
+      "RecentlyAddedResponse": {
+        "properties": {
+          "sidebarWeb": {
+            "description": "Whether the recently added page appears in the web sidebar",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sidebarWeb"
+        ],
+        "type": "object"
+      },
+      "RecentlyAddedUpdate": {
+        "properties": {
+          "sidebarWeb": {
+            "description": "Whether the recently added page appears in the web sidebar",
+            "type": "boolean"
+          }
+        },
+        "type": "object"
       },
       "ReleaseChannel": {
         "description": "Release channel",
@@ -27868,10 +27935,26 @@
           "enabled": {
             "description": "Enable real-time HLS transcoding (alpha)",
             "type": "boolean"
+          },
+          "resolutions": {
+            "description": "Resolutions to use for real-time HLS transcoding",
+            "items": {
+              "$ref": "#/components/schemas/HlsVideoResolution"
+            },
+            "type": "array"
+          },
+          "videoCodecs": {
+            "description": "Video codecs to use for real-time HLS transcoding",
+            "items": {
+              "$ref": "#/components/schemas/VideoCodec"
+            },
+            "type": "array"
           }
         },
         "required": [
-          "enabled"
+          "enabled",
+          "resolutions",
+          "videoCodecs"
         ],
         "type": "object"
       },
@@ -28004,9 +28087,10 @@
           },
           "percentageLimit": {
             "description": "Percentage limit of the integrity checksum job",
-            "maximum": 9007199254740991,
+            "format": "double",
+            "maximum": 1,
             "minimum": 0,
-            "type": "integer"
+            "type": "number"
           },
           "timeLimit": {
             "description": "How long the integrity checksum job may run for",
@@ -29684,6 +29768,9 @@
           "ratings": {
             "$ref": "#/components/schemas/RatingsResponse"
           },
+          "recentlyAdded": {
+            "$ref": "#/components/schemas/RecentlyAddedResponse"
+          },
           "sharedLinks": {
             "$ref": "#/components/schemas/SharedLinksResponse"
           },
@@ -29701,6 +29788,7 @@
           "people",
           "purchase",
           "ratings",
+          "recentlyAdded",
           "sharedLinks",
           "tags"
         ],
@@ -29737,6 +29825,9 @@
           },
           "ratings": {
             "$ref": "#/components/schemas/RatingsUpdate"
+          },
+          "recentlyAdded": {
+            "$ref": "#/components/schemas/RecentlyAddedUpdate"
           },
           "sharedLinks": {
             "$ref": "#/components/schemas/SharedLinksUpdate"

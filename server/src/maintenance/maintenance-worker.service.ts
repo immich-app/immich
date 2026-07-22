@@ -275,8 +275,8 @@ export class MaintenanceWorkerService {
   }
 
   async runRestoreDatabase(action: SetMaintenanceModeDto) {
-    const lock = await this.databaseRepository.tryLock(DatabaseLock.MaintenanceOperation);
-    if (!lock) {
+    const isLock = await this.databaseRepository.tryLock(DatabaseLock.MaintenanceOperation);
+    if (!isLock) {
       return;
     }
 

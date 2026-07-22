@@ -11,33 +11,31 @@
 part of openapi.api;
 
 /// Target video codec
-class VideoCodec {
-  /// Instantiate a new enum with the provided [value].
-  const VideoCodec._(this.value);
+enum VideoCodec {
+  h264._(r'h264'),
+  hevc._(r'hevc'),
+  vp9._(r'vp9'),
+  av1._(r'av1'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const VideoCodec._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const h264 = VideoCodec._(r'h264');
-  static const hevc = VideoCodec._(r'hevc');
-  static const vp9 = VideoCodec._(r'vp9');
-  static const av1 = VideoCodec._(r'av1');
-
-  /// List of all possible values in this [enum][VideoCodec].
-  static const values = <VideoCodec>[
-    h264,
-    hevc,
-    vp9,
-    av1,
-  ];
-
+  /// Returns the instance of [VideoCodec] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static VideoCodec? fromJson(dynamic value) => VideoCodecTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [VideoCodec]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<VideoCodec> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <VideoCodec>[];
     if (json is List && json.isNotEmpty) {
@@ -59,9 +57,11 @@ class VideoCodecTypeTransformer {
 
   const VideoCodecTypeTransformer._();
 
-  String encode(VideoCodec data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(VideoCodec data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a VideoCodec.
+  /// Returns the instance of [VideoCodec] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -70,6 +70,9 @@ class VideoCodecTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   VideoCodec? decode(dynamic data, {bool allowNull = true}) {
+    if (data is VideoCodec) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'h264': return VideoCodec.h264;
@@ -85,7 +88,7 @@ class VideoCodecTypeTransformer {
     return null;
   }
 
-  /// Singleton [VideoCodecTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static VideoCodecTypeTransformer? _instance;
 }
 

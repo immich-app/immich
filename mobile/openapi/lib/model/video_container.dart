@@ -11,33 +11,31 @@
 part of openapi.api;
 
 /// Accepted video containers
-class VideoContainer {
-  /// Instantiate a new enum with the provided [value].
-  const VideoContainer._(this.value);
+enum VideoContainer {
+  mov._(r'mov'),
+  mp4._(r'mp4'),
+  ogg._(r'ogg'),
+  webm._(r'webm'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const VideoContainer._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const mov = VideoContainer._(r'mov');
-  static const mp4 = VideoContainer._(r'mp4');
-  static const ogg = VideoContainer._(r'ogg');
-  static const webm = VideoContainer._(r'webm');
-
-  /// List of all possible values in this [enum][VideoContainer].
-  static const values = <VideoContainer>[
-    mov,
-    mp4,
-    ogg,
-    webm,
-  ];
-
+  /// Returns the instance of [VideoContainer] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static VideoContainer? fromJson(dynamic value) => VideoContainerTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [VideoContainer]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<VideoContainer> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <VideoContainer>[];
     if (json is List && json.isNotEmpty) {
@@ -59,9 +57,11 @@ class VideoContainerTypeTransformer {
 
   const VideoContainerTypeTransformer._();
 
-  String encode(VideoContainer data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(VideoContainer data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a VideoContainer.
+  /// Returns the instance of [VideoContainer] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -70,6 +70,9 @@ class VideoContainerTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   VideoContainer? decode(dynamic data, {bool allowNull = true}) {
+    if (data is VideoContainer) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'mov': return VideoContainer.mov;
@@ -85,7 +88,7 @@ class VideoContainerTypeTransformer {
     return null;
   }
 
-  /// Singleton [VideoContainerTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static VideoContainerTypeTransformer? _instance;
 }
 
