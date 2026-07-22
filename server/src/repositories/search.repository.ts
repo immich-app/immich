@@ -532,6 +532,8 @@ export class SearchRepository {
   @GenerateSql(...searchStatisticsV3Examples)
   searchStatisticsV3(options: AssetSearchBuilderV3Options) {
     return searchAssetBuilder(this.db, options)
+      // an ORDER BY on an ungrouped column is invalid in an aggregate-only query
+      .clearOrderBy()
       .select((qb) => qb.fn.countAll<number>().as('total'))
       .executeTakeFirstOrThrow();
   }

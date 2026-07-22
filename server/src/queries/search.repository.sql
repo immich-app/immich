@@ -1426,8 +1426,6 @@ from
 where
   "asset"."ownerId" = any ($1::uuid[])
   and true
-order by
-  "asset"."fileCreatedAt" desc
 
 -- SearchRepository.searchStatisticsV3 (with-filter)
 select
@@ -1442,8 +1440,6 @@ where
     and "asset"."fileCreatedAt" >= $3
     and "asset"."fileCreatedAt" < $4
   )
-order by
-  "asset"."fileCreatedAt" desc
 
 -- SearchRepository.searchStatisticsV3 (with-or)
 select
@@ -1463,5 +1459,3 @@ where
         "album_asset"."assetId" = "asset"."id"
     )
   )
-order by
-  "asset"."fileCreatedAt" desc
