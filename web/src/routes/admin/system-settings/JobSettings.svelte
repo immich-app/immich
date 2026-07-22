@@ -50,6 +50,7 @@
     [QueueName.Workflow]: $t('workflows'),
     [QueueName.Editor]: $t('editor'),
     [QueueName.IntegrityCheck]: $t('integrity_checks'),
+    [QueueName.VideoFrameExtraction]: $t('admin.video_frame_extraction_job'),
   });
 </script>
 

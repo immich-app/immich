@@ -17,6 +17,7 @@ import {
   mdiFileCheckOutline,
   mdiFileJpgBox,
   mdiFileXmlBox,
+  mdiFilmstripBoxMultiple,
   mdiFolderMove,
   mdiImageSearch,
   mdiLibraryShelves,
@@ -249,6 +250,11 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
     [QueueName.Editor]: {
       icon: mdiPencil,
       title: $t('editor'),
+    },
+    [QueueName.VideoFrameExtraction]: {
+      icon: mdiFilmstripBoxMultiple, // TBD
+      title: $t('admin.video_frame_extraction_job'),
+      subtitle: $t('admin.video_frame_extraction_job_description'),
     },
   };
 
