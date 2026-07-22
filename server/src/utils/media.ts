@@ -585,12 +585,6 @@ export class VideoFrameExtractionConfig {
     const fps = 1 / this.options.frameInterval;
     const videoFilters: string[] = [];
 
-    // TODO(upstream-review): confirm with Immich maintainers that video-frame extraction should never
-    // upscale a source already smaller than `targetResolution` (matching BaseConfig.shouldScale, used
-    // everywhere else for regular transcodes). Before this fix, this SW-only path always upscaled small
-    // sources (e.g. a 240p video -> 640p) while the HW-accelerated path already preserved them via the
-    // same shouldScale gate - this change makes the two paths consistent, but the "never upscale for
-    // frame extraction" behavior itself wasn't an explicit design decision and should be validated.
     if (this.delegate.shouldScale(videoStream)) {
       const { width, height } = getOutputSize(videoStream, this.options.targetResolution);
       videoFilters.push(`scale=${width}:${height}`);
