@@ -2,7 +2,6 @@ import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
@@ -197,7 +196,7 @@ void main() {
     test('permanently deletes local copies without trashing, even when Android trash handling is on', () async {
       await Store.put(StoreKey.manageLocalMediaAndroid, true);
 
-      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked)).thenAnswer((_) async {});
+      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
       when(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
       when(() => assetMediaRepository.deleteAll(localIds, trash: false)).thenAnswer((_) async => localIds);
       when(() => localAssetRepository.delete(localIds)).thenAnswer((_) async {});
@@ -205,7 +204,7 @@ void main() {
       final result = await sut.moveToLockFolder(remoteIds, localIds);
 
       expect(result, localIds.length);
-      verify(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked)).called(1);
+      verify(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibility.locked)).called(1);
       verify(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).called(1);
       verify(() => assetMediaRepository.deleteAll(localIds, trash: false)).called(1);
       verify(() => localAssetRepository.delete(localIds)).called(1);
@@ -213,18 +212,18 @@ void main() {
     });
 
     test('locks remote assets without touching local media when there are no local copies', () async {
-      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked)).thenAnswer((_) async {});
+      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
       when(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
 
       final result = await sut.moveToLockFolder(remoteIds, const []);
 
       expect(result, 0);
-      verify(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked)).called(1);
+      verify(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibility.locked)).called(1);
       verifyNever(() => assetMediaRepository.deleteAll(any(), trash: any(named: 'trash')));
     });
 
     test('returns zero when local deletion is cancelled', () async {
-      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked)).thenAnswer((_) async {});
+      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
       when(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
       when(() => assetMediaRepository.deleteAll(localIds, trash: false)).thenAnswer((_) async => <String>[]);
 
@@ -237,7 +236,7 @@ void main() {
 
     test('returns the number of local copies deleted from a partial result', () async {
       const deletedIds = ['l1'];
-      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked)).thenAnswer((_) async {});
+      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
       when(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
       when(() => assetMediaRepository.deleteAll(localIds, trash: false)).thenAnswer((_) async => deletedIds);
       when(() => localAssetRepository.delete(deletedIds)).thenAnswer((_) async {});
