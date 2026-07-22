@@ -77,10 +77,10 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
-  case
-    when "asset"."ownerId" = $1 then "asset"."isFavorite"
-    else false
-  end as "isFavorite",
+  (
+    "asset"."ownerId" = $1
+    and "asset"."isFavorite"
+  ) as "isFavorite",
   "album_asset"."updateId"
 from
   "album_asset" as "album_asset"
@@ -114,10 +114,10 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
-  case
-    when "asset"."ownerId" = $1 then "asset"."isFavorite"
-    else false
-  end as "isFavorite",
+  (
+    "asset"."ownerId" = $1
+    and "asset"."isFavorite"
+  ) as "isFavorite",
   "asset"."updateId"
 from
   "asset" as "asset"
@@ -153,10 +153,10 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
-  case
-    when "asset"."ownerId" = $1 then "asset"."isFavorite"
-    else false
-  end as "isFavorite"
+  (
+    "asset"."ownerId" = $1
+    and "asset"."isFavorite"
+  ) as "isFavorite"
 from
   "album_asset" as "album_asset"
   inner join "asset" on "asset"."id" = "album_asset"."assetId"

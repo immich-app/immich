@@ -201,13 +201,7 @@ class AlbumAssetSync extends BaseSync {
       .innerJoin('asset', 'asset.id', 'album_asset.assetId')
       .select(columns.syncAlbumAsset)
       .select((eb) =>
-        eb
-          .case()
-          .when('asset.ownerId', '=', userId)
-          .then(eb.ref('asset.isFavorite'))
-          .else(eb.lit(false))
-          .end()
-          .as('isFavorite'),
+        eb('asset.ownerId', '=', userId).and(eb.ref('asset.isFavorite')).$castTo<boolean>().as('isFavorite'),
       )
       .select('album_asset.updateId')
       .where('album_asset.albumId', '=', albumId)
@@ -221,13 +215,7 @@ class AlbumAssetSync extends BaseSync {
       .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
       .select(columns.syncAlbumAsset)
       .select((eb) =>
-        eb
-          .case()
-          .when('asset.ownerId', '=', userId)
-          .then(eb.ref('asset.isFavorite'))
-          .else(eb.lit(false))
-          .end()
-          .as('isFavorite'),
+        eb('asset.ownerId', '=', userId).and(eb.ref('asset.isFavorite')).$castTo<boolean>().as('isFavorite'),
       )
       .select('asset.updateId')
       .where('album_asset.updateId', '<=', albumToAssetAck.updateId) // Ensure we only send updates for assets that the client already knows about
@@ -244,13 +232,7 @@ class AlbumAssetSync extends BaseSync {
       .innerJoin('asset', 'asset.id', 'album_asset.assetId')
       .select(columns.syncAlbumAsset)
       .select((eb) =>
-        eb
-          .case()
-          .when('asset.ownerId', '=', userId)
-          .then(eb.ref('asset.isFavorite'))
-          .else(eb.lit(false))
-          .end()
-          .as('isFavorite'),
+        eb('asset.ownerId', '=', userId).and(eb.ref('asset.isFavorite')).$castTo<boolean>().as('isFavorite'),
       )
       .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
       .where('album_user.userId', '=', userId)
