@@ -1,14 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Kysely, sql } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
 import { SyncAck } from 'src/types';
-
-// album assets only expose the flag for the owner's own assets
-const withOwnedFavorite = (userId: string) => (eb: ExpressionBuilder<DB, 'asset'>) =>
-  eb('asset.ownerId', '=', userId).and(eb.ref('asset.isFavorite')).$castTo<boolean>().as('isFavorite');
 
 export type SyncBackfillOptions = {
   nowId: string;
@@ -204,7 +200,9 @@ class AlbumAssetSync extends BaseSync {
     return this.backfillQuery('album_asset', options)
       .innerJoin('asset', 'asset.id', 'album_asset.assetId')
       .select(columns.syncAlbumAsset)
-      .select(withOwnedFavorite(userId))
+      .select((eb) =>
+        eb('asset.ownerId', '=', userId).and(eb.ref('asset.isFavorite')).$castTo<boolean>().as('isFavorite'),
+      )
       .select('album_asset.updateId')
       .where('album_asset.albumId', '=', albumId)
       .stream();
@@ -216,7 +214,9 @@ class AlbumAssetSync extends BaseSync {
     return this.upsertQuery('asset', options)
       .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
       .select(columns.syncAlbumAsset)
-      .select(withOwnedFavorite(userId))
+      .select((eb) =>
+        eb('asset.ownerId', '=', userId).and(eb.ref('asset.isFavorite')).$castTo<boolean>().as('isFavorite'),
+      )
       .select('asset.updateId')
       .where('album_asset.updateId', '<=', albumToAssetAck.updateId) // Ensure we only send updates for assets that the client already knows about
       .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
@@ -231,7 +231,9 @@ class AlbumAssetSync extends BaseSync {
       .select('album_asset.updateId')
       .innerJoin('asset', 'asset.id', 'album_asset.assetId')
       .select(columns.syncAlbumAsset)
-      .select(withOwnedFavorite(userId))
+      .select((eb) =>
+        eb('asset.ownerId', '=', userId).and(eb.ref('asset.isFavorite')).$castTo<boolean>().as('isFavorite'),
+      )
       .innerJoin('album_user', 'album_user.albumId', 'album_asset.albumId')
       .where('album_user.userId', '=', userId)
       .stream();
