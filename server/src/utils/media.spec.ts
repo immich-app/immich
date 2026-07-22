@@ -27,6 +27,9 @@ const hdrVideoStream: VideoStreamInfo = {
   pixelFormat: 'yuv420p10le',
 };
 
+const lowResVideoStream: VideoStreamInfo = { ...sdrVideoStream, width: 426, height: 240 };
+const lowResOddVideoStream: VideoStreamInfo = { ...sdrVideoStream, width: 427, height: 241 };
+
 const hlsMuxerTail = [
   '-an',
   '-f',
@@ -93,6 +96,111 @@ describe('VideoFrameExtractionConfig', () => {
         '34',
         '-bf',
         '0',
+        ...hlsMuxerTail,
+      ]);
+    });
+
+    it('does not upscale a source already smaller than targetResolution (SW path)', () => {
+      // Directly validates that targetResolution is correctly threaded into the delegate's config:
+      // BaseConfig.shouldScale() reads it back out to decide no scaling is needed here.
+      const args = getExtractionCommand({ accel: TranscodeHardwareAcceleration.Disabled }, lowResVideoStream);
+
+      expect(args).toEqual([
+        '-nostdin',
+        '-nostats',
+        '-v',
+        'verbose',
+        '-noautorotate',
+        '-i',
+        inputPath,
+        `-filter_complex`,
+        `[0:v]fps=1,split[enc][an];[an]scdet=threshold=100,metadata=print:file=${scoresPath}[scored]`,
+        '-map',
+        '[enc]',
+        '-c:v',
+        'libx264',
+        '-g',
+        '1',
+        '-qp',
+        '34',
+        '-bf',
+        '0',
+        ...hlsMuxerTail,
+      ]);
+    });
+
+    it('still scales an odd-dimensioned low-res source for encoder parity (SW path)', () => {
+      const args = getExtractionCommand({ accel: TranscodeHardwareAcceleration.Disabled }, lowResOddVideoStream);
+
+      expect(args).toEqual([
+        '-nostdin',
+        '-nostats',
+        '-v',
+        'verbose',
+        '-noautorotate',
+        '-i',
+        inputPath,
+        '-filter_complex',
+        `[0:v]scale=1134:640,fps=1,split[enc][an];[an]scdet=threshold=100,metadata=print:file=${scoresPath}[scored]`,
+        '-map',
+        '[enc]',
+        '-c:v',
+        'libx264',
+        '-g',
+        '1',
+        '-qp',
+        '34',
+        '-bf',
+        '0',
+        ...hlsMuxerTail,
+      ]);
+    });
+
+    it('does not upscale a source already smaller than targetResolution (VAAPI HW path, for parity with SW)', () => {
+      const args = getExtractionCommand(
+        { accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: true },
+        lowResVideoStream,
+      );
+
+      expect(args).toEqual([
+        '-nostdin',
+        '-nostats',
+        '-v',
+        'verbose',
+        '-hwaccel',
+        'vaapi',
+        '-hwaccel_output_format',
+        'vaapi',
+        '-noautorotate',
+        '-hwaccel_device',
+        '/dev/dri/renderD128',
+        '-threads',
+        '1',
+        '-i',
+        inputPath,
+        '-filter_complex',
+        // Note the leading comma: getFilterOptions() returns an empty array when no scaling/tonemap is
+        // needed, and the HW filter_complex template joins it in unconditionally - this is pre-existing
+        // behavior in the HW path, unrelated to this fix.
+        `[0:v],fps=1,split[enc][an];[an]hwdownload,format=nv12,scdet=threshold=100,metadata=print:file=${scoresPath}[scored]`,
+        '-map',
+        '[enc]',
+        '-c:v',
+        'h264_vaapi',
+        '-g',
+        '1',
+        '-bf',
+        '0',
+        '-qp:v',
+        '34',
+        '-global_quality:v',
+        '34',
+        '-rc_mode',
+        '1',
+        '-idr_interval',
+        '0',
+        '-low_power',
+        '1',
         ...hlsMuxerTail,
       ]);
     });

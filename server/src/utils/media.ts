@@ -548,28 +548,26 @@ type VideoFrameExtractionOptions = {
 };
 
 export class VideoFrameExtractionConfig {
-  private delegate: BaseConfig | null;
+  private delegate: BaseConfig;
   private readonly scdetThreshold = 100; // Deliberately high, we ignore the scores
   private readonly gopSize = 1; // We want all-intra frames
 
   private constructor(private options: VideoFrameExtractionOptions) {
     const { ffmpeg, videoInterfaces } = options;
-    if (ffmpeg.accel === TranscodeHardwareAcceleration.Disabled) {
-      this.delegate = null;
-    } else {
-      const overrideConfig: SystemConfigFFmpegDto = {
-        ...ffmpeg,
-        targetVideoCodec: VideoCodec.H264,
-        targetResolution: String(options.targetResolution),
-        crf: options.qp,
-        cqMode: CQMode.Cqp,
-        maxBitrate: '0',
-      };
-      this.delegate = BaseConfig.create(overrideConfig, videoInterfaces, {
-        strictGop: true,
-        lowLatency: false,
-      }) as BaseConfig;
-    }
+    const overrideConfig: SystemConfigFFmpegDto = {
+      ...ffmpeg,
+      targetVideoCodec: VideoCodec.H264,
+      targetResolution: String(options.targetResolution),
+      crf: options.qp,
+      cqMode: CQMode.Cqp,
+      maxBitrate: '0',
+    };
+    // Always build the delegate (even for accel: Disabled, where this is just a plain H264Config) so
+    // both the SW and HW extraction paths share the same shouldScale()-gated scaling decision below.
+    this.delegate = BaseConfig.create(overrideConfig, videoInterfaces, {
+      strictGop: true,
+      lowLatency: false,
+    }) as BaseConfig;
   }
 
   static create(options: VideoFrameExtractionOptions) {
@@ -584,10 +582,23 @@ export class VideoFrameExtractionConfig {
   }
 
   private getSWExtractionCommand(videoStream: VideoStreamInfo): string[] {
-    const { width, height } = getOutputSize(videoStream, this.options.targetResolution);
     const fps = 1 / this.options.frameInterval;
+    const videoFilters: string[] = [];
+
+    // TODO(upstream-review): confirm with Immich maintainers that video-frame extraction should never
+    // upscale a source already smaller than `targetResolution` (matching BaseConfig.shouldScale, used
+    // everywhere else for regular transcodes). Before this fix, this SW-only path always upscaled small
+    // sources (e.g. a 240p video -> 640p) while the HW-accelerated path already preserved them via the
+    // same shouldScale gate - this change makes the two paths consistent, but the "never upscale for
+    // frame extraction" behavior itself wasn't an explicit design decision and should be validated.
+    if (this.delegate.shouldScale(videoStream)) {
+      const { width, height } = getOutputSize(videoStream, this.options.targetResolution);
+      videoFilters.push(`scale=${width}:${height}`);
+    }
+    videoFilters.push(`fps=${fps}`);
+
     const filterComplex = [
-      `[0:v]scale=${width}:${height},fps=${fps},split[enc][an]`,
+      `[0:v]${videoFilters.join(',')},split[enc][an]`,
       `[an]scdet=threshold=${this.scdetThreshold},metadata=print:file=${this.options.scoresPath}[scored]`,
     ].join(';');
 
@@ -634,7 +645,7 @@ export class VideoFrameExtractionConfig {
   }
 
   private getHWExtractionCommand(videoStream: VideoStreamInfo): string[] {
-    const d = this.delegate!;
+    const d = this.delegate;
     const { accel } = this.options.ffmpeg;
     const fps = 1 / this.options.frameInterval;
     const filterComplex = [
