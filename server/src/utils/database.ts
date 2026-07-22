@@ -7,6 +7,8 @@ import {
   Kysely,
   KyselyConfig,
   NotNull,
+  OperandValueExpression,
+  ReferenceExpression,
   Selectable,
   SelectQueryBuilder,
   ShallowDehydrateObject,
@@ -20,23 +22,17 @@ import { columns, lockableProperties, LockableProperty, Person } from 'src/datab
 import { DummyValue, GenerateSqlQueries } from 'src/decorators';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import {
-  DateFilter,
-  DateFilterNullable,
-  IdFilter,
-  IdFilterNullable,
+  DEFAULT_SEARCH_ORDER,
   IdsFilter,
-  NumberFilter,
-  NumberFilterNullable,
   SearchFilterBranch,
+  SearchOrder,
   StringFilter,
-  StringFilterNullable,
   StringPatternFilter,
 } from 'src/dtos/search.dto';
 import {
   AssetFileType,
   AssetOrder,
   AssetOrderBy,
-  AssetType,
   AssetVisibility,
   DatabaseExtension,
   ExifOrientation,
@@ -112,16 +108,15 @@ export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>)
   return qb.where('asset.visibility', 'in', [sql.lit(AssetVisibility.Archive), sql.lit(AssetVisibility.Timeline)]);
 }
 
+const selectExifInfo = (eb: AssetExpressionBuilder) =>
+  eb.fn
+    .toJson(eb.table('asset_exif'))
+    .$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>> | null>()
+    .as('exifInfo');
+
 // TODO come up with a better query that only selects the fields we need
 export function withExif<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
-  return qb
-    .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-    .select((eb) =>
-      eb.fn
-        .toJson(eb.table('asset_exif'))
-        .$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>> | null>()
-        .as('exifInfo'),
-    );
+  return qb.leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId').select(selectExifInfo);
 }
 
 export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
@@ -535,88 +530,92 @@ const visibleFaces = (eb: AssetExpressionBuilder) =>
 const tagAssets = (eb: AssetExpressionBuilder) =>
   eb.selectFrom('tag_asset').whereRef('tag_asset.assetId', '=', 'asset.id');
 
-function albumIdsPredicates(eb: AssetExpressionBuilder, { any, all, none }: IdsFilter = {}) {
+// shared any/all/none mechanics; `matchesAll` only receives deduplicated multi-id lists,
+// so its `count(distinct id) = ids.length` check stays satisfiable
+function idsPredicates(
+  eb: AssetExpressionBuilder,
+  { any, all, none }: IdsFilter = {},
+  ops: {
+    matchesAny: (ids: string[]) => Expression<SqlBool>;
+    matchesAll: (ids: string[]) => Expression<SqlBool>;
+  },
+) {
   const predicates: Expression<SqlBool>[] = [];
   if (any) {
-    predicates.push(eb.exists(albumAssets(eb).where('album_asset.albumId', '=', anyUuid(any))));
+    predicates.push(ops.matchesAny(any));
   }
   if (all) {
     const ids = uniqueIds(all);
-    predicates.push(
-      ids.length === 1
-        ? eb.exists(albumAssets(eb).where('album_asset.albumId', '=', anyUuid(ids)))
-        : eb.exists(
-            albumAssets(eb)
-              .select('album_asset.assetId')
-              .where('album_asset.albumId', '=', anyUuid(ids))
-              .groupBy('album_asset.assetId')
-              .having((eb) => eb.fn.count('album_asset.albumId').distinct(), '=', ids.length),
-          ),
-    );
+    predicates.push(ids.length === 1 ? ops.matchesAny(ids) : ops.matchesAll(ids));
   }
   if (none) {
-    predicates.push(eb.not(eb.exists(albumAssets(eb).where('album_asset.albumId', '=', anyUuid(none)))));
+    predicates.push(eb.not(ops.matchesAny(none)));
   }
   return predicates;
 }
 
-function personIdsPredicates(eb: AssetExpressionBuilder, { any, all, none }: IdsFilter = {}) {
-  const predicates: Expression<SqlBool>[] = [];
-  if (any) {
-    predicates.push(eb.exists(visibleFaces(eb).where('asset_face.personId', '=', anyUuid(any))));
-  }
-  if (all) {
-    const ids = uniqueIds(all);
-    predicates.push(
-      ids.length === 1
-        ? eb.exists(visibleFaces(eb).where('asset_face.personId', '=', anyUuid(ids)))
-        : eb.exists(
-            visibleFaces(eb)
-              .select('asset_face.assetId')
-              .where('asset_face.personId', '=', anyUuid(ids))
-              .groupBy('asset_face.assetId')
-              .having((eb) => eb.fn.count('asset_face.personId').distinct(), '=', ids.length),
-          ),
-    );
-  }
-  if (none) {
-    predicates.push(eb.not(eb.exists(visibleFaces(eb).where('asset_face.personId', '=', anyUuid(none)))));
-  }
-  return predicates;
+function albumIdsPredicates(eb: AssetExpressionBuilder, filter?: IdsFilter) {
+  const matching = (ids: string[]) => albumAssets(eb).where('album_asset.albumId', '=', anyUuid(ids));
+  return idsPredicates(eb, filter, {
+    matchesAny: (ids) => eb.exists(matching(ids)),
+    matchesAll: (ids) =>
+      eb.exists(
+        matching(ids)
+          .select('album_asset.assetId')
+          .groupBy('album_asset.assetId')
+          .having((eb) => eb.fn.count('album_asset.albumId').distinct(), '=', ids.length),
+      ),
+  });
 }
 
-function tagIdsPredicates(eb: AssetExpressionBuilder, { any, all, none }: IdsFilter = {}) {
-  const descendantTagAssets = (ids: string[]) =>
+function personIdsPredicates(eb: AssetExpressionBuilder, filter?: IdsFilter) {
+  const matching = (ids: string[]) => visibleFaces(eb).where('asset_face.personId', '=', anyUuid(ids));
+  return idsPredicates(eb, filter, {
+    matchesAny: (ids) => eb.exists(matching(ids)),
+    matchesAll: (ids) =>
+      eb.exists(
+        matching(ids)
+          .select('asset_face.assetId')
+          .groupBy('asset_face.assetId')
+          .having((eb) => eb.fn.count('asset_face.personId').distinct(), '=', ids.length),
+      ),
+  });
+}
+
+function tagIdsPredicates(eb: AssetExpressionBuilder, filter?: IdsFilter) {
+  const matching = (ids: string[]) =>
     tagAssets(eb)
       .innerJoin('tag_closure', 'tag_asset.tagId', 'tag_closure.id_descendant')
       .where('tag_closure.id_ancestor', '=', anyUuid(ids));
-  const predicates: Expression<SqlBool>[] = [];
-  if (any) {
-    predicates.push(eb.exists(descendantTagAssets(any)));
-  }
-  if (all) {
-    const ids = uniqueIds(all);
-    predicates.push(
-      ids.length === 1
-        ? eb.exists(descendantTagAssets(ids))
-        : eb.exists(
-            descendantTagAssets(ids)
-              .select('tag_asset.assetId')
-              .groupBy('tag_asset.assetId')
-              .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '>=', ids.length),
-          ),
-    );
-  }
-  if (none) {
-    predicates.push(eb.not(eb.exists(descendantTagAssets(none))));
-  }
-  return predicates;
+  return idsPredicates(eb, filter, {
+    matchesAny: (ids) => eb.exists(matching(ids)),
+    matchesAll: (ids) =>
+      eb.exists(
+        matching(ids)
+          .select('tag_asset.assetId')
+          .groupBy('tag_asset.assetId')
+          .having((eb) => eb.fn.count('tag_closure.id_ancestor').distinct(), '=', ids.length),
+      ),
+  });
 }
 
-function idPredicates(
-  eb: AssetExpressionBuilder,
-  column: 'asset.id' | 'asset.libraryId',
-  filter: IdFilter | IdFilterNullable = {},
+type ComparisonFilter<T> = {
+  eq?: T | null;
+  ne?: T | null;
+  lt?: T;
+  lte?: T;
+  gt?: T;
+  gte?: T;
+  in?: T[];
+  notIn?: T[];
+};
+
+// one operator dispatch for every filter shape; the DTO schemas constrain which
+// operators (and null literals) each filter can actually carry
+function comparisonPredicates<TB extends keyof DB, RE extends ReferenceExpression<DB, TB>>(
+  eb: ExpressionBuilder<DB, TB>,
+  column: RE,
+  filter: ComparisonFilter<OperandValueExpression<DB, TB, RE>> = {},
 ) {
   const predicates: Expression<SqlBool>[] = [];
   if (filter.eq !== undefined) {
@@ -625,20 +624,17 @@ function idPredicates(
   if (filter.ne !== undefined) {
     predicates.push(filter.ne === null ? eb(column, 'is not', null) : eb(column, '!=', filter.ne));
   }
-  return predicates;
-}
-
-function enumPredicates<T extends AssetType | AssetVisibility>(
-  eb: AssetExpressionBuilder,
-  column: 'asset.type' | 'asset.visibility',
-  filter: { eq?: T; ne?: T; in?: T[]; notIn?: T[] } = {},
-) {
-  const predicates: Expression<SqlBool>[] = [];
-  if (filter.eq !== undefined) {
-    predicates.push(eb(column, '=', filter.eq));
+  if (filter.lt !== undefined) {
+    predicates.push(eb(column, '<', filter.lt));
   }
-  if (filter.ne !== undefined) {
-    predicates.push(eb(column, '!=', filter.ne));
+  if (filter.lte !== undefined) {
+    predicates.push(eb(column, '<=', filter.lte));
+  }
+  if (filter.gt !== undefined) {
+    predicates.push(eb(column, '>', filter.gt));
+  }
+  if (filter.gte !== undefined) {
+    predicates.push(eb(column, '>=', filter.gte));
   }
   if (filter.in !== undefined) {
     predicates.push(eb(column, 'in', filter.in));
@@ -660,30 +656,9 @@ type StringColumn =
   | 'asset.originalFileName'
   | 'asset.originalPath';
 
-function stringEqNeInPredicates(
-  eb: AssetExpressionBuilder,
-  column: StringColumn,
-  filter: StringFilterNullable | StringPatternFilter = {},
-) {
-  const predicates: Expression<SqlBool>[] = [];
-  if (filter.eq !== undefined) {
-    predicates.push(filter.eq === null ? eb(column, 'is', null) : eb(column, '=', filter.eq));
-  }
-  if (filter.ne !== undefined) {
-    predicates.push(filter.ne === null ? eb(column, 'is not', null) : eb(column, '!=', filter.ne));
-  }
-  if (filter.in !== undefined) {
-    predicates.push(eb(column, 'in', filter.in));
-  }
-  if (filter.notIn !== undefined) {
-    predicates.push(eb(column, 'not in', filter.notIn));
-  }
-  return predicates;
-}
-
 function stringPatternPredicates(eb: AssetExpressionBuilder, column: StringColumn, filter: StringPatternFilter = {}) {
   const ref = sql.ref(column);
-  const predicates = stringEqNeInPredicates(eb, column, filter);
+  const predicates = comparisonPredicates(eb, column, filter);
   if (filter.like !== undefined) {
     predicates.push(sql<SqlBool>`f_unaccent(${ref}) ilike ('%' || f_unaccent(${filter.like}) || '%')`);
   }
@@ -699,126 +674,55 @@ function stringPatternPredicates(eb: AssetExpressionBuilder, column: StringColum
   return predicates;
 }
 
-type NumberColumn = 'asset_exif.rating' | 'asset_exif.fileSizeInByte';
-
-function numberPredicates(
-  eb: AssetExpressionBuilder,
-  column: NumberColumn,
-  filter: NumberFilter | NumberFilterNullable = {},
-) {
-  const predicates: Expression<SqlBool>[] = [];
-  if (filter.eq !== undefined) {
-    predicates.push(filter.eq === null ? eb(column, 'is', null) : eb(column, '=', filter.eq));
-  }
-  if (filter.ne !== undefined) {
-    predicates.push(filter.ne === null ? eb(column, 'is not', null) : eb(column, '!=', filter.ne));
-  }
-  if (filter.lt !== undefined) {
-    predicates.push(eb(column, '<', filter.lt));
-  }
-  if (filter.lte !== undefined) {
-    predicates.push(eb(column, '<=', filter.lte));
-  }
-  if (filter.gt !== undefined) {
-    predicates.push(eb(column, '>', filter.gt));
-  }
-  if (filter.gte !== undefined) {
-    predicates.push(eb(column, '>=', filter.gte));
-  }
-  if (filter.in !== undefined) {
-    predicates.push(eb(column, 'in', filter.in));
-  }
-  if (filter.notIn !== undefined) {
-    predicates.push(eb(column, 'not in', filter.notIn));
-  }
-  return predicates;
-}
-
-type DateColumn = 'asset.fileCreatedAt' | 'asset.createdAt' | 'asset.updatedAt' | 'asset.deletedAt';
-
-function datePredicates(eb: AssetExpressionBuilder, column: DateColumn, filter: DateFilter | DateFilterNullable = {}) {
-  const predicates: Expression<SqlBool>[] = [];
-  if (filter.eq !== undefined) {
-    predicates.push(filter.eq === null ? eb(column, 'is', null) : eb(column, '=', filter.eq));
-  }
-  if (filter.ne !== undefined) {
-    predicates.push(filter.ne === null ? eb(column, 'is not', null) : eb(column, '!=', filter.ne));
-  }
-  if (filter.gt !== undefined) {
-    predicates.push(eb(column, '>', filter.gt));
-  }
-  if (filter.gte !== undefined) {
-    predicates.push(eb(column, '>=', filter.gte));
-  }
-  if (filter.lt !== undefined) {
-    predicates.push(eb(column, '<', filter.lt));
-  }
-  if (filter.lte !== undefined) {
-    predicates.push(eb(column, '<=', filter.lte));
-  }
-  return predicates;
-}
-
 function checksumPredicates(eb: AssetExpressionBuilder, filter: StringFilter = {}) {
-  const predicates: Expression<SqlBool>[] = [];
-  if (filter.eq !== undefined) {
-    predicates.push(eb('asset.checksum', '=', fromChecksum(filter.eq)));
+  return comparisonPredicates(eb, 'asset.checksum', {
+    eq: filter.eq === undefined ? undefined : fromChecksum(filter.eq),
+    ne: filter.ne === undefined ? undefined : fromChecksum(filter.ne),
+    in: filter.in?.map((checksum) => fromChecksum(checksum)),
+    notIn: filter.notIn?.map((checksum) => fromChecksum(checksum)),
+  });
+}
+
+const encodedVideoFiles = (eb: AssetExpressionBuilder) =>
+  eb
+    .selectFrom('asset_file')
+    .whereRef('asset_file.assetId', '=', 'asset.id')
+    .where('asset_file.type', '=', AssetFileType.EncodedVideo);
+
+function existsPredicates(
+  eb: AssetExpressionBuilder,
+  filter: { eq: boolean } | undefined,
+  subquery: () => Expression<unknown>,
+): Expression<SqlBool>[] {
+  if (!filter) {
+    return [];
   }
-  if (filter.ne !== undefined) {
-    predicates.push(eb('asset.checksum', '!=', fromChecksum(filter.ne)));
-  }
-  if (filter.in !== undefined) {
-    predicates.push(
-      eb(
-        'asset.checksum',
-        'in',
-        filter.in.map((checksum) => fromChecksum(checksum)),
-      ),
-    );
-  }
-  if (filter.notIn !== undefined) {
-    predicates.push(
-      eb(
-        'asset.checksum',
-        'not in',
-        filter.notIn.map((checksum) => fromChecksum(checksum)),
-      ),
-    );
-  }
-  return predicates;
+  const exists = eb.exists(subquery());
+  return [filter.eq ? exists : eb.not(exists)];
 }
 
 // predicates are collected as expressions rather than chained `where` calls so the same
 // helpers can build each `or` branch, which must compose into eb.and/eb.or
 function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch) {
   const { encodedVideoPath } = branch;
-  const albumExists = eb.exists(albumAssets(eb));
-  const personExists = eb.exists(visibleFaces(eb));
-  const tagExists = eb.exists(tagAssets(eb));
-  const encodedVideoExists = eb.exists(
-    eb
-      .selectFrom('asset_file')
-      .whereRef('asset_file.assetId', '=', 'asset.id')
-      .where('asset_file.type', '=', AssetFileType.EncodedVideo),
-  );
   return [
-    ...idPredicates(eb, 'asset.id', branch.id),
-    ...idPredicates(eb, 'asset.libraryId', branch.libraryId),
-    ...enumPredicates(eb, 'asset.type', branch.type),
-    ...enumPredicates(eb, 'asset.visibility', branch.visibility),
+    ...comparisonPredicates(eb, 'asset.id', branch.id),
+    ...comparisonPredicates(eb, 'asset.libraryId', branch.libraryId),
+    ...comparisonPredicates(eb, 'asset.type', branch.type),
+    ...comparisonPredicates(eb, 'asset.visibility', branch.visibility),
     ...(branch.isFavorite ? [eb('asset.isFavorite', '=', branch.isFavorite.eq)] : []),
     ...(branch.isOffline ? [eb('asset.isOffline', '=', branch.isOffline.eq)] : []),
     ...(branch.isMotion ? [eb('asset.livePhotoVideoId', branch.isMotion.eq ? 'is not' : 'is', null)] : []),
-    ...(branch.isEncoded ? [branch.isEncoded.eq ? encodedVideoExists : eb.not(encodedVideoExists)] : []),
-    ...(branch.hasAlbums ? [branch.hasAlbums.eq ? albumExists : eb.not(albumExists)] : []),
-    ...(branch.hasPeople ? [branch.hasPeople.eq ? personExists : eb.not(personExists)] : []),
-    ...(branch.hasTags ? [branch.hasTags.eq ? tagExists : eb.not(tagExists)] : []),
-    ...stringEqNeInPredicates(eb, 'asset_exif.city', branch.city),
-    ...stringEqNeInPredicates(eb, 'asset_exif.state', branch.state),
-    ...stringEqNeInPredicates(eb, 'asset_exif.country', branch.country),
-    ...stringEqNeInPredicates(eb, 'asset_exif.make', branch.make),
-    ...stringEqNeInPredicates(eb, 'asset_exif.model', branch.model),
-    ...stringEqNeInPredicates(eb, 'asset_exif.lensModel', branch.lensModel),
+    ...existsPredicates(eb, branch.isEncoded, () => encodedVideoFiles(eb)),
+    ...existsPredicates(eb, branch.hasAlbums, () => albumAssets(eb)),
+    ...existsPredicates(eb, branch.hasPeople, () => visibleFaces(eb)),
+    ...existsPredicates(eb, branch.hasTags, () => tagAssets(eb)),
+    ...comparisonPredicates(eb, 'asset_exif.city', branch.city),
+    ...comparisonPredicates(eb, 'asset_exif.state', branch.state),
+    ...comparisonPredicates(eb, 'asset_exif.country', branch.country),
+    ...comparisonPredicates(eb, 'asset_exif.make', branch.make),
+    ...comparisonPredicates(eb, 'asset_exif.model', branch.model),
+    ...comparisonPredicates(eb, 'asset_exif.lensModel', branch.lensModel),
     ...stringPatternPredicates(eb, 'asset_exif.description', branch.description),
     ...stringPatternPredicates(eb, 'asset.originalFileName', branch.originalFileName),
     ...stringPatternPredicates(eb, 'asset.originalPath', branch.originalPath),
@@ -834,12 +738,12 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
           ),
         ]
       : []),
-    ...numberPredicates(eb, 'asset_exif.rating', branch.rating),
-    ...numberPredicates(eb, 'asset_exif.fileSizeInByte', branch.fileSizeInBytes),
-    ...datePredicates(eb, 'asset.fileCreatedAt', branch.takenAt),
-    ...datePredicates(eb, 'asset.createdAt', branch.createdAt),
-    ...datePredicates(eb, 'asset.updatedAt', branch.updatedAt),
-    ...datePredicates(eb, 'asset.deletedAt', branch.trashedAt),
+    ...comparisonPredicates(eb, 'asset_exif.rating', branch.rating),
+    ...comparisonPredicates(eb, 'asset_exif.fileSizeInByte', branch.fileSizeInBytes),
+    ...comparisonPredicates(eb, 'asset.fileCreatedAt', branch.takenAt),
+    ...comparisonPredicates(eb, 'asset.createdAt', branch.createdAt),
+    ...comparisonPredicates(eb, 'asset.updatedAt', branch.updatedAt),
+    ...comparisonPredicates(eb, 'asset.deletedAt', branch.trashedAt),
     ...albumIdsPredicates(eb, branch.albumIds),
     ...personIdsPredicates(eb, branch.personIds),
     ...tagIdsPredicates(eb, branch.tagIds),
@@ -847,27 +751,19 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
     ...(encodedVideoPath
       ? [
           eb.exists(
-            eb
-              .selectFrom('asset_file')
-              .whereRef('asset_file.assetId', '=', 'asset.id')
-              .where('asset_file.type', '=', AssetFileType.EncodedVideo)
+            encodedVideoFiles(eb)
               .where('asset_file.isEdited', '=', false)
-              .$if(encodedVideoPath.eq !== undefined, (qb) => qb.where('asset_file.path', '=', encodedVideoPath.eq!))
-              .$if(encodedVideoPath.ne !== undefined, (qb) => qb.where('asset_file.path', '!=', encodedVideoPath.ne!))
-              .$if(encodedVideoPath.in !== undefined, (qb) => qb.where('asset_file.path', 'in', encodedVideoPath.in!))
-              .$if(encodedVideoPath.notIn !== undefined, (qb) =>
-                qb.where('asset_file.path', 'not in', encodedVideoPath.notIn!),
-              ),
+              .where((eb) => eb.and(comparisonPredicates(eb, 'asset_file.path', encodedVideoPath))),
           ),
         ]
       : []),
   ];
 }
 
+// ordering is deliberately left to the caller so aggregate-only consumers (counts, stats)
+// can compose the same filters without stripping an order by
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderV3Options) {
   const filter = options.filter ?? {};
-  const orderField = options.order?.field ?? SearchOrderField.FileCreatedAt;
-  const orderDirection = options.order?.direction ?? AssetOrder.Desc;
 
   return (
     kysely
@@ -875,14 +771,7 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
       .selectFrom('asset')
       // postgres eliminates the left join when no exif column is referenced, so unused joins are free
       .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-      .$if(!!options.withExif, (qb) =>
-        qb.select((eb) =>
-          eb.fn
-            .toJson(eb.table('asset_exif'))
-            .$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>> | null>()
-            .as('exifInfo'),
-        ),
-      )
+      .$if(!!options.withExif, (qb) => qb.select(selectExifInfo))
       .$if(!!options.userIds && options.userIds.length > 0, (qb) =>
         qb.where('asset.ownerId', '=', anyUuid(options.userIds!)),
       )
@@ -895,28 +784,28 @@ export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuild
         }
         return predicates.length > 0 ? eb.and(predicates) : eb.lit(true);
       })
-      .$call((qb) => {
-        switch (orderField) {
-          case SearchOrderField.FileCreatedAt: {
-            return qb.orderBy('asset.fileCreatedAt', orderDirection);
-          }
-          case SearchOrderField.LocalDateTime: {
-            return qb.orderBy('asset.localDateTime', orderDirection);
-          }
-          // nulls last: assets without an asset_exif row would otherwise lead descending results
-          case SearchOrderField.FileSizeInBytes: {
-            return qb.orderBy('asset_exif.fileSizeInByte', (ob) =>
-              (orderDirection === AssetOrder.Asc ? ob.asc() : ob.desc()).nullsLast(),
-            );
-          }
-          case SearchOrderField.Rating: {
-            return qb.orderBy('asset_exif.rating', (ob) =>
-              (orderDirection === AssetOrder.Asc ? ob.asc() : ob.desc()).nullsLast(),
-            );
-          }
-        }
+  );
+}
+
+const searchOrderColumns = {
+  [SearchOrderField.FileCreatedAt]: { column: 'asset.fileCreatedAt', nullable: false },
+  [SearchOrderField.LocalDateTime]: { column: 'asset.localDateTime', nullable: false },
+  [SearchOrderField.FileSizeInBytes]: { column: 'asset_exif.fileSizeInByte', nullable: true },
+  [SearchOrderField.Rating]: { column: 'asset_exif.rating', nullable: true },
+} as const;
+
+export function withSearchOrder(qb: ReturnType<typeof searchAssetBuilder>, order?: SearchOrder) {
+  const { field, direction } = order ?? DEFAULT_SEARCH_ORDER;
+  const { column, nullable } = searchOrderColumns[field];
+  return (
+    qb
+      .orderBy(column, (ob) => {
+        const ordered = direction === AssetOrder.Asc ? ob.asc() : ob.desc();
+        // nulls last: assets without an asset_exif row would otherwise lead descending results
+        return nullable ? ordered.nullsLast() : ordered;
       })
-      .orderBy('asset.id', orderDirection)
+      // id tie-break for deterministic pagination
+      .orderBy('asset.id', direction)
   );
 }
 

@@ -41,7 +41,7 @@ where
   and "asset"."deletedAt" is null
 order by
   "asset"."fileCreatedAt" desc,
-  "asset"."id" asc
+  "asset"."id" desc
 limit
   $5
 offset
@@ -1007,7 +1007,7 @@ where
     group by
       "tag_asset"."assetId"
     having
-      count(distinct "tag_closure"."id_ancestor") >= $3
+      count(distinct "tag_closure"."id_ancestor") = $3
   )
 order by
   "asset"."fileCreatedAt" desc,
@@ -1235,8 +1235,8 @@ from
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."fileCreatedAt" >= $2
-    and "asset"."fileCreatedAt" < $3
+    "asset"."fileCreatedAt" < $2
+    and "asset"."fileCreatedAt" >= $3
   )
 order by
   "asset"."fileCreatedAt" desc,
@@ -1419,8 +1419,8 @@ from
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
-    "asset"."fileCreatedAt" >= $2
-    and "asset"."fileCreatedAt" < $3
+    "asset"."fileCreatedAt" < $2
+    and "asset"."fileCreatedAt" >= $3
     and (
       "asset"."isFavorite" = $4
       or exists (
@@ -1459,8 +1459,8 @@ where
   "asset"."ownerId" = any ($1::uuid[])
   and (
     "asset_exif"."fileSizeInByte" >= $2
-    and "asset"."fileCreatedAt" >= $3
-    and "asset"."fileCreatedAt" < $4
+    and "asset"."fileCreatedAt" < $3
+    and "asset"."fileCreatedAt" >= $4
   )
 
 -- SearchRepository.searchStatisticsV3 (with-or)
