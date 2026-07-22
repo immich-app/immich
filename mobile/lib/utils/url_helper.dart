@@ -10,6 +10,24 @@ String sanitizeUrl(String url) {
   return urlWithSchema.trimRight().replaceFirst(RegExp(r"/+$"), "");
 }
 
+/// Validates a user-entered server URL
+bool isValidServerUrl(String? url) {
+  if (url == null || url.isEmpty) {
+    return true;
+  }
+
+  if (!url.contains('://')) {
+    // Prepend conforming scheme for URL validation
+    // Uri.tryParse will not parse out host without a scheme provided, even though we assume http(s) when connecting
+    url = 'http://$url';
+  }
+
+  final parsedUrl = Uri.tryParse(url);
+  return parsedUrl != null &&
+      (parsedUrl.scheme.isEmpty || parsedUrl.scheme.startsWith(RegExp(r'https?'))) &&
+      parsedUrl.host.isNotEmpty;
+}
+
 String? getServerUrl() {
   final serverUrl = punycodeDecodeUrl(Store.tryGet(StoreKey.serverEndpoint));
   final serverUri = serverUrl != null ? Uri.tryParse(serverUrl) : null;
