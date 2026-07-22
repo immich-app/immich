@@ -11,45 +11,37 @@
 part of openapi.api;
 
 /// User avatar color
-class UserAvatarColor {
-  /// Instantiate a new enum with the provided [value].
-  const UserAvatarColor._(this.value);
+enum UserAvatarColor {
+  primary._(r'primary'),
+  pink._(r'pink'),
+  red._(r'red'),
+  yellow._(r'yellow'),
+  blue._(r'blue'),
+  green._(r'green'),
+  purple._(r'purple'),
+  orange._(r'orange'),
+  gray._(r'gray'),
+  amber._(r'amber'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const UserAvatarColor._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const primary = UserAvatarColor._(r'primary');
-  static const pink = UserAvatarColor._(r'pink');
-  static const red = UserAvatarColor._(r'red');
-  static const yellow = UserAvatarColor._(r'yellow');
-  static const blue = UserAvatarColor._(r'blue');
-  static const green = UserAvatarColor._(r'green');
-  static const purple = UserAvatarColor._(r'purple');
-  static const orange = UserAvatarColor._(r'orange');
-  static const gray = UserAvatarColor._(r'gray');
-  static const amber = UserAvatarColor._(r'amber');
-
-  /// List of all possible values in this [enum][UserAvatarColor].
-  static const values = <UserAvatarColor>[
-    primary,
-    pink,
-    red,
-    yellow,
-    blue,
-    green,
-    purple,
-    orange,
-    gray,
-    amber,
-  ];
-
+  /// Returns the instance of [UserAvatarColor] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static UserAvatarColor? fromJson(dynamic value) => UserAvatarColorTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [UserAvatarColor]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<UserAvatarColor> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <UserAvatarColor>[];
     if (json is List && json.isNotEmpty) {
@@ -71,9 +63,11 @@ class UserAvatarColorTypeTransformer {
 
   const UserAvatarColorTypeTransformer._();
 
-  String encode(UserAvatarColor data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(UserAvatarColor data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a UserAvatarColor.
+  /// Returns the instance of [UserAvatarColor] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -82,6 +76,9 @@ class UserAvatarColorTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   UserAvatarColor? decode(dynamic data, {bool allowNull = true}) {
+    if (data is UserAvatarColor) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'primary': return UserAvatarColor.primary;
@@ -103,7 +100,7 @@ class UserAvatarColorTypeTransformer {
     return null;
   }
 
-  /// Singleton [UserAvatarColorTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static UserAvatarColorTypeTransformer? _instance;
 }
 

@@ -67,7 +67,7 @@ export class MyConsoleLogger extends ConsoleLogger {
   };
 
   private withColor(text: string, color: LogColor) {
-    return this.isColorEnabled ? `\u001B[${color}m${text}\u001B[39m` : text;
+    return this.isColorEnabled ? `\u{1B}[${color}m${text}\u{1B}[39m` : text;
   }
 }
 
@@ -80,17 +80,17 @@ export class LoggingRepository {
     @Inject(ClsService) cls: ClsService | undefined,
     @Inject(ConfigRepository) configRepository: ConfigRepository | undefined,
   ) {
-    let noColor = false;
+    let isNoColor = false;
     let logFormat = LogFormat.Console;
     if (configRepository) {
       const env = configRepository.getEnv();
-      noColor = env.noColor;
+      isNoColor = env.noColor;
       logFormat = env.logFormat ?? logFormat;
     }
     this.logger = new MyConsoleLogger(cls, {
       context: LoggingRepository.name,
       json: logFormat === LogFormat.Json,
-      color: !noColor,
+      color: !isNoColor,
     });
   }
 

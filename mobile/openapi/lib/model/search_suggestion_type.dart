@@ -11,37 +11,33 @@
 part of openapi.api;
 
 /// Suggestion type
-class SearchSuggestionType {
-  /// Instantiate a new enum with the provided [value].
-  const SearchSuggestionType._(this.value);
+enum SearchSuggestionType {
+  country._(r'country'),
+  state._(r'state'),
+  city._(r'city'),
+  cameraMake._(r'camera-make'),
+  cameraModel._(r'camera-model'),
+  cameraLensModel._(r'camera-lens-model'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const SearchSuggestionType._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const country = SearchSuggestionType._(r'country');
-  static const state = SearchSuggestionType._(r'state');
-  static const city = SearchSuggestionType._(r'city');
-  static const cameraMake = SearchSuggestionType._(r'camera-make');
-  static const cameraModel = SearchSuggestionType._(r'camera-model');
-  static const cameraLensModel = SearchSuggestionType._(r'camera-lens-model');
-
-  /// List of all possible values in this [enum][SearchSuggestionType].
-  static const values = <SearchSuggestionType>[
-    country,
-    state,
-    city,
-    cameraMake,
-    cameraModel,
-    cameraLensModel,
-  ];
-
+  /// Returns the instance of [SearchSuggestionType] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static SearchSuggestionType? fromJson(dynamic value) => SearchSuggestionTypeTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [SearchSuggestionType]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<SearchSuggestionType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <SearchSuggestionType>[];
     if (json is List && json.isNotEmpty) {
@@ -63,9 +59,11 @@ class SearchSuggestionTypeTypeTransformer {
 
   const SearchSuggestionTypeTypeTransformer._();
 
-  String encode(SearchSuggestionType data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(SearchSuggestionType data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a SearchSuggestionType.
+  /// Returns the instance of [SearchSuggestionType] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -74,6 +72,9 @@ class SearchSuggestionTypeTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   SearchSuggestionType? decode(dynamic data, {bool allowNull = true}) {
+    if (data is SearchSuggestionType) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'country': return SearchSuggestionType.country;
@@ -91,7 +92,7 @@ class SearchSuggestionTypeTypeTransformer {
     return null;
   }
 
-  /// Singleton [SearchSuggestionTypeTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static SearchSuggestionTypeTypeTransformer? _instance;
 }
 

@@ -1,4 +1,5 @@
 #! /usr/bin/env node
+import { AssetVisibility } from '@immich/sdk';
 import { Command, Option } from 'commander';
 import os from 'node:os';
 import path from 'node:path';
@@ -46,7 +47,7 @@ program
   .usage('[paths...] [options]')
   .addOption(new Option('-r, --recursive', 'Recursive').env('IMMICH_RECURSIVE').default(false))
   .addOption(new Option('-i, --ignore <pattern>', 'Pattern to ignore').env('IMMICH_IGNORE_PATHS'))
-  .addOption(new Option('-h, --skip-hash', "Don't hash files before upload").env('IMMICH_SKIP_HASH').default(false))
+  .addOption(new Option('--skip-hash', "Don't hash files before upload").env('IMMICH_SKIP_HASH').default(false))
   .addOption(new Option('-H, --include-hidden', 'Include hidden folders').env('IMMICH_INCLUDE_HIDDEN').default(false))
   .addOption(
     new Option('-a, --album', 'Automatically create albums based on folder name')
@@ -57,6 +58,11 @@ program
     new Option('-A, --album-name <name>', 'Add all assets to specified album')
       .env('IMMICH_ALBUM_NAME')
       .conflicts('album'),
+  )
+  .addOption(
+    new Option('--visibility <visibility>', 'Set the visibility of uploaded assets')
+      .choices(Object.values(AssetVisibility))
+      .env('IMMICH_VISIBILITY'),
   )
   .addOption(
     new Option('-n, --dry-run', "Don't perform any actions, just show what will be done")

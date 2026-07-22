@@ -7,7 +7,7 @@ export const sleep = (ms: number) => {
 };
 
 export const padYearMonth = (yearMonth: string) => {
-  const [year, month] = yearMonth.split('-');
+  const [year, month] = yearMonth.split('-', 2);
   return `${year}-${month.padStart(2, '0')}`;
 };
 
@@ -72,6 +72,7 @@ export const thumbnailUtils = {
   },
   async queryThumbnailInViewport(page: Page, collector: (assetId: string) => boolean) {
     const assetIds: string[] = [];
+    // eslint-disable-next-line unicorn/no-this-outside-of-class
     for (const thumb of await this.locator(page).all()) {
       const box = await thumb.boundingBox();
       if (box) {
@@ -151,6 +152,7 @@ export const timelineUtils = {
       page.evaluate(() => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
+
         return document.querySelector('#asset-grid').scrollTop;
       });
     await expect.poll(queryTop).toBeGreaterThan(0);
@@ -177,6 +179,7 @@ export const assetViewerUtils = {
       page.evaluate(() => {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
+        // eslint-disable-next-line unicorn/no-optional-chaining-on-undeclared-variable
         return document.activeElement?.dataset?.asset;
       });
     await expect(poll(page, activeElement, (result) => result === assetId)).resolves.toBe(assetId);

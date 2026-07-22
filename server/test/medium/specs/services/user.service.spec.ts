@@ -126,8 +126,8 @@ describe(UserService.name, () => {
       const after = await sut.setLicense(auth, license);
       expect(after.licenseKey).toEqual(license.licenseKey);
       expect(after.activationKey).toEqual(license.activationKey);
-      const getResponse = await sut.getLicense(auth);
-      expect(getResponse).toEqual(after);
+      const response = await sut.getLicense(auth);
+      expect(response).toEqual(after);
     });
   });
 

@@ -49,6 +49,6 @@ class ImmichTimeRange extends MediaTimeRange {
   }
 }
 
-if (!globalThis.customElements.get('immich-time-range')) {
-  globalThis.customElements.define('immich-time-range', ImmichTimeRange);
+if (!customElements.get('immich-time-range')) {
+  customElements.define('immich-time-range', ImmichTimeRange);
 }

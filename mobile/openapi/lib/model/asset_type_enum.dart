@@ -11,33 +11,31 @@
 part of openapi.api;
 
 /// Asset type
-class AssetTypeEnum {
-  /// Instantiate a new enum with the provided [value].
-  const AssetTypeEnum._(this.value);
+enum AssetTypeEnum {
+  IMAGE._(r'IMAGE'),
+  VIDEO._(r'VIDEO'),
+  AUDIO._(r'AUDIO'),
+  OTHER._(r'OTHER'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const AssetTypeEnum._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const IMAGE = AssetTypeEnum._(r'IMAGE');
-  static const VIDEO = AssetTypeEnum._(r'VIDEO');
-  static const AUDIO = AssetTypeEnum._(r'AUDIO');
-  static const OTHER = AssetTypeEnum._(r'OTHER');
-
-  /// List of all possible values in this [enum][AssetTypeEnum].
-  static const values = <AssetTypeEnum>[
-    IMAGE,
-    VIDEO,
-    AUDIO,
-    OTHER,
-  ];
-
+  /// Returns the instance of [AssetTypeEnum] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static AssetTypeEnum? fromJson(dynamic value) => AssetTypeEnumTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [AssetTypeEnum]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<AssetTypeEnum> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetTypeEnum>[];
     if (json is List && json.isNotEmpty) {
@@ -59,9 +57,11 @@ class AssetTypeEnumTypeTransformer {
 
   const AssetTypeEnumTypeTransformer._();
 
-  String encode(AssetTypeEnum data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(AssetTypeEnum data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a AssetTypeEnum.
+  /// Returns the instance of [AssetTypeEnum] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -70,6 +70,9 @@ class AssetTypeEnumTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   AssetTypeEnum? decode(dynamic data, {bool allowNull = true}) {
+    if (data is AssetTypeEnum) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'IMAGE': return AssetTypeEnum.IMAGE;
@@ -85,7 +88,7 @@ class AssetTypeEnumTypeTransformer {
     return null;
   }
 
-  /// Singleton [AssetTypeEnumTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static AssetTypeEnumTypeTransformer? _instance;
 }
 
