@@ -11,37 +11,33 @@
 part of openapi.api;
 
 /// Notification type
-class NotificationType {
-  /// Instantiate a new enum with the provided [value].
-  const NotificationType._(this.value);
+enum NotificationType {
+  jobFailed._(r'JobFailed'),
+  backupFailed._(r'BackupFailed'),
+  systemMessage._(r'SystemMessage'),
+  albumInvite._(r'AlbumInvite'),
+  albumUpdate._(r'AlbumUpdate'),
+  custom._(r'Custom'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const NotificationType._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const jobFailed = NotificationType._(r'JobFailed');
-  static const backupFailed = NotificationType._(r'BackupFailed');
-  static const systemMessage = NotificationType._(r'SystemMessage');
-  static const albumInvite = NotificationType._(r'AlbumInvite');
-  static const albumUpdate = NotificationType._(r'AlbumUpdate');
-  static const custom = NotificationType._(r'Custom');
-
-  /// List of all possible values in this [enum][NotificationType].
-  static const values = <NotificationType>[
-    jobFailed,
-    backupFailed,
-    systemMessage,
-    albumInvite,
-    albumUpdate,
-    custom,
-  ];
-
+  /// Returns the instance of [NotificationType] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static NotificationType? fromJson(dynamic value) => NotificationTypeTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [NotificationType]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<NotificationType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <NotificationType>[];
     if (json is List && json.isNotEmpty) {
@@ -63,9 +59,11 @@ class NotificationTypeTypeTransformer {
 
   const NotificationTypeTypeTransformer._();
 
-  String encode(NotificationType data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(NotificationType data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a NotificationType.
+  /// Returns the instance of [NotificationType] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -74,6 +72,9 @@ class NotificationTypeTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   NotificationType? decode(dynamic data, {bool allowNull = true}) {
+    if (data is NotificationType) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'JobFailed': return NotificationType.jobFailed;
@@ -91,7 +92,7 @@ class NotificationTypeTypeTransformer {
     return null;
   }
 
-  /// Singleton [NotificationTypeTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static NotificationTypeTypeTransformer? _instance;
 }
 

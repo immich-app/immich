@@ -75,7 +75,7 @@ describe('/map', () => {
           country: 'United States of America',
           id: expect.any(String),
           lat: expect.closeTo(39.115),
-          lon: expect.closeTo(-108.400_968),
+          lon: expect.closeTo(-108.400968),
           state: 'Colorado',
         },
         {
@@ -83,7 +83,7 @@ describe('/map', () => {
           country: 'United States of America',
           id: expect.any(String),
           lat: expect.closeTo(41.2203),
-          lon: expect.closeTo(-96.071_625),
+          lon: expect.closeTo(-96.071625),
           state: 'Nebraska',
         },
       ]);
@@ -123,7 +123,7 @@ describe('/map', () => {
           country: 'United States of America',
           id: expect.any(String),
           lat: expect.closeTo(39.115),
-          lon: expect.closeTo(-108.400_968),
+          lon: expect.closeTo(-108.400968),
           state: 'Colorado',
         },
         {
@@ -131,7 +131,7 @@ describe('/map', () => {
           country: 'United States of America',
           id: expect.any(String),
           lat: expect.closeTo(41.2203),
-          lon: expect.closeTo(-96.071_625),
+          lon: expect.closeTo(-96.071625),
           state: 'Nebraska',
         },
       ]);
@@ -188,20 +188,20 @@ describe('/map', () => {
     const reverseGeocodeTestCases = [
       {
         name: 'Vaucluse',
-        lat: -33.858_977_058_663_13,
-        lon: 151.278_490_730_270_48,
+        lat: -33.85897705866313,
+        lon: 151.27849073027048,
         results: [{ city: 'Vaucluse', state: 'New South Wales', country: 'Australia' }],
       },
       {
         name: 'Ravenhall',
-        lat: -37.765_732_399_174_75,
-        lon: 144.752_453_164_883_3,
+        lat: -37.76573239917475,
+        lon: 144.7524531648833,
         results: [{ city: 'Ravenhall', state: 'Victoria', country: 'Australia' }],
       },
       {
         name: 'Scarborough',
-        lat: -31.894_346_156_789_997,
-        lon: 115.757_617_103_904_64,
+        lat: -31.894346156789997,
+        lon: 115.75761710390464,
         results: [{ city: 'Scarborough', state: 'Western Australia', country: 'Australia' }],
       },
     ];

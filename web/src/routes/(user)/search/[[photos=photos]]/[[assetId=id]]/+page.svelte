@@ -242,6 +242,7 @@
 
   function removeFilter(key: keyof SearchTerms) {
     delete terms[key];
+    assetMultiSelectManager.clear();
     void goto(Route.search(terms));
   }
 </script>

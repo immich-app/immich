@@ -22,6 +22,7 @@ import 'package:immich_mobile/repositories/upload.repository.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:logging/logging.dart';
+import 'package:openapi/api.dart' as api;
 import 'package:path/path.dart' as p;
 
 final backgroundUploadServiceProvider = Provider((ref) {
@@ -316,6 +317,8 @@ class BackgroundUploadService {
       priority: priority,
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
+      // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
+      fields: entity.isLivePhoto ? {'visibility': api.AssetVisibility.hidden.toString()} : null,
       cloudId: entity.isLivePhoto ? null : asset.cloudId,
       adjustmentTime: entity.isLivePhoto ? null : asset.adjustmentTime?.toIso8601String(),
       latitude: entity.isLivePhoto ? null : asset.latitude?.toString(),

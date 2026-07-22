@@ -46,7 +46,7 @@ void main() {
 
   void sendUser(SyncStream stream, String id, String name) {
     stream.send(
-      type: SyncEntityType.userV1.value,
+      type: SyncEntityType.userV1.toString(),
       data: SyncUserV1(
         id: id,
         name: name,

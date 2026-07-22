@@ -11,29 +11,29 @@
 part of openapi.api;
 
 /// Image format
-class ImageFormat {
-  /// Instantiate a new enum with the provided [value].
-  const ImageFormat._(this.value);
+enum ImageFormat {
+  jpeg._(r'jpeg'),
+  webp._(r'webp'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const ImageFormat._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const jpeg = ImageFormat._(r'jpeg');
-  static const webp = ImageFormat._(r'webp');
-
-  /// List of all possible values in this [enum][ImageFormat].
-  static const values = <ImageFormat>[
-    jpeg,
-    webp,
-  ];
-
+  /// Returns the instance of [ImageFormat] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static ImageFormat? fromJson(dynamic value) => ImageFormatTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [ImageFormat]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<ImageFormat> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ImageFormat>[];
     if (json is List && json.isNotEmpty) {
@@ -55,9 +55,11 @@ class ImageFormatTypeTransformer {
 
   const ImageFormatTypeTransformer._();
 
-  String encode(ImageFormat data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(ImageFormat data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a ImageFormat.
+  /// Returns the instance of [ImageFormat] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -66,6 +68,9 @@ class ImageFormatTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   ImageFormat? decode(dynamic data, {bool allowNull = true}) {
+    if (data is ImageFormat) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'jpeg': return ImageFormat.jpeg;
@@ -79,7 +84,7 @@ class ImageFormatTypeTransformer {
     return null;
   }
 
-  /// Singleton [ImageFormatTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static ImageFormatTypeTransformer? _instance;
 }
 

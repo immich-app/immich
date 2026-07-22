@@ -12,10 +12,10 @@
   let loading = $state(true);
 
   onMount(async () => {
-    if (oauth.isCallback(globalThis.location)) {
+    if (oauth.isCallback(location)) {
       try {
         loading = true;
-        const response = await oauth.link(globalThis.location);
+        const response = await oauth.link(location);
         authManager.setUser(response);
         toastManager.primary($t('linked_oauth_account'));
       } catch (error) {
@@ -50,9 +50,7 @@
         {#if authManager.user.oauthId}
           <Button shape="round" size="small" onclick={() => handleUnlink()}>{$t('unlink_oauth')}</Button>
         {:else}
-          <Button shape="round" size="small" onclick={() => oauth.authorize(globalThis.location)}
-            >{$t('link_to_oauth')}</Button
-          >
+          <Button shape="round" size="small" onclick={() => oauth.authorize(location)}>{$t('link_to_oauth')}</Button>
         {/if}
       {/if}
     </div>

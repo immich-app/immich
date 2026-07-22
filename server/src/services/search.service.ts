@@ -77,6 +77,8 @@ export class SearchService extends BaseService {
 
     if (dto.albumIds && dto.albumIds.length > 0) {
       await this.requireAccess({ auth, ids: dto.albumIds, permission: Permission.AlbumRead });
+    } else if (auth.sharedLink) {
+      throw new BadRequestException('Shared link access is only allowed in combination with an albumIds filter');
     } else {
       userIds = await this.getUserIdsToSearch(auth, dto.visibility);
     }
@@ -98,7 +100,7 @@ export class SearchService extends BaseService {
   }
 
   async searchStatistics(auth: AuthDto, dto: StatisticsSearchDto): Promise<SearchStatisticsResponseDto> {
-    const userIds = await this.getUserIdsToSearch(auth);
+    const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
     if (dto.visibility === AssetVisibility.Locked) {
       requireElevatedPermission(auth);
     }
@@ -116,7 +118,11 @@ export class SearchService extends BaseService {
     }
 
     const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
-    const items = await this.searchRepository.searchRandom(dto.size || 250, { ...dto, userIds });
+    const items = await this.searchRepository.searchRandom(dto.size || 250, {
+      ...dto,
+      visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
+      userIds,
+    });
     return items.map((item) => mapAsset(item, { auth }));
   }
 

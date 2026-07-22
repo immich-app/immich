@@ -101,7 +101,7 @@ class ViewerBottomBar extends ConsumerWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          OcrToggleButton(asset: asset),
+                          if (asset.isImage) OcrToggleButton(asset: asset),
                           if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
                           if (!isReadonlyModeEnabled)
                             Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),

@@ -13,7 +13,7 @@ export function updateObject(target: any, source: any): boolean {
     }
     const isDate = target[key] instanceof Date;
     if (typeof target[key] === 'object' && !isDate) {
-      updated = updated || updateObject(target[key], source[key]);
+      updated ||= updateObject(target[key], source[key]);
     } else {
       if (target[key] !== source[key]) {
         target[key] = source[key];

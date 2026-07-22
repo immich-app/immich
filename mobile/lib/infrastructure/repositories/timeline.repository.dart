@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
@@ -614,7 +613,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     return (
       bucketSource: () => _watchRemoteBucket(filter: filter, groupBy: groupBy, sortBy: sortBy),
       assetSource: (offset, count) =>
-          _getRemoteAssets(filter: filter, offset: offset, count: count, joinLocal: joinLocal),
+          _getRemoteAssets(filter: filter, offset: offset, count: count, joinLocal: joinLocal, sortBy: sortBy),
       origin: origin,
     );
   }
@@ -651,6 +650,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     required int offset,
     required int count,
     bool joinLocal = false,
+    SortAssetsBy sortBy = SortAssetsBy.taken,
   }) {
     if (joinLocal) {
       final query =
@@ -663,7 +663,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
             ])
             ..addColumns([_db.localAssetEntity.id])
             ..where(filter(_db.remoteAssetEntity))
-            ..orderBy([OrderingTerm.desc(_db.remoteAssetEntity.createdAt)])
+            ..orderBy([
+              OrderingTerm.desc(
+                sortBy == SortAssetsBy.uploaded ? _db.remoteAssetEntity.uploadedAt : _db.remoteAssetEntity.createdAt,
+              ),
+            ])
             ..limit(count, offset: offset);
 
       return query
@@ -672,7 +676,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     } else {
       final query = _db.remoteAssetEntity.select()
         ..where(filter)
-        ..orderBy([(row) => OrderingTerm.desc(row.createdAt)])
+        ..orderBy([(row) => OrderingTerm.desc(sortBy == SortAssetsBy.uploaded ? row.uploadedAt : row.createdAt)])
         ..limit(count, offset: offset);
 
       return query.map((row) => row.toDto()).get();
@@ -680,16 +684,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 }
 
-List<Bucket> _generateBuckets(int count) {
-  final buckets = List.filled(
-    (count / kTimelineNoneSegmentSize).ceil(),
-    const Bucket(assetCount: kTimelineNoneSegmentSize),
-  );
-  if (count % kTimelineNoneSegmentSize != 0) {
-    buckets[buckets.length - 1] = Bucket(assetCount: count % kTimelineNoneSegmentSize);
-  }
-  return buckets;
-}
+List<Bucket> _generateBuckets(int count) => count == 0 ? const [] : [Bucket(assetCount: count)];
 
 extension on Expression<DateTime> {
   Expression<String> dateFmt(GroupAssetsBy groupBy, {bool toLocal = false}) {

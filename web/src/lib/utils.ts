@@ -109,11 +109,10 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
     });
 
     xhr.addEventListener('load', () => {
+      unsubscribe();
       if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
-        unsubscribe();
         resolve({ data: xhr.response as T, status: xhr.status });
       } else {
-        unsubscribe();
         reject(new ApiError(xhr.statusText, xhr.status, xhr.response));
       }
     });
@@ -326,9 +325,9 @@ export const oauth = {
   authorize: async (location: Location) => {
     const $t = get(t);
     try {
-      const redirectUri = location.href.split('?')[0];
+      const redirectUri = location.href.split('?', 1)[0];
       const { url } = await startOAuth({ oAuthConfigDto: { redirectUri } });
-      globalThis.location.href = url;
+      globalThis.location.assign(url);
       return true;
     } catch (error) {
       handleError(error, $t('errors.unable_to_login_with_oauth'));
@@ -430,7 +429,8 @@ export const isEnabled = ({ $if }: IfLike) => $if?.() ?? true;
 export const transformToTitleCase = (text: string) => {
   if (text.length === 0) {
     return text;
-  } else if (text.length === 1) {
+  }
+  if (text.length === 1) {
     return text.charAt(0).toUpperCase();
   }
 
