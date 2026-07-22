@@ -149,148 +149,115 @@ const SearchSuggestionRequestSchema = z
   })
   .meta({ id: 'SearchSuggestionRequestDto' });
 
-const IdFilterSchema = nonEmptyPartial(
-  {
-    eq: z.uuidv4(),
-    ne: z.uuidv4(),
-  },
-  { strict: true },
-).meta({ id: 'IdFilter' });
+const IdFilterSchema = nonEmptyPartial({
+  eq: z.uuidv4(),
+  ne: z.uuidv4(),
+}).meta({ id: 'IdFilter' });
 
-const IdFilterNullableSchema = nonEmptyPartial(
-  {
-    eq: z.uuidv4().nullable(),
-    ne: z.uuidv4().nullable(),
-  },
-  { strict: true },
-).meta({ id: 'IdFilterNullable' });
+const IdFilterNullableSchema = nonEmptyPartial({
+  eq: z.uuidv4().nullable(),
+  ne: z.uuidv4().nullable(),
+}).meta({ id: 'IdFilterNullable' });
 
-const IdsFilterSchema = nonEmptyPartial(
-  {
-    any: z.array(z.uuidv4()).min(1),
-    all: z.array(z.uuidv4()).min(1),
-    none: z.array(z.uuidv4()).min(1),
-  },
-  { strict: true },
-).meta({ id: 'IdsFilter' });
+const IdsFilterSchema = nonEmptyPartial({
+  any: z.array(z.uuidv4()).min(1),
+  all: z.array(z.uuidv4()).min(1),
+  none: z.array(z.uuidv4()).min(1),
+}).meta({ id: 'IdsFilter' });
 
-const StringFilterSchema = nonEmptyPartial(
-  {
-    eq: z.string(),
-    ne: z.string(),
-    in: z.array(z.string()).min(1),
-    notIn: z.array(z.string()).min(1),
-  },
-  { strict: true },
-).meta({ id: 'StringFilter' });
+const StringFilterSchema = nonEmptyPartial({
+  eq: z.string(),
+  ne: z.string(),
+  in: z.array(z.string()).min(1),
+  notIn: z.array(z.string()).min(1),
+}).meta({ id: 'StringFilter' });
 
-const StringFilterNullableSchema = nonEmptyPartial(
-  {
-    eq: z.string().nullable(),
-    ne: z.string().nullable(),
-    in: z.array(z.string()).min(1),
-    notIn: z.array(z.string()).min(1),
-  },
-  { strict: true },
-).meta({ id: 'StringFilterNullable' });
+const StringFilterNullableSchema = nonEmptyPartial({
+  eq: z.string().nullable(),
+  ne: z.string().nullable(),
+  in: z.array(z.string()).min(1),
+  notIn: z.array(z.string()).min(1),
+}).meta({ id: 'StringFilterNullable' });
 
-const StringPatternFilterSchema = nonEmptyPartial(
-  {
-    eq: z.string().nullable(),
-    ne: z.string().nullable(),
-    in: z.array(z.string()).min(1),
-    notIn: z.array(z.string()).min(1),
-    like: z.string().min(1),
-    notLike: z.string().min(1),
-    startsWith: z.string().min(1),
-    endsWith: z.string().min(1),
-  },
-  { strict: true },
-).meta({ id: 'StringPatternFilter' });
+const StringPatternFilterSchema = nonEmptyPartial({
+  eq: z.string().nullable(),
+  ne: z.string().nullable(),
+  in: z.array(z.string()).min(1),
+  notIn: z.array(z.string()).min(1),
+  like: z.string().min(1),
+  notLike: z.string().min(1),
+  startsWith: z.string().min(1),
+  endsWith: z.string().min(1),
+}).meta({ id: 'StringPatternFilter' });
 
-const NumberFilterSchema = nonEmptyPartial(
-  {
-    eq: z.number(),
-    ne: z.number(),
-    lt: z.number(),
-    lte: z.number(),
-    gt: z.number(),
-    gte: z.number(),
-    in: z.array(z.number()).min(1),
-    notIn: z.array(z.number()).min(1),
-  },
-  { strict: true },
-).meta({ id: 'NumberFilter' });
+const NumberFilterSchema = nonEmptyPartial({
+  eq: z.number(),
+  ne: z.number(),
+  lt: z.number(),
+  lte: z.number(),
+  gt: z.number(),
+  gte: z.number(),
+  in: z.array(z.number()).min(1),
+  notIn: z.array(z.number()).min(1),
+}).meta({ id: 'NumberFilter' });
 
-const NumberFilterNullableSchema = nonEmptyPartial(
-  {
-    eq: z.number().nullable(),
-    ne: z.number().nullable(),
-    lt: z.number(),
-    lte: z.number(),
-    gt: z.number(),
-    gte: z.number(),
-    in: z.array(z.number()).min(1),
-    notIn: z.array(z.number()).min(1),
-  },
-  { strict: true },
-).meta({ id: 'NumberFilterNullable' });
+const NumberFilterNullableSchema = nonEmptyPartial({
+  eq: z.number().nullable(),
+  ne: z.number().nullable(),
+  lt: z.number(),
+  lte: z.number(),
+  gt: z.number(),
+  gte: z.number(),
+  in: z.array(z.number()).min(1),
+  notIn: z.array(z.number()).min(1),
+}).meta({ id: 'NumberFilterNullable' });
 
-const DateFilterSchema = nonEmptyPartial(
-  {
-    eq: isoDatetimeToDate,
-    ne: isoDatetimeToDate,
-    gt: isoDatetimeToDate,
-    gte: isoDatetimeToDate,
-    lt: isoDatetimeToDate,
-    lte: isoDatetimeToDate,
-  },
-  { strict: true },
-).meta({ id: 'DateFilter' });
+const DateFilterSchema = nonEmptyPartial({
+  eq: isoDatetimeToDate,
+  ne: isoDatetimeToDate,
+  gt: isoDatetimeToDate,
+  gte: isoDatetimeToDate,
+  lt: isoDatetimeToDate,
+  lte: isoDatetimeToDate,
+}).meta({ id: 'DateFilter' });
 
-const DateFilterNullableSchema = nonEmptyPartial(
-  {
-    eq: isoDatetimeToDate.nullable(),
-    ne: isoDatetimeToDate.nullable(),
-    gt: isoDatetimeToDate,
-    gte: isoDatetimeToDate,
-    lt: isoDatetimeToDate,
-    lte: isoDatetimeToDate,
-  },
-  { strict: true },
-).meta({ id: 'DateFilterNullable' });
+const DateFilterNullableSchema = nonEmptyPartial({
+  eq: isoDatetimeToDate.nullable(),
+  ne: isoDatetimeToDate.nullable(),
+  gt: isoDatetimeToDate,
+  gte: isoDatetimeToDate,
+  lt: isoDatetimeToDate,
+  lte: isoDatetimeToDate,
+}).meta({ id: 'DateFilterNullable' });
 
-const BoolFilterSchema = z.strictObject({ eq: z.boolean() }).meta({ id: 'BoolFilter' });
+const BoolFilterSchema = z.object({ eq: z.boolean() }).meta({ id: 'BoolFilter' });
 
 const enumFilterSchema = <T extends z.core.util.EnumLike>(values: z.ZodEnum<T>, id: string) =>
-  nonEmptyPartial(
-    {
-      eq: values,
-      ne: values,
-      in: z.array(values).min(1),
-      notIn: z.array(values).min(1),
-    },
-    { strict: true },
-  ).meta({ id });
+  nonEmptyPartial({
+    eq: values,
+    ne: values,
+    in: z.array(values).min(1),
+    notIn: z.array(values).min(1),
+  }).meta({ id });
 
 const EnumFilterAssetTypeSchema = enumFilterSchema(AssetTypeSchema, 'EnumFilterAssetType');
 const EnumFilterAssetVisibilitySchema = enumFilterSchema(AssetVisibilitySchema, 'EnumFilterAssetVisibility');
 
 const StringSimilarityFilterSchema = z
-  .strictObject({
+  .object({
     matches: z.string().min(1),
   })
   .meta({ id: 'StringSimilarityFilter' });
 
 export const SearchOrderSchema = z
-  .strictObject({
+  .object({
     field: SearchOrderFieldSchema.default(SearchOrderField.FileCreatedAt),
     direction: AssetOrderSchema.default(AssetOrder.Desc),
   })
   .meta({ id: 'SearchOrder' });
 
 const SearchFilterBranchSchema = z
-  .strictObject({
+  .object({
     id: IdFilterSchema.optional(),
     libraryId: IdFilterNullableSchema.optional(),
     type: EnumFilterAssetTypeSchema.optional(),

@@ -522,19 +522,18 @@ export class SearchRepository {
     pagination: AssetSearchPaginationV3Options,
     options: AssetSearchBuilderV3Options,
   ): Promise<MapAsset[]> {
-    return await searchAssetBuilder(this.db, options)
-      .select(columns.searchAsset)
-      .limit(pagination.size)
-      .execute();
+    return await searchAssetBuilder(this.db, options).select(columns.searchAsset).limit(pagination.size).execute();
   }
 
   @GenerateSql(...searchStatisticsV3Examples)
   searchStatisticsV3(options: AssetSearchBuilderV3Options) {
-    return searchAssetBuilder(this.db, options)
-      // an ORDER BY on an ungrouped column is invalid in an aggregate-only query
-      .clearOrderBy()
-      .select((qb) => qb.fn.countAll<number>().as('total'))
-      .executeTakeFirstOrThrow();
+    return (
+      searchAssetBuilder(this.db, options)
+        // an ORDER BY on an ungrouped column is invalid in an aggregate-only query
+        .clearOrderBy()
+        .select((qb) => qb.fn.countAll<number>().as('total'))
+        .executeTakeFirstOrThrow()
+    );
   }
 
   private getExifField(field: 'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel', userIds: string[]) {
