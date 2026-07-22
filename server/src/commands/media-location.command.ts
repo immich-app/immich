@@ -36,7 +36,7 @@ export class ChangeMediaLocationCommand extends CommandRunner {
         {},
       );
 
-      const success = await this.service.migrateFilePaths({
+      const isSuccess = await this.service.migrateFilePaths({
         oldValue,
         newValue,
         confirm: async ({ sourceFolder, targetFolder }) => {
@@ -65,7 +65,7 @@ export class ChangeMediaLocationCommand extends CommandRunner {
         ...
   )`;
 
-      console.log(`\n  ${success ? successMessage : 'No rows were updated'}\n`);
+      console.log(`\n  ${isSuccess ? successMessage : 'No rows were updated'}\n`);
 
       await this.showSamplePaths('after');
     } catch (error) {

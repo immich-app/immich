@@ -55,4 +55,7 @@ export class SessionTable {
 
   @Column({ nullable: true, index: true })
   oauthSid!: string | null;
+
+  @Column({ nullable: true })
+  oauthBearerToken!: string | null;
 }

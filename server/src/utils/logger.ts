@@ -2,7 +2,7 @@ import { HttpException } from '@nestjs/common';
 import { Request } from 'express';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
-const isRequestAborted = (request: Request) => request.destroyed === true && request.complete === false;
+const isRequestAborted = (request: Request) => request.destroyed && !request.complete;
 export const isHttpException = (error: Error): error is HttpException => error instanceof HttpException;
 
 export const onRequestError = (req: Request, error: Error, logger: LoggingRepository) => {

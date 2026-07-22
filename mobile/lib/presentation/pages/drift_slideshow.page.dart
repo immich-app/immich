@@ -51,6 +51,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   int? _crossfadeFromIndex;
   int? _crossfadeToIndex;
   int _zoomCycle = 0;
+  bool _disableAnimations = false;
 
   @override
   initState() {
@@ -68,6 +69,12 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     unawaited(WakelockPlus.enable());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _disableAnimations = MediaQuery.disableAnimationsOf(context);
   }
 
   @override
@@ -166,6 +173,11 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   }
 
   void _crossFadeToPage(int page) {
+    if (_disableAnimations) {
+      _pageController.jumpToPage(page);
+      return;
+    }
+
     final previousIndex = _index;
     _pageController.jumpToPage(page);
     setState(() {
@@ -273,19 +285,12 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     }
 
     if (asset.isImage) {
-      final elapsed = _stopwatch.elapsedMilliseconds;
-      final duration = _config.duration * 1000;
-
-      return TweenAnimationBuilder(
+      return _SlideshowProgressBar(
         key: Key(_index.toString()),
-        tween: Tween<double>(begin: elapsed / duration.toDouble(), end: _paused ? elapsed / duration.toDouble() : 1.0),
-        duration: Duration(milliseconds: _paused ? 1 : max(duration - elapsed, 1)),
-        builder: (context, value, _) => LinearProgressIndicator(
-          color: context.colorScheme.primary,
-          borderRadius: const BorderRadius.all(Radius.zero),
-          minHeight: 5,
-          value: value,
-        ),
+        durationMs: _config.duration * 1000,
+        elapsedMs: _stopwatch.elapsedMilliseconds,
+        paused: _paused,
+        color: context.colorScheme.primary,
       );
     } else {
       return LinearProgressIndicator(
@@ -334,6 +339,21 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     final imageProvider = getFullImageProvider(asset, size: context.sizeData);
 
     if (asset.isImage) {
+      PhotoView buildPhotoView(PhotoViewComputedScale initialScale) => PhotoView(
+        imageProvider: imageProvider,
+        index: index,
+        disableScaleGestures: true,
+        gaplessPlayback: true,
+        filterQuality: FilterQuality.high,
+        initialScale: initialScale,
+        controller: PhotoViewController(),
+        onTapUp: (_, _, _) => _onTapUp(),
+      );
+
+      if (_disableAnimations) {
+        return buildPhotoView(scale);
+      }
+
       final zoomOut = _zoomCycle.isOdd;
       final elapsed = _stopwatch.elapsedMilliseconds;
       final duration = _config.duration * 1000;
@@ -349,16 +369,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
               : 1.0,
         ),
         duration: Duration(milliseconds: _paused ? 1 : max(duration - elapsed, 1)),
-        builder: (context, value, _) => PhotoView(
-          imageProvider: imageProvider,
-          index: index,
-          disableScaleGestures: true,
-          gaplessPlayback: true,
-          filterQuality: FilterQuality.high,
-          initialScale: scale * (1.0 + value * _kenBurnsZoom),
-          controller: PhotoViewController(),
-          onTapUp: (_, _, _) => _onTapUp(),
-        ),
+        builder: (context, value, _) => buildPhotoView(scale * (1.0 + value * _kenBurnsZoom)),
       );
     } else {
       final status = ref.watch(videoPlayerProvider(asset.heroTag).select((s) => s.status));
@@ -459,6 +470,78 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Progress bar for image slides, driven by an explicit [AnimationController].
+///
+/// [TweenAnimationBuilder] creates its controller internally with the default
+/// [AnimationBehavior.normal], which makes it run ~20x too fast while the system
+/// "reduce motion" setting is on (flutter/flutter#164287). This owns its
+/// controller so it can use [AnimationBehavior.preserve] and animate at the real
+/// slide duration regardless of that setting.
+class _SlideshowProgressBar extends StatefulWidget {
+  final int durationMs;
+  final int elapsedMs;
+  final bool paused;
+  final Color color;
+
+  const _SlideshowProgressBar({
+    super.key,
+    required this.durationMs,
+    required this.elapsedMs,
+    required this.paused,
+    required this.color,
+  });
+
+  @override
+  State<_SlideshowProgressBar> createState() => _SlideshowProgressBarState();
+}
+
+class _SlideshowProgressBarState extends State<_SlideshowProgressBar> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: widget.durationMs),
+      animationBehavior: AnimationBehavior.preserve,
+    )..value = (widget.elapsedMs / widget.durationMs).clamp(0.0, 1.0);
+    if (!widget.paused) {
+      _controller.forward();
+    }
+  }
+
+  @override
+  void didUpdateWidget(_SlideshowProgressBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.durationMs != oldWidget.durationMs) {
+      _controller.duration = Duration(milliseconds: widget.durationMs);
+    }
+    if (widget.paused != oldWidget.paused) {
+      widget.paused ? _controller.stop() : _controller.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) => LinearProgressIndicator(
+        color: widget.color,
+        borderRadius: const BorderRadius.all(Radius.zero),
+        minHeight: 5,
+        value: _controller.value,
       ),
     );
   }

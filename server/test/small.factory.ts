@@ -6,17 +6,12 @@ import { v4, v7 } from 'uuid';
 import { expect } from 'vitest';
 
 export const newUuid = () => v4();
-export const newUuids = () =>
-  Array.from({ length: 100 })
-    .fill(0)
-    .map(() => newUuid());
+export const newUuids = () => Array.from({ length: 100 }, () => 0).map(() => newUuid());
 export const newDate = () => new Date();
 export const newUuidV7 = () => v7();
 export const newSha1 = () => Buffer.from('this is a fake hash');
 export const newEmbedding = () => {
-  const embedding = Array.from({ length: 512 })
-    .fill(0)
-    .map(() => Math.random());
+  const embedding = Array.from({ length: 512 }, () => 0).map(() => Math.random());
   return '[' + embedding + ']';
 };
 
@@ -27,7 +22,7 @@ const authFactory = ({
   user,
 }: {
   apiKey?: Partial<AuthApiKey>;
-  session?: { id?: string; hasElevatedPermission?: boolean };
+  session?: { id?: string; hasElevatedPermission?: boolean; oauthBearerToken?: string | null };
   user?: Omit<
     Partial<UserAdmin>,
     'createdAt' | 'updatedAt' | 'deletedAt' | 'fileCreatedAt' | 'fileModifiedAt' | 'localDateTime' | 'profileChangedAt'
