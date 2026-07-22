@@ -404,8 +404,8 @@ importers:
         specifier: 2.0.0-rc13
         version: 2.0.0-rc13
       '@futo-org/backups-orchestrator-api':
-        specifier: 0.12.0
-        version: 0.12.0(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28)(@nestjs/platform-socket.io@11.1.28)(@nestjs/schedule@6.1.3(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28))(@nestjs/websockets@11.1.28)(reflect-metadata@0.2.2)
+        specifier: 0.13.0
+        version: 0.13.0(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28)(@nestjs/platform-socket.io@11.1.28)(@nestjs/schedule@6.1.3(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28))(@nestjs/websockets@11.1.28)(reflect-metadata@0.2.2)
       '@immich/plugin-sdk':
         specifier: workspace:*
         version: link:../packages/plugin-sdk
@@ -2910,8 +2910,11 @@ packages:
   '@futo-org/backups-api-client@0.12.0':
     resolution: {integrity: sha512-DJ+XJusy8h6qCYyQUKZvY1nvLfvf8OgLIBphIV5MbcPmbBR5oLQcfyVgiyXCjWmGnbnNi8YIDiE07nerWqWfeg==}
 
-  '@futo-org/backups-orchestrator-api@0.12.0':
-    resolution: {integrity: sha512-8wC5gbkL3yG0gZh90vh9j1IgOf6DlsT1beqVVP3qe84cIyC0yvd4GoDiBK1ymMEfXElqVSV8vV8KgjtKWb6MbA==}
+  '@futo-org/backups-api-client@0.13.0':
+    resolution: {integrity: sha512-TRvgEStPRnmQx9jkqZeN7dPrsRqzyxnMMHnCY4nFUVvMR8ItMglKbx0zxZM+7Js7RQO+lagleVs33eXvCTHdlg==}
+
+  '@futo-org/backups-orchestrator-api@0.13.0':
+    resolution: {integrity: sha512-/gdfmB6s9aTuQ4ocdhpz3u9SY8PbXX9/ehA41DqK9P25dGtvKH4ehjmjttpZGpzZZCCHrzCfcosKV9BzFI+hzg==}
     peerDependencies:
       '@nestjs/common': ^11.0.0
       '@nestjs/core': ^11.0.0
@@ -15978,9 +15981,13 @@ snapshots:
     dependencies:
       '@oazapfts/runtime': 1.2.0
 
-  '@futo-org/backups-orchestrator-api@0.12.0(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28)(@nestjs/platform-socket.io@11.1.28)(@nestjs/schedule@6.1.3(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28))(@nestjs/websockets@11.1.28)(reflect-metadata@0.2.2)':
+  '@futo-org/backups-api-client@0.13.0':
     dependencies:
-      '@futo-org/backups-api-client': 0.12.0
+      '@oazapfts/runtime': 1.2.0
+
+  '@futo-org/backups-orchestrator-api@0.13.0(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28)(@nestjs/platform-socket.io@11.1.28)(@nestjs/schedule@6.1.3(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.28))(@nestjs/websockets@11.1.28)(reflect-metadata@0.2.2)':
+    dependencies:
+      '@futo-org/backups-api-client': 0.13.0
       '@futo-org/restic-wrapper': 1.3.0
       '@nestjs/common': 11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.28(@nestjs/common@11.1.28(class-transformer@0.5.1)(class-validator@0.14.4)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.28)(@nestjs/websockets@11.1.28)(reflect-metadata@0.2.2)(rxjs@7.8.2)
