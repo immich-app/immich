@@ -562,8 +562,6 @@ export class VideoFrameExtractionConfig {
       cqMode: CQMode.Cqp,
       maxBitrate: '0',
     };
-    // Always build the delegate (even for accel: Disabled, where this is just a plain H264Config) so
-    // both the SW and HW extraction paths share the same shouldScale()-gated scaling decision below.
     this.delegate = BaseConfig.create(overrideConfig, videoInterfaces, {
       strictGop: true,
       lowLatency: false,
