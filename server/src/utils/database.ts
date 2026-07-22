@@ -27,7 +27,6 @@ import {
   IdsFilter,
   NumberFilter,
   NumberFilterNullable,
-  SearchFilter,
   SearchFilterBranch,
   StringFilter,
   StringFilterNullable,
@@ -519,39 +518,6 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
     .$if(!options.withDeleted, (qb) => qb.where('asset.deletedAt', 'is', null));
 }
 
-type ExifFilterField = Extract<
-  keyof SearchFilterBranch,
-  'city' | 'state' | 'country' | 'make' | 'model' | 'lensModel' | 'description' | 'rating' | 'fileSizeInBytes'
->;
-
-const EXIF_FILTER_FIELDS: ReadonlySet<string> = new Set<ExifFilterField>([
-  'city',
-  'state',
-  'country',
-  'make',
-  'model',
-  'lensModel',
-  'description',
-  'rating',
-  'fileSizeInBytes',
-]);
-
-type ExifOrderField = SearchOrderField.FileSizeInBytes | SearchOrderField.Rating;
-
-const EXIF_ORDER_FIELDS: ReadonlySet<SearchOrderField> = new Set<ExifOrderField>([
-  SearchOrderField.FileSizeInBytes,
-  SearchOrderField.Rating,
-]);
-
-// the asset_exif join is only added when a filter or the order actually references an exif column
-function exifJoinRequired(filter: SearchFilter, orderField: SearchOrderField): boolean {
-  const branches = [filter, ...(filter.or ?? [])];
-  return (
-    EXIF_ORDER_FIELDS.has(orderField) ||
-    branches.some((branch) => Object.keys(branch).some((key) => EXIF_FILTER_FIELDS.has(key)))
-  );
-}
-
 type AssetExpressionBuilder = ExpressionBuilder<DB, 'asset' | 'asset_exif'>;
 
 const albumAssets = (eb: AssetExpressionBuilder) =>
@@ -912,55 +878,59 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
   ];
 }
 
-function applySearchOrder<O>(
-  qb: SelectQueryBuilder<DB, 'asset' | 'asset_exif', O>,
-  field: SearchOrderField,
-  direction: AssetOrder,
-) {
-  switch (field) {
-    case SearchOrderField.FileCreatedAt: {
-      return qb.orderBy('asset.fileCreatedAt', direction);
-    }
-    case SearchOrderField.LocalDateTime: {
-      return qb.orderBy('asset.localDateTime', direction);
-    }
-    case SearchOrderField.FileSizeInBytes: {
-      return qb.orderBy('asset_exif.fileSizeInByte', direction);
-    }
-    case SearchOrderField.Rating: {
-      return qb.orderBy('asset_exif.rating', direction);
-    }
-  }
-}
-
 export function searchAssetBuilder(kysely: Kysely<DB>, options: AssetSearchBuilderV3Options) {
   const filter = options.filter ?? {};
   const orderField = options.order?.field ?? SearchOrderField.FileCreatedAt;
   const orderDirection = options.order?.direction ?? AssetOrder.Desc;
-  const needsExifJoin = exifJoinRequired(filter, orderField);
 
-  return kysely
-    .withPlugin(joinDeduplicationPlugin)
-    .selectFrom('asset')
-    .$if(needsExifJoin && !options.withExif, (qb) => qb.innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId'))
-    .$if(!!options.withExif && needsExifJoin, withExifInner)
-    .$if(!!options.withExif && !needsExifJoin, withExif)
-    .$if(!!options.userIds && options.userIds.length > 0, (qb) =>
-      qb.where('asset.ownerId', '=', anyUuid(options.userIds!)),
-    )
-    .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
-    .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
-    .where((eb) => {
-      const predicates = branchPredicates(eb, filter);
-      if (filter.or && filter.or.length > 0) {
-        predicates.push(eb.or(filter.or.map((branch) => eb.and(branchPredicates(eb, branch)))));
-      }
-      return predicates.length > 0 ? eb.and(predicates) : eb.lit(true);
-    })
-    .$call((qb) =>
-      // cast: `.$if(needsExifJoin, ...)` doesn't carry the join into the type; `exifJoinRequired` guarantees it at runtime.
-      applySearchOrder(qb as SelectQueryBuilder<DB, 'asset' | 'asset_exif', unknown>, orderField, orderDirection),
-    );
+  return (
+    kysely
+      .withPlugin(joinDeduplicationPlugin)
+      .selectFrom('asset')
+      // postgres eliminates the left join when no exif column is referenced, so unused joins are free
+      .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .$if(!!options.withExif, (qb) =>
+        qb.select((eb) =>
+          eb.fn
+            .toJson(eb.table('asset_exif'))
+            .$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>> | null>()
+            .as('exifInfo'),
+        ),
+      )
+      .$if(!!options.userIds && options.userIds.length > 0, (qb) =>
+        qb.where('asset.ownerId', '=', anyUuid(options.userIds!)),
+      )
+      .$if(!!(options.withFaces || options.withPeople), (qb) => qb.select(withFacesAndPeople))
+      .$if(options.withStacked === false, (qb) => qb.where('asset.stackId', 'is', null))
+      .where((eb) => {
+        const predicates = branchPredicates(eb, filter);
+        if (filter.or && filter.or.length > 0) {
+          predicates.push(eb.or(filter.or.map((branch) => eb.and(branchPredicates(eb, branch)))));
+        }
+        return predicates.length > 0 ? eb.and(predicates) : eb.lit(true);
+      })
+      .$call((qb) => {
+        switch (orderField) {
+          case SearchOrderField.FileCreatedAt: {
+            return qb.orderBy('asset.fileCreatedAt', orderDirection);
+          }
+          case SearchOrderField.LocalDateTime: {
+            return qb.orderBy('asset.localDateTime', orderDirection);
+          }
+          // nulls last: assets without an asset_exif row would otherwise lead descending results
+          case SearchOrderField.FileSizeInBytes: {
+            return qb.orderBy('asset_exif.fileSizeInByte', (ob) =>
+              (orderDirection === AssetOrder.Asc ? ob.asc() : ob.desc()).nullsLast(),
+            );
+          }
+          case SearchOrderField.Rating: {
+            return qb.orderBy('asset_exif.rating', (ob) =>
+              (orderDirection === AssetOrder.Asc ? ob.asc() : ob.desc()).nullsLast(),
+            );
+          }
+        }
+      })
+  );
 }
 
 export const searchMetadataV3Examples: GenerateSqlQueries[] = [

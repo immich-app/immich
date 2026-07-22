@@ -446,6 +446,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and true
@@ -486,6 +487,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   true
 order by
@@ -525,7 +527,7 @@ select
   "asset"."height"
 from
   "asset"
-  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and "asset_exif"."city" = $2
@@ -566,7 +568,7 @@ select
   "asset"."height"
 from
   "asset"
-  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and "asset_exif"."city" is null
@@ -607,7 +609,7 @@ select
   "asset"."height"
 from
   "asset"
-  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and f_unaccent ("asset_exif"."description") ilike ('%' || f_unaccent ($2) || '%')
@@ -648,7 +650,7 @@ select
   "asset"."height"
 from
   "asset"
-  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and f_unaccent ("asset_exif"."description") not ilike ('%' || f_unaccent ($2) || '%')
@@ -689,6 +691,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and f_unaccent ("asset"."originalFileName") ilike (f_unaccent ($2) || '%')
@@ -729,6 +732,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and exists (
@@ -776,6 +780,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and exists (
@@ -823,6 +828,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and exists (
@@ -877,6 +883,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and exists (
@@ -924,6 +931,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and not exists (
@@ -972,6 +980,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and exists (
@@ -1025,6 +1034,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and not exists (
@@ -1071,6 +1081,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and exists (
@@ -1118,7 +1129,7 @@ select
   "asset"."height"
 from
   "asset"
-  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
@@ -1162,6 +1173,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and "asset"."fileCreatedAt" = $2
@@ -1202,6 +1214,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
@@ -1245,12 +1258,12 @@ select
   "asset"."height"
 from
   "asset"
-  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and true
 order by
-  "asset_exif"."fileSizeInByte" desc
+  "asset_exif"."fileSizeInByte" desc nulls last
 limit
   $2
 
@@ -1287,12 +1300,12 @@ select
   "asset"."height"
 from
   "asset"
-  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and true
 order by
-  "asset_exif"."rating" asc
+  "asset_exif"."rating" asc nulls last
 limit
   $2
 
@@ -1328,6 +1341,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
@@ -1380,6 +1394,7 @@ select
   "asset"."height"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
@@ -1407,6 +1422,7 @@ select
   count(*) as "total"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and true
@@ -1418,7 +1434,7 @@ select
   count(*) as "total"
 from
   "asset"
-  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
@@ -1434,6 +1450,7 @@ select
   count(*) as "total"
 from
   "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
   "asset"."ownerId" = any ($1::uuid[])
   and (
