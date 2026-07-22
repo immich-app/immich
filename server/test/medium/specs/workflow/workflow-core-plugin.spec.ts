@@ -9,6 +9,7 @@ import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PluginRepository } from 'src/repositories/plugin.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -39,7 +40,7 @@ class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
         UserRepository,
         WorkflowRepository,
       ],
-      mock: [ConfigRepository],
+      mock: [ConfigRepository, EventRepository],
     });
   }
 
@@ -52,6 +53,7 @@ class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
     mockData.resourcePaths.corePlugin = '../packages/plugin-core';
     mockData.plugins.external.allow = false;
     this.getMock(ConfigRepository).getEnv.mockReturnValue(mockData);
+    this.getMock(EventRepository).emit.mockResolvedValue();
     this.get(LoggingRepository).setLogLevel(LogLevel.Verbose);
 
     await this.sut.onPluginSync();
@@ -431,9 +433,10 @@ describe('core plugin', () => {
   describe('assetDateFilter', () => {
     it('should favorite assets created during the first 7 days of a specific year and month', async () => {
       const { user } = await ctx.newUser();
-      const [{ asset: asset1 }, { asset: asset2 }] = await Promise.all([
+      const [{ asset: asset1 }, { asset: asset2 }, { asset: asset3 }] = await Promise.all([
         ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2000-04-01') }),
         ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2000-04-07T23:59:59Z') }),
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2000-04-08T00:00:00Z') }),
       ]);
 
       const workflow = await createWorkflow({
@@ -459,6 +462,46 @@ describe('core plugin', () => {
 
       await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset2.id });
       await expect(ctx.get(AssetRepository).getById(asset2.id)).resolves.toMatchObject({ isFavorite: true });
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset3.id });
+      await expect(ctx.get(AssetRepository).getById(asset3.id)).resolves.toMatchObject({ isFavorite: false });
+    });
+
+    it('should match recurring dates regardless of the year', async () => {
+      const { user } = await ctx.newUser();
+      const [{ asset: asset1 }, { asset: asset2 }, { asset: asset3 }] = await Promise.all([
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2026-03-01') }),
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date('1998-12-21') }),
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2000-04-08T00:00:00Z') }),
+      ]);
+      await ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2010-06-15') });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetDateFilter',
+            config: {
+              startDate: { day: 12, month: 12, year: 2000 },
+              endDate: { day: 30, month: 3, year: 2001 },
+              recurring: true,
+            },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset1.id });
+      await expect(ctx.get(AssetRepository).getById(asset1.id)).resolves.toMatchObject({ isFavorite: true });
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset2.id });
+      await expect(ctx.get(AssetRepository).getById(asset2.id)).resolves.toMatchObject({ isFavorite: true });
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset3.id });
+      await expect(ctx.get(AssetRepository).getById(asset3.id)).resolves.toMatchObject({ isFavorite: false });
     });
   });
 

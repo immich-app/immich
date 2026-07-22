@@ -650,7 +650,7 @@ describe(`immich upload`, () => {
       ]);
 
       expect(stdout).toBe('');
-      expect(stderr).toEqual(`error: option '-n, --dry-run' cannot be used with option '-h, --skip-hash'`);
+      expect(stderr).toEqual(`error: option '-n, --dry-run' cannot be used with option '--skip-hash'`);
       expect(exitCode).not.toBe(0);
 
       const assets = await getAssetStatistics({}, { headers: asKeyAuth(key) });

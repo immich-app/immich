@@ -351,9 +351,12 @@ export class AssetMediaService extends BaseService {
     }
 
     await this.albumRepository.addAssetIds(album.id, [assetId]);
-    for (const { user } of album.albumUsers) {
-      await this.eventRepository.emit('AlbumUpdate', { id: album.id, recipientId: user.id });
-    }
+    const userIds = album.albumUsers.map(({ user }) => user.id);
+    await this.eventRepository.emit('AlbumUpdate', {
+      id: album.id,
+      userIds,
+      recipientIds: userIds,
+    });
   }
 
   private requireQuota(auth: AuthDto, size: number) {
