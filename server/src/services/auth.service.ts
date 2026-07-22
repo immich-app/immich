@@ -331,6 +331,13 @@ export class AuthService extends BaseService {
       }
     }
 
+    const role = this.getRoleClaim(profile, roleClaim);
+    const isAdmin = role === 'admin';
+
+    if (user && role && isAdmin !== user.isAdmin) {
+      user = await this.userRepository.update(user.id, { isAdmin });
+    }
+
     // register new user
     if (!user) {
       if (!autoRegister) {
@@ -356,11 +363,6 @@ export class AuthService extends BaseService {
         default: defaultStorageQuota,
         isValid: (value: unknown) => Number(value) >= 0,
       });
-      const role = this.getClaim<'admin' | 'user'>(profile, {
-        key: roleClaim,
-        default: 'user',
-        isValid: (value: unknown) => typeof value === 'string' && ['admin', 'user'].includes(value),
-      });
 
       user = await this.createUser({
         name:
@@ -372,7 +374,7 @@ export class AuthService extends BaseService {
         oauthId: profile.sub,
         quotaSizeInBytes: storageQuota === null ? null : storageQuota * HumanReadableSize.GiB,
         storageLabel: storageLabel || null,
-        isAdmin: role === 'admin',
+        isAdmin,
       });
     }
 
@@ -639,6 +641,19 @@ export class AuthService extends BaseService {
   private getClaim<T>(profile: OAuthProfile, options: ClaimOptions<T>): T {
     const value = profile[options.key as keyof OAuthProfile];
     return options.isValid(value) ? (value as T) : options.default;
+  }
+
+  private getRoleClaim(profile: OAuthProfile, roleClaim: string): 'admin' | 'user' | undefined {
+    const value = profile[roleClaim as keyof OAuthProfile];
+    const roles = Array.isArray(value) ? value : [value];
+    const isRole = (role: string) => roles.includes(role);
+
+    if (isRole('admin')) {
+      return 'admin';
+    }
+    if (isRole('user')) {
+      return 'user';
+    }
   }
 
   private resolveRedirectUri(
