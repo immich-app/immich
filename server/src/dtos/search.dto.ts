@@ -297,7 +297,8 @@ const SearchFilterBranchSchema = z
     albumIds: IdsFilterSchema,
     checksum: StringFilterSchema,
     encodedVideoPath: StringFilterSchema,
-  }).partial()
+  })
+  .partial()
   .meta({ id: 'SearchFilterBranch' });
 
 export const SearchFilterSchema = SearchFilterBranchSchema.extend({
