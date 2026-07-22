@@ -93,17 +93,9 @@ class _AssetOriginFilterButton extends ConsumerWidget {
         _buildItem(
           context,
           ref,
-          AssetOriginFilter.remoteOnly,
+          AssetOriginFilter.remote,
           'timeline_filter_remote_only'.tr(),
           Icons.cloud_outlined,
-          currentSelection,
-        ),
-        _buildItem(
-          context,
-          ref,
-          AssetOriginFilter.localAndRemote,
-          'timeline_filter_backed_up'.tr(),
-          Icons.cloud_done_outlined,
           currentSelection,
         ),
         _buildItem(
