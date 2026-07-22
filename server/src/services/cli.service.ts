@@ -189,7 +189,9 @@ export class CliService extends BaseService {
     }
 
     for (const user of users) {
-      paths.push(user.profileImagePath);
+      if (user.profileImagePath) {
+        paths.push(user.profileImagePath);
+      }
     }
 
     for (const asset of assets) {

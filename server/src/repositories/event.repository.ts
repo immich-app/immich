@@ -123,7 +123,7 @@ type UserEvent = {
   deletedAt: Date | null;
   status: UserStatus;
   email: string;
-  profileImagePath: string;
+  profileImagePath: string | null;
   isAdmin: boolean;
   shouldChangePassword: boolean;
   avatarColor: UserAvatarColor | null;
