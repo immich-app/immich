@@ -77,19 +77,19 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
-  (
-    "asset"."ownerId" = $1
-    and "asset"."isFavorite"
-  ) as "isFavorite",
+  case
+    when "asset"."ownerId" = $1 then "asset"."isFavorite"
+    else $2
+  end as "isFavorite",
   "album_asset"."updateId"
 from
   "album_asset" as "album_asset"
   inner join "asset" on "asset"."id" = "album_asset"."assetId"
 where
-  "album_asset"."updateId" < $2
-  and "album_asset"."updateId" <= $3
-  and "album_asset"."updateId" > $4
-  and "album_asset"."albumId" = $5
+  "album_asset"."updateId" < $3
+  and "album_asset"."updateId" <= $4
+  and "album_asset"."updateId" > $5
+  and "album_asset"."albumId" = $6
 order by
   "album_asset"."updateId" asc
 
@@ -114,20 +114,20 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
-  (
-    "asset"."ownerId" = $1
-    and "asset"."isFavorite"
-  ) as "isFavorite",
+  case
+    when "asset"."ownerId" = $1 then "asset"."isFavorite"
+    else $2
+  end as "isFavorite",
   "asset"."updateId"
 from
   "asset" as "asset"
   inner join "album_asset" on "album_asset"."assetId" = "asset"."id"
   inner join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
 where
-  "asset"."updateId" < $2
-  and "asset"."updateId" > $3
-  and "album_asset"."updateId" <= $4
-  and "album_user"."userId" = $5
+  "asset"."updateId" < $3
+  and "asset"."updateId" > $4
+  and "album_asset"."updateId" <= $5
+  and "album_user"."userId" = $6
 order by
   "asset"."updateId" asc
 
@@ -153,18 +153,18 @@ select
   "asset"."width",
   "asset"."height",
   "asset"."isEdited",
-  (
-    "asset"."ownerId" = $1
-    and "asset"."isFavorite"
-  ) as "isFavorite"
+  case
+    when "asset"."ownerId" = $1 then "asset"."isFavorite"
+    else $2
+  end as "isFavorite"
 from
   "album_asset" as "album_asset"
   inner join "asset" on "asset"."id" = "album_asset"."assetId"
   inner join "album_user" on "album_user"."albumId" = "album_asset"."albumId"
 where
-  "album_asset"."updateId" < $2
-  and "album_asset"."updateId" > $3
-  and "album_user"."userId" = $4
+  "album_asset"."updateId" < $3
+  and "album_asset"."updateId" > $4
+  and "album_user"."userId" = $5
 order by
   "album_asset"."updateId" asc
 
