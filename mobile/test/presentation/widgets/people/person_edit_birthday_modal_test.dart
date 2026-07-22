@@ -41,25 +41,29 @@ void main() {
       await initializeDateFormatting();
     });
 
-    test('en uses month/day/year', () {
-      expect(
-        datePickerColumnOrder(DateFormat.yMd('en').pattern),
-        orderedEquals([DatePickerViewType.month, DatePickerViewType.day, DatePickerViewType.year]),
-      );
-    });
-
-    test('pl uses day/month/year', () {
-      expect(
-        datePickerColumnOrder(DateFormat.yMd('pl').pattern),
-        orderedEquals([DatePickerViewType.day, DatePickerViewType.month, DatePickerViewType.year]),
-      );
-    });
-
-    test('ko uses year/month/day', () {
-      expect(
-        datePickerColumnOrder(DateFormat.yMd('ko').pattern),
-        orderedEquals([DatePickerViewType.year, DatePickerViewType.month, DatePickerViewType.day]),
-      );
-    });
+    for (final (locales, order, name) in const [
+      (
+        ['en', 'en-US', 'en-PH'],
+        [DatePickerViewType.month, DatePickerViewType.day, DatePickerViewType.year],
+        'month/day/year',
+      ),
+      (
+        ['en-GB', 'fr', 'fr-FR', 'de', 'de-DE', 'pl'],
+        [DatePickerViewType.day, DatePickerViewType.month, DatePickerViewType.year],
+        'day/month/year',
+      ),
+      (
+        ['ja', 'ja-JP', 'zh', 'zh-CN', 'ko', 'ko-KR'],
+        [DatePickerViewType.year, DatePickerViewType.month, DatePickerViewType.day],
+        'year/month/day',
+      ),
+      (['ky'], [DatePickerViewType.year, DatePickerViewType.day, DatePickerViewType.month], 'year/day/month'),
+    ]) {
+      for (final locale in locales) {
+        test('$locale uses $name', () {
+          expect(datePickerColumnOrder(DateFormat.yMd(locale).pattern), orderedEquals(order));
+        });
+      }
+    }
   });
 }
