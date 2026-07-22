@@ -165,69 +165,71 @@ const IdsFilterSchema = nonEmptyPartial({
   none: z.array(z.uuidv4()).min(1),
 }).meta({ id: 'IdsFilter' });
 
+const stringListShape = {
+  in: z.array(z.string()).min(1),
+  notIn: z.array(z.string()).min(1),
+};
+
 const StringFilterSchema = nonEmptyPartial({
   eq: z.string(),
   ne: z.string(),
-  in: z.array(z.string()).min(1),
-  notIn: z.array(z.string()).min(1),
+  ...stringListShape,
 }).meta({ id: 'StringFilter' });
 
-const StringFilterNullableSchema = nonEmptyPartial({
+const stringNullableShape = {
   eq: z.string().nullable(),
   ne: z.string().nullable(),
-  in: z.array(z.string()).min(1),
-  notIn: z.array(z.string()).min(1),
-}).meta({ id: 'StringFilterNullable' });
+  ...stringListShape,
+};
+
+const StringFilterNullableSchema = nonEmptyPartial(stringNullableShape).meta({ id: 'StringFilterNullable' });
 
 const StringPatternFilterSchema = nonEmptyPartial({
-  eq: z.string().nullable(),
-  ne: z.string().nullable(),
-  in: z.array(z.string()).min(1),
-  notIn: z.array(z.string()).min(1),
+  ...stringNullableShape,
   like: z.string().min(1),
   notLike: z.string().min(1),
   startsWith: z.string().min(1),
   endsWith: z.string().min(1),
 }).meta({ id: 'StringPatternFilter' });
 
-const NumberFilterSchema = nonEmptyPartial({
-  eq: z.number(),
-  ne: z.number(),
+const numberRangeShape = {
   lt: z.number(),
   lte: z.number(),
   gt: z.number(),
   gte: z.number(),
   in: z.array(z.number()).min(1),
   notIn: z.array(z.number()).min(1),
+};
+
+const NumberFilterSchema = nonEmptyPartial({
+  eq: z.number(),
+  ne: z.number(),
+  ...numberRangeShape,
 }).meta({ id: 'NumberFilter' });
 
 const NumberFilterNullableSchema = nonEmptyPartial({
   eq: z.number().nullable(),
   ne: z.number().nullable(),
-  lt: z.number(),
-  lte: z.number(),
-  gt: z.number(),
-  gte: z.number(),
-  in: z.array(z.number()).min(1),
-  notIn: z.array(z.number()).min(1),
+  ...numberRangeShape,
 }).meta({ id: 'NumberFilterNullable' });
 
-const DateFilterSchema = nonEmptyPartial({
-  eq: isoDatetimeToDate,
-  ne: isoDatetimeToDate,
+const dateRangeShape = {
   gt: isoDatetimeToDate,
   gte: isoDatetimeToDate,
   lt: isoDatetimeToDate,
   lte: isoDatetimeToDate,
+};
+
+const DateFilterSchema = nonEmptyPartial({
+  eq: isoDatetimeToDate,
+  ne: isoDatetimeToDate,
+  ...dateRangeShape,
 }).meta({ id: 'DateFilter' });
 
 const DateFilterNullableSchema = nonEmptyPartial({
   eq: isoDatetimeToDate.nullable(),
   ne: isoDatetimeToDate.nullable(),
-  gt: isoDatetimeToDate,
-  gte: isoDatetimeToDate,
-  lt: isoDatetimeToDate,
-  lte: isoDatetimeToDate,
+  ...dateRangeShape,
 }).meta({ id: 'DateFilterNullable' });
 
 const BoolFilterSchema = z.object({ eq: z.boolean() }).meta({ id: 'BoolFilter' });
@@ -249,10 +251,15 @@ const StringSimilarityFilterSchema = z
   })
   .meta({ id: 'StringSimilarityFilter' });
 
+export const DEFAULT_SEARCH_ORDER = {
+  field: SearchOrderField.FileCreatedAt,
+  direction: AssetOrder.Desc,
+};
+
 export const SearchOrderSchema = z
   .object({
-    field: SearchOrderFieldSchema.default(SearchOrderField.FileCreatedAt),
-    direction: AssetOrderSchema.default(AssetOrder.Desc),
+    field: SearchOrderFieldSchema.default(DEFAULT_SEARCH_ORDER.field),
+    direction: AssetOrderSchema.default(DEFAULT_SEARCH_ORDER.direction),
   })
   .meta({ id: 'SearchOrder' });
 
