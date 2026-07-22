@@ -88,8 +88,7 @@ SELECT * FROM (
 WHERE
     :filter = 0 -- default
     OR (:filter = 1 AND merged.remote_id IS NOT NULL AND merged.local_id IS NULL) -- remote only
-    OR (:filter = 2 AND merged.remote_id IS NOT NULL AND merged.local_id IS NOT NULL) -- local + remote
-    OR (:filter = 3 AND merged.remote_id IS NULL) -- local only
+    OR (:filter = 2 AND merged.remote_id IS NULL AND merged.local_id IS NOT NULL) -- local only
 ORDER BY created_at DESC
 LIMIT $limit;
 
@@ -154,9 +153,8 @@ FROM (
     ) AS merged
     WHERE
         :filter = 0 -- default
-        OR (:filter = 1 AND merged.remote_id IS NOT NULL AND merged.local_id IS NULL)-- remote only
-        OR (:filter = 2 AND merged.remote_id IS NOT NULL AND merged.local_id IS NOT NULL) -- local + remote
-        OR (:filter = 3 AND merged.remote_id IS NULL) -- local only
+        OR (:filter = 1 AND merged.remote_id IS NOT NULL AND merged.local_id IS NULL) -- remote only
+        OR (:filter = 2 AND merged.remote_id IS NULL AND merged.local_id IS NOT NULL) -- local only
 )
 GROUP BY bucket_date
 ORDER BY bucket_date DESC;
