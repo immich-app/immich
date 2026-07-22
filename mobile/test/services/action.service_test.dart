@@ -202,8 +202,9 @@ void main() {
       when(() => assetMediaRepository.deleteAll(localIds, trash: false)).thenAnswer((_) async => localIds);
       when(() => localAssetRepository.delete(localIds)).thenAnswer((_) async {});
 
-      await sut.moveToLockFolder(remoteIds, localIds);
+      final result = await sut.moveToLockFolder(remoteIds, localIds);
 
+      expect(result, localIds.length);
       verify(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked)).called(1);
       verify(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).called(1);
       verify(() => assetMediaRepository.deleteAll(localIds, trash: false)).called(1);
@@ -215,10 +216,36 @@ void main() {
       when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked)).thenAnswer((_) async {});
       when(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
 
-      await sut.moveToLockFolder(remoteIds, const []);
+      final result = await sut.moveToLockFolder(remoteIds, const []);
 
+      expect(result, 0);
       verify(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked)).called(1);
       verifyNever(() => assetMediaRepository.deleteAll(any(), trash: any(named: 'trash')));
+    });
+
+    test('returns zero when local deletion is cancelled', () async {
+      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked)).thenAnswer((_) async {});
+      when(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
+      when(() => assetMediaRepository.deleteAll(localIds, trash: false)).thenAnswer((_) async => <String>[]);
+
+      final result = await sut.moveToLockFolder(remoteIds, localIds);
+
+      expect(result, 0);
+      verify(() => assetMediaRepository.deleteAll(localIds, trash: false)).called(1);
+      verifyNever(() => localAssetRepository.delete(any()));
+    });
+
+    test('returns the number of local copies deleted from a partial result', () async {
+      const deletedIds = ['l1'];
+      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked)).thenAnswer((_) async {});
+      when(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
+      when(() => assetMediaRepository.deleteAll(localIds, trash: false)).thenAnswer((_) async => deletedIds);
+      when(() => localAssetRepository.delete(deletedIds)).thenAnswer((_) async {});
+
+      final result = await sut.moveToLockFolder(remoteIds, localIds);
+
+      expect(result, deletedIds.length);
+      verify(() => localAssetRepository.delete(deletedIds)).called(1);
     });
   });
 }

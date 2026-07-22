@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -10,10 +10,13 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:mocktail/mocktail.dart';
+
+import '../../widget_tester_extensions.dart';
 
 class MockActionService extends Mock implements ActionService {}
 
@@ -77,7 +80,9 @@ void main() {
       container.listen(assetExifProvider(_asset), (_, __) {});
       await container.read(assetExifProvider(_asset).future);
 
-      final result = await container.read(actionProvider.notifier).editDateTime(ActionSource.viewer, FakeBuildContext());
+      final result = await container
+          .read(actionProvider.notifier)
+          .editDateTime(ActionSource.viewer, FakeBuildContext());
 
       expect(result?.success, isTrue);
       await container.read(assetExifProvider(_asset).future);
@@ -89,7 +94,9 @@ void main() {
       container.listen(assetExifProvider(_asset), (_, __) {});
       await container.read(assetExifProvider(_asset).future);
 
-      final result = await container.read(actionProvider.notifier).editDateTime(ActionSource.timeline, FakeBuildContext());
+      final result = await container
+          .read(actionProvider.notifier)
+          .editDateTime(ActionSource.timeline, FakeBuildContext());
 
       expect(result?.success, isTrue);
       await container.read(assetExifProvider(_asset).future);
@@ -102,11 +109,76 @@ void main() {
       container.listen(assetExifProvider(_asset), (_, __) {});
       await container.read(assetExifProvider(_asset).future);
 
-      final result = await container.read(actionProvider.notifier).editDateTime(ActionSource.viewer, FakeBuildContext());
+      final result = await container
+          .read(actionProvider.notifier)
+          .editDateTime(ActionSource.viewer, FakeBuildContext());
 
       expect(result, isNull);
       await container.read(assetExifProvider(_asset).future);
       verify(() => assetService.getExif(_asset)).called(1);
+    });
+  });
+
+  group('moveToLockFolder', () {
+    Future<ActionResult?> runAction(WidgetTester tester) async {
+      late BuildContext context;
+      await tester.pumpConsumerWidget(
+        Builder(
+          builder: (value) {
+            context = value;
+            return const SizedBox.shrink();
+          },
+        ),
+      );
+
+      final result = container.read(actionProvider.notifier).moveToLockFolder(ActionSource.timeline, context);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(TextButton).last);
+      await tester.pumpAndSettle();
+      return result;
+    }
+
+    testWidgets('reports failure when local deletion is cancelled', (tester) async {
+      final asset = _asset.copyWith(localId: 'local-owned');
+      container.read(multiSelectProvider.notifier).selectAsset(asset);
+      when(() => actionService.moveToLockFolder(any(), any())).thenAnswer((_) async => 0);
+
+      final result = await runAction(tester);
+
+      expect(result?.success, isFalse);
+      verify(() => actionService.moveToLockFolder(['asset-1'], ['local-owned'])).called(1);
+    });
+
+    testWidgets('reports failure when only some local copies are deleted', (tester) async {
+      final first = _asset.copyWith(localId: 'local-1');
+      final second = _asset.copyWith(id: 'asset-2', localId: 'local-2', checksum: 'checksum-2');
+      container.read(multiSelectProvider.notifier)
+        ..selectAsset(first)
+        ..selectAsset(second);
+      when(() => actionService.moveToLockFolder(any(), any())).thenAnswer((_) async => 1);
+
+      final result = await runAction(tester);
+
+      expect(result?.success, isFalse);
+    });
+
+    testWidgets('deletes only owned local copies from a mixed selection', (tester) async {
+      final owned = _asset.copyWith(localId: 'local-owned');
+      final partner = _asset.copyWith(
+        id: 'asset-2',
+        localId: 'local-partner',
+        ownerId: 'partner-1',
+        checksum: 'checksum-2',
+      );
+      container.read(multiSelectProvider.notifier)
+        ..selectAsset(owned)
+        ..selectAsset(partner);
+      when(() => actionService.moveToLockFolder(any(), any())).thenAnswer((_) async => 1);
+
+      final result = await runAction(tester);
+
+      expect(result?.success, isTrue);
+      verify(() => actionService.moveToLockFolder(['asset-1'], ['local-owned'])).called(1);
     });
   });
 }

@@ -70,14 +70,11 @@ class ActionNotifier extends Notifier<void> {
     return _getAssets(source).whereType<RemoteAsset>().toIds().toList(growable: false);
   }
 
-  List<String> _getLocalIdsForSource(ActionSource source, {bool ignoreLocalOnly = false}) {
+  List<String> _getLocalIdsForSource(ActionSource source) {
     final Set<BaseAsset> assets = _getAssets(source);
     final List<String> localIds = [];
 
     for (final asset in assets) {
-      if (ignoreLocalOnly && asset.storage != AssetState.merged) {
-        continue;
-      }
       if (asset is LocalAsset) {
         localIds.add(asset.id);
       } else if (asset is RemoteAsset && asset.localId != null) {
@@ -184,8 +181,9 @@ class ActionNotifier extends Notifier<void> {
   }
 
   Future<ActionResult?> moveToLockFolder(ActionSource source, BuildContext context) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    final localIds = _getLocalIdsForSource(source, ignoreLocalOnly: true);
+    final assets = _getOwnedRemoteAssetsForSource(source);
+    final ids = assets.toIds().toList(growable: false);
+    final localIds = assets.map((asset) => asset.localId).nonNulls.toList(growable: false);
 
     if (localIds.isNotEmpty) {
       final confirmed = await showDialog<bool>(
@@ -202,8 +200,8 @@ class ActionNotifier extends Notifier<void> {
     }
 
     try {
-      await _service.moveToLockFolder(ids, localIds);
-      return ActionResult(count: ids.length, success: true);
+      final deletedCount = await _service.moveToLockFolder(ids, localIds);
+      return ActionResult(count: ids.length, success: deletedCount == localIds.length);
     } catch (error, stack) {
       _logger.severe('Failed to move assets to lock folder', error, stack);
       return ActionResult(count: ids.length, success: false, error: error.toString());

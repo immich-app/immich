@@ -88,14 +88,15 @@ class ActionService {
     await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.timeline);
   }
 
-  Future<void> moveToLockFolder(List<String> remoteIds, List<String> localIds) async {
+  Future<int> moveToLockFolder(List<String> remoteIds, List<String> localIds) async {
     await _assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked);
     await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked);
 
     // Locked assets stay on the server, so permanently delete the local copies instead of trashing them
-    if (localIds.isNotEmpty) {
-      await _deleteLocalAssets(localIds, trash: false);
+    if (localIds.isEmpty) {
+      return 0;
     }
+    return _deleteLocalAssets(localIds, trash: false);
   }
 
   Future<void> removeFromLockFolder(List<String> remoteIds) async {
