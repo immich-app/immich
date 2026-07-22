@@ -62,10 +62,15 @@ void main() {
   String? assetId;
   String? orientedAssetId;
 
+  // Seeding writes to MediaStore; on API < 29 the harness must grant
+  // WRITE_EXTERNAL_STORAGE first (adb shell pm grant), or saveImage throws.
+  // Seeded lazily so tests that need no fixture run regardless.
+  Future<String> seededAssetId() async {
+    return assetId ??= (await PhotoManager.editor.saveImage(fixture, filename: 'immich_jni_fixture.avif')).id;
+  }
+
   setUpAll(() async {
     await PhotoManager.setIgnorePermissionCheck(true);
-    final entity = await PhotoManager.editor.saveImage(fixture, filename: 'immich_jni_fixture.avif');
-    assetId = entity.id;
   });
 
   tearDownAll(() async {
@@ -96,7 +101,7 @@ void main() {
 
   test('encoded image buffer roundtrip', () async {
     final res = await api.requestImage(
-      assetId!,
+      await seededAssetId(),
       requestId: 900001,
       width: 0,
       height: 0,
@@ -111,16 +116,10 @@ void main() {
   });
 
   test('10-bit decode runs NativeImage.convert1010102', () async {
+    final id = await seededAssetId();
     final Map<String, int>? res;
     try {
-      res = await api.requestImage(
-        assetId!,
-        requestId: 900002,
-        width: 0,
-        height: 0,
-        isVideo: false,
-        preferEncoded: false,
-      );
+      res = await api.requestImage(id, requestId: 900002, width: 0, height: 0, isVideo: false, preferEncoded: false);
     } on PlatformException catch (e) {
       markTestSkipped('device cannot decode the 10-bit AVIF fixture: ${e.message}');
       return;
