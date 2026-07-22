@@ -14,6 +14,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getAssetActions } from '$lib/services/asset.service';
   import { faceManager } from '$lib/stores/face.svelte';
   import { ocrManager } from '$lib/stores/ocr.svelte';
@@ -23,6 +24,7 @@
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { navigate } from '$lib/utils/navigation';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
   import { SlideshowHistory } from '$lib/utils/slideshow-history';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -110,11 +112,11 @@
   let sharedLink = getSharedLink();
   let fullscreenElement = $state<Element>();
 
-  let playOriginalVideo = $state($alwaysLoadOriginalVideo);
+  let isPlayingOriginalVideo = $state($alwaysLoadOriginalVideo);
   let slideshowStartAssetId = $state<string>();
 
   const setPlayOriginalVideo = (value: boolean) => {
-    playOriginalVideo = value;
+    isPlayingOriginalVideo = value;
   };
 
   const refreshStack = async () => {
@@ -149,6 +151,15 @@
     }
   };
 
+  const onAssetsUndoArchive = async (assets: TimelineAsset[]) => {
+    if (assets.length === 0) {
+      return;
+    }
+    const restoredAsset = assets[0];
+    await assetViewerManager.setAssetId(restoredAsset.id);
+    await navigate({ targetRoute: 'current', assetId: restoredAsset.id });
+  };
+
   onMount(() => {
     syncAssetViewerOpenClass(true);
     const slideshowStateUnsubscribe = slideshowState.subscribe((value) => {
@@ -162,10 +173,12 @@
     });
 
     const slideshowNavigationUnsubscribe = slideshowNavigation.subscribe((value) => {
-      if (value === SlideshowNavigation.Shuffle) {
-        slideshowHistory.reset();
-        slideshowHistory.queue(toTimelineAsset(asset));
+      if (value !== SlideshowNavigation.Shuffle) {
+        return;
       }
+
+      slideshowHistory.reset();
+      slideshowHistory.queue(toTimelineAsset(asset));
     });
 
     return () => {
@@ -466,16 +479,14 @@
 
     if (event.detail.direction === 'left') {
       navigateAsset('next');
-    }
-
-    if (event.detail.direction === 'right') {
+    } else if (event.detail.direction === 'right') {
       navigateAsset('previous');
     }
   };
 </script>
 
 <CommandPaletteDefaultProvider name={$t('assets')} actions={[Tag, TagPeople]} />
-<OnEvents {onAssetUpdate} />
+<OnEvents {onAssetUpdate} {onAssetsUndoArchive} />
 
 <svelte:document
   bind:fullscreenElement
@@ -499,14 +510,12 @@
         {album}
         {person}
         {stack}
-        showSlideshow={true}
         preAction={handlePreAction}
         onAction={handleAction}
         {onUndoDelete}
-        onPlaySlideshow={() => ($slideshowState = SlideshowState.PlaySlideshow)}
         onClose={onClose ? () => onClose(stack?.primaryAssetId ?? asset.id) : undefined}
         {onRemoveFromAlbum}
-        {playOriginalVideo}
+        {isPlayingOriginalVideo}
         {setPlayOriginalVideo}
       />
     </div>
@@ -544,7 +553,7 @@
         onClose={closeViewer}
         onVideoEnded={() => navigateAsset()}
         onVideoStarted={handleVideoStarted}
-        {playOriginalVideo}
+        playOriginalVideo={isPlayingOriginalVideo}
       />
     {:else if viewerKind === 'LiveVideoViewer'}
       <VideoViewer
@@ -556,7 +565,7 @@
         onPreviousAsset={() => navigateAsset('previous')}
         onNextAsset={() => navigateAsset('next')}
         onVideoEnded={() => (assetViewerManager.isPlayingMotionPhoto = false)}
-        {playOriginalVideo}
+        playOriginalVideo={isPlayingOriginalVideo}
       />
     {:else if viewerKind === 'ImagePanaramaViewer'}
       <ImagePanoramaViewer {asset} />
@@ -576,7 +585,7 @@
         onClose={closeViewer}
         onVideoEnded={() => navigateAsset()}
         onVideoStarted={handleVideoStarted}
-        {playOriginalVideo}
+        playOriginalVideo={isPlayingOriginalVideo}
       />
     {/if}
 
@@ -627,7 +636,7 @@
     </div>
   {/if}
 
-  {#if stack && withStacked && !assetViewerManager.isShowEditor}
+  {#if stack && withStacked && !assetViewerManager.isShowEditor && $slideshowState === SlideshowState.None}
     {@const stackedAssets = stack.assets}
     <div id="stack-slideshow" class="absolute bottom-0 col-span-4 col-start-1 w-fit max-w-full">
       <div class="no-wrap horizontal-scrollbar relative flex flex-row overflow-x-auto overflow-y-hidden">

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.0.0-rc.1
+ * 3.0.3
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -342,6 +342,10 @@ export type RatingsResponse = {
     /** Whether ratings are enabled */
     enabled: boolean;
 };
+export type RecentlyAddedResponse = {
+    /** Whether the recently added page appears in the web sidebar */
+    sidebarWeb: boolean;
+};
 export type SharedLinksResponse = {
     /** Whether shared links are enabled */
     enabled: boolean;
@@ -364,6 +368,7 @@ export type UserPreferencesResponseDto = {
     people: PeopleResponse;
     purchase: PurchaseResponse;
     ratings: RatingsResponse;
+    recentlyAdded: RecentlyAddedResponse;
     sharedLinks: SharedLinksResponse;
     tags: TagsResponse;
 };
@@ -421,6 +426,10 @@ export type RatingsUpdate = {
     /** Whether ratings are enabled */
     enabled?: boolean;
 };
+export type RecentlyAddedUpdate = {
+    /** Whether the recently added page appears in the web sidebar */
+    sidebarWeb?: boolean;
+};
 export type SharedLinksUpdate = {
     /** Whether shared links are enabled */
     enabled?: boolean;
@@ -444,6 +453,7 @@ export type UserPreferencesUpdateDto = {
     people?: PeopleUpdate;
     purchase?: PurchaseUpdate;
     ratings?: RatingsUpdate;
+    recentlyAdded?: RecentlyAddedUpdate;
     sharedLinks?: SharedLinksUpdate;
     tags?: TagsUpdate;
 };
@@ -707,7 +717,7 @@ export type AssetBulkUploadCheckResult = {
     action: AssetUploadAction;
     /** Existing asset ID if duplicate */
     assetId?: string;
-    /** Asset ID */
+    /** Client-side identifier echoed from the request to match results to inputs */
     id: string;
     /** Whether existing asset is trashed */
     isTrashed?: boolean;
@@ -2292,6 +2302,10 @@ export type SystemConfigBackupsDto = {
 export type SystemConfigFFmpegRealtimeDto = {
     /** Enable real-time HLS transcoding (alpha) */
     enabled: boolean;
+    /** Resolutions to use for real-time HLS transcoding */
+    resolutions: HlsVideoResolution[];
+    /** Video codecs to use for real-time HLS transcoding */
+    videoCodecs: VideoCodec[];
 };
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
@@ -2501,7 +2515,7 @@ export type SystemConfigNightlyTasksDto = {
     generateMemories: boolean;
     /** Missing thumbnails */
     missingThumbnails: boolean;
-    /** Start time */
+    /** Start time (HH:MM) */
     startTime: string;
     /** Sync quota usage */
     syncQuotaUsage: boolean;
@@ -5750,13 +5764,18 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
 /**
  * Search assets by metadata
  */
-export function searchAssets({ metadataSearchDto }: {
+export function searchAssets({ key, slug, metadataSearchDto }: {
+    key?: string;
+    slug?: string;
     metadataSearchDto: MetadataSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: SearchResponseDto;
-    }>("/search/metadata", oazapfts.json({
+    }>(`/search/metadata${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
         ...opts,
         method: "POST",
         body: metadataSearchDto
@@ -7618,6 +7637,13 @@ export enum CQMode {
     Auto = "auto",
     Cqp = "cqp",
     Icq = "icq"
+}
+export enum HlsVideoResolution {
+    $480 = 480,
+    $720 = 720,
+    $1080 = 1080,
+    $1440 = 1440,
+    $2160 = 2160
 }
 export enum ToneMapping {
     Hable = "hable",

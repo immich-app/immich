@@ -32,11 +32,13 @@
   <a href="readme_i18n/README_zh_TW.md">正體中文</a>
   <a href="readme_i18n/README_uk_UA.md">Українська</a>
   <a href="readme_i18n/README_ru_RU.md">Русский</a>
+  <a href="readme_i18n/README_bg_BG.md">Български</a>
   <a href="readme_i18n/README_pt_BR.md">Português Brasileiro</a>
   <a href="readme_i18n/README_sv_SE.md">Svenska</a>
   <a href="readme_i18n/README_ar_JO.md">العربية</a>
   <a href="readme_i18n/README_vi_VN.md">Tiếng Việt</a>
   <a href="readme_i18n/README_th_TH.md">ภาษาไทย</a>
+  <a href="readme_i18n/README_ml_IN.md">മലയാളം</a>
 </p>
 
 

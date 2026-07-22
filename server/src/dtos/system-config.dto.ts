@@ -11,6 +11,7 @@ import {
   AudioCodecSchema,
   ColorspaceSchema,
   CQModeSchema,
+  HlsVideoResolutionSchema,
   ImageFormatSchema,
   LogLevelSchema,
   OAuthTokenEndpointAuthMethodSchema,
@@ -20,7 +21,6 @@ import {
   VideoCodecSchema,
   VideoContainerSchema,
 } from 'src/enum';
-import { isValidTime } from 'src/validation';
 import z from 'zod';
 
 /** Coerces 'true'/'false' strings to boolean, but also allows booleans. */
@@ -74,7 +74,12 @@ const SystemConfigIntegrityJobSchema = z
 
 const SystemConfigIntegrityChecksumJobSchema = SystemConfigIntegrityJobSchema.extend({
   timeLimit: z.int().nonnegative().describe('How long the integrity checksum job may run for'),
-  percentageLimit: z.int().nonnegative().describe('Percentage limit of the integrity checksum job'),
+  percentageLimit: z
+    .float32()
+    .nonnegative()
+    .max(1)
+    .describe('Percentage limit of the integrity checksum job')
+    .meta({ format: 'double' }),
 })
   .describe('Integrity checksum job config')
   .meta({ id: 'SystemConfigIntegrityChecksumJob' });
@@ -116,6 +121,8 @@ const SystemConfigFFmpegSchema = z
     realtime: z
       .object({
         enabled: configBool.describe('Enable real-time HLS transcoding (alpha)'),
+        videoCodecs: z.array(VideoCodecSchema).describe('Video codecs to use for real-time HLS transcoding'),
+        resolutions: z.array(HlsVideoResolutionSchema).describe('Resolutions to use for real-time HLS transcoding'),
       })
       .meta({ id: 'SystemConfigFFmpegRealtimeDto' }),
   })
@@ -204,7 +211,12 @@ const SystemConfigNewVersionCheckSchema = z
 
 const SystemConfigNightlyTasksSchema = z
   .object({
-    startTime: isValidTime.describe('Start time'),
+    startTime: z.iso
+      .time({
+        precision: -1,
+        error: (iss) => `Invalid input: expected string in HH:MM format, received ${typeof iss.input}`,
+      })
+      .describe('Start time (HH:MM)'),
     databaseCleanup: configBool.describe('Database cleanup'),
     missingThumbnails: configBool.describe('Missing thumbnails'),
     clusterNewFaces: configBool.describe('Cluster new faces'),

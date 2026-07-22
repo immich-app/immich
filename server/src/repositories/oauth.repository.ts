@@ -68,7 +68,7 @@ export class OAuthRepository {
       params.code_challenge_method = 'S256';
     }
 
-    const url = buildAuthorizationUrl(client, params).toString();
+    const url = buildAuthorizationUrl(client, params).href;
 
     return { url, state, codeVerifier };
   }
@@ -83,7 +83,7 @@ export class OAuthRepository {
     url: string,
     expectedState: string,
     codeVerifier: string,
-  ): Promise<{ profile: OAuthProfile; sid?: string }> {
+  ): Promise<{ profile: OAuthProfile; sid?: string; idToken?: string }> {
     const client = await this.getClient(config);
     const pkceCodeVerifier = client.serverMetadata().supportsPKCE() ? codeVerifier : undefined;
 
@@ -111,7 +111,7 @@ export class OAuthRepository {
         }
       }
 
-      return { profile, sid };
+      return { profile, sid, idToken: tokens.id_token };
     } catch (error: Error | any) {
       if (error.message.includes('unexpected JWT alg received')) {
         this.logger.warn(
@@ -173,6 +173,7 @@ export class OAuthRepository {
       // Validate specific Logout Token claims (RFC 8963):
       // "events" claim must exist and contain the backchannel-logout event
       const events = payload.events as Record<string, any> | undefined;
+      // eslint-disable-next-line unicorn/prefer-https
       if (!events || !events['http://schemas.openid.net/event/backchannel-logout']) {
         throw new Error('Missing backchannel-logout event claim');
       }

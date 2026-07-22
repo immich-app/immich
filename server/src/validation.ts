@@ -1,7 +1,7 @@
-import { ArgumentMetadata, FileValidator, Injectable, ParseUUIDPipe } from '@nestjs/common';
+import { FileValidator, Injectable } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { createZodDto } from 'nestjs-zod';
 import sanitize from 'sanitize-filename';
-import { IntegrityReportSchema } from 'src/enum';
 import { isIP, isIPRange } from 'validator';
 import z from 'zod';
 
@@ -12,10 +12,7 @@ function isIPOrRange(value: string, options?: IsIPRangeOptions): boolean {
   if (isIPRange(value)) {
     return true;
   }
-  if (!requireCIDR && isIP(value)) {
-    return true;
-  }
-  return false;
+  return !requireCIDR && isIP(value);
 }
 
 /**
@@ -63,7 +60,7 @@ export function IsNotSiblingOf<
   TKey extends z.infer<ReturnType<TSchema['keyof']>> & keyof z.infer<TSchema>,
 >(_schema: TSchema, property: TKey, siblings: TKey[]) {
   type T = z.infer<TSchema>;
-  const message = `${String(property)} cannot exist alongside ${siblings.join(' or ')}`;
+  const message = `${property} cannot exist alongside ${siblings.join(' or ')}`;
   return z.custom<T>().refine(
     (data) => {
       if (data[property] === undefined) {
@@ -73,16 +70,6 @@ export function IsNotSiblingOf<
     },
     { message },
   );
-}
-
-@Injectable()
-export class ParseMeUUIDPipe extends ParseUUIDPipe {
-  async transform(value: string, metadata: ArgumentMetadata) {
-    if (value == 'me') {
-      return value;
-    }
-    return super.transform(value, metadata);
-  }
 }
 
 @Injectable()
@@ -132,10 +119,6 @@ const FilenameParamSchema = z.object({
 
 export class FilenameParamDto extends createZodDto(FilenameParamSchema) {}
 
-const IntegrityReportParamSchema = z.object({ type: IntegrityReportSchema }).meta({ id: 'IntegrityReportDto' });
-
-export class IntegrityReportTypeParamDto extends createZodDto(IntegrityReportParamSchema) {}
-
 /**
  * Unified email validation
  * Converts email strings to lowercase and validates against HTML5 email regex
@@ -156,6 +139,7 @@ export const isoDatetimeToDate = z
   .codec(
     z.iso.datetime({
       error: (iss) => `Invalid input: expected ISO 8601 datetime string, received ${typeof iss.input}`,
+      offset: true,
     }),
     z.date(),
     {
@@ -177,19 +161,10 @@ export const isoDateToDate = z
     z.date(),
     {
       decode: (isoString) => new Date(isoString),
-      encode: (date) => {
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        return `${y}-${m}-${d}`;
-      },
+      encode: (date) => DateTime.fromJSDate(date).toFormat('yyyy-MM-dd'),
     },
   )
   .meta({ example: '2024-01-01' });
-
-export const isValidTime = z
-  .string()
-  .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Invalid input: expected string in HH:mm format, received string');
 
 /**
  * Latitude in range [-90, 90]. Reuse for body or query params.

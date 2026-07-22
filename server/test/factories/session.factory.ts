@@ -26,6 +26,7 @@ export class SessionFactory {
       updatedAt: newDate(),
       userId: newUuid(),
       oauthSid: newUuid(),
+      oauthBearerToken: 'oauth-bearer-token',
       ...dto,
     });
   }

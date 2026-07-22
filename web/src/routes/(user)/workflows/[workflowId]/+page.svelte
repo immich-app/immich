@@ -73,7 +73,13 @@
   let dragSourceId: string | undefined;
 
   const workflowSummary = $derived({ name, description, trigger, steps });
-  const workflowJsonContent = $derived<WorkflowJsonContent>({ name, description, enabled, trigger, steps });
+  const workflowJsonContent = $derived<WorkflowJsonContent>({
+    name,
+    description,
+    enabled,
+    trigger,
+    steps: steps.map(({ id: _, ...step }) => step),
+  });
 
   const hasChanges = $derived(
     enabled !== savedWorkflow.enabled ||
@@ -183,11 +189,13 @@
   };
 
   const onWorkflowUpdate = async (response: WorkflowResponseDto) => {
-    if (id === response.id) {
-      data.workflow = response;
-      savedWorkflow = cloneDeep(response);
-      await invalidate('workflow:data');
+    if (id !== response.id) {
+      return;
     }
+
+    data.workflow = response;
+    savedWorkflow = cloneDeep(response);
+    await invalidate('workflow:data');
   };
 
   const onWorkflowDelete = async (response: WorkflowResponseDto) => {
@@ -246,10 +254,12 @@
     }
 
     void confirmNavigation().then((confirmed) => {
-      if (confirmed) {
-        allowNavigation = true;
-        void goto(to.url);
+      if (!confirmed) {
+        return;
       }
+
+      allowNavigation = true;
+      void goto(to.url);
     });
   });
 

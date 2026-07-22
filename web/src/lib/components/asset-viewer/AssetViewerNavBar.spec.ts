@@ -7,6 +7,16 @@ import { preferencesFactory } from '@test-data/factories/preferences-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
 import AssetViewerNavBar from './AssetViewerNavBar.svelte';
 
+vi.mock(import('$lib/managers/feature-flags-manager.svelte'), function () {
+  return {
+    featureFlagsManager: {
+      init: vi.fn(),
+      loadFeatureFlags: vi.fn(),
+      value: { smartSearch: true, trash: true },
+    } as never,
+  };
+});
+
 describe('AssetViewerNavBar component', () => {
   const additionalProps = {
     preAction: () => {},
@@ -24,15 +34,6 @@ describe('AssetViewerNavBar component', () => {
       };
     });
     vi.stubGlobal('ResizeObserver', getResizeObserverMock());
-    vi.mock(import('$lib/managers/feature-flags-manager.svelte'), function () {
-      return {
-        featureFlagsManager: {
-          init: vi.fn(),
-          loadFeatureFlags: vi.fn(),
-          value: { smartSearch: true, trash: true },
-        } as never,
-      };
-    });
   });
 
   afterEach(() => {

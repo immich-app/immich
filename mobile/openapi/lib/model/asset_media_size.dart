@@ -11,33 +11,31 @@
 part of openapi.api;
 
 /// Asset media size
-class AssetMediaSize {
-  /// Instantiate a new enum with the provided [value].
-  const AssetMediaSize._(this.value);
+enum AssetMediaSize {
+  original._(r'original'),
+  fullsize._(r'fullsize'),
+  preview._(r'preview'),
+  thumbnail._(r'thumbnail'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const AssetMediaSize._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const original = AssetMediaSize._(r'original');
-  static const fullsize = AssetMediaSize._(r'fullsize');
-  static const preview = AssetMediaSize._(r'preview');
-  static const thumbnail = AssetMediaSize._(r'thumbnail');
-
-  /// List of all possible values in this [enum][AssetMediaSize].
-  static const values = <AssetMediaSize>[
-    original,
-    fullsize,
-    preview,
-    thumbnail,
-  ];
-
+  /// Returns the instance of [AssetMediaSize] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static AssetMediaSize? fromJson(dynamic value) => AssetMediaSizeTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [AssetMediaSize]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<AssetMediaSize> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetMediaSize>[];
     if (json is List && json.isNotEmpty) {
@@ -59,9 +57,11 @@ class AssetMediaSizeTypeTransformer {
 
   const AssetMediaSizeTypeTransformer._();
 
-  String encode(AssetMediaSize data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(AssetMediaSize data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a AssetMediaSize.
+  /// Returns the instance of [AssetMediaSize] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -70,6 +70,9 @@ class AssetMediaSizeTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   AssetMediaSize? decode(dynamic data, {bool allowNull = true}) {
+    if (data is AssetMediaSize) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'original': return AssetMediaSize.original;
@@ -85,7 +88,7 @@ class AssetMediaSizeTypeTransformer {
     return null;
   }
 
-  /// Singleton [AssetMediaSizeTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static AssetMediaSizeTypeTransformer? _instance;
 }
 

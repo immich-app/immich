@@ -7,7 +7,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
@@ -129,12 +128,6 @@ class ShareActionButton extends ConsumerWidget {
       return;
     }
 
-    await ref.read(settingsProvider).write(SettingsKey.shareFileType, fileType);
-
-    if (!context.mounted) {
-      return;
-    }
-
     await _share(context, ref, fileType);
   }
 
@@ -159,8 +152,6 @@ class ShareActionButton extends ConsumerWidget {
                 return;
               }
 
-              ref.read(multiSelectProvider.notifier).reset();
-
               if (!result.success) {
                 ImmichToast.show(
                   context: context,
@@ -173,7 +164,6 @@ class ShareActionButton extends ConsumerWidget {
               buildContext.pop();
             });
 
-        // Show download progress with a "Preparing" message
         return preparingDialog;
       },
       barrierDismissible: false,

@@ -35,16 +35,16 @@ class TimeBucketAssetResponseDto {
   });
 
   /// Array of city names extracted from EXIF GPS data
-  Optional<List<String>?> city;
+  Optional<List<String?>?> city;
 
   /// Array of country names extracted from EXIF GPS data
-  Optional<List<String>?> country;
+  Optional<List<String?>?> country;
 
   /// Array of UTC timestamps when each asset was originally uploaded to Immich
   List<String> createdAt;
 
   /// Array of video/gif durations in milliseconds (null for static images)
-  List<int> duration;
+  List<int?> duration;
 
   /// Array of file creation timestamps in UTC
   List<String> fileCreatedAt;
@@ -62,22 +62,22 @@ class TimeBucketAssetResponseDto {
   List<bool> isTrashed;
 
   /// Array of latitude coordinates extracted from EXIF GPS data
-  Optional<List<num>?> latitude;
+  Optional<List<num?>?> latitude;
 
   /// Array of live photo video asset IDs (null for non-live photos)
-  List<String> livePhotoVideoId;
+  List<String?> livePhotoVideoId;
 
   /// Array of UTC offset hours at the time each photo was taken. Positive values are east of UTC, negative values are west of UTC. Values may be fractional (e.g., 5.5 for +05:30, -9.75 for -09:45). Applying this offset to 'fileCreatedAt' will give you the time the photo was taken from the photographer's perspective.
   List<num> localOffsetHours;
 
   /// Array of longitude coordinates extracted from EXIF GPS data
-  Optional<List<num>?> longitude;
+  Optional<List<num?>?> longitude;
 
   /// Array of owner IDs for each asset
   List<String> ownerId;
 
   /// Array of projection types for 360° content (e.g., \"EQUIRECTANGULAR\", \"CUBEFACE\", \"CYLINDRICAL\")
-  List<String> projectionType;
+  List<String?> projectionType;
 
   /// Array of aspect ratios (width/height) for each asset
   List<num> ratio;
@@ -86,7 +86,7 @@ class TimeBucketAssetResponseDto {
   Optional<List<List<String>?>?> stack;
 
   /// Array of BlurHash strings for generating asset previews (base64 encoded)
-  List<String> thumbhash;
+  List<String?> thumbhash;
 
   /// Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED)
   List<AssetVisibility> visibility;

@@ -16,11 +16,13 @@ export const getOutputDimensions = (
   }
 
   for (const edit of edits) {
-    if (edit.action === AssetEditAction.Rotate) {
-      const angleDegrees = edit.parameters.angle;
-      if (angleDegrees === 90 || angleDegrees === 270) {
-        [width, height] = [height, width];
-      }
+    if (edit.action !== AssetEditAction.Rotate) {
+      continue;
+    }
+
+    const angleDegrees = edit.parameters.angle;
+    if (angleDegrees === 90 || angleDegrees === 270) {
+      [width, height] = [height, width];
     }
   }
 

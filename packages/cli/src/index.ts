@@ -1,4 +1,5 @@
 #! /usr/bin/env node
+import { AssetVisibility } from '@immich/sdk';
 import { Command, Option } from 'commander';
 import os from 'node:os';
 import path from 'node:path';
@@ -57,6 +58,11 @@ program
     new Option('-A, --album-name <name>', 'Add all assets to specified album')
       .env('IMMICH_ALBUM_NAME')
       .conflicts('album'),
+  )
+  .addOption(
+    new Option('--visibility <visibility>', 'Set the visibility of uploaded assets')
+      .choices(Object.values(AssetVisibility))
+      .env('IMMICH_VISIBILITY'),
   )
   .addOption(
     new Option('-n, --dry-run', "Don't perform any actions, just show what will be done")

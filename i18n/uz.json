@@ -10,7 +10,6 @@
   "active": "Faol",
   "active_count": "Faol: {count}",
   "activity": "Harakatlar",
-  "activity_changed": "Harakatlar {enabled, select, true {yoqilgan} other {yoqilmagan}}",
   "add": "Qoʻshish",
   "add_a_description": "Tavsif kiriting"
 }

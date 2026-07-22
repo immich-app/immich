@@ -82,6 +82,9 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
         cast: {
           gCastEnabled: false,
         },
+        recentlyAdded: {
+          sidebarWeb: false,
+        },
       },
     });
   });

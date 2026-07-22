@@ -103,6 +103,12 @@
             "default": false,
             "title": "Case sensitive",
             "description": "Whether matching should be case-sensitive"
+          },
+          "usePath": {
+            "type": "boolean",
+            "default": false,
+            "title": "Use path",
+            "description": "Match the full path on the server instead of the original filename"
           }
         },
         "required": ["pattern"]
@@ -163,19 +169,26 @@
             "description": "Filter by distance to a coordinate",
             "properties": {
               "latitude": {
-                "type": "string",
+                "type": "number",
                 "title": "Latitude",
-                "description": "GPS latitude of a coordinate which the asset must be close to"
+                "description": "GPS latitude of a coordinate which the asset must be close to",
+                "minimum": -90,
+                "maximum": 90,
+                "precision": 0.000001
               },
               "longitude": {
-                "type": "string",
+                "type": "number",
                 "title": "Longitude",
-                "description": "GPS longitude of a coordinate which the asset must be close to"
+                "description": "GPS longitude of a coordinate which the asset must be close to",
+                "minimum": -180,
+                "maximum": 180,
+                "precision": 0.000001
               },
               "radius": {
                 "type": "number",
                 "title": "Maximum distance",
-                "description": "How close in kilometres the asset must be to the given point"
+                "description": "How close in kilometres the asset must be to the given point",
+                "minimum": 0
               }
             }
           }
@@ -184,22 +197,114 @@
       "uiHints": ["Filter"]
     },
     {
-      "name": "filterFileType",
-      "title": "Filter by file type",
-      "description": "Filter assets by file type",
+      "name": "assetDateFilter",
+      "title": "Filter by date",
+      "description": "Filter assets by date taken",
       "types": ["AssetV1"],
       "schema": {
         "type": "object",
         "properties": {
-          "fileTypes": {
-            "title": "File types",
-            "description": "Allowed file types",
-            "type": "string",
-            "array": true,
-            "enum": ["image", "video"]
+          "startDate": {
+            "type": "object",
+            "title": "Start date",
+            "description": "Earliest date of assets to include",
+            "properties": {
+              "day": {
+                "type": "number",
+                "title": "Day",
+                "description": "Day of the year to match",
+                "uiHint": {
+                  "order": 1
+                }
+              },
+              "month": {
+                "type": "number",
+                "title": "Month",
+                "description": "Month of the year to match",
+                "uiHint": {
+                  "order": 2
+                }
+              },
+              "year": {
+                "type": "number",
+                "title": "Year",
+                "description": "Year to match",
+                "uiHint": {
+                  "order": 3
+                }
+              }
+            },
+            "uiHint": {
+              "order": 1
+            },
+            "required": ["day", "month", "year"]
+          },
+          "endDate": {
+            "type": "object",
+            "title": "End date",
+            "description": "Latest date of assets to include",
+            "properties": {
+              "day": {
+                "type": "number",
+                "title": "Day",
+                "description": "Day of the year to match",
+                "uiHint": {
+                  "order": 1
+                }
+              },
+              "month": {
+                "type": "number",
+                "title": "Month",
+                "description": "Month of the year to match",
+                "uiHint": {
+                  "order": 2
+                }
+              },
+              "year": {
+                "type": "number",
+                "title": "Year",
+                "description": "Year to match",
+                "uiHint": {
+                  "order": 3
+                }
+              }
+            },
+            "uiHint": {
+              "order": 2
+            },
+            "required": ["day", "month", "year"]
+          },
+          "recurring": {
+            "type": "boolean",
+            "default": false,
+            "title": "Match recurring dates",
+            "description": "Allow any assets with matching months/days regardless of the year",
+            "uiHint": {
+              "order": 3
+            }
           }
         },
-        "required": ["fileTypes"]
+        "required": ["recurring", "startDate", "endDate"]
+      },
+      "uiHints": ["Filter"]
+    },
+    {
+      "name": "assetTypeFilter",
+      "title": "Filter by asset type",
+      "description": "Filter assets by type",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "allowedTypes": {
+            "title": "Asset types",
+            "description": "Allowed asset types",
+            "type": "string",
+            "array": true,
+            "enum": ["IMAGE", "VIDEO", "AUDIO", "OTHER"]
+          }
+        },
+        "required": ["allowedTypes"]
       },
       "uiHints": ["Filter"]
     },
@@ -222,13 +327,16 @@
       "name": "assetLock",
       "title": "Move to locked folder",
       "description": "Change visibility to locked",
-      "types": ["AssetV1"]
-    },
-    {
-      "name": "assetTimeline",
-      "title": "Move to timeline",
-      "description": "Change visibility to timeline",
-      "types": ["AssetV1"]
+      "types": ["AssetV1"],
+      "schema": {
+        "properties": {
+          "inverse": {
+            "title": "Inverse",
+            "description": "When true will unarchive any archived assets",
+            "type": "boolean"
+          }
+        }
+      }
     },
     {
       "name": "assetVisibility",
@@ -278,7 +386,9 @@
             "title": "Album IDs",
             "array": true,
             "description": "Target album IDs",
-            "uiHint": "AlbumId"
+            "uiHint": {
+              "type": "AlbumId"
+            }
           },
           "albumName": {
             "type": "string",
@@ -290,94 +400,38 @@
       }
     },
     {
-      "name": "noop1",
-      "title": "DEV: Nested properties",
-      "description": "Example configuration with nested properties",
+      "name": "webhook",
+      "title": "Trigger Webhook",
+      "description": "POST/PUT event data to any URL",
       "types": ["AssetV1"],
+      "hostFunctions": true,
+      "allowedHosts": ["*"],
       "schema": {
         "type": "object",
         "properties": {
-          "number1": {
-            "type": "number",
-            "title": "Number 1",
-            "description": "Basic number"
-          },
-          "number2": {
-            "type": "number",
-            "title": "Number 2",
-            "array": true,
-            "description": "List of numbers"
-          },
-          "string1": {
+          "url": {
             "type": "string",
-            "title": "String 1",
-            "description": "Basic string"
+            "title": "URL",
+            "description": "Event data will be PUT/POSTed to this URL as a JSON object"
           },
-          "string2": {
+          "headerName": {
             "type": "string",
-            "title": "String 2",
-            "array": true,
-            "description": "List of strings"
+            "title": "Header name",
+            "description": "The name of an additional header to include with the request (e.g. authentication)"
           },
-          "string3": {
+          "headerValue": {
             "type": "string",
-            "title": "String 3",
-            "enum": ["choice-1", "choice-2"],
-            "description": "Select from a list"
+            "title": "Header value",
+            "description": "The value of the additional header"
           },
-          "nested": {
-            "type": "object",
-            "title": "Nested",
-            "description": "Nested properties for nesting",
-            "properties": {
-              "nested1": {
-                "type": "string",
-                "title": "Nested 1",
-                "description": "Nested string"
-              },
-              "nested2": {
-                "type": "number",
-                "title": "Nested 2",
-                "description": "Nested number"
-              },
-              "nested3": {
-                "type": "object",
-                "title": "Nested 3",
-                "description": "Nested again",
-                "properties": {
-                  "nested4": {
-                    "type": "boolean",
-                    "title": "Nested 4",
-                    "description": "Nested, nested boolean"
-                  }
-                }
-              }
-            }
+          "method": {
+            "type": "string",
+            "title": "Method",
+            "description": "The HTTP method to use in the request",
+            "enum": ["POST", "PUT"]
           }
-        }
-      }
-    },
-    {
-      "name": "noop2",
-      "title": "DEV: Album pickers",
-      "description": "Example configuration with album pickers",
-      "types": ["AssetV1"],
-      "schema": {
-        "properties": {
-          "albumId": {
-            "type": "string",
-            "title": "Album ID",
-            "description": "Target album ID",
-            "uiHint": "AlbumId"
-          },
-          "albumIds": {
-            "type": "string",
-            "title": "Album IDs",
-            "description": "Target album IDs",
-            "array": true,
-            "uiHint": "AlbumId"
-          }
-        }
+        },
+        "required": ["url"]
       }
     }
   ]
