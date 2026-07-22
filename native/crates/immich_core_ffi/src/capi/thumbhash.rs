@@ -22,8 +22,8 @@ pub(crate) fn decode_malloc(hash: &[u8]) -> Option<(*mut u8, u32, u32)> {
     Some((dst, w, h))
 }
 
-/// Decodes a ThumbHash into a libc buffer and writes width, height, and row bytes to `out_info`.
-/// Free the buffer with `free`; malformed hashes return null.
+/// Decodes a ThumbHash into a new buffer and writes width, height, and row bytes to `out_info`.
+/// Free the buffer with `immich_core_free`; malformed hashes return null.
 ///
 /// # Safety
 /// `hash` must be valid for `hash_len` bytes and `out_info` for three u32 writes.

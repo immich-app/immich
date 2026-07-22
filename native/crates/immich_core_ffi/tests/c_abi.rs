@@ -4,7 +4,7 @@ use std::ffi::CStr;
 use std::ptr;
 
 use immich_core_ffi::{
-    immich_core_free_string, immich_core_orientation_swaps_dims,
+    immich_core_free, immich_core_free_string, immich_core_orientation_swaps_dims,
     immich_core_rgba1010102_to_rgba8888, immich_core_rotate_rgba8888, immich_core_thumbhash_decode,
     immich_core_version,
 };
@@ -186,7 +186,12 @@ fn thumbhash_decodes_into_a_malloc_buffer() {
     let pixels = unsafe { std::slice::from_raw_parts(ptr, len) };
     assert!(pixels.chunks_exact(4).all(|px| px[3] == 255));
     assert!(pixels.chunks_exact(4).any(|px| px[0] != pixels[0]));
-    unsafe { libc::free(ptr as *mut libc::c_void) };
+    unsafe { immich_core_free(ptr) };
+}
+
+#[test]
+fn free_accepts_null() {
+    unsafe { immich_core_free(ptr::null_mut()) };
 }
 
 #[test]

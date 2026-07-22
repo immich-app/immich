@@ -86,7 +86,7 @@ void main() {
         expect(pixels[i], 255, reason: 'alpha at $i');
       }
       expect(pixels.toSet().length, greaterThan(2));
-      malloc.free(ptr);
+      immich_core_free(ptr);
 
       expect(immich_core_thumbhash_decode(hashPtr, 4, info), equals(nullptr));
     } finally {

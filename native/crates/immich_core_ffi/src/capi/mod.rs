@@ -28,6 +28,17 @@ pub unsafe extern "C" fn immich_core_free_string(ptr: *mut c_char) {
     });
 }
 
+/// Release a buffer returned by this library, such as a decoded ThumbHash.
+///
+/// # Safety
+/// `ptr` must be a buffer previously returned by this library, or null, and
+/// must not be released twice.
+#[no_mangle]
+pub unsafe extern "C" fn immich_core_free(ptr: *mut u8) {
+    // SAFETY: the buffer came from this library's libc allocation; free accepts null.
+    unsafe { libc::free(ptr as *mut core::ffi::c_void) };
+}
+
 fn guard<T>(sentinel: T, f: impl FnOnce() -> T + std::panic::UnwindSafe) -> T {
     crate::log::ensure_panic_hook();
     std::panic::catch_unwind(f).unwrap_or(sentinel)

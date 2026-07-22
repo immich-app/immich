@@ -35,7 +35,7 @@ Uint8List? decodeDriftThumbHash(String? thumbHash) {
     try {
       return _rgbaToBmp(rgba, info[0], info[1], info[2]);
     } finally {
-      malloc.free(rgba);
+      immich_core_free(rgba);
     }
   } finally {
     malloc.free(hashPtr);

@@ -21,6 +21,15 @@ char *immich_core_version(void);
 void immich_core_free_string(char *ptr);
 
 /**
+ * Release a buffer returned by this library, such as a decoded ThumbHash.
+ *
+ * # Safety
+ * `ptr` must be a buffer previously returned by this library, or null, and
+ * must not be released twice.
+ */
+void immich_core_free(uint8_t *ptr);
+
+/**
  * Returns whether an EXIF orientation swaps width and height.
  */
 bool immich_core_orientation_swaps_dims(int32_t orientation);
@@ -55,8 +64,8 @@ bool immich_core_rgba1010102_to_rgba8888(const uint8_t *src,
                                          uintptr_t dst_len);
 
 /**
- * Decodes a ThumbHash into a libc buffer and writes width, height, and row bytes to `out_info`.
- * Free the buffer with `free`; malformed hashes return null.
+ * Decodes a ThumbHash into a new buffer and writes width, height, and row bytes to `out_info`.
+ * Free the buffer with `immich_core_free`; malformed hashes return null.
  *
  * # Safety
  * `hash` must be valid for `hash_len` bytes and `out_info` for three u32 writes.
