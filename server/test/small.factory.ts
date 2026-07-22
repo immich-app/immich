@@ -22,7 +22,7 @@ const authFactory = ({
   user,
 }: {
   apiKey?: Partial<AuthApiKey>;
-  session?: { id?: string; hasElevatedPermission?: boolean };
+  session?: { id?: string; hasElevatedPermission?: boolean; oauthBearerToken?: string | null };
   user?: Omit<
     Partial<UserAdmin>,
     'createdAt' | 'updatedAt' | 'deletedAt' | 'fileCreatedAt' | 'fileModifiedAt' | 'localDateTime' | 'profileChangedAt'
