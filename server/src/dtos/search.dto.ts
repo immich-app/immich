@@ -14,32 +14,40 @@ import {
 import { isoDatetimeToDate, nonEmptyPartial, stringToBool } from 'src/validation';
 import z from 'zod';
 
+const ADDED_V3_1 = new HistoryBuilder().added('v3.1.0').getExtensions();
+
+// fields deprecated in favor of the structured filter tree
+const DEPRECATED_FLAT_FIELD = {
+  ...new HistoryBuilder().added('v1').stable('v2').deprecated('v3.1.0').getExtensions(),
+  deprecated: true,
+};
+
 const BaseSearchSchema = z.object({
-  libraryId: z.uuidv4().nullish().describe('Library ID to filter by'),
-  type: AssetTypeSchema.optional(),
-  isEncoded: z.boolean().optional().describe('Filter by encoded status'),
-  isFavorite: z.boolean().optional().describe('Filter by favorite status'),
-  isMotion: z.boolean().optional().describe('Filter by motion photo status'),
-  isOffline: z.boolean().optional().describe('Filter by offline status'),
-  visibility: AssetVisibilitySchema.optional(),
-  createdBefore: isoDatetimeToDate.optional().describe('Filter by creation date (before)'),
-  createdAfter: isoDatetimeToDate.optional().describe('Filter by creation date (after)'),
-  updatedBefore: isoDatetimeToDate.optional().describe('Filter by update date (before)'),
-  updatedAfter: isoDatetimeToDate.optional().describe('Filter by update date (after)'),
-  trashedBefore: isoDatetimeToDate.optional().describe('Filter by trash date (before)'),
-  trashedAfter: isoDatetimeToDate.optional().describe('Filter by trash date (after)'),
-  takenBefore: isoDatetimeToDate.optional().describe('Filter by taken date (before)'),
-  takenAfter: isoDatetimeToDate.optional().describe('Filter by taken date (after)'),
-  city: z.string().nullable().optional().describe('Filter by city name'),
-  state: z.string().nullable().optional().describe('Filter by state/province name'),
-  country: z.string().nullable().optional().describe('Filter by country name'),
-  make: z.string().nullable().optional().describe('Filter by camera make'),
-  model: z.string().nullable().optional().describe('Filter by camera model'),
-  lensModel: z.string().nullable().optional().describe('Filter by lens model'),
-  isNotInAlbum: z.boolean().optional().describe('Filter assets not in any album'),
-  personIds: z.array(z.uuidv4()).optional().describe('Filter by person IDs'),
-  tagIds: z.array(z.uuidv4()).nullish().describe('Filter by tag IDs'),
-  albumIds: z.array(z.uuidv4()).optional().describe('Filter by album IDs'),
+  libraryId: z.uuidv4().nullish().describe('Library ID to filter by').meta(DEPRECATED_FLAT_FIELD),
+  type: AssetTypeSchema.optional().meta(DEPRECATED_FLAT_FIELD),
+  isEncoded: z.boolean().optional().describe('Filter by encoded status').meta(DEPRECATED_FLAT_FIELD),
+  isFavorite: z.boolean().optional().describe('Filter by favorite status').meta(DEPRECATED_FLAT_FIELD),
+  isMotion: z.boolean().optional().describe('Filter by motion photo status').meta(DEPRECATED_FLAT_FIELD),
+  isOffline: z.boolean().optional().describe('Filter by offline status').meta(DEPRECATED_FLAT_FIELD),
+  visibility: AssetVisibilitySchema.optional().meta(DEPRECATED_FLAT_FIELD),
+  createdBefore: isoDatetimeToDate.optional().describe('Filter by creation date (before)').meta(DEPRECATED_FLAT_FIELD),
+  createdAfter: isoDatetimeToDate.optional().describe('Filter by creation date (after)').meta(DEPRECATED_FLAT_FIELD),
+  updatedBefore: isoDatetimeToDate.optional().describe('Filter by update date (before)').meta(DEPRECATED_FLAT_FIELD),
+  updatedAfter: isoDatetimeToDate.optional().describe('Filter by update date (after)').meta(DEPRECATED_FLAT_FIELD),
+  trashedBefore: isoDatetimeToDate.optional().describe('Filter by trash date (before)').meta(DEPRECATED_FLAT_FIELD),
+  trashedAfter: isoDatetimeToDate.optional().describe('Filter by trash date (after)').meta(DEPRECATED_FLAT_FIELD),
+  takenBefore: isoDatetimeToDate.optional().describe('Filter by taken date (before)').meta(DEPRECATED_FLAT_FIELD),
+  takenAfter: isoDatetimeToDate.optional().describe('Filter by taken date (after)').meta(DEPRECATED_FLAT_FIELD),
+  city: z.string().nullable().optional().describe('Filter by city name').meta(DEPRECATED_FLAT_FIELD),
+  state: z.string().nullable().optional().describe('Filter by state/province name').meta(DEPRECATED_FLAT_FIELD),
+  country: z.string().nullable().optional().describe('Filter by country name').meta(DEPRECATED_FLAT_FIELD),
+  make: z.string().nullable().optional().describe('Filter by camera make').meta(DEPRECATED_FLAT_FIELD),
+  model: z.string().nullable().optional().describe('Filter by camera model').meta(DEPRECATED_FLAT_FIELD),
+  lensModel: z.string().nullable().optional().describe('Filter by lens model').meta(DEPRECATED_FLAT_FIELD),
+  isNotInAlbum: z.boolean().optional().describe('Filter assets not in any album').meta(DEPRECATED_FLAT_FIELD),
+  personIds: z.array(z.uuidv4()).optional().describe('Filter by person IDs').meta(DEPRECATED_FLAT_FIELD),
+  tagIds: z.array(z.uuidv4()).nullish().describe('Filter by tag IDs').meta(DEPRECATED_FLAT_FIELD),
+  albumIds: z.array(z.uuidv4()).optional().describe('Filter by album IDs').meta(DEPRECATED_FLAT_FIELD),
   rating: z
     .int()
     .min(1)
@@ -52,50 +60,23 @@ const BaseSearchSchema = z.object({
         .stable('v2')
         .updated('v2.6.0', 'Using -1 as a rating is deprecated and will be removed in the next major version.')
         .updated('v3', 'Using -1 as a rating is no longer valid.')
+        .deprecated('v3.1.0')
         .getExtensions(),
+      deprecated: true,
     }),
-  ocr: z.string().optional().describe('Filter by OCR text content'),
+  ocr: z.string().optional().describe('Filter by OCR text content').meta(DEPRECATED_FLAT_FIELD),
 });
 
 const BaseSearchWithResultsSchema = BaseSearchSchema.extend({
-  withDeleted: z.boolean().optional().describe('Include deleted assets'),
+  withDeleted: z.boolean().optional().describe('Include deleted assets').meta(DEPRECATED_FLAT_FIELD),
   withExif: z.boolean().optional().describe('Include EXIF data in response'),
   size: z.int().min(1).max(1000).optional().describe('Number of results to return'),
 });
-
-const RandomSearchSchema = BaseSearchWithResultsSchema.extend({
-  withStacked: z.boolean().optional().describe('Include stacked assets'),
-  withPeople: z.boolean().optional().describe('Include people data in response'),
-}).meta({ id: 'RandomSearchDto' });
 
 const LargeAssetSearchSchema = BaseSearchWithResultsSchema.extend({
   minFileSize: z.coerce.number().int().min(0).optional().describe('Minimum file size in bytes'),
   size: z.coerce.number().int().min(1).max(1000).optional().describe('Number of results to return'),
 }).meta({ id: 'LargeAssetSearchDto' });
-
-const MetadataSearchSchema = RandomSearchSchema.extend({
-  id: z.uuidv4().optional().describe('Filter by asset ID'),
-  description: z.string().trim().optional().describe('Filter by description text'),
-  checksum: z.string().optional().describe('Filter by file checksum'),
-  originalFileName: z.string().trim().optional().describe('Filter by original file name'),
-  originalPath: z.string().optional().describe('Filter by original file path'),
-  previewPath: z.string().optional().describe('Filter by preview file path'),
-  thumbnailPath: z.string().optional().describe('Filter by thumbnail file path'),
-  encodedVideoPath: z.string().optional().describe('Filter by encoded video file path'),
-  order: AssetOrderSchema.default(AssetOrder.Desc).optional().describe('Sort order'),
-  page: z.int().min(1).optional().describe('Page number'),
-}).meta({ id: 'MetadataSearchDto' });
-
-const StatisticsSearchSchema = BaseSearchSchema.extend({
-  description: z.string().trim().optional().describe('Filter by description text'),
-}).meta({ id: 'StatisticsSearchDto' });
-
-const SmartSearchSchema = BaseSearchWithResultsSchema.extend({
-  query: z.string().trim().optional().describe('Natural language search query'),
-  queryAssetId: z.uuidv4().optional().describe('Asset ID to use as search reference'),
-  language: z.string().optional().describe('Search language code'),
-  page: z.int().min(1).optional().describe('Page number'),
-}).meta({ id: 'SmartSearchDto' });
 
 const SearchPlacesSchema = z
   .object({
@@ -319,6 +300,86 @@ export type SearchOrder = z.infer<typeof SearchOrderSchema>;
 export type SearchFilter = z.infer<typeof SearchFilterSchema>;
 export type SearchFilterBranch = z.infer<typeof SearchFilterBranchSchema>;
 
+/**
+ * The structured shape and the deprecated flat search fields are
+ * mutually exclusive; carrier fields combine with either.
+ * TODO(v4): remove together with the deprecated flat fields.
+ */
+const withShapeExclusivity = <T extends z.ZodObject<z.ZodRawShape>>(schema: T) =>
+  schema.superRefine((dto, ctx) => {
+    const NEW_SHAPE_FIELDS = ['filter', 'orderBy', 'cursor'];
+    const CARRIER_FIELDS = new Set([
+      'size',
+      'withExif',
+      'withStacked',
+      'withPeople',
+      'query',
+      'queryAssetId',
+      'language',
+    ]);
+
+    const values = dto as Record<string, unknown>;
+    const newShapeFields = NEW_SHAPE_FIELDS.filter((field) => values[field] !== undefined);
+    if (newShapeFields.length === 0) {
+      return;
+    }
+
+    for (const [field, value] of Object.entries(values)) {
+      if (value === undefined || CARRIER_FIELDS.has(field) || NEW_SHAPE_FIELDS.includes(field)) {
+        continue;
+      }
+
+      ctx.addIssue({
+        code: 'custom',
+        path: [field],
+        message: `Deprecated field ${field} cannot be combined with ${newShapeFields.join('/')}`,
+      });
+    }
+  });
+
+const RandomSearchBaseSchema = BaseSearchWithResultsSchema.extend({
+  withStacked: z.boolean().optional().describe('Include stacked assets'),
+  withPeople: z.boolean().optional().describe('Include people data in response'),
+  filter: SearchFilterSchema.optional().meta(ADDED_V3_1),
+});
+
+const RandomSearchSchema = withShapeExclusivity(RandomSearchBaseSchema).meta({ id: 'RandomSearchDto' });
+
+const MetadataSearchSchema = withShapeExclusivity(
+  RandomSearchBaseSchema.extend({
+    id: z.uuidv4().optional().describe('Filter by asset ID').meta(DEPRECATED_FLAT_FIELD),
+    description: z.string().trim().optional().describe('Filter by description text').meta(DEPRECATED_FLAT_FIELD),
+    checksum: z.string().optional().describe('Filter by file checksum').meta(DEPRECATED_FLAT_FIELD),
+    originalFileName: z.string().trim().optional().describe('Filter by original file name').meta(DEPRECATED_FLAT_FIELD),
+    originalPath: z.string().optional().describe('Filter by original file path').meta(DEPRECATED_FLAT_FIELD),
+    previewPath: z.string().optional().describe('Filter by preview file path').meta(DEPRECATED_FLAT_FIELD),
+    thumbnailPath: z.string().optional().describe('Filter by thumbnail file path').meta(DEPRECATED_FLAT_FIELD),
+    encodedVideoPath: z.string().optional().describe('Filter by encoded video file path').meta(DEPRECATED_FLAT_FIELD),
+    order: AssetOrderSchema.optional().describe('Sort order').meta(DEPRECATED_FLAT_FIELD),
+    page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
+    orderBy: SearchOrderSchema.optional().meta(ADDED_V3_1),
+    cursor: z.string().min(1).optional().describe('Cursor for the next page of results').meta(ADDED_V3_1),
+  }),
+).meta({ id: 'MetadataSearchDto' });
+
+const StatisticsSearchSchema = withShapeExclusivity(
+  BaseSearchSchema.extend({
+    description: z.string().trim().optional().describe('Filter by description text').meta(DEPRECATED_FLAT_FIELD),
+    filter: SearchFilterSchema.optional().meta(ADDED_V3_1),
+  }),
+).meta({ id: 'StatisticsSearchDto' });
+
+const SmartSearchSchema = withShapeExclusivity(
+  BaseSearchWithResultsSchema.extend({
+    query: z.string().trim().optional().describe('Natural language search query'),
+    queryAssetId: z.uuidv4().optional().describe('Asset ID to use as search reference'),
+    language: z.string().optional().describe('Search language code'),
+    page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
+    filter: SearchFilterSchema.optional().meta(ADDED_V3_1),
+    cursor: z.string().min(1).optional().describe('Cursor for the next page of results').meta(ADDED_V3_1),
+  }),
+).meta({ id: 'SmartSearchDto' });
+
 export class RandomSearchDto extends createZodDto(RandomSearchSchema) {}
 export class LargeAssetSearchDto extends createZodDto(LargeAssetSearchSchema) {}
 export class MetadataSearchDto extends createZodDto(MetadataSearchSchema) {}
@@ -372,7 +433,8 @@ const SearchAssetResponseSchema = z
     count: z.int().min(0).describe('Number of assets in this page'),
     items: z.array(AssetResponseSchema),
     facets: z.array(SearchFacetResponseSchema),
-    nextPage: z.string().nullable().describe('Next page token'),
+    nextPage: z.string().nullable().describe('Next page token').meta(DEPRECATED_FLAT_FIELD),
+    nextCursor: z.string().nullable().describe('Cursor for the next page of results').meta(ADDED_V3_1),
   })
   .meta({ id: 'SearchAssetResponseDto' });
 
