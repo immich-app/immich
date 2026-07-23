@@ -222,12 +222,12 @@ describe(SearchService.name, () => {
       const auth = AuthFactory.create();
 
       mocks.search.searchMetadataV3.mockResolvedValue({ hasNextPage: false, items: [] });
-      await sut.searchMetadata(auth, { filter: {} });
+      await sut.searchMetadata(auth, { size: 250, filter: {} });
       expect(mocks.search.searchMetadataV3).toHaveBeenCalled();
       expect(mocks.search.searchMetadata).not.toHaveBeenCalled();
 
       mocks.search.searchMetadata.mockResolvedValue({ hasNextPage: false, items: [] });
-      await sut.searchMetadata(auth, { city: 'Oslo' });
+      await sut.searchMetadata(auth, { size: 250, city: 'Oslo' });
       expect(mocks.search.searchMetadata).toHaveBeenCalled();
     });
 
@@ -238,11 +238,11 @@ describe(SearchService.name, () => {
       await expect(sut.searchStatistics(auth, { filter: {} })).resolves.toEqual({ total: 0 });
 
       mocks.search.searchRandomV3.mockResolvedValue([]);
-      await expect(sut.searchRandom(auth, { filter: {} })).resolves.toEqual([]);
+      await expect(sut.searchRandom(auth, { size: 250, filter: {} })).resolves.toEqual([]);
 
       mocks.search.searchSmartV3.mockResolvedValue({ hasNextPage: false, items: [] });
       mocks.machineLearning.encodeText.mockResolvedValue('[1, 2, 3]');
-      await sut.searchSmart(auth, { filter: {}, query: 'test' });
+      await sut.searchSmart(auth, { size: 100, filter: {}, query: 'test' });
       expect(mocks.search.searchSmartV3).toHaveBeenCalledWith(
         { size: 100, offset: 0 },
         expect.objectContaining({ embedding: '[1, 2, 3]' }),
@@ -250,27 +250,29 @@ describe(SearchService.name, () => {
     });
 
     it('should reject an invalid cursor', async () => {
-      await expect(sut.searchMetadata(AuthFactory.create(), { cursor: '???' })).rejects.toThrowError(
+      await expect(sut.searchMetadata(AuthFactory.create(), { size: 250, cursor: '???' })).rejects.toThrowError(
         new BadRequestException('Invalid cursor'),
       );
     });
 
     it('should reject an unelevated session whose filter could match locked assets', async () => {
       const filter = { visibility: { in: [AssetVisibility.Locked, AssetVisibility.Timeline] } };
-      await expect(sut.searchMetadata(AuthFactory.create(), { filter })).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(sut.searchMetadata(AuthFactory.create(), { size: 250, filter })).rejects.toBeInstanceOf(
+        UnauthorizedException,
+      );
     });
 
     it('should reject a shared link without a top-level album constraint', async () => {
       const auth = AuthFactory.from().sharedLink().build();
 
-      await expect(sut.searchMetadata(auth, { filter: {} })).rejects.toThrowError(
+      await expect(sut.searchMetadata(auth, { size: 250, filter: {} })).rejects.toThrowError(
         new BadRequestException('Shared link access is only allowed in combination with an albumIds filter'),
       );
 
       const albumId = newUuid();
       mocks.access.album.checkSharedLinkAccess.mockResolvedValue(new Set([albumId]));
       await expect(
-        sut.searchMetadata(auth, { filter: { or: [{ albumIds: { any: [albumId] } }] } }),
+        sut.searchMetadata(auth, { size: 250, filter: { or: [{ albumIds: { any: [albumId] } }] } }),
       ).rejects.toThrowError(
         new BadRequestException('Shared link access is only allowed in combination with an albumIds filter'),
       );
@@ -288,7 +290,7 @@ describe(SearchService.name, () => {
         machineLearning: { enabled: false },
       });
 
-      await expect(sut.searchSmart(authStub.user1, { query: 'test' })).rejects.toThrowError(
+      await expect(sut.searchSmart(authStub.user1, { size: 100, query: 'test' })).rejects.toThrowError(
         new BadRequestException('Smart search is not enabled'),
       );
     });
@@ -298,13 +300,13 @@ describe(SearchService.name, () => {
         machineLearning: { clip: { enabled: false } },
       });
 
-      await expect(sut.searchSmart(authStub.user1, { query: 'test' })).rejects.toThrowError(
+      await expect(sut.searchSmart(authStub.user1, { size: 100, query: 'test' })).rejects.toThrowError(
         new BadRequestException('Smart search is not enabled'),
       );
     });
 
     it('should work', async () => {
-      await sut.searchSmart(authStub.user1, { query: 'test' });
+      await sut.searchSmart(authStub.user1, { size: 100, query: 'test' });
 
       expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith(
         'test',
@@ -312,7 +314,13 @@ describe(SearchService.name, () => {
       );
       expect(mocks.search.searchSmart).toHaveBeenCalledWith(
         { page: 1, size: 100 },
-        { query: 'test', embedding: '[1, 2, 3]', userIds: [authStub.user1.user.id], visibility: 'not-locked' },
+        {
+          query: 'test',
+          size: 100,
+          embedding: '[1, 2, 3]',
+          userIds: [authStub.user1.user.id],
+          visibility: 'not-locked',
+        },
       );
     });
 
@@ -334,7 +342,7 @@ describe(SearchService.name, () => {
         machineLearning: { clip: { modelName: 'ViT-B-16-SigLIP__webli' } },
       });
 
-      await sut.searchSmart(authStub.user1, { query: 'test' });
+      await sut.searchSmart(authStub.user1, { size: 100, query: 'test' });
 
       expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith(
         'test',
@@ -343,7 +351,7 @@ describe(SearchService.name, () => {
     });
 
     it('should use language specified in request', async () => {
-      await sut.searchSmart(authStub.user1, { query: 'test', language: 'de' });
+      await sut.searchSmart(authStub.user1, { size: 100, query: 'test', language: 'de' });
 
       expect(mocks.machineLearning.encodeText).toHaveBeenCalledWith(
         'test',

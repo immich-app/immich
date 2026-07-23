@@ -58,7 +58,7 @@ describe(SearchService.name, () => {
 
     const auth = factory.auth({ user: { id: user.id } });
 
-    await expect(sut.searchLargeAssets(auth, {})).resolves.toEqual([
+    await expect(sut.searchLargeAssets(auth, { size: 250 })).resolves.toEqual([
       expect.objectContaining({ id: assets[2].id }),
       expect.objectContaining({ id: assets[0].id }),
       expect.objectContaining({ id: assets[1].id }),
@@ -122,7 +122,7 @@ describe(SearchService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id } });
 
-      const response = await sut.searchMetadata(auth, { withStacked: false });
+      const response = await sut.searchMetadata(auth, { size: 250, withStacked: false });
 
       expect(response.assets.items.length).toBe(1);
       expect(response.assets.items[0].id).toBe(unstackedAsset.id);
@@ -137,7 +137,7 @@ describe(SearchService.name, () => {
 
         const auth = factory.auth({ user: { id: user.id } });
 
-        const response = await sut.searchMetadata(auth, { withStacked: false });
+        const response = await sut.searchMetadata(auth, { size: 250, withStacked: false });
 
         expect(response.assets.items.length).toBe(0);
       });
@@ -150,7 +150,7 @@ describe(SearchService.name, () => {
 
         const auth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
 
-        const response = await sut.searchMetadata(auth, { withStacked: false });
+        const response = await sut.searchMetadata(auth, { size: 250, withStacked: false });
 
         expect(response.assets.items.length).toBe(1);
       });
@@ -170,7 +170,7 @@ describe(SearchService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id } });
 
-      const response = await sut.searchMetadata(auth, { albumIds: [album.id] });
+      const response = await sut.searchMetadata(auth, { size: 250, albumIds: [album.id] });
 
       expect(response.assets.items.length).toBe(1);
     });
@@ -188,7 +188,7 @@ describe(SearchService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id } });
 
-      await expect(sut.searchMetadata(auth, { albumIds: [album.id] })).rejects.toThrow(
+      await expect(sut.searchMetadata(auth, { size: 250, albumIds: [album.id] })).rejects.toThrow(
         'Not found or no album.read access',
       );
     });
@@ -224,7 +224,7 @@ describe(SearchService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id } });
 
-      const response = await sut.searchRandom(auth, {});
+      const response = await sut.searchRandom(auth, { size: 250 });
 
       expect(response.length).toBe(0);
     });
@@ -240,7 +240,7 @@ describe(SearchService.name, () => {
       await ctx.newExif({ assetId: other.id, city: 'Bergen' });
 
       const auth = factory.auth({ user: { id: user.id } });
-      const response = await sut.searchMetadata(auth, { filter: { city: { eq: 'Oslo' } } });
+      const response = await sut.searchMetadata(auth, { size: 250, filter: { city: { eq: 'Oslo' } } });
 
       expect(response.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
       expect(response.assets.nextPage).toBeNull();
@@ -257,6 +257,7 @@ describe(SearchService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id } });
       const response = await sut.searchMetadata(auth, {
+        size: 250,
         filter: { or: [{ city: { eq: 'Oslo' } }, { isFavorite: { eq: true } }] },
       });
 
@@ -273,10 +274,13 @@ describe(SearchService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id } });
 
-      const topLevel = await sut.searchMetadata(auth, { filter: { albumIds: { any: [album.id] } } });
+      const topLevel = await sut.searchMetadata(auth, { size: 250, filter: { albumIds: { any: [album.id] } } });
       expect(topLevel.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
 
-      const branchOnly = await sut.searchMetadata(auth, { filter: { or: [{ albumIds: { any: [album.id] } }] } });
+      const branchOnly = await sut.searchMetadata(auth, {
+        size: 250,
+        filter: { or: [{ albumIds: { any: [album.id] } }] },
+      });
       expect(branchOnly.assets.items).toEqual([]);
     });
 
@@ -288,9 +292,9 @@ describe(SearchService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id } });
 
-      await expect(sut.searchMetadata(auth, { filter: { or: [{ albumIds: { none: [album.id] } }] } })).rejects.toThrow(
-        'Not found or no album.read access',
-      );
+      await expect(
+        sut.searchMetadata(auth, { size: 250, filter: { or: [{ albumIds: { none: [album.id] } }] } }),
+      ).rejects.toThrow('Not found or no album.read access');
     });
 
     it('should return locked assets only to an elevated session that asks for them', async () => {
@@ -299,11 +303,12 @@ describe(SearchService.name, () => {
       const { asset: timeline } = await ctx.newAsset({ ownerId: user.id });
       const { asset: locked } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
 
-      const unelevated = await sut.searchMetadata(factory.auth({ user: { id: user.id } }), { filter: {} });
+      const unelevated = await sut.searchMetadata(factory.auth({ user: { id: user.id } }), { size: 250, filter: {} });
       expect(unelevated.assets.items).toEqual([expect.objectContaining({ id: timeline.id })]);
 
       const elevatedAuth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
       const elevated = await sut.searchMetadata(elevatedAuth, {
+        size: 250,
         filter: { visibility: { eq: AssetVisibility.Locked } },
       });
       expect(elevated.assets.items).toEqual([expect.objectContaining({ id: locked.id })]);
@@ -318,7 +323,10 @@ describe(SearchService.name, () => {
       await ctx.newAsset({ ownerId: partner.id, visibility: AssetVisibility.Locked });
 
       const auth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
-      const response = await sut.searchMetadata(auth, { filter: { visibility: { eq: AssetVisibility.Locked } } });
+      const response = await sut.searchMetadata(auth, {
+        size: 250,
+        filter: { visibility: { eq: AssetVisibility.Locked } },
+      });
 
       expect(response.assets.items).toEqual([expect.objectContaining({ id: ownLocked.id })]);
     });
@@ -358,6 +366,7 @@ describe(SearchService.name, () => {
 
       const auth = factory.auth({ user: { id: user.id } });
       const response = await sut.searchMetadata(auth, {
+        size: 250,
         orderBy: { field: SearchOrderField.FileSizeInBytes, direction: AssetOrder.Asc },
       });
 
