@@ -435,9 +435,15 @@ export class AssetRepository {
       return;
     }
 
+    // Batch deletes into chunked single statements instead of one round-trip per item (N+1),
+    // kept inside the transaction to preserve atomicity.
     await this.db.transaction().execute(async (tx) => {
-      for (const { assetId, key } of items) {
-        await tx.deleteFrom('asset_metadata').where('assetId', '=', assetId).where('key', '=', key).execute();
+      for (let i = 0; i < items.length; i += 500) {
+        const chunk = items.slice(i, i + 500);
+        await tx
+          .deleteFrom('asset_metadata')
+          .where((eb) => eb.or(chunk.map(({ assetId, key }) => eb.and([eb('assetId', '=', assetId), eb('key', '=', key)]))))
+          .execute();
       }
     });
   }
