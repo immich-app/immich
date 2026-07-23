@@ -1,14 +1,22 @@
 <script lang="ts">
   import Combobox from '$lib/components/shared-components/Combobox.svelte';
+  import { dateFormats } from '$lib/constants';
   import DateInput from '$lib/elements/DateInput.svelte';
   import DurationInput from '$lib/elements/DurationInput.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-  import { getPreferredTimeZone, getTimezones, toIsoDate, type ZoneOption } from '$lib/modals/timezone-utils';
+  import {
+    calcNewDate,
+    getPreferredTimeZone,
+    getTimezones,
+    toIsoDate,
+    type ZoneOption,
+  } from '$lib/modals/timezone-utils';
+  import { locale } from '$lib/stores/preferences.store';
   import { getOwnedAssetsWithWarning } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { updateAssets } from '@immich/sdk';
-  import { Field, FormModal, Label, Switch } from '@immich/ui';
+  import { Field, FormModal, Label, Switch, Text } from '@immich/ui';
   import { mdiCalendarEdit } from '@mdi/js';
   import { DateTime } from 'luxon';
   import { t } from 'svelte-i18n';
@@ -30,6 +38,28 @@
   // the offsets (and validity) for time zones may change if the date is changed, which is why we recompute the list
   let selectedOption = $derived(getPreferredTimeZone(initialDate, initialTimeZone, timezones, lastSelectedTimezone));
 
+  // get the first and last date range when doing a change by offset
+  const dateRange = $derived.by(() => {
+    let first = undefined;
+    let last = undefined;
+    for (const asset of assets) {
+      const date = DateTime.fromObject(asset.localDateTime, { zone: asset.localOffsetHours ? 'local' : 'UTC' });
+      if (!first || first > date) {
+        first = date;
+      }
+      if (!last || last < date) {
+        last = date;
+      }
+    }
+
+    first = showRelative && first ? calcNewDate(first, selectedDuration, selectedOption?.value) : first;
+    last = showRelative && last ? calcNewDate(last, selectedDuration, selectedOption?.value) : last;
+    return {
+      first: first?.toLocaleString(dateFormats.fullDateTime, { locale: $locale }) ?? '',
+      last: last?.toLocaleString(dateFormats.fullDateTime, { locale: $locale }) ?? '',
+    };
+  });
+
   const onSubmit = async () => {
     const ids = getOwnedAssetsWithWarning(assets, authManager.user);
     try {
@@ -41,6 +71,12 @@
             timeZone: selectedOption?.value,
           },
         });
+
+        const updatedAssets = assets.filter((a) => authManager.user && a.ownerId === authManager.user.id);
+        for (const asset of updatedAssets) {
+          asset.localOffsetHours = selectedOption.offsetMinutes / 60;
+        }
+
         onClose(true);
         return;
       }
@@ -52,12 +88,6 @@
       onClose(false);
     }
   };
-
-  // let before = $derived(DateTime.fromObject(assets[0].localDateTime).toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"));
-
-  // let after = $derived(
-  //   currentInterval ? calcNewDate(currentInterval.end, selectedDuration, selectedOption?.value) : undefined,
-  // );
 
   // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
   const date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
@@ -91,30 +121,13 @@
       onSelect={(option) => (lastSelectedTimezone = option as ZoneOption)}
     ></Combobox>
   </div>
-  <!-- <Card color="secondary" class={!showRelative || !currentInterval ? 'invisible' : ''}>
-      <CardBody class="p-2">
-        <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 items-center">
-          <div class="col-span-2 immich-form-label" data-testid="interval-preview">Preview</div>
-          <Text size="small" class="-mt-2 immich-form-label col-span-2"
-            >Showing changes for first selected asset only</Text
-          >
-          <label class="immich-form-label" for="from">Before</label>
-          <DateInput
-            class="dark:text-gray-300 text-gray-700 text-base"
-            id="from"
-            type="datetime-local"
-            readonly
-            bind:value={before}
-          />
-          <label class="immich-form-label" for="to">After</label>
-          <DateInput
-            class="dark:text-gray-300 text-gray-700 text-base"
-            id="to"
-            type="datetime-local"
-            readonly
-            bind:value={after}
-          />
-        </div>
-      </CardBody>
-    </Card> -->
+  {#if showRelative}
+    <Label for="datetime" class="mt-2 mb-1 block">{$t('new_date_range')}</Label>
+    {#if assets.length > 1}
+      <Text size="small">{$t('first_date', { values: { date: dateRange.first } })}</Text>
+      <Text size="small">{$t('last_date', { values: { date: dateRange.last } })}</Text>
+    {:else}
+      <Text size="small">{dateRange.first}</Text>
+    {/if}
+  {/if}
 </FormModal>
