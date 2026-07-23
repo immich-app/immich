@@ -51,6 +51,9 @@ class TimelineFactory {
 
   TimelineService main(List<String> timelineUsers) => TimelineService(_timelineRepository.main(timelineUsers, groupBy));
 
+  Future<int?> getMainTimelineAssetIndex(List<String> userIds, String remoteId) =>
+      _timelineRepository.getMainTimelineAssetIndex(userIds, remoteId);
+
   TimelineService localAlbum({required String albumId}) =>
       TimelineService(_timelineRepository.localAlbum(albumId, groupBy));
 
@@ -97,6 +100,8 @@ class TimelineService {
   int _bufferOffset = 0;
   List<BaseAsset> _buffer = [];
   StreamSubscription? _bucketSubscription;
+  Completer<void>? _readyCompleter;
+  bool _hasReceivedBuckets = false;
 
   int _totalAssets = 0;
   int get totalAssets => _totalAssets;
@@ -130,9 +135,20 @@ class TimelineService {
 
         // change the state's total assets count only after the buffer is reloaded
         _totalAssets = totalAssets;
+        _hasReceivedBuckets = true;
+        _readyCompleter?.complete();
+        _readyCompleter = null;
         EventStream.shared.emit(const TimelineReloadEvent());
       });
     });
+  }
+
+  /// Waits until the first bucket snapshot has been applied.
+  Future<void> ensureReady() {
+    if (_hasReceivedBuckets) {
+      return Future.value();
+    }
+    return (_readyCompleter ??= Completer<void>()).future;
   }
 
   Stream<List<Bucket>> Function() get watchBuckets => _bucketSource;
@@ -238,5 +254,9 @@ class TimelineService {
     _bucketSubscription = null;
     _buffer = [];
     _bufferOffset = 0;
+    if (_readyCompleter != null && !_readyCompleter!.isCompleted) {
+      _readyCompleter!.complete();
+    }
+    _readyCompleter = null;
   }
 }

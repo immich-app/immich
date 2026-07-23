@@ -53,6 +53,15 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     origin: TimelineOrigin.main,
   );
 
+  /// 0-based index in the main timeline, or null if the asset is not in it.
+  Future<int?> getMainTimelineAssetIndex(List<String> userIds, String remoteId) {
+    if (userIds.isEmpty) {
+      return Future.value();
+    }
+
+    return _db.mergedAssetDrift.mergedAssetIndex(remoteId: remoteId, userIds: userIds).getSingleOrNull();
+  }
+
   Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
       throw UnsupportedError("GroupAssetsBy.none is not supported for watchMainBucket");

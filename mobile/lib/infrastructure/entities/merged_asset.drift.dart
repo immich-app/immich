@@ -101,6 +101,34 @@ class MergedAssetDrift extends i1.ModularAccessor {
     );
   }
 
+  i0.Selectable<int?> mergedAssetIndex({
+    required String remoteId,
+    required List<String> userIds,
+  }) {
+    var $arrayStartIndex = 2;
+    final expandeduserIds = $expandVar($arrayStartIndex, userIds.length);
+    $arrayStartIndex += userIds.length;
+    final expandeduserIds2 = $expandVar($arrayStartIndex, userIds.length);
+    $arrayStartIndex += userIds.length;
+    final expandeduserIds3 = $expandVar($arrayStartIndex, userIds.length);
+    return customSelect(
+      'SELECT CASE WHEN NOT EXISTS (SELECT 1 FROM remote_asset_entity AS rae LEFT JOIN stack_entity AS se ON rae.stack_id = se.id WHERE rae.id = ?1 AND rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id IN ($expandeduserIds) AND(rae.stack_id IS NULL OR rae.id = se.primary_asset_id)) THEN NULL ELSE (SELECT COUNT(*) FROM (SELECT rae.created_at AS created_at FROM remote_asset_entity AS rae LEFT JOIN stack_entity AS se ON rae.stack_id = se.id WHERE rae.deleted_at IS NULL AND rae.visibility = 0 AND rae.owner_id IN ($expandeduserIds2) AND(rae.stack_id IS NULL OR rae.id = se.primary_asset_id)UNION ALL SELECT lae.created_at AS created_at FROM local_asset_entity AS lae WHERE NOT EXISTS (SELECT 1 FROM remote_asset_entity AS rae WHERE rae.checksum = lae.checksum AND rae.owner_id IN ($expandeduserIds3)) AND EXISTS (SELECT 1 FROM local_album_asset_entity AS laa INNER JOIN local_album_entity AS la ON laa.album_id = la.id WHERE laa.asset_id = lae.id AND la.backup_selection = 0) AND NOT EXISTS (SELECT 1 FROM local_album_asset_entity AS laa INNER JOIN local_album_entity AS la ON laa.album_id = la.id WHERE laa.asset_id = lae.id AND la.backup_selection = 2)) WHERE created_at > (SELECT created_at FROM remote_asset_entity WHERE id = ?1)) END AS asset_index',
+      variables: [
+        i0.Variable<String>(remoteId),
+        for (var $ in userIds) i0.Variable<String>($),
+        for (var $ in userIds) i0.Variable<String>($),
+        for (var $ in userIds) i0.Variable<String>($),
+      ],
+      readsFrom: {
+        remoteAssetEntity,
+        stackEntity,
+        localAssetEntity,
+        localAlbumAssetEntity,
+        localAlbumEntity,
+      },
+    ).map((i0.QueryRow row) => row.readNullable<int>('asset_index'));
+  }
+
   i4.$RemoteAssetEntityTable get remoteAssetEntity => i1.ReadDatabaseContainer(
     attachedDatabase,
   ).resultSet<i4.$RemoteAssetEntityTable>('remote_asset_entity');

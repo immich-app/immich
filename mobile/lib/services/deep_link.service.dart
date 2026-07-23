@@ -1,5 +1,9 @@
+import 'dart:math' as math;
+
 import 'package:auto_route/auto_route.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart' as beta_asset_service;
@@ -7,6 +11,7 @@ import 'package:immich_mobile/domain/services/memory.service.dart';
 import 'package:immich_mobile/domain/services/people.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
@@ -117,6 +122,36 @@ class DeepLinkService {
     }
 
     final album = albumId != null ? await _betaRemoteAlbumService.get(albumId) : null;
+
+    // Album-scoped links keep album context; widgets/generic asset links open the main
+    // timeline so the viewer supports left/right navigation (Fixes #20289).
+    if (album == null) {
+      final userIds = await ref.read(timelineUsersProvider.future);
+      final index = userIds.isEmpty
+          ? null
+          : await _betaTimelineFactory.getMainTimelineAssetIndex(userIds, assetId);
+
+      if (index != null) {
+        final timelineService = ref.read(timelineServiceProvider);
+        await timelineService.ensureReady();
+
+        if (timelineService.totalAssets > 0) {
+          final loadIndex = math.min(index, timelineService.totalAssets - 1);
+          await timelineService.loadAssets(math.max(0, loadIndex - 25), 50);
+          final exactIndex = timelineService.getIndex(asset.heroTag) ?? loadIndex;
+
+          AssetViewer.setAsset(ref, asset);
+          SchedulerBinding.instance.addPostFrameCallback((_) {
+            EventStream.shared.emit(ScrollToDateEvent(asset.createdAt));
+          });
+
+          return AssetViewerRoute(
+            initialIndex: exactIndex,
+            timelineService: timelineService,
+          );
+        }
+      }
+    }
 
     AssetViewer.setAsset(ref, asset);
     return AssetViewerRoute(
