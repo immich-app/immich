@@ -15,6 +15,7 @@ import androidx.work.ListenableWorker
 import androidx.work.WorkerParameters
 import app.alextran.immich.MainActivity
 import app.alextran.immich.R
+import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.SettableFuture
 import io.flutter.FlutterInjector
@@ -61,6 +62,11 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   }
 
   override fun startWork(): ListenableFuture<Result> {
+    if (BackgroundWorkerPreferences(ctx).isLocked() && BackgroundEngineLock.connectEngines > 0) {
+      Log.i(TAG, "Foreground engine active, skipping background worker")
+      return Futures.immediateFuture(Result.success())
+    }
+
     Log.i(TAG, "Starting background upload worker")
 
     if (!loader.initialized()) {
@@ -77,6 +83,10 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
     showNotification(notificationConfig.first, notificationConfig.second)
 
     loader.ensureInitializationCompleteAsync(ctx, null, Handler(Looper.getMainLooper())) {
+      if (isStopped || isComplete) {
+        return@ensureInitializationCompleteAsync
+      }
+
       engine = FlutterEngine(ctx)
       FlutterEngineCache.getInstance().put(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY, engine!!)
 
@@ -143,11 +153,17 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
       return
     }
 
+    val api = flutterApi
+    if (api == null) {
+      Handler(Looper.getMainLooper()).postAtFrontOfQueue {
+        complete(Result.failure())
+      }
+      return
+    }
+
     Handler(Looper.getMainLooper()).postAtFrontOfQueue {
-      if (flutterApi != null) {
-        flutterApi?.cancel {
-          complete(Result.failure())
-        }
+      api.cancel {
+        complete(Result.failure())
       }
     }
 

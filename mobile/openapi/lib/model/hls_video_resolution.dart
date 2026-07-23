@@ -11,35 +11,32 @@
 part of openapi.api;
 
 /// HLS video resolution
-class HlsVideoResolution {
-  /// Instantiate a new enum with the provided [value].
-  const HlsVideoResolution._(this.value);
+enum HlsVideoResolution {
+  number480._(480),
+  number720._(720),
+  number1080._(1080),
+  number1440._(1440),
+  number2160._(2160),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const HlsVideoResolution._(this._value);
 
   /// The underlying value of this enum member.
-  final int value;
+  final int _value;
 
   @override
-  String toString() => value.toString();
+  String toString() => _value.toString();
 
-  int toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  int toJson() => _value;
 
-  static const number480 = HlsVideoResolution._(480);
-  static const number720 = HlsVideoResolution._(720);
-  static const number1080 = HlsVideoResolution._(1080);
-  static const number1440 = HlsVideoResolution._(1440);
-  static const number2160 = HlsVideoResolution._(2160);
-
-  /// List of all possible values in this [enum][HlsVideoResolution].
-  static const values = <HlsVideoResolution>[
-    number480,
-    number720,
-    number1080,
-    number1440,
-    number2160,
-  ];
-
+  /// Returns the instance of [HlsVideoResolution] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static HlsVideoResolution? fromJson(dynamic value) => HlsVideoResolutionTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [HlsVideoResolution]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<HlsVideoResolution> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <HlsVideoResolution>[];
     if (json is List && json.isNotEmpty) {
@@ -61,9 +58,11 @@ class HlsVideoResolutionTypeTransformer {
 
   const HlsVideoResolutionTypeTransformer._();
 
-  int encode(HlsVideoResolution data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  int encode(HlsVideoResolution data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a HlsVideoResolution.
+  /// Returns the instance of [HlsVideoResolution] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -72,6 +71,9 @@ class HlsVideoResolutionTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   HlsVideoResolution? decode(dynamic data, {bool allowNull = true}) {
+    if (data is HlsVideoResolution) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case 480: return HlsVideoResolution.number480;
@@ -88,7 +90,7 @@ class HlsVideoResolutionTypeTransformer {
     return null;
   }
 
-  /// Singleton [HlsVideoResolutionTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static HlsVideoResolutionTypeTransformer? _instance;
 }
 

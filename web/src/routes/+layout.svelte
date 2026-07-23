@@ -250,10 +250,7 @@
     {#if page.data.meta.imageUrl}
       <meta
         property="og:image"
-        content={new URL(
-          page.data.meta.imageUrl,
-          serverConfigManager.value.externalDomain || globalThis.location.origin,
-        ).href}
+        content={new URL(page.data.meta.imageUrl, serverConfigManager.value.externalDomain || location.origin).href}
       />
     {/if}
   {/if}

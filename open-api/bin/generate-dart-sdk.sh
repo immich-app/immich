@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-OPENAPI_GENERATOR_VERSION=v7.23.0
+OPENAPI_GENERATOR_VERSION=v7.24.0
 
 set -euo pipefail
 

@@ -34,14 +34,14 @@ class {{{classname}}} {
     {{/isNullable}}
   {{/isEnum}}
   {{#required}}
-  {{{datatypeWithEnum}}}{{#isNullable}}?{{/isNullable}} {{{name}}};
+  {{#useFinalProperties}}final {{/useFinalProperties}}{{{datatypeWithEnum}}}{{#isNullable}}?{{/isNullable}} {{{name}}};
   {{/required}}
   {{^required}}
     {{#vendorExtensions.x-is-optional}}
-  {{{datatypeWithEnum}}} {{{name}}};
+  {{#useFinalProperties}}final {{/useFinalProperties}}{{{datatypeWithEnum}}} {{{name}}};
     {{/vendorExtensions.x-is-optional}}
     {{^vendorExtensions.x-is-optional}}
-  {{{datatypeWithEnum}}}{{#isNullable}}?{{/isNullable}}{{^isNullable}}{{^defaultValue}}?{{/defaultValue}}{{/isNullable}} {{{name}}};
+  {{#useFinalProperties}}final {{/useFinalProperties}}{{{datatypeWithEnum}}}{{#isNullable}}?{{/isNullable}}{{^isNullable}}{{^defaultValue}}?{{/defaultValue}}{{/isNullable}} {{{name}}};
     {{/vendorExtensions.x-is-optional}}
   {{/required}}
 
@@ -150,6 +150,21 @@ class {{{classname}}} {
     return json;
   }
 
+{{#useFinalProperties}}
+  /// Clones this instance of [{{{classname}}}] and returns a new one where some of the
+  /// properties have changed.
+  {{{classname}}} copyWith({
+  {{#vars}}
+    {{{datatypeWithEnum}}}? {{{name}}},{{#isNullable}}
+    bool {{{name}}}SetToNull = false,{{/isNullable}}
+  {{/vars}}
+  }) => {{{classname}}}(
+  {{#vars}}
+    {{{name}}}: {{#isNullable}}{{{name}}}SetToNull ? null : {{/isNullable}}{{{name}}} ?? this.{{{name}}},
+  {{/vars}}
+  );
+
+{{/useFinalProperties}}
   /// Returns a new [{{{classname}}}] instance and imports its values from
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods

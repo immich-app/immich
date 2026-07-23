@@ -1,4 +1,4 @@
-experimental_monorepo_root = true
+monorepo_root = true
 
 [monorepo]
 config_roots = [
@@ -16,9 +16,9 @@ config_roots = [
 
 [tools]
 node = "24.15.0"
-pnpm = "11.11.0"
-terragrunt = "1.0.3"
-opentofu = "1.11.6"
+pnpm = "11.13.1"
+terragrunt = "1.1.1"
+opentofu = "1.12.4"
 "npm:oazapfts" = "7.5.0"
 "github:extism/cli" = "1.6.3"
 "github:webassembly/binaryen" = "version_124"
@@ -35,7 +35,6 @@ macos-x64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_mac64-gpl.tar.xz" }
 macos-arm64 = { asset_pattern = "jellyfin-ffmpeg_*_portable_macarm64-gpl.tar.xz" }
 
 [settings]
-experimental = true
 pin = true
 lockfile = true
 

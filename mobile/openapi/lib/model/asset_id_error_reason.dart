@@ -11,31 +11,30 @@
 part of openapi.api;
 
 /// Error reason if failed
-class AssetIdErrorReason {
-  /// Instantiate a new enum with the provided [value].
-  const AssetIdErrorReason._(this.value);
+enum AssetIdErrorReason {
+  duplicate._(r'duplicate'),
+  noPermission._(r'no_permission'),
+  notFound._(r'not_found'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const AssetIdErrorReason._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const duplicate = AssetIdErrorReason._(r'duplicate');
-  static const noPermission = AssetIdErrorReason._(r'no_permission');
-  static const notFound = AssetIdErrorReason._(r'not_found');
-
-  /// List of all possible values in this [enum][AssetIdErrorReason].
-  static const values = <AssetIdErrorReason>[
-    duplicate,
-    noPermission,
-    notFound,
-  ];
-
+  /// Returns the instance of [AssetIdErrorReason] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static AssetIdErrorReason? fromJson(dynamic value) => AssetIdErrorReasonTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [AssetIdErrorReason]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<AssetIdErrorReason> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetIdErrorReason>[];
     if (json is List && json.isNotEmpty) {
@@ -57,9 +56,11 @@ class AssetIdErrorReasonTypeTransformer {
 
   const AssetIdErrorReasonTypeTransformer._();
 
-  String encode(AssetIdErrorReason data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(AssetIdErrorReason data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a AssetIdErrorReason.
+  /// Returns the instance of [AssetIdErrorReason] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -68,6 +69,9 @@ class AssetIdErrorReasonTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   AssetIdErrorReason? decode(dynamic data, {bool allowNull = true}) {
+    if (data is AssetIdErrorReason) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'duplicate': return AssetIdErrorReason.duplicate;
@@ -82,7 +86,7 @@ class AssetIdErrorReasonTypeTransformer {
     return null;
   }
 
-  /// Singleton [AssetIdErrorReasonTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static AssetIdErrorReasonTypeTransformer? _instance;
 }
 
