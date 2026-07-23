@@ -30,6 +30,7 @@ class LocalSyncService {
   final IPermissionRepository _permissionRepository;
   final Completer<void>? _cancellation;
   final Logger _log = Logger("DeviceSyncService");
+  bool _syncFailed = false;
 
   LocalSyncService({
     required this._localAlbumRepository,
@@ -45,7 +46,8 @@ class LocalSyncService {
 
   bool get _isCancelled => _cancellation?.isCompleted ?? false;
 
-  Future<void> sync({bool full = false}) async {
+  Future<bool> sync({bool full = false}) async {
+    _syncFailed = false;
     final Stopwatch stopwatch = Stopwatch()..start();
     try {
       if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
@@ -70,7 +72,7 @@ class LocalSyncService {
       final delta = await _nativeSyncApi.getMediaChanges();
       if (!delta.hasChanges) {
         _log.fine("No media changes detected. Skipping sync");
-        return;
+        return !_isCancelled;
       }
 
       _log.fine("Delta updated: ${delta.updates.length}");
@@ -92,7 +94,7 @@ class LocalSyncService {
         for (final album in dbAlbums) {
           if (_isCancelled) {
             _log.warning("Local sync cancelled. Stopped processing albums.");
-            return;
+            return false;
           }
           final deviceIds = await _nativeSyncApi.getAssetIdsForAlbum(album.id);
           await _localAlbumRepository.syncDeletes(album.id, deviceIds);
@@ -106,7 +108,7 @@ class LocalSyncService {
         for (final album in cloudAlbums) {
           if (_isCancelled) {
             _log.warning("Local sync cancelled. Stopped processing cloud albums.");
-            return;
+            return false;
           }
           final dbAlbum = dbAlbums.firstWhereOrNull((a) => a.id == album.id);
           if (dbAlbum == null) {
@@ -118,22 +120,29 @@ class LocalSyncService {
 
         await _mapIosCloudIds(newAssets);
       }
+      if (_syncFailed || _isCancelled) {
+        return false;
+      }
       await _nativeSyncApi.checkpointSync();
+      return true;
     } on PlatformException catch (e, s) {
       if (e.code == _kSyncCancelledCode) {
         _log.warning("Local sync cancelled");
       } else {
         _log.severe("Error performing device sync", e, s);
       }
+      return false;
     } catch (e, s) {
       _log.severe("Error performing device sync", e, s);
+      return false;
     } finally {
       stopwatch.stop();
       _log.info("Device sync took - ${stopwatch.elapsedMilliseconds}ms");
     }
   }
 
-  Future<void> fullSync() async {
+  Future<bool> fullSync() async {
+    _syncFailed = false;
     try {
       final Stopwatch stopwatch = Stopwatch()..start();
 
@@ -149,22 +158,29 @@ class LocalSyncService {
         onlySecond: addAlbum,
       );
 
+      if (_syncFailed || _isCancelled) {
+        return false;
+      }
       await _nativeSyncApi.checkpointSync();
       stopwatch.stop();
       _log.info("Full device sync took - ${stopwatch.elapsedMilliseconds}ms");
+      return true;
     } on PlatformException catch (e, s) {
       if (e.code == _kSyncCancelledCode) {
         _log.warning("Full device sync cancelled");
       } else {
         _log.severe("Error performing full device sync", e, s);
       }
+      return false;
     } catch (e, s) {
       _log.severe("Error performing full device sync", e, s);
+      return false;
     }
   }
 
   Future<void> addAlbum(LocalAlbum album) async {
     if (_isCancelled) {
+      _syncFailed = true;
       return;
     }
     try {
@@ -178,6 +194,7 @@ class LocalSyncService {
       await _mapIosCloudIds(assets);
       _log.fine("Successfully added device album ${album.name}");
     } catch (e, s) {
+      _syncFailed = true;
       _log.warning("Error while adding device album", e, s);
     }
   }
@@ -188,6 +205,7 @@ class LocalSyncService {
       // Asset deletion is handled in the repository
       await _localAlbumRepository.delete(a.id);
     } catch (e, s) {
+      _syncFailed = true;
       _log.warning("Error while removing device album", e, s);
     }
   }
@@ -195,6 +213,7 @@ class LocalSyncService {
   // The deviceAlbum is ignored since we are going to refresh it anyways
   FutureOr<bool> updateAlbum(LocalAlbum dbAlbum, LocalAlbum deviceAlbum) async {
     if (_isCancelled) {
+      _syncFailed = true;
       return false;
     }
     try {
@@ -216,6 +235,7 @@ class LocalSyncService {
       // Slower path - full sync
       return await fullDiff(dbAlbum, deviceAlbum);
     } catch (e, s) {
+      _syncFailed = true;
       _log.warning("Error while diff device album", e, s);
     }
     return true;
@@ -260,6 +280,7 @@ class LocalSyncService {
       await _mapIosCloudIds(newAssets);
       return true;
     } catch (e, s) {
+      _syncFailed = true;
       _log.warning("Error on fast syncing local album: ${dbAlbum.name}", e, s);
     }
     return false;
@@ -331,6 +352,7 @@ class LocalSyncService {
 
       return true;
     } catch (e, s) {
+      _syncFailed = true;
       _log.warning("Error on full syncing local album: ${dbAlbum.name}", e, s);
     }
     return true;
