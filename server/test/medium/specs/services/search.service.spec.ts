@@ -1,6 +1,6 @@
 import { Kysely } from 'kysely';
 import { SearchSuggestionType } from 'src/dtos/search.dto';
-import { AlbumUserRole, AssetVisibility } from 'src/enum';
+import { AlbumUserRole, AssetOrder, AssetVisibility, SearchOrderField } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
@@ -15,6 +15,8 @@ import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
 
 let defaultDatabase: Kysely<DB>;
+
+const unitVector = (index: number) => JSON.stringify(Array.from({ length: 512 }, (_, i) => (i === index ? 1 : 0)));
 
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(SearchService, {
@@ -225,6 +227,164 @@ describe(SearchService.name, () => {
       const response = await sut.searchRandom(auth, {});
 
       expect(response.length).toBe(0);
+    });
+  });
+
+  describe('new search shape', () => {
+    it('should filter by an exif field and return a cursor-less single page', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, city: 'Oslo' });
+      const { asset: other } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: other.id, city: 'Bergen' });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, { filter: { city: { eq: 'Oslo' } } });
+
+      expect(response.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
+      expect(response.assets.nextPage).toBeNull();
+      expect(response.assets.nextCursor).toBeNull();
+    });
+
+    it('should combine OR branches', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset: oslo } = await ctx.newAsset({ ownerId: user.id });
+      await ctx.newExif({ assetId: oslo.id, city: 'Oslo' });
+      const { asset: favorite } = await ctx.newAsset({ ownerId: user.id, isFavorite: true });
+      await ctx.newAsset({ ownerId: user.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, {
+        filter: { or: [{ city: { eq: 'Oslo' } }, { isFavorite: { eq: true } }] },
+      });
+
+      expect(response.assets.items.map(({ id }) => id).toSorted()).toEqual([oslo.id, favorite.id].toSorted());
+    });
+
+    it('should widen to album assets only for a top-level album constraint', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: otherUser.id });
+      const { album } = await ctx.newAlbum({ ownerId: user.id });
+      await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const topLevel = await sut.searchMetadata(auth, { filter: { albumIds: { any: [album.id] } } });
+      expect(topLevel.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
+
+      const branchOnly = await sut.searchMetadata(auth, { filter: { or: [{ albumIds: { any: [album.id] } }] } });
+      expect(branchOnly.assets.items).toEqual([]);
+    });
+
+    it('should reject an inaccessible album anywhere in the filter', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      const { album } = await ctx.newAlbum({ ownerId: otherUser.id });
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      await expect(sut.searchMetadata(auth, { filter: { or: [{ albumIds: { none: [album.id] } }] } })).rejects.toThrow(
+        'Not found or no album.read access',
+      );
+    });
+
+    it('should return locked assets only to an elevated session that asks for them', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { asset: timeline } = await ctx.newAsset({ ownerId: user.id });
+      const { asset: locked } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+
+      const unelevated = await sut.searchMetadata(factory.auth({ user: { id: user.id } }), { filter: {} });
+      expect(unelevated.assets.items).toEqual([expect.objectContaining({ id: timeline.id })]);
+
+      const elevatedAuth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
+      const elevated = await sut.searchMetadata(elevatedAuth, {
+        filter: { visibility: { eq: AssetVisibility.Locked } },
+      });
+      expect(elevated.assets.items).toEqual([expect.objectContaining({ id: locked.id })]);
+    });
+
+    it('should exclude partner assets from a locked-only search', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+      const { asset: ownLocked } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+      await ctx.newAsset({ ownerId: partner.id, visibility: AssetVisibility.Locked });
+
+      const auth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
+      const response = await sut.searchMetadata(auth, { filter: { visibility: { eq: AssetVisibility.Locked } } });
+
+      expect(response.assets.items).toEqual([expect.objectContaining({ id: ownLocked.id })]);
+    });
+
+    it('should paginate with an opaque cursor', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      for (let i = 0; i < 3; i++) {
+        await ctx.newAsset({ ownerId: user.id });
+      }
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const firstPage = await sut.searchMetadata(auth, { filter: {}, size: 2 });
+      expect(firstPage.assets.items.length).toBe(2);
+      expect(firstPage.assets.nextPage).toBeNull();
+      expect(firstPage.assets.nextCursor).toEqual(expect.any(String));
+
+      const secondPage = await sut.searchMetadata(auth, { cursor: firstPage.assets.nextCursor!, size: 2 });
+      expect(secondPage.assets.items.length).toBe(1);
+      expect(secondPage.assets.nextCursor).toBeNull();
+
+      const ids = [...firstPage.assets.items, ...secondPage.assets.items].map(({ id }) => id);
+      expect(new Set(ids).size).toBe(3);
+    });
+
+    it('should order by fileSizeInBytes', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const sizes = [12_334, 599, 123_456];
+      const assetIds: string[] = [];
+      for (const fileSizeInByte of sizes) {
+        const { asset } = await ctx.newAsset({ ownerId: user.id });
+        await ctx.newExif({ assetId: asset.id, fileSizeInByte });
+        assetIds.push(asset.id);
+      }
+
+      const auth = factory.auth({ user: { id: user.id } });
+      const response = await sut.searchMetadata(auth, {
+        orderBy: { field: SearchOrderField.FileSizeInBytes, direction: AssetOrder.Asc },
+      });
+
+      expect(response.assets.items.map(({ id }) => id)).toEqual([assetIds[1], assetIds[0], assetIds[2]]);
+    });
+
+    it('should order smart search results by embedding distance with cursor offsets', async () => {
+      const { ctx } = setup();
+      const { user } = await ctx.newUser();
+      const searchRepository = ctx.get(SearchRepository);
+
+      const assetIds: string[] = [];
+      for (let i = 0; i < 3; i++) {
+        const { asset } = await ctx.newAsset({ ownerId: user.id });
+        await searchRepository.upsert(asset.id, unitVector(i));
+        assetIds.push(asset.id);
+      }
+
+      const options = { filter: {}, userIds: [user.id], embedding: unitVector(0) };
+      const firstPage = await searchRepository.searchSmartV3({ size: 2 }, options);
+      expect(firstPage.items.length).toBe(2);
+      expect(firstPage.items[0].id).toBe(assetIds[0]);
+      expect(firstPage.hasNextPage).toBe(true);
+
+      const secondPage = await searchRepository.searchSmartV3({ size: 2, offset: 2 }, options);
+      expect(secondPage.items.length).toBe(1);
+      expect(secondPage.hasNextPage).toBe(false);
     });
   });
 });
