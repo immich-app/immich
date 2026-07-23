@@ -6,6 +6,10 @@ Immich supports the Google's Cast protocol so that photos and videos can be cast
 
 Google Cast support is disabled by default. The web UI uses Google-provided scripts and must retrieve them from Google servers when the page loads. This is a privacy concern for some and is thus opt-in.
 
+## Mobile Fcast support
+
+The mobile app also supports FCast for casting media to both FCast receivers and Google Cast devices such as a Google TV or Nest Hub. Devices are automatically discovered over your local network.
+
 You can enable Google Cast support through `Account Settings > Features > Cast > Google Cast`
 
 <img src={require('./img/gcast-enable.webp').default} width="70%" title='Enable Google Cast Support' />
