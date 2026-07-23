@@ -15,6 +15,9 @@ mobile/ios/**/*.g.swift linguist-generated=true
 mobile/lib/**/*.drift.dart -diff -merge
 mobile/lib/**/*.drift.dart linguist-generated=true
 
+mobile/lib/**/*.freezed.dart -diff -merge
+mobile/lib/**/*.freezed.dart linguist-generated=true
+
 mobile/drift_schemas/main/drift_schema_*.json -diff -merge
 mobile/drift_schemas/main/drift_schema_*.json linguist-generated=true
 
