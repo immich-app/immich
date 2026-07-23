@@ -9,6 +9,7 @@ import { AssetRepository } from 'src/repositories/asset.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PluginRepository } from 'src/repositories/plugin.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
@@ -21,7 +22,7 @@ import { MediumTestContext } from 'test/medium.factory';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { getKyselyDB } from 'test/utils';
 
-let initialized = false;
+let isInitialized = false;
 
 class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
   constructor(database: Kysely<DB>) {
@@ -39,12 +40,12 @@ class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
         UserRepository,
         WorkflowRepository,
       ],
-      mock: [ConfigRepository],
+      mock: [ConfigRepository, EventRepository],
     });
   }
 
   async init() {
-    if (initialized) {
+    if (isInitialized) {
       return;
     }
 
@@ -52,12 +53,13 @@ class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
     mockData.resourcePaths.corePlugin = '../packages/plugin-core';
     mockData.plugins.external.allow = false;
     this.getMock(ConfigRepository).getEnv.mockReturnValue(mockData);
+    this.getMock(EventRepository).emit.mockResolvedValue();
     this.get(LoggingRepository).setLogLevel(LogLevel.Verbose);
 
     await this.sut.onPluginSync();
     await this.sut.onPluginLoad();
 
-    initialized = true;
+    isInitialized = true;
   }
 }
 
@@ -337,7 +339,7 @@ describe('core plugin', () => {
     it('should favorite an asset within a given radius', async () => {
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
-      await ctx.newExif({ assetId: asset.id, latitude: 49.273_353_221_145_36, longitude: -123.103_871_440_787_64 });
+      await ctx.newExif({ assetId: asset.id, latitude: 49.27335322114536, longitude: -123.10387144078764 });
 
       const workflow = await createWorkflow({
         ownerId: user.id,
@@ -345,7 +347,7 @@ describe('core plugin', () => {
         steps: [
           {
             method: 'immich-plugin-core#assetLocationFilter',
-            config: { coordinate: { latitude: 49.288_821_679_949_29, longitude: -123.111_153_098_813_7, radius: 2 } },
+            config: { coordinate: { latitude: 49.28882167994929, longitude: -123.1111530988137, radius: 2 } },
           },
           {
             method: 'immich-plugin-core#assetFavorite',
@@ -360,7 +362,7 @@ describe('core plugin', () => {
     it('should not favorite asset outside a given radius', async () => {
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
-      await ctx.newExif({ assetId: asset.id, latitude: 49.261_266_052_570_35, longitude: -123.248_959_390_781_96 });
+      await ctx.newExif({ assetId: asset.id, latitude: 49.26126605257035, longitude: -123.24895939078196 });
 
       const workflow = await createWorkflow({
         ownerId: user.id,
@@ -368,7 +370,7 @@ describe('core plugin', () => {
         steps: [
           {
             method: 'immich-plugin-core#assetLocationFilter',
-            config: { coordinate: { latitude: 49.288_821_679_949_29, longitude: -123.111_153_098_813_7, radius: 10 } },
+            config: { coordinate: { latitude: 49.28882167994929, longitude: -123.1111530988137, radius: 10 } },
           },
           {
             method: 'immich-plugin-core#assetFavorite',
@@ -431,9 +433,10 @@ describe('core plugin', () => {
   describe('assetDateFilter', () => {
     it('should favorite assets created during the first 7 days of a specific year and month', async () => {
       const { user } = await ctx.newUser();
-      const [{ asset: asset1 }, { asset: asset2 }] = await Promise.all([
+      const [{ asset: asset1 }, { asset: asset2 }, { asset: asset3 }] = await Promise.all([
         ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2000-04-01') }),
         ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2000-04-07T23:59:59Z') }),
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2000-04-08T00:00:00Z') }),
       ]);
 
       const workflow = await createWorkflow({
@@ -459,6 +462,46 @@ describe('core plugin', () => {
 
       await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset2.id });
       await expect(ctx.get(AssetRepository).getById(asset2.id)).resolves.toMatchObject({ isFavorite: true });
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset3.id });
+      await expect(ctx.get(AssetRepository).getById(asset3.id)).resolves.toMatchObject({ isFavorite: false });
+    });
+
+    it('should match recurring dates regardless of the year', async () => {
+      const { user } = await ctx.newUser();
+      const [{ asset: asset1 }, { asset: asset2 }, { asset: asset3 }] = await Promise.all([
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2026-03-01') }),
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date('1998-12-21') }),
+        ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2000-04-08T00:00:00Z') }),
+      ]);
+      await ctx.newAsset({ ownerId: user.id, localDateTime: new Date('2010-06-15') });
+
+      const workflow = await createWorkflow({
+        ownerId: user.id,
+        trigger: WorkflowTrigger.AssetCreate,
+        steps: [
+          {
+            method: 'immich-plugin-core#assetDateFilter',
+            config: {
+              startDate: { day: 12, month: 12, year: 2000 },
+              endDate: { day: 30, month: 3, year: 2001 },
+              recurring: true,
+            },
+          },
+          {
+            method: 'immich-plugin-core#assetFavorite',
+          },
+        ],
+      });
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset1.id });
+      await expect(ctx.get(AssetRepository).getById(asset1.id)).resolves.toMatchObject({ isFavorite: true });
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset2.id });
+      await expect(ctx.get(AssetRepository).getById(asset2.id)).resolves.toMatchObject({ isFavorite: true });
+
+      await ctx.sut.handleAssetTrigger({ workflowId: workflow.id, assetId: asset3.id });
+      await expect(ctx.get(AssetRepository).getById(asset3.id)).resolves.toMatchObject({ isFavorite: false });
     });
   });
 

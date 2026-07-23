@@ -937,7 +937,6 @@ extension on AssetTypeEnum {
     AssetTypeEnum.VIDEO => AssetType.video,
     AssetTypeEnum.AUDIO => AssetType.audio,
     AssetTypeEnum.OTHER => AssetType.other,
-    _ => throw Exception('Unknown AssetType value: $this'),
   };
 }
 
@@ -945,14 +944,12 @@ extension on AssetOrder {
   AlbumAssetOrder toAlbumAssetOrder() => switch (this) {
     AssetOrder.asc => AlbumAssetOrder.asc,
     AssetOrder.desc => AlbumAssetOrder.desc,
-    _ => throw Exception('Unknown AssetOrder value: $this'),
   };
 }
 
 extension on MemoryType {
   MemoryTypeEnum toMemoryType() => switch (this) {
     MemoryType.onThisDay => MemoryTypeEnum.onThisDay,
-    _ => throw Exception('Unknown MemoryType value: $this'),
   };
 }
 
@@ -961,7 +958,6 @@ extension on api.AlbumUserRole {
     api.AlbumUserRole.editor => AlbumUserRole.editor,
     api.AlbumUserRole.viewer => AlbumUserRole.viewer,
     api.AlbumUserRole.owner => AlbumUserRole.owner,
-    _ => throw Exception('Unknown AlbumUserRole value: $this'),
   };
 }
 
@@ -971,7 +967,6 @@ extension on api.AssetVisibility {
     api.AssetVisibility.hidden => AssetVisibility.hidden,
     api.AssetVisibility.archive => AssetVisibility.archive,
     api.AssetVisibility.locked => AssetVisibility.locked,
-    _ => throw Exception('Unknown AssetVisibility value: $this'),
   };
 }
 
@@ -980,12 +975,11 @@ extension on api.UserMetadataKey {
     api.UserMetadataKey.onboarding => UserMetadataKey.onboarding,
     api.UserMetadataKey.preferences => UserMetadataKey.preferences,
     api.UserMetadataKey.license => UserMetadataKey.license,
-    _ => throw Exception('Unknown UserMetadataKey value: $this'),
   };
 }
 
 extension on UserAvatarColor {
-  AvatarColor? toAvatarColor() => AvatarColor.values.firstWhereOrNull((c) => c.name == value);
+  AvatarColor? toAvatarColor() => AvatarColor.values.firstWhereOrNull((c) => c.name == toString());
 }
 
 extension on api.AssetEditAction {
@@ -993,6 +987,5 @@ extension on api.AssetEditAction {
     api.AssetEditAction.crop => AssetEditAction.crop,
     api.AssetEditAction.rotate => AssetEditAction.rotate,
     api.AssetEditAction.mirror => AssetEditAction.mirror,
-    _ => AssetEditAction.other,
   };
 }

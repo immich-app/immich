@@ -79,17 +79,17 @@ class ActionService {
   }
 
   Future<void> archive(List<String> remoteIds) async {
-    await _assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.archive);
+    await _assetApiRepository.updateVisibility(remoteIds, .archive);
     await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.archive);
   }
 
   Future<void> unArchive(List<String> remoteIds) async {
-    await _assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.timeline);
+    await _assetApiRepository.updateVisibility(remoteIds, .timeline);
     await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.timeline);
   }
 
   Future<void> moveToLockFolder(List<String> remoteIds, List<String> localIds) async {
-    await _assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.locked);
+    await _assetApiRepository.updateVisibility(remoteIds, .locked);
     await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked);
 
     // Ask user if they want to delete local copies
@@ -99,7 +99,7 @@ class ActionService {
   }
 
   Future<void> removeFromLockFolder(List<String> remoteIds) async {
-    await _assetApiRepository.updateVisibility(remoteIds, AssetVisibilityEnum.timeline);
+    await _assetApiRepository.updateVisibility(remoteIds, .timeline);
     await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.timeline);
   }
 

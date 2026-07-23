@@ -98,10 +98,12 @@
     point = selected;
   };
   const handleEscape = () => {
-    if (assetMultiSelectManager.selectionActive) {
-      assetMultiSelectManager.clear();
+    if (!assetMultiSelectManager.selectionActive) {
       return;
     }
+
+    assetMultiSelectManager.clear();
+    return;
   };
 
   type AssetPoint = { latitude: number; longitude: number };

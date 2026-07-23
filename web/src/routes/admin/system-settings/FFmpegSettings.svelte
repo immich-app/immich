@@ -178,7 +178,7 @@
               onSelect={() =>
                 configToEdit.ffmpeg.acceptedAudioCodecs.includes(configToEdit.ffmpeg.targetAudioCodec)
                   ? null
-                  : configToEdit.ffmpeg.acceptedAudioCodecs.push(configToEdit.ffmpeg.targetAudioCodec)}
+                  : void configToEdit.ffmpeg.acceptedAudioCodecs.push(configToEdit.ffmpeg.targetAudioCodec)}
             />
 
             <SettingSelect

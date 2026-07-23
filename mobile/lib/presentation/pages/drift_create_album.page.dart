@@ -26,6 +26,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
   FocusNode albumTitleTextFieldFocusNode = FocusNode();
   FocusNode albumDescriptionTextFieldFocusNode = FocusNode();
   bool isAlbumTitleTextFieldFocus = false;
+  bool isCreatingAlbum = false;
   Set<BaseAsset> selectedAssets = {};
 
   @override
@@ -48,7 +49,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
     super.dispose();
   }
 
-  bool get _canCreateAlbum => albumTitleController.text.trim().isNotEmpty;
+  bool get _canCreateAlbum => albumTitleController.text.trim().isNotEmpty && !isCreatingAlbum;
 
   String _getEffectiveTitle() {
     return albumTitleController.text.isNotEmpty
@@ -167,7 +168,12 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
   }
 
   Future<void> createAlbum() async {
+    if (isCreatingAlbum) {
+      return;
+    }
+
     onBackgroundTapped();
+    setState(() => isCreatingAlbum = true);
 
     final title = _getEffectiveTitle().trim();
 
@@ -186,6 +192,10 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
     } catch (_) {
       if (context.mounted) {
         ImmichToast.show(context: context, toastType: ToastType.error, msg: 'errors.failed_to_create_album'.t());
+      }
+    } finally {
+      if (mounted) {
+        setState(() => isCreatingAlbum = false);
       }
     }
   }

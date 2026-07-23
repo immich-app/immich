@@ -26,6 +26,7 @@ export class MaintenanceService extends BaseService {
   getMaintenanceMode(): Promise<MaintenanceModeState> {
     return this.systemMetadataRepository
       .get(SystemMetadataKey.MaintenanceMode)
+
       .then((state) => state ?? { isMaintenanceMode: false });
   }
 

@@ -11,29 +11,29 @@
 part of openapi.api;
 
 /// Reaction level
-class ReactionLevel {
-  /// Instantiate a new enum with the provided [value].
-  const ReactionLevel._(this.value);
+enum ReactionLevel {
+  album._(r'album'),
+  asset._(r'asset'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const ReactionLevel._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const album = ReactionLevel._(r'album');
-  static const asset = ReactionLevel._(r'asset');
-
-  /// List of all possible values in this [enum][ReactionLevel].
-  static const values = <ReactionLevel>[
-    album,
-    asset,
-  ];
-
+  /// Returns the instance of [ReactionLevel] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static ReactionLevel? fromJson(dynamic value) => ReactionLevelTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [ReactionLevel]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<ReactionLevel> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ReactionLevel>[];
     if (json is List && json.isNotEmpty) {
@@ -55,9 +55,11 @@ class ReactionLevelTypeTransformer {
 
   const ReactionLevelTypeTransformer._();
 
-  String encode(ReactionLevel data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(ReactionLevel data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a ReactionLevel.
+  /// Returns the instance of [ReactionLevel] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -66,6 +68,9 @@ class ReactionLevelTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   ReactionLevel? decode(dynamic data, {bool allowNull = true}) {
+    if (data is ReactionLevel) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'album': return ReactionLevel.album;
@@ -79,7 +84,7 @@ class ReactionLevelTypeTransformer {
     return null;
   }
 
-  /// Singleton [ReactionLevelTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static ReactionLevelTypeTransformer? _instance;
 }
 

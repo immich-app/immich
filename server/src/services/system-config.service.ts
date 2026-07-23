@@ -51,7 +51,7 @@ export class SystemConfigService extends BaseService {
   @OnEvent({ name: 'ConfigValidate' })
   onConfigValidate({ newConfig, oldConfig }: ArgOf<'ConfigValidate'>) {
     const { logLevel } = this.configRepository.getEnv();
-    if (!_.isEqual(toPlainObject(newConfig.logging), oldConfig.logging) && logLevel) {
+    if (logLevel && !_.isEqual(toPlainObject(newConfig.logging), oldConfig.logging)) {
       throw new Error('Logging cannot be changed while the environment variable IMMICH_LOG_LEVEL is set.');
     }
   }

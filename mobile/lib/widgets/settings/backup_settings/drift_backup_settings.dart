@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
@@ -10,6 +9,7 @@ import 'package:immich_mobile/domain/services/sync_linked_album.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
@@ -255,11 +255,11 @@ class _BackupDelaySlider extends ConsumerWidget {
     _ => 600,
   };
 
-  static String formatBackupDelaySliderValue(int v) => switch (v) {
-    0 => 'setting_notifications_notify_seconds'.tr(namedArgs: {'count': '5'}),
-    1 => 'setting_notifications_notify_seconds'.tr(namedArgs: {'count': '30'}),
-    2 => 'setting_notifications_notify_minutes'.tr(namedArgs: {'count': '2'}),
-    _ => 'setting_notifications_notify_minutes'.tr(namedArgs: {'count': '10'}),
+  static String formatBackupDelaySliderValue(BuildContext context, int v) => switch (v) {
+    0 => context.t.setting_notifications_notify_seconds(count: 5),
+    1 => context.t.setting_notifications_notify_seconds(count: 30),
+    2 => context.t.setting_notifications_notify_minutes(count: 2),
+    _ => context.t.setting_notifications_notify_minutes(count: 10),
   };
 
   @override
@@ -272,8 +272,8 @@ class _BackupDelaySlider extends ConsumerWidget {
         Padding(
           padding: const EdgeInsets.only(left: 24.0, top: 8.0),
           child: Text(
-            'backup_controller_page_background_delay'.tr(
-              namedArgs: {'duration': formatBackupDelaySliderValue(currentValue)},
+            context.t.backup_controller_page_background_delay(
+              duration: formatBackupDelaySliderValue(context, currentValue),
             ),
             style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
           ),
@@ -291,7 +291,7 @@ class _BackupDelaySlider extends ConsumerWidget {
           max: 3.0,
           min: 0.0,
           divisions: 3,
-          label: formatBackupDelaySliderValue(currentValue),
+          label: formatBackupDelaySliderValue(context, currentValue),
         ),
       ],
     );

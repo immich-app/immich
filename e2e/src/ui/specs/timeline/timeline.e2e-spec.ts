@@ -49,7 +49,7 @@ test.describe('Timeline', () => {
       assets.push(...timeBucket);
     }
     for (const yearMonth of timelineRestData.buckets.keys()) {
-      const [year, month] = yearMonth.split('-');
+      const [year, month] = yearMonth.split('-', 2);
       yearMonths.push(`${year}-${Number(month)}`);
     }
   });

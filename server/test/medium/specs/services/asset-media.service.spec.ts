@@ -216,7 +216,8 @@ describe(AssetService.name, () => {
 
       expect(ctx.getMock(EventRepository).emit).toHaveBeenCalledWith('AlbumUpdate', {
         id: album.id,
-        recipientId: user.id,
+        userIds: [user.id],
+        recipientIds: [user.id],
       });
     });
 
