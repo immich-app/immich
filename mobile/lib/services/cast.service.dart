@@ -1,4 +1,4 @@
- import 'package:fcast_sender_sdk/fcast_sender_sdk.dart';
+import 'package:fcast_sender_sdk/fcast_sender_sdk.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
