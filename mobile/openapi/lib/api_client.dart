@@ -315,6 +315,8 @@ class ApiClient {
           return AuthStatusResponseDto.fromJson(value);
         case 'AvatarUpdate':
           return AvatarUpdate.fromJson(value);
+        case 'BoolFilter':
+          return BoolFilter.fromJson(value);
         case 'BulkIdErrorReason':
           return BulkIdErrorReasonTypeTransformer().decode(value);
         case 'BulkIdResponseDto':
@@ -357,6 +359,10 @@ class ApiClient {
           return DatabaseBackupDto.fromJson(value);
         case 'DatabaseBackupListResponseDto':
           return DatabaseBackupListResponseDto.fromJson(value);
+        case 'DateFilter':
+          return DateFilter.fromJson(value);
+        case 'DateFilterNullable':
+          return DateFilterNullable.fromJson(value);
         case 'DownloadArchiveDto':
           return DownloadArchiveDto.fromJson(value);
         case 'DownloadArchiveInfo':
@@ -381,6 +387,10 @@ class ApiClient {
           return EmailNotificationsResponse.fromJson(value);
         case 'EmailNotificationsUpdate':
           return EmailNotificationsUpdate.fromJson(value);
+        case 'EnumFilterAssetType':
+          return EnumFilterAssetType.fromJson(value);
+        case 'EnumFilterAssetVisibility':
+          return EnumFilterAssetVisibility.fromJson(value);
         case 'ExifResponseDto':
           return ExifResponseDto.fromJson(value);
         case 'FaceDto':
@@ -393,6 +403,12 @@ class ApiClient {
           return FoldersUpdate.fromJson(value);
         case 'HlsVideoResolution':
           return HlsVideoResolutionTypeTransformer().decode(value);
+        case 'IdFilter':
+          return IdFilter.fromJson(value);
+        case 'IdFilterNullable':
+          return IdFilterNullable.fromJson(value);
+        case 'IdsFilter':
+          return IdsFilter.fromJson(value);
         case 'ImageFormat':
           return ImageFormatTypeTransformer().decode(value);
         case 'IntegrityReport':
@@ -481,6 +497,10 @@ class ApiClient {
           return NotificationUpdateAllDto.fromJson(value);
         case 'NotificationUpdateDto':
           return NotificationUpdateDto.fromJson(value);
+        case 'NumberFilter':
+          return NumberFilter.fromJson(value);
+        case 'NumberFilterNullable':
+          return NumberFilterNullable.fromJson(value);
         case 'OAuthAuthorizeResponseDto':
           return OAuthAuthorizeResponseDto.fromJson(value);
         case 'OAuthCallbackDto':
@@ -605,6 +625,14 @@ class ApiClient {
           return SearchFacetCountResponseDto.fromJson(value);
         case 'SearchFacetResponseDto':
           return SearchFacetResponseDto.fromJson(value);
+        case 'SearchFilter':
+          return SearchFilter.fromJson(value);
+        case 'SearchFilterBranch':
+          return SearchFilterBranch.fromJson(value);
+        case 'SearchOrder':
+          return SearchOrder.fromJson(value);
+        case 'SearchOrderField':
+          return SearchOrderFieldTypeTransformer().decode(value);
         case 'SearchResponseDto':
           return SearchResponseDto.fromJson(value);
         case 'SearchStatisticsResponseDto':
@@ -673,6 +701,14 @@ class ApiClient {
           return StatisticsSearchDto.fromJson(value);
         case 'StorageFolder':
           return StorageFolderTypeTransformer().decode(value);
+        case 'StringFilter':
+          return StringFilter.fromJson(value);
+        case 'StringFilterNullable':
+          return StringFilterNullable.fromJson(value);
+        case 'StringPatternFilter':
+          return StringPatternFilter.fromJson(value);
+        case 'StringSimilarityFilter':
+          return StringSimilarityFilter.fromJson(value);
         case 'SyncAckDeleteDto':
           return SyncAckDeleteDto.fromJson(value);
         case 'SyncAckDto':

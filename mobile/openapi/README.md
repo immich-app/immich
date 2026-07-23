@@ -148,6 +148,7 @@ Class | Method | HTTP request | Description
 *DeprecatedApi* | [**createPartnerDeprecated**](doc//DeprecatedApi.md#createpartnerdeprecated) | **POST** /partners/{id} | Create a partner
 *DeprecatedApi* | [**getQueuesLegacy**](doc//DeprecatedApi.md#getqueueslegacy) | **GET** /jobs | Retrieve queue counts and status
 *DeprecatedApi* | [**runQueueCommandLegacy**](doc//DeprecatedApi.md#runqueuecommandlegacy) | **PUT** /jobs/{name} | Run jobs
+*DeprecatedApi* | [**searchLargeAssets**](doc//DeprecatedApi.md#searchlargeassets) | **POST** /search/large-assets | Search large assets
 *DeprecatedApi* | [**updateApiKey**](doc//DeprecatedApi.md#updateapikey) | **PUT** /api-keys/{id} | Update an API key
 *DeprecatedApi* | [**updateAsset**](doc//DeprecatedApi.md#updateasset) | **PUT** /assets/{id} | Update an asset
 *DeprecatedApi* | [**updateAssets**](doc//DeprecatedApi.md#updateassets) | **PUT** /assets | Update assets
@@ -414,6 +415,7 @@ Class | Method | HTTP request | Description
  - [AudioCodec](doc//AudioCodec.md)
  - [AuthStatusResponseDto](doc//AuthStatusResponseDto.md)
  - [AvatarUpdate](doc//AvatarUpdate.md)
+ - [BoolFilter](doc//BoolFilter.md)
  - [BulkIdErrorReason](doc//BulkIdErrorReason.md)
  - [BulkIdResponseDto](doc//BulkIdResponseDto.md)
  - [BulkIdsDto](doc//BulkIdsDto.md)
@@ -435,6 +437,8 @@ Class | Method | HTTP request | Description
  - [DatabaseBackupDeleteDto](doc//DatabaseBackupDeleteDto.md)
  - [DatabaseBackupDto](doc//DatabaseBackupDto.md)
  - [DatabaseBackupListResponseDto](doc//DatabaseBackupListResponseDto.md)
+ - [DateFilter](doc//DateFilter.md)
+ - [DateFilterNullable](doc//DateFilterNullable.md)
  - [DownloadArchiveDto](doc//DownloadArchiveDto.md)
  - [DownloadArchiveInfo](doc//DownloadArchiveInfo.md)
  - [DownloadInfoDto](doc//DownloadInfoDto.md)
@@ -447,12 +451,17 @@ Class | Method | HTTP request | Description
  - [DuplicateResponseDto](doc//DuplicateResponseDto.md)
  - [EmailNotificationsResponse](doc//EmailNotificationsResponse.md)
  - [EmailNotificationsUpdate](doc//EmailNotificationsUpdate.md)
+ - [EnumFilterAssetType](doc//EnumFilterAssetType.md)
+ - [EnumFilterAssetVisibility](doc//EnumFilterAssetVisibility.md)
  - [ExifResponseDto](doc//ExifResponseDto.md)
  - [FaceDto](doc//FaceDto.md)
  - [FacialRecognitionConfig](doc//FacialRecognitionConfig.md)
  - [FoldersResponse](doc//FoldersResponse.md)
  - [FoldersUpdate](doc//FoldersUpdate.md)
  - [HlsVideoResolution](doc//HlsVideoResolution.md)
+ - [IdFilter](doc//IdFilter.md)
+ - [IdFilterNullable](doc//IdFilterNullable.md)
+ - [IdsFilter](doc//IdsFilter.md)
  - [ImageFormat](doc//ImageFormat.md)
  - [IntegrityReport](doc//IntegrityReport.md)
  - [IntegrityReportResponseDto](doc//IntegrityReportResponseDto.md)
@@ -497,6 +506,8 @@ Class | Method | HTTP request | Description
  - [NotificationType](doc//NotificationType.md)
  - [NotificationUpdateAllDto](doc//NotificationUpdateAllDto.md)
  - [NotificationUpdateDto](doc//NotificationUpdateDto.md)
+ - [NumberFilter](doc//NumberFilter.md)
+ - [NumberFilterNullable](doc//NumberFilterNullable.md)
  - [OAuthAuthorizeResponseDto](doc//OAuthAuthorizeResponseDto.md)
  - [OAuthCallbackDto](doc//OAuthCallbackDto.md)
  - [OAuthConfigDto](doc//OAuthConfigDto.md)
@@ -559,6 +570,10 @@ Class | Method | HTTP request | Description
  - [SearchExploreResponseDto](doc//SearchExploreResponseDto.md)
  - [SearchFacetCountResponseDto](doc//SearchFacetCountResponseDto.md)
  - [SearchFacetResponseDto](doc//SearchFacetResponseDto.md)
+ - [SearchFilter](doc//SearchFilter.md)
+ - [SearchFilterBranch](doc//SearchFilterBranch.md)
+ - [SearchOrder](doc//SearchOrder.md)
+ - [SearchOrderField](doc//SearchOrderField.md)
  - [SearchResponseDto](doc//SearchResponseDto.md)
  - [SearchStatisticsResponseDto](doc//SearchStatisticsResponseDto.md)
  - [SearchSuggestionType](doc//SearchSuggestionType.md)
@@ -593,6 +608,10 @@ Class | Method | HTTP request | Description
  - [StackUpdateDto](doc//StackUpdateDto.md)
  - [StatisticsSearchDto](doc//StatisticsSearchDto.md)
  - [StorageFolder](doc//StorageFolder.md)
+ - [StringFilter](doc//StringFilter.md)
+ - [StringFilterNullable](doc//StringFilterNullable.md)
+ - [StringPatternFilter](doc//StringPatternFilter.md)
+ - [StringSimilarityFilter](doc//StringSimilarityFilter.md)
  - [SyncAckDeleteDto](doc//SyncAckDeleteDto.md)
  - [SyncAckDto](doc//SyncAckDto.md)
  - [SyncAckSetDto](doc//SyncAckSetDto.md)

@@ -10160,6 +10160,7 @@
     },
     "/search/large-assets": {
       "post": {
+        "deprecated": true,
         "description": "Search for assets that are considered large based on specified criteria.",
         "operationId": "searchLargeAssets",
         "parameters": [
@@ -10168,6 +10169,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by album IDs",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "array",
               "items": {
@@ -10182,6 +10199,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by city name",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "string",
               "nullable": true
@@ -10192,6 +10225,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by country name",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "string",
               "nullable": true
@@ -10202,6 +10251,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by creation date (after)",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "format": "date-time",
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -10214,6 +10279,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by creation date (before)",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "format": "date-time",
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -10226,6 +10307,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by encoded status",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "boolean"
             }
@@ -10235,6 +10332,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by favorite status",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "boolean"
             }
@@ -10244,6 +10357,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by motion photo status",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "boolean"
             }
@@ -10253,6 +10382,22 @@
             "required": false,
             "in": "query",
             "description": "Filter assets not in any album",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "boolean"
             }
@@ -10262,6 +10407,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by offline status",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "boolean"
             }
@@ -10271,6 +10432,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by lens model",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "string",
               "nullable": true
@@ -10281,6 +10458,22 @@
             "required": false,
             "in": "query",
             "description": "Library ID to filter by",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "string",
               "format": "uuid",
@@ -10293,6 +10486,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by camera make",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "string",
               "nullable": true
@@ -10314,6 +10523,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by camera model",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "string",
               "nullable": true
@@ -10324,6 +10549,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by OCR text content",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "string"
             }
@@ -10333,6 +10574,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by person IDs",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "array",
               "items": {
@@ -10365,9 +10622,14 @@
                 "version": "v3",
                 "state": "Updated",
                 "description": "Using -1 as a rating is no longer valid."
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
               }
             ],
-            "x-immich-state": "Stable",
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "integer",
               "minimum": 1,
@@ -10391,6 +10653,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by state/province name",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "string",
               "nullable": true
@@ -10401,6 +10679,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by tag IDs",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "array",
               "items": {
@@ -10416,6 +10710,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by taken date (after)",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "format": "date-time",
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -10428,6 +10738,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by taken date (before)",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "format": "date-time",
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -10440,6 +10766,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by trash date (after)",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "format": "date-time",
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -10452,6 +10794,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by trash date (before)",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "format": "date-time",
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -10463,6 +10821,22 @@
             "name": "type",
             "required": false,
             "in": "query",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "$ref": "#/components/schemas/AssetTypeEnum"
             }
@@ -10472,6 +10846,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by update date (after)",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "format": "date-time",
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -10484,6 +10874,22 @@
             "required": false,
             "in": "query",
             "description": "Filter by update date (before)",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "format": "date-time",
               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
@@ -10495,6 +10901,22 @@
             "name": "visibility",
             "required": false,
             "in": "query",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "$ref": "#/components/schemas/AssetVisibility"
             }
@@ -10504,6 +10926,22 @@
             "required": false,
             "in": "query",
             "description": "Include deleted assets",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated",
+            "deprecated": true,
             "schema": {
               "type": "boolean"
             }
@@ -10546,7 +10984,8 @@
         ],
         "summary": "Search large assets",
         "tags": [
-          "Search"
+          "Search",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -10560,10 +10999,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3.1.0",
+            "state": "Deprecated",
+            "replacementId": "searchAssets"
           }
         ],
         "x-immich-permission": "asset.read",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/search/metadata": {
@@ -18206,6 +18650,17 @@
         },
         "type": "object"
       },
+      "BoolFilter": {
+        "properties": {
+          "eq": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "eq"
+        ],
+        "type": "object"
+      },
       "BulkIdErrorReason": {
         "description": "Error reason",
         "enum": [
@@ -18648,6 +19103,90 @@
         },
         "type": "object"
       },
+      "DateFilter": {
+        "properties": {
+          "eq": {
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "gt": {
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "gte": {
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "lt": {
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "lte": {
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "ne": {
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DateFilterNullable": {
+        "properties": {
+          "eq": {
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "gt": {
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "gte": {
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "lt": {
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "lte": {
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "ne": {
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "nullable": true,
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "DownloadArchiveDto": {
         "properties": {
           "assetIds": {
@@ -18921,6 +19460,56 @@
         },
         "type": "object"
       },
+      "EnumFilterAssetType": {
+        "properties": {
+          "eq": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "in": {
+            "items": {
+              "$ref": "#/components/schemas/AssetTypeEnum"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "ne": {
+            "$ref": "#/components/schemas/AssetTypeEnum"
+          },
+          "notIn": {
+            "items": {
+              "$ref": "#/components/schemas/AssetTypeEnum"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "EnumFilterAssetVisibility": {
+        "properties": {
+          "eq": {
+            "$ref": "#/components/schemas/AssetVisibility"
+          },
+          "in": {
+            "items": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "ne": {
+            "$ref": "#/components/schemas/AssetVisibility"
+          },
+          "notIn": {
+            "items": {
+              "$ref": "#/components/schemas/AssetVisibility"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
       "ExifResponseDto": {
         "description": "EXIF response",
         "properties": {
@@ -19165,6 +19754,70 @@
           2160
         ],
         "type": "integer"
+      },
+      "IdFilter": {
+        "properties": {
+          "eq": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "ne": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IdFilterNullable": {
+        "properties": {
+          "eq": {
+            "format": "uuid",
+            "nullable": true,
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "ne": {
+            "format": "uuid",
+            "nullable": true,
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "IdsFilter": {
+        "properties": {
+          "all": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "any": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "none": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "type": "object"
       },
       "ImageFormat": {
         "description": "Image format",
@@ -20065,135 +20718,564 @@
       "MetadataSearchDto": {
         "properties": {
           "albumIds": {
+            "deprecated": true,
             "description": "Filter by album IDs",
             "items": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             },
-            "type": "array"
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "checksum": {
+            "deprecated": true,
             "description": "Filter by file checksum",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "city": {
+            "deprecated": true,
             "description": "Filter by city name",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "country": {
+            "deprecated": true,
             "description": "Filter by country name",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "createdAfter": {
+            "deprecated": true,
             "description": "Filter by creation date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "createdBefore": {
+            "deprecated": true,
             "description": "Filter by creation date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "cursor": {
+            "description": "Cursor for the next page of results",
+            "minLength": 1,
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v3.1.0",
+                "state": "Added"
+              }
+            ]
           },
           "description": {
+            "deprecated": true,
             "description": "Filter by description text",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "encodedVideoPath": {
+            "deprecated": true,
             "description": "Filter by encoded video file path",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/SearchFilter",
+            "x-immich-history": [
+              {
+                "version": "v3.1.0",
+                "state": "Added"
+              }
+            ]
           },
           "id": {
+            "deprecated": true,
             "description": "Filter by asset ID",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isEncoded": {
+            "deprecated": true,
             "description": "Filter by encoded status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isFavorite": {
+            "deprecated": true,
             "description": "Filter by favorite status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isMotion": {
+            "deprecated": true,
             "description": "Filter by motion photo status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isNotInAlbum": {
+            "deprecated": true,
             "description": "Filter assets not in any album",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isOffline": {
+            "deprecated": true,
             "description": "Filter by offline status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "lensModel": {
+            "deprecated": true,
             "description": "Filter by lens model",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "libraryId": {
+            "deprecated": true,
             "description": "Library ID to filter by",
             "format": "uuid",
             "nullable": true,
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "make": {
+            "deprecated": true,
             "description": "Filter by camera make",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "model": {
+            "deprecated": true,
             "description": "Filter by camera model",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "ocr": {
+            "deprecated": true,
             "description": "Filter by OCR text content",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "order": {
             "$ref": "#/components/schemas/AssetOrder",
-            "default": "desc",
-            "description": "Sort order"
+            "deprecated": true,
+            "description": "Sort order",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "orderBy": {
+            "$ref": "#/components/schemas/SearchOrder",
+            "x-immich-history": [
+              {
+                "version": "v3.1.0",
+                "state": "Added"
+              }
+            ]
           },
           "originalFileName": {
+            "deprecated": true,
             "description": "Filter by original file name",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "originalPath": {
+            "deprecated": true,
             "description": "Filter by original file path",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "page": {
+            "deprecated": true,
             "description": "Page number",
             "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "integer"
+            "type": "integer",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "personIds": {
+            "deprecated": true,
             "description": "Filter by person IDs",
             "items": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             },
-            "type": "array"
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "previewPath": {
+            "deprecated": true,
             "description": "Filter by preview file path",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "rating": {
+            "deprecated": true,
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": 1,
@@ -20217,9 +21299,13 @@
                 "version": "v3",
                 "state": "Updated",
                 "description": "Using -1 as a rating is no longer valid."
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
               }
             ],
-            "x-immich-state": "Stable"
+            "x-immich-state": "Deprecated"
           },
           "size": {
             "description": "Number of results to return",
@@ -20228,11 +21314,28 @@
             "type": "integer"
           },
           "state": {
+            "deprecated": true,
             "description": "Filter by state/province name",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "tagIds": {
+            "deprecated": true,
             "description": "Filter by tag IDs",
             "items": {
               "format": "uuid",
@@ -20240,63 +21343,238 @@
               "type": "string"
             },
             "nullable": true,
-            "type": "array"
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "takenAfter": {
+            "deprecated": true,
             "description": "Filter by taken date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "takenBefore": {
+            "deprecated": true,
             "description": "Filter by taken date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "thumbnailPath": {
+            "deprecated": true,
             "description": "Filter by thumbnail file path",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "trashedAfter": {
+            "deprecated": true,
             "description": "Filter by trash date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "trashedBefore": {
+            "deprecated": true,
             "description": "Filter by trash date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "$ref": "#/components/schemas/AssetTypeEnum",
+            "deprecated": true,
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "updatedAfter": {
+            "deprecated": true,
             "description": "Filter by update date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "updatedBefore": {
+            "deprecated": true,
             "description": "Filter by update date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "visibility": {
-            "$ref": "#/components/schemas/AssetVisibility"
+            "$ref": "#/components/schemas/AssetVisibility",
+            "deprecated": true,
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "withDeleted": {
+            "deprecated": true,
             "description": "Include deleted assets",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "withExif": {
             "description": "Include EXIF data in response",
@@ -20501,6 +21779,82 @@
             "nullable": true,
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "NumberFilter": {
+        "properties": {
+          "eq": {
+            "type": "number"
+          },
+          "gt": {
+            "type": "number"
+          },
+          "gte": {
+            "type": "number"
+          },
+          "in": {
+            "items": {
+              "type": "number"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "lt": {
+            "type": "number"
+          },
+          "lte": {
+            "type": "number"
+          },
+          "ne": {
+            "type": "number"
+          },
+          "notIn": {
+            "items": {
+              "type": "number"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "NumberFilterNullable": {
+        "properties": {
+          "eq": {
+            "nullable": true,
+            "type": "number"
+          },
+          "gt": {
+            "type": "number"
+          },
+          "gte": {
+            "type": "number"
+          },
+          "in": {
+            "items": {
+              "type": "number"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "lt": {
+            "type": "number"
+          },
+          "lte": {
+            "type": "number"
+          },
+          "ne": {
+            "nullable": true,
+            "type": "number"
+          },
+          "notIn": {
+            "items": {
+              "type": "number"
+            },
+            "minItems": 1,
+            "type": "array"
           }
         },
         "type": "object"
@@ -21797,94 +23151,360 @@
       "RandomSearchDto": {
         "properties": {
           "albumIds": {
+            "deprecated": true,
             "description": "Filter by album IDs",
             "items": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             },
-            "type": "array"
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "city": {
+            "deprecated": true,
             "description": "Filter by city name",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "country": {
+            "deprecated": true,
             "description": "Filter by country name",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "createdAfter": {
+            "deprecated": true,
             "description": "Filter by creation date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "createdBefore": {
+            "deprecated": true,
             "description": "Filter by creation date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/SearchFilter",
+            "x-immich-history": [
+              {
+                "version": "v3.1.0",
+                "state": "Added"
+              }
+            ]
           },
           "isEncoded": {
+            "deprecated": true,
             "description": "Filter by encoded status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isFavorite": {
+            "deprecated": true,
             "description": "Filter by favorite status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isMotion": {
+            "deprecated": true,
             "description": "Filter by motion photo status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isNotInAlbum": {
+            "deprecated": true,
             "description": "Filter assets not in any album",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isOffline": {
+            "deprecated": true,
             "description": "Filter by offline status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "lensModel": {
+            "deprecated": true,
             "description": "Filter by lens model",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "libraryId": {
+            "deprecated": true,
             "description": "Library ID to filter by",
             "format": "uuid",
             "nullable": true,
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "make": {
+            "deprecated": true,
             "description": "Filter by camera make",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "model": {
+            "deprecated": true,
             "description": "Filter by camera model",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "ocr": {
+            "deprecated": true,
             "description": "Filter by OCR text content",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "personIds": {
+            "deprecated": true,
             "description": "Filter by person IDs",
             "items": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             },
-            "type": "array"
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "rating": {
+            "deprecated": true,
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": 1,
@@ -21908,9 +23528,13 @@
                 "version": "v3",
                 "state": "Updated",
                 "description": "Using -1 as a rating is no longer valid."
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
               }
             ],
-            "x-immich-state": "Stable"
+            "x-immich-state": "Deprecated"
           },
           "size": {
             "description": "Number of results to return",
@@ -21919,11 +23543,28 @@
             "type": "integer"
           },
           "state": {
+            "deprecated": true,
             "description": "Filter by state/province name",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "tagIds": {
+            "deprecated": true,
             "description": "Filter by tag IDs",
             "items": {
               "format": "uuid",
@@ -21931,59 +23572,218 @@
               "type": "string"
             },
             "nullable": true,
-            "type": "array"
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "takenAfter": {
+            "deprecated": true,
             "description": "Filter by taken date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "takenBefore": {
+            "deprecated": true,
             "description": "Filter by taken date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "trashedAfter": {
+            "deprecated": true,
             "description": "Filter by trash date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "trashedBefore": {
+            "deprecated": true,
             "description": "Filter by trash date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "$ref": "#/components/schemas/AssetTypeEnum",
+            "deprecated": true,
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "updatedAfter": {
+            "deprecated": true,
             "description": "Filter by update date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "updatedBefore": {
+            "deprecated": true,
             "description": "Filter by update date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "visibility": {
-            "$ref": "#/components/schemas/AssetVisibility"
+            "$ref": "#/components/schemas/AssetVisibility",
+            "deprecated": true,
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "withDeleted": {
+            "deprecated": true,
             "description": "Include deleted assets",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "withExif": {
             "description": "Include EXIF data in response",
@@ -22195,10 +23995,37 @@
             },
             "type": "array"
           },
+          "nextCursor": {
+            "description": "Cursor for the next page of results",
+            "nullable": true,
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v3.1.0",
+                "state": "Added"
+              }
+            ]
+          },
           "nextPage": {
+            "deprecated": true,
             "description": "Next page token",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "total": {
             "description": "Total number of matching assets",
@@ -22218,6 +24045,7 @@
           "count",
           "facets",
           "items",
+          "nextCursor",
           "nextPage",
           "total"
         ],
@@ -22295,6 +24123,237 @@
           "fieldName"
         ],
         "type": "object"
+      },
+      "SearchFilter": {
+        "properties": {
+          "albumIds": {
+            "$ref": "#/components/schemas/IdsFilter"
+          },
+          "checksum": {
+            "$ref": "#/components/schemas/StringFilter"
+          },
+          "city": {
+            "$ref": "#/components/schemas/StringFilterNullable"
+          },
+          "country": {
+            "$ref": "#/components/schemas/StringFilterNullable"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/DateFilter"
+          },
+          "description": {
+            "$ref": "#/components/schemas/StringPatternFilter"
+          },
+          "encodedVideoPath": {
+            "$ref": "#/components/schemas/StringFilter"
+          },
+          "fileSizeInBytes": {
+            "$ref": "#/components/schemas/NumberFilter"
+          },
+          "hasAlbums": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "hasPeople": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "hasTags": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "id": {
+            "$ref": "#/components/schemas/IdFilter"
+          },
+          "isEncoded": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "isFavorite": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "isMotion": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "isOffline": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "lensModel": {
+            "$ref": "#/components/schemas/StringFilterNullable"
+          },
+          "libraryId": {
+            "$ref": "#/components/schemas/IdFilterNullable"
+          },
+          "make": {
+            "$ref": "#/components/schemas/StringFilterNullable"
+          },
+          "model": {
+            "$ref": "#/components/schemas/StringFilterNullable"
+          },
+          "ocr": {
+            "$ref": "#/components/schemas/StringSimilarityFilter"
+          },
+          "or": {
+            "items": {
+              "$ref": "#/components/schemas/SearchFilterBranch"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "originalFileName": {
+            "$ref": "#/components/schemas/StringPatternFilter"
+          },
+          "originalPath": {
+            "$ref": "#/components/schemas/StringPatternFilter"
+          },
+          "personIds": {
+            "$ref": "#/components/schemas/IdsFilter"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/NumberFilterNullable"
+          },
+          "state": {
+            "$ref": "#/components/schemas/StringFilterNullable"
+          },
+          "tagIds": {
+            "$ref": "#/components/schemas/IdsFilter"
+          },
+          "takenAt": {
+            "$ref": "#/components/schemas/DateFilter"
+          },
+          "trashedAt": {
+            "$ref": "#/components/schemas/DateFilterNullable"
+          },
+          "type": {
+            "$ref": "#/components/schemas/EnumFilterAssetType"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/DateFilter"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/EnumFilterAssetVisibility"
+          }
+        },
+        "type": "object"
+      },
+      "SearchFilterBranch": {
+        "properties": {
+          "albumIds": {
+            "$ref": "#/components/schemas/IdsFilter"
+          },
+          "checksum": {
+            "$ref": "#/components/schemas/StringFilter"
+          },
+          "city": {
+            "$ref": "#/components/schemas/StringFilterNullable"
+          },
+          "country": {
+            "$ref": "#/components/schemas/StringFilterNullable"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/DateFilter"
+          },
+          "description": {
+            "$ref": "#/components/schemas/StringPatternFilter"
+          },
+          "encodedVideoPath": {
+            "$ref": "#/components/schemas/StringFilter"
+          },
+          "fileSizeInBytes": {
+            "$ref": "#/components/schemas/NumberFilter"
+          },
+          "hasAlbums": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "hasPeople": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "hasTags": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "id": {
+            "$ref": "#/components/schemas/IdFilter"
+          },
+          "isEncoded": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "isFavorite": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "isMotion": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "isOffline": {
+            "$ref": "#/components/schemas/BoolFilter"
+          },
+          "lensModel": {
+            "$ref": "#/components/schemas/StringFilterNullable"
+          },
+          "libraryId": {
+            "$ref": "#/components/schemas/IdFilterNullable"
+          },
+          "make": {
+            "$ref": "#/components/schemas/StringFilterNullable"
+          },
+          "model": {
+            "$ref": "#/components/schemas/StringFilterNullable"
+          },
+          "ocr": {
+            "$ref": "#/components/schemas/StringSimilarityFilter"
+          },
+          "originalFileName": {
+            "$ref": "#/components/schemas/StringPatternFilter"
+          },
+          "originalPath": {
+            "$ref": "#/components/schemas/StringPatternFilter"
+          },
+          "personIds": {
+            "$ref": "#/components/schemas/IdsFilter"
+          },
+          "rating": {
+            "$ref": "#/components/schemas/NumberFilterNullable"
+          },
+          "state": {
+            "$ref": "#/components/schemas/StringFilterNullable"
+          },
+          "tagIds": {
+            "$ref": "#/components/schemas/IdsFilter"
+          },
+          "takenAt": {
+            "$ref": "#/components/schemas/DateFilter"
+          },
+          "trashedAt": {
+            "$ref": "#/components/schemas/DateFilterNullable"
+          },
+          "type": {
+            "$ref": "#/components/schemas/EnumFilterAssetType"
+          },
+          "updatedAt": {
+            "$ref": "#/components/schemas/DateFilter"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/EnumFilterAssetVisibility"
+          }
+        },
+        "type": "object"
+      },
+      "SearchOrder": {
+        "properties": {
+          "direction": {
+            "$ref": "#/components/schemas/AssetOrder",
+            "default": "desc"
+          },
+          "field": {
+            "$ref": "#/components/schemas/SearchOrderField",
+            "default": "fileCreatedAt"
+          }
+        },
+        "type": "object"
+      },
+      "SearchOrderField": {
+        "enum": [
+          "fileCreatedAt",
+          "localDateTime",
+          "fileSizeInBytes",
+          "rating"
+        ],
+        "type": "string"
       },
       "SearchResponseDto": {
         "properties": {
@@ -23277,102 +25336,394 @@
       "SmartSearchDto": {
         "properties": {
           "albumIds": {
+            "deprecated": true,
             "description": "Filter by album IDs",
             "items": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             },
-            "type": "array"
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "city": {
+            "deprecated": true,
             "description": "Filter by city name",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "country": {
+            "deprecated": true,
             "description": "Filter by country name",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "createdAfter": {
+            "deprecated": true,
             "description": "Filter by creation date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "createdBefore": {
+            "deprecated": true,
             "description": "Filter by creation date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "cursor": {
+            "description": "Cursor for the next page of results",
+            "minLength": 1,
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v3.1.0",
+                "state": "Added"
+              }
+            ]
+          },
+          "filter": {
+            "$ref": "#/components/schemas/SearchFilter",
+            "x-immich-history": [
+              {
+                "version": "v3.1.0",
+                "state": "Added"
+              }
+            ]
           },
           "isEncoded": {
+            "deprecated": true,
             "description": "Filter by encoded status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isFavorite": {
+            "deprecated": true,
             "description": "Filter by favorite status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isMotion": {
+            "deprecated": true,
             "description": "Filter by motion photo status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isNotInAlbum": {
+            "deprecated": true,
             "description": "Filter assets not in any album",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isOffline": {
+            "deprecated": true,
             "description": "Filter by offline status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "language": {
             "description": "Search language code",
             "type": "string"
           },
           "lensModel": {
+            "deprecated": true,
             "description": "Filter by lens model",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "libraryId": {
+            "deprecated": true,
             "description": "Library ID to filter by",
             "format": "uuid",
             "nullable": true,
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "make": {
+            "deprecated": true,
             "description": "Filter by camera make",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "model": {
+            "deprecated": true,
             "description": "Filter by camera model",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "ocr": {
+            "deprecated": true,
             "description": "Filter by OCR text content",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "page": {
+            "deprecated": true,
             "description": "Page number",
             "maximum": 9007199254740991,
             "minimum": 1,
-            "type": "integer"
+            "type": "integer",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "personIds": {
+            "deprecated": true,
             "description": "Filter by person IDs",
             "items": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             },
-            "type": "array"
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "query": {
             "description": "Natural language search query",
@@ -23385,6 +25736,7 @@
             "type": "string"
           },
           "rating": {
+            "deprecated": true,
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": 1,
@@ -23408,9 +25760,13 @@
                 "version": "v3",
                 "state": "Updated",
                 "description": "Using -1 as a rating is no longer valid."
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
               }
             ],
-            "x-immich-state": "Stable"
+            "x-immich-state": "Deprecated"
           },
           "size": {
             "description": "Number of results to return",
@@ -23419,11 +25775,28 @@
             "type": "integer"
           },
           "state": {
+            "deprecated": true,
             "description": "Filter by state/province name",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "tagIds": {
+            "deprecated": true,
             "description": "Filter by tag IDs",
             "items": {
               "format": "uuid",
@@ -23431,59 +25804,218 @@
               "type": "string"
             },
             "nullable": true,
-            "type": "array"
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "takenAfter": {
+            "deprecated": true,
             "description": "Filter by taken date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "takenBefore": {
+            "deprecated": true,
             "description": "Filter by taken date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "trashedAfter": {
+            "deprecated": true,
             "description": "Filter by trash date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "trashedBefore": {
+            "deprecated": true,
             "description": "Filter by trash date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "$ref": "#/components/schemas/AssetTypeEnum",
+            "deprecated": true,
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "updatedAfter": {
+            "deprecated": true,
             "description": "Filter by update date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "updatedBefore": {
+            "deprecated": true,
             "description": "Filter by update date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "visibility": {
-            "$ref": "#/components/schemas/AssetVisibility"
+            "$ref": "#/components/schemas/AssetVisibility",
+            "deprecated": true,
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "withDeleted": {
+            "deprecated": true,
             "description": "Include deleted assets",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "withExif": {
             "description": "Include EXIF data in response",
@@ -23562,98 +26094,380 @@
       "StatisticsSearchDto": {
         "properties": {
           "albumIds": {
+            "deprecated": true,
             "description": "Filter by album IDs",
             "items": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             },
-            "type": "array"
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "city": {
+            "deprecated": true,
             "description": "Filter by city name",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "country": {
+            "deprecated": true,
             "description": "Filter by country name",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "createdAfter": {
+            "deprecated": true,
             "description": "Filter by creation date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "createdBefore": {
+            "deprecated": true,
             "description": "Filter by creation date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "description": {
+            "deprecated": true,
             "description": "Filter by description text",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/SearchFilter",
+            "x-immich-history": [
+              {
+                "version": "v3.1.0",
+                "state": "Added"
+              }
+            ]
           },
           "isEncoded": {
+            "deprecated": true,
             "description": "Filter by encoded status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isFavorite": {
+            "deprecated": true,
             "description": "Filter by favorite status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isMotion": {
+            "deprecated": true,
             "description": "Filter by motion photo status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isNotInAlbum": {
+            "deprecated": true,
             "description": "Filter assets not in any album",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "isOffline": {
+            "deprecated": true,
             "description": "Filter by offline status",
-            "type": "boolean"
+            "type": "boolean",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "lensModel": {
+            "deprecated": true,
             "description": "Filter by lens model",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "libraryId": {
+            "deprecated": true,
             "description": "Library ID to filter by",
             "format": "uuid",
             "nullable": true,
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "make": {
+            "deprecated": true,
             "description": "Filter by camera make",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "model": {
+            "deprecated": true,
             "description": "Filter by camera model",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "ocr": {
+            "deprecated": true,
             "description": "Filter by OCR text content",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "personIds": {
+            "deprecated": true,
             "description": "Filter by person IDs",
             "items": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
               "type": "string"
             },
-            "type": "array"
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "rating": {
+            "deprecated": true,
             "description": "Filter by rating [1-5], or null for unrated",
             "maximum": 5,
             "minimum": 1,
@@ -23677,16 +26491,37 @@
                 "version": "v3",
                 "state": "Updated",
                 "description": "Using -1 as a rating is no longer valid."
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
               }
             ],
-            "x-immich-state": "Stable"
+            "x-immich-state": "Deprecated"
           },
           "state": {
+            "deprecated": true,
             "description": "Filter by state/province name",
             "nullable": true,
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "tagIds": {
+            "deprecated": true,
             "description": "Filter by tag IDs",
             "items": {
               "format": "uuid",
@@ -23694,55 +26529,198 @@
               "type": "string"
             },
             "nullable": true,
-            "type": "array"
+            "type": "array",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "takenAfter": {
+            "deprecated": true,
             "description": "Filter by taken date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "takenBefore": {
+            "deprecated": true,
             "description": "Filter by taken date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "trashedAfter": {
+            "deprecated": true,
             "description": "Filter by trash date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "trashedBefore": {
+            "deprecated": true,
             "description": "Filter by trash date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "type": {
-            "$ref": "#/components/schemas/AssetTypeEnum"
+            "$ref": "#/components/schemas/AssetTypeEnum",
+            "deprecated": true,
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "updatedAfter": {
+            "deprecated": true,
             "description": "Filter by update date (after)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "updatedBefore": {
+            "deprecated": true,
             "description": "Filter by update date (before)",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           },
           "visibility": {
-            "$ref": "#/components/schemas/AssetVisibility"
+            "$ref": "#/components/schemas/AssetVisibility",
+            "deprecated": true,
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v2",
+                "state": "Stable"
+              },
+              {
+                "version": "v3.1.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
           }
         },
         "type": "object"
@@ -23758,6 +26736,113 @@
           "backups"
         ],
         "type": "string"
+      },
+      "StringFilter": {
+        "properties": {
+          "eq": {
+            "type": "string"
+          },
+          "in": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "ne": {
+            "type": "string"
+          },
+          "notIn": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "StringFilterNullable": {
+        "properties": {
+          "eq": {
+            "nullable": true,
+            "type": "string"
+          },
+          "in": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "ne": {
+            "nullable": true,
+            "type": "string"
+          },
+          "notIn": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "StringPatternFilter": {
+        "properties": {
+          "endsWith": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "eq": {
+            "nullable": true,
+            "type": "string"
+          },
+          "in": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "like": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "ne": {
+            "nullable": true,
+            "type": "string"
+          },
+          "notIn": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "notLike": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "startsWith": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "StringSimilarityFilter": {
+        "properties": {
+          "matches": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "matches"
+        ],
+        "type": "object"
       },
       "SyncAckDeleteDto": {
         "properties": {

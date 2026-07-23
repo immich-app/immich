@@ -172,6 +172,9 @@ String parameterToString(dynamic value) {
   if (value is ReleaseType) {
     return ReleaseTypeTypeTransformer().encode(value).toString();
   }
+  if (value is SearchOrderField) {
+    return SearchOrderFieldTypeTransformer().encode(value).toString();
+  }
   if (value is SearchSuggestionType) {
     return SearchSuggestionTypeTypeTransformer().encode(value).toString();
   }
