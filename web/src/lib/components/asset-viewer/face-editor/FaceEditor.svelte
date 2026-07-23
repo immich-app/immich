@@ -5,7 +5,7 @@
   import FaceCreateTagModal from '$lib/modals/CreateFaceModal.svelte';
   import { faceManager } from '$lib/stores/face.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
-  import { getNaturalSize, scaleToFit } from '$lib/utils/container-utils';
+  import { computeContentMetrics, mapContentRectToNatural, type Size } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { normalizeSearchString } from '$lib/utils/string-utils';
   import { createFace, getAllPeople, type PersonResponseDto } from '@immich/sdk';
@@ -16,13 +16,12 @@
   import { t } from 'svelte-i18n';
 
   type Props = {
-    htmlElement: HTMLImageElement | HTMLVideoElement;
-    containerWidth: number;
-    containerHeight: number;
+    imageSize: Size;
+    containerSize: Size;
     assetId: string;
   };
 
-  let { htmlElement, containerWidth, containerHeight, assetId }: Props = $props();
+  let { imageSize, containerSize, assetId }: Props = $props();
 
   let canvasEl: HTMLCanvasElement | undefined = $state();
   let canvas: Canvas | undefined = $state();
@@ -56,7 +55,7 @@
   };
 
   const setupCanvas = () => {
-    if (!canvasEl || !htmlElement) {
+    if (!canvasEl) {
       return;
     }
 
@@ -88,17 +87,7 @@
     searchInputEl?.focus();
   });
 
-  const imageContentMetrics = $derived.by(() => {
-    const natural = getNaturalSize(htmlElement);
-    const container = { width: containerWidth, height: containerHeight };
-    const { width: contentWidth, height: contentHeight } = scaleToFit(natural, container);
-    return {
-      contentWidth,
-      contentHeight,
-      offsetX: (containerWidth - contentWidth) / 2,
-      offsetY: (containerHeight - contentHeight) / 2,
-    };
-  });
+  const imageContentMetrics = $derived(computeContentMetrics(imageSize, containerSize));
 
   const setDefaultFaceRectanglePosition = (faceRect: Rect) => {
     const { offsetX, offsetY } = imageContentMetrics;
@@ -118,8 +107,8 @@
     }
 
     canvas.setDimensions({
-      width: containerWidth,
-      height: containerHeight,
+      width: containerSize.width,
+      height: containerSize.height,
     });
 
     if (!faceRect) {
@@ -177,11 +166,11 @@
     };
     const selectorWidth = faceSelectorEl.offsetWidth;
     const chromeHeight = faceSelectorEl.offsetHeight - scrollableListEl.offsetHeight;
-    const listHeight = Math.min(MAX_LIST_HEIGHT, containerHeight - gap * 2 - chromeHeight);
+    const listHeight = Math.min(MAX_LIST_HEIGHT, containerSize.height - gap * 2 - chromeHeight);
     const selectorHeight = listHeight + chromeHeight;
 
-    const clampTop = (top: number) => clamp(top, gap, containerHeight - selectorHeight - gap);
-    const clampLeft = (left: number) => clamp(left, gap, containerWidth - selectorWidth - gap);
+    const clampTop = (top: number) => clamp(top, gap, containerSize.height - selectorHeight - gap);
+    const clampLeft = (left: number) => clamp(left, gap, containerSize.width - selectorWidth - gap);
 
     const overlapArea = (position: { top: number; left: number }) => {
       const selectorRight = position.left + selectorWidth;
@@ -240,61 +229,42 @@
   });
 
   const getFaceCroppedCoordinates = () => {
-    if (!faceRect || !htmlElement) {
+    if (!faceRect || imageContentMetrics.contentWidth === 0) {
       return;
     }
 
-    const { left, top, width, height } = faceRect.getBoundingRect();
-    const { offsetX, offsetY, contentWidth, contentHeight } = imageContentMetrics;
-    const natural = getNaturalSize(htmlElement);
-
-    const scaleX = natural.width / contentWidth;
-    const scaleY = natural.height / contentHeight;
-    const imageX = (left - offsetX) * scaleX;
-    const imageY = (top - offsetY) * scaleY;
+    const imageRect = mapContentRectToNatural(faceRect.getBoundingRect(), imageContentMetrics, imageSize);
 
     return {
-      imageWidth: natural.width,
-      imageHeight: natural.height,
-      x: Math.floor(imageX),
-      y: Math.floor(imageY),
-      width: Math.floor(width * scaleX),
-      height: Math.floor(height * scaleY),
+      imageWidth: imageSize.width,
+      imageHeight: imageSize.height,
+      x: Math.floor(imageRect.left),
+      y: Math.floor(imageRect.top),
+      width: Math.floor(imageRect.width),
+      height: Math.floor(imageRect.height),
     };
   };
 
   type FaceCoordinates = NonNullable<ReturnType<typeof getFaceCroppedCoordinates>>;
 
   const getFacePreviewUrl = (data: FaceCoordinates) => {
-    if (!htmlElement) {
+    const imgRef = assetViewerManager.imgRef;
+    if (!imgRef || imageContentMetrics.contentWidth === 0) {
       return;
     }
 
-    const natural = getNaturalSize(htmlElement);
-    if (natural.width <= 0 || natural.height <= 0) {
-      return;
-    }
-
-    const x = clamp(data.x, 0, natural.width - 1);
-    const y = clamp(data.y, 0, natural.height - 1);
-    const width = clamp(data.width, 1, natural.width - x);
-    const height = clamp(data.height, 1, natural.height - y);
-
-    if (width <= 0 || height <= 0) {
-      return;
-    }
+    const scaleX = imgRef.naturalWidth / imageSize.width;
+    const scaleY = imgRef.naturalHeight / imageSize.height;
+    const x = clamp(Math.floor(data.x * scaleX), 0, imgRef.naturalWidth - 1);
+    const y = clamp(Math.floor(data.y * scaleY), 0, imgRef.naturalHeight - 1);
+    const width = clamp(Math.floor(data.width * scaleX), 1, imgRef.naturalWidth - x);
+    const height = clamp(Math.floor(data.height * scaleY), 1, imgRef.naturalHeight - y);
 
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
-
-    const context = canvas.getContext('2d');
-    if (!context) {
-      return;
-    }
-
     try {
-      context.drawImage(htmlElement, x, y, width, height, 0, 0, width, height);
+      canvas.getContext('2d')?.drawImage(imgRef, x, y, width, height, 0, 0, width, height);
       return canvas.toDataURL('image/png');
     } catch {
       return;

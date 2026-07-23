@@ -317,9 +317,31 @@
   let containerHeight = $state(0);
 
   $effect(() => {
-    if (assetViewerManager.isFaceEditMode) {
-      videoPlayer?.pause();
+    if (!assetViewerManager.isFaceEditMode || !videoPlayer) {
+      return;
     }
+    videoPlayer.pause();
+
+    const { videoWidth, videoHeight } = videoPlayer;
+    if (videoWidth === 0 || videoHeight === 0) {
+      return;
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = videoWidth;
+    canvas.height = videoHeight;
+    canvas.getContext('2d')?.drawImage(videoPlayer, 0, 0);
+
+    const img = new Image();
+    const onImageLoad = () => (assetViewerManager.imgRef = img);
+    img.addEventListener('load', onImageLoad);
+    img.src = canvas.toDataURL('image/png');
+
+    return () => {
+      img.removeEventListener('load', onImageLoad);
+      img.src = '';
+      assetViewerManager.imgRef = undefined;
+    };
   });
 
   // The time is only refreshed on HLS fragment decode by default,
@@ -489,8 +511,12 @@
         </div>
       {/if}
 
-      {#if assetViewerManager.isFaceEditMode && videoPlayer}
-        <FaceEditor htmlElement={videoPlayer} {containerWidth} {containerHeight} {assetId} />
+      {#if assetViewerManager.isFaceEditMode}
+        <FaceEditor
+          imageSize={{ width: asset.width ?? 0, height: asset.height ?? 0 }}
+          containerSize={{ width: containerWidth, height: containerHeight }}
+          {assetId}
+        />
       {/if}
     {/if}
   </div>

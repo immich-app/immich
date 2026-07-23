@@ -287,7 +287,11 @@
     {/snippet}
   </AdaptiveImage>
 
-  {#if assetViewerManager.isFaceEditMode && assetViewerManager.imgRef}
-    <FaceEditor htmlElement={assetViewerManager.imgRef} {containerWidth} {containerHeight} assetId={asset.id} />
+  {#if assetViewerManager.isFaceEditMode && assetViewerManager.imgRef && asset.width && asset.height}
+    <FaceEditor
+      imageSize={{ width: asset.width, height: asset.height }}
+      containerSize={{ width: containerWidth, height: containerHeight }}
+      assetId={asset.id}
+    />
   {/if}
 </div>
