@@ -195,25 +195,35 @@ class FlutterError (
   val details: Any? = null
 ) : RuntimeException()
 
+enum class BackgroundWorkerResult(val raw: Int) {
+  NONE(0),
+  CONNECTED(1),
+  UNMETERED(2),
+  UNCHANGED(3);
+
+  companion object {
+    fun ofRaw(raw: Int): BackgroundWorkerResult? {
+      return values().firstOrNull { it.raw == raw }
+    }
+  }
+}
+
 /** Generated class from Pigeon that represents data sent in messages. */
 data class BackgroundWorkerSettings (
   val requiresCharging: Boolean,
-  val requiresUnmetered: Boolean,
   val minimumDelaySeconds: Long
 )
  {
   companion object {
     fun fromList(pigeonVar_list: List<Any?>): BackgroundWorkerSettings {
       val requiresCharging = pigeonVar_list[0] as Boolean
-      val requiresUnmetered = pigeonVar_list[1] as Boolean
-      val minimumDelaySeconds = pigeonVar_list[2] as Long
-      return BackgroundWorkerSettings(requiresCharging, requiresUnmetered, minimumDelaySeconds)
+      val minimumDelaySeconds = pigeonVar_list[1] as Long
+      return BackgroundWorkerSettings(requiresCharging, minimumDelaySeconds)
     }
   }
   fun toList(): List<Any?> {
     return listOf(
       requiresCharging,
-      requiresUnmetered,
       minimumDelaySeconds,
     )
   }
@@ -225,13 +235,12 @@ data class BackgroundWorkerSettings (
       return true
     }
     val other = other as BackgroundWorkerSettings
-    return BackgroundWorkerPigeonUtils.deepEquals(this.requiresCharging, other.requiresCharging) && BackgroundWorkerPigeonUtils.deepEquals(this.requiresUnmetered, other.requiresUnmetered) && BackgroundWorkerPigeonUtils.deepEquals(this.minimumDelaySeconds, other.minimumDelaySeconds)
+    return BackgroundWorkerPigeonUtils.deepEquals(this.requiresCharging, other.requiresCharging) && BackgroundWorkerPigeonUtils.deepEquals(this.minimumDelaySeconds, other.minimumDelaySeconds)
   }
 
   override fun hashCode(): Int {
     var result = javaClass.hashCode()
     result = 31 * result + BackgroundWorkerPigeonUtils.deepHash(this.requiresCharging)
-    result = 31 * result + BackgroundWorkerPigeonUtils.deepHash(this.requiresUnmetered)
     result = 31 * result + BackgroundWorkerPigeonUtils.deepHash(this.minimumDelaySeconds)
     return result
   }
@@ -240,6 +249,11 @@ private open class BackgroundWorkerPigeonCodec : StandardMessageCodec() {
   override fun readValueOfType(type: Byte, buffer: ByteBuffer): Any? {
     return when (type) {
       129.toByte() -> {
+        return (readValue(buffer) as Long?)?.let {
+          BackgroundWorkerResult.ofRaw(it.toInt())
+        }
+      }
+      130.toByte() -> {
         return (readValue(buffer) as? List<Any?>)?.let {
           BackgroundWorkerSettings.fromList(it)
         }
@@ -249,8 +263,12 @@ private open class BackgroundWorkerPigeonCodec : StandardMessageCodec() {
   }
   override fun writeValue(stream: ByteArrayOutputStream, value: Any?)   {
     when (value) {
-      is BackgroundWorkerSettings -> {
+      is BackgroundWorkerResult -> {
         stream.write(129)
+        writeValue(stream, value.raw.toLong())
+      }
+      is BackgroundWorkerSettings -> {
+        stream.write(130)
         writeValue(stream, value.toList())
       }
       else -> super.writeValue(stream, value)
@@ -260,7 +278,7 @@ private open class BackgroundWorkerPigeonCodec : StandardMessageCodec() {
 
 /** Generated interface from Pigeon that represents a handler of messages from Flutter. */
 interface BackgroundWorkerFgHostApi {
-  fun enable(settings: BackgroundWorkerSettings)
+  fun enable()
   fun saveNotificationMessage(title: String, body: String)
   fun configure(settings: BackgroundWorkerSettings)
   fun disable()
@@ -277,11 +295,9 @@ interface BackgroundWorkerFgHostApi {
       run {
         val channel = BasicMessageChannel<Any?>(binaryMessenger, "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enable$separatedMessageChannelSuffix", codec)
         if (api != null) {
-          channel.setMessageHandler { message, reply ->
-            val args = message as List<Any?>
-            val settingsArg = args[0] as BackgroundWorkerSettings
+          channel.setMessageHandler { _, reply ->
             val wrapped: List<Any?> = try {
-              api.enable(settingsArg)
+              api.enable()
               listOf(null)
             } catch (exception: Throwable) {
               BackgroundWorkerPigeonUtils.wrapError(exception)
@@ -422,7 +438,7 @@ class BackgroundWorkerFlutterApi(private val binaryMessenger: BinaryMessenger, p
       } 
     }
   }
-  fun onAndroidUpload(maxMinutesArg: Long?, callback: (Result<Unit>) -> Unit)
+  fun onAndroidUpload(maxMinutesArg: Long?, callback: (Result<BackgroundWorkerResult>) -> Unit)
 {
     val separatedMessageChannelSuffix = if (messageChannelSuffix.isNotEmpty()) ".$messageChannelSuffix" else ""
     val channelName = "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onAndroidUpload$separatedMessageChannelSuffix"
@@ -431,8 +447,11 @@ class BackgroundWorkerFlutterApi(private val binaryMessenger: BinaryMessenger, p
       if (it is List<*>) {
         if (it.size > 1) {
           callback(Result.failure(FlutterError(it[0] as String, it[1] as String, it[2] as String?)))
+        } else if (it[0] == null) {
+          callback(Result.failure(FlutterError("null-error", "Flutter api returned null value for non-null return value.", "")))
         } else {
-          callback(Result.success(Unit))
+          val output = it[0] as BackgroundWorkerResult
+          callback(Result.success(output))
         }
       } else {
         callback(Result.failure(BackgroundWorkerPigeonUtils.createConnectionError(channelName)))

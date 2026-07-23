@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:background_downloader/background_downloader.dart';
@@ -18,6 +17,7 @@ import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart' show nativeSyncApiProvider;
+import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
@@ -33,25 +33,22 @@ class BackgroundWorkerFgService {
   const BackgroundWorkerFgService(this._foregroundHostApi);
 
   // TODO: Move this call to native side once old timeline is removed
-  Future<void> enable() => _foregroundHostApi.enable(_currentSettings());
+  Future<void> enable() => _foregroundHostApi.enable();
 
   Future<void> saveNotificationMessage(String title, String body) =>
       _foregroundHostApi.saveNotificationMessage(title, body);
 
-  Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) => _foregroundHostApi.configure(
-    _currentSettings(minimumDelaySeconds: minimumDelaySeconds, requireCharging: requireCharging),
-  );
-
-  Future<void> disable() => _foregroundHostApi.disable();
-
-  BackgroundWorkerSettings _currentSettings({int? minimumDelaySeconds, bool? requireCharging}) {
+  Future<void> configure({int? minimumDelaySeconds, bool? requireCharging}) {
     final backup = SettingsRepository.instance.appConfig.backup;
-    return BackgroundWorkerSettings(
-      minimumDelaySeconds: minimumDelaySeconds ?? backup.triggerDelay,
-      requiresCharging: requireCharging ?? backup.requireCharging,
-      requiresUnmetered: !(backup.useCellularForPhotos || backup.useCellularForVideos),
+    return _foregroundHostApi.configure(
+      BackgroundWorkerSettings(
+        minimumDelaySeconds: minimumDelaySeconds ?? backup.triggerDelay,
+        requiresCharging: requireCharging ?? backup.requireCharging,
+      ),
     );
   }
+
+  Future<void> disable() => _foregroundHostApi.disable();
 }
 
 class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
@@ -104,7 +101,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   @override
-  Future<void> onAndroidUpload(int? maxMinutes) async {
+  Future<BackgroundWorkerResult> onAndroidUpload(int? maxMinutes) async {
     final hashTimeout = Duration(minutes: _isBackupEnabled ? 3 : 6);
     final backupTimeout = maxMinutes != null ? Duration(minutes: maxMinutes - 1) : null;
     await _optimizeDB();
@@ -138,7 +135,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       // hash and handle_backup read drift state and tolerate stale reads
       // (server-side dedup catches the rare race). The single budget caps the
       // whole batch; no phase needs its own timeout.
-      final all = Future.wait<dynamic>([sync.syncLocal(), sync.syncRemote(), sync.hashAssets(), _handleBackup()]);
+      final all = Future.wait<dynamic>([sync.syncLocal(), sync.syncRemote(), sync.hashAssets(), _handleIosBackup()]);
       if (budget != null) {
         await all.timeout(budget, onTimeout: () => <dynamic>[]);
       } else {
@@ -153,7 +150,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  Future<void> _backgroundLoop({
+  Future<BackgroundWorkerResult> _backgroundLoop({
     required Duration hashTimeout,
     required Duration? backupTimeout,
     required String debugLabel,
@@ -163,12 +160,13 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     );
     final sw = Stopwatch()..start();
     try {
-      if (!await _syncAssets(hashTimeout: hashTimeout)) {
-        _logger.warning("Remote sync did not complete successfully, skipping backup");
-        return;
-      }
+      final remoteSyncCompleted = await _syncAssets(hashTimeout: hashTimeout);
+      final localSyncCompleted = _ref?.read(syncStatusProvider).localSyncStatus == SyncStatus.success;
 
-      final backupFuture = _handleBackup();
+      final backupFuture = _handleAndroidBackup(
+        localSyncCompleted: localSyncCompleted,
+        remoteSyncCompleted: remoteSyncCompleted,
+      );
       Timer? cancelTimer;
       if (backupTimeout != null) {
         cancelTimer = Timer(backupTimeout, () {
@@ -179,12 +177,13 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
         });
       }
       try {
-        await backupFuture;
+        return await backupFuture;
       } finally {
         cancelTimer?.cancel();
       }
     } catch (error, stack) {
       _logger.severe("Failed to complete $debugLabel", error, stack);
+      return BackgroundWorkerResult.unchanged;
     } finally {
       sw.stop();
       _logger.info("$debugLabel completed in ${sw.elapsed.inSeconds}s");
@@ -249,7 +248,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     }
   }
 
-  Future<void> _handleBackup() async {
+  Future<void> _handleIosBackup() async {
     await runZonedGuarded(
       () async {
         if (_isCleanedUp) {
@@ -267,17 +266,34 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
           return;
         }
 
-        if (Platform.isIOS) {
-          return _ref?.read(driftBackupProvider.notifier).startBackupWithURLSession(currentUser.id);
-        }
-
-        return _ref
-            ?.read(foregroundUploadServiceProvider)
-            .uploadCandidates(currentUser.id, _cancellationToken, useSequentialUpload: true);
+        return _ref?.read(driftBackupProvider.notifier).startBackupWithURLSession(currentUser.id);
       },
       (error, stack) {
         dPrint(() => "Error in backup zone $error, $stack");
       },
+    );
+  }
+
+  Future<BackgroundWorkerResult> _handleAndroidBackup({
+    required bool localSyncCompleted,
+    required bool remoteSyncCompleted,
+  }) async {
+    if (_isCleanedUp) {
+      return BackgroundWorkerResult.unchanged;
+    }
+
+    final currentUser = _ref?.read(currentUserProvider);
+    final uploadService = _ref?.read(foregroundUploadServiceProvider);
+    if (uploadService == null) {
+      return BackgroundWorkerResult.unchanged;
+    }
+
+    return uploadService.uploadCandidatesInBackground(
+      currentUser?.id,
+      _cancellationToken,
+      backupEnabled: _isBackupEnabled,
+      localSyncCompleted: localSyncCompleted,
+      remoteSyncCompleted: remoteSyncCompleted,
     );
   }
 

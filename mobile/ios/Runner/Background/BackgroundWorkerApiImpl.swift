@@ -2,7 +2,7 @@ import BackgroundTasks
 
 class BackgroundWorkerApiImpl: BackgroundWorkerFgHostApi {
 
-  func enable(settings: BackgroundWorkerSettings) throws {
+  func enable() throws {
     BackgroundWorkerApiImpl.scheduleRefreshWorker()
     BackgroundWorkerApiImpl.scheduleProcessingWorker()
     print("BackgroundWorkerApiImpl:enable Background worker scheduled")

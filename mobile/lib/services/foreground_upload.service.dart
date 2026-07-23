@@ -14,6 +14,7 @@ import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/platform/connectivity_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
@@ -23,6 +24,8 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart' show PMProgressHandler;
+
+enum _AssetUploadResult { complete, pending, failed, offline }
 
 /// Callbacks for upload progress and status updates
 class UploadCallbacks {
@@ -80,7 +83,6 @@ class ForegroundUploadService {
     String userId,
     Completer<void> cancelToken, {
     UploadCallbacks callbacks = const UploadCallbacks(),
-    bool useSequentialUpload = false,
   }) async {
     final candidates = await _backupRepository.getCandidates(userId);
     if (candidates.isEmpty) {
@@ -91,44 +93,121 @@ class ForegroundUploadService {
     final hasWifi = networkCapabilities.isUnmetered;
     _logger.info('Network capabilities: $networkCapabilities, hasWifi/isUnmetered: $hasWifi');
 
-    if (useSequentialUpload) {
-      await _uploadSequentially(items: candidates, cancelToken: cancelToken, hasWifi: hasWifi, callbacks: callbacks);
-    } else {
-      await _executeWithWorkerPool<LocalAsset>(
-        items: candidates,
-        cancelToken: cancelToken,
-        shouldSkip: (asset) {
-          final requireWifi = _shouldRequireWiFi(asset);
-          return requireWifi && !hasWifi;
-        },
-        processItem: (asset) => uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
-      );
+    await _executeWithWorkerPool<LocalAsset>(
+      items: candidates,
+      cancelToken: cancelToken,
+      shouldSkip: (asset) {
+        final requireWifi = _shouldRequireWiFi(asset);
+        return requireWifi && !hasWifi;
+      },
+      processItem: (asset) => uploadSingleAsset(asset, cancelToken, callbacks: callbacks),
+    );
+  }
+
+  Future<BackgroundWorkerResult> uploadCandidatesInBackground(
+    String? userId,
+    Completer<void> cancelToken, {
+    required bool backupEnabled,
+    required bool localSyncCompleted,
+    required bool remoteSyncCompleted,
+  }) async {
+    if (!localSyncCompleted) {
+      return BackgroundWorkerResult.unchanged;
+    }
+    if (!backupEnabled) {
+      _logger.info("Backup is disabled. Skipping backup routine");
+      return BackgroundWorkerResult.none;
+    }
+    if (userId == null) {
+      _logger.warning("No current user found. Skipping backup from background");
+      return BackgroundWorkerResult.none;
+    }
+
+    try {
+      final remaining = await _backupRepository.getCandidates(userId, onlyHashed: false);
+      if (remaining.isEmpty) {
+        return BackgroundWorkerResult.none;
+      }
+
+      var capabilities = await _connectivityApi.getCapabilities();
+      if (!remoteSyncCompleted) {
+        if (capabilities.isUnmetered) {
+          return BackgroundWorkerResult.connected;
+        }
+        return _classifyRemaining(remaining);
+      }
+
+      if (capabilities.isEmpty) {
+        return _classifyRemaining(remaining);
+      }
+
+      await _storageRepository.clearCache();
+      shouldAbortUpload = false;
+      var needsConnected = false;
+
+      for (final asset in remaining.toList()) {
+        if (shouldAbortUpload || cancelToken.isCompleted) {
+          break;
+        }
+        if (asset.checksum == null) {
+          continue;
+        }
+
+        final requiresUnmetered = _shouldRequireWiFi(asset);
+        if (requiresUnmetered) {
+          capabilities = await _connectivityApi.getCapabilities();
+          if (!capabilities.isUnmetered) {
+            continue;
+          }
+        }
+
+        final result = await _uploadSingleAsset(
+          asset,
+          cancelToken,
+          callbacks: const UploadCallbacks(),
+          checkNetwork: true,
+        );
+        if (result == _AssetUploadResult.complete) {
+          remaining.remove(asset);
+          continue;
+        }
+        if (shouldAbortUpload || cancelToken.isCompleted) {
+          break;
+        }
+        if (result == _AssetUploadResult.offline) {
+          break;
+        }
+        if (result == _AssetUploadResult.pending) {
+          continue;
+        }
+
+        capabilities = await _connectivityApi.getCapabilities();
+        if (capabilities.isUnmetered) {
+          needsConnected = true;
+          continue;
+        }
+        if (capabilities.isEmpty) {
+          break;
+        }
+      }
+
+      if (needsConnected) {
+        return BackgroundWorkerResult.connected;
+      }
+      return _classifyRemaining(remaining);
+    } catch (error, stackTrace) {
+      _logger.severe(() => "Error classifying background upload: $error", stackTrace);
+      return BackgroundWorkerResult.unchanged;
     }
   }
 
-  /// Sequential upload - used for background isolate where concurrent HTTP clients may cause issues
-  Future<void> _uploadSequentially({
-    required List<LocalAsset> items,
-    required Completer<void> cancelToken,
-    required bool hasWifi,
-    required UploadCallbacks callbacks,
-  }) async {
-    await _storageRepository.clearCache();
-    shouldAbortUpload = false;
-
-    for (final asset in items) {
-      if (shouldAbortUpload || cancelToken.isCompleted) {
-        break;
-      }
-
-      final requireWifi = _shouldRequireWiFi(asset);
-      if (requireWifi && !hasWifi) {
-        _logger.warning('Skipping upload for ${asset.id} because it requires WiFi');
-        continue;
-      }
-
-      await uploadSingleAsset(asset, cancelToken, callbacks: callbacks);
+  BackgroundWorkerResult _classifyRemaining(List<LocalAsset> remaining) {
+    if (remaining.isEmpty) {
+      return BackgroundWorkerResult.none;
     }
+    return remaining.any((asset) => !_shouldRequireWiFi(asset))
+        ? BackgroundWorkerResult.connected
+        : BackgroundWorkerResult.unmetered;
   }
 
   /// Manually upload picked local assets
@@ -240,8 +319,19 @@ class ForegroundUploadService {
     Completer<void>? cancelToken, {
     required UploadCallbacks callbacks,
   }) async {
+    await _uploadSingleAsset(asset, cancelToken, callbacks: callbacks);
+  }
+
+  Future<_AssetUploadResult> _uploadSingleAsset(
+    LocalAsset asset,
+    Completer<void>? cancelToken, {
+    required UploadCallbacks callbacks,
+    bool checkNetwork = false,
+  }) async {
     File? file;
     File? livePhotoFile;
+    var livePhotoFailed = false;
+    var livePhotoUploadFailed = false;
 
     try {
       final entity = await _storageRepository.getAssetEntityForAsset(asset);
@@ -250,7 +340,7 @@ class ForegroundUploadService {
           asset.localId!,
           CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
         );
-        return;
+        return _AssetUploadResult.complete;
       }
 
       final isAvailableLocally = await _storageRepository.isAssetAvailableLocally(asset.id);
@@ -287,7 +377,7 @@ class ForegroundUploadService {
             asset.localId!,
             CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
           );
-          return;
+          return _AssetUploadResult.complete;
         }
 
         // For live photos, get the motion video file
@@ -306,7 +396,10 @@ class ForegroundUploadService {
       if (file == null) {
         _logger.warning("Failed to obtain file from iCloud for asset ${asset.id} - ${asset.name}");
         callbacks.onError?.call(asset.localId!, "asset_not_found_on_icloud".t());
-        return;
+        return _AssetUploadResult.complete;
+      }
+      if (entity.isLivePhoto && livePhotoFile == null) {
+        livePhotoFailed = true;
       }
 
       final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
@@ -345,6 +438,22 @@ class ForegroundUploadService {
 
         if (livePhotoResult.isSuccess && livePhotoResult.remoteAssetId != null) {
           livePhotoVideoId = livePhotoResult.remoteAssetId;
+        } else if (livePhotoResult.isCancelled && checkNetwork) {
+          shouldAbortUpload = true;
+          return _AssetUploadResult.pending;
+        } else {
+          livePhotoFailed = true;
+          livePhotoUploadFailed = true;
+        }
+
+        if (checkNetwork) {
+          final capabilities = await _connectivityApi.getCapabilities();
+          if (capabilities.isEmpty) {
+            return _AssetUploadResult.offline;
+          }
+          if (_shouldRequireWiFi(asset) && !capabilities.isUnmetered) {
+            return _AssetUploadResult.pending;
+          }
         }
       }
 
@@ -382,6 +491,10 @@ class ForegroundUploadService {
 
       if (result.isSuccess && result.remoteAssetId != null) {
         callbacks.onSuccess?.call(asset.localId!, result.remoteAssetId!);
+        if (livePhotoUploadFailed) {
+          return _AssetUploadResult.failed;
+        }
+        return livePhotoFailed ? _AssetUploadResult.pending : _AssetUploadResult.complete;
       } else if (result.isCancelled) {
         _logger.warning(() => "Backup was cancelled by the user");
         shouldAbortUpload = true;
@@ -397,9 +510,11 @@ class ForegroundUploadService {
           shouldAbortUpload = true;
         }
       }
+      return _AssetUploadResult.failed;
     } catch (error, stackTrace) {
       _logger.severe(() => "Error backup asset: ${error.toString()}", stackTrace);
       callbacks.onError?.call(asset.localId!, error.toString());
+      return _AssetUploadResult.pending;
     } finally {
       if (Platform.isIOS) {
         try {

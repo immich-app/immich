@@ -13,19 +13,16 @@ import 'package:pigeon/pigeon.dart';
 )
 class BackgroundWorkerSettings {
   final bool requiresCharging;
-  final bool requiresUnmetered;
   final int minimumDelaySeconds;
 
-  const BackgroundWorkerSettings({
-    required this.requiresCharging,
-    required this.requiresUnmetered,
-    required this.minimumDelaySeconds,
-  });
+  const BackgroundWorkerSettings({required this.requiresCharging, required this.minimumDelaySeconds});
 }
+
+enum BackgroundWorkerResult { none, connected, unmetered, unchanged }
 
 @HostApi()
 abstract class BackgroundWorkerFgHostApi {
-  void enable(BackgroundWorkerSettings settings);
+  void enable();
 
   void saveNotificationMessage(String title, String body);
 
@@ -52,7 +49,7 @@ abstract class BackgroundWorkerFlutterApi {
 
   // Android Only: Called when the Android background upload is triggered
   @async
-  void onAndroidUpload(int? maxMinutes);
+  BackgroundWorkerResult onAndroidUpload(int? maxMinutes);
 
   @async
   void cancel();

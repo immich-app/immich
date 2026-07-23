@@ -192,34 +192,30 @@ class _BackupSwitchTile extends ConsumerWidget {
   }
 }
 
-class _UseCellularForVideosButton extends ConsumerWidget {
+class _UseCellularForVideosButton extends StatelessWidget {
   const _UseCellularForVideosButton();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final fgService = ref.read(backgroundWorkerFgServiceProvider);
+  Widget build(BuildContext context) {
     return _BackupSwitchTile(
       metadataKey: SettingsKey.backupUseCellularForVideos,
       selector: (c) => c.backup.useCellularForVideos,
       titleKey: "videos",
       subtitleKey: "network_requirement_videos_upload",
-      onChanged: (_) => fgService.configure(),
     );
   }
 }
 
-class _UseCellularForPhotosButton extends ConsumerWidget {
+class _UseCellularForPhotosButton extends StatelessWidget {
   const _UseCellularForPhotosButton();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final fgService = ref.read(backgroundWorkerFgServiceProvider);
+  Widget build(BuildContext context) {
     return _BackupSwitchTile(
       metadataKey: SettingsKey.backupUseCellularForPhotos,
       selector: (c) => c.backup.useCellularForPhotos,
       titleKey: "photos",
       subtitleKey: "network_requirement_photos_upload",
-      onChanged: (_) => fgService.configure(),
     );
   }
 }

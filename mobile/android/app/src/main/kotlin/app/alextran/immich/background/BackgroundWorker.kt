@@ -51,6 +51,10 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   /// Flag to track whether the background task has completed to prevent duplicate completions
   private var isComplete = false
 
+  private var isStopping = false
+
+  private var retryEpoch = 0L
+
   private val notificationManager =
     ctx.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
@@ -59,6 +63,16 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
   companion object {
     private const val NOTIFICATION_CHANNEL_ID = "immich::background_worker::notif"
     private const val NOTIFICATION_ID = 100
+    private val workerLock = Any()
+    private var activeWorker: BackgroundWorker? = null
+
+    fun isRunning(): Boolean = synchronized(workerLock) {
+      activeWorker != null
+    }
+
+    fun hasEngine(): Boolean = synchronized(workerLock) {
+      activeWorker?.engine != null
+    }
   }
 
   override fun startWork(): ListenableFuture<Result> {
@@ -67,6 +81,33 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
       return Futures.immediateFuture(Result.success())
     }
 
+    synchronized(workerLock) {
+      activeWorker = this
+    }
+
+    val widenRetryTarget = inputData.getBoolean(BackgroundWorkerApiImpl.WIDEN_RETRY_TARGET_KEY, true)
+    BackgroundWorkerApiImpl.prepareRetryWorker(ctx, widenRetryTarget) { result ->
+      synchronized(this) {
+        if (isStopped || isStopping || isComplete) {
+          return@prepareRetryWorker
+        }
+        result.fold(
+          onSuccess = {
+            retryEpoch = it
+            startFlutter()
+          },
+          onFailure = {
+            Log.w(TAG, "Failed to prepare background retry worker", it)
+            complete(Result.failure())
+          },
+        )
+      }
+    }
+
+    return completionHandler
+  }
+
+  private fun startFlutter() {
     Log.i(TAG, "Starting background upload worker")
 
     if (!loader.initialized()) {
@@ -87,28 +128,48 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
         return@ensureInitializationCompleteAsync
       }
 
-      engine = FlutterEngine(ctx)
-      FlutterEngineCache.getInstance().put(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY, engine!!)
+      val engine = FlutterEngine(ctx)
+      if (!cacheEngine(engine)) {
+        engine.destroy()
+        return@ensureInitializationCompleteAsync
+      }
 
-      // Register custom plugins
-      MainActivity.registerPlugins(ctx, engine!!)
-      flutterApi =
-        BackgroundWorkerFlutterApi(binaryMessenger = engine!!.dartExecutor.binaryMessenger)
-      BackgroundWorkerBgHostApi.setUp(
-        binaryMessenger = engine!!.dartExecutor.binaryMessenger,
-        api = this
-      )
-
-      engine!!.dartExecutor.executeDartEntrypoint(
-        DartExecutor.DartEntrypoint(
-          loader.findAppBundlePath(),
-          "package:immich_mobile/domain/services/background_worker.service.dart",
-          "backgroundSyncNativeEntrypoint"
+      synchronized(this) {
+        if (isStopped || isStopping || isComplete) {
+          return@ensureInitializationCompleteAsync
+        }
+        // Register custom plugins
+        MainActivity.registerPlugins(ctx, engine)
+        flutterApi =
+          BackgroundWorkerFlutterApi(binaryMessenger = engine.dartExecutor.binaryMessenger)
+        BackgroundWorkerBgHostApi.setUp(
+          binaryMessenger = engine.dartExecutor.binaryMessenger,
+          api = this
         )
-      )
-    }
 
-    return completionHandler
+        engine.dartExecutor.executeDartEntrypoint(
+          DartExecutor.DartEntrypoint(
+            loader.findAppBundlePath(),
+            "package:immich_mobile/domain/services/background_worker.service.dart",
+            "backgroundSyncNativeEntrypoint"
+          )
+        )
+      }
+    }
+  }
+
+  private fun cacheEngine(engine: FlutterEngine): Boolean = synchronized(this) {
+    if (isStopped || isStopping || isComplete) {
+      return@synchronized false
+    }
+    synchronized(workerLock) {
+      if (activeWorker !== this) {
+        return@synchronized false
+      }
+      this.engine = engine
+      FlutterEngineCache.getInstance().put(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY, engine)
+      true
+    }
   }
 
   /**
@@ -180,19 +241,44 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
    * This is also called when the worker has been explicitly cancelled or replaced
    */
   override fun onStopped() {
+    synchronized(this) {
+      isStopping = true
+    }
     Log.d(TAG, "About to stop BackupWorker")
     close()
   }
 
-  private fun handleHostResult(result: kotlin.Result<Unit>) {
-    if (isComplete) {
-      return
-    }
+  private fun handleHostResult(result: kotlin.Result<BackgroundWorkerResult>) {
+    synchronized(this) {
+      if (isStopped || isStopping || isComplete) {
+        return
+      }
 
-    result.fold(
-      onSuccess = { _ -> complete(Result.success()) },
-      onFailure = { _ -> onStopped() }
-    )
+      result.fold(
+        onSuccess = { updateRetryWorker(it) },
+        onFailure = {
+          Log.w(TAG, "Background upload failed", it)
+          complete(Result.failure())
+        },
+      )
+    }
+  }
+
+  private fun updateRetryWorker(result: BackgroundWorkerResult) {
+    BackgroundWorkerApiImpl.updateRetryWorker(ctx, retryEpoch, result) callback@{
+      synchronized(this) {
+        if (isStopped || isStopping || isComplete) {
+          return@callback
+        }
+        it.fold(
+          onSuccess = { complete(Result.success()) },
+          onFailure = { error ->
+            Log.w(TAG, "Failed to update background retry worker", error)
+            complete(Result.failure())
+          },
+        )
+      }
+    }
   }
 
   /**
@@ -203,17 +289,28 @@ class BackgroundWorker(context: Context, params: WorkerParameters) :
    *
    * - Parameter success: Indicates whether the background task completed successfully
    */
+  @Synchronized
   private fun complete(success: Result) {
+    if (isComplete) {
+      return
+    }
+
     Log.d(TAG, "About to complete BackupWorker with result: $success")
     isComplete = true
+    val engine = engine
     if (engine != null) {
-      MainActivity.cancelPlugins(engine!!)
+      MainActivity.cancelPlugins(engine)
     }
     engine?.destroy()
-    engine = null
+    this.engine = null
     flutterApi = null
-    notificationManager.cancel(NOTIFICATION_ID)
-    FlutterEngineCache.getInstance().remove(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY)
+    synchronized(workerLock) {
+      if (activeWorker === this) {
+        activeWorker = null
+        notificationManager.cancel(NOTIFICATION_ID)
+        FlutterEngineCache.getInstance().remove(BackgroundWorkerApiImpl.ENGINE_CACHE_KEY)
+      }
+    }
     waitForForegroundPromotion()
     completionHandler.set(success)
   }

@@ -96,21 +96,17 @@ int _deepHash(Object? value) {
   return value.hashCode;
 }
 
+enum BackgroundWorkerResult { none, connected, unmetered, unchanged }
+
 class BackgroundWorkerSettings {
-  BackgroundWorkerSettings({
-    required this.requiresCharging,
-    required this.requiresUnmetered,
-    required this.minimumDelaySeconds,
-  });
+  BackgroundWorkerSettings({required this.requiresCharging, required this.minimumDelaySeconds});
 
   bool requiresCharging;
-
-  bool requiresUnmetered;
 
   int minimumDelaySeconds;
 
   List<Object?> _toList() {
-    return <Object?>[requiresCharging, requiresUnmetered, minimumDelaySeconds];
+    return <Object?>[requiresCharging, minimumDelaySeconds];
   }
 
   Object encode() {
@@ -119,11 +115,7 @@ class BackgroundWorkerSettings {
 
   static BackgroundWorkerSettings decode(Object result) {
     result as List<Object?>;
-    return BackgroundWorkerSettings(
-      requiresCharging: result[0]! as bool,
-      requiresUnmetered: result[1]! as bool,
-      minimumDelaySeconds: result[2]! as int,
-    );
+    return BackgroundWorkerSettings(requiresCharging: result[0]! as bool, minimumDelaySeconds: result[1]! as int);
   }
 
   @override
@@ -136,7 +128,6 @@ class BackgroundWorkerSettings {
       return true;
     }
     return _deepEquals(requiresCharging, other.requiresCharging) &&
-        _deepEquals(requiresUnmetered, other.requiresUnmetered) &&
         _deepEquals(minimumDelaySeconds, other.minimumDelaySeconds);
   }
 
@@ -152,8 +143,11 @@ class _PigeonCodec extends StandardMessageCodec {
     if (value is int) {
       buffer.putUint8(4);
       buffer.putInt64(value);
-    } else if (value is BackgroundWorkerSettings) {
+    } else if (value is BackgroundWorkerResult) {
       buffer.putUint8(129);
+      writeValue(buffer, value.index);
+    } else if (value is BackgroundWorkerSettings) {
+      buffer.putUint8(130);
       writeValue(buffer, value.encode());
     } else {
       super.writeValue(buffer, value);
@@ -164,6 +158,9 @@ class _PigeonCodec extends StandardMessageCodec {
   Object? readValueOfType(int type, ReadBuffer buffer) {
     switch (type) {
       case 129:
+        final value = readValue(buffer) as int?;
+        return value == null ? null : BackgroundWorkerResult.values[value];
+      case 130:
         return BackgroundWorkerSettings.decode(readValue(buffer)!);
       default:
         return super.readValueOfType(type, buffer);
@@ -184,7 +181,7 @@ class BackgroundWorkerFgHostApi {
 
   final String pigeonVar_messageChannelSuffix;
 
-  Future<void> enable(BackgroundWorkerSettings settings) async {
+  Future<void> enable() async {
     final pigeonVar_channelName =
         'dev.flutter.pigeon.immich_mobile.BackgroundWorkerFgHostApi.enable$pigeonVar_messageChannelSuffix';
     final pigeonVar_channel = BasicMessageChannel<Object?>(
@@ -192,7 +189,7 @@ class BackgroundWorkerFgHostApi {
       pigeonChannelCodec,
       binaryMessenger: pigeonVar_binaryMessenger,
     );
-    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(<Object?>[settings]);
+    final Future<Object?> pigeonVar_sendFuture = pigeonVar_channel.send(null);
     final pigeonVar_replyList = await pigeonVar_sendFuture as List<Object?>?;
 
     _extractReplyValueOrThrow(pigeonVar_replyList, pigeonVar_channelName, isNullValid: true);
@@ -288,7 +285,7 @@ abstract class BackgroundWorkerFlutterApi {
 
   Future<void> onIosUpload(bool isRefresh, int? maxSeconds);
 
-  Future<void> onAndroidUpload(int? maxMinutes);
+  Future<BackgroundWorkerResult> onAndroidUpload(int? maxMinutes);
 
   Future<void> cancel();
 
@@ -337,8 +334,8 @@ abstract class BackgroundWorkerFlutterApi {
           final List<Object?> args = message! as List<Object?>;
           final int? arg_maxMinutes = args[0] as int?;
           try {
-            await api.onAndroidUpload(arg_maxMinutes);
-            return wrapResponse(empty: true);
+            final BackgroundWorkerResult output = await api.onAndroidUpload(arg_maxMinutes);
+            return wrapResponse(result: output);
           } on PlatformException catch (e) {
             return wrapResponse(error: e);
           } catch (e) {
