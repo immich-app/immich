@@ -102,15 +102,32 @@ void main() {
             source: TrashOrigin.localSync,
           ),
         );
+    await db
+        .into(db.trashedLocalAssetEntity)
+        .insert(
+          TrashedLocalAssetEntityCompanion.insert(
+            id: 'trashed-epoch',
+            albumId: 'album',
+            name: 'trashed-epoch.jpg',
+            type: AssetType.image,
+            createdAt: drift.Value(createdAt),
+            updatedAt: drift.Value(epoch),
+            source: TrashOrigin.localSync,
+          ),
+        );
 
     await migrateDatabaseIfNeeded(db);
 
     final local = await (db.select(db.localAssetEntity)..where((row) => row.id.equals('local'))).getSingle();
     final unchanged = await (db.select(db.localAssetEntity)..where((row) => row.id.equals('epoch'))).getSingle();
-    final trashed = await db.select(db.trashedLocalAssetEntity).getSingle();
+    final trashed = await (db.select(db.trashedLocalAssetEntity)..where((row) => row.id.equals('trashed'))).getSingle();
+    final trashedUnchanged = await (db.select(
+      db.trashedLocalAssetEntity,
+    )..where((row) => row.id.equals('trashed-epoch'))).getSingle();
     expect(local.createdAt, updatedAt);
     expect(unchanged.createdAt, createdAt);
     expect(trashed.createdAt, updatedAt);
+    expect(trashedUnchanged.createdAt, createdAt);
     expect(await storeRepository.tryGet(StoreKey.version), 27);
   });
 }
