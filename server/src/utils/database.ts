@@ -938,6 +938,37 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
       },
     ],
   },
+  {
+    name: 'cursor-offset',
+    params: [{ size: 100, offset: 100 }, { userIds: [DummyValue.UUID], filter: { isFavorite: { eq: true } } }],
+  },
+];
+
+export const searchRandomV3Examples: GenerateSqlQueries[] = [
+  { name: 'baseline', params: [100, { userIds: [DummyValue.UUID] }] },
+  {
+    name: 'with-filter',
+    params: [100, { userIds: [DummyValue.UUID], filter: { isFavorite: { eq: true } } }],
+  },
+];
+
+export const searchSmartV3Examples: GenerateSqlQueries[] = [
+  { name: 'baseline', params: [{ size: 100 }, { userIds: [DummyValue.UUID], embedding: DummyValue.VECTOR }] },
+  {
+    name: 'with-filter',
+    params: [
+      { size: 100 },
+      {
+        userIds: [DummyValue.UUID],
+        embedding: DummyValue.VECTOR,
+        filter: { takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE } },
+      },
+    ],
+  },
+  {
+    name: 'cursor-offset',
+    params: [{ size: 100, offset: 100 }, { userIds: [DummyValue.UUID], embedding: DummyValue.VECTOR }],
+  },
 ];
 
 export const searchStatisticsV3Examples: GenerateSqlQueries[] = [

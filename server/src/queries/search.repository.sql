@@ -455,6 +455,8 @@ order by
   "asset"."id" desc
 limit
   $2
+offset
+  $3
 
 -- SearchRepository.searchMetadataV3 (empty)
 select
@@ -496,6 +498,8 @@ order by
   "asset"."id" desc
 limit
   $1
+offset
+  $2
 
 -- SearchRepository.searchMetadataV3 (or-exif-only)
 select
@@ -538,6 +542,8 @@ order by
   "asset"."id" desc
 limit
   $3
+offset
+  $4
 
 -- SearchRepository.searchMetadataV3 (string-eq-null)
 select
@@ -580,6 +586,8 @@ order by
   "asset"."id" desc
 limit
   $2
+offset
+  $3
 
 -- SearchRepository.searchMetadataV3 (string-pattern-like)
 select
@@ -622,6 +630,8 @@ order by
   "asset"."id" desc
 limit
   $3
+offset
+  $4
 
 -- SearchRepository.searchMetadataV3 (string-pattern-notLike)
 select
@@ -664,6 +674,8 @@ order by
   "asset"."id" desc
 limit
   $3
+offset
+  $4
 
 -- SearchRepository.searchMetadataV3 (string-pattern-startsWith)
 select
@@ -706,6 +718,8 @@ order by
   "asset"."id" desc
 limit
   $3
+offset
+  $4
 
 -- SearchRepository.searchMetadataV3 (string-similarity-ocr)
 select
@@ -755,6 +769,8 @@ order by
   "asset"."id" desc
 limit
   $3
+offset
+  $4
 
 -- SearchRepository.searchMetadataV3 (ids-any)
 select
@@ -804,6 +820,8 @@ order by
   "asset"."id" desc
 limit
   $3
+offset
+  $4
 
 -- SearchRepository.searchMetadataV3 (ids-all)
 select
@@ -860,6 +878,8 @@ order by
   "asset"."id" desc
 limit
   $5
+offset
+  $6
 
 -- SearchRepository.searchMetadataV3 (ids-all-single)
 select
@@ -909,6 +929,8 @@ order by
   "asset"."id" desc
 limit
   $3
+offset
+  $4
 
 -- SearchRepository.searchMetadataV3 (ids-none)
 select
@@ -959,6 +981,8 @@ order by
   "asset"."id" desc
 limit
   $3
+offset
+  $4
 
 -- SearchRepository.searchMetadataV3 (ids-tags-all)
 select
@@ -1014,6 +1038,8 @@ order by
   "asset"."id" desc
 limit
   $4
+offset
+  $5
 
 -- SearchRepository.searchMetadataV3 (has-albums-false)
 select
@@ -1062,6 +1088,8 @@ order by
   "asset"."id" desc
 limit
   $2
+offset
+  $3
 
 -- SearchRepository.searchMetadataV3 (is-encoded)
 select
@@ -1111,6 +1139,8 @@ order by
   "asset"."id" desc
 limit
   $3
+offset
+  $4
 
 -- SearchRepository.searchMetadataV3 (number-range)
 select
@@ -1156,6 +1186,8 @@ order by
   "asset"."id" desc
 limit
   $4
+offset
+  $5
 
 -- SearchRepository.searchMetadataV3 (date-eq)
 select
@@ -1198,6 +1230,8 @@ order by
   "asset"."id" desc
 limit
   $3
+offset
+  $4
 
 -- SearchRepository.searchMetadataV3 (date-range)
 select
@@ -1243,6 +1277,8 @@ order by
   "asset"."id" desc
 limit
   $4
+offset
+  $5
 
 -- SearchRepository.searchMetadataV3 (order-fileSize-noExif)
 select
@@ -1285,6 +1321,8 @@ order by
   "asset"."id" desc
 limit
   $2
+offset
+  $3
 
 -- SearchRepository.searchMetadataV3 (order-rating-withExif)
 select
@@ -1328,6 +1366,8 @@ order by
   "asset"."id" asc
 limit
   $2
+offset
+  $3
 
 -- SearchRepository.searchMetadataV3 (or-branches)
 select
@@ -1382,6 +1422,8 @@ order by
   "asset"."id" desc
 limit
   $5
+offset
+  $6
 
 -- SearchRepository.searchMetadataV3 (or-with-top-level)
 select
@@ -1438,6 +1480,284 @@ order by
   "asset"."id" desc
 limit
   $6
+offset
+  $7
+
+-- SearchRepository.searchMetadataV3 (cursor-offset)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and "asset"."isFavorite" = $2
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $3
+offset
+  $4
+
+-- SearchRepository.searchRandomV3 (baseline)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and true
+order by
+  random()
+limit
+  $2
+
+-- SearchRepository.searchRandomV3 (with-filter)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and "asset"."isFavorite" = $2
+order by
+  random()
+limit
+  $3
+
+-- SearchRepository.searchSmartV3 (baseline)
+begin
+set
+  local vchordrq.probes = 1
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and true
+order by
+  smart_search.embedding <=> $2,
+  "asset"."id" asc
+limit
+  $3
+offset
+  $4
+commit
+
+-- SearchRepository.searchSmartV3 (with-filter)
+begin
+set
+  local vchordrq.probes = 1
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and (
+    "asset"."fileCreatedAt" < $2
+    and "asset"."fileCreatedAt" >= $3
+  )
+order by
+  smart_search.embedding <=> $4,
+  "asset"."id" asc
+limit
+  $5
+offset
+  $6
+commit
+
+-- SearchRepository.searchSmartV3 (cursor-offset)
+begin
+set
+  local vchordrq.probes = 1
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  inner join "smart_search" on "asset"."id" = "smart_search"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and true
+order by
+  smart_search.embedding <=> $2,
+  "asset"."id" asc
+limit
+  $3
+offset
+  $4
+commit
 
 -- SearchRepository.searchStatisticsV3 (baseline)
 select
