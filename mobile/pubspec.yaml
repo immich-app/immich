@@ -113,6 +113,11 @@ dev_dependencies:
 # cast 2.1.0 declares a loose bonsoir range but its code targets the 5.x API.
 # Pin bonsoir to 5.x until cast releases a version compatible with bonsoir 6.x.
 dependency_overrides:
+  bonsoir_darwin:
+    git:
+      url: https://github.com/Skyost/Bonsoir
+      ref: ce155549130e   # fix(darwin): add missing Foundation import; still v6.1.0
+      path: packages/bonsoir_darwin
   objective_c:
     git:
       url: https://github.com/mertalev/native
