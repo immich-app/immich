@@ -4,7 +4,9 @@ import { AssetVisibility } from 'src/enum';
 import { requireElevatedPermission } from 'src/utils/access';
 
 type EnumField = 'type' | 'visibility';
-type EnumCondition<T> = { eq?: T; ne?: T; in?: T[]; notIn?: T[] };
+type EnumOperator = keyof NonNullable<SearchFilterBranch[EnumField]>;
+type EnumOperandMap<T> = { eq: T; ne: T; in: T[]; notIn: T[] };
+type EnumCondition<T> = { [K in EnumOperator]?: EnumOperandMap<T>[K] };
 type IdsFilterField = 'albumIds' | 'personIds' | 'tagIds';
 
 const filterBranches = (filter: SearchFilter): SearchFilterBranch[] => [filter, ...(filter.or ?? [])];
