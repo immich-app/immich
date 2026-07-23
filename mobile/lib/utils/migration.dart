@@ -54,7 +54,16 @@ Future<bool> _migrateTo27(Drift drift) async {
     return true;
   }
   try {
-    await drift.customStatement('UPDATE local_asset_entity SET created_at = updated_at WHERE created_at > updated_at');
+    await drift.customStatement(
+      "UPDATE local_asset_entity SET created_at = updated_at "
+      "WHERE julianday(updated_at) > julianday('1970-01-01T00:00:00Z') "
+      "AND julianday(created_at) > julianday(updated_at)",
+    );
+    await drift.customStatement(
+      "UPDATE trashed_local_asset_entity SET created_at = updated_at "
+      "WHERE julianday(updated_at) > julianday('1970-01-01T00:00:00Z') "
+      "AND julianday(created_at) > julianday(updated_at)",
+    );
     return true;
   } catch (_) {
     return false;
