@@ -18,9 +18,6 @@ const canMatch = <T>(condition: EnumCondition<T>, value: T): boolean =>
   (condition.in === undefined || condition.in.includes(value)) &&
   (condition.notIn === undefined || !condition.notIn.includes(value));
 
-const matchesOnly = <T>(condition: EnumCondition<T>, value: T, values: T[]): boolean =>
-  values.every((other) => other === value || !canMatch(condition, other));
-
 /**
  * The conditions that decide which `field` values the filter can return. A top-level condition decides alone, otherwise each branch itself.
  */
@@ -53,10 +50,6 @@ export const applyLockedVisibilityPolicy = (auth: AuthDto, filter: SearchFilter)
 
   return { ...filter, visibility: { ne: AssetVisibility.Locked } };
 };
-
-/** Whether the top-level visibility condition limits the filter to locked assets only. */
-export const isLockedOnlyFilter = ({ visibility }: SearchFilter): boolean =>
-  visibility !== undefined && matchesOnly(visibility, AssetVisibility.Locked, Object.values(AssetVisibility));
 
 export const collectFilterIds = (filter: SearchFilter, field: IdsFilterField): string[] => {
   const ids = new Set<string>();

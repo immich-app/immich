@@ -331,6 +331,25 @@ describe(SearchService.name, () => {
       expect(response.assets.items).toEqual([expect.objectContaining({ id: ownLocked.id })]);
     });
 
+    it('should never return partner locked assets, even for locked-matching mixed filters', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+      const { asset: ownLocked } = await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+      const { asset: partnerTimeline } = await ctx.newAsset({ ownerId: partner.id });
+      await ctx.newAsset({ ownerId: partner.id, visibility: AssetVisibility.Locked });
+
+      const auth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
+      const response = await sut.searchMetadata(auth, {
+        size: 250,
+        filter: { visibility: { in: [AssetVisibility.Locked, AssetVisibility.Timeline] } },
+      });
+
+      const ids = response.assets.items.map(({ id }) => id);
+      expect(ids.toSorted()).toEqual([ownLocked.id, partnerTimeline.id].toSorted());
+    });
+
     it('should paginate with an opaque cursor', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
@@ -385,13 +404,14 @@ describe(SearchService.name, () => {
         assetIds.push(asset.id);
       }
 
-      const options = { filter: {}, userIds: [user.id], embedding: unitVector(0) };
-      const firstPage = await searchRepository.searchSmartV3({ size: 2 }, options);
+      const options = { filter: {}, embedding: unitVector(0) };
+      const scope = { userIds: [user.id], lockedOwnerId: user.id };
+      const firstPage = await searchRepository.searchSmartV3({ size: 2 }, options, scope);
       expect(firstPage.items.length).toBe(2);
       expect(firstPage.items[0].id).toBe(assetIds[0]);
       expect(firstPage.hasNextPage).toBe(true);
 
-      const secondPage = await searchRepository.searchSmartV3({ size: 2, offset: 2 }, options);
+      const secondPage = await searchRepository.searchSmartV3({ size: 2, offset: 2 }, options, scope);
       expect(secondPage.items.length).toBe(1);
       expect(secondPage.hasNextPage).toBe(false);
     });

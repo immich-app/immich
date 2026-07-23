@@ -22,6 +22,7 @@ import {
   StatisticsSearchDto,
 } from 'src/dtos/search.dto';
 import { AssetOrder, AssetVisibility, Permission } from 'src/enum';
+import { AssetSearchScope } from 'src/repositories/search.repository';
 import { BaseService } from 'src/services/base.service';
 import { requireElevatedPermission } from 'src/utils/access';
 import { getMyPartnerIds } from 'src/utils/asset.util';
@@ -31,7 +32,6 @@ import {
   applyLockedVisibilityPolicy,
   collectFilterIds,
   hasTopLevelPositiveIdsConstraint,
-  isLockedOnlyFilter,
 } from 'src/utils/search-filter';
 
 @Injectable()
@@ -235,6 +235,71 @@ export class SearchService extends BaseService {
   }
 
   private async searchMetadataV3(auth: AuthDto, dto: MetadataSearchDto): Promise<SearchResponseDto> {
+    const { filter, scope } = await this.resolveSearchScopeV3(auth, dto);
+
+    const { offset } = decodeSearchCursor(dto.cursor);
+    const size = dto.size;
+    const { hasNextPage, items } = await this.searchRepository.searchMetadataV3(
+      { size, offset },
+      {
+        filter,
+        withExif: dto.withExif,
+        withPeople: dto.withPeople,
+        withStacked: dto.withStacked,
+        order: dto.orderBy,
+      },
+      scope,
+    );
+
+    return this.mapResponse(items, { auth }, { nextCursor: hasNextPage ? encodeSearchCursor(offset + size) : null });
+  }
+
+  private async searchStatisticsV3(auth: AuthDto, dto: StatisticsSearchDto): Promise<SearchStatisticsResponseDto> {
+    const { filter, scope } = await this.resolveSearchScopeV3(auth, dto);
+    return this.searchRepository.searchStatisticsV3({ filter }, scope);
+  }
+
+  private async searchRandomV3(auth: AuthDto, dto: RandomSearchDto): Promise<AssetResponseDto[]> {
+    const { filter, scope } = await this.resolveSearchScopeV3(auth, dto);
+    const items = await this.searchRepository.searchRandomV3(
+      dto.size,
+      {
+        filter,
+        withExif: dto.withExif,
+        withPeople: dto.withPeople,
+        withStacked: dto.withStacked,
+      },
+      scope,
+    );
+    return items.map((item) => mapAsset(item, { auth }));
+  }
+
+  private async searchSmartV3(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
+    const { machineLearning } = await this.getConfig({ withCache: false });
+    if (!isSmartSearchEnabled(machineLearning)) {
+      throw new BadRequestException('Smart search is not enabled');
+    }
+
+    const [{ filter, scope }, embedding] = await Promise.all([
+      this.resolveSearchScopeV3(auth, dto),
+      this.resolveEmbedding(auth, dto, machineLearning),
+    ]);
+
+    const { offset } = decodeSearchCursor(dto.cursor);
+    const size = dto.size;
+    const { hasNextPage, items } = await this.searchRepository.searchSmartV3(
+      { size, offset },
+      { filter, withExif: dto.withExif, embedding },
+      scope,
+    );
+
+    return this.mapResponse(items, { auth }, { nextCursor: hasNextPage ? encodeSearchCursor(offset + size) : null });
+  }
+
+  private async resolveSearchScopeV3(
+    auth: AuthDto,
+    dto: { filter?: SearchFilter },
+  ): Promise<{ filter: SearchFilter; scope: AssetSearchScope }> {
     const filter = dto.filter ?? {};
     const effectiveFilter = applyLockedVisibilityPolicy(auth, filter);
 
@@ -247,75 +312,11 @@ export class SearchService extends BaseService {
 
     const albumIds = collectFilterIds(filter, 'albumIds');
     const [userIds] = await Promise.all([
-      hasTopLevelAlbums ? undefined : this.getUserIdsToSearchV3(auth, filter),
+      hasTopLevelAlbums ? undefined : this.getUserIdsToSearch(auth),
       albumIds.length > 0 ? this.requireAccess({ auth, ids: albumIds, permission: Permission.AlbumRead }) : undefined,
     ]);
 
-    const { offset } = decodeSearchCursor(dto.cursor);
-    const size = dto.size;
-    const { hasNextPage, items } = await this.searchRepository.searchMetadataV3(
-      { size, offset },
-      {
-        filter: effectiveFilter,
-        userIds,
-        withExif: dto.withExif,
-        withPeople: dto.withPeople,
-        withStacked: dto.withStacked,
-        order: dto.orderBy,
-      },
-    );
-
-    return this.mapResponse(items, { auth }, { nextCursor: hasNextPage ? encodeSearchCursor(offset + size) : null });
-  }
-
-  private async searchStatisticsV3(auth: AuthDto, dto: StatisticsSearchDto): Promise<SearchStatisticsResponseDto> {
-    const { effectiveFilter, userIds } = await this.resolveSearchScopeV3(auth, dto);
-    return this.searchRepository.searchStatisticsV3({ filter: effectiveFilter, userIds });
-  }
-
-  private async searchRandomV3(auth: AuthDto, dto: RandomSearchDto): Promise<AssetResponseDto[]> {
-    const { effectiveFilter, userIds } = await this.resolveSearchScopeV3(auth, dto);
-    const items = await this.searchRepository.searchRandomV3(dto.size, {
-      filter: effectiveFilter,
-      userIds,
-      withExif: dto.withExif,
-      withPeople: dto.withPeople,
-      withStacked: dto.withStacked,
-    });
-    return items.map((item) => mapAsset(item, { auth }));
-  }
-
-  private async searchSmartV3(auth: AuthDto, dto: SmartSearchDto): Promise<SearchResponseDto> {
-    const { machineLearning } = await this.getConfig({ withCache: false });
-    if (!isSmartSearchEnabled(machineLearning)) {
-      throw new BadRequestException('Smart search is not enabled');
-    }
-
-    const [{ effectiveFilter, userIds }, embedding] = await Promise.all([
-      this.resolveSearchScopeV3(auth, dto),
-      this.resolveEmbedding(auth, dto, machineLearning),
-    ]);
-
-    const { offset } = decodeSearchCursor(dto.cursor);
-    const size = dto.size;
-    const { hasNextPage, items } = await this.searchRepository.searchSmartV3(
-      { size, offset },
-      { filter: effectiveFilter, userIds, withExif: dto.withExif, embedding },
-    );
-
-    return this.mapResponse(items, { auth }, { nextCursor: hasNextPage ? encodeSearchCursor(offset + size) : null });
-  }
-
-  private async resolveSearchScopeV3(auth: AuthDto, dto: { filter?: SearchFilter }) {
-    const filter = dto.filter ?? {};
-    return {
-      effectiveFilter: applyLockedVisibilityPolicy(auth, filter),
-      userIds: await this.getUserIdsToSearchV3(auth, filter),
-    };
-  }
-
-  private getUserIdsToSearchV3(auth: AuthDto, filter: SearchFilter): Promise<string[]> {
-    return this.getUserIdsToSearch(auth, isLockedOnlyFilter(filter) ? AssetVisibility.Locked : undefined);
+    return { filter: effectiveFilter, scope: { userIds, lockedOwnerId: auth.user.id } };
   }
 
   private async resolveEmbedding(
