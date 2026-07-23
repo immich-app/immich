@@ -18,6 +18,10 @@ describe('encodeSearchCursor', () => {
 describe('decodeSearchCursor', () => {
   const encode = (value: unknown) => Buffer.from(JSON.stringify(value)).toString('base64url');
 
+  it('should treat a missing cursor as the first page', () => {
+    expect(decodeSearchCursor(undefined)).toEqual({ offset: 0 });
+  });
+
   it.each([
     ['empty string', ''],
     ['garbage that is not base64url', '!!!not-base64!!!'],
