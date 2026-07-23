@@ -127,6 +127,15 @@ jobs:
         with:
           packages: ''
 
+      - name: Install Rust and protoc for cargokit
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          "$HOME/.cargo/bin/rustup" target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
+          sudo apt-get update
+          sudo apt-get install -y protobuf-compiler
+          echo "PROTOC=$(command -v protoc)" >> "$GITHUB_ENV"
+
       - name: Get Packages
         working-directory: ./mobile
         run: flutter pub get
@@ -225,6 +234,11 @@ jobs:
         with:
           github_token: ${{ steps.token.outputs.token }}
           working_directory: ./mobile
+
+      - name: Install protoc
+        run: |
+          brew install protobuf
+          echo "PROTOC=$(brew --prefix)/bin/protoc" >> "$GITHUB_ENV"
 
       - name: Install Flutter dependencies
         working-directory: ./mobile
