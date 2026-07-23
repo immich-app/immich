@@ -4,6 +4,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { resolve } from 'node:path';
 import { Writable } from 'node:stream';
+import { SystemConfig } from 'src/config';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem, AssetEditsCreateDto } from 'src/dtos/editing.dto';
@@ -76,6 +77,7 @@ import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.servic
 import { MetadataService } from 'src/services/metadata.service';
 import { SyncService } from 'src/services/sync.service';
 import { ClassConstructor, UploadFile } from 'src/types';
+import { getConfig, updateConfig } from 'src/utils/config';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory';
@@ -301,6 +303,28 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   async newEdits(assetId: string, dto: AssetEditsCreateDto) {
     const edits = await this.get(AssetEditRepository).replaceAll(assetId, dto.edits as AssetEditActionItem[]);
     return { edits };
+  }
+
+  async getConfig({ withCache = true }: { withCache?: boolean } = {}) {
+    return getConfig(
+      {
+        configRepo: this.get(ConfigRepository),
+        metadataRepo: this.get(SystemMetadataRepository),
+        logger: this.get(LoggingRepository),
+      },
+      { withCache },
+    );
+  }
+
+  async updateConfig(config: SystemConfig) {
+    return updateConfig(
+      {
+        configRepo: this.get(ConfigRepository),
+        metadataRepo: this.get(SystemMetadataRepository),
+        logger: this.get(LoggingRepository),
+      },
+      config,
+    );
   }
 }
 
