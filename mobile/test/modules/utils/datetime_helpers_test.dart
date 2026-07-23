@@ -16,8 +16,14 @@ void main() {
     });
 
     test('returns null for value above maximum allowed range', () {
-      // _maxMillisecondsSinceEpoch = 8640000000000000
-      final seconds = 8640000000000000 ~/ 1000 + 1; // One second after max allowed
+      // _maxMillisecondsSinceEpoch = 253402300799000
+      final seconds = 253402300799000 ~/ 1000 + 1; // One second after max allowed
+      final result = tryFromSecondsSinceEpoch(seconds);
+      expect(result, isNull);
+    });
+
+    test('returns null for a year beyond SQLite range', () {
+      final seconds = 8640000000000000 ~/ 1000; // Year 275760
       final result = tryFromSecondsSinceEpoch(seconds);
       expect(result, isNull);
     });
@@ -29,9 +35,9 @@ void main() {
     });
 
     test('returns correct DateTime for maximum allowed value', () {
-      final seconds = 8640000000000000 ~/ 1000; // Maximum allowed timestamp
+      final seconds = 253402300799000 ~/ 1000; // Maximum allowed timestamp
       final result = tryFromSecondsSinceEpoch(seconds);
-      expect(result, DateTime.fromMillisecondsSinceEpoch(8640000000000000));
+      expect(result, DateTime.fromMillisecondsSinceEpoch(253402300799000));
     });
 
     test('returns correct DateTime for negative timestamp', () {

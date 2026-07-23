@@ -1,5 +1,5 @@
-const int _maxMillisecondsSinceEpoch = 8640000000000000; // 275760-09-13
-const int _minMillisecondsSinceEpoch = -62135596800000; // 0001-01-01
+const int _maxMillisecondsSinceEpoch = 253402300799000; // 9999-12-31 (SQLite limit)
+const int _minMillisecondsSinceEpoch = -62135596800000; // 0001-01-01 (Dart / SQLite limit)
 
 DateTime? tryFromSecondsSinceEpoch(int? secondsSinceEpoch, {bool isUtc = false}) {
   if (secondsSinceEpoch == null) {

@@ -13,6 +13,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/feature_message.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
@@ -20,7 +21,7 @@ import 'package:immich_mobile/infrastructure/repositories/settings.repository.da
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-const int targetVersion = 26;
+const int targetVersion = 27;
 
 Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   final int? storedVersion = Store.tryGet(StoreKey.version);
@@ -32,6 +33,10 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
   if (version < 26) {
     await _migrateTo26(drift);
+  }
+
+  if (version < 27) {
+    await migrateTo27(drift);
   }
 
   if (storedVersion == null) {
@@ -143,6 +148,19 @@ Future<void> _migrateTo26(Drift drift) async {
   await migrator.migrateInt(StoreKey.legacyBackupTriggerDelay, SettingsKey.backupTriggerDelay);
   await migrator.migrateBool(StoreKey.legacySyncAlbums, SettingsKey.backupSyncAlbums);
   await migrator.complete();
+}
+
+@visibleForTesting
+Future<void> migrateTo27(Drift drift) async {
+  final now = DateTime.timestamp();
+  const format = '%Y-%m-%d';
+  final table = drift.localAssetEntity;
+  await (drift.update(
+    table,
+  )..where((t) => t.createdAt.strftime(format).isNull())).write(LocalAssetEntityCompanion(createdAt: .new(now)));
+  await (drift.update(
+    table,
+  )..where((t) => t.updatedAt.strftime(format).isNull())).write(LocalAssetEntityCompanion(updatedAt: .new(now)));
 }
 
 Future<void> _migrateAlbumSortMode(_StoreMigrator migrator) async {
