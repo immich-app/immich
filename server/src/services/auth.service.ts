@@ -439,7 +439,7 @@ export class AuthService extends BaseService {
       await this.sessionRepository.update(auth.session.id, { oauthSid: null });
     }
 
-    const user = await this.userRepository.update(auth.user.id, { oauthId: '' });
+    const user = await this.userRepository.update(auth.user.id, { oauthId: null });
     return mapUserAdmin(user);
   }
 
