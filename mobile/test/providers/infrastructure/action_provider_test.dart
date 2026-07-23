@@ -138,18 +138,19 @@ void main() {
       return result;
     }
 
-    testWidgets('reports failure when local deletion is cancelled', (tester) async {
+    testWidgets('keeps success and reports kept local copies when the OS delete is declined', (tester) async {
       final asset = _asset.copyWith(localId: 'local-owned');
       container.read(multiSelectProvider.notifier).selectAsset(asset);
       when(() => actionService.moveToLockFolder(any(), any())).thenAnswer((_) async => 0);
 
       final result = await runAction(tester);
 
-      expect(result?.success, isFalse);
+      expect(result?.success, isTrue);
+      expect(result?.failedCount, 1);
       verify(() => actionService.moveToLockFolder(['asset-1'], ['local-owned'])).called(1);
     });
 
-    testWidgets('reports failure when only some local copies are deleted', (tester) async {
+    testWidgets('reports kept local copies when only some are deleted', (tester) async {
       final first = _asset.copyWith(localId: 'local-1');
       final second = _asset.copyWith(id: 'asset-2', localId: 'local-2', checksum: 'checksum-2');
       container.read(multiSelectProvider.notifier)
@@ -159,7 +160,8 @@ void main() {
 
       final result = await runAction(tester);
 
-      expect(result?.success, isFalse);
+      expect(result?.success, isTrue);
+      expect(result?.failedCount, 1);
     });
 
     testWidgets('deletes only owned local copies from a mixed selection', (tester) async {

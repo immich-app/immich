@@ -201,7 +201,7 @@ class ActionNotifier extends Notifier<void> {
 
     try {
       final deletedCount = await _service.moveToLockFolder(ids, localIds);
-      return ActionResult(count: ids.length, success: deletedCount == localIds.length);
+      return ActionResult(count: ids.length, success: true, failedCount: localIds.length - deletedCount);
     } catch (error, stack) {
       _logger.severe('Failed to move assets to lock folder', error, stack);
       return ActionResult(count: ids.length, success: false, error: error.toString());
