@@ -225,15 +225,21 @@ export class MediaService extends BaseService {
     }
 
     let generated: Awaited<ReturnType<MediaService['generateImageThumbnails']>>;
-    if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
-      this.logger.verbose(`Thumbnail generation for video ${id} ${asset.originalPath}`);
-      generated = await this.generateVideoThumbnails(asset, config);
-    } else if (asset.type === AssetType.Image) {
-      this.logger.verbose(`Thumbnail generation for image ${id} ${asset.originalPath}`);
-      generated = await this.generateImageThumbnails(asset, config);
-    } else {
-      this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
-      return JobStatus.Skipped;
+    try {
+      if (asset.type === AssetType.Video || asset.originalFileName.toLowerCase().endsWith('.gif')) {
+        this.logger.verbose(`Thumbnail generation for video ${id} ${asset.originalPath}`);
+        generated = await this.generateVideoThumbnails(asset, config);
+      } else if (asset.type === AssetType.Image) {
+        this.logger.verbose(`Thumbnail generation for image ${id} ${asset.originalPath}`);
+        generated = await this.generateImageThumbnails(asset, config);
+      } else {
+        this.logger.warn(`Skipping thumbnail generation for asset ${id}: ${asset.type} is not an image or video`);
+        return JobStatus.Skipped;
+      }
+    } catch (error: any) {
+      // Corrupt/unsupported media: fail the job instead of throwing into indefinite retries.
+      this.logger.error(`Thumbnail generation failed for asset ${id} (${asset.originalPath}): ${error.message}`);
+      return JobStatus.Failed;
     }
 
     const editedGenerated = await this.generateEditedThumbnails(asset, config);
@@ -536,8 +542,19 @@ export class MediaService extends BaseService {
     const previewOptions = previewConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
     const thumbnailOptions = thumbConfig.getCommand(TranscodeTarget.Video, videoStream, undefined, format ?? undefined);
 
-    await this.mediaRepository.transcode(asset.originalPath, previewFile.path, previewOptions);
-    await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, thumbnailOptions);
+    try {
+      await this.mediaRepository.transcode(asset.originalPath, previewFile.path, previewOptions);
+      await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, thumbnailOptions);
+    } catch (error: any) {
+      // Primary chain can SIGSEGV on very short videos; retry once with the fallback.
+      this.logger.warn(
+        `Thumbnail generation failed for asset ${asset.id} (${asset.originalPath}): ${error.message}. Retrying with fallback filter chain.`,
+      );
+      const fallbackPreviewOptions = previewConfig.getFallbackCommand(TranscodeTarget.Video, videoStream);
+      const fallbackThumbnailOptions = thumbConfig.getFallbackCommand(TranscodeTarget.Video, videoStream);
+      await this.mediaRepository.transcode(asset.originalPath, previewFile.path, fallbackPreviewOptions);
+      await this.mediaRepository.transcode(asset.originalPath, thumbnailFile.path, fallbackThumbnailOptions);
+    }
 
     const thumbhash = await this.mediaRepository.generateThumbhash(previewFile.path, {
       colorspace: image.colorspace,

@@ -471,17 +471,12 @@ export class BaseHWConfig extends BaseConfig {
 }
 
 export class ThumbnailConfig extends BaseConfig {
-  static create(config: SystemConfigFFmpegDto): VideoCodecSWConfig {
+  static create(config: SystemConfigFFmpegDto): ThumbnailConfig {
     return new ThumbnailConfig(config);
   }
 
-  getBaseInputOptions(videoStream: VideoStreamInfo, format?: VideoFormat): string[] {
-    // skip_frame nointra skips all frames for some MPEG-TS files. Look at ffmpeg tickets 7950 and 7895 for more details.
-    const options =
-      format?.formatName === 'mpegts'
-        ? ['-sws_flags', 'accurate_rnd+full_chroma_int']
-        : ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'];
-
+  // workaround for https://fftrac-bg.ffmpeg.org/ticket/11020
+  private getColorMetadataOptions(videoStream: VideoStreamInfo): string[] {
     const metadataOverrides = [];
     if (videoStream.colorPrimaries === ColorPrimaries.Reserved) {
       metadataOverrides.push('colour_primaries=1');
@@ -495,10 +490,21 @@ export class ThumbnailConfig extends BaseConfig {
       metadataOverrides.push('transfer_characteristics=1');
     }
 
-    if (metadataOverrides.length > 0) {
-      // workaround for https://fftrac-bg.ffmpeg.org/ticket/11020
-      options.push(`-bsf:${videoStream.index}`, `${videoStream.codecName}_metadata=${metadataOverrides.join(':')}`);
+    if (metadataOverrides.length === 0) {
+      return [];
     }
+
+    return [`-bsf:${videoStream.index}`, `${videoStream.codecName}_metadata=${metadataOverrides.join(':')}`];
+  }
+
+  getBaseInputOptions(videoStream: VideoStreamInfo, format?: VideoFormat): string[] {
+    // skip_frame nointra skips all frames for some MPEG-TS files. Look at ffmpeg tickets 7950 and 7895 for more details.
+    const options =
+      format?.formatName === 'mpegts'
+        ? ['-sws_flags', 'accurate_rnd+full_chroma_int']
+        : ['-skip_frame', 'nointra', '-sws_flags', 'accurate_rnd+full_chroma_int'];
+
+    options.push(...this.getColorMetadataOptions(videoStream));
 
     return options;
   }
@@ -516,6 +522,32 @@ export class ThumbnailConfig extends BaseConfig {
       'reverse',
       ...super.getFilterOptions(videoStream),
     ];
+  }
+
+  // No skip_frame nointra, which can drop every frame of a short video.
+  getFallbackBaseInputOptions(videoStream: VideoStreamInfo): string[] {
+    return ['-sws_flags', 'accurate_rnd+full_chroma_int', ...this.getColorMetadataOptions(videoStream)];
+  }
+
+  // First frame only; thumbnail=12 + reverse can SIGSEGV on short videos when the pipeline is empty.
+  getFallbackFilterOptions(videoStream: VideoStreamInfo): string[] {
+    return [String.raw`select=eq(n\,0)`, ...super.getFilterOptions(videoStream)];
+  }
+
+  getFallbackCommand(target: TranscodeTarget, video: VideoStreamInfo): TranscodeCommand {
+    const options: TranscodeCommand = {
+      inputOptions: this.getFallbackBaseInputOptions(video),
+      outputOptions: [...this.getBaseOutputOptions(), '-fps_mode', 'passthrough', '-v', 'verbose'],
+      twoPass: false,
+      progress: { frameCount: video.frameCount, percentInterval: 5 },
+    };
+    if ([TranscodeTarget.All, TranscodeTarget.Video].includes(target)) {
+      const filters = this.getFallbackFilterOptions(video);
+      if (filters.length > 0) {
+        options.outputOptions.push('-vf', filters.join(','));
+      }
+    }
+    return options;
   }
 
   getPresetOptions() {
