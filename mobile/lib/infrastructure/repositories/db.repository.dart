@@ -120,7 +120,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 32;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -317,6 +317,26 @@ class Drift extends $Drift {
               },
               from30To31: (m, v31) async {
                 await m.createIndex(v31.idxRemoteAssetUploaded);
+              },
+              from31To32: (m, v32) async {
+                const minDateTime = '0001-01-01T00:00:00.000Z';
+                const maxDateTime = '9999-12-31T00:00:00.000Z';
+                const timestampColumns = {
+                  'local_asset_entity': ['created_at', 'updated_at'],
+                  'local_album_entity': ['updated_at'],
+                  'trashed_local_asset_entity': ['created_at', 'updated_at'],
+                };
+
+                for (final entry in timestampColumns.entries) {
+                  final table = entry.key;
+                  for (final column in entry.value) {
+                    await customStatement("UPDATE $table SET $column = '$maxDateTime' WHERE $column LIKE '+%'");
+                    await customStatement("UPDATE $table SET $column = '$minDateTime' WHERE $column LIKE '-%'");
+                  }
+                }
+                await customStatement(
+                  "UPDATE local_asset_entity SET adjustment_time = NULL WHERE adjustment_time LIKE '+%' OR adjustment_time LIKE '-%'",
+                );
               },
             ),
           ),

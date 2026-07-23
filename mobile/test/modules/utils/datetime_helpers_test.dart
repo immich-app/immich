@@ -16,8 +16,8 @@ void main() {
     });
 
     test('returns null for value above maximum allowed range', () {
-      // _maxMillisecondsSinceEpoch = 8640000000000000
-      final seconds = 8640000000000000 ~/ 1000 + 1; // One second after max allowed
+      // _maxMillisecondsSinceEpoch = 253402214400000
+      final seconds = 253402214400000 ~/ 1000 + 1; // One second after max allowed
       final result = tryFromSecondsSinceEpoch(seconds);
       expect(result, isNull);
     });
@@ -29,9 +29,15 @@ void main() {
     });
 
     test('returns correct DateTime for maximum allowed value', () {
-      final seconds = 8640000000000000 ~/ 1000; // Maximum allowed timestamp
+      final seconds = 253402214400000 ~/ 1000; // Maximum allowed timestamp
       final result = tryFromSecondsSinceEpoch(seconds);
-      expect(result, DateTime.fromMillisecondsSinceEpoch(8640000000000000));
+      expect(result, DateTime.fromMillisecondsSinceEpoch(253402214400000));
+    });
+
+    test('returns null for value within Dart range but beyond SQLite range', () {
+      final seconds = 8640000000000; // Dart's maximum DateTime (year 275760)
+      final result = tryFromSecondsSinceEpoch(seconds);
+      expect(result, isNull);
     });
 
     test('returns correct DateTime for negative timestamp', () {
