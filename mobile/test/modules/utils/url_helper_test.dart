@@ -77,37 +77,37 @@ void main() {
     });
   });
 
-  group('isValidServerUrl', () {
+  group('normalizeAndValidateServerUrl', () {
     test('should treat null as valid', () {
-      expect(isValidServerUrl(null), isTrue);
+      expect(normalizeAndValidateServerUrl(null), isTrue);
     });
 
     test('should treat empty string as valid', () {
-      expect(isValidServerUrl(''), isTrue);
+      expect(normalizeAndValidateServerUrl(''), isTrue);
     });
 
     test('should accept a bare host', () {
-      expect(isValidServerUrl('demo.immich.app'), isTrue);
+      expect(normalizeAndValidateServerUrl('demo.immich.app'), isTrue);
     });
 
     test('should accept a bare host with a port', () {
-      expect(isValidServerUrl('192.168.1.1:2283'), isTrue);
+      expect(normalizeAndValidateServerUrl('192.168.1.1:2283'), isTrue);
     });
 
     test('should accept an http URL', () {
-      expect(isValidServerUrl('http://demo.immich.app'), isTrue);
+      expect(normalizeAndValidateServerUrl('http://demo.immich.app'), isTrue);
     });
 
     test('should accept an https URL', () {
-      expect(isValidServerUrl('https://demo.immich.app:2283/api'), isTrue);
+      expect(normalizeAndValidateServerUrl('https://demo.immich.app:2283/api'), isTrue);
     });
 
     test('should reject a non-http scheme', () {
-      expect(isValidServerUrl('ftp://demo.immich.app'), isFalse);
+      expect(normalizeAndValidateServerUrl('ftp://demo.immich.app'), isFalse);
     });
 
     test('should reject scheme only input', () {
-      expect(isValidServerUrl('https://'), isFalse);
+      expect(normalizeAndValidateServerUrl('https://'), isFalse);
     });
   });
 
