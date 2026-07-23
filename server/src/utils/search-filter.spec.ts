@@ -10,37 +10,47 @@ import {
 import { AuthFactory } from 'test/factories/auth.factory';
 import { describe, expect, it } from 'vitest';
 
-const { Locked, Timeline, Archive, Hidden } = AssetVisibility;
-
 const elevatedAuth = () => AuthFactory.from().session({ hasElevatedPermission: true }).build();
 const unelevatedAuth = () => AuthFactory.from().session().build();
 
 describe(applyLockedVisibilityPolicy.name, () => {
   it('should let an elevated session query locked assets', () => {
-    const filter = { visibility: { eq: Locked } };
+    const filter = { visibility: { eq: AssetVisibility.Locked } };
     expect(applyLockedVisibilityPolicy(elevatedAuth(), filter)).toBe(filter);
   });
 
   it('should reject an unelevated session when any operator permits locked', () => {
-    for (const visibility of [{ eq: Locked }, { ne: Timeline }, { in: [Locked, Timeline] }, { notIn: [Timeline] }]) {
+    for (const visibility of [
+      { eq: AssetVisibility.Locked },
+      { ne: AssetVisibility.Timeline },
+      { in: [AssetVisibility.Locked, AssetVisibility.Timeline] },
+      { notIn: [AssetVisibility.Timeline] },
+    ]) {
       expect(() => applyLockedVisibilityPolicy(unelevatedAuth(), { visibility })).toThrow(UnauthorizedException);
     }
   });
 
   it('should keep a filter whose top-level visibility excludes locked', () => {
-    for (const visibility of [{ eq: Timeline }, { ne: Locked }, { in: [Timeline, Archive] }, { notIn: [Locked] }]) {
+    for (const visibility of [
+      { eq: AssetVisibility.Timeline },
+      { ne: AssetVisibility.Locked },
+      { in: [AssetVisibility.Timeline, AssetVisibility.Archive] },
+      { notIn: [AssetVisibility.Locked] },
+    ]) {
       const filter = { visibility };
       expect(applyLockedVisibilityPolicy(unelevatedAuth(), filter)).toBe(filter);
     }
   });
 
   it('should let a safe top-level visibility decide over could-match branches', () => {
-    const filter = { visibility: { ne: Locked }, or: [{ visibility: { eq: Locked } }] };
+    const filter = { visibility: { ne: AssetVisibility.Locked }, or: [{ visibility: { eq: AssetVisibility.Locked } }] };
     expect(applyLockedVisibilityPolicy(unelevatedAuth(), filter)).toBe(filter);
   });
 
   it('should reject a branch that permits locked when the top level has no visibility', () => {
-    const filter = { or: [{ city: { eq: 'Oslo' } }, { visibility: { in: [Locked, Timeline] } }] };
+    const filter = {
+      or: [{ city: { eq: 'Oslo' } }, { visibility: { in: [AssetVisibility.Locked, AssetVisibility.Timeline] } }],
+    };
     expect(() => applyLockedVisibilityPolicy(unelevatedAuth(), filter)).toThrow(UnauthorizedException);
   });
 
@@ -48,26 +58,30 @@ describe(applyLockedVisibilityPolicy.name, () => {
     const filter = { city: { eq: 'Oslo' }, visibility: undefined };
     expect(applyLockedVisibilityPolicy(unelevatedAuth(), filter)).toEqual({
       city: { eq: 'Oslo' },
-      visibility: { ne: Locked },
+      visibility: { ne: AssetVisibility.Locked },
     });
     expect(filter.visibility).toBeUndefined();
 
-    const branched = { or: [{ isFavorite: { eq: true } }, { visibility: { eq: Timeline } }] };
-    expect(applyLockedVisibilityPolicy(unelevatedAuth(), branched).visibility).toEqual({ ne: Locked });
+    const branched = { or: [{ isFavorite: { eq: true } }, { visibility: { eq: AssetVisibility.Timeline } }] };
+    expect(applyLockedVisibilityPolicy(unelevatedAuth(), branched).visibility).toEqual({ ne: AssetVisibility.Locked });
   });
 });
 
 describe(isLockedOnlyFilter.name, () => {
   it('should detect provably locked-only filters', () => {
-    expect(isLockedOnlyFilter({ visibility: { eq: Locked } })).toBe(true);
-    expect(isLockedOnlyFilter({ visibility: { in: [Locked] } })).toBe(true);
-    expect(isLockedOnlyFilter({ visibility: { notIn: [Timeline, Archive, Hidden] } })).toBe(true);
+    expect(isLockedOnlyFilter({ visibility: { eq: AssetVisibility.Locked } })).toBe(true);
+    expect(isLockedOnlyFilter({ visibility: { in: [AssetVisibility.Locked] } })).toBe(true);
+    expect(
+      isLockedOnlyFilter({
+        visibility: { notIn: [AssetVisibility.Timeline, AssetVisibility.Archive, AssetVisibility.Hidden] },
+      }),
+    ).toBe(true);
   });
 
   it('should not match other filters', () => {
-    expect(isLockedOnlyFilter({ visibility: { ne: Locked } })).toBe(false);
-    expect(isLockedOnlyFilter({ visibility: { in: [Locked, Timeline] } })).toBe(false);
-    expect(isLockedOnlyFilter({ or: [{ visibility: { eq: Locked } }] })).toBe(false);
+    expect(isLockedOnlyFilter({ visibility: { ne: AssetVisibility.Locked } })).toBe(false);
+    expect(isLockedOnlyFilter({ visibility: { in: [AssetVisibility.Locked, AssetVisibility.Timeline] } })).toBe(false);
+    expect(isLockedOnlyFilter({ or: [{ visibility: { eq: AssetVisibility.Locked } }] })).toBe(false);
     expect(isLockedOnlyFilter({})).toBe(false);
   });
 });

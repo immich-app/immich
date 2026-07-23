@@ -940,7 +940,10 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   },
   {
     name: 'cursor-offset',
-    params: [{ size: 100, offset: 100 }, { userIds: [DummyValue.UUID], filter: { isFavorite: { eq: true } } }],
+    params: [
+      { size: 100, offset: 100 },
+      { userIds: [DummyValue.UUID], filter: { isFavorite: { eq: true } } },
+    ],
   },
 ];
 
@@ -967,7 +970,10 @@ export const searchSmartV3Examples: GenerateSqlQueries[] = [
   },
   {
     name: 'cursor-offset',
-    params: [{ size: 100, offset: 100 }, { userIds: [DummyValue.UUID], embedding: DummyValue.VECTOR }],
+    params: [
+      { size: 100, offset: 100 },
+      { userIds: [DummyValue.UUID], embedding: DummyValue.VECTOR },
+    ],
   },
 ];
 

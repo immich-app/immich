@@ -54,8 +54,7 @@ export const applyLockedVisibilityPolicy = (auth: AuthDto, filter: SearchFilter)
 
 /** Whether the top-level visibility condition limits the filter to locked assets only. */
 export const isLockedOnlyFilter = ({ visibility }: SearchFilter): boolean =>
-  visibility !== undefined &&
-  matchesOnly(visibility, AssetVisibility.Locked, Object.values(AssetVisibility));
+  visibility !== undefined && matchesOnly(visibility, AssetVisibility.Locked, Object.values(AssetVisibility));
 
 export const collectFilterIds = (filter: SearchFilter, field: IdsFilterField): string[] => {
   const ids = new Set<string>();
