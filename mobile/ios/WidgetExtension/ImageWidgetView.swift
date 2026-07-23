@@ -18,15 +18,21 @@ struct ImmichWidgetView: View {
 
   var body: some View {
     if entry.image == nil {
-      VStack {
-        Image("LaunchImage")
-          .tintedWidgetImageModifier()
-        Text(entry.metadata.error?.errorDescription ?? "")
-          .minimumScaleFactor(0.25)
-          .multilineTextAlignment(.center)
-          .foregroundStyle(.secondary)
-      }
-      .padding(16)
+      Image("LaunchImage")
+        .tintedWidgetImageModifier()
+        .overlay(alignment: .bottom) {
+          if let error = entry.metadata.error?.errorDescription {
+            Text(error)
+              .minimumScaleFactor(0.25)
+              .multilineTextAlignment(.center)
+              .foregroundStyle(.secondary)
+              .fixedSize()
+              .alignmentGuide(.bottom) { dimensions in
+                // Place the text below the bottom of the image
+                dimensions[.top] - 8
+              }
+          }
+        }
     } else {
       ZStack(alignment: .leading) {
         Color.clear.overlay(
