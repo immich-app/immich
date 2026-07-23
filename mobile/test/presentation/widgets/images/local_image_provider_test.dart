@@ -5,67 +5,32 @@ import 'package:immich_mobile/presentation/widgets/images/local_image_provider.d
 
 void main() {
   group('LocalFullImageProvider.previewTargetSize', () {
-    // a typical phone preview box (logical size * devicePixelRatio).
-    const boxW = 1179.0;
-    const boxH = 2556.0;
-    const oldBox = Size(boxW, boxH);
+    const box = Size(1179, 2556);
+    const cases = <(String, Size, int?, int?, bool, Size)>[
+      ('normal', box, 4032, 3024, true, box),
+      ('missing dimensions', box, null, null, true, box),
+      ('invalid dimensions', box, 1000, 0, true, box),
+      ('long final preview', box, 1000, 30000, true, Size(16384 / 30, 16384)),
+      ('long first preview', box, 30000, 1000, false, Size(2556, 2556 / 30)),
+      ('ultra-thin preview', box, 10, 50000, false, Size(1, 2556)),
+      ('small source', box, 50, 2000, true, Size(50, 2000)),
+      ('at limit', Size(16384, 100), 1000, 1000, true, Size(16384, 100)),
+      ('over limit', Size(16385, 100), 1000, 1000, true, Size(1000, 1000)),
+    ];
 
-    test('normal landscape keeps the exact old box (no preview regression)', () {
-      // 4:3, cover long edge ~3407 < 16384 -> not gated, regardless of previewIsFinal.
-      expect(LocalFullImageProvider.previewTargetSize(boxW, boxH, 4032, 3024, previewIsFinal: true), oldBox);
-      expect(LocalFullImageProvider.previewTargetSize(boxW, boxH, 4032, 3024, previewIsFinal: false), oldBox);
-    });
-
-    test('normal portrait keeps the exact old box', () {
-      expect(LocalFullImageProvider.previewTargetSize(boxW, boxH, 3024, 4032, previewIsFinal: true), oldBox);
-    });
-
-    test('null or zero dims fall back to the old box', () {
-      expect(LocalFullImageProvider.previewTargetSize(boxW, boxH, null, null, previewIsFinal: true), oldBox);
-      expect(LocalFullImageProvider.previewTargetSize(boxW, boxH, 0, 0, previewIsFinal: true), oldBox);
-      expect(LocalFullImageProvider.previewTargetSize(boxW, boxH, 1000, 0, previewIsFinal: true), oldBox);
-    });
-
-    test('extreme panorama, FINAL preview (load-original off): capped at the texture limit, ratio kept', () {
-      final t = LocalFullImageProvider.previewTargetSize(boxW, boxH, 1000, 30000, previewIsFinal: true);
-      expect(t, isNot(oldBox));
-      expect(t.longestSide, closeTo(16384, 1));
-      expect(t.width / t.height, closeTo(1000 / 30000, 1e-6));
-    });
-
-    test('extreme panorama, NON-final preview (load-original on): light, capped at screen long edge, ratio kept', () {
-      final t = LocalFullImageProvider.previewTargetSize(boxW, boxH, 1000, 30000, previewIsFinal: false);
-      expect(t, isNot(oldBox));
-      expect(t.longestSide, closeTo(boxH, 1)); // screen long edge = max(boxW, boxH), the original follows at 16384
-      expect(t.width / t.height, closeTo(1000 / 30000, 1e-6));
-    });
-
-    test('extreme but small source is never upscaled', () {
-      // ratio 40 -> gated, but the source long edge (2000) < texture limit so scale clamps to 1.0.
-      expect(
-        LocalFullImageProvider.previewTargetSize(boxW, boxH, 50, 2000, previewIsFinal: true),
-        const Size(50, 2000),
-      );
-    });
-
-    test('narrow image is gated in but not upscaled (long edge already under the texture limit)', () {
-      // ratio 100: cover overshoots 16384 so it's gated, but the source long edge (10000) < 16384 -> scale clamps to 1.0.
-      expect(
-        LocalFullImageProvider.previewTargetSize(boxW, boxH, 100, 10000, previewIsFinal: true),
-        const Size(100, 10000),
-      );
-    });
-
-    test('gate boundary: at the texture limit keeps the old box, just over switches to the fix', () {
-      // square source -> coverLong == the box long edge.
-      expect(
-        LocalFullImageProvider.previewTargetSize(16384, 100, 1000, 1000, previewIsFinal: true),
-        const Size(16384, 100),
-      );
-      final over = LocalFullImageProvider.previewTargetSize(16385, 100, 1000, 1000, previewIsFinal: true);
-      expect(over, isNot(const Size(16385, 100)));
-      expect(over, const Size(1000, 1000));
-    });
+    for (final (name, box, width, height, previewIsFinal, expected) in cases) {
+      test(name, () {
+        final actual = LocalFullImageProvider.previewTargetSize(
+          box.width,
+          box.height,
+          width,
+          height,
+          previewIsFinal: previewIsFinal,
+        );
+        expect(actual.width, closeTo(expected.width, 1e-6));
+        expect(actual.height, closeTo(expected.height, 1e-6));
+      });
+    }
   });
 
   group('LocalFullImageProvider equality', () {
@@ -78,15 +43,12 @@ void main() {
       height: height,
     );
 
-    test('same id/size/isAnimated but different w/h are not equal (distinct cache entries)', () {
-      expect(make(width: 1000, height: 30000) == make(width: 4032, height: 3024), isFalse);
-    });
-
-    test('identical config is equal and shares a hashCode', () {
+    test('uses dimensions in the cache key', () {
       final a = make(width: 100, height: 200);
       final b = make(width: 100, height: 200);
       expect(a, b);
       expect(a.hashCode, b.hashCode);
+      expect(a == make(width: 200, height: 100), isFalse);
     });
   });
 }

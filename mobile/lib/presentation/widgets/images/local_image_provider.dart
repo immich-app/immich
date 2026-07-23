@@ -10,8 +10,8 @@ import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 
-// iphone's max gpu texture size. images longer than this squish in the preview.
-const _kMaxTextureSize = 16384;
+// iOS GPU textures max out at 16384px; larger images squish.
+const _kMaxPixelSize = 16384;
 
 class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
     with CancellableImageProviderMixin<LocalThumbProvider> {
@@ -79,7 +79,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   Size _previewTarget(double dpr, bool previewIsFinal) =>
       previewTargetSize(size.width * dpr, size.height * dpr, width, height, previewIsFinal: previewIsFinal);
 
-  // long images squish on aspectFill; use an aspect-correct target (full detail if final, else light).
+  // Use an aspect-correct target when aspectFill would exceed the texture limit.
   @visibleForTesting
   static Size previewTargetSize(double boxW, double boxH, int? width, int? height, {required bool previewIsFinal}) {
     if (width == null || height == null || width <= 0 || height <= 0) {
@@ -87,12 +87,12 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     }
     final imgLong = math.max(width, height).toDouble();
     final coverLong = imgLong * math.max(boxW / width, boxH / height);
-    if (coverLong <= _kMaxTextureSize) {
+    if (coverLong <= _kMaxPixelSize) {
       return Size(boxW, boxH);
     }
-    final bound = previewIsFinal ? _kMaxTextureSize.toDouble() : math.max(boxW, boxH);
+    final bound = previewIsFinal ? _kMaxPixelSize.toDouble() : math.max(boxW, boxH);
     final scale = math.min(1.0, bound / imgLong);
-    return Size(width * scale, height * scale);
+    return Size(math.max(1.0, width * scale), math.max(1.0, height * scale));
   }
 
   @override
