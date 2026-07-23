@@ -242,7 +242,12 @@ export class SearchService extends BaseService {
     return [auth.user.id, ...partnerIds];
   }
 
-  private mapResponse(assets: MapAsset[], nextPage: string | null, options: AssetMapOptions): SearchResponseDto {
+  private mapResponse(
+    assets: MapAsset[],
+    nextPage: string | null,
+    options: AssetMapOptions,
+    nextCursor: string | null = null,
+  ): SearchResponseDto {
     return {
       albums: { total: 0, count: 0, items: [], facets: [] },
       assets: {
@@ -251,6 +256,7 @@ export class SearchService extends BaseService {
         items: assets.map((asset) => mapAsset(asset, options)),
         facets: [],
         nextPage,
+        nextCursor,
       },
     };
   }
