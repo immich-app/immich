@@ -190,8 +190,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     switch (event) {
       case ScrollToTopEvent():
         _scrollToTop();
-      case ScrollToDateEvent scrollToDateEvent:
-        _scrollToDate(scrollToDateEvent.date, scrollToDateEvent.asset);
+      case ScrollToAssetEvent scrollToAssetEvent:
+        _scrollToAsset(scrollToAssetEvent.asset);
       case TimelineReloadEvent():
         setState(() {});
       default:
@@ -265,7 +265,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
         .whenComplete(() => timelineState.setScrubbing(false));
   }
 
-  void _scrollToDate(DateTime date, [BaseAsset? asset]) {
+  void _scrollToAsset(BaseAsset asset) {
+    final date = asset.createdAt.toLocal();
     final timelineState = ref.read(timelineStateProvider.notifier);
     final asyncSegments = ref.read(timelineSegmentProvider);
     asyncSegments.whenData((segments) async {
@@ -297,44 +298,28 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 
       double targetOffset = fallbackSegment.startOffset - 50;
 
-      if (asset != null) {
-        final assets = await ref
-            .read(timelineServiceProvider)
-            .loadAssets(fallbackSegment.firstAssetIndex, fallbackSegment.bucket.assetCount);
-        final indexInSegment = assets.indexWhere((a) => _isSameAsset(a, asset));
-        if (indexInSegment != -1) {
-          final columnCount = ref.read(timelineArgsProvider).columnCount;
-          final rowIndex = fallbackSegment.firstIndex + 1 + (indexInSegment ~/ columnCount);
-          targetOffset = fallbackSegment.indexToLayoutOffset(rowIndex) - 50;
-        }
+      final assets = await ref
+          .read(timelineServiceProvider)
+          .loadAssets(fallbackSegment.firstAssetIndex, fallbackSegment.bucket.assetCount);
+      final indexInSegment = assets.indexWhere((a) => a.refersToSameAsset(asset));
+      if (indexInSegment != -1) {
+        final columnCount = ref.read(timelineArgsProvider).columnCount;
+        final rowIndex = fallbackSegment.firstIndex + 1 + (indexInSegment ~/ columnCount);
+        targetOffset = fallbackSegment.indexToLayoutOffset(rowIndex) - 50;
       }
 
+      final clampedOffset = targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent);
       timelineState.setScrubbing(true);
       unawaited(
         _scrollController
             .animateTo(
-              targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+              clampedOffset,
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeInOut,
             )
             .whenComplete(() => timelineState.setScrubbing(false)),
       );
     });
-  }
-
-  bool _isSameAsset(BaseAsset a, BaseAsset b) {
-    if (a.heroTag == b.heroTag) {
-      return true;
-    }
-    final aRemoteId = switch (a) {
-      RemoteAsset r => r.id,
-      LocalAsset l => l.remoteId,
-    };
-    final bRemoteId = switch (b) {
-      RemoteAsset r => r.id,
-      LocalAsset l => l.remoteId,
-    };
-    return aRemoteId != null && aRemoteId == bRemoteId;
   }
 
   // Drag selection methods

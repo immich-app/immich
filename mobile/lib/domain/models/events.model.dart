@@ -10,11 +10,10 @@ class ScrollToTopEvent extends Event {
   const ScrollToTopEvent();
 }
 
-class ScrollToDateEvent extends Event {
-  final DateTime date;
-  final BaseAsset? asset;
+class ScrollToAssetEvent extends Event {
+  final BaseAsset asset;
 
-  const ScrollToDateEvent(this.date, [this.asset]);
+  const ScrollToAssetEvent(this.asset);
 }
 
 // Asset Viewer Events

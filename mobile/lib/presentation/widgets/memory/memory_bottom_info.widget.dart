@@ -44,7 +44,7 @@ class DriftMemoryBottomInfo extends StatelessWidget {
               minWidth: 0,
               onPressed: () async {
                 await context.router.navigate(const TabShellRoute(children: [MainTimelineRoute()]));
-                EventStream.shared.emit(ScrollToDateEvent(fileCreatedDate.toLocal(), currentAsset));
+                EventStream.shared.emit(ScrollToAssetEvent(currentAsset));
               },
               shape: const CircleBorder(),
               color: Colors.white.withValues(alpha: 0.2),

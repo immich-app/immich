@@ -280,7 +280,7 @@ enum ActionButtonType {
             ? null
             : () async {
                 await buildContext.router.navigate(const TabShellRoute(children: [MainTimelineRoute()]));
-                EventStream.shared.emit(ScrollToDateEvent(context.asset.createdAt, context.asset));
+                EventStream.shared.emit(ScrollToAssetEvent(context.asset));
               },
       ),
       ActionButtonType.cast => CastActionButton(iconOnly: iconOnly, menuItem: menuItem),
