@@ -120,6 +120,16 @@ describe(SearchController.name, () => {
       );
     });
 
+    it('should reject a deprecated field combined with a new structure field', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/search/metadata')
+        .send({ filter: {}, city: 'Oslo' });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['city'], message: 'Deprecated field city cannot be combined with filter' }]),
+      );
+    });
+
     describe('POST /search/random', () => {
       it('should be an authenticated route', async () => {
         await request(ctx.getHttpServer()).post('/search/random');
