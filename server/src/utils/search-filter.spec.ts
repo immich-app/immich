@@ -5,7 +5,6 @@ import {
   applyLockedVisibilityPolicy,
   collectFilterIds,
   hasTopLevelPositiveIdsConstraint,
-  isLockedOnlyFilter,
 } from 'src/utils/search-filter';
 import { AuthFactory } from 'test/factories/auth.factory';
 import { describe, expect, it } from 'vitest';
@@ -64,25 +63,6 @@ describe(applyLockedVisibilityPolicy.name, () => {
 
     const branched = { or: [{ isFavorite: { eq: true } }, { visibility: { eq: AssetVisibility.Timeline } }] };
     expect(applyLockedVisibilityPolicy(unelevatedAuth(), branched).visibility).toEqual({ ne: AssetVisibility.Locked });
-  });
-});
-
-describe(isLockedOnlyFilter.name, () => {
-  it('should detect provably locked-only filters', () => {
-    expect(isLockedOnlyFilter({ visibility: { eq: AssetVisibility.Locked } })).toBe(true);
-    expect(isLockedOnlyFilter({ visibility: { in: [AssetVisibility.Locked] } })).toBe(true);
-    expect(
-      isLockedOnlyFilter({
-        visibility: { notIn: [AssetVisibility.Timeline, AssetVisibility.Archive, AssetVisibility.Hidden] },
-      }),
-    ).toBe(true);
-  });
-
-  it('should not match other filters', () => {
-    expect(isLockedOnlyFilter({ visibility: { ne: AssetVisibility.Locked } })).toBe(false);
-    expect(isLockedOnlyFilter({ visibility: { in: [AssetVisibility.Locked, AssetVisibility.Timeline] } })).toBe(false);
-    expect(isLockedOnlyFilter({ or: [{ visibility: { eq: AssetVisibility.Locked } }] })).toBe(false);
-    expect(isLockedOnlyFilter({})).toBe(false);
   });
 });
 

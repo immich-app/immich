@@ -246,6 +246,7 @@ describe(SearchService.name, () => {
       expect(mocks.search.searchSmartV3).toHaveBeenCalledWith(
         { size: 100, offset: 0 },
         expect.objectContaining({ embedding: '[1, 2, 3]' }),
+        expect.objectContaining({ lockedOwnerId: expect.any(String) }),
       );
     });
 
