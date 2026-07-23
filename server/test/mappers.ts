@@ -203,6 +203,12 @@ export const getForStack = (stack: ReturnType<StackFactory['build']>) => ({
   assets: stack.assets.map((asset) => ({
     ...getDehydrated(asset),
     exifInfo: getDehydrated(asset.exifInfo),
+    faces: asset.faces
+      .filter((face): face is typeof face & { person: NonNullable<typeof face.person> } => face.person !== null)
+      .map((face) => ({
+        ...getDehydrated(face),
+        person: getDehydrated(face.person),
+      })),
   })),
 });
 
