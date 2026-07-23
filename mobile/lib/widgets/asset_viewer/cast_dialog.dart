@@ -69,7 +69,7 @@ class CastDialog extends ConsumerWidget {
                     child: Text(item, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)).tr(),
                   );
                 } else {
-                  final (deviceName, type, deviceObj) = item as (String, CastDestinationType, dynamic);
+                  final (deviceName, _, deviceObj) = item as (String, CastDestinationType, dynamic);
 
                   return ListTile(
                     title: Text(
@@ -77,7 +77,7 @@ class CastDialog extends ConsumerWidget {
                       style: TextStyle(color: isCurrentDevice(deviceName) ? context.colorScheme.primary : null),
                     ),
                     leading: Icon(
-                      type == CastDestinationType.googleCast ? Icons.cast : Icons.cast_connected,
+                      isCurrentDevice(deviceName) ? Icons.cast_connected : Icons.cast,
                       color: isCurrentDevice(deviceName) ? context.colorScheme.primary : null,
                     ),
                     trailing: isCurrentDevice(deviceName)
@@ -95,7 +95,7 @@ class CastDialog extends ConsumerWidget {
                       }
 
                       if (!isCurrentDevice(deviceName)) {
-                        unawaited(ref.read(castProvider.notifier).connect(type, deviceObj));
+                        unawaited(ref.read(castProvider.notifier).connect(deviceObj));
                       }
                     },
                   );

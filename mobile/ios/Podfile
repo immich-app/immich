@@ -27,12 +27,30 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_ios_podfile_setup
 
+def ensure_fcast_sender_sdk_podspec
+  plugin_ios_dir = File.expand_path(File.join('.symlinks', 'plugins', 'fcast_sender_sdk', 'ios'), __dir__)
+  original_podspec = File.join(plugin_ios_dir, 'fcast_sender_sdk_flutter_plugin.podspec')
+  expected_podspec = File.join(plugin_ios_dir, 'fcast_sender_sdk.podspec')
+
+  return unless File.exist?(original_podspec)
+
+  contents = File.read(original_podspec)
+  fixed_contents = contents
+    .sub("s.name             = 'fcast_sender_sdk_flutter_plugin'", "s.name             = 'fcast_sender_sdk'")
+    .gsub('libfcast_sender_sdk_flutter_plugin.a', 'libfcast_sender_sdk.a')
+
+  return if File.exist?(expected_podspec) && File.read(expected_podspec) == fixed_contents
+
+  File.write(expected_podspec, fixed_contents)
+end
+
 target 'Runner' do
   use_frameworks!
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-  
+  ensure_fcast_sender_sdk_podspec
+
   # share_handler addition start
   target 'ShareExtension' do
     inherit! :search_paths
@@ -49,7 +67,7 @@ post_install do |installer|
         end
     end
   end
-  
+
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
 
