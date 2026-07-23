@@ -1,4 +1,5 @@
 import { Kysely } from 'kysely';
+import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { JobStatus } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -51,6 +52,21 @@ describe(TagService.name, () => {
         expect.objectContaining({ id: tag.id }),
       );
       await expect(ctx.get(TagRepository).getAssetIds(tag.id, [asset.id])).resolves.toContain(asset.id);
+    });
+
+    it('should not tag a partner asset', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      const { user: owner } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: owner.id, inTimeline: true });
+      const { asset } = await ctx.newAsset({ ownerId: partner.id });
+      const [tag] = await upsertTags(ctx.get(TagRepository), { userId: owner.id, tags: ['tag-1'] });
+      const authDto = factory.auth({ user: owner });
+
+      await expect(sut.addAssets(authDto, tag.id, { ids: [asset.id] })).resolves.toEqual([
+        { id: asset.id, success: false, error: BulkIdErrorReason.NO_PERMISSION },
+      ]);
     });
   });
   describe('deleteEmptyTags', () => {
