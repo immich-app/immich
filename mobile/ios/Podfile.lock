@@ -1,10 +1,9 @@
 PODS:
-  - bonsoir_darwin (0.0.1):
-    - Flutter
-    - FlutterMacOS
   - cupertino_http (0.0.1):
     - Flutter
     - FlutterMacOS
+  - fcast_sender_sdk (0.0.1):
+    - Flutter
   - Flutter (1.0.0)
   - flutter_local_notifications (0.0.1):
     - Flutter
@@ -24,8 +23,8 @@ PODS:
   - share_handler_ios_models (0.0.9)
 
 DEPENDENCIES:
-  - bonsoir_darwin (from `.symlinks/plugins/bonsoir_darwin/darwin`)
   - cupertino_http (from `.symlinks/plugins/cupertino_http/darwin`)
+  - fcast_sender_sdk (from `.symlinks/plugins/fcast_sender_sdk/ios`)
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
@@ -35,10 +34,10 @@ DEPENDENCIES:
   - share_handler_ios_models (from `.symlinks/plugins/share_handler_ios/ios/Models`)
 
 EXTERNAL SOURCES:
-  bonsoir_darwin:
-    :path: ".symlinks/plugins/bonsoir_darwin/darwin"
   cupertino_http:
     :path: ".symlinks/plugins/cupertino_http/darwin"
+  fcast_sender_sdk:
+    :path: ".symlinks/plugins/fcast_sender_sdk/ios"
   Flutter:
     :path: Flutter
   flutter_local_notifications:
@@ -55,8 +54,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/share_handler_ios/ios/Models"
 
 SPEC CHECKSUMS:
-  bonsoir_darwin: 29c7ccf356646118844721f36e1de4b61f6cbd0e
   cupertino_http: 94ac07f5ff090b8effa6c5e2c47871d48ab7c86c
+  fcast_sender_sdk: 8bf227a5cbcedaea2e580a633ff0f706f1e90328
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_local_notifications: ad39620c743ea4c15127860f4b5641649a988100
   flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
@@ -65,6 +64,6 @@ SPEC CHECKSUMS:
   share_handler_ios: e2244e990f826b2c8eaa291ac3831569438ba0fb
   share_handler_ios_models: fc638c9b4330dc7f082586c92aee9dfa0b87b871
 
-PODFILE CHECKSUM: 3c43a700a4bffb4120bf696cad263aefd4bb3c8c
+PODFILE CHECKSUM: 44895462563291c3e4328a856c6482a25165b507
 
-COCOAPODS: 1.16.2
+COCOAPODS: 1.17.0
