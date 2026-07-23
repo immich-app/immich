@@ -43,18 +43,7 @@ class LoginForm extends HookConsumerWidget {
 
   final log = Logger('LoginForm');
 
-  String? _validateUrl(String? url) {
-    if (url == null || url.isEmpty) {
-      return null;
-    }
-
-    final parsedUrl = Uri.tryParse(url);
-    if (parsedUrl == null || !parsedUrl.isAbsolute || !parsedUrl.scheme.startsWith("http") || parsedUrl.host.isEmpty) {
-      return 'login_form_err_invalid_url'.tr();
-    }
-
-    return null;
-  }
+  String? _validateUrl(String? url) => normalizeAndValidateServerUrl(url) ? null : 'login_form_err_invalid_url'.tr();
 
   String? _validateEmail(String? email) {
     if (email == null || email == '') {
@@ -101,7 +90,7 @@ class LoginForm extends HookConsumerWidget {
     /// Fetch the server login credential and enables oAuth login if necessary
     /// Returns true if successful, false otherwise
     Future<void> getServerAuthSettings() async {
-      final sanitizeServerUrl = sanitizeUrl(serverEndpointController.text);
+      final sanitizeServerUrl = normalizeServerUrl(serverEndpointController.text);
       final serverUrl = punycodeEncodeUrl(sanitizeServerUrl);
 
       // Guard empty URL
@@ -304,7 +293,7 @@ class LoginForm extends HookConsumerWidget {
 
       try {
         oAuthServerUrl = await oAuthService.getOAuthServerUrl(
-          sanitizeUrl(serverEndpointController.text),
+          normalizeServerUrl(serverEndpointController.text),
           state,
           codeChallenge,
         );
@@ -436,7 +425,7 @@ class LoginForm extends HookConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.only(bottom: ImmichSpacing.md),
                   child: Text(
-                    sanitizeUrl(serverEndpointController.text),
+                    normalizeServerUrl(serverEndpointController.text),
                     style: context.textTheme.displaySmall,
                     textAlign: TextAlign.center,
                   ),
