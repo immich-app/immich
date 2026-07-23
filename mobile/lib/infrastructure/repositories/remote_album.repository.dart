@@ -225,7 +225,11 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
       ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
       ..addColumns([_db.remoteAssetEntity.createdAt.min(), _db.remoteAssetEntity.createdAt.max()])
       ..join([
-        innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
+        innerJoin(
+          _db.remoteAssetEntity,
+          _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
+              _db.remoteAssetEntity.deletedAt.isNull(),
+        ),
       ]);
 
     return query.map((row) {
@@ -275,7 +279,11 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
 
   Future<List<RemoteAsset>> getAssets(String albumId) {
     final query = _db.remoteAlbumAssetEntity.select().join([
-      innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
+      innerJoin(
+        _db.remoteAssetEntity,
+        _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
+            _db.remoteAssetEntity.deletedAt.isNull(),
+      ),
     ])..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId));
 
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
@@ -428,6 +436,7 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
             ON raae.album_id = ids.value
           INNER JOIN remote_asset_entity rae
             ON rae.id = raae.asset_id
+          WHERE rae.deleted_at IS NULL
           GROUP BY raae.album_id
           ORDER BY asset_date ASC
           ''',
