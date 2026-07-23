@@ -300,32 +300,29 @@ export type SearchOrder = z.infer<typeof SearchOrderSchema>;
 export type SearchFilter = z.infer<typeof SearchFilterSchema>;
 export type SearchFilterBranch = z.infer<typeof SearchFilterBranchSchema>;
 
+const NEW_SHAPE_FIELDS = ['filter', 'orderBy', 'cursor'] as const;
+
+export const isNewShapeRequest = (dto: Partial<Record<(typeof NEW_SHAPE_FIELDS)[number], unknown>>): boolean =>
+  NEW_SHAPE_FIELDS.some((field) => dto[field] !== undefined);
+
 /**
- * The structured shape and the deprecated flat search fields are
- * mutually exclusive; carrier fields combine with either.
+ * The structured shape and the deprecated flat search fields are mutually exclusive
  * TODO(v4): remove together with the deprecated flat fields.
  */
-const withShapeExclusivity = <T extends z.ZodObject<z.ZodRawShape>>(schema: T) =>
-  schema.superRefine((dto, ctx) => {
-    const NEW_SHAPE_FIELDS = ['filter', 'orderBy', 'cursor'];
-    const CARRIER_FIELDS = new Set([
-      'size',
-      'withExif',
-      'withStacked',
-      'withPeople',
-      'query',
-      'queryAssetId',
-      'language',
-    ]);
+const withShapeExclusivity = <T extends z.ZodObject<z.ZodRawShape>>(schema: T) => {
+  const deprecatedFields = Object.keys(schema.shape).filter(
+    (field) => (schema.shape[field] as z.ZodType).meta()?.deprecated,
+  );
 
+  return schema.superRefine((dto, ctx) => {
     const values = dto as Record<string, unknown>;
     const newShapeFields = NEW_SHAPE_FIELDS.filter((field) => values[field] !== undefined);
     if (newShapeFields.length === 0) {
       return;
     }
 
-    for (const [field, value] of Object.entries(values)) {
-      if (value === undefined || CARRIER_FIELDS.has(field) || NEW_SHAPE_FIELDS.includes(field)) {
+    for (const field of deprecatedFields) {
+      if (values[field] === undefined) {
         continue;
       }
 
@@ -336,11 +333,15 @@ const withShapeExclusivity = <T extends z.ZodObject<z.ZodRawShape>>(schema: T) =
       });
     }
   });
+};
+
+const filterField = SearchFilterSchema.optional().meta(ADDED_V3_1);
+const cursorField = z.string().min(1).optional().describe('Cursor for the next page of results').meta(ADDED_V3_1);
 
 const RandomSearchBaseSchema = BaseSearchWithResultsSchema.extend({
   withStacked: z.boolean().optional().describe('Include stacked assets'),
   withPeople: z.boolean().optional().describe('Include people data in response'),
-  filter: SearchFilterSchema.optional().meta(ADDED_V3_1),
+  filter: filterField,
 });
 
 const RandomSearchSchema = withShapeExclusivity(RandomSearchBaseSchema).meta({ id: 'RandomSearchDto' });
@@ -358,14 +359,14 @@ const MetadataSearchSchema = withShapeExclusivity(
     order: AssetOrderSchema.optional().describe('Sort order').meta(DEPRECATED_FLAT_FIELD),
     page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
     orderBy: SearchOrderSchema.optional().meta(ADDED_V3_1),
-    cursor: z.string().min(1).optional().describe('Cursor for the next page of results').meta(ADDED_V3_1),
+    cursor: cursorField,
   }),
 ).meta({ id: 'MetadataSearchDto' });
 
 const StatisticsSearchSchema = withShapeExclusivity(
   BaseSearchSchema.extend({
     description: z.string().trim().optional().describe('Filter by description text').meta(DEPRECATED_FLAT_FIELD),
-    filter: SearchFilterSchema.optional().meta(ADDED_V3_1),
+    filter: filterField,
   }),
 ).meta({ id: 'StatisticsSearchDto' });
 
@@ -375,8 +376,8 @@ const SmartSearchSchema = withShapeExclusivity(
     queryAssetId: z.uuidv4().optional().describe('Asset ID to use as search reference'),
     language: z.string().optional().describe('Search language code'),
     page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
-    filter: SearchFilterSchema.optional().meta(ADDED_V3_1),
-    cursor: z.string().min(1).optional().describe('Cursor for the next page of results').meta(ADDED_V3_1),
+    filter: filterField,
+    cursor: cursorField,
   }),
 ).meta({ id: 'SmartSearchDto' });
 

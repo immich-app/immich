@@ -5,12 +5,14 @@ const SearchCursorPayloadSchema = z.object({
   o: z.int().min(0),
 });
 
-type SearchCursorPayload = z.infer<typeof SearchCursorPayloadSchema>;
-
 export const encodeSearchCursor = (offset: number): string =>
-  Buffer.from(JSON.stringify({ o: offset } satisfies SearchCursorPayload)).toString('base64url');
+  Buffer.from(JSON.stringify({ o: offset } satisfies z.infer<typeof SearchCursorPayloadSchema>)).toString('base64url');
 
-export const decodeSearchCursor = (cursor: string): { offset: number } => {
+export const decodeSearchCursor = (cursor?: string): { offset: number } => {
+  if (cursor === undefined) {
+    return { offset: 0 };
+  }
+
   try {
     const payload = SearchCursorPayloadSchema.parse(JSON.parse(Buffer.from(cursor, 'base64url').toString('utf8')));
     return { offset: payload.o };
