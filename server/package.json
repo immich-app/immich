@@ -79,7 +79,6 @@
     "geo-tz": "^8.0.0",
     "handlebars": "^4.7.8",
     "helmet": "^8.1.0",
-    "i18n-iso-countries": "^7.6.0",
     "ioredis": "^5.8.2",
     "jose": "^6.0.0",
     "js-yaml": "^4.1.0",
