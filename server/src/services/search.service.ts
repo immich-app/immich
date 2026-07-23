@@ -98,7 +98,7 @@ export class SearchService extends BaseService {
     }
 
     const page = dto.page ?? 1;
-    const size = dto.size || 250;
+    const size = dto.size;
     const { hasNextPage, items } = await this.searchRepository.searchMetadata(
       { page, size },
       {
@@ -140,7 +140,7 @@ export class SearchService extends BaseService {
     }
 
     const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
-    const items = await this.searchRepository.searchRandom(dto.size || 250, {
+    const items = await this.searchRepository.searchRandom(dto.size, {
       ...dto,
       visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       userIds,
@@ -154,7 +154,7 @@ export class SearchService extends BaseService {
     }
 
     const userIds = await this.getUserIdsToSearch(auth, dto.visibility);
-    const items = await this.searchRepository.searchLargeAssets(dto.size || 250, {
+    const items = await this.searchRepository.searchLargeAssets(dto.size, {
       ...dto,
       visibility: dto.visibility ?? (auth.session?.hasElevatedPermission ? undefined : 'not-locked'),
       userIds,
@@ -179,7 +179,7 @@ export class SearchService extends BaseService {
     const userIds = this.getUserIdsToSearch(auth, dto.visibility);
     const embedding = await this.resolveEmbedding(auth, dto, machineLearning);
     const page = dto.page ?? 1;
-    const size = dto.size || 100;
+    const size = dto.size;
     const { hasNextPage, items } = await this.searchRepository.searchSmart(
       { page, size },
       {
@@ -252,7 +252,7 @@ export class SearchService extends BaseService {
     ]);
 
     const { offset } = decodeSearchCursor(dto.cursor);
-    const size = dto.size || 250;
+    const size = dto.size;
     const { hasNextPage, items } = await this.searchRepository.searchMetadataV3(
       { size, offset },
       {
@@ -275,7 +275,7 @@ export class SearchService extends BaseService {
 
   private async searchRandomV3(auth: AuthDto, dto: RandomSearchDto): Promise<AssetResponseDto[]> {
     const { effectiveFilter, userIds } = await this.resolveSearchScopeV3(auth, dto);
-    const items = await this.searchRepository.searchRandomV3(dto.size || 250, {
+    const items = await this.searchRepository.searchRandomV3(dto.size, {
       filter: effectiveFilter,
       userIds,
       withExif: dto.withExif,
@@ -297,7 +297,7 @@ export class SearchService extends BaseService {
     ]);
 
     const { offset } = decodeSearchCursor(dto.cursor);
-    const size = dto.size || 100;
+    const size = dto.size;
     const { hasNextPage, items } = await this.searchRepository.searchSmartV3(
       { size, offset },
       { filter: effectiveFilter, userIds, withExif: dto.withExif, embedding },

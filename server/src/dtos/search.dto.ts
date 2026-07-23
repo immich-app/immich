@@ -70,12 +70,12 @@ const BaseSearchSchema = z.object({
 const BaseSearchWithResultsSchema = BaseSearchSchema.extend({
   withDeleted: z.boolean().optional().describe('Include deleted assets').meta(DEPRECATED_FLAT_FIELD),
   withExif: z.boolean().optional().describe('Include EXIF data in response'),
-  size: z.int().min(1).max(1000).optional().describe('Number of results to return'),
+  size: z.int().min(1).max(1000).default(250).describe('Number of results to return'),
 });
 
 const LargeAssetSearchSchema = BaseSearchWithResultsSchema.extend({
   minFileSize: z.coerce.number().int().min(0).optional().describe('Minimum file size in bytes'),
-  size: z.coerce.number().int().min(1).max(1000).optional().describe('Number of results to return'),
+  size: z.coerce.number().int().min(1).max(1000).default(250).describe('Number of results to return'),
 }).meta({ id: 'LargeAssetSearchDto' });
 
 const SearchPlacesSchema = z
@@ -372,6 +372,7 @@ const StatisticsSearchSchema = withShapeExclusivity(
 
 const SmartSearchSchema = withShapeExclusivity(
   BaseSearchWithResultsSchema.extend({
+    size: z.int().min(1).max(1000).default(100).describe('Number of results to return'),
     query: z.string().trim().optional().describe('Natural language search query'),
     queryAssetId: z.uuidv4().optional().describe('Asset ID to use as search reference'),
     language: z.string().optional().describe('Search language code'),
