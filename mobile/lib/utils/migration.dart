@@ -35,10 +35,9 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
     await _migrateTo26(drift);
   }
 
-  if (version < 27) {
-    if (!await _migrateTo27(drift)) {
-      return;
-    }
+  if (version < 27 && !await _migrateTo27(drift)) {
+    await Store.put(StoreKey.version, 26);
+    return;
   }
 
   if (storedVersion == null) {
@@ -50,11 +49,7 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 }
 
 Future<bool> _migrateTo27(Drift drift) async {
-  // Android-only: no-EXIF photos got a wrong createdAt (DATE_ADDED copy-time instead
-  // of the real DATE_MODIFIED). Those rows can't self-heal -- the local sync only
-  // updates an asset when its updatedAt (DATE_MODIFIED) changes, which it never does
-  // here. A createdAt later than updatedAt is the copy-time signature, so clamp it
-  // back to updatedAt (the real date, == the new minOf(DATE_MODIFIED, DATE_ADDED)).
+  // DATE_ADDED can be later than DATE_MODIFIED after a file is copied.
   if (!CurrentPlatform.isAndroid) {
     return true;
   }
