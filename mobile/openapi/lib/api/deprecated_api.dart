@@ -185,6 +185,338 @@ class DeprecatedApi {
     return null;
   }
 
+  /// Search large assets
+  ///
+  /// Search for assets that are considered large based on specified criteria.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [List<String>] albumIds:
+  ///   Filter by album IDs
+  ///
+  /// * [String] city:
+  ///   Filter by city name
+  ///
+  /// * [String] country:
+  ///   Filter by country name
+  ///
+  /// * [DateTime] createdAfter:
+  ///   Filter by creation date (after)
+  ///
+  /// * [DateTime] createdBefore:
+  ///   Filter by creation date (before)
+  ///
+  /// * [bool] isEncoded:
+  ///   Filter by encoded status
+  ///
+  /// * [bool] isFavorite:
+  ///   Filter by favorite status
+  ///
+  /// * [bool] isMotion:
+  ///   Filter by motion photo status
+  ///
+  /// * [bool] isNotInAlbum:
+  ///   Filter assets not in any album
+  ///
+  /// * [bool] isOffline:
+  ///   Filter by offline status
+  ///
+  /// * [String] lensModel:
+  ///   Filter by lens model
+  ///
+  /// * [String] libraryId:
+  ///   Library ID to filter by
+  ///
+  /// * [String] make:
+  ///   Filter by camera make
+  ///
+  /// * [int] minFileSize:
+  ///   Minimum file size in bytes
+  ///
+  /// * [String] model:
+  ///   Filter by camera model
+  ///
+  /// * [String] ocr:
+  ///   Filter by OCR text content
+  ///
+  /// * [List<String>] personIds:
+  ///   Filter by person IDs
+  ///
+  /// * [int] rating:
+  ///   Filter by rating [1-5], or null for unrated
+  ///
+  /// * [int] size:
+  ///   Number of results to return
+  ///
+  /// * [String] state:
+  ///   Filter by state/province name
+  ///
+  /// * [List<String>] tagIds:
+  ///   Filter by tag IDs
+  ///
+  /// * [DateTime] takenAfter:
+  ///   Filter by taken date (after)
+  ///
+  /// * [DateTime] takenBefore:
+  ///   Filter by taken date (before)
+  ///
+  /// * [DateTime] trashedAfter:
+  ///   Filter by trash date (after)
+  ///
+  /// * [DateTime] trashedBefore:
+  ///   Filter by trash date (before)
+  ///
+  /// * [AssetTypeEnum] type:
+  ///
+  /// * [DateTime] updatedAfter:
+  ///   Filter by update date (after)
+  ///
+  /// * [DateTime] updatedBefore:
+  ///   Filter by update date (before)
+  ///
+  /// * [AssetVisibility] visibility:
+  ///
+  /// * [bool] withDeleted:
+  ///   Include deleted assets
+  ///
+  /// * [bool] withExif:
+  ///   Include EXIF data in response
+  Future<Response> searchLargeAssetsWithHttpInfo({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, String? ocr, List<String>? personIds, int? rating, int? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/search/large-assets';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    if (albumIds != null) {
+      queryParams.addAll(_queryParams('multi', 'albumIds', albumIds));
+    }
+    if (city != null) {
+      queryParams.addAll(_queryParams('', 'city', city));
+    }
+    if (country != null) {
+      queryParams.addAll(_queryParams('', 'country', country));
+    }
+    if (createdAfter != null) {
+      queryParams.addAll(_queryParams('', 'createdAfter', createdAfter));
+    }
+    if (createdBefore != null) {
+      queryParams.addAll(_queryParams('', 'createdBefore', createdBefore));
+    }
+    if (isEncoded != null) {
+      queryParams.addAll(_queryParams('', 'isEncoded', isEncoded));
+    }
+    if (isFavorite != null) {
+      queryParams.addAll(_queryParams('', 'isFavorite', isFavorite));
+    }
+    if (isMotion != null) {
+      queryParams.addAll(_queryParams('', 'isMotion', isMotion));
+    }
+    if (isNotInAlbum != null) {
+      queryParams.addAll(_queryParams('', 'isNotInAlbum', isNotInAlbum));
+    }
+    if (isOffline != null) {
+      queryParams.addAll(_queryParams('', 'isOffline', isOffline));
+    }
+    if (lensModel != null) {
+      queryParams.addAll(_queryParams('', 'lensModel', lensModel));
+    }
+    if (libraryId != null) {
+      queryParams.addAll(_queryParams('', 'libraryId', libraryId));
+    }
+    if (make != null) {
+      queryParams.addAll(_queryParams('', 'make', make));
+    }
+    if (minFileSize != null) {
+      queryParams.addAll(_queryParams('', 'minFileSize', minFileSize));
+    }
+    if (model != null) {
+      queryParams.addAll(_queryParams('', 'model', model));
+    }
+    if (ocr != null) {
+      queryParams.addAll(_queryParams('', 'ocr', ocr));
+    }
+    if (personIds != null) {
+      queryParams.addAll(_queryParams('multi', 'personIds', personIds));
+    }
+    if (rating != null) {
+      queryParams.addAll(_queryParams('', 'rating', rating));
+    }
+    if (size != null) {
+      queryParams.addAll(_queryParams('', 'size', size));
+    }
+    if (state != null) {
+      queryParams.addAll(_queryParams('', 'state', state));
+    }
+    if (tagIds != null) {
+      queryParams.addAll(_queryParams('multi', 'tagIds', tagIds));
+    }
+    if (takenAfter != null) {
+      queryParams.addAll(_queryParams('', 'takenAfter', takenAfter));
+    }
+    if (takenBefore != null) {
+      queryParams.addAll(_queryParams('', 'takenBefore', takenBefore));
+    }
+    if (trashedAfter != null) {
+      queryParams.addAll(_queryParams('', 'trashedAfter', trashedAfter));
+    }
+    if (trashedBefore != null) {
+      queryParams.addAll(_queryParams('', 'trashedBefore', trashedBefore));
+    }
+    if (type != null) {
+      queryParams.addAll(_queryParams('', 'type', type));
+    }
+    if (updatedAfter != null) {
+      queryParams.addAll(_queryParams('', 'updatedAfter', updatedAfter));
+    }
+    if (updatedBefore != null) {
+      queryParams.addAll(_queryParams('', 'updatedBefore', updatedBefore));
+    }
+    if (visibility != null) {
+      queryParams.addAll(_queryParams('', 'visibility', visibility));
+    }
+    if (withDeleted != null) {
+      queryParams.addAll(_queryParams('', 'withDeleted', withDeleted));
+    }
+    if (withExif != null) {
+      queryParams.addAll(_queryParams('', 'withExif', withExif));
+    }
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Search large assets
+  ///
+  /// Search for assets that are considered large based on specified criteria.
+  ///
+  /// Parameters:
+  ///
+  /// * [List<String>] albumIds:
+  ///   Filter by album IDs
+  ///
+  /// * [String] city:
+  ///   Filter by city name
+  ///
+  /// * [String] country:
+  ///   Filter by country name
+  ///
+  /// * [DateTime] createdAfter:
+  ///   Filter by creation date (after)
+  ///
+  /// * [DateTime] createdBefore:
+  ///   Filter by creation date (before)
+  ///
+  /// * [bool] isEncoded:
+  ///   Filter by encoded status
+  ///
+  /// * [bool] isFavorite:
+  ///   Filter by favorite status
+  ///
+  /// * [bool] isMotion:
+  ///   Filter by motion photo status
+  ///
+  /// * [bool] isNotInAlbum:
+  ///   Filter assets not in any album
+  ///
+  /// * [bool] isOffline:
+  ///   Filter by offline status
+  ///
+  /// * [String] lensModel:
+  ///   Filter by lens model
+  ///
+  /// * [String] libraryId:
+  ///   Library ID to filter by
+  ///
+  /// * [String] make:
+  ///   Filter by camera make
+  ///
+  /// * [int] minFileSize:
+  ///   Minimum file size in bytes
+  ///
+  /// * [String] model:
+  ///   Filter by camera model
+  ///
+  /// * [String] ocr:
+  ///   Filter by OCR text content
+  ///
+  /// * [List<String>] personIds:
+  ///   Filter by person IDs
+  ///
+  /// * [int] rating:
+  ///   Filter by rating [1-5], or null for unrated
+  ///
+  /// * [int] size:
+  ///   Number of results to return
+  ///
+  /// * [String] state:
+  ///   Filter by state/province name
+  ///
+  /// * [List<String>] tagIds:
+  ///   Filter by tag IDs
+  ///
+  /// * [DateTime] takenAfter:
+  ///   Filter by taken date (after)
+  ///
+  /// * [DateTime] takenBefore:
+  ///   Filter by taken date (before)
+  ///
+  /// * [DateTime] trashedAfter:
+  ///   Filter by trash date (after)
+  ///
+  /// * [DateTime] trashedBefore:
+  ///   Filter by trash date (before)
+  ///
+  /// * [AssetTypeEnum] type:
+  ///
+  /// * [DateTime] updatedAfter:
+  ///   Filter by update date (after)
+  ///
+  /// * [DateTime] updatedBefore:
+  ///   Filter by update date (before)
+  ///
+  /// * [AssetVisibility] visibility:
+  ///
+  /// * [bool] withDeleted:
+  ///   Include deleted assets
+  ///
+  /// * [bool] withExif:
+  ///   Include EXIF data in response
+  Future<List<AssetResponseDto>?> searchLargeAssets({ List<String>? albumIds, String? city, String? country, DateTime? createdAfter, DateTime? createdBefore, bool? isEncoded, bool? isFavorite, bool? isMotion, bool? isNotInAlbum, bool? isOffline, String? lensModel, String? libraryId, String? make, int? minFileSize, String? model, String? ocr, List<String>? personIds, int? rating, int? size, String? state, List<String>? tagIds, DateTime? takenAfter, DateTime? takenBefore, DateTime? trashedAfter, DateTime? trashedBefore, AssetTypeEnum? type, DateTime? updatedAfter, DateTime? updatedBefore, AssetVisibility? visibility, bool? withDeleted, bool? withExif, Future<void>? abortTrigger, }) async {
+    final response = await searchLargeAssetsWithHttpInfo(albumIds: albumIds, city: city, country: country, createdAfter: createdAfter, createdBefore: createdBefore, isEncoded: isEncoded, isFavorite: isFavorite, isMotion: isMotion, isNotInAlbum: isNotInAlbum, isOffline: isOffline, lensModel: lensModel, libraryId: libraryId, make: make, minFileSize: minFileSize, model: model, ocr: ocr, personIds: personIds, rating: rating, size: size, state: state, tagIds: tagIds, takenAfter: takenAfter, takenBefore: takenBefore, trashedAfter: trashedAfter, trashedBefore: trashedBefore, type: type, updatedAfter: updatedAfter, updatedBefore: updatedBefore, visibility: visibility, withDeleted: withDeleted, withExif: withExif, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<AssetResponseDto>') as List)
+        .cast<AssetResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
   /// Update an API key
   ///
   /// Updates the name and permissions of an API key by its ID. The current user must own this API key.

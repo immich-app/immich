@@ -19,8 +19,10 @@ class MetadataSearchDto {
     this.country = const Optional.absent(),
     this.createdAfter = const Optional.absent(),
     this.createdBefore = const Optional.absent(),
+    this.cursor = const Optional.absent(),
     this.description = const Optional.absent(),
     this.encodedVideoPath = const Optional.absent(),
+    this.filter = const Optional.absent(),
     this.id = const Optional.absent(),
     this.isEncoded = const Optional.absent(),
     this.isFavorite = const Optional.absent(),
@@ -33,6 +35,7 @@ class MetadataSearchDto {
     this.model = const Optional.absent(),
     this.ocr = const Optional.absent(),
     this.order = const Optional.absent(),
+    this.orderBy = const Optional.absent(),
     this.originalFileName = const Optional.absent(),
     this.originalPath = const Optional.absent(),
     this.page = const Optional.absent(),
@@ -93,6 +96,15 @@ class MetadataSearchDto {
   ///
   Optional<DateTime?> createdBefore;
 
+  /// Cursor for the next page of results
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<String?> cursor;
+
   /// Filter by description text
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -110,6 +122,14 @@ class MetadataSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   Optional<String?> encodedVideoPath;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<SearchFilter?> filter;
 
   /// Filter by asset ID
   ///
@@ -193,6 +213,14 @@ class MetadataSearchDto {
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
   Optional<AssetOrder?> order;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<SearchOrder?> orderBy;
 
   /// Filter by original file name
   ///
@@ -383,8 +411,10 @@ class MetadataSearchDto {
     other.country == country &&
     other.createdAfter == createdAfter &&
     other.createdBefore == createdBefore &&
+    other.cursor == cursor &&
     other.description == description &&
     other.encodedVideoPath == encodedVideoPath &&
+    other.filter == filter &&
     other.id == id &&
     other.isEncoded == isEncoded &&
     other.isFavorite == isFavorite &&
@@ -397,6 +427,7 @@ class MetadataSearchDto {
     other.model == model &&
     other.ocr == ocr &&
     other.order == order &&
+    other.orderBy == orderBy &&
     other.originalFileName == originalFileName &&
     other.originalPath == originalPath &&
     other.page == page &&
@@ -429,8 +460,10 @@ class MetadataSearchDto {
     (country == null ? 0 : country!.hashCode) +
     (createdAfter == null ? 0 : createdAfter!.hashCode) +
     (createdBefore == null ? 0 : createdBefore!.hashCode) +
+    (cursor == null ? 0 : cursor!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
     (encodedVideoPath == null ? 0 : encodedVideoPath!.hashCode) +
+    (filter == null ? 0 : filter!.hashCode) +
     (id == null ? 0 : id!.hashCode) +
     (isEncoded == null ? 0 : isEncoded!.hashCode) +
     (isFavorite == null ? 0 : isFavorite!.hashCode) +
@@ -443,6 +476,7 @@ class MetadataSearchDto {
     (model == null ? 0 : model!.hashCode) +
     (ocr == null ? 0 : ocr!.hashCode) +
     (order == null ? 0 : order!.hashCode) +
+    (orderBy == null ? 0 : orderBy!.hashCode) +
     (originalFileName == null ? 0 : originalFileName!.hashCode) +
     (originalPath == null ? 0 : originalPath!.hashCode) +
     (page == null ? 0 : page!.hashCode) +
@@ -467,7 +501,7 @@ class MetadataSearchDto {
     (withStacked == null ? 0 : withStacked!.hashCode);
 
   @override
-  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, description=$description, encodedVideoPath=$encodedVideoPath, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, order=$order, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
+  String toString() => 'MetadataSearchDto[albumIds=$albumIds, checksum=$checksum, city=$city, country=$country, createdAfter=$createdAfter, createdBefore=$createdBefore, cursor=$cursor, description=$description, encodedVideoPath=$encodedVideoPath, filter=$filter, id=$id, isEncoded=$isEncoded, isFavorite=$isFavorite, isMotion=$isMotion, isNotInAlbum=$isNotInAlbum, isOffline=$isOffline, lensModel=$lensModel, libraryId=$libraryId, make=$make, model=$model, ocr=$ocr, order=$order, orderBy=$orderBy, originalFileName=$originalFileName, originalPath=$originalPath, page=$page, personIds=$personIds, previewPath=$previewPath, rating=$rating, size=$size, state=$state, tagIds=$tagIds, takenAfter=$takenAfter, takenBefore=$takenBefore, thumbnailPath=$thumbnailPath, trashedAfter=$trashedAfter, trashedBefore=$trashedBefore, type=$type, updatedAfter=$updatedAfter, updatedBefore=$updatedBefore, visibility=$visibility, withDeleted=$withDeleted, withExif=$withExif, withPeople=$withPeople, withStacked=$withStacked]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -499,6 +533,10 @@ class MetadataSearchDto {
         ? value.millisecondsSinceEpoch
         : value.toUtc().toIso8601String());
     }
+    if (this.cursor.isPresent) {
+      final value = this.cursor.value;
+      json[r'cursor'] = value;
+    }
     if (this.description.isPresent) {
       final value = this.description.value;
       json[r'description'] = value;
@@ -506,6 +544,10 @@ class MetadataSearchDto {
     if (this.encodedVideoPath.isPresent) {
       final value = this.encodedVideoPath.value;
       json[r'encodedVideoPath'] = value;
+    }
+    if (this.filter.isPresent) {
+      final value = this.filter.value;
+      json[r'filter'] = value;
     }
     if (this.id.isPresent) {
       final value = this.id.value;
@@ -554,6 +596,10 @@ class MetadataSearchDto {
     if (this.order.isPresent) {
       final value = this.order.value;
       json[r'order'] = value;
+    }
+    if (this.orderBy.isPresent) {
+      final value = this.orderBy.value;
+      json[r'orderBy'] = value;
     }
     if (this.originalFileName.isPresent) {
       final value = this.originalFileName.value;
@@ -675,8 +721,10 @@ class MetadataSearchDto {
         country: json.containsKey(r'country') ? Optional.present(mapValueOfType<String>(json, r'country')) : const Optional.absent(),
         createdAfter: json.containsKey(r'createdAfter') ? Optional.present(mapDateTime(json, r'createdAfter', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')) : const Optional.absent(),
         createdBefore: json.containsKey(r'createdBefore') ? Optional.present(mapDateTime(json, r'createdBefore', r'/^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$/')) : const Optional.absent(),
+        cursor: json.containsKey(r'cursor') ? Optional.present(mapValueOfType<String>(json, r'cursor')) : const Optional.absent(),
         description: json.containsKey(r'description') ? Optional.present(mapValueOfType<String>(json, r'description')) : const Optional.absent(),
         encodedVideoPath: json.containsKey(r'encodedVideoPath') ? Optional.present(mapValueOfType<String>(json, r'encodedVideoPath')) : const Optional.absent(),
+        filter: json.containsKey(r'filter') ? Optional.present(SearchFilter.fromJson(json[r'filter'])) : const Optional.absent(),
         id: json.containsKey(r'id') ? Optional.present(mapValueOfType<String>(json, r'id')) : const Optional.absent(),
         isEncoded: json.containsKey(r'isEncoded') ? Optional.present(mapValueOfType<bool>(json, r'isEncoded')) : const Optional.absent(),
         isFavorite: json.containsKey(r'isFavorite') ? Optional.present(mapValueOfType<bool>(json, r'isFavorite')) : const Optional.absent(),
@@ -689,6 +737,7 @@ class MetadataSearchDto {
         model: json.containsKey(r'model') ? Optional.present(mapValueOfType<String>(json, r'model')) : const Optional.absent(),
         ocr: json.containsKey(r'ocr') ? Optional.present(mapValueOfType<String>(json, r'ocr')) : const Optional.absent(),
         order: json.containsKey(r'order') ? Optional.present(AssetOrder.fromJson(json[r'order'])) : const Optional.absent(),
+        orderBy: json.containsKey(r'orderBy') ? Optional.present(SearchOrder.fromJson(json[r'orderBy'])) : const Optional.absent(),
         originalFileName: json.containsKey(r'originalFileName') ? Optional.present(mapValueOfType<String>(json, r'originalFileName')) : const Optional.absent(),
         originalPath: json.containsKey(r'originalPath') ? Optional.present(mapValueOfType<String>(json, r'originalPath')) : const Optional.absent(),
         page: json.containsKey(r'page') ? Optional.present(json[r'page'] == null ? null : int.parse('${json[r'page']}')) : const Optional.absent(),
