@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -147,13 +148,13 @@ void main() {
       await Store.put(StoreKey.manageLocalMediaAndroid, true);
       const ids = ['a', 'b'];
 
-      when(() => assetMediaRepository.deleteAll(ids)).thenAnswer((_) async => ids);
+      when(() => assetMediaRepository.deleteAll(ids, trash: true)).thenAnswer((_) async => ids);
       when(() => trashedLocalAssetRepository.applyTrashedAssets(ids)).thenAnswer((_) async {});
 
       final result = await sut.deleteLocal(ids);
 
       expect(result, ids.length);
-      verify(() => assetMediaRepository.deleteAll(ids)).called(1);
+      verify(() => assetMediaRepository.deleteAll(ids, trash: true)).called(1);
       verify(() => trashedLocalAssetRepository.applyTrashedAssets(ids)).called(1);
       verifyNever(() => localAssetRepository.delete(any()));
     });
@@ -162,13 +163,13 @@ void main() {
       await Store.put(StoreKey.manageLocalMediaAndroid, false);
       const ids = ['c'];
 
-      when(() => assetMediaRepository.deleteAll(ids)).thenAnswer((_) async => ids);
+      when(() => assetMediaRepository.deleteAll(ids, trash: true)).thenAnswer((_) async => ids);
       when(() => localAssetRepository.delete(ids)).thenAnswer((_) async {});
 
       final result = await sut.deleteLocal(ids);
 
       expect(result, ids.length);
-      verify(() => assetMediaRepository.deleteAll(ids)).called(1);
+      verify(() => assetMediaRepository.deleteAll(ids, trash: true)).called(1);
       verify(() => localAssetRepository.delete(ids)).called(1);
       verifyNever(() => trashedLocalAssetRepository.applyTrashedAssets(any()));
     });
@@ -177,14 +178,73 @@ void main() {
       await Store.put(StoreKey.manageLocalMediaAndroid, true);
       const ids = ['x'];
 
-      when(() => assetMediaRepository.deleteAll(ids)).thenAnswer((_) async => <String>[]);
+      when(() => assetMediaRepository.deleteAll(ids, trash: true)).thenAnswer((_) async => <String>[]);
 
       final result = await sut.deleteLocal(ids);
 
       expect(result, 0);
-      verify(() => assetMediaRepository.deleteAll(ids)).called(1);
+      verify(() => assetMediaRepository.deleteAll(ids, trash: true)).called(1);
       verifyNever(() => trashedLocalAssetRepository.applyTrashedAssets(any()));
       verifyNever(() => localAssetRepository.delete(any()));
+    });
+  });
+
+  group('ActionService.moveToLockFolder', () {
+    const remoteIds = ['r1', 'r2'];
+    const localIds = ['l1', 'l2'];
+
+    test('permanently deletes local copies without trashing, even when Android trash handling is on', () async {
+      await Store.put(StoreKey.manageLocalMediaAndroid, true);
+
+      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
+      when(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
+      when(() => assetMediaRepository.deleteAll(localIds, trash: false)).thenAnswer((_) async => localIds);
+      when(() => localAssetRepository.delete(localIds)).thenAnswer((_) async {});
+
+      final result = await sut.moveToLockFolder(remoteIds, localIds);
+
+      expect(result, localIds.length);
+      verify(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibility.locked)).called(1);
+      verify(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).called(1);
+      verify(() => assetMediaRepository.deleteAll(localIds, trash: false)).called(1);
+      verify(() => localAssetRepository.delete(localIds)).called(1);
+      verifyNever(() => trashedLocalAssetRepository.applyTrashedAssets(any()));
+    });
+
+    test('locks remote assets without touching local media when there are no local copies', () async {
+      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
+      when(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
+
+      final result = await sut.moveToLockFolder(remoteIds, const []);
+
+      expect(result, 0);
+      verify(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibility.locked)).called(1);
+      verifyNever(() => assetMediaRepository.deleteAll(any(), trash: any(named: 'trash')));
+    });
+
+    test('returns zero when local deletion is cancelled', () async {
+      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
+      when(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
+      when(() => assetMediaRepository.deleteAll(localIds, trash: false)).thenAnswer((_) async => <String>[]);
+
+      final result = await sut.moveToLockFolder(remoteIds, localIds);
+
+      expect(result, 0);
+      verify(() => assetMediaRepository.deleteAll(localIds, trash: false)).called(1);
+      verifyNever(() => localAssetRepository.delete(any()));
+    });
+
+    test('returns the number of local copies deleted from a partial result', () async {
+      const deletedIds = ['l1'];
+      when(() => assetApiRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
+      when(() => remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked)).thenAnswer((_) async {});
+      when(() => assetMediaRepository.deleteAll(localIds, trash: false)).thenAnswer((_) async => deletedIds);
+      when(() => localAssetRepository.delete(deletedIds)).thenAnswer((_) async {});
+
+      final result = await sut.moveToLockFolder(remoteIds, localIds);
+
+      expect(result, deletedIds.length);
+      verify(() => localAssetRepository.delete(deletedIds)).called(1);
     });
   });
 }

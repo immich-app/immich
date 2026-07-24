@@ -88,14 +88,15 @@ class ActionService {
     await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.timeline);
   }
 
-  Future<void> moveToLockFolder(List<String> remoteIds, List<String> localIds) async {
+  Future<int> moveToLockFolder(List<String> remoteIds, List<String> localIds) async {
     await _assetApiRepository.updateVisibility(remoteIds, .locked);
     await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked);
 
-    // Ask user if they want to delete local copies
-    if (localIds.isNotEmpty) {
-      await _deleteLocalAssets(localIds);
+    // Locked assets stay on the server, so permanently delete the local copies instead of trashing them
+    if (localIds.isEmpty) {
+      return 0;
     }
+    return _deleteLocalAssets(localIds, trash: false);
   }
 
   Future<void> removeFromLockFolder(List<String> remoteIds) async {
@@ -313,12 +314,12 @@ class ActionService {
     }
   }
 
-  Future<int> _deleteLocalAssets(List<String> localIds) async {
-    final deletedIds = await _assetMediaRepository.deleteAll(localIds);
+  Future<int> _deleteLocalAssets(List<String> localIds, {bool trash = true}) async {
+    final deletedIds = await _assetMediaRepository.deleteAll(localIds, trash: trash);
     if (deletedIds.isEmpty) {
       return 0;
     }
-    if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
+    if (trash && CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
       await _trashedLocalAssetRepository.applyTrashedAssets(deletedIds);
     } else {
       await _localAssetRepository.delete(deletedIds);
