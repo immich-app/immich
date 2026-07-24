@@ -16,6 +16,7 @@ class SearchAssetResponseDto {
     required this.count,
     this.facets = const [],
     this.items = const [],
+    required this.nextCursor,
     required this.nextPage,
     required this.total,
   });
@@ -29,6 +30,9 @@ class SearchAssetResponseDto {
   List<SearchFacetResponseDto> facets;
 
   List<AssetResponseDto> items;
+
+  /// Cursor for the next page of results
+  String? nextCursor;
 
   /// Next page token
   String? nextPage;
@@ -44,6 +48,7 @@ class SearchAssetResponseDto {
     other.count == count &&
     _deepEquality.equals(other.facets, facets) &&
     _deepEquality.equals(other.items, items) &&
+    other.nextCursor == nextCursor &&
     other.nextPage == nextPage &&
     other.total == total;
 
@@ -53,17 +58,23 @@ class SearchAssetResponseDto {
     (count.hashCode) +
     (facets.hashCode) +
     (items.hashCode) +
+    (nextCursor == null ? 0 : nextCursor!.hashCode) +
     (nextPage == null ? 0 : nextPage!.hashCode) +
     (total.hashCode);
 
   @override
-  String toString() => 'SearchAssetResponseDto[count=$count, facets=$facets, items=$items, nextPage=$nextPage, total=$total]';
+  String toString() => 'SearchAssetResponseDto[count=$count, facets=$facets, items=$items, nextCursor=$nextCursor, nextPage=$nextPage, total=$total]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'count'] = this.count;
       json[r'facets'] = this.facets;
       json[r'items'] = this.items;
+    if (this.nextCursor != null) {
+      json[r'nextCursor'] = this.nextCursor;
+    } else {
+      json[r'nextCursor'] = null;
+    }
     if (this.nextPage != null) {
       json[r'nextPage'] = this.nextPage;
     } else {
@@ -85,6 +96,7 @@ class SearchAssetResponseDto {
         count: mapValueOfType<int>(json, r'count')!,
         facets: SearchFacetResponseDto.listFromJson(json[r'facets']),
         items: AssetResponseDto.listFromJson(json[r'items']),
+        nextCursor: mapValueOfType<String>(json, r'nextCursor'),
         nextPage: mapValueOfType<String>(json, r'nextPage'),
         total: mapValueOfType<int>(json, r'total')!,
       );
@@ -137,6 +149,7 @@ class SearchAssetResponseDto {
     'count',
     'facets',
     'items',
+    'nextCursor',
     'nextPage',
     'total',
   };

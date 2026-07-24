@@ -69,7 +69,11 @@ export class SearchController {
   @Endpoint({
     summary: 'Search large assets',
     description: 'Search for assets that are considered large based on specified criteria.',
-    history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
+    history: new HistoryBuilder()
+      .added('v1')
+      .beta('v1')
+      .stable('v2')
+      .deprecated('v3.1.0', { replacementId: 'searchAssets' }),
   })
   searchLargeAssets(@Auth() auth: AuthDto, @Query() dto: LargeAssetSearchDto): Promise<AssetResponseDto[]> {
     return this.service.searchLargeAssets(auth, dto);

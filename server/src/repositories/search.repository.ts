@@ -14,6 +14,8 @@ import {
   searchAssetBuilder,
   searchAssetBuilderLegacy,
   searchMetadataV3Examples,
+  searchRandomV3Examples,
+  searchSmartV3Examples,
   searchStatisticsV3Examples,
   withExifInner,
   withSearchOrder,
@@ -133,10 +135,13 @@ export type AssetSearchOptions = Omit<BaseAssetSearchOptions, 'visibility'> &
 
 export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection'>;
 
+export interface AssetSearchScope {
+  userIds?: string[];
+  lockedOwnerId: string;
+}
+
 export interface AssetSearchBuilderV3Options {
   filter?: SearchFilter;
-  /** Server-derived ownership scope. Never client-controlled. */
-  userIds?: string[];
   withExif?: boolean;
   withFaces?: boolean;
   withPeople?: boolean;
@@ -146,6 +151,7 @@ export interface AssetSearchBuilderV3Options {
 
 export interface AssetSearchPaginationV3Options {
   size: number;
+  offset?: number;
 }
 
 export type SmartSearchOptions = SearchDateOptions &
@@ -208,6 +214,7 @@ export interface GetCameraLensModelsOptions {
 export class SearchRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
+  // TODO(v4): remove with the deprecated flat-field search API
   @GenerateSql({
     params: [
       { page: 1, size: 100 },
@@ -233,6 +240,7 @@ export class SearchRepository {
     return paginationHelper(items, pagination.size);
   }
 
+  // TODO(v4): remove with the deprecated flat-field search API
   @GenerateSql({
     params: [
       {
@@ -249,6 +257,7 @@ export class SearchRepository {
       .executeTakeFirstOrThrow();
   }
 
+  // TODO(v4): remove with the deprecated flat-field search API
   @GenerateSql({
     params: [
       100,
@@ -269,6 +278,7 @@ export class SearchRepository {
       .execute();
   }
 
+  // TODO(v4): remove with the deprecated flat-field search API
   @GenerateSql({
     params: [
       100,
@@ -292,6 +302,7 @@ export class SearchRepository {
       .execute();
   }
 
+  // TODO(v4): remove with the deprecated flat-field search API
   @GenerateSql({
     params: [
       { page: 1, size: 200 },
@@ -518,20 +529,60 @@ export class SearchRepository {
     return res.map((row) => row.lensModel!);
   }
 
+  // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchMetadataV3Examples)
-  searchMetadataV3(
+  async searchMetadataV3(
     pagination: AssetSearchPaginationV3Options,
     options: AssetSearchBuilderV3Options,
-  ): Promise<MapAsset[]> {
-    return withSearchOrder(searchAssetBuilder(this.db, options), options.order)
+    scope: AssetSearchScope,
+  ) {
+    const items = await withSearchOrder(searchAssetBuilder(this.db, options, scope), options.order)
       .select(columns.searchAsset)
-      .limit(pagination.size)
+      .limit(pagination.size + 1)
+      .offset(pagination.offset ?? 0)
+      .execute();
+    return paginationHelper(items, pagination.size);
+  }
+
+  // TODO(v4): drop the V3 suffix once the legacy methods are removed
+  @GenerateSql(...searchRandomV3Examples)
+  searchRandomV3(
+    size: number,
+    options: Omit<AssetSearchBuilderV3Options, 'order'>,
+    scope: AssetSearchScope,
+  ): Promise<MapAsset[]> {
+    return searchAssetBuilder(this.db, options, scope)
+      .select(columns.searchAsset)
+      .orderBy(sql`random()`)
+      .limit(size)
       .execute();
   }
 
+  // TODO(v4): drop the V3 suffix once the legacy methods are removed
+  @GenerateSql(...searchSmartV3Examples)
+  searchSmartV3(
+    pagination: AssetSearchPaginationV3Options,
+    options: Omit<AssetSearchBuilderV3Options, 'order'> & { embedding: string },
+    scope: AssetSearchScope,
+  ) {
+    return this.db.transaction().execute(async (trx) => {
+      await sql`set local vchordrq.probes = ${sql.lit(probes[VectorIndex.Clip])}`.execute(trx);
+      const items = await searchAssetBuilder(trx, options, scope)
+        .select(columns.searchAsset)
+        .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
+        .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
+        .orderBy('asset.id', 'asc')
+        .limit(pagination.size + 1)
+        .offset(pagination.offset ?? 0)
+        .execute();
+      return paginationHelper(items, pagination.size);
+    });
+  }
+
+  // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchStatisticsV3Examples)
-  searchStatisticsV3(options: AssetSearchBuilderV3Options) {
-    return searchAssetBuilder(this.db, options)
+  searchStatisticsV3(options: AssetSearchBuilderV3Options, scope: AssetSearchScope) {
+    return searchAssetBuilder(this.db, options, scope)
       .select((qb) => qb.fn.countAll<number>().as('total'))
       .executeTakeFirstOrThrow();
   }
