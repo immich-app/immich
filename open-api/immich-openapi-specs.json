@@ -14313,6 +14313,15 @@
             }
           },
           {
+            "name": "hasCoordinates",
+            "required": false,
+            "in": "query",
+            "description": "Filter by GPS coordinates (true for assets with coordinates only, false for assets without)",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "isFavorite",
             "required": false,
             "in": "query",
@@ -14509,6 +14518,15 @@
             "schema": {
               "example": "11.075683,49.416711,11.117589,49.454875",
               "type": "string"
+            }
+          },
+          {
+            "name": "hasCoordinates",
+            "required": false,
+            "in": "query",
+            "description": "Filter by GPS coordinates (true for assets with coordinates only, false for assets without)",
+            "schema": {
+              "type": "boolean"
             }
           },
           {
