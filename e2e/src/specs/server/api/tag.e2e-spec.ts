@@ -54,6 +54,13 @@ describe('/tags', () => {
       expect(body).toEqual(errorDto.missingPermission('tag.create'));
     });
 
+    it('should prevent tags with slash in name', async () => {
+      const { secret } = await utils.createApiKey(user.accessToken, [Permission.TagCreate]);
+      const { status, body } = await request(app).post('/tags').set('x-api-key', secret).send({ name: 'TagA/TagB' });
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest([String.raw`[name] Tag name cannot contain slash characters ("/")`]));
+    });
+
     it('should work with tag.create', async () => {
       const { secret } = await utils.createApiKey(user.accessToken, [Permission.TagCreate]);
       const { status, body } = await request(app).post('/tags').set('x-api-key', secret).send({ name: 'TagA' });
@@ -170,7 +177,7 @@ describe('/tags', () => {
 
   describe('PUT /tags', () => {
     it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/tags`).send({ name: 'TagA/TagB' });
+      const { status, body } = await request(app).put(`/tags`).send({ name: 'TagA' });
       expect(status).toBe(401);
       expect(body).toEqual(errorDto.unauthorized);
     });
@@ -377,7 +384,17 @@ describe('/tags', () => {
       expect(body).toEqual(errorDto.missingPermission('tag.update'));
     });
 
-    it('should update a tag', async () => {
+    it('should update a tag name', async () => {
+      const tag = await create(user.accessToken, { name: 'tagA' });
+      const { status, body } = await request(app)
+        .put(`/tags/${tag.id}`)
+        .send({ name: 'tagB' })
+        .set('Authorization', `Bearer ${user.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ name: `tagB` }));
+    });
+
+    it('should update a tag color', async () => {
       const tag = await create(user.accessToken, { name: 'tagA' });
       const { status, body } = await request(app)
         .put(`/tags/${tag.id}`)
@@ -385,6 +402,16 @@ describe('/tags', () => {
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual(expect.objectContaining({ color: `#000000` }));
+    });
+
+    it('should update both a tag name and color', async () => {
+      const tag = await create(user.accessToken, { name: 'tagA' });
+      const { status, body } = await request(app)
+        .put(`/tags/${tag.id}`)
+        .send({ name: 'tagB', color: '#000000' })
+        .set('Authorization', `Bearer ${user.accessToken}`);
+      expect(status).toBe(200);
+      expect(body).toEqual(expect.objectContaining({ name: 'tagB', color: `#000000` }));
     });
 
     it('should update a tag color without a # prefix', async () => {
