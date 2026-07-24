@@ -38,12 +38,13 @@ abstract class PhotoViewControllerBase<T extends PhotoViewControllerValue> {
   /// Closes streams and removes eventual listeners.
   void dispose();
 
-  void positionAnimationBuilder(void Function(Offset)? value);
-  void scaleAnimationBuilder(void Function(double)? value);
-  void rotationAnimationBuilder(void Function(double)? value);
+  void positionAnimationBuilder(Future<void> Function(Offset)? value);
+  void scaleAnimationBuilder(Future<void> Function(double)? value);
+  void rotationAnimationBuilder(Future<void> Function(double)? value);
 
-  /// Animates multiple fields of the state
-  void animateMultiple({Offset? position, double? scale, double? rotation});
+  /// Animates multiple fields of the state. The returned future completes
+  /// when all underlying animations have settled.
+  Future<void> animateMultiple({Offset? position, double? scale, double? rotation});
 
   /// Add a listener that will ignore updates made internally
   ///
@@ -148,9 +149,9 @@ class PhotoViewController implements PhotoViewControllerBase<PhotoViewController
   @override
   ScaleBoundaries? scaleBoundaries;
 
-  late void Function(Offset)? _animatePosition;
-  late void Function(double)? _animateScale;
-  late void Function(double)? _animateRotation;
+  late Future<void> Function(Offset)? _animatePosition;
+  late Future<void> Function(double)? _animateScale;
+  late Future<void> Function(double)? _animateRotation;
 
   @override
   Stream<PhotoViewControllerValue> get outputStateStream => _outputCtrl.stream;
@@ -159,17 +160,17 @@ class PhotoViewController implements PhotoViewControllerBase<PhotoViewController
   late PhotoViewControllerValue prevValue;
 
   @override
-  void positionAnimationBuilder(void Function(Offset)? value) {
+  void positionAnimationBuilder(Future<void> Function(Offset)? value) {
     _animatePosition = value;
   }
 
   @override
-  void scaleAnimationBuilder(void Function(double)? value) {
+  void scaleAnimationBuilder(Future<void> Function(double)? value) {
     _animateScale = value;
   }
 
   @override
-  void rotationAnimationBuilder(void Function(double)? value) {
+  void rotationAnimationBuilder(Future<void> Function(double)? value) {
     _animateRotation = value;
   }
 
@@ -193,18 +194,18 @@ class PhotoViewController implements PhotoViewControllerBase<PhotoViewController
   }
 
   @override
-  void animateMultiple({Offset? position, double? scale, double? rotation}) {
+  Future<void> animateMultiple({Offset? position, double? scale, double? rotation}) {
+    final futures = <Future<void>>[];
     if (position != null && _animatePosition != null) {
-      _animatePosition!(position);
+      futures.add(_animatePosition!(position));
     }
-
     if (scale != null && _animateScale != null) {
-      _animateScale!(scale);
+      futures.add(_animateScale!(scale));
     }
-
     if (rotation != null && _animateRotation != null) {
-      _animateRotation!(rotation);
+      futures.add(_animateRotation!(rotation));
     }
+    return Future.wait(futures);
   }
 
   @override
