@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
@@ -70,11 +72,16 @@ class MapState {
 class MapStateNotifier extends Notifier<MapState> {
   MapStateNotifier();
 
+  final StreamController<TimelineMapOptions> _optionsController = StreamController.broadcast();
+
+  Stream<TimelineMapOptions> get optionsStream => _optionsController.stream;
+
   bool setBounds(LatLngBounds bounds) {
     if (state.bounds == bounds) {
       return false;
     }
     state = state.copyWith(bounds: bounds);
+    _optionsController.add(state.toOptions());
     return true;
   }
 
@@ -89,12 +96,14 @@ class MapStateNotifier extends Notifier<MapState> {
   void switchFavoriteOnly(bool isFavoriteOnly) {
     ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly);
     state = state.copyWith(onlyFavorites: isFavoriteOnly);
+    _optionsController.add(state.toOptions());
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void switchIncludeArchived(bool isIncludeArchived) {
     ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived);
     state = state.copyWith(includeArchived: isIncludeArchived);
+    _optionsController.add(state.toOptions());
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
@@ -107,6 +116,7 @@ class MapStateNotifier extends Notifier<MapState> {
   void setRelativeTime(int relativeDays) {
     ref.read(settingsProvider).write(.mapRelativeDate, relativeDays);
     state = state.copyWith(relativeDays: relativeDays);
+    _optionsController.add(state.toOptions());
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
@@ -130,6 +140,7 @@ class MapStateNotifier extends Notifier<MapState> {
 
   @override
   MapState build() {
+    ref.onDispose(_optionsController.close);
     final mapConfig = ref.read(appConfigProvider.select((config) => config.map));
     return MapState(
       themeMode: mapConfig.themeMode,
