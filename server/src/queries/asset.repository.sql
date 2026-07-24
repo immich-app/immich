@@ -97,8 +97,10 @@ where
 begin
 delete from "asset_metadata"
 where
-  "assetId" = $1
-  and "key" = $2
+  (
+    "assetId" = $1
+    and "key" = $2
+  )
 commit
 
 -- AssetRepository.getByDayOfYear
