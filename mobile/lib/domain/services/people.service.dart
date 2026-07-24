@@ -31,4 +31,25 @@ class DriftPeopleService {
     await _personApiRepository.update(personId, birthday: birthday);
     return _repository.updateBirthday(personId, birthday);
   }
+
+  Future<({int merged, int failed})> mergePerson(String targetPersonId, List<String> personIdsToMerge) async {
+    if (personIdsToMerge.isEmpty) {
+      return (merged: 0, failed: 0);
+    }
+
+    final mergedIds = await _personApiRepository.mergePerson(targetPersonId, personIdsToMerge);
+    final failed = personIdsToMerge.length - mergedIds.length;
+
+    if (mergedIds.isNotEmpty) {
+      final updatedTarget = await _personApiRepository.getById(targetPersonId);
+      await _repository.mergePeople(
+        targetPersonId,
+        mergedIds,
+        name: updatedTarget.name,
+        birthDate: updatedTarget.birthDate,
+      );
+    }
+
+    return (merged: mergedIds.length, failed: failed);
+  }
 }

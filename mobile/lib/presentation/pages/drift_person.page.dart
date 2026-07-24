@@ -7,6 +7,7 @@ import 'package:immich_mobile/presentation/widgets/people/person_option_sheet.wi
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/widgets/common/person_sliver_app_bar.dart';
 
@@ -49,6 +50,16 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
     }
   }
 
+  Future<void> handleMerge() async {
+    final updatedPerson = await context.pushRoute<DriftPerson?>(DriftPersonMergeRoute(person: _person));
+
+    if (updatedPerson != null) {
+      setState(() {
+        _person = updatedPerson;
+      });
+    }
+  }
+
   void showOptionSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
@@ -63,6 +74,10 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
           onEditBirthday: () async {
             await handleEditBirthday(context);
             ContextHelper(context).pop();
+          },
+          onMerge: () {
+            ContextHelper(context).pop();
+            handleMerge();
           },
           birthdayExists: _person.birthDate != null,
         );
