@@ -1,6 +1,7 @@
 [tools]
 "aqua:flutter/flutter" = "3.44.6"
 java = "21.0.2"
+"npm:@openapitools/openapi-generator-cli" = "2.40.1"
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.37.0"
