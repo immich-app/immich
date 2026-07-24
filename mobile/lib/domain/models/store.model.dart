@@ -12,13 +12,13 @@ enum StoreKey<T> {
   advancedTroubleshooting<bool>._(114),
   enableHapticFeedback<bool>._(126),
 
-  manageLocalMediaAndroid<bool>._(137),
   // Read-only Mode settings
   readonlyModeEnabled<bool>._(138),
 
   syncMigrationStatus<String>._(1013),
 
   // Legacy keys that have been migrated to the new metadata store
+  legacyManageLocalMediaAndroid<bool>._(137),
   legacyBackupRequireCharging<bool>._(7),
   legacyBackupTriggerDelay<int>._(8),
   legacySyncAlbums<bool>._(131),

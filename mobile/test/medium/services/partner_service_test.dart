@@ -8,8 +8,8 @@ void main() {
   late MediumServiceContext ctx;
   late PartnerService sut;
 
-  setUp(() {
-    ctx = MediumServiceContext();
+  setUp(() async {
+    ctx = await MediumServiceContext.init();
     sut = PartnerService(ctx.userRepository, ctx.partnerRepository, ctx.partnerApi);
   });
 

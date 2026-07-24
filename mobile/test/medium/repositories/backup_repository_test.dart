@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/infrastructure/entities/server_deleted_checksum.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
 
@@ -112,6 +114,32 @@ void main() {
       final result = await sut.getAllCounts(userId);
       expect(result.total, 1);
       expect(result.remainder, 1);
+    });
+
+    test('excludes asset with a trash sync row from counts', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+      await ctx.db
+          .into(ctx.db.trashSyncEntity)
+          .insert(TrashSyncEntityCompanion.insert(assetId: asset.id, checksum: 'trashed'));
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 0);
+      expect(result.remainder, 0);
+    });
+
+    test('excludes an asset whose content the server permanently deleted', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset = await ctx.newLocalAsset(checksum: 'deleted');
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+      await ctx.db
+          .into(ctx.db.serverDeletedChecksumEntity)
+          .insert(ServerDeletedChecksumEntityCompanion.insert(checksum: 'deleted'));
+
+      final result = await sut.getAllCounts(userId);
+      expect(result.total, 0);
+      expect(result.remainder, 0);
     });
 
     test('mixed assets produce correct combined counts', () async {
@@ -227,6 +255,30 @@ void main() {
 
       final result = await sut.getCandidates(userId);
       expect(result.map((a) => a.id).toList(), [asset2.id, asset3.id, asset1.id]);
+    });
+
+    test('excludes asset with a trash sync row', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+      await ctx.db
+          .into(ctx.db.trashSyncEntity)
+          .insert(TrashSyncEntityCompanion.insert(assetId: asset.id, checksum: 'trashed'));
+
+      final result = await sut.getCandidates(userId);
+      expect(result, isEmpty);
+    });
+
+    test('excludes an asset whose content the server permanently deleted', () async {
+      final album = await ctx.newLocalAlbum(backupSelection: BackupSelection.selected);
+      final asset = await ctx.newLocalAsset(checksum: 'deleted');
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+      await ctx.db
+          .into(ctx.db.serverDeletedChecksumEntity)
+          .insert(ServerDeletedChecksumEntityCompanion.insert(checksum: 'deleted'));
+
+      final result = await sut.getCandidates(userId);
+      expect(result, isEmpty);
     });
 
     test('does not return duplicate when asset is in multiple selected albums', () async {

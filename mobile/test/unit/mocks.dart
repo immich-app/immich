@@ -17,8 +17,6 @@ import 'factories/user_factory.dart';
 class RepositoryMocks {
   final localAlbum = LocalAlbumRepositoryStub(MockLocalAlbumRepository());
   final localAsset = LocalAssetRepositoryStub(MockDriftLocalAssetRepository());
-  final trashedAsset = MockTrashedLocalAssetRepository();
-
   final nativeApi = NativeSyncApiStub(MockNativeSyncApi());
 
   RepositoryMocks() {
@@ -29,7 +27,6 @@ class RepositoryMocks {
     _registerFallbacks();
     localAlbum.reset();
     localAsset.reset();
-    reset(trashedAsset);
     nativeApi.reset();
     _stubLocalAlbumRepository();
     _stubLocalAssetRepository();

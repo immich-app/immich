@@ -1,8 +1,8 @@
+import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/auth.repository.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
-import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -10,7 +10,7 @@ class MockAssetApiRepository extends Mock implements AssetApiRepository {}
 
 class MockAssetMediaRepository extends Mock implements AssetMediaRepository {}
 
-class MockPermissionRepository extends Mock implements IPermissionRepository {}
+class MockPermissionRepository extends Mock implements PermissionRepository {}
 
 class MockAuthApiRepository extends Mock implements AuthApiRepository {}
 

@@ -20,7 +20,7 @@ import 'package:immich_mobile/infrastructure/repositories/settings.repository.da
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-const int targetVersion = 26;
+const int targetVersion = 27;
 
 Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   final int? storedVersion = Store.tryGet(StoreKey.version);
@@ -32,6 +32,10 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
   if (version < 26) {
     await _migrateTo26(drift);
+  }
+
+  if (version < 27) {
+    await _migrateTo27(drift);
   }
 
   if (storedVersion == null) {
@@ -142,6 +146,12 @@ Future<void> _migrateTo26(Drift drift) async {
   await migrator.migrateBool(StoreKey.legacyBackupRequireCharging, SettingsKey.backupRequireCharging);
   await migrator.migrateInt(StoreKey.legacyBackupTriggerDelay, SettingsKey.backupTriggerDelay);
   await migrator.migrateBool(StoreKey.legacySyncAlbums, SettingsKey.backupSyncAlbums);
+  await migrator.complete();
+}
+
+Future<void> _migrateTo27(Drift drift) async {
+  final migrator = _StoreMigrator(drift);
+  await migrator.migrateBool(.legacyManageLocalMediaAndroid, .trashSyncEnabled);
   await migrator.complete();
 }
 

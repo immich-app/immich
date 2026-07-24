@@ -7,9 +7,9 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
@@ -28,7 +28,7 @@ class AdvancedSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
-    final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
+    final trashSyncEnabled = useState(ref.read(appConfigProvider).trashSyncEnabled);
     final isManageMediaSupported = useState(false);
     final manageMediaAndroidPermission = useState(false);
     final levelId = useState<int>(ref.read(appConfigProvider).logLevel.index);
@@ -75,14 +75,16 @@ class AdvancedSettings extends HookConsumerWidget {
           children: [
             SettingsSwitchListTile(
               enabled: true,
-              valueNotifier: manageLocalMediaAndroid,
+              valueNotifier: trashSyncEnabled,
               title: "advanced_settings_sync_remote_deletions_title".tr(),
               subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
               onChanged: (value) async {
+                trashSyncEnabled.value = value;
+                await ref.read(settingsProvider).write(.trashSyncEnabled, value);
                 if (value) {
-                  final result = await ref.read(permissionRepositoryProvider).requestManageMediaPermission();
-                  manageLocalMediaAndroid.value = result;
-                  manageMediaAndroidPermission.value = result;
+                  manageMediaAndroidPermission.value = await ref
+                      .read(permissionRepositoryProvider)
+                      .requestManageMediaPermission();
                 }
               },
             ),
@@ -90,12 +92,14 @@ class AdvancedSettings extends HookConsumerWidget {
               title: "manage_media_access_title".tr(),
               statusText: manageMediaAndroidPermission.value ? "allowed".tr() : "not_allowed".tr(),
               subtitle: "manage_media_access_rationale".tr(),
-              statusColor: manageLocalMediaAndroid.value && !manageMediaAndroidPermission.value
+              statusColor: trashSyncEnabled.value && !manageMediaAndroidPermission.value
                   ? const Color.fromARGB(255, 243, 188, 106)
                   : null,
               onActionTap: () async {
-                final result = await ref.read(permissionRepositoryProvider).manageMediaPermission();
-                manageMediaAndroidPermission.value = result;
+                await ref.read(permissionRepositoryProvider).manageMediaPermission();
+                manageMediaAndroidPermission.value = await ref
+                    .read(permissionRepositoryProvider)
+                    .hasManageMediaPermission();
               },
             ),
           ],

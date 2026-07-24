@@ -1762,6 +1762,10 @@ i0.Index get idxRemoteAssetChecksum => i0.Index(
   'idx_remote_asset_checksum',
   'CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)',
 );
+i0.Index get idxRemoteAssetSoftDeletedChecksum => i0.Index(
+  'idx_remote_asset_soft_deleted_checksum',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_soft_deleted_checksum ON remote_asset_entity (checksum) WHERE deleted_at IS NOT NULL',
+);
 i0.Index get idxRemoteAssetStackId => i0.Index(
   'idx_remote_asset_stack_id',
   'CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)',

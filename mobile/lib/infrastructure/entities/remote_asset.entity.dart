@@ -16,6 +16,11 @@ ON remote_asset_entity (owner_id, library_id, checksum)
 WHERE (library_id IS NOT NULL);
 ''')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_checksum ON remote_asset_entity (checksum)')
+@TableIndex.sql('''
+CREATE INDEX IF NOT EXISTS idx_remote_asset_soft_deleted_checksum
+ON remote_asset_entity (checksum)
+WHERE deleted_at IS NOT NULL
+''')
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_stack_id ON remote_asset_entity (stack_id)')
 @TableIndex.sql('''
 CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created
