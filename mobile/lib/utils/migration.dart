@@ -13,6 +13,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/feature_message.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
@@ -20,7 +21,7 @@ import 'package:immich_mobile/infrastructure/repositories/settings.repository.da
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-const int targetVersion = 26;
+const int targetVersion = 27;
 
 Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   final int? storedVersion = Store.tryGet(StoreKey.version);
@@ -34,12 +35,39 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
     await _migrateTo26(drift);
   }
 
+  if (version < 27 && !await _migrateTo27(drift)) {
+    await Store.put(StoreKey.version, 26);
+    return;
+  }
+
   if (storedVersion == null) {
     await FeatureMessageService(SettingsRepository.instance).markSeen();
   }
 
   await Store.put(StoreKey.version, targetVersion);
   return;
+}
+
+Future<bool> _migrateTo27(Drift drift) async {
+  // DATE_ADDED can be later than DATE_MODIFIED after a file is copied.
+  if (!CurrentPlatform.isAndroid) {
+    return true;
+  }
+  try {
+    await drift.customStatement(
+      "UPDATE local_asset_entity SET created_at = updated_at "
+      "WHERE julianday(updated_at) > julianday('1970-01-01T00:00:00Z') "
+      "AND julianday(created_at) > julianday(updated_at)",
+    );
+    await drift.customStatement(
+      "UPDATE trashed_local_asset_entity SET created_at = updated_at "
+      "WHERE julianday(updated_at) > julianday('1970-01-01T00:00:00Z') "
+      "AND julianday(created_at) > julianday(updated_at)",
+    );
+    return true;
+  } catch (_) {
+    return false;
+  }
 }
 
 Future<void> _migrateTo25() async {
