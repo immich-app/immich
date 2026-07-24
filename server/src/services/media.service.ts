@@ -43,7 +43,7 @@ import { getAssetFile, getDimensions } from 'src/utils/asset.util';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
-import { clamp, isFaceImportEnabled, isFacialRecognitionEnabled } from 'src/utils/misc';
+import { clamp } from 'src/utils/misc';
 import { getOutputDimensions } from 'src/utils/transform';
 
 interface UpsertFileOptions {
@@ -410,11 +410,7 @@ export class MediaService extends BaseService {
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
   async handleGeneratePersonThumbnail({ id }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
-    const { machineLearning, metadata, image } = await this.getConfig({ withCache: true });
-    if (!isFacialRecognitionEnabled(machineLearning) && !isFaceImportEnabled(metadata)) {
-      return JobStatus.Skipped;
-    }
-
+    const { image } = await this.getConfig({ withCache: true });
     const data = await this.personRepository.getDataForThumbnailGenerationJob(id);
     if (!data) {
       this.logger.error(`Could not generate person thumbnail for ${id}: missing data`);
