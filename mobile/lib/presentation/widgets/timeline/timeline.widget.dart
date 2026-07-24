@@ -25,6 +25,7 @@ import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.da
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/utils/debounce.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
@@ -155,6 +156,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
   double _baseScaleFactor = 3.0;
   int? _restoreAssetIndex;
 
+  final Debouncer _fastScrollDebouncer = Debouncer(interval: const Duration(milliseconds: 100));
+
   @override
   void initState() {
     super.initState();
@@ -248,9 +251,28 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _fastScrollDebouncer.dispose();
     _scrollController.dispose();
     _eventSubscription?.cancel();
     super.dispose();
+  }
+
+  /// Track whether the timeline is moving fast enough to defer per-row asset loading
+  bool _onScrollVelocityNotification(ScrollNotification notification) {
+    // Only consider the primary timeline ScrollView (no nested views) and update events
+    if (notification.depth != 0 || notification is! ScrollUpdateNotification) {
+      return false;
+    }
+
+    // Use Flutter's built in fast velocity tracking
+    if (_scrollController.position.recommendDeferredLoading(context)) {
+      ref.read(timelineStateProvider.notifier).setRecommendDeferredLoading(true);
+
+      // We cannot rely on scroll end events, as the timeline scrubber jumps from position
+      // to position, resulting in large spikes in velocity followed by low velocity
+      _fastScrollDebouncer.run(() => ref.read(timelineStateProvider.notifier).setRecommendDeferredLoading(false));
+    }
+    return false;
   }
 
   void _scrollToTop() {
@@ -258,15 +280,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
       return;
     }
 
-    final timelineState = ref.read(timelineStateProvider.notifier);
-    timelineState.setScrubbing(true);
-    _scrollController
-        .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
-        .whenComplete(() => timelineState.setScrubbing(false));
+    _scrollController.animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
   }
 
   void _scrollToDate(DateTime date) {
-    final timelineState = ref.read(timelineStateProvider.notifier);
     final asyncSegments = ref.read(timelineSegmentProvider);
     asyncSegments.whenData((segments) {
       // Find the segment that contains assets from the target date
@@ -293,16 +310,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
       if (fallbackSegment != null) {
         // Scroll to the segment with a small offset to show the header
         final targetOffset = fallbackSegment.startOffset - 50;
-        timelineState.setScrubbing(true);
-        _scrollController
-            .animateTo(
-              targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-            )
-            .whenComplete(() => timelineState.setScrubbing(false));
-      } else {
-        timelineState.setScrubbing(false);
+        _scrollController.animateTo(
+          targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
       }
     });
   }
@@ -497,7 +509,10 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                   child: Stack(
                     clipBehavior: Clip.none,
                     children: [
-                      timeline,
+                      NotificationListener<ScrollNotification>(
+                        onNotification: _onScrollVelocityNotification,
+                        child: timeline,
+                      ),
                       if (isBottomWidgetVisible)
                         Positioned(
                           top: MediaQuery.paddingOf(context).top,
