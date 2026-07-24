@@ -1,5 +1,6 @@
+import { Settings } from 'luxon';
 import { asDateString, asDateTimeString } from 'src/utils/date';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 describe('asDateString', () => {
   it('should return null for null input', () => {
@@ -10,9 +11,18 @@ describe('asDateString', () => {
     expect(asDateString('2000-01-15')).toBe('2000-01-15');
   });
 
-  it('should return the local calendar date, not the UTC date', () => {
-    const date = new Date(2000, 0, 15); // 15 Jan 2000, local midnight
+  afterEach(() => {
+    Settings.defaultZone = 'system';
+  });
+
+  it('should return the UTC calendar date', () => {
+    const date = new Date('2000-01-15'); // parsed as UTC midnight, like a database `date` column
     expect(asDateString(date)).toBe('2000-01-15');
+  });
+
+  it('should not shift the date when the server runs in a timezone behind UTC', () => {
+    Settings.defaultZone = 'America/Chicago';
+    expect(asDateString(new Date('1994-09-01'))).toBe('1994-09-01');
   });
 
   it('should correctly pad years with a leading 0', () => {
