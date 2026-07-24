@@ -4,6 +4,7 @@
   import OnEvents from '$lib/components/OnEvents.svelte';
   import ButtonContextMenu from '$lib/components/shared-components/context-menu/ButtonContextMenu.svelte';
   import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
   import ChangeDate from '$lib/components/timeline/actions/ChangeDateAction.svelte';
   import ChangeLocation from '$lib/components/timeline/actions/ChangeLocationAction.svelte';
   import DeleteAssets from '$lib/components/timeline/actions/DeleteAssetsAction.svelte';
@@ -16,6 +17,7 @@
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
   import { Route } from '$lib/route';
+  import { getAssetBulkActions } from '$lib/services/asset.service';
   import { getUserActions } from '$lib/services/user.service';
   import { AssetVisibility } from '@immich/sdk';
   import { mdiDotsVertical } from '@mdi/js';
@@ -44,6 +46,11 @@
     assetMultiSelectManager.clear();
     timelineManager.removeAssets(assetIds);
   };
+
+  // Every asset here already has Locked visibility, so the shared AddToAlbum action (which is
+  // selection-aware: it only offers locked albums when the selection is locked) naturally offers
+  // locked albums here too -- no bespoke handling needed.
+  const { AddToAlbum } = $derived(getAssetBulkActions($t));
 
   const { LockSession } = $derived(getUserActions($t));
 
@@ -80,6 +87,7 @@
     <SelectAllAssets withText {timelineManager} assetInteraction={assetMultiSelectManager} />
     <SetVisibilityAction unlock onVisibilitySet={handleMoveOffLockedFolder} />
     <ButtonContextMenu icon={mdiDotsVertical} title={$t('menu')}>
+      <MenuOption icon={AddToAlbum.icon} text={AddToAlbum.title} onClick={AddToAlbum.onAction} />
       <DownloadAction menuItem />
       <ChangeDate menuItem />
       <ChangeLocation menuItem />

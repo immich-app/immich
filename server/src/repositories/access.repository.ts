@@ -73,7 +73,7 @@ class AlbumAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, albumIds: Set<string>) {
+  async checkOwnerAccess(userId: string, albumIds: Set<string>, hasElevatedPermission: boolean | undefined = true) {
     if (albumIds.size === 0) {
       return new Set<string>();
     }
@@ -89,13 +89,19 @@ class AlbumAccess {
           .on('album_user.userId', '=', userId),
       )
       .where('album.deletedAt', 'is', null)
+      .$if(!hasElevatedPermission, (eb) => eb.where('album.isLocked', '=', false))
       .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkSharedAlbumAccess(userId: string, albumIds: Set<string>, access: AlbumUserRole) {
+  async checkSharedAlbumAccess(
+    userId: string,
+    albumIds: Set<string>,
+    access: AlbumUserRole,
+    hasElevatedPermission: boolean | undefined = true,
+  ) {
     if (albumIds.size === 0) {
       return new Set<string>();
     }
@@ -112,6 +118,7 @@ class AlbumAccess {
       .where('album.deletedAt', 'is', null)
       .where('user.id', '=', userId)
       .where('album_user.role', 'in', [...accessRole])
+      .$if(!hasElevatedPermission, (eb) => eb.where('album.isLocked', '=', false))
       .execute()
       .then((albums) => new Set(albums.map((album) => album.id)));
   }
@@ -143,7 +150,7 @@ class AssetAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkAlbumAccess(userId: string, assetIds: Set<string>) {
+  async checkAlbumAccess(userId: string, assetIds: Set<string>, hasElevatedPermission: boolean | undefined = true) {
     if (assetIds.size === 0) {
       return new Set<string>();
     }
@@ -167,6 +174,11 @@ class AssetAccess {
       )
       .where('user.id', '=', userId)
       .where('album.deletedAt', 'is', null)
+      // Album membership alone shouldn't bypass a lock: if the ONLY album granting access to this
+      // asset is locked, a non-elevated session (even the owner/an editor/a viewer of that album)
+      // must not gain asset-view access through this path. Without this, locking an album would be
+      // pointless -- its own members could still view its assets directly without ever unlocking.
+      .$if(!hasElevatedPermission, (eb) => eb.where('album.isLocked', '=', false))
       .execute()
       .then((assets) => {
         const allowedIds = new Set<string>();

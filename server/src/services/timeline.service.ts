@@ -41,7 +41,13 @@ export class TimelineService extends BaseService {
       }
     }
 
-    return { ...options, userIds };
+    // Safe to include Locked-visibility assets scoped to this album: timeBucketChecks() already
+    // ran requireAccess(AlbumRead) above, which denies access to a locked album entirely unless
+    // the requester's session is elevated. So by the time we get here, either the album isn't
+    // locked (Locked assets can't exist in it anyway), or the requester is verified-elevated.
+    const includeLockedAlbumAssets = !!dto.albumId;
+
+    return { ...options, userIds, includeLockedAlbumAssets };
   }
 
   private async timeBucketChecks(auth: AuthDto, dto: TimeBucketDto) {

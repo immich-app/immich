@@ -89,7 +89,14 @@
   const sharedLink = getSharedLink();
 </script>
 
-<CommandPaletteDefaultProvider name={$t('assets')} actions={withoutIcons([Close, Cast, ...Object.values(Actions)])} />
+<CommandPaletteDefaultProvider
+  name={$t('assets')}
+  actions={withoutIcons([
+    Close,
+    Cast,
+    ...Object.values(Actions).filter((action) => !album?.isLocked || action !== Actions.AddToAlbum),
+  ])}
+/>
 
 <div
   class="flex h-16 place-items-center justify-between bg-linear-to-b from-black/40 px-3 drop-shadow-[0_0_1px_rgba(0,0,0,0.4)] transition-transform duration-200"
@@ -145,7 +152,12 @@
           <RestoreAction {asset} {onAction} />
         {/if}
 
-        <ActionMenuItem action={Actions.AddToAlbum} />
+        {#if !album?.isLocked}
+          <!-- Every asset here already belongs to this album. If it's locked, "Add to album" can
+               only ever be a no-op duplicate or a rejected cross-locked-album error, so there's
+               nothing useful it can do from within the album's own viewer. -->
+          <ActionMenuItem action={Actions.AddToAlbum} />
+        {/if}
         {#if album && (isOwner || isAlbumOwner)}
           <RemoveFromAlbumAction {album} onRemove={onRemoveFromAlbum} assetIds={[asset.id]} menuItem />
         {/if}

@@ -67,8 +67,14 @@ export const getAssetBulkActions = ($t: MessageFormatter) => {
     title: $t('add_to_album'),
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
-    onAction: () =>
-      modalManager.show(AssetAddToAlbumModal, { assetIds: assetMultiSelectManager.assets.map((asset) => asset.id) }),
+    onAction: () => {
+      const assets = assetMultiSelectManager.assets;
+      // Which albums the picker offers depends on what's selected, not where the button was
+      // clicked: a locked selection can only go into a locked album, same as opening this from
+      // the Locked Folder view itself.
+      const lockedOnly = assets.some((asset) => asset.visibility === AssetVisibility.Locked);
+      modalManager.show(AssetAddToAlbumModal, { assetIds: assets.map((asset) => asset.id), lockedOnly });
+    },
   };
 
   const RefreshFacesJob: ActionItem = {
@@ -177,8 +183,12 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     title: $t('add_to_album'),
     icon: mdiPlus,
     shortcuts: [{ key: 'l' }],
-    $if: () => asset.visibility !== AssetVisibility.Locked && !asset.isTrashed,
-    onAction: () => modalManager.show(AssetAddToAlbumModal, { assetIds: [asset.id] }),
+    $if: () => !asset.isTrashed,
+    onAction: () =>
+      modalManager.show(AssetAddToAlbumModal, {
+        assetIds: [asset.id],
+        lockedOnly: asset.visibility === AssetVisibility.Locked,
+      }),
   };
 
   const Offline: ActionItem = {

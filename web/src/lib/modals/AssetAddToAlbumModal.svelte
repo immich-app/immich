@@ -6,9 +6,10 @@
   type Props = {
     assetIds: string[];
     onClose: () => void;
+    lockedOnly?: boolean;
   };
 
-  const { assetIds, onClose }: Props = $props();
+  const { assetIds, onClose, lockedOnly = false }: Props = $props();
 
   const handleClose = async (albums?: AlbumResponseDto[]) => {
     const albumIds = (albums ?? []).map(({ id }) => id);
@@ -24,4 +25,4 @@
   };
 </script>
 
-<AlbumPickerModal onClose={handleClose} />
+<AlbumPickerModal onClose={handleClose} {assetIds} {lockedOnly} />

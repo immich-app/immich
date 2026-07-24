@@ -4,8 +4,8 @@
   import { getContextMenuPositionFromEvent, type ContextMenuPosition } from '$lib/utils/context-menu';
   import { getShortDateRange } from '$lib/utils/date-time';
   import { type AlbumResponseDto } from '@immich/sdk';
-  import { IconButton } from '@immich/ui';
-  import { mdiDotsVertical } from '@mdi/js';
+  import { Icon, IconButton } from '@immich/ui';
+  import { mdiDotsVertical, mdiLock } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
@@ -60,10 +60,15 @@
 
   <div class="mt-4">
     <p
-      class="line-clamp-2 w-full text-lg/6 font-semibold text-black group-hover:text-primary dark:text-white"
+      class="line-clamp-2 flex w-full items-center gap-1 text-lg/6 font-semibold text-black group-hover:text-primary dark:text-white"
       data-testid="album-name"
       title={album.albumName}
     >
+      {#if album.isLocked}
+        <span title={$t('lock_album')} data-testid="album-locked-icon" class="shrink-0">
+          <Icon icon={mdiLock} size="16" />
+        </span>
+      {/if}
       {album.albumName}
     </p>
 

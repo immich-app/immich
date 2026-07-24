@@ -35,6 +35,7 @@ select distinct
   "album"."updatedAt",
   "album"."albumThumbnailAssetId" as "thumbnailAssetId",
   "album"."isActivityEnabled",
+  "album"."isLocked",
   "album"."order",
   "album"."updateId"
 from

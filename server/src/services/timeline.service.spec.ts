@@ -53,7 +53,11 @@ describe(TimelineService.name, () => {
         json,
       );
 
-      expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['album-id']));
+      expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['album-id']),
+        undefined,
+      );
       expect(mocks.asset.getTimeBucket).toHaveBeenCalledWith(
         'bucket',
         {
