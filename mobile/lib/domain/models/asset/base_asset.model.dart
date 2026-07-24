@@ -63,8 +63,7 @@ sealed class BaseAsset {
 
   /// Returns true if this image is likely a 360° equirectangular panorama,
   //  detected by a ~2:1 aspect ratio (width ≥ 1.99× height) and has local content available.
-  bool get isPhotosphere =>
-      isImage && hasLocal && width != null && height != null && height! > 0 && (width! / height!) >= 1.99;
+  bool get isPhotosphere => isImage && width != null && height != null && height! > 0 && (width! / height!) >= 1.99;
 
   // Same asset even if localId is known on one side but not the other (heroTag isn't stable then)
   bool refersToSameAsset(BaseAsset other) {
