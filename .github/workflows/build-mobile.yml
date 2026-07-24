@@ -74,6 +74,7 @@ jobs:
     needs: pre-job
     permissions:
       contents: read
+      deployments: write
       pull-requests: write
     if: ${{ github.actor != 'dependabot[bot]' && fromJSON(needs.pre-job.outputs.should_run).mobile == true }}
     runs-on: mich
@@ -145,9 +146,18 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
           IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
+          IS_MAIN_DEPLOYMENT: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          IS_DEPLOYMENT_BUILD: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork) }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
+          if [[ $IS_DEPLOYMENT_BUILD == 'true' ]]; then
+            export ANDROID_APP_LABEL='Immich Staging'
+          fi
+
           if [[ $IS_MAIN == 'true' ]]; then
+            if [[ $IS_MAIN_DEPLOYMENT == 'true' ]]; then
+              export ANDROID_APPLICATION_ID=app.immich.main
+            fi
             flutter build apk --release
             flutter build apk --release --split-per-abi --target-platform android-arm,android-arm64,android-x64
           else
@@ -160,6 +170,50 @@ jobs:
         with:
           name: release-apk-signed
           path: mobile/build/app/outputs/flutter-apk/*.apk
+
+      - name: Publish Android APK deployment
+        if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork) }}
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          APK_URL: ${{ steps.upload-apk.outputs.artifact-url }}
+        with:
+          script: |
+            const artifactUrl = process.env.APK_URL;
+            const isPullRequest = context.eventName === "pull_request";
+            const pullNumber = context.payload.pull_request?.number;
+            const environment = isPullRequest ? `mobile-android-apk-pr-${pullNumber}` : "mobile-android-apk";
+            const description = isPullRequest
+              ? `Signed Android APK for PR #${pullNumber}`
+              : "Latest signed Android APK from main";
+            const ref = isPullRequest ? context.payload.pull_request.head.sha : context.sha;
+
+            if (!artifactUrl) {
+              throw new Error("The Android APK artifact URL was not generated");
+            }
+
+            const runUrl = `${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const deployment = await github.rest.repos.createDeployment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref,
+              environment,
+              description,
+              auto_merge: false,
+              required_contexts: [],
+              production_environment: false,
+              transient_environment: isPullRequest,
+            });
+
+            await github.rest.repos.createDeploymentStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              deployment_id: deployment.data.id,
+              state: "success",
+              environment,
+              environment_url: artifactUrl,
+              log_url: runUrl,
+              description: "Signed APK artifact is ready for testing",
+            });
 
       - name: Comment APK download link on PR
         if: ${{ github.event_name == 'pull_request' && !github.event.pull_request.head.repo.fork }}
