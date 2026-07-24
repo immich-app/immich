@@ -50,10 +50,12 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
                 faces.isVisible.equals(true) &
                 faces.deletedAt.isNull(),
           )
-          ..groupBy([people.id], having: faces.id.count().isBiggerOrEqualValue(minFaces) | people.name.equals('').not())
+          ..groupBy([
+            people.id,
+          ], having: faces.assetId.count(distinct: true).isBiggerOrEqualValue(minFaces) | people.name.equals('').not())
           ..orderBy([
             OrderingTerm(expression: people.name.equals('').not(), mode: OrderingMode.desc),
-            OrderingTerm(expression: faces.id.count(), mode: OrderingMode.desc),
+            OrderingTerm(expression: faces.assetId.count(distinct: true), mode: OrderingMode.desc),
           ]);
 
     return query.map((row) {

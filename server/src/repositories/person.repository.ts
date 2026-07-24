@@ -168,7 +168,7 @@ export class PersonRepository {
         eb.or([
           eb('person.name', '!=', ''),
           eb(
-            (innerEb) => innerEb.fn.count('asset_face.assetId'),
+            (innerEb) => innerEb.fn.count(innerEb.fn('distinct', ['asset_face.assetId'])),
             '>=',
             sql<number>`COALESCE(
               (SELECT value -> 'people' ->> 'minimumFaces'
@@ -201,7 +201,7 @@ export class PersonRepository {
       .$if(!options?.closestFaceAssetId, (qb) =>
         qb
           .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
-          .orderBy((eb) => eb.fn.count('asset_face.assetId'), 'desc')
+          .orderBy((eb) => eb.fn.count(eb.fn('distinct', ['asset_face.assetId'])), 'desc')
           .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
           .orderBy('person.createdAt'),
       )

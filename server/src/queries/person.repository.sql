@@ -42,7 +42,7 @@ group by
 having
   (
     "person"."name" != $3
-    or count("asset_face"."assetId") >= COALESCE(
+    or count(distinct ("asset_face"."assetId")) >= COALESCE(
       (
         SELECT
           value -> 'people' ->> 'minimumFaces'
@@ -59,7 +59,7 @@ order by
   "person"."isHidden" asc,
   "person"."isFavorite" desc,
   NULLIF(person.name, '') is null asc,
-  count("asset_face"."assetId") desc,
+  count(distinct ("asset_face"."assetId")) desc,
   NULLIF(person.name, '') asc nulls last,
   "person"."createdAt"
 limit
