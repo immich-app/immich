@@ -64,9 +64,8 @@ export class UserTable {
   @Column({ unique: true, nullable: true, default: null })
   storageLabel!: string | null;
 
-  // TODO remove default, make nullable, and convert empty spaces to null
-  @Column({ default: '' })
-  name!: string;
+  @Column({ nullable: true, default: null })
+  name!: string | null;
 
   @Column({ type: 'bigint', nullable: true })
   quotaSizeInBytes!: ColumnType<number> | null;
