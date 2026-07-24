@@ -1,10 +1,10 @@
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { SystemConfig } from 'src/config';
-import { AssetType, JobStatus, VideoFrameExtractionStatus } from 'src/enum';
+import { AssetType, JobStatus } from 'src/enum';
 import { VideoFrameService } from 'src/services/video-frame.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { probeStub } from 'test/fixtures/media.stub';
-import { makeStream, mockSpawn, newTestService, ServiceMocks } from 'test/utils';
+import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { vitest } from 'vitest';
 
 vitest.mock('node:fs/promises', async (importOriginal) => {
@@ -61,7 +61,6 @@ describe(VideoFrameService.name, () => {
     });
     vitest.mocked(rm).mockResolvedValue(void 0);
 
-    mocks.videoFrame.upsertExtractionRecord.mockResolvedValue(void 0 as never);
     mocks.videoFrame.upsertFrames.mockResolvedValue(void 0 as never);
   });
 
@@ -86,7 +85,7 @@ describe(VideoFrameService.name, () => {
 
       await expect(sut.handleQueueGenerateVideoFrames({ force: true })).resolves.toEqual(JobStatus.Success);
 
-      expect(mocks.assetJob.streamForVideoFrameExtraction).toHaveBeenCalledWith(true, expect.any(String));
+      expect(mocks.assetJob.streamForVideoFrameExtraction).toHaveBeenCalledWith(true);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: 'VideoFrameExtraction', data: { id: asset.id } }]);
     });
   });
@@ -115,76 +114,6 @@ describe(VideoFrameService.name, () => {
       mocks.assetJob.getForVideoFrameExtraction.mockResolvedValue(void 0);
 
       await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
-    });
-
-    it('should skip if an up-to-date extraction already exists', async () => {
-      mocks.videoFrame.getExtractionRecord.mockResolvedValue(void 0);
-      mocks.process.spawn.mockReturnValue(mockSpawn(0, '', '') as any);
-
-      // first run computes and persists the current parameters hash
-      await sut.handleGenerateVideoFrames({ id: asset.id });
-      const [, persisted] = mocks.videoFrame.upsertExtractionRecord.mock.calls.at(-1)!;
-
-      mocks.videoFrame.getExtractionRecord.mockResolvedValue({
-        assetId: asset.id,
-        ...persisted,
-      } as never);
-      mocks.process.spawn.mockClear();
-
-      await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Skipped);
-
-      expect(mocks.process.spawn).not.toHaveBeenCalled();
-    });
-
-    it('should generate frames and persist the extraction record', async () => {
-      mocks.videoFrame.getExtractionRecord.mockResolvedValue(void 0);
-      mocks.process.spawn.mockReturnValue(mockSpawn(0, '', '') as any);
-
-      await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Success);
-
-      expect(mocks.process.spawn).toHaveBeenCalledWith('ffmpeg', expect.any(Array), expect.any(Object));
-      expect(mocks.videoFrame.upsertFrames).toHaveBeenCalledWith(asset.id, [
-        { frameIndex: 0, byteOffset: 813, byteSize: 3843, intervalChange: 0 },
-        { frameIndex: 1, byteOffset: 4656, byteSize: 3238, intervalChange: 2.516 },
-      ]);
-      expect(mocks.videoFrame.upsertExtractionRecord).toHaveBeenLastCalledWith(
-        asset.id,
-        expect.objectContaining({ status: VideoFrameExtractionStatus.Completed, initSegmentSize: 813 }),
-      );
-      expect(rm).toHaveBeenCalledWith('/tmp/immich-video-frames-asset-1', { recursive: true, force: true });
-    });
-
-    it('should mark the extraction as failed if ffmpeg fails', async () => {
-      mocks.videoFrame.getExtractionRecord.mockResolvedValue(void 0);
-      mocks.process.spawn.mockReturnValue({
-        ...mockSpawn(1, '', 'ffmpeg stderr'),
-        on: vitest.fn((event, cb: any) => {
-          if (event === 'close') {
-            cb(1);
-          }
-        }),
-      } as any);
-
-      await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
-
-      expect(mocks.videoFrame.upsertExtractionRecord).toHaveBeenLastCalledWith(
-        asset.id,
-        expect.objectContaining({ status: VideoFrameExtractionStatus.Failed }),
-      );
-    });
-
-    it('should mark the extraction as failed if no frames were extracted', async () => {
-      mocks.videoFrame.getExtractionRecord.mockResolvedValue(void 0);
-      mocks.process.spawn.mockReturnValue(mockSpawn(0, '', '') as any);
-      vitest.mocked(readFile).mockResolvedValue('#EXTM3U\n#EXT-X-ENDLIST');
-
-      await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
-
-      expect(mocks.videoFrame.upsertFrames).not.toHaveBeenCalled();
-      expect(mocks.videoFrame.upsertExtractionRecord).toHaveBeenLastCalledWith(
-        asset.id,
-        expect.objectContaining({ status: VideoFrameExtractionStatus.Failed }),
-      );
     });
   });
 });

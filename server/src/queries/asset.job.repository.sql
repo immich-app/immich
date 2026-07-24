@@ -703,13 +703,16 @@ select
   "asset"."id"
 from
   "asset"
-  left join "video_frame_extraction" on "video_frame_extraction"."assetId" = "asset"."id"
 where
   "asset"."type" = 'VIDEO'
-  and (
-    "video_frame_extraction"."assetId" is null
-    or "video_frame_extraction"."status" != 'completed'
-    or "video_frame_extraction"."parametersHash" != $1
+  and not exists (
+    select
+      "asset_file"."id"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'sampled_video'
   )
   and "asset"."visibility" != 'hidden'
   and "asset"."deletedAt" is null

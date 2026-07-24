@@ -131,6 +131,7 @@ export class StorageCore {
   }
 
   static getVideoFrameArtifactPath(asset: ThumbnailPathEntity) {
+    // TODO: store in same place as encoded videos
     return StorageCore.getNestedPath(StorageFolder.VideoFrames, asset.ownerId, `${asset.id}.m4s`);
   }
 
@@ -333,7 +334,8 @@ export class StorageCore {
       case AssetFileType.Thumbnail:
       case AssetFileType.Preview:
       case AssetFileType.Sidecar:
-      case AssetPathType.EncodedVideo: {
+      case AssetPathType.EncodedVideo:
+      case AssetFileType.SampledVideo: {
         return this.assetRepository.upsertFile({ assetId: id, type: pathType as AssetFileType, path: newPath });
       }
 

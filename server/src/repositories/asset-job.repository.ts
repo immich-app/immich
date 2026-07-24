@@ -4,7 +4,7 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { AssetFileType, AssetStatus, AssetType, AssetVisibility, VideoFrameExtractionStatus } from 'src/enum';
+import { AssetFileType, AssetStatus, AssetType, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import {
   anyUuid,
@@ -353,20 +353,23 @@ export class AssetJobRepository {
   }
 
   @GenerateSql({ params: [undefined, DummyValue.STRING], stream: true })
-  streamForVideoFrameExtraction(force: boolean | undefined, parametersHash: string) {
+  streamForVideoFrameExtraction(force: boolean | undefined) {
     return this.db
       .selectFrom('asset')
       .select(['asset.id'])
       .where('asset.type', '=', sql.lit(AssetType.Video))
       .$if(!force, (qb) =>
         qb
-          .leftJoin('video_frame_extraction', 'video_frame_extraction.assetId', 'asset.id')
           .where((eb) =>
-            eb.or([
-              eb('video_frame_extraction.assetId', 'is', null),
-              eb('video_frame_extraction.status', '!=', sql.lit(VideoFrameExtractionStatus.Completed)),
-              eb('video_frame_extraction.parametersHash', '!=', parametersHash),
-            ]),
+            eb.not(
+              eb.exists(
+                eb
+                  .selectFrom('asset_file')
+                  .select('asset_file.id')
+                  .whereRef('asset_file.assetId', '=', 'asset.id')
+                  .where('asset_file.type', '=', sql.lit(AssetFileType.SampledVideo)),
+              ),
+            ),
           )
           .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
       )

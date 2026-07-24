@@ -10,19 +10,15 @@
  * ```
  */
 export function parseByteRangePlaylist(content: string): {
-  initSegmentSize: number;
-  frames: { byteOffset: number; byteSize: number }[];
+  byteRanges: { byteOffset: number; byteSize: number }[];
 } {
-  const initMatch = /^#EXT-X-MAP:URI="[^"]*",BYTERANGE="(\d+)@(\d+)"/m.exec(content);
-  const initSegmentSize = initMatch ? Math.trunc(Number(initMatch[1])) : 0;
-
-  const frames: { byteOffset: number; byteSize: number }[] = [];
+  const byteRanges: { byteOffset: number; byteSize: number }[] = [];
   const byteRangeRegex = /^#EXT-X-BYTERANGE:(\d+)@(\d+)/gm;
   for (const match of content.matchAll(byteRangeRegex)) {
-    frames.push({ byteSize: Math.trunc(Number(match[1])), byteOffset: Math.trunc(Number(match[2])) });
+    byteRanges.push({ byteSize: Math.trunc(Number(match[1])), byteOffset: Math.trunc(Number(match[2])) });
   }
 
-  return { initSegmentSize, frames };
+  return { byteRanges };
 }
 
 /**

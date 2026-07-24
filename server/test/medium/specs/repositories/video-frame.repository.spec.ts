@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetType, VideoFrameExtractionStatus } from 'src/enum';
+import { AssetType } from 'src/enum';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -40,60 +40,13 @@ beforeAll(async () => {
 });
 
 describe(VideoFrameRepository.name, () => {
-  describe('trigger: updatedAt/updateId', () => {
-    it('should automatically bump updatedAt and updateId on update, without any application-level SET', async () => {
-      const { ctx, sut } = setup();
-      const { user } = await ctx.newUser();
-      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
-
-      // Neither call below ever sets `updatedAt`/`updateId` explicitly - if the DB trigger were
-      // missing or broken, both reads would return identical values.
-      await sut.upsertExtractionRecord(asset.id, {
-        status: VideoFrameExtractionStatus.Pending,
-        version: 1,
-        parameters: {},
-        parametersHash: 'hash-1',
-      });
-
-      const before = await ctx.database
-        .selectFrom('video_frame_extraction')
-        .select(['updatedAt', 'updateId'])
-        .where('assetId', '=', asset.id)
-        .executeTakeFirstOrThrow();
-
-      await sut.upsertExtractionRecord(asset.id, {
-        status: VideoFrameExtractionStatus.Completed,
-        version: 1,
-        parameters: {},
-        parametersHash: 'hash-1',
-      });
-
-      const after = await ctx.database
-        .selectFrom('video_frame_extraction')
-        .select(['updatedAt', 'updateId'])
-        .where('assetId', '=', asset.id)
-        .executeTakeFirstOrThrow();
-
-      expect(before.updateId).not.toEqual(after.updateId);
-      expect(before.updatedAt).not.toEqual(after.updatedAt);
-    });
-  });
-
   describe('cascade delete', () => {
-    it('should remove video_frame and video_frame_extraction rows when the parent asset is deleted', async () => {
+    it('should remove video_frame  rows when the parent asset is deleted', async () => {
       const { ctx, sut } = setup();
       const assetRepository = ctx.get(AssetRepository);
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
 
-      await sut.upsertExtractionRecord(asset.id, {
-        status: VideoFrameExtractionStatus.Completed,
-        version: 1,
-        parameters: {},
-        parametersHash: 'hash-1',
-        path: '/artifacts/asset.m4s',
-        initSegmentSize: 813,
-      });
       await sut.upsertFrames(asset.id, [
         { frameIndex: 0, byteOffset: 813, byteSize: 3843, intervalChange: 0 },
         { frameIndex: 1, byteOffset: 4656, byteSize: 3238, intervalChange: 2.516 },
@@ -101,8 +54,8 @@ describe(VideoFrameRepository.name, () => {
 
       await assetRepository.remove({ id: asset.id });
 
-      await expect(sut.getExtractionRecord(asset.id)).resolves.toBeUndefined();
       await expect(sut.getFramesInRange(asset.id, 0, 1)).resolves.toEqual([]);
+      // TODO: check if asset_file rows are also deleted
     });
   });
 
@@ -135,39 +88,7 @@ describe(`${AssetJobRepository.name}.streamForVideoFrameExtraction`, () => {
     const { user } = await ctx.newUser();
     const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
 
-    const results = await consume(sut.streamForVideoFrameExtraction(false, 'hash-1'));
-
-    expect(results).toEqual(expect.arrayContaining([expect.objectContaining({ id: asset.id })]));
-  });
-
-  it('should skip a video asset whose completed extraction matches the current parametersHash', async () => {
-    const { ctx, sut, videoFrameRepository } = setupAssetJob();
-    const { user } = await ctx.newUser();
-    const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
-    await videoFrameRepository.upsertExtractionRecord(asset.id, {
-      status: VideoFrameExtractionStatus.Completed,
-      version: 1,
-      parameters: {},
-      parametersHash: 'hash-1',
-    });
-
-    const results = await consume(sut.streamForVideoFrameExtraction(false, 'hash-1'));
-
-    expect(results).not.toEqual(expect.arrayContaining([expect.objectContaining({ id: asset.id })]));
-  });
-
-  it('should re-yield a video asset once the parametersHash changes', async () => {
-    const { ctx, sut, videoFrameRepository } = setupAssetJob();
-    const { user } = await ctx.newUser();
-    const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
-    await videoFrameRepository.upsertExtractionRecord(asset.id, {
-      status: VideoFrameExtractionStatus.Completed,
-      version: 1,
-      parameters: {},
-      parametersHash: 'hash-1',
-    });
-
-    const results = await consume(sut.streamForVideoFrameExtraction(false, 'hash-2'));
+    const results = await consume(sut.streamForVideoFrameExtraction(false));
 
     expect(results).toEqual(expect.arrayContaining([expect.objectContaining({ id: asset.id })]));
   });

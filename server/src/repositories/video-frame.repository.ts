@@ -1,10 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql } from 'kysely';
+import { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { VideoFrameExtractionStatus } from 'src/enum';
 import { DB } from 'src/schema';
-import { VideoFrameExtractionTable } from 'src/schema/tables/video-frame-extraction.table';
 import { VideoFrameTable } from 'src/schema/tables/video-frame.table';
 
 export type VideoFrameInsert = Omit<Insertable<VideoFrameTable>, 'assetId'>;
@@ -12,25 +10,6 @@ export type VideoFrameInsert = Omit<Insertable<VideoFrameTable>, 'assetId'>;
 @Injectable()
 export class VideoFrameRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
-
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getExtractionRecord(assetId: string) {
-    return this.db.selectFrom('video_frame_extraction').selectAll().where('assetId', '=', assetId).executeTakeFirst();
-  }
-
-  @GenerateSql({
-    params: [
-      DummyValue.UUID,
-      { status: DummyValue.STRING, version: DummyValue.NUMBER, parameters: {}, parametersHash: DummyValue.STRING },
-    ],
-  })
-  upsertExtractionRecord(assetId: string, record: Omit<Insertable<VideoFrameExtractionTable>, 'assetId'>) {
-    return this.db
-      .insertInto('video_frame_extraction')
-      .values({ assetId, ...record })
-      .onConflict((oc) => oc.column('assetId').doUpdateSet(record))
-      .execute();
-  }
 
   @GenerateSql({ params: [DummyValue.UUID, [{ frameIndex: 0, byteOffset: 0, byteSize: 0, intervalChange: 0 }]] })
   async upsertFrames(assetId: string, frames: VideoFrameInsert[]) {
@@ -72,32 +51,28 @@ export class VideoFrameRepository {
       .execute();
   }
 
-  /**
-   * Returns the extraction artifact's location (path/init segment size) joined with all of an asset's
-   * sampled frames, ordered by frame index - the single call a future ML-embedding consumer needs to
-   * read frame bytes (artifact location + per-frame byte offsets) without a second round-trip or
-   * reaching around this repository.
-   */
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async getFramesForEmbedding(assetId: string) {
-    const extraction = await this.db
-      .selectFrom('video_frame_extraction')
-      .select(['path', 'initSegmentSize'])
-      .where('assetId', '=', assetId)
-      .where('status', '=', sql.lit(VideoFrameExtractionStatus.Completed))
-      .executeTakeFirst();
+  // TODO: implement this in a follow-up PR (ML on extracted frames)
+  // @GenerateSql({ params: [DummyValue.UUID] })
+  // async getFramesForEmbedding(assetId: string) {
+  //   const extraction = await this.db
+  //     .selectFrom('asset')
+  //     .innerJoin('asset_file', 'asset.id', 'asset_file.assetId')
+  //     .select(['asset_file.path'])
+  //     .where('asset_file.assetId', '=', assetId)
+  //     .where('asset_file.type', '=', sql.lit(AssetFileType.SampledVideo))
+  //     .executeTakeFirst();
 
-    if (!extraction?.path) {
-      return null;
-    }
+  //   if (!extraction?.path) {
+  //     return null;
+  //   }
 
-    const frames = await this.db
-      .selectFrom('video_frame')
-      .selectAll()
-      .where('assetId', '=', assetId)
-      .orderBy('frameIndex', 'asc')
-      .execute();
+  //   const frames = await this.db
+  //     .selectFrom('video_frame')
+  //     .selectAll()
+  //     .where('assetId', '=', assetId)
+  //     .orderBy('frameIndex', 'asc')
+  //     .execute();
 
-    return { path: extraction.path, initSegmentSize: extraction.initSegmentSize, frames };
-  }
+  //   return { path: extraction.path, frames };
+  // }
 }

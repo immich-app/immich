@@ -60,6 +60,7 @@ export enum AssetFileType {
   Thumbnail = 'thumbnail',
   Sidecar = 'sidecar',
   EncodedVideo = 'encoded_video',
+  SampledVideo = 'sampled_video',
 }
 
 export enum AlbumUserRole {
@@ -393,18 +394,6 @@ export enum AssetStatus {
   Trashed = 'trashed',
   Deleted = 'deleted',
 }
-
-export enum VideoFrameExtractionStatus {
-  Pending = 'pending',
-  Processing = 'processing',
-  Completed = 'completed',
-  Failed = 'failed',
-}
-
-export const VideoFrameExtractionStatusSchema = z
-  .enum(VideoFrameExtractionStatus)
-  .describe('Video frame extraction status')
-  .meta({ id: 'VideoFrameExtractionStatus' });
 
 export enum SourceType {
   MachineLearning = 'machine-learning',
