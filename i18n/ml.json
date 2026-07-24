@@ -809,7 +809,6 @@
   "custom_date": "ഇഷ്ടാനുസൃത തീയതി",
   "custom_locale": "കസ്റ്റം ലൊക്കേൽ",
   "custom_locale_description": "ഭാഷയെയും പ്രദേശത്തെയും അടിസ്ഥാനമാക്കി തീയതികളും അക്കങ്ങളും ഫോർമാറ്റ് ചെയ്യുക",
-  "custom_url": "കസ്റ്റം URL",
   "cutoff_date_description": "അവസാനത്തെ ഫോട്ടോകൾ സൂക്ഷിക്കുക…",
   "cutoff_day": "{count, plural, one {ദിവസം} other {ദിവസങ്ങൾ}}",
   "cutoff_year": "{count, plural, one {വർഷം} other {വർഷങ്ങൾ}}",

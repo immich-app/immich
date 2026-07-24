@@ -754,7 +754,6 @@
   "custom_date": "मनचाही तिथि",
   "custom_locale": "कस्टम लोकेल",
   "custom_locale_description": "भाषा और क्षेत्र के आधार पर दिनांक और संख्याएँ प्रारूपित करें",
-  "custom_url": "कस्टम URL",
   "cutoff_date_description": "पिछले कितने फ़ोटो रखें…",
   "cutoff_day": "{count, plural, one {दिन} other {दिन}}",
   "cutoff_year": "{count, plural, one {वर्ष} other {वर्ष}}",

@@ -435,7 +435,7 @@
     "user_settings_description": "ব্যবহারকারী সেটিংস ম্যানেজ করুন",
     "user_successfully_removed": "সফলভাবে ইউজার {email}-কে সরিয়ে দেওয়া হয়েছে।",
     "version_check_enabled_description": "ভার্সন যাচাই চালু করুন",
-    "version_check_implications": "ভার্সন চেক ফিচারটি github.com-এর সঙ্গে নিয়মিত সংযোগের ওপর নির্ভরশীল",
+    "version_check_implications": "ভার্সন চেক ফিচারটি {server}-এর সঙ্গে নিয়মিত সংযোগের ওপর নির্ভরশীল",
     "version_check_settings": "ভার্সন যাচাই",
     "version_check_settings_description": "নতুন ভার্সনের নোটিফিকেশন চালু/বন্ধ করুন",
     "video_conversion_job": "ভিডিও ট্রান্সকোড করুন",
