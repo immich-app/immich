@@ -131,8 +131,7 @@ export class StorageCore {
   }
 
   static getVideoFrameArtifactPath(asset: ThumbnailPathEntity) {
-    // TODO: store in same place as encoded videos
-    return StorageCore.getNestedPath(StorageFolder.VideoFrames, asset.ownerId, `${asset.id}.m4s`);
+    return StorageCore.getNestedPath(StorageFolder.EncodedVideo, asset.ownerId, `${asset.id}.m4s`);
   }
 
   static getHlsSessionFolder({ ownerId, sessionId }: HlsSessionFolder) {
