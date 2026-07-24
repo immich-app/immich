@@ -61,6 +61,14 @@ run = [
 
 [tasks.open-api-dart]
 dir = "open-api"
+sources = [
+  "immich-openapi-specs.json",
+  "openapitools.json",
+  "templates/**/*",
+  "patch/*",
+  "bin/generate-dart-sdk.sh",
+]
+outputs = ["mobile/openapi/lib/"]
 run = "bash ./bin/generate-dart-sdk.sh"
 
 [tasks.open-api]
