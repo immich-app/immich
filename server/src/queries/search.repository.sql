@@ -218,13 +218,13 @@ with
   "cte" as (
     select
       "asset_face"."id",
-      "asset_face"."personId",
+      "asset_face"."faceClusterId",
       face_search.embedding <=> $1 as "distance"
     from
       "asset_face"
       inner join "asset" on "asset"."id" = "asset_face"."assetId"
       inner join "face_search" on "face_search"."faceId" = "asset_face"."id"
-      left join "person" on "person"."id" = "asset_face"."personId"
+      left join "face_cluster" on "face_cluster"."id" = "asset_face"."faceClusterId"
     where
       "asset"."ownerId" = any ($2::uuid[])
       and "asset"."deletedAt" is null
@@ -845,15 +845,16 @@ where
       "asset_face"."assetId"
     from
       "asset_face"
+      inner join "person" on "person"."faceClusterId" = "asset_face"."faceClusterId"
     where
       "asset_face"."assetId" = "asset"."id"
       and "asset_face"."deletedAt" is null
       and "asset_face"."isVisible" = $2
-      and "asset_face"."personId" = any ($3::uuid[])
+      and "person"."id" = any ($3::uuid[])
     group by
       "asset_face"."assetId"
     having
-      count(distinct "asset_face"."personId") = $4
+      count(distinct "person"."id") = $4
   )
 order by
   "asset"."fileCreatedAt" desc,
@@ -1370,11 +1371,12 @@ where
       select
       from
         "asset_face"
+        inner join "person" on "person"."faceClusterId" = "asset_face"."faceClusterId"
       where
         "asset_face"."assetId" = "asset"."id"
         and "asset_face"."deletedAt" is null
         and "asset_face"."isVisible" = $3
-        and "asset_face"."personId" = any ($4::uuid[])
+        and "person"."id" = any ($4::uuid[])
     )
   )
 order by

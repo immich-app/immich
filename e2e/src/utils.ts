@@ -434,12 +434,12 @@ export const utils = {
     return person;
   },
 
-  createFace: async ({ assetId, personId }: { assetId: string; personId: string }) => {
+  createFace: async ({ assetId, faceClusterId }: { assetId: string; faceClusterId: string }) => {
     if (!client) {
       return;
     }
 
-    await client.query('INSERT INTO asset_face ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
+    await client.query('INSERT INTO asset_face ("assetId", "faceClusterId") VALUES ($1, $2)', [assetId, faceClusterId]);
   },
 
   setPersonThumbnail: async (personId: string) => {

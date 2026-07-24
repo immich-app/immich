@@ -58,6 +58,7 @@ export class SyncRepository {
   assetMetadata: AssetMetadataSync;
   assetOcr: AssetOcrSync;
   authUser: AuthUserSync;
+  faceCluster: FaceClusterSync;
   memory: MemorySync;
   memoryToAsset: MemoryToAssetSync;
   partner: PartnerSync;
@@ -82,6 +83,7 @@ export class SyncRepository {
     this.assetMetadata = new AssetMetadataSync(this.db);
     this.assetOcr = new AssetOcrSync(this.db);
     this.authUser = new AuthUserSync(this.db);
+    this.faceCluster = new FaceClusterSync(this.db);
     this.memory = new MemorySync(this.db);
     this.memoryToAsset = new MemoryToAssetSync(this.db);
     this.partner = new PartnerSync(this.db);
@@ -434,21 +436,42 @@ class PersonSync extends BaseSync {
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('person', options)
-      .select([
-        'id',
-        'createdAt',
-        'updatedAt',
-        'ownerId',
-        'name',
-        'birthDate',
-        'isHidden',
-        'isFavorite',
-        'color',
-        'updateId',
-        'faceAssetId',
-      ])
+      .select(['id', 'createdAt', 'updatedAt', 'ownerId', 'isHidden', 'isFavorite', 'updateId', 'faceClusterId'])
       .where('ownerId', '=', options.userId)
       .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  getByFaceClusterId(faceClusterId: string, ownerId: string) {
+    return this.db
+      .selectFrom('person')
+      .selectAll()
+      .where('person.faceClusterId', '=', faceClusterId)
+      .where('person.ownerId', '=', ownerId)
+      .executeTakeFirst();
+  }
+}
+
+class FaceClusterSync extends BaseSync {
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('face_cluster_audit', options).select(['id', 'faceClusterId']).stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('face_cluster_audit', daysAgo);
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('face_cluster', options)
+      .select(['id', 'birthDate', 'createdAt', 'featureFaceAssetId', 'name', 'updateId', 'updatedAt'])
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getById(id: string) {
+    return this.db.selectFrom('face_cluster').selectAll().where('face_cluster.id', '=', id).executeTakeFirstOrThrow();
   }
 }
 
@@ -472,7 +495,7 @@ class AssetFaceSync extends BaseSync {
       .select([
         'asset_face.id',
         'assetId',
-        'personId',
+        'faceClusterId',
         'imageWidth',
         'imageHeight',
         'boundingBoxX1',

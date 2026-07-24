@@ -96,19 +96,19 @@ export class MediaService extends BaseService {
 
     await queueAll();
 
-    const people = this.personRepository.getAll(force ? undefined : { thumbnailPath: '' });
+    const people = this.personRepository.streamForQueueThumbnailGeneration(force ? undefined : '');
 
-    for await (const person of people) {
-      if (!person.faceAssetId) {
-        const face = await this.personRepository.getRandomFace(person.id);
+    for await (const { faceClusterId, personId, featureFaceAssetId } of people) {
+      if (!featureFaceAssetId) {
+        const face = await this.personRepository.getRandomFace(personId);
         if (!face) {
           continue;
         }
 
-        await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+        await this.personRepository.updateFaceCluster({ id: faceClusterId, featureFaceAssetId: face.id });
       }
 
-      jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: person.id } });
+      jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: personId } });
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await queueAll();
       }

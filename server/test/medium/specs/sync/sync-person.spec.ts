@@ -21,7 +21,8 @@ beforeAll(async () => {
 describe(SyncEntityType.PersonV1, () => {
   it('should detect and sync the first person', async () => {
     const { auth, ctx } = await setup();
-    const { person } = await ctx.newPerson({ ownerId: auth.user.id });
+    const { faceCluster } = await ctx.newFaceCluster();
+    const { person } = await ctx.newPerson({ ownerId: auth.user.id, faceClusterId: faceCluster.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PeopleV1]);
     expect(response).toEqual([
@@ -29,13 +30,13 @@ describe(SyncEntityType.PersonV1, () => {
         ack: expect.any(String),
         data: expect.objectContaining({
           id: person.id,
-          name: person.name,
+          name: faceCluster.name,
           isHidden: person.isHidden,
-          birthDate: person.birthDate,
-          faceAssetId: person.faceAssetId,
+          birthDate: faceCluster.birthDate,
+          faceAssetId: faceCluster.featureFaceAssetId,
           isFavorite: person.isFavorite,
           ownerId: auth.user.id,
-          color: person.color,
+          color: null,
         }),
         type: 'PersonV1',
       },

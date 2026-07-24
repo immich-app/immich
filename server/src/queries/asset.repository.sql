@@ -188,11 +188,14 @@ select
           "asset_face"
           left join lateral (
             select
-              "person".*
+              "person".*,
+              "face_cluster"."name",
+              "face_cluster"."birthDate"
             from
               "person"
+              inner join "face_cluster" on "face_cluster"."id" = "person"."faceClusterId"
             where
-              "asset_face"."personId" = "person"."id"
+              "asset_face"."faceClusterId" = "person"."faceClusterId"
           ) as "person" on true
         where
           "asset_face"."assetId" = "asset"."id"

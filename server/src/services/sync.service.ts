@@ -72,7 +72,9 @@ export const SYNC_TYPES_ORDER = [
   SyncRequestType.PartnerAssetExifsV1,
   SyncRequestType.MemoriesV1,
   SyncRequestType.MemoryToAssetsV1,
+  SyncRequestType.FaceClusterV1,
   SyncRequestType.PeopleV1,
+  SyncRequestType.PeopleV2,
   SyncRequestType.AssetFacesV1,
   SyncRequestType.AssetFacesV2,
   SyncRequestType.UserMetadataV1,
@@ -187,6 +189,8 @@ export class SyncService extends BaseService {
       [SyncRequestType.StacksV1]: () => this.syncStackV1(options, response, checkpointMap),
       [SyncRequestType.PartnerStacksV1]: () => this.syncPartnerStackV1(options, response, checkpointMap, session.id),
       [SyncRequestType.PeopleV1]: () => this.syncPeopleV1(options, response, checkpointMap),
+      [SyncRequestType.PeopleV2]: () => this.syncPeopleV2(options, response, checkpointMap),
+      [SyncRequestType.FaceClusterV1]: () => this.syncFaceClusterV1(options, response, checkpointMap),
       [SyncRequestType.AssetFacesV2]: () => this.syncAssetFacesV2(options, response, checkpointMap),
       [SyncRequestType.UserMetadataV1]: () => this.syncUserMetadataV1(options, response, checkpointMap),
       [SyncRequestType.AssetOcrV1]: () => this.syncAssetOcrV1(options, response, checkpointMap, auth),
@@ -221,6 +225,7 @@ export class SyncService extends BaseService {
     await this.syncRepository.memoryToAsset.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.partner.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.person.cleanupAuditTable(pruneThreshold);
+    await this.syncRepository.faceCluster.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.stack.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.user.cleanupAuditTable(pruneThreshold);
     await this.syncRepository.userMetadata.cleanupAuditTable(pruneThreshold);
@@ -829,6 +834,50 @@ export class SyncService extends BaseService {
     const upsertType = SyncEntityType.PersonV1;
     const upserts = this.syncRepository.person.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
+      const faceCluster = await this.syncRepository.faceCluster.getById(data.faceClusterId);
+      send(response, {
+        type: upsertType,
+        ids: [updateId],
+        data: {
+          birthDate: faceCluster.birthDate,
+          color: null,
+          createdAt: data.createdAt,
+          faceAssetId: faceCluster.featureFaceAssetId,
+          id: data.id,
+          isFavorite: data.isFavorite,
+          isHidden: data.isHidden,
+          name: faceCluster.name,
+          ownerId: data.ownerId,
+          updatedAt: data.updatedAt,
+        },
+      });
+    }
+  }
+
+  private async syncPeopleV2(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    const deleteType = SyncEntityType.PersonDeleteV1;
+    const deletes = this.syncRepository.person.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.PersonV2;
+    const upserts = this.syncRepository.person.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    for await (const { updateId, ...data } of upserts) {
+      send(response, { type: upsertType, ids: [updateId], data });
+    }
+  }
+
+  private async syncFaceClusterV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+    const deleteType = SyncEntityType.FaceClusterDeleteV1;
+    const deletes = this.syncRepository.faceCluster.getDeletes({ ...options, ack: checkpointMap[deleteType] });
+    for await (const { id, ...data } of deletes) {
+      send(response, { type: deleteType, ids: [id], data });
+    }
+
+    const upsertType = SyncEntityType.FaceClusterV1;
+    const upserts = this.syncRepository.faceCluster.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    for await (const { updateId, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data });
     }
   }
@@ -848,8 +897,11 @@ export class SyncService extends BaseService {
 
     const upsertType = SyncEntityType.AssetFaceV2;
     const upserts = this.syncRepository.assetFace.getUpserts({ ...options, ack: checkpointMap[upsertType] });
-    for await (const { updateId, ...data } of upserts) {
-      send(response, { type: upsertType, ids: [updateId], data });
+    for await (const { updateId, faceClusterId, ...data } of upserts) {
+      const person = faceClusterId
+        ? await this.syncRepository.person.getByFaceClusterId(faceClusterId, options.userId)
+        : undefined;
+      send(response, { type: upsertType, ids: [updateId], data: { ...data, personId: person?.id ?? null } });
     }
   }
 
