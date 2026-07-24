@@ -9,6 +9,10 @@ class RemoteAsset extends BaseAsset {
   final String? thumbHash;
   final AssetVisibility visibility;
   final String ownerId;
+  final String ownerName;
+  final AvatarColor ownerAvatarColor;
+  final bool ownerHasProfileImage;
+  final DateTime? ownerProfileChangedAt;
   final String? stackId;
   final String? livePhotoVideoId;
   final DateTime? uploadedAt;
@@ -19,6 +23,10 @@ class RemoteAsset extends BaseAsset {
     String? localId,
     required super.name,
     required this.ownerId,
+    this.ownerName = '',
+    this.ownerAvatarColor = AvatarColor.primary,
+    this.ownerHasProfileImage = false,
+    this.ownerProfileChangedAt,
     required super.checksum,
     required super.type,
     required super.createdAt,
@@ -80,6 +88,7 @@ class RemoteAsset extends BaseAsset {
     id: $id,
     name: $name,
     ownerId: $ownerId,
+    ownerName: $ownerName,
     type: $type,
     createdAt: $createdAt,
     updatedAt: $updatedAt,
@@ -109,6 +118,10 @@ class RemoteAsset extends BaseAsset {
     return super == other &&
         id == other.id &&
         ownerId == other.ownerId &&
+        ownerName == other.ownerName &&
+        ownerAvatarColor == other.ownerAvatarColor &&
+        ownerHasProfileImage == other.ownerHasProfileImage &&
+        ownerProfileChangedAt == other.ownerProfileChangedAt &&
         thumbHash == other.thumbHash &&
         visibility == other.visibility &&
         stackId == other.stackId &&
@@ -122,6 +135,10 @@ class RemoteAsset extends BaseAsset {
       super.hashCode ^
       id.hashCode ^
       ownerId.hashCode ^
+      ownerName.hashCode ^
+      ownerAvatarColor.hashCode ^
+      ownerHasProfileImage.hashCode ^
+      (ownerProfileChangedAt?.hashCode ?? 0) ^
       localId.hashCode ^
       thumbHash.hashCode ^
       visibility.hashCode ^
@@ -135,6 +152,10 @@ class RemoteAsset extends BaseAsset {
     String? localId,
     String? name,
     String? ownerId,
+    String? ownerName,
+    AvatarColor? ownerAvatarColor,
+    bool? ownerHasProfileImage,
+    DateTime? ownerProfileChangedAt,
     String? checksum,
     AssetType? type,
     DateTime? createdAt,
@@ -156,6 +177,10 @@ class RemoteAsset extends BaseAsset {
       localId: localId ?? this.localId,
       name: name ?? this.name,
       ownerId: ownerId ?? this.ownerId,
+      ownerName: ownerName ?? this.ownerName,
+      ownerAvatarColor: ownerAvatarColor ?? this.ownerAvatarColor,
+      ownerHasProfileImage: ownerHasProfileImage ?? this.ownerHasProfileImage,
+      ownerProfileChangedAt: ownerProfileChangedAt ?? this.ownerProfileChangedAt,
       checksum: checksum ?? this.checksum,
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
@@ -183,6 +208,10 @@ class RemoteAssetExif extends RemoteAsset {
     super.localId,
     required super.name,
     required super.ownerId,
+    super.ownerName = '',
+    super.ownerAvatarColor = AvatarColor.primary,
+    super.ownerHasProfileImage = false,
+    super.ownerProfileChangedAt,
     required super.checksum,
     required super.type,
     required super.createdAt,
@@ -221,6 +250,10 @@ class RemoteAssetExif extends RemoteAsset {
     String? localId,
     String? name,
     String? ownerId,
+    String? ownerName,
+    AvatarColor? ownerAvatarColor,
+    bool? ownerHasProfileImage,
+    DateTime? ownerProfileChangedAt,
     String? checksum,
     AssetType? type,
     DateTime? createdAt,
@@ -243,6 +276,10 @@ class RemoteAssetExif extends RemoteAsset {
       localId: localId ?? this.localId,
       name: name ?? this.name,
       ownerId: ownerId ?? this.ownerId,
+      ownerName: ownerName ?? this.ownerName,
+      ownerAvatarColor: ownerAvatarColor ?? this.ownerAvatarColor,
+      ownerHasProfileImage: ownerHasProfileImage ?? this.ownerHasProfileImage,
+      ownerProfileChangedAt: ownerProfileChangedAt ?? this.ownerProfileChangedAt,
       checksum: checksum ?? this.checksum,
       type: type ?? this.type,
       createdAt: createdAt ?? this.createdAt,
