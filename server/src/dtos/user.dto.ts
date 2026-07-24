@@ -27,7 +27,7 @@ export const UserResponseSchema = z
     id: z.uuidv4().describe('User ID'),
     name: z.string().describe('User name'),
     email: toEmail.describe('User email'),
-    profileImagePath: z.string().describe('Profile image path'),
+    profileImagePath: z.string().nullable().describe('Profile image path'),
     avatarColor: UserAvatarColorSchema,
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     profileChangedAt: z.string().meta({ format: 'date-time' }).describe('Profile change date'),
