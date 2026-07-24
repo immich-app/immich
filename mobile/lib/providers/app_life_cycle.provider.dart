@@ -216,7 +216,9 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   void handleAppHidden() {
     state = AppLifeCycleEnum.hidden;
-    // do not stop/clean up anything on inactivity: issued on every orientation change
+    // Mark as paused so the existing resume flow refreshes local assets when
+    // returning from another app.
+    _wasPaused = true;
   }
 }
 
