@@ -38,7 +38,7 @@ class Timeline extends ConsumerWidget {
     this.showStorageIndicator = false,
     this.withStack = false,
     this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
-    this.bottomSheet = const GeneralBottomSheet(minChildSize: 0.23),
+    this.bottomSheet = const GeneralBottomSheet(minChildSize: kSelectionBottomSheetMinChildSize),
     this.groupBy,
     this.withScrubber = true,
     this.snapToMonth = true,
@@ -409,7 +409,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                   : 0;
               final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
 
-              const bottomSheetOpenModifier = 120.0;
+              final bottomSheetOpenModifier = MediaQuery.sizeOf(context).height * kSelectionBottomSheetMinChildSize;
               final contentBottomPadding =
                   context.padding.bottom + (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
               final scrubberBottomPadding = contentBottomPadding + kScrubberThumbHeight;
