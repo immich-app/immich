@@ -7,6 +7,7 @@
   import { maintenanceStore } from '$lib/stores/maintenance.store';
   import { MaintenanceAction } from '@immich/sdk';
   import { Button, Heading, Link, ProgressBar, Scrollable, Text } from '@immich/ui';
+  import { YuccaContext } from '@futo-org/backups-orchestrator-ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -30,6 +31,11 @@
       action: MaintenanceAction.End,
     });
 
+  const startRestore = () =>
+    handleSetMaintenanceMode({
+      action: MaintenanceAction.SelectDatabaseRestore,
+    });
+
   const error = $derived(
     $status?.error
       ?.split('\n')
@@ -38,58 +44,63 @@
   );
 </script>
 
-<AuthPageLayout
-  withHeader={$status?.action === MaintenanceAction.Start || $status?.action === MaintenanceAction.End}
-  withBackdrop={$status?.action === MaintenanceAction.Start}
->
-  <div class="flex flex-col place-items-center gap-8 text-center">
-    {#if $status?.action === MaintenanceAction.RestoreDatabase}
-      <Heading size="large" color="primary" tag="h1">{$t('maintenance_action_restore')}</Heading>
-      {#if $status.error}
-        <Scrollable class="max-h-80">
-          <pre class="text-left text-sm"><code>{error}</code></pre>
-        </Scrollable>
-        <Button onclick={end}>{$t('maintenance_end')}</Button>
+<YuccaContext baseUrl={globalThis.location.origin}>
+  <AuthPageLayout
+    withHeader={$status?.action === MaintenanceAction.Start || $status?.action === MaintenanceAction.End}
+    withBackdrop={$status?.action === MaintenanceAction.Start}
+  >
+    <div class="flex flex-col place-items-center gap-8 text-center">
+      {#if $status?.action === MaintenanceAction.RestoreDatabase}
+        <Heading size="large" color="primary" tag="h1">{$t('maintenance_action_restore')}</Heading>
+        {#if $status.error}
+          <Scrollable class="max-h-80">
+            <pre class="text-left text-sm"><code>{error}</code></pre>
+          </Scrollable>
+          <Button onclick={end}>{$t('maintenance_end')}</Button>
+        {:else}
+          <ProgressBar progress={$status.progress || 0} />
+          {#if $status.task === 'backup'}
+            <Text>{$t('maintenance_task_backup')}</Text>
+          {/if}
+          {#if $status.task === 'restore'}
+            <Text>{$t('maintenance_task_restore')}</Text>
+          {/if}
+          {#if $status.task === 'migrations'}
+            <Text>{$t('maintenance_task_migrations')}</Text>
+          {/if}
+          {#if $status.task === 'rollback'}
+            <Text>{$t('maintenance_task_rollback')}</Text>
+          {/if}
+        {/if}
+      {:else if $status?.action === MaintenanceAction.SelectDatabaseRestore && $auth}
+        <MaintenanceRestoreFlow {end} expectedVersion={data.expectedVersion} />
       {:else}
-        <ProgressBar progress={$status.progress || 0} />
-        {#if $status.task === 'backup'}
-          <Text>{$t('maintenance_task_backup')}</Text>
-        {/if}
-        {#if $status.task === 'restore'}
-          <Text>{$t('maintenance_task_restore')}</Text>
-        {/if}
-        {#if $status.task === 'migrations'}
-          <Text>{$t('maintenance_task_migrations')}</Text>
-        {/if}
-        {#if $status.task === 'rollback'}
-          <Text>{$t('maintenance_task_rollback')}</Text>
-        {/if}
-      {/if}
-    {:else if $status?.action === MaintenanceAction.SelectDatabaseRestore && $auth}
-      <MaintenanceRestoreFlow {end} expectedVersion={data.expectedVersion} />
-    {:else}
-      <Heading size="large" color="primary" tag="h1">{$t('maintenance_title')}</Heading>
-      <p>
-        <FormatMessage key="maintenance_description">
-          {#snippet children({ tag, message })}
-            {#if tag === 'link'}
-              <Link href="https://docs.immich.app/administration/maintenance-mode">
-                {message}
-              </Link>
-            {/if}
-          {/snippet}
-        </FormatMessage>
-      </p>
-      {#if $auth}
+        <Heading size="large" color="primary" tag="h1">{$t('maintenance_title')}</Heading>
         <p>
-          {$t('maintenance_logged_in_as', {
-            values: {
-              user: $auth.username,
-            },
-          })}
+          <FormatMessage key="maintenance_description">
+            {#snippet children({ tag, message })}
+              {#if tag === 'link'}
+                <Link href="https://docs.immich.app/administration/maintenance-mode">
+                  {message}
+                </Link>
+              {/if}
+            {/snippet}
+          </FormatMessage>
         </p>
-        <Button onclick={end}>{$t('maintenance_end')}</Button>
+        {#if $auth}
+          <p>
+            {$t('maintenance_logged_in_as', {
+              values: {
+                user: $auth.username,
+              },
+            })}
+          </p>
+          <div class="flex gap-2">
+            <Button color="secondary" onclick={startRestore}>{$t('maintenance_restore_from_backup')}</Button>
+            <Button onclick={end}>{$t('maintenance_end')}</Button>
+          </div>
+        {/if}
       {/if}
-    {/if}
-  </div>
-</AuthPageLayout>
+    </div>
+  </AuthPageLayout>
+</YuccaContext>

@@ -16236,6 +16236,1070 @@
         ],
         "x-immich-permission": "workflow.read"
       }
+    },
+    "/yucca/auth/oidc/device": {
+      "get": {
+        "operationId": "oidcDeviceFlow",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeviceFlowResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/yucca/backend": {
+      "get": {
+        "operationId": "getBackends",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackendsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Backend"
+        ]
+      }
+    },
+    "/yucca/backend/local": {
+      "post": {
+        "operationId": "createLocalBackend",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLocalBackendRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackendResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Backend"
+        ]
+      }
+    },
+    "/yucca/debug/reset": {
+      "post": {
+        "operationId": "resetOrchestrator",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Development"
+        ]
+      }
+    },
+    "/yucca/fs": {
+      "get": {
+        "operationId": "getFileListing",
+        "parameters": [
+          {
+            "name": "path",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesystemListingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Filesystem"
+        ]
+      }
+    },
+    "/yucca/integrations": {
+      "get": {
+        "operationId": "getIntegrations",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntegrationsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Integrations"
+        ]
+      }
+    },
+    "/yucca/integrations/immich": {
+      "post": {
+        "operationId": "configureImmichIntegration",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfigureImmichIntegrationRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Integrations"
+        ]
+      }
+    },
+    "/yucca/logs/{id}": {
+      "get": {
+        "operationId": "getRun",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "RunHistory"
+        ]
+      }
+    },
+    "/yucca/logs/{id}/stream": {
+      "get": {
+        "operationId": "logStreamSse",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "RunHistory"
+        ]
+      }
+    },
+    "/yucca/onboarding": {
+      "get": {
+        "operationId": "onboardingStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnboardingStatusResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Onboarding"
+        ]
+      }
+    },
+    "/yucca/onboarding/recovery-key": {
+      "get": {
+        "operationId": "currentRecoveryKey",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentRecoveryKeyResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Onboarding"
+        ]
+      },
+      "post": {
+        "operationId": "confirmRecoveryKey",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Onboarding"
+        ]
+      },
+      "put": {
+        "operationId": "importRecoveryKey",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportRecoveryKeyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Onboarding"
+        ]
+      }
+    },
+    "/yucca/onboarding/report-error": {
+      "post": {
+        "operationId": "reportError",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Onboarding"
+        ]
+      }
+    },
+    "/yucca/onboarding/skip": {
+      "post": {
+        "operationId": "skipOnboardingExtraConfig",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Onboarding"
+        ]
+      }
+    },
+    "/yucca/onboarding/telemetry": {
+      "post": {
+        "operationId": "enableTelemetry",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Onboarding"
+        ]
+      }
+    },
+    "/yucca/repository": {
+      "get": {
+        "operationId": "getRepositories",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      },
+      "post": {
+        "operationId": "createRepository",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryCreateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/yucca/repository/inspect": {
+      "get": {
+        "operationId": "inspectRepositories",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryInspectResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/yucca/repository/{id}": {
+      "delete": {
+        "operationId": "deleteRepository",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      },
+      "patch": {
+        "operationId": "updateRepository",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryUpdateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      },
+      "post": {
+        "operationId": "createBackup",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/yucca/repository/{id}/backend": {
+      "put": {
+        "operationId": "reconfigureRepositoryPrimaryBackend",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositoryPrimaryBackendReconfigureRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/yucca/repository/{id}/import": {
+      "get": {
+        "operationId": "checkImportRepository",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCheckImportResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      },
+      "post": {
+        "operationId": "importRepository",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RepositoryCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/yucca/repository/{id}/runs": {
+      "get": {
+        "operationId": "getRunHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunHistoryResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/yucca/repository/{id}/snapshots": {
+      "get": {
+        "operationId": "getSnapshots",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListSnapshotsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/yucca/repository/{id}/snapshots/prune": {
+      "post": {
+        "operationId": "pruneRepository",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/yucca/repository/{id}/snapshots/{snapshot}": {
+      "delete": {
+        "operationId": "forgetSnapshot",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListSnapshotsResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      },
+      "post": {
+        "operationId": "restoreSnapshot",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySnapshotRestoreRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/yucca/repository/{id}/snapshots/{snapshot}/listing": {
+      "get": {
+        "operationId": "getSnapshotListing",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "path",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FilesystemListingResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/yucca/repository/{id}/snapshots/{snapshot}/restore-from-point": {
+      "post": {
+        "operationId": "restoreFromPoint",
+        "parameters": [
+          {
+            "name": "backend",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "snapshot",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RepositorySnapshotRestoreFromPointRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Repository"
+        ]
+      }
+    },
+    "/yucca/schedule": {
+      "get": {
+        "operationId": "getSchedules",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleListResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Schedule"
+        ]
+      },
+      "post": {
+        "operationId": "createSchedule",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleCreateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Schedule"
+        ]
+      }
+    },
+    "/yucca/schedule/{id}": {
+      "delete": {
+        "operationId": "removeSchedule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Schedule"
+        ]
+      },
+      "patch": {
+        "operationId": "updateSchedule",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScheduleUpdateRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScheduleUpdateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "Schedule"
+        ]
+      }
+    },
+    "/yucca/tasks": {
+      "get": {
+        "operationId": "getRunningTasks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunningTaskListResponse"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "tags": [
+          "RunningTasks"
+        ]
+      }
+    },
+    "/yucca/tasks/{parentId}/cancel": {
+      "post": {
+        "operationId": "cancelTask",
+        "parameters": [
+          {
+            "name": "parentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "RunningTasks"
+        ]
+      }
     }
   },
   "info": {
@@ -16423,6 +17487,25 @@
       }
     },
     "schemas": {
+      "ActiveScheduleItemDto": {
+        "properties": {
+          "repositoryId": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskStatus"
+              }
+            ]
+          }
+        },
+        "required": [
+          "repositoryId",
+          "status"
+        ],
+        "type": "object"
+      },
       "ActivityCreateDto": {
         "description": "Activity create",
         "properties": {
@@ -18206,6 +19289,77 @@
         },
         "type": "object"
       },
+      "BackendDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isOnline": {
+            "type": "boolean"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BackendType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "description",
+          "id",
+          "isOnline",
+          "type"
+        ],
+        "type": "object"
+      },
+      "BackendResponseDto": {
+        "properties": {
+          "backend": {
+            "$ref": "#/components/schemas/BackendDto"
+          }
+        },
+        "required": [
+          "backend"
+        ],
+        "type": "object"
+      },
+      "BackendType": {
+        "enum": [
+          "yucca",
+          "local",
+          "s3"
+        ],
+        "type": "string"
+      },
+      "BackendsResponseDto": {
+        "properties": {
+          "backends": {
+            "items": {
+              "$ref": "#/components/schemas/BackendDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "backends"
+        ],
+        "type": "object"
+      },
+      "BootstrapStatus": {
+        "enum": [
+          "not-ready",
+          "ready",
+          "error"
+        ],
+        "type": "string"
+      },
       "BulkIdErrorReason": {
         "description": "Error reason",
         "enum": [
@@ -18397,6 +19551,62 @@
         ],
         "type": "string"
       },
+      "ConfigureImmichIntegrationRequestDto": {
+        "properties": {
+          "backupConfiguration": {
+            "type": "boolean"
+          },
+          "cron": {
+            "type": "string"
+          },
+          "dataFolders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "libraries": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "all"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "name": {
+            "type": "string"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "backupConfiguration",
+          "cron",
+          "dataFolders",
+          "libraries",
+          "name",
+          "worm"
+        ],
+        "type": "object"
+      },
       "ContributorCountResponseDto": {
         "properties": {
           "assetCount": {
@@ -18485,6 +19695,17 @@
         ],
         "type": "object"
       },
+      "CreateLocalBackendRequestDto": {
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ],
+        "type": "object"
+      },
       "CreateProfileImageDto": {
         "properties": {
           "file": {
@@ -18557,6 +19778,17 @@
           "width",
           "x",
           "y"
+        ],
+        "type": "object"
+      },
+      "CurrentRecoveryKeyResponse": {
+        "properties": {
+          "recoveryKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "recoveryKey"
         ],
         "type": "object"
       },
@@ -18646,6 +19878,21 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "DeviceFlowResponseDto": {
+        "properties": {
+          "userCode": {
+            "type": "string"
+          },
+          "verificationUri": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "userCode",
+          "verificationUri"
+        ],
         "type": "object"
       },
       "DownloadArchiveDto": {
@@ -19125,6 +20372,43 @@
         ],
         "type": "object"
       },
+      "FilesystemListingItemDto": {
+        "properties": {
+          "isDirectory": {
+            "type": "boolean"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "isDirectory",
+          "path"
+        ],
+        "type": "object"
+      },
+      "FilesystemListingResponseDto": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/FilesystemListingItemDto"
+            },
+            "type": "array"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items",
+          "parent",
+          "path"
+        ],
+        "type": "object"
+      },
       "FoldersResponse": {
         "properties": {
           "enabled": {
@@ -19173,6 +20457,175 @@
           "webp"
         ],
         "type": "string"
+      },
+      "ImmichIntegrationConfigurationDto": {
+        "properties": {
+          "backupConfiguration": {
+            "type": "boolean"
+          },
+          "dataFolders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "libraries": {
+            "oneOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "all"
+                ]
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          }
+        },
+        "required": [
+          "backupConfiguration",
+          "dataFolders",
+          "libraries"
+        ],
+        "type": "object"
+      },
+      "ImmichIntegrationDto": {
+        "properties": {
+          "configuration": {
+            "$ref": "#/components/schemas/ImmichIntegrationConfigurationDto"
+          },
+          "id": {
+            "type": "string"
+          },
+          "scheduleId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "configuration",
+          "id",
+          "scheduleId"
+        ],
+        "type": "object"
+      },
+      "ImmichLibraryDto": {
+        "properties": {
+          "exclusionPatterns": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "id": {
+            "type": "string"
+          },
+          "importPaths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "exclusionPatterns",
+          "id",
+          "importPaths",
+          "name"
+        ],
+        "type": "object"
+      },
+      "ImmichStateDto": {
+        "properties": {
+          "dataFolders": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "dataPath": {
+            "type": "string"
+          },
+          "libraries": {
+            "items": {
+              "$ref": "#/components/schemas/ImmichLibraryDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "dataFolders",
+          "dataPath",
+          "libraries"
+        ],
+        "type": "object"
+      },
+      "ImportRecoveryKeyRequest": {
+        "properties": {
+          "recoveryKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "recoveryKey"
+        ],
+        "type": "object"
+      },
+      "InspectedLocalRepositoryDto": {
+        "properties": {
+          "backends": {
+            "$ref": "#/components/schemas/RepositoryBackendsDto"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/RepositoryConfigurationDto"
+          },
+          "id": {
+            "type": "string"
+          },
+          "meter": {
+            "$ref": "#/components/schemas/RepositoryMeterDto"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/RepositoryMetricsDto"
+          },
+          "name": {
+            "type": "string"
+          },
+          "snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/SnapshotDto"
+            },
+            "type": "array"
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "metrics",
+          "name",
+          "snapshots",
+          "worm"
+        ],
+        "type": "object"
+      },
+      "IntegrationsResponseDto": {
+        "properties": {
+          "immichIntegration": {
+            "$ref": "#/components/schemas/ImmichIntegrationDto"
+          },
+          "immichState": {
+            "$ref": "#/components/schemas/ImmichStateDto"
+          }
+        },
+        "type": "object"
       },
       "IntegrityReport": {
         "description": "Integrity report type",
@@ -19472,6 +20925,52 @@
       "LicenseResponseDto": {
         "$ref": "#/components/schemas/UserLicense"
       },
+      "ListSnapshotsResponseDto": {
+        "properties": {
+          "snapshots": {
+            "items": {
+              "$ref": "#/components/schemas/SnapshotDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "snapshots"
+        ],
+        "type": "object"
+      },
+      "LocalRepositoryDto": {
+        "properties": {
+          "backends": {
+            "$ref": "#/components/schemas/RepositoryBackendsDto"
+          },
+          "configuration": {
+            "$ref": "#/components/schemas/RepositoryConfigurationDto"
+          },
+          "id": {
+            "type": "string"
+          },
+          "meter": {
+            "$ref": "#/components/schemas/RepositoryMeterDto"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/RepositoryMetricsDto"
+          },
+          "name": {
+            "type": "string"
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "metrics",
+          "name",
+          "worm"
+        ],
+        "type": "object"
+      },
       "LogLevel": {
         "description": "Log level",
         "enum": [
@@ -19483,6 +20982,17 @@
           "fatal"
         ],
         "type": "string"
+      },
+      "LogResponseDto": {
+        "properties": {
+          "logId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "logId"
+        ],
+        "type": "object"
       },
       "LoginCredentialDto": {
         "properties": {
@@ -20653,6 +22163,52 @@
         },
         "required": [
           "isOnboarded"
+        ],
+        "type": "object"
+      },
+      "OnboardingStatusResponseDto": {
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "hasBackend": {
+            "type": "boolean"
+          },
+          "hasBackup": {
+            "type": "boolean"
+          },
+          "hasOnboardedKey": {
+            "type": "boolean"
+          },
+          "hasSchedule": {
+            "type": "boolean"
+          },
+          "hasSkippedExtraConfig": {
+            "type": "boolean"
+          },
+          "hasTelemetry": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TelemetryLevel"
+              }
+            ]
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BootstrapStatus"
+              }
+            ]
+          }
+        },
+        "required": [
+          "hasBackend",
+          "hasBackup",
+          "hasOnboardedKey",
+          "hasSchedule",
+          "hasSkippedExtraConfig",
+          "hasTelemetry",
+          "status"
         ],
         "type": "object"
       },
@@ -22109,6 +23665,278 @@
         ],
         "type": "string"
       },
+      "RepositoryBackendDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BackendType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "online",
+          "type"
+        ],
+        "type": "object"
+      },
+      "RepositoryBackendsDto": {
+        "properties": {
+          "primary": {
+            "$ref": "#/components/schemas/RepositoryBackendDto"
+          },
+          "secondary": {
+            "items": {
+              "$ref": "#/components/schemas/RepositoryBackendDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "primary",
+          "secondary"
+        ],
+        "type": "object"
+      },
+      "RepositoryCheckImportResponseDto": {
+        "properties": {
+          "readable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "readable"
+        ],
+        "type": "object"
+      },
+      "RepositoryConfigurationDto": {
+        "properties": {
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          }
+        },
+        "required": [
+          "paths"
+        ],
+        "type": "object"
+      },
+      "RepositoryCreateRequestDto": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "worm": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "name",
+          "worm"
+        ],
+        "type": "object"
+      },
+      "RepositoryCreateResponseDto": {
+        "properties": {
+          "repository": {
+            "$ref": "#/components/schemas/LocalRepositoryDto"
+          }
+        },
+        "required": [
+          "repository"
+        ],
+        "type": "object"
+      },
+      "RepositoryInspectResponseDto": {
+        "properties": {
+          "repositories": {
+            "items": {
+              "$ref": "#/components/schemas/InspectedLocalRepositoryDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "repositories"
+        ],
+        "type": "object"
+      },
+      "RepositoryListResponseDto": {
+        "properties": {
+          "repositories": {
+            "items": {
+              "$ref": "#/components/schemas/LocalRepositoryDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "repositories"
+        ],
+        "type": "object"
+      },
+      "RepositoryMeterDto": {
+        "properties": {
+          "lastUpdated": {
+            "type": "string"
+          },
+          "objectCount": {
+            "type": "number"
+          },
+          "sizeBytes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "objectCount",
+          "sizeBytes"
+        ],
+        "type": "object"
+      },
+      "RepositoryMetricsDto": {
+        "properties": {
+          "lastBackup": {
+            "type": "string"
+          },
+          "lastBackupDuration": {
+            "type": "number"
+          },
+          "lastSuccessfulBackup": {
+            "type": "string"
+          },
+          "sizeBytes": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "sizeBytes"
+        ],
+        "type": "object"
+      },
+      "RepositoryPrimaryBackendReconfigureRequestDto": {
+        "properties": {
+          "backendId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "backendId"
+        ],
+        "type": "object"
+      },
+      "RepositorySnapshotRestoreFromPointRequestDto": {
+        "properties": {
+          "include": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "yuccaConfig": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RepositorySnapshotRestoreRequestDto": {
+        "properties": {
+          "include": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "target": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RepositoryUpdateRequestDto": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "retentionPolicy": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RetentionPolicyDto"
+              }
+            ],
+            "nullable": true,
+            "type": "object"
+          }
+        },
+        "type": "object"
+      },
+      "RepositoryUpdateResponseDto": {
+        "properties": {
+          "repository": {
+            "$ref": "#/components/schemas/LocalRepositoryDto"
+          }
+        },
+        "required": [
+          "repository"
+        ],
+        "type": "object"
+      },
+      "RetentionPolicyDto": {
+        "properties": {
+          "keepLast": {
+            "type": "number"
+          },
+          "keepWithin": {
+            "type": "string"
+          },
+          "keepWithinDaily": {
+            "type": "string"
+          },
+          "keepWithinHourly": {
+            "type": "string"
+          },
+          "keepWithinMonthly": {
+            "type": "string"
+          },
+          "keepWithinWeekly": {
+            "type": "string"
+          },
+          "keepWithinYearly": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ReverseGeocodingStateResponseDto": {
         "properties": {
           "lastImportFileName": {
@@ -22137,6 +23965,247 @@
         },
         "required": [
           "angle"
+        ],
+        "type": "object"
+      },
+      "RunDto": {
+        "properties": {
+          "end": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "logFilePath": {
+            "type": "string"
+          },
+          "repositoryId": {
+            "type": "string"
+          },
+          "start": {
+            "type": "string"
+          },
+          "status": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunStatus"
+              }
+            ]
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/RunType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "end",
+          "id",
+          "logFilePath",
+          "repositoryId",
+          "start",
+          "status",
+          "type"
+        ],
+        "type": "object"
+      },
+      "RunHistoryResponseDto": {
+        "properties": {
+          "runs": {
+            "items": {
+              "$ref": "#/components/schemas/RunDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "runs"
+        ],
+        "type": "object"
+      },
+      "RunResponseDto": {
+        "properties": {
+          "run": {
+            "$ref": "#/components/schemas/RunDto"
+          }
+        },
+        "required": [
+          "run"
+        ],
+        "type": "object"
+      },
+      "RunStatus": {
+        "enum": [
+          "incomplete",
+          "complete",
+          "failed"
+        ],
+        "type": "string"
+      },
+      "RunType": {
+        "enum": [
+          "schedule",
+          "restore",
+          "backup",
+          "forget"
+        ],
+        "type": "string"
+      },
+      "RunningTaskDto": {
+        "properties": {
+          "logId": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string"
+          },
+          "scheduleStatus": {
+            "items": {
+              "$ref": "#/components/schemas/ActiveScheduleItemDto"
+            },
+            "type": "array"
+          },
+          "type": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TaskType"
+              }
+            ]
+          }
+        },
+        "required": [
+          "parentId",
+          "type"
+        ],
+        "type": "object"
+      },
+      "RunningTaskListResponse": {
+        "properties": {
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/RunningTaskDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "tasks"
+        ],
+        "type": "object"
+      },
+      "ScheduleCreateRequestDto": {
+        "properties": {
+          "cron": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "cron",
+          "name",
+          "repositories"
+        ],
+        "type": "object"
+      },
+      "ScheduleCreateResponseDto": {
+        "properties": {
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleDto"
+          }
+        },
+        "required": [
+          "schedule"
+        ],
+        "type": "object"
+      },
+      "ScheduleDto": {
+        "properties": {
+          "cron": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "lastFinished": {
+            "type": "string"
+          },
+          "lastRun": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "paused": {
+            "type": "boolean"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "cron",
+          "id",
+          "name",
+          "paused",
+          "repositories"
+        ],
+        "type": "object"
+      },
+      "ScheduleListResponseDto": {
+        "properties": {
+          "schedules": {
+            "items": {
+              "$ref": "#/components/schemas/ScheduleDto"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "schedules"
+        ],
+        "type": "object"
+      },
+      "ScheduleUpdateRequestDto": {
+        "properties": {
+          "cron": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "paused": {
+            "type": "boolean"
+          },
+          "repositories": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object"
+      },
+      "ScheduleUpdateResponseDto": {
+        "properties": {
+          "schedule": {
+            "$ref": "#/components/schemas/ScheduleDto"
+          }
+        },
+        "required": [
+          "schedule"
         ],
         "type": "object"
       },
@@ -22533,6 +24602,10 @@
       },
       "ServerFeaturesDto": {
         "properties": {
+          "backups": {
+            "description": "Whether the backups feature is enabled",
+            "type": "boolean"
+          },
           "configFile": {
             "description": "Whether config file is available",
             "type": "boolean"
@@ -22599,6 +24672,7 @@
           }
         },
         "required": [
+          "backups",
           "configFile",
           "duplicateDetection",
           "email",
@@ -23490,6 +25564,62 @@
             "type": "boolean"
           }
         },
+        "type": "object"
+      },
+      "SnapshotDto": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "paths": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/SnapshotSummaryDto"
+          },
+          "time": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "paths",
+          "time"
+        ],
+        "type": "object"
+      },
+      "SnapshotSummaryDto": {
+        "properties": {
+          "dataAdded": {
+            "type": "number"
+          },
+          "filesChanged": {
+            "type": "number"
+          },
+          "filesNew": {
+            "type": "number"
+          },
+          "filesUnmodified": {
+            "type": "number"
+          },
+          "totalBytes": {
+            "type": "number"
+          },
+          "totalFiles": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "dataAdded",
+          "filesChanged",
+          "filesNew",
+          "filesUnmodified",
+          "totalBytes",
+          "totalFiles"
+        ],
         "type": "object"
       },
       "SourceType": {
@@ -25561,11 +27691,16 @@
       },
       "SystemConfigBackupsDto": {
         "properties": {
+          "beta": {
+            "description": "Whether the backups feature is enabled",
+            "type": "boolean"
+          },
           "database": {
             "$ref": "#/components/schemas/DatabaseBackupConfig"
           }
         },
         "required": [
+          "beta",
           "database"
         ],
         "type": "object"
@@ -26821,6 +28956,30 @@
           }
         },
         "type": "object"
+      },
+      "TaskStatus": {
+        "enum": [
+          "incomplete",
+          "complete",
+          "failed"
+        ],
+        "type": "string"
+      },
+      "TaskType": {
+        "enum": [
+          "schedule",
+          "restore",
+          "backup",
+          "forget"
+        ],
+        "type": "string"
+      },
+      "TelemetryLevel": {
+        "enum": [
+          "full",
+          "none"
+        ],
+        "type": "string"
       },
       "TemplateDto": {
         "properties": {

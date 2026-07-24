@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@extism/extism": "2.0.0-rc13",
+    "@futo-org/backups-orchestrator-api": "0.13.0",
     "@immich/plugin-sdk": "workspace:*",
     "@immich/sql-tools": "^0.5.1",
     "@nestjs/bullmq": "^11.0.1",
@@ -147,6 +148,7 @@
     "@types/supertest": "^7.0.0",
     "@types/ua-parser-js": "^0.7.36",
     "@types/validator": "^13.15.2",
+    "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^4.0.0",
     "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
@@ -161,7 +163,6 @@
     "supertest": "^7.1.0",
     "tailwindcss": "^3.4.0",
     "testcontainers": "^12.0.0",
-    "@typescript/native": "npm:typescript@^7.0.2",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
     "typescript-eslint": "^8.28.0",
     "unplugin-swc": "^1.4.5",

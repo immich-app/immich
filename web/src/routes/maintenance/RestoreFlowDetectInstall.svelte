@@ -7,10 +7,10 @@
 
   type Props = {
     next: () => void;
-    end: () => void;
+    previous: () => void;
   };
 
-  const { next, end }: Props = $props();
+  const { next, previous }: Props = $props();
 
   let detectedInstall: MaintenanceDetectInstallResponseDto | undefined = $state();
 
@@ -92,6 +92,6 @@
 </div>
 <Text>{$t('maintenance_restore_library_confirm')}</Text>
 <HStack>
-  <Button onclick={end} variant="ghost">{$t('cancel')}</Button>
+  <Button onclick={previous} variant="ghost">{$t('back')}</Button>
   <Button onclick={next} trailingIcon={mdiArrowRight}>{$t('next')}</Button>
 </HStack>

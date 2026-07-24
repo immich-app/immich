@@ -41,16 +41,18 @@ export class MaintenanceAuthGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest<MaintenanceAuthRequest>();
+
     const targets = [context.getHandler()];
     const options = this.reflector.getAllAndOverride<{ _emptyObject: never } | undefined>(
       MetadataKey.AuthRoute,
       targets,
     );
-    if (!options) {
+
+    if (!options && !request.path.startsWith('/api/yucca')) {
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<MaintenanceAuthRequest>();
     request.auth = await this.service.authenticate(request.headers);
 
     return true;

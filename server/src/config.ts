@@ -19,6 +19,7 @@ import { ConcurrentQueueName, FullsizeImageOptions, ImageOptions } from 'src/typ
 
 export type SystemConfig = {
   backup: {
+    beta: boolean;
     database: {
       enabled: boolean;
       cronExpression: string;
@@ -220,6 +221,7 @@ export type MachineLearningConfig = SystemConfig['machineLearning'];
 
 export const defaults = Object.freeze<SystemConfig>({
   backup: {
+    beta: false,
     database: {
       enabled: true,
       cronExpression: CronExpression.EVERY_DAY_AT_2AM,
