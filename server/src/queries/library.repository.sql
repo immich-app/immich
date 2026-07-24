@@ -51,7 +51,8 @@ from
   inner join "asset" on "asset"."libraryId" = "library"."id"
   left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
 where
-  "library"."id" = $6
+  "asset"."deletedAt" is null
+  and "library"."id" = $6
 group by
   "library"."id"
 select
