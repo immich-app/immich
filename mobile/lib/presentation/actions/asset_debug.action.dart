@@ -17,9 +17,14 @@ class AssetDebugAction extends AssetAction<BaseAsset> {
   @override
   String label(ActionScope scope) => scope.context.t.troubleshoot;
 
+  static bool canShow({required int assetCount, required bool advancedTroubleshooting}) =>
+      assetCount == 1 && advancedTroubleshooting;
+
   @override
-  bool isVisible(ActionScope scope) =>
-      assets.length == 1 && scope.ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting);
+  bool isVisible(ActionScope scope) => canShow(
+    assetCount: assets.length,
+    advancedTroubleshooting: scope.ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting),
+  );
 
   @override
   Future<void> onAction(ActionScope scope) async =>

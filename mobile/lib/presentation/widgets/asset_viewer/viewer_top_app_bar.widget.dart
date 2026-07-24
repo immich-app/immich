@@ -14,7 +14,6 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provid
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/timezone.dart';
 import 'package:immich_ui/immich_ui.dart';
 
@@ -47,20 +46,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final actions = <Widget>[
       if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
-      if (album != null && album.isActivityEnabled && album.isShared)
-        IconButton(
-          icon: const Icon(Icons.chat_outlined),
-          onPressed: () {
-            context.router.push(
-              DriftActivitiesRoute(
-                album: album,
-                assetId: asset is RemoteAsset ? asset.id : null,
-                assetName: asset.name,
-              ),
-            );
-          },
-        ),
-
       ActionIconButtonWidget(action: FavoriteAction(assets: assetForAction)),
 
       ImmichColorOverride(color: null, child: ViewerKebabMenu(originalTheme: originalTheme)),
