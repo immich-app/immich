@@ -324,7 +324,7 @@
     </div>
   {/if}
 
-  {#if currentAlbum && currentAlbum.albumUsers.length > 0 && asset.owner}
+  {#if currentAlbum && currentAlbum.albumUsers.length > 1 && asset.owner}
     <section class="mt-4 px-6 dark:text-immich-dark-fg">
       <Text size="small" color="muted">{$t('shared_by')}</Text>
       <div class="flex gap-4 pt-4">
