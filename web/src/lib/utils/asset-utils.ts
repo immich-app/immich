@@ -101,7 +101,7 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
         : `${archiveName} `;
 
     const abort = new AbortController();
-    downloadManager.add(downloadKey, archive.size, abort);
+    downloadManager.add(downloadKey, archive.size, abort, index + 1, downloadInfo.archives.length);
 
     try {
       // TODO use sdk once it supports progress events
