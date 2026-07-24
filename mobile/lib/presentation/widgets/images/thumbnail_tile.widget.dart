@@ -312,6 +312,11 @@ class _AssetTypeIcons extends StatelessWidget {
           ),
         if (asset.isAnimatedImage)
           const Padding(padding: EdgeInsets.only(right: 10.0, top: 6.0), child: _TileOverlayIcon(Icons.gif_rounded)),
+        if (asset.isPhotosphere)
+          const Padding(
+            padding: EdgeInsets.only(right: 10.0, top: 6.0),
+            child: _TileOverlayIcon(Icons.panorama_photosphere),
+          ),
       ],
     );
   }
