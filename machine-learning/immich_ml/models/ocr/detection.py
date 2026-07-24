@@ -7,11 +7,11 @@ from PIL import Image
 from rapidocr.ch_ppocr_det.utils import DBPostProcess
 from rapidocr.inference_engine.base import FileInfo, InferSession
 from rapidocr.utils.download_file import DownloadFile, DownloadFileInput
-from rapidocr.utils.typings import EngineType, LangDet, OCRVersion, TaskType
-from rapidocr.utils.typings import ModelType as RapidModelType
+from rapidocr.utils.typings import EngineType, LangDet, TaskType
 
 from immich_ml.config import log
 from immich_ml.models.base import InferenceModel
+from immich_ml.models.constants import PADDLE_MODEL_SPECS
 from immich_ml.schemas import ModelFormat, ModelSession, ModelTask, ModelType
 from immich_ml.sessions.ort import OrtSession
 
@@ -41,13 +41,14 @@ class TextDetector(InferenceModel):
         )
 
     def _download(self) -> None:
+        ocr_version, model_type = PADDLE_MODEL_SPECS[self.model_name.split("__")[-1]]
         model_info = InferSession.get_model_url(
             FileInfo(
                 engine_type=EngineType.ONNXRUNTIME,
-                ocr_version=OCRVersion.PPOCRV5,
+                ocr_version=ocr_version,
                 task_type=TaskType.DET,
                 lang_type=LangDet.CH,
-                model_type=RapidModelType.MOBILE if "mobile" in self.model_name else RapidModelType.SERVER,
+                model_type=model_type,
             )
         )
         download_params = DownloadFileInput(

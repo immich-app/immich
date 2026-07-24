@@ -1,3 +1,6 @@
+from rapidocr.utils.typings import ModelType as RapidModelType
+from rapidocr.utils.typings import OCRVersion
+
 from immich_ml.config import clean_name
 from immich_ml.schemas import ModelSource
 
@@ -86,7 +89,20 @@ _PADDLE_MODELS = {
     "KOREAN__PP-OCRv5_mobile",
     "LATIN__PP-OCRv5_mobile",
     "TH__PP-OCRv5_mobile",
+    "PP-OCRv6_tiny",
+    "PP-OCRv6_small",
+    "PP-OCRv6_medium",
 }
+
+
+PADDLE_MODEL_SPECS: dict[str, tuple[OCRVersion, RapidModelType]] = {
+    "PP-OCRv5_server": (OCRVersion.PPOCRV5, RapidModelType.SERVER),
+    "PP-OCRv5_mobile": (OCRVersion.PPOCRV5, RapidModelType.MOBILE),
+    "PP-OCRv6_tiny": (OCRVersion.PPOCRV6, RapidModelType.TINY),
+    "PP-OCRv6_small": (OCRVersion.PPOCRV6, RapidModelType.SMALL),
+    "PP-OCRv6_medium": (OCRVersion.PPOCRV6, RapidModelType.MEDIUM),
+}
+
 
 SUPPORTED_PROVIDERS = [
     "CUDAExecutionProvider",
