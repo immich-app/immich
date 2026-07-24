@@ -43,26 +43,9 @@ class AssetApiRepository extends ApiRepository {
     return response?.count ?? 0;
   }
 
+  // TODO(shenlong): remove after action migration
   Future<void> updateVisibility(List<String> ids, AssetVisibility visibility) async {
     return _api.updateAssets(AssetBulkUpdateDto(ids: ids, visibility: Optional.present(_mapVisibility(visibility))));
-  }
-
-  Future<void> updateFavorite(List<String> ids, bool isFavorite) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, isFavorite: Optional.present(isFavorite)));
-  }
-
-  Future<void> updateLocation(List<String> ids, LatLng location) async {
-    return _api.updateAssets(
-      AssetBulkUpdateDto(
-        ids: ids,
-        latitude: Optional.present(location.latitude),
-        longitude: Optional.present(location.longitude),
-      ),
-    );
-  }
-
-  Future<void> updateDateTime(List<String> ids, String dateTime) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, dateTimeOriginal: Optional.present(dateTime)));
   }
 
   Future<StackResponse> stack(List<String> ids) async {
@@ -113,14 +96,38 @@ class AssetApiRepository extends ApiRepository {
     List<String> remoteIds, {
     Option<bool> isFavorite = const .none(),
     Option<AssetVisibility> visibility = const .none(),
+    Option<String> dateTimeOriginal = const .none(),
+    Option<LatLng> location = const .none(),
   }) {
     return _api.updateAssets(
       AssetBulkUpdateDto(
         ids: remoteIds,
         isFavorite: isFavorite.toOptional(),
         visibility: visibility.map(_mapVisibility).toOptional(),
+        dateTimeOriginal: dateTimeOriginal.toOptional(),
+        latitude: location.map((loc) => loc.latitude).toOptional(),
+        longitude: location.map((loc) => loc.longitude).toOptional(),
       ),
     );
+  }
+
+  // TODO(shenlong): remove after action migration
+  Future<void> updateFavorite(List<String> ids, bool isFavorite) async {
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, isFavorite: Optional.present(isFavorite)));
+  }
+
+  Future<void> updateLocation(List<String> ids, LatLng location) async {
+    return _api.updateAssets(
+      AssetBulkUpdateDto(
+        ids: ids,
+        latitude: Optional.present(location.latitude),
+        longitude: Optional.present(location.longitude),
+      ),
+    );
+  }
+
+  Future<void> updateDateTime(List<String> ids, String dateTime) async {
+    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, dateTimeOriginal: Optional.present(dateTime)));
   }
 }
 
