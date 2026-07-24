@@ -31,4 +31,9 @@ class DriftPeopleService {
     await _personApiRepository.update(personId, birthday: birthday);
     return _repository.updateBirthday(personId, birthday);
   }
+
+  Future<int> updateVisibility(String personId, bool isHidden) async {
+    await _personApiRepository.update(personId, isHidden: isHidden);
+    return _repository.updateVisibility(personId, isHidden);
+  }
 }
