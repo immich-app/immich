@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/progressive_image_guard.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/upload_profile_image.provider.dart';
@@ -170,7 +171,9 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
                     ],
                   ),
                   child: ClipRRect(
-                    child: CropImage(controller: _cropController, image: image, gridColor: Colors.white),
+                    child: ProgressiveImageGuard(
+                      child: CropImage(controller: _cropController, image: image, gridColor: Colors.white),
+                    ),
                   ),
                 ),
               ),
