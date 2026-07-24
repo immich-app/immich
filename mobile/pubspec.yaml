@@ -54,6 +54,7 @@ dependencies:
   openapi:
     path: openapi
   package_info_plus: ^8.3.1
+  panorama_viewer: ^2.0.7
   path: ^1.9.1
   path_provider: ^2.1.5
   path_provider_foundation: ^2.6.0

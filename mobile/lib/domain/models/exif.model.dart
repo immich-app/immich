@@ -26,6 +26,8 @@ class ExifInfo {
   final int? iso;
   final double? exposureSeconds;
 
+  final String? projectionType;
+
   bool get hasCoordinates => latitude != null && longitude != null && latitude != 0 && longitude != 0;
 
   String get exposureTime {
@@ -65,6 +67,7 @@ class ExifInfo {
     this.mm,
     this.iso,
     this.exposureSeconds,
+    this.projectionType,
   });
 
   @override
