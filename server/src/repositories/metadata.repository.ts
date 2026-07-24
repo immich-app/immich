@@ -88,8 +88,18 @@ export class MetadataRepository {
     /* eslint unicorn/no-array-callback-reference: off, unicorn/no-array-method-this-argument: off */
     geoTz: (lat, lon) => geotz.find(lat, lon)[0],
     geolocation: true,
-    // Enable exiftool LFS to parse metadata for files larger than 2GB.
-    readArgs: ['-api', 'largefilesupport=1', '--ICC_Profile:DeviceManufacturer', '--ICC_Profile:DeviceModelName'],
+    readArgs: [
+      // Enable exiftool LFS to parse metadata for files larger than 2GB.
+      '-api',
+      'largefilesupport=1',
+      '--ICC_Profile:DeviceManufacturer',
+      '--ICC_Profile:DeviceModelName',
+      // Ignore embedded thumbnail dimensions/orientation for the main asset.
+      '--IFD1:Orientation',
+      '--MWG:Orientation',
+      '--IFD1:ImageWidth',
+      '--IFD1:ImageHeight',
+    ],
     writeArgs: ['-api', 'largefilesupport=1', '-overwrite_original'],
     taskTimeoutMillis: 2 * 60 * 1000,
   });

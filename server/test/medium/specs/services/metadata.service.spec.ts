@@ -151,5 +151,58 @@ describe(MetadataService.name, () => {
         // note that this date is technically wrong. it does not throw though and should get the user's attention either way.
       ).resolves.toEqual({ dateTimeOriginal: new Date('4260-03-05T04:04:12.000Z') });
     });
+
+    it('should ignore IFD1 thumbnail orientation when extracting metadata', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      const { filePath } = await createTestFile({ 'IFD1:Orientation#': 6 });
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: '' });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('orientation')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ orientation: null });
+    });
+
+    it('should ignore IFD1 thumbnail dimensions when extracting metadata', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      const { filePath } = await createTestFile({ 'IFD1:ImageWidth#': 160, 'IFD1:ImageHeight#': 120 });
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: '' });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      await expect(ctx.get(AssetRepository).getById(asset.id)).resolves.toEqual(
+        expect.objectContaining({ width: 1, height: 1 }),
+      );
+    });
+
+    it('should keep IFD0 orientation when extracting metadata', async () => {
+      const { sut, ctx } = setup();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      const { filePath } = await createTestFile({ 'IFD0:Orientation#': 6 });
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
+      await ctx.newExif({ assetId: asset.id, description: '' });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_exif')
+          .select('orientation')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ orientation: '6' });
+    });
   });
 });
