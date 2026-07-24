@@ -242,6 +242,24 @@
   $effect(() => {
     // reactive on `assetFileUrl` changes
     if (videoPlayer && assetFileUrl) {
+      const player = videoPlayer as HTMLVideoElement & { _logVolumeApplied?: boolean };
+      if (!player._logVolumeApplied) {
+        player._logVolumeApplied = true;
+        const originalDesc = Object.getOwnPropertyDescriptor(HTMLMediaElement.prototype, 'volume')!;
+        let currentUiVolume = videoPlayer.volume;
+        Object.defineProperty(videoPlayer, 'volume', {
+          get() {
+            return currentUiVolume;
+          },
+          set(val: number) {
+            currentUiVolume = val;
+            // Apply quadratic curve to hardware volume
+            originalDesc.set!.call(videoPlayer, Math.pow(val, 2));
+          },
+          configurable: true,
+        });
+        videoPlayer.volume = currentUiVolume;
+      }
       hasFocused = false;
       rebuildCount = 0;
       releaseSession();
