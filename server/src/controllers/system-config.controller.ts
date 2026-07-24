@@ -1,7 +1,12 @@
-import { Body, Controller, Get, Put } from '@nestjs/common';
+import { Body, Controller, Get, Post, Put } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
-import { SystemConfigDto, SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
+import {
+  RenderStorageTemplateDto,
+  RenderStorageTemplateResponseDto,
+  SystemConfigDto,
+  SystemConfigTemplateStorageOptionDto,
+} from 'src/dtos/system-config.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Authenticated } from 'src/middleware/auth.guard';
 import { StorageTemplateService } from 'src/services/storage-template.service';
@@ -57,5 +62,15 @@ export class SystemConfigController {
   })
   getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
     return this.storageTemplateService.getStorageTemplateOptions();
+  }
+
+  @Post('storage-template-render')
+  @Authenticated({ permission: Permission.SystemConfigRead, admin: true })
+  @Endpoint({
+    summary: 'Render storage template preview',
+    description: 'Render a storage template with sample data for preview purposes.',
+  })
+  renderStorageTemplate(@Body() dto: RenderStorageTemplateDto): RenderStorageTemplateResponseDto {
+    return this.storageTemplateService.renderTemplate(dto);
   }
 }

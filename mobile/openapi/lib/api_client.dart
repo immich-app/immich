@@ -589,6 +589,10 @@ class ApiClient {
           return ReleaseEventV1.fromJson(value);
         case 'ReleaseType':
           return ReleaseTypeTypeTransformer().decode(value);
+        case 'RenderStorageTemplateDto':
+          return RenderStorageTemplateDto.fromJson(value);
+        case 'RenderStorageTemplateResponseDto':
+          return RenderStorageTemplateResponseDto.fromJson(value);
         case 'ReverseGeocodingStateResponseDto':
           return ReverseGeocodingStateResponseDto.fromJson(value);
         case 'RotateParameters':

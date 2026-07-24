@@ -13514,6 +13514,52 @@
         "x-immich-state": "Stable"
       }
     },
+    "/system-config/storage-template-render": {
+      "post": {
+        "description": "Render a storage template with sample data for preview purposes.",
+        "operationId": "renderStorageTemplate",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenderStorageTemplateDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RenderStorageTemplateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Render storage template preview",
+        "tags": [
+          "System config"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-permission": "systemConfig.read"
+      }
+    },
     "/system-metadata/admin-onboarding": {
       "get": {
         "description": "Retrieve the current admin onboarding status.",
@@ -22109,6 +22155,30 @@
         ],
         "type": "string"
       },
+      "RenderStorageTemplateDto": {
+        "properties": {
+          "template": {
+            "description": "Storage template string to render",
+            "type": "string"
+          }
+        },
+        "required": [
+          "template"
+        ],
+        "type": "object"
+      },
+      "RenderStorageTemplateResponseDto": {
+        "properties": {
+          "rendered": {
+            "description": "Rendered storage template path",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rendered"
+        ],
+        "type": "object"
+      },
       "ReverseGeocodingStateResponseDto": {
         "properties": {
           "lastImportFileName": {
@@ -26566,6 +26636,13 @@
             },
             "type": "array"
           },
+          "renderedPresetOptions": {
+            "description": "Rendered versions of preset template options",
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "secondOptions": {
             "description": "Available second format options for storage template",
             "items": {
@@ -26594,6 +26671,7 @@
           "minuteOptions",
           "monthOptions",
           "presetOptions",
+          "renderedPresetOptions",
           "secondOptions",
           "weekOptions",
           "yearOptions"
