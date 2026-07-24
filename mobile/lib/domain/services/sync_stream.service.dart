@@ -451,6 +451,7 @@ class SyncStreamService {
 
       await _syncStreamRepository.updateAssetsV1([asset], debugLabel: 'websocket-edit');
       await _syncStreamRepository.replaceAssetEditsV1(asset.id, assetEdits, debugLabel: 'websocket-edit');
+      await _refreshAssetOcrAndFaces(asset.id);
 
       _logger.info(
         'Successfully processed AssetEditReadyV1 event for asset ${asset.id} with ${assetEdits.length} edits',
@@ -489,12 +490,29 @@ class SyncStreamService {
 
       await _syncStreamRepository.updateAssetsV2([asset], debugLabel: 'websocket-edit');
       await _syncStreamRepository.replaceAssetEditsV1(asset.id, assetEdits, debugLabel: 'websocket-edit');
+      await _refreshAssetOcrAndFaces(asset.id);
 
       _logger.info(
         'Successfully processed AssetEditReadyV2 event for asset ${asset.id} with ${assetEdits.length} edits',
       );
     } catch (error, stackTrace) {
       _logger.severe("Error processing AssetEditReadyV2 websocket event", error, stackTrace);
+    }
+  }
+
+  Future<void> _refreshAssetOcrAndFaces(String assetId) async {
+    try {
+      final ocr = await _api.assetsApi.getAssetOcr(assetId);
+      await _syncStreamRepository.replaceAssetOcr(assetId, ocr ?? const []);
+    } catch (error, stackTrace) {
+      _logger.severe("Error refreshing OCR for asset $assetId", error, stackTrace);
+    }
+
+    try {
+      final faces = await _api.facesApi.getFaces(assetId);
+      await _syncStreamRepository.replaceAssetFaces(assetId, faces ?? const []);
+    } catch (error, stackTrace) {
+      _logger.severe("Error refreshing faces for asset $assetId", error, stackTrace);
     }
   }
 

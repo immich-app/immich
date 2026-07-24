@@ -7,6 +7,7 @@ import 'package:immich_mobile/infrastructure/repositories/network.repository.dar
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/ocr.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/utils/debounce.dart';
@@ -182,7 +183,10 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   void _handleSyncAssetEditReadyV1(dynamic data) {
-    unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEditV1(data));
+    final assetId = _assetIdFromEditReady(data);
+    unawaited(
+      _ref.read(backgroundSyncProvider).syncWebsocketEditV1(data).whenComplete(() => _onAssetEditApplied(assetId)),
+    );
   }
 
   void _handleAlbumUpdate(dynamic _) {
@@ -190,7 +194,27 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   void _handleSyncAssetEditReadyV2(dynamic data) {
-    unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEditV2(data));
+    final assetId = _assetIdFromEditReady(data);
+    unawaited(
+      _ref.read(backgroundSyncProvider).syncWebsocketEditV2(data).whenComplete(() => _onAssetEditApplied(assetId)),
+    );
+  }
+
+  String? _assetIdFromEditReady(dynamic data) {
+    if (data is Map && data['asset'] is Map) {
+      final id = (data['asset'] as Map)['id'];
+      return id is String ? id : null;
+    }
+    return null;
+  }
+
+  /// The edit handler refreshes OCR/faces in the drift DB from a background isolate,
+  /// so the main-isolate UI providers must be invalidated here to re-read the new data.
+  void _onAssetEditApplied(String? assetId) {
+    if (assetId == null) {
+      return;
+    }
+    _ref.invalidate(ocrAssetProvider(assetId));
   }
 
   void _processBatchedAssetUploadReadyV1() {
