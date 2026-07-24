@@ -1,2 +1,0 @@
-* Fixed crash issue when upload large file on slow network
-* Updated album to conform with server refactoring of SharedAlbum to Album

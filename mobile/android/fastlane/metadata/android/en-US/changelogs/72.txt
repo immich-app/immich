@@ -1,2 +1,0 @@
-* Fix no album thumbnail lead to no album selection shown and add global logs
-* Fix remove asset from gallery view

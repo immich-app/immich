@@ -1,1 +1,0 @@
-* Update deprecated API that causes notification not dismissing after background upload progress finished.

@@ -1,2 +1,0 @@
-* Fixed admin is forced to change password upon logging in on mobile app
-* Fixed change password form validation

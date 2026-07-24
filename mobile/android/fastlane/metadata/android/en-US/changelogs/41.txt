@@ -1,2 +1,0 @@
-* Fixed oversize play button on video
-* Fixed app crashing when swipe between assets

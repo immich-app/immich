@@ -1,1 +1,0 @@
-* Fixed app crashes when there is no object detection result.
