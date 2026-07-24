@@ -24,13 +24,19 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   const DriftLocalAssetRepository(this._db) : super(_db);
 
   SingleOrNullSelectable<LocalAsset?> _assetSelectable(String id) {
-    final query = _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.id]).join([
-      leftOuterJoin(
-        _db.remoteAssetEntity,
-        _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-        useColumns: false,
-      ),
-    ])..where(_db.localAssetEntity.id.equals(id));
+    final query =
+        _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.id]).join([
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum) &
+                  _db.remoteAssetEntity.ownerId.isInQuery(
+                    _db.selectOnly(_db.authUserEntity)..addColumns([_db.authUserEntity.id]),
+                  ),
+              useColumns: false,
+            ),
+          ])
+          ..where(_db.localAssetEntity.id.equals(id))
+          ..limit(1);
 
     return query.map((row) {
       final asset = row.readTable(_db.localAssetEntity).toDto();
