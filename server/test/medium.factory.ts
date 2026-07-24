@@ -56,6 +56,7 @@ import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { VideoFrameRepository } from 'src/repositories/video-frame.repository';
 import { WorkflowRepository } from 'src/repositories/workflow.repository';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
@@ -432,6 +433,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case SystemMetadataRepository:
     case UserRepository:
     case VersionHistoryRepository:
+    case VideoFrameRepository:
     case WorkflowRepository: {
       return new key(db);
     }

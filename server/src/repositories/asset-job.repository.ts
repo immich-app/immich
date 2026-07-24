@@ -352,6 +352,44 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [undefined, DummyValue.STRING], stream: true })
+  streamForVideoFrameExtraction(force: boolean | undefined) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id'])
+      .where('asset.type', '=', sql.lit(AssetType.Video))
+      .$if(!force, (qb) =>
+        qb
+          .where((eb) =>
+            eb.not(
+              eb.exists(
+                eb
+                  .selectFrom('asset_file')
+                  .select('asset_file.id')
+                  .whereRef('asset_file.assetId', '=', 'asset.id')
+                  .where('asset_file.type', '=', sql.lit(AssetFileType.SampledVideo)),
+              ),
+            ),
+          )
+          .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
+      )
+      .where('asset.deletedAt', 'is', null)
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForVideoFrameExtraction(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .innerJoin('asset_video', 'asset_video.assetId', 'asset.id')
+      .select(['asset.id', 'asset.ownerId', 'asset.originalPath'])
+      .select((eb) => withVideoStream(eb).$notNull().as('videoStream'))
+      .where('asset.id', '=', id)
+      .where('asset.type', '=', sql.lit(AssetType.Video))
+      .executeTakeFirst();
+  }
+
   @GenerateSql({ params: [], stream: true })
   streamForMetadataExtraction(force?: boolean) {
     return this.db

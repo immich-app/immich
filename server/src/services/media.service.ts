@@ -1,4 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { SystemConfig } from 'src/config';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
@@ -41,7 +44,7 @@ import {
 } from 'src/types';
 import { getAssetFile, getDimensions } from 'src/utils/asset.util';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
-import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
+import { BaseConfig, ThumbnailConfig, VideoFrameExtractionConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
 import { clamp } from 'src/utils/misc';
 import { getOutputDimensions } from 'src/utils/transform';
@@ -249,6 +252,96 @@ export class MediaService extends BaseService {
     }
 
     return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.VideoFrameExtractionQueueAll, queue: QueueName.VideoConversion })
+  async handleQueueGenerateVideoFrames({ force }: JobOf<JobName.VideoFrameExtractionQueueAll>): Promise<JobStatus> {
+    const { videoFrameExtraction } = await this.getConfig({ withCache: true });
+    if (!videoFrameExtraction.enabled) {
+      return JobStatus.Skipped;
+    }
+
+    let jobs: JobItem[] = [];
+    const queueAll = async () => {
+      await this.jobRepository.queueAll(jobs);
+      jobs = [];
+    };
+
+    for await (const asset of this.assetJobRepository.streamForVideoFrameExtraction(force)) {
+      jobs.push({ name: JobName.VideoFrameExtraction, data: { id: asset.id } });
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await queueAll();
+      }
+    }
+
+    await queueAll();
+
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.VideoFrameExtraction, queue: QueueName.VideoConversion })
+  async handleGenerateVideoFrames({ id }: JobOf<JobName.VideoFrameExtraction>): Promise<JobStatus> {
+    const { videoFrameExtraction, ffmpeg } = await this.getConfig({ withCache: true });
+    if (!videoFrameExtraction.enabled) {
+      return JobStatus.Skipped;
+    }
+
+    const asset = await this.assetJobRepository.getForVideoFrameExtraction(id);
+    if (!asset) {
+      return JobStatus.Failed;
+    }
+
+    const artifactPath = StorageCore.getVideoFrameArtifactPath(asset);
+    this.storageCore.ensureFolders(artifactPath);
+
+    const tempDir = await mkdtemp(join(tmpdir(), `immich-video-frames-${asset.id}-`));
+    const playlistPath = join(tempDir, 'frames.m3u8');
+    const scoresPath = join(tempDir, 'scores.txt');
+
+    try {
+      const config = VideoFrameExtractionConfig.create({
+        inputPath: asset.originalPath,
+        artifactPath,
+        playlistPath,
+        scoresPath,
+        targetResolution: videoFrameExtraction.targetResolution,
+        qp: videoFrameExtraction.qp,
+        frameInterval: videoFrameExtraction.frameInterval,
+        ffmpeg,
+        videoInterfaces: this.videoInterfaces,
+      });
+
+      const command = config.getExtractionCommand(asset.videoStream);
+
+      let result;
+      try {
+        result = await this.mediaRepository.extractVideoFrames(command, { playlistPath, scoresPath });
+      } catch (error) {
+        this.logger.error(`Failed to generate video frames for asset ${asset.id}: ${error}`);
+        return JobStatus.Failed;
+      }
+
+      const { byteRanges } = result;
+      if (byteRanges.length === 0) {
+        this.logger.warn(`No frames extracted for video ${asset.id}`);
+        return JobStatus.Failed;
+      }
+
+      const frames = byteRanges.map((range, frameIndex) => ({
+        frameIndex,
+        byteOffset: range.byteOffset,
+        byteSize: range.byteSize,
+        intervalChange: result.intervalChanges[frameIndex] ?? 0,
+      }));
+
+      await this.videoFrameRepository.upsertFrames(asset.id, frames);
+
+      this.logger.log(`Extracted ${frames.length} frame(s) for video ${asset.id}`);
+
+      return JobStatus.Success;
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
   }
 
   private async extractImage(originalPath: string, minSize: number) {

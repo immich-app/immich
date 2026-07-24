@@ -66,6 +66,7 @@ import { TelemetryRepository } from 'src/repositories/telemetry.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
+import { VideoFrameRepository } from 'src/repositories/video-frame.repository';
 import { VideoStreamRepository } from 'src/repositories/video-stream.repository';
 import { ViewRepository } from 'src/repositories/view-repository';
 import { WebsocketRepository } from 'src/repositories/websocket.repository';
@@ -269,6 +270,7 @@ export type ServiceOverrides = {
   trash: TrashRepository;
   user: UserRepository;
   versionHistory: VersionHistoryRepository;
+  videoFrame: VideoFrameRepository;
   videoStream: VideoStreamRepository;
   view: ViewRepository;
   websocket: WebsocketRepository;
@@ -355,6 +357,7 @@ export const getMocks = () => {
     trash: automock(TrashRepository),
     user: automock(UserRepository, { strict: false }),
     versionHistory: automock(VersionHistoryRepository),
+    videoFrame: automock(VideoFrameRepository),
     videoStream: automock(VideoStreamRepository, { strict: false }),
     view: automock(ViewRepository),
     // eslint-disable-next-line no-sparse-arrays
@@ -421,6 +424,7 @@ export const newTestService = <T extends BaseService>(
     overrides.trash || (mocks.trash as As<TrashRepository>),
     overrides.user || (mocks.user as As<UserRepository>),
     overrides.versionHistory || (mocks.versionHistory as As<VersionHistoryRepository>),
+    overrides.videoFrame || (mocks.videoFrame as As<VideoFrameRepository>),
     overrides.videoStream || (mocks.videoStream as As<VideoStreamRepository>),
     overrides.view || (mocks.view as As<ViewRepository>),
     overrides.websocket || (mocks.websocket as As<WebsocketRepository>),

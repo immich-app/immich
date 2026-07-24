@@ -825,6 +825,8 @@ class ApiClient {
           return SystemConfigTrashDto.fromJson(value);
         case 'SystemConfigUserDto':
           return SystemConfigUserDto.fromJson(value);
+        case 'SystemConfigVideoFrameExtractionDto':
+          return SystemConfigVideoFrameExtractionDto.fromJson(value);
         case 'TagBulkAssetsDto':
           return TagBulkAssetsDto.fromJson(value);
         case 'TagBulkAssetsResponseDto':

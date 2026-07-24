@@ -698,6 +698,76 @@ where
   "asset"."id" = $1
   and "asset"."type" = 'VIDEO'
 
+-- AssetJobRepository.streamForVideoFrameExtraction
+select
+  "asset"."id"
+from
+  "asset"
+where
+  "asset"."type" = 'VIDEO'
+  and not exists (
+    select
+      "asset_file"."id"
+    from
+      "asset_file"
+    where
+      "asset_file"."assetId" = "asset"."id"
+      and "asset_file"."type" = 'sampled_video'
+  )
+  and "asset"."visibility" != 'hidden'
+  and "asset"."deletedAt" is null
+
+-- AssetJobRepository.getForVideoFrameExtraction
+select
+  "asset"."id",
+  "asset"."ownerId",
+  "asset"."originalPath",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_video"."index",
+          "asset_video"."codecName",
+          "asset_video"."profile",
+          "asset_video"."level",
+          "asset_video"."bitrate",
+          "asset_exif"."exifImageWidth" as "width",
+          "asset_exif"."exifImageHeight" as "height",
+          "asset_video"."pixelFormat",
+          "asset_video"."frameCount",
+          "asset_exif"."fps" as "frameRate",
+          "asset_video"."timeBase",
+          case
+            when "asset_exif"."orientation" = '6' then -90
+            when "asset_exif"."orientation" = '8' then 90
+            when "asset_exif"."orientation" = '3' then 180
+            else 0
+          end as "rotation",
+          "asset_video"."colorPrimaries",
+          "asset_video"."colorMatrix",
+          "asset_video"."colorTransfer",
+          "asset_video"."dvProfile",
+          "asset_video"."dvLevel",
+          "asset_video"."dvBlSignalCompatibilityId"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_video"."assetId" is not null
+      ) as obj
+  ) as "videoStream"
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  inner join "asset_video" on "asset_video"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1
+  and "asset"."type" = 'VIDEO'
+
 -- AssetJobRepository.streamForMetadataExtraction
 select
   "asset"."id"

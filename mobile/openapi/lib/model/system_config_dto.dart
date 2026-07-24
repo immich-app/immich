@@ -35,6 +35,7 @@ class SystemConfigDto {
     required this.theme,
     required this.trash,
     required this.user,
+    required this.videoFrameExtraction,
   });
 
   SystemConfigBackupsDto backup;
@@ -81,6 +82,8 @@ class SystemConfigDto {
 
   SystemConfigUserDto user;
 
+  SystemConfigVideoFrameExtractionDto videoFrameExtraction;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
     other.backup == backup &&
@@ -104,7 +107,8 @@ class SystemConfigDto {
     other.templates == templates &&
     other.theme == theme &&
     other.trash == trash &&
-    other.user == user;
+    other.user == user &&
+    other.videoFrameExtraction == videoFrameExtraction;
 
   @override
   int get hashCode =>
@@ -130,10 +134,11 @@ class SystemConfigDto {
     (templates.hashCode) +
     (theme.hashCode) +
     (trash.hashCode) +
-    (user.hashCode);
+    (user.hashCode) +
+    (videoFrameExtraction.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[backup=$backup, ffmpeg=$ffmpeg, image=$image, integrityChecks=$integrityChecks, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user]';
+  String toString() => 'SystemConfigDto[backup=$backup, ffmpeg=$ffmpeg, image=$image, integrityChecks=$integrityChecks, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user, videoFrameExtraction=$videoFrameExtraction]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -159,6 +164,7 @@ class SystemConfigDto {
       json[r'theme'] = this.theme;
       json[r'trash'] = this.trash;
       json[r'user'] = this.user;
+      json[r'videoFrameExtraction'] = this.videoFrameExtraction;
     return json;
   }
 
@@ -193,6 +199,7 @@ class SystemConfigDto {
         theme: SystemConfigThemeDto.fromJson(json[r'theme'])!,
         trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
         user: SystemConfigUserDto.fromJson(json[r'user'])!,
+        videoFrameExtraction: SystemConfigVideoFrameExtractionDto.fromJson(json[r'videoFrameExtraction'])!,
       );
     }
     return null;
@@ -262,6 +269,7 @@ class SystemConfigDto {
     'theme',
     'trash',
     'user',
+    'videoFrameExtraction',
   };
 }
 

@@ -251,6 +251,12 @@ const updatedConfig = Object.freeze<SystemConfig>({
       albumUpdateTemplate: '',
     },
   },
+  videoFrameExtraction: {
+    enabled: false,
+    targetResolution: 640,
+    qp: 34,
+    frameInterval: 1,
+  },
 });
 
 describe(SystemConfigService.name, () => {

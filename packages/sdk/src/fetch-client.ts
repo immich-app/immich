@@ -2615,6 +2615,16 @@ export type SystemConfigUserDto = {
     /** Delete delay */
     deleteDelay: number;
 };
+export type SystemConfigVideoFrameExtractionDto = {
+    /** Enable video frame extraction */
+    enabled: boolean;
+    /** Seconds between sampled frames */
+    frameInterval: number;
+    /** Fixed quantizer used for the all-intra frame encode */
+    qp: number;
+    /** Target short-side resolution (px) of extracted frames */
+    targetResolution: number;
+};
 export type SystemConfigDto = {
     backup: SystemConfigBackupsDto;
     ffmpeg: SystemConfigFFmpegDto;
@@ -2638,6 +2648,7 @@ export type SystemConfigDto = {
     theme: SystemConfigThemeDto;
     trash: SystemConfigTrashDto;
     user: SystemConfigUserDto;
+    videoFrameExtraction: SystemConfigVideoFrameExtractionDto;
 };
 export type SystemConfigTemplateStorageOptionDto = {
     /** Available day format options for storage template */
@@ -7499,7 +7510,9 @@ export enum JobName {
     IntegrityChecksumFiles = "IntegrityChecksumFiles",
     IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh",
     IntegrityDeleteReportType = "IntegrityDeleteReportType",
-    IntegrityDeleteReports = "IntegrityDeleteReports"
+    IntegrityDeleteReports = "IntegrityDeleteReports",
+    VideoFrameExtractionQueueAll = "VideoFrameExtractionQueueAll",
+    VideoFrameExtraction = "VideoFrameExtraction"
 }
 export enum SearchSuggestionType {
     Country = "country",

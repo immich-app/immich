@@ -1,3 +1,6 @@
+import { spawn } from 'node:child_process';
+import { EventEmitter } from 'node:events';
+import fs from 'node:fs/promises';
 import sharp from 'sharp';
 import { AssetFace } from 'src/database';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
@@ -8,6 +11,12 @@ import { BoundingBox } from 'src/repositories/machine-learning.repository';
 import { MediaRepository } from 'src/repositories/media.repository';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { automock } from 'test/utils';
+import { MockInstance, vitest } from 'vitest';
+
+vitest.mock('node:child_process', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('node:child_process')>();
+  return { ...actual, spawn: vitest.fn() };
+});
 
 const getPixelColor = async (buffer: Buffer, x: number, y: number) => {
   const metadata = await sharp(buffer).metadata();
@@ -662,6 +671,94 @@ describe(MediaRepository.name, () => {
         expect(result.visible).toEqual([ocrInsideCrop]);
         expect(result.hidden).toEqual([ocrOutsideCrop]);
       });
+    });
+  });
+
+  describe('extractVideoFrames', () => {
+    class FakeFfmpegProcess extends EventEmitter {
+      stderr = Object.assign(new EventEmitter(), { setEncoding: vitest.fn() });
+    }
+
+    const playlist = [
+      '#EXTM3U',
+      '#EXT-X-MAP:URI="asset.m4s",BYTERANGE="813@0"',
+      '#EXTINF:1.000000,',
+      '#EXT-X-BYTERANGE:3843@813',
+      'asset.m4s',
+      '#EXT-X-ENDLIST',
+    ].join('\n');
+
+    const scores = ['frame:0    pts:0       pts_time:0', 'lavfi.scd.mafd=1.234', 'lavfi.scd.score=1.234'].join('\n');
+
+    let fakeProcess: FakeFfmpegProcess;
+    let readFileSpy: MockInstance<typeof fs.readFile>;
+
+    beforeEach(() => {
+      fakeProcess = new FakeFfmpegProcess();
+      vitest.mocked(spawn).mockReturnValue(fakeProcess as unknown as ReturnType<typeof spawn>);
+      readFileSpy = vitest.spyOn(fs, 'readFile').mockImplementation((path) => {
+        return Promise.resolve(String(path).endsWith('scores.txt') ? scores : playlist);
+      }) as unknown as MockInstance<typeof fs.readFile>;
+    });
+
+    afterEach(() => {
+      readFileSpy.mockRestore();
+    });
+
+    it('spawns ffmpeg with the given command and resolves with the parsed byte ranges and scores', async () => {
+      const promise = sut.extractVideoFrames(['-i', 'input.mp4'], {
+        playlistPath: '/tmp/frames.m3u8',
+        scoresPath: '/tmp/scores.txt',
+      });
+
+      fakeProcess.emit('close', 0);
+
+      await expect(promise).resolves.toEqual({
+        byteRanges: [{ byteOffset: 813, byteSize: 3843 }],
+        intervalChanges: [1.234],
+      });
+
+      expect(spawn).toHaveBeenCalledWith('ffmpeg', ['-i', 'input.mp4'], { stdio: ['ignore', 'ignore', 'pipe'] });
+      expect(fs.readFile).toHaveBeenCalledWith('/tmp/frames.m3u8', 'utf8');
+      expect(fs.readFile).toHaveBeenCalledWith('/tmp/scores.txt', 'utf8');
+    });
+
+    it('rejects with the collected stderr when ffmpeg exits with a non-zero code', async () => {
+      const promise = sut.extractVideoFrames(['-i', 'input.mp4'], {
+        playlistPath: '/tmp/frames.m3u8',
+        scoresPath: '/tmp/scores.txt',
+      });
+
+      fakeProcess.stderr.emit('data', 'something went wrong\n');
+      fakeProcess.emit('close', 1);
+
+      await expect(promise).rejects.toThrowError('ffmpeg exited with code 1: something went wrong');
+      expect(fs.readFile).not.toHaveBeenCalled();
+    });
+
+    it('rejects when the process emits an error', async () => {
+      const promise = sut.extractVideoFrames(['-i', 'input.mp4'], {
+        playlistPath: '/tmp/frames.m3u8',
+        scoresPath: '/tmp/scores.txt',
+      });
+
+      const error = new Error('spawn ffmpeg ENOENT');
+      fakeProcess.emit('error', error);
+
+      await expect(promise).rejects.toThrow(error);
+    });
+
+    it('rejects when the output artifacts cannot be read', async () => {
+      readFileSpy.mockRejectedValue(new Error('ENOENT: no such file or directory'));
+
+      const promise = sut.extractVideoFrames(['-i', 'input.mp4'], {
+        playlistPath: '/tmp/frames.m3u8',
+        scoresPath: '/tmp/scores.txt',
+      });
+
+      fakeProcess.emit('close', 0);
+
+      await expect(promise).rejects.toThrowError('ENOENT: no such file or directory');
     });
   });
 });

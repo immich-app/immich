@@ -214,6 +214,12 @@ export type SystemConfig = {
   user: {
     deleteDelay: number;
   };
+  videoFrameExtraction: {
+    enabled: boolean;
+    targetResolution: number;
+    qp: number;
+    frameInterval: number;
+  };
 };
 
 export type MachineLearningConfig = SystemConfig['machineLearning'];
@@ -445,5 +451,11 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   user: {
     deleteDelay: 7,
+  },
+  videoFrameExtraction: {
+    enabled: false,
+    targetResolution: 640,
+    qp: 34,
+    frameInterval: 1,
   },
 });

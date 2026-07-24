@@ -60,6 +60,7 @@ export enum AssetFileType {
   Thumbnail = 'thumbnail',
   Sidecar = 'sidecar',
   EncodedVideo = 'encoded_video',
+  SampledVideo = 'sampled_video',
 }
 
 export enum AlbumUserRole {
@@ -915,6 +916,10 @@ export enum JobName {
   IntegrityChecksumFilesRefresh = 'IntegrityChecksumFilesRefresh',
   IntegrityDeleteReportType = 'IntegrityDeleteReportType',
   IntegrityDeleteReports = 'IntegrityDeleteReports',
+
+  // Video frame extraction
+  VideoFrameExtractionQueueAll = 'VideoFrameExtractionQueueAll',
+  VideoFrameExtraction = 'VideoFrameExtraction',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });
