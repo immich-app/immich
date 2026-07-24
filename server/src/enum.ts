@@ -1241,3 +1241,12 @@ export enum CalendarHeatmapType {
   Upload = 'Upload',
   Taken = 'Taken',
 }
+
+export enum SearchOrderField {
+  FileCreatedAt = 'fileCreatedAt',
+  LocalDateTime = 'localDateTime',
+  FileSizeInBytes = 'fileSizeInBytes',
+  Rating = 'rating',
+}
+
+export const SearchOrderFieldSchema = z.enum(SearchOrderField).meta({ id: 'SearchOrderField' });

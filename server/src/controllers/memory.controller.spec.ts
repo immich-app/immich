@@ -106,7 +106,11 @@ describe(MemoryController.name, () => {
     it('should require at least one field', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/memories/${factory.uuid()}`).send({});
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.validationError([{ path: [], message: 'At least one field must be provided' }]));
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: [], message: 'At least one of the following fields is required: isSaved, seenAt, memoryAt' },
+        ]),
+      );
     });
   });
 

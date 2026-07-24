@@ -95,6 +95,8 @@
     const getPreviousRoute = $page.url.searchParams.get(QueryParameter.PREVIOUS_ROUTE);
     if (getPreviousRoute && !isExternalUrl(getPreviousRoute)) {
       previousRoute = getPreviousRoute;
+    } else if ($page.params.assetId) {
+      previousRoute = Route.viewPerson(data.person);
     }
     if (action == 'merge') {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;

@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart';
 import 'package:openapi/api.dart' show Optional;
 
 sealed class Option<T> {
@@ -21,10 +22,26 @@ sealed class Option<T> {
     None() => null,
   };
 
+  Option<U> map<U>(U Function(T value) f) => switch (this) {
+    Some(:final value) => Some(f(value)),
+    None() => None<U>(),
+  };
+
   U fold<U>(U Function(T value) onSome, U Function() onNone) => switch (this) {
     Some(:final value) => onSome(value),
     None() => onNone(),
   };
+
+  Option<U> flatMap<U>(Option<U> Function(T value) f) => switch (this) {
+    Some(:final value) => f(value),
+    None() => const Option.none(),
+  };
+
+  void ifPresent(void Function(T value) f) {
+    if (this case Some(:final value)) {
+      f(value);
+    }
+  }
 
   @override
   String toString() => switch (this) {
@@ -63,5 +80,12 @@ extension OptionToOptional<T> on Option<T> {
   Optional<T> toOptional() => switch (this) {
     None() => const Optional.absent(),
     Some(:final value) => Optional.present(value),
+  };
+}
+
+extension OptionToDriftValue<T> on Option<T> {
+  Value<T> toDriftValue() => switch (this) {
+    Some(:final value) => Value(value),
+    None() => const Value.absent(),
   };
 }

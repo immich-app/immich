@@ -10,6 +10,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class RemoteAssetRepository extends DriftDatabaseRepository {
@@ -291,5 +292,21 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
       ..where((row) => row.assetId.equals(assetId) & row.action.equals(AssetEditAction.other.index).not())
       ..orderBy([(row) => OrderingTerm.asc(row.sequence)]);
     return query.map((row) => row.toDto()!).get();
+  }
+
+  Future<void> update(
+    List<String> remoteIds, {
+    Option<bool> isFavorite = const .none(),
+    Option<AssetVisibility> visibility = const .none(),
+  }) {
+    final companion = RemoteAssetEntityCompanion(
+      visibility: visibility.toDriftValue(),
+      isFavorite: isFavorite.toDriftValue(),
+    );
+    return _db.batch((batch) {
+      for (final remoteId in remoteIds) {
+        batch.update(_db.remoteAssetEntity, companion, where: (e) => e.id.equals(remoteId));
+      }
+    });
   }
 }
