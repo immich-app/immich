@@ -139,7 +139,7 @@ export type UserAdmin = User & {
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
-  oauthId: string;
+  oauthId: string | null;
   quotaSizeInBytes: number | null;
   quotaUsageInBytes: number;
   status: UserStatus;
