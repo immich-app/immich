@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetOrder, AssetVisibility } from 'src/enum';
+import { AssetOrder, AssetOrderBy, AssetVisibility } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
@@ -74,6 +74,179 @@ describe(AssetRepository.name, () => {
       expect(JSON.parse(ascendingBucket.assets)).toEqual(
         expect.objectContaining({
           id: [previousLocalDayAsset.id, nextLocalDayEarlierAsset.id, nextLocalDayLaterAsset.id],
+        }),
+      );
+    });
+
+    it('should order assets by originalFileName when fileCreatedAt is the same (takenAt)', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user: { id: user.id } });
+
+      // create all the fake photos
+      const [
+        { asset: time1DSC0001Asset },
+        { asset: time1DSC0002Asset },
+        { asset: time2DSC0003Asset },
+        { asset: time2DSC0004Asset },
+      ] = await Promise.all([
+        // both at 12:30AM
+        ctx.newAsset({
+          ownerId: user.id,
+          fileCreatedAt: new Date('2026-03-09T00:30:00.000Z'),
+          localDateTime: new Date('2026-03-09T00:30:00.000Z'),
+          originalFileName: 'DSC0001.jpg',
+        }),
+        ctx.newAsset({
+          ownerId: user.id,
+          fileCreatedAt: new Date('2026-03-09T00:30:00.000Z'),
+          localDateTime: new Date('2026-03-09T00:30:00.000Z'),
+          originalFileName: 'DSC0002.jpg',
+        }),
+        // both at 1:45AM
+        ctx.newAsset({
+          ownerId: user.id,
+          fileCreatedAt: new Date('2026-03-09T01:45:00.000Z'),
+          localDateTime: new Date('2026-03-09T01:45:00.000Z'),
+          originalFileName: 'DSC0003.jpg',
+        }),
+        ctx.newAsset({
+          ownerId: user.id,
+          fileCreatedAt: new Date('2026-03-09T01:45:00.000Z'),
+          localDateTime: new Date('2026-03-09T01:45:00.000Z'),
+          originalFileName: 'DSC0004.jpg',
+        }),
+      ]);
+
+      // even though im not gonna do anything with these it's required!
+      await Promise.all([
+        ctx.newExif({ assetId: time1DSC0001Asset.id, timeZone: 'UTC+2' }),
+        ctx.newExif({ assetId: time1DSC0002Asset.id, timeZone: 'UTC+2' }),
+        ctx.newExif({ assetId: time2DSC0003Asset.id, timeZone: 'UTC+2' }),
+        ctx.newExif({ assetId: time2DSC0004Asset.id, timeZone: 'UTC+2' }),
+      ]);
+
+      // check the values given by the bucket when descending
+      const descendingBucket = await sut.getTimeBucket(
+        '2026-03-01',
+        {
+          order: AssetOrder.Desc,
+          userIds: [user.id],
+          visibility: AssetVisibility.Timeline,
+          orderBy: AssetOrderBy.TakenAt,
+        },
+        auth,
+      );
+      // make sure they're ordered correctly
+      expect(JSON.parse(descendingBucket.assets)).toEqual(
+        expect.objectContaining({
+          id: [time2DSC0004Asset.id, time2DSC0003Asset.id, time1DSC0002Asset.id, time1DSC0001Asset.id],
+        }),
+      );
+
+      // now do the same when ascending
+      const ascendingBucket = await sut.getTimeBucket(
+        '2026-03-01',
+        {
+          order: AssetOrder.Asc,
+          userIds: [user.id],
+          visibility: AssetVisibility.Timeline,
+          orderBy: AssetOrderBy.TakenAt,
+        },
+        auth,
+      );
+      expect(JSON.parse(ascendingBucket.assets)).toEqual(
+        expect.objectContaining({
+          id: [time1DSC0001Asset.id, time1DSC0002Asset.id, time2DSC0003Asset.id, time2DSC0004Asset.id],
+        }),
+      );
+    });
+
+    it('should order assets by originalFileName when fileCreatedAt is the same (createdAt)', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user: { id: user.id } });
+
+      // create all the fake photos
+      const [
+        { asset: time1DSC0001Asset },
+        { asset: time1DSC0002Asset },
+        { asset: time2DSC0003Asset },
+        { asset: time2DSC0004Asset },
+      ] = await Promise.all([
+        // createdAt = uploadedAt, fileCreatedAt = file metadata
+        // both at 12:30AM
+        ctx.newAsset({
+          ownerId: user.id,
+          fileCreatedAt: new Date('2026-03-09T00:30:00.000Z'),
+          localDateTime: new Date('2026-03-09T00:30:00.000Z'),
+          createdAt: new Date('2026-03-09T00:30:00.000Z'),
+          originalFileName: 'DSC0001.jpg',
+        }),
+        ctx.newAsset({
+          ownerId: user.id,
+          fileCreatedAt: new Date('2026-03-09T00:30:00.000Z'),
+          localDateTime: new Date('2026-03-09T00:30:00.000Z'),
+          createdAt: new Date('2026-03-09T00:30:00.000Z'),
+          originalFileName: 'DSC0002.jpg',
+        }),
+        // both at 1:45AM
+        ctx.newAsset({
+          ownerId: user.id,
+          fileCreatedAt: new Date('2026-03-09T01:45:00.000Z'),
+          localDateTime: new Date('2026-03-09T01:45:00.000Z'),
+          createdAt: new Date('2026-03-09T01:45:00.000Z'),
+          originalFileName: 'DSC0003.jpg',
+        }),
+        ctx.newAsset({
+          ownerId: user.id,
+          fileCreatedAt: new Date('2026-03-09T01:45:00.000Z'),
+          localDateTime: new Date('2026-03-09T01:45:00.000Z'),
+          createdAt: new Date('2026-03-09T01:45:00.000Z'),
+          originalFileName: 'DSC0004.jpg',
+        }),
+      ]);
+
+      // even though im not gonna do anything with these it's required!
+      await Promise.all([
+        ctx.newExif({ assetId: time1DSC0001Asset.id, timeZone: 'UTC+2' }),
+        ctx.newExif({ assetId: time1DSC0002Asset.id, timeZone: 'UTC+2' }),
+        ctx.newExif({ assetId: time2DSC0003Asset.id, timeZone: 'UTC+2' }),
+        ctx.newExif({ assetId: time2DSC0004Asset.id, timeZone: 'UTC+2' }),
+      ]);
+
+      // check the values given by the bucket when descending
+      const descendingBucket = await sut.getTimeBucket(
+        '2026-03-01',
+        {
+          order: AssetOrder.Desc,
+          userIds: [user.id],
+          visibility: AssetVisibility.Timeline,
+          orderBy: AssetOrderBy.CreatedAt,
+        },
+        auth,
+      );
+      // make sure they're ordered correctly
+      expect(JSON.parse(descendingBucket.assets)).toEqual(
+        expect.objectContaining({
+          id: [time2DSC0004Asset.id, time2DSC0003Asset.id, time1DSC0002Asset.id, time1DSC0001Asset.id],
+        }),
+      );
+
+      // now do the same when ascending
+      const ascendingBucket = await sut.getTimeBucket(
+        '2026-03-01',
+        {
+          order: AssetOrder.Asc,
+          userIds: [user.id],
+          visibility: AssetVisibility.Timeline,
+          orderBy: AssetOrderBy.CreatedAt,
+        },
+        auth,
+      );
+      expect(JSON.parse(ascendingBucket.assets)).toEqual(
+        expect.objectContaining({
+          id: [time1DSC0001Asset.id, time1DSC0002Asset.id, time2DSC0003Asset.id, time2DSC0004Asset.id],
         }),
       );
     });
