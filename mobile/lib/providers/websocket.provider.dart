@@ -56,14 +56,16 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   @override
   void dispose() {
     _batchDebouncer.dispose();
+    state.socket?.dispose();
     super.dispose();
   }
 
-  /// Connects websocket to server unless already connected
+  /// Connects websocket to server unless an active socket already exists
   void connect() {
-    if (state.isConnected) {
+    if (state.socket?.active == true) {
       return;
     }
+    state.socket?.dispose();
     final authenticationState = _ref.read(authProvider);
 
     if (authenticationState.isAuthenticated) {
@@ -84,6 +86,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
               .build(),
         );
 
+        state = WebsocketState(isConnected: false, socket: socket);
+
         socket.onConnect((_) {
           dPrint(() => "Established Websocket Connection");
           state = WebsocketState(isConnected: true, socket: socket);
@@ -91,12 +95,12 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
         socket.onDisconnect((_) {
           dPrint(() => "Disconnect to Websocket Connection");
-          state = const WebsocketState(isConnected: false, socket: null);
+          state = WebsocketState(isConnected: false, socket: socket);
         });
 
         socket.on('error', (errorMessage) {
           _log.severe("Websocket Error - $errorMessage");
-          state = const WebsocketState(isConnected: false, socket: null);
+          state = WebsocketState(isConnected: false, socket: socket);
         });
 
         socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReadyV1);
