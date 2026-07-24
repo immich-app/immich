@@ -1247,7 +1247,6 @@ export type QueuesResponseLegacyDto = {
     storageTemplateMigration: QueueResponseLegacyDto;
     thumbnailGeneration: QueueResponseLegacyDto;
     videoConversion: QueueResponseLegacyDto;
-    videoFrameExtraction: QueueResponseLegacyDto;
     workflow: QueueResponseLegacyDto;
 };
 export type JobCreateDto = {
@@ -2413,7 +2412,6 @@ export type SystemConfigJobDto = {
     smartSearch: JobSettingsDto;
     thumbnailGeneration: JobSettingsDto;
     videoConversion: JobSettingsDto;
-    videoFrameExtraction: JobSettingsDto;
     workflow: JobSettingsDto;
 };
 export type SystemConfigLibraryScanDto = {
@@ -7126,8 +7124,7 @@ export enum StorageFolder {
     Upload = "upload",
     Profile = "profile",
     Thumbs = "thumbs",
-    Backups = "backups",
-    VideoFrames = "video-frames"
+    Backups = "backups"
 }
 export enum NotificationLevel {
     Success = "success",
@@ -7411,8 +7408,7 @@ export enum QueueName {
     Ocr = "ocr",
     Workflow = "workflow",
     IntegrityCheck = "integrityCheck",
-    Editor = "editor",
-    VideoFrameExtraction = "videoFrameExtraction"
+    Editor = "editor"
 }
 export enum QueueCommand {
     Start = "start",

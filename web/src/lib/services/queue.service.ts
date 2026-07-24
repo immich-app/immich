@@ -251,11 +251,6 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
       icon: mdiPencil,
       title: $t('editor'),
     },
-    [QueueName.VideoFrameExtraction]: {
-      icon: mdiFilmstripBoxMultiple, // TBD
-      title: $t('admin.video_frame_extraction_job'),
-      subtitle: $t('admin.video_frame_extraction_job_description'),
-    },
   };
 
   return items[queue.name];

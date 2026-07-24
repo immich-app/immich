@@ -18,7 +18,6 @@ enum StorageFolder {
   profile._(r'profile'),
   thumbs._(r'thumbs'),
   backups._(r'backups'),
-  videoFrames._(r'video-frames'),
   ;
 
   /// Instantiate a new enum with the provided value.
@@ -84,7 +83,6 @@ class StorageFolderTypeTransformer {
         case r'profile': return StorageFolder.profile;
         case r'thumbs': return StorageFolder.thumbs;
         case r'backups': return StorageFolder.backups;
-        case r'video-frames': return StorageFolder.videoFrames;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

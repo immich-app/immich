@@ -280,7 +280,6 @@ export class UserService extends BaseService {
       StorageCore.getFolderLocation(StorageFolder.Profile, user.id),
       StorageCore.getFolderLocation(StorageFolder.Thumbnails, user.id),
       StorageCore.getFolderLocation(StorageFolder.EncodedVideo, user.id),
-      StorageCore.getFolderLocation(StorageFolder.VideoFrames, user.id),
     ];
 
     for (const folder of folders) {

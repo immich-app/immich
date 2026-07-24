@@ -329,7 +329,6 @@ export enum StorageFolder {
   Profile = 'profile',
   Thumbnails = 'thumbs',
   Backups = 'backups',
-  VideoFrames = 'video-frames',
 }
 
 export const StorageFolderSchema = z.enum(StorageFolder).describe('Storage folder').meta({ id: 'StorageFolder' });
@@ -811,7 +810,6 @@ export enum QueueName {
   Workflow = 'workflow',
   IntegrityCheck = 'integrityCheck',
   Editor = 'editor',
-  VideoFrameExtraction = 'videoFrameExtraction',
 }
 
 export const QueueNameSchema = z.enum(QueueName).describe('Queue name').meta({ id: 'QueueName' });

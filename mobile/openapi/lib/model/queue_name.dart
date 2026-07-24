@@ -31,7 +31,6 @@ enum QueueName {
   workflow._(r'workflow'),
   integrityCheck._(r'integrityCheck'),
   editor._(r'editor'),
-  videoFrameExtraction._(r'videoFrameExtraction'),
   ;
 
   /// Instantiate a new enum with the provided value.
@@ -110,7 +109,6 @@ class QueueNameTypeTransformer {
         case r'workflow': return QueueName.workflow;
         case r'integrityCheck': return QueueName.integrityCheck;
         case r'editor': return QueueName.editor;
-        case r'videoFrameExtraction': return QueueName.videoFrameExtraction;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

@@ -145,7 +145,6 @@ const SystemConfigJobSchema = z
     workflow: JobSettingsSchema,
     editor: JobSettingsSchema,
     integrityCheck: JobSettingsSchema,
-    videoFrameExtraction: JobSettingsSchema,
   })
   .meta({ id: 'SystemConfigJobDto' });
 

@@ -21599,8 +21599,7 @@
           "ocr",
           "workflow",
           "integrityCheck",
-          "editor",
-          "videoFrameExtraction"
+          "editor"
         ],
         "type": "string"
       },
@@ -21770,9 +21769,6 @@
           "videoConversion": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
-          "videoFrameExtraction": {
-            "$ref": "#/components/schemas/QueueResponseLegacyDto"
-          },
           "workflow": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           }
@@ -21796,7 +21792,6 @@
           "storageTemplateMigration",
           "thumbnailGeneration",
           "videoConversion",
-          "videoFrameExtraction",
           "workflow"
         ],
         "type": "object"
@@ -23762,8 +23757,7 @@
           "upload",
           "profile",
           "thumbs",
-          "backups",
-          "video-frames"
+          "backups"
         ],
         "type": "string"
       },
@@ -26046,9 +26040,6 @@
           "videoConversion": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
-          "videoFrameExtraction": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
           "workflow": {
             "$ref": "#/components/schemas/JobSettingsDto"
           }
@@ -26068,7 +26059,6 @@
           "smartSearch",
           "thumbnailGeneration",
           "videoConversion",
-          "videoFrameExtraction",
           "workflow"
         ],
         "type": "object"

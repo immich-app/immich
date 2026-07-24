@@ -79,7 +79,6 @@ describe(QueueService.name, () => {
         [QueueName.Workflow]: expected,
         [QueueName.IntegrityCheck]: expected,
         [QueueName.Editor]: expected,
-        [QueueName.VideoFrameExtraction]: expected,
       });
     });
   });

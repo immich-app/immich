@@ -594,81 +594,57 @@ export class VideoFrameExtractionConfig {
       `[an]scdet=threshold=${this.scdetThreshold},metadata=print:file=${this.options.scoresPath}[scored]`,
     ].join(';');
 
-    return [
-      '-nostdin',
-      '-nostats',
-      '-v',
-      'verbose',
-      '-noautorotate',
-      '-i',
-      this.options.inputPath,
-      '-filter_complex',
+    return this.buildExtractionCommand({
+      inputPrefixOptions: ['-noautorotate'],
       filterComplex,
-      '-map',
-      '[enc]',
-      '-c:v',
-      'libx264',
-      '-g',
-      String(this.gopSize),
-      '-qp',
-      String(this.options.qp),
-      '-bf',
-      '0',
-      '-an',
-      '-f',
-      'hls',
-      '-hls_segment_type',
-      'fmp4',
-      '-hls_flags',
-      'single_file',
-      '-hls_time',
-      '0',
-      '-hls_list_size',
-      '0',
-      '-hls_segment_filename',
-      this.options.artifactPath,
-      this.options.playlistPath,
-      '-map',
-      '[scored]',
-      '-f',
-      'null',
-      '-',
-    ];
+      encodeArgs: ['-qp', String(this.options.qp)],
+    });
   }
 
   private getHWExtractionCommand(videoStream: VideoStreamInfo): string[] {
-    const d = this.delegate;
     const { accel } = this.options.ffmpeg;
     const fps = 1 / this.options.frameInterval;
     const filterComplex = [
-      `[0:v]${d.getFilterOptions(videoStream).join(',')},fps=${fps},split[enc][an]`,
+      `[0:v]${this.delegate.getFilterOptions(videoStream).join(',')},fps=${fps},split[enc][an]`,
       `[an]hwdownload,format=nv12,scdet=threshold=${this.scdetThreshold},metadata=print:file=${this.options.scoresPath}[scored]`,
     ].join(';');
 
-    const encodeArgs = [...d.getBitrateOptions(), ...d.getEncoderOptions()];
+    const encodeArgs = [...this.delegate.getBitrateOptions(), ...this.delegate.getEncoderOptions()];
     if (accel === TranscodeHardwareAcceleration.Vaapi || accel === TranscodeHardwareAcceleration.Qsv) {
       encodeArgs.push('-low_power', '1');
     }
 
+    return this.buildExtractionCommand({
+      inputPrefixOptions: this.delegate.getBaseInputOptions(videoStream),
+      filterComplex,
+      encodeArgs,
+    });
+  }
+
+  private buildExtractionCommand(options: {
+    inputPrefixOptions: string[];
+    filterComplex: string;
+    encodeArgs: string[];
+  }): string[] {
     return [
       '-nostdin',
       '-nostats',
       '-v',
       'verbose',
-      ...d.getBaseInputOptions(videoStream), // -noautorotate only added for hw decoding, just like the rest of the functions in this file
+      ...options.inputPrefixOptions,
       '-i',
       this.options.inputPath,
       '-filter_complex',
-      filterComplex,
+      options.filterComplex,
       '-map',
       '[enc]',
       '-c:v',
-      d.getVideoCodec(),
+      this.delegate.getVideoCodec(),
       '-g',
       String(this.gopSize),
       '-bf',
       '0',
-      ...encodeArgs,
+      ...options.encodeArgs,
       '-an',
       '-f',
       'hls',

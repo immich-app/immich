@@ -99,12 +99,6 @@ describe(MaintenanceService.name, () => {
               "readable": true,
               "writable": false,
             },
-            {
-              "files": 2,
-              "folder": "video-frames",
-              "readable": true,
-              "writable": false,
-            },
           ],
         }
       `);
