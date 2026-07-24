@@ -485,9 +485,7 @@
     "version_check_settings": "Version Check",
     "version_check_settings_description": "Enable/disable the new version notification",
     "video_conversion_job": "Transcode videos",
-    "video_conversion_job_description": "Transcode videos for wider compatibility with browsers and devices",
-    "video_frame_extraction_job": "Extract video frames",
-    "video_frame_extraction_job_description": "Extract frames from videos for use in the video player seek bar and for AI analysis"
+    "video_conversion_job_description": "Transcode videos for wider compatibility with browsers and devices"
   },
   "admin_email": "Admin Email",
   "admin_password": "Admin Password",

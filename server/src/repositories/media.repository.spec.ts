@@ -18,10 +18,6 @@ vitest.mock('node:child_process', async (importOriginal) => {
   return { ...actual, spawn: vitest.fn() };
 });
 
-class FakeFfmpegProcess extends EventEmitter {
-  stderr = Object.assign(new EventEmitter(), { setEncoding: vitest.fn() });
-}
-
 const getPixelColor = async (buffer: Buffer, x: number, y: number) => {
   const metadata = await sharp(buffer).metadata();
   const width = metadata.width!;
@@ -679,6 +675,10 @@ describe(MediaRepository.name, () => {
   });
 
   describe('extractVideoFrames', () => {
+    class FakeFfmpegProcess extends EventEmitter {
+      stderr = Object.assign(new EventEmitter(), { setEncoding: vitest.fn() });
+    }
+
     const playlist = [
       '#EXTM3U',
       '#EXT-X-MAP:URI="asset.m4s",BYTERANGE="813@0"',
