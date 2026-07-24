@@ -108,28 +108,32 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   }
 
   Stream<ImageInfo> _codec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
-    yield* initialImageStream();
+    final isImage = assetType == AssetType.image;
+    final loadOriginal = isImage && SettingsRepository.instance.appConfig.image.loadOriginal;
+    final loadPreview = isImage && SettingsRepository.instance.appConfig.image.loadPreview;
+    yield* initialImageStream(isFinal: !loadOriginal && !loadPreview);
 
     if (isCancelled) {
       return;
     }
 
-    final previewRequest = request = RemoteImageRequest(
-      uri: getThumbnailUrlForRemoteId(
-        key.assetId,
-        type: AssetMediaSize.preview,
-        thumbhash: key.thumbhash,
-        edited: key.edited,
-      ),
-    );
-    final loadOriginal = assetType == AssetType.image && SettingsRepository.instance.appConfig.image.loadOriginal;
-    yield* loadRequest(previewRequest, decode, isFinal: !loadOriginal);
+    if (loadPreview) {
+      final previewRequest = request = RemoteImageRequest(
+        uri: getThumbnailUrlForRemoteId(
+          key.assetId,
+          type: AssetMediaSize.preview,
+          thumbhash: key.thumbhash,
+          edited: key.edited,
+        ),
+      );
+      yield* loadRequest(previewRequest, decode, isFinal: !loadOriginal);
+
+      if (isCancelled) {
+        return;
+      }
+    }
 
     if (!loadOriginal) {
-      return;
-    }
-
-    if (isCancelled) {
       return;
     }
 
@@ -140,24 +144,26 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
   }
 
   Stream<Object> _animatedCodec(RemoteFullImageProvider key, ImageDecoderCallback decode) async* {
-    yield* initialImageStream();
+    yield* initialImageStream(isFinal: false);
 
     if (isCancelled) {
       return;
     }
 
-    final previewRequest = request = RemoteImageRequest(
-      uri: getThumbnailUrlForRemoteId(
-        key.assetId,
-        type: AssetMediaSize.preview,
-        thumbhash: key.thumbhash,
-        edited: key.edited,
-      ),
-    );
-    yield* loadRequest(previewRequest, decode, isFinal: false);
+    if (SettingsRepository.instance.appConfig.image.loadPreview) {
+      final previewRequest = request = RemoteImageRequest(
+        uri: getThumbnailUrlForRemoteId(
+          key.assetId,
+          type: AssetMediaSize.preview,
+          thumbhash: key.thumbhash,
+          edited: key.edited,
+        ),
+      );
+      yield* loadRequest(previewRequest, decode, isFinal: false);
 
-    if (isCancelled) {
-      return;
+      if (isCancelled) {
+        return;
+      }
     }
 
     // always try original for animated, since previews don't support animation
