@@ -83,7 +83,13 @@ struct ImmichMemoryProvider: TimelineProvider {
         return
       }
 
-      let memories = try await api.fetchMemory(for: Date.now)
+      let memories: [MemoryResult]
+      do {
+        memories = try await api.fetchMemory(for: Date.now)
+      } catch {
+        completion(ImageEntry.handleError(for: cacheKey))
+        return
+      }
 
       await withTaskGroup(of: ImageEntry?.self) { group in
         var totalAssets = 0
