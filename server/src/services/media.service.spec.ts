@@ -385,7 +385,7 @@ describe(MediaService.name, () => {
         ...getForGenerateThumbnail(asset),
         ...probeStub.noVideoStreams,
       });
-      await expect(sut.handleGenerateThumbnails({ id: asset.id })).rejects.toThrowError();
+      await expect(sut.handleGenerateThumbnails({ id: asset.id })).resolves.toBe(JobStatus.Failed);
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
       expect(mocks.asset.update).not.toHaveBeenCalledWith();
     });
@@ -541,6 +541,46 @@ describe(MediaService.name, () => {
           isTransparent: false,
         },
       ]);
+    });
+
+    it('should retry video thumbnail generation with a fallback filter chain when ffmpeg fails', async () => {
+      const asset = AssetFactory.from({ type: AssetType.Video, originalPath: '/original/path.ext' }).exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue({
+        ...getForGenerateThumbnail(asset),
+        ...probeStub.videoStream2160p,
+      });
+      mocks.media.transcode.mockRejectedValueOnce(new Error('ffmpeg was killed with signal SIGSEGV'));
+
+      await expect(sut.handleGenerateThumbnails({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      // primary preview attempt (1) fails, then preview (2) and thumbnail (3) fallbacks run
+      expect(mocks.media.transcode).toHaveBeenCalledTimes(3);
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          inputOptions: ['-sws_flags', 'accurate_rnd+full_chroma_int'],
+          outputOptions: expect.arrayContaining([
+            '-fps_mode',
+            'passthrough',
+            '-vf',
+            String.raw`select=eq(n\,0),scale=-2:1440:flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc`,
+          ]),
+          twoPass: false,
+        }),
+      );
+      expect(mocks.asset.upsertFiles).toHaveBeenCalled();
+    });
+
+    it('should fail gracefully without throwing when media decoding is unsupported', async () => {
+      const asset = AssetFactory.from().exif().build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.media.decodeImage.mockRejectedValue(new Error('Input file contains unsupported image format'));
+
+      await expect(sut.handleGenerateThumbnails({ id: asset.id })).resolves.toBe(JobStatus.Failed);
+
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
     it('should tonemap thumbnail for hdr video', async () => {
