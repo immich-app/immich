@@ -1508,12 +1508,17 @@ describe(MediaService.name, () => {
   });
 
   describe('handleGeneratePersonThumbnail', () => {
-    it('should skip if machine learning is disabled', async () => {
+    it('should generate a thumbnail even if machine learning is disabled', async () => {
       mocks.systemMetadata.get.mockResolvedValue(systemConfigStub.machineLearningDisabled);
+      mocks.person.getDataForThumbnailGenerationJob.mockResolvedValue(personThumbnailStub.newThumbnailMiddle);
+      mocks.media.generateThumbnail.mockResolvedValue();
+      mocks.media.decodeImage.mockResolvedValue({
+        data: Buffer.from(''),
+        info: { width: 1000, height: 1000 } as OutputInfo,
+      });
 
-      await expect(sut.handleGeneratePersonThumbnail({ id: 'person-1' })).resolves.toBe(JobStatus.Skipped);
-      expect(mocks.asset.getByIds).not.toHaveBeenCalled();
-      expect(mocks.systemMetadata.get).toHaveBeenCalled();
+      await expect(sut.handleGeneratePersonThumbnail({ id: 'person-1' })).resolves.toBe(JobStatus.Success);
+      expect(mocks.media.generateThumbnail).toHaveBeenCalled();
     });
 
     it('should skip a person not found', async () => {
