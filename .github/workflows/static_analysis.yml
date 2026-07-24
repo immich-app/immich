@@ -70,7 +70,7 @@ jobs:
           working_directory: ./mobile
 
       - name: Install dependencies
-        run: mise //mobile:install -- --enforce-lockfile
+        run: mise //mobile:install:ci
 
       - name: Install dependencies for UI package
         run: flutter pub get --enforce-lockfile

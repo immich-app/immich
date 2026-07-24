@@ -94,6 +94,12 @@ description = "Install flutter dependencies"
 depends = ["//:open-api-dart"]
 run = "flutter pub get"
 
+[tasks."install:ci"]
+description = "Install flutter dependencies in CI"
+run = [
+  { task = "install", args = ["--enforce-lockfile"] },
+]
+
 [tasks.start]
 alias = "start"
 description = "Start flutter app"

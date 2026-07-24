@@ -68,7 +68,7 @@ sources = [
   "patch/*",
   "bin/generate-dart-sdk.sh",
 ]
-outputs = ["mobile/openapi/lib/"]
+outputs = ["../mobile/openapi/lib/"]
 run = "bash ./bin/generate-dart-sdk.sh"
 
 [tasks.open-api]

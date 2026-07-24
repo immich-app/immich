@@ -49,7 +49,7 @@ jobs:
           working_directory: ./mobile
 
       - name: Install dependencies
-        run: mise //mobile:install -- --enforce-lockfile
+        run: mise //mobile:install:ci
 
       - name: Fetch base spec from main
         run: |
