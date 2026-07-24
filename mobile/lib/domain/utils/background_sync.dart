@@ -49,15 +49,37 @@ class BackgroundSyncManager {
     this.onCloudIdSyncError,
   });
 
+  // The tasks the app-resume path re-runs. One in-flight when the app was suspended
+  // stays referenced but frozen, so on resume the dedupe guards would hand back the
+  // stale task instead of syncing (#28082). Websocket and cloud-id are excluded - the
+  // resume path never restarts them. [_allTasks] builds on this so the lists can't drift.
+  List<Cancelable?> get _resumeSyncTasks => [_syncTask, _deviceAlbumSyncTask, _hashTask, _linkedAlbumSyncTask];
+
+  List<Cancelable?> get _allTasks => [_syncWebsocketTask, _cloudIdSyncTask, ..._resumeSyncTasks];
+
   Future<void> cancel() async {
-    final tasks = [
-      _syncTask,
-      _syncWebsocketTask,
-      _cloudIdSyncTask,
-      _linkedAlbumSyncTask,
-      _deviceAlbumSyncTask,
-      _hashTask,
-    ];
+    final tasks = _allTasks;
+    _syncTask = null;
+    _syncWebsocketTask = null;
+    _cloudIdSyncTask = null;
+    _linkedAlbumSyncTask = null;
+    _deviceAlbumSyncTask = null;
+    _hashTask = null;
+    await _cancelAll(tasks);
+  }
+
+  Future<void> cancelResumeSyncs() async {
+    final tasks = _resumeSyncTasks;
+    _syncTask = null;
+    _deviceAlbumSyncTask = null;
+    _hashTask = null;
+    _linkedAlbumSyncTask = null;
+    await _cancelAll(tasks);
+  }
+
+  // Cancels every task in [tasks] and waits for them to unwind. Callers null out
+  // their own fields first, so the sync guards see a clean slate immediately.
+  Future<void> _cancelAll(List<Cancelable?> tasks) async {
     final futures = [
       for (final task in tasks)
         if (task != null) task.future,
@@ -65,13 +87,6 @@ class BackgroundSyncManager {
     for (final task in tasks) {
       task?.cancel();
     }
-    _syncTask = null;
-    _syncWebsocketTask = null;
-    _cloudIdSyncTask = null;
-    _linkedAlbumSyncTask = null;
-    _deviceAlbumSyncTask = null;
-    _hashTask = null;
-
     try {
       await Future.wait(futures);
     } on CanceledError {
@@ -82,14 +97,14 @@ class BackgroundSyncManager {
   // No need to cancel the task, as it can also be run when the user logs out
   Future<void> syncLocal({bool full = false}) {
     if (_deviceAlbumSyncTask != null) {
-      return _deviceAlbumSyncTask!.future;
+      return _deviceAlbumSyncTask!.future.catchError((_) {}, test: (error) => error is CanceledError);
     }
 
     onLocalSyncStart?.call();
 
     // We use a ternary operator to avoid [_deviceAlbumSyncTask] from being
     // captured by the closure passed to [runInIsolateGentle].
-    _deviceAlbumSyncTask = full
+    final task = _deviceAlbumSyncTask = full
         ? runInIsolateGentle(
             computation: (ref) => ref.read(localSyncServiceProvider).sync(full: true),
             debugLabel: 'local-sync-full-true',
@@ -99,37 +114,43 @@ class BackgroundSyncManager {
             debugLabel: 'local-sync-full-false',
           );
 
-    return _deviceAlbumSyncTask!
+    return task
         .whenComplete(() {
-          _deviceAlbumSyncTask = null;
+          if (identical(_deviceAlbumSyncTask, task)) {
+            _deviceAlbumSyncTask = null;
+          }
           onLocalSyncComplete?.call();
         })
         .catchError((error) {
-          onLocalSyncError?.call(error.toString());
-          _deviceAlbumSyncTask = null;
+          if (error is! CanceledError) {
+            onLocalSyncError?.call(error.toString());
+          }
         });
   }
 
   Future<void> hashAssets() {
     if (_hashTask != null) {
-      return _hashTask!.future;
+      return _hashTask!.future.catchError((_) {}, test: (error) => error is CanceledError);
     }
 
     onHashingStart?.call();
 
-    _hashTask = runInIsolateGentle(
+    final task = _hashTask = runInIsolateGentle(
       computation: (ref) => ref.read(hashServiceProvider).hashAssets(),
       debugLabel: 'hash-assets',
     );
 
-    return _hashTask!
+    return task
         .whenComplete(() {
           onHashingComplete?.call();
-          _hashTask = null;
+          if (identical(_hashTask, task)) {
+            _hashTask = null;
+          }
         })
         .catchError((error) {
-          onHashingError?.call(error.toString());
-          _hashTask = null;
+          if (error is! CanceledError) {
+            onHashingError?.call(error.toString());
+          }
         });
   }
 
@@ -140,23 +161,28 @@ class BackgroundSyncManager {
 
     onRemoteSyncStart?.call();
 
-    _syncTask = runInIsolateGentle(
+    final task = _syncTask = runInIsolateGentle(
       computation: (ref) => ref.read(syncStreamServiceProvider).sync(),
       debugLabel: 'remote-sync',
     );
-    return _syncTask!
+    return task
         .then((result) {
           final success = result ?? false;
           onRemoteSyncComplete?.call(success);
           return success;
         })
         .catchError((error) {
-          onRemoteSyncError?.call(error.toString());
-          _syncTask = null;
+          if (error is! CanceledError) {
+            onRemoteSyncError?.call(error.toString());
+          }
           return false;
         })
+        // A task clears only its own slot: one that was cancelled and superseded by a
+        // fresh task (see cancelResumeSyncs) must not null the new task's slot.
         .whenComplete(() {
-          _syncTask = null;
+          if (identical(_syncTask, task)) {
+            _syncTask = null;
+          }
         });
   }
 
@@ -202,13 +228,21 @@ class BackgroundSyncManager {
 
   Future<void> syncLinkedAlbum() {
     if (_linkedAlbumSyncTask != null) {
-      return _linkedAlbumSyncTask!.future;
+      return _linkedAlbumSyncTask!.future.catchError((_) {}, test: (error) => error is CanceledError);
     }
 
-    _linkedAlbumSyncTask = runInIsolateGentle(computation: syncLinkedAlbumsIsolated, debugLabel: 'linked-album-sync');
-    return _linkedAlbumSyncTask!.whenComplete(() {
-      _linkedAlbumSyncTask = null;
-    });
+    final task = _linkedAlbumSyncTask = runInIsolateGentle(
+      computation: syncLinkedAlbumsIsolated,
+      debugLabel: 'linked-album-sync',
+    );
+    return task
+        .whenComplete(() {
+          if (identical(_linkedAlbumSyncTask, task)) {
+            _linkedAlbumSyncTask = null;
+          }
+        })
+        // a cancelled resume sync is not a failure; absorb it so the websocket callers don't get an uncaught error
+        .catchError((_) {}, test: (error) => error is CanceledError);
   }
 
   Future<void> syncCloudIds() {

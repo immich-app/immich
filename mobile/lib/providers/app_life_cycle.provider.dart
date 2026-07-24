@@ -108,6 +108,12 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     await Future.delayed(const Duration(milliseconds: 500));
 
     final backgroundManager = _ref.read(backgroundSyncProvider);
+
+    // Drop any sync that froze mid-flight while the app was suspended so resume
+    // starts fresh instead of awaiting the stale task (#28082). cancelResumeSyncs
+    // clears the task refs synchronously, so the syncs below see a clean slate.
+    unawaited(backgroundManager.cancelResumeSyncs());
+
     final isAlbumLinkedSyncEnable = _ref.read(appConfigProvider).backup.syncAlbums;
 
     try {
