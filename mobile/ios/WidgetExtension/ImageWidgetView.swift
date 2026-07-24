@@ -29,21 +29,20 @@ private struct ImmichWidgetLoadingView: View {
   let message: String?
 
   var body: some View {
-    Image("LaunchImage")
-      .tintedWidgetImageModifier()
-      .overlay(alignment: .bottom) {
-        if let message {
-          Text(message)
-            .minimumScaleFactor(0.25)
-            .multilineTextAlignment(.center)
-            .foregroundStyle(.secondary)
-            .fixedSize()
-            .alignmentGuide(.bottom) { dimensions in
-              // Place the text below the bottom of the image
-              dimensions[.top] - 8
-            }
-        }
-      }
+    let messageText = Text(message ?? "")
+      .minimumScaleFactor(0.25)
+      .multilineTextAlignment(.center)
+      .foregroundStyle(.secondary)
+
+    VStack(spacing: 8) {
+      // This is used as a nicer way to center the image, rather than using offsets
+      messageText.hidden()
+
+      Image("LaunchImage")
+        .tintedWidgetImageModifier()
+
+      messageText
+    }
   }
 }
 
@@ -59,24 +58,26 @@ private struct ImmichWidgetContentView: View {
           .resizable()
           .tintedWidgetImageModifier()
           .scaledToFill()
-        )
-        VStack {
-          Spacer()
-          if let subtitle = subtitle {
-            Text(subtitle)
-              .foregroundColor(.white)
-              .padding(6)
-              .background(ContainerRelativeShape().fill(Color.black.opacity(0.6)))
-              .font(.system(size: 16))
-          }
+      )
+
+      VStack {
+        Spacer()
+        if let subtitle {
+          Text(subtitle)
+            .foregroundColor(.white)
+            .padding(6)
+            .background(ContainerRelativeShape().fill(Color.black.opacity(0.6)))
+            .font(.system(size: 16))
         }
-          .padding(16)
-        }
+      }
+      .padding(16)
+    }
     .widgetURL(deepLink)
   }
 }
 
 #Preview(
+  "Medium",
   as: .systemMedium,
   widget: {
     ImmichRandomWidget()
@@ -94,6 +95,53 @@ private struct ImmichWidgetContentView: View {
 )
 
 #Preview(
+  "Medium No Data",
+  as: .systemMedium,
+  widget: {
+    ImmichRandomWidget()
+  },
+  timeline: {
+    let date = Date()
+    ImageEntry(
+      date: date,
+      image: nil
+    )
+  }
+)
+
+#Preview(
+  "Medium No Data Error",
+  as: .systemMedium,
+  widget: {
+    ImmichRandomWidget()
+  },
+  timeline: {
+    let date = Date()
+    ImageEntry(
+      date: date,
+      image: nil,
+      metadata: EntryMetadata(error: WidgetError.fetchFailed)
+    )
+  }
+)
+
+#Preview(
+  "Medium Loading",
+  as: .systemMedium,
+  widget: {
+    ImmichRandomWidget()
+  },
+  timeline: {
+    let date = Date()
+    ImageEntry(
+      date: date,
+      image: nil
+    )
+  }
+)
+
+#Preview(
+  "Small",
   as: .systemSmall,
   widget: {
     ImmichRandomWidget()
@@ -111,6 +159,23 @@ private struct ImmichWidgetContentView: View {
 )
 
 #Preview(
+  "Small No Data Error",
+  as: .systemSmall,
+  widget: {
+    ImmichRandomWidget()
+  },
+  timeline: {
+    let date = Date()
+    ImageEntry(
+      date: date,
+      image: nil,
+      metadata: EntryMetadata(error: WidgetError.fetchFailed)
+    )
+  }
+)
+
+#Preview(
+  "Large",
   as: .systemLarge,
   widget: {
     ImmichRandomWidget()
