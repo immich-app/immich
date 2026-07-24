@@ -15,11 +15,13 @@ import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details.wi
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.provider.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_stack.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/ocr_overlay.widget.dart';
+import 'package:immich_mobile/presentation/widgets/asset_viewer/photo_sphere_view.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/is_motion_video_playing.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
@@ -49,6 +51,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   late PhotoViewControllerValue _initialPhotoViewState;
 
   bool _showingDetails = false;
+  bool _showingControls = false;
   bool _isZoomed = false;
 
   final _scrollController = SnapScrollController();
@@ -338,30 +341,47 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final imageProvider = getFullImageProvider(asset, size: size, localFilePath: localFilePath);
 
     if (asset.isImage && !isPlayingMotionVideo) {
-      return PhotoView(
-        key: Key(asset.heroTag),
-        index: widget.index,
-        imageProvider: imageProvider,
-        heroAttributes: heroAttributes,
-        loadingBuilder: (context, progress, index) => const Center(child: ImmichLoadingIndicator()),
-        gaplessPlayback: true,
-        filterQuality: FilterQuality.high,
-        tightMode: true,
-        enablePanAlways: true,
-        disableScaleGestures: _showingDetails,
-        scaleStateChangedCallback: _onScaleStateChanged,
-        onPageBuild: _onPageBuild,
-        onDragStart: _onDragStart,
-        onDragUpdate: _onDragUpdate,
-        onDragEnd: _onDragEnd,
-        onDragCancel: _onDragCancel,
-        onTapUp: _onTapUp,
-        onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
-        errorBuilder: (_, __, ___) => SizedBox(
-          width: size.width,
-          height: size.height,
-          child: Thumbnail.fromAsset(asset: asset, fit: BoxFit.contain),
-        ),
+      final exifInfo = ref.watch(assetExifProvider(asset)).valueOrNull;
+      final isPhotosphere = exifInfo?.projectionType?.toUpperCase() == 'EQUIRECTANGULAR' || asset.isPhotosphere;
+      if (isPhotosphere && !_showingControls && !_showingDetails) {
+        return PhotoSphereView(
+          key: Key(asset.heroTag),
+          toggleControls: _viewer.toggleControls,
+          imageProvider: imageProvider,
+        );
+      }
+
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          PhotoView(
+            key: Key(asset.heroTag),
+            index: widget.index,
+            imageProvider: imageProvider,
+            heroAttributes: heroAttributes,
+            loadingBuilder: (context, progress, index) => const Center(child: ImmichLoadingIndicator()),
+            gaplessPlayback: true,
+            filterQuality: FilterQuality.high,
+            tightMode: true,
+            enablePanAlways: true,
+            disableScaleGestures: _showingDetails,
+            scaleStateChangedCallback: _onScaleStateChanged,
+            onPageBuild: _onPageBuild,
+            onDragStart: _onDragStart,
+            onDragUpdate: _onDragUpdate,
+            onDragEnd: _onDragEnd,
+            onDragCancel: _onDragCancel,
+            onTapUp: _onTapUp,
+            onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
+            errorBuilder: (_, __, ___) => SizedBox(
+              width: size.width,
+              height: size.height,
+              child: Thumbnail.fromAsset(asset: asset, fit: BoxFit.contain),
+            ),
+          ),
+          if (isPhotosphere && !_showingDetails)
+            const Center(child: Icon(Icons.panorama_photosphere, color: Colors.white)),
+        ],
       );
     }
 
@@ -398,6 +418,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   @override
   Widget build(BuildContext context) {
     final currentAsset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
+    _showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
