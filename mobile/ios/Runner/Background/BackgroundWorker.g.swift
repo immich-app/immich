@@ -160,6 +160,13 @@ func deepHashBackgroundWorker(value: Any?, hasher: inout Hasher) {
 }
 
 
+enum BackgroundWorkerResult: Int {
+  case none = 0
+  case connected = 1
+  case unmetered = 2
+  case unchanged = 3
+}
+
 /// Generated class from Pigeon that represents data sent in messages.
 struct BackgroundWorkerSettings: Hashable {
   var requiresCharging: Bool
@@ -200,6 +207,12 @@ private class BackgroundWorkerPigeonCodecReader: FlutterStandardReader {
   override func readValue(ofType type: UInt8) -> Any? {
     switch type {
     case 129:
+      let enumResultAsInt: Int? = nilOrValue(self.readValue() as! Int?)
+      if let enumResultAsInt = enumResultAsInt {
+        return BackgroundWorkerResult(rawValue: enumResultAsInt)
+      }
+      return nil
+    case 130:
       return BackgroundWorkerSettings.fromList(self.readValue() as! [Any?])
     default:
       return super.readValue(ofType: type)
@@ -209,8 +222,11 @@ private class BackgroundWorkerPigeonCodecReader: FlutterStandardReader {
 
 private class BackgroundWorkerPigeonCodecWriter: FlutterStandardWriter {
   override func writeValue(_ value: Any) {
-    if let value = value as? BackgroundWorkerSettings {
+    if let value = value as? BackgroundWorkerResult {
       super.writeByte(129)
+      super.writeValue(value.rawValue)
+    } else if let value = value as? BackgroundWorkerSettings {
+      super.writeByte(130)
       super.writeValue(value.toList())
     } else {
       super.writeValue(value)
@@ -348,7 +364,7 @@ class BackgroundWorkerBgHostApiSetup {
 /// Generated protocol from Pigeon that represents Flutter messages that can be called from Swift.
 protocol BackgroundWorkerFlutterApiProtocol {
   func onIosUpload(isRefresh isRefreshArg: Bool, maxSeconds maxSecondsArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void)
-  func onAndroidUpload(maxMinutes maxMinutesArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void)
+  func onAndroidUpload(maxMinutes maxMinutesArg: Int64?, completion: @escaping (Result<BackgroundWorkerResult, PigeonError>) -> Void)
   func cancel(completion: @escaping (Result<Void, PigeonError>) -> Void)
 }
 class BackgroundWorkerFlutterApi: BackgroundWorkerFlutterApiProtocol {
@@ -379,7 +395,7 @@ class BackgroundWorkerFlutterApi: BackgroundWorkerFlutterApiProtocol {
       }
     }
   }
-  func onAndroidUpload(maxMinutes maxMinutesArg: Int64?, completion: @escaping (Result<Void, PigeonError>) -> Void) {
+  func onAndroidUpload(maxMinutes maxMinutesArg: Int64?, completion: @escaping (Result<BackgroundWorkerResult, PigeonError>) -> Void) {
     let channelName: String = "dev.flutter.pigeon.immich_mobile.BackgroundWorkerFlutterApi.onAndroidUpload\(messageChannelSuffix)"
     let channel = FlutterBasicMessageChannel(name: channelName, binaryMessenger: binaryMessenger, codec: codec)
     channel.sendMessage([maxMinutesArg] as [Any?]) { response in
@@ -392,8 +408,11 @@ class BackgroundWorkerFlutterApi: BackgroundWorkerFlutterApiProtocol {
         let message: String? = nilOrValue(listResponse[1])
         let details: String? = nilOrValue(listResponse[2])
         completion(.failure(PigeonError(code: code, message: message, details: details)))
+      } else if listResponse[0] == nil {
+        completion(.failure(PigeonError(code: "null-error", message: "Flutter api returned null value for non-null return value.", details: "")))
       } else {
-        completion(.success(()))
+        let result = listResponse[0] as! BackgroundWorkerResult
+        completion(.success(result))
       }
     }
   }

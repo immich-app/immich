@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/local_sync.service.dart';
@@ -34,6 +37,13 @@ void main() {
   setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    registerFallbackValue(
+      LocalAlbum(id: 'fallback', name: 'Fallback', updatedAt: DateTime.fromMillisecondsSinceEpoch(0)),
+    );
+    registerFallbackValue(<LocalAlbum>[]);
+    registerFallbackValue(<LocalAsset>[]);
+    registerFallbackValue(<String>[]);
+    registerFallbackValue(<String, List<String>>{});
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: DriftStoreRepository(db));
@@ -79,6 +89,83 @@ void main() {
 
     await Store.put(StoreKey.manageLocalMediaAndroid, false);
     when(() => mockPermissionRepository.hasManageMediaPermission()).thenAnswer((_) async => false);
+  });
+
+  group('LocalSyncService - result', () {
+    test('returns true when there are no media changes', () async {
+      expect(await sut.sync(), isTrue);
+    });
+
+    test('returns false when the media change scan fails', () async {
+      when(() => mockNativeSyncApi.getMediaChanges()).thenThrow(Exception('scan failed'));
+
+      expect(await sut.sync(), isFalse);
+    });
+
+    test('returns false when cancelled during a no-change scan', () async {
+      final cancellation = Completer<void>();
+      when(() => mockNativeSyncApi.cancelSync()).thenAnswer((_) async {});
+      when(() => mockNativeSyncApi.getMediaChanges()).thenAnswer((_) async {
+        cancellation.complete();
+        return SyncDelta(hasChanges: false, updates: const [], deletes: const [], assetAlbums: const {});
+      });
+      sut = LocalSyncService(
+        localAlbumRepository: mockLocalAlbumRepository,
+        localAssetRepository: mockLocalAssetRepository,
+        trashedLocalAssetRepository: mockTrashedLocalAssetRepository,
+        assetMediaRepository: mockAssetMediaRepository,
+        permissionRepository: mockPermissionRepository,
+        nativeSyncApi: mockNativeSyncApi,
+        cancellation: cancellation,
+      );
+
+      expect(await sut.sync(), isFalse);
+    });
+
+    test('returns false when a full sync album fails', () async {
+      final album = PlatformAlbum(id: 'album', name: 'Album', isCloud: false, assetCount: 1);
+      when(() => mockNativeSyncApi.getAlbums()).thenAnswer((_) async => [album]);
+      when(() => mockLocalAlbumRepository.getAll(sortBy: {SortLocalAlbumsBy.id})).thenAnswer((_) async => []);
+      when(() => mockNativeSyncApi.getAssetsForAlbum('album')).thenThrow(Exception('album failed'));
+      when(() => mockNativeSyncApi.checkpointSync()).thenAnswer((_) async {});
+
+      expect(await sut.fullSync(), isFalse);
+      verifyNever(() => mockNativeSyncApi.checkpointSync());
+    });
+
+    test('does not checkpoint after a delta sync album fails', () async {
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      addTearDown(() => debugDefaultTargetPlatformOverride = TargetPlatform.android);
+      final updatedAt = DateTime.utc(2026);
+      final album = PlatformAlbum(
+        id: 'album',
+        name: 'Device album',
+        isCloud: true,
+        assetCount: 0,
+        updatedAt: updatedAt.millisecondsSinceEpoch ~/ 1000,
+      );
+      final dbAlbum = LocalAlbum(id: 'album', name: 'Database album', updatedAt: updatedAt, isIosSharedAlbum: true);
+      when(() => mockNativeSyncApi.getMediaChanges()).thenAnswer(
+        (_) async => SyncDelta(hasChanges: true, updates: const [], deletes: const [], assetAlbums: const {}),
+      );
+      when(() => mockNativeSyncApi.getAlbums()).thenAnswer((_) async => [album]);
+      when(() => mockLocalAlbumRepository.updateAll(any())).thenAnswer((_) async {});
+      when(
+        () => mockLocalAlbumRepository.processDelta(
+          updates: any(named: 'updates'),
+          deletes: any(named: 'deletes'),
+          assetAlbums: any(named: 'assetAlbums'),
+        ),
+      ).thenAnswer((_) async {});
+      when(() => mockLocalAlbumRepository.getAll()).thenAnswer((_) async => [dbAlbum]);
+      when(
+        () => mockLocalAlbumRepository.upsert(any(), toDelete: any(named: 'toDelete')),
+      ).thenThrow(Exception('album failed'));
+      when(() => mockNativeSyncApi.checkpointSync()).thenAnswer((_) async {});
+
+      expect(await sut.sync(), isFalse);
+      verifyNever(() => mockNativeSyncApi.checkpointSync());
+    });
   });
 
   group('LocalSyncService - syncTrashedAssets gating', () {

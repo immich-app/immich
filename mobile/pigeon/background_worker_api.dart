@@ -18,6 +18,8 @@ class BackgroundWorkerSettings {
   const BackgroundWorkerSettings({required this.requiresCharging, required this.minimumDelaySeconds});
 }
 
+enum BackgroundWorkerResult { none, connected, unmetered, unchanged }
+
 @HostApi()
 abstract class BackgroundWorkerFgHostApi {
   void enable();
@@ -47,7 +49,7 @@ abstract class BackgroundWorkerFlutterApi {
 
   // Android Only: Called when the Android background upload is triggered
   @async
-  void onAndroidUpload(int? maxMinutes);
+  BackgroundWorkerResult onAndroidUpload(int? maxMinutes);
 
   @async
   void cancel();
