@@ -380,7 +380,9 @@ class _AssetPageState extends ConsumerState<AssetPage> {
             ),
           ),
           if (isPhotosphere && !_showingDetails)
-            const Center(child: Icon(Icons.panorama_photosphere, color: Colors.white)),
+            const Center(
+              child: IgnorePointer(ignoring: true, child: Icon(Icons.panorama_photosphere, color: Colors.white)),
+            ),
         ],
       );
     }
