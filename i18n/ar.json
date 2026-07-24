@@ -733,7 +733,7 @@
   "confirm_delete_face": "هل أنت متأكد من حذف وجه {name} من الأصول؟",
   "confirm_delete_shared_link": "هل أنت متأكد أنك تريد حذف هذا الرابط المشترك؟",
   "confirm_keep_this_delete_others": "سيتم حذف جميع الأصول الأخرى في المجموعة باستثناء هذا الأصل. هل أنت متأكد من أنك تريد المتابعة؟",
-  "confirm_new_pin_code": "ثبت رمز PIN الجديد",
+  "confirm_new_pin_code": "تأكيد رمز PIN الجديد",
   "confirm_password": "تأكيد كلمة المرور",
   "confirm_tag_face": "هل تريد وضع علامة على هذا الوجه {name}؟",
   "confirm_tag_face_unnamed": "هل تريد وضع علامة على هذا الوجه؟",
