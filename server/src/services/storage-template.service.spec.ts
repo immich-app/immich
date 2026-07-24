@@ -86,6 +86,7 @@ describe(StorageTemplateService.name, () => {
           '{{y}}/{{y}}-{{WW}}/{{assetId}}',
           '{{album}}/{{filename}}',
           '{{make}}/{{model}}/{{lensModel}}/{{filename}}',
+          '{{#if isVideo}}videos{{/if}}/{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
         ],
         secondOptions: ['s', 'ss', 'SSS'],
         weekOptions: ['W', 'WW'],
@@ -255,6 +256,53 @@ describe(StorageTemplateService.name, () => {
         newPath: expect.stringContaining(
           `/data/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/other/${month}/${asset.originalFileName}`,
         ),
+        oldPath: asset.originalPath,
+        pathType: AssetPathType.Original,
+      });
+    });
+
+    it('should use handlebar if condition for isVideo (video asset)', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from({ type: AssetType.Video }).owner(user).exif().build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{#if isVideo}}videos{{/if}}/{{y}}/{{filename}}';
+
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
+
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        newPath: expect.stringContaining(
+          `/data/library/${user.id}/videos/${asset.fileCreatedAt.getFullYear()}/${asset.originalFileName}`,
+        ),
+        oldPath: asset.originalPath,
+        pathType: AssetPathType.Original,
+      });
+    });
+
+    it('should use handlebar else condition for isVideo (image asset)', async () => {
+      const user = UserFactory.create();
+      const asset = AssetFactory.from({ type: AssetType.Image }).owner(user).exif().build();
+      const config = structuredClone(defaults);
+      config.storageTemplate.template = '{{#if isVideo}}videos{{/if}}/{{y}}/{{filename}}';
+
+      sut.onConfigInit({ newConfig: config });
+
+      mocks.user.get.mockResolvedValue(user);
+      mocks.assetJob.getForStorageTemplateJob.mockResolvedValueOnce(getForStorageTemplate(asset));
+
+      expect(await sut.handleMigrationSingle({ id: asset.id })).toBe(JobStatus.Success);
+
+      expect(mocks.move.create).toHaveBeenCalledWith({
+        entityId: asset.id,
+        newPath: expect.not.stringContaining('videos/') &&
+          expect.stringContaining(
+            `/data/library/${user.id}/${asset.fileCreatedAt.getFullYear()}/${asset.originalFileName}`,
+          ),
         oldPath: asset.originalPath,
         pathType: AssetPathType.Original,
       });

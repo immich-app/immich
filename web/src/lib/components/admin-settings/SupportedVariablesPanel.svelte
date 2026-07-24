@@ -21,6 +21,8 @@
         <ul>
           <li>{`{{filetype}}`} - VID or IMG</li>
           <li>{`{{filetypefull}}`} - VIDEO or IMAGE</li>
+          <li>{`{{isVideo}}`}  —  'true' if video, otherwise empty</li>
+          <li>{`{{isImage}}`}  —  'true' if image, otherwise empty</li>
         </ul>
       </div>
 
