@@ -64,7 +64,7 @@ export const PersonResponseSchema = z
     name: z.string().describe('Person name'),
     // TODO: use `isoDateToDate` when using `ZodSerializerDto` on the controllers.
     birthDate: z.string().meta({ format: 'date' }).describe('Person date of birth').nullable(),
-    thumbnailPath: z.string().describe('Thumbnail path'),
+    thumbnailPath: z.string().nullable().describe('Thumbnail path'),
     isHidden: z.boolean().describe('Is hidden'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     updatedAt: z
