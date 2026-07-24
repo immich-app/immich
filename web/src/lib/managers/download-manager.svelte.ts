@@ -1,44 +1,31 @@
-export interface DownloadProgress {
-  progress: number;
+import { SvelteMap } from 'svelte/reactivity';
+
+export interface DownloadState {
+  url: string;
+  assetIds: string[];
+  archiveName: string;
   total: number;
-  percentage: number;
-  abort: AbortController | null;
+  downloaded: boolean;
 }
 
 class DownloadManager {
-  assets = $state<Record<string, DownloadProgress>>({});
+  assets = new SvelteMap<string, DownloadState>();
 
-  isDownloading = $derived(Object.keys(this.assets).length > 0);
+  isDownloading = $derived(this.assets.size > 0);
 
-  #update(key: string, value: Partial<DownloadProgress> | null) {
-    if (value === null) {
-      delete this.assets[key];
-      return;
-    }
-
-    if (!Object.hasOwn(this.assets, key)) {
-      this.assets[key] = { progress: 0, total: 0, percentage: 0, abort: null };
-    }
-
-    const item = this.assets[key];
-    Object.assign(item, value);
-    item.percentage = Math.min(Math.floor((item.progress / item.total) * 100), 100);
+  add(key: string, url: string, assetIds: string[], archiveName: string, total: number) {
+    this.assets.set(key, { url, assetIds, archiveName, total, downloaded: false });
   }
 
-  add(key: string, total: number, abort?: AbortController) {
-    this.#update(key, { total, abort });
+  clearAll() {
+    this.assets.clear();
   }
 
-  clear(key: string) {
-    this.#update(key, null);
-  }
-
-  update(key: string, progress: number, total?: number) {
-    const download: Partial<DownloadProgress> = { progress };
-    if (total !== undefined) {
-      download.total = total;
+  markDownloaded(key: string) {
+    const state = this.assets.get(key);
+    if (state) {
+      this.assets.set(key, { ...state, downloaded: true });
     }
-    this.#update(key, download);
   }
 }
 

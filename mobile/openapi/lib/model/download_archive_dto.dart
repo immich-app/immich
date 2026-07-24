@@ -13,9 +13,19 @@ part of openapi.api;
 class DownloadArchiveDto {
   /// Returns a new [DownloadArchiveDto] instance.
   DownloadArchiveDto({
+    this.archiveName = const Optional.absent(),
     this.assetIds = const [],
     this.edited = const Optional.absent(),
   });
+
+  /// The name of the archive to download, without extension
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<String?> archiveName;
 
   /// Asset IDs
   List<String> assetIds;
@@ -31,20 +41,26 @@ class DownloadArchiveDto {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is DownloadArchiveDto &&
+    other.archiveName == archiveName &&
     _deepEquality.equals(other.assetIds, assetIds) &&
     other.edited == edited;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (archiveName == null ? 0 : archiveName!.hashCode) +
     (assetIds.hashCode) +
     (edited == null ? 0 : edited!.hashCode);
 
   @override
-  String toString() => 'DownloadArchiveDto[assetIds=$assetIds, edited=$edited]';
+  String toString() => 'DownloadArchiveDto[archiveName=$archiveName, assetIds=$assetIds, edited=$edited]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.archiveName.isPresent) {
+      final value = this.archiveName.value;
+      json[r'archiveName'] = value;
+    }
       json[r'assetIds'] = this.assetIds;
     if (this.edited.isPresent) {
       final value = this.edited.value;
@@ -62,6 +78,7 @@ class DownloadArchiveDto {
       final json = value.cast<String, dynamic>();
 
       return DownloadArchiveDto(
+        archiveName: json.containsKey(r'archiveName') ? Optional.present(mapValueOfType<String>(json, r'archiveName')) : const Optional.absent(),
         assetIds: json[r'assetIds'] is Iterable
             ? (json[r'assetIds'] as Iterable).cast<String>().toList(growable: false)
             : const [],
