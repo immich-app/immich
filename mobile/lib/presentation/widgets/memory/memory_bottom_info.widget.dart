@@ -3,6 +3,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
@@ -10,13 +11,15 @@ import 'package:immich_mobile/routing/router.dart';
 
 class DriftMemoryBottomInfo extends StatelessWidget {
   final DriftMemory memory;
+  final BaseAsset? asset;
   final String title;
-  const DriftMemoryBottomInfo({super.key, required this.memory, required this.title});
+  const DriftMemoryBottomInfo({super.key, required this.memory, this.asset, required this.title});
 
   @override
   Widget build(BuildContext context) {
     final df = DateFormat.yMMMMd();
-    final fileCreatedDate = memory.assets.first.createdAt;
+    final currentAsset = asset ?? memory.assets.first;
+    final fileCreatedDate = currentAsset.createdAt;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
@@ -41,7 +44,7 @@ class DriftMemoryBottomInfo extends StatelessWidget {
               minWidth: 0,
               onPressed: () async {
                 await context.router.navigate(const TabShellRoute(children: [MainTimelineRoute()]));
-                EventStream.shared.emit(ScrollToDateEvent(fileCreatedDate.toLocal()));
+                EventStream.shared.emit(ScrollToAssetEvent(currentAsset));
               },
               shape: const CircleBorder(),
               color: Colors.white.withValues(alpha: 0.2),

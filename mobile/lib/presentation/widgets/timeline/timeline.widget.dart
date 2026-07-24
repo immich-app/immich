@@ -190,8 +190,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     switch (event) {
       case ScrollToTopEvent():
         _scrollToTop();
-      case ScrollToDateEvent scrollToDateEvent:
-        _scrollToDate(scrollToDateEvent.date);
+      case ScrollToAssetEvent scrollToAssetEvent:
+        _scrollToAsset(scrollToAssetEvent.asset);
       case TimelineReloadEvent():
         setState(() {});
       default:
@@ -265,10 +265,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
         .whenComplete(() => timelineState.setScrubbing(false));
   }
 
-  void _scrollToDate(DateTime date) {
+  void _scrollToAsset(BaseAsset asset) {
+    final date = asset.createdAt.toLocal();
     final timelineState = ref.read(timelineStateProvider.notifier);
     final asyncSegments = ref.read(timelineSegmentProvider);
-    asyncSegments.whenData((segments) {
+    asyncSegments.whenData((segments) async {
       // Find the segment that contains assets from the target date
       final targetSegment = segments.firstWhereOrNull((segment) {
         if (segment.bucket is TimeBucket) {
@@ -290,20 +291,34 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
             return false;
           });
 
-      if (fallbackSegment != null) {
-        // Scroll to the segment with a small offset to show the header
-        final targetOffset = fallbackSegment.startOffset - 50;
-        timelineState.setScrubbing(true);
+      if (fallbackSegment == null) {
+        timelineState.setScrubbing(false);
+        return;
+      }
+
+      double targetOffset = fallbackSegment.startOffset - 50;
+
+      final assets = await ref
+          .read(timelineServiceProvider)
+          .loadAssets(fallbackSegment.firstAssetIndex, fallbackSegment.bucket.assetCount);
+      final indexInSegment = assets.indexWhere((a) => a.refersToSameAsset(asset));
+      if (indexInSegment != -1) {
+        final columnCount = ref.read(timelineArgsProvider).columnCount;
+        final rowIndex = fallbackSegment.firstIndex + 1 + (indexInSegment ~/ columnCount);
+        targetOffset = fallbackSegment.indexToLayoutOffset(rowIndex) - 50;
+      }
+
+      final clampedOffset = targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent);
+      timelineState.setScrubbing(true);
+      unawaited(
         _scrollController
             .animateTo(
-              targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+              clampedOffset,
               duration: const Duration(milliseconds: 500),
               curve: Curves.easeInOut,
             )
-            .whenComplete(() => timelineState.setScrubbing(false));
-      } else {
-        timelineState.setScrubbing(false);
-      }
+            .whenComplete(() => timelineState.setScrubbing(false)),
+      );
     });
   }
 
