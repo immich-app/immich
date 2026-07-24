@@ -1,0 +1,17 @@
+# Keep asset-id in sync with the build hook.
+name: ImmichNativeCoreBindings
+ffi-native:
+  asset-id: 'package:immich_native_core/src/ffi/bindings.g.dart'
+description: 'Generated FFI bindings to immich_native_core.'
+output: 'lib/src/ffi/bindings.g.dart'
+headers:
+  entry-points:
+    - '../crates/immich_core_ffi/include/immich_core.h'
+  include-directives:
+    - '**/immich_core.h'
+functions:
+  include:
+    - 'immich_core_.*'
+comments:
+  style: any
+  length: full

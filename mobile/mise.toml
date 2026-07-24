@@ -1,6 +1,8 @@
 [tools]
 "aqua:flutter/flutter" = "3.44.6"
 java = "21.0.2"
+# RUSTUP_TOOLCHAIN makes build hooks ignore rust-toolchain.toml targets.
+rust = { version = "1.92.0", targets = "armv7-linux-androideabi,aarch64-linux-android,x86_64-linux-android,aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios" }
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.37.0"

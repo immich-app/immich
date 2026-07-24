@@ -4,26 +4,27 @@ import android.graphics.Bitmap
 
 object NativeImage {
   init {
-    // rotate() is compiled into the native_buffer shared lib (which already links jnigraphics).
-    System.loadLibrary("native_buffer")
+    System.loadLibrary("immich_core_ffi")
   }
 
   /**
-   * Rotates an RGBA_8888 [bitmap] to the given EXIF [orientation], writing the result into a freshly
-   * malloc'd native buffer. Returns the buffer address (free it with [NativeBuffer.free]) and fills
-   * [outInfo] with {width, height, rowBytes}. Returns 0 when the bitmap can't be handled (e.g. a
-   * non-8888 config) so the caller can fall back.
+   * Rotates an RGBA_8888 [bitmap] and returns a malloc'd buffer, or 0 on failure.
+   * [outInfo] receives width, height, and row bytes.
    */
   @JvmStatic
   external fun rotate(bitmap: Bitmap, orientation: Int, outInfo: IntArray): Long
 
   /**
-   * Converts an RGBA_1010102 [bitmap] (what a 10-bit HEIC/AVIF decodes to on API 33+) to RGBA_8888,
-   * writing the result into a freshly malloc'd native buffer in one pass, with no intermediate
-   * ARGB_8888 bitmap. Returns the buffer address (free it with [NativeBuffer.free]) and fills
-   * [outInfo] with {width, height, rowBytes}. Returns 0 when the bitmap isn't RGBA_1010102 so the
-   * caller can fall back to a Skia copy.
+   * Converts an RGBA_1010102 [bitmap] to RGBA_8888 and returns a malloc'd buffer, or 0 on failure.
+   * [outInfo] receives width, height, and row bytes.
    */
   @JvmStatic
   external fun convert1010102(bitmap: Bitmap, outInfo: IntArray): Long
+
+  /**
+   * Decodes a ThumbHash into a malloc'd RGBA_8888 buffer, or 0 on failure.
+   * [outInfo] receives width, height, and row bytes.
+   */
+  @JvmStatic
+  external fun thumbhash(hash: ByteArray, outInfo: IntArray): Long
 }

@@ -1,0 +1,23 @@
+name: immich_native_core
+description: "Dart FFI bindings to the Immich native core."
+version: 0.1.0
+homepage: https://github.com/immich-app/immich
+publish_to: none
+
+environment:
+  sdk: '>=3.11.0 <4.0.0'
+  flutter: '>=3.38.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  code_assets: ^1.2.1
+  hooks: ^2.0.2
+  native_toolchain_rust: ^1.0.4
+
+dev_dependencies:
+  ffi: ^2.2.0
+  ffigen: 20.1.1 # Keep generated bindings stable.
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

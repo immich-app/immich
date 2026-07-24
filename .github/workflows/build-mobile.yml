@@ -65,6 +65,7 @@ jobs:
           filters: |
             mobile:
               - 'mobile/**'
+              - 'native/**'
           force-filters: |
             - '.github/workflows/build-mobile.yml'
           force-events: 'workflow_call,workflow_dispatch'
@@ -153,6 +154,59 @@ jobs:
           else
             flutter build apk --release
           fi
+
+      - name: Verify native Android compatibility
+        run: |
+          apk=mobile/build/app/outputs/flutter-apk/app-release.apk
+          sdk=${ANDROID_SDK_ROOT:-${ANDROID_HOME:?Android SDK path is not set}}
+          min_sdk=$(sed -nE 's/^[[:space:]]*minSdk[[:space:]]*=[[:space:]]*([0-9]+)[[:space:]]*$/\1/p' mobile/android/app/build.gradle)
+          [[ $min_sdk =~ ^[0-9]+$ ]] || { printf 'Could not parse minSdk from mobile/android/app/build.gradle\n' >&2; exit 1; }
+          readelf=$(find "$sdk/ndk" -path '*/toolchains/llvm/prebuilt/*/bin/llvm-readelf' -print | sort -V | tail -n 1)
+          [[ -n $readelf ]] || { printf 'No llvm-readelf found under %s\n' "$sdk/ndk" >&2; exit 1; }
+          dir=$(mktemp -d)
+          trap 'rm -rf "$dir"' EXIT
+
+          test -f "$apk"
+          [[ -x $readelf ]] || { printf 'llvm-readelf is not executable: %s\n' "$readelf" >&2; exit 1; }
+
+          for abi in armeabi-v7a arm64-v8a x86_64; do
+            so="$dir/$abi.so"
+            unzip -p "$apk" "lib/$abi/libimmich_core_ffi.so" > "$so"
+            test -s "$so"
+
+            notes=$("$readelf" -n "$so")
+            headers=$("$readelf" -lW "$so")
+            printf '%s notes:\n%s\n' "$abi" "$notes"
+            printf '%s LOAD headers:\n%s\n' "$abi" "$(printf '%s\n' "$headers" | awk '/^[[:space:]]*LOAD[[:space:]]/')"
+
+            bytes=$(printf '%s\n' "$notes" | awk '
+              /^[[:space:]]*Android[[:space:]]/ { android = 1; next }
+              android && /description data:/ {
+                sub(/^.*description data:[[:space:]]*/, "")
+                print $1, $2, $3, $4
+                exit
+              }
+            ')
+            read -r b0 b1 b2 b3 <<< "$bytes"
+            for byte in "$b0" "$b1" "$b2" "$b3"; do
+              [[ $byte =~ ^[0-9a-fA-F]{2}$ ]]
+            done
+            api=$((16#$b0 + (16#$b1 << 8) + (16#$b2 << 16) + (16#$b3 << 24)))
+            printf '%s Android API: %d\n' "$abi" "$api"
+            if ((api > min_sdk)); then
+              printf '%s Android API %d exceeds minSdk %d\n' "$abi" "$api" "$min_sdk" >&2
+              exit 1
+            fi
+
+            alignments=$(printf '%s\n' "$headers" | awk '/^[[:space:]]*LOAD[[:space:]]/ { print $NF }')
+            test -n "$alignments"
+            while read -r alignment; do
+              if [[ $alignment != 0x4000 ]]; then
+                printf '%s LOAD alignment %s is not 0x4000\n' "$abi" "$alignment" >&2
+                exit 1
+              fi
+            done <<< "$alignments"
+          done
 
       - name: Publish Android Artifact
         id: upload-apk

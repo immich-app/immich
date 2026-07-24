@@ -1,0 +1,76 @@
+pub mod image;
+pub mod thumbhash;
+
+use std::ffi::{c_char, CString};
+use std::ptr;
+
+/// Returns the version as a C string. Free it with [`immich_core_free_string`].
+#[no_mangle]
+pub extern "C" fn immich_core_version() -> *mut c_char {
+    guard(ptr::null_mut(), || {
+        into_c_string(immich_core::core_version().to_owned())
+    })
+}
+
+/// Release a string returned by this library.
+///
+/// # Safety
+/// `ptr` must be a pointer previously returned by this library, or null.
+#[no_mangle]
+pub unsafe extern "C" fn immich_core_free_string(ptr: *mut c_char) {
+    if ptr.is_null() {
+        return;
+    }
+    guard((), || {
+        // SAFETY: guaranteed by the caller.
+        let s = unsafe { CString::from_raw(ptr) };
+        drop(s);
+    });
+}
+
+/// Release a buffer returned by this library, such as a decoded ThumbHash.
+///
+/// # Safety
+/// `ptr` must be a buffer previously returned by this library, or null, and
+/// must not be released twice.
+#[no_mangle]
+pub unsafe extern "C" fn immich_core_free(ptr: *mut u8) {
+    // SAFETY: the buffer came from this library's libc allocation; free accepts null.
+    unsafe { libc::free(ptr as *mut core::ffi::c_void) };
+}
+
+fn guard<T>(sentinel: T, f: impl FnOnce() -> T + std::panic::UnwindSafe) -> T {
+    crate::log::ensure_panic_hook();
+    std::panic::catch_unwind(f).unwrap_or(sentinel)
+}
+
+fn into_c_string(s: String) -> *mut c_char {
+    match CString::new(s) {
+        Ok(c) => c.into_raw(),
+        Err(_) => ptr::null_mut(),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    #![allow(clippy::unwrap_used)]
+    use super::*;
+    use std::ffi::CStr;
+
+    #[test]
+    fn version_roundtrips_and_frees() {
+        let p = immich_core_version();
+        assert!(!p.is_null());
+        // SAFETY: p is a C string returned by this library.
+        let s = unsafe { CStr::from_ptr(p) }.to_str().unwrap();
+        assert!(!s.is_empty());
+        // SAFETY: p was returned by this library and is freed once.
+        unsafe { immich_core_free_string(p) };
+    }
+
+    #[test]
+    fn free_null_is_noop() {
+        // SAFETY: null is allowed by the function contract.
+        unsafe { immich_core_free_string(ptr::null_mut()) };
+    }
+}

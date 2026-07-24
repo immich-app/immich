@@ -1,0 +1,34 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/immich_core",
+    "crates/immich_core_ffi",
+    "crates/immich_core_napi",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-only"
+
+[workspace.dependencies]
+tokio = { version = "1", default-features = false, features = [
+    "rt-multi-thread",
+    "time",
+] }
+libc = { version = "0.2", default-features = false }
+jni = { version = "0.22", default-features = false }
+napi = { version = "3", default-features = false }
+napi-derive = "3"
+napi-build = "2"
+cbindgen = { version = "0.29", default-features = false }
+
+[workspace.lints.clippy]
+undocumented_unsafe_blocks = "deny"
+
+# FFI panic guards require the default unwind strategy.
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
