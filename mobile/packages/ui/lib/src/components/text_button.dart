@@ -31,18 +31,35 @@ class ImmichTextButton extends StatefulWidget {
 }
 
 class _ImmichTextButtonState extends State<ImmichTextButton> {
-  bool _loading = false;
-  bool get _isLoading => widget.loading ?? _loading;
+  bool _running = false;
+  bool get _isLoading => widget.loading ?? _running;
+  bool get _isDisabled => widget.disabled || _isLoading;
 
-  Future<void> _run(FutureOr<void> Function() action) async {
-    setState(() => _loading = true);
+  Future<void> _runAction(FutureOr<void> Function() action) async {
+    setState(() => _running = true);
     try {
       await action();
     } finally {
       if (mounted) {
-        setState(() => _loading = false);
+        setState(() => _running = false);
       }
     }
+  }
+
+  Future<void>? _onPressed() {
+    if (_isDisabled) {
+      return null;
+    }
+
+    return _runAction(widget.onPressed);
+  }
+
+  Future<void>? _onLongPress() {
+    if (_isDisabled || widget.onLongPress == null) {
+      return null;
+    }
+
+    return _runAction(widget.onLongPress!);
   }
 
   @override
@@ -61,23 +78,19 @@ class _ImmichTextButtonState extends State<ImmichTextButton> {
       style: const .new(fontSize: ImmichTextSize.body, fontWeight: .bold),
     );
     final style = ElevatedButton.styleFrom(padding: const .symmetric(vertical: ImmichSpacing.md));
-    final handlerDisabled = widget.disabled || _isLoading;
-    final longPress = widget.onLongPress;
-    final onPressed = handlerDisabled ? null : () => _run(widget.onPressed);
-    final onLongPress = handlerDisabled || longPress == null ? null : () => _run(longPress);
 
     final button = switch (widget.variant) {
       ImmichVariant.filled => ElevatedButton.icon(
         style: style,
-        onPressed: onPressed,
-        onLongPress: onLongPress,
+        onPressed: _onPressed,
+        onLongPress: _onLongPress,
         icon: icon,
         label: label,
       ),
       ImmichVariant.ghost => TextButton.icon(
         style: style,
-        onPressed: onPressed,
-        onLongPress: onLongPress,
+        onPressed: _onPressed,
+        onLongPress: _onLongPress,
         icon: icon,
         label: label,
       ),

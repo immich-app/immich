@@ -29,18 +29,35 @@ class ImmichIconButton extends StatefulWidget {
 }
 
 class _ImmichIconButtonState extends State<ImmichIconButton> {
-  bool _loading = false;
-  bool get _isLoading => widget.loading ?? _loading;
+  bool _running = false;
+  bool get _isLoading => widget.loading ?? _running;
+  bool get _isDisabled => widget.disabled || _isLoading;
 
-  Future<void> _run(FutureOr<void> Function() action) async {
-    setState(() => _loading = true);
+  Future<void> _runAction(FutureOr<void> Function() action) async {
+    setState(() => _running = true);
     try {
       await action();
     } finally {
       if (mounted) {
-        setState(() => _loading = false);
+        setState(() => _running = false);
       }
     }
+  }
+
+  Future<void>? _onPressed() {
+    if (_isDisabled) {
+      return null;
+    }
+
+    return _runAction(widget.onPressed);
+  }
+
+  Future<void>? _onLongPress() {
+    if (_isDisabled || widget.onLongPress == null) {
+      return null;
+    }
+
+    return _runAction(widget.onLongPress!);
   }
 
   @override
@@ -68,9 +85,6 @@ class _ImmichIconButtonState extends State<ImmichIconButton> {
           },
         };
 
-    final handlerDisabled = widget.disabled || _isLoading;
-    final onLongPress = widget.onLongPress;
-
     return IconButton(
       icon: _isLoading
           ? const SizedBox.square(
@@ -78,8 +92,8 @@ class _ImmichIconButtonState extends State<ImmichIconButton> {
               child: CircularProgressIndicator(strokeWidth: ImmichBorderWidth.md),
             )
           : Icon(widget.icon),
-      onPressed: handlerDisabled ? null : () => _run(widget.onPressed),
-      onLongPress: handlerDisabled || onLongPress == null ? null : () => _run(onLongPress),
+      onPressed: _onPressed,
+      onLongPress: _onLongPress,
       style: IconButton.styleFrom(backgroundColor: background, foregroundColor: foreground),
     );
   }
