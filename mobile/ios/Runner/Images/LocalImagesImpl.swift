@@ -20,6 +20,7 @@ class LocalImageApiImpl: LocalImageApi {
     requestOptions.version = .current
     return requestOptions
   }()
+  private static let maxPixelSize: CGFloat = 16384
 
   private static let registry = RequestRegistry<ImageRequest>()
 
@@ -108,11 +109,16 @@ class LocalImageApiImpl: LocalImageApi {
         ]))
       }
 
+      let isOriginal = !(width > 0 && height > 0)
+      let targetSize = isOriginal
+        ? CGSize(width: Self.maxPixelSize, height: Self.maxPixelSize)
+        : CGSize(width: Double(width), height: Double(height))
+      let contentMode: PHImageContentMode = isOriginal ? .aspectFit : .aspectFill
       var image: UIImage?
       Self.imageManager.requestImage(
         for: asset,
-        targetSize: width > 0 && height > 0 ? CGSize(width: Double(width), height: Double(height)) : PHImageManagerMaximumSize,
-        contentMode: .aspectFill,
+        targetSize: targetSize,
+        contentMode: contentMode,
         options: Self.requestOptions,
         resultHandler: { (_image, info) -> Void in
           image = _image
@@ -123,10 +129,36 @@ class LocalImageApiImpl: LocalImageApi {
         return request.completion(ImageProcessing.cancelledResult)
       }
 
-      guard let image = image,
-            let cgImage = image.cgImage else {
+      guard let fastImage = image,
+            var cgImage = fastImage.cgImage else {
         Self.registry.remove(requestId: requestId)
         return request.completion(.failure(PigeonError(code: "", message: "Could not get pixel data for \(assetId)", details: nil)))
+      }
+
+      // .fast can return larger than the target, so retry with .exact to guarantee the bound.
+      if max(cgImage.width, cgImage.height) > Int(Self.maxPixelSize) {
+        let exactOptions = Self.requestOptions.copy() as! PHImageRequestOptions
+        exactOptions.resizeMode = .exact
+        image = nil
+        Self.imageManager.requestImage(
+          for: asset,
+          targetSize: targetSize,
+          contentMode: contentMode,
+          options: exactOptions,
+          resultHandler: { (_image, info) -> Void in
+            image = _image
+          }
+        )
+
+        if request.isCancelled {
+          return request.completion(ImageProcessing.cancelledResult)
+        }
+
+        guard let exactImage = image?.cgImage else {
+          Self.registry.remove(requestId: requestId)
+          return request.completion(.failure(PigeonError(code: "", message: "Could not resize image for \(assetId)", details: nil)))
+        }
+        cgImage = exactImage
       }
 
       if request.isCancelled {
