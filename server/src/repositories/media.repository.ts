@@ -240,6 +240,7 @@ export class MediaRepository {
         formatLongName: results.format.format_long_name,
         duration: this.parseFloat(results.format.duration),
         bitrate: this.parseInt(results.format.bit_rate),
+        tags: results.format.tags,
       },
       videoStreams: results.streams
         .filter((stream) => stream.codec_type === 'video' && !stream.disposition?.attached_pic)
