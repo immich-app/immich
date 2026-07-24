@@ -46,6 +46,7 @@
     "geojson": "^0.5.0",
     "handlebars": "^4.7.8",
     "happy-dom": "^20.0.0",
+    "hash-wasm": "^4.12.0",
     "hls-video-element": "^1.5.11",
     "hls.js": "^1.6.16",
     "intl-messageformat": "^11.0.0",
