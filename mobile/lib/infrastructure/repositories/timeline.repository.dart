@@ -164,7 +164,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
               _db.remoteAssetEntity,
               _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum) &
                   _db.remoteAssetEntity.ownerId.isInQuery(
-                    _db.selectOnly(_db.authUserEntity)..addColumns([_db.authUserEntity.id]),
+                    _db.selectOnly(_db.authUserEntity)
+                      ..addColumns([_db.authUserEntity.id])
+                      ..limit(1),
                   ),
               useColumns: false,
             ),

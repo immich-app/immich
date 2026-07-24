@@ -58,10 +58,11 @@ void main() {
       expect(result.storage, AssetState.local);
     });
 
-    test('allows the current user to have multiple remote rows for one checksum (#29973)', () async {
-      // A single user can have many remote assets with the same checksum (their upload + external library copy)
+    test('allows the current user to have access to multiple remote rows for one checksum (#29973)', () async {
+      // A single user can have their own remote asset, a partner's remote asset, and a local asset all with the same checksum
       const checksum = 'multi-library';
-      await ctx.newRemoteAsset(ownerId: userId, checksum: checksum);
+      final partner = await ctx.newUser();
+      await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
       await ctx.newRemoteAsset(ownerId: userId, checksum: checksum);
       final local = await ctx.newLocalAsset(checksum: checksum);
 
