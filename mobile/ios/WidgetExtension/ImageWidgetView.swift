@@ -126,21 +126,6 @@ private struct ImmichWidgetContentView: View {
 )
 
 #Preview(
-  "Medium Loading",
-  as: .systemMedium,
-  widget: {
-    ImmichRandomWidget()
-  },
-  timeline: {
-    let date = Date()
-    ImageEntry(
-      date: date,
-      image: nil
-    )
-  }
-)
-
-#Preview(
   "Small",
   as: .systemSmall,
   widget: {
