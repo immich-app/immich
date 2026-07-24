@@ -7,7 +7,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../domain/service.mock.dart';
+import '../../service.mocks.dart';
 import '../../unit/factories/remote_asset_factory.dart';
 
 void main() {
