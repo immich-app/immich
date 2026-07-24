@@ -32,5 +32,6 @@ class PersonApiRepository extends ApiRepository {
     isHidden: dto.isHidden,
     name: dto.name,
     thumbnailPath: dto.thumbnailPath,
+    updatedAt: dto.updatedAt.orElse(null),
   );
 }

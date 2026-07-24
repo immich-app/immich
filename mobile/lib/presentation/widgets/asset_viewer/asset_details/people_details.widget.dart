@@ -121,7 +121,9 @@ class _Avatar extends StatelessWidget {
                   elevation: 3,
                   child: CircleAvatar(
                     maxRadius: imageSize / 2,
-                    backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
+                    backgroundImage: RemoteImageProvider(
+                      url: getFaceThumbnailUrl(person.id, updatedAt: person.updatedAt),
+                    ),
                   ),
                 ),
               ),
