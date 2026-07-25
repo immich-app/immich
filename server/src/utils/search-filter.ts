@@ -12,11 +12,18 @@ type IdsFilterField = 'albumIds' | 'personIds' | 'tagIds';
 const filterBranches = (filter: SearchFilter): SearchFilterBranch[] => [filter, ...(filter.or ?? [])];
 
 /** Whether a row with `value` can satisfy the condition. A missing operator allows any value. */
-const canMatch = <T>(condition: EnumCondition<T>, value: T): boolean =>
-  (condition.eq === undefined || condition.eq === value) &&
-  (condition.ne === undefined || condition.ne !== value) &&
-  (condition.in === undefined || condition.in.includes(value)) &&
-  (condition.notIn === undefined || !condition.notIn.includes(value));
+const canMatch = <T>(condition: EnumCondition<T>, value: T): boolean => {
+  const { eq, ne, in: anyOf, notIn, ...unhandled } = condition;
+  // fails to compile when EnumFilter gains an operator this check does not consider
+  void (unhandled satisfies Record<string, never>);
+
+  return (
+    (eq === undefined || eq === value) &&
+    (ne === undefined || ne !== value) &&
+    (anyOf === undefined || anyOf.includes(value)) &&
+    (notIn === undefined || !notIn.includes(value))
+  );
+};
 
 /**
  * The conditions that decide which `field` values the filter can return. A top-level condition decides alone, otherwise each branch itself.
