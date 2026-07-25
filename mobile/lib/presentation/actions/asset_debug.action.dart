@@ -2,26 +2,27 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 
-class AssetDebugAction extends AssetAction<BaseAsset> {
-  const AssetDebugAction({required super.assets});
+class AssetDebugAction extends AssetActionBuilder {
+  const AssetDebugAction({required super.source});
 
   @override
-  IconData get icon => Icons.help_outline_rounded;
+  ActionData? build(BuildContext context, WidgetRef ref) {
+    final assets = ref.watch(assetsActionProvider(source)).assets;
+    final troubleshootEnabled = ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting);
+    if (!troubleshootEnabled || assets.length != 1) {
+      return null;
+    }
 
-  @override
-  String label(ActionScope scope) => scope.context.t.troubleshoot;
-
-  @override
-  bool isVisible(ActionScope scope) =>
-      assets.length == 1 && scope.ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting);
-
-  @override
-  Future<void> onAction(ActionScope scope) async =>
-      unawaited(scope.context.pushRoute(AssetTroubleshootRoute(asset: assets.first)));
+    return .new(
+      icon: Icons.help_outline_rounded,
+      label: context.t.troubleshoot,
+      onAction: () async => unawaited(context.pushRoute(AssetTroubleshootRoute(asset: assets.single))),
+    );
+  }
 }
