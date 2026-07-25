@@ -1,6 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { mkdtemp, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { SystemConfig } from 'src/config';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
@@ -294,7 +292,7 @@ export class MediaService extends BaseService {
     const artifactPath = StorageCore.getVideoFrameArtifactPath(asset);
     this.storageCore.ensureFolders(artifactPath);
 
-    const tempDir = await mkdtemp(join(tmpdir(), `immich-video-frames-${asset.id}-`));
+    const tempDir = await this.storageRepository.mkdtemp(`immich-video-frames-${asset.id}`);
     const playlistPath = join(tempDir, 'frames.m3u8');
     const scoresPath = join(tempDir, 'scores.txt');
 
@@ -346,7 +344,7 @@ export class MediaService extends BaseService {
 
       return JobStatus.Success;
     } finally {
-      await rm(tempDir, { recursive: true, force: true });
+      await this.storageRepository.unlinkDir(tempDir, { recursive: true, force: true });
     }
   }
 
