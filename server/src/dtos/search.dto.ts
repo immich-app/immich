@@ -244,47 +244,56 @@ export const SearchOrderSchema = z
   })
   .meta({ id: 'SearchOrder' });
 
+const searchFilterBranchShape = {
+  id: IdFilterSchema,
+  libraryId: IdFilterNullableSchema,
+  type: EnumFilterAssetTypeSchema,
+  visibility: EnumFilterAssetVisibilitySchema,
+  isFavorite: BoolFilterSchema,
+  isMotion: BoolFilterSchema,
+  isOffline: BoolFilterSchema,
+  isEncoded: BoolFilterSchema,
+  hasAlbums: BoolFilterSchema,
+  hasPeople: BoolFilterSchema,
+  hasTags: BoolFilterSchema,
+  city: StringFilterNullableSchema,
+  state: StringFilterNullableSchema,
+  country: StringFilterNullableSchema,
+  make: StringFilterNullableSchema,
+  model: StringFilterNullableSchema,
+  lensModel: StringFilterNullableSchema,
+  description: StringPatternFilterSchema,
+  originalFileName: StringPatternFilterSchema,
+  originalPath: StringPatternFilterSchema,
+  ocr: StringSimilarityFilterSchema,
+  rating: NumberFilterNullableSchema,
+  fileSizeInBytes: NumberFilterSchema,
+  takenAt: DateFilterSchema,
+  createdAt: DateFilterSchema,
+  updatedAt: DateFilterSchema,
+  trashedAt: DateFilterNullableSchema,
+  personIds: IdsFilterSchema,
+  tagIds: IdsFilterSchema,
+  albumIds: IdsFilterSchema,
+  checksum: StringFilterSchema,
+  encodedVideoPath: StringFilterSchema,
+};
+
 const SearchFilterBranchSchema = z
-  .object({
-    id: IdFilterSchema,
-    libraryId: IdFilterNullableSchema,
-    type: EnumFilterAssetTypeSchema,
-    visibility: EnumFilterAssetVisibilitySchema,
-    isFavorite: BoolFilterSchema,
-    isMotion: BoolFilterSchema,
-    isOffline: BoolFilterSchema,
-    isEncoded: BoolFilterSchema,
-    hasAlbums: BoolFilterSchema,
-    hasPeople: BoolFilterSchema,
-    hasTags: BoolFilterSchema,
-    city: StringFilterNullableSchema,
-    state: StringFilterNullableSchema,
-    country: StringFilterNullableSchema,
-    make: StringFilterNullableSchema,
-    model: StringFilterNullableSchema,
-    lensModel: StringFilterNullableSchema,
-    description: StringPatternFilterSchema,
-    originalFileName: StringPatternFilterSchema,
-    originalPath: StringPatternFilterSchema,
-    ocr: StringSimilarityFilterSchema,
-    rating: NumberFilterNullableSchema,
-    fileSizeInBytes: NumberFilterSchema,
-    takenAt: DateFilterSchema,
-    createdAt: DateFilterSchema,
-    updatedAt: DateFilterSchema,
-    trashedAt: DateFilterNullableSchema,
-    personIds: IdsFilterSchema,
-    tagIds: IdsFilterSchema,
-    albumIds: IdsFilterSchema,
-    checksum: StringFilterSchema,
-    encodedVideoPath: StringFilterSchema,
-  })
+  .strictObject(searchFilterBranchShape)
   .partial()
+  .refine((branch) => Object.values(branch).some((value) => value !== undefined), {
+    message: 'At least one filter condition is required',
+  })
   .meta({ id: 'SearchFilterBranch' });
 
-export const SearchFilterSchema = SearchFilterBranchSchema.extend({
-  or: z.array(SearchFilterBranchSchema).min(1).optional(),
-}).meta({ id: 'SearchFilter' });
+export const SearchFilterSchema = z
+  .strictObject(searchFilterBranchShape)
+  .partial()
+  .extend({
+    or: z.array(SearchFilterBranchSchema).min(1).optional(),
+  })
+  .meta({ id: 'SearchFilter' });
 
 export type IdFilter = z.infer<typeof IdFilterSchema>;
 export type IdFilterNullable = z.infer<typeof IdFilterNullableSchema>;
@@ -344,7 +353,7 @@ const RandomSearchBaseSchema = BaseSearchWithResultsSchema.extend({
   filter: filterField,
 });
 
-const RandomSearchSchema = withShapeExclusivity(RandomSearchBaseSchema).meta({ id: 'RandomSearchDto' });
+const RandomSearchSchema = withShapeExclusivity(RandomSearchBaseSchema.strict()).meta({ id: 'RandomSearchDto' });
 
 const MetadataSearchSchema = withShapeExclusivity(
   RandomSearchBaseSchema.extend({
@@ -360,14 +369,14 @@ const MetadataSearchSchema = withShapeExclusivity(
     page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
     orderBy: SearchOrderSchema.optional().meta(ADDED_V3_1),
     cursor: cursorField,
-  }),
+  }).strict(),
 ).meta({ id: 'MetadataSearchDto' });
 
 const StatisticsSearchSchema = withShapeExclusivity(
   BaseSearchSchema.extend({
     description: z.string().trim().optional().describe('Filter by description text').meta(DEPRECATED_FLAT_FIELD),
     filter: filterField,
-  }),
+  }).strict(),
 ).meta({ id: 'StatisticsSearchDto' });
 
 const SmartSearchSchema = withShapeExclusivity(
@@ -379,7 +388,7 @@ const SmartSearchSchema = withShapeExclusivity(
     page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
     filter: filterField,
     cursor: cursorField,
-  }),
+  }).strict(),
 ).meta({ id: 'SmartSearchDto' });
 
 export class RandomSearchDto extends createZodDto(RandomSearchSchema) {}

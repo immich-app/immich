@@ -10645,6 +10645,7 @@
             "schema": {
               "minimum": 1,
               "maximum": 1000,
+              "default": 250,
               "type": "integer"
             }
           },
@@ -20716,6 +20717,7 @@
         "type": "object"
       },
       "MetadataSearchDto": {
+        "additionalProperties": false,
         "properties": {
           "albumIds": {
             "deprecated": true,
@@ -21308,6 +21310,7 @@
             "x-immich-state": "Deprecated"
           },
           "size": {
+            "default": 250,
             "description": "Number of results to return",
             "maximum": 1000,
             "minimum": 1,
@@ -23149,6 +23152,7 @@
         "type": "object"
       },
       "RandomSearchDto": {
+        "additionalProperties": false,
         "properties": {
           "albumIds": {
             "deprecated": true,
@@ -23537,6 +23541,7 @@
             "x-immich-state": "Deprecated"
           },
           "size": {
+            "default": 250,
             "description": "Number of results to return",
             "maximum": 1000,
             "minimum": 1,
@@ -24125,6 +24130,7 @@
         "type": "object"
       },
       "SearchFilter": {
+        "additionalProperties": false,
         "properties": {
           "albumIds": {
             "$ref": "#/components/schemas/IdsFilter"
@@ -24233,6 +24239,7 @@
         "type": "object"
       },
       "SearchFilterBranch": {
+        "additionalProperties": false,
         "properties": {
           "albumIds": {
             "$ref": "#/components/schemas/IdsFilter"
@@ -25334,6 +25341,7 @@
         "type": "object"
       },
       "SmartSearchDto": {
+        "additionalProperties": false,
         "properties": {
           "albumIds": {
             "deprecated": true,
@@ -25769,6 +25777,7 @@
             "x-immich-state": "Deprecated"
           },
           "size": {
+            "default": 100,
             "description": "Number of results to return",
             "maximum": 1000,
             "minimum": 1,
@@ -26092,6 +26101,7 @@
         "type": "object"
       },
       "StatisticsSearchDto": {
+        "additionalProperties": false,
         "properties": {
           "albumIds": {
             "deprecated": true,

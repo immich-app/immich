@@ -31,7 +31,7 @@ class RandomSearchDto {
     this.ocr = const Optional.absent(),
     this.personIds = const Optional.present(const []),
     this.rating = const Optional.absent(),
-    this.size = const Optional.absent(),
+    this.size = const Optional.present(250),
     this.state = const Optional.absent(),
     this.tagIds = const Optional.present(const []),
     this.takenAfter = const Optional.absent(),
@@ -162,12 +162,6 @@ class RandomSearchDto {
   ///
   /// Minimum value: 1
   /// Maximum value: 1000
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
   Optional<int?> size;
 
   /// Filter by state/province name
@@ -339,7 +333,7 @@ class RandomSearchDto {
     (ocr == null ? 0 : ocr!.hashCode) +
     (personIds.hashCode) +
     (rating == null ? 0 : rating!.hashCode) +
-    (size == null ? 0 : size!.hashCode) +
+    (size.hashCode) +
     (state == null ? 0 : state!.hashCode) +
     (tagIds == null ? 0 : tagIds!.hashCode) +
     (takenAfter == null ? 0 : takenAfter!.hashCode) +
