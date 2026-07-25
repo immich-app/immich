@@ -244,7 +244,7 @@ describe(SearchService.name, () => {
       mocks.machineLearning.encodeText.mockResolvedValue('[1, 2, 3]');
       await sut.searchSmart(auth, { size: 100, filter: {}, query: 'test' });
       expect(mocks.search.searchSmartV3).toHaveBeenCalledWith(
-        { size: 100, offset: 0 },
+        { size: 100 },
         expect.objectContaining({ embedding: '[1, 2, 3]' }),
         expect.objectContaining({ lockedOwnerId: expect.any(String) }),
       );

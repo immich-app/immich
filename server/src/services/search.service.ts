@@ -285,15 +285,14 @@ export class SearchService extends BaseService {
       this.resolveEmbedding(auth, dto, machineLearning),
     ]);
 
-    const { offset } = decodeSearchCursor(dto.cursor);
-    const size = dto.size;
-    const { hasNextPage, items } = await this.searchRepository.searchSmartV3(
-      { size, offset },
+    // no cursor until a rank-aware pagination strategy for smart search is decided
+    const { items } = await this.searchRepository.searchSmartV3(
+      { size: dto.size },
       { filter, withExif: dto.withExif, embedding },
       scope,
     );
 
-    return this.mapResponse(items, { auth }, { nextCursor: hasNextPage ? encodeSearchCursor(offset + size) : null });
+    return this.mapResponse(items, { auth });
   }
 
   private async resolveSearchScopeV3(
