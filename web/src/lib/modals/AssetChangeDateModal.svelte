@@ -24,6 +24,13 @@
   const timezones = $derived(getTimezones(selectedDate));
 
   let selectedOption = $state(getPreferredTimeZone(initialDate, initialTimeZone, getTimezones(selectedDate)));
+  const initialOptionValue = selectedOption?.value;
+
+  const isDateDirty = $derived(
+    DateTime.fromISO(selectedDate).toMillis() !==
+    initialDate.setZone('local', { keepLocalTime: true }).toMillis()
+  );
+  const isTimezoneDirty = $derived(selectedOption?.value !== initialOptionValue);
 
   const onSubmit = async () => {
     if (!date.isValid || !selectedOption) {
@@ -67,10 +74,11 @@
     id="datetime"
     type="datetime-local"
     bind:value={() => selectedDate, updateSelectedDate}
+    dirty={isDateDirty}
   />
   {#if timezoneInput}
     <div class="w-full">
-      <Combobox bind:selectedOption label={$t('timezone')} options={timezones} placeholder={$t('search_timezone')} />
+      <Combobox bind:selectedOption label={$t('timezone')} options={timezones} placeholder={$t('search_timezone')} dirty={isTimezoneDirty} />
     </div>
   {/if}
 </FormModal>
