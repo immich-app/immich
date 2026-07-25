@@ -61,6 +61,14 @@
 
   // when changing the time zone, assume the configured date/time is meant for that time zone (instead of updating it)
   const date = $derived(DateTime.fromISO(selectedDate, { zone: selectedOption?.value, setZone: true }));
+
+  const initialOptionValue = lastSelectedTimezone?.value;
+
+  const isDateDirty = $derived(
+    DateTime.fromISO(selectedDate).toMillis() !== initialDate.setZone('local', { keepLocalTime: true }).toMillis(),
+  );
+  const isTimezoneDirty = $derived(selectedOption?.value !== initialOptionValue);
+  const isDurationDirty = $derived(selectedDuration !== 0);
 </script>
 
 <FormModal
@@ -77,10 +85,21 @@
   </Field>
   {#if showRelative}
     <Label for="relativedatetime" class="mb-1 block">{$t('offset')}</Label>
-    <DurationInput class="mb-2 immich-form-input w-full" id="relativedatetime" bind:value={selectedDuration} />
+    <DurationInput
+      class="mb-2 immich-form-input w-full"
+      id="relativedatetime"
+      bind:value={selectedDuration}
+      dirty={isDurationDirty}
+    />
   {:else}
     <Label for="datetime" class="mb-1 block">{$t('date_and_time')}</Label>
-    <DateInput class="mb-2 immich-form-input w-full" id="datetime" type="datetime-local" bind:value={selectedDate} />
+    <DateInput
+      class="mb-2 immich-form-input w-full"
+      id="datetime"
+      type="datetime-local"
+      bind:value={selectedDate}
+      dirty={isDateDirty}
+    />
   {/if}
   <div class="w-full">
     <Combobox
@@ -89,6 +108,7 @@
       options={timezones}
       placeholder={$t('search_timezone')}
       onSelect={(option) => (lastSelectedTimezone = option as ZoneOption)}
+      dirty={isTimezoneDirty}
     ></Combobox>
   </div>
   <!-- <Card color="secondary" class={!showRelative || !currentInterval ? 'invisible' : ''}>

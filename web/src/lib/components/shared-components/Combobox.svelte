@@ -47,6 +47,7 @@
     defaultFirstOption?: boolean;
     onSelect?: (option: ComboBoxOption | undefined) => void;
     forceFocus?: boolean;
+    dirty?: boolean;
   }
 
   let {
@@ -60,6 +61,7 @@
     defaultFirstOption = false,
     onSelect = () => {},
     forceFocus = false,
+    dirty = false,
   }: Props = $props();
 
   /**
@@ -303,8 +305,7 @@
       class:ps-8!={isActive}
       class:rounded-b-none!={isOpen && dropdownDirection === 'bottom'}
       class:rounded-t-none!={isOpen && dropdownDirection === 'top'}
-      class:cursor-pointer={!isActive}
-      class="immich-form-input w-full pe-12! text-sm transition-all"
+      class="immich-form-input w-full pe-12! text-sm transition-all {dirty ? 'immich-form-input-dirty' : ''}"
       id={inputId}
       onfocus={activate}
       oninput={onInput}

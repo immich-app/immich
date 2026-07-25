@@ -12,9 +12,18 @@
     placeholder?: string;
     autofocus?: boolean;
     onkeydown?: (e: KeyboardEvent) => void;
+    dirty?: boolean;
   }
 
-  let { type, value = $bindable(), max = undefined, onkeydown, ...rest }: Props = $props();
+  let {
+    type,
+    value = $bindable(),
+    max = undefined,
+    onkeydown,
+    class: className = '',
+    dirty = false,
+    ...rest
+  }: Props = $props();
 
   let fallbackMax = $derived(type === 'date' ? '9999-12-31' : '9999-12-31T23:59');
 
@@ -37,4 +46,5 @@
     onkeydown?.(e);
   }}
   step=".001"
+  class="{className} {dirty ? 'immich-form-input-dirty' : ''}"
 />

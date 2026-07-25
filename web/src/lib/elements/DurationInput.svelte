@@ -6,9 +6,10 @@
     value: number;
     class?: string;
     id?: string;
+    dirty?: boolean;
   }
 
-  let { value = $bindable(), class: className = '', ...rest }: Props = $props();
+  let { value = $bindable(), class: className = '', dirty = false, ...rest }: Props = $props();
 
   function minToParts(minutes: number) {
     const duration = Duration.fromObject({ minutes: Math.abs(minutes) }).shiftTo('days', 'hours', 'minutes');
@@ -42,7 +43,7 @@
   }
 </script>
 
-<div class={`flex gap-2 ${className}`} {...rest}>
+<div class={`flex gap-2 ${className} ${dirty ? 'immich-form-input-dirty' : ''}`} {...rest}>
   <button type="button" class="w-8 text-xl leading-none font-bold" onclick={toggleSign} title="Toggle sign">
     {sign >= 0 ? '+' : '-'}
   </button>
