@@ -1,5 +1,4 @@
 import { ShallowDehydrateObject } from 'kysely';
-import { mkdtemp, rm } from 'node:fs/promises';
 import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
 import { Exif } from 'src/database';
@@ -4279,15 +4278,6 @@ describe(MediaService.name, () => {
   });
 
   describe('extractVideoFrames', () => {
-    vitest.mock('node:fs/promises', async (importOriginal) => {
-      const actual = await importOriginal<typeof import('node:fs/promises')>();
-      return {
-        ...actual,
-        mkdtemp: vitest.fn(),
-        rm: vitest.fn(),
-      };
-    });
-
     let mocks: ServiceMocks;
 
     const videoFrameExtractionConfig: SystemConfig['videoFrameExtraction'] = {
@@ -4301,9 +4291,6 @@ describe(MediaService.name, () => {
       ({ sut, mocks } = newTestService(MediaService));
 
       mocks.systemMetadata.get.mockResolvedValue({ videoFrameExtraction: videoFrameExtractionConfig });
-
-      vitest.mocked(mkdtemp).mockResolvedValue('/tmp/immich-video-frames-asset-1');
-      vitest.mocked(rm).mockResolvedValue(void 0);
 
       mocks.videoFrame.upsertFrames.mockResolvedValue(void 0 as never);
     });
@@ -4342,6 +4329,7 @@ describe(MediaService.name, () => {
 
       beforeEach(() => {
         mocks.assetJob.getForVideoFrameExtraction.mockResolvedValue(asset);
+        mocks.storage.mkdtemp.mockResolvedValue(`/tmp/immich-video-frames-${asset.id}`);
       });
 
       it('should skip if disabled', async () => {
@@ -4372,15 +4360,18 @@ describe(MediaService.name, () => {
         await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Success);
 
         expect(mocks.storage.mkdirSync).toHaveBeenCalled();
+
         expect(mocks.media.extractVideoFrames).toHaveBeenCalledWith(expect.any(Array), {
           playlistPath: expect.stringContaining('frames.m3u8'),
           scoresPath: expect.stringContaining('scores.txt'),
         });
+
         expect(mocks.videoFrame.upsertFrames).toHaveBeenCalledWith(asset.id, [
           { frameIndex: 0, byteOffset: 813, byteSize: 3843, intervalChange: 0 },
           { frameIndex: 1, byteOffset: 4656, byteSize: 3238, intervalChange: 2.516 },
         ]);
-        expect(rm).toHaveBeenCalledWith('/tmp/immich-video-frames-asset-1', { recursive: true, force: true });
+        expect(mocks.storage.mkdtemp).toHaveBeenCalledTimes(1);
+        expect(mocks.storage.unlinkDir).toHaveBeenCalledTimes(1);
       });
 
       it('should default a missing interval change to 0', async () => {
@@ -4402,7 +4393,7 @@ describe(MediaService.name, () => {
         await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
 
         expect(mocks.videoFrame.upsertFrames).not.toHaveBeenCalled();
-        expect(rm).toHaveBeenCalledWith('/tmp/immich-video-frames-asset-1', { recursive: true, force: true });
+        expect(mocks.storage.unlinkDir).toHaveBeenCalledTimes(1);
       });
 
       it('should fail and clean up the temp dir if no frames were extracted', async () => {
@@ -4411,7 +4402,7 @@ describe(MediaService.name, () => {
         await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
 
         expect(mocks.videoFrame.upsertFrames).not.toHaveBeenCalled();
-        expect(rm).toHaveBeenCalledWith('/tmp/immich-video-frames-asset-1', { recursive: true, force: true });
+        expect(mocks.storage.unlinkDir).toHaveBeenCalledTimes(1);
       });
     });
   });
