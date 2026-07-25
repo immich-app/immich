@@ -88,6 +88,7 @@ class _AssetOriginFilterButton extends ConsumerWidget {
           AssetOriginFilter.all,
           'timeline_filter_all'.tr(),
           Icons.photo_library_outlined,
+          Icons.photo_library,
           currentSelection,
         ),
         _buildItem(
@@ -96,6 +97,7 @@ class _AssetOriginFilterButton extends ConsumerWidget {
           AssetOriginFilter.remote,
           'timeline_filter_remote_only'.tr(),
           Icons.cloud_outlined,
+          Icons.cloud,
           currentSelection,
         ),
         _buildItem(
@@ -104,6 +106,7 @@ class _AssetOriginFilterButton extends ConsumerWidget {
           AssetOriginFilter.localOnly,
           'timeline_filter_local_only'.tr(),
           Icons.cloud_off_outlined,
+          Icons.cloud_off,
           currentSelection,
         ),
       ],
@@ -116,6 +119,7 @@ class _AssetOriginFilterButton extends ConsumerWidget {
     AssetOriginFilter staticFilter,
     String label,
     IconData icon,
+    IconData iconActive,
     AssetOriginFilter currentFilter,
   ) {
     final isSelected = staticFilter == currentFilter;
@@ -124,7 +128,7 @@ class _AssetOriginFilterButton extends ConsumerWidget {
     return MenuItemButton(
       onPressed: () => ref.read(assetOriginFilterProvider.notifier).state = staticFilter,
       child: ListTile(
-        leading: Icon(icon, color: isSelected ? primaryColor : null),
+        leading: Icon(isSelected ? iconActive : icon, color: isSelected ? primaryColor : null),
         title: Text(
           label,
           style: context.textTheme.bodyLarge?.copyWith(
@@ -132,7 +136,6 @@ class _AssetOriginFilterButton extends ConsumerWidget {
             color: isSelected ? primaryColor : null,
           ),
         ),
-        trailing: isSelected ? Icon(Icons.check, color: primaryColor) : null,
         selected: isSelected,
         selectedColor: primaryColor,
       ),
