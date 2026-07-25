@@ -1,35 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
-import 'package:immich_mobile/utils/asset_filter.dart';
+import 'package:immich_mobile/utils/error_handler.dart';
 
-class RestoreAction extends BaseAction {
-  final List<String> assetIds;
+final _stateProvider = Provider.family.autoDispose<List<String>?, ActionSource>((ref, source) {
+  final AssetsActionState(:ownedAssets) = ref.watch(assetsActionProvider(source));
+  final assetIds = ownedAssets.trashed().map((asset) => asset.id).toList(growable: false);
+  return assetIds.isEmpty ? null : assetIds;
+});
 
-  const RestoreAction._({required this.assetIds, required super.scope, required super.icon, required super.label, super.isVisible});
-
-  factory RestoreAction({required Iterable<BaseAsset> assets, required ActionScope scope}) {
-    final assetIds = AssetFilter(
-      assets,
-    ).owned(scope.authUser.id).trashed().map((asset) => asset.id).toList(growable: false);
-
-    return RestoreAction._(
-      assetIds: assetIds,
-      scope: scope,
-      icon: Icons.history_rounded,
-      label: scope.context.t.restore,
-      isVisible: assetIds.isNotEmpty,
-    );
-  }
+class RestoreAction extends AssetActionBuilder {
+  const RestoreAction({required super.source});
 
   @override
-  Future<void> onAction() async {
-    final ActionScope(:ref, :context) = scope;
+  ActionData? build(BuildContext context, WidgetRef ref) {
+    if (!ref.watch(_stateProvider(source).select((state) => state != null))) {
+      return null;
+    }
 
-    await ref.read(assetServiceProvider).restoreTrash(assetIds);
-    ref.read(toastRepositoryProvider).success(context.t.assets_restored_count(count: assetIds.length));
+    return .new(icon: Icons.history_rounded, label: context.t.restore, onAction: () => _restore(context, ref));
+  }
+
+  Future<void> _restore(BuildContext context, WidgetRef ref) async {
+    final assetIds = ref.read(_stateProvider(source));
+    if (assetIds == null) {
+      return;
+    }
+
+    final message = context.t.assets_restored_count(count: assetIds.length);
+    final toast = ref.read(toastRepositoryProvider);
+    final selection = ref.read(assetsActionProvider(source).notifier);
+
+    try {
+      await ref.read(assetServiceProvider).restoreTrash(assetIds);
+      toast.success(message);
+      selection.clearSelect();
+    } catch (error, stack) {
+      handleError(error, stack: stack, description: "Failed to restore assets");
+    }
   }
 }
