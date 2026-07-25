@@ -335,6 +335,12 @@ export class MediaService extends BaseService {
       }));
 
       await this.videoFrameRepository.upsertFrames(asset.id, frames);
+      await this.assetRepository.upsertFile({
+        assetId: asset.id,
+        type: AssetFileType.SampledVideo,
+        path: artifactPath,
+        isEdited: false,
+      });
 
       this.logger.log(`Extracted ${frames.length} frame(s) for video ${asset.id}`);
 

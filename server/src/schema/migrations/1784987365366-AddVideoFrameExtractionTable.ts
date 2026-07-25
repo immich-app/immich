@@ -1,7 +1,6 @@
 import { Kysely, sql } from 'kysely';
 
 export async function up(db: Kysely<any>): Promise<void> {
-  await sql`ALTER TABLE "asset_job_status" ADD "videoFramesExtractedAt" timestamp with time zone;`.execute(db);
   await sql`CREATE TABLE "video_frame" (
   "assetId" uuid NOT NULL,
   "frameIndex" integer NOT NULL,
@@ -15,6 +14,5 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  await sql`ALTER TABLE "asset_job_status" DROP COLUMN "videoFramesExtractedAt";`.execute(db);
   await sql`DROP TABLE "video_frame";`.execute(db);
 }
