@@ -36,7 +36,6 @@ class _AbortCallbackWrapper {
 
 class _MockAbortCallbackWrapper extends Mock implements _AbortCallbackWrapper {}
 
-
 void main() {
   late SyncStreamService sut;
   late SyncStreamRepository mockSyncStreamRepo;
