@@ -240,7 +240,7 @@ export class SearchService extends BaseService {
     const { offset } = decodeSearchCursor(dto.cursor);
     const size = dto.size;
     const { hasNextPage, items } = await this.searchRepository.searchMetadataV3(
-      { size, offset },
+      { take: size, skip: offset },
       {
         filter,
         withExif: dto.withExif,
@@ -287,7 +287,7 @@ export class SearchService extends BaseService {
 
     // no cursor until a rank-aware pagination strategy for smart search is decided
     const { items } = await this.searchRepository.searchSmartV3(
-      { size: dto.size },
+      { take: dto.size },
       { filter, withExif: dto.withExif, embedding },
       scope,
     );

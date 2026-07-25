@@ -20,7 +20,7 @@ import {
   withExifInner,
   withSearchOrder,
 } from 'src/utils/database';
-import { paginationHelper } from 'src/utils/pagination';
+import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 import z from 'zod';
 
 export interface SearchAssetIdOptions {
@@ -147,11 +147,6 @@ export interface AssetSearchBuilderV3Options {
   withPeople?: boolean;
   withStacked?: boolean;
   order?: SearchOrder;
-}
-
-export interface AssetSearchPaginationV3Options {
-  size: number;
-  offset?: number;
 }
 
 export type SmartSearchOptions = SearchDateOptions &
@@ -532,16 +527,16 @@ export class SearchRepository {
   // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchMetadataV3Examples)
   async searchMetadataV3(
-    pagination: AssetSearchPaginationV3Options,
+    pagination: PaginationOptions,
     options: AssetSearchBuilderV3Options,
     scope: AssetSearchScope,
   ) {
     const items = await withSearchOrder(searchAssetBuilder(this.db, options, scope), options.order)
       .select(columns.searchAsset)
-      .limit(pagination.size + 1)
-      .offset(pagination.offset ?? 0)
+      .limit(pagination.take + 1)
+      .offset(pagination.skip ?? 0)
       .execute();
-    return paginationHelper(items, pagination.size);
+    return paginationHelper(items, pagination.take);
   }
 
   // TODO(v4): drop the V3 suffix once the legacy methods are removed
@@ -561,7 +556,7 @@ export class SearchRepository {
   // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchSmartV3Examples)
   searchSmartV3(
-    pagination: AssetSearchPaginationV3Options,
+    pagination: PaginationOptions,
     options: Omit<AssetSearchBuilderV3Options, 'order'> & { embedding: string },
     scope: AssetSearchScope,
   ) {
@@ -572,10 +567,10 @@ export class SearchRepository {
         .innerJoin('smart_search', 'asset.id', 'smart_search.assetId')
         .orderBy(sql`smart_search.embedding <=> ${options.embedding}`)
         .orderBy('asset.id', 'asc')
-        .limit(pagination.size + 1)
-        .offset(pagination.offset ?? 0)
+        .limit(pagination.take + 1)
+        .offset(pagination.skip ?? 0)
         .execute();
-      return paginationHelper(items, pagination.size);
+      return paginationHelper(items, pagination.take);
     });
   }
 

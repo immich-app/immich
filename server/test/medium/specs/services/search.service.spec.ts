@@ -406,12 +406,12 @@ describe(SearchService.name, () => {
 
       const options = { filter: {}, embedding: unitVector(0) };
       const scope = { userIds: [user.id], lockedOwnerId: user.id };
-      const firstPage = await searchRepository.searchSmartV3({ size: 2 }, options, scope);
+      const firstPage = await searchRepository.searchSmartV3({ take: 2 }, options, scope);
       expect(firstPage.items.length).toBe(2);
       expect(firstPage.items[0].id).toBe(assetIds[0]);
       expect(firstPage.hasNextPage).toBe(true);
 
-      const secondPage = await searchRepository.searchSmartV3({ size: 2, offset: 2 }, options, scope);
+      const secondPage = await searchRepository.searchSmartV3({ take: 2, skip: 2 }, options, scope);
       expect(secondPage.items.length).toBe(1);
       expect(secondPage.hasNextPage).toBe(false);
     });

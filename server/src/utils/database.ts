@@ -817,12 +817,12 @@ export function withSearchOrder(qb: ReturnType<typeof searchAssetBuilder>, order
 const scopeExample: AssetSearchScope = { userIds: [DummyValue.UUID], lockedOwnerId: DummyValue.UUID };
 
 export const searchMetadataV3Examples: GenerateSqlQueries[] = [
-  { name: 'baseline', params: [{ size: 100 }, {}, scopeExample] },
-  { name: 'empty', params: [{ size: 100 }, {}, { lockedOwnerId: DummyValue.UUID }] },
+  { name: 'baseline', params: [{ take: 100 }, {}, scopeExample] },
+  { name: 'empty', params: [{ take: 100 }, {}, { lockedOwnerId: DummyValue.UUID }] },
   {
     name: 'or-exif-only',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         filter: { or: [{ city: { eq: DummyValue.STRING } }] },
       },
@@ -831,12 +831,12 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   },
   {
     name: 'string-eq-null',
-    params: [{ size: 100 }, { filter: { city: { eq: null } } }, scopeExample],
+    params: [{ take: 100 }, { filter: { city: { eq: null } } }, scopeExample],
   },
   {
     name: 'string-pattern-like',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         filter: { description: { like: DummyValue.STRING } },
       },
@@ -846,7 +846,7 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   {
     name: 'string-pattern-notLike',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         filter: { description: { notLike: DummyValue.STRING } },
       },
@@ -856,7 +856,7 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   {
     name: 'string-pattern-startsWith',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         filter: { originalFileName: { startsWith: DummyValue.STRING } },
       },
@@ -865,16 +865,16 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   },
   {
     name: 'string-similarity-ocr',
-    params: [{ size: 100 }, { filter: { ocr: { matches: DummyValue.STRING } } }, scopeExample],
+    params: [{ take: 100 }, { filter: { ocr: { matches: DummyValue.STRING } } }, scopeExample],
   },
   {
     name: 'ids-any',
-    params: [{ size: 100 }, { filter: { albumIds: { any: [DummyValue.UUID] } } }, scopeExample],
+    params: [{ take: 100 }, { filter: { albumIds: { any: [DummyValue.UUID] } } }, scopeExample],
   },
   {
     name: 'ids-all',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         filter: { personIds: { all: [DummyValue.UUID, DummyValue.UUID_1] } },
       },
@@ -883,16 +883,16 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   },
   {
     name: 'ids-all-single',
-    params: [{ size: 100 }, { filter: { albumIds: { all: [DummyValue.UUID] } } }, scopeExample],
+    params: [{ take: 100 }, { filter: { albumIds: { all: [DummyValue.UUID] } } }, scopeExample],
   },
   {
     name: 'ids-none',
-    params: [{ size: 100 }, { filter: { tagIds: { none: [DummyValue.UUID] } } }, scopeExample],
+    params: [{ take: 100 }, { filter: { tagIds: { none: [DummyValue.UUID] } } }, scopeExample],
   },
   {
     name: 'ids-tags-all',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         filter: { tagIds: { all: [DummyValue.UUID, DummyValue.UUID_1] } },
       },
@@ -901,16 +901,16 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   },
   {
     name: 'has-albums-false',
-    params: [{ size: 100 }, { filter: { hasAlbums: { eq: false } } }, scopeExample],
+    params: [{ take: 100 }, { filter: { hasAlbums: { eq: false } } }, scopeExample],
   },
   {
     name: 'is-encoded',
-    params: [{ size: 100 }, { filter: { isEncoded: { eq: true } } }, scopeExample],
+    params: [{ take: 100 }, { filter: { isEncoded: { eq: true } } }, scopeExample],
   },
   {
     name: 'number-range',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         filter: { fileSizeInBytes: { gte: 100, lte: 1000 } },
       },
@@ -919,12 +919,12 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   },
   {
     name: 'date-eq',
-    params: [{ size: 100 }, { filter: { takenAt: { eq: DummyValue.DATE } } }, scopeExample],
+    params: [{ take: 100 }, { filter: { takenAt: { eq: DummyValue.DATE } } }, scopeExample],
   },
   {
     name: 'date-range',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         filter: { takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE } },
       },
@@ -934,7 +934,7 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   {
     name: 'order-fileSize-noExif',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         order: { field: SearchOrderField.FileSizeInBytes, direction: AssetOrder.Desc },
         withExif: false,
@@ -945,7 +945,7 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   {
     name: 'order-rating-withExif',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         order: { field: SearchOrderField.Rating, direction: AssetOrder.Asc },
         withExif: true,
@@ -956,7 +956,7 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   {
     name: 'or-branches',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         filter: {
           or: [{ isFavorite: { eq: true } }, { personIds: { any: [DummyValue.UUID] } }],
@@ -968,7 +968,7 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   {
     name: 'or-with-top-level',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         filter: {
           takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE },
@@ -980,7 +980,7 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   },
   {
     name: 'cursor-offset',
-    params: [{ size: 100, offset: 100 }, { filter: { isFavorite: { eq: true } } }, scopeExample],
+    params: [{ take: 100, skip: 100 }, { filter: { isFavorite: { eq: true } } }, scopeExample],
   },
 ];
 
@@ -995,12 +995,12 @@ export const searchRandomV3Examples: GenerateSqlQueries[] = [
 export const searchSmartV3Examples: GenerateSqlQueries[] = [
   {
     name: 'baseline',
-    params: [{ size: 100 }, { embedding: DummyValue.VECTOR }, scopeExample],
+    params: [{ take: 100 }, { embedding: DummyValue.VECTOR }, scopeExample],
   },
   {
     name: 'with-filter',
     params: [
-      { size: 100 },
+      { take: 100 },
       {
         embedding: DummyValue.VECTOR,
         filter: { takenAt: { gte: DummyValue.DATE, lt: DummyValue.DATE } },
@@ -1010,7 +1010,7 @@ export const searchSmartV3Examples: GenerateSqlQueries[] = [
   },
   {
     name: 'cursor-offset',
-    params: [{ size: 100, offset: 100 }, { embedding: DummyValue.VECTOR }, scopeExample],
+    params: [{ take: 100, skip: 100 }, { embedding: DummyValue.VECTOR }, scopeExample],
   },
 ];
 
