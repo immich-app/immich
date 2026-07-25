@@ -25,5 +25,5 @@ docker logs immich_machine_learning
 ```
 
 :::tip Follow a log
-Adding `--follow` to a `docker logs <id or name>` command will stream new logs, instead of immediately exiting, which is often useful for debugging.
+Adding `--tail <lines wanted>` to a `docker logs <id or name>` will make it only show the newest lines instead of all of the logs (`docker logs <id or name> --tail 100` will show the 100 latest lines) and `--follow`  will make it stream new logs, instead of immediately exiting, which is often useful for debugging.
 :::
