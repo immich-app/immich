@@ -117,18 +117,6 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     }).get();
   }
 
-  Future<void> updateFavorite(List<String> ids, bool isFavorite) {
-    return _db.batch((batch) async {
-      for (final id in ids) {
-        batch.update(
-          _db.remoteAssetEntity,
-          RemoteAssetEntityCompanion(isFavorite: Value(isFavorite)),
-          where: (e) => e.id.equals(id),
-        );
-      }
-    });
-  }
-
   Future<void> updateVisibility(List<String> ids, AssetVisibility visibility) {
     return _db.batch((batch) async {
       for (final id in ids) {

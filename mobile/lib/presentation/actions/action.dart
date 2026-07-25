@@ -1,32 +1,57 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/utils/asset_filter.dart';
 
-class ActionScope {
-  final BuildContext context;
-  final WidgetRef ref;
-  final UserDto authUser;
+class ActionData {
+  final IconData icon;
+  final String label;
+  final Future<void> Function() onAction;
+  final Future<void> Function()? onSecondaryAction;
 
-  const ActionScope({required this.context, required this.ref, required this.authUser});
+  const ActionData({required this.icon, required this.label, required this.onAction, this.onSecondaryAction});
 }
 
-abstract class BaseAction {
-  const BaseAction();
+abstract class ActionBuilder {
+  const ActionBuilder();
 
-  IconData get icon;
-
-  String label(ActionScope scope);
-
-  bool isVisible(ActionScope scope) => true;
-
-  Future<void> onAction(ActionScope scope);
+  ActionData? build(BuildContext context, WidgetRef ref);
 }
 
-abstract class AssetAction<T extends BaseAsset> extends BaseAction {
-  final Iterable<BaseAsset> assets;
+typedef AssetsActionState = ({AssetFilter<BaseAsset> assets, AssetFilter<RemoteAsset> ownedAssets});
 
-  const AssetAction({required this.assets});
+class AssetsActionNotifier extends AutoDisposeFamilyNotifier<AssetsActionState, ActionSource> {
+  @override
+  AssetsActionState build(ActionSource source) {
+    final selected = switch (source) {
+      .timeline => ref.watch(multiSelectProvider.select((s) => s.selectedAssets)),
+      .viewer => switch (ref.watch(assetViewerProvider.select((s) => s.currentAsset))) {
+        BaseAsset asset => {asset},
+        null => const <BaseAsset>{},
+      },
+    };
 
-  Iterable<T> filter(ActionScope scope) => assets.whereType<T>();
+    final assets = AssetFilter(selected);
+    return (assets: assets, ownedAssets: assets.owned(ref.watch(authUserProvider).id));
+  }
+
+  void clearSelect() {
+    if (arg == .timeline) {
+      ref.read(multiSelectProvider.notifier).reset();
+    }
+  }
+}
+
+final assetsActionProvider = NotifierProvider.family.autoDispose<AssetsActionNotifier, AssetsActionState, ActionSource>(
+  AssetsActionNotifier.new,
+);
+
+abstract class AssetActionBuilder extends ActionBuilder {
+  final ActionSource source;
+
+  const AssetActionBuilder({required this.source});
 }

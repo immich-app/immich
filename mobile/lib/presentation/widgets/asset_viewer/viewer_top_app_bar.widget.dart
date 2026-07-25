@@ -43,7 +43,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     double opacity = ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
 
     final originalTheme = context.themeData;
-    final assetForAction = [asset];
 
     final actions = <Widget>[
       if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
@@ -61,7 +60,7 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
           },
         ),
 
-      ActionIconButtonWidget(action: FavoriteAction(assets: assetForAction)),
+      const ActionIconButton(action: FavoriteAction(source: .viewer)),
 
       ImmichColorOverride(color: null, child: ViewerKebabMenu(originalTheme: originalTheme)),
     ];

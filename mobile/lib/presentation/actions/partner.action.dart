@@ -6,44 +6,46 @@ import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/widgets/people/partner_user_avatar.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
-class PartnerAddAction extends BaseAction {
+class PartnerAddAction extends ActionBuilder {
   const PartnerAddAction();
 
   @override
-  IconData get icon => Icons.person_add_rounded;
+  ActionData build(BuildContext context, WidgetRef ref) =>
+      ActionData(icon: Icons.person_add_rounded, label: context.t.add_partner, onAction: () => _add(context, ref));
 
-  @override
-  String label(ActionScope scope) => scope.context.t.add_partner;
+  Future<void> _add(BuildContext context, WidgetRef ref) async {
+    final partnerService = ref.read(partnerServiceProvider);
+    final authUserId = ref.read(authUserProvider).id;
 
-  @override
-  Future<void> onAction(ActionScope scope) async {
-    final ActionScope(:context, :ref, :authUser) = scope;
     final selected = await showDialog<User>(context: context, builder: (_) => const PartnerSelectionDialog());
     if (selected == null) {
       return;
     }
 
-    await ref.read(partnerServiceProvider).create(sharedById: authUser.id, sharedWithId: selected.id);
+    try {
+      await partnerService.create(sharedById: authUserId, sharedWithId: selected.id);
+    } catch (error, stack) {
+      handleError(error, stack: stack, description: 'Failed to add partner');
+    }
   }
 }
 
-class PartnerRemoveAction extends BaseAction {
+class PartnerRemoveAction extends ActionBuilder {
   const PartnerRemoveAction({required this.sharedWithId, required this.partnerName});
 
   final String sharedWithId;
   final String partnerName;
 
   @override
-  IconData get icon => Icons.person_remove_rounded;
+  ActionData build(BuildContext context, WidgetRef ref) =>
+      ActionData(icon: Icons.person_remove_rounded, label: context.t.remove, onAction: () => _remove(context, ref));
 
-  @override
-  String label(ActionScope scope) => scope.context.t.remove;
-
-  @override
-  Future<void> onAction(ActionScope scope) async {
-    final ActionScope(:context, :ref, :authUser) = scope;
+  Future<void> _remove(BuildContext context, WidgetRef ref) async {
+    final partnerService = ref.read(partnerServiceProvider);
+    final authUserId = ref.read(authUserProvider).id;
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -56,7 +58,11 @@ class PartnerRemoveAction extends BaseAction {
       return;
     }
 
-    await ref.read(partnerServiceProvider).delete(sharedById: authUser.id, sharedWithId: sharedWithId);
+    try {
+      await partnerService.delete(sharedById: authUserId, sharedWithId: sharedWithId);
+    } catch (error, stack) {
+      handleError(error, stack: stack, description: 'Failed to remove partner');
+    }
   }
 }
 
