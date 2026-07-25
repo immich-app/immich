@@ -319,7 +319,7 @@ export class MediaService extends BaseService {
         return JobStatus.Failed;
       }
 
-      const { byteRanges } = result;
+      const { byteRanges, intervalChanges } = result;
       if (byteRanges.length === 0) {
         this.logger.warn(`No frames extracted for video ${asset.id}`);
         return JobStatus.Failed;
@@ -329,7 +329,7 @@ export class MediaService extends BaseService {
         frameIndex,
         byteOffset: range.byteOffset,
         byteSize: range.byteSize,
-        intervalChange: result.intervalChanges[frameIndex] ?? 0,
+        intervalChange: intervalChanges[frameIndex] ?? 0,
       }));
 
       await this.videoFrameRepository.upsertFrames(asset.id, frames);
