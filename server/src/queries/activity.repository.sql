@@ -41,7 +41,9 @@ from
   inner join "asset" on "asset"."id" = "album_asset"."assetId"
   and "asset"."deletedAt" is null
   and "asset"."visibility" != 'locked'
-  inner join "user" as "user2" on "user2"."id" = coalesce("album_asset"."createdById", "asset"."ownerId")
+  left join "user" as "adder" on "adder"."id" = "album_asset"."createdById"
+  and "adder"."deletedAt" is null
+  inner join "user" as "user2" on "user2"."id" = coalesce("adder"."id", "asset"."ownerId")
   and "user2"."deletedAt" is null
   inner join lateral (
     select

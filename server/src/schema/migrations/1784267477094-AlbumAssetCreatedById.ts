@@ -7,7 +7,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 }
 
 export async function down(db: Kysely<any>): Promise<void> {
-  await sql`ALTER TABLE "album_asset" DROP COLUMN "createdById";`.execute(db);
-  await sql`DROP INDEX "album_asset_createdById_idx";`.execute(db);
   await sql`ALTER TABLE "album_asset" DROP CONSTRAINT "album_asset_createdById_fkey";`.execute(db);
+  await sql`DROP INDEX "album_asset_createdById_idx";`.execute(db);
+  await sql`ALTER TABLE "album_asset" DROP COLUMN "createdById";`.execute(db);
 }

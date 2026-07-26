@@ -243,8 +243,12 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
     return { album, result };
   }
 
-  async newAlbumAsset(albumAsset: { albumId: string; assetId: string }) {
-    const result = await this.get(AlbumRepository).addAssetIds(albumAsset.albumId, [albumAsset.assetId]);
+  async newAlbumAsset(albumAsset: { albumId: string; assetId: string; createdById?: string }) {
+    const result = await this.get(AlbumRepository).addAssetIds(
+      albumAsset.albumId,
+      [albumAsset.assetId],
+      albumAsset.createdById,
+    );
     return { albumAsset, result };
   }
 

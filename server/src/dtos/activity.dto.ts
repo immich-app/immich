@@ -60,7 +60,7 @@ const ActivityCreateSchema = ActivitySchema.extend({
   assetId: z.uuidv4().optional().describe('Asset ID (if activity is for an asset)'),
   comment: z.string().optional().describe('Comment text (required if type is comment)'),
 })
-  .refine((data) => data.type === ReactionType.ASSET_ADDED, {
+  .refine((data) => data.type !== ReactionType.ASSET_ADDED, {
     error: 'Asset-added activities cannot be created directly',
     path: ['type'],
   })

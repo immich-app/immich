@@ -57,9 +57,13 @@ export class ActivityRepository {
           .on('asset.deletedAt', 'is', null)
           .on('asset.visibility', '!=', sql.lit(AssetVisibility.Locked)),
       )
+      .leftJoin('user as adder', (join) =>
+        join.onRef('adder.id', '=', 'album_asset.createdById').on('adder.deletedAt', 'is', null),
+      )
       .innerJoin('user as user2', (join) =>
         join
-          .on('user2.id', '=', sql`coalesce("album_asset"."createdById", "asset"."ownerId")`)
+          // attribute to the adding user, falling back to the asset owner when unknown or deleted
+          .on((eb) => eb('user2.id', '=', eb.fn.coalesce('adder.id', 'asset.ownerId')))
           .on('user2.deletedAt', 'is', null),
       )
       .innerJoinLateral(
