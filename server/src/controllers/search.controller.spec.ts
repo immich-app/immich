@@ -143,7 +143,9 @@ describe(SearchController.name, () => {
         .post('/search/metadata')
         .send({ filter: { previewPath: { eq: 'preview.webp' } } });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.validationError([{ path: ['filter'], message: 'Unrecognized key: "previewPath"' }]));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['filter'], message: 'Unrecognized key: "previewPath"' }]),
+      );
     });
 
     it('should reject a nested or', async () => {

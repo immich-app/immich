@@ -526,11 +526,7 @@ export class SearchRepository {
 
   // TODO(v4): drop the V3 suffix once the legacy methods are removed
   @GenerateSql(...searchMetadataV3Examples)
-  async searchMetadataV3(
-    pagination: PaginationOptions,
-    options: AssetSearchBuilderV3Options,
-    scope: AssetSearchScope,
-  ) {
+  async searchMetadataV3(pagination: PaginationOptions, options: AssetSearchBuilderV3Options, scope: AssetSearchScope) {
     const items = await withSearchOrder(searchAssetBuilder(this.db, options, scope), options.order)
       .select(columns.searchAsset)
       .limit(pagination.take + 1)
