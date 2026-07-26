@@ -23,7 +23,7 @@ void main() {
   });
 
   RemoteAsset owned({bool trashed = true}) =>
-      RemoteAssetFactory.create(ownerId: context.currentUser.id, deletedAt: trashed ? DateTime(2020) : null);
+      RemoteAssetFactory.create(ownerId: context.currentUser.id, deletedAt: trashed ? .new(2020) : null);
 
   Future<void> pumpRestore(WidgetTester tester, Set<BaseAsset> selection) =>
       tester.pumpTestAction(context, const RestoreAction(source: .timeline), overrides: context.selected(selection));
@@ -39,7 +39,7 @@ void main() {
 
     testWidgets('ignores assets owned by someone else', (tester) async {
       final mine = owned();
-      final theirs = RemoteAssetFactory.create(deletedAt: DateTime(2020));
+      final theirs = RemoteAssetFactory.create(deletedAt: .new(2020));
 
       await pumpRestore(tester, {mine, theirs});
 

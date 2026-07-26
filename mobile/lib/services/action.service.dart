@@ -68,16 +68,6 @@ class ActionService {
     unawaited(context.pushRoute(SharedLinkEditRoute(assetsList: remoteIds)));
   }
 
-  Future<void> archive(List<String> remoteIds) async {
-    await _assetApiRepository.updateVisibility(remoteIds, .archive);
-    await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.archive);
-  }
-
-  Future<void> unArchive(List<String> remoteIds) async {
-    await _assetApiRepository.updateVisibility(remoteIds, .timeline);
-    await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.timeline);
-  }
-
   Future<void> moveToLockFolder(List<String> remoteIds, List<String> localIds) async {
     await _assetApiRepository.updateVisibility(remoteIds, .locked);
     await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked);
