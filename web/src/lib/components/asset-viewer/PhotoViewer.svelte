@@ -213,6 +213,7 @@
 <div
   bind:this={element}
   class="relative size-full select-none"
+  dir="ltr"
   bind:clientWidth={containerWidth}
   bind:clientHeight={containerHeight}
   role="presentation"

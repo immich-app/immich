@@ -197,6 +197,11 @@
 
   $effect(() => {
     assetViewerManager.imageLoaderStatus = status;
+    return () => {
+      if (assetViewerManager.imageLoaderStatus === status) {
+        assetViewerManager.imageLoaderStatus = undefined;
+      }
+    };
   });
 
   $effect(() => {
