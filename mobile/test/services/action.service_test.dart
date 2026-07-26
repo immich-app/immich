@@ -17,8 +17,6 @@ void main() {
 
   late MockAssetApiRepository assetApiRepository;
   late MockRemoteAssetRepository remoteAssetRepository;
-  late MockDownloadRepository downloadRepository;
-  late MockTagService tagService;
 
   late Drift db;
 
@@ -39,10 +37,8 @@ void main() {
   setUp(() {
     assetApiRepository = MockAssetApiRepository();
     remoteAssetRepository = MockRemoteAssetRepository();
-    downloadRepository = MockDownloadRepository();
-    tagService = MockTagService();
 
-    sut = ActionService(assetApiRepository, remoteAssetRepository, downloadRepository, tagService);
+    sut = ActionService(assetApiRepository, remoteAssetRepository);
   });
 
   tearDown(() async {
