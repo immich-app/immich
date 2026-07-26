@@ -4,18 +4,18 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
-import 'package:immich_mobile/presentation/actions/share.action.dart';
-import 'package:immich_mobile/presentation/actions/share_link.action.dart';
+import 'package:immich_mobile/presentation/actions/archive.action.dart';
+import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
-import 'package:immich_mobile/presentation/actions/delete.action.dart';
-import 'package:immich_mobile/presentation/actions/lock.action.dart';
-import 'package:immich_mobile/presentation/actions/archive.action.dart';
-import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
+import 'package:immich_mobile/presentation/actions/lock.action.dart';
+import 'package:immich_mobile/presentation/actions/remove_from_album.action.dart';
+import 'package:immich_mobile/presentation/actions/set_album_cover.action.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/share_link.action.dart';
+import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -104,9 +104,14 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
           ],
         ],
         const ActionColumnButton(action: CleanupLocalAction(source: .timeline)),
-        if (ownsAlbum) RemoveFromAlbumActionButton(source: ActionSource.timeline, albumId: widget.album.id),
-        if (ownsAlbum && multiselect.selectedAssets.length == 1)
-          SetAlbumCoverActionButton(source: ActionSource.timeline, albumId: widget.album.id),
+        if (ownsAlbum) ...[
+          ActionColumnButton(
+            action: RemoveFromAlbumAction(source: .timeline, albumId: widget.album.id),
+          ),
+          ActionColumnButton(
+            action: SetAlbumCoverAction(source: .timeline, albumId: widget.album.id),
+          ),
+        ],
       ],
       slivers: ownsAlbum
           ? [const AddToAlbumHeader(), AlbumSelector(onAlbumSelected: addToAlbum, onKeyboardExpanded: onKeyboardExpand)]
