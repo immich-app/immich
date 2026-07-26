@@ -16,6 +16,8 @@ import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/open_in_browser.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/set_profile_picture.action.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/similar_photos.action.dart';
 import 'package:immich_mobile/presentation/actions/slideshow.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
@@ -24,8 +26,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/download_actio
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/routing/router.dart';
 
@@ -173,12 +173,8 @@ enum ActionButtonType {
   ]) {
     return switch (this) {
       ActionButtonType.advancedInfo => ActionMenuItem(action: AssetDebugAction(source: context.source)),
-      ActionButtonType.share => ShareActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
-      ActionButtonType.shareLink => ShareLinkActionButton(
-        source: context.source,
-        iconOnly: iconOnly,
-        menuItem: menuItem,
-      ),
+      ActionButtonType.share => ActionMenuItem(action: ShareAction(source: context.source)),
+      ActionButtonType.shareLink => ActionMenuItem(action: ShareLinkAction(source: context.source)),
       ActionButtonType.slideshow => const ActionMenuItem(action: SlideshowAction()),
       ActionButtonType.archive ||
       ActionButtonType.unarchive => ActionMenuItem(action: ArchiveAction(source: context.source)),

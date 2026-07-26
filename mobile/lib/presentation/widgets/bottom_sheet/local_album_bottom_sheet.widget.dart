@@ -5,7 +5,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
@@ -66,7 +66,7 @@ class _LocalAlbumBottomSheetState extends ConsumerState<LocalAlbumBottomSheet> {
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
       actions: const [
-        ShareActionButton(source: ActionSource.timeline),
+        ActionColumnButton(action: ShareAction(source: .timeline)),
         ActionColumnButton(action: DeleteAction(source: .timeline)),
         ActionColumnButton(action: CleanupLocalAction(source: .timeline)),
         UploadActionButton(source: ActionSource.timeline),
