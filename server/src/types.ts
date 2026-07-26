@@ -181,6 +181,15 @@ export interface HlsCommandOptions {
   totalDuration: number;
 }
 
+export interface FrameSamplingOptions {
+  inputPath: string;
+  segmentFilename: string;
+  playlistFilename: string;
+  scoresFilename: string;
+  frameInterval: number;
+  qp: number;
+}
+
 export interface BitrateDistribution {
   max: number;
   target: number;
@@ -201,6 +210,10 @@ export interface VideoCodecSWConfig {
     format?: VideoFormat,
   ): TranscodeCommand;
   getHlsCommand(options: HlsCommandOptions, video: VideoStreamInfo, audio?: AudioStreamInfo): string[];
+}
+
+export interface FrameSamplingConfig {
+  getFrameSamplingCommand(options: FrameSamplingOptions, video: VideoStreamInfo): string[];
 }
 
 export interface ProbeOptions {

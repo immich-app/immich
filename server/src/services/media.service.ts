@@ -13,6 +13,7 @@ import {
   AssetVisibility,
   AudioCodec,
   Colorspace,
+  CQMode,
   ImageFormat,
   ImmichWorker,
   JobName,
@@ -42,7 +43,7 @@ import {
 } from 'src/types';
 import { getAssetFile, getDimensions } from 'src/utils/asset.util';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
-import { BaseConfig, ThumbnailConfig, VideoFrameExtractionConfig } from 'src/utils/media';
+import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
 import { clamp } from 'src/utils/misc';
 import { getOutputDimensions } from 'src/utils/transform';
@@ -297,19 +298,26 @@ export class MediaService extends BaseService {
     const scoresPath = join(tempDir, 'scores.txt');
 
     try {
-      const config = VideoFrameExtractionConfig.create({
-        inputPath: asset.originalPath,
-        artifactPath,
-        playlistPath,
-        scoresPath,
-        targetResolution: videoFrameExtraction.targetResolution,
-        qp: videoFrameExtraction.qp,
-        frameInterval: videoFrameExtraction.frameInterval,
-        ffmpeg,
-        videoInterfaces: this.videoInterfaces,
-      });
-
-      const command = config.getExtractionCommand(asset.videoStream);
+      const overrideConfig: SystemConfigFFmpegDto = {
+        ...ffmpeg,
+        targetVideoCodec: VideoCodec.H264,
+        targetResolution: String(videoFrameExtraction.targetResolution),
+        crf: videoFrameExtraction.qp,
+        cqMode: CQMode.Icq,
+        maxBitrate: '0',
+      };
+      const config = BaseConfig.create(overrideConfig, this.videoInterfaces, { strictGop: true, lowLatency: false });
+      const command = config.getFrameSamplingCommand(
+        {
+          inputPath: asset.originalPath,
+          segmentFilename: artifactPath,
+          playlistFilename: playlistPath,
+          scoresFilename: scoresPath,
+          frameInterval: videoFrameExtraction.frameInterval,
+          qp: videoFrameExtraction.qp,
+        },
+        asset.videoStream,
+      );
 
       let result;
       try {

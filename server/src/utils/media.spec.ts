@@ -2,7 +2,6 @@ import { defaults } from 'src/config';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import { ColorTransfer, TranscodeHardwareAcceleration } from 'src/enum';
 import { VideoInterfaces, VideoStreamInfo } from 'src/types';
-import { VideoFrameExtractionConfig } from 'src/utils/media';
 import { probeStub } from 'test/fixtures/media.stub';
 import { describe, expect, it } from 'vitest';
 
