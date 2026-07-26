@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
@@ -11,10 +9,8 @@ import 'package:immich_mobile/infrastructure/repositories/remote_asset.repositor
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
-import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/common/tag_picker.dart';
 
 final actionServiceProvider = Provider<ActionService>(
@@ -23,7 +19,6 @@ final actionServiceProvider = Provider<ActionService>(
     ref.watch(remoteAssetRepositoryProvider),
     ref.watch(driftAlbumApiRepositoryProvider),
     ref.watch(remoteAlbumRepository),
-    ref.watch(assetMediaRepositoryProvider),
     ref.watch(downloadRepositoryProvider),
     ref.watch(tagServiceProvider),
   ),
@@ -34,7 +29,6 @@ class ActionService {
   final RemoteAssetRepository _remoteAssetRepository;
   final DriftAlbumApiRepository _albumApiRepository;
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
-  final AssetMediaRepository _assetMediaRepository;
   final DownloadRepository _downloadRepository;
   final TagService _tagService;
 
@@ -43,14 +37,9 @@ class ActionService {
     this._remoteAssetRepository,
     this._albumApiRepository,
     this._remoteAlbumRepository,
-    this._assetMediaRepository,
     this._downloadRepository,
     this._tagService,
   );
-
-  Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
-    unawaited(context.pushRoute(SharedLinkEditRoute(assetsList: remoteIds)));
-  }
 
   Future<int> emptyTrash(String userId) async {
     final count = await _assetApiRepository.emptyTrash();
@@ -106,22 +95,6 @@ class ActionService {
       return 0;
     }
     return _tagService.bulkTagAssets(remoteIds, selectedTagIds.toList());
-  }
-
-  Future<int> shareAssets(
-    List<BaseAsset> assets,
-    BuildContext context, {
-    ShareAssetType fileType = ShareAssetType.original,
-    Completer<void>? cancelCompleter,
-    void Function(double progress)? onAssetDownloadProgress,
-  }) {
-    return _assetMediaRepository.shareAssets(
-      assets,
-      context,
-      fileType: fileType,
-      cancelCompleter: cancelCompleter,
-      onAssetDownloadProgress: onAssetDownloadProgress,
-    );
   }
 
   Future<List<bool>> downloadAll(List<RemoteAsset> assets) {

@@ -4,6 +4,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
@@ -12,8 +14,6 @@ import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -76,9 +76,9 @@ class _ArchiveBottomSheetState extends ConsumerState<ArchiveBottomSheet> {
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
       actions: [
-        const ShareActionButton(source: ActionSource.timeline),
+        const ActionColumnButton(action: ShareAction(source: .timeline)),
         if (multiselect.hasRemote) ...[
-          const ShareLinkActionButton(source: ActionSource.timeline),
+          const ActionColumnButton(action: ShareLinkAction(source: .timeline)),
           const ActionColumnButton(action: ArchiveAction(source: .timeline)),
           const ActionColumnButton(action: FavoriteAction(source: .timeline)),
           if (multiselect.onlyRemote) const DownloadActionButton(source: ActionSource.timeline),

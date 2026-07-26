@@ -19,7 +19,6 @@ void main() {
   late MockRemoteAssetRepository remoteAssetRepository;
   late MockDriftAlbumApiRepository albumApiRepository;
   late MockRemoteAlbumRepository remoteAlbumRepository;
-  late MockAssetMediaRepository assetMediaRepository;
   late MockDownloadRepository downloadRepository;
   late MockTagService tagService;
 
@@ -44,7 +43,6 @@ void main() {
     remoteAssetRepository = MockRemoteAssetRepository();
     albumApiRepository = MockDriftAlbumApiRepository();
     remoteAlbumRepository = MockRemoteAlbumRepository();
-    assetMediaRepository = MockAssetMediaRepository();
     downloadRepository = MockDownloadRepository();
     tagService = MockTagService();
 
@@ -53,7 +51,6 @@ void main() {
       remoteAssetRepository,
       albumApiRepository,
       remoteAlbumRepository,
-      assetMediaRepository,
       downloadRepository,
       tagService,
     );
@@ -88,5 +85,4 @@ void main() {
       verify(() => remoteAssetRepository.updateRating(assetId, null)).called(1);
     });
   });
-
 }
