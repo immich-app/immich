@@ -13,7 +13,7 @@ import {
   Text,
 } from '@react-email/components';
 import * as React from 'react';
-import { ImmichFooter } from './footer.template';
+import { ImmichFooter } from 'src/emails/components/footer.template';
 
 interface FutoLayoutProps {
   children: React.ReactNode;
@@ -24,6 +24,7 @@ export const FutoLayout = ({ children, preview }: FutoLayoutProps) => (
   <Html>
     <Tailwind
       config={{
+        // eslint-disable-next-line @typescript-eslint/no-require-imports, unicorn/prefer-module
         presets: [require('tailwindcss-preset-email')],
         theme: {
           extend: {
