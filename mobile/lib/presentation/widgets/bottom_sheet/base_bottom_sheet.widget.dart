@@ -4,6 +4,12 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
 
+/// Implemented by widgets used as the timeline's bottom sheet so the grid can
+/// reserve space for the sheet's resting size, similar to [PreferredSizeWidget]
+abstract interface class TimelineBottomSheet implements Widget {
+  double get minChildSize;
+}
+
 class BaseBottomSheet extends ConsumerStatefulWidget {
   final List<Widget> actions;
   final DraggableScrollableController? controller;

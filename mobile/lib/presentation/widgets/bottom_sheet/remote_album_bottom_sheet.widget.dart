@@ -28,9 +28,12 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class RemoteAlbumBottomSheet extends ConsumerStatefulWidget {
+class RemoteAlbumBottomSheet extends ConsumerStatefulWidget implements TimelineBottomSheet {
   final RemoteAlbum album;
   const RemoteAlbumBottomSheet({super.key, required this.album});
+
+  @override
+  double get minChildSize => 0.22;
 
   @override
   ConsumerState<RemoteAlbumBottomSheet> createState() => _RemoteAlbumBottomSheetState();

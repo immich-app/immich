@@ -7,8 +7,11 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lo
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 
-class LockedFolderBottomSheet extends ConsumerWidget {
+class LockedFolderBottomSheet extends ConsumerWidget implements TimelineBottomSheet {
   const LockedFolderBottomSheet({super.key});
+
+  @override
+  double get minChildSize => 0.15;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

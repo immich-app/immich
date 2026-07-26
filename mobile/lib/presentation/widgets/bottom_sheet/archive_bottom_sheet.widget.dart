@@ -25,8 +25,11 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class ArchiveBottomSheet extends ConsumerStatefulWidget {
+class ArchiveBottomSheet extends ConsumerStatefulWidget implements TimelineBottomSheet {
   const ArchiveBottomSheet({super.key});
+
+  @override
+  double get minChildSize => 0.15;
 
   @override
   ConsumerState<ArchiveBottomSheet> createState() => _ArchiveBottomSheetState();
