@@ -11,7 +11,7 @@
     id: string;
     name: string;
     email: string;
-    profileImagePath: string;
+    profileImagePath: string | null;
     avatarColor: UserAvatarColor;
     profileChangedAt: string;
   }
