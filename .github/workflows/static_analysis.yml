@@ -35,6 +35,7 @@ jobs:
             mobile:
               - 'mobile/**'
               - 'i18n/en.json'
+              - 'native/**'
           force-filters: |
             - '.github/workflows/static_analysis.yml'
           force-events: 'workflow_dispatch,release'

@@ -1,0 +1,26 @@
+[package]
+name = "immich_core_ffi"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+# The build hook uses cdylib, iOS uses staticlib, and tests use lib.
+[lib]
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[dependencies]
+immich_core = { path = "../immich_core", default-features = false, features = ["image", "thumbhash"] }
+libc = { workspace = true }
+tokio = { workspace = true }
+
+[target.'cfg(target_os = "android")'.dependencies]
+jni = { workspace = true }
+
+[dev-dependencies]
+libc = { workspace = true }
+
+[build-dependencies]
+cbindgen = { workspace = true }
+
+[lints]
+workspace = true

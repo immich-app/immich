@@ -912,6 +912,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.2"
+  immich_native_core:
+    dependency: "direct main"
+    description:
+      path: "../native/immich_native_core"
+      relative: true
+    source: path
+    version: "0.1.0"
   immich_ui:
     dependency: "direct main"
     description:
@@ -1124,6 +1131,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.19.1"
+  native_toolchain_rust:
+    dependency: transitive
+    description:
+      name: native_toolchain_rust
+      sha256: faa57d2258a3b0fd2a634054f54e4496c9fcbd971977e7d2b7e6916d56892857
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4+0"
   native_video_player:
     dependency: "direct main"
     description:
@@ -1740,14 +1755,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.11"
-  thumbhash:
-    dependency: "direct main"
-    description:
-      name: thumbhash
-      sha256: "5f6d31c5279ca0b5caa81ec10aae8dcaab098d82cb699ea66ada4ed09c794a37"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.0+1"
   timezone:
     dependency: "direct main"
     description:
@@ -1756,6 +1763,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.4"
+  toml:
+    dependency: transitive
+    description:
+      name: toml
+      sha256: "35a35f782228656a2af31e8c73d1353cc4ef3d683fd68af1111b44631879c05e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.18.0"
   typed_data:
     dependency: transitive
     description:

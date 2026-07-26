@@ -6,7 +6,7 @@ const val INITIAL_BUFFER_SIZE = 32 * 1024
 
 object NativeBuffer {
   init {
-    System.loadLibrary("native_buffer")
+    System.loadLibrary("immich_core_ffi")
   }
 
   @JvmStatic
@@ -22,9 +22,6 @@ object NativeBuffer {
   external fun wrap(address: Long, capacity: Int): ByteBuffer
 
   @JvmStatic
-  external fun copy(buffer: ByteBuffer, destAddress: Long, offset: Int, length: Int)
-
-  @JvmStatic
   external fun createGlobalRef(obj: Any): Long
 }
 
@@ -35,8 +32,12 @@ class NativeByteBuffer(initialCapacity: Int) {
 
   inline fun ensureHeadroom() {
     if (offset == capacity) {
-      capacity *= 2
-      pointer = NativeBuffer.realloc(pointer, capacity)
+      check(capacity <= Int.MAX_VALUE / 2) { "Native buffer capacity overflow" }
+      val newCapacity = capacity * 2
+      val newPointer = NativeBuffer.realloc(pointer, newCapacity)
+      check(newPointer != 0L) { "Native buffer realloc failed" }
+      pointer = newPointer
+      capacity = newCapacity
     }
   }
 

@@ -1,0 +1,13 @@
+[package]
+name = "immich_core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = ["image", "thumbhash"]
+image = []
+thumbhash = []
+
+[lints]
+workspace = true

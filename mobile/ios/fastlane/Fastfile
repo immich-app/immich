@@ -34,6 +34,13 @@ platform :ios do
     )
   end
   
+  # Xcode build phases need mise trust saved to disk.
+  def trust_mise_configs
+    return unless system("command -v mise > /dev/null 2>&1")
+    sh("mise trust ../../../mise.toml")
+    sh("mise trust ../../mise.toml")
+  end
+
   # Helper method to assemble xcargs with optional CUSTOM_GROUP_ID override
   def build_xcargs(group_id: nil)
     args = "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual"
@@ -101,6 +108,8 @@ end
     group_id: nil
   )
     app_identifier = base_bundle_id
+
+    trust_mise_configs
 
     # Set version number if provided
     if version_number
@@ -258,6 +267,8 @@ end
 
     api_key = get_api_key
 
+    trust_mise_configs
+
     # Download and install provisioning profiles from App Store Connect
     # Certificate is imported by GHA workflow into build.keychain
     sigh(api_key: api_key, app_identifier: DEV_BUNDLE_ID, force: true)
@@ -284,6 +295,7 @@ end
       configuration: "Release",
       export_method: "app-store",
       skip_package_ipa: true,
+      xcodebuild_formatter: "", # raw xcodebuild output so script-phase errors show in CI logs
       xcargs: build_xcargs(group_id: DEV_GROUP_ID),
       export_options: {
         provisioningProfiles: {

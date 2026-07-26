@@ -39,6 +39,8 @@ dependencies:
   hooks_riverpod: ^2.6.1
   http: ^1.6.0
   image_picker: ^1.2.1
+  immich_native_core:
+    path: ../native/immich_native_core
   immich_ui:
     path: './packages/ui'
   intl: ^0.20.2
@@ -70,7 +72,6 @@ dependencies:
   sqlite3: ^3.3.2
   sqlite_async: 0.14.2
   sqlite3_connection_pool: ^0.2.6
-  thumbhash: 0.1.0+1
   timezone: ^0.9.4
   url_launcher: ^6.3.2
   uuid: ^4.5.3
