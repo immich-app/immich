@@ -314,7 +314,6 @@ export class MediaService extends BaseService {
           playlistFilename: playlistPath,
           scoresFilename: scoresPath,
           frameInterval: videoFrameExtraction.frameInterval,
-          qp: videoFrameExtraction.qp,
         },
         asset.videoStream,
       );

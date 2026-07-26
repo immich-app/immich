@@ -2620,7 +2620,7 @@ export type SystemConfigVideoFrameExtractionDto = {
     enabled: boolean;
     /** Seconds between sampled frames */
     frameInterval: number;
-    /** Fixed quantizer used for the all-intra frame encode */
+    /** Target quality (CRF-equivalent) used for the all-intra frame encode */
     qp: number;
     /** Target short-side resolution (px) of extracted frames */
     targetResolution: number;

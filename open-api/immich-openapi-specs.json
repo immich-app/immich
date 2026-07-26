@@ -26675,7 +26675,7 @@
             "type": "number"
           },
           "qp": {
-            "description": "Fixed quantizer used for the all-intra frame encode",
+            "description": "Target quality (CRF-equivalent) used for the all-intra frame encode",
             "maximum": 51,
             "minimum": 0,
             "type": "integer"

@@ -187,7 +187,6 @@ export interface FrameSamplingOptions {
   playlistFilename: string;
   scoresFilename: string;
   frameInterval: number;
-  qp: number;
 }
 
 export interface BitrateDistribution {

@@ -27,7 +27,7 @@ class SystemConfigVideoFrameExtractionDto {
   /// Minimum value: 0.01
   double frameInterval;
 
-  /// Fixed quantizer used for the all-intra frame encode
+  /// Target quality (CRF-equivalent) used for the all-intra frame encode
   ///
   /// Minimum value: 0
   /// Maximum value: 51
