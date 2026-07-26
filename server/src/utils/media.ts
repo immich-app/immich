@@ -532,7 +532,7 @@ export class BaseHWConfig extends BaseConfig {
 }
 
 export class ThumbnailConfig extends BaseConfig {
-  static create(config: SystemConfigFFmpegDto): VideoCodecSWConfig {
+  static create(config: SystemConfigFFmpegDto): VideoCodecSWConfig & FrameSamplingConfig {
     return new ThumbnailConfig(config);
   }
 

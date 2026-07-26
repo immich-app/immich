@@ -1,7 +1,8 @@
 import { defaults } from 'src/config';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
-import { ColorTransfer, TranscodeHardwareAcceleration } from 'src/enum';
+import { ColorTransfer, CQMode, TranscodeHardwareAcceleration, VideoCodec } from 'src/enum';
 import { VideoInterfaces, VideoStreamInfo } from 'src/types';
+import { BaseConfig } from 'src/utils/media';
 import { probeStub } from 'test/fixtures/media.stub';
 import { describe, expect, it } from 'vitest';
 
@@ -51,40 +52,47 @@ const hlsMuxerTail = [
   '-',
 ];
 
-const getExtractionCommand = (
+const getFrameSamplingCommand = (
   ffmpegOverrides: Partial<SystemConfigFFmpegDto>,
   videoStream: VideoStreamInfo = sdrVideoStream,
 ) => {
   const ffmpeg: SystemConfigFFmpegDto = { ...defaults.ffmpeg, ...ffmpegOverrides };
-  const config = VideoFrameExtractionConfig.create({
-    inputPath,
-    artifactPath,
-    playlistPath,
-    scoresPath,
-    targetResolution,
-    qp,
-    frameInterval: 1,
-    ffmpeg,
-    videoInterfaces,
-  });
-  return config.getExtractionCommand(videoStream);
+  const overrideConfig: SystemConfigFFmpegDto = {
+    ...ffmpeg,
+    targetVideoCodec: VideoCodec.H264,
+    targetResolution: String(targetResolution),
+    crf: qp,
+    cqMode: CQMode.Icq,
+    maxBitrate: '0',
+  };
+  const config = BaseConfig.create(overrideConfig, videoInterfaces, { strictGop: true, lowLatency: false });
+  return config.getFrameSamplingCommand(
+    {
+      inputPath,
+      segmentFilename: artifactPath,
+      playlistFilename: playlistPath,
+      scoresFilename: scoresPath,
+      frameInterval: 1,
+      qp,
+    },
+    videoStream,
+  );
 };
 
-describe('VideoFrameExtractionConfig', () => {
-  describe('getExtractionCommand', () => {
+describe('BaseConfig', () => {
+  describe('getFrameSamplingCommand', () => {
     it('builds the SW (CPU) command when hardware acceleration is disabled', () => {
-      const args = getExtractionCommand({ accel: TranscodeHardwareAcceleration.Disabled });
+      const args = getFrameSamplingCommand({ accel: TranscodeHardwareAcceleration.Disabled });
 
       expect(args).toEqual([
         '-nostdin',
         '-nostats',
         '-v',
         'verbose',
-        '-noautorotate',
         '-i',
         inputPath,
         '-filter_complex',
-        `[0:v]scale=1138:640,fps=1,split[enc][an];[an]scdet=threshold=100,metadata=print:file=${scoresPath}[scored]`,
+        `[0:v]scale=-2:640,fps=1,split[enc][an];[an]scdet=threshold=100,metadata=print:file=${scoresPath}[scored]`,
         '-map',
         '[enc]',
         '-c:v',
@@ -93,26 +101,25 @@ describe('VideoFrameExtractionConfig', () => {
         '1',
         '-bf',
         '0',
-        '-qp',
+        '-crf',
         '34',
+        '-sc_threshold:v',
+        '0',
         ...hlsMuxerTail,
       ]);
     });
 
     it('does not upscale a source already smaller than targetResolution (SW path)', () => {
-      // Directly validates that targetResolution is correctly threaded into the delegate's config:
-      // BaseConfig.shouldScale() reads it back out to decide no scaling is needed here.
-      const args = getExtractionCommand({ accel: TranscodeHardwareAcceleration.Disabled }, lowResVideoStream);
+      const args = getFrameSamplingCommand({ accel: TranscodeHardwareAcceleration.Disabled }, lowResVideoStream);
 
       expect(args).toEqual([
         '-nostdin',
         '-nostats',
         '-v',
         'verbose',
-        '-noautorotate',
         '-i',
         inputPath,
-        `-filter_complex`,
+        '-filter_complex',
         `[0:v]fps=1,split[enc][an];[an]scdet=threshold=100,metadata=print:file=${scoresPath}[scored]`,
         '-map',
         '[enc]',
@@ -122,25 +129,26 @@ describe('VideoFrameExtractionConfig', () => {
         '1',
         '-bf',
         '0',
-        '-qp',
+        '-crf',
         '34',
+        '-sc_threshold:v',
+        '0',
         ...hlsMuxerTail,
       ]);
     });
 
     it('still scales an odd-dimensioned low-res source for encoder parity (SW path)', () => {
-      const args = getExtractionCommand({ accel: TranscodeHardwareAcceleration.Disabled }, lowResOddVideoStream);
+      const args = getFrameSamplingCommand({ accel: TranscodeHardwareAcceleration.Disabled }, lowResOddVideoStream);
 
       expect(args).toEqual([
         '-nostdin',
         '-nostats',
         '-v',
         'verbose',
-        '-noautorotate',
         '-i',
         inputPath,
         '-filter_complex',
-        `[0:v]scale=1134:640,fps=1,split[enc][an];[an]scdet=threshold=100,metadata=print:file=${scoresPath}[scored]`,
+        `[0:v]scale=-2:640,fps=1,split[enc][an];[an]scdet=threshold=100,metadata=print:file=${scoresPath}[scored]`,
         '-map',
         '[enc]',
         '-c:v',
@@ -149,14 +157,16 @@ describe('VideoFrameExtractionConfig', () => {
         '1',
         '-bf',
         '0',
-        '-qp',
+        '-crf',
         '34',
+        '-sc_threshold:v',
+        '0',
         ...hlsMuxerTail,
       ]);
     });
 
     it('does not upscale a source already smaller than targetResolution (VAAPI HW path, for parity with SW)', () => {
-      const args = getExtractionCommand(
+      const args = getFrameSamplingCommand(
         { accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: true },
         lowResVideoStream,
       );
@@ -178,10 +188,7 @@ describe('VideoFrameExtractionConfig', () => {
         '-i',
         inputPath,
         '-filter_complex',
-        // Note the leading comma: getFilterOptions() returns an empty array when no scaling/tonemap is
-        // needed, and the HW filter_complex template joins it in unconditionally - this is pre-existing
-        // behavior in the HW path, unrelated to this fix.
-        `[0:v],fps=1,split[enc][an];[an]hwdownload,format=nv12,scdet=threshold=100,metadata=print:file=${scoresPath}[scored]`,
+        `[0:v]fps=1,split[enc][an];[an]hwdownload,format=nv12,scdet=threshold=100,metadata=print:file=${scoresPath}[scored]`,
         '-map',
         '[enc]',
         '-c:v',
@@ -190,12 +197,10 @@ describe('VideoFrameExtractionConfig', () => {
         '1',
         '-bf',
         '0',
-        '-qp:v',
-        '34',
         '-global_quality:v',
         '34',
         '-rc_mode',
-        '1',
+        '4',
         '-idr_interval',
         '0',
         '-low_power',
@@ -205,7 +210,7 @@ describe('VideoFrameExtractionConfig', () => {
     });
 
     it('builds the VAAPI command with hardware decoding', () => {
-      const args = getExtractionCommand({ accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: true });
+      const args = getFrameSamplingCommand({ accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: true });
 
       expect(args).toEqual([
         '-nostdin',
@@ -233,12 +238,10 @@ describe('VideoFrameExtractionConfig', () => {
         '1',
         '-bf',
         '0',
-        '-qp:v',
-        '34',
         '-global_quality:v',
         '34',
         '-rc_mode',
-        '1',
+        '4',
         '-idr_interval',
         '0',
         '-low_power',
@@ -248,7 +251,7 @@ describe('VideoFrameExtractionConfig', () => {
     });
 
     it('builds the VAAPI command with software decoding', () => {
-      const args = getExtractionCommand({ accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: false });
+      const args = getFrameSamplingCommand({ accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: false });
 
       expect(args).toEqual([
         '-nostdin',
@@ -271,12 +274,10 @@ describe('VideoFrameExtractionConfig', () => {
         '1',
         '-bf',
         '0',
-        '-qp:v',
-        '34',
         '-global_quality:v',
         '34',
         '-rc_mode',
-        '1',
+        '4',
         '-idr_interval',
         '0',
         '-low_power',
@@ -286,7 +287,7 @@ describe('VideoFrameExtractionConfig', () => {
     });
 
     it('builds the QSV command with hardware decoding', () => {
-      const args = getExtractionCommand({ accel: TranscodeHardwareAcceleration.Qsv, accelDecode: true });
+      const args = getFrameSamplingCommand({ accel: TranscodeHardwareAcceleration.Qsv, accelDecode: true });
 
       expect(args).toEqual([
         '-nostdin',
@@ -316,7 +317,7 @@ describe('VideoFrameExtractionConfig', () => {
         '1',
         '-bf',
         '0',
-        '-q:v',
+        '-global_quality:v',
         '34',
         '-idr_interval',
         '0',
@@ -327,7 +328,7 @@ describe('VideoFrameExtractionConfig', () => {
     });
 
     it('builds the QSV command with software decoding', () => {
-      const args = getExtractionCommand({ accel: TranscodeHardwareAcceleration.Qsv, accelDecode: false });
+      const args = getFrameSamplingCommand({ accel: TranscodeHardwareAcceleration.Qsv, accelDecode: false });
 
       expect(args).toEqual([
         '-nostdin',
@@ -350,7 +351,7 @@ describe('VideoFrameExtractionConfig', () => {
         '1',
         '-bf',
         '0',
-        '-q:v',
+        '-global_quality:v',
         '34',
         '-idr_interval',
         '0',
@@ -361,7 +362,7 @@ describe('VideoFrameExtractionConfig', () => {
     });
 
     it('builds the NVENC command with hardware decoding, without -low_power (VAAPI/QSV-only flag)', () => {
-      const args = getExtractionCommand({ accel: TranscodeHardwareAcceleration.Nvenc, accelDecode: true });
+      const args = getFrameSamplingCommand({ accel: TranscodeHardwareAcceleration.Nvenc, accelDecode: true });
 
       expect(args).toEqual([
         '-nostdin',
@@ -396,7 +397,7 @@ describe('VideoFrameExtractionConfig', () => {
     });
 
     it('builds the NVENC command with software decoding, without -low_power (VAAPI/QSV-only flag)', () => {
-      const args = getExtractionCommand({ accel: TranscodeHardwareAcceleration.Nvenc, accelDecode: false });
+      const args = getFrameSamplingCommand({ accel: TranscodeHardwareAcceleration.Nvenc, accelDecode: false });
 
       expect(args).toEqual([
         '-nostdin',
@@ -428,7 +429,7 @@ describe('VideoFrameExtractionConfig', () => {
     });
 
     it('builds the RKMPP command with hardware decoding, without an IDR flag or -low_power', () => {
-      const args = getExtractionCommand({ accel: TranscodeHardwareAcceleration.Rkmpp, accelDecode: true });
+      const args = getFrameSamplingCommand({ accel: TranscodeHardwareAcceleration.Rkmpp, accelDecode: true });
 
       expect(args).toEqual([
         '-nostdin',
@@ -463,7 +464,7 @@ describe('VideoFrameExtractionConfig', () => {
     });
 
     it('builds the VAAPI command with a tonemap filter chain for HDR source content', () => {
-      const args = getExtractionCommand(
+      const args = getFrameSamplingCommand(
         { accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: true },
         hdrVideoStream,
       );
@@ -496,12 +497,10 @@ describe('VideoFrameExtractionConfig', () => {
         '1',
         '-bf',
         '0',
-        '-qp:v',
-        '34',
         '-global_quality:v',
         '34',
         '-rc_mode',
-        '1',
+        '4',
         '-idr_interval',
         '0',
         '-low_power',
@@ -511,7 +510,7 @@ describe('VideoFrameExtractionConfig', () => {
     });
 
     it('builds the NVENC command with a single tonemap_cuda filter for HDR source content', () => {
-      const args = getExtractionCommand(
+      const args = getFrameSamplingCommand(
         { accel: TranscodeHardwareAcceleration.Nvenc, accelDecode: true },
         hdrVideoStream,
       );
