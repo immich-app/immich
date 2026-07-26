@@ -20,6 +20,14 @@ export function asHumanReadable(bytes: number, precision = 1): string {
     }
   }
 
+  // Rounding for display can reach a full 1024 of the chosen unit, which that
+  // unit cannot hold: 1 MiB - 1 byte would render as "1024.0 KiB". Promote to
+  // the next unit instead.
+  if (magnitude + 1 < units.length && Number(remainder.toFixed(magnitude === 0 ? 0 : precision)) >= 1024) {
+    magnitude++;
+    remainder /= 1024;
+  }
+
   return `${remainder.toFixed(magnitude == 0 ? 0 : precision)} ${units[magnitude]}`;
 }
 
