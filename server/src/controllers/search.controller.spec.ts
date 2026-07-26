@@ -130,7 +130,6 @@ describe(SearchController.name, () => {
       );
     });
 
-
     it('should reject an unknown key in the filter', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/search/metadata')
