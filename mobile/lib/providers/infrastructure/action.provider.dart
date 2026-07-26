@@ -7,12 +7,10 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
-import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart' show assetExifProvider;
 import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
@@ -53,7 +51,6 @@ class ActionNotifier extends Notifier<void> {
   final Logger _logger = Logger('ActionNotifier');
   late ActionService _service;
   late ForegroundUploadService _foregroundUploadService;
-  late AssetService _assetService;
 
   ActionNotifier() : super();
 
@@ -61,7 +58,6 @@ class ActionNotifier extends Notifier<void> {
   void build() {
     _foregroundUploadService = ref.watch(foregroundUploadServiceProvider);
     _service = ref.watch(actionServiceProvider);
-    _assetService = ref.watch(assetServiceProvider);
   }
 
   List<String> _getRemoteIdsForSource(ActionSource source) {
@@ -89,21 +85,6 @@ class ActionNotifier extends Notifier<void> {
   List<String> _getOwnedRemoteIdsForSource(ActionSource source) {
     final ownerId = ref.read(currentUserProvider)?.id;
     return _getAssets(source).whereType<RemoteAsset>().ownedAssets(ownerId).toIds().toList(growable: false);
-  }
-
-  List<RemoteAsset> _getOwnedRemoteAssetsForSource(ActionSource source) {
-    final ownerId = ref.read(currentUserProvider)?.id;
-    return _getIdsForSource<RemoteAsset>(source).ownedAssets(ownerId).toList();
-  }
-
-  Iterable<T> _getIdsForSource<T extends BaseAsset>(ActionSource source) {
-    final Set<BaseAsset> assets = _getAssets(source);
-    return switch (T) {
-          const (RemoteAsset) => assets.whereType<RemoteAsset>(),
-          const (LocalAsset) => assets.whereType<LocalAsset>(),
-          _ => const [],
-        }
-        as Iterable<T>;
   }
 
   Set<BaseAsset> _getAssets(ActionSource source) {
@@ -435,35 +416,6 @@ class ActionNotifier extends Notifier<void> {
     } catch (error, stack) {
       _logger.severe('Failed to update rating for asset', error, stack);
       return ActionResult(count: 1, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> stack(String userId, ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    try {
-      await _service.stack(userId, ids);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to stack assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> unStack(ActionSource source) async {
-    final assets = _getOwnedRemoteAssetsForSource(source);
-    try {
-      await _service.unStack(assets.map((e) => e.stackId).nonNulls.toList());
-      if (source == ActionSource.viewer) {
-        final updatedParent = await _assetService.getRemoteAsset(assets.first.id);
-        if (updatedParent != null) {
-          ref.read(assetViewerProvider.notifier).setAsset(updatedParent);
-        }
-      }
-
-      return ActionResult(count: assets.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to unstack assets', error, stack);
-      return ActionResult(count: assets.length, success: false);
     }
   }
 
