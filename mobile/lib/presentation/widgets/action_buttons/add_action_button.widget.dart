@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
+import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -17,11 +18,10 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_ui/immich_ui.dart';
 
-enum AddToMenuItem { album, lockedFolder }
+enum AddToMenuItem { album }
 
 class AddActionButton extends ConsumerStatefulWidget {
   const AddActionButton({super.key, this.originalTheme});
@@ -37,9 +37,6 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
     switch (selected) {
       case AddToMenuItem.album:
         _openAlbumSelector();
-        break;
-      case AddToMenuItem.lockedFolder:
-        performMoveToLockFolderAction(context, ref, source: ActionSource.viewer);
         break;
     }
   }
@@ -72,12 +69,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
           child: Text("move_to".tr(), style: context.textTheme.labelMedium),
         ),
         const ActionMenuItem(action: ArchiveAction(source: .viewer)),
-        BaseActionButton(
-          iconData: Icons.lock_outline,
-          label: "locked_folder".tr(),
-          menuItem: true,
-          onPressed: () => _handleMenuSelection(AddToMenuItem.lockedFolder),
-        ),
+        const ActionMenuItem(action: LockAction(source: .viewer)),
       ],
     ];
   }

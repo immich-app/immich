@@ -68,21 +68,6 @@ class ActionService {
     unawaited(context.pushRoute(SharedLinkEditRoute(assetsList: remoteIds)));
   }
 
-  Future<void> moveToLockFolder(List<String> remoteIds, List<String> localIds) async {
-    await _assetApiRepository.updateVisibility(remoteIds, .locked);
-    await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.locked);
-
-    // Ask user if they want to delete local copies
-    if (localIds.isNotEmpty) {
-      await _deleteLocalAssets(localIds);
-    }
-  }
-
-  Future<void> removeFromLockFolder(List<String> remoteIds) async {
-    await _assetApiRepository.updateVisibility(remoteIds, .timeline);
-    await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.timeline);
-  }
-
   Future<void> trash(List<String> remoteIds) async {
     await _assetApiRepository.delete(remoteIds, false);
     await _remoteAssetRepository.trash(remoteIds);

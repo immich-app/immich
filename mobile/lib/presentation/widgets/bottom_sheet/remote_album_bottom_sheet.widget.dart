@@ -4,6 +4,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
@@ -12,7 +13,6 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permane
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
@@ -105,7 +105,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
                 : const DeletePermanentActionButton(source: ActionSource.timeline),
             const EditDateTimeActionButton(source: ActionSource.timeline),
             const EditLocationActionButton(source: ActionSource.timeline),
-            const MoveToLockFolderActionButton(source: ActionSource.timeline),
+            const ActionColumnButton(action: LockAction(source: .timeline)),
             const ActionColumnButton(action: StackAction(source: .timeline)),
           ],
         ],

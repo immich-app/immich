@@ -167,6 +167,7 @@ class ServiceMocks {
     when(asset.trash).thenAnswer((_) async {});
     when(asset.delete).thenAnswer((_) async {});
     when(asset.applyEdits).thenAnswer((_) async {});
+    when(asset.deleteLocal).thenAnswer((_) async => 0);
   }
 
   void _stubRemoteAlbumService() {
@@ -342,6 +343,9 @@ extension type const AssetServiceStub(MockAssetService service) implements Stub<
 
   Future<void> Function() get applyEdits =>
       () => service.applyEdits(any(), any());
+
+  Future<int> Function() get deleteLocal =>
+      () => service.deleteLocal(any());
 }
 
 extension type const RemoteAlbumServiceStub(MockRemoteAlbumService service) implements Stub<MockRemoteAlbumService> {

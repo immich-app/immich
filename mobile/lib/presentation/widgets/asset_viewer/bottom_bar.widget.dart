@@ -4,7 +4,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
@@ -22,6 +22,15 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/widgets/asset_viewer/video_controls.dart';
+import 'package:immich_ui/immich_ui.dart';
+
+// Resolved here rather than as an ActionColumnButton so a hidden restore
+// takes no slot in the spaceEvenly row below.
+List<Widget> _actionColumnButtons(BuildContext context, WidgetRef ref, List<ActionBuilder> actions) => actions
+    .map((a) => a.build(context, ref))
+    .nonNulls
+    .map((data) => ImmichColumnButton(icon: data.icon, label: data.label, onPressed: data.onAction))
+    .toList(growable: false);
 
 class ViewerBottomBar extends ConsumerWidget {
   const ViewerBottomBar({super.key});
@@ -44,7 +53,7 @@ class ViewerBottomBar extends ConsumerWidget {
     final originalTheme = context.themeData;
 
     final actions = <Widget>[
-      const ActionColumnButton(action: RestoreAction(source: .viewer)),
+      ..._actionColumnButtons(context, ref, const [RestoreAction(source: .viewer)]),
       const ShareActionButton(source: .viewer),
 
       if (!isInLockedView) ...[

@@ -118,29 +118,6 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> moveToLockFolder(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    final localIds = _getLocalIdsForSource(source, ignoreLocalOnly: true);
-    try {
-      await _service.moveToLockFolder(ids, localIds);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to move assets to lock folder', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> removeFromLockFolder(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    try {
-      await _service.removeFromLockFolder(ids);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to remove assets from lock folder', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
   Future<ActionResult> trash(ActionSource source) async {
     final ids = _getOwnedRemoteIdsForSource(source);
 
