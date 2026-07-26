@@ -54,6 +54,7 @@ class PresentationContext {
     gCastServiceProvider.overrideWithValue(service.cast),
     serverInfoServiceProvider.overrideWithValue(service.serverInfo),
     inLockedViewProvider.overrideWithValue(false),
+    remoteAssetRepositoryProvider.overrideWithValue(repository.remoteAsset.repo),
   ];
 
   List<Override> selected(Set<BaseAsset> assets) => [

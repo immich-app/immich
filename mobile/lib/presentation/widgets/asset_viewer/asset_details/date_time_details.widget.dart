@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -28,16 +29,15 @@ class DateTimeDetails extends ConsumerWidget {
     final asset = this.asset;
     final exifInfo = this.exifInfo;
     final isOwner = ref.watch(currentUserProvider)?.id == (asset is RemoteAsset ? asset.ownerId : null);
+    final editDateTime = const EditDateTimeAction(source: .viewer).create(context, ref);
 
     return Column(
       children: [
         SheetTile(
           title: _getDateTime(context, asset, exifInfo),
           titleStyle: context.textTheme.labelLarge,
-          trailing: asset.hasRemote && isOwner ? const Icon(Icons.edit, size: 18) : null,
-          onTap: asset.hasRemote && isOwner
-              ? () async => await ref.read(actionProvider.notifier).editDateTime(ActionSource.viewer, context)
-              : null,
+          trailing: editDateTime == null ? null : const Icon(Icons.edit, size: 18),
+          onTap: editDateTime?.onAction,
         ),
         if (exifInfo != null) _SheetAssetDescription(exif: exifInfo, isEditable: isOwner),
       ],
