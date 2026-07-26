@@ -43,7 +43,7 @@ class FavoriteAction extends AssetActionBuilder {
       return;
     }
 
-    final _State(:shouldFavorite, :assetIds) = state;
+    final (:shouldFavorite, :assetIds) = state;
     final message = shouldFavorite
         ? context.t.favorite_action_prompt(count: assetIds.length)
         : context.t.unfavorite_action_prompt(count: assetIds.length);
