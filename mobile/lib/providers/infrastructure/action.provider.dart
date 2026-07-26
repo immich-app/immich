@@ -21,7 +21,6 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/utils/semver.dart';
-import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
 import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 
@@ -64,24 +63,6 @@ class ActionNotifier extends Notifier<void> {
     return _getAssets(source).whereType<RemoteAsset>().toIds().toList(growable: false);
   }
 
-  List<String> _getLocalIdsForSource(ActionSource source, {bool ignoreLocalOnly = false}) {
-    final Set<BaseAsset> assets = _getAssets(source);
-    final List<String> localIds = [];
-
-    for (final asset in assets) {
-      if (ignoreLocalOnly && asset.storage != AssetState.merged) {
-        continue;
-      }
-      if (asset is LocalAsset) {
-        localIds.add(asset.id);
-      } else if (asset is RemoteAsset && asset.localId != null) {
-        localIds.add(asset.localId!);
-      }
-    }
-
-    return localIds;
-  }
-
   List<String> _getOwnedRemoteIdsForSource(ActionSource source) {
     final ownerId = ref.read(currentUserProvider)?.id;
     return _getAssets(source).whereType<RemoteAsset>().ownedAssets(ownerId).toIds().toList(growable: false);
@@ -118,18 +99,6 @@ class ActionNotifier extends Notifier<void> {
     }
   }
 
-  Future<ActionResult> trash(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-
-    try {
-      await _service.trash(ids);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to trash assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
   Future<ActionResult> emptyTrash(String userId) async {
     try {
       final count = await _service.emptyTrash(userId);
@@ -147,60 +116,6 @@ class ActionNotifier extends Notifier<void> {
     } catch (error, stack) {
       _logger.severe('Failed to restore all trash assets', error, stack);
       return ActionResult(count: 0, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> trashRemoteAndDeleteLocal(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    final localIds = _getLocalIdsForSource(source);
-    try {
-      await _service.trashRemoteAndDeleteLocal(ids, localIds);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to delete assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> deleteRemoteAndLocal(ActionSource source) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    final localIds = _getLocalIdsForSource(source);
-    try {
-      await _service.deleteRemoteAndLocal(ids, localIds);
-      return ActionResult(count: ids.length, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to delete assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult?> deleteLocal(ActionSource source, BuildContext context) async {
-    final assets = _getAssets(source);
-    final bool? backedUpOnly = assets.every((asset) => asset.storage == AssetState.merged)
-        ? true
-        : await showDialog<bool>(
-            context: context,
-            builder: (BuildContext context) => DeleteLocalOnlyDialog(onDeleteLocal: (_) {}),
-          );
-
-    if (backedUpOnly == null) {
-      // User cancelled the dialog
-      return null;
-    }
-
-    final List<String> ids;
-    if (backedUpOnly) {
-      ids = assets.where((asset) => asset.storage == AssetState.merged).map((asset) => asset.localId!).toList();
-    } else {
-      ids = _getLocalIdsForSource(source);
-    }
-
-    try {
-      final deletedCount = await _service.deleteLocal(ids);
-      return ActionResult(count: deletedCount, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to delete assets', error, stack);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 

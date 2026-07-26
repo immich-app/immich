@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
@@ -66,7 +67,8 @@ class _LocalAlbumBottomSheetState extends ConsumerState<LocalAlbumBottomSheet> {
       shouldCloseOnMinExtent: false,
       actions: const [
         ShareActionButton(source: ActionSource.timeline),
-        DeleteLocalActionButton(source: ActionSource.timeline),
+        ActionColumnButton(action: DeleteAction(source: .timeline)),
+        ActionColumnButton(action: CleanupLocalAction(source: .timeline)),
         UploadActionButton(source: ActionSource.timeline),
       ],
       slivers: [

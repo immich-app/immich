@@ -6,14 +6,9 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/tag.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
-import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
@@ -31,10 +26,8 @@ final actionServiceProvider = Provider<ActionService>(
   (ref) => ActionService(
     ref.watch(assetApiRepositoryProvider),
     ref.watch(remoteAssetRepositoryProvider),
-    ref.watch(localAssetRepository),
     ref.watch(driftAlbumApiRepositoryProvider),
     ref.watch(remoteAlbumRepository),
-    ref.watch(trashedLocalAssetRepository),
     ref.watch(assetMediaRepositoryProvider),
     ref.watch(downloadRepositoryProvider),
     ref.watch(tagServiceProvider),
@@ -44,10 +37,8 @@ final actionServiceProvider = Provider<ActionService>(
 class ActionService {
   final AssetApiRepository _assetApiRepository;
   final RemoteAssetRepository _remoteAssetRepository;
-  final DriftLocalAssetRepository _localAssetRepository;
   final DriftAlbumApiRepository _albumApiRepository;
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
-  final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
   final DownloadRepository _downloadRepository;
   final TagService _tagService;
@@ -55,10 +46,8 @@ class ActionService {
   const ActionService(
     this._assetApiRepository,
     this._remoteAssetRepository,
-    this._localAssetRepository,
     this._albumApiRepository,
     this._remoteAlbumRepository,
-    this._trashedLocalAssetRepository,
     this._assetMediaRepository,
     this._downloadRepository,
     this._tagService,
@@ -66,11 +55,6 @@ class ActionService {
 
   Future<void> shareLink(List<String> remoteIds, BuildContext context) async {
     unawaited(context.pushRoute(SharedLinkEditRoute(assetsList: remoteIds)));
-  }
-
-  Future<void> trash(List<String> remoteIds) async {
-    await _assetApiRepository.delete(remoteIds, false);
-    await _remoteAssetRepository.trash(remoteIds);
   }
 
   Future<int> emptyTrash(String userId) async {
@@ -83,28 +67,6 @@ class ActionService {
     final count = await _assetApiRepository.restoreAllTrash();
     await _remoteAssetRepository.restoreAllTrash(userId);
     return count;
-  }
-
-  Future<void> trashRemoteAndDeleteLocal(List<String> remoteIds, List<String> localIds) async {
-    await _assetApiRepository.delete(remoteIds, false);
-    await _remoteAssetRepository.trash(remoteIds);
-
-    if (localIds.isNotEmpty) {
-      await _deleteLocalAssets(localIds);
-    }
-  }
-
-  Future<void> deleteRemoteAndLocal(List<String> remoteIds, List<String> localIds) async {
-    await _assetApiRepository.delete(remoteIds, true);
-    await _remoteAssetRepository.delete(remoteIds);
-
-    if (localIds.isNotEmpty) {
-      await _deleteLocalAssets(localIds);
-    }
-  }
-
-  Future<int> deleteLocal(List<String> localIds) async {
-    return await _deleteLocalAssets(localIds);
   }
 
   Future<bool> editLocation(List<String> remoteIds, BuildContext context) async {
@@ -269,18 +231,5 @@ class ActionService {
     } else {
       await _assetApiRepository.editAsset(remoteId, edits);
     }
-  }
-
-  Future<int> _deleteLocalAssets(List<String> localIds) async {
-    final deletedIds = await _assetMediaRepository.deleteAll(localIds);
-    if (deletedIds.isEmpty) {
-      return 0;
-    }
-    if (CurrentPlatform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false)) {
-      await _trashedLocalAssetRepository.applyTrashedAssets(deletedIds);
-    } else {
-      await _localAssetRepository.delete(deletedIds);
-    }
-    return deletedIds.length;
   }
 }
