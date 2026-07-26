@@ -130,13 +130,6 @@ describe(SearchController.name, () => {
       );
     });
 
-    it('should reject an unknown field on the request body', async () => {
-      const { status, body } = await request(ctx.getHttpServer())
-        .post('/search/metadata')
-        .send({ filter: {}, oderBy: { field: 'rating' } });
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.validationError([{ path: [], message: 'Unrecognized key: "oderBy"' }]));
-    });
 
     it('should reject an unknown key in the filter', async () => {
       const { status, body } = await request(ctx.getHttpServer())

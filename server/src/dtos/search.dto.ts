@@ -353,7 +353,7 @@ const RandomSearchBaseSchema = BaseSearchWithResultsSchema.extend({
   filter: filterField,
 });
 
-const RandomSearchSchema = withShapeExclusivity(RandomSearchBaseSchema.strict()).meta({ id: 'RandomSearchDto' });
+const RandomSearchSchema = withShapeExclusivity(RandomSearchBaseSchema).meta({ id: 'RandomSearchDto' });
 
 const MetadataSearchSchema = withShapeExclusivity(
   RandomSearchBaseSchema.extend({
@@ -369,14 +369,14 @@ const MetadataSearchSchema = withShapeExclusivity(
     page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
     orderBy: SearchOrderSchema.optional().meta(ADDED_V3_1),
     cursor: cursorField,
-  }).strict(),
+  }),
 ).meta({ id: 'MetadataSearchDto' });
 
 const StatisticsSearchSchema = withShapeExclusivity(
   BaseSearchSchema.extend({
     description: z.string().trim().optional().describe('Filter by description text').meta(DEPRECATED_FLAT_FIELD),
     filter: filterField,
-  }).strict(),
+  }),
 ).meta({ id: 'StatisticsSearchDto' });
 
 const SmartSearchSchema = withShapeExclusivity(
@@ -387,7 +387,7 @@ const SmartSearchSchema = withShapeExclusivity(
     language: z.string().optional().describe('Search language code'),
     page: z.int().min(1).optional().describe('Page number').meta(DEPRECATED_FLAT_FIELD),
     filter: filterField,
-  }).strict(),
+  }),
 ).meta({ id: 'SmartSearchDto' });
 
 export class RandomSearchDto extends createZodDto(RandomSearchSchema) {}

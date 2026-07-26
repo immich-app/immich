@@ -20717,7 +20717,6 @@
         "type": "object"
       },
       "MetadataSearchDto": {
-        "additionalProperties": false,
         "properties": {
           "albumIds": {
             "deprecated": true,
@@ -23152,7 +23151,6 @@
         "type": "object"
       },
       "RandomSearchDto": {
-        "additionalProperties": false,
         "properties": {
           "albumIds": {
             "deprecated": true,
@@ -25341,7 +25339,6 @@
         "type": "object"
       },
       "SmartSearchDto": {
-        "additionalProperties": false,
         "properties": {
           "albumIds": {
             "deprecated": true,
@@ -26090,7 +26087,6 @@
         "type": "object"
       },
       "StatisticsSearchDto": {
-        "additionalProperties": false,
         "properties": {
           "albumIds": {
             "deprecated": true,
