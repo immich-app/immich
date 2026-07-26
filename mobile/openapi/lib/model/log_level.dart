@@ -11,37 +11,33 @@
 part of openapi.api;
 
 /// Log level
-class LogLevel {
-  /// Instantiate a new enum with the provided [value].
-  const LogLevel._(this.value);
+enum LogLevel {
+  verbose._(r'verbose'),
+  debug._(r'debug'),
+  log._(r'log'),
+  warn._(r'warn'),
+  error._(r'error'),
+  fatal._(r'fatal'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const LogLevel._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const verbose = LogLevel._(r'verbose');
-  static const debug = LogLevel._(r'debug');
-  static const log = LogLevel._(r'log');
-  static const warn = LogLevel._(r'warn');
-  static const error = LogLevel._(r'error');
-  static const fatal = LogLevel._(r'fatal');
-
-  /// List of all possible values in this [enum][LogLevel].
-  static const values = <LogLevel>[
-    verbose,
-    debug,
-    log,
-    warn,
-    error,
-    fatal,
-  ];
-
+  /// Returns the instance of [LogLevel] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static LogLevel? fromJson(dynamic value) => LogLevelTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [LogLevel]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<LogLevel> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <LogLevel>[];
     if (json is List && json.isNotEmpty) {
@@ -63,9 +59,11 @@ class LogLevelTypeTransformer {
 
   const LogLevelTypeTransformer._();
 
-  String encode(LogLevel data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(LogLevel data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a LogLevel.
+  /// Returns the instance of [LogLevel] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -74,6 +72,9 @@ class LogLevelTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   LogLevel? decode(dynamic data, {bool allowNull = true}) {
+    if (data is LogLevel) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'verbose': return LogLevel.verbose;
@@ -91,7 +92,7 @@ class LogLevelTypeTransformer {
     return null;
   }
 
-  /// Singleton [LogLevelTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static LogLevelTypeTransformer? _instance;
 }
 

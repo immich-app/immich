@@ -11,29 +11,29 @@
 part of openapi.api;
 
 /// Shared link type
-class SharedLinkType {
-  /// Instantiate a new enum with the provided [value].
-  const SharedLinkType._(this.value);
+enum SharedLinkType {
+  ALBUM._(r'ALBUM'),
+  INDIVIDUAL._(r'INDIVIDUAL'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const SharedLinkType._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const ALBUM = SharedLinkType._(r'ALBUM');
-  static const INDIVIDUAL = SharedLinkType._(r'INDIVIDUAL');
-
-  /// List of all possible values in this [enum][SharedLinkType].
-  static const values = <SharedLinkType>[
-    ALBUM,
-    INDIVIDUAL,
-  ];
-
+  /// Returns the instance of [SharedLinkType] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static SharedLinkType? fromJson(dynamic value) => SharedLinkTypeTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [SharedLinkType]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<SharedLinkType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <SharedLinkType>[];
     if (json is List && json.isNotEmpty) {
@@ -55,9 +55,11 @@ class SharedLinkTypeTypeTransformer {
 
   const SharedLinkTypeTypeTransformer._();
 
-  String encode(SharedLinkType data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(SharedLinkType data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a SharedLinkType.
+  /// Returns the instance of [SharedLinkType] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -66,6 +68,9 @@ class SharedLinkTypeTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   SharedLinkType? decode(dynamic data, {bool allowNull = true}) {
+    if (data is SharedLinkType) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'ALBUM': return SharedLinkType.ALBUM;
@@ -79,7 +84,7 @@ class SharedLinkTypeTypeTransformer {
     return null;
   }
 
-  /// Singleton [SharedLinkTypeTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static SharedLinkTypeTypeTransformer? _instance;
 }
 

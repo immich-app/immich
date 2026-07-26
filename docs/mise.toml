@@ -28,4 +28,4 @@ run = "prettier --write ."
 run = "wrangler pages deploy build --project-name=${PROJECT_NAME} --branch=${BRANCH_NAME}"
 
 [tools]
-wrangler = "4.110.0"
+wrangler = "4.111.0"

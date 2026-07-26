@@ -91,7 +91,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
         }
       case AppLifecycleState.paused:
         _shouldPlayOnForeground = await _controller?.isPlaying() ?? true;
-        if (_shouldPlayOnForeground) {
+        if (_shouldPlayOnForeground && mounted) {
           await _notifier.pause();
         }
       default:
@@ -268,10 +268,13 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       return;
     }
 
-    await _notifier.load(source);
+    // Grab refs to prevent reading after dispose
     final loopVideo = ref.read(appConfigProvider).viewer.loopVideo;
-    await _notifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
-    await _notifier.setVolume(1);
+    final localNotifier = _notifier;
+
+    await localNotifier.load(source);
+    await localNotifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
+    await localNotifier.setVolume(1);
   }
 
   void _initController(NativeVideoPlayerController nc) {

@@ -11,335 +11,182 @@
 part of openapi.api;
 
 /// List of permissions
-class Permission {
-  /// Instantiate a new enum with the provided [value].
-  const Permission._(this.value);
+enum Permission {
+  all._(r'all'),
+  activityPeriodCreate._(r'activity.create'),
+  activityPeriodRead._(r'activity.read'),
+  activityPeriodUpdate._(r'activity.update'),
+  activityPeriodDelete._(r'activity.delete'),
+  activityPeriodStatistics._(r'activity.statistics'),
+  apiKeyPeriodCreate._(r'apiKey.create'),
+  apiKeyPeriodRead._(r'apiKey.read'),
+  apiKeyPeriodUpdate._(r'apiKey.update'),
+  apiKeyPeriodDelete._(r'apiKey.delete'),
+  assetPeriodRead._(r'asset.read'),
+  assetPeriodUpdate._(r'asset.update'),
+  assetPeriodDelete._(r'asset.delete'),
+  assetPeriodStatistics._(r'asset.statistics'),
+  assetPeriodShare._(r'asset.share'),
+  assetPeriodView._(r'asset.view'),
+  assetPeriodDownload._(r'asset.download'),
+  assetPeriodUpload._(r'asset.upload'),
+  assetPeriodCopy._(r'asset.copy'),
+  assetPeriodDerive._(r'asset.derive'),
+  assetPeriodEditPeriodGet._(r'asset.edit.get'),
+  assetPeriodEditPeriodCreate._(r'asset.edit.create'),
+  assetPeriodEditPeriodDelete._(r'asset.edit.delete'),
+  albumPeriodCreate._(r'album.create'),
+  albumPeriodRead._(r'album.read'),
+  albumPeriodUpdate._(r'album.update'),
+  albumPeriodDelete._(r'album.delete'),
+  albumPeriodStatistics._(r'album.statistics'),
+  albumPeriodShare._(r'album.share'),
+  albumPeriodDownload._(r'album.download'),
+  albumAssetPeriodCreate._(r'albumAsset.create'),
+  albumAssetPeriodDelete._(r'albumAsset.delete'),
+  albumUserPeriodCreate._(r'albumUser.create'),
+  albumUserPeriodUpdate._(r'albumUser.update'),
+  albumUserPeriodDelete._(r'albumUser.delete'),
+  authPeriodChangePassword._(r'auth.changePassword'),
+  authDevicePeriodDelete._(r'authDevice.delete'),
+  archivePeriodRead._(r'archive.read'),
+  backupPeriodList._(r'backup.list'),
+  backupPeriodDownload._(r'backup.download'),
+  backupPeriodUpload._(r'backup.upload'),
+  backupPeriodDelete._(r'backup.delete'),
+  duplicatePeriodRead._(r'duplicate.read'),
+  duplicatePeriodDelete._(r'duplicate.delete'),
+  facePeriodCreate._(r'face.create'),
+  facePeriodRead._(r'face.read'),
+  facePeriodUpdate._(r'face.update'),
+  facePeriodDelete._(r'face.delete'),
+  folderPeriodRead._(r'folder.read'),
+  jobPeriodCreate._(r'job.create'),
+  jobPeriodRead._(r'job.read'),
+  libraryPeriodCreate._(r'library.create'),
+  libraryPeriodRead._(r'library.read'),
+  libraryPeriodUpdate._(r'library.update'),
+  libraryPeriodDelete._(r'library.delete'),
+  libraryPeriodStatistics._(r'library.statistics'),
+  timelinePeriodRead._(r'timeline.read'),
+  timelinePeriodDownload._(r'timeline.download'),
+  maintenance._(r'maintenance'),
+  mapPeriodRead._(r'map.read'),
+  mapPeriodSearch._(r'map.search'),
+  memoryPeriodCreate._(r'memory.create'),
+  memoryPeriodRead._(r'memory.read'),
+  memoryPeriodUpdate._(r'memory.update'),
+  memoryPeriodDelete._(r'memory.delete'),
+  memoryPeriodStatistics._(r'memory.statistics'),
+  memoryAssetPeriodCreate._(r'memoryAsset.create'),
+  memoryAssetPeriodDelete._(r'memoryAsset.delete'),
+  notificationPeriodCreate._(r'notification.create'),
+  notificationPeriodRead._(r'notification.read'),
+  notificationPeriodUpdate._(r'notification.update'),
+  notificationPeriodDelete._(r'notification.delete'),
+  partnerPeriodCreate._(r'partner.create'),
+  partnerPeriodRead._(r'partner.read'),
+  partnerPeriodUpdate._(r'partner.update'),
+  partnerPeriodDelete._(r'partner.delete'),
+  personPeriodCreate._(r'person.create'),
+  personPeriodRead._(r'person.read'),
+  personPeriodUpdate._(r'person.update'),
+  personPeriodDelete._(r'person.delete'),
+  personPeriodStatistics._(r'person.statistics'),
+  personPeriodMerge._(r'person.merge'),
+  personPeriodReassign._(r'person.reassign'),
+  pinCodePeriodCreate._(r'pinCode.create'),
+  pinCodePeriodUpdate._(r'pinCode.update'),
+  pinCodePeriodDelete._(r'pinCode.delete'),
+  pluginPeriodCreate._(r'plugin.create'),
+  pluginPeriodRead._(r'plugin.read'),
+  pluginPeriodUpdate._(r'plugin.update'),
+  pluginPeriodDelete._(r'plugin.delete'),
+  serverPeriodAbout._(r'server.about'),
+  serverPeriodApkLinks._(r'server.apkLinks'),
+  serverPeriodStorage._(r'server.storage'),
+  serverPeriodStatistics._(r'server.statistics'),
+  serverPeriodVersionCheck._(r'server.versionCheck'),
+  serverLicensePeriodRead._(r'serverLicense.read'),
+  serverLicensePeriodUpdate._(r'serverLicense.update'),
+  serverLicensePeriodDelete._(r'serverLicense.delete'),
+  sessionPeriodCreate._(r'session.create'),
+  sessionPeriodRead._(r'session.read'),
+  sessionPeriodUpdate._(r'session.update'),
+  sessionPeriodDelete._(r'session.delete'),
+  sessionPeriodLock._(r'session.lock'),
+  sharedLinkPeriodCreate._(r'sharedLink.create'),
+  sharedLinkPeriodRead._(r'sharedLink.read'),
+  sharedLinkPeriodUpdate._(r'sharedLink.update'),
+  sharedLinkPeriodDelete._(r'sharedLink.delete'),
+  stackPeriodCreate._(r'stack.create'),
+  stackPeriodRead._(r'stack.read'),
+  stackPeriodUpdate._(r'stack.update'),
+  stackPeriodDelete._(r'stack.delete'),
+  syncPeriodStream._(r'sync.stream'),
+  syncCheckpointPeriodRead._(r'syncCheckpoint.read'),
+  syncCheckpointPeriodUpdate._(r'syncCheckpoint.update'),
+  syncCheckpointPeriodDelete._(r'syncCheckpoint.delete'),
+  systemConfigPeriodRead._(r'systemConfig.read'),
+  systemConfigPeriodUpdate._(r'systemConfig.update'),
+  systemMetadataPeriodRead._(r'systemMetadata.read'),
+  systemMetadataPeriodUpdate._(r'systemMetadata.update'),
+  tagPeriodCreate._(r'tag.create'),
+  tagPeriodRead._(r'tag.read'),
+  tagPeriodUpdate._(r'tag.update'),
+  tagPeriodDelete._(r'tag.delete'),
+  tagPeriodAsset._(r'tag.asset'),
+  userPeriodRead._(r'user.read'),
+  userPeriodUpdate._(r'user.update'),
+  userLicensePeriodCreate._(r'userLicense.create'),
+  userLicensePeriodRead._(r'userLicense.read'),
+  userLicensePeriodUpdate._(r'userLicense.update'),
+  userLicensePeriodDelete._(r'userLicense.delete'),
+  userOnboardingPeriodRead._(r'userOnboarding.read'),
+  userOnboardingPeriodUpdate._(r'userOnboarding.update'),
+  userOnboardingPeriodDelete._(r'userOnboarding.delete'),
+  userPreferencePeriodRead._(r'userPreference.read'),
+  userPreferencePeriodUpdate._(r'userPreference.update'),
+  userProfileImagePeriodCreate._(r'userProfileImage.create'),
+  userProfileImagePeriodRead._(r'userProfileImage.read'),
+  userProfileImagePeriodUpdate._(r'userProfileImage.update'),
+  userProfileImagePeriodDelete._(r'userProfileImage.delete'),
+  queuePeriodRead._(r'queue.read'),
+  queuePeriodUpdate._(r'queue.update'),
+  queueJobPeriodCreate._(r'queueJob.create'),
+  queueJobPeriodRead._(r'queueJob.read'),
+  queueJobPeriodUpdate._(r'queueJob.update'),
+  queueJobPeriodDelete._(r'queueJob.delete'),
+  workflowPeriodCreate._(r'workflow.create'),
+  workflowPeriodRead._(r'workflow.read'),
+  workflowPeriodUpdate._(r'workflow.update'),
+  workflowPeriodDelete._(r'workflow.delete'),
+  adminUserPeriodCreate._(r'adminUser.create'),
+  adminUserPeriodRead._(r'adminUser.read'),
+  adminUserPeriodUpdate._(r'adminUser.update'),
+  adminUserPeriodDelete._(r'adminUser.delete'),
+  adminSessionPeriodRead._(r'adminSession.read'),
+  adminAuthPeriodUnlinkAll._(r'adminAuth.unlinkAll'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const Permission._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const all = Permission._(r'all');
-  static const activityPeriodCreate = Permission._(r'activity.create');
-  static const activityPeriodRead = Permission._(r'activity.read');
-  static const activityPeriodUpdate = Permission._(r'activity.update');
-  static const activityPeriodDelete = Permission._(r'activity.delete');
-  static const activityPeriodStatistics = Permission._(r'activity.statistics');
-  static const apiKeyPeriodCreate = Permission._(r'apiKey.create');
-  static const apiKeyPeriodRead = Permission._(r'apiKey.read');
-  static const apiKeyPeriodUpdate = Permission._(r'apiKey.update');
-  static const apiKeyPeriodDelete = Permission._(r'apiKey.delete');
-  static const assetPeriodRead = Permission._(r'asset.read');
-  static const assetPeriodUpdate = Permission._(r'asset.update');
-  static const assetPeriodDelete = Permission._(r'asset.delete');
-  static const assetPeriodStatistics = Permission._(r'asset.statistics');
-  static const assetPeriodShare = Permission._(r'asset.share');
-  static const assetPeriodView = Permission._(r'asset.view');
-  static const assetPeriodDownload = Permission._(r'asset.download');
-  static const assetPeriodUpload = Permission._(r'asset.upload');
-  static const assetPeriodCopy = Permission._(r'asset.copy');
-  static const assetPeriodDerive = Permission._(r'asset.derive');
-  static const assetPeriodEditPeriodGet = Permission._(r'asset.edit.get');
-  static const assetPeriodEditPeriodCreate = Permission._(r'asset.edit.create');
-  static const assetPeriodEditPeriodDelete = Permission._(r'asset.edit.delete');
-  static const albumPeriodCreate = Permission._(r'album.create');
-  static const albumPeriodRead = Permission._(r'album.read');
-  static const albumPeriodUpdate = Permission._(r'album.update');
-  static const albumPeriodDelete = Permission._(r'album.delete');
-  static const albumPeriodStatistics = Permission._(r'album.statistics');
-  static const albumPeriodShare = Permission._(r'album.share');
-  static const albumPeriodDownload = Permission._(r'album.download');
-  static const albumAssetPeriodCreate = Permission._(r'albumAsset.create');
-  static const albumAssetPeriodDelete = Permission._(r'albumAsset.delete');
-  static const albumUserPeriodCreate = Permission._(r'albumUser.create');
-  static const albumUserPeriodUpdate = Permission._(r'albumUser.update');
-  static const albumUserPeriodDelete = Permission._(r'albumUser.delete');
-  static const authPeriodChangePassword = Permission._(r'auth.changePassword');
-  static const authDevicePeriodDelete = Permission._(r'authDevice.delete');
-  static const archivePeriodRead = Permission._(r'archive.read');
-  static const backupPeriodList = Permission._(r'backup.list');
-  static const backupPeriodDownload = Permission._(r'backup.download');
-  static const backupPeriodUpload = Permission._(r'backup.upload');
-  static const backupPeriodDelete = Permission._(r'backup.delete');
-  static const duplicatePeriodRead = Permission._(r'duplicate.read');
-  static const duplicatePeriodDelete = Permission._(r'duplicate.delete');
-  static const facePeriodCreate = Permission._(r'face.create');
-  static const facePeriodRead = Permission._(r'face.read');
-  static const facePeriodUpdate = Permission._(r'face.update');
-  static const facePeriodDelete = Permission._(r'face.delete');
-  static const folderPeriodRead = Permission._(r'folder.read');
-  static const jobPeriodCreate = Permission._(r'job.create');
-  static const jobPeriodRead = Permission._(r'job.read');
-  static const libraryPeriodCreate = Permission._(r'library.create');
-  static const libraryPeriodRead = Permission._(r'library.read');
-  static const libraryPeriodUpdate = Permission._(r'library.update');
-  static const libraryPeriodDelete = Permission._(r'library.delete');
-  static const libraryPeriodStatistics = Permission._(r'library.statistics');
-  static const timelinePeriodRead = Permission._(r'timeline.read');
-  static const timelinePeriodDownload = Permission._(r'timeline.download');
-  static const maintenance = Permission._(r'maintenance');
-  static const mapPeriodRead = Permission._(r'map.read');
-  static const mapPeriodSearch = Permission._(r'map.search');
-  static const memoryPeriodCreate = Permission._(r'memory.create');
-  static const memoryPeriodRead = Permission._(r'memory.read');
-  static const memoryPeriodUpdate = Permission._(r'memory.update');
-  static const memoryPeriodDelete = Permission._(r'memory.delete');
-  static const memoryPeriodStatistics = Permission._(r'memory.statistics');
-  static const memoryAssetPeriodCreate = Permission._(r'memoryAsset.create');
-  static const memoryAssetPeriodDelete = Permission._(r'memoryAsset.delete');
-  static const notificationPeriodCreate = Permission._(r'notification.create');
-  static const notificationPeriodRead = Permission._(r'notification.read');
-  static const notificationPeriodUpdate = Permission._(r'notification.update');
-  static const notificationPeriodDelete = Permission._(r'notification.delete');
-  static const partnerPeriodCreate = Permission._(r'partner.create');
-  static const partnerPeriodRead = Permission._(r'partner.read');
-  static const partnerPeriodUpdate = Permission._(r'partner.update');
-  static const partnerPeriodDelete = Permission._(r'partner.delete');
-  static const personPeriodCreate = Permission._(r'person.create');
-  static const personPeriodRead = Permission._(r'person.read');
-  static const personPeriodUpdate = Permission._(r'person.update');
-  static const personPeriodDelete = Permission._(r'person.delete');
-  static const personPeriodStatistics = Permission._(r'person.statistics');
-  static const personPeriodMerge = Permission._(r'person.merge');
-  static const personPeriodReassign = Permission._(r'person.reassign');
-  static const pinCodePeriodCreate = Permission._(r'pinCode.create');
-  static const pinCodePeriodUpdate = Permission._(r'pinCode.update');
-  static const pinCodePeriodDelete = Permission._(r'pinCode.delete');
-  static const pluginPeriodCreate = Permission._(r'plugin.create');
-  static const pluginPeriodRead = Permission._(r'plugin.read');
-  static const pluginPeriodUpdate = Permission._(r'plugin.update');
-  static const pluginPeriodDelete = Permission._(r'plugin.delete');
-  static const serverPeriodAbout = Permission._(r'server.about');
-  static const serverPeriodApkLinks = Permission._(r'server.apkLinks');
-  static const serverPeriodStorage = Permission._(r'server.storage');
-  static const serverPeriodStatistics = Permission._(r'server.statistics');
-  static const serverPeriodVersionCheck = Permission._(r'server.versionCheck');
-  static const serverLicensePeriodRead = Permission._(r'serverLicense.read');
-  static const serverLicensePeriodUpdate = Permission._(r'serverLicense.update');
-  static const serverLicensePeriodDelete = Permission._(r'serverLicense.delete');
-  static const sessionPeriodCreate = Permission._(r'session.create');
-  static const sessionPeriodRead = Permission._(r'session.read');
-  static const sessionPeriodUpdate = Permission._(r'session.update');
-  static const sessionPeriodDelete = Permission._(r'session.delete');
-  static const sessionPeriodLock = Permission._(r'session.lock');
-  static const sharedLinkPeriodCreate = Permission._(r'sharedLink.create');
-  static const sharedLinkPeriodRead = Permission._(r'sharedLink.read');
-  static const sharedLinkPeriodUpdate = Permission._(r'sharedLink.update');
-  static const sharedLinkPeriodDelete = Permission._(r'sharedLink.delete');
-  static const stackPeriodCreate = Permission._(r'stack.create');
-  static const stackPeriodRead = Permission._(r'stack.read');
-  static const stackPeriodUpdate = Permission._(r'stack.update');
-  static const stackPeriodDelete = Permission._(r'stack.delete');
-  static const syncPeriodStream = Permission._(r'sync.stream');
-  static const syncCheckpointPeriodRead = Permission._(r'syncCheckpoint.read');
-  static const syncCheckpointPeriodUpdate = Permission._(r'syncCheckpoint.update');
-  static const syncCheckpointPeriodDelete = Permission._(r'syncCheckpoint.delete');
-  static const systemConfigPeriodRead = Permission._(r'systemConfig.read');
-  static const systemConfigPeriodUpdate = Permission._(r'systemConfig.update');
-  static const systemMetadataPeriodRead = Permission._(r'systemMetadata.read');
-  static const systemMetadataPeriodUpdate = Permission._(r'systemMetadata.update');
-  static const tagPeriodCreate = Permission._(r'tag.create');
-  static const tagPeriodRead = Permission._(r'tag.read');
-  static const tagPeriodUpdate = Permission._(r'tag.update');
-  static const tagPeriodDelete = Permission._(r'tag.delete');
-  static const tagPeriodAsset = Permission._(r'tag.asset');
-  static const userPeriodRead = Permission._(r'user.read');
-  static const userPeriodUpdate = Permission._(r'user.update');
-  static const userLicensePeriodCreate = Permission._(r'userLicense.create');
-  static const userLicensePeriodRead = Permission._(r'userLicense.read');
-  static const userLicensePeriodUpdate = Permission._(r'userLicense.update');
-  static const userLicensePeriodDelete = Permission._(r'userLicense.delete');
-  static const userOnboardingPeriodRead = Permission._(r'userOnboarding.read');
-  static const userOnboardingPeriodUpdate = Permission._(r'userOnboarding.update');
-  static const userOnboardingPeriodDelete = Permission._(r'userOnboarding.delete');
-  static const userPreferencePeriodRead = Permission._(r'userPreference.read');
-  static const userPreferencePeriodUpdate = Permission._(r'userPreference.update');
-  static const userProfileImagePeriodCreate = Permission._(r'userProfileImage.create');
-  static const userProfileImagePeriodRead = Permission._(r'userProfileImage.read');
-  static const userProfileImagePeriodUpdate = Permission._(r'userProfileImage.update');
-  static const userProfileImagePeriodDelete = Permission._(r'userProfileImage.delete');
-  static const queuePeriodRead = Permission._(r'queue.read');
-  static const queuePeriodUpdate = Permission._(r'queue.update');
-  static const queueJobPeriodCreate = Permission._(r'queueJob.create');
-  static const queueJobPeriodRead = Permission._(r'queueJob.read');
-  static const queueJobPeriodUpdate = Permission._(r'queueJob.update');
-  static const queueJobPeriodDelete = Permission._(r'queueJob.delete');
-  static const workflowPeriodCreate = Permission._(r'workflow.create');
-  static const workflowPeriodRead = Permission._(r'workflow.read');
-  static const workflowPeriodUpdate = Permission._(r'workflow.update');
-  static const workflowPeriodDelete = Permission._(r'workflow.delete');
-  static const adminUserPeriodCreate = Permission._(r'adminUser.create');
-  static const adminUserPeriodRead = Permission._(r'adminUser.read');
-  static const adminUserPeriodUpdate = Permission._(r'adminUser.update');
-  static const adminUserPeriodDelete = Permission._(r'adminUser.delete');
-  static const adminSessionPeriodRead = Permission._(r'adminSession.read');
-  static const adminAuthPeriodUnlinkAll = Permission._(r'adminAuth.unlinkAll');
-
-  /// List of all possible values in this [enum][Permission].
-  static const values = <Permission>[
-    all,
-    activityPeriodCreate,
-    activityPeriodRead,
-    activityPeriodUpdate,
-    activityPeriodDelete,
-    activityPeriodStatistics,
-    apiKeyPeriodCreate,
-    apiKeyPeriodRead,
-    apiKeyPeriodUpdate,
-    apiKeyPeriodDelete,
-    assetPeriodRead,
-    assetPeriodUpdate,
-    assetPeriodDelete,
-    assetPeriodStatistics,
-    assetPeriodShare,
-    assetPeriodView,
-    assetPeriodDownload,
-    assetPeriodUpload,
-    assetPeriodCopy,
-    assetPeriodDerive,
-    assetPeriodEditPeriodGet,
-    assetPeriodEditPeriodCreate,
-    assetPeriodEditPeriodDelete,
-    albumPeriodCreate,
-    albumPeriodRead,
-    albumPeriodUpdate,
-    albumPeriodDelete,
-    albumPeriodStatistics,
-    albumPeriodShare,
-    albumPeriodDownload,
-    albumAssetPeriodCreate,
-    albumAssetPeriodDelete,
-    albumUserPeriodCreate,
-    albumUserPeriodUpdate,
-    albumUserPeriodDelete,
-    authPeriodChangePassword,
-    authDevicePeriodDelete,
-    archivePeriodRead,
-    backupPeriodList,
-    backupPeriodDownload,
-    backupPeriodUpload,
-    backupPeriodDelete,
-    duplicatePeriodRead,
-    duplicatePeriodDelete,
-    facePeriodCreate,
-    facePeriodRead,
-    facePeriodUpdate,
-    facePeriodDelete,
-    folderPeriodRead,
-    jobPeriodCreate,
-    jobPeriodRead,
-    libraryPeriodCreate,
-    libraryPeriodRead,
-    libraryPeriodUpdate,
-    libraryPeriodDelete,
-    libraryPeriodStatistics,
-    timelinePeriodRead,
-    timelinePeriodDownload,
-    maintenance,
-    mapPeriodRead,
-    mapPeriodSearch,
-    memoryPeriodCreate,
-    memoryPeriodRead,
-    memoryPeriodUpdate,
-    memoryPeriodDelete,
-    memoryPeriodStatistics,
-    memoryAssetPeriodCreate,
-    memoryAssetPeriodDelete,
-    notificationPeriodCreate,
-    notificationPeriodRead,
-    notificationPeriodUpdate,
-    notificationPeriodDelete,
-    partnerPeriodCreate,
-    partnerPeriodRead,
-    partnerPeriodUpdate,
-    partnerPeriodDelete,
-    personPeriodCreate,
-    personPeriodRead,
-    personPeriodUpdate,
-    personPeriodDelete,
-    personPeriodStatistics,
-    personPeriodMerge,
-    personPeriodReassign,
-    pinCodePeriodCreate,
-    pinCodePeriodUpdate,
-    pinCodePeriodDelete,
-    pluginPeriodCreate,
-    pluginPeriodRead,
-    pluginPeriodUpdate,
-    pluginPeriodDelete,
-    serverPeriodAbout,
-    serverPeriodApkLinks,
-    serverPeriodStorage,
-    serverPeriodStatistics,
-    serverPeriodVersionCheck,
-    serverLicensePeriodRead,
-    serverLicensePeriodUpdate,
-    serverLicensePeriodDelete,
-    sessionPeriodCreate,
-    sessionPeriodRead,
-    sessionPeriodUpdate,
-    sessionPeriodDelete,
-    sessionPeriodLock,
-    sharedLinkPeriodCreate,
-    sharedLinkPeriodRead,
-    sharedLinkPeriodUpdate,
-    sharedLinkPeriodDelete,
-    stackPeriodCreate,
-    stackPeriodRead,
-    stackPeriodUpdate,
-    stackPeriodDelete,
-    syncPeriodStream,
-    syncCheckpointPeriodRead,
-    syncCheckpointPeriodUpdate,
-    syncCheckpointPeriodDelete,
-    systemConfigPeriodRead,
-    systemConfigPeriodUpdate,
-    systemMetadataPeriodRead,
-    systemMetadataPeriodUpdate,
-    tagPeriodCreate,
-    tagPeriodRead,
-    tagPeriodUpdate,
-    tagPeriodDelete,
-    tagPeriodAsset,
-    userPeriodRead,
-    userPeriodUpdate,
-    userLicensePeriodCreate,
-    userLicensePeriodRead,
-    userLicensePeriodUpdate,
-    userLicensePeriodDelete,
-    userOnboardingPeriodRead,
-    userOnboardingPeriodUpdate,
-    userOnboardingPeriodDelete,
-    userPreferencePeriodRead,
-    userPreferencePeriodUpdate,
-    userProfileImagePeriodCreate,
-    userProfileImagePeriodRead,
-    userProfileImagePeriodUpdate,
-    userProfileImagePeriodDelete,
-    queuePeriodRead,
-    queuePeriodUpdate,
-    queueJobPeriodCreate,
-    queueJobPeriodRead,
-    queueJobPeriodUpdate,
-    queueJobPeriodDelete,
-    workflowPeriodCreate,
-    workflowPeriodRead,
-    workflowPeriodUpdate,
-    workflowPeriodDelete,
-    adminUserPeriodCreate,
-    adminUserPeriodRead,
-    adminUserPeriodUpdate,
-    adminUserPeriodDelete,
-    adminSessionPeriodRead,
-    adminAuthPeriodUnlinkAll,
-  ];
-
+  /// Returns the instance of [Permission] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static Permission? fromJson(dynamic value) => PermissionTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [Permission]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<Permission> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <Permission>[];
     if (json is List && json.isNotEmpty) {
@@ -361,9 +208,11 @@ class PermissionTypeTransformer {
 
   const PermissionTypeTransformer._();
 
-  String encode(Permission data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(Permission data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a Permission.
+  /// Returns the instance of [Permission] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -372,6 +221,9 @@ class PermissionTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   Permission? decode(dynamic data, {bool allowNull = true}) {
+    if (data is Permission) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'all': return Permission.all;
@@ -538,7 +390,7 @@ class PermissionTypeTransformer {
     return null;
   }
 
-  /// Singleton [PermissionTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static PermissionTypeTransformer? _instance;
 }
 

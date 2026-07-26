@@ -11,55 +11,42 @@
 part of openapi.api;
 
 /// Manual job name
-class ManualJobName {
-  /// Instantiate a new enum with the provided [value].
-  const ManualJobName._(this.value);
+enum ManualJobName {
+  personCleanup._(r'person-cleanup'),
+  tagCleanup._(r'tag-cleanup'),
+  userCleanup._(r'user-cleanup'),
+  memoryCleanup._(r'memory-cleanup'),
+  memoryCreate._(r'memory-create'),
+  backupDatabase._(r'backup-database'),
+  integrityMissingFiles._(r'integrity-missing-files'),
+  integrityUntrackedFiles._(r'integrity-untracked-files'),
+  integrityChecksumMismatch._(r'integrity-checksum-mismatch'),
+  integrityMissingFilesRefresh._(r'integrity-missing-files-refresh'),
+  integrityUntrackedFilesRefresh._(r'integrity-untracked-files-refresh'),
+  integrityChecksumMismatchRefresh._(r'integrity-checksum-mismatch-refresh'),
+  integrityMissingFilesDeleteAll._(r'integrity-missing-files-delete-all'),
+  integrityUntrackedFilesDeleteAll._(r'integrity-untracked-files-delete-all'),
+  integrityChecksumMismatchDeleteAll._(r'integrity-checksum-mismatch-delete-all'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const ManualJobName._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const personCleanup = ManualJobName._(r'person-cleanup');
-  static const tagCleanup = ManualJobName._(r'tag-cleanup');
-  static const userCleanup = ManualJobName._(r'user-cleanup');
-  static const memoryCleanup = ManualJobName._(r'memory-cleanup');
-  static const memoryCreate = ManualJobName._(r'memory-create');
-  static const backupDatabase = ManualJobName._(r'backup-database');
-  static const integrityMissingFiles = ManualJobName._(r'integrity-missing-files');
-  static const integrityUntrackedFiles = ManualJobName._(r'integrity-untracked-files');
-  static const integrityChecksumMismatch = ManualJobName._(r'integrity-checksum-mismatch');
-  static const integrityMissingFilesRefresh = ManualJobName._(r'integrity-missing-files-refresh');
-  static const integrityUntrackedFilesRefresh = ManualJobName._(r'integrity-untracked-files-refresh');
-  static const integrityChecksumMismatchRefresh = ManualJobName._(r'integrity-checksum-mismatch-refresh');
-  static const integrityMissingFilesDeleteAll = ManualJobName._(r'integrity-missing-files-delete-all');
-  static const integrityUntrackedFilesDeleteAll = ManualJobName._(r'integrity-untracked-files-delete-all');
-  static const integrityChecksumMismatchDeleteAll = ManualJobName._(r'integrity-checksum-mismatch-delete-all');
-
-  /// List of all possible values in this [enum][ManualJobName].
-  static const values = <ManualJobName>[
-    personCleanup,
-    tagCleanup,
-    userCleanup,
-    memoryCleanup,
-    memoryCreate,
-    backupDatabase,
-    integrityMissingFiles,
-    integrityUntrackedFiles,
-    integrityChecksumMismatch,
-    integrityMissingFilesRefresh,
-    integrityUntrackedFilesRefresh,
-    integrityChecksumMismatchRefresh,
-    integrityMissingFilesDeleteAll,
-    integrityUntrackedFilesDeleteAll,
-    integrityChecksumMismatchDeleteAll,
-  ];
-
+  /// Returns the instance of [ManualJobName] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static ManualJobName? fromJson(dynamic value) => ManualJobNameTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [ManualJobName]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<ManualJobName> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <ManualJobName>[];
     if (json is List && json.isNotEmpty) {
@@ -81,9 +68,11 @@ class ManualJobNameTypeTransformer {
 
   const ManualJobNameTypeTransformer._();
 
-  String encode(ManualJobName data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(ManualJobName data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a ManualJobName.
+  /// Returns the instance of [ManualJobName] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -92,6 +81,9 @@ class ManualJobNameTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   ManualJobName? decode(dynamic data, {bool allowNull = true}) {
+    if (data is ManualJobName) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'person-cleanup': return ManualJobName.personCleanup;
@@ -118,7 +110,7 @@ class ManualJobNameTypeTransformer {
     return null;
   }
 
-  /// Singleton [ManualJobNameTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static ManualJobNameTypeTransformer? _instance;
 }
 

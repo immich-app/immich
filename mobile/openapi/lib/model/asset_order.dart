@@ -11,29 +11,29 @@
 part of openapi.api;
 
 /// Asset sort order
-class AssetOrder {
-  /// Instantiate a new enum with the provided [value].
-  const AssetOrder._(this.value);
+enum AssetOrder {
+  asc._(r'asc'),
+  desc._(r'desc'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const AssetOrder._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const asc = AssetOrder._(r'asc');
-  static const desc = AssetOrder._(r'desc');
-
-  /// List of all possible values in this [enum][AssetOrder].
-  static const values = <AssetOrder>[
-    asc,
-    desc,
-  ];
-
+  /// Returns the instance of [AssetOrder] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static AssetOrder? fromJson(dynamic value) => AssetOrderTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [AssetOrder]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<AssetOrder> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AssetOrder>[];
     if (json is List && json.isNotEmpty) {
@@ -55,9 +55,11 @@ class AssetOrderTypeTransformer {
 
   const AssetOrderTypeTransformer._();
 
-  String encode(AssetOrder data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(AssetOrder data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a AssetOrder.
+  /// Returns the instance of [AssetOrder] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -66,6 +68,9 @@ class AssetOrderTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   AssetOrder? decode(dynamic data, {bool allowNull = true}) {
+    if (data is AssetOrder) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'asc': return AssetOrder.asc;
@@ -79,7 +84,7 @@ class AssetOrderTypeTransformer {
     return null;
   }
 
-  /// Singleton [AssetOrderTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static AssetOrderTypeTransformer? _instance;
 }
 

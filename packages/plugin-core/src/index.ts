@@ -2,6 +2,42 @@ import { wrapper } from '@immich/plugin-sdk';
 import { AssetVisibility } from '@immich/sdk';
 import type { Manifest } from '../dist/index.d.ts';
 
+type MatchValueConfig = {
+  pattern: string;
+  matchType?: 'contains' | 'exact' | 'regex' | 'startsWith';
+  caseSensitive?: boolean;
+};
+
+const matchValueResult = (value: string, config: MatchValueConfig) => {
+  const { pattern, matchType = 'contains', caseSensitive = false } = config;
+  const searchName = caseSensitive ? value : value.toLowerCase();
+  const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
+
+  switch (matchType) {
+    case 'contains': {
+      return { workflow: { continue: searchName.includes(searchPattern) } };
+    }
+
+    case 'exact': {
+      return { workflow: { continue: searchName === searchPattern } };
+    }
+
+    case 'startsWith': {
+      return { workflow: { continue: searchName.startsWith(searchPattern) } };
+    }
+
+    case 'regex': {
+      const flags = caseSensitive ? '' : 'i';
+      const regex = new RegExp(searchPattern, flags);
+      return { workflow: { continue: regex.test(value) } };
+    }
+
+    default: {
+      return {};
+    }
+  }
+};
+
 const methods = wrapper<Manifest>({
   assetAddToAlbums: ({ config, data, functions }) => {
     const assetId = data.asset.id;
@@ -53,39 +89,7 @@ const methods = wrapper<Manifest>({
     }
   },
 
-  assetFileFilter: ({ data, config }) => {
-    const { pattern, matchType = 'contains', caseSensitive = false, usePath = false } = config;
-
-    const { asset } = data;
-
-    const fileName = usePath ? asset.originalPath : asset.originalFileName;
-    const searchName = caseSensitive ? fileName : fileName.toLowerCase();
-    const searchPattern = caseSensitive ? pattern : pattern.toLowerCase();
-
-    switch (matchType) {
-      case 'contains': {
-        return { workflow: { continue: searchName.includes(searchPattern) } };
-      }
-
-      case 'exact': {
-        return { workflow: { continue: searchName === searchPattern } };
-      }
-
-      case 'startsWith': {
-        return { workflow: { continue: searchName.startsWith(searchPattern) } };
-      }
-
-      case 'regex': {
-        const flags = caseSensitive ? '' : 'i';
-        const regex = new RegExp(searchPattern, flags);
-        return { workflow: { continue: regex.test(fileName) } };
-      }
-
-      default: {
-        return {};
-      }
-    }
-  },
+  assetFileFilter: ({ data, config }) => matchValueResult(data.asset.originalFileName || '', config),
 
   assetLocationFilter: ({ config, data }) => {
     if (
@@ -122,6 +126,14 @@ const methods = wrapper<Manifest>({
     );
 
     return { workflow: { continue: earthDiameter * delta <= (config.coordinate?.radius ?? 0) } };
+  },
+
+  assetExifFilter: ({ config, data }) => {
+    if (!data.asset.exifInfo || data.asset.exifInfo[config.property] === null) {
+      return { workflow: { continue: false } };
+    }
+
+    return matchValueResult(String(data.asset.exifInfo[config.property]), config);
   },
 
   assetDateFilter: ({ config, data }) => {
@@ -200,6 +212,7 @@ const {
   assetFavorite,
   assetFileFilter,
   assetLocationFilter,
+  assetExifFilter,
   assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,
@@ -217,6 +230,7 @@ export {
   assetFavorite,
   assetFileFilter,
   assetLocationFilter,
+  assetExifFilter,
   assetDateFilter,
   assetLock,
   assetMissingTimeZoneFilter,

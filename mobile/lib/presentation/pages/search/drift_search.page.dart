@@ -886,7 +886,6 @@ class _QuickLinkList extends StatelessWidget {
           _QuickLink(
             title: context.t.recently_added,
             icon: Icons.upload_outlined,
-            isTop: true,
             onTap: () => context.pushRoute(const DriftRecentlyAddedRoute()),
           ),
           _QuickLink(

@@ -11,63 +11,46 @@
 part of openapi.api;
 
 /// Queue name
-class QueueName {
-  /// Instantiate a new enum with the provided [value].
-  const QueueName._(this.value);
+enum QueueName {
+  thumbnailGeneration._(r'thumbnailGeneration'),
+  metadataExtraction._(r'metadataExtraction'),
+  videoConversion._(r'videoConversion'),
+  faceDetection._(r'faceDetection'),
+  facialRecognition._(r'facialRecognition'),
+  smartSearch._(r'smartSearch'),
+  duplicateDetection._(r'duplicateDetection'),
+  backgroundTask._(r'backgroundTask'),
+  storageTemplateMigration._(r'storageTemplateMigration'),
+  migration._(r'migration'),
+  search._(r'search'),
+  sidecar._(r'sidecar'),
+  library_._(r'library'),
+  notifications._(r'notifications'),
+  backupDatabase._(r'backupDatabase'),
+  ocr._(r'ocr'),
+  workflow._(r'workflow'),
+  integrityCheck._(r'integrityCheck'),
+  editor._(r'editor'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const QueueName._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const thumbnailGeneration = QueueName._(r'thumbnailGeneration');
-  static const metadataExtraction = QueueName._(r'metadataExtraction');
-  static const videoConversion = QueueName._(r'videoConversion');
-  static const faceDetection = QueueName._(r'faceDetection');
-  static const facialRecognition = QueueName._(r'facialRecognition');
-  static const smartSearch = QueueName._(r'smartSearch');
-  static const duplicateDetection = QueueName._(r'duplicateDetection');
-  static const backgroundTask = QueueName._(r'backgroundTask');
-  static const storageTemplateMigration = QueueName._(r'storageTemplateMigration');
-  static const migration = QueueName._(r'migration');
-  static const search = QueueName._(r'search');
-  static const sidecar = QueueName._(r'sidecar');
-  static const library_ = QueueName._(r'library');
-  static const notifications = QueueName._(r'notifications');
-  static const backupDatabase = QueueName._(r'backupDatabase');
-  static const ocr = QueueName._(r'ocr');
-  static const workflow = QueueName._(r'workflow');
-  static const integrityCheck = QueueName._(r'integrityCheck');
-  static const editor = QueueName._(r'editor');
-
-  /// List of all possible values in this [enum][QueueName].
-  static const values = <QueueName>[
-    thumbnailGeneration,
-    metadataExtraction,
-    videoConversion,
-    faceDetection,
-    facialRecognition,
-    smartSearch,
-    duplicateDetection,
-    backgroundTask,
-    storageTemplateMigration,
-    migration,
-    search,
-    sidecar,
-    library_,
-    notifications,
-    backupDatabase,
-    ocr,
-    workflow,
-    integrityCheck,
-    editor,
-  ];
-
+  /// Returns the instance of [QueueName] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static QueueName? fromJson(dynamic value) => QueueNameTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [QueueName]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<QueueName> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <QueueName>[];
     if (json is List && json.isNotEmpty) {
@@ -89,9 +72,11 @@ class QueueNameTypeTransformer {
 
   const QueueNameTypeTransformer._();
 
-  String encode(QueueName data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(QueueName data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a QueueName.
+  /// Returns the instance of [QueueName] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -100,6 +85,9 @@ class QueueNameTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   QueueName? decode(dynamic data, {bool allowNull = true}) {
+    if (data is QueueName) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'thumbnailGeneration': return QueueName.thumbnailGeneration;
@@ -130,7 +118,7 @@ class QueueNameTypeTransformer {
     return null;
   }
 
-  /// Singleton [QueueNameTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static QueueNameTypeTransformer? _instance;
 }
 

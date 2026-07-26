@@ -11,35 +11,32 @@
 part of openapi.api;
 
 /// Error reason
-class BulkIdErrorReason {
-  /// Instantiate a new enum with the provided [value].
-  const BulkIdErrorReason._(this.value);
+enum BulkIdErrorReason {
+  duplicate._(r'duplicate'),
+  noPermission._(r'no_permission'),
+  notFound._(r'not_found'),
+  unknown._(r'unknown'),
+  validation._(r'validation'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const BulkIdErrorReason._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const duplicate = BulkIdErrorReason._(r'duplicate');
-  static const noPermission = BulkIdErrorReason._(r'no_permission');
-  static const notFound = BulkIdErrorReason._(r'not_found');
-  static const unknown = BulkIdErrorReason._(r'unknown');
-  static const validation = BulkIdErrorReason._(r'validation');
-
-  /// List of all possible values in this [enum][BulkIdErrorReason].
-  static const values = <BulkIdErrorReason>[
-    duplicate,
-    noPermission,
-    notFound,
-    unknown,
-    validation,
-  ];
-
+  /// Returns the instance of [BulkIdErrorReason] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static BulkIdErrorReason? fromJson(dynamic value) => BulkIdErrorReasonTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [BulkIdErrorReason]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<BulkIdErrorReason> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <BulkIdErrorReason>[];
     if (json is List && json.isNotEmpty) {
@@ -61,9 +58,11 @@ class BulkIdErrorReasonTypeTransformer {
 
   const BulkIdErrorReasonTypeTransformer._();
 
-  String encode(BulkIdErrorReason data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(BulkIdErrorReason data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a BulkIdErrorReason.
+  /// Returns the instance of [BulkIdErrorReason] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -72,6 +71,9 @@ class BulkIdErrorReasonTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   BulkIdErrorReason? decode(dynamic data, {bool allowNull = true}) {
+    if (data is BulkIdErrorReason) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'duplicate': return BulkIdErrorReason.duplicate;
@@ -88,7 +90,7 @@ class BulkIdErrorReasonTypeTransformer {
     return null;
   }
 
-  /// Singleton [BulkIdErrorReasonTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static BulkIdErrorReasonTypeTransformer? _instance;
 }
 

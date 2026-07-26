@@ -247,7 +247,7 @@ export class BaseService {
       ctx.workflowRepository,
     );
 
-    service.logger.setContext(this.name);
+    service.logger.setContext(BaseService.name);
 
     return service as T;
   }

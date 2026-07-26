@@ -12,15 +12,12 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
-import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockActionService extends Mock implements ActionService {}
 
 class MockAssetService extends Mock implements AssetService {}
-
-class MockDownloadService extends Mock implements DownloadService {}
 
 class MockForegroundUploadService extends Mock implements ForegroundUploadService {}
 
@@ -67,7 +64,6 @@ void main() {
       overrides: [
         actionServiceProvider.overrideWithValue(actionService),
         assetServiceProvider.overrideWithValue(assetService),
-        downloadServiceProvider.overrideWithValue(MockDownloadService()),
         foregroundUploadServiceProvider.overrideWithValue(MockForegroundUploadService()),
         currentUserProvider.overrideWith((ref) => CurrentUserProvider(userService)),
       ],

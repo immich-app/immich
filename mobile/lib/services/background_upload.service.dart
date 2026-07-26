@@ -290,13 +290,10 @@ class BackgroundUploadService {
       return null;
     }
 
-    String fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
-    final hasExtension = p.extension(fileName).isNotEmpty;
-    if (!hasExtension) {
-      fileName = p.setExtension(fileName, p.extension(asset.name));
-    }
-
-    final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
+    final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+    // Some apps (e.g. DJI/Fusion) return names without an extension; fall back to the asset name for those.
+    final extension = p.extension(file.path).isNotEmpty ? p.extension(file.path) : p.extension(asset.name);
+    final originalFileName = p.setExtension(fileName, extension);
 
     String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
@@ -318,7 +315,7 @@ class BackgroundUploadService {
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
       // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
-      fields: entity.isLivePhoto ? {'visibility': api.AssetVisibility.hidden.value} : null,
+      fields: entity.isLivePhoto ? {'visibility': api.AssetVisibility.hidden.toString()} : null,
       cloudId: entity.isLivePhoto ? null : asset.cloudId,
       adjustmentTime: entity.isLivePhoto ? null : asset.adjustmentTime?.toIso8601String(),
       latitude: entity.isLivePhoto ? null : asset.latitude?.toString(),

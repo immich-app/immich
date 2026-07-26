@@ -27,7 +27,7 @@
   ];
 
   function isSystemConfigJobDto(jobName: string): jobName is keyof SystemConfigJobDto {
-    return jobName in configToEdit.job;
+    return Object.hasOwn(configToEdit.job, jobName);
   }
 
   const queueTitles: Record<QueueName, string> = $derived({
@@ -66,7 +66,7 @@
               description=""
               bind:value={configToEdit.job[queueName].concurrency}
               required={true}
-              isEdited={!(configToEdit.job[queueName].concurrency == config.job[queueName].concurrency)}
+              isEdited={configToEdit.job[queueName].concurrency != config.job[queueName].concurrency}
             />
           {:else}
             <SettingInputField

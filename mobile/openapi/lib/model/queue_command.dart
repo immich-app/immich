@@ -11,35 +11,32 @@
 part of openapi.api;
 
 /// Queue command to execute
-class QueueCommand {
-  /// Instantiate a new enum with the provided [value].
-  const QueueCommand._(this.value);
+enum QueueCommand {
+  start._(r'start'),
+  pause._(r'pause'),
+  resume._(r'resume'),
+  empty._(r'empty'),
+  clearFailed._(r'clear-failed'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const QueueCommand._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const start = QueueCommand._(r'start');
-  static const pause = QueueCommand._(r'pause');
-  static const resume = QueueCommand._(r'resume');
-  static const empty = QueueCommand._(r'empty');
-  static const clearFailed = QueueCommand._(r'clear-failed');
-
-  /// List of all possible values in this [enum][QueueCommand].
-  static const values = <QueueCommand>[
-    start,
-    pause,
-    resume,
-    empty,
-    clearFailed,
-  ];
-
+  /// Returns the instance of [QueueCommand] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static QueueCommand? fromJson(dynamic value) => QueueCommandTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [QueueCommand]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<QueueCommand> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <QueueCommand>[];
     if (json is List && json.isNotEmpty) {
@@ -61,9 +58,11 @@ class QueueCommandTypeTransformer {
 
   const QueueCommandTypeTransformer._();
 
-  String encode(QueueCommand data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(QueueCommand data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a QueueCommand.
+  /// Returns the instance of [QueueCommand] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -72,6 +71,9 @@ class QueueCommandTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   QueueCommand? decode(dynamic data, {bool allowNull = true}) {
+    if (data is QueueCommand) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'start': return QueueCommand.start;
@@ -88,7 +90,7 @@ class QueueCommandTypeTransformer {
     return null;
   }
 
-  /// Singleton [QueueCommandTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static QueueCommandTypeTransformer? _instance;
 }
 

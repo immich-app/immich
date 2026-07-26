@@ -93,6 +93,7 @@ export class WorkflowExecutionService extends BaseService {
       for (const pattern of context.allowedHosts) {
         const regex = new RegExp(pattern.replaceAll('.', String.raw`\.`).replaceAll('*', '.*'));
         if (regex.test(hostname)) {
+          // eslint-disable-next-line unicorn/no-invalid-argument-count
           const res = await fetch(...args);
 
           return {
@@ -124,8 +125,8 @@ export class WorkflowExecutionService extends BaseService {
 
     const plugins = await this.pluginRepository.getForLoad();
     for (const { id, name, version, wasmBytes, methods } of plugins) {
-      const method = methods.some(({ hostFunctions }) => !hostFunctions);
-      if (method) {
+      const isMethod = methods.some(({ hostFunctions }) => !hostFunctions);
+      if (isMethod) {
         const label = `${name}@${version}`;
         const key = this.getPluginKey({ id, hostFunctions: false });
         try {
@@ -136,8 +137,8 @@ export class WorkflowExecutionService extends BaseService {
         }
       }
 
-      const methodWithFunction = methods.some(({ hostFunctions }) => hostFunctions);
-      if (methodWithFunction) {
+      const isMethodWithFunction = methods.some(({ hostFunctions }) => hostFunctions);
+      if (isMethodWithFunction) {
         const label = `${name}@${version}/worker`;
         const key = this.getPluginKey({ id, hostFunctions: true });
         try {
@@ -381,8 +382,8 @@ export class WorkflowExecutionService extends BaseService {
     // TODO infer from steps
     let type: T | undefined;
     for (const targetType of Object.values(WorkflowType)) {
-      const missing = workflow.steps.some((step) => !step.types.includes(targetType));
-      if (!missing) {
+      const isMissing = workflow.steps.some((step) => !step.types.includes(targetType));
+      if (!isMissing) {
         type = targetType as unknown as T;
         break;
       }

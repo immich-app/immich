@@ -8,7 +8,7 @@
     "format": "prettier --cache --check i18n/",
     "format:fix": "prettier --cache --write --list-different i18n"
   },
-  "packageManager": "pnpm@11.11.0",
+  "packageManager": "pnpm@11.13.1",
   "engines": {
     "pnpm": ">=10.0.0"
   },

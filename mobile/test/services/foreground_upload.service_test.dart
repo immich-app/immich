@@ -81,6 +81,24 @@ void main() {
     return captured;
   }
 
+  List<String> captureOriginalFileNames() {
+    final captured = <String>[];
+    when(
+      () => mockUploadRepository.uploadFile(
+        file: any(named: 'file'),
+        originalFileName: any(named: 'originalFileName'),
+        fields: any(named: 'fields'),
+        cancelToken: any(named: 'cancelToken'),
+        onProgress: any(named: 'onProgress'),
+        logContext: any(named: 'logContext'),
+      ),
+    ).thenAnswer((invocation) async {
+      captured.add(invocation.namedArguments[#originalFileName] as String);
+      return UploadResult.success(remoteAssetId: 'remote-${captured.length}');
+    });
+    return captured;
+  }
+
   group('uploadSingleAsset', () {
     test('should upload the motion part hidden and keep the still image visible', () async {
       final asset = LocalAssetStub.image1;
@@ -123,6 +141,60 @@ void main() {
 
       expect(captured, hasLength(1));
       expect(captured[0].containsKey('visibility'), isFalse);
+    });
+
+    test('corrects the extension when iOS returns a rendered file for a .dng asset', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final stillFile = File('/path/to/IMG_6499.jpg');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG_6499.dng');
+
+      final names = captureOriginalFileNames();
+
+      await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
+
+      expect(names, equals(['IMG_6499.jpg']));
+    });
+
+    test('keeps the .dng extension for a genuine RAW original', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final stillFile = File('/path/to/IMG_5210.dng');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG_5210.dng');
+
+      final names = captureOriginalFileNames();
+
+      await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
+
+      expect(names, equals(['IMG_5210.dng']));
+    });
+
+    test('borrows the extension from the asset name for an extensionless name (DJI/Fusion)', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final stillFile = File('/path/to/DJI_0001');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.isAssetAvailableLocally(asset.id)).thenAnswer((_) async => true);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => stillFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'DJI_0001');
+
+      final names = captureOriginalFileNames();
+
+      await sut.uploadSingleAsset(asset, null, callbacks: const UploadCallbacks());
+
+      expect(names, equals(['DJI_0001.jpg']));
     });
   });
 }

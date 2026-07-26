@@ -18,7 +18,7 @@
     };
   };
 
-  const parsePixels = (style: string) => Number.parseInt(style, 10) || 0;
+  const parsePixels = (style: string) => Math.trunc(Number(style)) || 0;
 
   const getItemCount = (container: HTMLElement, containerWidth: number) => {
     if (!container.firstElementChild) {

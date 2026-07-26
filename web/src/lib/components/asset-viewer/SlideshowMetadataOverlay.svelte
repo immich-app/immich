@@ -18,7 +18,7 @@
   const description = $derived(asset.exifInfo?.description?.trim() || '');
 
   const dateTime = $derived(
-    asset.exifInfo?.timeZone && asset.exifInfo?.dateTimeOriginal
+    asset.exifInfo?.timeZone && asset.exifInfo.dateTimeOriginal
       ? fromISODateTime(asset.exifInfo.dateTimeOriginal, asset.exifInfo.timeZone)
       : fromISODateTimeUTC(asset.localDateTime),
   );

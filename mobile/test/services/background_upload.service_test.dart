@@ -136,6 +136,51 @@ void main() {
       expect(task, isNotNull);
       expect(task!.fields.containsKey('visibility'), isFalse);
     });
+
+    test('corrects the extension when iOS returns a rendered file for a .dng asset', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/IMG_6499.jpg');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG_6499.dng');
+
+      final task = await sut.getUploadTask(asset);
+      expect(task, isNotNull);
+      expect(task!.fields['filename'], equals('IMG_6499.jpg'));
+    });
+
+    test('keeps the .dng extension for a genuine RAW original', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/IMG_5210.dng');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG_5210.dng');
+
+      final task = await sut.getUploadTask(asset);
+      expect(task, isNotNull);
+      expect(task!.fields['filename'], equals('IMG_5210.dng'));
+    });
+
+    test('borrows the extension from the asset name for an extensionless name (DJI/Fusion)', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/DJI_0001');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'DJI_0001');
+
+      final task = await sut.getUploadTask(asset);
+      expect(task, isNotNull);
+      expect(task!.fields['filename'], equals('DJI_0001.jpg'));
+    });
   });
 
   group('getLivePhotoUploadTask', () {

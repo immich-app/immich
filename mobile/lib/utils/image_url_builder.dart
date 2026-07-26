@@ -12,7 +12,7 @@ String getThumbnailUrlForRemoteId(
   bool edited = true,
   String? thumbhash,
 }) {
-  final url = '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail?size=${type.value}&edited=$edited';
+  final url = '${Store.get(StoreKey.serverEndpoint)}/assets/$id/thumbnail?size=${type.toString()}&edited=$edited';
   return thumbhash != null ? '$url&c=${Uri.encodeComponent(thumbhash)}' : url;
 }
 
