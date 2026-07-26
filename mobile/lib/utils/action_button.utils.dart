@@ -10,6 +10,7 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
+import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
@@ -19,10 +20,8 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_a
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/open_in_browser_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_album_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/set_profile_picture_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
@@ -210,16 +209,8 @@ enum ActionButtonType {
         menuItem: menuItem,
       ),
       ActionButtonType.delete => DeleteActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
-      ActionButtonType.moveToLockFolder => MoveToLockFolderActionButton(
-        source: context.source,
-        iconOnly: iconOnly,
-        menuItem: menuItem,
-      ),
-      ActionButtonType.removeFromLockFolder => RemoveFromLockFolderActionButton(
-        source: context.source,
-        iconOnly: iconOnly,
-        menuItem: menuItem,
-      ),
+      ActionButtonType.moveToLockFolder ||
+      ActionButtonType.removeFromLockFolder => ActionMenuItem(action: LockAction(source: context.source)),
       ActionButtonType.deleteLocal => DeleteLocalActionButton(
         source: context.source,
         iconOnly: iconOnly,
