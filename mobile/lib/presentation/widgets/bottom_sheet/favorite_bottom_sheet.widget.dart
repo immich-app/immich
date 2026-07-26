@@ -5,14 +5,14 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
@@ -80,8 +80,8 @@ class FavoriteBottomSheet extends ConsumerWidget {
           const ActionColumnButton(action: ArchiveAction(source: .timeline)),
           if (multiselect.onlyRemote) const DownloadActionButton(source: ActionSource.timeline),
           const ActionColumnButton(action: DeleteAction(source: .timeline)),
-          const EditDateTimeActionButton(source: ActionSource.timeline),
-          const EditLocationActionButton(source: ActionSource.timeline),
+          const ActionColumnButton(action: EditDateTimeAction(source: .timeline)),
+          const ActionColumnButton(action: EditLocationAction(source: .timeline)),
           const ActionColumnButton(action: LockAction(source: .timeline)),
           const ActionColumnButton(action: StackAction(source: .timeline)),
         ],
