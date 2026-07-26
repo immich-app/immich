@@ -4,9 +4,9 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
@@ -95,7 +95,7 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
           const ShareLinkActionButton(source: ActionSource.timeline),
 
           if (ownsAlbum) ...[
-            const ArchiveActionButton(source: ActionSource.timeline),
+            const ActionColumnButton(action: ArchiveAction(source: .timeline)),
             const ActionColumnButton(action: FavoriteAction(source: .timeline)),
           ],
           const DownloadActionButton(source: ActionSource.timeline),
