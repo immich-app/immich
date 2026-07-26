@@ -1,36 +1,19 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
-import 'package:immich_mobile/repositories/download.repository.dart';
-import 'package:immich_mobile/widgets/common/tag_picker.dart';
 
 final actionServiceProvider = Provider<ActionService>(
-  (ref) => ActionService(
-    ref.watch(assetApiRepositoryProvider),
-    ref.watch(remoteAssetRepositoryProvider),
-    ref.watch(downloadRepositoryProvider),
-    ref.watch(tagServiceProvider),
-  ),
+  (ref) => ActionService(ref.watch(assetApiRepositoryProvider), ref.watch(remoteAssetRepositoryProvider)),
 );
 
 class ActionService {
   final AssetApiRepository _assetApiRepository;
   final RemoteAssetRepository _remoteAssetRepository;
-  final DownloadRepository _downloadRepository;
-  final TagService _tagService;
 
-  const ActionService(
-    this._assetApiRepository,
-    this._remoteAssetRepository,
-    this._downloadRepository,
-    this._tagService,
-  );
+  const ActionService(this._assetApiRepository, this._remoteAssetRepository);
 
   Future<int> emptyTrash(String userId) async {
     final count = await _assetApiRepository.emptyTrash();
@@ -58,29 +41,5 @@ class ActionService {
     await _remoteAssetRepository.updateRating(assetId, rating);
 
     return true;
-  }
-
-  Future<int?> tagAssets(List<String> remoteIds, BuildContext context) async {
-    final tagResults = await showTagPickerModal(context: context);
-    if (tagResults == null) {
-      // user cancelled
-      return null;
-    }
-
-    final selectedTagIds = Set<String>.from(tagResults.$1);
-    final selectedNewTagValues = tagResults.$2;
-
-    if (selectedNewTagValues.isNotEmpty) {
-      final upsertedTags = await _tagService.upsertTags(selectedNewTagValues.toList());
-      selectedTagIds.addAll(upsertedTags.map((t) => t.id));
-    }
-    if (selectedTagIds.isEmpty) {
-      return 0;
-    }
-    return _tagService.bulkTagAssets(remoteIds, selectedTagIds.toList());
-  }
-
-  Future<List<bool>> downloadAll(List<RemoteAsset> assets) {
-    return _downloadRepository.downloadAllAssets(assets);
   }
 }
