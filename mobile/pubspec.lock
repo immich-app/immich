@@ -1346,10 +1346,10 @@ packages:
     dependency: "direct dev"
     description:
       name: pigeon
-      sha256: "04cfefc8add8b47ddf9ccac8b92bb4edeb67c87f185c623ba0db118ac99334ad"
+      sha256: f90254ef7b22db026fd8d5fd44718fd60697d50968a144a8bc251e5e95d79e10
       url: "https://pub.dev"
     source: hosted
-    version: "26.3.4"
+    version: "27.3.0"
   pinput:
     dependency: "direct main"
     description:
