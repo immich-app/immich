@@ -38,6 +38,7 @@ class DriftMemoryPage extends HookConsumerWidget {
     final assetProgress = useState("${currentAssetPage.value + 1}|${currentMemory.value.assets.length}");
     const bgColor = Colors.black;
     final currentAsset = useState<RemoteAsset?>(null);
+    final isLandscape = MediaQuery.orientationOf(context) == Orientation.landscape;
 
     /// The list of all of the asset page controllers
     final memoryAssetPageControllers = List.generate(memories.length, (i) => usePageController());
@@ -286,7 +287,7 @@ class DriftMemoryPage extends HookConsumerWidget {
                                   child: DriftMemoryCard(
                                     asset: asset,
                                     title: title,
-                                    showTitle: index == 0,
+                                    showTitle: !isLandscape && index == 0,
                                     isCurrent: mIndex == currentMemoryIndex.value && index == currentAssetPage.value,
                                   ),
                                 ),
@@ -339,14 +340,21 @@ class DriftMemoryPage extends HookConsumerWidget {
                         ),
                         if (currentAsset.value != null && currentAsset.value!.isVideo)
                           Positioned(
-                            bottom: 24,
+                            bottom: isLandscape ? 72 : 24,
                             right: 32,
                             child: Icon(Icons.videocam_outlined, color: Colors.grey[200]),
+                          ),
+                        if (isLandscape)
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            child: DriftMemoryBottomInfo(memory: memories[mIndex], title: title, overlay: true),
                           ),
                       ],
                     ),
                   ),
-                  DriftMemoryBottomInfo(memory: memories[mIndex], title: title),
+                  if (!isLandscape) DriftMemoryBottomInfo(memory: memories[mIndex], title: title),
                 ],
               );
             },

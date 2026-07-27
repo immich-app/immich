@@ -11,14 +11,16 @@ import 'package:immich_mobile/routing/router.dart';
 class DriftMemoryBottomInfo extends StatelessWidget {
   final DriftMemory memory;
   final String title;
-  const DriftMemoryBottomInfo({super.key, required this.memory, required this.title});
+  final bool overlay;
+
+  const DriftMemoryBottomInfo({super.key, required this.memory, required this.title, this.overlay = false});
 
   @override
   Widget build(BuildContext context) {
     final df = DateFormat.yMMMMd();
     final fileCreatedDate = memory.assets.first.createdAt;
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
+    final content = Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: overlay ? 8.0 : 16.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -51,6 +53,21 @@ class DriftMemoryBottomInfo extends StatelessWidget {
           ),
         ],
       ),
+    );
+
+    if (!overlay) {
+      return content;
+    }
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+          colors: [Colors.black.withValues(alpha: 0.65), Colors.transparent],
+        ),
+      ),
+      child: content,
     );
   }
 }
