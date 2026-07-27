@@ -10,15 +10,10 @@
   let container: HTMLElement | undefined = $state();
   let contentRect: DOMRectReadOnly | undefined = $state();
 
-  const getGridGap = (element: Element) => {
+  const getColumnGap = (element: Element) => {
     const style = getComputedStyle(element);
-
-    return {
-      columnGap: parsePixels(style.columnGap),
-    };
+    return Number.parseInt(style.columnGap) || 0;
   };
-
-  const parsePixels = (style: string) => Math.trunc(Number(style)) || 0;
 
   const getItemCount = (container: HTMLElement, containerWidth: number) => {
     if (!container.firstElementChild) {
@@ -27,7 +22,7 @@
 
     const childContentRect = container.firstElementChild.getBoundingClientRect();
     const childWidth = Math.floor(childContentRect.width || Infinity);
-    const { columnGap } = getGridGap(container);
+    const columnGap = getColumnGap(container);
 
     return Math.floor((containerWidth + columnGap) / (childWidth + columnGap)) || 1;
   };
