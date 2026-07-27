@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:math' as math;
 
+import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -184,7 +185,15 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 
   // Capture iOS status bar tap
   @override
-  void handleStatusBarTap() => _scrollToTop();
+  void handleStatusBarTap() {
+    // Routes may be pushed non-opaquely on top of the timeline (such as the asset viewer), or the timeline
+    // may be in a background tab. In either case, `handleStatusBarTap()` still fires
+    // Make sure the timeline is the primary route before scrolling to the top
+    final routeData = context.findAncestorWidgetOfExactType<RouteDataScope>()?.routeData;
+    if (ModalRoute.of(context)?.isCurrent == true && routeData?.isActive == true) {
+      _scrollToTop();
+    }
+  }
 
   void _onEvent(Event event) {
     switch (event) {
