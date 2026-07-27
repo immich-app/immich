@@ -3218,6 +3218,30 @@ describe(MediaService.name, () => {
       );
     });
 
+    it('should convert to nv12 for sw decode vaapi when input is not yuv420p and scaling is not required', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStream10Bit });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { accel: TranscodeHardwareAcceleration.Vaapi, accelDecode: false },
+      });
+
+      await sut.handleVideoConversion({ id: 'video-id' });
+
+      expect(mocks.media.transcode).toHaveBeenCalledWith(
+        '/original/path.ext',
+        expect.any(String),
+        expect.objectContaining({
+          outputOptions: expect.arrayContaining([
+            '-c:v',
+            'h264_vaapi',
+            expect.stringContaining('hwupload=extra_hw_frames=64'),
+            expect.stringContaining('scale_vaapi='),
+            expect.stringContaining('format=nv12'),
+          ]),
+          twoPass: false,
+        }),
+      );
+    });
+
     it('should set vbr options for vaapi when max bitrate is enabled', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.matroskaContainer });
       mocks.systemMetadata.get.mockResolvedValue({

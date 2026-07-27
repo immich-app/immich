@@ -923,11 +923,19 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
   }
 
   getFilterOptions(videoStream: VideoStreamInfo) {
-    const options = this.getToneMapping(videoStream);
-    options.push('hwupload=extra_hw_frames=64');
-    if (this.shouldScale(videoStream)) {
-      options.push(`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc:format=nv12`);
-    }
+    const tonemapOptions = this.getToneMapping(videoStream);
+    // VAAPI encoders (notably the AMD Mesa driver) require nv12 input; a software-decoded
+    // source whose pixel format is not yuv420p must be converted even when no scaling is
+    // needed, otherwise encoding fails with an invalid VASurfaceID error. Tone mapping
+    // already produces nv12, so the explicit conversion is only needed without it.
+    const needsNv12Conversion = tonemapOptions.length === 0 && !videoStream.pixelFormat.endsWith('420p');
+    const options = [
+      ...tonemapOptions,
+      'hwupload=extra_hw_frames=64',
+      ...(this.shouldScale(videoStream) || needsNv12Conversion
+        ? [`scale_vaapi=${this.getScaling(videoStream)}:mode=hq:out_range=pc:format=nv12`]
+        : []),
+    ];
 
     return options;
   }
