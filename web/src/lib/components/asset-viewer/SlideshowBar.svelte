@@ -31,7 +31,7 @@
     onSetToFullScreen = () => {},
   }: Props = $props();
 
-  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation, slideshowAutoplay } =
+  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation, slideshowAutoplay, slideshowPaused } =
     slideshowStore;
 
   let progressBarStatus: ProgressBarStatus | undefined = $state();
@@ -156,8 +156,10 @@
         shortcut: { key: ' ' },
         onShortcut: () => {
           if (progressBarStatus === ProgressBarStatus.Paused) {
+            $slideshowPaused = false;
             progressBar?.play();
           } else {
+            $slideshowPaused = true;
             progressBar?.pause();
           }
         },
@@ -197,7 +199,15 @@
         shape="round"
         color="secondary"
         icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
-        onclick={() => (progressBarStatus === ProgressBarStatus.Paused ? progressBar?.play() : progressBar?.pause())}
+        onclick={() => {
+          if (progressBarStatus === ProgressBarStatus.Paused) {
+            $slideshowPaused = false;
+            progressBar?.play();
+          } else {
+            $slideshowPaused = true;
+            progressBar?.pause();
+          }
+        }}
         aria-label={progressBarStatus === ProgressBarStatus.Paused ? $t('play') : $t('pause')}
       />
     {/if}
@@ -240,7 +250,7 @@
 
 {#if !isVideoSlide}
   <ProgressBar
-    autoplay={$slideshowAutoplay}
+    autoplay={!$slideshowPaused}
     hidden={!$showProgressBar}
     duration={$slideshowDelay}
     bind:this={progressBar}
