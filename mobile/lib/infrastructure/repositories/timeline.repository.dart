@@ -133,25 +133,25 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   JoinedSelectStatement _selectedBackupAssetsQuery([$LocalAssetEntityTable? asset]) {
     asset ??= _db.localAssetEntity;
     return _db.selectOnly(_db.localAlbumAssetEntity)
-    ..addColumns([_db.localAlbumAssetEntity.assetId])
-    ..where(
-      _db.localAlbumAssetEntity.assetId.equalsExp(asset.id) &
-          _db.localAlbumAssetEntity.albumId.isInQuery(
-            _db.selectOnly(_db.localAlbumEntity)
-              ..addColumns([_db.localAlbumEntity.id])
-              ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected)),
-          ),
-    );
+      ..addColumns([_db.localAlbumAssetEntity.assetId])
+      ..where(
+        _db.localAlbumAssetEntity.assetId.equalsExp(asset.id) &
+            _db.localAlbumAssetEntity.albumId.isInQuery(
+              _db.selectOnly(_db.localAlbumEntity)
+                ..addColumns([_db.localAlbumEntity.id])
+                ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected)),
+            ),
+      );
   }
 
   JoinedSelectStatement _pendingReviewMarkersQuery([$LocalAssetEntityTable? asset]) {
     asset ??= _db.localAssetEntity;
     return _db.selectOnly(_db.trashSyncEntity)
-    ..addColumns([_db.trashSyncEntity.assetId])
-    ..where(
-      _db.trashSyncEntity.checksum.equalsExp(asset.checksum) &
-          _db.trashSyncEntity.status.equalsValue(TrashSyncStatus.reviewPending),
-    );
+      ..addColumns([_db.trashSyncEntity.assetId])
+      ..where(
+        _db.trashSyncEntity.checksum.equalsExp(asset.checksum) &
+            _db.trashSyncEntity.status.equalsValue(TrashSyncStatus.reviewPending),
+      );
   }
 
   Expression<bool> _syncTrashRepresentativeFilter($LocalAssetEntityTable asset) {
@@ -200,10 +200,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
   Stream<List<Bucket>> _watchSyncTrashBuckets({required GroupAssetsBy groupBy}) {
     if (groupBy == GroupAssetsBy.none) {
-      return _db.localAssetEntity
-          .count(where: _syncTrashRepresentativeFilter)
-          .map(_generateBuckets)
-          .watchSingle();
+      return _db.localAssetEntity.count(where: _syncTrashRepresentativeFilter).map(_generateBuckets).watchSingle();
     }
 
     final assetCount = _db.localAssetEntity.checksum.count();
