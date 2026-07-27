@@ -31,7 +31,7 @@
     onSetToFullScreen = () => {},
   }: Props = $props();
 
-  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation, slideshowAutoplay, slideshowPaused } =
+  const { restartProgress, stopProgress, slideshowDelay, showProgressBar, slideshowNavigation, slideshowPaused } =
     slideshowStore;
 
   let progressBarStatus: ProgressBarStatus | undefined = $state();
