@@ -243,6 +243,10 @@ url = "https://nodejs.org/dist/v24.15.0/node-v24.15.0-darwin-x64.tar.gz"
 checksum = "sha256:cc5149eabd53779ce1e7bdc5401643622d0c7e6800ade18928a767e940bb0e62"
 url = "https://nodejs.org/dist/v24.15.0/node-v24.15.0-win-x64.zip"
 
+[[tools."npm:@openapitools/openapi-generator-cli"]]
+version = "2.40.1"
+backend = "npm:@openapitools/openapi-generator-cli"
+
 [[tools."npm:oazapfts"]]
 version = "7.5.0"
 backend = "npm:oazapfts"

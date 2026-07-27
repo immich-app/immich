@@ -48,9 +48,8 @@ jobs:
           github_token: ${{ github.token }}
           working_directory: ./mobile
 
-      - name: Get packages
-        working-directory: ./mobile
-        run: flutter pub get
+      - name: Install dependencies
+        run: mise //mobile:install:ci
 
       - name: Fetch base spec from main
         run: |

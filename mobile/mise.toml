@@ -91,7 +91,14 @@ run = "dart run drift_dev make-migrations"
 [tasks.install]
 alias = "install"
 description = "Install flutter dependencies"
+depends = ["//:open-api-dart"]
 run = "flutter pub get"
+
+[tasks."install:ci"]
+description = "Install flutter dependencies in CI"
+run = [
+  { task = "install", args = ["--enforce-lockfile"] },
+]
 
 [tasks.start]
 alias = "start"
