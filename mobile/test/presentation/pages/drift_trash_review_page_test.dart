@@ -155,7 +155,7 @@ void main() {
 
   test('action notifier keeps assets on device by rejecting remote trash', () async {
     when(
-      () => actionService.resolveRemoteTrash(any(), keep: false),
+      () => actionService.resolveRemoteTrash(any(), keep: true),
     ).thenAnswer((_) async => (displayCount: 1, success: true));
 
     final timeline = _timeline([_reviewAsset]);
@@ -175,12 +175,12 @@ void main() {
     final result = await container.read(actionProvider.notifier).resolveRemoteTrash(ActionSource.timeline, keep: true);
 
     expect(result.success, isTrue);
-    verify(() => actionService.resolveRemoteTrash(['checksum-1'], keep: false)).called(1);
+    verify(() => actionService.resolveRemoteTrash(['checksum-1'], keep: true)).called(1);
   });
 
   test('action notifier moves selected assets to device trash by approving remote trash', () async {
     when(
-      () => actionService.resolveRemoteTrash(any(), keep: true),
+      () => actionService.resolveRemoteTrash(any(), keep: false),
     ).thenAnswer((_) async => (displayCount: 1, success: true));
 
     final timeline = _timeline([_reviewAsset]);
@@ -200,6 +200,6 @@ void main() {
     final result = await container.read(actionProvider.notifier).resolveRemoteTrash(ActionSource.timeline, keep: false);
 
     expect(result.success, isTrue);
-    verify(() => actionService.resolveRemoteTrash(['checksum-1'], keep: true)).called(1);
+    verify(() => actionService.resolveRemoteTrash(['checksum-1'], keep: false)).called(1);
   });
 }

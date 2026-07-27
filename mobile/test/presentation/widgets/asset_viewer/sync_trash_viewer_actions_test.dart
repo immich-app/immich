@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/bottom_bar.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -205,10 +206,10 @@ void main() {
       overrides: [timelineServiceProvider.overrideWithValue(timeline)],
     );
 
-    expect(find.text('Keep on device'), findsOneWidget);
-    expect(find.text('Move to device trash'), findsOneWidget);
+    expect(find.text('Keep'), findsOneWidget);
+    expect(find.text('Delete'), findsOneWidget);
     expect(find.text('Share'), findsNothing);
-    expect(find.text('Delete'), findsNothing);
+    expect(find.byType(DeleteActionButton), findsNothing);
   });
 
   testWidgets('sync trash viewer advances after a review decision event', (tester) async {
