@@ -12,12 +12,12 @@ abstract class ActionWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final resolved = action.build(context, ref);
-    if (resolved == null) {
+    final actionItem = action.create(context, ref);
+    if (actionItem == null) {
       return const SizedBox.shrink();
     }
 
-    return builder(context, ref, resolved);
+    return builder(context, ref, actionItem);
   }
 }
 

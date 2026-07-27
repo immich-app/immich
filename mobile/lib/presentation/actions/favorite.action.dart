@@ -10,13 +10,13 @@ import 'package:immich_mobile/utils/error_handler.dart';
 typedef _State = ({bool shouldFavorite, List<String> assetIds});
 
 final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, source) {
-  final AssetsActionState(:ownedAssets) = ref.watch(assetsActionProvider(source));
-  if (ownedAssets.isEmpty) {
+  final assets = ref.watch(ownedAssetsActionProvider(source));
+  if (assets.isEmpty) {
     return null;
   }
 
-  final shouldFavorite = ownedAssets.favorite(isFavorite: false).isNotEmpty;
-  final assetIds = ownedAssets.favorite(isFavorite: !shouldFavorite).map((asset) => asset.id).toList(growable: false);
+  final shouldFavorite = assets.favorite(isFavorite: false).isNotEmpty;
+  final assetIds = assets.favorite(isFavorite: !shouldFavorite).map((asset) => asset.id).toList(growable: false);
   return (shouldFavorite: shouldFavorite, assetIds: assetIds);
 });
 
@@ -24,7 +24,7 @@ class FavoriteAction extends AssetActionBuilder {
   const FavoriteAction({required super.source});
 
   @override
-  ActionItem? build(BuildContext context, WidgetRef ref) {
+  ActionItem? create(BuildContext context, WidgetRef ref) {
     final shouldFavorite = ref.watch(_stateProvider(source).select((state) => state?.shouldFavorite));
     if (shouldFavorite == null) {
       return null;
@@ -47,13 +47,14 @@ class FavoriteAction extends AssetActionBuilder {
     final message = shouldFavorite
         ? context.t.favorite_action_prompt(count: assetIds.length)
         : context.t.unfavorite_action_prompt(count: assetIds.length);
-    final toast = ref.read(toastRepositoryProvider);
-    final selection = ref.read(assetsActionProvider(source).notifier);
+    final assertService = ref.read(assetServiceProvider);
+    final toastService = ref.read(toastServiceProvider);
+    final clearSelection = ref.read(clearSelectionProvider(source));
 
     try {
-      await ref.read(assetServiceProvider).update(assetIds, isFavorite: .some(shouldFavorite));
-      toast.success(message);
-      selection.clearSelect();
+      await assertService.update(assetIds, isFavorite: .some(shouldFavorite));
+      toastService.success(message);
+      clearSelection();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to update favorite status for assets");
     }

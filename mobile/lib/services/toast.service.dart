@@ -9,8 +9,8 @@ class ToastOption {
   const ToastOption({this.timeout, this.onUndo});
 }
 
-class ToastRepository {
-  const ToastRepository();
+class ToastService {
+  const ToastService();
 
   FutureOr<void> success(String message, {ToastOption? toast}) {
     snackbar.success(message, duration: toast?.timeout);

@@ -13,7 +13,7 @@ class PartnerAddAction extends ActionBuilder {
   const PartnerAddAction();
 
   @override
-  ActionItem build(BuildContext context, WidgetRef ref) =>
+  ActionItem create(BuildContext context, WidgetRef ref) =>
       ActionItem(icon: Icons.person_add_rounded, label: context.t.add_partner, onAction: () => _add(context, ref));
 
   Future<void> _add(BuildContext context, WidgetRef ref) async {
@@ -40,7 +40,7 @@ class PartnerRemoveAction extends ActionBuilder {
   final String partnerName;
 
   @override
-  ActionItem build(BuildContext context, WidgetRef ref) =>
+  ActionItem create(BuildContext context, WidgetRef ref) =>
       ActionItem(icon: Icons.person_remove_rounded, label: context.t.remove, onAction: () => _remove(context, ref));
 
   Future<void> _remove(BuildContext context, WidgetRef ref) async {
@@ -67,14 +67,9 @@ class PartnerRemoveAction extends ActionBuilder {
 }
 
 @visibleForTesting
-final candidatesStateProvider = StreamProvider.autoDispose<Iterable<User>>((ref) {
-  final currentUser = ref.watch(currentUserProvider);
-  // TODO: Refactor with a route guard to avoid this check in every provider
-  if (currentUser == null) {
-    return const Stream.empty();
-  }
-  return ref.watch(partnerServiceProvider).getCandidates(currentUser.id);
-});
+final candidatesStateProvider = StreamProvider.autoDispose<Iterable<User>>(
+  (ref) => ref.watch(partnerServiceProvider).getCandidates(ref.watch(authUserProvider).id),
+);
 
 @visibleForTesting
 class PartnerSelectionDialog extends ConsumerWidget {

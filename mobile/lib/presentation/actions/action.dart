@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -19,35 +19,30 @@ class ActionItem {
 abstract class ActionBuilder {
   const ActionBuilder();
 
-  ActionItem? build(BuildContext context, WidgetRef ref);
+  // null when the action is not applicable for the current context
+  ActionItem? create(BuildContext context, WidgetRef ref);
 }
 
-typedef AssetsActionState = ({AssetFilter<BaseAsset> assets, AssetFilter<RemoteAsset> ownedAssets});
+final assetsActionProvider = Provider.family.autoDispose<AssetFilter<BaseAsset>, ActionSource>(
+  (ref, source) => AssetFilter(switch (source) {
+    .timeline => ref.watch(multiSelectProvider.select((s) => s.selectedAssets)),
+    .viewer => switch (ref.watch(assetViewerProvider.select((s) => s.currentAsset))) {
+      BaseAsset asset => {asset},
+      null => const <BaseAsset>{},
+    },
+  }),
+);
 
-class AssetsActionNotifier extends AutoDisposeFamilyNotifier<AssetsActionState, ActionSource> {
-  @override
-  AssetsActionState build(ActionSource source) {
-    final selected = switch (source) {
-      .timeline => ref.watch(multiSelectProvider.select((s) => s.selectedAssets)),
-      .viewer => switch (ref.watch(assetViewerProvider.select((s) => s.currentAsset))) {
-        BaseAsset asset => {asset},
-        null => const <BaseAsset>{},
-      },
-    };
-
-    final assets = AssetFilter(selected);
-    return (assets: assets, ownedAssets: assets.owned(ref.watch(authUserProvider).id));
+final clearSelectionProvider = Provider.family.autoDispose<VoidCallback, ActionSource>((ref, source) {
+  if (source == .timeline) {
+    return ref.read(multiSelectProvider.notifier).reset;
   }
 
-  void clearSelect() {
-    if (arg == .timeline) {
-      ref.read(multiSelectProvider.notifier).reset();
-    }
-  }
-}
+  return () {};
+});
 
-final assetsActionProvider = NotifierProvider.family.autoDispose<AssetsActionNotifier, AssetsActionState, ActionSource>(
-  AssetsActionNotifier.new,
+final ownedAssetsActionProvider = Provider.family.autoDispose<AssetFilter<RemoteAsset>, ActionSource>(
+  (ref, source) => ref.watch(assetsActionProvider(source)).owned(ref.watch(authUserProvider).id),
 );
 
 abstract class AssetActionBuilder extends ActionBuilder {
