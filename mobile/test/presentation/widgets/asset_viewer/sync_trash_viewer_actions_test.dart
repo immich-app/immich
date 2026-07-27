@@ -1,4 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -131,6 +132,34 @@ extension _PumpAssetViewer on WidgetTester {
     required _MutableSyncTrashTimelineService timeline,
     required BaseAsset initialAsset,
   }) async {
+    final router = RootStackRouter.build(
+      routes: [
+        AutoRoute(
+          initial: true,
+          page: PageInfo(
+            'Home',
+            builder: (_) => Builder(
+              builder: (context) => Scaffold(
+                body: Column(
+                  children: [
+                    const Text('route-home'),
+                    ElevatedButton(
+                      onPressed: () => AutoRouter.of(context).pushPath('/viewer'),
+                      child: const Text('open-viewer'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+        AutoRoute(
+          path: '/viewer',
+          page: PageInfo('Viewer', builder: (_) => const Material(child: AssetViewer(initialIndex: 0))),
+        ),
+      ],
+    );
+
     await pumpWidget(
       EasyLocalization(
         supportedLocales: locales.values.toList(),
@@ -148,32 +177,18 @@ extension _PumpAssetViewer on WidgetTester {
             assetViewerProvider.overrideWith(() => _SeededAssetViewerNotifier(initialAsset)),
           ],
           child: Builder(
-            builder: (context) => MaterialApp(
+            builder: (context) => MaterialApp.router(
               debugShowCheckedModeBanner: false,
               localizationsDelegates: context.localizationDelegates,
               supportedLocales: context.supportedLocales,
               locale: context.locale,
-              home: Builder(
-                builder: (context) => Scaffold(
-                  body: Column(
-                    children: [
-                      const Text('route-home'),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(builder: (_) => const Material(child: AssetViewer(initialIndex: 0))),
-                        ),
-                        child: const Text('open-viewer'),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              routerConfig: router.config(),
             ),
           ),
         ),
       ),
     );
-    await pump();
+    await pumpAndSettle();
   }
 }
 
