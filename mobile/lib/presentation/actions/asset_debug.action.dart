@@ -12,7 +12,7 @@ class AssetDebugAction extends AssetActionBuilder {
   const AssetDebugAction({required super.source});
 
   @override
-  ActionData? build(BuildContext context, WidgetRef ref) {
+  ActionItem? build(BuildContext context, WidgetRef ref) {
     final assets = ref.watch(assetsActionProvider(source)).assets;
     final troubleshootEnabled = ref.watch(settingsProvider.notifier).get(.advancedTroubleshooting);
     if (!troubleshootEnabled || assets.length != 1) {

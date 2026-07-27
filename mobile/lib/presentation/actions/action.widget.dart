@@ -8,7 +8,7 @@ abstract class ActionWidget extends ConsumerWidget {
 
   const ActionWidget({super.key, required this.action});
 
-  Widget builder(BuildContext context, WidgetRef ref, ActionData action);
+  Widget builder(BuildContext context, WidgetRef ref, ActionItem action);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,7 +25,7 @@ class ActionColumnButton extends ActionWidget {
   const ActionColumnButton({super.key, required super.action});
 
   @override
-  Widget builder(BuildContext context, WidgetRef ref, ActionData action) => ImmichColumnButton(
+  Widget builder(BuildContext context, WidgetRef ref, ActionItem action) => ImmichColumnButton(
     icon: action.icon,
     label: action.label,
     onPressed: action.onAction,
@@ -39,7 +39,7 @@ class ActionIconButton extends ActionWidget {
   const ActionIconButton({super.key, required super.action, this.variant = .ghost});
 
   @override
-  Widget builder(BuildContext context, WidgetRef ref, ActionData action) => ImmichIconButton(
+  Widget builder(BuildContext context, WidgetRef ref, ActionItem action) => ImmichIconButton(
     icon: action.icon,
     onPressed: action.onAction,
     // onLongPress: action.onSecondaryAction,
@@ -53,7 +53,7 @@ class ActionButton extends ActionWidget {
   const ActionButton({super.key, required super.action, this.variant = .ghost});
 
   @override
-  Widget builder(BuildContext context, WidgetRef ref, ActionData action) => ImmichTextButton(
+  Widget builder(BuildContext context, WidgetRef ref, ActionItem action) => ImmichTextButton(
     labelText: action.label,
     icon: action.icon,
     onPressed: action.onAction,
@@ -66,6 +66,6 @@ class ActionMenuItem extends ActionWidget {
   const ActionMenuItem({super.key, required super.action});
 
   @override
-  Widget builder(BuildContext context, WidgetRef ref, ActionData action) =>
+  Widget builder(BuildContext context, WidgetRef ref, ActionItem action) =>
       ImmichMenuItem(icon: action.icon, label: action.label, onPressed: action.onAction);
 }

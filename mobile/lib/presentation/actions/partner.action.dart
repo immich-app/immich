@@ -13,8 +13,8 @@ class PartnerAddAction extends ActionBuilder {
   const PartnerAddAction();
 
   @override
-  ActionData build(BuildContext context, WidgetRef ref) =>
-      ActionData(icon: Icons.person_add_rounded, label: context.t.add_partner, onAction: () => _add(context, ref));
+  ActionItem build(BuildContext context, WidgetRef ref) =>
+      ActionItem(icon: Icons.person_add_rounded, label: context.t.add_partner, onAction: () => _add(context, ref));
 
   Future<void> _add(BuildContext context, WidgetRef ref) async {
     final partnerService = ref.read(partnerServiceProvider);
@@ -40,8 +40,8 @@ class PartnerRemoveAction extends ActionBuilder {
   final String partnerName;
 
   @override
-  ActionData build(BuildContext context, WidgetRef ref) =>
-      ActionData(icon: Icons.person_remove_rounded, label: context.t.remove, onAction: () => _remove(context, ref));
+  ActionItem build(BuildContext context, WidgetRef ref) =>
+      ActionItem(icon: Icons.person_remove_rounded, label: context.t.remove, onAction: () => _remove(context, ref));
 
   Future<void> _remove(BuildContext context, WidgetRef ref) async {
     final partnerService = ref.read(partnerServiceProvider);

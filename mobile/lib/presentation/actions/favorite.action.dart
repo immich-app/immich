@@ -24,7 +24,7 @@ class FavoriteAction extends AssetActionBuilder {
   const FavoriteAction({required super.source});
 
   @override
-  ActionData? build(BuildContext context, WidgetRef ref) {
+  ActionItem? build(BuildContext context, WidgetRef ref) {
     final shouldFavorite = ref.watch(_stateProvider(source).select((state) => state?.shouldFavorite));
     if (shouldFavorite == null) {
       return null;

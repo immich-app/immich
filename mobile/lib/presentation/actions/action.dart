@@ -7,19 +7,19 @@ import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
 
-class ActionData {
+class ActionItem {
   final IconData icon;
   final String label;
   final Future<void> Function() onAction;
   final Future<void> Function()? onSecondaryAction;
 
-  const ActionData({required this.icon, required this.label, required this.onAction, this.onSecondaryAction});
+  const ActionItem({required this.icon, required this.label, required this.onAction, this.onSecondaryAction});
 }
 
 abstract class ActionBuilder {
   const ActionBuilder();
 
-  ActionData? build(BuildContext context, WidgetRef ref);
+  ActionItem? build(BuildContext context, WidgetRef ref);
 }
 
 typedef AssetsActionState = ({AssetFilter<BaseAsset> assets, AssetFilter<RemoteAsset> ownedAssets});
