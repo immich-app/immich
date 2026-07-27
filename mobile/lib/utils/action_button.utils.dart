@@ -9,6 +9,9 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_image.action.dart';
+import 'package:immich_mobile/presentation/actions/open_activity.action.dart';
+import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/cast_action_button.widget.dart';
@@ -16,6 +19,7 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/add_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/open_in_browser_action_button.widget.dart';
@@ -47,6 +51,8 @@ class ActionButtonContext {
   final bool isCasting;
   final TimelineOrigin timelineOrigin;
   final int selectedCount;
+  final ThemeData? originalTheme;
+  final SemVer serverVersion;
 
   const ActionButtonContext({
     required this.asset,
@@ -61,13 +67,17 @@ class ActionButtonContext {
     this.isCasting = false,
     this.timelineOrigin = TimelineOrigin.main,
     this.selectedCount = 1,
+    this.originalTheme,
+    this.serverVersion = const SemVer(major: 0, minor: 0, patch: 0),
   });
 }
 
 enum ActionButtonType {
   openInfo,
+  openActivity,
   likeActivity,
   share,
+  editImage,
   shareLink,
   cast,
   setAlbumCover,
@@ -89,11 +99,22 @@ enum ActionButtonType {
   deleteLocal,
   deletePermanent,
   delete,
+  addTo,
   advancedInfo;
+
+  bool _isInActivityAlbum(ActionButtonContext context) {
+    return !context.isInLockedView &&
+        context.currentAlbum != null &&
+        context.currentAlbum!.isActivityEnabled &&
+        context.currentAlbum!.isShared;
+  }
 
   bool shouldShow(ActionButtonContext context) {
     return switch (this) {
-      ActionButtonType.advancedInfo => context.advancedTroubleshooting,
+      ActionButtonType.advancedInfo => AssetDebugAction.canShow(
+        assetCount: context.selectedCount,
+        advancedTroubleshooting: context.advancedTroubleshooting,
+      ),
       ActionButtonType.share => true,
       ActionButtonType.shareLink =>
         !context.isInLockedView && //
@@ -159,11 +180,7 @@ enum ActionButtonType {
             !context.isInLockedView && //
             context.isStacked,
       ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView,
-      ActionButtonType.likeActivity =>
-        !context.isInLockedView &&
-            context.currentAlbum != null &&
-            context.currentAlbum!.isActivityEnabled &&
-            context.currentAlbum!.isShared,
+      ActionButtonType.likeActivity => _isInActivityAlbum(context),
       ActionButtonType.similarPhotos =>
         !context.isInLockedView && //
             context.asset is RemoteAsset,
@@ -181,9 +198,28 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.localAlbum &&
             context.isOwner,
       ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
+      ActionButtonType.editImage => EditImageAction.canShow(
+        asset: context.asset,
+        isInLockedView: context.isInLockedView,
+        serverVersion: context.serverVersion,
+      ),
+      ActionButtonType.addTo =>
+        !context.isInLockedView && //
+            context.asset.hasRemote,
+      ActionButtonType.openActivity => OpenActivityAction.canShow(
+        isInLockedView: context.isInLockedView,
+        album: context.currentAlbum,
+      ),
       ActionButtonType.slideshow => true,
     };
   }
+
+  bool showsAt(ButtonPosition position, ActionButtonContext context) => switch (this) {
+    ActionButtonType.openActivity || ActionButtonType.likeActivity =>
+      position != ButtonPosition.bottomBar || context.timelineOrigin != TimelineOrigin.trash,
+    ActionButtonType.editImage => position != ButtonPosition.bottomBar || context.currentAlbum?.isShared != true,
+    _ => true,
+  };
 
   Widget buildButton(
     ActionButtonContext context, [
@@ -217,8 +253,14 @@ enum ActionButtonType {
         source: context.source,
         iconOnly: iconOnly,
         menuItem: menuItem,
+        useShortLabel: false,
       ),
-      ActionButtonType.delete => DeleteActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.delete => DeleteActionButton(
+        source: context.source,
+        iconOnly: iconOnly,
+        menuItem: menuItem,
+        showConfirmation: true,
+      ),
       ActionButtonType.moveToLockFolder => MoveToLockFolderActionButton(
         source: context.source,
         iconOnly: iconOnly,
@@ -284,6 +326,15 @@ enum ActionButtonType {
               },
       ),
       ActionButtonType.cast => CastActionButton(iconOnly: iconOnly, menuItem: menuItem),
+      ActionButtonType.editImage when menuItem => ActionMenuItemWidget(
+        action: EditImageAction(assets: [context.asset]),
+      ),
+      ActionButtonType.editImage => ActionColumnButtonWidget(action: EditImageAction(assets: [context.asset])),
+      ActionButtonType.addTo => AddActionButton(originalTheme: context.originalTheme),
+      ActionButtonType.openActivity when menuItem => ActionMenuItemWidget(
+        action: OpenActivityAction(assets: [context.asset]),
+      ),
+      ActionButtonType.openActivity => ActionColumnButtonWidget(action: OpenActivityAction(assets: [context.asset])),
     };
   }
 
@@ -315,34 +366,62 @@ enum ActionButtonType {
 class ActionButtonBuilder {
   static const List<ActionButtonType> _actionTypes = ActionButtonType.values;
   static const List<ActionButtonType> defaultViewerKebabMenuOrder = _actionTypes;
-  static const Set<ActionButtonType> defaultViewerBottomBarButtons = {
+  static const List<ActionButtonType> _defaultViewerBottomBarOrder = [
     ActionButtonType.share,
-    ActionButtonType.moveToLockFolder,
     ActionButtonType.upload,
-    ActionButtonType.delete,
-    ActionButtonType.archive,
-    ActionButtonType.unarchive,
+    ActionButtonType.editImage,
+    ActionButtonType.addTo,
+    ActionButtonType.openActivity,
+    ActionButtonType.likeActivity,
+    ActionButtonType.removeFromLockFolder,
     ActionButtonType.restoreTrash,
     ActionButtonType.deletePermanent,
-  };
+    ActionButtonType.delete,
+    ActionButtonType.deleteLocal,
+  ];
 
   static List<Widget> build(ActionButtonContext context) {
     return _actionTypes.where((type) => type.shouldShow(context)).map((type) => type.buildButton(context)).toList();
   }
 
-  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext) {
-    final visibleButtons = defaultViewerKebabMenuOrder
-        .where((type) => !defaultViewerBottomBarButtons.contains(type) && type.shouldShow(context))
+  static List<ActionButtonType> getViewerBottomBarTypes(ActionButtonContext context) {
+    return _defaultViewerBottomBarOrder
+        .where((type) => type.shouldShow(context) && type.showsAt(ButtonPosition.bottomBar, context))
+        .take(4)
         .toList();
+  }
 
-    if (visibleButtons.isEmpty) {
+  static List<ActionButtonType> getViewerKebabMenuTypes(ActionButtonContext context) {
+    final inBottomBar = getViewerBottomBarTypes(context).toSet();
+    return defaultViewerKebabMenuOrder
+        .where(
+          (type) =>
+              !inBottomBar.contains(type) &&
+              type.shouldShow(context) &&
+              type.showsAt(ButtonPosition.kebabMenu, context),
+        )
+        .toList();
+  }
+
+  static List<Widget> buildViewerKebabMenu(ActionButtonContext context, BuildContext buildContext) {
+    return getViewerKebabMenuTypes(context).toKebabMenuWidgets(context, buildContext);
+  }
+
+  static List<Widget> buildViewerBottomBar(ActionButtonContext context, BuildContext buildContext) {
+    return getViewerBottomBarTypes(context).toBottomBarWidgets(context, buildContext);
+  }
+}
+
+extension ActionButtonTypeListExtension on List<ActionButtonType> {
+  List<Widget> toKebabMenuWidgets(ActionButtonContext context, BuildContext buildContext) {
+    if (isEmpty) {
       return [];
     }
 
     final List<Widget> result = [];
     int? lastGroup;
 
-    for (final type in visibleButtons) {
+    for (final type in this) {
       if (lastGroup != null && type.kebabMenuGroup != lastGroup) {
         result.add(const Divider(height: 1));
       }
@@ -351,5 +430,9 @@ class ActionButtonBuilder {
     }
 
     return result;
+  }
+
+  List<Widget> toBottomBarWidgets(ActionButtonContext context, BuildContext buildContext) {
+    return map((type) => type.buildButton(context, buildContext, false, false)).toList();
   }
 }
