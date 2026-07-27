@@ -10,8 +10,10 @@ import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
@@ -31,6 +33,7 @@ final actionServiceProvider = Provider<ActionService>(
     ref.watch(driftAlbumApiRepositoryProvider),
     ref.watch(remoteAlbumRepository),
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(trashSyncRepositoryProvider),
     ref.watch(downloadRepositoryProvider),
     ref.watch(tagServiceProvider),
   ),
@@ -43,6 +46,7 @@ class ActionService {
   final DriftAlbumApiRepository _albumApiRepository;
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
   final AssetMediaRepository _assetMediaRepository;
+  final DriftTrashSyncRepository _trashSyncRepository;
   final DownloadRepository _downloadRepository;
   final TagService _tagService;
 
@@ -53,6 +57,7 @@ class ActionService {
     this._albumApiRepository,
     this._remoteAlbumRepository,
     this._assetMediaRepository,
+    this._trashSyncRepository,
     this._downloadRepository,
     this._tagService,
   );
@@ -138,6 +143,39 @@ class ActionService {
 
   Future<int> deleteLocal(List<String> localIds) async {
     return await _deleteLocalAssets(localIds);
+  }
+
+  Future<({int displayCount, bool success})> resolveRemoteTrash(
+    Iterable<String> checksums, {
+    required bool keep,
+  }) async {
+    if (keep) {
+      final rejectedChecksums = await _trashSyncRepository.rejectReviewChecksums(checksums);
+      return (displayCount: rejectedChecksums.length, success: rejectedChecksums.isNotEmpty);
+    }
+
+    final assetIdsByChecksum = await _trashSyncRepository.getReviewAssetIdsByChecksum(checksums);
+    final assetIds = assetIdsByChecksum.values.expand((ids) => ids).toList();
+    if (assetIds.isEmpty) {
+      return (displayCount: 0, success: false);
+    }
+
+    final deletedIds = await _assetMediaRepository.deleteAll(assetIds);
+    if (deletedIds.isEmpty) {
+      return (displayCount: 0, success: false);
+    }
+    await _localAssetRepository.delete(deletedIds);
+
+    final deletedIdSet = deletedIds.toSet();
+    final approvedAssetIdsByChecksum = Map.fromEntries(
+      assetIdsByChecksum.entries.where((entry) => entry.value.isNotEmpty && entry.value.every(deletedIdSet.contains)),
+    );
+    if (approvedAssetIdsByChecksum.isEmpty) {
+      return (displayCount: 0, success: false);
+    }
+
+    await _trashSyncRepository.approveSelectedReviewChecksums(approvedAssetIdsByChecksum);
+    return (displayCount: approvedAssetIdsByChecksum.length, success: true);
   }
 
   Future<bool> editLocation(List<String> remoteIds, BuildContext context) async {

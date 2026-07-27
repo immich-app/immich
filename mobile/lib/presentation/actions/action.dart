@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 
 class ActionScope {
   final BuildContext context;
   final WidgetRef ref;
   final UserDto authUser;
+  final TimelineOrigin timelineOrigin;
 
-  const ActionScope({required this.context, required this.ref, required this.authUser});
+  const ActionScope({required this.context, required this.ref, required this.authUser, required this.timelineOrigin});
 }
 
 abstract class BaseAction {

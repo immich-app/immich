@@ -121,7 +121,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 32;
+  int get schemaVersion => 33;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -321,6 +321,10 @@ class Drift extends $Drift {
                 await m.createTable(v32.serverDeletedChecksum);
                 await m.create(v32.idxRemoteAssetSoftDeletedChecksum);
                 await m.deleteTable('trashed_local_asset_entity');
+              },
+              from32To33: (m, v33) async {
+                await m.addColumn(v33.trashSync, v33.trashSync.remoteDeletedAt);
+                await m.addColumn(v33.serverDeletedChecksum, v33.serverDeletedChecksum.timelineAt);
               },
             ),
           ),

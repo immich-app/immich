@@ -37,4 +37,9 @@ enum TrashSyncStatus {
    * to copy the checksum back into the local asset table
    */
   restored,
+  reviewPending,
+  reviewRejected,
+  reviewApproved,
 }
+
+enum TrashSyncMode { off, autoSync, review }

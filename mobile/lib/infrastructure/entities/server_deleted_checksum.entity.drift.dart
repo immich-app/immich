@@ -9,10 +9,12 @@ import 'package:immich_mobile/infrastructure/entities/server_deleted_checksum.en
 typedef $$ServerDeletedChecksumEntityTableCreateCompanionBuilder =
     i1.ServerDeletedChecksumEntityCompanion Function({
       required String checksum,
+      i0.Value<DateTime?> timelineAt,
     });
 typedef $$ServerDeletedChecksumEntityTableUpdateCompanionBuilder =
     i1.ServerDeletedChecksumEntityCompanion Function({
       i0.Value<String> checksum,
+      i0.Value<DateTime?> timelineAt,
     });
 
 class $$ServerDeletedChecksumEntityTableFilterComposer
@@ -30,6 +32,11 @@ class $$ServerDeletedChecksumEntityTableFilterComposer
   });
   i0.ColumnFilters<String> get checksum => $composableBuilder(
     column: $table.checksum,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<DateTime> get timelineAt => $composableBuilder(
+    column: $table.timelineAt,
     builder: (column) => i0.ColumnFilters(column),
   );
 }
@@ -51,6 +58,11 @@ class $$ServerDeletedChecksumEntityTableOrderingComposer
     column: $table.checksum,
     builder: (column) => i0.ColumnOrderings(column),
   );
+
+  i0.ColumnOrderings<DateTime> get timelineAt => $composableBuilder(
+    column: $table.timelineAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 }
 
 class $$ServerDeletedChecksumEntityTableAnnotationComposer
@@ -68,6 +80,11 @@ class $$ServerDeletedChecksumEntityTableAnnotationComposer
   });
   i0.GeneratedColumn<String> get checksum =>
       $composableBuilder(column: $table.checksum, builder: (column) => column);
+
+  i0.GeneratedColumn<DateTime> get timelineAt => $composableBuilder(
+    column: $table.timelineAt,
+    builder: (column) => column,
+  );
 }
 
 class $$ServerDeletedChecksumEntityTableTableManager
@@ -115,11 +132,20 @@ class $$ServerDeletedChecksumEntityTableTableManager
                 $table: table,
               ),
           updateCompanionCallback:
-              ({i0.Value<String> checksum = const i0.Value.absent()}) =>
-                  i1.ServerDeletedChecksumEntityCompanion(checksum: checksum),
-          createCompanionCallback: ({required String checksum}) =>
-              i1.ServerDeletedChecksumEntityCompanion.insert(
+              ({
+                i0.Value<String> checksum = const i0.Value.absent(),
+                i0.Value<DateTime?> timelineAt = const i0.Value.absent(),
+              }) => i1.ServerDeletedChecksumEntityCompanion(
                 checksum: checksum,
+                timelineAt: timelineAt,
+              ),
+          createCompanionCallback:
+              ({
+                required String checksum,
+                i0.Value<DateTime?> timelineAt = const i0.Value.absent(),
+              }) => i1.ServerDeletedChecksumEntityCompanion.insert(
+                checksum: checksum,
+                timelineAt: timelineAt,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -172,8 +198,20 @@ class $ServerDeletedChecksumEntityTable extends i2.ServerDeletedChecksumEntity
     type: i0.DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const i0.VerificationMeta _timelineAtMeta = const i0.VerificationMeta(
+    'timelineAt',
+  );
   @override
-  List<i0.GeneratedColumn> get $columns => [checksum];
+  late final i0.GeneratedColumn<DateTime> timelineAt =
+      i0.GeneratedColumn<DateTime>(
+        'timeline_at',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  @override
+  List<i0.GeneratedColumn> get $columns => [checksum, timelineAt];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -194,6 +232,12 @@ class $ServerDeletedChecksumEntityTable extends i2.ServerDeletedChecksumEntity
     } else if (isInserting) {
       context.missing(_checksumMeta);
     }
+    if (data.containsKey('timeline_at')) {
+      context.handle(
+        _timelineAtMeta,
+        timelineAt.isAcceptableOrUnknown(data['timeline_at']!, _timelineAtMeta),
+      );
+    }
     return context;
   }
 
@@ -210,6 +254,10 @@ class $ServerDeletedChecksumEntityTable extends i2.ServerDeletedChecksumEntity
         i0.DriftSqlType.string,
         data['${effectivePrefix}checksum'],
       )!,
+      timelineAt: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}timeline_at'],
+      ),
     );
   }
 
@@ -227,11 +275,18 @@ class $ServerDeletedChecksumEntityTable extends i2.ServerDeletedChecksumEntity
 class ServerDeletedChecksumEntityData extends i0.DataClass
     implements i0.Insertable<i1.ServerDeletedChecksumEntityData> {
   final String checksum;
-  const ServerDeletedChecksumEntityData({required this.checksum});
+  final DateTime? timelineAt;
+  const ServerDeletedChecksumEntityData({
+    required this.checksum,
+    this.timelineAt,
+  });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
     final map = <String, i0.Expression>{};
     map['checksum'] = i0.Variable<String>(checksum);
+    if (!nullToAbsent || timelineAt != null) {
+      map['timeline_at'] = i0.Variable<DateTime>(timelineAt);
+    }
     return map;
   }
 
@@ -242,60 +297,84 @@ class ServerDeletedChecksumEntityData extends i0.DataClass
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
     return ServerDeletedChecksumEntityData(
       checksum: serializer.fromJson<String>(json['checksum']),
+      timelineAt: serializer.fromJson<DateTime?>(json['timelineAt']),
     );
   }
   @override
   Map<String, dynamic> toJson({i0.ValueSerializer? serializer}) {
     serializer ??= i0.driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{'checksum': serializer.toJson<String>(checksum)};
+    return <String, dynamic>{
+      'checksum': serializer.toJson<String>(checksum),
+      'timelineAt': serializer.toJson<DateTime?>(timelineAt),
+    };
   }
 
-  i1.ServerDeletedChecksumEntityData copyWith({String? checksum}) =>
-      i1.ServerDeletedChecksumEntityData(checksum: checksum ?? this.checksum);
+  i1.ServerDeletedChecksumEntityData copyWith({
+    String? checksum,
+    i0.Value<DateTime?> timelineAt = const i0.Value.absent(),
+  }) => i1.ServerDeletedChecksumEntityData(
+    checksum: checksum ?? this.checksum,
+    timelineAt: timelineAt.present ? timelineAt.value : this.timelineAt,
+  );
   ServerDeletedChecksumEntityData copyWithCompanion(
     i1.ServerDeletedChecksumEntityCompanion data,
   ) {
     return ServerDeletedChecksumEntityData(
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
+      timelineAt: data.timelineAt.present
+          ? data.timelineAt.value
+          : this.timelineAt,
     );
   }
 
   @override
   String toString() {
     return (StringBuffer('ServerDeletedChecksumEntityData(')
-          ..write('checksum: $checksum')
+          ..write('checksum: $checksum, ')
+          ..write('timelineAt: $timelineAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => checksum.hashCode;
+  int get hashCode => Object.hash(checksum, timelineAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is i1.ServerDeletedChecksumEntityData &&
-          other.checksum == this.checksum);
+          other.checksum == this.checksum &&
+          other.timelineAt == this.timelineAt);
 }
 
 class ServerDeletedChecksumEntityCompanion
     extends i0.UpdateCompanion<i1.ServerDeletedChecksumEntityData> {
   final i0.Value<String> checksum;
+  final i0.Value<DateTime?> timelineAt;
   const ServerDeletedChecksumEntityCompanion({
     this.checksum = const i0.Value.absent(),
+    this.timelineAt = const i0.Value.absent(),
   });
-  ServerDeletedChecksumEntityCompanion.insert({required String checksum})
-    : checksum = i0.Value(checksum);
+  ServerDeletedChecksumEntityCompanion.insert({
+    required String checksum,
+    this.timelineAt = const i0.Value.absent(),
+  }) : checksum = i0.Value(checksum);
   static i0.Insertable<i1.ServerDeletedChecksumEntityData> custom({
     i0.Expression<String>? checksum,
+    i0.Expression<DateTime>? timelineAt,
   }) {
-    return i0.RawValuesInsertable({if (checksum != null) 'checksum': checksum});
+    return i0.RawValuesInsertable({
+      if (checksum != null) 'checksum': checksum,
+      if (timelineAt != null) 'timeline_at': timelineAt,
+    });
   }
 
   i1.ServerDeletedChecksumEntityCompanion copyWith({
     i0.Value<String>? checksum,
+    i0.Value<DateTime?>? timelineAt,
   }) {
     return i1.ServerDeletedChecksumEntityCompanion(
       checksum: checksum ?? this.checksum,
+      timelineAt: timelineAt ?? this.timelineAt,
     );
   }
 
@@ -305,13 +384,17 @@ class ServerDeletedChecksumEntityCompanion
     if (checksum.present) {
       map['checksum'] = i0.Variable<String>(checksum.value);
     }
+    if (timelineAt.present) {
+      map['timeline_at'] = i0.Variable<DateTime>(timelineAt.value);
+    }
     return map;
   }
 
   @override
   String toString() {
     return (StringBuffer('ServerDeletedChecksumEntityCompanion(')
-          ..write('checksum: $checksum')
+          ..write('checksum: $checksum, ')
+          ..write('timelineAt: $timelineAt')
           ..write(')'))
         .toString();
   }

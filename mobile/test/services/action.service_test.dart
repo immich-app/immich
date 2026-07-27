@@ -21,6 +21,7 @@ void main() {
   late MockDriftAlbumApiRepository albumApiRepository;
   late MockRemoteAlbumRepository remoteAlbumRepository;
   late MockAssetMediaRepository assetMediaRepository;
+  late MockTrashSyncRepository trashSyncRepository;
   late MockDownloadRepository downloadRepository;
   late MockTagService tagService;
 
@@ -47,6 +48,7 @@ void main() {
     albumApiRepository = MockDriftAlbumApiRepository();
     remoteAlbumRepository = MockRemoteAlbumRepository();
     assetMediaRepository = MockAssetMediaRepository();
+    trashSyncRepository = MockTrashSyncRepository();
     downloadRepository = MockDownloadRepository();
     tagService = MockTagService();
 
@@ -57,6 +59,7 @@ void main() {
       albumApiRepository,
       remoteAlbumRepository,
       assetMediaRepository,
+      trashSyncRepository,
       downloadRepository,
       tagService,
     );
@@ -159,6 +162,58 @@ void main() {
       expect(result, 0);
       verify(() => assetMediaRepository.deleteAll(ids)).called(1);
       verifyNever(() => localAssetRepository.delete(any()));
+    });
+  });
+
+  group('ActionService.resolveRemoteTrash', () {
+    test('rejecting review marks checksum rejected and leaves local row', () async {
+      const checksums = ['checksum-1'];
+      when(() => trashSyncRepository.rejectReviewChecksums(checksums)).thenAnswer((_) async => checksums.toSet());
+
+      final result = await sut.resolveRemoteTrash(checksums, keep: true);
+
+      expect(result, (displayCount: 1, success: true));
+      verify(() => trashSyncRepository.rejectReviewChecksums(checksums)).called(1);
+      verifyNever(() => assetMediaRepository.deleteAll(any()));
+    });
+
+    test('approving review trashes only matching actionable local ids before approving', () async {
+      const checksums = ['checksum-1'];
+      const assetIds = ['asset-1'];
+      when(
+        () => trashSyncRepository.getReviewAssetIdsByChecksum(checksums),
+      ).thenAnswer((_) async => const {'checksum-1': assetIds});
+      when(() => assetMediaRepository.deleteAll(assetIds)).thenAnswer((_) async => assetIds);
+      when(() => localAssetRepository.delete(assetIds)).thenAnswer((_) async {});
+      when(
+        () => trashSyncRepository.approveSelectedReviewChecksums(const {'checksum-1': assetIds}),
+      ).thenAnswer((_) async {});
+
+      final result = await sut.resolveRemoteTrash(checksums, keep: false);
+
+      expect(result, (displayCount: 1, success: true));
+      verifyInOrder([
+        () => assetMediaRepository.deleteAll(assetIds),
+        () => localAssetRepository.delete(assetIds),
+        () => trashSyncRepository.approveSelectedReviewChecksums(const {'checksum-1': assetIds}),
+      ]);
+    });
+
+    test('approving review leaves all pending rows for a checksum when any selected deletion fails', () async {
+      const checksums = ['checksum-1'];
+      const assetIds = ['asset-1', 'asset-2'];
+      const deletedIds = ['asset-1'];
+      when(
+        () => trashSyncRepository.getReviewAssetIdsByChecksum(checksums),
+      ).thenAnswer((_) async => const {'checksum-1': assetIds});
+      when(() => assetMediaRepository.deleteAll(assetIds)).thenAnswer((_) async => deletedIds);
+      when(() => localAssetRepository.delete(deletedIds)).thenAnswer((_) async {});
+
+      final result = await sut.resolveRemoteTrash(checksums, keep: false);
+
+      expect(result, (displayCount: 0, success: false));
+      verify(() => localAssetRepository.delete(deletedIds)).called(1);
+      verifyNever(() => trashSyncRepository.approveSelectedReviewChecksums(any()));
     });
   });
 }

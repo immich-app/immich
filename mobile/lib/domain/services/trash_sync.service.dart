@@ -1,3 +1,4 @@
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
@@ -23,12 +24,22 @@ class TrashSyncService {
     try {
       await _prune();
 
-      if (!_settings.appConfig.trashSyncEnabled || !await _canApplyToOsTrash()) {
-        return;
+      switch (_settings.appConfig.trashSync.mode) {
+        case TrashSyncMode.off:
+          return;
+        case TrashSyncMode.autoSync:
+          if (!await _canApplyToOsTrash()) {
+            return;
+          }
+          await _recordAuto();
+          await _act();
+        case TrashSyncMode.review:
+          await _recordReview();
+          if (CurrentPlatform.isAndroid && await _canApplyToOsTrash()) {
+            await _restoreAssets();
+            await _reconcileWithOSTrash();
+          }
       }
-
-      await _record();
-      await _act();
     } catch (error, stack) {
       _log.severe("Trash reconcile failed", error, stack);
     }
@@ -40,9 +51,14 @@ class TrashSyncService {
     await _repo.prunePendingMarkers();
   }
 
-  Future<void> _record() async {
+  Future<void> _recordAuto() async {
     await _repo.recordSoftDeleteAssets();
     await _repo.recordHardDeletedAssets();
+  }
+
+  Future<void> _recordReview() async {
+    await _repo.recordSoftDeleteReviewAssets();
+    await _repo.recordHardDeletedReviewAssets();
   }
 
   Future<void> _act() async {

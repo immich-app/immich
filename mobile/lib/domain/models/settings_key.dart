@@ -38,6 +38,7 @@ enum SettingsKey<T> {
 
   // Sync
   trashSyncEnabled<bool>(),
+  trashSyncMode<TrashSyncMode>(codec: EnumCodec(TrashSyncMode.values)),
 
   // Backup
   backupEnabled<bool>(),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_ui/immich_ui.dart';
@@ -34,12 +36,21 @@ class _ActionWidget extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final scope = ActionScope(context: context, ref: ref, authUser: authUser);
+    final timelineOrigin = _timelineOrigin(ref);
+    final scope = ActionScope(context: context, ref: ref, authUser: authUser, timelineOrigin: timelineOrigin);
     if (!action.isVisible(scope)) {
       return const SizedBox.shrink();
     }
 
     return builder(.new(label: action.label(scope), onAction: () => _onAction(scope)));
+  }
+
+  TimelineOrigin _timelineOrigin(WidgetRef ref) {
+    try {
+      return ref.read(timelineServiceProvider).origin;
+    } catch (_) {
+      return TimelineOrigin.main;
+    }
   }
 }
 

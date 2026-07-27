@@ -2,12 +2,15 @@ import 'dart:async';
 
 import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -120,6 +123,112 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     assetSource: (offset, count) => _getLocalAlbumBucketAssets(albumId, offset: offset, count: count),
     origin: TimelineOrigin.localAlbum,
   );
+
+  TimelineQuery syncTrash(GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchSyncTrashBuckets(groupBy: groupBy),
+    assetSource: (offset, count) => _getSyncTrashAssets(offset: offset, count: count),
+    origin: TimelineOrigin.syncTrash,
+  );
+
+  JoinedSelectStatement _selectedBackupAssetsQuery([$LocalAssetEntityTable? asset]) {
+    asset ??= _db.localAssetEntity;
+    return _db.selectOnly(_db.localAlbumAssetEntity)
+    ..addColumns([_db.localAlbumAssetEntity.assetId])
+    ..where(
+      _db.localAlbumAssetEntity.assetId.equalsExp(asset.id) &
+          _db.localAlbumAssetEntity.albumId.isInQuery(
+            _db.selectOnly(_db.localAlbumEntity)
+              ..addColumns([_db.localAlbumEntity.id])
+              ..where(_db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected)),
+          ),
+    );
+  }
+
+  JoinedSelectStatement _pendingReviewMarkersQuery([$LocalAssetEntityTable? asset]) {
+    asset ??= _db.localAssetEntity;
+    return _db.selectOnly(_db.trashSyncEntity)
+    ..addColumns([_db.trashSyncEntity.assetId])
+    ..where(
+      _db.trashSyncEntity.checksum.equalsExp(asset.checksum) &
+          _db.trashSyncEntity.status.equalsValue(TrashSyncStatus.reviewPending),
+    );
+  }
+
+  Expression<bool> _syncTrashRepresentativeFilter($LocalAssetEntityTable asset) {
+    final duplicate = _db.localAssetEntity.createAlias('sync_trash_duplicate');
+    final duplicateQuery = _db.selectOnly(duplicate)
+      ..addColumns([duplicate.id])
+      ..where(
+        duplicate.checksum.equalsExp(asset.checksum) &
+            existsQuery(_selectedBackupAssetsQuery(duplicate)) &
+            existsQuery(_pendingReviewMarkersQuery(duplicate)) &
+            duplicate.id.isBiggerThan(asset.id),
+      );
+
+    return existsQuery(_selectedBackupAssetsQuery(asset)) &
+        existsQuery(_pendingReviewMarkersQuery(asset)) &
+        notExistsQuery(duplicateQuery);
+  }
+
+  Expression<String> _syncTrashTimelineDate(GroupAssetsBy groupBy) => coalesce([
+    _db.remoteAssetEntity.effectiveCreatedAt(groupBy),
+    _db.serverDeletedChecksumEntity.timelineAt.dateFmt(groupBy),
+    _db.localAssetEntity.createdAt.dateFmt(groupBy, toLocal: true),
+  ]);
+
+  Expression<DateTime> _syncTrashTimelineOrder() => coalesce([
+    _db.remoteAssetEntity.localDateTime,
+    _db.remoteAssetEntity.createdAt,
+    _db.serverDeletedChecksumEntity.timelineAt,
+    _db.localAssetEntity.createdAt,
+  ]);
+
+  List<Join> _syncTrashTimelineJoins() => [
+    leftOuterJoin(
+      _db.remoteAssetEntity,
+      _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
+          _db.remoteAssetEntity.deletedAt.isNotNull() &
+          _db.remoteAssetEntity.ownerId.isInQuery(currentUserIdQuery()),
+      useColumns: false,
+    ),
+    leftOuterJoin(
+      _db.serverDeletedChecksumEntity,
+      _db.serverDeletedChecksumEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
+      useColumns: false,
+    ),
+  ];
+
+  Stream<List<Bucket>> _watchSyncTrashBuckets({required GroupAssetsBy groupBy}) {
+    if (groupBy == GroupAssetsBy.none) {
+      return _db.localAssetEntity
+          .count(where: _syncTrashRepresentativeFilter)
+          .map(_generateBuckets)
+          .watchSingle();
+    }
+
+    final assetCount = _db.localAssetEntity.checksum.count();
+    final date = _syncTrashTimelineDate(groupBy);
+    final query = _db.localAssetEntity.selectOnly()
+      ..addColumns([assetCount, date])
+      ..join(_syncTrashTimelineJoins())
+      ..where(_syncTrashRepresentativeFilter(_db.localAssetEntity))
+      ..groupBy([date])
+      ..orderBy([OrderingTerm.desc(date)]);
+
+    return query
+        .map((row) => TimeBucket(date: row.read(date)!.truncateDate(groupBy), assetCount: row.read(assetCount)!))
+        .watch();
+  }
+
+  Future<List<BaseAsset>> _getSyncTrashAssets({required int offset, required int count}) {
+    final timelineOrder = _syncTrashTimelineOrder();
+    final query = _db.localAssetEntity.select().join(_syncTrashTimelineJoins())
+      ..addColumns([timelineOrder])
+      ..where(_syncTrashRepresentativeFilter(_db.localAssetEntity))
+      ..orderBy([OrderingTerm.desc(timelineOrder), OrderingTerm.desc(_db.localAssetEntity.id)])
+      ..limit(count, offset: offset);
+    return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
+  }
 
   Stream<List<Bucket>> _watchLocalAlbumBucket(String albumId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {

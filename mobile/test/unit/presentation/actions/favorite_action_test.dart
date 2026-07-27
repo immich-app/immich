@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../service.mocks.dart';
@@ -23,6 +28,12 @@ void main() {
 
   RemoteAsset owned({bool isFavorite = false}) =>
       RemoteAssetFactory.create(ownerId: context.currentUser.id, isFavorite: isFavorite);
+
+  TimelineService timeline(TimelineOrigin origin) => TimelineService((
+    assetSource: (_, _) async => const [],
+    bucketSource: () => Stream.value(const <Bucket>[]),
+    origin: origin,
+  ));
 
   group('FavoriteAction', () {
     testWidgets('favorites the eligible owned assets', (tester) async {
@@ -73,6 +84,19 @@ void main() {
       await tester.pumpUntilFound(find.byType(SnackBar));
 
       expect(find.byType(SnackBar), findsOneWidget);
+    });
+
+    testWidgets('is hidden in sync trash timeline', (tester) async {
+      final syncTrashTimeline = timeline(TimelineOrigin.syncTrash);
+      addTearDown(syncTrashTimeline.dispose);
+
+      await tester.pumpTestWidget(
+        context,
+        ActionIconButtonWidget(action: FavoriteAction(assets: [owned()])),
+        overrides: [timelineServiceProvider.overrideWithValue(syncTrashTimeline)],
+      );
+
+      expect(find.byType(ImmichIconButton), findsNothing);
     });
   });
 }

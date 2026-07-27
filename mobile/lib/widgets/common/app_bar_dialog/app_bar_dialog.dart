@@ -6,11 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -93,6 +95,39 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         Icons.cleaning_services_outlined,
         "free_up_space",
         () => context.pushRoute(SettingsSubRoute(section: SettingSection.freeUpSpace)),
+      );
+    }
+
+    Widget buildOutOfSyncButton() {
+      return Consumer(
+        builder: (context, ref, _) {
+          final outOfSyncCount = ref.watch(pendingTrashReviewCountProvider).value ?? 0;
+          if (outOfSyncCount == 0) {
+            return const SizedBox.shrink();
+          }
+
+          final textColor = theme.textTheme.labelLarge?.color?.withAlpha(250);
+          final textStyle = theme.textTheme.labelLarge?.copyWith(color: textColor);
+
+          return Padding(
+            padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
+            child: Material(
+              color: Colors.orange.withValues(alpha: 0.1),
+              borderRadius: const BorderRadius.all(Radius.circular(10)),
+              clipBehavior: Clip.antiAlias,
+              child: ListTile(
+                dense: true,
+                visualDensity: VisualDensity.standard,
+                contentPadding: const EdgeInsets.only(left: 18, right: 18),
+                minLeadingWidth: 40,
+                leading: Icon(Icons.warning_amber_rounded, color: textColor, size: 20),
+                title: Text('review_out_of_sync_changes'.t(), style: textStyle),
+                onTap: () => context.pushRoute(const DriftTrashReviewRoute()),
+                trailing: Text('($outOfSyncCount)', style: textStyle),
+              ),
+            ),
+          );
+        },
       );
     }
 
@@ -269,6 +304,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     ],
                   ),
                 ),
+                buildOutOfSyncButton(),
                 if (isReadonlyModeEnabled) buildReadonlyMessage(),
                 buildAppLogButton(),
                 buildFreeUpSpaceButton(),

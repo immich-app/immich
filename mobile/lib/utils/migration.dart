@@ -20,7 +20,7 @@ import 'package:immich_mobile/infrastructure/repositories/settings.repository.da
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-const int targetVersion = 27;
+const int targetVersion = 28;
 
 Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   final int? storedVersion = Store.tryGet(StoreKey.version);
@@ -36,6 +36,10 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
   if (version < 27) {
     await _migrateTo27(drift);
+  }
+
+  if (version < 28) {
+    await _migrateTo28(drift);
   }
 
   if (storedVersion == null) {
@@ -151,7 +155,13 @@ Future<void> _migrateTo26(Drift drift) async {
 
 Future<void> _migrateTo27(Drift drift) async {
   final migrator = _StoreMigrator(drift);
-  await migrator.migrateBool(.legacyManageLocalMediaAndroid, .trashSyncEnabled);
+  await migrator.migrateTrashSyncMode(.legacyManageLocalMediaAndroid);
+  await migrator.complete();
+}
+
+Future<void> _migrateTo28(Drift drift) async {
+  final migrator = _StoreMigrator(drift);
+  await migrator.migrateLegacyTrashSyncSetting();
   await migrator.complete();
 }
 
@@ -216,6 +226,7 @@ class _StoreMigrator {
   final Drift _db;
   final Map<SettingsKey, Object?> _cache = {};
   final List<int> _migratedStoreIds = [];
+  final List<String> _settingsToDelete = [];
 
   _StoreMigrator(this._db);
 
@@ -264,6 +275,31 @@ class _StoreMigrator {
     _migratedStoreIds.add(legacyKey.id);
   }
 
+  Future<void> migrateTrashSyncMode(StoreKey<bool> legacyKey) async {
+    final intValue = await readLegacyStoreInt(legacyKey.id);
+    if (intValue == null) {
+      return;
+    }
+
+    if (intValue != 0) {
+      _cache[SettingsKey.trashSyncMode] = TrashSyncMode.autoSync;
+    }
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  Future<void> migrateLegacyTrashSyncSetting() async {
+    final row = await (_db.settingsEntity.select()..where((row) => row.key.equals(SettingsKey.trashSyncEnabled.name)))
+        .getSingleOrNull();
+    if (row == null) {
+      return;
+    }
+
+    if (row.value != null && SettingsKey.trashSyncEnabled.decode(row.value!)) {
+      _cache[SettingsKey.trashSyncMode] = TrashSyncMode.autoSync;
+    }
+    _settingsToDelete.add(SettingsKey.trashSyncEnabled.name);
+  }
+
   Future<void> migrateInt(StoreKey<int> legacyKey, SettingsKey<int> newKey) async {
     final intValue = await readLegacyStoreInt(legacyKey.id);
     if (intValue == null) {
@@ -306,6 +342,9 @@ class _StoreMigrator {
           SettingsEntityCompanion(key: Value(entry.key.name), value: Value(resolvedValue)),
           mode: InsertMode.insertOrReplace,
         );
+      }
+      if (_settingsToDelete.isNotEmpty) {
+        batch.deleteWhere(_db.settingsEntity, (row) => row.key.isIn(_settingsToDelete));
       }
     });
     await deleteLegacyStoreRows(_migratedStoreIds);
