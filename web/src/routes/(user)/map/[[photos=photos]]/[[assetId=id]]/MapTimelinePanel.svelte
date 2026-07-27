@@ -86,6 +86,7 @@
     isFavorite: $mapSettings.onlyFavorites || undefined,
     withPartners: $mapSettings.withPartners || undefined,
     assetFilter: selectedClusterIds,
+    withStacked: true,
   });
 
   $effect.pre(() => {
@@ -113,6 +114,7 @@
       onEscape={handleEscape}
       assetInteraction={assetMultiSelectManager}
       showArchiveIcon
+      withStacked
     />
   </div>
 </aside>
