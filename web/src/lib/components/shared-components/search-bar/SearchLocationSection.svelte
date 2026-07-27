@@ -1,5 +1,6 @@
 <script lang="ts">
   import Combobox, { asComboboxOptions, asSelectedOption } from '$lib/components/shared-components/Combobox.svelte';
+  import { searchPlacesTitle } from '$lib/components/shared-components/search-bar/search-bar-utils';
   import type { SearchLocationFilter } from '$lib/types';
   import { handlePromiseError } from '$lib/utils';
   import { getSearchSuggestions, SearchSuggestionType } from '@immich/sdk';
@@ -9,13 +10,17 @@
 
   type Props = {
     filters: SearchLocationFilter;
+    title: string | undefined;
   };
 
-  let { filters = $bindable() }: Props = $props();
+  // eslint-disable-next-line no-useless-assignment
+  let { filters = $bindable(), title = $bindable() }: Props = $props();
 
   let countries: string[] = $state([]);
   let states: string[] = $state([]);
   let cities: string[] = $state([]);
+
+  const updateTitle = () => (title = searchPlacesTitle(filters.city, filters.state, filters.country));
 
   async function updateCountries() {
     const results: Array<string | null> = await getSearchSuggestions({
@@ -64,17 +69,23 @@
   $effect(() => handlePromiseError(updateStates(countryFilter)));
   $effect(() => handlePromiseError(updateCities(countryFilter, stateFilter)));
 
-  onMount(() => updateCountries());
+  onMount(() => {
+    updateTitle();
+    void updateCountries();
+  });
 </script>
 
 <div id="location-selection">
-  <Text fontWeight="medium">{$t('place')}</Text>
+  <Text>{$t('search_filter_location_description')}</Text>
 
-  <div class="mt-1 grid grid-auto-fit-40 gap-5">
+  <div class="mt-5 grid grid-auto-fit-40 gap-5">
     <div class="w-full">
       <Combobox
         label={$t('country')}
-        onSelect={(option) => (filters.country = option?.value)}
+        onSelect={(option) => {
+          filters.country = option?.value;
+          updateTitle();
+        }}
         options={asComboboxOptions(countries)}
         placeholder={$t('search_country')}
         selectedOption={asSelectedOption(filters.country)}
@@ -84,7 +95,10 @@
     <div class="w-full">
       <Combobox
         label={$t('state')}
-        onSelect={(option) => (filters.state = option?.value)}
+        onSelect={(option) => {
+          filters.state = option?.value;
+          updateTitle();
+        }}
         options={asComboboxOptions(states)}
         placeholder={$t('search_state')}
         selectedOption={asSelectedOption(filters.state)}
@@ -94,7 +108,10 @@
     <div class="w-full">
       <Combobox
         label={$t('city')}
-        onSelect={(option) => (filters.city = option?.value)}
+        onSelect={(option) => {
+          filters.city = option?.value;
+          updateTitle();
+        }}
         options={asComboboxOptions(cities)}
         placeholder={$t('search_city')}
         selectedOption={asSelectedOption(filters.city)}

@@ -75,8 +75,8 @@
 </script>
 
 <div id="camera-selection">
-  <Text fontWeight="medium">{$t('camera')}</Text>
-  <div class="mt-1 grid grid-auto-fit-40 gap-5">
+  <Text fontWeight="medium" class="pb-5">{$t('camera')}</Text>
+  <div class="grid grid-auto-fit-40 gap-2">
     <div class="w-full">
       <Combobox
         label={$t('make')}

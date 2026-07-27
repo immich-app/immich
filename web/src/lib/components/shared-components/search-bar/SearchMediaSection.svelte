@@ -1,36 +1,56 @@
 <script lang="ts">
+  import { searchMediaTitle } from './search-bar-utils';
   import { MediaType } from '$lib/constants';
-  import RadioButton from '$lib/elements/RadioButton.svelte';
-  import { Text } from '@immich/ui';
+  import { Button, Text } from '@immich/ui';
+  import { mdiCheck } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
     filteredMedia: MediaType;
+    title: string | undefined;
   }
 
-  let { filteredMedia = $bindable() }: Props = $props();
+  // eslint-disable-next-line no-useless-assignment
+  let { filteredMedia = $bindable(), title = $bindable() }: Props = $props();
+
+  const setMedia = (media: MediaType) => {
+    filteredMedia = media;
+    title = searchMediaTitle(media);
+  };
 </script>
 
 <div id="media-type-selection">
   <fieldset>
-    <Text class="mb-2" fontWeight="medium">{$t('media_type')}</Text>
+    <Text class="pb-5">{$t('media_type_description')}</Text>
 
-    <div class="mt-1 flex flex-wrap gap-x-5 gap-y-2">
-      <RadioButton name="media-type" id="type-all" bind:group={filteredMedia} label={$t('all')} value={MediaType.All} />
-      <RadioButton
-        name="media-type"
-        id="type-image"
-        bind:group={filteredMedia}
-        label={$t('image')}
-        value={MediaType.Image}
-      />
-      <RadioButton
-        name="media-type"
-        id="type-video"
-        bind:group={filteredMedia}
-        label={$t('video')}
-        value={MediaType.Video}
-      />
+    <div class="flex flex-wrap gap-2">
+      <Button
+        shape="round"
+        color={filteredMedia === MediaType.All ? 'primary' : 'secondary'}
+        variant="outline"
+        onclick={() => setMedia(MediaType.All)}
+        class={filteredMedia === MediaType.All ? undefined : 'bg-transparent'}
+        leadingIcon={filteredMedia === MediaType.All ? mdiCheck : undefined}
+        >{$t('all')}
+      </Button>
+      <Button
+        shape="round"
+        color={filteredMedia === MediaType.Image ? 'primary' : 'secondary'}
+        variant="outline"
+        onclick={() => setMedia(MediaType.Image)}
+        class={filteredMedia === MediaType.Image ? undefined : 'bg-transparent'}
+        leadingIcon={filteredMedia === MediaType.Image ? mdiCheck : undefined}
+        >{$t('image')}
+      </Button>
+      <Button
+        shape="round"
+        color={filteredMedia === MediaType.Video ? 'primary' : 'secondary'}
+        variant="outline"
+        onclick={() => setMedia(MediaType.Video)}
+        class={filteredMedia === MediaType.Video ? undefined : 'bg-transparent'}
+        leadingIcon={filteredMedia === MediaType.Video ? mdiCheck : undefined}
+        >{$t('video')}
+      </Button>
     </div>
   </fieldset>
 </div>
