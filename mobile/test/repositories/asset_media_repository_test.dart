@@ -19,14 +19,12 @@ void main() {
     );
   });
 
-  DownloadTask buildTask(String taskId, String displayName, {bool isDuplicate = false}) =>
-      AssetMediaRepository.buildShareDownloadTask(
-        taskId: taskId,
-        url: 'https://example.com/api/assets/some-id/original',
-        headers: const {},
-        displayName: displayName,
-        isDuplicate: isDuplicate,
-      );
+  DownloadTask buildTask(String taskId, String displayName) => AssetMediaRepository.buildShareDownloadTask(
+    taskId: taskId,
+    url: 'https://example.com/api/assets/some-id/original',
+    headers: const {},
+    displayName: displayName,
+  );
 
   group('buildShareDownloadTask', () {
     test('saves a unique original under the asset name, without the task id prefix (#29468)', () async {
@@ -49,46 +47,61 @@ void main() {
       expect(task.filename, name);
     });
 
-    test('two same-named assets download to two distinct prefixed names', () async {
+    test('two same-named assets download to ordinal names in batch order', () async {
       final assets = [
         TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG-0001.jpg'),
         TestUtils.createRemoteAsset(id: 'remote-2').copyWith(name: 'IMG-0001.jpg'),
       ];
       final counts = AssetMediaRepository.countShareDisplayNames(assets, ShareAssetType.original);
-      final isDuplicate = counts['IMG-0001.jpg']! > 1;
+      expect(counts['IMG-0001.jpg'], 2);
 
-      final first = buildTask('share-original-remote-1-111', 'IMG-0001.jpg', isDuplicate: isDuplicate);
-      final second = buildTask('share-original-remote-2-222', 'IMG-0001.jpg', isDuplicate: isDuplicate);
-
-      expect(p.basename(await first.filePath()), 'share-original-remote-1-111-IMG-0001.jpg');
-      expect(p.basename(await second.filePath()), 'share-original-remote-2-222-IMG-0001.jpg');
-    });
-
-    test('sharing the same asset twice downloads to distinct paths', () async {
-      final asset = TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG-0001.jpg');
-      final counts = AssetMediaRepository.countShareDisplayNames([asset, asset], ShareAssetType.original);
-      final isDuplicate = counts['IMG-0001.jpg']! > 1;
-
-      final first = buildTask('share-original-remote-1-111111', 'IMG-0001.jpg', isDuplicate: isDuplicate);
-      final second = buildTask('share-original-remote-1-222222', 'IMG-0001.jpg', isDuplicate: isDuplicate);
-
-      expect(await first.filePath(), isNot(await second.filePath()));
-    });
-
-    test('a failed duplicate leaves the survivor with the prefixed name', () {
-      final assets = [
-        TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG-0001.jpg'),
-        TestUtils.createRemoteAsset(id: 'remote-2').copyWith(name: 'IMG-0001.jpg'),
-      ];
-      final counts = AssetMediaRepository.countShareDisplayNames(assets, ShareAssetType.original);
-
-      final survivor = buildTask(
+      final first = buildTask(
         'share-original-remote-1-111',
-        'IMG-0001.jpg',
-        isDuplicate: counts['IMG-0001.jpg']! > 1,
+        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 1),
+      );
+      final second = buildTask(
+        'share-original-remote-2-222',
+        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 2),
       );
 
-      expect(survivor.filename, 'share-original-remote-1-111-IMG-0001.jpg');
+      expect(p.basename(await first.filePath()), 'IMG-0001 (1).jpg');
+      expect(p.basename(await second.filePath()), 'IMG-0001 (2).jpg');
+    });
+
+    // receivers flatten attachments into one list, so identical names clobber each other
+    test('sharing the same asset twice gives the second copy an ordinal name', () async {
+      final asset = TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG-0001.jpg');
+      final counts = AssetMediaRepository.countShareDisplayNames([asset, asset], ShareAssetType.original);
+      expect(counts['IMG-0001.jpg'], 2);
+
+      final first = buildTask(
+        'share-original-remote-1-111111',
+        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 1),
+      );
+      final second = buildTask(
+        'share-original-remote-1-222222',
+        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 2),
+      );
+
+      expect(p.basename(await first.filePath()), 'IMG-0001 (1).jpg');
+      expect(p.basename(await second.filePath()), 'IMG-0001 (2).jpg');
+    });
+
+    // the ordinal follows batch order, not download success, so a failed first copy must not rename the survivor
+    test('a failed first duplicate leaves the survivor with its batch ordinal name', () {
+      final assets = [
+        TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG-0001.jpg'),
+        TestUtils.createRemoteAsset(id: 'remote-2').copyWith(name: 'IMG-0001.jpg'),
+      ];
+      final counts = AssetMediaRepository.countShareDisplayNames(assets, ShareAssetType.original);
+      expect(counts['IMG-0001.jpg'], 2);
+
+      final survivor = buildTask(
+        'share-original-remote-2-222',
+        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 2),
+      );
+
+      expect(survivor.filename, 'IMG-0001 (2).jpg');
     });
   });
 
