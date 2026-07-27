@@ -11,29 +11,29 @@
 part of openapi.api;
 
 
-class TelemetryLevel {
-  /// Instantiate a new enum with the provided [value].
-  const TelemetryLevel._(this.value);
+enum TelemetryLevel {
+  full._(r'full'),
+  none._(r'none'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const TelemetryLevel._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const full = TelemetryLevel._(r'full');
-  static const none = TelemetryLevel._(r'none');
-
-  /// List of all possible values in this [enum][TelemetryLevel].
-  static const values = <TelemetryLevel>[
-    full,
-    none,
-  ];
-
+  /// Returns the instance of [TelemetryLevel] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static TelemetryLevel? fromJson(dynamic value) => TelemetryLevelTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [TelemetryLevel]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<TelemetryLevel> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <TelemetryLevel>[];
     if (json is List && json.isNotEmpty) {
@@ -55,9 +55,11 @@ class TelemetryLevelTypeTransformer {
 
   const TelemetryLevelTypeTransformer._();
 
-  String encode(TelemetryLevel data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(TelemetryLevel data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a TelemetryLevel.
+  /// Returns the instance of [TelemetryLevel] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -66,6 +68,9 @@ class TelemetryLevelTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   TelemetryLevel? decode(dynamic data, {bool allowNull = true}) {
+    if (data is TelemetryLevel) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'full': return TelemetryLevel.full;
@@ -79,7 +84,7 @@ class TelemetryLevelTypeTransformer {
     return null;
   }
 
-  /// Singleton [TelemetryLevelTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static TelemetryLevelTypeTransformer? _instance;
 }
 

@@ -11,31 +11,30 @@
 part of openapi.api;
 
 
-class BootstrapStatus {
-  /// Instantiate a new enum with the provided [value].
-  const BootstrapStatus._(this.value);
+enum BootstrapStatus {
+  notReady._(r'not-ready'),
+  ready._(r'ready'),
+  error._(r'error'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const BootstrapStatus._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const notReady = BootstrapStatus._(r'not-ready');
-  static const ready = BootstrapStatus._(r'ready');
-  static const error = BootstrapStatus._(r'error');
-
-  /// List of all possible values in this [enum][BootstrapStatus].
-  static const values = <BootstrapStatus>[
-    notReady,
-    ready,
-    error,
-  ];
-
+  /// Returns the instance of [BootstrapStatus] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static BootstrapStatus? fromJson(dynamic value) => BootstrapStatusTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [BootstrapStatus]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<BootstrapStatus> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <BootstrapStatus>[];
     if (json is List && json.isNotEmpty) {
@@ -57,9 +56,11 @@ class BootstrapStatusTypeTransformer {
 
   const BootstrapStatusTypeTransformer._();
 
-  String encode(BootstrapStatus data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(BootstrapStatus data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a BootstrapStatus.
+  /// Returns the instance of [BootstrapStatus] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -68,6 +69,9 @@ class BootstrapStatusTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   BootstrapStatus? decode(dynamic data, {bool allowNull = true}) {
+    if (data is BootstrapStatus) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'not-ready': return BootstrapStatus.notReady;
@@ -82,7 +86,7 @@ class BootstrapStatusTypeTransformer {
     return null;
   }
 
-  /// Singleton [BootstrapStatusTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static BootstrapStatusTypeTransformer? _instance;
 }
 

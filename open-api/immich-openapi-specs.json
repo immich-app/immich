@@ -16399,6 +16399,30 @@
         ]
       }
     },
+    "/yucca/integrations/immich/rollback": {
+      "post": {
+        "operationId": "startImmichRollback",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImmichRollbackRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Integrations"
+        ]
+      }
+    },
     "/yucca/logs/{id}": {
       "get": {
         "operationId": "getRun",
@@ -20541,6 +20565,24 @@
         ],
         "type": "object"
       },
+      "ImmichRollbackRequestDto": {
+        "properties": {
+          "backupFileName": {
+            "type": "string"
+          },
+          "repositoryId": {
+            "type": "string"
+          },
+          "snapshotId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "repositoryId",
+          "snapshotId"
+        ],
+        "type": "object"
+      },
       "ImmichStateDto": {
         "properties": {
           "dataFolders": {
@@ -21113,7 +21155,8 @@
           "start",
           "end",
           "select_database_restore",
-          "restore_database"
+          "restore_database",
+          "rollback"
         ],
         "type": "string"
       },
@@ -21197,6 +21240,10 @@
             "type": "integer"
           },
           "task": {
+            "type": "string"
+          },
+          "yuccaLogId": {
+            "description": "Yucca log ID",
             "type": "string"
           }
         },
@@ -25067,6 +25114,14 @@
           },
           "restoreBackupFilename": {
             "description": "Restore backup filename",
+            "type": "string"
+          },
+          "rollbackRepositoryId": {
+            "description": "Rollback repository ID",
+            "type": "string"
+          },
+          "rollbackSnapshotId": {
+            "description": "Rollback snapshot ID",
             "type": "string"
           }
         },

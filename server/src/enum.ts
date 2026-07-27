@@ -977,6 +977,7 @@ export enum MaintenanceAction {
   End = 'end',
   SelectDatabaseRestore = 'select_database_restore',
   RestoreDatabase = 'restore_database',
+  Rollback = 'rollback',
 }
 
 export const MaintenanceActionSchema = z

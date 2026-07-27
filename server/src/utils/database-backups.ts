@@ -1,3 +1,6 @@
+import { DateTime } from 'luxon';
+import { DatabaseBackupDto } from 'src/dtos/database-backup.dto';
+
 export function isValidDatabaseBackupName(filename: string) {
   return filename.match(/^[\d\w-.]+\.sql(?:\.gz)?$/);
 }
@@ -15,6 +18,23 @@ export function isFailedDatabaseBackupName(filename: string) {
 
 export function findDatabaseBackupVersion(filename: string) {
   return /-v(.*)-/.exec(filename)?.[1];
+}
+
+function getDatabaseBackupTimestamp(backup: DatabaseBackupDto): number {
+  const dateMatch = backup.filename.match(/\d+T\d+/);
+  if (!dateMatch) {
+    return 0;
+  }
+
+  return DateTime.fromFormat(dateMatch[0], "yyyyMMdd'T'HHmmss", { zone: backup.timezone }).toMillis();
+}
+
+export function getLatestDatabaseBackup<T extends DatabaseBackupDto>(backups: T[]): T | undefined {
+  if (backups.length === 0) {
+    return undefined;
+  }
+
+  return backups.toSorted((a, b) => getDatabaseBackupTimestamp(b) - getDatabaseBackupTimestamp(a))[0];
 }
 
 export class UnsupportedPostgresError extends Error {

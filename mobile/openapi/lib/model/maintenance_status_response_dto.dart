@@ -18,6 +18,7 @@ class MaintenanceStatusResponseDto {
     this.error = const Optional.absent(),
     this.progress = const Optional.absent(),
     this.task = const Optional.absent(),
+    this.yuccaLogId = const Optional.absent(),
   });
 
   MaintenanceAction action;
@@ -50,13 +51,23 @@ class MaintenanceStatusResponseDto {
   ///
   Optional<String?> task;
 
+  /// Yucca log ID
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<String?> yuccaLogId;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is MaintenanceStatusResponseDto &&
     other.action == action &&
     other.active == active &&
     other.error == error &&
     other.progress == progress &&
-    other.task == task;
+    other.task == task &&
+    other.yuccaLogId == yuccaLogId;
 
   @override
   int get hashCode =>
@@ -65,10 +76,11 @@ class MaintenanceStatusResponseDto {
     (active.hashCode) +
     (error == null ? 0 : error!.hashCode) +
     (progress == null ? 0 : progress!.hashCode) +
-    (task == null ? 0 : task!.hashCode);
+    (task == null ? 0 : task!.hashCode) +
+    (yuccaLogId == null ? 0 : yuccaLogId!.hashCode);
 
   @override
-  String toString() => 'MaintenanceStatusResponseDto[action=$action, active=$active, error=$error, progress=$progress, task=$task]';
+  String toString() => 'MaintenanceStatusResponseDto[action=$action, active=$active, error=$error, progress=$progress, task=$task, yuccaLogId=$yuccaLogId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -85,6 +97,10 @@ class MaintenanceStatusResponseDto {
     if (this.task.isPresent) {
       final value = this.task.value;
       json[r'task'] = value;
+    }
+    if (this.yuccaLogId.isPresent) {
+      final value = this.yuccaLogId.value;
+      json[r'yuccaLogId'] = value;
     }
     return json;
   }
@@ -103,6 +119,7 @@ class MaintenanceStatusResponseDto {
         error: json.containsKey(r'error') ? Optional.present(mapValueOfType<String>(json, r'error')) : const Optional.absent(),
         progress: json.containsKey(r'progress') ? Optional.present(json[r'progress'] == null ? null : int.parse('${json[r'progress']}')) : const Optional.absent(),
         task: json.containsKey(r'task') ? Optional.present(mapValueOfType<String>(json, r'task')) : const Optional.absent(),
+        yuccaLogId: json.containsKey(r'yuccaLogId') ? Optional.present(mapValueOfType<String>(json, r'yuccaLogId')) : const Optional.absent(),
       );
     }
     return null;

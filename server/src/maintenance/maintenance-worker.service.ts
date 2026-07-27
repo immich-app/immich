@@ -1,4 +1,6 @@
+import { YuccaService } from '@futo-org/backups-orchestrator-api';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { parse } from 'cookie';
 import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
@@ -30,6 +32,7 @@ import { type ServerService as _ServerService } from 'src/services/server.servic
 import { type VersionService as _VersionService } from 'src/services/version.service';
 import { MaintenanceModeState } from 'src/types';
 import { getConfig } from 'src/utils/config';
+import { getLatestDatabaseBackup } from 'src/utils/database-backups';
 import { createMaintenanceLoginUrl, detectPriorInstall } from 'src/utils/maintenance';
 import { getExternalDomain } from 'src/utils/misc';
 import { detectMediaLocation } from 'src/utils/storage';
@@ -56,6 +59,7 @@ export class MaintenanceWorkerService {
     private processRepository: ProcessRepository,
     private databaseRepository: DatabaseRepository,
     private databaseBackupService: DatabaseBackupService,
+    private moduleRef: ModuleRef,
   ) {
     this.logger.setContext(this.constructor.name);
   }
@@ -271,6 +275,9 @@ export class MaintenanceWorkerService {
       case MaintenanceAction.RestoreDatabase: {
         return this.runRestoreDatabase(action);
       }
+      case MaintenanceAction.Rollback: {
+        return this.runRollback(action);
+      }
     }
   }
 
@@ -327,6 +334,67 @@ export class MaintenanceWorkerService {
     await this.setAction({
       action: MaintenanceAction.End,
     });
+  }
+
+  private async runRollback(action: SetMaintenanceModeDto) {
+    const isLock = await this.databaseRepository.tryLock(DatabaseLock.MaintenanceOperation);
+    if (!isLock) {
+      return;
+    }
+
+    this.logger.log(`Running maintenance action ${action.action}`);
+
+    await this.systemMetadataRepository.set(SystemMetadataKey.MaintenanceMode, {
+      isMaintenanceMode: true,
+      secret: this.secret,
+      action: {
+        action: MaintenanceAction.Start,
+      },
+    });
+
+    try {
+      if (!action.rollbackRepositoryId || !action.rollbackSnapshotId) {
+        throw new Error("Expected rollbackRepositoryId and rollbackSnapshotId but they're missing!");
+      }
+
+      await this.rollback(action.rollbackRepositoryId, action.rollbackSnapshotId);
+    } catch (error) {
+      this.logger.error(`Encountered error running action: ${error}`);
+      this.setStatus({
+        active: true,
+        action: action.action,
+        task: 'error',
+        error: '' + error,
+      });
+    }
+  }
+
+  private async rollback(repositoryId: string, snapshotId: string): Promise<void> {
+    this.setStatus({
+      active: true,
+      action: MaintenanceAction.Rollback,
+    });
+
+    const yucca = this.moduleRef.get(YuccaService, { strict: false });
+    const { logId, task } = await yucca.restoreSnapshotInplace(repositoryId, snapshotId);
+
+    this.setStatus({
+      active: true,
+      action: MaintenanceAction.Rollback,
+      yuccaLogId: logId,
+    });
+
+    await task;
+
+    const { backups } = await this.databaseBackupService.listBackups();
+    const latest = getLatestDatabaseBackup(backups);
+    if (!latest) {
+      return this.setAction({
+        action: MaintenanceAction.SelectDatabaseRestore,
+      });
+    }
+
+    await this.restoreBackup(latest.filename);
   }
 
   private async endMaintenance(): Promise<void> {

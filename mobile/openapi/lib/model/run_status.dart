@@ -11,31 +11,30 @@
 part of openapi.api;
 
 
-class RunStatus {
-  /// Instantiate a new enum with the provided [value].
-  const RunStatus._(this.value);
+enum RunStatus {
+  incomplete._(r'incomplete'),
+  complete._(r'complete'),
+  failed._(r'failed'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const RunStatus._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const incomplete = RunStatus._(r'incomplete');
-  static const complete = RunStatus._(r'complete');
-  static const failed = RunStatus._(r'failed');
-
-  /// List of all possible values in this [enum][RunStatus].
-  static const values = <RunStatus>[
-    incomplete,
-    complete,
-    failed,
-  ];
-
+  /// Returns the instance of [RunStatus] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static RunStatus? fromJson(dynamic value) => RunStatusTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [RunStatus]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<RunStatus> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <RunStatus>[];
     if (json is List && json.isNotEmpty) {
@@ -57,9 +56,11 @@ class RunStatusTypeTransformer {
 
   const RunStatusTypeTransformer._();
 
-  String encode(RunStatus data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(RunStatus data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a RunStatus.
+  /// Returns the instance of [RunStatus] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -68,6 +69,9 @@ class RunStatusTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   RunStatus? decode(dynamic data, {bool allowNull = true}) {
+    if (data is RunStatus) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'incomplete': return RunStatus.incomplete;
@@ -82,7 +86,7 @@ class RunStatusTypeTransformer {
     return null;
   }
 
-  /// Singleton [RunStatusTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static RunStatusTypeTransformer? _instance;
 }
 

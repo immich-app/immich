@@ -11,31 +11,30 @@
 part of openapi.api;
 
 
-class BackendType {
-  /// Instantiate a new enum with the provided [value].
-  const BackendType._(this.value);
+enum BackendType {
+  yucca._(r'yucca'),
+  local._(r'local'),
+  s3._(r's3'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const BackendType._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const yucca = BackendType._(r'yucca');
-  static const local = BackendType._(r'local');
-  static const s3 = BackendType._(r's3');
-
-  /// List of all possible values in this [enum][BackendType].
-  static const values = <BackendType>[
-    yucca,
-    local,
-    s3,
-  ];
-
+  /// Returns the instance of [BackendType] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static BackendType? fromJson(dynamic value) => BackendTypeTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [BackendType]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<BackendType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <BackendType>[];
     if (json is List && json.isNotEmpty) {
@@ -57,9 +56,11 @@ class BackendTypeTypeTransformer {
 
   const BackendTypeTypeTransformer._();
 
-  String encode(BackendType data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(BackendType data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a BackendType.
+  /// Returns the instance of [BackendType] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -68,6 +69,9 @@ class BackendTypeTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   BackendType? decode(dynamic data, {bool allowNull = true}) {
+    if (data is BackendType) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'yucca': return BackendType.yucca;
@@ -82,7 +86,7 @@ class BackendTypeTypeTransformer {
     return null;
   }
 
-  /// Singleton [BackendTypeTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static BackendTypeTypeTransformer? _instance;
 }
 

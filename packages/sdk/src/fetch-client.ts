@@ -93,6 +93,10 @@ export type SetMaintenanceModeDto = {
     action: MaintenanceAction;
     /** Restore backup filename */
     restoreBackupFilename?: string;
+    /** Rollback repository ID */
+    rollbackRepositoryId?: string;
+    /** Rollback snapshot ID */
+    rollbackSnapshotId?: string;
 };
 export type MaintenanceDetectInstallStorageFolderDto = {
     /** Number of files in the folder */
@@ -120,6 +124,8 @@ export type MaintenanceStatusResponseDto = {
     error?: string;
     progress?: number;
     task?: string;
+    /** Yucca log ID */
+    yuccaLogId?: string;
 };
 export type NotificationCreateDto = {
     /** Additional notification data */
@@ -2923,6 +2929,11 @@ export type ConfigureImmichIntegrationRequestDto = {
     name: string;
     retentionPolicy?: (RetentionPolicyDto) | null;
     worm: boolean;
+};
+export type ImmichRollbackRequestDto = {
+    backupFileName?: string;
+    repositoryId: string;
+    snapshotId: string;
 };
 export type RunDto = {
     end: string;
@@ -7387,6 +7398,15 @@ export function configureImmichIntegration({ configureImmichIntegrationRequestDt
         body: configureImmichIntegrationRequestDto
     })));
 }
+export function startImmichRollback({ immichRollbackRequestDto }: {
+    immichRollbackRequestDto: ImmichRollbackRequestDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText("/yucca/integrations/immich/rollback", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: immichRollbackRequestDto
+    })));
+}
 export function getRun({ id }: {
     id: string;
 }, opts?: Oazapfts.RequestOpts) {
@@ -7737,7 +7757,8 @@ export enum MaintenanceAction {
     Start = "start",
     End = "end",
     SelectDatabaseRestore = "select_database_restore",
-    RestoreDatabase = "restore_database"
+    RestoreDatabase = "restore_database",
+    Rollback = "rollback"
 }
 export enum StorageFolder {
     EncodedVideo = "encoded-video",

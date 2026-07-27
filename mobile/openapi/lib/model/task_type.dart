@@ -11,33 +11,31 @@
 part of openapi.api;
 
 
-class TaskType {
-  /// Instantiate a new enum with the provided [value].
-  const TaskType._(this.value);
+enum TaskType {
+  schedule._(r'schedule'),
+  restore._(r'restore'),
+  backup._(r'backup'),
+  forget._(r'forget'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const TaskType._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const schedule = TaskType._(r'schedule');
-  static const restore = TaskType._(r'restore');
-  static const backup = TaskType._(r'backup');
-  static const forget = TaskType._(r'forget');
-
-  /// List of all possible values in this [enum][TaskType].
-  static const values = <TaskType>[
-    schedule,
-    restore,
-    backup,
-    forget,
-  ];
-
+  /// Returns the instance of [TaskType] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static TaskType? fromJson(dynamic value) => TaskTypeTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [TaskType]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<TaskType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <TaskType>[];
     if (json is List && json.isNotEmpty) {
@@ -59,9 +57,11 @@ class TaskTypeTypeTransformer {
 
   const TaskTypeTypeTransformer._();
 
-  String encode(TaskType data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(TaskType data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a TaskType.
+  /// Returns the instance of [TaskType] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -70,6 +70,9 @@ class TaskTypeTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   TaskType? decode(dynamic data, {bool allowNull = true}) {
+    if (data is TaskType) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'schedule': return TaskType.schedule;
@@ -85,7 +88,7 @@ class TaskTypeTypeTransformer {
     return null;
   }
 
-  /// Singleton [TaskTypeTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static TaskTypeTypeTransformer? _instance;
 }
 

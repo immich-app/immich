@@ -15,6 +15,8 @@ class SetMaintenanceModeDto {
   SetMaintenanceModeDto({
     required this.action,
     this.restoreBackupFilename = const Optional.absent(),
+    this.rollbackRepositoryId = const Optional.absent(),
+    this.rollbackSnapshotId = const Optional.absent(),
   });
 
   MaintenanceAction action;
@@ -28,19 +30,41 @@ class SetMaintenanceModeDto {
   ///
   Optional<String?> restoreBackupFilename;
 
+  /// Rollback repository ID
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<String?> rollbackRepositoryId;
+
+  /// Rollback snapshot ID
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  Optional<String?> rollbackSnapshotId;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SetMaintenanceModeDto &&
     other.action == action &&
-    other.restoreBackupFilename == restoreBackupFilename;
+    other.restoreBackupFilename == restoreBackupFilename &&
+    other.rollbackRepositoryId == rollbackRepositoryId &&
+    other.rollbackSnapshotId == rollbackSnapshotId;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (action.hashCode) +
-    (restoreBackupFilename == null ? 0 : restoreBackupFilename!.hashCode);
+    (restoreBackupFilename == null ? 0 : restoreBackupFilename!.hashCode) +
+    (rollbackRepositoryId == null ? 0 : rollbackRepositoryId!.hashCode) +
+    (rollbackSnapshotId == null ? 0 : rollbackSnapshotId!.hashCode);
 
   @override
-  String toString() => 'SetMaintenanceModeDto[action=$action, restoreBackupFilename=$restoreBackupFilename]';
+  String toString() => 'SetMaintenanceModeDto[action=$action, restoreBackupFilename=$restoreBackupFilename, rollbackRepositoryId=$rollbackRepositoryId, rollbackSnapshotId=$rollbackSnapshotId]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -48,6 +72,14 @@ class SetMaintenanceModeDto {
     if (this.restoreBackupFilename.isPresent) {
       final value = this.restoreBackupFilename.value;
       json[r'restoreBackupFilename'] = value;
+    }
+    if (this.rollbackRepositoryId.isPresent) {
+      final value = this.rollbackRepositoryId.value;
+      json[r'rollbackRepositoryId'] = value;
+    }
+    if (this.rollbackSnapshotId.isPresent) {
+      final value = this.rollbackSnapshotId.value;
+      json[r'rollbackSnapshotId'] = value;
     }
     return json;
   }
@@ -63,6 +95,8 @@ class SetMaintenanceModeDto {
       return SetMaintenanceModeDto(
         action: MaintenanceAction.fromJson(json[r'action'])!,
         restoreBackupFilename: json.containsKey(r'restoreBackupFilename') ? Optional.present(mapValueOfType<String>(json, r'restoreBackupFilename')) : const Optional.absent(),
+        rollbackRepositoryId: json.containsKey(r'rollbackRepositoryId') ? Optional.present(mapValueOfType<String>(json, r'rollbackRepositoryId')) : const Optional.absent(),
+        rollbackSnapshotId: json.containsKey(r'rollbackSnapshotId') ? Optional.present(mapValueOfType<String>(json, r'rollbackSnapshotId')) : const Optional.absent(),
       );
     }
     return null;

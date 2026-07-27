@@ -3,10 +3,12 @@ import { Injectable, Optional } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
-import { DatabaseLock, ImmichWorker, StorageFolder } from 'src/enum';
+import { DatabaseLock, ImmichWorker, MaintenanceAction, StorageFolder } from 'src/enum';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { ArgOf } from 'src/repositories/event.repository';
 import { LibraryRepository } from 'src/repositories/library.repository';
+import { DatabaseBackupService } from 'src/services/database-backup.service';
+import { MaintenanceService } from 'src/services/maintenance.service';
 import { getExternalDomain } from 'src/utils/misc';
 
 @Injectable()
@@ -14,8 +16,13 @@ export class YuccaService {
   constructor(
     private readonly databaseRepository: DatabaseRepository,
     private readonly libraryRepository: LibraryRepository,
+    private readonly databaseBackupService: DatabaseBackupService,
+    @Optional() private readonly maintenanceService: MaintenanceService,
     @Optional() private readonly yuccaService: YuccaOrchestratorService,
-  ) {}
+  ) {
+    this.createDatabaseBackup = this.createDatabaseBackup.bind(this);
+    this.enterMaintenanceRollback = this.enterMaintenanceRollback.bind(this);
+  }
 
   private updateSystemConfig({ server }: SystemConfig) {
     this.yuccaService.setExternalBaseUrl(getExternalDomain(server));
@@ -30,7 +37,26 @@ export class YuccaService {
       libraries: libraries
         .filter((library) => !library.deletedAt)
         .map(({ id, name, importPaths, exclusionPatterns }) => ({ id, name, importPaths, exclusionPatterns })),
+      hooks: {
+        createDatabaseBackup: this.createDatabaseBackup,
+        enterMaintenanceRollback: this.enterMaintenanceRollback,
+      },
     });
+  }
+
+  private async createDatabaseBackup() {
+    await this.databaseBackupService.createDatabaseBackup();
+  }
+
+  private enterMaintenanceRollback(repositoryId: string, snapshotId: string) {
+    return this.maintenanceService.startMaintenance(
+      {
+        action: MaintenanceAction.Rollback,
+        rollbackRepositoryId: repositoryId,
+        rollbackSnapshotId: snapshotId,
+      },
+      'yucca-rollback',
+    );
   }
 
   @OnEvent({ name: 'ConfigInit', workers: [ImmichWorker.Api] })

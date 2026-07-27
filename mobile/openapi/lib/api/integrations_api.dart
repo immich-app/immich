@@ -97,4 +97,44 @@ class IntegrationsApi {
     }
     return null;
   }
+
+  /// Performs an HTTP 'POST /yucca/integrations/immich/rollback' operation and returns the [Response].
+  /// Parameters:
+  ///
+  /// * [ImmichRollbackRequestDto] immichRollbackRequestDto (required):
+  Future<Response> startImmichRollbackWithHttpInfo(ImmichRollbackRequestDto immichRollbackRequestDto, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/yucca/integrations/immich/rollback';
+
+    // ignore: prefer_final_locals
+    Object? postBody = immichRollbackRequestDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Parameters:
+  ///
+  /// * [ImmichRollbackRequestDto] immichRollbackRequestDto (required):
+  Future<void> startImmichRollback(ImmichRollbackRequestDto immichRollbackRequestDto, { Future<void>? abortTrigger, }) async {
+    final response = await startImmichRollbackWithHttpInfo(immichRollbackRequestDto, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
 }

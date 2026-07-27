@@ -11,33 +11,31 @@
 part of openapi.api;
 
 
-class RunType {
-  /// Instantiate a new enum with the provided [value].
-  const RunType._(this.value);
+enum RunType {
+  schedule._(r'schedule'),
+  restore._(r'restore'),
+  backup._(r'backup'),
+  forget._(r'forget'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const RunType._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const schedule = RunType._(r'schedule');
-  static const restore = RunType._(r'restore');
-  static const backup = RunType._(r'backup');
-  static const forget = RunType._(r'forget');
-
-  /// List of all possible values in this [enum][RunType].
-  static const values = <RunType>[
-    schedule,
-    restore,
-    backup,
-    forget,
-  ];
-
+  /// Returns the instance of [RunType] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static RunType? fromJson(dynamic value) => RunTypeTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [RunType]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<RunType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <RunType>[];
     if (json is List && json.isNotEmpty) {
@@ -59,9 +57,11 @@ class RunTypeTypeTransformer {
 
   const RunTypeTypeTransformer._();
 
-  String encode(RunType data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(RunType data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a RunType.
+  /// Returns the instance of [RunType] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -70,6 +70,9 @@ class RunTypeTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   RunType? decode(dynamic data, {bool allowNull = true}) {
+    if (data is RunType) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'schedule': return RunType.schedule;
@@ -85,7 +88,7 @@ class RunTypeTypeTransformer {
     return null;
   }
 
-  /// Singleton [RunTypeTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static RunTypeTypeTransformer? _instance;
 }
 

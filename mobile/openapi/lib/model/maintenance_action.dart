@@ -16,6 +16,7 @@ enum MaintenanceAction {
   end._(r'end'),
   selectDatabaseRestore._(r'select_database_restore'),
   restoreDatabase._(r'restore_database'),
+  rollback._(r'rollback'),
   ;
 
   /// Instantiate a new enum with the provided value.
@@ -79,6 +80,7 @@ class MaintenanceActionTypeTransformer {
         case r'end': return MaintenanceAction.end;
         case r'select_database_restore': return MaintenanceAction.selectDatabaseRestore;
         case r'restore_database': return MaintenanceAction.restoreDatabase;
+        case r'rollback': return MaintenanceAction.rollback;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
