@@ -92,7 +92,6 @@ jobs:
           files: |
             mobile/**/*.g.dart
             mobile/**/*.gr.dart
-            mobile/**/*.drift.dart
             mobile/**/*.g.swift
             mobile/**/*.g.kt
 
