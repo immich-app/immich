@@ -52,7 +52,7 @@ dependencies:
   network_info_plus: ^6.1.4
   octo_image: ^2.1.0
   openapi:
-    path: openapi
+    path: generated/openapi
   package_info_plus: ^8.3.1
   path: ^1.9.1
   path_provider: ^2.1.5
@@ -157,4 +157,4 @@ flutter_launcher_icons:
 
 analyzer:
   exclude:
-    - openapi/**
+    - generated/**
