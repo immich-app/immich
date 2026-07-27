@@ -32,7 +32,7 @@ void main() {
   tearDown(() async {
     debugDefaultTargetPlatformOverride = null;
     await StoreService.I.put(StoreKey.manageLocalMediaAndroid, false);
-    context.dispose();
+    await context.dispose();
   });
 
   RemoteAsset owned({AssetVisibility visibility = .timeline, DateTime? deletedAt, String? localId}) =>

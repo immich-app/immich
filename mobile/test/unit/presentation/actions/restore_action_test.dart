@@ -18,8 +18,8 @@ void main() {
     assetService = context.service.asset.service;
   });
 
-  tearDown(() {
-    context.dispose();
+  tearDown(() async {
+    await context.dispose();
   });
 
   RemoteAsset owned({bool trashed = true}) =>

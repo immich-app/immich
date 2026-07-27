@@ -4,22 +4,21 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
-import 'package:immich_mobile/presentation/actions/upload.action.dart';
-import 'package:immich_mobile/presentation/actions/download.action.dart';
-import 'package:immich_mobile/presentation/actions/tag.action.dart';
-import 'package:immich_mobile/presentation/actions/share.action.dart';
-import 'package:immich_mobile/presentation/actions/share_link.action.dart';
-import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
-import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
+import 'package:immich_mobile/presentation/actions/download.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
+import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
+import 'package:immich_mobile/presentation/actions/tag.action.dart';
+import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class GeneralBottomSheet extends ConsumerStatefulWidget {
@@ -46,8 +45,6 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final multiselect = ref.watch(multiSelectProvider);
-
     Future<void> addToAlbum(RemoteAlbum album) async {
       final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.timeline, album);
 
@@ -77,23 +74,20 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
       minChildSize: widget.minChildSize,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
-      actions: [
-        const ActionColumnButton(action: FavoriteAction(source: .timeline)),
-        const ActionColumnButton(action: ShareAction(source: .timeline)),
-        if (multiselect.hasRemote) ...[
-          const ActionColumnButton(action: ShareLinkAction(source: .timeline)),
-          const ActionColumnButton(action: DownloadAction(source: .timeline)),
-          const ActionColumnButton(action: FavoriteAction(source: .timeline)),
-          const ActionColumnButton(action: ArchiveAction(source: .timeline)),
-          const ActionColumnButton(action: TagAction(source: .timeline)),
-          const ActionColumnButton(action: EditDateTimeAction(source: .timeline)),
-          const ActionColumnButton(action: EditLocationAction(source: .timeline)),
-          const ActionColumnButton(action: LockAction(source: .timeline)),
-          const ActionColumnButton(action: StackAction(source: .timeline)),
-        ],
-        const ActionColumnButton(action: DeleteAction(source: .timeline)),
-        const ActionColumnButton(action: CleanupLocalAction(source: .timeline)),
-        const ActionColumnButton(action: UploadAction(source: .timeline)),
+      actions: const <ActionColumnButton>[
+        .new(action: ShareAction(source: .timeline)),
+        .new(action: ShareLinkAction(source: .timeline)),
+        .new(action: DownloadAction(source: .timeline)),
+        .new(action: DeleteAction(source: .timeline)),
+        .new(action: FavoriteAction(source: .timeline)),
+        .new(action: ArchiveAction(source: .timeline)),
+        .new(action: TagAction(source: .timeline)),
+        .new(action: EditDateTimeAction(source: .timeline)),
+        .new(action: EditLocationAction(source: .timeline)),
+        .new(action: LockAction(source: .timeline)),
+        .new(action: StackAction(source: .timeline)),
+        .new(action: CleanupLocalAction(source: .timeline)),
+        .new(action: UploadAction(source: .timeline)),
       ],
       slivers: [
         const AddToAlbumHeader(),

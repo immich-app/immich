@@ -11,6 +11,7 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
@@ -37,7 +38,6 @@ class PresentationContext {
       service = ServiceMocks(),
       repository = RepositoryMocks() {
     setup();
-    addTearDown(dispose);
   }
 
   static const String serverEndpoint = 'http://localhost:3000';
@@ -75,6 +75,7 @@ class PresentationContext {
       await StoreService.I.put(StoreKey.serverEndpoint, serverEndpoint);
       _db = db;
     }
+    await SettingsRepository.ensureInitialized(_db!);
     return PresentationContext._(user: UserFactory.createDto());
   }
 
@@ -82,7 +83,8 @@ class PresentationContext {
     when(service.user.tryGetMyUser).thenReturn(currentUser);
   }
 
-  void dispose() {
+  Future<void> dispose() async {
+    await SettingsRepository.reset();
     service.resetAll();
   }
 }

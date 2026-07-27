@@ -29,8 +29,8 @@ void main() {
     tagService = context.service.tag.service;
   });
 
-  tearDown(() {
-    context.dispose();
+  tearDown(() async {
+    await context.dispose();
   });
 
   RemoteAsset owned() => RemoteAssetFactory.create(ownerId: context.currentUser.id);

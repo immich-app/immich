@@ -19,9 +19,9 @@ class TrashBottomBar extends ConsumerWidget {
           top: false,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ActionColumnButton(action: DeleteAction(source: .timeline)),
-              ActionColumnButton(action: RestoreAction(source: .timeline)),
+            children: <ActionColumnButton>[
+              .new(action: DeleteAction(source: .timeline)),
+              .new(action: RestoreAction(source: .timeline)),
             ],
           ),
         ),

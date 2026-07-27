@@ -1,12 +1,8 @@
-import 'package:drift/drift.dart';
-import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/settings_key.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
@@ -21,18 +17,12 @@ import '../presentation_context.dart';
 void main() {
   late PresentationContext context;
 
-  setUpAll(() async {
-    final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await SettingsRepository.ensureInitialized(db);
-  });
-
   setUp(() async {
     context = await PresentationContext.create();
-    await SettingsRepository.instance.clear([SettingsKey.shareFileType]);
   });
 
-  tearDown(() {
-    context.dispose();
+  tearDown(() async {
+    await context.dispose();
   });
 
   late BuildContext actionContext;

@@ -13,8 +13,8 @@ void main() {
     context = await PresentationContext.create();
   });
 
-  tearDown(() {
-    context.dispose();
+  tearDown(() async {
+    await context.dispose();
   });
 
   void Function(bool) captureConnectionListener() =>
