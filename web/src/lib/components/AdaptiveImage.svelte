@@ -150,11 +150,24 @@
     return { width: 1, height: 1 };
   });
 
-  const { insetInlineStart, top, displayWidth, displayHeight, rasterWidth, rasterHeight, rasterScale } = $derived.by(
-    () => {
+  // The `will-change: transform` GPU-layer promotion below (see comment at
+  // the top of this file) keeps a persistent composited texture for the
+  // raster div. That texture is tile-rasterized, and Chromium only
+  // repaints the tiles it thinks are dirty. Consecutive assets can differ
+  // in aspect ratio/size, so a newly navigated-to asset doesn't always
+  // cover the same tile region as the previous one, and Chromium can leave
+  // stale tiles from the previous asset showing until a later full repaint
+  // (see https://github.com/immich-app/immich/issues/29834). Since zoom is
+  // always reset to 1 on asset navigation, only promoting the layer while
+  // actually zoomed in keeps the composited texture from persisting across
+  // navigations while still fixing the seam artifacts it was added for.
+  const isZoomed = $derived(assetViewerManager.zoom > 1);
+
+  const { insetInlineStart, top, displayWidth, displayHeight, rasterWidth, rasterHeight, rasterScale, useGpuLayer } =
+    $derived.by(() => {
       const scaleFn = objectFit === 'cover' ? scaleToCover : scaleToFit;
       const { width, height } = scaleFn(imageDimensions, container);
-      if (maxRasterPixels === 0) {
+      if (maxRasterPixels === 0 || !isZoomed) {
         return {
           insetInlineStart: (container.width - width) / 2 + 'px',
           top: (container.height - height) / 2 + 'px',
@@ -163,6 +176,7 @@
           rasterWidth: width + 'px',
           rasterHeight: height + 'px',
           rasterScale: 1,
+          useGpuLayer: false,
         };
       }
       const nativeRatio = imageDimensions.width / width;
@@ -176,9 +190,9 @@
         rasterWidth: width * rasterRatio + 'px',
         rasterHeight: height * rasterRatio + 'px',
         rasterScale: 1 / rasterRatio,
+        useGpuLayer: true,
       };
-    },
-  );
+    });
 
   const { status } = $derived(adaptiveImageLoader);
   const alt = $derived(status.urls.preview ? $getAltText(toTimelineAsset(asset)) : '');
@@ -234,7 +248,7 @@
       style:height={rasterHeight}
       style:transform="scale({rasterScale})"
       style:transform-origin={languageManager.rtl ? 'right top' : 'left top'}
-      style:will-change={maxRasterPixels > 0 ? 'transform' : undefined}
+      style:will-change={useGpuLayer ? 'transform' : undefined}
     >
       {#if show.alphaBackground}
         <AlphaBackground />
