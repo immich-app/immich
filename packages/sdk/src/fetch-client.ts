@@ -2347,7 +2347,7 @@ export type SystemConfigFFmpegDto = {
     twoPass: boolean;
 };
 export type SystemConfigFrameSamplingDto = {
-    /** Enable video frame extraction */
+    /** Enable frame sampling */
     enabled: boolean;
     /** Seconds between sampled frames */
     frameInterval: number;

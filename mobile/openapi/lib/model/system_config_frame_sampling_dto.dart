@@ -19,7 +19,7 @@ class SystemConfigFrameSamplingDto {
     required this.targetResolution,
   });
 
-  /// Enable video frame extraction
+  /// Enable frame sampling
   bool enabled;
 
   /// Seconds between sampled frames

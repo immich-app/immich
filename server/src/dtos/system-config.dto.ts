@@ -408,7 +408,7 @@ const SystemConfigUserSchema = z
 
 const SystemConfigFrameSamplingSchema = z
   .object({
-    enabled: configBool.describe('Enable video frame extraction'),
+    enabled: configBool.describe('Enable frame sampling'),
     targetResolution: z.int().min(1).describe('Target short-side resolution (px) of extracted frames'),
     qp: z.int().min(0).max(51).describe('Target quality (CRF-equivalent) used for the all-intra frame encode'),
     frameInterval: z.number().meta({ format: 'double' }).min(0.01).describe('Seconds between sampled frames'),

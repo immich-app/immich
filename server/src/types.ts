@@ -486,7 +486,7 @@ export type JobItem =
   // Editor
   | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob }
 
-  // Video frame extraction
+  // Frame sampling
   | { name: JobName.FrameSamplingQueueAll; data: IBaseJob }
   | { name: JobName.FrameSampling; data: IEntityJob };
 

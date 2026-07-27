@@ -25844,7 +25844,7 @@
       "SystemConfigFrameSamplingDto": {
         "properties": {
           "enabled": {
-            "description": "Enable video frame extraction",
+            "description": "Enable frame sampling",
             "type": "boolean"
           },
           "frameInterval": {
