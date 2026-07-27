@@ -1,4 +1,4 @@
-import { parseByteRangePlaylist, parseIntervalChangeScores } from 'src/utils/video-frame';
+import { parseByteRangePlaylist, parseIntervalChangeScores } from 'src/utils/frame-sampling';
 import { describe, expect, it } from 'vitest';
 
 describe('parseByteRangePlaylist', () => {

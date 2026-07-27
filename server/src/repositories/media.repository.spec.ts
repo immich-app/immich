@@ -674,7 +674,7 @@ describe(MediaRepository.name, () => {
     });
   });
 
-  describe('extractVideoFrames', () => {
+  describe('frameSampling', () => {
     class FakeFfmpegProcess extends EventEmitter {
       stderr = Object.assign(new EventEmitter(), { setEncoding: vitest.fn() });
     }
@@ -706,7 +706,7 @@ describe(MediaRepository.name, () => {
     });
 
     it('spawns ffmpeg with the given command and resolves with the parsed byte ranges and scores', async () => {
-      const promise = sut.extractVideoFrames(['-i', 'input.mp4'], {
+      const promise = sut.sampleFrames(['-i', 'input.mp4'], {
         playlistPath: '/tmp/frames.m3u8',
         scoresPath: '/tmp/scores.txt',
       });
@@ -724,7 +724,7 @@ describe(MediaRepository.name, () => {
     });
 
     it('rejects with the collected stderr when ffmpeg exits with a non-zero code', async () => {
-      const promise = sut.extractVideoFrames(['-i', 'input.mp4'], {
+      const promise = sut.sampleFrames(['-i', 'input.mp4'], {
         playlistPath: '/tmp/frames.m3u8',
         scoresPath: '/tmp/scores.txt',
       });
@@ -737,7 +737,7 @@ describe(MediaRepository.name, () => {
     });
 
     it('rejects when the process emits an error', async () => {
-      const promise = sut.extractVideoFrames(['-i', 'input.mp4'], {
+      const promise = sut.sampleFrames(['-i', 'input.mp4'], {
         playlistPath: '/tmp/frames.m3u8',
         scoresPath: '/tmp/scores.txt',
       });
@@ -751,7 +751,7 @@ describe(MediaRepository.name, () => {
     it('rejects when the output artifacts cannot be read', async () => {
       readFileSpy.mockRejectedValue(new Error('ENOENT: no such file or directory'));
 
-      const promise = sut.extractVideoFrames(['-i', 'input.mp4'], {
+      const promise = sut.sampleFrames(['-i', 'input.mp4'], {
         playlistPath: '/tmp/frames.m3u8',
         scoresPath: '/tmp/scores.txt',
       });

@@ -253,10 +253,10 @@ export class MediaService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.VideoFrameExtractionQueueAll, queue: QueueName.VideoConversion })
-  async handleQueueGenerateVideoFrames({ force }: JobOf<JobName.VideoFrameExtractionQueueAll>): Promise<JobStatus> {
-    const { videoFrameExtraction } = await this.getConfig({ withCache: true });
-    if (!videoFrameExtraction.enabled) {
+  @OnJob({ name: JobName.FrameSamplingQueueAll, queue: QueueName.VideoConversion })
+  async handleQueueSampledFrames({ force }: JobOf<JobName.FrameSamplingQueueAll>): Promise<JobStatus> {
+    const { frameSampling } = await this.getConfig({ withCache: true });
+    if (!frameSampling.enabled) {
       return JobStatus.Skipped;
     }
 
@@ -266,8 +266,8 @@ export class MediaService extends BaseService {
       jobs = [];
     };
 
-    for await (const asset of this.assetJobRepository.streamForVideoFrameExtraction(force)) {
-      jobs.push({ name: JobName.VideoFrameExtraction, data: { id: asset.id } });
+    for await (const asset of this.assetJobRepository.streamForFrameSampling(force)) {
+      jobs.push({ name: JobName.FrameSampling, data: { id: asset.id } });
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await queueAll();
       }
@@ -278,14 +278,14 @@ export class MediaService extends BaseService {
     return JobStatus.Success;
   }
 
-  @OnJob({ name: JobName.VideoFrameExtraction, queue: QueueName.VideoConversion })
-  async handleGenerateVideoFrames({ id }: JobOf<JobName.VideoFrameExtraction>): Promise<JobStatus> {
-    const { videoFrameExtraction, ffmpeg } = await this.getConfig({ withCache: true });
-    if (!videoFrameExtraction.enabled) {
+  @OnJob({ name: JobName.FrameSampling, queue: QueueName.VideoConversion })
+  async handleSampledFrames({ id }: JobOf<JobName.FrameSampling>): Promise<JobStatus> {
+    const { frameSampling, ffmpeg } = await this.getConfig({ withCache: true });
+    if (!frameSampling.enabled) {
       return JobStatus.Skipped;
     }
 
-    const asset = await this.assetJobRepository.getForVideoFrameExtraction(id);
+    const asset = await this.assetJobRepository.getForFrameSampling(id);
     if (!asset) {
       return JobStatus.Failed;
     }
@@ -301,8 +301,8 @@ export class MediaService extends BaseService {
       const overrideConfig: SystemConfigFFmpegDto = {
         ...ffmpeg,
         targetVideoCodec: VideoCodec.H264,
-        targetResolution: String(videoFrameExtraction.targetResolution),
-        crf: videoFrameExtraction.qp,
+        targetResolution: String(frameSampling.targetResolution),
+        crf: frameSampling.qp,
         cqMode: CQMode.Icq,
         maxBitrate: '0',
       };
@@ -313,14 +313,14 @@ export class MediaService extends BaseService {
           segmentFilename: artifactPath,
           playlistFilename: playlistPath,
           scoresFilename: scoresPath,
-          frameInterval: videoFrameExtraction.frameInterval,
+          frameInterval: frameSampling.frameInterval,
         },
         asset.videoStream,
       );
 
       let result;
       try {
-        result = await this.mediaRepository.extractVideoFrames(command, { playlistPath, scoresPath });
+        result = await this.mediaRepository.sampleFrames(command, { playlistPath, scoresPath });
       } catch (error) {
         this.logger.error(`Failed to generate video frames for asset ${asset.id}: ${error}`);
         return JobStatus.Failed;
@@ -332,12 +332,11 @@ export class MediaService extends BaseService {
         return JobStatus.Failed;
       }
 
-      const frames = byteRanges.map((range, frameIndex) => ({
-        frameIndex,
-        byteOffset: range.byteOffset,
-        byteSize: range.byteSize,
-        intervalChange: intervalChanges[frameIndex] ?? 0,
-      }));
+      const frames = {
+        byteOffset: byteRanges.map((range) => range.byteOffset),
+        byteSize: byteRanges.map((range) => range.byteSize),
+        intervalChange: byteRanges.map((_, frameIndex) => intervalChanges[frameIndex] ?? 0),
+      };
 
       await this.videoFrameRepository.upsertFrames(asset.id, frames);
       await this.assetRepository.upsertFile({
@@ -347,7 +346,7 @@ export class MediaService extends BaseService {
         isEdited: false,
       });
 
-      this.logger.log(`Extracted ${frames.length} frame(s) for video ${asset.id}`);
+      this.logger.log(`Extracted ${frames.byteOffset.length} frame(s) for video ${asset.id}`);
 
       return JobStatus.Success;
     } finally {

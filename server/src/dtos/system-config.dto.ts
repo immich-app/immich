@@ -406,14 +406,14 @@ const SystemConfigUserSchema = z
   })
   .meta({ id: 'SystemConfigUserDto' });
 
-const SystemConfigVideoFrameExtractionSchema = z
+const SystemConfigFrameSamplingSchema = z
   .object({
     enabled: configBool.describe('Enable video frame extraction'),
     targetResolution: z.int().min(1).describe('Target short-side resolution (px) of extracted frames'),
     qp: z.int().min(0).max(51).describe('Target quality (CRF-equivalent) used for the all-intra frame encode'),
     frameInterval: z.number().meta({ format: 'double' }).min(0.01).describe('Seconds between sampled frames'),
   })
-  .meta({ id: 'SystemConfigVideoFrameExtractionDto' });
+  .meta({ id: 'SystemConfigFrameSamplingDto' });
 
 export const SystemConfigSchema = z
   .object({
@@ -439,7 +439,7 @@ export const SystemConfigSchema = z
     server: SystemConfigServerSchema,
     user: SystemConfigUserSchema,
     integrityChecks: SystemConfigIntegrityChecksSchema,
-    videoFrameExtraction: SystemConfigVideoFrameExtractionSchema,
+    frameSampling: SystemConfigFrameSamplingSchema,
   })
   .describe('System configuration')
   .meta({ id: 'SystemConfigDto' });

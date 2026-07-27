@@ -765,6 +765,8 @@ class ApiClient {
           return SystemConfigFFmpegRealtimeDto.fromJson(value);
         case 'SystemConfigFacesDto':
           return SystemConfigFacesDto.fromJson(value);
+        case 'SystemConfigFrameSamplingDto':
+          return SystemConfigFrameSamplingDto.fromJson(value);
         case 'SystemConfigGeneratedFullsizeImageDto':
           return SystemConfigGeneratedFullsizeImageDto.fromJson(value);
         case 'SystemConfigGeneratedImageDto':
@@ -825,8 +827,6 @@ class ApiClient {
           return SystemConfigTrashDto.fromJson(value);
         case 'SystemConfigUserDto':
           return SystemConfigUserDto.fromJson(value);
-        case 'SystemConfigVideoFrameExtractionDto':
-          return SystemConfigVideoFrameExtractionDto.fromJson(value);
         case 'TagBulkAssetsDto':
           return TagBulkAssetsDto.fromJson(value);
         case 'TagBulkAssetsResponseDto':

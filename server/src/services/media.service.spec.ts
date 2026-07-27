@@ -4277,10 +4277,10 @@ describe(MediaService.name, () => {
     });
   });
 
-  describe('extractVideoFrames', () => {
+  describe('frameSampling', () => {
     let mocks: ServiceMocks;
 
-    const videoFrameExtractionConfig: SystemConfig['videoFrameExtraction'] = {
+    const frameSamplingConfig: SystemConfig['frameSampling'] = {
       enabled: true,
       targetResolution: 640,
       qp: 34,
@@ -4290,7 +4290,7 @@ describe(MediaService.name, () => {
     beforeEach(() => {
       ({ sut, mocks } = newTestService(MediaService));
 
-      mocks.systemMetadata.get.mockResolvedValue({ videoFrameExtraction: videoFrameExtractionConfig });
+      mocks.systemMetadata.get.mockResolvedValue({ frameSampling: frameSamplingConfig });
 
       mocks.videoFrame.upsertFrames.mockResolvedValue(void 0 as never);
     });
@@ -4302,22 +4302,22 @@ describe(MediaService.name, () => {
     describe('handleQueueGenerateVideoFrames', () => {
       it('should skip if disabled', async () => {
         mocks.systemMetadata.get.mockResolvedValue({
-          videoFrameExtraction: { ...videoFrameExtractionConfig, enabled: false },
+          frameSampling: { ...frameSamplingConfig, enabled: false },
         });
 
-        await expect(sut.handleQueueGenerateVideoFrames({})).resolves.toEqual(JobStatus.Skipped);
+        await expect(sut.handleQueueSampledFrames({})).resolves.toEqual(JobStatus.Skipped);
 
-        expect(mocks.assetJob.streamForVideoFrameExtraction).not.toHaveBeenCalled();
+        expect(mocks.assetJob.streamForFrameSampling).not.toHaveBeenCalled();
       });
 
       it('should queue all eligible video assets', async () => {
         const asset = AssetFactory.create({ type: AssetType.Video });
-        mocks.assetJob.streamForVideoFrameExtraction.mockReturnValue(makeStream([asset]));
+        mocks.assetJob.streamForFrameSampling.mockReturnValue(makeStream([asset]));
 
-        await expect(sut.handleQueueGenerateVideoFrames({ force: true })).resolves.toEqual(JobStatus.Success);
+        await expect(sut.handleQueueSampledFrames({ force: true })).resolves.toEqual(JobStatus.Success);
 
-        expect(mocks.assetJob.streamForVideoFrameExtraction).toHaveBeenCalledWith(true);
-        expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: 'VideoFrameExtraction', data: { id: asset.id } }]);
+        expect(mocks.assetJob.streamForFrameSampling).toHaveBeenCalledWith(true);
+        expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.FrameSampling, data: { id: asset.id } }]);
       });
     });
 
@@ -4328,28 +4328,28 @@ describe(MediaService.name, () => {
       };
 
       beforeEach(() => {
-        mocks.assetJob.getForVideoFrameExtraction.mockResolvedValue(asset);
+        mocks.assetJob.getForFrameSampling.mockResolvedValue(asset);
         mocks.storage.mkdtemp.mockResolvedValue(`/tmp/immich-video-frames-${asset.id}`);
       });
 
       it('should skip if disabled', async () => {
         mocks.systemMetadata.get.mockResolvedValue({
-          videoFrameExtraction: { ...videoFrameExtractionConfig, enabled: false },
+          frameSampling: { ...frameSamplingConfig, enabled: false },
         });
 
-        await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Skipped);
+        await expect(sut.handleSampledFrames({ id: asset.id })).resolves.toEqual(JobStatus.Skipped);
 
-        expect(mocks.assetJob.getForVideoFrameExtraction).not.toHaveBeenCalled();
+        expect(mocks.assetJob.getForFrameSampling).not.toHaveBeenCalled();
       });
 
       it('should fail if asset could not be found', async () => {
-        mocks.assetJob.getForVideoFrameExtraction.mockResolvedValue(void 0);
+        mocks.assetJob.getForFrameSampling.mockResolvedValue(void 0);
 
-        await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
+        await expect(sut.handleSampledFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
       });
 
       it('should extract frames and persist them', async () => {
-        mocks.media.extractVideoFrames.mockResolvedValue({
+        mocks.media.sampleFrames.mockResolvedValue({
           byteRanges: [
             { byteOffset: 813, byteSize: 3843 },
             { byteOffset: 4656, byteSize: 3238 },
@@ -4357,49 +4357,52 @@ describe(MediaService.name, () => {
           intervalChanges: [0, 2.516],
         });
 
-        await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Success);
+        await expect(sut.handleSampledFrames({ id: asset.id })).resolves.toEqual(JobStatus.Success);
 
         expect(mocks.storage.mkdirSync).toHaveBeenCalled();
 
-        expect(mocks.media.extractVideoFrames).toHaveBeenCalledWith(expect.any(Array), {
+        expect(mocks.media.sampleFrames).toHaveBeenCalledWith(expect.any(Array), {
           playlistPath: expect.stringContaining('frames.m3u8'),
           scoresPath: expect.stringContaining('scores.txt'),
         });
 
-        expect(mocks.videoFrame.upsertFrames).toHaveBeenCalledWith(asset.id, [
-          { frameIndex: 0, byteOffset: 813, byteSize: 3843, intervalChange: 0 },
-          { frameIndex: 1, byteOffset: 4656, byteSize: 3238, intervalChange: 2.516 },
-        ]);
+        expect(mocks.videoFrame.upsertFrames).toHaveBeenCalledWith(asset.id, {
+          byteOffset: [813, 4656],
+          byteSize: [3843, 3238],
+          intervalChange: [0, 2.516],
+        });
         expect(mocks.storage.mkdtemp).toHaveBeenCalledTimes(1);
         expect(mocks.storage.unlinkDir).toHaveBeenCalledTimes(1);
       });
 
       it('should default a missing interval change to 0', async () => {
-        mocks.media.extractVideoFrames.mockResolvedValue({
+        mocks.media.sampleFrames.mockResolvedValue({
           byteRanges: [{ byteOffset: 0, byteSize: 100 }],
           intervalChanges: [],
         });
 
-        await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Success);
+        await expect(sut.handleSampledFrames({ id: asset.id })).resolves.toEqual(JobStatus.Success);
 
-        expect(mocks.videoFrame.upsertFrames).toHaveBeenCalledWith(asset.id, [
-          { frameIndex: 0, byteOffset: 0, byteSize: 100, intervalChange: 0 },
-        ]);
+        expect(mocks.videoFrame.upsertFrames).toHaveBeenCalledWith(asset.id, {
+          byteOffset: [0],
+          byteSize: [100],
+          intervalChange: [0],
+        });
       });
 
       it('should fail and clean up the temp dir if ffmpeg fails', async () => {
-        mocks.media.extractVideoFrames.mockRejectedValue(new Error('ffmpeg exited with code 1: boom'));
+        mocks.media.sampleFrames.mockRejectedValue(new Error('ffmpeg exited with code 1: boom'));
 
-        await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
+        await expect(sut.handleSampledFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
 
         expect(mocks.videoFrame.upsertFrames).not.toHaveBeenCalled();
         expect(mocks.storage.unlinkDir).toHaveBeenCalledTimes(1);
       });
 
       it('should fail and clean up the temp dir if no frames were extracted', async () => {
-        mocks.media.extractVideoFrames.mockResolvedValue({ byteRanges: [], intervalChanges: [] });
+        mocks.media.sampleFrames.mockResolvedValue({ byteRanges: [], intervalChanges: [] });
 
-        await expect(sut.handleGenerateVideoFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
+        await expect(sut.handleSampledFrames({ id: asset.id })).resolves.toEqual(JobStatus.Failed);
 
         expect(mocks.videoFrame.upsertFrames).not.toHaveBeenCalled();
         expect(mocks.storage.unlinkDir).toHaveBeenCalledTimes(1);

@@ -487,8 +487,8 @@ export type JobItem =
   | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob }
 
   // Video frame extraction
-  | { name: JobName.VideoFrameExtractionQueueAll; data: IBaseJob }
-  | { name: JobName.VideoFrameExtraction; data: IEntityJob };
+  | { name: JobName.FrameSamplingQueueAll; data: IBaseJob }
+  | { name: JobName.FrameSampling; data: IEntityJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

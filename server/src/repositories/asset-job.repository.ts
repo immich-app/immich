@@ -353,7 +353,7 @@ export class AssetJobRepository {
   }
 
   @GenerateSql({ params: [undefined, DummyValue.STRING], stream: true })
-  streamForVideoFrameExtraction(force: boolean | undefined) {
+  streamForFrameSampling(force: boolean | undefined) {
     return this.db
       .selectFrom('asset')
       .select(['asset.id'])
@@ -378,7 +378,7 @@ export class AssetJobRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  getForVideoFrameExtraction(id: string) {
+  getForFrameSampling(id: string) {
     return this.db
       .selectFrom('asset')
       .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')

@@ -73,7 +73,6 @@ const getFrameSamplingCommand = (
       playlistFilename: playlistPath,
       scoresFilename: scoresPath,
       frameInterval: 1,
-      qp,
     },
     videoStream,
   );

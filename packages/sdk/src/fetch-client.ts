@@ -2346,6 +2346,16 @@ export type SystemConfigFFmpegDto = {
     /** Two pass */
     twoPass: boolean;
 };
+export type SystemConfigFrameSamplingDto = {
+    /** Enable video frame extraction */
+    enabled: boolean;
+    /** Seconds between sampled frames */
+    frameInterval: number;
+    /** Target quality (CRF-equivalent) used for the all-intra frame encode */
+    qp: number;
+    /** Target short-side resolution (px) of extracted frames */
+    targetResolution: number;
+};
 export type SystemConfigGeneratedFullsizeImageDto = {
     /** Enabled */
     enabled: boolean;
@@ -2615,19 +2625,10 @@ export type SystemConfigUserDto = {
     /** Delete delay */
     deleteDelay: number;
 };
-export type SystemConfigVideoFrameExtractionDto = {
-    /** Enable video frame extraction */
-    enabled: boolean;
-    /** Seconds between sampled frames */
-    frameInterval: number;
-    /** Target quality (CRF-equivalent) used for the all-intra frame encode */
-    qp: number;
-    /** Target short-side resolution (px) of extracted frames */
-    targetResolution: number;
-};
 export type SystemConfigDto = {
     backup: SystemConfigBackupsDto;
     ffmpeg: SystemConfigFFmpegDto;
+    frameSampling: SystemConfigFrameSamplingDto;
     image: SystemConfigImageDto;
     integrityChecks: SystemConfigIntegrityChecks;
     job: SystemConfigJobDto;
@@ -2648,7 +2649,6 @@ export type SystemConfigDto = {
     theme: SystemConfigThemeDto;
     trash: SystemConfigTrashDto;
     user: SystemConfigUserDto;
-    videoFrameExtraction: SystemConfigVideoFrameExtractionDto;
 };
 export type SystemConfigTemplateStorageOptionDto = {
     /** Available day format options for storage template */
@@ -7511,8 +7511,8 @@ export enum JobName {
     IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh",
     IntegrityDeleteReportType = "IntegrityDeleteReportType",
     IntegrityDeleteReports = "IntegrityDeleteReports",
-    VideoFrameExtractionQueueAll = "VideoFrameExtractionQueueAll",
-    VideoFrameExtraction = "VideoFrameExtraction"
+    FrameSamplingQueueAll = "FrameSamplingQueueAll",
+    FrameSampling = "FrameSampling"
 }
 export enum SearchSuggestionType {
     Country = "country",

@@ -214,7 +214,7 @@ export type SystemConfig = {
   user: {
     deleteDelay: number;
   };
-  videoFrameExtraction: {
+  frameSampling: {
     enabled: boolean;
     targetResolution: number;
     qp: number;
@@ -452,8 +452,8 @@ export const defaults = Object.freeze<SystemConfig>({
   user: {
     deleteDelay: 7,
   },
-  videoFrameExtraction: {
-    enabled: false,
+  frameSampling: {
+    enabled: true,
     targetResolution: 640,
     qp: 34,
     frameInterval: 1,

@@ -78,8 +78,8 @@ enum JobName {
   integrityChecksumFilesRefresh._(r'IntegrityChecksumFilesRefresh'),
   integrityDeleteReportType._(r'IntegrityDeleteReportType'),
   integrityDeleteReports._(r'IntegrityDeleteReports'),
-  videoFrameExtractionQueueAll._(r'VideoFrameExtractionQueueAll'),
-  videoFrameExtraction._(r'VideoFrameExtraction'),
+  frameSamplingQueueAll._(r'FrameSamplingQueueAll'),
+  frameSampling._(r'FrameSampling'),
   ;
 
   /// Instantiate a new enum with the provided value.
@@ -205,8 +205,8 @@ class JobNameTypeTransformer {
         case r'IntegrityChecksumFilesRefresh': return JobName.integrityChecksumFilesRefresh;
         case r'IntegrityDeleteReportType': return JobName.integrityDeleteReportType;
         case r'IntegrityDeleteReports': return JobName.integrityDeleteReports;
-        case r'VideoFrameExtractionQueueAll': return JobName.videoFrameExtractionQueueAll;
-        case r'VideoFrameExtraction': return JobName.videoFrameExtraction;
+        case r'FrameSamplingQueueAll': return JobName.frameSamplingQueueAll;
+        case r'FrameSampling': return JobName.frameSampling;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

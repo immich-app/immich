@@ -75,7 +75,7 @@ describe(JobService.name, () => {
           JobName.AssetDetectFaces,
           JobName.Ocr,
           JobName.AssetEncodeVideo,
-          JobName.VideoFrameExtraction,
+          JobName.FrameSampling,
         ],
         stub: [AssetFactory.create({ id: 'asset-1', type: AssetType.Video })],
       },

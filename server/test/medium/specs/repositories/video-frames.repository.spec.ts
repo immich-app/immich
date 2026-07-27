@@ -3,7 +3,7 @@ import { AssetType } from 'src/enum';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { VideoFrameRepository } from 'src/repositories/video-frame.repository';
+import { VideoFrameRepository } from 'src/repositories/video-frames.repository';
 import { DB } from 'src/schema';
 import { BaseService } from 'src/services/base.service';
 import { newMediumService } from 'test/medium.factory';
@@ -41,21 +41,17 @@ beforeAll(async () => {
 
 describe(VideoFrameRepository.name, () => {
   describe('cascade delete', () => {
-    it('should remove video_frame  rows when the parent asset is deleted', async () => {
+    it('should remove video_frames rows when the parent asset is deleted', async () => {
       const { ctx, sut } = setup();
       const assetRepository = ctx.get(AssetRepository);
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
 
-      await sut.upsertFrames(asset.id, [
-        { frameIndex: 0, byteOffset: 813, byteSize: 3843, intervalChange: 0 },
-        { frameIndex: 1, byteOffset: 4656, byteSize: 3238, intervalChange: 2.516 },
-      ]);
+      await sut.upsertFrames(asset.id, { byteOffset: [813, 4656], byteSize: [3843, 3238], intervalChange: [0, 2.516] });
 
       await assetRepository.remove({ id: asset.id });
 
-      await expect(sut.getFramesInRange(asset.id, 0, 1)).resolves.toEqual([]);
-      // TODO: check if asset_file rows are also deleted
+      await expect(sut.getFrames(asset.id)).resolves.toBeUndefined();
     });
   });
 
@@ -65,30 +61,32 @@ describe(VideoFrameRepository.name, () => {
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
 
-      await sut.upsertFrames(asset.id, [
-        { frameIndex: 0, byteOffset: 0, byteSize: 100, intervalChange: 0 },
-        { frameIndex: 1, byteOffset: 100, byteSize: 200, intervalChange: 1.5 },
-      ]);
+      await sut.upsertFrames(asset.id, {
+        byteOffset: [0, 100],
+        byteSize: [100, 200],
+        intervalChange: [0, 1.5],
+      });
 
-      await sut.upsertFrames(asset.id, [{ frameIndex: 5, byteOffset: 999, byteSize: 50, intervalChange: 3.2 }]);
+      const frames = await sut.getFrames(asset.id);
 
-      const frames = await sut.getFramesInRange(asset.id, 0, 100);
+      expect(frames?.byteOffset).toEqual([0, 100]);
 
-      expect(frames).toHaveLength(1);
-      expect(frames[0]).toEqual(
-        expect.objectContaining({ frameIndex: 5, byteOffset: 999, byteSize: 50, intervalChange: 3.2 }),
-      );
+      await sut.upsertFrames(asset.id, { byteOffset: [999], byteSize: [50], intervalChange: [3.2] });
+
+      const framesUpdated = await sut.getFrames(asset.id);
+
+      expect(framesUpdated?.byteOffset).toEqual([999]);
     });
   });
 });
 
-describe(`${AssetJobRepository.name}.streamForVideoFrameExtraction`, () => {
+describe(`${AssetJobRepository.name}.streamForFrameSampling`, () => {
   it('should yield a video asset with no extraction record yet', async () => {
     const { ctx, sut } = setupAssetJob();
     const { user } = await ctx.newUser();
     const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
 
-    const results = await consume(sut.streamForVideoFrameExtraction(false));
+    const results = await consume(sut.streamForFrameSampling(false));
 
     expect(results).toEqual(expect.arrayContaining([expect.objectContaining({ id: asset.id })]));
   });

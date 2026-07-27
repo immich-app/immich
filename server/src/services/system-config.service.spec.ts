@@ -251,7 +251,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
       albumUpdateTemplate: '',
     },
   },
-  videoFrameExtraction: {
+  frameSampling: {
     enabled: false,
     targetResolution: 640,
     qp: 34,

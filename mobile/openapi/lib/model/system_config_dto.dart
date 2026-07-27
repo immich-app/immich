@@ -15,6 +15,7 @@ class SystemConfigDto {
   SystemConfigDto({
     required this.backup,
     required this.ffmpeg,
+    required this.frameSampling,
     required this.image,
     required this.integrityChecks,
     required this.job,
@@ -35,12 +36,13 @@ class SystemConfigDto {
     required this.theme,
     required this.trash,
     required this.user,
-    required this.videoFrameExtraction,
   });
 
   SystemConfigBackupsDto backup;
 
   SystemConfigFFmpegDto ffmpeg;
+
+  SystemConfigFrameSamplingDto frameSampling;
 
   SystemConfigImageDto image;
 
@@ -82,12 +84,11 @@ class SystemConfigDto {
 
   SystemConfigUserDto user;
 
-  SystemConfigVideoFrameExtractionDto videoFrameExtraction;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigDto &&
     other.backup == backup &&
     other.ffmpeg == ffmpeg &&
+    other.frameSampling == frameSampling &&
     other.image == image &&
     other.integrityChecks == integrityChecks &&
     other.job == job &&
@@ -107,14 +108,14 @@ class SystemConfigDto {
     other.templates == templates &&
     other.theme == theme &&
     other.trash == trash &&
-    other.user == user &&
-    other.videoFrameExtraction == videoFrameExtraction;
+    other.user == user;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (backup.hashCode) +
     (ffmpeg.hashCode) +
+    (frameSampling.hashCode) +
     (image.hashCode) +
     (integrityChecks.hashCode) +
     (job.hashCode) +
@@ -134,16 +135,16 @@ class SystemConfigDto {
     (templates.hashCode) +
     (theme.hashCode) +
     (trash.hashCode) +
-    (user.hashCode) +
-    (videoFrameExtraction.hashCode);
+    (user.hashCode);
 
   @override
-  String toString() => 'SystemConfigDto[backup=$backup, ffmpeg=$ffmpeg, image=$image, integrityChecks=$integrityChecks, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user, videoFrameExtraction=$videoFrameExtraction]';
+  String toString() => 'SystemConfigDto[backup=$backup, ffmpeg=$ffmpeg, frameSampling=$frameSampling, image=$image, integrityChecks=$integrityChecks, job=$job, library_=$library_, logging=$logging, machineLearning=$machineLearning, map=$map, metadata=$metadata, newVersionCheck=$newVersionCheck, nightlyTasks=$nightlyTasks, notifications=$notifications, oauth=$oauth, passwordLogin=$passwordLogin, reverseGeocoding=$reverseGeocoding, server=$server, storageTemplate=$storageTemplate, templates=$templates, theme=$theme, trash=$trash, user=$user]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'backup'] = this.backup;
       json[r'ffmpeg'] = this.ffmpeg;
+      json[r'frameSampling'] = this.frameSampling;
       json[r'image'] = this.image;
       json[r'integrityChecks'] = this.integrityChecks;
       json[r'job'] = this.job;
@@ -164,7 +165,6 @@ class SystemConfigDto {
       json[r'theme'] = this.theme;
       json[r'trash'] = this.trash;
       json[r'user'] = this.user;
-      json[r'videoFrameExtraction'] = this.videoFrameExtraction;
     return json;
   }
 
@@ -179,6 +179,7 @@ class SystemConfigDto {
       return SystemConfigDto(
         backup: SystemConfigBackupsDto.fromJson(json[r'backup'])!,
         ffmpeg: SystemConfigFFmpegDto.fromJson(json[r'ffmpeg'])!,
+        frameSampling: SystemConfigFrameSamplingDto.fromJson(json[r'frameSampling'])!,
         image: SystemConfigImageDto.fromJson(json[r'image'])!,
         integrityChecks: SystemConfigIntegrityChecks.fromJson(json[r'integrityChecks'])!,
         job: SystemConfigJobDto.fromJson(json[r'job'])!,
@@ -199,7 +200,6 @@ class SystemConfigDto {
         theme: SystemConfigThemeDto.fromJson(json[r'theme'])!,
         trash: SystemConfigTrashDto.fromJson(json[r'trash'])!,
         user: SystemConfigUserDto.fromJson(json[r'user'])!,
-        videoFrameExtraction: SystemConfigVideoFrameExtractionDto.fromJson(json[r'videoFrameExtraction'])!,
       );
     }
     return null;
@@ -249,6 +249,7 @@ class SystemConfigDto {
   static const requiredKeys = <String>{
     'backup',
     'ffmpeg',
+    'frameSampling',
     'image',
     'integrityChecks',
     'job',
@@ -269,7 +270,6 @@ class SystemConfigDto {
     'theme',
     'trash',
     'user',
-    'videoFrameExtraction',
   };
 }
 

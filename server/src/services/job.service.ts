@@ -187,7 +187,7 @@ export class JobService extends BaseService {
         if (asset.type === AssetType.Video) {
           jobs.push(
             { name: JobName.AssetEncodeVideo, data: item.data },
-            { name: JobName.VideoFrameExtraction, data: item.data },
+            { name: JobName.FrameSampling, data: item.data },
           );
         }
 

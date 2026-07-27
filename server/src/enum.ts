@@ -917,9 +917,9 @@ export enum JobName {
   IntegrityDeleteReportType = 'IntegrityDeleteReportType',
   IntegrityDeleteReports = 'IntegrityDeleteReports',
 
-  // Video frame extraction
-  VideoFrameExtractionQueueAll = 'VideoFrameExtractionQueueAll',
-  VideoFrameExtraction = 'VideoFrameExtraction',
+  // Frame sampling
+  FrameSamplingQueueAll = 'FrameSamplingQueueAll',
+  FrameSampling = 'FrameSampling',
 }
 
 export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'JobName' });

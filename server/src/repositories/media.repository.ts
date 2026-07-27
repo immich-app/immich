@@ -35,9 +35,9 @@ import {
   VideoInfo,
   VideoPacketInfo,
 } from 'src/types';
+import { parseByteRangePlaylist, parseIntervalChangeScores } from 'src/utils/frame-sampling';
 import { handlePromiseError } from 'src/utils/misc';
 import { createAffineMatrix } from 'src/utils/transform';
-import { parseByteRangePlaylist, parseIntervalChangeScores } from 'src/utils/video-frame';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   new Promise((resolve, reject) =>
@@ -557,7 +557,7 @@ export class MediaRepository {
     return outputFrames + median;
   }
 
-  async extractVideoFrames(
+  async sampleFrames(
     command: string[],
     artifacts: { playlistPath: string; scoresPath: string },
   ): Promise<{ byteRanges: ReturnType<typeof parseByteRangePlaylist>['byteRanges']; intervalChanges: number[] }> {

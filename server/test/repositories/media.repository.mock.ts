@@ -21,6 +21,6 @@ export const newMediaRepositoryMock = (): Mocked<RepositoryInterface<MediaReposi
     }),
     transcode: vitest.fn(),
     getImageMetadata: vitest.fn(),
-    extractVideoFrames: vitest.fn().mockResolvedValue({ byteRanges: [], intervalChanges: [] }),
+    sampleFrames: vitest.fn().mockResolvedValue({ byteRanges: [], intervalChanges: [] }),
   };
 };

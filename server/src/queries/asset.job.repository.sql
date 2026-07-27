@@ -698,7 +698,7 @@ where
   "asset"."id" = $1
   and "asset"."type" = 'VIDEO'
 
--- AssetJobRepository.streamForVideoFrameExtraction
+-- AssetJobRepository.streamForFrameSampling
 select
   "asset"."id"
 from
@@ -717,7 +717,7 @@ where
   and "asset"."visibility" != 'hidden'
   and "asset"."deletedAt" is null
 
--- AssetJobRepository.getForVideoFrameExtraction
+-- AssetJobRepository.getForFrameSampling
 select
   "asset"."id",
   "asset"."ownerId",

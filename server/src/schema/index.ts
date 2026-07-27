@@ -81,7 +81,7 @@ import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.ta
 import { UserMetadataTable } from 'src/schema/tables/user-metadata.table';
 import { UserTable } from 'src/schema/tables/user.table';
 import { VersionHistoryTable } from 'src/schema/tables/version-history.table';
-import { VideoFrameTable } from 'src/schema/tables/video-frame.table';
+import { VideoFramesTable } from 'src/schema/tables/video-frames.table';
 import {
   VideoStreamSegmentTable,
   VideoStreamSessionTable,
@@ -150,7 +150,7 @@ export class ImmichDatabase {
     VideoStreamSessionTable,
     VideoStreamVariantTable,
     VideoStreamSegmentTable,
-    VideoFrameTable,
+    VideoFramesTable,
     PluginTable,
     PluginMethodTable,
     WorkflowTable,
@@ -270,7 +270,7 @@ export interface DB {
 
   version_history: VersionHistoryTable;
 
-  video_frame: VideoFrameTable;
+  video_frames: VideoFramesTable;
 
   video_stream_session: VideoStreamSessionTable;
   video_stream_variant: VideoStreamVariantTable;
