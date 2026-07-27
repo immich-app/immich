@@ -143,6 +143,16 @@
     true,
   );
 
+  const togglePause = () => {
+    if (progressBarStatus === ProgressBarStatus.Paused) {
+      $slideshowPaused = false;
+      progressBar?.play();
+    } else {
+      $slideshowPaused = true;
+      progressBar?.pause();
+    }
+  };
+
   const shortcutBindings = $derived.by((): ShortcutOptions[] => {
     const bindings: ShortcutOptions[] = [
       { shortcut: { key: 'Escape' }, onShortcut: onClose },
@@ -154,15 +164,7 @@
     if (!isVideoSlide) {
       bindings.push({
         shortcut: { key: ' ' },
-        onShortcut: () => {
-          if (progressBarStatus === ProgressBarStatus.Paused) {
-            $slideshowPaused = false;
-            progressBar?.play();
-          } else {
-            $slideshowPaused = true;
-            progressBar?.pause();
-          }
-        },
+        onShortcut: togglePause,
         preventDefault: true,
       });
     }
@@ -199,15 +201,7 @@
         shape="round"
         color="secondary"
         icon={progressBarStatus === ProgressBarStatus.Paused ? mdiPlay : mdiPause}
-        onclick={() => {
-          if (progressBarStatus === ProgressBarStatus.Paused) {
-            $slideshowPaused = false;
-            progressBar?.play();
-          } else {
-            $slideshowPaused = true;
-            progressBar?.pause();
-          }
-        }}
+        onclick={togglePause}
         aria-label={progressBarStatus === ProgressBarStatus.Paused ? $t('play') : $t('pause')}
       />
     {/if}
