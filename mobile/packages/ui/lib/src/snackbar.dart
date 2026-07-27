@@ -1,7 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:immich_ui/immich_ui.dart';
+import 'package:immich_ui/src/internal.dart';
 
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
+class SnackbarAction {
+  final String? label;
+  final FutureOr<void> Function() onPressed;
+
+  const SnackbarAction({this.label, required this.onPressed});
+}
 
 class SnackbarManager {
   const SnackbarManager();
@@ -10,6 +20,7 @@ class SnackbarManager {
     String message,
     SnackbarType type, {
     Duration? duration,
+    SnackbarAction? action,
   }) {
     final messenger = scaffoldMessengerKey.currentState;
     final context = scaffoldMessengerKey.currentContext;
@@ -19,10 +30,10 @@ class SnackbarManager {
 
     duration ??= const .new(seconds: 4);
     messenger.hideCurrentSnackBar();
-    return messenger.showSnackBar(_build(context, message, type, duration));
+    return messenger.showSnackBar(_build(context, message, type, duration, action));
   }
 
-  SnackBar _build(BuildContext context, String message, SnackbarType type, Duration duration) {
+  SnackBar _build(BuildContext context, String message, SnackbarType type, Duration duration, SnackbarAction? action) {
     final theme = Theme.of(context);
     final colors = theme.extension<ImmichColors>() ?? ImmichColors.harmonized(theme.colorScheme);
     final (IconData icon, Color background, Color foreground) = switch (type) {
@@ -31,11 +42,21 @@ class SnackbarManager {
       .error => (Icons.warning_rounded, colors.error, colors.onError),
     };
 
+    SnackBarAction? snackAction;
+    if (action != null) {
+      snackAction = .new(
+        label: action.label ?? context.translations.undo,
+        onPressed: action.onPressed,
+        textColor: foreground,
+      );
+    }
+
     return SnackBar(
       behavior: .floating,
       backgroundColor: background,
       duration: duration,
       shape: const RoundedRectangleBorder(borderRadius: .all(.circular(ImmichRadius.sm))),
+      persist: false,
       content: Row(
         children: [
           Icon(icon, color: foreground, size: ImmichIconSize.sm),
@@ -50,17 +71,27 @@ class SnackbarManager {
           ),
         ],
       ),
+      action: snackAction,
     );
   }
 
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? info(String message, {Duration? duration}) =>
-      show(message, .info, duration: duration);
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? info(
+    String message, {
+    Duration? duration,
+    SnackbarAction? action,
+  }) => show(message, .info, duration: duration, action: action);
 
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? success(String message, {Duration? duration}) =>
-      show(message, .success, duration: duration);
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? success(
+    String message, {
+    Duration? duration,
+    SnackbarAction? action,
+  }) => show(message, .success, duration: duration, action: action);
 
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? error(String message, {Duration? duration}) =>
-      show(message, .error, duration: duration);
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? error(
+    String message, {
+    Duration? duration,
+    SnackbarAction? action,
+  }) => show(message, .error, duration: duration, action: action);
 }
 
 const snackbar = SnackbarManager();

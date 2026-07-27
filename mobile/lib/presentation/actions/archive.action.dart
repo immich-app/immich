@@ -5,16 +5,11 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
-import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 
 typedef _State = ({bool shouldArchive, List<String> assetIds});
 
 final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, source) {
-  if (ref.watch(inLockedViewProvider)) {
-    return null;
-  }
-
   final AssetsActionState(:ownedAssets) = ref.watch(assetsActionProvider(source));
   final shouldArchive = ownedAssets.notVisibility(.archive).isNotEmpty;
   final assetIds = ownedAssets
@@ -57,7 +52,10 @@ class ArchiveAction extends AssetActionBuilder {
 
     try {
       await service.update(assetIds, visibility: .some(shouldArchive ? .archive : .timeline));
-      toast.success(message);
+      toast.success(
+        message,
+        toast: .new(onUndo: () => service.update(assetIds, visibility: .some(shouldArchive ? .timeline : .archive))),
+      );
       selection.clearSelect();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to update the archive status for assets");

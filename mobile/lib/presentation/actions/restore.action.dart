@@ -32,12 +32,13 @@ class RestoreAction extends AssetActionBuilder {
     }
 
     final message = context.t.assets_restored_count(count: assetIds.length);
+    final service = ref.read(assetServiceProvider);
     final toast = ref.read(toastRepositoryProvider);
     final selection = ref.read(assetsActionProvider(source).notifier);
 
     try {
-      await ref.read(assetServiceProvider).restoreTrash(assetIds);
-      toast.success(message);
+      await service.restoreTrash(assetIds);
+      toast.success(message, toast: .new(onUndo: () => service.trash(assetIds)));
       selection.clearSelect();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to restore assets");

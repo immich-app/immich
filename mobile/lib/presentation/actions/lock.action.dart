@@ -20,7 +20,6 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
   return (
     shouldLock: shouldLock,
     assetIds: targets.map((asset) => asset.id).toList(growable: false),
-    // Only locking has an on-device copy to clean up; unlocking leaves the device alone.
     localIds: shouldLock ? targets.map((asset) => asset.localId).nonNulls.toList(growable: false) : const [],
   );
 });
@@ -59,10 +58,13 @@ class LockAction extends AssetActionBuilder {
     try {
       await service.update(assetIds, visibility: .some(shouldLock ? .locked : .timeline));
       if (localIds.isNotEmpty) {
-        // A locked asset still sits in the device gallery, so offer to remove the local copy.
+        // A locked asset still sits in the device gallery, so offer to remove the local copy
         await service.deleteLocal(localIds);
       }
-      toast.success(message);
+      toast.success(
+        message,
+        toast: shouldLock ? null : .new(onUndo: () => service.update(assetIds, visibility: const .some(.locked))),
+      );
       selection.clearSelect();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to update the locked folder for assets");

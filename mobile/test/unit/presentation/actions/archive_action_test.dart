@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
-import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
@@ -101,17 +100,26 @@ void main() {
       expect(find.byType(ImmichIconButton), findsNothing);
     });
 
-    testWidgets('is hidden inside the locked folder view', (tester) async {
-      await tester.pumpTestWidget(
-        context,
-        const ActionIconButton(action: ArchiveAction(source: .timeline)),
-        overrides: [
-          ...context.selected({owned()}),
-          inLockedViewProvider.overrideWithValue(true),
-        ],
-      );
+    testWidgets('offers an undo that puts the archived assets back on the timeline', (tester) async {
+      final asset = owned();
 
-      expect(find.byType(ImmichIconButton), findsNothing);
+      await pumpArchive(tester, {asset});
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Undo'));
+      await tester.pump();
+
+      verify(() => assetService.update([asset.id], visibility: const .some(.timeline))).called(1);
+    });
+
+    testWidgets('offers an undo that re-archives the unarchived assets', (tester) async {
+      final asset = owned(visibility: .archive);
+
+      await pumpArchive(tester, {asset});
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Undo'));
+      await tester.pump();
+
+      verify(() => assetService.update([asset.id], visibility: const .some(.archive))).called(1);
     });
 
     testWidgets('is hidden when none of the selected assets are owned', (tester) async {

@@ -10,6 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/toast.repository.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
@@ -66,15 +67,19 @@ class DeleteAction extends AssetActionBuilder {
     }
 
     final (:localIds, :remoteIds, :trash) = state;
+    final service = ref.read(assetServiceProvider);
     final toast = ref.read(toastRepositoryProvider);
     final selection = ref.read(assetsActionProvider(source).notifier);
 
     try {
       final String? message;
+      // Only trashing is reversible
+      ToastOption? options;
       if (remoteIds.isEmpty) {
         message = await _removeLocalAssets(context, ref, localIds);
       } else if (trash) {
         message = await _moveToTrash(context, ref, remoteIds, localIds);
+        options = .new(onUndo: () => service.restoreTrash(remoteIds));
       } else {
         message = await _deletePermanently(context, ref, remoteIds, localIds);
       }
@@ -83,7 +88,7 @@ class DeleteAction extends AssetActionBuilder {
         return;
       }
 
-      toast.success(message);
+      toast.success(message, toast: options);
       selection.clearSelect();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to delete assets");

@@ -103,6 +103,24 @@ void main() {
       verifyNever(() => assetService.deleteLocal(any()));
     });
 
+    testWidgets('offers an undo that locks the unlocked assets again', (tester) async {
+      final asset = owned(visibility: .locked);
+
+      await pumpLock(tester, {asset});
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Undo'));
+      await tester.pump();
+
+      verify(() => assetService.update([asset.id], visibility: const .some(.locked))).called(1);
+    });
+
+    testWidgets('offers no undo for locking, which would need an elevated session to reverse', (tester) async {
+      await pumpLock(tester, {owned()});
+      await tester.pumpAndSettle();
+
+      expect(find.text('Undo'), findsNothing);
+    });
+
     testWidgets('clears the selection once the update succeeds', (tester) async {
       await pumpLock(tester, {owned()});
       await tester.pumpAndSettle();
