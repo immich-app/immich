@@ -453,7 +453,7 @@ export const defaults = Object.freeze<SystemConfig>({
     deleteDelay: 7,
   },
   frameSampling: {
-    enabled: true,
+    enabled: false,
     targetResolution: 640,
     qp: 34,
     frameInterval: 1,
