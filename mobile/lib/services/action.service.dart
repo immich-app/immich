@@ -155,27 +155,27 @@ class ActionService {
     }
 
     final assetIdsByChecksum = await _trashSyncRepository.getReviewAssetIdsByChecksum(checksums);
-    final assetIds = assetIdsByChecksum.values.expand((ids) => ids).toList();
-    if (assetIds.isEmpty) {
+    if (assetIdsByChecksum.isEmpty) {
       return (displayCount: 0, success: false);
     }
 
-    final deletedIds = await _assetMediaRepository.deleteAll(assetIds);
-    if (deletedIds.isEmpty) {
+    final requestedAssetIds = assetIdsByChecksum.values.expand((ids) => ids).toList();
+    final trashedAssetIds = await _assetMediaRepository.deleteAll(requestedAssetIds);
+    if (trashedAssetIds.isEmpty) {
       return (displayCount: 0, success: false);
     }
-    await _localAssetRepository.delete(deletedIds);
+    await _localAssetRepository.delete(trashedAssetIds);
 
-    final deletedIdSet = deletedIds.toSet();
-    final approvedAssetIdsByChecksum = Map.fromEntries(
-      assetIdsByChecksum.entries.where((entry) => entry.value.isNotEmpty && entry.value.every(deletedIdSet.contains)),
+    final trashedAssetIdSet = trashedAssetIds.toSet();
+    final trashedAssetIdsByChecksum = Map.fromEntries(
+      assetIdsByChecksum.entries.where((entry) => entry.value.every(trashedAssetIdSet.contains)),
     );
-    if (approvedAssetIdsByChecksum.isEmpty) {
+    if (trashedAssetIdsByChecksum.isEmpty) {
       return (displayCount: 0, success: false);
     }
 
-    await _trashSyncRepository.approveSelectedReviewChecksums(approvedAssetIdsByChecksum);
-    return (displayCount: approvedAssetIdsByChecksum.length, success: true);
+    await _trashSyncRepository.approveSelectedReviewChecksums(trashedAssetIdsByChecksum);
+    return (displayCount: trashedAssetIdsByChecksum.length, success: true);
   }
 
   Future<bool> editLocation(List<String> remoteIds, BuildContext context) async {

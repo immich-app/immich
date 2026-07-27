@@ -23,10 +23,10 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
       await (_db.delete(_db.trashSyncEntity)..where(
             (t) =>
                 t.checksum.isInQuery(liveChecksums) &
-                t.status.isIn([
-                  TrashSyncStatus.pending.index,
-                  TrashSyncStatus.reviewPending.index,
-                  TrashSyncStatus.reviewRejected.index,
+                t.status.isInValues([
+                  TrashSyncStatus.pending,
+                  TrashSyncStatus.reviewPending,
+                  TrashSyncStatus.reviewRejected,
                 ]),
           ))
           .go();
