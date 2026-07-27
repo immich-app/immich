@@ -64,9 +64,9 @@ class _PartnerDetailBottomSheetState extends ConsumerState<PartnerDetailBottomSh
       initialChildSize: 0.25,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
-      actions: const [
-        ActionColumnButton(action: ShareAction(source: .timeline)),
-        ActionColumnButton(action: DownloadAction(source: .timeline)),
+      actions: const <ActionColumnButton>[
+        .new(action: ShareAction(source: .timeline)),
+        .new(action: DownloadAction(source: .timeline)),
       ],
       slivers: [
         const AddToAlbumHeader(),

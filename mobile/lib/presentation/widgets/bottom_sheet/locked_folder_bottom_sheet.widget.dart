@@ -16,11 +16,11 @@ class LockedFolderBottomSheet extends ConsumerWidget {
       initialChildSize: 0.25,
       maxChildSize: 0.4,
       shouldCloseOnMinExtent: false,
-      actions: [
-        ActionColumnButton(action: ShareAction(source: .timeline)),
-        ActionColumnButton(action: DownloadAction(source: .timeline)),
-        ActionColumnButton(action: DeleteAction(source: .timeline)),
-        ActionColumnButton(action: LockAction(source: .timeline)),
+      actions: <ActionColumnButton>[
+        .new(action: ShareAction(source: .timeline)),
+        .new(action: DownloadAction(source: .timeline)),
+        .new(action: DeleteAction(source: .timeline)),
+        .new(action: LockAction(source: .timeline)),
       ],
     );
   }

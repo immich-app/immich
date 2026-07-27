@@ -95,6 +95,7 @@ class RepositoryMocks {
 
   void _stubAssetMediaRepository() {
     when(assetMedia.shareAssets).thenAnswer((_) async => 1);
+    when(assetMedia.getOriginalFilename).thenAnswer((_) async => null);
   }
 
   void _stubDownloadRepository() {
@@ -389,6 +390,9 @@ extension type const AssetMediaRepositoryStub(MockAssetMediaRepository api) impl
         cancelCompleter: any(named: 'cancelCompleter'),
         onAssetDownloadProgress: any(named: 'onAssetDownloadProgress'),
       );
+
+  Future<String?> Function() get getOriginalFilename =>
+      () => api.getOriginalFilename(any());
 }
 
 extension type const DownloadRepositoryStub(MockDownloadRepository repo) implements Stub<MockDownloadRepository> {
