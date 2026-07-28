@@ -127,9 +127,8 @@ jobs:
         with:
           packages: ''
 
-      - name: Get Packages
-        working-directory: ./mobile
-        run: flutter pub get
+      - name: Install dependencies
+        run: mise //mobile:install:ci
 
       - name: Generate translation file
         run: mise //mobile:codegen:translation
@@ -226,9 +225,8 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
           working_directory: ./mobile
 
-      - name: Install Flutter dependencies
-        working-directory: ./mobile
-        run: flutter pub get
+      - name: Install dependencies
+        run: mise //mobile:install:ci
 
       - name: Generate translation files
         run: mise //mobile:codegen:translation

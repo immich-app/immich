@@ -70,10 +70,10 @@ jobs:
           working_directory: ./mobile
 
       - name: Install dependencies
-        run: flutter pub get
+        run: mise //mobile:install:ci
 
       - name: Install dependencies for UI package
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
         working-directory: ./mobile/packages/ui
 
       - name: Generate translation files

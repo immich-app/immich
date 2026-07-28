@@ -1,22 +1,19 @@
 #!/usr/bin/env bash
-OPENAPI_GENERATOR_VERSION=v7.24.0
-
 set -euo pipefail
 
 # usage: ./bin/generate-dart-sdk.sh
 
+TEMPLATE_DIR=$(mktemp -d)
+trap 'rm -rf "$TEMPLATE_DIR"' EXIT
+
+# Installed via mise
+openapi-generator-cli author template -g dart -o "$TEMPLATE_DIR"
+patch --no-backup-if-mismatch -u "$TEMPLATE_DIR/api.mustache" <./templates/mobile/api.mustache.patch
+patch --no-backup-if-mismatch -u "$TEMPLATE_DIR/serialization/native/native_class.mustache" <./templates/mobile/serialization/native/native_class.mustache.patch
+
 rm -rf ../mobile/openapi
 
-cd ./templates/mobile/serialization/native
-wget -O native_class.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/$OPENAPI_GENERATOR_VERSION/modules/openapi-generator/src/main/resources/dart2/serialization/native/native_class.mustache
-patch --no-backup-if-mismatch -u native_class.mustache <native_class.mustache.patch
-
-cd ../../
-wget -O api.mustache https://raw.githubusercontent.com/OpenAPITools/openapi-generator/$OPENAPI_GENERATOR_VERSION/modules/openapi-generator/src/main/resources/dart2/api.mustache
-patch --no-backup-if-mismatch -u api.mustache <api.mustache.patch
-
-cd ../../
-pnpm dlx --allow-build="" @openapitools/openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi -t ./templates/mobile --additional-properties=useOptional=true
+openapi-generator-cli generate -g dart -i ./immich-openapi-specs.json -o ../mobile/openapi -t "$TEMPLATE_DIR" --additional-properties=useOptional=true
 
 # Post generate patches
 patch --no-backup-if-mismatch -u ../mobile/openapi/lib/api_client.dart <./patch/api_client.dart.patch

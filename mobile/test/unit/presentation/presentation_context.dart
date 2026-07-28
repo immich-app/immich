@@ -15,7 +15,10 @@ import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/services/gcast.service.dart';
+import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -29,6 +32,7 @@ class PresentationContext {
       service = ServiceMocks(),
       repository = RepositoryMocks() {
     setup();
+    addTearDown(dispose);
   }
 
   static const String serverEndpoint = 'http://localhost:3000';
@@ -43,6 +47,9 @@ class PresentationContext {
     currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
     assetServiceProvider.overrideWithValue(service.asset.service),
     partnerServiceProvider.overrideWithValue(service.partner.service),
+    gCastServiceProvider.overrideWithValue(service.cast),
+    serverInfoServiceProvider.overrideWithValue(service.serverInfo),
+    inLockedViewProvider.overrideWithValue(false),
   ];
 
   static Future<PresentationContext> create() async {
@@ -61,9 +68,7 @@ class PresentationContext {
   }
 
   void dispose() {
-    addTearDown(() {
-      service.resetAll();
-    });
+    service.resetAll();
   }
 }
 

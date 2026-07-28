@@ -610,8 +610,7 @@ jobs:
           working_directory: ./mobile
 
       - name: Install dependencies
-        run: flutter pub get
-        working-directory: ./mobile
+        run: mise //mobile:install:ci
 
       - name: Generate translation files
         run: mise //mobile:codegen:translation
@@ -920,6 +919,6 @@ jobs:
 #           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
 #           disable-animations: true
 #           script: |
-#             flutter pub get
+#             flutter pub get --enforce-lockfile
 #             flutter test integration_test
 #         attempt_limit: 3
