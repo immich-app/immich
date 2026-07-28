@@ -1,8 +1,7 @@
 import type { AlbumResponseDto } from '@immich/sdk';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
-import { sortAlbums } from '$lib/utils/album-utils';
-import { normalizeSearchString } from '$lib/utils/string-utils';
+import { filterAlbums, sortAlbums } from '$lib/utils/album-utils';
 
 export const SCROLL_PROPERTIES: ScrollIntoViewOptions = { block: 'center', behavior: 'smooth' };
 
@@ -46,14 +45,7 @@ export class AlbumModalRowConverter {
     const recentAlbumsToShow = search.length === 0 ? recentAlbums : [];
     const rows: AlbumModalRow[] = [{ type: AlbumModalRowType.NEW_ALBUM, selected: selectedRowIndex === 0 }];
 
-    const filteredAlbums = sortAlbums(
-      search.length > 0 && albums.length > 0
-        ? albums.filter((album) => {
-            return normalizeSearchString(album.albumName).includes(normalizeSearchString(search));
-          })
-        : albums,
-      { sortBy: this.sortBy, orderBy: this.orderBy },
-    );
+    const filteredAlbums = sortAlbums(filterAlbums(albums, search), { sortBy: this.sortBy, orderBy: this.orderBy });
 
     if (filteredAlbums.length > 0) {
       if (recentAlbumsToShow.length > 0) {

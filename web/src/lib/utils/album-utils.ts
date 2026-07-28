@@ -16,6 +16,7 @@ import {
   type AlbumViewSettings,
 } from '$lib/stores/preferences.store';
 import { handleError } from '$lib/utils/handle-error';
+import { normalizeSearchString } from '$lib/utils/string-utils';
 
 /**
  * -------------------------
@@ -43,6 +44,23 @@ export const createAlbumAndRedirect = async (name?: string, assetIds?: string[])
   if (newAlbum) {
     await goto(Route.viewAlbum(newAlbum));
   }
+};
+
+/**
+ * ---------------
+ * Album Searching
+ * ---------------
+ */
+export const filterAlbums = (albums: AlbumResponseDto[], searchQuery: string) => {
+  const normalizedSearch = normalizeSearchString(searchQuery);
+  if (!normalizedSearch) {
+    return albums;
+  }
+  return albums.filter(
+    ({ albumName, description }) =>
+      normalizeSearchString(albumName).includes(normalizedSearch) ||
+      normalizeSearchString(description).includes(normalizedSearch),
+  );
 };
 
 /**

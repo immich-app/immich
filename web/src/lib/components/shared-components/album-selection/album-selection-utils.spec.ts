@@ -108,6 +108,19 @@ describe('Album Modal', () => {
     ]);
   });
 
+  it('search matches album descriptions', () => {
+    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
+    const foodAlbum = albumFactory.build({ albumName: 'Food', description: 'Cooking, Baking, Eating' });
+    const holidayAlbum = albumFactory.build({ albumName: 'Holidays', description: '' });
+    const modalRows = converter.toModalRows('baking', [], [foodAlbum, holidayAlbum], -1, []);
+
+    expect(modalRows).toStrictEqual([
+      createNewAlbumRow(false),
+      createSectionRow('ALBUMS'),
+      createAlbumRow(foodAlbum, false),
+    ]);
+  });
+
   it('selection can select new album row', () => {
     const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
     const holidayAlbum = albumFactory.build({ albumName: 'Holidays' });

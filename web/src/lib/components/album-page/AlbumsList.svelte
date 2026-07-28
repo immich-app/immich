@@ -17,9 +17,14 @@
     SortOrder,
     type AlbumViewSettings,
   } from '$lib/stores/preferences.store';
-  import { getSelectedAlbumGroupOption, sortAlbums, stringToSortOrder, type AlbumGroup } from '$lib/utils/album-utils';
+  import {
+    filterAlbums,
+    getSelectedAlbumGroupOption,
+    sortAlbums,
+    stringToSortOrder,
+    type AlbumGroup,
+  } from '$lib/utils/album-utils';
   import type { ContextMenuPosition } from '$lib/utils/context-menu';
-  import { normalizeSearchString } from '$lib/utils/string-utils';
   import { AlbumUserRole, type AlbumResponseDto, type SharedLinkResponseDto } from '@immich/sdk';
   import { modalManager } from '@immich/ui';
   import { mdiDeleteOutline, mdiDownload, mdiRenameOutline, mdiShareVariantOutline } from '@mdi/js';
@@ -138,16 +143,7 @@
       }
     }
   });
-  const normalizedSearchQuery = $derived(normalizeSearchString(searchQuery));
-  let filteredAlbums = $derived(
-    normalizedSearchQuery
-      ? albums.filter(
-          ({ albumName, description }) =>
-            normalizeSearchString(albumName).includes(normalizedSearchQuery) ||
-            normalizeSearchString(description).includes(normalizedSearchQuery),
-        )
-      : albums,
-  );
+  let filteredAlbums = $derived(filterAlbums(albums, searchQuery));
 
   let albumGroupOption = $derived(getSelectedAlbumGroupOption(userSettings));
   let groupedAlbums = $derived.by(() => {
