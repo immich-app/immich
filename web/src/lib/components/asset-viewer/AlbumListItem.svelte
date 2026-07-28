@@ -40,6 +40,10 @@
   const albumNameArray: string[] = $derived.by(() => {
     let { albumName } = album;
     let findIndex = normalizeSearchString(albumName).indexOf(normalizeSearchString(searchQuery));
+    if (findIndex === -1) {
+      // the search query only matched the album description
+      return [albumName, '', ''];
+    }
     let findLength = searchQuery.length;
     return [
       albumName.slice(0, findIndex),
