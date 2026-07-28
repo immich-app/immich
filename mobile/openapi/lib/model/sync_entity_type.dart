@@ -62,7 +62,10 @@ enum SyncEntityType {
   stackV1._(r'StackV1'),
   stackDeleteV1._(r'StackDeleteV1'),
   personV1._(r'PersonV1'),
+  personV2._(r'PersonV2'),
   personDeleteV1._(r'PersonDeleteV1'),
+  faceClusterV1._(r'FaceClusterV1'),
+  faceClusterDeleteV1._(r'FaceClusterDeleteV1'),
   assetFaceV1._(r'AssetFaceV1'),
   assetFaceV2._(r'AssetFaceV2'),
   assetFaceDeleteV1._(r'AssetFaceDeleteV1'),
@@ -180,7 +183,10 @@ class SyncEntityTypeTypeTransformer {
         case r'StackV1': return SyncEntityType.stackV1;
         case r'StackDeleteV1': return SyncEntityType.stackDeleteV1;
         case r'PersonV1': return SyncEntityType.personV1;
+        case r'PersonV2': return SyncEntityType.personV2;
         case r'PersonDeleteV1': return SyncEntityType.personDeleteV1;
+        case r'FaceClusterV1': return SyncEntityType.faceClusterV1;
+        case r'FaceClusterDeleteV1': return SyncEntityType.faceClusterDeleteV1;
         case r'AssetFaceV1': return SyncEntityType.assetFaceV1;
         case r'AssetFaceV2': return SyncEntityType.assetFaceV2;
         case r'AssetFaceDeleteV1': return SyncEntityType.assetFaceDeleteV1;

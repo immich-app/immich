@@ -329,7 +329,7 @@ describe(MediaRepository.name, () => {
     const baseFace: AssetFace = {
       id: 'face-1',
       assetId: 'asset-1',
-      personId: 'person-1',
+      faceClusterId: 'face-cluster-1',
       boundingBoxX1: 100,
       boundingBoxY1: 100,
       boundingBoxX2: 200,

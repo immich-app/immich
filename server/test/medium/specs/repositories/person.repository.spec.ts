@@ -33,7 +33,7 @@ describe(PersonRepository.name, () => {
 
       const { assetFace } = await ctx.newAssetFace({
         assetId: asset.id,
-        personId: person.id,
+        faceClusterId: person.faceClusterId,
         boundingBoxX1: 10,
         boundingBoxY1: 10,
         boundingBoxX2: 90,
@@ -41,7 +41,11 @@ describe(PersonRepository.name, () => {
       });
 
       // theres a circular dependency between assetFace and person, so we need to update the person after creating the assetFace
-      await ctx.database.updateTable('person').set({ faceAssetId: assetFace.id }).where('id', '=', person.id).execute();
+      await ctx.database
+        .updateTable('face_cluster')
+        .set({ featureFaceAssetId: assetFace.id })
+        .where('id', '=', person.faceClusterId)
+        .execute();
 
       await ctx.newAssetFile({
         assetId: asset.id,

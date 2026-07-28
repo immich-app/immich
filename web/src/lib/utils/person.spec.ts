@@ -7,6 +7,7 @@ const makePerson = (overrides: Partial<PersonResponseDto> = {}): PersonResponseD
   thumbnailPath: '',
   isHidden: false,
   birthDate: null,
+  faceClusterId: 'cluster-id',
   ...overrides,
 });
 

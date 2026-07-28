@@ -18,6 +18,7 @@ import {
   getForAssetFace,
   getForDetectedFaces,
   getForFacialRecognitionJob,
+  getForPerson,
 } from 'test/mappers';
 import { newDate, newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
@@ -40,7 +41,7 @@ describe(PersonService.name, () => {
       const [person, hiddenPerson] = [PersonFactory.create(), PersonFactory.create({ isHidden: true })];
 
       mocks.person.getAllForUser.mockResolvedValue({
-        items: [person, hiddenPerson],
+        items: [getForPerson(person), getForPerson(hiddenPerson)],
         hasNextPage: false,
       });
       mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
@@ -66,7 +67,7 @@ describe(PersonService.name, () => {
       const [isFavorite, person] = [PersonFactory.create({ isFavorite: true }), PersonFactory.create()];
 
       mocks.person.getAllForUser.mockResolvedValue({
-        items: [isFavorite, person],
+        items: [getForPerson(isFavorite), getForPerson(person)],
         hasNextPage: false,
       });
       mocks.person.getNumberOfPeople.mockResolvedValue({ total: 2, hidden: 1 });
@@ -92,7 +93,7 @@ describe(PersonService.name, () => {
     it('should require person.read permission', async () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       await expect(sut.getById(auth, person.id)).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
     });
@@ -108,7 +109,7 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
 
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
       await expect(sut.getById(auth, person.id)).resolves.toEqual(expect.objectContaining({ id: person.id }));
       expect(mocks.person.getById).toHaveBeenCalledWith(person.id);
@@ -121,7 +122,7 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
 
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       await expect(sut.getThumbnail(auth, person.id)).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.storage.createReadStream).not.toHaveBeenCalled();
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
@@ -140,7 +141,7 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create({ thumbnailPath: '' });
 
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
       await expect(sut.getThumbnail(auth, person.id)).rejects.toBeInstanceOf(NotFoundException);
       expect(mocks.storage.createReadStream).not.toHaveBeenCalled();
@@ -151,7 +152,7 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
 
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
       await expect(sut.getThumbnail(auth, person.id)).resolves.toEqual(
         new ImmichFileResponse({
@@ -169,7 +170,7 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
 
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       await expect(sut.update(auth, person.id, { name: 'Person 1' })).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.person.update).not.toHaveBeenCalled();
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
@@ -186,36 +187,46 @@ describe(PersonService.name, () => {
 
     it("should update a person's name", async () => {
       const auth = AuthFactory.create();
-      const person = PersonFactory.create({ name: 'Person 1' });
+      const person = PersonFactory.from().faceCluster({ name: 'Person 1' }).build();
 
       mocks.person.update.mockResolvedValue(person);
+      mocks.person.updateFaceCluster.mockResolvedValue(person.faceCluster);
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
 
       await expect(sut.update(auth, person.id, { name: 'Person 1' })).resolves.toEqual(
         expect.objectContaining({ id: person.id, name: 'Person 1' }),
       );
 
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, name: 'Person 1' });
+      expect(mocks.person.updateFaceCluster).toHaveBeenCalledWith({ id: person.faceClusterId, name: 'Person 1' });
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
     });
 
     it("should update a person's date of birth", async () => {
       const auth = AuthFactory.create();
-      const person = PersonFactory.create({ birthDate: new Date('1976-06-30') });
+      const person = PersonFactory.from()
+        .faceCluster({ birthDate: new Date('1976-06-30') })
+        .build();
 
       mocks.person.update.mockResolvedValue(person);
+      mocks.person.updateFaceCluster.mockResolvedValue(person.faceCluster);
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
 
       await expect(sut.update(auth, person.id, { birthDate: '1976-06-30' })).resolves.toEqual({
         id: person.id,
-        name: person.name,
+        name: person.faceCluster.name,
+        faceClusterId: person.faceClusterId,
         birthDate: '1976-06-30',
         thumbnailPath: person.thumbnailPath,
         isHidden: false,
         isFavorite: false,
         updatedAt: expect.any(String),
       });
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, birthDate: '1976-06-30' });
+      expect(mocks.person.updateFaceCluster).toHaveBeenCalledWith({
+        id: person.faceClusterId,
+        birthDate: '1976-06-30',
+      });
       expect(mocks.job.queue).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalled();
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
@@ -227,6 +238,7 @@ describe(PersonService.name, () => {
 
       mocks.person.update.mockResolvedValue(person);
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
 
       await expect(sut.update(auth, person.id, { isHidden: true })).resolves.toEqual(
         expect.objectContaining({ isHidden: true }),
@@ -242,6 +254,7 @@ describe(PersonService.name, () => {
 
       mocks.person.update.mockResolvedValue(person);
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
 
       await expect(sut.update(auth, person.id, { isFavorite: true })).resolves.toEqual(
         expect.objectContaining({ isFavorite: true }),
@@ -257,15 +270,20 @@ describe(PersonService.name, () => {
       const person = PersonFactory.create();
 
       mocks.person.update.mockResolvedValue(person);
+      mocks.person.updateFaceCluster.mockResolvedValue(person.faceCluster);
       mocks.person.getForFeatureFaceUpdate.mockResolvedValue(face);
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([face.assetId]));
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
 
       await expect(sut.update(auth, person.id, { featureFaceAssetId: face.assetId })).resolves.toEqual(
         expect.objectContaining({ id: person.id }),
       );
 
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, faceAssetId: face.id });
+      expect(mocks.person.updateFaceCluster).toHaveBeenCalledWith({
+        id: person.faceClusterId,
+        featureFaceAssetId: face.id,
+      });
       expect(mocks.person.getForFeatureFaceUpdate).toHaveBeenCalledWith({
         assetId: face.assetId,
         personId: person.id,
@@ -281,11 +299,11 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
 
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
 
       await expect(sut.update(auth, person.id, { featureFaceAssetId: '-1' })).rejects.toThrow(BadRequestException);
-      expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.person.updateFaceCluster).not.toHaveBeenCalled();
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
     });
   });
@@ -321,7 +339,7 @@ describe(PersonService.name, () => {
       const person = PersonFactory.create();
 
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
       mocks.person.getFacesByIds.mockResolvedValue([getForAssetFace(face)]);
       mocks.person.reassignFace.mockResolvedValue(1);
@@ -378,19 +396,19 @@ describe(PersonService.name, () => {
     it('should create a manual face and initialize the person feature photo creation', async () => {
       const auth = AuthFactory.create();
       const asset = AssetFactory.create();
-      const person = PersonFactory.create({ faceAssetId: null });
+      const person = PersonFactory.from().faceCluster({ featureFaceAssetId: null }).build();
       const featureFace = AssetFaceFactory.create({
         assetId: asset.id,
-        personId: person.id,
+        faceClusterId: person.faceClusterId,
         sourceType: SourceType.Manual,
       });
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
       mocks.asset.getById.mockResolvedValue(getForAsset(asset));
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       mocks.person.getRandomFace.mockResolvedValue(featureFace);
-      mocks.person.update.mockResolvedValue({ ...person, faceAssetId: featureFace.id });
+      mocks.person.updateFaceCluster.mockResolvedValue({ ...person.faceCluster, featureFaceAssetId: featureFace.id });
 
       await expect(
         sut.createFace(auth, {
@@ -408,7 +426,7 @@ describe(PersonService.name, () => {
       expect(mocks.asset.getById).toHaveBeenCalledWith(asset.id, { edits: true, exifInfo: true });
       expect(mocks.person.createAssetFace).toHaveBeenCalledWith({
         assetId: asset.id,
-        personId: person.id,
+        faceClusterId: person.faceClusterId,
         imageHeight: 500,
         imageWidth: 400,
         boundingBoxX1: 10,
@@ -418,7 +436,10 @@ describe(PersonService.name, () => {
         sourceType: SourceType.Manual,
       });
       expect(mocks.person.getRandomFace).toHaveBeenCalledWith(person.id);
-      expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, faceAssetId: featureFace.id });
+      expect(mocks.person.updateFaceCluster).toHaveBeenCalledWith({
+        id: person.faceClusterId,
+        featureFaceAssetId: featureFace.id,
+      });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         { name: JobName.PersonGenerateThumbnail, data: { id: person.id } },
       ]);
@@ -427,12 +448,12 @@ describe(PersonService.name, () => {
     it('should not update the person feature photo if one already exists', async () => {
       const auth = AuthFactory.create();
       const asset = AssetFactory.create();
-      const person = PersonFactory.create({ faceAssetId: newUuid() });
+      const person = PersonFactory.from().faceCluster({ featureFaceAssetId: newUuid() }).build();
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
       mocks.asset.getById.mockResolvedValue(getForAsset(asset));
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
 
       await expect(
         sut.createFace(auth, {
@@ -456,7 +477,7 @@ describe(PersonService.name, () => {
     it('should reject creating a face on an asset the user does not own', async () => {
       const auth = AuthFactory.create();
       const asset = AssetFactory.create();
-      const person = PersonFactory.create({ faceAssetId: null });
+      const person = PersonFactory.from().faceCluster({ featureFaceAssetId: null }).build();
 
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
@@ -502,13 +523,14 @@ describe(PersonService.name, () => {
       mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
       mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
       mocks.person.reassignFace.mockResolvedValue(1);
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       await expect(sut.reassignFacesById(AuthFactory.create(), person.id, { id: face.id })).resolves.toEqual({
-        birthDate: person.birthDate,
+        birthDate: person.faceCluster.birthDate,
         isHidden: person.isHidden,
         isFavorite: person.isFavorite,
         id: person.id,
-        name: person.name,
+        faceClusterId: person.faceClusterId,
+        name: person.faceCluster.name,
         thumbnailPath: person.thumbnailPath,
         updatedAt: expect.any(String),
       });
@@ -524,7 +546,7 @@ describe(PersonService.name, () => {
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
       mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
       mocks.person.reassignFace.mockResolvedValue(1);
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       await expect(
         sut.reassignFacesById(AuthFactory.create(), person.id, {
           id: face.id,
@@ -539,11 +561,14 @@ describe(PersonService.name, () => {
   describe('createPerson', () => {
     it('should create a new person', async () => {
       const auth = AuthFactory.create();
+      const person = PersonFactory.create();
 
-      mocks.person.create.mockResolvedValue(PersonFactory.create());
+      mocks.person.createFaceCluster.mockResolvedValue(person.faceCluster);
+      mocks.person.create.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       await expect(sut.create(auth, {})).resolves.toBeDefined();
 
-      expect(mocks.person.create).toHaveBeenCalledWith({ ownerId: auth.user.id });
+      expect(mocks.person.create).toHaveBeenCalledWith({ ownerId: auth.user.id, faceClusterId: person.faceClusterId });
     });
   });
 
@@ -703,7 +728,7 @@ describe(PersonService.name, () => {
       await sut.handleQueueRecognizeFaces({});
 
       expect(mocks.person.getAllFaces).toHaveBeenCalledWith({
-        personId: null,
+        faceClusterId: null,
         sourceType: SourceType.MachineLearning,
       });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
@@ -769,7 +794,7 @@ describe(PersonService.name, () => {
       expect(mocks.systemMetadata.get).toHaveBeenCalledWith(SystemMetadataKey.FacialRecognitionState);
       expect(mocks.person.getLatestFaceDate).toHaveBeenCalledOnce();
       expect(mocks.person.getAllFaces).toHaveBeenCalledWith({
-        personId: null,
+        faceClusterId: null,
         sourceType: SourceType.MachineLearning,
       });
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
@@ -1036,11 +1061,11 @@ describe(PersonService.name, () => {
       expect(mocks.person.reassignFaces).toHaveBeenCalledTimes(1);
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.arrayContaining([noPerson1.id]),
-        newPersonId: primaryFace.person!.id,
+        newFaceClusterId: primaryFace.person!.faceClusterId,
       });
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.not.arrayContaining([face.id]),
-        newPersonId: primaryFace.person!.id,
+        newFaceClusterId: primaryFace.person!.faceClusterId,
       });
     });
 
@@ -1049,7 +1074,9 @@ describe(PersonService.name, () => {
       const [noPerson, face, faceWithBirthDate] = [
         AssetFaceFactory.create({ assetId: asset.id }),
         AssetFaceFactory.from().person().build(),
-        AssetFaceFactory.from().person({ birthDate: newDate() }).build(),
+        AssetFaceFactory.from()
+          .person({}, (builder) => builder.faceCluster({ birthDate: newDate() }))
+          .build(),
       ];
 
       const faces = [
@@ -1069,11 +1096,11 @@ describe(PersonService.name, () => {
       expect(mocks.person.reassignFaces).toHaveBeenCalledTimes(1);
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.arrayContaining([noPerson.id]),
-        newPersonId: face.person!.id,
+        newFaceClusterId: face.person!.faceClusterId,
       });
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.not.arrayContaining([face.id]),
-        newPersonId: face.person!.id,
+        newFaceClusterId: face.person!.faceClusterId,
       });
     });
 
@@ -1082,7 +1109,9 @@ describe(PersonService.name, () => {
       const [noPerson, face, faceWithBirthDate] = [
         AssetFaceFactory.create({ assetId: asset.id }),
         AssetFaceFactory.from().person().build(),
-        AssetFaceFactory.from().person({ birthDate: newDate() }).build(),
+        AssetFaceFactory.from()
+          .person({}, (builder) => builder.faceCluster({ birthDate: newDate() }))
+          .build(),
       ];
 
       const faces = [
@@ -1102,11 +1131,11 @@ describe(PersonService.name, () => {
       expect(mocks.person.reassignFaces).toHaveBeenCalledTimes(1);
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.arrayContaining([noPerson.id]),
-        newPersonId: faceWithBirthDate.person!.id,
+        newFaceClusterId: faceWithBirthDate.person!.faceClusterId,
       });
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: expect.not.arrayContaining([face.id]),
-        newPersonId: faceWithBirthDate.person!.id,
+        newFaceClusterId: faceWithBirthDate.person!.faceClusterId,
       });
     });
 
@@ -1123,17 +1152,21 @@ describe(PersonService.name, () => {
       mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
       mocks.search.searchFaces.mockResolvedValue(faces);
       mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson1, asset));
+      mocks.person.createFaceCluster.mockResolvedValue(person.faceCluster);
       mocks.person.create.mockResolvedValue(person);
 
       await sut.handleRecognizeFaces({ id: noPerson1.id });
 
       expect(mocks.person.create).toHaveBeenCalledWith({
         ownerId: asset.ownerId,
-        faceAssetId: noPerson1.id,
+        faceClusterId: person.faceClusterId,
+      });
+      expect(mocks.person.createFaceCluster).toHaveBeenCalledWith({
+        featureFaceAssetId: noPerson1.id,
       });
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
         faceIds: [noPerson1.id],
-        newPersonId: person.id,
+        newFaceClusterId: person.faceClusterId,
       });
     });
 
@@ -1207,8 +1240,8 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const [person, mergePerson] = [PersonFactory.create(), PersonFactory.create()];
 
-      mocks.person.getById.mockResolvedValueOnce(person);
-      mocks.person.getById.mockResolvedValueOnce(mergePerson);
+      mocks.person.getById.mockResolvedValueOnce(getForPerson(person));
+      mocks.person.getById.mockResolvedValueOnce(getForPerson(mergePerson));
 
       await expect(sut.mergePerson(auth, person.id, { ids: [mergePerson.id] })).rejects.toBeInstanceOf(
         BadRequestException,
@@ -1224,8 +1257,8 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const [person, mergePerson] = [PersonFactory.create(), PersonFactory.create()];
 
-      mocks.person.getById.mockResolvedValueOnce(person);
-      mocks.person.getById.mockResolvedValueOnce(mergePerson);
+      mocks.person.getById.mockResolvedValueOnce(getForPerson(person));
+      mocks.person.getById.mockResolvedValueOnce(getForPerson(mergePerson));
       mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set([person.id]));
       mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set([mergePerson.id]));
 
@@ -1234,8 +1267,8 @@ describe(PersonService.name, () => {
       ]);
 
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
-        newPersonId: person.id,
-        oldPersonId: mergePerson.id,
+        newFaceClusterId: person.faceClusterId,
+        oldFaceClusterId: mergePerson.faceClusterId,
       });
 
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
@@ -1244,13 +1277,13 @@ describe(PersonService.name, () => {
     it('should merge two people with smart merge', async () => {
       const auth = AuthFactory.create();
       const [person, mergePerson] = [
-        PersonFactory.create({ name: undefined }),
-        PersonFactory.create({ name: 'Merge person' }),
+        PersonFactory.from().faceCluster({ name: undefined }).build(),
+        PersonFactory.from().faceCluster({ name: 'Merge person' }).build(),
       ];
 
-      mocks.person.getById.mockResolvedValueOnce(person);
-      mocks.person.getById.mockResolvedValueOnce(mergePerson);
-      mocks.person.update.mockResolvedValue({ ...person, name: mergePerson.name });
+      mocks.person.getById.mockResolvedValueOnce(getForPerson(person));
+      mocks.person.getById.mockResolvedValueOnce(getForPerson(mergePerson));
+      mocks.person.updateFaceCluster.mockResolvedValue({ ...person.faceCluster, name: mergePerson.faceCluster.name });
       mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set([person.id]));
       mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set([mergePerson.id]));
 
@@ -1259,13 +1292,13 @@ describe(PersonService.name, () => {
       ]);
 
       expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
-        newPersonId: person.id,
-        oldPersonId: mergePerson.id,
+        newFaceClusterId: person.faceClusterId,
+        oldFaceClusterId: mergePerson.faceClusterId,
       });
 
-      expect(mocks.person.update).toHaveBeenCalledWith({
-        id: person.id,
-        name: mergePerson.name,
+      expect(mocks.person.updateFaceCluster).toHaveBeenCalledWith({
+        id: person.faceCluster.id,
+        name: mergePerson.faceCluster.name,
       });
 
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
@@ -1286,7 +1319,7 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
 
-      mocks.person.getById.mockResolvedValueOnce(person);
+      mocks.person.getById.mockResolvedValueOnce(getForPerson(person));
       mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set([person.id]));
       mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set(['unknown']));
 
@@ -1303,8 +1336,8 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const [person, mergePerson] = [PersonFactory.create(), PersonFactory.create()];
 
-      mocks.person.getById.mockResolvedValueOnce(person);
-      mocks.person.getById.mockResolvedValueOnce(mergePerson);
+      mocks.person.getById.mockResolvedValueOnce(getForPerson(person));
+      mocks.person.getById.mockResolvedValueOnce(getForPerson(mergePerson));
       mocks.person.reassignFaces.mockRejectedValue(new Error('update failed'));
       mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set([person.id]));
       mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set([mergePerson.id]));
@@ -1323,7 +1356,7 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
 
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       mocks.person.getStatistics.mockResolvedValue({ assets: 3 });
       mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
       await expect(sut.getStatistics(auth, person.id)).resolves.toEqual({ assets: 3 });
@@ -1334,7 +1367,7 @@ describe(PersonService.name, () => {
       const auth = AuthFactory.create();
       const person = PersonFactory.create();
 
-      mocks.person.getById.mockResolvedValue(person);
+      mocks.person.getById.mockResolvedValue(getForPerson(person));
       await expect(sut.getStatistics(auth, person.id)).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.access.person.checkOwnerAccess).toHaveBeenCalledWith(auth.user.id, new Set([person.id]));
     });
@@ -1356,7 +1389,7 @@ describe(PersonService.name, () => {
         imageHeight: 500,
         imageWidth: 400,
         sourceType: SourceType.MachineLearning,
-        person: mapPerson(person),
+        person: mapPerson(getForPerson(person)),
       });
     });
 
