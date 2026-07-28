@@ -22503,6 +22503,10 @@
             "description": "Whether public user registration is enabled",
             "type": "boolean"
           },
+          "sharedLinkDomain": {
+            "description": "Shared link domain URL",
+            "type": "string"
+          },
           "trashDays": {
             "description": "Number of days before trashed assets are permanently deleted",
             "maximum": 9007199254740991,
@@ -22527,6 +22531,7 @@
           "minFaces",
           "oauthButtonText",
           "publicUsers",
+          "sharedLinkDomain",
           "trashDays",
           "userDeleteDelay"
         ],
@@ -26412,12 +26417,17 @@
           "publicUsers": {
             "description": "Public users",
             "type": "boolean"
+          },
+          "sharedLinkDomain": {
+            "description": "Shared link domain",
+            "type": "string"
           }
         },
         "required": [
           "externalDomain",
           "loginPageMessage",
-          "publicUsers"
+          "publicUsers",
+          "sharedLinkDomain"
         ],
         "type": "object"
       },

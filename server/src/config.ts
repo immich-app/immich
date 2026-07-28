@@ -208,6 +208,7 @@ export type SystemConfig = {
   };
   server: {
     externalDomain: string;
+    sharedLinkDomain: string;
     loginPageMessage: string;
     publicUsers: boolean;
   };
@@ -418,6 +419,7 @@ export const defaults = Object.freeze<SystemConfig>({
   },
   server: {
     externalDomain: '',
+    sharedLinkDomain: '',
     loginPageMessage: '',
     publicUsers: true,
   },

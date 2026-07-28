@@ -300,6 +300,12 @@ const SystemConfigServerSchema = z
         error: 'External domain must be an empty string or a valid URL',
       })
       .describe('External domain'),
+    sharedLinkDomain: z
+      .string()
+      .refine((url) => url.length === 0 || z.url().safeParse(url).success, {
+        error: 'Shared link domain must be an empty string or a valid URL',
+      })
+      .describe('Shared link domain'),
     loginPageMessage: z.string().describe('Login page message'),
     publicUsers: configBool.describe('Public users'),
   })

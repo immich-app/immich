@@ -31,8 +31,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeData = context.themeData;
     final colorScheme = context.colorScheme;
-    final externalDomain = ref.watch(serverInfoProvider.select((s) => s.serverConfig.externalDomain));
-    final displayServerUrl = externalDomain.isNotEmpty ? externalDomain : getServerUrl();
+    final sharedLinkDomain = ref.watch(serverInfoProvider.select((s) => s.serverConfig.sharedLinkDomain));
+    final displayServerUrl = sharedLinkDomain.isNotEmpty ? sharedLinkDomain : getServerUrl();
     final expiryPresets = <(Duration, String)>[
       (Duration.zero, context.t.never),
       (const Duration(minutes: 30), context.t.shared_link_edit_expire_after_option_minutes(count: 30)),
@@ -345,9 +345,9 @@ class SharedLinkEditPage extends HookConsumerWidget {
       if (!context.mounted) {
         return;
       }
-      final externalDomain = ref.read(serverInfoProvider.select((s) => s.serverConfig.externalDomain));
+      final sharedLinkDomain = ref.read(serverInfoProvider.select((s) => s.serverConfig.sharedLinkDomain));
 
-      final serverUrl = externalDomain.isNotEmpty ? externalDomain : getServerUrl();
+      final serverUrl = sharedLinkDomain.isNotEmpty ? sharedLinkDomain : getServerUrl();
 
       if (newLink != null) {
         newShareLink.value = buildSharedLinkUrl(baseUrl: serverUrl, slug: newLink.slug, key: newLink.key) ?? '';

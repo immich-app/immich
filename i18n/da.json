@@ -342,6 +342,8 @@
     "send_welcome_email": "Send velkomst-email",
     "server_external_domain_settings": "Eksternt domæne",
     "server_external_domain_settings_description": "Domæne brugt til eksterne links",
+    "server_shared_link_domain_settings": "Delt link domæne",
+    "server_shared_link_domain_settings_description": "Domæne brugt til delte links",
     "server_public_users": "Offentlige brugere",
     "server_public_users_description": "Alle brugere (navn og e-mail) vises, når en bruger tilføjes til delte album. Når den er deaktiveret, vil brugerlisten kun være tilgængelig for administratorbrugere.",
     "server_settings": "Serverindstillinger",

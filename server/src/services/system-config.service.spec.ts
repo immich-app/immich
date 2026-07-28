@@ -181,6 +181,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
   },
   server: {
     externalDomain: '',
+    sharedLinkDomain: '',
     loginPageMessage: '',
     publicUsers: true,
   },
@@ -422,6 +423,28 @@ describe(SystemConfigService.name, () => {
 
         const config = await sut.getSystemConfig();
         expect(config.server.externalDomain).toEqual(result ?? 'https://demo.immich.app');
+      });
+    }
+
+    const sharedLinkDomainTests = [
+      { should: 'with a trailing slash', sharedLinkDomain: 'https://demo.immich.app/' },
+      { should: 'without a trailing slash', sharedLinkDomain: 'https://demo.immich.app' },
+      { should: 'with a port', sharedLinkDomain: 'https://demo.immich.app:42', result: 'https://demo.immich.app:42' },
+      {
+        should: 'with basic auth',
+        sharedLinkDomain: 'https://user:password@example.com:123',
+        result: 'https://user:password@example.com:123',
+      },
+    ];
+
+    for (const { should, sharedLinkDomain, result } of sharedLinkDomainTests) {
+      it(`should normalize an external domain ${should}`, async () => {
+        mocks.config.getEnv.mockReturnValue(mockEnvData({ configFile: 'immich-config.json' }));
+        const partialConfig = { server: { sharedLinkDomain } };
+        mocks.systemMetadata.readFile.mockResolvedValue(JSON.stringify(partialConfig));
+
+        const config = await sut.getSystemConfig();
+        expect(config.server.sharedLinkDomain).toEqual(result ?? 'https://demo.immich.app');
       });
     }
 

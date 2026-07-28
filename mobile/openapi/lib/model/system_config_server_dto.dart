@@ -16,6 +16,7 @@ class SystemConfigServerDto {
     required this.externalDomain,
     required this.loginPageMessage,
     required this.publicUsers,
+    required this.sharedLinkDomain,
   });
 
   /// External domain
@@ -27,27 +28,33 @@ class SystemConfigServerDto {
   /// Public users
   bool publicUsers;
 
+  /// Shared link domain
+  String sharedLinkDomain;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigServerDto &&
     other.externalDomain == externalDomain &&
     other.loginPageMessage == loginPageMessage &&
-    other.publicUsers == publicUsers;
+    other.publicUsers == publicUsers &&
+    other.sharedLinkDomain == sharedLinkDomain;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (externalDomain.hashCode) +
     (loginPageMessage.hashCode) +
-    (publicUsers.hashCode);
+    (publicUsers.hashCode) +
+    (sharedLinkDomain.hashCode);
 
   @override
-  String toString() => 'SystemConfigServerDto[externalDomain=$externalDomain, loginPageMessage=$loginPageMessage, publicUsers=$publicUsers]';
+  String toString() => 'SystemConfigServerDto[externalDomain=$externalDomain, loginPageMessage=$loginPageMessage, publicUsers=$publicUsers, sharedLinkDomain=$sharedLinkDomain]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'externalDomain'] = this.externalDomain;
       json[r'loginPageMessage'] = this.loginPageMessage;
       json[r'publicUsers'] = this.publicUsers;
+      json[r'sharedLinkDomain'] = this.sharedLinkDomain;
     return json;
   }
 
@@ -63,6 +70,7 @@ class SystemConfigServerDto {
         externalDomain: mapValueOfType<String>(json, r'externalDomain')!,
         loginPageMessage: mapValueOfType<String>(json, r'loginPageMessage')!,
         publicUsers: mapValueOfType<bool>(json, r'publicUsers')!,
+        sharedLinkDomain: mapValueOfType<String>(json, r'sharedLinkDomain')!,
       );
     }
     return null;
@@ -113,6 +121,7 @@ class SystemConfigServerDto {
     'externalDomain',
     'loginPageMessage',
     'publicUsers',
+    'sharedLinkDomain',
   };
 }
 

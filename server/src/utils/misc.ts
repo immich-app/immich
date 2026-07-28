@@ -53,6 +53,9 @@ export const getMethodNames = (instance: any) => {
 export const getExternalDomain = (server: SystemConfig['server'], defaultDomain = 'https://my.immich.app') =>
   server.externalDomain || defaultDomain;
 
+export const getSharedLinkDomain = (server: SystemConfig['server'], defaultDomain = 'https://my.immich.app') =>
+  server.sharedLinkDomain || defaultDomain;
+
 /**
  * @returns a list of strings representing the keys of the object in dot notation
  */
