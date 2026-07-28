@@ -23,7 +23,7 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../domain/service.mock.dart';
+import '../../service.mocks.dart';
 import '../../unit/factories/user_factory.dart';
 
 class MockActionService extends Mock implements ActionService {}
