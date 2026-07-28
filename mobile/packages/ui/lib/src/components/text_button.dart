@@ -7,6 +7,7 @@ class ImmichTextButton extends StatefulWidget {
   final String labelText;
   final IconData? icon;
   final FutureOr<void> Function() onPressed;
+  final FutureOr<void> Function()? onLongPress;
   final ImmichVariant variant;
   final bool expanded;
   final bool disabled;
@@ -17,6 +18,7 @@ class ImmichTextButton extends StatefulWidget {
     required this.labelText,
     this.icon,
     required this.onPressed,
+    this.onLongPress,
     this.variant = .filled,
     this.expanded = true,
 
@@ -29,18 +31,35 @@ class ImmichTextButton extends StatefulWidget {
 }
 
 class _ImmichTextButtonState extends State<ImmichTextButton> {
-  bool _loading = false;
-  bool get _isLoading => widget.loading ?? _loading;
+  bool _running = false;
+  bool get _isLoading => widget.loading ?? _running;
+  bool get _isDisabled => widget.disabled || _isLoading;
 
-  Future<void> _onPressed() async {
-    setState(() => _loading = true);
+  Future<void> _runAction(FutureOr<void> Function() action) async {
+    setState(() => _running = true);
     try {
-      await widget.onPressed();
+      await action();
     } finally {
       if (mounted) {
-        setState(() => _loading = false);
+        setState(() => _running = false);
       }
     }
+  }
+
+  Future<void>? _onPressed() {
+    if (_isDisabled) {
+      return null;
+    }
+
+    return _runAction(widget.onPressed);
+  }
+
+  Future<void>? _onLongPress() {
+    if (_isDisabled || widget.onLongPress == null) {
+      return null;
+    }
+
+    return _runAction(widget.onLongPress!);
   }
 
   @override
@@ -59,11 +78,22 @@ class _ImmichTextButtonState extends State<ImmichTextButton> {
       style: const .new(fontSize: ImmichTextSize.body, fontWeight: .bold),
     );
     final style = ElevatedButton.styleFrom(padding: const .symmetric(vertical: ImmichSpacing.md));
-    final onPressed = widget.disabled || _isLoading ? null : _onPressed;
 
     final button = switch (widget.variant) {
-      ImmichVariant.filled => ElevatedButton.icon(style: style, onPressed: onPressed, icon: icon, label: label),
-      ImmichVariant.ghost => TextButton.icon(style: style, onPressed: onPressed, icon: icon, label: label),
+      ImmichVariant.filled => ElevatedButton.icon(
+        style: style,
+        onPressed: _onPressed,
+        onLongPress: _onLongPress,
+        icon: icon,
+        label: label,
+      ),
+      ImmichVariant.ghost => TextButton.icon(
+        style: style,
+        onPressed: _onPressed,
+        onLongPress: _onLongPress,
+        icon: icon,
+        label: label,
+      ),
     };
 
     if (widget.expanded) {

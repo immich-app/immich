@@ -1,5 +1,6 @@
 import {
   LoginResponseDto,
+  Permission,
   QueueName,
   createStack,
   deleteUserAdmin,
@@ -355,6 +356,31 @@ describe('/admin/users', () => {
       });
 
       await utils.waitForWebsocketEvent({ event: 'userDelete', id: user.userId, timeout: 5000 });
+    });
+  });
+
+  describe('GET /admin/users/:id/calendar-heatmap', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get(`/admin/users/${nonAdmin.userId}/calendar-heatmap`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should require admin permissions', async () => {
+      const { status, body } = await request(app)
+        .get(`/admin/users/${nonAdmin.userId}/calendar-heatmap`)
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.forbidden);
+    });
+
+    it('should require the AdminUserRead permission', async () => {
+      const { secret } = await utils.createApiKey(admin.accessToken, [Permission.UserRead]);
+      const { status, body } = await request(app)
+        .get(`/admin/users/${nonAdmin.userId}/calendar-heatmap`)
+        .set('x-api-key', secret);
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.forbidden);
     });
   });
 

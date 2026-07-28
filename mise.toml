@@ -19,6 +19,7 @@ node = "24.15.0"
 pnpm = "11.13.1"
 terragrunt = "1.1.1"
 opentofu = "1.12.4"
+"npm:@openapitools/openapi-generator-cli" = "2.40.1"
 "npm:oazapfts" = "7.5.0"
 "github:extism/cli" = "1.6.3"
 "github:webassembly/binaryen" = "version_124"
@@ -61,6 +62,14 @@ run = [
 
 [tasks.open-api-dart]
 dir = "open-api"
+sources = [
+  "immich-openapi-specs.json",
+  "openapitools.json",
+  "templates/**/*",
+  "patch/*",
+  "bin/generate-dart-sdk.sh",
+]
+outputs = ["../mobile/openapi/lib/"]
 run = "bash ./bin/generate-dart-sdk.sh"
 
 [tasks.open-api]

@@ -341,4 +341,10 @@ class RemoteAlbumService {
 
     return sortedAlbums;
   }
+
+  Future<int> removeAssets({required String albumId, required List<String> assetIds}) async {
+    final result = await _albumApiRepository.removeAssets(albumId, assetIds);
+    await _repository.removeAssets(albumId, result.removed);
+    return result.removed.length;
+  }
 }

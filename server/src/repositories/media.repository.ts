@@ -81,6 +81,7 @@ export class MediaRepository {
     ]) {
       try {
         const buffer = await exiftool.extractBinaryTagToBuffer(tag, input);
+        this.logger.debug(`Successfully extracted ${tag} buffer from image`);
         return { buffer, format };
       } catch (error: any) {
         this.logger.debug(`Could not extract ${tag} buffer from image: ${error}`);

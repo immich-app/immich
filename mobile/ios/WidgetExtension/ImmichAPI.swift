@@ -25,7 +25,7 @@ extension WidgetError: LocalizedError {
       return "Login to Immich"
 
     case .fetchFailed:
-      return "Unable to connect to your Immich instance"
+      return "Unable to connect to Immich"
 
     case .albumNotFound:
       return "Album not found"
