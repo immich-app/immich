@@ -4,6 +4,7 @@ class ServerConfig {
   final int trashDays;
   final String oauthButtonText;
   final String externalDomain;
+  final String sharedLinkDomain;
   final String mapDarkStyleUrl;
   final String mapLightStyleUrl;
 
@@ -11,6 +12,7 @@ class ServerConfig {
     required this.trashDays,
     required this.oauthButtonText,
     required this.externalDomain,
+    required this.sharedLinkDomain,
     required this.mapDarkStyleUrl,
     required this.mapLightStyleUrl,
   });
@@ -20,6 +22,7 @@ class ServerConfig {
       trashDays: trashDays ?? this.trashDays,
       oauthButtonText: oauthButtonText ?? this.oauthButtonText,
       externalDomain: externalDomain ?? this.externalDomain,
+      sharedLinkDomain: sharedLinkDomain ?? this.sharedLinkDomain,
       mapDarkStyleUrl: mapDarkStyleUrl,
       mapLightStyleUrl: mapLightStyleUrl,
     );
@@ -27,12 +30,13 @@ class ServerConfig {
 
   @override
   String toString() =>
-      'ServerConfig(trashDays: $trashDays, oauthButtonText: $oauthButtonText, externalDomain: $externalDomain)';
+      'ServerConfig(trashDays: $trashDays, oauthButtonText: $oauthButtonText, externalDomain: $externalDomain, sharedLinkDomain: $sharedLinkDomain)';
 
   ServerConfig.fromDto(ServerConfigDto dto)
     : trashDays = dto.trashDays,
       oauthButtonText = dto.oauthButtonText,
       externalDomain = dto.externalDomain,
+      sharedLinkDomain = dto.sharedLinkDomain,
       mapDarkStyleUrl = dto.mapDarkStyleUrl,
       mapLightStyleUrl = dto.mapLightStyleUrl;
 
@@ -44,9 +48,10 @@ class ServerConfig {
 
     return other.trashDays == trashDays &&
         other.oauthButtonText == oauthButtonText &&
-        other.externalDomain == externalDomain;
+        other.externalDomain == externalDomain &&
+        other.sharedLinkDomain == sharedLinkDomain;
   }
 
   @override
-  int get hashCode => trashDays.hashCode ^ oauthButtonText.hashCode ^ externalDomain.hashCode;
+  int get hashCode => trashDays.hashCode ^ oauthButtonText.hashCode ^ externalDomain.hashCode ^ sharedLinkDomain.hashCode;
 }
