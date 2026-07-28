@@ -191,6 +191,47 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
         );
   }
 
+  Future<void> approveSelectedReviewChecksums(Map<String, List<String>> approvedAssetIdsByChecksum) async {
+    if (approvedAssetIdsByChecksum.isEmpty) {
+      return;
+    }
+
+    await _db.transaction(() async {
+      for (final checksumSlice in approvedAssetIdsByChecksum.keys.slices(kDriftMaxChunk)) {
+        final pending = await (_db.select(
+          _db.trashSyncEntity,
+        )..where((t) => t.checksum.isIn(checksumSlice) & t.status.equalsValue(.reviewPending))).get();
+        final sourceMarkerByChecksum = {
+          for (final entry in groupBy(pending, (row) => row.checksum).entries) entry.key: entry.value.first,
+        };
+        final approvedMarkers = [
+          for (final entry in sourceMarkerByChecksum.entries)
+            for (final assetId in approvedAssetIdsByChecksum[entry.key]!)
+              TrashSyncEntityCompanion.insert(
+                assetId: assetId,
+                checksum: entry.key,
+                status: const Value(TrashSyncStatus.reviewApproved),
+                remoteDeletedAt: Value.absentIfNull(entry.value.remoteDeletedAt),
+                assetUpdatedAt: Value.absentIfNull(entry.value.assetUpdatedAt),
+              ),
+        ];
+        if (approvedMarkers.isEmpty) {
+          continue;
+        }
+
+        await _db.batch((batch) {
+          for (final marker in approvedMarkers) {
+            batch.insert(_db.trashSyncEntity, marker, onConflict: DoUpdate((_) => marker));
+          }
+          batch.deleteWhere(
+            _db.trashSyncEntity,
+            (t) => t.checksum.isIn(sourceMarkerByChecksum.keys) & t.status.equalsValue(.reviewPending),
+          );
+        });
+      }
+    });
+  }
+
   Future<void> approveReviewChecksums(Iterable<String> checksums) async {
     final set = checksums.toSet();
     if (set.isEmpty) {
@@ -215,50 +256,6 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
             ..where((t) => t.assetId.isIn(slice) & t.status.equalsValue(.reviewPending)))
           .write(const TrashSyncEntityCompanion(status: .new(.reviewApproved)));
     }
-  }
-
-  Future<void> approveSelectedReviewChecksums(Map<String, List<String>> approvedAssetIdsByChecksum) async {
-    final approved = approvedAssetIdsByChecksum.map(
-      (checksum, assetIds) => MapEntry(checksum, assetIds.toSet().toList(growable: false)),
-    )..removeWhere((_, assetIds) => assetIds.isEmpty);
-    if (approved.isEmpty) {
-      return;
-    }
-
-    await _db.transaction(() async {
-      for (final checksumSlice in approved.keys.slices(kDriftMaxChunk)) {
-        final pending = await (_db.select(
-          _db.trashSyncEntity,
-        )..where((t) => t.checksum.isIn(checksumSlice) & t.status.equalsValue(.reviewPending))).get();
-        final pendingByChecksum = groupBy(pending, (row) => row.checksum);
-
-        for (final checksum in checksumSlice) {
-          final approvedAssetIds = approved[checksum] ?? const <String>[];
-          for (final assetId in approvedAssetIds) {
-            final pendingForChecksum = pendingByChecksum[checksum];
-            if (pendingForChecksum == null || pendingForChecksum.isEmpty) {
-              continue;
-            }
-
-            final source = pendingForChecksum.first;
-            if (source.assetId != assetId) {
-              await (_db.delete(_db.trashSyncEntity)..where((t) => t.assetId.equals(source.assetId))).go();
-            }
-            await _db
-                .into(_db.trashSyncEntity)
-                .insertOnConflictUpdate(
-                  TrashSyncEntityCompanion.insert(
-                    assetId: assetId,
-                    checksum: checksum,
-                    status: const Value(TrashSyncStatus.reviewApproved),
-                    remoteDeletedAt: Value.absentIfNull(source.remoteDeletedAt),
-                    assetUpdatedAt: Value.absentIfNull(source.assetUpdatedAt),
-                  ),
-                );
-          }
-        }
-      }
-    });
   }
 
   Future<List<String>> getReviewAssetIdsForChecksums(Iterable<String> checksums) async {

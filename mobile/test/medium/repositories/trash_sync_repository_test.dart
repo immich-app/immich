@@ -334,6 +334,25 @@ void main() {
       expect(await trashStatusOf(marked.localId), isNull);
       expect(await trashStatusOf(selectedDuplicate.localId), TrashSyncStatus.reviewApproved);
     });
+
+    test('keeps an approved marker for every selected duplicate copy', () async {
+      final first = await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1));
+      final second = await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1));
+      await (ctx.db.update(ctx.db.localAssetEntity)..where((asset) => asset.id.equals(second.localId))).write(
+        LocalAssetEntityCompanion(checksum: Value(first.checksum)),
+      );
+      await sut.recordSoftDeleteReviewAssets();
+
+      await (ctx.db.delete(
+        ctx.db.localAssetEntity,
+      )..where((asset) => asset.id.isIn([first.localId, second.localId]))).go();
+      await sut.approveSelectedReviewChecksums({
+        first.checksum: [first.localId, second.localId],
+      });
+
+      expect(await trashStatusOf(first.localId), TrashSyncStatus.reviewApproved);
+      expect(await trashStatusOf(second.localId), TrashSyncStatus.reviewApproved);
+    });
   });
 
   group('getRestorableAssetIds', () {
