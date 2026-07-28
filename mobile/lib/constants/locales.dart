@@ -11,6 +11,7 @@ const Map<String, Locale> locales = {
   'Brazilian Portuguese (pt_BR)': Locale('pt', 'BR'),
   'Bulgarian (bg)': Locale('bg'),
   'Catalan (ca)': Locale('ca'),
+  'Cantonese (Traditional)': Locale.fromSubtags(languageCode: 'yue', scriptCode: 'Hant'),
   'Chinese Simplified (zh_CN)': Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hans'),
   'Chinese Traditional (zh_TW)': Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   'Croatian (hr)': Locale('hr'),
