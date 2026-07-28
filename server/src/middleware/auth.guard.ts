@@ -17,7 +17,15 @@ import { getUserAgentDetails } from 'src/utils/request';
 
 type AdminRoute = { admin?: true };
 type SharedLinkRoute = { sharedLink?: true };
-type AuthenticatedOptions = { permission?: Permission | false } & (AdminRoute | SharedLinkRoute);
+export type AuthenticatedOptions = { permission?: Permission | false } & (AdminRoute | SharedLinkRoute);
+
+type ReflectorTarget = Parameters<Reflector['get']>[1];
+
+/** Resolves the `@Authenticated()` options of a route handler, with the defaults applied. */
+export const getAuthenticatedOptions = (reflector: Reflector, target: ReflectorTarget) => {
+  const options = reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, [target]);
+  return options && { sharedLink: false, admin: false, ...options };
+};
 
 export const Authenticated = (options: AuthenticatedOptions = {}): MethodDecorator => {
   const decorators: MethodDecorator[] = [
@@ -86,17 +94,12 @@ export class AuthGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const targets = [context.getHandler()];
-    const options = this.reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, targets);
+    const options = getAuthenticatedOptions(this.reflector, context.getHandler());
     if (!options) {
       return true;
     }
 
-    const {
-      admin: adminRoute,
-      sharedLink: sharedLinkRoute,
-      permission,
-    } = { sharedLink: false, admin: false, ...options };
+    const { admin: adminRoute, sharedLink: sharedLinkRoute, permission } = options;
     const request = context.switchToHttp().getRequest<AuthRequest>();
 
     request.user = await this.authService.authenticate({
