@@ -1639,6 +1639,7 @@
         "tags": [
           "Users (admin)"
         ],
+        "x-immich-admin-only": true,
         "x-immich-history": [
           {
             "version": "v3",
