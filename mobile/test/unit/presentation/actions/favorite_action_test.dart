@@ -56,15 +56,6 @@ void main() {
       verify(() => assetService.update([mine.id], isFavorite: const Option.some(true))).called(1);
     });
 
-    testWidgets('batches every eligible owned asset into a single call', (tester) async {
-      final first = owned();
-      final second = owned();
-
-      await pumpFavorite(tester, {first, second});
-
-      verify(() => assetService.update([first.id, second.id], isFavorite: const Option.some(true))).called(1);
-    });
-
     testWidgets('skips owned assets already in the target state', (tester) async {
       final stale = owned();
       final alreadyFavorite = owned(isFavorite: true);

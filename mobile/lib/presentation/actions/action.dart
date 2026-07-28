@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -10,8 +12,8 @@ import 'package:immich_mobile/utils/asset_filter.dart';
 class ActionItem {
   final IconData icon;
   final String label;
-  final Future<void> Function() onAction;
-  final Future<void> Function()? onSecondaryAction;
+  final FutureOr<void> Function() onAction;
+  final FutureOr<void> Function()? onSecondaryAction;
 
   const ActionItem({required this.icon, required this.label, required this.onAction, this.onSecondaryAction});
 }

@@ -22,7 +22,7 @@ class AssetDebugAction extends AssetActionBuilder {
     return .new(
       icon: Icons.help_outline_rounded,
       label: context.t.troubleshoot,
-      onAction: () async => unawaited(context.pushRoute(AssetTroubleshootRoute(asset: assets.single))),
+      onAction: () => unawaited(context.pushRoute(AssetTroubleshootRoute(asset: assets.single))),
     );
   }
 }

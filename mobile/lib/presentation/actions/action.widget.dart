@@ -29,7 +29,7 @@ class ActionColumnButton extends ActionWidget {
     icon: action.icon,
     label: action.label,
     onPressed: action.onAction,
-    // onLongPress: action.onSecondaryAction,
+    onLongPress: action.onSecondaryAction,
   );
 }
 
@@ -42,7 +42,7 @@ class ActionIconButton extends ActionWidget {
   Widget builder(BuildContext context, WidgetRef ref, ActionItem action) => ImmichIconButton(
     icon: action.icon,
     onPressed: action.onAction,
-    // onLongPress: action.onSecondaryAction,
+    onLongPress: action.onSecondaryAction,
     variant: variant,
   );
 }
@@ -57,7 +57,7 @@ class ActionButton extends ActionWidget {
     labelText: action.label,
     icon: action.icon,
     onPressed: action.onAction,
-    // onLongPress: action.onSecondaryAction,
+    onLongPress: action.onSecondaryAction,
     variant: variant,
   );
 }
