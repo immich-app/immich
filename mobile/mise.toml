@@ -17,7 +17,7 @@ windows-x64 = { asset_pattern = "dcm-windows-release.zip" }
 [tasks.codegen]
 alias = "codegen"
 description = "Generate all codegen artifacts"
-depends = ["codegen:dart", "codegen:drift-schema", "codegen:pigeon", "codegen:translation"]
+depends = ["codegen:dart", "codegen:drift:schema", "codegen:pigeon", "codegen:translation"]
 
 [tasks."codegen:dart"]
 description = "Execute build_runner to auto-generate dart code"
@@ -33,7 +33,7 @@ run = [
   "dart format lib/routing/router.gr.dart",
 ]
 
-[tasks."codegen:drift-schema"]
+[tasks."codegen:drift:schema"]
 description = "Generate Drift migration schema test code"
 sources = ["drift_schemas/main/*.json"]
 outputs = { auto = true }

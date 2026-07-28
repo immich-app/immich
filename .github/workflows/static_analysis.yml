@@ -76,14 +76,8 @@ jobs:
         run: flutter pub get --enforce-lockfile
         working-directory: ./mobile/packages/ui
 
-      - name: Generate translation files
-        run: mise //mobile:codegen:translation
-
-      - name: Run Build Runner
-        run: mise //mobile:codegen:dart
-
-      - name: Generate platform API
-        run: mise //mobile:codegen:pigeon
+      - name: Perform codegen
+        run: mise //mobile:codegen
 
       - name: Find file changes
         uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
@@ -100,7 +94,7 @@ jobs:
         env:
           CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
         run: |
-          echo "ERROR: Generated files not up to date! Run 'mise //mobile:codegen:dart' and 'mise //mobile:codegen:pigeon'"
+          echo "ERROR: Generated files not up to date! Run 'mise //mobile:codegen'"
           echo "Changed files: ${CHANGED_FILES}"
           exit 1
 
