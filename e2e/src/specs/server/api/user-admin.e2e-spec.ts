@@ -358,6 +358,22 @@ describe('/admin/users', () => {
     });
   });
 
+  describe('GET /admin/users/:id/calendar-heatmap', () => {
+    it('should require authentication', async () => {
+      const { status, body } = await request(app).get(`/admin/users/${nonAdmin.userId}/calendar-heatmap`);
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.unauthorized);
+    });
+
+    it('should require admin permissions', async () => {
+      const { status, body } = await request(app)
+        .get(`/admin/users/${nonAdmin.userId}/calendar-heatmap`)
+        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.forbidden);
+    });
+  });
+
   describe('POST /admin/users/:id/restore', () => {
     it('should require authentication', async () => {
       const { status, body } = await request(app).post(`/admin/users/${userToDelete.userId}/restore`);
