@@ -245,7 +245,11 @@ class LoginForm extends HookConsumerWidget {
           unawaited(handleSyncFlow());
           ref.read(websocketProvider.notifier).connect();
           unawaited(ref.read(featureMessageServiceProvider).markSeen());
-          unawaited(context.router.replaceAll([const TabShellRoute()]));
+          unawaited(
+            context.router.replaceAll([
+              ref.read(onboardingServiceProvider).isComplete ? const TabShellRoute() : const OnboardingRoute(),
+            ]),
+          );
           return;
         }
       } catch (error) {
@@ -333,7 +337,11 @@ class LoginForm extends HookConsumerWidget {
             }
             unawaited(handleSyncFlow());
             unawaited(ref.read(featureMessageServiceProvider).markSeen());
-            unawaited(context.router.replaceAll([const TabShellRoute()]));
+            unawaited(
+              context.router.replaceAll([
+                ref.read(onboardingServiceProvider).isComplete ? const TabShellRoute() : const OnboardingRoute(),
+              ]),
+            );
             return;
           }
         } catch (error, stack) {

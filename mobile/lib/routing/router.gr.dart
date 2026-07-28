@@ -1441,6 +1441,22 @@ class MapLocationPickerRouteArgs {
 }
 
 /// generated route for
+/// [OnboardingPage]
+class OnboardingRoute extends PageRouteInfo<void> {
+  const OnboardingRoute({List<PageRouteInfo>? children})
+    : super(OnboardingRoute.name, initialChildren: children);
+
+  static const String name = 'OnboardingRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const OnboardingPage();
+    },
+  );
+}
+
+/// generated route for
 /// [PartnerPage]
 class PartnerRoute extends PageRouteInfo<void> {
   const PartnerRoute({List<PageRouteInfo>? children})
@@ -1869,6 +1885,22 @@ class TabShellRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const TabShellPage();
+    },
+  );
+}
+
+/// generated route for
+/// [WelcomePage]
+class WelcomeRoute extends PageRouteInfo<void> {
+  const WelcomeRoute({List<PageRouteInfo>? children})
+    : super(WelcomeRoute.name, initialChildren: children);
+
+  static const String name = 'WelcomeRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const WelcomePage();
     },
   );
 }

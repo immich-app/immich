@@ -78,7 +78,10 @@ enum SettingsKey<T> {
   slideshowDirection<SlideshowDirection>(codec: EnumCodec(SlideshowDirection.values)),
 
   // Feature message
-  featureMessageSeenRelease<SemVer>(codec: SemVerCodec());
+  featureMessageSeenRelease<SemVer>(codec: SemVerCodec()),
+
+  // Onboarding
+  onboardingComplete<bool>();
 
   final ValueCodec<T>? _codecOverride;
 

@@ -12,6 +12,7 @@ import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/feature_message.service.dart';
+import 'package:immich_mobile/domain/services/onboarding.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -35,6 +36,7 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   }
 
   if (storedVersion == null) {
+    await OnboardingService(SettingsRepository.instance).markComplete(false);
     await FeatureMessageService(SettingsRepository.instance).markSeen();
   }
 
