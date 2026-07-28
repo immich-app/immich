@@ -453,11 +453,30 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
     }
   }
   
+
+  private func cloudIdErrorKind(for error: Error) -> CloudIdErrorKind {
+    let nsError = error as NSError
+    guard nsError.domain == PHPhotosErrorDomain else {
+      return .unknown
+    }
+
+    switch nsError.code {
+    case PHPhotosError.identifierNotFound.rawValue:
+      return .notFound
+    case PHPhotosError.multipleIdentifiersFound.rawValue:
+      return .ambiguous
+    default:
+      return .unknown
+    }
+  }
+
   func getCloudIdForAssetIds(assetIds: [String]) throws -> [CloudIdResult] {
     guard #available(iOS 16, *) else {
-      return assetIds.map { CloudIdResult(assetId: $0) }
+      return assetIds.map {
+        CloudIdResult(assetId: $0, error: "Cloud identifiers require iOS 16", errorKind: .unsupported)
+      }
     }
-    
+
     var mappings: [CloudIdResult] = []
     let result = PHPhotoLibrary.shared().cloudIdentifierMappings(forLocalIdentifiers: assetIds)
     for (key, value) in result {
@@ -468,10 +487,17 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
         if !cloudId.hasSuffix(":") {
           mappings.append(CloudIdResult(assetId: key, cloudId: cloudId))
         } else {
-          mappings.append(CloudIdResult(assetId: key, error: "Incomplete Cloud Id: \(cloudId)"))
+          mappings.append(
+            CloudIdResult(assetId: key, error: "Incomplete Cloud Id: \(cloudId)", errorKind: .incomplete))
         }
       case .failure(let error):
-        mappings.append(CloudIdResult(assetId: key, error: "Error getting Cloud Id: \(error.localizedDescription)"))
+        let kind = cloudIdErrorKind(for: error)
+        var message = "Error getting Cloud Id: \(error.localizedDescription)"
+        if kind == .ambiguous,
+          let matches = (error as NSError).userInfo[PHLocalIdentifiersErrorKey] as? [String] {
+          message += " (matched: \(matches.joined(separator: ", ")))"
+        }
+        mappings.append(CloudIdResult(assetId: key, error: message, errorKind: kind))
       }
     }
     return mappings;
