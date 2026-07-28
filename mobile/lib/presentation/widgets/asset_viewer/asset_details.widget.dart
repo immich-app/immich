@@ -45,7 +45,7 @@ class AssetDetails extends ConsumerWidget {
             DateTimeDetails(asset: asset, exifInfo: exifInfo),
             PeopleDetails(asset: asset),
             LocationDetails(asset: asset, exifInfo: exifInfo),
-            AssetOwnerDetails(asset: asset, exifInfo: exifInfo),
+            AssetOwnerDetails(asset: asset),
             TechnicalDetails(asset: asset, exifInfo: exifInfo),
             RatingDetails(exifInfo: exifInfo),
             AppearsInDetails(asset: asset),

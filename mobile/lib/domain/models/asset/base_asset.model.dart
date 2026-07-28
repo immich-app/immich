@@ -1,5 +1,4 @@
 import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/domain/models/user.model.dart';
 
 part 'local_asset.model.dart';
 part 'remote_asset.model.dart';

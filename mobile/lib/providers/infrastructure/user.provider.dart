@@ -16,6 +16,7 @@ final userApiRepositoryProvider = Provider((ref) => UserApiRepository(ref.watch(
 final userServiceProvider = Provider(
   (ref) => UserService(
     userApiRepository: ref.watch(userApiRepositoryProvider),
+    userRepository: ref.watch(userRepositoryProvider),
     storeService: ref.watch(storeServiceProvider),
   ),
 );

@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/exif.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
-import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
+import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
 class AssetOwnerDetails extends ConsumerWidget {
   final BaseAsset asset;
-  final ExifInfo? exifInfo;
 
-  const AssetOwnerDetails({super.key, required this.asset, this.exifInfo});
+  const AssetOwnerDetails({super.key, required this.asset});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,67 +28,45 @@ class AssetOwnerDetails extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    if (remote.ownerName.isNotEmpty) {
-      return _buildOwnerTile(
-        context: context,
-        ownerId: remote.ownerId,
-        ownerName: remote.ownerName,
-        ownerHasProfileImage: remote.ownerHasProfileImage,
-        ownerProfileChangedAt: remote.ownerProfileChangedAt,
-        ownerAvatarColor: remote.ownerAvatarColor,
-      );
-    }
+    return _OwnerDetailsTile(ownerId: remote.ownerId);
+  }
+}
 
-    return FutureBuilder<UserDto?>(
-      future: ref.read(userRepositoryProvider).getById(remote.ownerId),
+class _OwnerDetailsTile extends ConsumerWidget {
+  final String ownerId;
+
+  const _OwnerDetailsTile({required this.ownerId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(userServiceProvider).watch(ownerId);
+
+    return StreamBuilder<User?>(
+      stream: user,
       builder: (context, snapshot) {
         final ownerDto = snapshot.data;
-        return _buildOwnerTile(
-          context: context,
-          ownerId: remote.ownerId,
-          ownerName: ownerDto?.name ?? 'Unknown',
-          ownerHasProfileImage: ownerDto?.hasProfileImage ?? false,
-          ownerProfileChangedAt: ownerDto?.profileChangedAt,
-          ownerAvatarColor: ownerDto?.avatarColor ?? AvatarColor.primary,
+
+        if (ownerDto == null) {
+          return const SizedBox.shrink();
+        }
+
+        return Padding(
+          padding: const .only(bottom: 12.0),
+          child: Column(
+            children: <SheetTile>[
+              .new(
+                title: context.t.shared_by,
+                titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+              ),
+              .new(
+                leading: UserCircleAvatar.fromUser(user: ownerDto, size: 40),
+                title: ownerDto.name,
+                titleStyle: context.textTheme.labelLarge,
+              ),
+            ],
+          ),
         );
       },
-    );
-  }
-
-  Widget _buildOwnerTile({
-    required BuildContext context,
-    required String ownerId,
-    required String ownerName,
-    required bool ownerHasProfileImage,
-    required DateTime? ownerProfileChangedAt,
-    required AvatarColor ownerAvatarColor,
-  }) {
-    final avatarColor = ownerAvatarColor.toColor();
-    final profileImageUrl =
-        '${Store.get(StoreKey.serverEndpoint)}/users/$ownerId/profile-image'
-        '${ownerProfileChangedAt != null ? '?d=${ownerProfileChangedAt.millisecondsSinceEpoch}' : ''}';
-
-    return Column(
-      children: [
-        SheetTile(
-          title: 'shared_by'.t(context: context),
-          titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-        ),
-        SheetTile(
-          leading: CircleAvatar(
-            radius: 20,
-            backgroundColor: avatarColor,
-            foregroundImage: ownerHasProfileImage ? RemoteImageProvider(url: profileImageUrl) : null,
-            onForegroundImageError: ownerHasProfileImage ? (exception, stackTrace) {} : null,
-            child: Text(
-              ownerName.isNotEmpty ? ownerName[0].toUpperCase() : '?',
-              style: TextStyle(fontSize: 16, color: avatarColor.computeLuminance() > 0.5 ? Colors.black : Colors.white),
-            ),
-          ),
-          title: ownerName.isNotEmpty ? ownerName : 'Unknown',
-          titleStyle: context.textTheme.labelLarge,
-        ),
-      ],
     );
   }
 }
