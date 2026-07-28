@@ -197,8 +197,6 @@ export class AuthService extends BaseService {
   }
 
   async adminSignUp(dto: SignUpDto): Promise<UserAdminResponseDto> {
-    await this.requireSetupAvailable();
-
     const admin = await this.createUser({
       isAdmin: true,
       email: dto.email,

@@ -59,8 +59,6 @@ export class MaintenanceService extends BaseService {
   }
 
   async startRestoreFlow(): Promise<{ jwt: string }> {
-    await this.requireSetupAvailable();
-
     return this.startMaintenance(
       {
         action: MaintenanceAction.SelectDatabaseRestore,

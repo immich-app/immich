@@ -33,6 +33,7 @@ export class AuthController {
     description: 'Login with username and password and receive a session token.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
+  @Authenticated({ public: true })
   async login(
     @Res({ passthrough: true }) res: Response,
     @Body() loginCredential: LoginCredentialDto,
@@ -55,6 +56,7 @@ export class AuthController {
     description: 'Create the first admin user in the system.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
+  @Authenticated({ public: true, setup: true })
   signUpAdmin(@Body() dto: SignUpDto): Promise<UserAdminResponseDto> {
     return this.service.adminSignUp(dto);
   }

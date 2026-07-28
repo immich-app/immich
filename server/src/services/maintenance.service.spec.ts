@@ -1,6 +1,5 @@
 import { MaintenanceAction, SystemMetadataKey } from 'src/enum';
 import { MaintenanceService } from 'src/services/maintenance.service';
-import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 describe(MaintenanceService.name, () => {
@@ -136,27 +135,7 @@ describe(MaintenanceService.name, () => {
   });
 
   describe('startRestoreFlow', () => {
-    it('should fail if setup is disabled', async () => {
-      mocks.config.getEnv.mockReturnValue(mockEnvData({ setup: { allow: false } }));
-      mocks.user.hasAdmin.mockResolvedValue(false);
-
-      await expect(sut.startRestoreFlow()).rejects.toThrowError('Admin setup is not available');
-
-      expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
-      expect(mocks.event.emit).not.toHaveBeenCalled();
-    });
-
-    it('should fail if the server already has an admin', async () => {
-      mocks.user.hasAdmin.mockResolvedValue(true);
-
-      await expect(sut.startRestoreFlow()).rejects.toThrowError('Admin setup is not available');
-
-      expect(mocks.systemMetadata.set).not.toHaveBeenCalled();
-      expect(mocks.event.emit).not.toHaveBeenCalled();
-    });
-
     it('should start maintenance mode and return a jwt', async () => {
-      mocks.user.hasAdmin.mockResolvedValue(false);
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
 
       await expect(sut.startRestoreFlow()).resolves.toMatchObject({ jwt: expect.any(String) });
