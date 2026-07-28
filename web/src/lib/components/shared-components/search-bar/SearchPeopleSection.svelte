@@ -8,17 +8,17 @@
   import { Button, Icon, LoadingSpinner, Text } from '@immich/ui';
   import { mdiArrowRight, mdiCheck, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
-  import type { SvelteSet } from 'svelte/reactivity';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
 
   interface Props {
-    selectedPeople: SvelteSet<string>;
     title: string | undefined;
     parentPromise: Promise<PersonResponseDto[]> | undefined;
   }
 
   // eslint-disable-next-line no-useless-assignment
-  let { selectedPeople = $bindable(), title = $bindable(), parentPromise }: Props = $props();
+  let { title = $bindable(), parentPromise }: Props = $props();
 
+  let selectedPeople = $derived(searchManager.filter.personIds);
   let peoplePromise = parentPromise ?? getPeople(selectedPeople);
   let showAllPeople = $state(false);
   let name = $state('');

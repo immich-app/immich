@@ -1,25 +1,20 @@
 <script lang="ts">
+  import { searchManager } from '$lib/managers/search-manager.svelte';
   import { searchStore } from '$lib/stores/search.svelte';
   import { Icon, IconButton, Text } from '@immich/ui';
   import { mdiClockOutline, mdiClose } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
   interface Props {
-    searchBoxText?: string;
     onSelectSearchTerm: (searchTerm: string) => void;
     onClearSearchTerm: (searchTerm: string) => void;
     onClearAllSearchTerms: () => void;
     onActiveSelectionChange: (selectedId: string | undefined) => void;
   }
 
-  let {
-    searchBoxText = '',
-    onSelectSearchTerm,
-    onClearSearchTerm,
-    onClearAllSearchTerms,
-    onActiveSelectionChange,
-  }: Props = $props();
+  let { onSelectSearchTerm, onClearSearchTerm, onClearAllSearchTerms, onActiveSelectionChange }: Props = $props();
 
+  let searchBoxText = $derived(searchManager.filter.query);
   let filteredSearchTerms = $derived(
     searchStore.savedSearchTerms.filter((term) => term.toLowerCase().includes(searchBoxText.toLowerCase())),
   );

@@ -1,21 +1,15 @@
 <script lang="ts">
   import { searchTypeTitle } from '$lib/components/shared-components/search-bar/search-bar-utils';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
   import { Button, Text } from '@immich/ui';
   import { mdiCheck } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  interface Props {
-    queryType?: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr';
-    title: string | undefined;
-  }
-
-  // eslint-disable-next-line no-useless-assignment
-  let { queryType = $bindable('smart'), title = $bindable() }: Props = $props();
+  let queryType = $derived(searchManager.filter.queryType);
 
   const setType = (type: 'smart' | 'metadata' | 'description' | 'fullPath' | 'ocr') => {
-    queryType = type;
-    title = searchTypeTitle(type);
+    searchManager.filter.queryType = type;
   };
 </script>
 

@@ -4,17 +4,18 @@
   import { Button, Text } from '@immich/ui';
   import { mdiCheck } from '@mdi/js';
   import { t } from 'svelte-i18n';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
 
   interface Props {
-    filteredMedia: MediaType;
     title: string | undefined;
   }
 
   // eslint-disable-next-line no-useless-assignment
-  let { filteredMedia = $bindable(), title = $bindable() }: Props = $props();
+  let { title = $bindable() }: Props = $props();
+  let filteredMedia = $derived(searchManager.filter.mediaType);
 
   const setMedia = (media: MediaType) => {
-    filteredMedia = media;
+    searchManager.filter.mediaType = media;
     title = searchMediaTitle(media);
   };
 </script>

@@ -1,27 +1,24 @@
 <script lang="ts">
-  import { goto } from '$app/navigation';
   import { focusOutside } from '$lib/actions/focus-outside';
   import { shortcuts } from '$lib/actions/shortcut';
   import { Route } from '$lib/route';
   import { searchStore } from '$lib/stores/search.svelte';
   import { handlePromiseError } from '$lib/utils';
   import { generateId } from '$lib/utils/generate-id';
-  import type { MetadataSearchDto, SmartSearchDto } from '@immich/sdk';
   import { IconButton } from '@immich/ui';
   import { mdiClose, mdiMagnify } from '@mdi/js';
   import { onDestroy, tick } from 'svelte';
   import { t } from 'svelte-i18n';
   import SearchFilters from './SearchFilters.svelte';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
 
   type Props = {
-    value?: string;
     grayTheme: boolean;
-    searchQuery?: MetadataSearchDto | SmartSearchDto;
   };
 
-  let { value = $bindable(''), grayTheme, searchQuery = {} }: Props = $props();
+  let { grayTheme }: Props = $props();
 
-  let showClearIcon = $derived(value.length > 0);
+  let showClearIcon = $derived(searchManager.filter.query.length > 0);
 
   let input = $state<HTMLInputElement>();
   let searchFilters = $state<ReturnType<typeof SearchFilters>>();
@@ -35,41 +32,10 @@
     searchStore.isSearchEnabled = false;
   });
 
-  const buildSearchPayload = (term: string): SmartSearchDto | MetadataSearchDto => {
-    if (!term) {
-      return {};
-    }
-
-    const searchType = searchFilters?.getSearchType();
-    switch (searchType) {
-      case 'smart': {
-        return { query: term };
-      }
-      case 'metadata': {
-        return { originalFileName: term };
-      }
-      case 'description': {
-        return { description: term };
-      }
-      case 'fullPath': {
-        const normalizedTerm = term.trim();
-        return normalizedTerm ? { originalPath: normalizedTerm } : {};
-      }
-      case 'ocr': {
-        return { ocr: term };
-      }
-      default: {
-        return { query: term };
-      }
-    }
-  };
-
   const handleSearch = async () => {
-    const query = searchFilters?.getQuery();
-    const payload = buildSearchPayload(value);
     closeDropdown();
     searchStore.isSearchEnabled = false;
-    await goto(Route.search(query ? { ...query, ...payload } : payload));
+    await searchManager.submit();
   };
 
   const clearSearchTerm = (searchTerm: string) => {
@@ -102,17 +68,17 @@
   };
 
   const onHistoryTermClick = async (searchTerm: string) => {
-    value = searchTerm;
+    searchManager.filter.query = searchTerm;
     await handleSearch();
   };
 
   const onSubmit = () => {
     handlePromiseError(handleSearch());
-    saveSearchTerm(value);
+    saveSearchTerm(searchManager.filter.query);
   };
 
   const onClear = () => {
-    value = '';
+    searchManager.filter.query = '';
     input?.focus();
   };
 
@@ -163,7 +129,7 @@
     autocomplete="off"
     class="text-sm select-text"
     action={Route.search()}
-    onreset={() => (value = '')}
+    onreset={() => (searchManager.filter.query = '')}
     {onsubmit}
     onfocusin={onFocusIn}
     role="search"
@@ -182,7 +148,7 @@
         placeholder={$t('search_your_photos')}
         required
         pattern="^(?!m:$).*$"
-        bind:value
+        bind:value={searchManager.filter.query}
         bind:this={input}
         onfocus={openDropdown}
         oninput={onInput}
@@ -204,8 +170,6 @@
       <SearchFilters
         bind:this={searchFilters}
         id={listboxId}
-        {searchQuery}
-        searchBoxText={value}
         isOpen={showSuggestions}
         onClearAllSearchTerms={clearAllSearchTerms}
         onClearSearchTerm={(searchTerm) => clearSearchTerm(searchTerm)}

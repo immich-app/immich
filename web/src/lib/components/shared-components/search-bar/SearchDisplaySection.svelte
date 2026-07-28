@@ -1,14 +1,10 @@
 <script lang="ts">
-  import type { SearchDisplayFilters } from '$lib/types';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
   import { Button, Text } from '@immich/ui';
   import { mdiCheck } from '@mdi/js';
   import { t } from 'svelte-i18n';
 
-  type Props = {
-    filters: SearchDisplayFilters;
-  };
-
-  let { filters = $bindable() }: Props = $props();
+  let filters = $derived(searchManager.filter.display);
 </script>
 
 <div id="display-options-selection">

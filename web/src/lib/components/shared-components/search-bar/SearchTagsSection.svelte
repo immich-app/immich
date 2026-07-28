@@ -5,19 +5,19 @@
   import { Button, Text } from '@immich/ui';
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
-  import { SvelteSet } from 'svelte/reactivity';
   import { mdiClose } from '@mdi/js';
   import { searchTagsTitle } from './search-bar-utils';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
 
   interface Props {
-    selectedTags: SvelteSet<string> | null;
     title: string | undefined;
     parentPromise: Promise<TagResponseDto[]> | undefined;
   }
 
   // eslint-disable-next-line no-useless-assignment
-  let { selectedTags = $bindable(), title = $bindable(), parentPromise }: Props = $props();
+  let { title = $bindable(), parentPromise }: Props = $props();
 
+  let selectedTags = $derived(searchManager.filter.tagIds);
   let allTags: TagResponseDto[] = $state([]);
   let tagMap = $derived(Object.fromEntries(allTags.map((tag) => [tag.id, tag])));
   let selectedOption = $state(undefined);

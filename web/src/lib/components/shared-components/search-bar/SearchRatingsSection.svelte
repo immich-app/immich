@@ -1,12 +1,9 @@
 <script lang="ts">
+  import { searchManager } from '$lib/managers/search-manager.svelte';
   import { Button, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  interface Props {
-    rating?: number | null;
-  }
-
-  let { rating = $bindable() }: Props = $props();
+  let rating = $derived(searchManager.filter.rating);
 
   const options = [
     { value: 5, label: '★★★★★' },
@@ -25,7 +22,7 @@
         shape="round"
         color={rating === option.value ? 'primary' : 'secondary'}
         variant="outline"
-        onclick={() => (rating = rating === option.value ? undefined : option.value)}
+        onclick={() => (searchManager.filter.rating = rating === option.value ? undefined : option.value)}
         class={rating === option.value ? undefined : 'bg-transparent'}
         >{option.label}
       </Button>
