@@ -51,8 +51,6 @@ services:
       - NET_RAW
     volumes:
       - ./ml-model-cache:/cache
-      - ./ml-dotcache:/.cache
-      - ./ml-config:/.config
     env_file:
       - .env
     restart: always
