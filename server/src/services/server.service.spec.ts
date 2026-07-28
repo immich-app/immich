@@ -161,7 +161,7 @@ describe(ServerService.name, () => {
         oauthButtonText: 'Login with OAuth',
         trashDays: 30,
         userDeleteDelay: 7,
-        isInitialized: undefined,
+        isInitialized: false,
         isOnboarded: false,
         externalDomain: '',
         publicUsers: true,

@@ -65,7 +65,7 @@ describe(AuthService.name, () => {
 
       const response = sut.adminSignUp(dto);
       await expect(response).rejects.toThrow(BadRequestException);
-      await expect(response).rejects.toThrow('The server already has an admin');
+      await expect(response).rejects.toThrow('Admin setup is not available');
     });
   });
 

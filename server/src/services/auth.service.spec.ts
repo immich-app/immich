@@ -14,6 +14,7 @@ import { UserFactory } from 'test/factories/user.factory';
 import { sharedLinkStub } from 'test/fixtures/shared-link.stub';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { userStub } from 'test/fixtures/user.stub';
+import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newUuid } from 'test/small.factory';
 import { newTestService, ServiceMocks } from 'test/utils';
 
@@ -308,15 +309,25 @@ describe(AuthService.name, () => {
     const dto: SignUpDto = { email: 'test@immich.com', password: 'password', name: 'immich admin' };
 
     it('should only allow one admin', async () => {
-      mocks.user.getAdmin.mockResolvedValue({} as UserAdmin);
+      mocks.user.hasAdmin.mockResolvedValue(true);
 
       await expect(sut.adminSignUp(dto)).rejects.toBeInstanceOf(BadRequestException);
 
-      expect(mocks.user.getAdmin).toHaveBeenCalled();
+      expect(mocks.user.hasAdmin).toHaveBeenCalled();
+      expect(mocks.user.create).not.toHaveBeenCalled();
+    });
+
+    it('should not allow signup when setup is disabled', async () => {
+      mocks.config.getEnv.mockReturnValue(mockEnvData({ setup: { allow: false } }));
+      mocks.user.hasAdmin.mockResolvedValue(false);
+
+      await expect(sut.adminSignUp(dto)).rejects.toBeInstanceOf(BadRequestException);
+
+      expect(mocks.user.create).not.toHaveBeenCalled();
     });
 
     it('should sign up the admin', async () => {
-      mocks.user.getAdmin.mockResolvedValue(void 0);
+      mocks.user.hasAdmin.mockResolvedValue(false);
       mocks.user.create.mockResolvedValue({
         ...userStub.admin,
         ...dto,
@@ -334,7 +345,7 @@ describe(AuthService.name, () => {
         name: 'immich admin',
       });
 
-      expect(mocks.user.getAdmin).toHaveBeenCalled();
+      expect(mocks.user.hasAdmin).toHaveBeenCalled();
       expect(mocks.user.create).toHaveBeenCalled();
     });
   });
