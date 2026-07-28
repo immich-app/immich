@@ -199,23 +199,30 @@ const getEnv = (): EnvData => {
     web: join(buildFolder, 'www'),
   };
 
-  let redisConfig = {
-    host: dto.REDIS_HOSTNAME || 'redis',
-    port: dto.REDIS_PORT || 6379,
-    db: dto.REDIS_DBINDEX || 0,
-    username: dto.REDIS_USERNAME || undefined,
-    password: dto.REDIS_PASSWORD || undefined,
-    path: dto.REDIS_SOCKET || undefined,
-  };
-
   const redisUrl = dto.REDIS_URL;
-  if (redisUrl && redisUrl.startsWith('ioredis://')) {
-    try {
-      redisConfig = JSON.parse(Buffer.from(redisUrl.slice(10), 'base64').toString());
-    } catch (error) {
-      throw new Error('Failed to decode redis options', { cause: error });
-    }
-  }
+  const redisConfig: RedisOptions =
+    redisUrl && redisUrl.startsWith('ioredis://')
+      ? (() => {
+          try {
+            return JSON.parse(Buffer.from(redisUrl.slice(10), 'base64').toString());
+          } catch (error) {
+            throw new Error('Failed to decode redis options', { cause: error });
+          }
+        })()
+      : dto.REDIS_SOCKET
+        ? // When a Unix socket is configured, the documented contract is that the
+          // TCP-oriented env vars (REDIS_HOSTNAME/PORT/USERNAME/PASSWORD/DBINDEX)
+          // are ignored, matching how REDIS_URL already behaves. Passing host/port
+          // alongside path is ambiguous for ioredis and can produce surprising
+          // connections, so build a socket-only config here.
+          { path: dto.REDIS_SOCKET }
+        : {
+            host: dto.REDIS_HOSTNAME || 'redis',
+            port: dto.REDIS_PORT || 6379,
+            db: dto.REDIS_DBINDEX || 0,
+            username: dto.REDIS_USERNAME || undefined,
+            password: dto.REDIS_PASSWORD || undefined,
+          };
 
   const includedTelemetries =
     dto.IMMICH_TELEMETRY_INCLUDE === 'all'
