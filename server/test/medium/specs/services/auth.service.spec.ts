@@ -16,6 +16,7 @@ import { UserRepository } from 'src/repositories/user.repository';
 import { DB } from 'src/schema';
 import { AuthService } from 'src/services/auth.service';
 import { mediumFactory, newMediumService } from 'test/medium.factory';
+import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
 
@@ -66,6 +67,19 @@ describe(AuthService.name, () => {
       const response = sut.adminSignUp(dto);
       await expect(response).rejects.toThrow(BadRequestException);
       await expect(response).rejects.toThrow('Admin setup is not available');
+    });
+
+    it('should not allow signup when setup is disabled', async () => {
+      // a database without an admin, so that the env var is the only thing rejecting the signup
+      const { sut, ctx } = setup(await getKyselyDB());
+      vi.spyOn(ctx.get(ConfigRepository), 'getEnv').mockReturnValue(mockEnvData({ setup: { allow: false } }));
+      const dto = { name: 'Admin', email: 'admin@immich.cloud', password: 'password' };
+
+      const response = sut.adminSignUp(dto);
+      await expect(response).rejects.toThrow(BadRequestException);
+      await expect(response).rejects.toThrow('Admin setup is not available');
+
+      await expect(ctx.get(UserRepository).hasAdmin()).resolves.toBe(false);
     });
   });
 
