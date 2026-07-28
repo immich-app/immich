@@ -15,20 +15,8 @@ class UserRepository extends DatabaseAccessor<Drift> with $UserRepositoryMixin {
 
   Stream<Iterable<User>> getAll() => _db.select(_db.userEntity).map(mapToUser).watch();
 
-  Future<UserDto?> getById(String id) async {
-    final user = await (_db.select(_db.userEntity)..where((u) => u.id.equals(id))).getSingleOrNull();
-    if (user == null) {
-      return null;
-    }
-    return UserDto(
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      hasProfileImage: user.hasProfileImage,
-      profileChangedAt: user.profileChangedAt,
-      avatarColor: user.avatarColor,
-    );
-  }
+  Stream<User?> watch(String id) =>
+      (_db.select(_db.userEntity)..where((u) => u.id.equals(id))).map(mapToUser).watchSingleOrNull();
 }
 
 @DriftAccessor()
