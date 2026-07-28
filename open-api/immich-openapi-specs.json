@@ -1639,6 +1639,7 @@
         "tags": [
           "Users (admin)"
         ],
+        "x-immich-admin-only": true,
         "x-immich-history": [
           {
             "version": "v3",
@@ -1649,7 +1650,7 @@
             "state": "Stable"
           }
         ],
-        "x-immich-permission": "user.read",
+        "x-immich-permission": "adminUser.read",
         "x-immich-state": "Stable"
       }
     },
@@ -16241,7 +16242,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "3.0.3",
+    "version": "3.1.0",
     "contact": {}
   },
   "tags": [
