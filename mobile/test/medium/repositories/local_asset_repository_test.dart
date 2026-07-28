@@ -492,8 +492,8 @@ void main() {
       final remoteAsset = await ctx.newRemoteAsset(ownerId: userId);
       final cloudIdAsset = await ctx.newRemoteAssetCloudId(id: remoteAsset.id);
       final localAsset = await ctx.newLocalAsset(
-        checksumOption: const Option.none(),
-        iCloudId: null,
+        checksumOption: const .none(),
+        iCloudIdOption: const .none(),
         createdAt: cloudIdAsset.createdAt,
         adjustmentTime: cloudIdAsset.adjustmentTime,
         latitude: cloudIdAsset.latitude,

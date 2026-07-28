@@ -209,11 +209,6 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     return RemovalCandidatesResult(assets: assets, totalBytes: totalBytes);
   }
 
-  Future<List<LocalAsset>> getEmptyCloudIdAssets() {
-    final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
-    return query.map((row) => row.toDto()).get();
-  }
-
   Future<void> reconcileHashesFromCloudId() async {
     await _db.customUpdate(
       '''
