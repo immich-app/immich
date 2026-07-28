@@ -32,6 +32,11 @@
 .pub/
 /build/
 
+# Pigeon related
+/lib/platform/*.g.dart
+/ios/**/*.g.swift
+/android/**/*.g.kt
+
 # Web related
 lib/generated_plugin_registrant.dart
 
