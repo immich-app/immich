@@ -1650,7 +1650,7 @@
             "state": "Stable"
           }
         ],
-        "x-immich-permission": "user.read",
+        "x-immich-permission": "adminUser.read",
         "x-immich-state": "Stable"
       }
     },
