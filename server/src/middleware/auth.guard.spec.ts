@@ -16,16 +16,16 @@ class TestController {
   undecoratedRoute() {}
 }
 
+const contextFor = (handler: () => void) =>
+  ({
+    getHandler: () => handler,
+    switchToHttp: () => ({ getRequest: () => ({ headers: {}, query: {}, path: '/' }) }),
+  }) as unknown as ExecutionContext;
+
 describe(AuthGuard.name, () => {
   let sut: AuthGuard;
   let authService: AuthService;
   let mocks: ServiceMocks;
-
-  const contextFor = (handler: () => void) =>
-    ({
-      getHandler: () => handler,
-      switchToHttp: () => ({ getRequest: () => ({ headers: {}, query: {}, path: '/' }) }),
-    }) as unknown as ExecutionContext;
 
   beforeEach(() => {
     ({ sut: authService, mocks } = newTestService(AuthService));
