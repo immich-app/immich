@@ -125,7 +125,7 @@ void main() {
             TrashSyncEntityCompanion.insert(
               assetId: asset.id,
               checksum: asset.checksum!,
-              status: const Value(TrashSyncStatus.reviewPending),
+              status: const Value(TrashSyncStatus.pending),
             ),
           );
       return (localId: asset.id, albumId: album.id);
@@ -168,10 +168,7 @@ void main() {
 
     test('sync trash timeline groups selected duplicate checksums', () async {
       final older = await createPendingReviewAssetInSelectedAlbum(id: 'local-a');
-      final newer = await ctx.newLocalAsset(
-        id: 'local-z',
-        checksum: 'pending-review-checksum',
-      );
+      final newer = await ctx.newLocalAsset(id: 'local-z', checksum: 'pending-review-checksum');
       final selectedAlbum = await ctx.newLocalAlbum(backupSelection: .selected);
       await ctx.newLocalAlbumAsset(albumId: selectedAlbum.id, assetId: newer.id);
 

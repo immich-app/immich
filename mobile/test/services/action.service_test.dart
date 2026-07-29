@@ -185,21 +185,19 @@ void main() {
       ).thenAnswer((_) async => const {'checksum-1': assetIds});
       when(() => assetMediaRepository.deleteAll(assetIds)).thenAnswer((_) async => assetIds);
       when(() => localAssetRepository.delete(assetIds)).thenAnswer((_) async {});
-      when(
-        () => trashSyncRepository.markReviewAssetsApproved(const {'checksum-1': assetIds}),
-      ).thenAnswer((_) async {});
+      when(() => trashSyncRepository.markReviewAssetsApproved(assetIds)).thenAnswer((_) async {});
 
       final result = await sut.resolveRemoteTrash(checksums, keep: false);
 
       expect(result, (displayCount: 1, success: true));
       verifyInOrder([
         () => assetMediaRepository.deleteAll(assetIds),
+        () => trashSyncRepository.markReviewAssetsApproved(assetIds),
         () => localAssetRepository.delete(assetIds),
-        () => trashSyncRepository.markReviewAssetsApproved(const {'checksum-1': assetIds}),
       ]);
     });
 
-    test('approving review leaves all pending rows for a checksum when any selected deletion fails', () async {
+    test('approving review records successfully trashed ids when another copy fails', () async {
       const checksums = ['checksum-1'];
       const assetIds = ['asset-1', 'asset-2'];
       const deletedIds = ['asset-1'];
@@ -208,12 +206,15 @@ void main() {
       ).thenAnswer((_) async => const {'checksum-1': assetIds});
       when(() => assetMediaRepository.deleteAll(assetIds)).thenAnswer((_) async => deletedIds);
       when(() => localAssetRepository.delete(deletedIds)).thenAnswer((_) async {});
+      when(() => trashSyncRepository.markReviewAssetsApproved(deletedIds)).thenAnswer((_) async {});
 
       final result = await sut.resolveRemoteTrash(checksums, keep: false);
 
       expect(result, (displayCount: 0, success: false));
-      verify(() => localAssetRepository.delete(deletedIds)).called(1);
-      verifyNever(() => trashSyncRepository.markReviewAssetsApproved(any()));
+      verifyInOrder([
+        () => trashSyncRepository.markReviewAssetsApproved(deletedIds),
+        () => localAssetRepository.delete(deletedIds),
+      ]);
     });
   });
 }

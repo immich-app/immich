@@ -150,7 +150,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ..addColumns([_db.trashSyncEntity.assetId])
       ..where(
         _db.trashSyncEntity.checksum.equalsExp(asset.checksum) &
-            _db.trashSyncEntity.status.equalsValue(TrashSyncStatus.reviewPending),
+            _db.trashSyncEntity.status.equalsValue(TrashSyncStatus.pending),
       );
   }
 

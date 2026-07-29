@@ -164,19 +164,13 @@ class ActionService {
     if (trashedAssetIds.isEmpty) {
       return (displayCount: 0, success: false);
     }
-    await _localAssetRepository.delete(trashedAssetIds);
 
     final trashedAssetIdSet = trashedAssetIds.toSet();
-    final approvedAssetIdsByChecksum = {
-      for (final entry in assetIdsByChecksum.entries)
-        if (entry.value.every(trashedAssetIdSet.contains)) entry.key: entry.value,
-    };
-    if (approvedAssetIdsByChecksum.isEmpty) {
-      return (displayCount: 0, success: false);
-    }
+    final resolvedCount = assetIdsByChecksum.values.where((ids) => ids.every(trashedAssetIdSet.contains)).length;
 
-    await _trashSyncRepository.markReviewAssetsApproved(approvedAssetIdsByChecksum);
-    return (displayCount: approvedAssetIdsByChecksum.length, success: true);
+    await _trashSyncRepository.markReviewAssetsApproved(trashedAssetIds);
+    await _localAssetRepository.delete(trashedAssetIds);
+    return (displayCount: resolvedCount, success: resolvedCount > 0);
   }
 
   Future<bool> editLocation(List<String> remoteIds, BuildContext context) async {
