@@ -478,7 +478,7 @@ class _ScrollLabel extends StatelessWidget {
       child: FadeTransition(
         opacity: animation,
         child: Container(
-          margin: const EdgeInsets.only(right: 12.0),
+          margin: const EdgeInsetsDirectional.only(end: 12.0),
           child: Material(
             elevation: 4.0,
             color: backgroundColor,
@@ -530,16 +530,18 @@ class _CircularThumb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isRTL = Directionality.of(context) == TextDirection.rtl;
+
     return CustomPaint(
-      foregroundPainter: const _ArrowPainter(Colors.white),
+      foregroundPainter: _ArrowPainter(Colors.white, isRTL),
       child: Material(
         elevation: 4.0,
         color: backgroundColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(kScrubberThumbHeight),
-          bottomLeft: Radius.circular(kScrubberThumbHeight),
-          topRight: Radius.circular(4.0),
-          bottomRight: Radius.circular(4.0),
+        borderRadius: const BorderRadiusDirectional.only(
+          topStart: Radius.circular(kScrubberThumbHeight),
+          bottomStart: Radius.circular(kScrubberThumbHeight),
+          topEnd: Radius.circular(4.0),
+          bottomEnd: Radius.circular(4.0),
         ),
         child: Container(
           constraints: BoxConstraints.tight(const Size(kScrubberThumbHeight * 0.6, kScrubberThumbHeight)),
@@ -551,8 +553,9 @@ class _CircularThumb extends StatelessWidget {
 
 class _ArrowPainter extends CustomPainter {
   final Color color;
+  final bool isRtl;
 
-  const _ArrowPainter(this.color);
+  const _ArrowPainter(this.color, this.isRtl);
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
@@ -562,7 +565,7 @@ class _ArrowPainter extends CustomPainter {
     final paint = Paint()..color = color;
     const width = 12.0;
     const height = 8.0;
-    final baseX = size.width / 2;
+    final baseX = isRtl ? (size.width / 2) - width : size.width / 2;
     final baseY = size.height / 2;
 
     canvas.drawPath(_trianglePath(Offset(baseX, baseY - 2.0), width, height, true), paint);
@@ -586,11 +589,13 @@ class _SlideFadeTransition extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isRTL = Directionality.of(context) == TextDirection.rtl;
+
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) => _animation.value == 0.0 ? const SizedBox() : child!,
       child: SlideTransition(
-        position: Tween(begin: const Offset(0.3, 0.0), end: const Offset(0.0, 0.0)).animate(_animation),
+        position: Tween(begin: Offset(isRTL ? -3.0 : 3.0, 0.0), end: const Offset(0.0, 0.0)).animate(_animation),
         child: FadeTransition(opacity: _animation, child: _child),
       ),
     );
