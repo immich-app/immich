@@ -53,16 +53,7 @@ final class $$MemoryEntityTableReferences
   static i5.$UserEntityTable _ownerIdTable(i0.GeneratedDatabase db) =>
       i6.ReadDatabaseContainer(db)
           .resultSet<i5.$UserEntityTable>('user_entity')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i6.ReadDatabaseContainer(
-                db,
-              ).resultSet<i1.$MemoryEntityTable>('memory_entity').ownerId,
-              i6.ReadDatabaseContainer(
-                db,
-              ).resultSet<i5.$UserEntityTable>('user_entity').id,
-            ),
-          );
+          .createAlias('memory_entity__owner_id__user_entity__id');
 
   i5.$$UserEntityTableProcessedTableManager get ownerId {
     final $_column = $_itemColumn<String>('owner_id')!;

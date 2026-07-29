@@ -192,7 +192,11 @@ export class SyncService extends BaseService {
       [SyncRequestType.AssetOcrV1]: () => this.syncAssetOcrV1(options, response, checkpointMap, auth),
     } as const;
 
-    for (const type of SYNC_TYPES_ORDER.filter((type) => dto.types.includes(type))) {
+    for (const type of SYNC_TYPES_ORDER) {
+      if (!dto.types.includes(type)) {
+        continue;
+      }
+
       const handler = handlers[type as keyof typeof handlers];
       await handler();
     }
@@ -573,16 +577,16 @@ export class SyncService extends BaseService {
     }
 
     const creates = this.syncRepository.albumAsset.getCreates({ ...options, ack: createCheckpoint });
-    let first = true;
+    let isFirst = true;
     for await (const { updateId, ...data } of creates) {
-      if (first) {
+      if (isFirst) {
         send(response, {
           type: SyncEntityType.SyncAckV1,
           data: {},
           ackType: SyncEntityType.AlbumAssetUpdateV2,
           ids: [options.nowId],
         });
-        first = false;
+        isFirst = false;
       }
       send(response, { type: createType, ids: [updateId], data: mapSyncAssetV2(data) });
     }
@@ -644,16 +648,16 @@ export class SyncService extends BaseService {
     }
 
     const creates = this.syncRepository.albumAssetExif.getCreates({ ...options, ack: createCheckpoint });
-    let first = true;
+    let isFirst = true;
     for await (const { updateId, ...data } of creates) {
-      if (first) {
+      if (isFirst) {
         send(response, {
           type: SyncEntityType.SyncAckV1,
           data: {},
           ackType: SyncEntityType.AlbumAssetExifUpdateV1,
           ids: [options.nowId],
         });
-        first = false;
+        isFirst = false;
       }
       send(response, { type: createType, ids: [updateId], data });
     }

@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-this-outside-of-class */
 import { createPostgres, DatabaseConnectionParams } from '@immich/sql-tools';
 import { CallHandler, ExecutionContext, Provider } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
@@ -107,6 +108,7 @@ export const controllerSetup = async (controller: new (...args: any[]) => unknow
       await new Promise<void>((resolve, reject) => {
         const next: NextFunction = (error) => (error ? reject(transformException(error)) : resolve());
         const maybePromise = handler(context.getRequest(), context.getResponse(), next);
+
         Promise.resolve(maybePromise).catch((error) => reject(error));
       });
 
@@ -176,7 +178,7 @@ export const automock = <T>(
   },
 ): AutoMocked<T> => {
   const mock: Record<string, unknown> = {};
-  const strict = options?.strict ?? true;
+  const isStrict = options?.strict ?? true;
   const args = options?.args ?? [];
 
   const mocks: Mock[] = [];
@@ -197,7 +199,7 @@ export const automock = <T>(
 
       const target = instance[property as keyof T];
       if (typeof target === 'function') {
-        const mockImplementation = mockFn(label, { strict });
+        const mockImplementation = mockFn(label, { strict: isStrict });
         mock[property] = mockImplementation;
         mocks.push(mockImplementation);
         continue;
@@ -454,7 +456,7 @@ const pngFactory = newPngFactory();
 
 const templateName = 'mich';
 
-const withDatabase = (url: string, name: string) => url.replace(`/${templateName}`, `/${name}`);
+const withDatabase = (url: string, name: string) => url.replace(`/${templateName}`, () => `/${name}`);
 
 export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
   const testUrl = process.env.IMMICH_TEST_POSTGRES_URL!;

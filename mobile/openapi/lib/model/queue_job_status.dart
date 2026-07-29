@@ -11,37 +11,33 @@
 part of openapi.api;
 
 /// Queue job status
-class QueueJobStatus {
-  /// Instantiate a new enum with the provided [value].
-  const QueueJobStatus._(this.value);
+enum QueueJobStatus {
+  active._(r'active'),
+  failed._(r'failed'),
+  completed._(r'completed'),
+  delayed._(r'delayed'),
+  waiting._(r'waiting'),
+  paused._(r'paused'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const QueueJobStatus._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const active = QueueJobStatus._(r'active');
-  static const failed = QueueJobStatus._(r'failed');
-  static const completed = QueueJobStatus._(r'completed');
-  static const delayed = QueueJobStatus._(r'delayed');
-  static const waiting = QueueJobStatus._(r'waiting');
-  static const paused = QueueJobStatus._(r'paused');
-
-  /// List of all possible values in this [enum][QueueJobStatus].
-  static const values = <QueueJobStatus>[
-    active,
-    failed,
-    completed,
-    delayed,
-    waiting,
-    paused,
-  ];
-
+  /// Returns the instance of [QueueJobStatus] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static QueueJobStatus? fromJson(dynamic value) => QueueJobStatusTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [QueueJobStatus]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<QueueJobStatus> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <QueueJobStatus>[];
     if (json is List && json.isNotEmpty) {
@@ -63,9 +59,11 @@ class QueueJobStatusTypeTransformer {
 
   const QueueJobStatusTypeTransformer._();
 
-  String encode(QueueJobStatus data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(QueueJobStatus data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a QueueJobStatus.
+  /// Returns the instance of [QueueJobStatus] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -74,6 +72,9 @@ class QueueJobStatusTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   QueueJobStatus? decode(dynamic data, {bool allowNull = true}) {
+    if (data is QueueJobStatus) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'active': return QueueJobStatus.active;
@@ -91,7 +92,7 @@ class QueueJobStatusTypeTransformer {
     return null;
   }
 
-  /// Singleton [QueueJobStatusTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static QueueJobStatusTypeTransformer? _instance;
 }
 

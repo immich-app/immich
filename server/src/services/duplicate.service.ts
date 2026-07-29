@@ -220,15 +220,15 @@ export class DuplicateService extends BaseService {
     if (idsToTrash.length > 0) {
       // TODO: this is duplicated with AssetService.deleteAssets
       const { trash } = await this.getConfig({ withCache: true });
-      const force = !trash.enabled;
+      const isForce = !trash.enabled;
 
       await this.assetRepository.updateAll(idsToTrash, {
         deletedAt: new Date(),
-        status: force ? AssetStatus.Deleted : AssetStatus.Trashed,
+        status: isForce ? AssetStatus.Deleted : AssetStatus.Trashed,
         duplicateId: null,
       });
 
-      await this.eventRepository.emit(force ? 'AssetDeleteAll' : 'AssetTrashAll', {
+      await this.eventRepository.emit(isForce ? 'AssetDeleteAll' : 'AssetTrashAll', {
         assetIds: idsToTrash,
         userId: auth.user.id,
       });

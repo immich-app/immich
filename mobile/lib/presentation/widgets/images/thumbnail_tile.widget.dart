@@ -297,8 +297,7 @@ class _AssetTypeIcons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final remoteAsset = asset is RemoteAsset ? asset as RemoteAsset : null;
-    final isLivePhoto = remoteAsset?.livePhotoVideoId != null;
+    final isLivePhoto = asset.isMotionPhoto;
 
     return Column(
       mainAxisSize: MainAxisSize.min,

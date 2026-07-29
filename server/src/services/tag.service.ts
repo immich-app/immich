@@ -123,10 +123,12 @@ export class TagService extends BaseService {
     );
 
     for (const { id: assetId, success } of results) {
-      if (success) {
-        await this.updateTags(assetId);
-        await this.eventRepository.emit('AssetTag', { assetId });
+      if (!success) {
+        continue;
       }
+
+      await this.updateTags(assetId);
+      await this.eventRepository.emit('AssetTag', { assetId });
     }
 
     return results;
@@ -142,10 +144,12 @@ export class TagService extends BaseService {
     );
 
     for (const { id: assetId, success } of results) {
-      if (success) {
-        await this.updateTags(assetId);
-        await this.eventRepository.emit('AssetUntag', { assetId });
+      if (!success) {
+        continue;
       }
+
+      await this.updateTags(assetId);
+      await this.eventRepository.emit('AssetUntag', { assetId });
     }
 
     return results;

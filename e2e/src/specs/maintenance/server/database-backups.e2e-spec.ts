@@ -118,7 +118,7 @@ describe('/admin/database-backups', () => {
 
       expect(status).toBe(201);
 
-      cookie = headers['set-cookie'][0].split(';')[0];
+      cookie = headers['set-cookie'][0].split(';', 1)[0];
 
       await expect
         .poll(
@@ -224,7 +224,7 @@ describe('/admin/database-backups', () => {
         });
 
       expect(status).toBe(201);
-      cookie = headers['set-cookie'][0].split(';')[0];
+      cookie = headers['set-cookie'][0].split(';', 1)[0];
 
       await expect
         .poll(
@@ -295,7 +295,7 @@ describe('/admin/database-backups', () => {
         });
 
       expect(status).toBe(201);
-      cookie = headers['set-cookie'][0].split(';')[0];
+      cookie = headers['set-cookie'][0].split(';', 1)[0];
 
       await expect
         .poll(

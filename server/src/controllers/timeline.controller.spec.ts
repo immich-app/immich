@@ -33,7 +33,7 @@ describe(TimelineController.name, () => {
       expect(service.getTimeBuckets).toHaveBeenCalledWith(
         undefined,
         expect.objectContaining({
-          bbox: { west: 11.075_683, south: 49.416_711, east: 11.117_589, north: 49.454_875 },
+          bbox: { west: 11.075683, south: 49.416711, east: 11.117589, north: 49.454875 },
         }),
       );
     });

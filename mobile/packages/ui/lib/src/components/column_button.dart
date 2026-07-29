@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:core';
 
 import 'package:flutter/material.dart';
 import 'package:immich_ui/src/constants.dart';
@@ -8,6 +9,7 @@ class ImmichColumnButton extends StatefulWidget {
   final IconData icon;
   final String label;
   final FutureOr<void> Function() onPressed;
+  final FutureOr<void> Function()? onLongPress;
   final bool disabled;
   final bool? loading;
 
@@ -16,6 +18,7 @@ class ImmichColumnButton extends StatefulWidget {
     required this.icon,
     required this.label,
     required this.onPressed,
+    this.onLongPress,
     this.disabled = false,
     this.loading,
   });
@@ -25,18 +28,35 @@ class ImmichColumnButton extends StatefulWidget {
 }
 
 class _ImmichColumnButtonState extends State<ImmichColumnButton> {
-  bool _loading = false;
-  bool get _isLoading => widget.loading ?? _loading;
+  bool _running = false;
+  bool get _isLoading => widget.loading ?? _running;
+  bool get _isDisabled => widget.disabled || _isLoading;
 
-  Future<void> _onPressed() async {
-    setState(() => _loading = true);
+  Future<void> _runAction(FutureOr<void> Function() action) async {
+    setState(() => _running = true);
     try {
-      await widget.onPressed();
+      await action();
     } finally {
       if (mounted) {
-        setState(() => _loading = false);
+        setState(() => _running = false);
       }
     }
+  }
+
+  Future<void>? _onPressed() {
+    if (_isDisabled) {
+      return null;
+    }
+
+    return _runAction(widget.onPressed);
+  }
+
+  Future<void>? _onLongPress() {
+    if (_isDisabled || widget.onLongPress == null) {
+      return null;
+    }
+
+    return _runAction(widget.onLongPress!);
   }
 
   @override
@@ -44,7 +64,8 @@ class _ImmichColumnButtonState extends State<ImmichColumnButton> {
     final foreground = context.colorOverride ?? Theme.of(context).colorScheme.onSurface;
 
     return TextButton(
-      onPressed: widget.disabled || _isLoading ? null : _onPressed,
+      onPressed: _onPressed,
+      onLongPress: _onLongPress,
       style: TextButton.styleFrom(
         foregroundColor: foreground,
         padding: const .symmetric(horizontal: ImmichSpacing.sm, vertical: ImmichSpacing.md),

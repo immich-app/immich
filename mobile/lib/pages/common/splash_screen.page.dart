@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -12,6 +11,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
@@ -25,8 +25,6 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:logging/logging.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart';
 import 'package:url_launcher/url_launcher.dart' show launchUrl, LaunchMode;
 
 class BootstrapErrorWidget extends StatelessWidget {
@@ -132,13 +130,7 @@ class _BottomPanelState extends State<_BottomPanel> {
     }
 
     try {
-      final dir = await getApplicationDocumentsDirectory();
-      for (final suffix in ['', '-wal', '-shm']) {
-        final file = File(path.join(dir.path, 'immich.sqlite$suffix'));
-        if (await file.exists()) {
-          await file.delete();
-        }
-      }
+      await deleteSqliteDatabase(name: 'immich');
     } catch (_) {
       return;
     }

@@ -1,6 +1,6 @@
 import 'package:immich_mobile/utils/semver.dart';
 
-String? getVersionCompatibilityMessage(SemVer serverVersion, SemVer appVersion) {
+String? getVersionCompatibilityMessage({required SemVer serverVersion, required SemVer appVersion}) {
   // Add latest compat info up top
 
   // ensure mobile app major version is not behind server major version

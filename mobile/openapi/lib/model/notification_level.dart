@@ -11,33 +11,31 @@
 part of openapi.api;
 
 /// Notification level
-class NotificationLevel {
-  /// Instantiate a new enum with the provided [value].
-  const NotificationLevel._(this.value);
+enum NotificationLevel {
+  success._(r'success'),
+  error._(r'error'),
+  warning._(r'warning'),
+  info._(r'info'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const NotificationLevel._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const success = NotificationLevel._(r'success');
-  static const error = NotificationLevel._(r'error');
-  static const warning = NotificationLevel._(r'warning');
-  static const info = NotificationLevel._(r'info');
-
-  /// List of all possible values in this [enum][NotificationLevel].
-  static const values = <NotificationLevel>[
-    success,
-    error,
-    warning,
-    info,
-  ];
-
+  /// Returns the instance of [NotificationLevel] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static NotificationLevel? fromJson(dynamic value) => NotificationLevelTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [NotificationLevel]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<NotificationLevel> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <NotificationLevel>[];
     if (json is List && json.isNotEmpty) {
@@ -59,9 +57,11 @@ class NotificationLevelTypeTransformer {
 
   const NotificationLevelTypeTransformer._();
 
-  String encode(NotificationLevel data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(NotificationLevel data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a NotificationLevel.
+  /// Returns the instance of [NotificationLevel] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -70,6 +70,9 @@ class NotificationLevelTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   NotificationLevel? decode(dynamic data, {bool allowNull = true}) {
+    if (data is NotificationLevel) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'success': return NotificationLevel.success;
@@ -85,7 +88,7 @@ class NotificationLevelTypeTransformer {
     return null;
   }
 
-  /// Singleton [NotificationLevelTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static NotificationLevelTypeTransformer? _instance;
 }
 

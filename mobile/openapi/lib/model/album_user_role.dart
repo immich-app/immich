@@ -11,31 +11,30 @@
 part of openapi.api;
 
 /// Album user role
-class AlbumUserRole {
-  /// Instantiate a new enum with the provided [value].
-  const AlbumUserRole._(this.value);
+enum AlbumUserRole {
+  editor._(r'editor'),
+  owner._(r'owner'),
+  viewer._(r'viewer'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const AlbumUserRole._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const editor = AlbumUserRole._(r'editor');
-  static const owner = AlbumUserRole._(r'owner');
-  static const viewer = AlbumUserRole._(r'viewer');
-
-  /// List of all possible values in this [enum][AlbumUserRole].
-  static const values = <AlbumUserRole>[
-    editor,
-    owner,
-    viewer,
-  ];
-
+  /// Returns the instance of [AlbumUserRole] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static AlbumUserRole? fromJson(dynamic value) => AlbumUserRoleTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [AlbumUserRole]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<AlbumUserRole> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <AlbumUserRole>[];
     if (json is List && json.isNotEmpty) {
@@ -57,9 +56,11 @@ class AlbumUserRoleTypeTransformer {
 
   const AlbumUserRoleTypeTransformer._();
 
-  String encode(AlbumUserRole data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(AlbumUserRole data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a AlbumUserRole.
+  /// Returns the instance of [AlbumUserRole] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -68,6 +69,9 @@ class AlbumUserRoleTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   AlbumUserRole? decode(dynamic data, {bool allowNull = true}) {
+    if (data is AlbumUserRole) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'editor': return AlbumUserRole.editor;
@@ -82,7 +86,7 @@ class AlbumUserRoleTypeTransformer {
     return null;
   }
 
-  /// Singleton [AlbumUserRoleTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static AlbumUserRoleTypeTransformer? _instance;
 }
 
