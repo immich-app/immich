@@ -1,7 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_details/asset_owner_details.widget.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
-import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../factories/local_asset_factory.dart';
@@ -19,7 +18,7 @@ void main() {
     testWidgets('renders nothing for a local asset', (tester) async {
       await tester.pumpTestWidget(context, AssetOwnerDetails(asset: LocalAssetFactory.create()));
 
-      expect(find.byType(SheetTile), findsNothing);
+      expect(find.byType(Text), findsNothing);
       verifyNever(context.service.user.watch);
     });
 
@@ -28,19 +27,17 @@ void main() {
 
       await tester.pumpTestWidget(context, AssetOwnerDetails(asset: asset));
 
-      expect(find.byType(SheetTile), findsNothing);
+      expect(find.byType(Text), findsNothing);
       verifyNever(context.service.user.watch);
     });
 
-    testWidgets('renders the owner name and avatar for an asset owned by someone else', (tester) async {
+    testWidgets('renders shared by for an asset owned by someone else', (tester) async {
       final owner = UserFactory.create();
       when(context.service.user.watch).thenAnswer((_) => Stream.value(owner));
 
       await tester.pumpTestWidget(context, AssetOwnerDetails(asset: RemoteAssetFactory.create(ownerId: owner.id)));
 
-      expect(find.byType(SheetTile), findsNWidgets(2));
-      expect(find.text(owner.name), findsOneWidget);
-      expect(find.byType(UserCircleAvatar), findsOneWidget);
+      expect(find.text('Shared by ${owner.name}'), findsOneWidget);
       verify(() => context.service.user.service.watch(owner.id)).called(1);
     });
 
@@ -49,7 +46,7 @@ void main() {
 
       await tester.pumpTestWidget(context, AssetOwnerDetails(asset: RemoteAssetFactory.create()));
 
-      expect(find.byType(SheetTile), findsNothing);
+      expect(find.byType(Text), findsNothing);
     });
   });
 }

@@ -5,10 +5,10 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class AssetOwnerDetails extends ConsumerWidget {
   final BaseAsset asset;
@@ -51,17 +51,19 @@ class _OwnerDetailsTile extends ConsumerWidget {
         }
 
         return Padding(
-          padding: const .only(bottom: 12.0),
-          child: Column(
-            children: <SheetTile>[
-              .new(
-                title: context.t.shared_by,
-                titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-              ),
-              .new(
-                leading: UserCircleAvatar.fromUser(user: ownerDto, size: 40),
-                title: ownerDto.name,
-                titleStyle: context.textTheme.labelLarge,
+          padding: const .only(
+            left: ImmichSpacing.lg,
+            right: ImmichSpacing.lg,
+            top: ImmichSpacing.md,
+            bottom: ImmichSpacing.sm,
+          ),
+          child: Row(
+            spacing: ImmichSpacing.md,
+            children: [
+              UserCircleAvatar.fromUser(user: ownerDto, size: 24, hasBorder: false, opacity: 0.8),
+              Text(
+                context.t.shared_by_user(user: ownerDto.name),
+                style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
               ),
             ],
           ),
