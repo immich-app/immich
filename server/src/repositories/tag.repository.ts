@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql, Updateable } from 'kysely';
+import { Insertable, Kysely, Selectable, sql, Transaction, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
@@ -20,6 +20,11 @@ export class TagRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   get(id: string) {
     return this.db.selectFrom('tag').select(columns.tag).where('id', '=', id).executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  async getMany(ids: string[]) {
+    return await this.db.selectFrom('tag').select(columns.tag).where('id', 'in', ids).execute();
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
@@ -43,26 +48,7 @@ export class TagRepository {
         .returning(columns.tag)
         .executeTakeFirstOrThrow();
 
-      // update closure table
-      await tx
-        .insertInto('tag_closure')
-        .values({ id_ancestor: tag.id, id_descendant: tag.id })
-        .onConflict((oc) => oc.doNothing())
-        .execute();
-
-      if (parentId) {
-        await tx
-          .insertInto('tag_closure')
-          .columns(['id_ancestor', 'id_descendant'])
-          .expression(
-            this.db
-              .selectFrom('tag_closure')
-              .select(['id_ancestor', sql.raw<string>(`'${tag.id}'`).as('id_descendant')])
-              .where('id_descendant', '=', parentId),
-          )
-          .onConflict((oc) => oc.doNothing())
-          .execute();
-      }
+      await this.updateTagClosures(tag, tx);
 
       return tag;
     });
@@ -74,18 +60,74 @@ export class TagRepository {
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, color: DummyValue.STRING, value: DummyValue.STRING }] })
-  create(tag: Insertable<TagTable>) {
-    return this.db.insertInto('tag').values(tag).returningAll().executeTakeFirstOrThrow();
+  async create(tag: Insertable<TagTable>) {
+    let createdTag: Selectable<TagTable>;
+    await this.db.transaction().execute(async (tx) => {
+      createdTag = await tx.insertInto('tag').values(tag).returningAll().executeTakeFirstOrThrow();
+      await this.updateTagClosures(createdTag, tx);
+    });
+    return createdTag!;
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, { color: DummyValue.STRING }] })
-  update(id: string, dto: Updateable<TagTable>) {
-    return this.db.updateTable('tag').set(dto).where('id', '=', id).returningAll().executeTakeFirstOrThrow();
+  @GenerateSql({ params: [DummyValue.UUID, { value: DummyValue.STRING, color: DummyValue.STRING }] })
+  async update(id: string, dto: Updateable<TagTable>) {
+    let updated: Selectable<TagTable>;
+    await this.db.transaction().execute(async (tx) => {
+      updated = await tx.updateTable('tag').set(dto).where('id', '=', id).returningAll().executeTakeFirstOrThrow();
+
+      if (dto.value) {
+        // propagate value update downstream
+        const descendantIds = await this.getDescendantIds(id);
+        if (descendantIds.length > 1) {
+          const descendants = await this.getMany(descendantIds.filter((_id: string) => _id !== id));
+          const childrenByParentId = new Map<string, { id: string; value: string }[]>();
+          for (const descendant of descendants) {
+            const parentId = descendant.parentId;
+            if (parentId) {
+              if (!childrenByParentId.has(parentId)) {
+                childrenByParentId.set(parentId, []);
+              }
+              childrenByParentId.get(parentId)!.push(descendant);
+            }
+          }
+
+          const queue: { id: string; value: string }[] = [{ id, value: updated.value }];
+          for (let i = 0; i < queue.length; i++) {
+            const { id, value } = queue[i];
+            const children = childrenByParentId.get(id) ?? [];
+            for (const child of children) {
+              const name = child.value.split('/').at(-1)!;
+              const item = { id: child.id, value: `${value}/${name}` };
+              queue.push(item);
+            }
+          }
+
+          const toUpdate = queue.slice(1);
+          if (toUpdate.length > 0) {
+            await sql`
+          UPDATE tag
+          SET value = updates.value
+          FROM (
+            VALUES
+              ${sql.join(
+                toUpdate.map((u) => sql`(${sql`${u.id}::uuid`}, ${u.value})`),
+                sql`, `,
+              )}
+          ) AS updates(id, value)
+          WHERE tag.id = updates.id
+        `.execute(tx);
+          }
+        }
+      }
+    });
+
+    return updated!;
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
   async delete(id: string) {
-    await this.db.deleteFrom('tag').where('id', '=', id).execute();
+    const descendantIds = await this.getDescendantIds(id);
+    await this.db.deleteFrom('tag').where('id', 'in', descendantIds).execute();
   }
 
   @ChunkedSet({ paramIndex: 1 })
@@ -162,6 +204,15 @@ export class TagRepository {
     });
   }
 
+  async getDescendantIds(ancestorId: string) {
+    const results = await this.db
+      .selectFrom('tag_closure')
+      .select('id_descendant')
+      .where('id_ancestor', '=', ancestorId)
+      .execute();
+    return results.map((r) => r.id_descendant);
+  }
+
   async deleteEmptyTags() {
     const result = await this.db
       .deleteFrom('tag')
@@ -179,6 +230,28 @@ export class TagRepository {
     const deletedRows = Number(result.numDeletedRows);
     if (deletedRows > 0) {
       this.logger.log(`Deleted ${deletedRows} empty tags`);
+    }
+  }
+
+  async updateTagClosures(tag: { id: string; parentId?: string | null }, tx: Transaction<DB>) {
+    await tx
+      .insertInto('tag_closure')
+      .values({ id_ancestor: tag.id, id_descendant: tag.id })
+      .onConflict((oc) => oc.doNothing())
+      .execute();
+
+    if (tag.parentId) {
+      await tx
+        .insertInto('tag_closure')
+        .columns(['id_ancestor', 'id_descendant'])
+        .expression(
+          this.db
+            .selectFrom('tag_closure')
+            .select(['id_ancestor', sql.raw<string>(`'${tag.id}'`).as('id_descendant')])
+            .where('id_descendant', '=', tag.parentId),
+        )
+        .onConflict((oc) => oc.doNothing())
+        .execute();
     }
   }
 }

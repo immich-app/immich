@@ -5,16 +5,26 @@ import { asDateTimeString } from 'src/utils/date';
 import { hexColor } from 'src/validation';
 import z from 'zod';
 
-const TagCreateSchema = z
+const tagNameError = `Tag name cannot contain slash characters ("/")`;
+
+export const TagCreateSchema = z
   .object({
-    name: z.string().describe('Tag name'),
+    name: z
+      .string()
+      .regex(/^[^/]*$/, tagNameError)
+      .describe('Tag name'),
     parentId: z.uuidv4().nullish().describe('Parent tag ID'),
     color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })
   .meta({ id: 'TagCreateDto' });
 
-const TagUpdateSchema = z
+export const TagUpdateSchema = z
   .object({
+    name: z
+      .string()
+      .regex(/^[^/]*$/, tagNameError)
+      .nullish()
+      .describe('Tag name'),
     color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })
   .meta({ id: 'TagUpdateDto' });
