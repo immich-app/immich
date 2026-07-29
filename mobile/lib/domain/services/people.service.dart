@@ -18,6 +18,10 @@ class DriftPeopleService {
     return _repository.getAssetPeople(assetId);
   }
 
+  Stream<DriftPerson?> watchPersonById(String personId) {
+    return _repository.watchPersonById(personId);
+  }
+
   Future<List<DriftPerson>> getAllPeople({int minFaces = 3}) {
     return _repository.getAllPeople(minFaces: minFaces);
   }
@@ -25,6 +29,11 @@ class DriftPeopleService {
   Future<int> updateName(String personId, String name) async {
     await _personApiRepository.update(personId, name: name);
     return _repository.updateName(personId, name);
+  }
+
+  Future<int> mergePeople({required String targetPersonId, required List<String> mergePersonIds}) async {
+    await _personApiRepository.merge(targetPersonId, mergePersonIds);
+    return _repository.mergePeople(targetPersonId, mergePersonIds);
   }
 
   Future<int> updateBrithday(String personId, DateTime birthday) async {

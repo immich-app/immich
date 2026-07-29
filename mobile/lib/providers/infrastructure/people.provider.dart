@@ -24,3 +24,7 @@ final driftGetAllPeopleProvider = FutureProvider<List<DriftPerson>>((ref) async 
   final prefs = await ref.watch(userMetadataPreferencesProvider.future);
   return service.getAllPeople(minFaces: prefs?.minimumFaces ?? 3);
 });
+
+final driftGetPersonByIdProvider = StreamProvider.family<DriftPerson?, String>((ref, personId) {
+  return ref.watch(driftPeopleServiceProvider).watchPersonById(personId);
+});
