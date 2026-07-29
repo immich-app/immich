@@ -181,6 +181,17 @@ describe('getEnv', () => {
       expect(redis).toEqual(sentinelConfig);
     });
 
+    it('should ignore other redis env vars when REDIS_SOCKET is set', () => {
+      process.env.REDIS_SOCKET = '/var/run/redis/redis.sock';
+      process.env.REDIS_HOSTNAME = 'redis-host';
+      process.env.REDIS_PORT = '6380';
+      process.env.REDIS_DBINDEX = '1';
+      process.env.REDIS_USERNAME = 'redis-user';
+      process.env.REDIS_PASSWORD = 'redis-password';
+      const { redis } = getEnv();
+      expect(redis).toEqual({ path: '/var/run/redis/redis.sock' });
+    });
+
     it('should reject invalid json', () => {
       process.env.REDIS_URL = `ioredis://${Buffer.from('{ "invalid json"').toString('base64')}`;
       expect(() => getEnv()).toThrowError('Failed to decode redis options');

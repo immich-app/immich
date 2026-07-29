@@ -199,7 +199,7 @@ const getEnv = (): EnvData => {
     web: join(buildFolder, 'www'),
   };
 
-  let redisConfig = {
+  let redisConfig: RedisOptions = {
     host: dto.REDIS_HOSTNAME || 'redis',
     port: dto.REDIS_PORT || 6379,
     db: dto.REDIS_DBINDEX || 0,
@@ -207,6 +207,14 @@ const getEnv = (): EnvData => {
     password: dto.REDIS_PASSWORD || undefined,
     path: dto.REDIS_SOCKET || undefined,
   };
+
+  // When a Unix socket is configured, ioredis connects through it and the
+  // host/port/username/password/db fields are meaningless. Clear them so the
+  // configuration matches what the docs promise and stale defaults (e.g. the
+  // built-in "redis" hostname) don't leak into the connection options.
+  if (dto.REDIS_SOCKET) {
+    redisConfig = { path: dto.REDIS_SOCKET };
+  }
 
   const redisUrl = dto.REDIS_URL;
   if (redisUrl && redisUrl.startsWith('ioredis://')) {
