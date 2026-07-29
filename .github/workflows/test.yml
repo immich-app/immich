@@ -742,7 +742,6 @@ jobs:
         id: verify-changed-files
         with:
           files: |
-            mobile/openapi
             packages/sdk
             open-api/immich-openapi-specs.json
 
