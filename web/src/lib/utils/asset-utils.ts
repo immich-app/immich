@@ -91,8 +91,8 @@ export const tagUntagAssets = async ({
 
   if (showNotification) {
     const $t = await getFormatter();
-    toastManager.primary($t('tagged_assets', { values: { count: addedCount } }));
-    toastManager.primary($t('removed_tagged_assets', { values: { count: removedCount } }));
+    if (addedCount) toastManager.primary($t('tagged_assets', { values: { count: addedCount } }));
+    if (removedCount) toastManager.primary($t('removed_tagged_assets', { values: { count: removedCount } }));
   }
 
   return assetIds;

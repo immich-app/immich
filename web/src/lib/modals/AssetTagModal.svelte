@@ -78,7 +78,7 @@
         tagIdsToAdd,
         tagIdsToRemove,
         assetIds,
-        showNotification: false,
+        showNotification: true,
       });
       eventManager.emit('AssetsTag', assetIds);
       onClose(true);
