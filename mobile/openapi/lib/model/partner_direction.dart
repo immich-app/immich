@@ -11,29 +11,29 @@
 part of openapi.api;
 
 /// Partner direction
-class PartnerDirection {
-  /// Instantiate a new enum with the provided [value].
-  const PartnerDirection._(this.value);
+enum PartnerDirection {
+  sharedBy._(r'shared-by'),
+  sharedWith._(r'shared-with'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const PartnerDirection._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const sharedBy = PartnerDirection._(r'shared-by');
-  static const sharedWith = PartnerDirection._(r'shared-with');
-
-  /// List of all possible values in this [enum][PartnerDirection].
-  static const values = <PartnerDirection>[
-    sharedBy,
-    sharedWith,
-  ];
-
+  /// Returns the instance of [PartnerDirection] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static PartnerDirection? fromJson(dynamic value) => PartnerDirectionTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [PartnerDirection]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<PartnerDirection> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <PartnerDirection>[];
     if (json is List && json.isNotEmpty) {
@@ -55,9 +55,11 @@ class PartnerDirectionTypeTransformer {
 
   const PartnerDirectionTypeTransformer._();
 
-  String encode(PartnerDirection data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(PartnerDirection data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a PartnerDirection.
+  /// Returns the instance of [PartnerDirection] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -66,6 +68,9 @@ class PartnerDirectionTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   PartnerDirection? decode(dynamic data, {bool allowNull = true}) {
+    if (data is PartnerDirection) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'shared-by': return PartnerDirection.sharedBy;
@@ -79,7 +84,7 @@ class PartnerDirectionTypeTransformer {
     return null;
   }
 
-  /// Singleton [PartnerDirectionTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static PartnerDirectionTypeTransformer? _instance;
 }
 

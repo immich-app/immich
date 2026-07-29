@@ -70,4 +70,36 @@ void main() {
       expect((assets.first as RemoteAsset).id, asset.id);
     });
   });
+
+  group('live photos', () {
+    test('remote-only live photo contains livePhotoVideoId and is marked as a motion photo', () async {
+      final user = await ctx.newUser();
+      final asset = await ctx.newRemoteAsset(ownerId: user.id, livePhotoVideoId: 'motion-photo-1');
+
+      final assets = await sut.main([user.id], .day).assetSource(0, 10);
+
+      expect(assets, hasLength(1));
+      final remote = assets.single as RemoteAsset;
+      expect(remote.id, asset.id);
+      expect(remote.livePhotoVideoId, 'motion-photo-1');
+      expect(remote.isMotionPhoto, isTrue);
+      expect(remote.localId, isNull);
+    });
+
+    test('merged live photo resolves localId and is marked as a motion photo', () async {
+      final user = await ctx.newUser();
+      const checksum = 'shared-live-photo-checksum';
+      final asset = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum, livePhotoVideoId: 'motion-photo-2');
+      final local = await ctx.newLocalAsset(checksum: checksum);
+
+      final assets = await sut.main([user.id], .day).assetSource(0, 10);
+
+      expect(assets, hasLength(1));
+      final remote = assets.single as RemoteAsset;
+      expect(remote.id, asset.id);
+      expect(remote.livePhotoVideoId, 'motion-photo-2');
+      expect(remote.isMotionPhoto, isTrue);
+      expect(remote.localId, local.id);
+    });
+  });
 }

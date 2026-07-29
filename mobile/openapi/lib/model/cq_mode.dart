@@ -11,31 +11,30 @@
 part of openapi.api;
 
 /// CQ mode
-class CQMode {
-  /// Instantiate a new enum with the provided [value].
-  const CQMode._(this.value);
+enum CQMode {
+  auto._(r'auto'),
+  cqp._(r'cqp'),
+  icq._(r'icq'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const CQMode._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const auto = CQMode._(r'auto');
-  static const cqp = CQMode._(r'cqp');
-  static const icq = CQMode._(r'icq');
-
-  /// List of all possible values in this [enum][CQMode].
-  static const values = <CQMode>[
-    auto,
-    cqp,
-    icq,
-  ];
-
+  /// Returns the instance of [CQMode] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static CQMode? fromJson(dynamic value) => CQModeTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [CQMode]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<CQMode> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <CQMode>[];
     if (json is List && json.isNotEmpty) {
@@ -57,9 +56,11 @@ class CQModeTypeTransformer {
 
   const CQModeTypeTransformer._();
 
-  String encode(CQMode data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(CQMode data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a CQMode.
+  /// Returns the instance of [CQMode] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -68,6 +69,9 @@ class CQModeTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   CQMode? decode(dynamic data, {bool allowNull = true}) {
+    if (data is CQMode) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'auto': return CQMode.auto;
@@ -82,7 +86,7 @@ class CQModeTypeTransformer {
     return null;
   }
 
-  /// Singleton [CQModeTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static CQModeTypeTransformer? _instance;
 }
 

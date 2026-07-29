@@ -74,16 +74,7 @@ final class $$RemoteAssetEntityTableReferences
   static i5.$UserEntityTable _ownerIdTable(i0.GeneratedDatabase db) =>
       i6.ReadDatabaseContainer(db)
           .resultSet<i5.$UserEntityTable>('user_entity')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i6.ReadDatabaseContainer(db)
-                  .resultSet<i1.$RemoteAssetEntityTable>('remote_asset_entity')
-                  .ownerId,
-              i6.ReadDatabaseContainer(
-                db,
-              ).resultSet<i5.$UserEntityTable>('user_entity').id,
-            ),
-          );
+          .createAlias('remote_asset_entity__owner_id__user_entity__id');
 
   i5.$$UserEntityTableProcessedTableManager get ownerId {
     final $_column = $_itemColumn<String>('owner_id')!;
@@ -1778,4 +1769,8 @@ i0.Index get idxRemoteAssetStackId => i0.Index(
 i0.Index get idxRemoteAssetOwnerVisibilityDeletedCreated => i0.Index(
   'idx_remote_asset_owner_visibility_deleted_created',
   'CREATE INDEX IF NOT EXISTS idx_remote_asset_owner_visibility_deleted_created ON remote_asset_entity (owner_id, visibility, deleted_at, created_at DESC)',
+);
+i0.Index get idxRemoteAssetUploaded => i0.Index(
+  'idx_remote_asset_uploaded',
+  'CREATE INDEX IF NOT EXISTS idx_remote_asset_uploaded ON remote_asset_entity (uploaded_at)',
 );

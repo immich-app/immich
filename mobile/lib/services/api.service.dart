@@ -96,12 +96,12 @@ class ApiService {
   ///  port   - optional (default: based on schema)
   ///  path   - optional
   Future<String> resolveEndpoint(String serverUrl) async {
-    String url = sanitizeUrl(serverUrl);
+    String url = normalizeServerUrl(serverUrl);
 
     // Check for /.well-known/immich
     final wellKnownEndpoint = await _getWellKnownEndpoint(url);
     if (wellKnownEndpoint.isNotEmpty) {
-      url = sanitizeUrl(wellKnownEndpoint);
+      url = normalizeServerUrl(wellKnownEndpoint);
     }
 
     if (!await _isEndpointAvailable(url)) {

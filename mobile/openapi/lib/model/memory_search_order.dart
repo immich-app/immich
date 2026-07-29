@@ -11,31 +11,30 @@
 part of openapi.api;
 
 /// Sort order
-class MemorySearchOrder {
-  /// Instantiate a new enum with the provided [value].
-  const MemorySearchOrder._(this.value);
+enum MemorySearchOrder {
+  asc._(r'asc'),
+  desc._(r'desc'),
+  random._(r'random'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const MemorySearchOrder._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const asc = MemorySearchOrder._(r'asc');
-  static const desc = MemorySearchOrder._(r'desc');
-  static const random = MemorySearchOrder._(r'random');
-
-  /// List of all possible values in this [enum][MemorySearchOrder].
-  static const values = <MemorySearchOrder>[
-    asc,
-    desc,
-    random,
-  ];
-
+  /// Returns the instance of [MemorySearchOrder] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static MemorySearchOrder? fromJson(dynamic value) => MemorySearchOrderTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [MemorySearchOrder]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<MemorySearchOrder> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <MemorySearchOrder>[];
     if (json is List && json.isNotEmpty) {
@@ -57,9 +56,11 @@ class MemorySearchOrderTypeTransformer {
 
   const MemorySearchOrderTypeTransformer._();
 
-  String encode(MemorySearchOrder data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(MemorySearchOrder data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a MemorySearchOrder.
+  /// Returns the instance of [MemorySearchOrder] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -68,6 +69,9 @@ class MemorySearchOrderTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   MemorySearchOrder? decode(dynamic data, {bool allowNull = true}) {
+    if (data is MemorySearchOrder) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'asc': return MemorySearchOrder.asc;
@@ -82,7 +86,7 @@ class MemorySearchOrderTypeTransformer {
     return null;
   }
 
-  /// Singleton [MemorySearchOrderTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static MemorySearchOrderTypeTransformer? _instance;
 }
 

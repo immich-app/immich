@@ -14,26 +14,40 @@ class SystemConfigFFmpegRealtimeDto {
   /// Returns a new [SystemConfigFFmpegRealtimeDto] instance.
   SystemConfigFFmpegRealtimeDto({
     required this.enabled,
+    this.resolutions = const [],
+    this.videoCodecs = const [],
   });
 
   /// Enable real-time HLS transcoding (alpha)
   bool enabled;
 
+  /// Resolutions to use for real-time HLS transcoding
+  List<HlsVideoResolution> resolutions;
+
+  /// Video codecs to use for real-time HLS transcoding
+  List<VideoCodec> videoCodecs;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is SystemConfigFFmpegRealtimeDto &&
-    other.enabled == enabled;
+    other.enabled == enabled &&
+    _deepEquality.equals(other.resolutions, resolutions) &&
+    _deepEquality.equals(other.videoCodecs, videoCodecs);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (enabled.hashCode);
+    (enabled.hashCode) +
+    (resolutions.hashCode) +
+    (videoCodecs.hashCode);
 
   @override
-  String toString() => 'SystemConfigFFmpegRealtimeDto[enabled=$enabled]';
+  String toString() => 'SystemConfigFFmpegRealtimeDto[enabled=$enabled, resolutions=$resolutions, videoCodecs=$videoCodecs]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'enabled'] = this.enabled;
+      json[r'resolutions'] = this.resolutions;
+      json[r'videoCodecs'] = this.videoCodecs;
     return json;
   }
 
@@ -47,6 +61,8 @@ class SystemConfigFFmpegRealtimeDto {
 
       return SystemConfigFFmpegRealtimeDto(
         enabled: mapValueOfType<bool>(json, r'enabled')!,
+        resolutions: HlsVideoResolution.listFromJson(json[r'resolutions']),
+        videoCodecs: VideoCodec.listFromJson(json[r'videoCodecs']),
       );
     }
     return null;
@@ -95,6 +111,8 @@ class SystemConfigFFmpegRealtimeDto {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'enabled',
+    'resolutions',
+    'videoCodecs',
   };
 }
 

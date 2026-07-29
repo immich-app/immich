@@ -32,7 +32,9 @@ describe(DownloadController.name, () => {
     it('should be an authenticated route', async () => {
       const stream = new Readable({
         read() {
+          // eslint-disable-next-line unicorn/no-this-outside-of-class
           this.push('test');
+          // eslint-disable-next-line unicorn/no-this-outside-of-class
           this.push(null);
         },
       });

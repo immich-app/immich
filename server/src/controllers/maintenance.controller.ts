@@ -65,12 +65,14 @@ export class MaintenanceController {
     @GetLoginDetails() loginDetails: LoginDetails,
     @Res({ passthrough: true }) res: Response,
   ): Promise<void> {
-    if (dto.action !== MaintenanceAction.End) {
-      const { jwt } = await this.service.startMaintenance(dto, auth.user.name);
-      return respondWithCookie(res, undefined, {
-        isSecure: loginDetails.isSecure,
-        values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],
-      });
+    if (dto.action === MaintenanceAction.End) {
+      return;
     }
+
+    const { jwt } = await this.service.startMaintenance(dto, auth.user.name);
+    return respondWithCookie(res, undefined, {
+      isSecure: loginDetails.isSecure,
+      values: [{ key: ImmichCookie.MaintenanceToken, value: jwt }],
+    });
   }
 }

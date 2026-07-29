@@ -1,13 +1,14 @@
-import 'package:collection/collection.dart';
+import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/repositories/cached_key_value_repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
-class SettingsRepository extends DriftDatabaseRepository {
+class SettingsRepository extends CachedKeyValueRepository<SettingsKey, AppConfig> {
   final Drift _db;
 
-  SettingsRepository._(this._db) : super(_db);
+  SettingsRepository._(this._db) : super(const .new());
 
   static SettingsRepository? _instance;
 
@@ -19,9 +20,6 @@ class SettingsRepository extends DriftDatabaseRepository {
     return instance;
   }
 
-  AppConfig _appConfig = const .new();
-  AppConfig get appConfig => _appConfig;
-
   static Future<SettingsRepository> ensureInitialized(Drift db) async {
     if (_instance == null) {
       final instance = SettingsRepository._(db);
@@ -31,7 +29,20 @@ class SettingsRepository extends DriftDatabaseRepository {
     return _instance!;
   }
 
-  Future<void> refresh() async => _applyOverrides(await _db.select(_db.settingsEntity).get());
+  @override
+  List<SettingsKey> get keys => SettingsKey.values;
+
+  @override
+  Object decodeValue(SettingsKey key, String raw) => key.decode(raw);
+
+  @override
+  AppConfig buildSnapshot(Map<SettingsKey, Object?> overrides) => AppConfig.fromEntries(overrides);
+
+  @override
+  Selectable<({String key, String? value})> selectable() =>
+      _db.select(_db.settingsEntity).map((row) => (key: row.key, value: row.value));
+
+  AppConfig get appConfig => snapshot;
 
   Future<void> clear(Iterable<SettingsKey> keys) async {
     if (keys.isEmpty) {
@@ -41,13 +52,15 @@ class SettingsRepository extends DriftDatabaseRepository {
     final names = keys.map((key) => key.name).toList();
     await (_db.delete(_db.settingsEntity)..where((row) => row.key.isIn(names))).go();
 
+    var config = snapshot;
     for (final key in keys) {
-      _appConfig = _appConfig.write(key, defaultConfig.read(key));
+      config = config.write(key, defaultConfig.read(key));
     }
+    snapshot = config;
   }
 
   Future<void> write<T, U extends T>(SettingsKey<T> key, U value) async {
-    if (value == _appConfig.read(key)) {
+    if (value == snapshot.read(key)) {
       return;
     }
 
@@ -65,29 +78,8 @@ class SettingsRepository extends DriftDatabaseRepository {
         .insertOnConflictUpdate(
           SettingsEntityCompanion.insert(key: key.name, value: .new(resolvedValue), updatedAt: .new(DateTime.now())),
         );
-    _appConfig = _appConfig.write(key, value);
+    snapshot = snapshot.write(key, value);
   }
 
-  Stream<AppConfig> watchConfig() => _db.select(_db.settingsEntity).watch().map((rows) {
-    _applyOverrides(rows);
-    return _appConfig;
-  });
-
-  void _applyOverrides(List<SettingsEntityData> rows) {
-    _appConfig = AppConfig.fromEntries(
-      rows.fold({}, (overrides, row) {
-        final metadataKey = SettingsKey.values.firstWhereOrNull((key) => key.name == row.key);
-        if (metadataKey == null) {
-          return overrides;
-        }
-
-        Object? decodedValue;
-        if (row.value != null) {
-          decodedValue = metadataKey.decode(row.value!);
-        }
-
-        return {...overrides, metadataKey: decodedValue};
-      }),
-    );
-  }
+  Stream<AppConfig> watchConfig() => watchSnapshot();
 }

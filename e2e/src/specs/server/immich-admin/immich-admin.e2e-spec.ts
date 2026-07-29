@@ -65,6 +65,10 @@ describe(`immich-admin`, () => {
       child.stdout.on('data', (chunk) => {
         data += chunk;
         if (data.includes('Please choose a new password (optional)')) {
+          child.stdin.write('\n');
+        }
+
+        if (data.includes('Invalidate existing sessions?')) {
           child.stdin.end('\n');
         }
       });

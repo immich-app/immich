@@ -4,6 +4,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  HlsVideoResolution,
   ImageFormat,
   LogLevel,
   OAuthTokenEndpointAuthMethod,
@@ -48,6 +49,8 @@ export type SystemConfig = {
     tonemap: ToneMapping;
     realtime: {
       enabled: boolean;
+      videoCodecs: VideoCodec[];
+      resolutions: HlsVideoResolution[];
     };
   };
   integrityChecks: {
@@ -247,6 +250,8 @@ export const defaults = Object.freeze<SystemConfig>({
     accelDecode: true,
     realtime: {
       enabled: false,
+      videoCodecs: [VideoCodec.H264, VideoCodec.Hevc],
+      resolutions: [HlsVideoResolution.p480, HlsVideoResolution.p720, HlsVideoResolution.p1080],
     },
   },
   integrityChecks: {

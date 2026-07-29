@@ -71,7 +71,7 @@
         if (pagesToLoad) {
           handlePromiseError(
             Promise.all(
-              Array.from({ length: pagesToLoad }).map((_, i) => {
+              Array.from({ length: pagesToLoad }, (_, i) => {
                 return getAllPeople({ withHidden: true, page: startingPage + i });
               }),
             ).then((pages) => {

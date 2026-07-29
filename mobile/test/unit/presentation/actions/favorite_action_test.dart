@@ -4,7 +4,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../../domain/service.mock.dart';
+import '../../../service.mocks.dart';
 import '../../factories/remote_asset_factory.dart';
 import '../presentation_context.dart';
 

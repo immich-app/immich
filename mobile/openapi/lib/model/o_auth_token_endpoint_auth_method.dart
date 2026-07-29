@@ -11,29 +11,29 @@
 part of openapi.api;
 
 /// OAuth token endpoint auth method
-class OAuthTokenEndpointAuthMethod {
-  /// Instantiate a new enum with the provided [value].
-  const OAuthTokenEndpointAuthMethod._(this.value);
+enum OAuthTokenEndpointAuthMethod {
+  clientSecretPost._(r'client_secret_post'),
+  clientSecretBasic._(r'client_secret_basic'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const OAuthTokenEndpointAuthMethod._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const clientSecretPost = OAuthTokenEndpointAuthMethod._(r'client_secret_post');
-  static const clientSecretBasic = OAuthTokenEndpointAuthMethod._(r'client_secret_basic');
-
-  /// List of all possible values in this [enum][OAuthTokenEndpointAuthMethod].
-  static const values = <OAuthTokenEndpointAuthMethod>[
-    clientSecretPost,
-    clientSecretBasic,
-  ];
-
+  /// Returns the instance of [OAuthTokenEndpointAuthMethod] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static OAuthTokenEndpointAuthMethod? fromJson(dynamic value) => OAuthTokenEndpointAuthMethodTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [OAuthTokenEndpointAuthMethod]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<OAuthTokenEndpointAuthMethod> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <OAuthTokenEndpointAuthMethod>[];
     if (json is List && json.isNotEmpty) {
@@ -55,9 +55,11 @@ class OAuthTokenEndpointAuthMethodTypeTransformer {
 
   const OAuthTokenEndpointAuthMethodTypeTransformer._();
 
-  String encode(OAuthTokenEndpointAuthMethod data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(OAuthTokenEndpointAuthMethod data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a OAuthTokenEndpointAuthMethod.
+  /// Returns the instance of [OAuthTokenEndpointAuthMethod] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -66,6 +68,9 @@ class OAuthTokenEndpointAuthMethodTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   OAuthTokenEndpointAuthMethod? decode(dynamic data, {bool allowNull = true}) {
+    if (data is OAuthTokenEndpointAuthMethod) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'client_secret_post': return OAuthTokenEndpointAuthMethod.clientSecretPost;
@@ -79,7 +84,7 @@ class OAuthTokenEndpointAuthMethodTypeTransformer {
     return null;
   }
 
-  /// Singleton [OAuthTokenEndpointAuthMethodTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static OAuthTokenEndpointAuthMethodTypeTransformer? _instance;
 }
 

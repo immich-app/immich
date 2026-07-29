@@ -230,7 +230,9 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                     elevation: 3,
                     child: CircleAvatar(
                       maxRadius: 84 / 2,
-                      backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(widget.person.id)),
+                      backgroundImage: RemoteImageProvider(
+                        url: getFaceThumbnailUrl(widget.person.id, updatedAt: widget.person.updatedAt),
+                      ),
                     ),
                   ),
                 ),
@@ -496,10 +498,8 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
       builder: (context, child) {
         return Transform.scale(
           scale: _zoomAnimation.value,
-          filterQuality: Platform.isAndroid ? FilterQuality.low : null,
           child: Transform.translate(
             offset: _panAnimation.value,
-            filterQuality: Platform.isAndroid ? FilterQuality.low : null,
             child: Stack(
               fit: StackFit.expand,
               children: [

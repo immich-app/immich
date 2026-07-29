@@ -41,7 +41,7 @@ class FavoriteBottomSheet extends ConsumerWidget {
       }
 
       final remoteAssets = selectedAssets.whereType<RemoteAsset>();
-      final addedCount = await ref
+      final result = await ref
           .read(remoteAlbumProvider.notifier)
           .addAssets(album.id, remoteAssets.map((e) => e.id).toList());
 
@@ -52,15 +52,22 @@ class FavoriteBottomSheet extends ConsumerWidget {
         );
       }
 
-      if (addedCount != remoteAssets.length) {
+      // Only report the failure when nothing was added; if some succeeded we show "added".
+      if (result.added > 0) {
         ImmichToast.show(
           context: context,
-          msg: 'add_to_album_bottom_sheet_already_exists'.t(args: {"album": album.name}),
+          msg: 'add_to_album_bottom_sheet_added'.t(args: {"album": album.name}),
+        );
+      } else if (result.failed > 0) {
+        ImmichToast.show(
+          context: context,
+          msg: 'assets_cannot_be_added_to_album_count'.t(context: context, args: {'count': result.failed}),
+          toastType: ToastType.error,
         );
       } else {
         ImmichToast.show(
           context: context,
-          msg: 'add_to_album_bottom_sheet_added'.t(args: {"album": album.name}),
+          msg: 'add_to_album_bottom_sheet_already_exists'.t(args: {"album": album.name}),
         );
       }
 

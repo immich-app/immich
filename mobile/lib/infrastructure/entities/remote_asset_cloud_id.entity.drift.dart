@@ -45,16 +45,7 @@ final class $$RemoteAssetCloudIdEntityTableReferences
       i4.ReadDatabaseContainer(db)
           .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity')
           .createAlias(
-            i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i1.$RemoteAssetCloudIdEntityTable>(
-                    'remote_asset_cloud_id_entity',
-                  )
-                  .assetId,
-              i4.ReadDatabaseContainer(
-                db,
-              ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity').id,
-            ),
+            'remote_asset_cloud_id_entity__asset_id__remote_asset_entity__id',
           );
 
   i3.$$RemoteAssetEntityTableProcessedTableManager get assetId {

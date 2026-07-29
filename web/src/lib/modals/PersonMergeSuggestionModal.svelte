@@ -28,6 +28,7 @@
 
   const changePersonToMerge = (newPerson: PersonResponseDto) => {
     const index = potentialMergePeople.indexOf(newPerson);
+    // eslint-disable-next-line unicorn/no-unreadable-array-destructuring
     [potentialMergePeople[index], personToBeMergedInto] = [personToBeMergedInto, potentialMergePeople[index]];
     choosePersonToMerge = false;
   };

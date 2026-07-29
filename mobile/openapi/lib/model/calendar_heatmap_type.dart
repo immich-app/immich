@@ -11,29 +11,29 @@
 part of openapi.api;
 
 /// Type of calendar heatmap
-class CalendarHeatmapType {
-  /// Instantiate a new enum with the provided [value].
-  const CalendarHeatmapType._(this.value);
+enum CalendarHeatmapType {
+  upload._(r'Upload'),
+  taken._(r'Taken'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const CalendarHeatmapType._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const upload = CalendarHeatmapType._(r'Upload');
-  static const taken = CalendarHeatmapType._(r'Taken');
-
-  /// List of all possible values in this [enum][CalendarHeatmapType].
-  static const values = <CalendarHeatmapType>[
-    upload,
-    taken,
-  ];
-
+  /// Returns the instance of [CalendarHeatmapType] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static CalendarHeatmapType? fromJson(dynamic value) => CalendarHeatmapTypeTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [CalendarHeatmapType]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<CalendarHeatmapType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <CalendarHeatmapType>[];
     if (json is List && json.isNotEmpty) {
@@ -55,9 +55,11 @@ class CalendarHeatmapTypeTypeTransformer {
 
   const CalendarHeatmapTypeTypeTransformer._();
 
-  String encode(CalendarHeatmapType data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(CalendarHeatmapType data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a CalendarHeatmapType.
+  /// Returns the instance of [CalendarHeatmapType] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -66,6 +68,9 @@ class CalendarHeatmapTypeTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   CalendarHeatmapType? decode(dynamic data, {bool allowNull = true}) {
+    if (data is CalendarHeatmapType) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'Upload': return CalendarHeatmapType.upload;
@@ -79,7 +84,7 @@ class CalendarHeatmapTypeTypeTransformer {
     return null;
   }
 
-  /// Singleton [CalendarHeatmapTypeTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static CalendarHeatmapTypeTypeTransformer? _instance;
 }
 

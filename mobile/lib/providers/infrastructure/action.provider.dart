@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -10,7 +9,6 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
-import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -23,7 +21,6 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/action.service.dart';
-import 'package:immich_mobile/services/download.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/utils/semver.dart';
 import 'package:immich_mobile/widgets/asset_grid/delete_dialog.dart';
@@ -37,18 +34,25 @@ class ActionResult {
   final bool success;
   final String? error;
   final List<String> remoteAssetIds;
+  final int failedCount;
 
-  const ActionResult({required this.count, required this.success, this.error, this.remoteAssetIds = const []});
+  const ActionResult({
+    required this.count,
+    required this.success,
+    this.error,
+    this.remoteAssetIds = const [],
+    this.failedCount = 0,
+  });
 
   @override
-  String toString() => 'ActionResult(count: $count, success: $success, error: $error, remoteAssetIds: $remoteAssetIds)';
+  String toString() =>
+      'ActionResult(count: $count, success: $success, error: $error, remoteAssetIds: $remoteAssetIds, failedCount: $failedCount)';
 }
 
 class ActionNotifier extends Notifier<void> {
   final Logger _logger = Logger('ActionNotifier');
   late ActionService _service;
   late ForegroundUploadService _foregroundUploadService;
-  late DownloadService _downloadService;
   late AssetService _assetService;
 
   ActionNotifier() : super();
@@ -58,29 +62,6 @@ class ActionNotifier extends Notifier<void> {
     _foregroundUploadService = ref.watch(foregroundUploadServiceProvider);
     _service = ref.watch(actionServiceProvider);
     _assetService = ref.watch(assetServiceProvider);
-    _downloadService = ref.watch(downloadServiceProvider);
-    _downloadService.onImageDownloadStatus = _downloadImageCallback;
-    _downloadService.onVideoDownloadStatus = _downloadVideoCallback;
-    _downloadService.onLivePhotoDownloadStatus = _downloadLivePhotoCallback;
-  }
-
-  void _downloadImageCallback(TaskStatusUpdate update) {
-    if (update.status == TaskStatus.complete) {
-      _downloadService.saveImageWithPath(update.task);
-    }
-  }
-
-  void _downloadVideoCallback(TaskStatusUpdate update) {
-    if (update.status == TaskStatus.complete) {
-      _downloadService.saveVideo(update.task);
-    }
-  }
-
-  void _downloadLivePhotoCallback(TaskStatusUpdate update) async {
-    if (update.status == TaskStatus.complete) {
-      final livePhotosId = LivePhotosMetadata.fromJson(update.task.metaData).id;
-      unawaited(_downloadService.saveLivePhotos(update.task, livePhotosId));
-    }
   }
 
   List<String> _getRemoteIdsForSource(ActionSource source) {
@@ -393,9 +374,12 @@ class ActionNotifier extends Notifier<void> {
     final albumNotifier = ref.read(remoteAlbumProvider.notifier);
 
     int addedRemote = 0;
+    int failedRemote = 0;
     if (remoteIds.isNotEmpty) {
       try {
-        addedRemote = await albumNotifier.addAssets(album.id, remoteIds);
+        final result = await albumNotifier.addAssets(album.id, remoteIds);
+        addedRemote = result.added;
+        failedRemote = result.failed;
       } catch (error, stack) {
         _logger.severe('Failed to add assets to album ${album.id}', error, stack);
         return ActionResult(count: 0, success: false, error: error.toString());
@@ -409,7 +393,7 @@ class ActionNotifier extends Notifier<void> {
     }
 
     if (localAssets.isEmpty) {
-      return ActionResult(count: addedRemote, success: true);
+      return ActionResult(count: addedRemote, success: true, failedCount: failedRemote);
     }
 
     final uploadResult = await upload(
@@ -424,6 +408,7 @@ class ActionNotifier extends Notifier<void> {
       count: addedRemote + uploadResult.count,
       success: uploadResult.success,
       error: uploadResult.error,
+      failedCount: failedRemote,
     );
   }
 

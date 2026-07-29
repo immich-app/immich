@@ -39,14 +39,7 @@ final class $$MemoryAssetEntityTableReferences
       i4.ReadDatabaseContainer(db)
           .resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity')
           .createAlias(
-            i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i1.$MemoryAssetEntityTable>('memory_asset_entity')
-                  .assetId,
-              i4.ReadDatabaseContainer(
-                db,
-              ).resultSet<i3.$RemoteAssetEntityTable>('remote_asset_entity').id,
-            ),
+            'memory_asset_entity__asset_id__remote_asset_entity__id',
           );
 
   i3.$$RemoteAssetEntityTableProcessedTableManager get assetId {
@@ -70,16 +63,7 @@ final class $$MemoryAssetEntityTableReferences
   static i5.$MemoryEntityTable _memoryIdTable(i0.GeneratedDatabase db) =>
       i4.ReadDatabaseContainer(db)
           .resultSet<i5.$MemoryEntityTable>('memory_entity')
-          .createAlias(
-            i0.$_aliasNameGenerator(
-              i4.ReadDatabaseContainer(db)
-                  .resultSet<i1.$MemoryAssetEntityTable>('memory_asset_entity')
-                  .memoryId,
-              i4.ReadDatabaseContainer(
-                db,
-              ).resultSet<i5.$MemoryEntityTable>('memory_entity').id,
-            ),
-          );
+          .createAlias('memory_asset_entity__memory_id__memory_entity__id');
 
   i5.$$MemoryEntityTableProcessedTableManager get memoryId {
     final $_column = $_itemColumn<String>('memory_id')!;

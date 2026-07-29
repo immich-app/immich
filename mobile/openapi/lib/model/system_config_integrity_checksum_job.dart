@@ -28,8 +28,8 @@ class SystemConfigIntegrityChecksumJob {
   /// Percentage limit of the integrity checksum job
   ///
   /// Minimum value: 0
-  /// Maximum value: 9007199254740991
-  int percentageLimit;
+  /// Maximum value: 1
+  double percentageLimit;
 
   /// How long the integrity checksum job may run for
   ///
@@ -75,7 +75,7 @@ class SystemConfigIntegrityChecksumJob {
       return SystemConfigIntegrityChecksumJob(
         cronExpression: mapValueOfType<String>(json, r'cronExpression')!,
         enabled: mapValueOfType<bool>(json, r'enabled')!,
-        percentageLimit: mapValueOfType<int>(json, r'percentageLimit')!,
+        percentageLimit: mapValueOfType<double>(json, r'percentageLimit')!,
         timeLimit: mapValueOfType<int>(json, r'timeLimit')!,
       );
     }

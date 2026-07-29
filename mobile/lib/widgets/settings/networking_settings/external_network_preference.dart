@@ -5,6 +5,7 @@ import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/networking_settings/endpoint_input.dart';
 
@@ -26,13 +27,16 @@ class ExternalNetworkPreference extends HookConsumerWidget {
           .map((e) => e.url)
           .toList();
 
-      ref.read(settingsProvider).write(SettingsKey.networkExternalEndpointList, urls);
+      return ref.read(settingsProvider).write(SettingsKey.networkExternalEndpointList, urls);
     }
 
-    updateValidationStatus(String url, int index, AuxCheckStatus status) {
+    updateValidationStatus(String url, int index, AuxCheckStatus status) async {
       entries.value[index] = entries.value[index].copyWith(url: url, status: status);
 
-      saveEndpointList();
+      await saveEndpointList();
+      if (status == AuxCheckStatus.valid) {
+        await ref.read(apiServiceProvider).updateHeaders();
+      }
     }
 
     handleReorder(int oldIndex, int newIndex) {

@@ -106,6 +106,9 @@ String parameterToString(dynamic value) {
   if (value is Colorspace) {
     return ColorspaceTypeTransformer().encode(value).toString();
   }
+  if (value is HlsVideoResolution) {
+    return HlsVideoResolutionTypeTransformer().encode(value).toString();
+  }
   if (value is ImageFormat) {
     return ImageFormatTypeTransformer().encode(value).toString();
   }

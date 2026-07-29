@@ -11,31 +11,30 @@
 part of openapi.api;
 
 /// Face detection source type
-class SourceType {
-  /// Instantiate a new enum with the provided [value].
-  const SourceType._(this.value);
+enum SourceType {
+  machineLearning._(r'machine-learning'),
+  exif._(r'exif'),
+  manual._(r'manual'),
+  ;
+
+  /// Instantiate a new enum with the provided value.
+  const SourceType._(this._value);
 
   /// The underlying value of this enum member.
-  final String value;
+  final String _value;
 
   @override
-  String toString() => value;
+  String toString() => _value;
 
-  String toJson() => value;
+  /// Encodes this enum as a value suitable for JSON.
+  String toJson() => _value;
 
-  static const machineLearning = SourceType._(r'machine-learning');
-  static const exif = SourceType._(r'exif');
-  static const manual = SourceType._(r'manual');
-
-  /// List of all possible values in this [enum][SourceType].
-  static const values = <SourceType>[
-    machineLearning,
-    exif,
-    manual,
-  ];
-
+  /// Returns the instance of [SourceType] that was successfully decoded
+  /// from the passed [value] on success, null otherwise.
   static SourceType? fromJson(dynamic value) => SourceTypeTypeTransformer().decode(value);
 
+  /// Returns a [List] containing instances of [SourceType]
+  /// that were successfully decoded from the passed [JSON][json].
   static List<SourceType> listFromJson(dynamic json, {bool growable = false,}) {
     final result = <SourceType>[];
     if (json is List && json.isNotEmpty) {
@@ -57,9 +56,11 @@ class SourceTypeTypeTransformer {
 
   const SourceTypeTypeTransformer._();
 
-  String encode(SourceType data) => data.value;
+  /// Encodes this enum as a value suitable for JSON.
+  String encode(SourceType data) => data._value;
 
-  /// Decodes a [dynamic value][data] to a SourceType.
+  /// Returns the instance of [SourceType] that was successfully decoded
+  /// from the passed [data] value on success, null otherwise.
   ///
   /// If [allowNull] is true and the [dynamic value][data] cannot be decoded successfully,
   /// then null is returned. However, if [allowNull] is false and the [dynamic value][data]
@@ -68,6 +69,9 @@ class SourceTypeTypeTransformer {
   /// The [allowNull] is very handy when an API changes and a new enum value is added or removed,
   /// and users are still using an old app with the old code.
   SourceType? decode(dynamic data, {bool allowNull = true}) {
+    if (data is SourceType) {
+      return data;
+    }
     if (data != null) {
       switch (data) {
         case r'machine-learning': return SourceType.machineLearning;
@@ -82,7 +86,7 @@ class SourceTypeTypeTransformer {
     return null;
   }
 
-  /// Singleton [SourceTypeTypeTransformer] instance.
+  /// The singleton instance of this transformer.
   static SourceTypeTypeTransformer? _instance;
 }
 

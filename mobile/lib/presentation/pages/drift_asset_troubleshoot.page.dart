@@ -114,7 +114,6 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
       _PropertyItem(label: 'Height', value: asset.height?.toString()),
       _PropertyItem(label: 'Duration', value: asset.durationMs != null ? '${asset.durationMs} ms' : null),
       _PropertyItem(label: 'Is Favorite', value: asset.isFavorite.toString()),
-      _PropertyItem(label: 'Live Photo Video ID', value: asset.livePhotoVideoId),
       _PropertyItem(label: 'Is Edited', value: asset.isEdited.toString()),
     ]);
   }
@@ -151,6 +150,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
       _PropertyItem(label: 'Thumb Hash', value: asset.thumbHash),
       _PropertyItem(label: 'Visibility', value: asset.visibility.toString()),
       _PropertyItem(label: 'Stack ID', value: asset.stackId),
+      _PropertyItem(label: 'Live Photo Video ID', value: asset.livePhotoVideoId),
     ];
 
     properties.insertAll(4, additionalProps);

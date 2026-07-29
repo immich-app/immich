@@ -58,7 +58,6 @@ extension on api.AssetVisibility {
     api.AssetVisibility.hidden => AssetVisibility.hidden,
     api.AssetVisibility.archive => AssetVisibility.archive,
     api.AssetVisibility.locked => AssetVisibility.locked,
-    _ => AssetVisibility.timeline,
   };
 }
 
@@ -68,6 +67,5 @@ extension on api.AssetTypeEnum {
     api.AssetTypeEnum.VIDEO => AssetType.video,
     api.AssetTypeEnum.AUDIO => AssetType.audio,
     api.AssetTypeEnum.OTHER => AssetType.other,
-    _ => throw Exception('Unknown AssetType value: $this'),
   };
 }
