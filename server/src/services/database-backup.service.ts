@@ -129,6 +129,7 @@ export class DatabaseBackupService {
 
     const args: string[] = [];
     let databaseUsername;
+    let databasePassword: string | undefined;
 
     if (isUrlConnection) {
       if (bin !== 'pg_dump') {
@@ -142,6 +143,11 @@ export class DatabaseBackupService {
         parsedUrl.searchParams.delete('uselibpqcompat');
 
         databaseUsername = parsedUrl.username || parsedUrl.searchParams.get('user');
+        databasePassword = parsedUrl.password;
+
+        // Strip the password from the URL before it reaches argv so it cannot leak via `ps`.
+        // The password is supplied to the child process via the PGPASSWORD env var below.
+        parsedUrl.password = '';
 
         url = parsedUrl.href;
       }
@@ -214,7 +220,7 @@ export class DatabaseBackupService {
       bin: `/usr/lib/postgresql/${databaseMajorVersion}/bin/${bin}`,
       args,
       databaseUsername,
-      databasePassword: isUrlConnection ? new URL(databaseConfig.url).password : databaseConfig.password,
+      databasePassword: isUrlConnection ? (databasePassword ?? '') : databaseConfig.password,
       databaseVersion,
       databaseMajorVersion,
     };
