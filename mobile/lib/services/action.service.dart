@@ -154,7 +154,7 @@ class ActionService {
       return (displayCount: rejectedChecksums.length, success: rejectedChecksums.isNotEmpty);
     }
 
-    final assetIdsByChecksum = await _trashSyncRepository.getReviewAssetIdsByChecksum(checksums);
+    final assetIdsByChecksum = await _trashSyncRepository.getReviewableAssetIdsByChecksum(checksums);
     if (assetIdsByChecksum.isEmpty) {
       return (displayCount: 0, success: false);
     }
@@ -175,7 +175,7 @@ class ActionService {
       return (displayCount: 0, success: false);
     }
 
-    await _trashSyncRepository.approveSelectedReviewChecksums(approvedAssetIdsByChecksum);
+    await _trashSyncRepository.markReviewAssetsApproved(approvedAssetIdsByChecksum);
     return (displayCount: approvedAssetIdsByChecksum.length, success: true);
   }
 

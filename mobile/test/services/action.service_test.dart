@@ -181,12 +181,12 @@ void main() {
       const checksums = ['checksum-1'];
       const assetIds = ['asset-1'];
       when(
-        () => trashSyncRepository.getReviewAssetIdsByChecksum(checksums),
+        () => trashSyncRepository.getReviewableAssetIdsByChecksum(checksums),
       ).thenAnswer((_) async => const {'checksum-1': assetIds});
       when(() => assetMediaRepository.deleteAll(assetIds)).thenAnswer((_) async => assetIds);
       when(() => localAssetRepository.delete(assetIds)).thenAnswer((_) async {});
       when(
-        () => trashSyncRepository.approveSelectedReviewChecksums(const {'checksum-1': assetIds}),
+        () => trashSyncRepository.markReviewAssetsApproved(const {'checksum-1': assetIds}),
       ).thenAnswer((_) async {});
 
       final result = await sut.resolveRemoteTrash(checksums, keep: false);
@@ -195,7 +195,7 @@ void main() {
       verifyInOrder([
         () => assetMediaRepository.deleteAll(assetIds),
         () => localAssetRepository.delete(assetIds),
-        () => trashSyncRepository.approveSelectedReviewChecksums(const {'checksum-1': assetIds}),
+        () => trashSyncRepository.markReviewAssetsApproved(const {'checksum-1': assetIds}),
       ]);
     });
 
@@ -204,7 +204,7 @@ void main() {
       const assetIds = ['asset-1', 'asset-2'];
       const deletedIds = ['asset-1'];
       when(
-        () => trashSyncRepository.getReviewAssetIdsByChecksum(checksums),
+        () => trashSyncRepository.getReviewableAssetIdsByChecksum(checksums),
       ).thenAnswer((_) async => const {'checksum-1': assetIds});
       when(() => assetMediaRepository.deleteAll(assetIds)).thenAnswer((_) async => deletedIds);
       when(() => localAssetRepository.delete(deletedIds)).thenAnswer((_) async {});
@@ -213,7 +213,7 @@ void main() {
 
       expect(result, (displayCount: 0, success: false));
       verify(() => localAssetRepository.delete(deletedIds)).called(1);
-      verifyNever(() => trashSyncRepository.approveSelectedReviewChecksums(any()));
+      verifyNever(() => trashSyncRepository.markReviewAssetsApproved(any()));
     });
   });
 }
