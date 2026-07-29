@@ -1,13 +1,23 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { OnEvent } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { StackCreateDto, StackResponseDto, StackSearchDto, StackUpdateDto, mapStack } from 'src/dtos/stack.dto';
 import { Permission } from 'src/enum';
+import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { UUIDAssetIDParamDto } from 'src/validation';
 
 @Injectable()
 export class StackService extends BaseService {
+  @OnEvent({ name: 'AssetMetadataExtracted' })
+  async onAssetMetadataExtracted({ assetId, userId }: ArgOf<'AssetMetadataExtracted'>) {
+    const stackId = await this.stackRepository.autoStackRawPair(assetId);
+    if (stackId) {
+      await this.eventRepository.emit('StackCreate', { stackId, userId });
+    }
+  }
+
   async search(auth: AuthDto, dto: StackSearchDto): Promise<StackResponseDto[]> {
     const stacks = await this.stackRepository.search({
       ownerId: auth.user.id,

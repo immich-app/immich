@@ -1,17 +1,24 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
+import { dirname, parse } from 'node:path';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
+import { AssetStatus, AssetType } from 'src/enum';
 import { DB } from 'src/schema';
 import { StackTable } from 'src/schema/tables/stack.table';
 import { asUuid, withDefaultVisibility } from 'src/utils/database';
+import { mimeTypes } from 'src/utils/mime-types';
 
 export interface StackSearch {
   ownerId: string;
   primaryAssetId?: string;
 }
+
+const jpegExtensions = new Set(['.jpe', '.jpeg', '.jpg']);
+const isJpeg = (filename: string) => jpegExtensions.has(parse(filename).ext.toLowerCase());
+const getBasename = (filename: string) => parse(filename).name.toLowerCase();
 
 const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
   return jsonArrayFrom(
@@ -48,6 +55,122 @@ const withAssets = (eb: ExpressionBuilder<DB, 'stack'>, withTags = false) => {
 @Injectable()
 export class StackRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
+
+  private getRawPairAsset(db: Kysely<DB>, id: string) {
+    return db
+      .selectFrom('asset')
+      .innerJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+      .select([
+        'asset.id',
+        'asset.ownerId',
+        'asset.type',
+        'asset.originalPath',
+        'asset.originalFileName',
+        'asset.fileCreatedAt',
+        'asset.libraryId',
+        'asset.visibility',
+        'asset.stackId',
+        'asset.isEdited',
+        'asset_exif.make',
+        'asset_exif.model',
+      ])
+      .where('asset.id', '=', id)
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.status', '=', AssetStatus.Active)
+      .executeTakeFirst();
+  }
+
+  /**
+   * Creates a stack for an unambiguous RAW+JPEG pair. Existing stacks are left
+   * alone so automatic pairing never changes a user's manual organization.
+   */
+  async autoStackRawPair(assetId: string): Promise<string | undefined> {
+    const initial = await this.getRawPairAsset(this.db, assetId);
+    if (
+      !initial ||
+      initial.type !== AssetType.Image ||
+      initial.isEdited ||
+      initial.stackId ||
+      (!mimeTypes.isRaw(initial.originalFileName) && !isJpeg(initial.originalFileName))
+    ) {
+      return;
+    }
+
+    const basename = getBasename(initial.originalFileName);
+    const directory = initial.libraryId ? dirname(initial.originalPath).toLowerCase() : '';
+    const lockKey = [
+      initial.ownerId,
+      initial.libraryId ?? '',
+      directory,
+      basename,
+      initial.fileCreatedAt.toISOString(),
+    ].join(':');
+
+    return this.db.transaction().execute(async (tx) => {
+      await sql`select pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`.execute(tx);
+
+      const current = await this.getRawPairAsset(tx, assetId);
+
+      if (!current || current.stackId || current.isEdited) {
+        return;
+      }
+
+      const currentIsRaw = mimeTypes.isRaw(current.originalFileName);
+      const candidates = await tx
+        .selectFrom('asset')
+        .innerJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
+        .select(['asset.id', 'asset.originalPath', 'asset.originalFileName', 'asset_exif.make', 'asset_exif.model'])
+        .where('asset.id', '!=', current.id)
+        .where('asset.ownerId', '=', current.ownerId)
+        .where('asset.type', '=', AssetType.Image)
+        .where('asset.fileCreatedAt', '=', current.fileCreatedAt)
+        .where('asset.visibility', '=', current.visibility)
+        .where('asset.stackId', 'is', null)
+        .where('asset.isEdited', '=', false)
+        .where('asset.deletedAt', 'is', null)
+        .where('asset.status', '=', AssetStatus.Active)
+        .$if(current.libraryId === null, (qb) => qb.where('asset.libraryId', 'is', null))
+        .$if(current.libraryId !== null, (qb) => qb.where('asset.libraryId', '=', current.libraryId!))
+        .execute();
+
+      const matches = candidates.filter((candidate) => {
+        const isComplement = currentIsRaw
+          ? isJpeg(candidate.originalFileName)
+          : mimeTypes.isRaw(candidate.originalFileName);
+        const isSameDirectory =
+          current.libraryId === null ||
+          dirname(current.originalPath).toLowerCase() === dirname(candidate.originalPath).toLowerCase();
+
+        return (
+          isComplement &&
+          isSameDirectory &&
+          getBasename(candidate.originalFileName) === getBasename(current.originalFileName) &&
+          candidate.make === current.make &&
+          candidate.model === current.model
+        );
+      });
+
+      if (matches.length !== 1) {
+        return;
+      }
+
+      const match = matches[0];
+      const primaryAssetId = currentIsRaw ? match.id : current.id;
+      const { id } = await tx
+        .insertInto('stack')
+        .values({ ownerId: current.ownerId, primaryAssetId })
+        .returning('id')
+        .executeTakeFirstOrThrow();
+
+      await tx
+        .updateTable('asset')
+        .set({ stackId: id, updatedAt: new Date() })
+        .where('id', 'in', [current.id, match.id])
+        .execute();
+
+      return id;
+    });
+  }
 
   @GenerateSql({ params: [{ ownerId: DummyValue.UUID }] })
   search(query: StackSearch) {

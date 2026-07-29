@@ -20,6 +20,31 @@ describe(StackService.name, () => {
     expect(sut).toBeDefined();
   });
 
+  describe('onAssetMetadataExtracted', () => {
+    it('should emit an event when a RAW+JPEG stack is created', async () => {
+      const assetId = newUuid();
+      const userId = newUuid();
+      const stackId = newUuid();
+      mocks.stack.autoStackRawPair.mockResolvedValue(stackId);
+
+      await sut.onAssetMetadataExtracted({ assetId, userId });
+
+      expect(mocks.stack.autoStackRawPair).toHaveBeenCalledWith(assetId);
+      expect(mocks.event.emit).toHaveBeenCalledWith('StackCreate', { stackId, userId });
+    });
+
+    it('should not emit an event when an asset has no RAW+JPEG pair', async () => {
+      const assetId = newUuid();
+      const userId = newUuid();
+      mocks.stack.autoStackRawPair.mockResolvedValue(undefined);
+
+      await sut.onAssetMetadataExtracted({ assetId, userId });
+
+      expect(mocks.stack.autoStackRawPair).toHaveBeenCalledWith(assetId);
+      expect(mocks.event.emit).not.toHaveBeenCalled();
+    });
+  });
+
   describe('search', () => {
     it('should search stacks', async () => {
       const auth = AuthFactory.create();
