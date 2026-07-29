@@ -209,7 +209,7 @@ describe(DatabaseBackupService.name, () => {
       const args = call[1] as string[];
       expect(args).toMatchInlineSnapshot(`
         [
-          "postgresql://postgres:pwd@host:5432/immich?sslmode=require",
+          "postgresql://postgres@host:5432/immich?sslmode=require",
           "--clean",
           "--if-exists",
         ]
@@ -488,7 +488,7 @@ describe(DatabaseBackupService.name, () => {
         await expect(sut.buildPostgresLaunchArguments('pg_dump')).resolves.toMatchInlineSnapshot(`
           {
             "args": [
-              "postgresql://mypg:mypwd@myhost:1234/myimmich?sslmode=require",
+              "postgresql://mypg@myhost:1234/myimmich?sslmode=require",
               "--clean",
               "--if-exists",
             ],
@@ -507,7 +507,7 @@ describe(DatabaseBackupService.name, () => {
           {
             "args": [
               "--dbname",
-              "postgresql://mypg:mypwd@myhost:1234/myimmich?sslmode=require",
+              "postgresql://mypg@myhost:1234/myimmich?sslmode=require",
               "--single-transaction",
               "--set",
               "ON_ERROR_STOP=on",
@@ -521,6 +521,13 @@ describe(DatabaseBackupService.name, () => {
             "databaseVersion": "14.10 (Debian 14.10-1.pgdg120+1)",
           }
         `);
+      });
+
+      it('should not leak the password in the args (argv is visible via ps)', async () => {
+        const { args } = await sut.buildPostgresLaunchArguments('pg_dump');
+        for (const arg of args) {
+          expect(arg).not.toContain('mypwd');
+        }
       });
     });
 

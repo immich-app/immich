@@ -143,6 +143,10 @@ export class DatabaseBackupService {
 
         databaseUsername = parsedUrl.username || parsedUrl.searchParams.get('user');
 
+        // Strip the password from the URL before it reaches argv so it cannot leak via `ps`.
+        // The password is supplied to the child process via the PGPASSWORD env var below.
+        parsedUrl.password = '';
+
         url = parsedUrl.href;
       }
 
