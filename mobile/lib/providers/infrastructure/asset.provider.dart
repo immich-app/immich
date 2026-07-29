@@ -3,7 +3,6 @@ import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_exif.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
@@ -17,10 +16,6 @@ final remoteAssetRepositoryProvider = Provider<RemoteAssetRepository>(
 );
 
 final remoteExifRepositoryProvider = Provider((ref) => RemoteExifRepository(ref.watch(driftProvider)));
-
-final trashedLocalAssetRepository = Provider<DriftTrashedLocalAssetRepository>(
-  (ref) => DriftTrashedLocalAssetRepository(ref.watch(driftProvider)),
-);
 
 final assetServiceProvider = Provider(
   (ref) => AssetService(

@@ -7,17 +7,14 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/widgets/settings/beta_sync_settings/entity_count_tile.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/setting_list_tile.dart';
@@ -219,7 +216,6 @@ class _SyncStatsCounts extends ConsumerWidget {
     final localAlbumService = ref.watch(localAlbumServiceProvider);
     final remoteAlbumService = ref.watch(remoteAlbumServiceProvider);
     final memoryService = ref.watch(driftMemoryServiceProvider);
-    final appSettingsService = ref.watch(appSettingsServiceProvider);
 
     Future<List<dynamic>> loadCounts() async {
       final assetCounts = assetService.getAssetCounts();
@@ -353,47 +349,6 @@ class _SyncStatsCounts extends ConsumerWidget {
                 ),
               ),
             ),
-            // To be removed once the experimental feature is stable
-            if (CurrentPlatform.isAndroid &&
-                appSettingsService.getSetting<bool>(AppSettingsEnum.manageLocalMediaAndroid)) ...[
-              SettingGroupTitle(title: "trash".t(context: context)),
-              Consumer(
-                builder: (context, ref, _) {
-                  final counts = ref.watch(trashedAssetsCountProvider);
-                  return counts.when(
-                    data: (c) => Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-                      child: IntrinsicHeight(
-                        child: Flex(
-                          direction: Axis.horizontal,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.stretch, // Added
-                          spacing: 8.0,
-                          children: [
-                            Expanded(
-                              child: EntityCountTile(
-                                label: "local".t(context: context),
-                                count: c.total,
-                                icon: Icons.delete_outline,
-                              ),
-                            ),
-                            Expanded(
-                              child: EntityCountTile(
-                                label: "hashed_assets".t(context: context),
-                                count: c.hashed,
-                                icon: Icons.tag,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    loading: () => const CircularProgressIndicator(),
-                    error: (e, st) => Text('Error: $e'),
-                  );
-                },
-              ),
-            ],
           ],
         );
       },

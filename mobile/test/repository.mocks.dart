@@ -13,7 +13,7 @@ class MockAssetApiRepository extends Mock implements AssetApiRepository {}
 
 class MockAssetMediaRepository extends Mock implements AssetMediaRepository {}
 
-class MockPermissionRepository extends Mock implements IPermissionRepository {}
+class MockPermissionRepository extends Mock implements PermissionRepository {}
 
 class MockAuthApiRepository extends Mock implements AuthApiRepository {}
 

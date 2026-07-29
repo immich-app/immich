@@ -24,9 +24,8 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/repositories/asset_media.repository.dart';
-import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
@@ -80,18 +79,13 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       localAlbumRepository: ref.read(localAlbumRepository),
       localAssetRepository: ref.read(localAssetRepository),
       nativeSyncApi: ref.read(nativeSyncApiProvider),
-      trashedLocalAssetRepository: ref.read(trashedLocalAssetRepository),
-      assetMediaRepository: ref.read(assetMediaRepositoryProvider),
-      permissionRepository: ref.read(permissionRepositoryProvider),
+      trashSyncRepository: ref.read(trashSyncRepositoryProvider),
       cancellation: _cancellationToken,
     );
     _remoteSyncService = SyncStreamService(
       syncApiRepository: ref.read(syncApiRepositoryProvider),
       syncStreamRepository: ref.read(syncStreamRepositoryProvider),
-      localAssetRepository: ref.read(localAssetRepository),
-      trashedLocalAssetRepository: ref.read(trashedLocalAssetRepository),
-      assetMediaRepository: ref.read(assetMediaRepositoryProvider),
-      permissionRepository: ref.read(permissionRepositoryProvider),
+      trashSyncRepository: ref.read(trashSyncRepositoryProvider),
       syncMigrationRepository: ref.read(syncMigrationRepositoryProvider),
       api: ref.read(apiServiceProvider),
       cancellation: _cancellationToken,
@@ -100,7 +94,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       localAlbumRepository: ref.read(localAlbumRepository),
       localAssetRepository: ref.read(localAssetRepository),
       nativeSyncApi: ref.read(nativeSyncApiProvider),
-      trashedLocalAssetRepository: ref.read(trashedLocalAssetRepository),
       cancellation: _cancellationToken,
     );
     BackgroundWorkerFlutterApi.setUp(this);

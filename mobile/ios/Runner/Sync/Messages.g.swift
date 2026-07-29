@@ -537,8 +537,6 @@ protocol NativeSyncApi {
   func hashAssets(assetIds: [String], allowNetworkAccess: Bool, completion: @escaping (Result<[HashResult], Error>) -> Void)
   func cancelHashing() throws
   func cancelSync() throws
-  func getTrashedAssets() throws -> [String: [PlatformAsset]]
-  func restoreFromTrashById(mediaId: String, type: Int64, completion: @escaping (Result<Bool, Error>) -> Void)
   func getCloudIdForAssetIds(assetIds: [String]) throws -> [CloudIdResult]
 }
 
@@ -722,39 +720,6 @@ class NativeSyncApiSetup {
       }
     } else {
       cancelSyncChannel.setMessageHandler(nil)
-    }
-    let getTrashedAssetsChannel = taskQueue == nil
-      ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-      : FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getTrashedAssets\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec, taskQueue: taskQueue)
-    if let api = api {
-      getTrashedAssetsChannel.setMessageHandler { _, reply in
-        do {
-          let result = try api.getTrashedAssets()
-          reply(wrapResult(result))
-        } catch {
-          reply(wrapError(error))
-        }
-      }
-    } else {
-      getTrashedAssetsChannel.setMessageHandler(nil)
-    }
-    let restoreFromTrashByIdChannel = FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.restoreFromTrashById\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)
-    if let api = api {
-      restoreFromTrashByIdChannel.setMessageHandler { message, reply in
-        let args = message as! [Any?]
-        let mediaIdArg = args[0] as! String
-        let typeArg = args[1] as! Int64
-        api.restoreFromTrashById(mediaId: mediaIdArg, type: typeArg) { result in
-          switch result {
-          case .success(let res):
-            reply(wrapResult(res))
-          case .failure(let error):
-            reply(wrapError(error))
-          }
-        }
-      }
-    } else {
-      restoreFromTrashByIdChannel.setMessageHandler(nil)
     }
     let getCloudIdForAssetIdsChannel = taskQueue == nil
       ? FlutterBasicMessageChannel(name: "dev.flutter.pigeon.immich_mobile.NativeSyncApi.getCloudIdForAssetIds\(channelSuffix)", binaryMessenger: binaryMessenger, codec: codec)

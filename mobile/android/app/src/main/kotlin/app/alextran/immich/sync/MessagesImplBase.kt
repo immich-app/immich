@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
-import androidx.exifinterface.media.ExifInterface
 import android.os.Build
 import android.os.Bundle
 import android.os.ext.SdkExtensions
@@ -17,8 +16,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.ImageHeaderParser
 import com.bumptech.glide.load.ImageHeaderParserUtils
 import com.bumptech.glide.load.resource.bitmap.DefaultImageHeaderParser
-import io.flutter.embedding.engine.plugins.activity.ActivityAware
-import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,12 +38,11 @@ sealed class AssetResult {
 private const val TAG = "NativeSyncApiImplBase"
 
 @SuppressLint("InlinedApi")
-open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAware {
+open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
   private val ctx: Context = context.applicationContext
 
   private var hashTask: Job? = null
   private var syncJob: Job? = null
-  private val mediaTrashDelegate = MediaTrashDelegate(ctx)
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
@@ -377,7 +373,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
     )?.use { cursor -> cursor.count.toLong() } ?: 0L
 
 
-  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?, callback: (Result<List<PlatformAsset>>) -> Unit) {
+  fun getAssetsForAlbum(
+    albumId: String,
+    updatedTimeCond: Long?,
+    callback: (Result<List<PlatformAsset>>) -> Unit
+  ) {
     runSync(callback) { getAssetsForAlbum(albumId, updatedTimeCond) }
   }
 
@@ -477,31 +477,14 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
       try {
         completeWhenActive(callback, Result.success(work()))
       } catch (e: CancellationException) {
-        completeWhenActive(callback, Result.failure(FlutterError(SYNC_CANCELLED_CODE, "Sync cancelled", null)))
+        completeWhenActive(
+          callback,
+          Result.failure(FlutterError(SYNC_CANCELLED_CODE, "Sync cancelled", null))
+        )
       } catch (e: Exception) {
         completeWhenActive(callback, Result.failure(e))
       }
     }
-  }
-
-  fun restoreFromTrashById(mediaId: String, type: Long, callback: (Result<Boolean>) -> Unit) {
-    mediaTrashDelegate.restoreFromTrashById(mediaId, type) { completeWhenActive(callback, it) }
-  }
-
-  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-    mediaTrashDelegate.onAttachedToActivity(binding)
-  }
-
-  override fun onDetachedFromActivityForConfigChanges() {
-    mediaTrashDelegate.onDetachedFromActivity()
-  }
-
-  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-    mediaTrashDelegate.onAttachedToActivity(binding)
-  }
-
-  override fun onDetachedFromActivity() {
-    mediaTrashDelegate.onDetachedFromActivity()
   }
 
   // This method is only implemented on iOS; on Android, we do not have a concept of cloud IDs

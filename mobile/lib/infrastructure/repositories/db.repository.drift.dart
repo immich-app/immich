@@ -39,17 +39,19 @@ import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.da
     as i18;
 import 'package:immich_mobile/infrastructure/entities/store.entity.drift.dart'
     as i19;
-import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/trash_sync.entity.drift.dart'
     as i20;
-import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/server_deleted_checksum.entity.drift.dart'
     as i21;
-import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.dart'
     as i22;
-import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart'
     as i23;
-import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dart'
     as i24;
-import 'package:drift/internal/modular.dart' as i25;
+import 'package:immich_mobile/infrastructure/entities/merged_asset.drift.dart'
+    as i25;
+import 'package:drift/internal/modular.dart' as i26;
 
 abstract class $Drift extends i0.GeneratedDatabase {
   $Drift(i0.QueryExecutor e) : super(e);
@@ -89,19 +91,21 @@ abstract class $Drift extends i0.GeneratedDatabase {
   late final i18.$AssetFaceEntityTable assetFaceEntity = i18
       .$AssetFaceEntityTable(this);
   late final i19.$StoreEntityTable storeEntity = i19.$StoreEntityTable(this);
-  late final i20.$TrashedLocalAssetEntityTable trashedLocalAssetEntity = i20
-      .$TrashedLocalAssetEntityTable(this);
-  late final i21.$AssetEditEntityTable assetEditEntity = i21
+  late final i20.$TrashSyncEntityTable trashSyncEntity = i20
+      .$TrashSyncEntityTable(this);
+  late final i21.$ServerDeletedChecksumEntityTable serverDeletedChecksumEntity =
+      i21.$ServerDeletedChecksumEntityTable(this);
+  late final i22.$AssetEditEntityTable assetEditEntity = i22
       .$AssetEditEntityTable(this);
-  late final i22.$SettingsEntityTable settingsEntity = i22.$SettingsEntityTable(
+  late final i23.$SettingsEntityTable settingsEntity = i23.$SettingsEntityTable(
     this,
   );
-  late final i23.$AssetOcrEntityTable assetOcrEntity = i23.$AssetOcrEntityTable(
+  late final i24.$AssetOcrEntityTable assetOcrEntity = i24.$AssetOcrEntityTable(
     this,
   );
-  i24.MergedAssetDrift get mergedAssetDrift => i25.ReadDatabaseContainer(
+  i25.MergedAssetDrift get mergedAssetDrift => i26.ReadDatabaseContainer(
     this,
-  ).accessor<i24.MergedAssetDrift>(i24.MergedAssetDrift.new);
+  ).accessor<i25.MergedAssetDrift>(i25.MergedAssetDrift.new);
   @override
   Iterable<i0.TableInfo<i0.Table, Object?>> get allTables =>
       allSchemaEntities.whereType<i0.TableInfo<i0.Table, Object?>>();
@@ -122,6 +126,7 @@ abstract class $Drift extends i0.GeneratedDatabase {
     i2.uQRemoteAssetsOwnerChecksum,
     i2.uQRemoteAssetsOwnerLibraryChecksum,
     i2.idxRemoteAssetChecksum,
+    i2.idxRemoteAssetSoftDeletedChecksum,
     i2.idxRemoteAssetStackId,
     i2.idxRemoteAssetOwnerVisibilityDeletedCreated,
     i2.idxRemoteAssetUploaded,
@@ -137,7 +142,8 @@ abstract class $Drift extends i0.GeneratedDatabase {
     personEntity,
     assetFaceEntity,
     storeEntity,
-    trashedLocalAssetEntity,
+    trashSyncEntity,
+    serverDeletedChecksumEntity,
     assetEditEntity,
     settingsEntity,
     assetOcrEntity,
@@ -150,10 +156,9 @@ abstract class $Drift extends i0.GeneratedDatabase {
     i18.idxAssetFacePersonId,
     i18.idxAssetFaceAssetId,
     i18.idxAssetFaceVisiblePerson,
-    i20.idxTrashedLocalAssetChecksum,
-    i20.idxTrashedLocalAssetAlbum,
-    i21.idxAssetEditAssetId,
-    i23.idxAssetOcrAssetId,
+    i20.idxTrashSyncChecksum,
+    i22.idxAssetEditAssetId,
+    i24.idxAssetOcrAssetId,
   ];
   @override
   i0.StreamQueryUpdateRules
@@ -404,15 +409,18 @@ class $DriftManager {
       i18.$$AssetFaceEntityTableTableManager(_db, _db.assetFaceEntity);
   i19.$$StoreEntityTableTableManager get storeEntity =>
       i19.$$StoreEntityTableTableManager(_db, _db.storeEntity);
-  i20.$$TrashedLocalAssetEntityTableTableManager get trashedLocalAssetEntity =>
-      i20.$$TrashedLocalAssetEntityTableTableManager(
+  i20.$$TrashSyncEntityTableTableManager get trashSyncEntity =>
+      i20.$$TrashSyncEntityTableTableManager(_db, _db.trashSyncEntity);
+  i21.$$ServerDeletedChecksumEntityTableTableManager
+  get serverDeletedChecksumEntity =>
+      i21.$$ServerDeletedChecksumEntityTableTableManager(
         _db,
-        _db.trashedLocalAssetEntity,
+        _db.serverDeletedChecksumEntity,
       );
-  i21.$$AssetEditEntityTableTableManager get assetEditEntity =>
-      i21.$$AssetEditEntityTableTableManager(_db, _db.assetEditEntity);
-  i22.$$SettingsEntityTableTableManager get settingsEntity =>
-      i22.$$SettingsEntityTableTableManager(_db, _db.settingsEntity);
-  i23.$$AssetOcrEntityTableTableManager get assetOcrEntity =>
-      i23.$$AssetOcrEntityTableTableManager(_db, _db.assetOcrEntity);
+  i22.$$AssetEditEntityTableTableManager get assetEditEntity =>
+      i22.$$AssetEditEntityTableTableManager(_db, _db.assetEditEntity);
+  i23.$$SettingsEntityTableTableManager get settingsEntity =>
+      i23.$$SettingsEntityTableTableManager(_db, _db.settingsEntity);
+  i24.$$AssetOcrEntityTableTableManager get assetOcrEntity =>
+      i24.$$AssetOcrEntityTableTableManager(_db, _db.assetOcrEntity);
 }
