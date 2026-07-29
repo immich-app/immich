@@ -73,6 +73,120 @@ class TagsApi {
     return null;
   }
 
+  /// Tag/Untag assets
+  ///
+  /// Add or remove multiple tags from multiple assets in a single request.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [TagBulkAddRemoveAssetsDto] tagBulkAddRemoveAssetsDto (required):
+  Future<Response> bulkTagUntagAssetsWithHttpInfo(TagBulkAddRemoveAssetsDto tagBulkAddRemoveAssetsDto, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/tags/assets';
+
+    // ignore: prefer_final_locals
+    Object? postBody = tagBulkAddRemoveAssetsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Tag/Untag assets
+  ///
+  /// Add or remove multiple tags from multiple assets in a single request.
+  ///
+  /// Parameters:
+  ///
+  /// * [TagBulkAddRemoveAssetsDto] tagBulkAddRemoveAssetsDto (required):
+  Future<TagBulkAddRemoveAssetsResponseDto?> bulkTagUntagAssets(TagBulkAddRemoveAssetsDto tagBulkAddRemoveAssetsDto, { Future<void>? abortTrigger, }) async {
+    final response = await bulkTagUntagAssetsWithHttpInfo(tagBulkAddRemoveAssetsDto, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TagBulkAddRemoveAssetsResponseDto',) as TagBulkAddRemoveAssetsResponseDto;
+    
+    }
+    return null;
+  }
+
+  /// Untag assets
+  ///
+  /// Remove multiple tags from multiple assets in a single request.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [TagBulkAssetsDto] tagBulkAssetsDto (required):
+  Future<Response> bulkUntagAssetsWithHttpInfo(TagBulkAssetsDto tagBulkAssetsDto, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/tags/assets';
+
+    // ignore: prefer_final_locals
+    Object? postBody = tagBulkAssetsDto;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Untag assets
+  ///
+  /// Remove multiple tags from multiple assets in a single request.
+  ///
+  /// Parameters:
+  ///
+  /// * [TagBulkAssetsDto] tagBulkAssetsDto (required):
+  Future<TagBulkAssetsResponseDto?> bulkUntagAssets(TagBulkAssetsDto tagBulkAssetsDto, { Future<void>? abortTrigger, }) async {
+    final response = await bulkUntagAssetsWithHttpInfo(tagBulkAssetsDto, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'TagBulkAssetsResponseDto',) as TagBulkAssetsResponseDto;
+    
+    }
+    return null;
+  }
+
   /// Create a tag
   ///
   /// Create a new tag by providing a name and optional color.
@@ -226,6 +340,70 @@ class TagsApi {
       final responseBody = await _decodeBodyBytes(response);
       return (await apiClient.deserializeAsync(responseBody, 'List<TagResponseDto>') as List)
         .cast<TagResponseDto>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// Retrieve tags for assets
+  ///
+  /// Retrieve all tags associated with the specified assets.
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [List<String>] assetIds (required):
+  ///   Asset IDs to retrieve tags for
+  Future<Response> getAllTagsForAssetsWithHttpInfo(List<String> assetIds, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final apiPath = r'/tags/getAllTagsForAssets';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+      queryParams.addAll(_queryParams('multi', 'assetIds', assetIds));
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      apiPath,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Retrieve tags for assets
+  ///
+  /// Retrieve all tags associated with the specified assets.
+  ///
+  /// Parameters:
+  ///
+  /// * [List<String>] assetIds (required):
+  ///   Asset IDs to retrieve tags for
+  Future<List<TagsForAssetsResponseDto>?> getAllTagsForAssets(List<String> assetIds, { Future<void>? abortTrigger, }) async {
+    final response = await getAllTagsForAssetsWithHttpInfo(assetIds, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<TagsForAssetsResponseDto>') as List)
+        .cast<TagsForAssetsResponseDto>()
         .toList(growable: false);
 
     }

@@ -1,13 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
+  TagBulkAddRemoveAssetsDto,
+  TagBulkAddRemoveAssetsResponseDto,
   TagBulkAssetsDto,
   TagBulkAssetsResponseDto,
   TagCreateDto,
   TagResponseDto,
+  TagsForAssetsQueryDto,
+  TagsForAssetsResponseDto,
   TagUpdateDto,
   TagUpsertDto,
 } from 'src/dtos/tag.dto';
@@ -63,6 +67,45 @@ export class TagController {
   })
   bulkTagAssets(@Auth() auth: AuthDto, @Body() dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
     return this.service.bulkTagAssets(auth, dto);
+  }
+
+  @Delete('assets')
+  @Authenticated({ permission: Permission.TagAsset })
+  @Endpoint({
+    summary: 'Untag assets',
+    description: 'Remove multiple tags from multiple assets in a single request.',
+    history: new HistoryBuilder().added('v2').beta('v2').stable('v2'),
+  })
+  bulkUntagAssets(@Auth() auth: AuthDto, @Body() dto: TagBulkAssetsDto): Promise<TagBulkAssetsResponseDto> {
+    return this.service.bulkUntagAssets(auth, dto);
+  }
+
+  @Post('assets')
+  @Authenticated({ permission: Permission.TagAsset })
+  @Endpoint({
+    summary: 'Tag/Untag assets',
+    description: 'Add or remove multiple tags from multiple assets in a single request.',
+    history: new HistoryBuilder().added('v2').beta('v2').stable('v2'),
+  })
+  bulkTagUntagAssets(
+    @Auth() auth: AuthDto,
+    @Body() dto: TagBulkAddRemoveAssetsDto,
+  ): Promise<TagBulkAddRemoveAssetsResponseDto> {
+    return this.service.bulkTagUntagAssets(auth, dto);
+  }
+
+  @Get('getAllTagsForAssets')
+  @Authenticated({ permission: Permission.TagRead })
+  @Endpoint({
+    summary: 'Retrieve tags for assets',
+    description: 'Retrieve all tags associated with the specified assets.',
+    history: new HistoryBuilder().added('v2').beta('v2').stable('v2'),
+  })
+  getAllTagsForAssets(
+    @Auth() auth: AuthDto,
+    @Query() { assetIds }: TagsForAssetsQueryDto,
+  ): Promise<TagsForAssetsResponseDto[]> {
+    return this.service.getAllForAssets(auth, assetIds);
   }
 
   @Get(':id')
