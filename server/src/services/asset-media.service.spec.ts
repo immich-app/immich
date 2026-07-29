@@ -8,20 +8,22 @@ import { AssetFile } from 'src/database';
 import { AssetMediaStatus, AssetRejectReason, AssetUploadAction } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaCreateDto, AssetMediaSize, UploadFieldName } from 'src/dtos/asset-media.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
+import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
-import { UploadBody } from 'src/types';
+import { UploadBody, UploadFile } from 'src/types';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 import { ImmichFileResponse } from 'src/utils/file';
+import { AlbumFactory } from 'test/factories/album.factory';
 import { AssetFileFactory } from 'test/factories/asset-file.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { fileStub } from 'test/fixtures/file.stub';
 import { userStub } from 'test/fixtures/user.stub';
-import { getForAsset } from 'test/mappers';
+import { getForAlbum, getForAsset } from 'test/mappers';
 import { newTestService, ServiceMocks } from 'test/utils';
 
 const file1 = Buffer.from('d2947b871a706081be194569951b7db246907957', 'hex');
@@ -317,6 +319,11 @@ describe(AssetMediaService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.asset.create).not.toHaveBeenCalled();
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: [file.originalPath, undefined] },
+      });
+      expect(mocks.event.emit).not.toHaveBeenCalled();
       expect(mocks.user.updateUsage).not.toHaveBeenCalledWith(authStub.user1.user.id, file.size);
       expect(mocks.storage.utimes).not.toHaveBeenCalledWith(
         file.originalPath,
@@ -343,6 +350,7 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.asset.create).toHaveBeenCalled();
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', { asset: assetEntity, file });
       expect(mocks.storage.utimes).toHaveBeenCalledWith(
         file.originalPath,
         expect.any(Date),
@@ -374,6 +382,7 @@ describe(AssetMediaService.name, () => {
         name: JobName.FileDelete,
         data: { files: ['fake_path/asset_1.jpeg', undefined] },
       });
+      expect(mocks.event.emit).not.toHaveBeenCalled();
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
     });
 
@@ -457,6 +466,179 @@ describe(AssetMediaService.name, () => {
         new Date(createDto.fileModifiedAt),
       );
       expect(mocks.asset.update).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      {
+        step: 'metadata upsert',
+        arrange: (error: Error) => mocks.asset.upsertMetadata.mockRejectedValue(error),
+        dto: {
+          ...createDto,
+          metadata: [{ key: 'description', value: { text: 'a description' } }],
+        } as AssetMediaCreateDto,
+      },
+      {
+        step: 'sidecar write',
+        arrange: (error: Error) => mocks.asset.upsertFile.mockRejectedValue(error),
+        sidecarFile: fileStub.photoSidecar,
+      },
+      {
+        step: 'setting file times',
+        arrange: (error: Error) => mocks.storage.utimes.mockRejectedValue(error),
+      },
+      {
+        step: 'setting sidecar file times',
+        arrange: (error: Error) => mocks.storage.utimes.mockRejectedValue(error),
+        sidecarFile: fileStub.photoSidecar,
+      },
+      {
+        step: 'exif upsert',
+        arrange: (error: Error) => mocks.asset.upsertExif.mockRejectedValue(error),
+      },
+      {
+        step: 'shared link add',
+        arrange: (error: Error) => mocks.sharedLink.addAssets.mockRejectedValue(error),
+        auth: authStub.adminSharedLink,
+      },
+      {
+        step: 'album shared link add',
+        arrange: (error: Error) => {
+          mocks.album.getById.mockResolvedValue(getForAlbum(AlbumFactory.from().build()));
+          mocks.album.addAssetIds.mockRejectedValue(error);
+        },
+        auth: {
+          ...authStub.adminSharedLink,
+          sharedLink: { ...authStub.adminSharedLink.sharedLink, albumId: 'album-1' },
+        } as AuthDto,
+      },
+    ] as {
+      step: string;
+      arrange: (error: Error) => void;
+      dto?: AssetMediaCreateDto;
+      auth?: AuthDto;
+      sidecarFile?: UploadFile;
+    }[])('should keep the asset and its files when the $step fails', async ({ arrange, dto, auth, sidecarFile }) => {
+      const error = new Error('step failed');
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      arrange(error);
+
+      await expect(sut.uploadAsset(auth ?? authStub.user1, dto ?? createDto, fileStub.photo, sidecarFile)).rejects.toBe(
+        error,
+      );
+
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.FileDelete }));
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetExtractMetadata,
+        data: { id: assetEntity.id, source: 'upload' },
+      });
+      expect(mocks.event.emit).toHaveBeenCalledTimes(1);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', { asset: assetEntity, file: fileStub.photo });
+    });
+
+    it('should requeue the metadata job when queueing it fails', async () => {
+      const error = new Error('queue unavailable');
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.job.queue.mockRejectedValueOnce(error);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, fileStub.photo)).rejects.toBe(error);
+
+      expect(mocks.job.queue).toHaveBeenCalledTimes(2);
+      expect(mocks.job.queue).toHaveBeenNthCalledWith(1, {
+        name: JobName.AssetExtractMetadata,
+        data: { id: assetEntity.id, source: 'upload' },
+      });
+      expect(mocks.job.queue).toHaveBeenNthCalledWith(2, {
+        name: JobName.AssetExtractMetadata,
+        data: { id: assetEntity.id, source: 'upload' },
+      });
+      expect(mocks.event.emit).toHaveBeenCalledTimes(1);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', { asset: assetEntity, file: fileStub.photo });
+    });
+
+    it('should rethrow the step error when the metadata job cannot be queued at all', async () => {
+      const error = new Error('queue unavailable');
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.job.queue.mockRejectedValueOnce(error).mockRejectedValue(new Error('queue still unavailable'));
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, fileStub.photo)).rejects.toBe(error);
+
+      expect(mocks.job.queue).toHaveBeenCalledTimes(2);
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.FileDelete }));
+      expect(mocks.event.emit).toHaveBeenCalledTimes(1);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', { asset: assetEntity, file: fileStub.photo });
+    });
+
+    it('should rethrow the step error when the create event also fails', async () => {
+      const error = new Error('exif write failed');
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.asset.upsertExif.mockRejectedValue(error);
+      mocks.event.emit.mockRejectedValue(new Error('listener failed'));
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, fileStub.photo)).rejects.toBe(error);
+
+      expect(mocks.event.emit).toHaveBeenCalledTimes(1);
+    });
+
+    it('should rethrow a falsey step rejection', async () => {
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.asset.upsertExif.mockRejectedValue(undefined);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, fileStub.photo)).rejects.toBeUndefined();
+
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.FileDelete }));
+      expect(mocks.event.emit).toHaveBeenCalledTimes(1);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', { asset: assetEntity, file: fileStub.photo });
+    });
+
+    it('should not let an uninterpolable event error mask the step error', async () => {
+      const error = new Error('exif write failed');
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.asset.upsertExif.mockRejectedValue(error);
+      mocks.event.emit.mockRejectedValue(Symbol('listener failed'));
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, fileStub.photo)).rejects.toBe(error);
+    });
+
+    it('should not delete the files when the create event fails', async () => {
+      const error = new Error('listener failed');
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.event.emit.mockRejectedValue(error);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, fileStub.photo)).rejects.toBe(error);
+
+      expect(mocks.event.emit).toHaveBeenCalledTimes(1);
+      expect(mocks.job.queue).toHaveBeenCalledTimes(1);
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.FileDelete }));
+    });
+
+    it('should not queue the metadata job again when a later step fails', async () => {
+      const error = new Error('shared link write failed');
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.sharedLink.addAssets.mockRejectedValue(error);
+
+      await expect(sut.uploadAsset(authStub.adminSharedLink, createDto, fileStub.photo)).rejects.toBe(error);
+
+      expect(mocks.job.queue).toHaveBeenCalledTimes(1);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetExtractMetadata,
+        data: { id: assetEntity.id, source: 'upload' },
+      });
+    });
+
+    it('should still repair and announce when a step rejects with an uninterpolable value', async () => {
+      const error = Symbol('step failed');
+      mocks.asset.create.mockResolvedValue(assetEntity);
+      mocks.asset.upsertExif.mockRejectedValue(error);
+
+      await expect(sut.uploadAsset(authStub.user1, createDto, fileStub.photo)).rejects.toBe(error);
+
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.FileDelete }));
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetExtractMetadata,
+        data: { id: assetEntity.id, source: 'upload' },
+      });
+      expect(mocks.event.emit).toHaveBeenCalledTimes(1);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', { asset: assetEntity, file: fileStub.photo });
     });
   });
 

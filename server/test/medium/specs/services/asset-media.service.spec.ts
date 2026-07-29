@@ -2,7 +2,7 @@ import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
 import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaSize } from 'src/dtos/asset-media.dto';
-import { AssetFileType, SharedLinkType } from 'src/enum';
+import { AssetFileType, JobName, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -99,6 +99,51 @@ describe(AssetService.name, () => {
         id: expect.any(String),
         status: AssetMediaStatus.CREATED,
       });
+    });
+
+    it('should keep the asset and its files when a post-create step fails and the upload is retried', async () => {
+      const { sut, ctx } = setup();
+
+      ctx.getMock(StorageRepository).utimes.mockResolvedValue();
+      ctx.getMock(EventRepository).emit.mockResolvedValue();
+      // the first upload fails to queue its metadata job; the repair path queues it again
+      ctx.getMock(JobRepository).queue.mockRejectedValueOnce(new Error('queue down')).mockResolvedValue();
+
+      const { user } = await ctx.newUser();
+      const auth = factory.auth({ user: { id: user.id } });
+      const dto = {
+        fileModifiedAt: new Date(),
+        fileCreatedAt: new Date(),
+        assetData: Buffer.from('some data'),
+      };
+      const file = mediumFactory.uploadFile({ originalPath: '/path/to/first.jpg' });
+
+      await expect(sut.uploadAsset(auth, dto, file)).rejects.toThrow('queue down');
+
+      const [asset] = await ctx.database.selectFrom('asset').selectAll().where('ownerId', '=', user.id).execute();
+      expect(asset).toMatchObject({ checksum: file.checksum, originalPath: file.originalPath });
+      expect(ctx.getMock(JobRepository).queue).not.toHaveBeenCalledWith(
+        expect.objectContaining({ name: JobName.FileDelete }),
+      );
+      expect(ctx.getMock(JobRepository).queue).toHaveBeenCalledTimes(2);
+      expect(ctx.getMock(EventRepository).emit).toHaveBeenCalledTimes(1);
+      expect(ctx.getMock(EventRepository).emit).toHaveBeenCalledWith('AssetCreate', {
+        asset: expect.objectContaining({ id: asset.id }),
+        file: expect.objectContaining({ size: file.size }),
+      });
+
+      const retry = await sut.uploadAsset(
+        auth,
+        dto,
+        mediumFactory.uploadFile({ originalPath: '/path/to/second.jpg', checksum: file.checksum }),
+      );
+
+      expect(retry).toEqual({ id: asset.id, status: AssetMediaStatus.DUPLICATE });
+      expect(ctx.getMock(JobRepository).queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: ['/path/to/second.jpg', undefined] },
+      });
+      expect(ctx.getMock(EventRepository).emit).toHaveBeenCalledTimes(1);
     });
 
     it('should add to a shared link', async () => {
