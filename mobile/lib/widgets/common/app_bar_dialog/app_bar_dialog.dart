@@ -126,6 +126,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     await ref.read(authProvider.notifier).logout().whenComplete(() => isLoggingOut.value = false);
 
                     ref.read(websocketProvider.notifier).disconnect();
+                    if (!context.mounted) {
+                      return;
+                    }
+
                     unawaited(context.replaceRoute(const LoginRoute()));
                   },
                 );
@@ -199,6 +203,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               onTap: () async {
                 ContextHelper(context).pop();
                 final packageInfo = await PackageInfo.fromPlatform();
+                if (!context.mounted) {
+                  return;
+                }
+
                 showLicensePage(
                   context: context,
                   applicationIcon: const Padding(

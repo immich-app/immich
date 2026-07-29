@@ -90,7 +90,7 @@ class _DateTimePicker extends HookWidget {
         firstDate: DateTime(1800),
         lastDate: now,
       );
-      if (newDate == null) {
+      if (newDate == null || !context.mounted) {
         return;
       }
 

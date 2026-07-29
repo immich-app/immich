@@ -25,17 +25,19 @@ class PinAuthPage extends HookConsumerWidget {
     Future<void> registerBiometric(String pinCode) async {
       final isRegistered = await ref.read(localAuthProvider.notifier).registerBiometric(context, pinCode);
 
-      if (isRegistered) {
-        context.showSnackBar(
-          SnackBar(
-            content: Text('biometric_auth_enabled'.tr(), style: context.textTheme.labelLarge),
-            duration: const Duration(seconds: 3),
-            backgroundColor: context.colorScheme.primaryContainer,
-          ),
-        );
-
-        unawaited(context.replaceRoute(const DriftLockedFolderRoute()));
+      if (!isRegistered || !context.mounted) {
+        return;
       }
+
+      context.showSnackBar(
+        SnackBar(
+          content: Text('biometric_auth_enabled'.tr(), style: context.textTheme.labelLarge),
+          duration: const Duration(seconds: 3),
+          backgroundColor: context.colorScheme.primaryContainer,
+        ),
+      );
+
+      unawaited(context.replaceRoute(const DriftLockedFolderRoute()));
     }
 
     Future<void> enableBiometricAuth() {

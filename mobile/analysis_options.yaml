@@ -65,7 +65,7 @@ linter:
     avoid_type_to_string: true
 
     # Flutter specific
-    use_build_context_synchronously: false
+    use_build_context_synchronously: true
     sized_box_for_whitespace: true
     use_colored_box: true
     use_decorated_box: true

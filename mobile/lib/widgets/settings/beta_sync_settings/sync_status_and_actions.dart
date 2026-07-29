@@ -41,11 +41,13 @@ class SyncStatusAndActions extends HookConsumerWidget {
 
         // ignore: avoid_slow_async_io
         if (!await dbFile.exists()) {
-          if (context.mounted) {
-            context.scaffoldMessenger.showSnackBar(
-              SnackBar(content: Text("Database file not found".t(context: context))),
-            );
+          if (!context.mounted) {
+            return;
           }
+
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(content: Text("Database file not found".t(context: context))),
+          );
           return;
         }
 
@@ -53,6 +55,10 @@ class SyncStatusAndActions extends HookConsumerWidget {
         final exportFile = File(path.join(documentsDir.path, 'immich_export_$timestamp.sqlite'));
 
         await dbFile.copy(exportFile.path);
+
+        if (!context.mounted) {
+          return;
+        }
 
         final size = MediaQuery.of(context).size;
         await Share.shareXFiles(
@@ -67,18 +73,21 @@ class SyncStatusAndActions extends HookConsumerWidget {
             await exportFile.delete();
           }
         });
+        if (!context.mounted) {
+          return;
+        }
 
-        if (context.mounted) {
-          context.scaffoldMessenger.showSnackBar(
-            SnackBar(content: Text("Database exported successfully".t(context: context))),
-          );
-        }
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text("Database exported successfully".t(context: context))),
+        );
       } catch (e) {
-        if (context.mounted) {
-          context.scaffoldMessenger.showSnackBar(
-            SnackBar(content: Text("Failed to export database: $e".t(context: context))),
-          );
+        if (!context.mounted) {
+          return;
         }
+
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text("Failed to export database: $e".t(context: context))),
+        );
       }
     }
 
@@ -98,6 +107,10 @@ class SyncStatusAndActions extends HookConsumerWidget {
               TextButton(
                 onPressed: () async {
                   await ref.read(driftProvider).reset();
+                  if (!context.mounted) {
+                    return;
+                  }
+
                   context.pop();
                   unawaited(
                     showDialog<void>(

@@ -147,20 +147,9 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
 
   Future<void> initApp() async {
     WidgetsBinding.instance.addObserver(this);
-
     // Draw the app from edge to edge
     unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
-
-    // Sets the navigation bar color
-    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent);
-    if (Platform.isAndroid) {
-      // Android 8 does not support transparent app bars
-      final info = await DeviceInfoPlugin().androidInfo;
-      if (info.version.sdkInt <= 26) {
-        overlayStyle = context.isDarkTheme ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light;
-      }
-    }
-    SystemChrome.setSystemUIOverlayStyle(overlayStyle);
+    await _setNavigationBarColor();
 
     await FlutterLocalNotificationsPlugin().initialize(
       const InitializationSettings(
@@ -168,6 +157,22 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         iOS: DarwinInitializationSettings(),
       ),
     );
+  }
+
+  Future<void> _setNavigationBarColor() async {
+    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent);
+    if (Platform.isAndroid) {
+      // Android 8 does not support transparent app bars
+      final info = await DeviceInfoPlugin().androidInfo;
+      if (!mounted) {
+        return;
+      }
+
+      if (info.version.sdkInt <= 26) {
+        overlayStyle = context.isDarkTheme ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light;
+      }
+    }
+    SystemChrome.setSystemUIOverlayStyle(overlayStyle);
   }
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {

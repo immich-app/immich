@@ -157,6 +157,10 @@ class ActionService {
       }
     }
 
+    if (!context.mounted) {
+      return false;
+    }
+
     final location = await showLocationPicker(context: context, initialLatLng: initialLatLng);
 
     if (location == null) {
@@ -193,6 +197,10 @@ class ActionService {
       }
 
       initialDate = dt;
+    }
+
+    if (!context.mounted) {
+      return false;
     }
 
     final dateTime = await showDateTimePicker(
