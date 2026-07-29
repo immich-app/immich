@@ -903,6 +903,7 @@ export enum JobName {
 
   // Workflow
   WorkflowAssetTrigger = 'WorkflowAssetTrigger',
+  WorkflowAlbumAssetTrigger = 'WorkflowAlbumAssetTrigger',
 
   // Integrity
   IntegrityUntrackedFilesQueueAll = 'IntegrityUntrackedFilesQueueAll',
@@ -1225,6 +1226,7 @@ export const WorkflowTriggerSchema = z
 
 export enum WorkflowType {
   AssetV1 = 'AssetV1',
+  AlbumAssetV1 = 'AlbumAssetV1',
   // AssetPersonV1 = 'AssetPersonV1',
 }
 

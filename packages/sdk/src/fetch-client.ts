@@ -7419,11 +7419,13 @@ export enum PartnerDirection {
     SharedWith = "shared-with"
 }
 export enum WorkflowType {
-    AssetV1 = "AssetV1"
+    AssetV1 = "AssetV1",
+    AlbumAssetV1 = "AlbumAssetV1"
 }
 export enum WorkflowTrigger {
     AssetCreate = "AssetCreate",
-    AssetMetadataExtraction = "AssetMetadataExtraction"
+    AssetMetadataExtraction = "AssetMetadataExtraction",
+    AlbumAssetAdded = "AlbumAssetAdded"
 }
 export enum QueueJobStatus {
     Active = "active",

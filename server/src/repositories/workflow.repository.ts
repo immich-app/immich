@@ -26,6 +26,7 @@ export class WorkflowRepository {
         'workflow.enabled',
         'workflow.createdAt',
         'workflow.updatedAt',
+        'workflow.ownerId',
       ])
       .select((eb) => [
         jsonArrayFrom(

@@ -458,6 +458,7 @@ export type JobItem =
 
   // Workflow
   | { name: JobName.WorkflowAssetTrigger; data: { workflowId: string; assetId: string } }
+  | { name: JobName.WorkflowAlbumAssetTrigger; data: { workflowId: string; assetId: string; albumId: string } }
 
   // Integrity
   | { name: JobName.IntegrityUntrackedFilesQueueAll; data?: IIntegrityJob }

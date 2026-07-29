@@ -9,6 +9,7 @@ select
   "workflow"."enabled",
   "workflow"."createdAt",
   "workflow"."updatedAt",
+  "workflow"."ownerId",
   (
     select
       coalesce(json_agg(agg), '[]')
@@ -43,6 +44,7 @@ select
   "workflow"."enabled",
   "workflow"."createdAt",
   "workflow"."updatedAt",
+  "workflow"."ownerId",
   (
     select
       coalesce(json_agg(agg), '[]')

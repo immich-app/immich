@@ -27,7 +27,7 @@ import { ArgOf } from 'src/repositories/event.repository';
 import { AlbumService } from 'src/services/album.service';
 import { AssetService } from 'src/services/asset.service';
 import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
+import { JobItem, JobOf } from 'src/types';
 
 const dummy = () => {
   throw new Error(
@@ -41,6 +41,8 @@ type ExecuteOptions<T extends WorkflowType> = {
 };
 
 type AssetTrigger = { userId: string; assetId: string; trigger: WorkflowTrigger };
+
+type AlbumAssetTrigger = { userIds: string[]; albumId: string; assetIds: string[]; trigger: WorkflowTrigger };
 
 type HostContext = {
   allowedHosts: string[];
@@ -309,6 +311,16 @@ export class WorkflowExecutionService extends BaseService {
     return this.onAssetTrigger({ userId, assetId, trigger: WorkflowTrigger.AssetMetadataExtraction });
   }
 
+  @OnEvent({ name: 'AlbumAssetsAdded' })
+  onAlbumAssetsAdded({ albumId, userIds, recipientIds, assetIds }: ArgOf<'AlbumAssetsAdded'>) {
+    return this.onAlbumAssetTrigger({
+      albumId,
+      userIds: [...userIds, ...recipientIds],
+      assetIds,
+      trigger: WorkflowTrigger.AlbumAssetAdded,
+    });
+  }
+
   private async onAssetTrigger({ userId, assetId, trigger }: AssetTrigger) {
     const items = await this.workflowRepository.search({ userId, trigger });
     await this.jobRepository.queueAll(
@@ -319,11 +331,64 @@ export class WorkflowExecutionService extends BaseService {
     );
   }
 
+  private async onAlbumAssetTrigger({ albumId, userIds, assetIds, trigger }: AlbumAssetTrigger) {
+    let jobs: JobItem[] = [];
+    for (const userId of userIds) {
+      const items = await this.workflowRepository.search({ userId, trigger });
+      if (!items.length) {
+        continue;
+      }
+
+      let batch: JobItem[] = items.flatMap(({ id: workflowId }) =>
+        assetIds.map((assetId) => ({
+          name: JobName.WorkflowAlbumAssetTrigger,
+          data: { workflowId, assetId, albumId, trigger },
+        })),
+      );
+      jobs.push(...batch);
+    }
+
+    await this.jobRepository.queueAll(jobs);
+  }
+
+  private writeAssetV1(assetId: string, type: WorkflowType) {
+    const assetService = BaseService.create(AssetService, this);
+
+    return async (auth: AuthDto, changes: WorkflowChanges<typeof type>) => {
+      const asset = changes.asset;
+      if (!asset) {
+        return;
+      }
+
+      await assetService.update(auth, assetId, {
+        isFavorite: asset.isFavorite,
+        visibility: asset.visibility,
+        dateTimeOriginal: asset.exifInfo?.dateTimeOriginal ?? undefined,
+        // TODO allow setting to null
+        longitude: asset.exifInfo?.longitude ?? undefined,
+        // TODO allow setting to null
+        latitude: asset.exifInfo?.latitude ?? undefined,
+        // TODO allow setting to null
+        description: asset.exifInfo?.description ?? undefined,
+        rating: asset.exifInfo?.rating,
+
+        // TODO add to update dto
+        // make: asset.exifInfo?.make,
+        // model: asset.exifInfo?.model,
+        // city: asset.exifInfo?.city,
+        // state: asset.exifInfo?.state,
+        // country: asset.exifInfo?.country,
+        // lensModel: asset.exifInfo?.lensModel,
+        // fNumber: asset.exifInfo?.fNumber,
+        // fps: asset.exifInfo?.fps,
+        // iso: asset.exifInfo?.iso,
+      });
+    };
+  }
+
   @OnJob({ name: JobName.WorkflowAssetTrigger, queue: QueueName.Workflow })
   handleAssetTrigger({ workflowId, assetId }: JobOf<JobName.WorkflowAssetTrigger>) {
     return this.execute(workflowId, (type) => {
-      const assetService = BaseService.create(AssetService, this);
-
       switch (type) {
         case WorkflowType.AssetV1: {
           return {
@@ -334,35 +399,35 @@ export class WorkflowExecutionService extends BaseService {
                 authUserId: asset.ownerId,
               };
             },
+            write: this.writeAssetV1(assetId, type),
+          } satisfies ExecuteOptions<typeof type>;
+        }
+      }
+    });
+  }
+
+  @OnJob({ name: JobName.WorkflowAlbumAssetTrigger, queue: QueueName.Workflow })
+  handleAlbumAssetTrigger({ workflowId, assetId, albumId }: JobOf<JobName.WorkflowAlbumAssetTrigger>) {
+    return this.execute(workflowId, (type) => {
+      switch (type) {
+        case WorkflowType.AssetV1: {
+          return {
+            read: async () => {
+              const asset = await this.workflowRepository.getForAssetV1(assetId);
+              const workflow = await this.workflowRepository.get(workflowId);
+
+              return {
+                data: { asset, album: { id: albumId } } as any,
+                authUserId: workflow!.ownerId,
+              };
+            },
             write: async (auth, changes) => {
-              const asset = changes.asset;
-              if (!asset) {
-                return;
+              const asset = await this.workflowRepository.getForAssetV1(assetId);
+              const workflow = await this.workflowRepository.get(workflowId);
+
+              if (asset.ownerId === workflow!.ownerId) {
+                await this.writeAssetV1(assetId, type)(auth, changes);
               }
-
-              await assetService.update(auth, assetId, {
-                isFavorite: asset.isFavorite,
-                visibility: asset.visibility,
-                dateTimeOriginal: asset.exifInfo?.dateTimeOriginal ?? undefined,
-                // TODO allow setting to null
-                longitude: asset.exifInfo?.longitude ?? undefined,
-                // TODO allow setting to null
-                latitude: asset.exifInfo?.latitude ?? undefined,
-                // TODO allow setting to null
-                description: asset.exifInfo?.description ?? undefined,
-                rating: asset.exifInfo?.rating,
-
-                // TODO add to update dto
-                // make: asset.exifInfo?.make,
-                // model: asset.exifInfo?.model,
-                // city: asset.exifInfo?.city,
-                // state: asset.exifInfo?.state,
-                // country: asset.exifInfo?.country,
-                // lensModel: asset.exifInfo?.lensModel,
-                // fNumber: asset.exifInfo?.fNumber,
-                // fps: asset.exifInfo?.fps,
-                // iso: asset.exifInfo?.iso,
-              });
             },
           } satisfies ExecuteOptions<typeof type>;
         }
