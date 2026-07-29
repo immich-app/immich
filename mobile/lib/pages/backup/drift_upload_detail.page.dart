@@ -429,7 +429,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
               SizedBox(
                 width: 48,
                 height: 48,
-                child: Container(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: context.colorScheme.outline.withValues(alpha: 0.1),
                     borderRadius: const BorderRadius.all(Radius.circular(8)),

@@ -286,7 +286,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                   return SizedBox(
                     height: double.infinity,
                     width: double.infinity,
-                    child: Container(
+                    child: ColoredBox(
                       color: context.scaffoldBackgroundColor.withValues(alpha: 0.8),
                       child: Center(
                         child: Column(

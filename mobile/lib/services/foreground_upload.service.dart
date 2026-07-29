@@ -419,6 +419,7 @@ class ForegroundUploadService {
     void Function(int bytes, int totalBytes)? onProgress,
   }) async {
     try {
+      // ignore: avoid_slow_async_io
       final stats = await file.stat();
       final fileCreatedAt = stats.changed;
       final fileModifiedAt = stats.modified;

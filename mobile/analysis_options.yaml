@@ -29,12 +29,23 @@ linter:
     # avoid_print: false  # Uncomment to disable the `avoid_print` rule
     # prefer_single_quotes: true # Uncomment to enable the `prefer_single_quotes` rule
     unawaited_futures: true
-    use_build_context_synchronously: false
     require_trailing_commas: true
     unrelated_type_equality_checks: true
     prefer_const_constructors: true
     always_use_package_imports: true
     always_put_control_body_on_new_line: true
+
+    # Known issues
+    avoid_slow_async_io: true
+    avoid_type_to_string: true
+
+    # Flutter specific
+    use_build_context_synchronously: false
+    sized_box_for_whitespace: true
+    use_colored_box: true
+    use_decorated_box: true
+    avoid_unnecessary_containers: true
+    use_full_hex_values_for_flutter_colors: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

@@ -350,7 +350,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
     return SliverPadding(
       padding: const EdgeInsets.only(left: 16, top: 12, right: 16, bottom: 32),
       sliver: SliverToBoxAdapter(
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: context.colorScheme.onSurface.withAlpha(10), width: 1),
             borderRadius: const BorderRadius.all(Radius.circular(20)),

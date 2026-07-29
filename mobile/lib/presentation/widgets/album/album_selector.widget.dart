@@ -395,7 +395,7 @@ class _SearchBar extends StatelessWidget {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       sliver: SliverToBoxAdapter(
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: context.colorScheme.onSurface.withAlpha(0), width: 0),
             borderRadius: const BorderRadius.all(Radius.circular(24)),
@@ -699,7 +699,7 @@ class _GridAlbumCard extends ConsumerWidget {
                         );
                       }
 
-                      return Container(
+                      return ColoredBox(
                         color: context.colorScheme.surfaceContainerHighest,
                         child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
                       );

@@ -598,7 +598,7 @@ class DriftSearchPage extends HookConsumerWidget {
             ),
           ),
         ],
-        title: Container(
+        title: DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: context.colorScheme.onSurface.withAlpha(0), width: 0),
             borderRadius: const BorderRadius.all(Radius.circular(24)),
@@ -859,7 +859,7 @@ class _QuickLinkList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(20)),
         border: Border.all(color: context.colorScheme.outline.withAlpha(10), width: 1),

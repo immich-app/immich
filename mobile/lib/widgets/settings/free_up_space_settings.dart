@@ -773,7 +773,7 @@ class _DatePresetCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: const BorderRadius.all(Radius.circular(12)),
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(12)),
             border: Border.all(color: isSelected ? context.colorScheme.primary : Colors.transparent, width: 1),

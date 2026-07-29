@@ -125,7 +125,7 @@ class TagPicker extends HookConsumerWidget {
                     // Create new tag tile
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 2.0),
-                      child: Container(
+                      child: DecoratedBox(
                         decoration: BoxDecoration(
                           color: isCreateSelected ? context.primaryColor : context.primaryColor.withAlpha(25),
                           borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -160,7 +160,7 @@ class TagPicker extends HookConsumerWidget {
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 2.0),
-                    child: Container(
+                    child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: isSelected ? context.primaryColor : context.primaryColor.withAlpha(25),
                         borderRadius: borderRadius,

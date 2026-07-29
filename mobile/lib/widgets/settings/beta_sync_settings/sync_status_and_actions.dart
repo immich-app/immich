@@ -39,6 +39,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
         final documentsDir = await getApplicationDocumentsDirectory();
         final dbFile = File(path.join(documentsDir.path, 'immich.sqlite'));
 
+        // ignore: avoid_slow_async_io
         if (!await dbFile.exists()) {
           if (context.mounted) {
             context.scaffoldMessenger.showSnackBar(
@@ -61,6 +62,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
         );
 
         Future.delayed(const Duration(seconds: 30), () async {
+          // ignore: avoid_slow_async_io
           if (await exportFile.exists()) {
             await exportFile.delete();
           }
