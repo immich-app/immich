@@ -5,7 +5,11 @@ import path from 'node:path';
 import sanitize from 'sanitize-filename';
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent, OnJob } from 'src/decorators';
-import { SystemConfigTemplateStorageOptionDto } from 'src/dtos/system-config.dto';
+import {
+  RenderStorageTemplateDto,
+  RenderStorageTemplateResponseDto,
+  SystemConfigTemplateStorageOptionDto,
+} from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
   AssetPathType,
@@ -130,7 +134,38 @@ export class StorageTemplateService extends BaseService {
   }
 
   getStorageTemplateOptions(): SystemConfigTemplateStorageOptionDto {
-    return { ...storageTokens, presetOptions: storagePresets };
+    const sample = this.getSampleRenderMetadata();
+    const renderedPresetOptions = storagePresets.map((preset) => {
+      const { compiled } = this.compile(preset);
+      return this.render(compiled, sample);
+    });
+    return { ...storageTokens, presetOptions: storagePresets, renderedPresetOptions };
+  }
+
+  renderTemplate(dto: RenderStorageTemplateDto): RenderStorageTemplateResponseDto {
+    const { compiled } = this.compile(dto.template);
+    const sample = this.getSampleRenderMetadata();
+    const rendered = this.render(compiled, sample);
+    return { rendered };
+  }
+
+  private getSampleRenderMetadata(): RenderMetadata {
+    return {
+      asset: {
+        fileCreatedAt: new Date('2022-02-03T04:56:05.250Z'),
+        originalPath: '/upload/test/IMAGE_56437.jpg',
+        type: AssetType.Image,
+        id: 'a8312960-e277-447d-b4ea-56717ccba856',
+      } as StorageAsset,
+      filename: 'IMAGE_56437',
+      extension: 'jpg',
+      albumName: 'album_name',
+      albumStartDate: new Date('2021-12-31T05:32:41.750Z'),
+      albumEndDate: new Date('2023-05-06T09:15:17.100Z'),
+      make: 'FUJIFILM',
+      model: 'X-T50',
+      lensModel: 'XF27mm F2.8 R WR',
+    };
   }
 
   @OnEvent({ name: 'AssetMetadataExtracted' })

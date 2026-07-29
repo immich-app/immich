@@ -358,8 +358,21 @@ const SystemConfigTemplateStorageOptionSchema = z
     minuteOptions: z.array(z.string()).describe('Available minute format options for storage template'),
     secondOptions: z.array(z.string()).describe('Available second format options for storage template'),
     presetOptions: z.array(z.string()).describe('Available preset template options'),
+    renderedPresetOptions: z.array(z.string()).describe('Rendered versions of preset template options'),
   })
   .meta({ id: 'SystemConfigTemplateStorageOptionDto' });
+
+const RenderStorageTemplateSchema = z
+  .object({
+    template: z.string().describe('Storage template string to render'),
+  })
+  .meta({ id: 'RenderStorageTemplateDto' });
+
+const RenderStorageTemplateResponseSchema = z
+  .object({
+    rendered: z.string().describe('Rendered storage template path'),
+  })
+  .meta({ id: 'RenderStorageTemplateResponseDto' });
 
 const SystemConfigThemeSchema = z
   .object({ customCss: z.string().describe('Custom CSS for theming') })
@@ -437,6 +450,8 @@ export const SystemConfigSchema = z
 export class SystemConfigFFmpegDto extends createZodDto(SystemConfigFFmpegSchema) {}
 export class SystemConfigSmtpDto extends createZodDto(SystemConfigSmtpSchema) {}
 export class SystemConfigTemplateStorageOptionDto extends createZodDto(SystemConfigTemplateStorageOptionSchema) {}
+export class RenderStorageTemplateDto extends createZodDto(RenderStorageTemplateSchema) {}
+export class RenderStorageTemplateResponseDto extends createZodDto(RenderStorageTemplateResponseSchema) {}
 export class SystemConfigDto extends createZodDto(SystemConfigSchema) {}
 
 export function mapConfig(config: SystemConfig): SystemConfigDto {

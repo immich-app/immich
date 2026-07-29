@@ -87,10 +87,55 @@ describe(StorageTemplateService.name, () => {
           '{{album}}/{{filename}}',
           '{{make}}/{{model}}/{{lensModel}}/{{filename}}',
         ],
+        renderedPresetOptions: [
+          '2022/2022-02-03/IMAGE_56437',
+          '2022/02-03/IMAGE_56437',
+          '2022/February-03/IMAGE_56437',
+          '2022/02/IMAGE_56437',
+          '2022/album_name/IMAGE_56437',
+          '2021/album_name/IMAGE_56437',
+          '2022/Feb/IMAGE_56437',
+          '2022/February/IMAGE_56437',
+          '2022/02/03/IMAGE_56437',
+          '2022/February/03/IMAGE_56437',
+          '2022/2022-02/2022-02-03/IMAGE_56437',
+          '2022-02-03/IMAGE_56437',
+          '2022-Feb-03/IMAGE_56437',
+          '2022-February-03/IMAGE_56437',
+          '2022/2022-02/IMAGE_56437',
+          '2022/2022-05/IMAGE_56437',
+          '2022/2022-02-03/a8312960-e277-447d-b4ea-56717ccba856',
+          '2022/2022-02/a8312960-e277-447d-b4ea-56717ccba856',
+          '2022/2022-05/a8312960-e277-447d-b4ea-56717ccba856',
+          'album_name/IMAGE_56437',
+          'FUJIFILM/X-T50/XF27mm F2.8 R WR/IMAGE_56437',
+        ],
         secondOptions: ['s', 'ss', 'SSS'],
         weekOptions: ['W', 'WW'],
         yearOptions: ['y', 'yy'],
       });
+    });
+  });
+
+  describe('renderTemplate', () => {
+    it('should render a basic date + filename template', () => {
+      expect(sut.renderTemplate({ template: '{{y}}/{{filename}}' })).toEqual({ rendered: '2022/IMAGE_56437' });
+    });
+
+    it('should render with album tokens', () => {
+      expect(sut.renderTemplate({ template: '{{album}}/{{filename}}' })).toEqual({
+        rendered: 'album_name/IMAGE_56437',
+      });
+    });
+
+    it('should handle conditionals', () => {
+      expect(sut.renderTemplate({ template: '{{#if album}}{{album}}{{else}}other{{/if}}' })).toEqual({
+        rendered: 'album_name',
+      });
+    });
+
+    it('should throw for invalid template syntax', () => {
+      expect(() => sut.renderTemplate({ template: '{{y}}/{{}' })).toThrow();
     });
   });
 

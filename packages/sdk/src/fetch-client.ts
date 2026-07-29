@@ -2650,12 +2650,22 @@ export type SystemConfigTemplateStorageOptionDto = {
     monthOptions: string[];
     /** Available preset template options */
     presetOptions: string[];
+    /** Rendered versions of preset template options */
+    renderedPresetOptions: string[];
     /** Available second format options for storage template */
     secondOptions: string[];
     /** Available week format options for storage template */
     weekOptions: string[];
     /** Available year format options for storage template */
     yearOptions: string[];
+};
+export type RenderStorageTemplateDto = {
+    /** Storage template string to render */
+    template: string;
+};
+export type RenderStorageTemplateResponseDto = {
+    /** Rendered storage template path */
+    rendered: string;
 };
 export type AdminOnboardingUpdateDto = {
     /** Is admin onboarded */
@@ -6445,6 +6455,21 @@ export function getStorageTemplateOptions(opts?: Oazapfts.RequestOpts) {
     }>("/system-config/storage-template-options", {
         ...opts
     }));
+}
+/**
+ * Render storage template preview
+ */
+export function renderStorageTemplate({ renderStorageTemplateDto }: {
+    renderStorageTemplateDto: RenderStorageTemplateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: RenderStorageTemplateResponseDto;
+    }>("/system-config/storage-template-render", oazapfts.json({
+        ...opts,
+        method: "POST",
+        body: renderStorageTemplateDto
+    })));
 }
 /**
  * Retrieve admin onboarding
