@@ -29,7 +29,7 @@ import {
 } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, UploadFile, UploadRequest } from 'src/types';
+import { UploadFile, UploadRequest } from 'src/types';
 import { requireUploadAccess } from 'src/utils/access';
 import { asUploadRequest, onBeforeLink } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
@@ -128,7 +128,7 @@ export class AssetMediaService extends BaseService {
     file: UploadFile,
     sidecarFile?: UploadFile,
   ): Promise<AssetMediaResponseDto> {
-    let asset: Asset;
+    let asset: Asset | undefined;
     try {
       await this.requireAccess({
         auth,
@@ -165,6 +165,34 @@ export class AssetMediaService extends BaseService {
         livePhotoVideoId: dto.livePhotoVideoId,
         originalFileName: dto.filename || file.originalName,
       });
+
+      if (dto.metadata?.length) {
+        await this.assetRepository.upsertMetadata(asset.id, dto.metadata);
+      }
+
+      if (sidecarFile) {
+        await this.assetRepository.upsertFile({
+          assetId: asset.id,
+          path: sidecarFile.originalPath,
+          type: AssetFileType.Sidecar,
+        });
+        await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
+      }
+      await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
+      await this.assetRepository.upsertExif({
+        exif: { assetId: asset.id, fileSizeInByte: file.size },
+        lockedPropertiesBehavior: 'override',
+      });
+
+      await this.jobRepository.queue({ name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } });
+
+      if (auth.sharedLink) {
+        await this.addToSharedLink(auth.sharedLink, asset.id);
+      }
+
+      await this.eventRepository.emit('AssetCreate', { asset, file });
+
+      return { id: asset.id, status: AssetMediaStatus.CREATED };
     } catch (error: any) {
       // clean up files
       await this.jobRepository.queue({
@@ -188,69 +216,14 @@ export class AssetMediaService extends BaseService {
         return { status: AssetMediaStatus.DUPLICATE, id: duplicateId };
       }
 
+      // clean up the asset row if one was created
+      if (asset) {
+        await this.assetRepository.remove({ id: asset.id });
+      }
+
       this.logger.error(`Error uploading file ${error}`, error?.stack);
       throw error;
     }
-
-    // the row exists from here on: keep its files, queue its metadata job, and announce it
-    const metadataJob: JobItem = { name: JobName.AssetExtractMetadata, data: { id: asset.id, source: 'upload' } };
-    let metadataJobQueued = false;
-    let failure: { error: unknown } | undefined;
-    try {
-      if (dto.metadata?.length) {
-        await this.assetRepository.upsertMetadata(asset.id, dto.metadata);
-      }
-
-      if (sidecarFile) {
-        await this.assetRepository.upsertFile({
-          assetId: asset.id,
-          path: sidecarFile.originalPath,
-          type: AssetFileType.Sidecar,
-        });
-        await this.storageRepository.utimes(sidecarFile.originalPath, new Date(), new Date(dto.fileModifiedAt));
-      }
-      await this.storageRepository.utimes(file.originalPath, new Date(), new Date(dto.fileModifiedAt));
-      await this.assetRepository.upsertExif({
-        exif: { assetId: asset.id, fileSizeInByte: file.size },
-        lockedPropertiesBehavior: 'override',
-      });
-
-      await this.jobRepository.queue(metadataJob);
-      metadataJobQueued = true;
-
-      if (auth.sharedLink) {
-        await this.addToSharedLink(auth.sharedLink, asset.id);
-      }
-    } catch (error: any) {
-      failure = { error };
-      this.logger.error('Error uploading file', error?.stack);
-
-      if (!metadataJobQueued) {
-        // repair is best effort, it must not replace the original error
-        try {
-          await this.jobRepository.queue(metadataJob);
-        } catch (queueError: any) {
-          this.logger.error(`Error queueing metadata extraction for asset ${asset.id}`, queueError?.stack);
-        }
-      }
-    }
-
-    // a listener failure must not replace the error that got us here
-    try {
-      await this.eventRepository.emit('AssetCreate', { asset, file });
-    } catch (emitError: any) {
-      if (!failure) {
-        this.logger.error('Error uploading file', emitError?.stack);
-        throw emitError;
-      }
-      this.logger.error(`Error emitting create event for asset ${asset.id}`, emitError?.stack);
-    }
-
-    if (failure) {
-      throw failure.error;
-    }
-
-    return { id: asset.id, status: AssetMediaStatus.CREATED };
   }
 
   async downloadOriginal(auth: AuthDto, id: string, dto: AssetDownloadOriginalDto): Promise<ImmichFileResponse> {
