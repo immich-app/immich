@@ -38,7 +38,7 @@ class PinAuthPage extends HookConsumerWidget {
       }
     }
 
-    enableBiometricAuth() {
+    void enableBiometricAuth() {
       showDialog(
         context: context,
         builder: (buildContext) {

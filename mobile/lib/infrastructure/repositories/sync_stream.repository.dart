@@ -31,8 +31,8 @@ import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.drift
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 import 'package:logging/logging.dart';
-import 'package:openapi/api.dart' as api show AssetVisibility, AlbumUserRole, UserMetadataKey, AssetEditAction;
-import 'package:openapi/api.dart' hide UserMetadataKey, AssetEditAction, AssetVisibility, AlbumUserRole;
+import 'package:openapi/api.dart' as api show AlbumUserRole, AssetEditAction, AssetVisibility, UserMetadataKey;
+import 'package:openapi/api.dart' hide AlbumUserRole, AssetEditAction, AssetVisibility, UserMetadataKey;
 
 class SyncStreamRepository extends DriftDatabaseRepository {
   final Logger _logger = Logger('DriftSyncStreamRepository');
@@ -287,8 +287,8 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             fNumber: Value(exif.fNumber),
             fileSize: Value(exif.fileSizeInByte),
             focalLength: Value(exif.focalLength),
-            latitude: Value(exif.latitude?.toDouble()),
-            longitude: Value(exif.longitude?.toDouble()),
+            latitude: Value(exif.latitude),
+            longitude: Value(exif.longitude),
             iso: Value(exif.iso),
             make: Value(exif.make),
             model: Value(exif.model),

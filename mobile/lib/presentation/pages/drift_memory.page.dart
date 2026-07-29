@@ -7,10 +7,10 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_bottom_info.widget.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_card.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
@@ -54,7 +54,7 @@ class DriftMemoryPage extends HookConsumerWidget {
       };
     });
 
-    toNextMemory() {
+    void toNextMemory() {
       memoryPageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
     }
 
@@ -83,10 +83,10 @@ class DriftMemoryPage extends HookConsumerWidget {
       }
     }
 
-    toNextAsset(int currentAssetIndex) {
+    void toNextAsset(int currentAssetIndex) {
       if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
         // Go to the next asset
-        PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
+        final PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
         controller.nextPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500));
       } else {
@@ -95,10 +95,10 @@ class DriftMemoryPage extends HookConsumerWidget {
       }
     }
 
-    toPreviousAsset(int currentAssetIndex) {
+    void toPreviousAsset(int currentAssetIndex) {
       if (currentAssetIndex > 0) {
         // Go to the previous asset
-        PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
+        final PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
         controller.previousPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500));
       } else {
@@ -107,12 +107,12 @@ class DriftMemoryPage extends HookConsumerWidget {
       }
     }
 
-    updateProgressText() {
+    void updateProgressText() {
       assetProgress.value = "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
     }
 
     /// Downloads and caches the image for the asset at this [currentMemory]'s index
-    precacheAsset(int index) async {
+    Future<void> precacheAsset(int index) async {
       // Guard index out of range
       if (index < 0) {
         return;

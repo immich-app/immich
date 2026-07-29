@@ -48,15 +48,12 @@ class LocalAuthNotifier extends StateNotifier<BiometricStatus> {
         case "NotEnrolled":
           _log.warning("User is not enrolled in biometrics");
           errorMessage = "biometric_no_options".tr();
-          break;
         case "NotAvailable":
           _log.warning("Biometric authentication is not available");
           errorMessage = "biometric_not_available".tr();
-          break;
         case "LockedOut":
           _log.warning("User is locked out of biometric authentication");
           errorMessage = "biometric_locked_out".tr();
-          break;
         default:
           _log.warning("Failed to authenticate with unknown reason");
           errorMessage = 'failed_to_authenticate'.tr();

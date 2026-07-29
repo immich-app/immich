@@ -62,7 +62,6 @@ class GCastService {
     switch (message['type']) {
       case "MEDIA_STATUS":
         _handleMediaStatus(message);
-        break;
     }
   }
 
@@ -77,13 +76,10 @@ class GCastService {
     switch (status['playerState']) {
       case "PLAYING":
         onCastState?.call(CastState.playing);
-        break;
       case "PAUSED":
         onCastState?.call(CastState.paused);
-        break;
       case "BUFFERING":
         onCastState?.call(CastState.buffering);
-        break;
       case "IDLE":
         onCastState?.call(CastState.idle);
 
@@ -92,7 +88,6 @@ class GCastService {
           _mediaStatusPollingTimer?.cancel();
         }
 
-        break;
     }
 
     if (status["media"] != null && status["media"]["duration"] != null) {
@@ -147,7 +142,7 @@ class GCastService {
     return bufferedExpiration.isAfter(DateTime.now());
   }
 
-  void loadMedia(RemoteAsset asset, bool reload) async {
+  Future<void> loadMedia(RemoteAsset asset, bool reload) async {
     if (!isConnected) {
       return;
     } else if (asset.id == currentAssetId && !reload) {

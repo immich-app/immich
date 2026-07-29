@@ -41,13 +41,13 @@ class MapLocationPickerPage extends HookConsumerWidget {
     }
 
     Future<void> getCurrentLocation() async {
-      var (currentLocation, _) = await MapUtils.checkPermAndGetLocation(context: context);
+      final (currentLocation, _) = await MapUtils.checkPermAndGetLocation(context: context);
 
       if (currentLocation == null) {
         return;
       }
 
-      var currentLatLng = LatLng(currentLocation.latitude, currentLocation.longitude);
+      final currentLatLng = LatLng(currentLocation.latitude, currentLocation.longitude);
       selectedLatLng.value = currentLatLng;
       await controller.value?.animateCamera(CameraUpdate.newLatLngZoom(currentLatLng, 12));
     }

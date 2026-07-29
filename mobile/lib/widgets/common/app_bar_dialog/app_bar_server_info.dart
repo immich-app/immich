@@ -18,14 +18,14 @@ class AppBarServerInfo extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(localeProvider);
-    ServerInfo serverInfoState = ref.watch(serverInfoProvider);
+    final ServerInfo serverInfoState = ref.watch(serverInfoProvider);
     final user = ref.watch(currentUserProvider);
     final bool showVersionWarning = ref.watch(versionWarningPresentProvider(user));
 
     final appInfo = useState({});
 
-    getPackageInfo() async {
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    Future<void> getPackageInfo() async {
+      final PackageInfo packageInfo = await PackageInfo.fromPlatform();
 
       appInfo.value = {"version": packageInfo.version, "buildNumber": packageInfo.buildNumber};
     }

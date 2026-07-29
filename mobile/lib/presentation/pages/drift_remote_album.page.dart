@@ -84,7 +84,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     } catch (e) {
       ImmichToast.show(
         context: context,
-        msg: "Failed to add users to album: ${e.toString()}",
+        msg: "Failed to add users to album: $e",
         toastType: ToastType.error,
       );
     }

@@ -30,7 +30,7 @@ class DeleteActionButton extends ConsumerWidget {
     this.menuItem = false,
   });
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }

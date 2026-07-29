@@ -366,7 +366,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
           ),
           child: ListView(
             shrinkWrap: true,
-            padding: const EdgeInsets.all(0),
+            padding: EdgeInsets.zero,
             physics: const NeverScrollableScrollPhysics(),
             children: [
               ListTile(
@@ -418,7 +418,7 @@ class _PartnerList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.all(0),
+      padding: EdgeInsets.zero,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: partners.length,
       shrinkWrap: true,
