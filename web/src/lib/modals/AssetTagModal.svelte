@@ -56,8 +56,8 @@
     const tagIdsToAdd = [...selectedTags]
       .filter(
         (tag) =>
-          tag.partial === false &&
-          !existingTagsForAssets.some((t) => t.tagId === tag.id && t.assetIds?.length === assetIds.length),
+          !tag.partial &&
+          existingTagsForAssets.every((t) => t.tagId !== tag.id || t.assetIds?.length !== assetIds.length),
       )
       .map((tag) => tag.id);
 
@@ -78,7 +78,7 @@
         tagIdsToAdd,
         tagIdsToRemove,
         assetIds,
-        showNotification: true,
+        showNotification: false,
       });
       eventManager.emit('AssetsTag', assetIds);
       onClose(true);

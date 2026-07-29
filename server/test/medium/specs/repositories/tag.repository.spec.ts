@@ -154,7 +154,7 @@ describe(TagRepository.name, () => {
       expect(result).toBeDefined();
 
       await expect(ctx.database.selectFrom('tag_asset').selectAll().orderBy('assetId').execute()).resolves.toEqual(
-        testPairs.sort((a, b) => (a.assetId < b.assetId ? -1 : 1)),
+        testPairs.sort((a, b) => a.assetId.localeCompare(b.assetId)),
       );
     });
 
@@ -188,7 +188,7 @@ describe(TagRepository.name, () => {
       const result = await sut.upsertAssetIds(testPairs);
       expect(result).toBeDefined();
       await expect(ctx.database.selectFrom('tag_asset').selectAll().orderBy('assetId').execute()).resolves.toEqual(
-        testPairs.sort((a, b) => (a.assetId < b.assetId ? -1 : 1)),
+        testPairs.sort((a, b) => a.assetId.localeCompare(b.assetId)),
       );
     });
   });
@@ -262,7 +262,7 @@ describe(TagRepository.name, () => {
       ];
 
       await expect(ctx.database.selectFrom('tag_asset').selectAll().orderBy('assetId').execute()).resolves.toEqual(
-        testPairsRemainig.sort((a, b) => (a.assetId < b.assetId ? -1 : 1)),
+        testPairsRemainig.sort((a, b) => a.assetId.localeCompare(b.assetId)),
       );
     });
   });

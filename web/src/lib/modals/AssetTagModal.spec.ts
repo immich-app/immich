@@ -368,7 +368,7 @@ describe('AssetTagModal component', () => {
 
     render(AssetTagModal, {
       props: {
-        assetIds: Array.from({ length: 41 }).fill('asset-id') as string[],
+        assetIds: Array.from({ length: 41 }, () => 'asset-id') as string[],
         onClose,
       },
     });
