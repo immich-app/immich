@@ -56,9 +56,9 @@ void upgradeDto(dynamic value, String targetType) {
   });
 }
 
-addDefault(dynamic value, String keys, dynamic defaultValue) {
+void addDefault(dynamic value, String keys, dynamic defaultValue) {
   // Loop through the keys and assign the default value if the key is not present
-  List<String> keyList = keys.split('.');
+  final List<String> keyList = keys.split('.');
   dynamic current = value;
 
   for (int i = 0; i < keyList.length - 1; i++) {

@@ -56,7 +56,7 @@ class _InfoBoxState extends ConsumerState<_InfoBox> {
     _inTimeline = widget.partner.inTimeline;
   }
 
-  _toggleInTimeline() async {
+  Future<void> _toggleInTimeline() async {
     final user = ref.read(currentUserProvider);
     if (user == null) {
       return;

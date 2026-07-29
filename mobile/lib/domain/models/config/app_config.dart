@@ -190,9 +190,9 @@ class AppConfig {
       .viewerTapToNavigate => copyWith(viewer: viewer.copyWith(tapToNavigate: value as bool)),
       .networkAutoEndpointSwitching => copyWith(network: network.copyWith(autoEndpointSwitching: value as bool)),
       .networkPreferredWifiName => copyWith(
-        network: network.copyWith(preferredWifiName: .fromNullable((value as String?))),
+        network: network.copyWith(preferredWifiName: .fromNullable(value as String?)),
       ),
-      .networkLocalEndpoint => copyWith(network: network.copyWith(localEndpoint: .fromNullable((value as String?)))),
+      .networkLocalEndpoint => copyWith(network: network.copyWith(localEndpoint: .fromNullable(value as String?))),
       .networkExternalEndpointList => copyWith(network: network.copyWith(externalEndpointList: value as List<String>)),
       .networkCustomHeaders => copyWith(network: network.copyWith(customHeaders: value as Map<String, String>)),
       .albumSortMode => copyWith(album: album.copyWith(sortMode: value as AlbumSortMode)),

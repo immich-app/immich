@@ -53,7 +53,7 @@ class ApiService {
     _apiClient.client = NetworkRepository.client;
   }
 
-  setEndpoint(String endpoint) {
+  void setEndpoint(String endpoint) {
     _apiClient.basePath = endpoint;
     _apiClient.client = NetworkRepository.client;
     usersApi = UsersApi(_apiClient);
@@ -118,7 +118,7 @@ class ApiService {
     }
 
     try {
-      await setEndpoint(serverUrl);
+      setEndpoint(serverUrl);
       await serverInfoApi.pingServer().timeout(const Duration(seconds: 5));
     } on TimeoutException catch (_) {
       return false;
@@ -155,7 +155,7 @@ class ApiService {
   }
 
   Future<void> setDeviceInfoHeader() async {
-    DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
+    final DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
 
     if (Platform.isIOS) {
       final iosInfo = await deviceInfoPlugin.iosInfo;

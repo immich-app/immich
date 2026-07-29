@@ -63,7 +63,7 @@ class DownloadService {
     onVideoDownloadStatus?.call(update);
   }
 
-  void _onLivePhotoRecordComplete(TaskRecord record) async {
+  Future<void> _onLivePhotoRecordComplete(TaskRecord record) async {
     final livePhotosId = LivePhotosMetadata.fromJson(record.task.metaData).id;
     await _saveLivePhotos(livePhotosId);
   }
