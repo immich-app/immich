@@ -14,8 +14,12 @@ macos-x64 = { asset_pattern = "dcm-macos-x64-release.zip" }
 macos-arm64 = { asset_pattern = "dcm-macos-arm-release.zip" }
 windows-x64 = { asset_pattern = "dcm-windows-release.zip" }
 
-[tasks."codegen:dart"]
+[tasks.codegen]
 alias = "codegen"
+description = "Generate all codegen artifacts"
+depends = ["codegen:dart", "codegen:drift:schema", "codegen:pigeon", "codegen:translation"]
+
+[tasks."codegen:dart"]
 description = "Execute build_runner to auto-generate dart code"
 sources = [
   "pubspec.yaml",
@@ -28,6 +32,12 @@ run = [
   "dart run build_runner build --delete-conflicting-outputs",
   "dart format lib/routing/router.gr.dart",
 ]
+
+[tasks."codegen:drift:schema"]
+description = "Generate Drift migration schema test code"
+sources = ["drift_schemas/main/*.json"]
+outputs = { auto = true }
+run = "dart run drift_dev schema generate --data-classes --companions drift_schemas/main/ test/drift/main/generated/"
 
 [tasks."codegen:watch"]
 alias = "watch"
