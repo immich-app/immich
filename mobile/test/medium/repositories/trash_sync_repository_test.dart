@@ -207,6 +207,7 @@ void main() {
 
   group('review status', () {
     test('watches the count of pending review markers for selected local assets', () async {
+      await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1));
       final unselected = await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1), album: .none);
       await sut.recordSoftDeleteReviewAssets();
       await markAsset(assetId: unselected.localId, checksum: unselected.checksum, status: .reviewPending);
