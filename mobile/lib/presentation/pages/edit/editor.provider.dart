@@ -25,7 +25,7 @@ class EditorProvider extends Notifier<EditorState> {
     final originalWidth = exifInfo.isFlipped ? exifInfo.height : exifInfo.width;
     final originalHeight = exifInfo.isFlipped ? exifInfo.width : exifInfo.height;
 
-    Rect crop = existingCrop != null && originalWidth != null && originalHeight != null
+    final Rect crop = existingCrop != null && originalWidth != null && originalHeight != null
         ? convertCropParametersToRect(existingCrop.parameters, originalWidth, originalHeight)
         : const Rect.fromLTRB(0, 0, 1, 1);
 

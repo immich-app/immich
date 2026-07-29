@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 Future<Uint8List> imageToUint8List(Image image) async {
   final Completer<Uint8List> completer = Completer();
   image.image
-      .resolve(const ImageConfiguration())
+      .resolve(ImageConfiguration.empty)
       .addListener(
         ImageStreamListener((ImageInfo info, bool _) {
           info.image.toByteData(format: ImageByteFormat.png).then((byteData) {

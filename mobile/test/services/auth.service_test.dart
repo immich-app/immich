@@ -103,7 +103,7 @@ void main() {
     });
 
     test('Should return null if auto endpoint switching is disabled', () async {
-      when(() => authRepository.getEndpointSwitchingFeature()).thenReturn((false));
+      when(() => authRepository.getEndpointSwitchingFeature()).thenReturn(false);
 
       final result = await sut.setOpenApiServiceEndpoint();
 

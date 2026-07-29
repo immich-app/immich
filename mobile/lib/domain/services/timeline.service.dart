@@ -178,7 +178,7 @@ class TimelineService {
     if (!hasRange(index, count)) {
       throw RangeError('TimelineService::getAssets Index out of range');
     }
-    int start = index - _bufferOffset;
+    final int start = index - _bufferOffset;
     return _buffer.slice(start, start + count);
   }
 

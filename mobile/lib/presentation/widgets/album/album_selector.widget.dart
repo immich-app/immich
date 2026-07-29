@@ -774,7 +774,7 @@ class AddToAlbumHeader extends ConsumerWidget {
             TextButton.icon(
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // remove internal padding
-                minimumSize: const Size(0, 0), // allow shrinking
+                minimumSize: Size.zero, // allow shrinking
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap, // remove extra height
               ),
               onPressed: onCreateAlbum,
@@ -797,7 +797,7 @@ class CreateAlbumButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Future<void> onCreateAlbum() async {
-      var albumName = await showDialog<String?>(context: context, builder: (context) => const NewAlbumNameModal());
+      final albumName = await showDialog<String?>(context: context, builder: (context) => const NewAlbumNameModal());
       if (albumName == null) {
         return;
       }
@@ -839,7 +839,7 @@ class CreateAlbumButton extends ConsumerWidget {
             TextButton.icon(
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                minimumSize: const Size(0, 0),
+                minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               onPressed: onCreateAlbum,

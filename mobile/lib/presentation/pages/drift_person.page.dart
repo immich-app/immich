@@ -24,7 +24,7 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
   late DriftPerson _person;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     _person = widget.person;
   }

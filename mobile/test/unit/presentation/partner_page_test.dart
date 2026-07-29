@@ -17,7 +17,7 @@ void main() {
 
   group('PartnerSharedByList', () {
     testWidgets('shows the empty-state add button when there are no partners', (tester) async {
-      final action = const PartnerAddAction();
+      const action = PartnerAddAction();
 
       await tester.pumpTestWidget(context, const PartnerSharedByList(partners: []));
 
@@ -39,7 +39,7 @@ void main() {
     testWidgets('renders a remove action for each partner', (tester) async {
       final partner1 = PartnerFactory.create(inTimeline: true);
       final partner2 = PartnerFactory.create();
-      final action = const PartnerRemoveAction(sharedWithId: '', partnerName: '');
+      const action = PartnerRemoveAction(sharedWithId: '', partnerName: '');
       await tester.pumpTestWidget(context, PartnerSharedByList(partners: [partner1, partner2]));
       expect(find.byIcon(action.icon), findsNWidgets(2));
     });

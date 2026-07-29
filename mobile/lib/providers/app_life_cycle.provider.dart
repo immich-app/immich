@@ -35,7 +35,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     return state;
   }
 
-  void handleAppResume() async {
+  Future<void> handleAppResume() async {
     state = AppLifeCycleEnum.resumed;
 
     // Prevent overlapping resume operations
