@@ -23,7 +23,8 @@ class AssetStackRow extends ConsumerWidget {
     }
 
     final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
-    final double opacity = ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
+    final double opacity =
+        ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
 
     return IgnorePointer(
       ignoring: opacity < 1.0,

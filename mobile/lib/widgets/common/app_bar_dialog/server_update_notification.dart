@@ -17,7 +17,9 @@ class ServerUpdateNotification extends HookConsumerWidget {
     final serverInfoState = ref.watch(serverInfoProvider);
 
     const Color errorColor = Color.fromARGB(85, 253, 97, 83);
-    final Color infoColor = context.isDarkTheme ? context.primaryColor.withAlpha(55) : context.primaryColor.withAlpha(25);
+    final Color infoColor = context.isDarkTheme
+        ? context.primaryColor.withAlpha(55)
+        : context.primaryColor.withAlpha(25);
     void openUpdateLink() {
       String url;
       if (serverInfoState.versionStatus == VersionStatus.serverOutOfDate) {

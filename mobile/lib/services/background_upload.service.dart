@@ -219,7 +219,6 @@ class BackgroundUploadService {
           }
         }
 
-
       default:
         break;
     }

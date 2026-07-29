@@ -87,7 +87,6 @@ class GCastService {
         if (status["idleReason"] == "FINISHED") {
           _mediaStatusPollingTimer?.cancel();
         }
-
     }
 
     if (status["media"] != null && status["media"]["duration"] != null) {

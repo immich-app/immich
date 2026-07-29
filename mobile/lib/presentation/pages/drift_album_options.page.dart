@@ -83,11 +83,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
 
         ref.invalidate(remoteAlbumSharedUsersProvider(album.id));
       } catch (e) {
-        ImmichToast.show(
-          context: context,
-          msg: "Failed to add users to album: $e",
-          toastType: ToastType.error,
-        );
+        ImmichToast.show(context: context, msg: "Failed to add users to album: $e", toastType: ToastType.error);
       }
     }
 
