@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -76,7 +77,7 @@ void main() {
       final user = await ctx.newUser();
       final asset = await ctx.newRemoteAsset(ownerId: user.id, livePhotoVideoId: 'motion-photo-1');
 
-      final assets = await sut.main([user.id], .day).assetSource(0, 10);
+      final assets = await sut.main([user.id], .day, AssetOriginFilter.all).assetSource(0, 10);
 
       expect(assets, hasLength(1));
       final remote = assets.single as RemoteAsset;
@@ -92,7 +93,7 @@ void main() {
       final asset = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum, livePhotoVideoId: 'motion-photo-2');
       final local = await ctx.newLocalAsset(checksum: checksum);
 
-      final assets = await sut.main([user.id], .day).assetSource(0, 10);
+      final assets = await sut.main([user.id], .day, AssetOriginFilter.all).assetSource(0, 10);
 
       expect(assets, hasLength(1));
       final remote = assets.single as RemoteAsset;
