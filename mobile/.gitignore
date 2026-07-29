@@ -31,6 +31,8 @@
 .pub-cache/
 .pub/
 /build/
+lib/**/*.drift.dart
+test/drift/main/generated/
 
 # Web related
 lib/generated_plugin_registrant.dart
