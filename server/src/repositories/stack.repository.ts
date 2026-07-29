@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ExpressionBuilder, Insertable, Kysely, sql, Updateable } from 'kysely';
+import { ExpressionBuilder, Insertable, Kysely, Updateable } from 'kysely';
 import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { dirname, parse } from 'node:path';
@@ -71,8 +71,6 @@ export class StackRepository {
         'asset.visibility',
         'asset.stackId',
         'asset.isEdited',
-        'asset_exif.make',
-        'asset_exif.model',
       ])
       .where('asset.id', '=', id)
       .where('asset.deletedAt', 'is', null)
@@ -96,52 +94,41 @@ export class StackRepository {
       return;
     }
 
-    const basename = getBasename(initial.originalFileName);
-    const directory = initial.libraryId ? dirname(initial.originalPath).toLowerCase() : '';
-    const lockKey = [
-      initial.ownerId,
-      initial.libraryId ?? '',
-      directory,
-      basename,
-      initial.fileCreatedAt.toISOString(),
-    ].join(':');
-
     return this.db.transaction().execute(async (tx) => {
-      await sql`select pg_advisory_xact_lock(hashtextextended(${lockKey}, 0))`.execute(tx);
-
-      const current = await this.getRawPairAsset(tx, assetId);
-
-      if (!current || current.stackId || current.isEdited) {
-        return;
-      }
-
-      const currentIsRaw = mimeTypes.isRaw(current.originalFileName);
-      const candidates = await tx
+      const assets = await tx
         .selectFrom('asset')
         .innerJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
         .select(['asset.id', 'asset.originalPath', 'asset.originalFileName', 'asset_exif.make', 'asset_exif.model'])
-        .where('asset.id', '!=', current.id)
-        .where('asset.ownerId', '=', current.ownerId)
+        .where('asset.ownerId', '=', initial.ownerId)
         .where('asset.type', '=', AssetType.Image)
-        .where('asset.fileCreatedAt', '=', current.fileCreatedAt)
-        .where('asset.visibility', '=', current.visibility)
+        .where('asset.fileCreatedAt', '=', initial.fileCreatedAt)
+        .where('asset.visibility', '=', initial.visibility)
         .where('asset.stackId', 'is', null)
         .where('asset.isEdited', '=', false)
         .where('asset.deletedAt', 'is', null)
         .where('asset.status', '=', AssetStatus.Active)
-        .$if(current.libraryId === null, (qb) => qb.where('asset.libraryId', 'is', null))
-        .$if(current.libraryId !== null, (qb) => qb.where('asset.libraryId', '=', current.libraryId!))
+        .$if(initial.libraryId === null, (qb) => qb.where('asset.libraryId', 'is', null))
+        .$if(initial.libraryId !== null, (qb) => qb.where('asset.libraryId', '=', initial.libraryId!))
+        .orderBy('asset.id')
+        .forUpdate('asset')
         .execute();
 
-      const matches = candidates.filter((candidate) => {
+      const current = assets.find(({ id }) => id === assetId);
+      if (!current) {
+        return;
+      }
+
+      const currentIsRaw = mimeTypes.isRaw(current.originalFileName);
+      const matches = assets.filter((candidate) => {
         const isComplement = currentIsRaw
           ? isJpeg(candidate.originalFileName)
           : mimeTypes.isRaw(candidate.originalFileName);
         const isSameDirectory =
-          current.libraryId === null ||
+          initial.libraryId === null ||
           dirname(current.originalPath).toLowerCase() === dirname(candidate.originalPath).toLowerCase();
 
         return (
+          candidate.id !== current.id &&
           isComplement &&
           isSameDirectory &&
           getBasename(candidate.originalFileName) === getBasename(current.originalFileName) &&
@@ -158,7 +145,7 @@ export class StackRepository {
       const primaryAssetId = currentIsRaw ? match.id : current.id;
       const { id } = await tx
         .insertInto('stack')
-        .values({ ownerId: current.ownerId, primaryAssetId })
+        .values({ ownerId: initial.ownerId, primaryAssetId })
         .returning('id')
         .executeTakeFirstOrThrow();
 
