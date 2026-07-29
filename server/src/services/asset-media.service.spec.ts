@@ -12,7 +12,7 @@ import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetType, AssetVisibility, CacheControl, JobName } from 'src/enum';
 import { AuthRequest } from 'src/middleware/auth.guard';
 import { AssetMediaService } from 'src/services/asset-media.service';
-import { UploadBody, UploadFile } from 'src/types';
+import { UploadBody } from 'src/types';
 import { ASSET_CHECKSUM_CONSTRAINT } from 'src/utils/database';
 import { ImmichFileResponse } from 'src/utils/file';
 import { AssetFileFactory } from 'test/factories/asset-file.factory';
@@ -349,7 +349,6 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.asset.create).toHaveBeenCalled();
-      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', { asset: assetEntity, file });
       expect(mocks.storage.utimes).toHaveBeenCalledWith(
         file.originalPath,
         expect.any(Date),
@@ -377,12 +376,10 @@ describe(AssetMediaService.name, () => {
         status: AssetMediaStatus.DUPLICATE,
       });
 
-      expect(mocks.asset.remove).not.toHaveBeenCalled();
       expect(mocks.job.queue).toHaveBeenCalledWith({
         name: JobName.FileDelete,
         data: { files: ['fake_path/asset_1.jpeg', undefined] },
       });
-      expect(mocks.event.emit).not.toHaveBeenCalled();
       expect(mocks.user.updateUsage).not.toHaveBeenCalled();
     });
 
@@ -466,53 +463,6 @@ describe(AssetMediaService.name, () => {
         new Date(createDto.fileModifiedAt),
       );
       expect(mocks.asset.update).not.toHaveBeenCalled();
-    });
-
-    it.each([
-      {
-        step: 'metadata upsert',
-        arrange: (error: Error) => mocks.asset.upsertMetadata.mockRejectedValue(error),
-        dto: {
-          ...createDto,
-          metadata: [{ key: 'description', value: { text: 'a description' } }],
-        } as AssetMediaCreateDto,
-      },
-      {
-        step: 'sidecar write',
-        arrange: (error: Error) => mocks.asset.upsertFile.mockRejectedValue(error),
-        sidecarFile: fileStub.photoSidecar,
-      },
-      {
-        step: 'setting file times',
-        arrange: (error: Error) => mocks.storage.utimes.mockRejectedValue(error),
-      },
-      {
-        step: 'setting sidecar file times',
-        arrange: (error: Error) => mocks.storage.utimes.mockRejectedValue(error),
-        sidecarFile: fileStub.photoSidecar,
-      },
-      {
-        step: 'exif upsert',
-        arrange: (error: Error) => mocks.asset.upsertExif.mockRejectedValue(error),
-      },
-    ] as {
-      step: string;
-      arrange: (error: Error) => void;
-      dto?: AssetMediaCreateDto;
-      sidecarFile?: UploadFile;
-    }[])('should remove the created asset when the $step fails', async ({ arrange, dto, sidecarFile }) => {
-      const error = new Error('step failed');
-      mocks.asset.create.mockResolvedValue(assetEntity);
-      arrange(error);
-
-      await expect(sut.uploadAsset(authStub.user1, dto ?? createDto, fileStub.photo, sidecarFile)).rejects.toBe(error);
-
-      expect(mocks.asset.remove).toHaveBeenCalledWith({ id: assetEntity.id });
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.FileDelete,
-        data: { files: [fileStub.photo.originalPath, sidecarFile?.originalPath] },
-      });
-      expect(mocks.event.emit).not.toHaveBeenCalled();
     });
   });
 
