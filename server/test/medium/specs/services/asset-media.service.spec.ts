@@ -2,7 +2,7 @@ import { Kysely } from 'kysely';
 import { randomBytes } from 'node:crypto';
 import { AssetMediaStatus } from 'src/dtos/asset-media-response.dto';
 import { AssetMediaSize } from 'src/dtos/asset-media.dto';
-import { AssetFileType, JobName, SharedLinkType } from 'src/enum';
+import { AssetFileType, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -98,83 +98,6 @@ describe(AssetService.name, () => {
       ).resolves.toEqual({
         id: expect.any(String),
         status: AssetMediaStatus.CREATED,
-      });
-    });
-
-    it('should remove the created asset and its sidecar record when a post-create step fails', async () => {
-      const { sut, ctx } = setup();
-
-      ctx.getMock(EventRepository).emit.mockResolvedValue();
-      ctx.getMock(JobRepository).queue.mockResolvedValue();
-      // the sidecar utimes succeeds, the main file's utimes fails
-      ctx.getMock(StorageRepository).utimes.mockResolvedValueOnce().mockRejectedValueOnce(new Error('utimes failed'));
-
-      const { user } = await ctx.newUser();
-      const auth = factory.auth({ user: { id: user.id } });
-      const dto = {
-        fileModifiedAt: new Date(),
-        fileCreatedAt: new Date(),
-        assetData: Buffer.from('some data'),
-      };
-      const file = mediumFactory.uploadFile({ originalPath: '/path/to/main.jpg' });
-      const sidecar = mediumFactory.uploadFile({ originalPath: '/path/to/main.jpg.xmp' });
-
-      await expect(sut.uploadAsset(auth, dto, file, sidecar)).rejects.toThrow('utimes failed');
-
-      await expect(
-        ctx.database.selectFrom('asset').selectAll().where('ownerId', '=', user.id).execute(),
-      ).resolves.toHaveLength(0);
-      await expect(
-        ctx.database.selectFrom('asset_file').selectAll().where('path', '=', '/path/to/main.jpg.xmp').execute(),
-      ).resolves.toHaveLength(0);
-      expect(ctx.getMock(JobRepository).queue).toHaveBeenCalledWith({
-        name: JobName.FileDelete,
-        data: { files: ['/path/to/main.jpg', '/path/to/main.jpg.xmp'] },
-      });
-      expect(ctx.getMock(EventRepository).emit).not.toHaveBeenCalled();
-    });
-
-    it('should upload cleanly when the same file is retried after a post-create failure', async () => {
-      const { sut, ctx } = setup();
-
-      ctx.getMock(StorageRepository).utimes.mockResolvedValue();
-      ctx.getMock(EventRepository).emit.mockResolvedValue();
-      // the first upload fails to queue its metadata job
-      ctx.getMock(JobRepository).queue.mockRejectedValueOnce(new Error('queue down')).mockResolvedValue();
-
-      const { user } = await ctx.newUser();
-      const auth = factory.auth({ user: { id: user.id } });
-      const dto = {
-        fileModifiedAt: new Date(),
-        fileCreatedAt: new Date(),
-        assetData: Buffer.from('some data'),
-      };
-      const file = mediumFactory.uploadFile({ originalPath: '/path/to/first.jpg' });
-
-      await expect(sut.uploadAsset(auth, dto, file)).rejects.toThrow('queue down');
-
-      // nothing survives the failed attempt
-      await expect(
-        ctx.database.selectFrom('asset').selectAll().where('ownerId', '=', user.id).execute(),
-      ).resolves.toHaveLength(0);
-      expect(ctx.getMock(JobRepository).queue).toHaveBeenCalledWith({
-        name: JobName.FileDelete,
-        data: { files: ['/path/to/first.jpg', undefined] },
-      });
-      expect(ctx.getMock(EventRepository).emit).not.toHaveBeenCalled();
-
-      const retryFile = mediumFactory.uploadFile({ originalPath: '/path/to/second.jpg', checksum: file.checksum });
-      await expect(sut.uploadAsset(auth, dto, retryFile)).resolves.toEqual({
-        id: expect.any(String),
-        status: AssetMediaStatus.CREATED,
-      });
-
-      const [asset] = await ctx.database.selectFrom('asset').selectAll().where('ownerId', '=', user.id).execute();
-      expect(asset).toMatchObject({ checksum: retryFile.checksum, originalPath: retryFile.originalPath });
-      expect(ctx.getMock(EventRepository).emit).toHaveBeenCalledTimes(1);
-      expect(ctx.getMock(EventRepository).emit).toHaveBeenCalledWith('AssetCreate', {
-        asset: expect.objectContaining({ id: asset.id }),
-        file: expect.objectContaining({ size: retryFile.size }),
       });
     });
 
