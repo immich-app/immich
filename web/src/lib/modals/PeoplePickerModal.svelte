@@ -26,7 +26,7 @@
     people
       .filter((person) => !excludedIds.includes(person.id))
       .filter(
-        (person) => !searchName || normalizeSearchString(person.name).includes(normalizeSearchString(searchName)),
+        (person) => !searchName || normalizeSearchString(person.name ?? '').includes(normalizeSearchString(searchName)),
       ),
   );
 
