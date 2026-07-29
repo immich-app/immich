@@ -64,9 +64,9 @@ class _MesmerizingSliverAppBarState extends ConsumerState<RemoteAlbumSliverAppBa
       return const SliverToBoxAdapter(child: SizedBox.shrink());
     }
 
-    Color? actionIconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
+    final Color? actionIconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
 
-    List<Shadow> actionIconShadows = [
+    final List<Shadow> actionIconShadows = [
       if (_scrollProgress < 0.95)
         Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
       else

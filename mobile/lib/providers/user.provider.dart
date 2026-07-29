@@ -14,7 +14,7 @@ class CurrentUserProvider extends StateNotifier<UserDto?> {
   final UserService _userService;
   late final StreamSubscription<UserDto?> streamSub;
 
-  refresh() async {
+  Future<void> refresh() async {
     try {
       await _userService.refreshMyUser();
     } catch (_) {}

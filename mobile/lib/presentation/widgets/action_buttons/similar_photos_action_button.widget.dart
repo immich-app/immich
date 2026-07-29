@@ -18,7 +18,7 @@ class SimilarPhotosActionButton extends ConsumerWidget {
 
   const SimilarPhotosActionButton({super.key, required this.assetId, this.iconOnly = false, this.menuItem = false});
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }

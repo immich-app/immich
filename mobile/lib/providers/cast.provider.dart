@@ -58,7 +58,6 @@ class CastNotifier extends StateNotifier<CastManagerState> {
     switch (type) {
       case CastDestinationType.googleCast:
         await _gCastService.connect(device);
-        break;
     }
   }
 

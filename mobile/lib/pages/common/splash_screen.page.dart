@@ -25,7 +25,7 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:logging/logging.dart';
-import 'package:url_launcher/url_launcher.dart' show launchUrl, LaunchMode;
+import 'package:url_launcher/url_launcher.dart' show LaunchMode, launchUrl;
 
 class BootstrapErrorWidget extends StatelessWidget {
   final String error;
@@ -297,7 +297,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     log.info("Resuming session at $endpoint");
   }
 
-  void resumeSession() async {
+  Future<void> resumeSession() async {
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
     final accessToken = Store.tryGet(StoreKey.accessToken);

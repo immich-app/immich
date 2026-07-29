@@ -13,7 +13,7 @@ class EditDateTimeActionButton extends ConsumerWidget {
 
   const EditDateTimeActionButton({super.key, required this.source});
 
-  _onTap(BuildContext context, WidgetRef ref) async {
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }

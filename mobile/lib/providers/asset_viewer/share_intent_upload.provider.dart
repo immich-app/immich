@@ -9,11 +9,11 @@ import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 
 final shareIntentUploadProvider = StateNotifierProvider<ShareIntentUploadStateNotifier, List<ShareIntentAttachment>>(
-  ((ref) => ShareIntentUploadStateNotifier(
+  (ref) => ShareIntentUploadStateNotifier(
     ref.watch(appRouterProvider),
     ref.read(foregroundUploadServiceProvider),
     ref.read(shareIntentServiceProvider),
-  )),
+  ),
 );
 
 class ShareIntentUploadStateNotifier extends StateNotifier<List<ShareIntentAttachment>> {

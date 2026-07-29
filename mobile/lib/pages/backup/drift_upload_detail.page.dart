@@ -520,7 +520,7 @@ class _CurrentUploadThumbnail extends ConsumerWidget {
             ),
             clipBehavior: Clip.antiAlias,
             child: snapshot.data != null
-                ? Thumbnail.fromAsset(asset: snapshot.data!, size: const Size(48, 48), fit: BoxFit.cover)
+                ? Thumbnail.fromAsset(asset: snapshot.data, size: const Size(48, 48), fit: BoxFit.cover)
                 : Icon(Icons.image, size: 24, color: context.colorScheme.primary),
           ),
         );

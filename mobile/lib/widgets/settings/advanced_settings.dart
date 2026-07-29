@@ -7,9 +7,9 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
@@ -45,9 +45,9 @@ class AdvancedSettings extends HookConsumerWidget {
 
     Future<bool> checkAndroidVersion() async {
       if (Platform.isAndroid) {
-        DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-        int sdkVersion = androidInfo.version.sdkInt;
+        final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+        final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+        final int sdkVersion = androidInfo.version.sdkInt;
         return sdkVersion >= 31;
       }
       return false;
