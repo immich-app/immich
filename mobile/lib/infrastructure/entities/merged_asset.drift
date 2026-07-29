@@ -139,3 +139,64 @@ FROM
 )
 GROUP BY bucket_date
 ORDER BY bucket_date DESC;
+
+-- 0-based index of a remote asset in the main timeline (same filters/order as mergedAsset).
+-- NULL when the asset is not part of the main timeline (archived, non-primary stack, etc.).
+mergedAssetIndex(:remote_id AS TEXT):
+SELECT CASE
+	WHEN NOT EXISTS (
+		SELECT 1
+		FROM remote_asset_entity rae
+		LEFT JOIN stack_entity se ON rae.stack_id = se.id
+		WHERE rae.id = :remote_id
+			AND rae.deleted_at IS NULL
+			AND rae.visibility = 0
+			AND rae.owner_id IN :user_ids
+			AND (
+				rae.stack_id IS NULL
+				OR rae.id = se.primary_asset_id
+			)
+	) THEN NULL
+	ELSE (
+		SELECT COUNT(*)
+		FROM (
+			SELECT
+				rae.created_at as created_at
+			FROM
+				remote_asset_entity rae
+			LEFT JOIN
+				stack_entity se ON rae.stack_id = se.id
+			WHERE
+				rae.deleted_at IS NULL
+				AND rae.visibility = 0
+				AND rae.owner_id IN :user_ids
+				AND (
+					rae.stack_id IS NULL
+					OR rae.id = se.primary_asset_id
+				)
+
+			UNION ALL
+
+			SELECT
+				lae.created_at as created_at
+			FROM
+				local_asset_entity lae
+			WHERE NOT EXISTS (
+				SELECT 1 FROM remote_asset_entity rae WHERE rae.checksum = lae.checksum AND rae.owner_id IN :user_ids
+			)
+			AND EXISTS (
+				SELECT 1 FROM local_album_asset_entity laa
+				INNER JOIN local_album_entity la on laa.album_id = la.id
+				WHERE laa.asset_id = lae.id AND la.backup_selection = 0
+			)
+			AND NOT EXISTS (
+				SELECT 1 FROM local_album_asset_entity laa
+				INNER JOIN local_album_entity la on laa.album_id = la.id
+				WHERE laa.asset_id = lae.id AND la.backup_selection = 2
+			)
+		)
+		WHERE created_at > (
+			SELECT created_at FROM remote_asset_entity WHERE id = :remote_id
+		)
+	)
+END AS asset_index;
