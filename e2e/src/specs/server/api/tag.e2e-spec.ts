@@ -58,7 +58,9 @@ describe('/tags', () => {
       const { secret } = await utils.createApiKey(user.accessToken, [Permission.TagCreate]);
       const { status, body } = await request(app).post('/tags').set('x-api-key', secret).send({ name: 'TagA/TagB' });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest([String.raw`[name] Tag name cannot contain slash characters ("/")`]));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['name'], message: 'Tag name cannot contain slash characters ("/")' }]),
+      );
     });
 
     it('should work with tag.create', async () => {
