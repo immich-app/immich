@@ -63,7 +63,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
         isGrid = albumConfig.isGrid;
       });
 
-      ref.read(remoteAlbumProvider.notifier).refresh();
+      unawaited(ref.read(remoteAlbumProvider.notifier).refresh());
     });
 
     searchController.addListener(() {
@@ -81,7 +81,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     final userId = ref.read(currentUserProvider)?.id;
     filter = filter.copyWith(query: searchTerm, userId: userId, mode: filterMode);
 
-    filterAlbums();
+    unawaited(filterAlbums());
   }
 
   Future<void> onRefresh() async {
@@ -92,7 +92,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     setState(() {
       isGrid = !isGrid;
     });
-    ref.read(settingsProvider).write(.albumIsGrid, isGrid);
+    unawaited(ref.read(settingsProvider).write(.albumIsGrid, isGrid));
   }
 
   void changeFilter(QuickFilterMode mode) {
@@ -100,7 +100,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       filter = filter.copyWith(mode: mode);
     });
 
-    filterAlbums();
+    unawaited(filterAlbums());
   }
 
   Future<void> changeSort(AlbumSort sort) async {
@@ -121,7 +121,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       searchController.clear();
     });
 
-    filterAlbums();
+    unawaited(filterAlbums());
   }
 
   Future<void> sortAlbums() async {

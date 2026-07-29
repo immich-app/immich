@@ -203,7 +203,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       unawaited(
         _ref.read(backgroundSyncProvider).syncWebsocketBatchV1(_batchedAssetUploadReady.toList()).then((_) {
           if (isSyncAlbumEnabled) {
-            _ref.read(backgroundSyncProvider).syncLinkedAlbum();
+            unawaited(_ref.read(backgroundSyncProvider).syncLinkedAlbum());
           }
         }),
       );
@@ -224,7 +224,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       unawaited(
         _ref.read(backgroundSyncProvider).syncWebsocketBatchV2(_batchedAssetUploadReady.toList()).then((_) {
           if (isSyncAlbumEnabled) {
-            _ref.read(backgroundSyncProvider).syncLinkedAlbum();
+            unawaited(_ref.read(backgroundSyncProvider).syncLinkedAlbum());
           }
         }),
       );

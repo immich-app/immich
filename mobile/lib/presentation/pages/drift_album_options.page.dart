@@ -114,18 +114,20 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
         ];
       }
 
-      showModalBottomSheet(
-        backgroundColor: context.colorScheme.surfaceContainer,
-        isScrollControlled: false,
-        context: context,
-        builder: (context) {
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 24.0),
-              child: Column(mainAxisSize: MainAxisSize.min, children: [...actions]),
-            ),
-          );
-        },
+      unawaited(
+        showModalBottomSheet(
+          backgroundColor: context.colorScheme.surfaceContainer,
+          isScrollControlled: false,
+          context: context,
+          builder: (context) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 24.0),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [...actions]),
+              ),
+            );
+          },
+        ),
       );
     }
 

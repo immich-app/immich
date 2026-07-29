@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -13,12 +15,12 @@ class SetProfilePictureActionButton extends ConsumerWidget {
 
   const SetProfilePictureActionButton({super.key, required this.asset, this.iconOnly = false, this.menuItem = false});
 
-  void _onTap(BuildContext context) {
+  Future<void> _onTap(BuildContext context) async {
     if (!context.mounted) {
       return;
     }
 
-    context.pushRoute(ProfilePictureCropRoute(asset: asset));
+    await context.pushRoute(ProfilePictureCropRoute(asset: asset));
   }
 
   @override
@@ -28,7 +30,7 @@ class SetProfilePictureActionButton extends ConsumerWidget {
       label: "set_as_profile_picture".t(context: context),
       iconOnly: iconOnly,
       menuItem: menuItem,
-      onPressed: () => _onTap(context),
+      onPressed: () => unawaited(_onTap(context)),
       maxWidth: 100,
     );
   }

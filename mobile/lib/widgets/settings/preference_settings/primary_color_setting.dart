@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -26,16 +28,16 @@ class PrimaryColorSetting extends HookConsumerWidget {
     }
 
     onUseSystemColorChange(bool newValue) {
-      ref.read(settingsProvider).write(.themeDynamic, newValue);
+      unawaited(ref.read(settingsProvider).write(.themeDynamic, newValue));
       popBottomSheet();
     }
 
     onPrimaryColorChange(ImmichColorPreset colorPreset) {
-      ref.read(settingsProvider).write(.themePrimaryColor, colorPreset);
+      unawaited(ref.read(settingsProvider).write(.themePrimaryColor, colorPreset));
 
       //turn off system color setting
       if (themeConfig.dynamicTheme) {
-        ref.read(settingsProvider).write(.themeDynamic, false);
+        unawaited(ref.read(settingsProvider).write(.themeDynamic, false));
       }
       popBottomSheet();
     }

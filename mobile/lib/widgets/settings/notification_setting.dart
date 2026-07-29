@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -17,13 +19,13 @@ class NotificationSetting extends HookConsumerWidget {
 
     openAppNotificationSettings(BuildContext ctx) {
       ctx.pop();
-      openAppSettings();
+      unawaited(openAppSettings());
     }
 
     // When permissions are permanently denied, you need to go to settings to
     // allow them
-    showPermissionsDialog() {
-      showDialog(
+    Future<void> showPermissionsDialog() {
+      return showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
           content: const Text('notification_permission_dialog_content').tr(),
@@ -45,7 +47,7 @@ class NotificationSetting extends HookConsumerWidget {
           onButtonTap: () =>
               ref.watch(notificationPermissionProvider.notifier).requestNotificationPermission().then((permission) {
                 if (permission == PermissionStatus.permanentlyDenied) {
-                  showPermissionsDialog();
+                  unawaited(showPermissionsDialog());
                 }
               }),
         )

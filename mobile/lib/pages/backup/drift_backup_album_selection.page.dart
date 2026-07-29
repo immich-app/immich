@@ -214,34 +214,36 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                           splashRadius: 16,
                           icon: Icon(Icons.info, size: 20, color: context.primaryColor),
                           onPressed: () {
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return AlertDialog(
-                                  shape: const RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                                  ),
-                                  elevation: 5,
-                                  title: Text(
-                                    'backup_album_selection_page_selection_info',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: context.primaryColor,
+                            unawaited(
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(Radius.circular(10)),
                                     ),
-                                  ).t(context: context),
-                                  content: SingleChildScrollView(
-                                    child: ListBody(
-                                      children: [
-                                        const Text(
-                                          'backup_album_selection_page_assets_scatter',
-                                          style: TextStyle(fontSize: 14),
-                                        ).t(context: context),
-                                      ],
+                                    elevation: 5,
+                                    title: Text(
+                                      'backup_album_selection_page_selection_info',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: context.primaryColor,
+                                      ),
+                                    ).t(context: context),
+                                    content: SingleChildScrollView(
+                                      child: ListBody(
+                                        children: [
+                                          const Text(
+                                            'backup_album_selection_page_assets_scatter',
+                                            style: TextStyle(fontSize: 14),
+                                          ).t(context: context),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                );
-                              },
+                                  );
+                                },
+                              ),
                             );
                           },
                         ),
@@ -364,14 +366,14 @@ class _SelectedAlbumNameChips extends ConsumerWidget {
       children: selectedBackupAlbums.asMap().entries.map((entry) {
         final album = entry.value;
 
-        void removeSelection() {
-          ref.read(backupAlbumProvider.notifier).deselectAlbum(album);
+        Future<void> removeSelection() {
+          return ref.read(backupAlbumProvider.notifier).deselectAlbum(album);
         }
 
         return Padding(
           padding: const EdgeInsets.only(right: 8.0),
           child: GestureDetector(
-            onTap: removeSelection,
+            onTap: () => unawaited(removeSelection()),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
               curve: Curves.easeInOut,
@@ -387,7 +389,7 @@ class _SelectedAlbumNameChips extends ConsumerWidget {
                 backgroundColor: context.primaryColor,
                 deleteIconColor: context.isDarkTheme ? Colors.black : Colors.white,
                 deleteIcon: const Icon(Icons.cancel_rounded, size: 15),
-                onDeleted: removeSelection,
+                onDeleted: () => unawaited(removeSelection()),
               ),
             ),
           ),
@@ -408,12 +410,12 @@ class _ExcludedAlbumNameChips extends ConsumerWidget {
       children: excludedBackupAlbums.asMap().entries.map((entry) {
         final album = entry.value;
 
-        void removeSelection() {
-          ref.read(backupAlbumProvider.notifier).deselectAlbum(album);
+        Future<void> removeSelection() {
+          return ref.read(backupAlbumProvider.notifier).deselectAlbum(album);
         }
 
         return GestureDetector(
-          onTap: removeSelection,
+          onTap: () => unawaited(removeSelection()),
           child: Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: AnimatedContainer(
@@ -427,7 +429,7 @@ class _ExcludedAlbumNameChips extends ConsumerWidget {
                 backgroundColor: Colors.red[300],
                 deleteIconColor: context.scaffoldBackgroundColor,
                 deleteIcon: const Icon(Icons.cancel_rounded, size: 15),
-                onDeleted: removeSelection,
+                onDeleted: () => unawaited(removeSelection()),
               ),
             ),
           ),
@@ -457,7 +459,7 @@ class _SelectAllButton extends ConsumerWidget {
                   ? () {
                       for (final album in filteredAlbums) {
                         if (album.backupSelection != BackupSelection.selected) {
-                          ref.read(backupAlbumProvider.notifier).selectAlbum(album);
+                          unawaited(ref.read(backupAlbumProvider.notifier).selectAlbum(album));
                         }
                       }
                     }
@@ -477,7 +479,7 @@ class _SelectAllButton extends ConsumerWidget {
                   ? () {
                       for (final album in filteredAlbums) {
                         if (album.backupSelection == BackupSelection.selected) {
-                          ref.read(backupAlbumProvider.notifier).deselectAlbum(album);
+                          unawaited(ref.read(backupAlbumProvider.notifier).deselectAlbum(album));
                         }
                       }
                     }

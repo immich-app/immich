@@ -82,7 +82,6 @@ class _ImageWrapperState extends State<ImageWrapper> {
   ImageStreamListener? _imageStreamListener;
   ImageStream? _imageStream;
   ImageChunkEvent? _loadingProgress;
-  ImageInfo? _imageInfo;
   bool _loading = true;
   Size? _imageSize;
   Object? _lastException;

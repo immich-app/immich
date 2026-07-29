@@ -126,14 +126,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
 
     final assetViewer = ref.read(assetViewerProvider);
-    _setSystemUIMode(assetViewer.showingControls, assetViewer.showingDetails);
+    unawaited(_setSystemUIMode(assetViewer.showingControls, assetViewer.showingDetails));
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     _preloader.dispose();
-    _reloadSubscription?.cancel();
+    unawaited(_reloadSubscription?.cancel());
     _stackChildrenKeepAlive?.close();
 
     unawaited(restoreEdgeToEdge());
@@ -223,7 +223,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       case ViewerReloadAssetEvent():
         _onViewerReloadEvent();
       case ViewerStackAssetDeletedEvent event:
-        _onViewerStackAssetDeletedEvent(event);
+        unawaited(_onViewerStackAssetDeletedEvent(event));
       default:
     }
   }
@@ -235,7 +235,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     final index = _pageController.page?.round() ?? 0;
     final target = index >= _totalAssets - 1 ? index - 1 : index + 1;
-    _pageController.animateToPage(target, duration: Durations.medium1, curve: Curves.easeInOut);
+    unawaited(_pageController.animateToPage(target, duration: Durations.medium1, curve: Curves.easeInOut));
     _onAssetChanged(target);
   }
 
@@ -271,7 +271,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final totalAssets = timelineService.totalAssets;
 
     if (totalAssets == 0) {
-      context.maybePop();
+      unawaited(context.maybePop());
       return;
     }
 
@@ -298,9 +298,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _setSystemUIMode(bool controls, bool details) {
+  Future<void> _setSystemUIMode(bool controls, bool details) {
     final immersive = !controls || (CurrentPlatform.isIOS && details);
-    unawaited(immersive ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky) : restoreEdgeToEdge());
+    return immersive ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky) : restoreEdgeToEdge();
   }
 
   @override
@@ -324,7 +324,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     ref.listen(assetViewerProvider.select((value) => (value.showingControls, value.showingDetails)), (_, state) {
       final (controls, details) = state;
-      _setSystemUIMode(controls, details);
+      unawaited(_setSystemUIMode(controls, details));
     });
 
     return AnnotatedRegion(

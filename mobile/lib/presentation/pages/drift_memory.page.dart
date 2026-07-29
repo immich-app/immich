@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -47,21 +49,21 @@ class DriftMemoryPage extends HookConsumerWidget {
 
     useEffect(() {
       // Memories is an immersive activity
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive));
       return () {
         // Clean up to normal edge to edge when we are done
-        restoreEdgeToEdge();
+        unawaited(restoreEdgeToEdge());
       };
     });
 
     toNextMemory() {
-      memoryPageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
+      unawaited(memoryPageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn));
     }
 
     void toPreviousMemory() {
       if (currentMemoryIndex.value > 0) {
         // Move to the previous memory page
-        memoryPageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
+        unawaited(memoryPageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn));
 
         // Wait for the next frame to ensure the page is built
         SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -88,7 +90,7 @@ class DriftMemoryPage extends HookConsumerWidget {
         // Go to the next asset
         PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
-        controller.nextPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500));
+        unawaited(controller.nextPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500)));
       } else {
         // Go to the next memory since we are at the end of our assets
         toNextMemory();
@@ -100,7 +102,7 @@ class DriftMemoryPage extends HookConsumerWidget {
         // Go to the previous asset
         PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
-        controller.previousPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500));
+        unawaited(controller.previousPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500)));
       } else {
         // Go to the previous memory since we are at the end of our assets
         toPreviousMemory();
@@ -153,7 +155,7 @@ class DriftMemoryPage extends HookConsumerWidget {
 
     // Precache the next page right away if we are on the first page
     if (currentAssetPage.value == 0) {
-      Future.delayed(const Duration(milliseconds: 200)).then((_) => precacheAsset(1));
+      unawaited(Future.delayed(const Duration(milliseconds: 200)).then((_) => precacheAsset(1)));
     }
 
     Future<void> onAssetChanged(int otherIndex) async {
@@ -198,7 +200,7 @@ class DriftMemoryPage extends HookConsumerWidget {
 
           final offset = notification.metrics.pixels;
           if (isEpiloguePage && (offset > notification.metrics.maxScrollExtent + 150)) {
-            context.maybePop();
+            unawaited(context.maybePop());
             return true;
           }
         }
@@ -328,8 +330,8 @@ class DriftMemoryPage extends HookConsumerWidget {
                               // auto_route doesn't invoke pop scope, so
                               // turn off full screen mode here
                               // https://github.com/Milad-Akarie/auto_route_library/issues/1799
-                              context.maybePop();
-                              restoreEdgeToEdge();
+                              unawaited(context.maybePop());
+                              unawaited(restoreEdgeToEdge());
                             },
                             shape: const CircleBorder(),
                             color: Colors.white.withValues(alpha: 0.2),

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
@@ -31,7 +33,7 @@ class AppBarServerInfo extends HookConsumerWidget {
     }
 
     useEffect(() {
-      getPackageInfo();
+      unawaited(getPackageInfo());
       return null;
     }, []);
 

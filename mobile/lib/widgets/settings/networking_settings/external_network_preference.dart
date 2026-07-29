@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -44,13 +46,13 @@ class ExternalNetworkPreference extends HookConsumerWidget {
       entries.value.insert(newIndex, entry);
       entries.value = [...entries.value];
 
-      saveEndpointList();
+      unawaited(saveEndpointList());
     }
 
     handleDismiss(int index) {
       entries.value = [...entries.value..removeAt(index)];
 
-      saveEndpointList();
+      unawaited(saveEndpointList());
     }
 
     Widget proxyDecorator(Widget child, int _, Animation<double> animation) {

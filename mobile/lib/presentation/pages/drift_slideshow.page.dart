@@ -67,7 +67,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _updateNextIndex();
     ref.listenManual(appConfigProvider.select((s) => s.slideshow), _onConfigChanged);
 
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+    unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive));
     unawaited(WakelockPlus.enable());
   }
 
@@ -94,7 +94,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     if (asset.isImage) {
       _createTimer();
     } else if (ref.read(videoPlayerProvider(asset.heroTag)).status == VideoPlaybackStatus.paused) {
-      ref.read(videoPlayerProvider(asset.heroTag).notifier).play();
+      unawaited(ref.read(videoPlayerProvider(asset.heroTag).notifier).play());
     } else {
       _nextPage();
     }
@@ -113,7 +113,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     final asset = widget.timeline.getAssetSafe(_index)!;
 
     if (!asset.isImage) {
-      ref.read(videoPlayerProvider(asset.heroTag).notifier).pause();
+      unawaited(ref.read(videoPlayerProvider(asset.heroTag).notifier).pause());
     }
 
     setState(() {
@@ -147,7 +147,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     };
 
     if (!widget.timeline.hasRange(_nextIndex, 1)) {
-      widget.timeline.preloadAssets(_nextIndex);
+      unawaited(widget.timeline.preloadAssets(_nextIndex));
     }
   }
 
@@ -184,14 +184,16 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
       _crossfadeFromIndex = previousIndex;
       _crossfadeToIndex = page;
     });
-    _crossfadeController.forward(from: 0.0).whenComplete(() {
-      if (mounted) {
-        setState(() {
-          _crossfadeFromIndex = null;
-          _crossfadeToIndex = null;
-        });
-      }
-    });
+    unawaited(
+      _crossfadeController.forward(from: 0.0).whenComplete(() {
+        if (mounted) {
+          setState(() {
+            _crossfadeFromIndex = null;
+            _crossfadeToIndex = null;
+          });
+        }
+      }),
+    );
   }
 
   Widget _getCrossfadeLayer(BuildContext context, int index, {required bool isIncoming}) {
@@ -378,7 +380,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
       if (status == VideoPlaybackStatus.completed && isCurrent && position.inMicroseconds > 0) {
         _nextPage();
       } else if (status == VideoPlaybackStatus.playing) {
-        ref.read(videoPlayerProvider(asset.heroTag).notifier).setLoop(false);
+        unawaited(ref.read(videoPlayerProvider(asset.heroTag).notifier).setLoop(false));
       }
 
       return PhotoView.customChild(
@@ -418,7 +420,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
                     IconButton(
                       onPressed: () {
                         _pause();
-                        context.pushRoute(SettingsSubRoute(section: SettingSection.assetViewer));
+                        unawaited(context.pushRoute(SettingsSubRoute(section: SettingSection.assetViewer)));
                       },
                       icon: const Icon(Icons.settings),
                     ),
@@ -512,7 +514,7 @@ class _SlideshowProgressBarState extends State<_SlideshowProgressBar> with Singl
       animationBehavior: AnimationBehavior.preserve,
     )..value = (widget.elapsedMs / widget.durationMs).clamp(0.0, 1.0);
     if (!widget.paused) {
-      _controller.forward();
+      unawaited(_controller.forward());
     }
   }
 

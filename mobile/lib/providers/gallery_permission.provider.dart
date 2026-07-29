@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
@@ -9,7 +10,7 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
     : super(PermissionStatus.denied) // Denied is the initial state
       {
     // Sets the initial state
-    getGalleryPermissionStatus();
+    unawaited(getGalleryPermissionStatus());
   }
 
   get hasPermission => state.isGranted || state.isLimited;

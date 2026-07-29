@@ -22,7 +22,7 @@ class CurrentUserProvider extends StateNotifier<UserDto?> {
 
   @override
   void dispose() {
-    streamSub.cancel();
+    unawaited(streamSub.cancel());
     super.dispose();
   }
 }

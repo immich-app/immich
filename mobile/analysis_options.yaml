@@ -40,8 +40,7 @@ linter:
     cancel_subscriptions: true
     close_sinks: true
     unawaited_futures: true
-    # TODO: This may have a large diff
-    # discarded_futures: true
+    discarded_futures: true
     no_self_assignments: true
     throw_in_finally: true
     collection_methods_unrelated_type: true

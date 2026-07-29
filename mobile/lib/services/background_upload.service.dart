@@ -139,8 +139,8 @@ class BackgroundUploadService {
   }
 
   void dispose() {
-    _taskStatusController.close();
-    _taskProgressController.close();
+    unawaited(_taskStatusController.close());
+    unawaited(_taskProgressController.close());
   }
 
   /// Enqueue tasks to the background upload queue

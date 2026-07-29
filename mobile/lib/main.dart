@@ -137,11 +137,11 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         break;
       case AppLifecycleState.paused:
         dPrint(() => "[APP STATE] paused");
-        ref.read(appStateProvider.notifier).handleAppPause();
+        unawaited(ref.read(appStateProvider.notifier).handleAppPause());
         break;
       case AppLifecycleState.detached:
         dPrint(() => "[APP STATE] detached");
-        ref.read(appStateProvider.notifier).handleAppDetached();
+        unawaited(ref.read(appStateProvider.notifier).handleAppDetached());
         break;
       case AppLifecycleState.hidden:
         dPrint(() => "[APP STATE] hidden");
@@ -221,17 +221,19 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   @override
   initState() {
     super.initState();
-    initApp().then((_) => dPrint(() => "App Init Completed"));
+    unawaited(initApp().then((_) => dPrint(() => "App Init Completed")));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // needs to be delayed so that EasyLocalization is working
-      ref.read(backgroundWorkerFgServiceProvider).enable();
+      unawaited(ref.read(backgroundWorkerFgServiceProvider).enable());
       if (Platform.isAndroid) {
-        ref
-            .read(backgroundWorkerFgServiceProvider)
-            .saveNotificationMessage(
-              StaticTranslations.instance.uploading_media,
-              StaticTranslations.instance.backup_background_service_default_notification,
-            );
+        unawaited(
+          ref
+              .read(backgroundWorkerFgServiceProvider)
+              .saveNotificationMessage(
+                StaticTranslations.instance.uploading_media,
+                StaticTranslations.instance.backup_background_service_default_notification,
+              ),
+        );
       }
     });
 
@@ -248,7 +250,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   @override
   void reassemble() {
     if (kDebugMode) {
-      NetworkRepository.init();
+      unawaited(NetworkRepository.init());
     }
     super.reassemble();
   }
