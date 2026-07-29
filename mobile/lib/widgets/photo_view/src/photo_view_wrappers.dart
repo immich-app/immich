@@ -138,7 +138,6 @@ class _ImageWrapperState extends State<ImageWrapper> {
       setupCB() {
         _imageSize = Size(info.image.width.toDouble(), info.image.height.toDouble());
         _loading = false;
-        _imageInfo = _imageInfo;
 
         _loadingProgress = null;
         _lastException = null;

@@ -87,7 +87,7 @@ class _ServerInfoItem extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        if (icon != null) ...[icon as Widget, const SizedBox(width: 8)],
+        if (icon != null) ...[icon! as Widget, const SizedBox(width: 8)],
         Text(
           label,
           style: TextStyle(
