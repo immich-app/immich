@@ -4,13 +4,13 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:http/http.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
-import 'package:logging/logging.dart';
-import 'package:http/http.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
+import 'package:logging/logging.dart';
 
 final uploadRepositoryProvider = Provider((ref) => UploadRepository());
 
@@ -144,7 +144,7 @@ class UploadRepository {
       logger.warning("Upload $logContext was cancelled");
       return UploadResult.cancelled();
     } catch (error, stackTrace) {
-      logger.warning("Error uploading $logContext: ${error.toString()}: $stackTrace");
+      logger.warning("Error uploading $logContext: $error: $stackTrace");
       return UploadResult.error(errorMessage: error.toString());
     }
   }

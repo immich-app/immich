@@ -67,7 +67,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
   }
 
   @override
-  dispose() {
+  void dispose() {
     super.dispose();
     WakelockPlus.disable();
   }

@@ -25,7 +25,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
   ImageInfo? getInitialImage(CancellableImageProvider provider) {
     final completer = CancelableCompleter<ImageInfo?>(onCancel: provider.cancel);
-    final cachedStream = provider.resolve(const ImageConfiguration());
+    final cachedStream = provider.resolve(ImageConfiguration.empty);
     ImageInfo? cachedImage;
     final listener = ImageStreamListener((image, synchronousCall) {
       if (synchronousCall) {

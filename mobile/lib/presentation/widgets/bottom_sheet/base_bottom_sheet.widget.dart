@@ -74,7 +74,7 @@ class _BaseDraggableScrollableSheetState extends ConsumerState<BaseBottomSheet> 
           color: widget.backgroundColor ?? context.colorScheme.surfaceContainer,
           elevation: 3.0,
           shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
-          margin: const EdgeInsets.symmetric(horizontal: 0),
+          margin: EdgeInsets.zero,
           child: Column(
             children: [
               Expanded(
