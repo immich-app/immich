@@ -10,6 +10,7 @@ import 'package:immich_mobile/constants/aspect_ratios.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/pages/edit/editor.provider.dart';
+import 'package:immich_mobile/presentation/widgets/images/progressive_image_guard.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/editor.utils.dart';
@@ -117,7 +118,9 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
             bottom: false,
             child: Column(
               children: [
-                Expanded(child: _EditorPreview(image: widget.image)),
+                Expanded(
+                  child: ProgressiveImageGuard(child: _EditorPreview(image: widget.image)),
+                ),
                 AnimatedSize(
                   duration: const Duration(milliseconds: 250),
                   curve: Curves.easeInOut,
@@ -427,7 +430,9 @@ class _EditorPreviewState extends ConsumerState<_EditorPreview> with TickerProvi
                 padding: const EdgeInsets.all(10),
                 width: (editorState.rotationAngle % 180 == 0) ? baseWidth : baseHeight,
                 height: (editorState.rotationAngle % 180 == 0) ? baseHeight : baseWidth,
-                child: CropImage(controller: cropController, image: widget.image, gridColor: Colors.white),
+                child: ProgressiveImageGuard(
+                  child: CropImage(controller: cropController, image: widget.image, gridColor: Colors.white),
+                ),
               ),
             ),
           ),
