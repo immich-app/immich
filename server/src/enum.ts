@@ -825,6 +825,13 @@ export enum QueueJobStatus {
 
 export const QueueJobStatusSchema = z.enum(QueueJobStatus).describe('Queue job status').meta({ id: 'QueueJobStatus' });
 
+/** How far along an asset's transcript is. Distinguishing these keeps reads from gating on completion. */
+export enum TranscriptionStatus {
+  NotStarted = 'notStarted',
+  InProgress = 'inProgress',
+  Complete = 'complete',
+}
+
 export enum JobName {
   AssetDelete = 'AssetDelete',
   AssetDeleteCheck = 'AssetDeleteCheck',

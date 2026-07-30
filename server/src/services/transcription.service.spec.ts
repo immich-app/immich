@@ -1,8 +1,13 @@
+import { Stats } from 'node:fs';
 import { AssetVisibility, ImmichWorker, JobName, JobStatus } from 'src/enum';
 import { TranscriptionService } from 'src/services/transcription.service';
+import { PCM_BYTES_PER_SECOND } from 'src/utils/transcription';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { systemConfigStub } from 'test/fixtures/system-config.stub';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
+
+/** An extracted stream holding `seconds` of 16 kHz mono 16-bit PCM. */
+const audioOf = (seconds: number) => ({ size: seconds * PCM_BYTES_PER_SECOND }) as Stats;
 
 describe(TranscriptionService.name, () => {
   let sut: TranscriptionService;
@@ -18,6 +23,10 @@ describe(TranscriptionService.name, () => {
       visibility: AssetVisibility.Timeline,
       audioStream: { index: 0, codecName: 'aac', profile: null, bitrate: 128_000 },
     });
+    mocks.media.extractAudio.mockResolvedValue([]);
+    mocks.storage.stat.mockResolvedValue(audioOf(10));
+    mocks.storage.readFile.mockResolvedValue(Buffer.alloc(4));
+    mocks.transcript.getStatus.mockResolvedValue(void 0);
     mocks.machineLearning.transcribe.mockResolvedValue({
       language: 'en',
       segments: [{ start: 0, end: 1.5, text: 'Hello there' }],
@@ -101,27 +110,103 @@ describe(TranscriptionService.name, () => {
 
       expect(mocks.media.extractAudio).not.toHaveBeenCalled();
       expect(mocks.machineLearning.transcribe).not.toHaveBeenCalled();
-      expect(mocks.transcript.upsert).not.toHaveBeenCalled();
+      expect(mocks.transcript.appendChunk).not.toHaveBeenCalled();
     });
 
-    it('should extract audio from the original file and persist the transcript', async () => {
+    it('should extract raw pcm with silence detection and persist the transcript', async () => {
       expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Success);
 
       expect(mocks.media.extractAudio).toHaveBeenCalledWith(
         '/uploads/user-id/original/video.mp4',
-        expect.any(String),
+        expect.stringMatching(/\.pcm$/),
+        { silenceThreshold: -30, silenceMinDuration: 0.25 },
       );
       expect(mocks.machineLearning.transcribe).toHaveBeenCalledWith(
-        expect.any(String),
+        expect.any(Buffer),
         expect.objectContaining({ modelName: 'small', threads: 4 }),
       );
-      expect(mocks.transcript.upsert).toHaveBeenCalledWith('asset-id', [
-        { assetId: 'asset-id', startTime: 0, endTime: 1.5, text: 'Hello there' },
-      ]);
+      expect(mocks.transcript.appendChunk).toHaveBeenCalledWith(
+        'asset-id',
+        [{ assetId: 'asset-id', startTime: 0, endTime: 1.5, text: 'Hello there' }],
+        10_000,
+      );
       expect(mocks.asset.upsertJobStatus).toHaveBeenCalledWith({
         assetId: 'asset-id',
         transcribedAt: expect.any(Date),
       });
+    });
+
+    it('should clear any earlier attempt before a fresh run', async () => {
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.reset).toHaveBeenCalledWith('asset-id');
+    });
+
+    it('should split long audio at detected silences', async () => {
+      mocks.storage.stat.mockResolvedValue(audioOf(90));
+      mocks.media.extractAudio.mockResolvedValue([
+        { start: 28, end: 30 },
+        { start: 62, end: 63 },
+      ]);
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.machineLearning.transcribe).toHaveBeenCalledTimes(3);
+      expect(mocks.transcript.appendChunk.mock.calls.map((call) => call[2])).toEqual([29_000, 62_500, 90_000]);
+    });
+
+    it('should offset segment times by the start of their chunk', async () => {
+      mocks.storage.stat.mockResolvedValue(audioOf(70));
+      mocks.machineLearning.transcribe.mockResolvedValue({
+        language: 'en',
+        segments: [{ start: 2, end: 4, text: 'Second chunk' }],
+      });
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.appendChunk.mock.calls[1][1]).toEqual([
+        { assetId: 'asset-id', startTime: 32, endTime: 34, text: 'Second chunk' },
+      ]);
+    });
+
+    it('should time out inference on a multiple of the chunk duration', async () => {
+      mocks.storage.stat.mockResolvedValue(audioOf(120));
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.machineLearning.transcribe).toHaveBeenCalledWith(
+        expect.any(Buffer),
+        expect.objectContaining({ timeout: 30 * 30 * 1000 }),
+      );
+    });
+
+    it('should resume from the recorded offset instead of restarting', async () => {
+      mocks.storage.stat.mockResolvedValue(audioOf(90));
+      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: null, transcriptionProgressMs: 60_000 });
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.reset).not.toHaveBeenCalled();
+      expect(mocks.machineLearning.transcribe).toHaveBeenCalledTimes(1);
+      expect(mocks.transcript.appendChunk).toHaveBeenCalledTimes(1);
+      expect(mocks.transcript.appendChunk.mock.calls[0][2]).toBe(90_000);
+    });
+
+    it('should still advance progress for a chunk with no speech', async () => {
+      mocks.machineLearning.transcribe.mockResolvedValue({ language: 'en', segments: [] });
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.appendChunk).toHaveBeenCalledWith('asset-id', [], 10_000);
+    });
+
+    it('should mark an already complete asset done without re-running inference', async () => {
+      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: new Date(), transcriptionProgressMs: 10_000 });
+
+      expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Success);
+
+      expect(mocks.machineLearning.transcribe).not.toHaveBeenCalled();
+      expect(mocks.transcript.appendChunk).not.toHaveBeenCalled();
     });
   });
 });

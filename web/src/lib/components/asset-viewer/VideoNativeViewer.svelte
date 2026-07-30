@@ -95,6 +95,12 @@
   });
   const aspectRatio = $derived(asset.width && asset.height ? `${asset.width} / ${asset.height}` : undefined);
   const captionsUrl = $derived(getAssetCaptionsUrl(assetId));
+  // Transcription runs chunk by chunk, so the caption track is refetched while the video is open
+  // and the cues fill in as the job progresses. The server marks a finished transcript in a WebVTT
+  // NOTE, which players ignore, so a partial track renders exactly like a complete one.
+  const TRANSCRIPT_POLL_INTERVAL = 15_000;
+  const TRANSCRIPT_COMPLETE = /^NOTE immich-transcription-status: complete$/m;
+  let captionsSrc: string | undefined = $state();
   let showVideo = $state(false);
   let hasFocused = $state(false);
   let activeSession: { assetId: string; id: string } | undefined;
@@ -275,6 +281,58 @@
     return () => window.removeEventListener('pagehide', onPagehide);
   });
 
+  $effect(() => {
+    const url = captionsUrl;
+    let objectUrl: string | undefined;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let cancelled = false;
+
+    const poll = async () => {
+      let complete = false;
+
+      try {
+        const response = await fetch(url);
+        const vtt = response.ok ? await response.text() : undefined;
+        if (cancelled) {
+          return;
+        }
+
+        if (vtt) {
+          const next = URL.createObjectURL(new Blob([vtt], { type: 'text/vtt' }));
+          if (objectUrl) {
+            URL.revokeObjectURL(objectUrl);
+          }
+          objectUrl = next;
+          captionsSrc = next;
+          complete = TRANSCRIPT_COMPLETE.test(vtt);
+        }
+      } catch {
+        // Keep whatever track we last managed to load and try again on the next tick.
+      }
+
+      if (!complete && !cancelled) {
+        timer = setTimeout(() => void poll(), TRANSCRIPT_POLL_INTERVAL);
+      }
+    };
+
+    void poll();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+      captionsSrc = undefined;
+    };
+  });
+
+  // A track element resets to disabled when its source is replaced, so showing has to be reasserted
+  // on every refresh, not just when the video first becomes playable.
+  const handleCaptionsLoad = (event: Event) => {
+    (event.currentTarget as HTMLTrackElement).track.mode = 'showing';
+  };
+
   onDestroy(() => {
     if (videoPlayer) {
       videoPlayer.src = '';
@@ -409,7 +467,9 @@
             onclose={onClose}
             poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}
           >
-            <track kind="subtitles" src={captionsUrl} default />
+            {#if captionsSrc}
+              <track kind="subtitles" src={captionsSrc} onload={handleCaptionsLoad} default />
+            {/if}
           </hls-video>
         {:else}
           <video
@@ -436,7 +496,9 @@
             onclose={onClose}
             poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}
           >
-            <track kind="subtitles" src={captionsUrl} default />
+            {#if captionsSrc}
+              <track kind="subtitles" src={captionsSrc} onload={handleCaptionsLoad} default />
+            {/if}
           </video>
         {/if}
 

@@ -26,6 +26,7 @@ import {
 } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import {
+  AudioExtractionOptions,
   DecodeToBufferOptions,
   GenerateThumbhashOptions,
   GenerateThumbnailOptions,
@@ -36,6 +37,7 @@ import {
   VideoPacketInfo,
 } from 'src/types';
 import { handlePromiseError } from 'src/utils/misc';
+import { PCM_SAMPLE_RATE, SilencePeriod } from 'src/utils/transcription';
 import { createAffineMatrix } from 'src/utils/transform';
 
 const probe = (input: string, options: string[]): Promise<FfprobeData> =>
@@ -44,6 +46,11 @@ const probe = (input: string, options: string[]): Promise<FfprobeData> =>
   );
 
 const pascalCase = (str: string) => _.upperFirst(_.camelCase(str.toLowerCase()));
+
+// e.g. "[silencedetect @ 0x…] silence_start: 12.345"
+const SILENCE_START_PATTERN = /silence_start:\s*(-?\d+(?:\.\d+)?)/;
+// e.g. "[silencedetect @ 0x…] silence_end: 15.678 | silence_duration: 3.333"
+const SILENCE_END_PATTERN = /silence_end:\s*(-?\d+(?:\.\d+)?)/;
 
 type ProgressEvent = {
   frames: number;
@@ -410,15 +417,53 @@ export class MediaRepository {
     });
   }
 
-  extractAudio(input: string, output: string): Promise<void> {
-    return new Promise((resolve, reject) => {
+  /**
+   * Decodes the audio track to raw little-endian signed 16-bit mono PCM at 16 kHz — the sample
+   * format the transcription model consumes — and reports the silences found along the way.
+   * Silence detection rides along on the same decode because a second pass over a long file costs
+   * as much as the first.
+   */
+  async extractAudio(input: string, output: string, options: AudioExtractionOptions): Promise<SilencePeriod[]> {
+    const silences: SilencePeriod[] = [];
+    let openedAt: number | undefined;
+
+    await new Promise<void>((resolve, reject) => {
       ffmpeg(input, { niceness: 10 })
-        .outputOptions(['-vn', '-ac 1', '-ar 16000', '-f wav'])
+        .outputOptions([
+          '-vn',
+          '-ac 1',
+          `-ar ${PCM_SAMPLE_RATE}`,
+          '-acodec pcm_s16le',
+          '-f s16le',
+          `-af silencedetect=noise=${options.silenceThreshold}dB:d=${options.silenceMinDuration}`,
+        ])
         .output(output)
+        .on('stderr', (chunk: string) => {
+          for (const line of chunk.split('\n')) {
+            const start = SILENCE_START_PATTERN.exec(line);
+            if (start) {
+              openedAt = Number(start[1]);
+              continue;
+            }
+
+            const end = SILENCE_END_PATTERN.exec(line);
+            if (end && openedAt !== undefined) {
+              silences.push({ start: openedAt, end: Number(end[1]) });
+              openedAt = undefined;
+            }
+          }
+        })
         .on('error', reject)
         .on('end', () => resolve())
         .run();
     });
+
+    if (openedAt !== undefined) {
+      // A silence still open at end of stream runs to the end of the audio; callers clamp it.
+      silences.push({ start: openedAt, end: Infinity });
+    }
+
+    return silences;
   }
 
   async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {

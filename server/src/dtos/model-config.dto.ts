@@ -56,6 +56,17 @@ export const OcrConfigSchema = ModelConfigSchema.extend({
 
 export const TranscriptionConfigSchema = ModelConfigSchema.extend({
   threads: z.int().min(1).describe('Maximum number of CPU threads to use for transcription'),
+  chunkDuration: z
+    .int()
+    .min(5)
+    .max(600)
+    .describe('Target length in seconds of each audio chunk sent for transcription'),
+  timeoutMultiplier: z
+    .number()
+    .min(1)
+    .describe(
+      'Transcription request timeout as a multiple of the chunk duration. The same chunk takes seconds on a GPU and minutes on a low-power CPU, so the timeout scales with the audio rather than being fixed.',
+    ),
 }).meta({ id: 'TranscriptionConfig' });
 
 export class CLIPConfig extends createZodDto(CLIPConfigSchema) {}

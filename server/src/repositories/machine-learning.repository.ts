@@ -28,7 +28,7 @@ export enum ModelType {
   OCR = 'ocr',
 }
 
-export type ModelPayload = { imagePath: string } | { text: string } | { audioPath: string };
+export type ModelPayload = { imagePath: string } | { text: string } | { audio: Buffer };
 
 type ModelOptions = { modelName: string };
 
@@ -38,7 +38,7 @@ export type OcrOptions = ModelOptions & {
   minRecognitionScore: number;
   maxResolution: number;
 };
-export type TranscriptionOptions = ModelOptions & { threads: number };
+export type TranscriptionOptions = ModelOptions & { threads: number; timeout: number };
 type VisualResponse = { imageHeight: number; imageWidth: number };
 export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
 export type ClipVisualResponse = { [ModelTask.SEARCH]: string } & VisualResponse;
@@ -174,7 +174,12 @@ export class MachineLearningRepository {
     return this.healthyMap[url];
   }
 
-  private async predict<T>(payload: ModelPayload, config: MachineLearningRequest): Promise<T> {
+  /**
+   * `timeout` is opt-in: only transcription supplies it, so every other caller keeps its previous
+   * behaviour of waiting indefinitely. Transcription needs it because a request that is still
+   * running and one that has hung permanently are otherwise indistinguishable.
+   */
+  private async predict<T>(payload: ModelPayload, config: MachineLearningRequest, timeout?: number): Promise<T> {
     const formData = await this.getFormData(payload, config);
 
     for (const url of [
@@ -183,7 +188,11 @@ export class MachineLearningRepository {
       ...this.config.urls.filter((url) => !this.isHealthy(url)),
     ]) {
       try {
-        const response = await fetch(new URL('predict', url), { method: 'POST', body: formData });
+        const response = await fetch(new URL('predict', url), {
+          method: 'POST',
+          body: formData,
+          signal: timeout === undefined ? undefined : AbortSignal.timeout(timeout),
+        });
         if (response.ok) {
           this.setHealthy(url, true);
           return response.json();
@@ -242,13 +251,14 @@ export class MachineLearningRepository {
     return response[ModelTask.OCR];
   }
 
-  async transcribe(audioPath: string, { modelName, threads }: TranscriptionOptions) {
+  /** `audio` is raw little-endian signed 16-bit mono PCM at 16 kHz. */
+  async transcribe(audio: Buffer, { modelName, threads, timeout }: TranscriptionOptions) {
     const request = {
       [ModelTask.TRANSCRIPTION]: {
         [ModelType.RECOGNITION]: { modelName, options: { cpuThreads: threads } },
       },
     };
-    const response = await this.predict<TranscriptionResponse>({ audioPath }, request);
+    const response = await this.predict<TranscriptionResponse>({ audio }, request, timeout);
     return response[ModelTask.TRANSCRIPTION];
   }
 
@@ -261,9 +271,8 @@ export class MachineLearningRepository {
       formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
     } else if ('text' in payload) {
       formData.append('text', payload.text);
-    } else if ('audioPath' in payload) {
-      const fileBuffer = await readFile(payload.audioPath);
-      formData.append('audio', new Blob([new Uint8Array(fileBuffer)]));
+    } else if ('audio' in payload) {
+      formData.append('audio', new Blob([new Uint8Array(payload.audio)]));
     } else {
       throw new Error('Invalid input');
     }

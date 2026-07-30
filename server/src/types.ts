@@ -78,6 +78,13 @@ export interface DecodeToBufferOptions extends DecodeImageOptions {
 export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> & DecodeToBufferOptions;
 export type GenerateThumbhashOptions = DecodeImageOptions;
 
+export interface AudioExtractionOptions {
+  /** Loudness below which audio counts as quiet, in dBFS. */
+  silenceThreshold: number;
+  /** Shortest quiet stretch, in seconds, reported as a silence. */
+  silenceMinDuration: number;
+}
+
 export interface GenerateThumbnailsOptions {
   colorspace: string;
   preview?: ImageOptions;

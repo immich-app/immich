@@ -141,6 +141,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
       enabled: true,
       modelName: 'small',
       threads: 4,
+      chunkDuration: 30,
+      timeoutMultiplier: 30,
     },
   },
   map: {

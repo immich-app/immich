@@ -108,6 +108,8 @@ export type SystemConfig = {
       enabled: boolean;
       modelName: string;
       threads: number;
+      chunkDuration: number;
+      timeoutMultiplier: number;
     };
   };
   map: {
@@ -331,6 +333,8 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: true,
       modelName: 'small',
       threads: 4,
+      chunkDuration: 30,
+      timeoutMultiplier: 30,
     },
   },
   map: {

@@ -27200,6 +27200,12 @@
       },
       "TranscriptionConfig": {
         "properties": {
+          "chunkDuration": {
+            "description": "Target length in seconds of each audio chunk sent for transcription",
+            "maximum": 600,
+            "minimum": 5,
+            "type": "integer"
+          },
           "enabled": {
             "description": "Whether the task is enabled",
             "type": "boolean"
@@ -27213,12 +27219,19 @@
             "maximum": 9007199254740991,
             "minimum": 1,
             "type": "integer"
+          },
+          "timeoutMultiplier": {
+            "description": "Transcription request timeout as a multiple of the chunk duration. The same chunk takes seconds on a GPU and minutes on a low-power CPU, so the timeout scales with the audio rather than being fixed.",
+            "minimum": 1,
+            "type": "number"
           }
         },
         "required": [
+          "chunkDuration",
           "enabled",
           "modelName",
-          "threads"
+          "threads",
+          "timeoutMultiplier"
         ],
         "type": "object"
       },

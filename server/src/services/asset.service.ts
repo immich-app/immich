@@ -46,6 +46,7 @@ import {
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
+import { getTranscriptionStatus } from 'src/utils/transcription';
 import { transformOcrBoundingBox } from 'src/utils/transform';
 import { toWebVtt } from 'src/utils/vtt';
 
@@ -416,8 +417,18 @@ export class AssetService extends BaseService {
 
   async getCaptions(auth: AuthDto, id: string): Promise<string> {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
-    const segments = await this.transcriptRepository.getByAssetId(id);
-    return toWebVtt(segments);
+    // Deliberately not gated on completion: a transcript still filling in renders as a caption
+    // track just as well as a finished one, and the embedded status tells a client when to stop
+    // asking for more.
+    const [segments, status] = await Promise.all([
+      this.transcriptRepository.getByAssetId(id),
+      this.transcriptRepository.getStatus(id),
+    ]);
+
+    return toWebVtt(segments, {
+      status: getTranscriptionStatus(status),
+      progressMs: status?.transcriptionProgressMs ?? 0,
+    });
   }
 
   async upsertBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkUpsertDto): Promise<AssetMetadataBulkResponseDto[]> {

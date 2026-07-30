@@ -55,6 +55,7 @@ import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { TranscriptRepository } from 'src/repositories/transcript.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
 import { WorkflowRepository } from 'src/repositories/workflow.repository';
@@ -454,6 +455,7 @@ const newRealRepository = <T>(key: ClassConstructor<T>, db: Kysely<DB>): T => {
     case SyncRepository:
     case SyncCheckpointRepository:
     case SystemMetadataRepository:
+    case TranscriptRepository:
     case UserRepository:
     case VersionHistoryRepository:
     case WorkflowRepository: {
@@ -518,6 +520,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case SyncRepository:
     case SyncCheckpointRepository:
     case SystemMetadataRepository:
+    case TranscriptRepository:
     case UserRepository:
     case VersionHistoryRepository:
     case TagRepository:

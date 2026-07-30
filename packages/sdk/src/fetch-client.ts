@@ -2478,12 +2478,16 @@ export type OcrConfig = {
     modelName: string;
 };
 export type TranscriptionConfig = {
+    /** Target length in seconds of each audio chunk sent for transcription */
+    chunkDuration: number;
     /** Whether the task is enabled */
     enabled: boolean;
     /** Name of the model to use */
     modelName: string;
     /** Maximum number of CPU threads to use for transcription */
     threads: number;
+    /** Transcription request timeout as a multiple of the chunk duration. The same chunk takes seconds on a GPU and minutes on a low-power CPU, so the timeout scales with the audio rather than being fixed. */
+    timeoutMultiplier: number;
 };
 export type SystemConfigMachineLearningDto = {
     availabilityChecks: MachineLearningAvailabilityChecksDto;

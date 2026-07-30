@@ -1,3 +1,5 @@
+import { TranscriptionStatus } from 'src/enum';
+
 const pad = (value: number, width = 2) => value.toString().padStart(width, '0');
 
 const formatVttTimestamp = (seconds: number): string => {
@@ -9,8 +11,24 @@ const formatVttTimestamp = (seconds: number): string => {
   return `${pad(hours)}:${pad(minutes)}:${pad(secs)}.${pad(ms, 3)}`;
 };
 
-export const toWebVtt = (segments: { startTime: number; endTime: number; text: string }[]): string => {
+export type TranscriptProgress = {
+  status: TranscriptionStatus;
+  /** How far into the audio the transcript is committed, in milliseconds. */
+  progressMs: number;
+};
+
+/**
+ * Renders a transcript as WebVTT, carrying the job state in `NOTE` blocks. Players ignore notes, so
+ * a partial transcript renders as a caption track exactly like a finished one, while a client that
+ * wants to keep polling can tell a transcript that has not started from one still filling in.
+ */
+export const toWebVtt = (
+  segments: { startTime: number; endTime: number; text: string }[],
+  progress: TranscriptProgress,
+): string => {
   let vtt = 'WEBVTT\n\n';
+  vtt += `NOTE immich-transcription-status: ${progress.status}\n`;
+  vtt += `NOTE immich-transcription-progress-ms: ${progress.progressMs}\n\n`;
   for (const segment of segments) {
     vtt += `${formatVttTimestamp(segment.startTime)} --> ${formatVttTimestamp(segment.endTime)}\n${segment.text}\n\n`;
   }

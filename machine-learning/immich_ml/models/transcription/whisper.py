@@ -1,7 +1,7 @@
-import io
 from pathlib import Path
 from typing import Any, ClassVar
 
+import numpy as np
 from faster_whisper import WhisperModel
 from huggingface_hub import snapshot_download
 
@@ -10,6 +10,18 @@ from immich_ml.models.base import InferenceModel
 from immich_ml.schemas import ModelFormat, ModelIdentity, ModelSession, ModelTask, ModelType
 
 from .schemas import TranscriptionOutput
+
+# Audio arrives as raw little-endian signed 16-bit mono PCM at 16 kHz. That is what
+# faster-whisper feeds to the encoder anyway, so accepting it directly removes a
+# container decode from the request path.
+INT16_FULL_SCALE = 32768.0
+
+
+def decode_pcm(inputs: bytes) -> "np.ndarray[Any, np.dtype[np.float32]]":
+    # A trailing odd byte cannot form a sample; np.frombuffer would raise on it.
+    usable = len(inputs) - len(inputs) % 2
+    samples: np.ndarray[Any, np.dtype[np.int16]] = np.frombuffer(inputs[:usable], dtype="<i2")
+    return samples.astype(np.float32) / INT16_FULL_SCALE
 
 
 class WhisperTranscriber(InferenceModel):
@@ -38,8 +50,7 @@ class WhisperTranscriber(InferenceModel):
         return self.model  # type: ignore[return-value]
 
     def _predict(self, inputs: bytes) -> TranscriptionOutput:
-        audio = io.BytesIO(inputs)
-        segments, info = self.model.transcribe(audio, vad_filter=True, multilingual=True)
+        segments, info = self.model.transcribe(decode_pcm(inputs), vad_filter=True, multilingual=True)
         return {
             "language": info.language,
             "segments": [

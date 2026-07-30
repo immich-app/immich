@@ -20,4 +20,17 @@ export class AssetJobStatusTable {
 
   @Column({ type: 'timestamp with time zone', nullable: true })
   transcribedAt!: Timestamp | null;
+
+  /**
+   * How far into the audio transcription has committed, in milliseconds. A time offset rather than
+   * a chunk index because indices are not stable across runs: change the target chunk size or the
+   * silence thresholds between a failure and its retry and a given index denotes a different
+   * region, while an offset stays meaningful under any re-planning.
+   *
+   * Null means transcription has never started, which the maximum segment end time cannot express:
+   * with voice activity detection a chunk can legitimately produce no segments, leaving the absence
+   * of rows ambiguous between "processed, found no speech" and "never processed".
+   */
+  @Column({ type: 'integer', nullable: true })
+  transcriptionProgressMs!: number | null;
 }

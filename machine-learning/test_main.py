@@ -1155,12 +1155,33 @@ class TestTranscription:
         transcriber.model = mock.Mock()
         transcriber.model.transcribe.return_value = ([segment], info)
 
-        result = transcriber._predict(b"raw-pcm-bytes")
+        result = transcriber._predict(b"\x00\x00\x01\x00")
 
         _, kwargs = transcriber.model.transcribe.call_args
         assert kwargs["vad_filter"] is True
         assert kwargs["multilingual"] is True
         assert result == {"language": "en", "segments": [{"start": 0.0, "end": 1.5, "text": "hello there"}]}
+
+    def test_predict_decodes_raw_pcm_to_normalised_float32(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = ([], SimpleNamespace(language="en"))
+
+        # 0, +1, -1 and full negative scale as little-endian signed 16-bit samples.
+        transcriber._predict(b"\x00\x00\x01\x00\xff\xff\x00\x80")
+
+        audio = transcriber.model.transcribe.call_args.args[0]
+        assert audio.dtype == np.float32
+        np.testing.assert_allclose(audio, [0.0, 1 / 32768, -1 / 32768, -1.0])
+
+    def test_predict_ignores_a_trailing_partial_sample(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = ([], SimpleNamespace(language="en"))
+
+        transcriber._predict(b"\x00\x00\x01\x00\x7f")
+
+        assert transcriber.model.transcribe.call_args.args[0].shape == (2,)
 
 
 @pytest.mark.asyncio
