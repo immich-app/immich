@@ -19,7 +19,7 @@ export class SessionService extends BaseService {
   async handleCleanup(): Promise<JobStatus> {
     const sessions = await this.sessionRepository.cleanup();
     for (const session of sessions) {
-      this.logger.verbose(`Deleted expired session token: ${session.deviceOS}/${session.deviceType}`);
+      this.logger.verbose(`Deleted expired session token: ${session.deviceOS ?? 'Unknown'}/${session.deviceType ?? 'Unknown'}`);
     }
 
     this.logger.log(`Deleted ${sessions.length} expired session tokens`);
