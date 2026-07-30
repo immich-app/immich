@@ -112,6 +112,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final localFilePath = widget.localFilePath;
       if (localFilePath != null) {
         final file = File(localFilePath);
+        // ignore: avoid_slow_async_io
         if (!await file.exists()) {
           throw Exception('No file found for the video');
         }

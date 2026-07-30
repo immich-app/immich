@@ -313,7 +313,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
 
     return ImageFiltered(
       imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           image: DecorationImage(
             image: getFullImageProvider(asset, size: Size(context.width, context.height)),
