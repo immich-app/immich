@@ -22,6 +22,9 @@
   const {
     slideshowDelay,
     showProgressBar,
+    slideshowAnimate,
+    slideshowAnimatePanStrength,
+    slideshowAnimateZoomStrength,
     slideshowNavigation,
     slideshowLook,
     slideshowTransition,
@@ -41,6 +44,9 @@
   // Temporary variables to hold the settings - marked as reactive with $state() but initialized with store values
   let tempSlideshowDelay = $state($slideshowDelay);
   let tempShowProgressBar = $state($showProgressBar);
+  let tempSlideshowAnimate = $state($slideshowAnimate);
+  let tempSlideshowAnimatePanStrength = $state($slideshowAnimatePanStrength);
+  let tempSlideshowAnimateZoomStrength = $state($slideshowAnimateZoomStrength);
   let tempSlideshowNavigation = $state($slideshowNavigation);
   let tempSlideshowLook = $state($slideshowLook);
   let tempSlideshowTransition = $state($slideshowTransition);
@@ -84,6 +90,9 @@
   const onSubmit = () => {
     $slideshowDelay = tempSlideshowDelay;
     $showProgressBar = tempShowProgressBar;
+    $slideshowAnimate = tempSlideshowAnimate;
+    $slideshowAnimatePanStrength = tempSlideshowAnimatePanStrength;
+    $slideshowAnimateZoomStrength = tempSlideshowAnimateZoomStrength;
     $slideshowNavigation = tempSlideshowNavigation;
     $slideshowLook = tempSlideshowLook;
     $slideshowTransition = tempSlideshowTransition;
@@ -150,6 +159,16 @@
     <Field label={$t('duration')}>
       <NumberInput min={1} bind:value={tempSlideshowDelay} />
       <HelperText>{$t('admin.slideshow_duration_description')}</HelperText>
+    </Field>
+
+    <Field label={$t('slideshow_animate')}>
+      <Switch bind:checked={tempSlideshowAnimate} />
+    </Field>
+    <Field label={$t('slideshow_animate_pan_strength')}>
+      <NumberInput bind:value={tempSlideshowAnimatePanStrength} min={1} max={100} disabled={!tempSlideshowAnimate} />
+    </Field>
+    <Field label={$t('slideshow_animate_zoom_strength')}>
+      <NumberInput bind:value={tempSlideshowAnimateZoomStrength} min={1} max={100} disabled={!tempSlideshowAnimate} />
     </Field>
   </div>
 </FormModal>
