@@ -94,7 +94,9 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                             child: CircleAvatar(
                               key: ValueKey(person.id),
                               maxRadius: isTablet ? 100 / 2 : 96 / 2,
-                              backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
+                              backgroundImage: RemoteImageProvider(
+                                url: getFaceThumbnailUrl(person.id, updatedAt: person.updatedAt),
+                              ),
                             ),
                           ),
                         ),

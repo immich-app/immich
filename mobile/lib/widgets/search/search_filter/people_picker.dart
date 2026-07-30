@@ -80,7 +80,9 @@ class PeoplePicker extends HookConsumerWidget {
                           child: CircleAvatar(
                             key: ValueKey(person.id),
                             maxRadius: imageSize / 2,
-                            backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
+                            backgroundImage: RemoteImageProvider(
+                              url: getFaceThumbnailUrl(person.id, updatedAt: person.updatedAt),
+                            ),
                           ),
                         ),
                       ),

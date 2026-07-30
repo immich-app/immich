@@ -40,7 +40,7 @@ linter:
 # https://dart.dev/guides/language/analysis-options
 analyzer:
   exclude:
-    - openapi/**
+    - generated/openapi/**
     - build/**
     - lib/generated_plugin_registrant.dart
     - lib/**/*.g.dart

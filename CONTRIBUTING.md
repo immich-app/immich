@@ -23,6 +23,8 @@ We ask you not to open PRs generated with an LLM. We find that code generated li
 
 If you use an LLM to translate a PR description or title, that is fine. Please make sure however that you stick to the PR template and that the text is written concisely.
 
+Misrepresenting LLM use, contribution farming (automated low-effort PRs), or repeatedly hitting auto-close rules may be grounds for a block at maintainer discretion.
+
 ## Feature freezes
 
 From time to time, we put a feature freeze on parts of the codebase. For us, this means we won't accept most PRs that make changes in that area. Exempted from this are simple bug fixes that require only minor changes. We will close feature PRs that target a feature-frozen area, even if that feature is highly requested and you put a lot of work into it. Please keep that in mind, and if you're ever uncertain if a PR would be accepted, reach out to us first (e.g., in the aforementioned `#contributing` channel). We hate to throw away work. Currently, we have feature freezes on:
