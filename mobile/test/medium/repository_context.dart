@@ -20,6 +20,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.
 import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:uuid/uuid.dart';
 
@@ -126,6 +127,7 @@ class MediumRepositoryContext {
             livePhotoVideoId: .new(livePhotoVideoId),
             stackId: .new(stackId),
             localDateTime: .new(createdAt.toLocal()),
+            groupDate: .new(timelineGroupDate(createdAt.toLocal())),
             thumbHash: .new(TestUtils.uuid(thumbHash)),
             libraryId: .new(TestUtils.uuid(libraryId)),
           ),
@@ -263,6 +265,7 @@ class MediumRepositoryContext {
     DateTime? updatedAt,
   }) async {
     id ??= TestUtils.uuid();
+    createdAt ??= TestUtils.date();
     return db
         .into(db.localAssetEntity)
         .insertReturning(
@@ -275,7 +278,8 @@ class MediumRepositoryContext {
             orientation: .new(orientation ?? 0),
             updatedAt: .new(TestUtils.date(updatedAt)),
             checksum: _resolveUndefined(checksum, checksumOption, const Uuid().v4()),
-            createdAt: .new(TestUtils.date(createdAt)),
+            createdAt: .new(createdAt),
+            groupDate: .new(timelineGroupDate(createdAt.toLocal())),
             type: .new(type ?? .image),
             isFavorite: .new(isFavorite ?? false),
             iCloudId: .new(TestUtils.uuid(iCloudId)),

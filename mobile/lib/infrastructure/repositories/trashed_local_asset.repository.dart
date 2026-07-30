@@ -8,6 +8,7 @@ import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.d
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 
 typedef TrashedAsset = ({String albumId, LocalAsset asset});
 
@@ -198,6 +199,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
         isFavorite: Value(e.isFavorite),
         orientation: Value(e.orientation),
         playbackStyle: Value(e.playbackStyle),
+        groupDate: Value(timelineGroupDate(e.createdAt.toLocal())),
       );
     });
 
