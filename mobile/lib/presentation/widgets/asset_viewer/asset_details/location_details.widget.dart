@@ -53,7 +53,7 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
     }
   }
 
-  void editLocation() async {
+  Future<void> editLocation() async {
     await ref.read(actionProvider.notifier).editLocation(ActionSource.viewer, context);
   }
 
