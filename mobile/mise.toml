@@ -29,7 +29,7 @@ sources = [
 ]
 outputs = { auto = true }
 run = [
-  "dart run build_runner build --delete-conflicting-outputs",
+  "dart run build_runner build", 
   "dart format lib/routing/router.gr.dart",
 ]
 
@@ -42,7 +42,7 @@ run = "dart run drift_dev schema generate --data-classes --companions drift_sche
 [tasks."codegen:watch"]
 alias = "watch"
 description = "Watch and auto-generate dart code"
-run = "dart run build_runner watch --delete-conflicting-outputs"
+run = "dart run build_runner watch"
 
 [tasks."codegen:pigeon"]
 alias = "pigeon"
