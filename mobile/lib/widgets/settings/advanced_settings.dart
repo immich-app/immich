@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
@@ -16,6 +17,7 @@ import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:immich_mobile/utils/hooks/app_settings_update_hook.dart';
 import 'package:immich_mobile/widgets/settings/custom_proxy_headers_settings/custom_proxy_headers_settings.dart';
 import 'package:immich_mobile/widgets/settings/settings_action_tile.dart';
+import 'package:immich_mobile/widgets/settings/settings_radio_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
@@ -28,9 +30,7 @@ class AdvancedSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final advancedTroubleshooting = useAppSettingsState(AppSettingsEnum.advancedTroubleshooting);
-    final trashSyncEnabled = useState(ref.read(appConfigProvider).trashSyncEnabled);
     final isManageMediaSupported = useState(false);
-    final manageMediaAndroidPermission = useState(false);
     final levelId = useState<int>(ref.read(appConfigProvider).logLevel.index);
     final preferRemote = useState(ref.read(appConfigProvider).image.preferRemote);
     useValueChanged(
@@ -56,9 +56,6 @@ class AdvancedSettings extends HookConsumerWidget {
     useEffect(() {
       () async {
         isManageMediaSupported.value = await checkAndroidVersion();
-        if (isManageMediaSupported.value) {
-          manageMediaAndroidPermission.value = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
-        }
       }();
       return null;
     }, []);
@@ -70,40 +67,9 @@ class AdvancedSettings extends HookConsumerWidget {
         title: "advanced_settings_troubleshooting_title".tr(),
         subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
       ),
-      if (isManageMediaSupported.value)
-        Column(
-          children: [
-            SettingsSwitchListTile(
-              enabled: true,
-              valueNotifier: trashSyncEnabled,
-              title: "advanced_settings_sync_remote_deletions_title".tr(),
-              subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
-              onChanged: (value) async {
-                trashSyncEnabled.value = value;
-                await ref.read(settingsProvider).write(.trashSyncEnabled, value);
-                if (value) {
-                  manageMediaAndroidPermission.value = await ref
-                      .read(permissionRepositoryProvider)
-                      .requestManageMediaPermission();
-                }
-              },
-            ),
-            SettingsActionTile(
-              title: "manage_media_access_title".tr(),
-              statusText: manageMediaAndroidPermission.value ? "allowed".tr() : "not_allowed".tr(),
-              subtitle: "manage_media_access_rationale".tr(),
-              statusColor: trashSyncEnabled.value && !manageMediaAndroidPermission.value
-                  ? const Color.fromARGB(255, 243, 188, 106)
-                  : null,
-              onActionTap: () async {
-                await ref.read(permissionRepositoryProvider).manageMediaPermission();
-                manageMediaAndroidPermission.value = await ref
-                    .read(permissionRepositoryProvider)
-                    .hasManageMediaPermission();
-              },
-            ),
-          ],
-        ),
+      // Android 12+: full selector (Off / Auto sync / Review) + MANAGE_MEDIA tile.
+      // iOS: reduced selector (Off / Review); auto-sync is not offered there.
+      if (isManageMediaSupported.value || Platform.isIOS) const _TrashSyncModeSelector(),
       SettingsSliderListTile(
         text: "advanced_settings_log_level_title".tr(namedArgs: {'level': logLevel}),
         valueNotifier: levelId,
@@ -178,5 +144,134 @@ class AdvancedSettings extends HookConsumerWidget {
     ];
 
     return SettingsSubPageScaffold(settings: advancedSettings);
+  }
+}
+
+final _manageMediaPermissionProvider = FutureProvider<bool>((ref) async {
+  return ref.watch(permissionRepositoryProvider).hasManageMediaPermission();
+});
+
+class _TrashSyncModeSelector extends HookConsumerWidget {
+  const _TrashSyncModeSelector();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedTrashSyncMode = ref.watch(appConfigProvider.select((config) => config.trashSync.mode));
+    final manageMediaAndroidPermission = ref.watch(_manageMediaPermissionProvider);
+    final manageMediaAndroidPermissionValue = manageMediaAndroidPermission.valueOrNull;
+    final isTrashSyncEnabled = selectedTrashSyncMode != TrashSyncMode.off;
+    final reviewRemoteDeletionsSubtitle = [
+      "advanced_settings_review_remote_deletions_subtitle".tr(),
+      if (Platform.isAndroid) "advanced_settings_review_remote_deletions_subtitle_android".tr(),
+    ].join(' ');
+
+    void showManageMediaRequiredSnackBar() {
+      if (!context.mounted) {
+        return;
+      }
+      context.scaffoldMessenger.showSnackBar(
+        SnackBar(
+          // duration: const Duration(seconds: 3),
+          content: Text(
+            "manage_media_access_review_rationale".tr(),
+            style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+          ),
+        ),
+      );
+    }
+
+    Future<void> setTrashSyncMode(TrashSyncMode mode) {
+      return ref.read(settingsProvider).write(.trashSyncMode, mode);
+    }
+
+    Future<void> attemptToEnableSetting(TrashSyncMode mode) async {
+      if (Platform.isIOS) {
+        if (mode == TrashSyncMode.review) {
+          await setTrashSyncMode(TrashSyncMode.review);
+        }
+        return;
+      }
+
+      final result = await ref.read(permissionRepositoryProvider).requestManageMediaPermission();
+      ref.invalidate(_manageMediaPermissionProvider);
+
+      if (mode == TrashSyncMode.autoSync && result) {
+        await setTrashSyncMode(TrashSyncMode.autoSync);
+      }
+      if (mode == TrashSyncMode.review) {
+        await setTrashSyncMode(TrashSyncMode.review);
+        if (!result) {
+          showManageMediaRequiredSnackBar();
+        }
+      }
+    }
+
+    Future<void> handleTrashSyncModeChange(TrashSyncMode? mode) async {
+      if (mode == null || mode == selectedTrashSyncMode) {
+        return;
+      }
+
+      if (mode == TrashSyncMode.off) {
+        await setTrashSyncMode(TrashSyncMode.off);
+        return;
+      }
+
+      await attemptToEnableSetting(mode);
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 20),
+          child: Text(
+            "advanced_settings_sync_remote_deletions_selector_title".tr(),
+            style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, height: 1.5),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: SettingsRadioListTile<TrashSyncMode>(
+            groups: [
+              SettingsRadioGroup(
+                title: 'off'.tr(),
+                subtitle: 'advanced_settings_sync_remote_deletions_off_subtitle'.tr(),
+                value: TrashSyncMode.off,
+              ),
+              if (!Platform.isIOS)
+                SettingsRadioGroup(
+                  title: 'advanced_settings_sync_remote_deletions_title'.tr(),
+                  subtitle: 'advanced_settings_sync_remote_deletions_subtitle'.tr(),
+                  value: TrashSyncMode.autoSync,
+                ),
+              SettingsRadioGroup(
+                title: 'advanced_settings_review_remote_deletions_title'.tr(),
+                subtitle: reviewRemoteDeletionsSubtitle,
+                value: TrashSyncMode.review,
+              ),
+            ],
+            groupBy: selectedTrashSyncMode,
+            onRadioChanged: handleTrashSyncModeChange,
+          ),
+        ),
+        if (Platform.isAndroid)
+          SettingsActionTile(
+            title: "manage_media_access_title".tr(),
+            statusText: manageMediaAndroidPermissionValue == null
+                ? null
+                : manageMediaAndroidPermissionValue == true
+                ? "allowed".tr()
+                : "not_allowed".tr(),
+            subtitle: "manage_media_access_rationale".tr(),
+            statusColor: manageMediaAndroidPermissionValue == false && isTrashSyncEnabled
+                ? const Color.fromARGB(255, 243, 188, 106)
+                : null,
+            onActionTap: () async {
+              await ref.read(permissionRepositoryProvider).manageMediaPermission();
+              ref.invalidate(_manageMediaPermissionProvider);
+            },
+          ),
+      ],
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/timeline.action.dart';
@@ -63,7 +64,12 @@ void main() {
       context,
       Consumer(
         builder: (innerContext, ref, _) {
-          scope = ActionScope(context: innerContext, ref: ref, authUser: context.currentUser);
+          scope = ActionScope(
+            context: innerContext,
+            ref: ref,
+            authUser: context.currentUser,
+            timelineOrigin: TimelineOrigin.main,
+          );
           container = ProviderScope.containerOf(innerContext, listen: false);
           return const SizedBox.shrink();
         },

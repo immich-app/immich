@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
@@ -22,7 +23,7 @@ class FavoriteAction extends AssetAction<RemoteAsset> {
       AssetFilter(assets).owned(scope.authUser.id).favorite(isFavorite: !favorite);
 
   @override
-  bool isVisible(ActionScope scope) => filter(scope).isNotEmpty;
+  bool isVisible(ActionScope scope) => scope.timelineOrigin != TimelineOrigin.syncTrash && filter(scope).isNotEmpty;
 
   @override
   Future<void> onAction(ActionScope scope) async {

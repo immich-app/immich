@@ -1143,6 +1143,22 @@ class DriftTrashRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [DriftTrashReviewPage]
+class DriftTrashReviewRoute extends PageRouteInfo<void> {
+  const DriftTrashReviewRoute({List<PageRouteInfo>? children})
+    : super(DriftTrashReviewRoute.name, initialChildren: children);
+
+  static const String name = 'DriftTrashReviewRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const DriftTrashReviewPage();
+    },
+  );
+}
+
+/// generated route for
 /// [DriftUploadDetailPage]
 class DriftUploadDetailRoute extends PageRouteInfo<void> {
   const DriftUploadDetailRoute({List<PageRouteInfo>? children})

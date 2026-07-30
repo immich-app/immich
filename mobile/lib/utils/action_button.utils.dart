@@ -9,6 +9,7 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
+import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/cast_action_button.widget.dart';
@@ -62,10 +63,13 @@ class ActionButtonContext {
     this.timelineOrigin = TimelineOrigin.main,
     this.selectedCount = 1,
   });
+
+  bool get isTrashReview => timelineOrigin == TimelineOrigin.syncTrash;
 }
 
 enum ActionButtonType {
   openInfo,
+  favorite,
   likeActivity,
   share,
   shareLink,
@@ -94,6 +98,7 @@ enum ActionButtonType {
   bool shouldShow(ActionButtonContext context) {
     return switch (this) {
       ActionButtonType.advancedInfo => context.advancedTroubleshooting,
+      ActionButtonType.favorite => context.asset is RemoteAsset,
       ActionButtonType.share => true,
       ActionButtonType.shareLink =>
         !context.isInLockedView && //
@@ -102,7 +107,8 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.asset.hasRemote && //
-            !context.isArchived,
+            !context.isArchived &&
+            !context.isTrashReview,
       ActionButtonType.unarchive =>
         context.isOwner && //
             !context.isInLockedView && //
@@ -117,31 +123,37 @@ enum ActionButtonType {
             !context.isInLockedView && //
             context.asset.hasRemote && //
             context.isTrashEnabled && //
-            context.timelineOrigin != TimelineOrigin.trash,
+            context.timelineOrigin != TimelineOrigin.trash &&
+            !context.isTrashReview,
       ActionButtonType.restoreTrash =>
         context.isOwner && //
             !context.isInLockedView && //
             context.asset.hasRemote && //
-            context.timelineOrigin == TimelineOrigin.trash,
+            context.timelineOrigin == TimelineOrigin.trash &&
+            !context.isTrashReview,
       ActionButtonType.deletePermanent =>
         context.isOwner && //
             context.asset.hasRemote && //
-            (!context.isTrashEnabled || context.timelineOrigin == TimelineOrigin.trash || context.isInLockedView),
+            (!context.isTrashEnabled || context.timelineOrigin == TimelineOrigin.trash || context.isInLockedView) &&
+            !context.isTrashReview,
       ActionButtonType.delete =>
         context.isOwner && //
             !context.isInLockedView && //
-            context.asset.hasRemote,
+            context.asset.hasRemote &&
+            !context.isTrashReview,
       ActionButtonType.moveToLockFolder =>
         context.isOwner && //
             !context.isInLockedView && //
-            context.asset.hasRemote,
+            context.asset.hasRemote &&
+            !context.isTrashReview,
       ActionButtonType.removeFromLockFolder =>
         context.isOwner && //
             context.isInLockedView && //
             context.asset.hasRemote,
       ActionButtonType.deleteLocal =>
         !context.isInLockedView && //
-            context.asset.hasLocal,
+            context.asset.hasLocal &&
+            !context.isTrashReview,
       ActionButtonType.upload =>
         !context.isInLockedView && //
             context.asset.storage == AssetState.local,
@@ -179,6 +191,7 @@ enum ActionButtonType {
             context.timelineOrigin != TimelineOrigin.lockedFolder &&
             context.timelineOrigin != TimelineOrigin.archive &&
             context.timelineOrigin != TimelineOrigin.localAlbum &&
+            context.timelineOrigin != TimelineOrigin.syncTrash &&
             context.isOwner,
       ActionButtonType.cast => context.isCasting || context.asset.hasRemote,
       ActionButtonType.slideshow => true,
@@ -193,6 +206,7 @@ enum ActionButtonType {
   ]) {
     return switch (this) {
       ActionButtonType.advancedInfo => ActionMenuItemWidget(action: AssetDebugAction(assets: [context.asset])),
+      ActionButtonType.favorite => ActionMenuItemWidget(action: FavoriteAction(assets: [context.asset])),
       ActionButtonType.share => ShareActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.shareLink => ShareLinkActionButton(
         source: context.source,
@@ -324,6 +338,7 @@ class ActionButtonBuilder {
     ActionButtonType.unarchive,
     ActionButtonType.restoreTrash,
     ActionButtonType.deletePermanent,
+    ActionButtonType.favorite,
   };
 
   static List<Widget> build(ActionButtonContext context) {

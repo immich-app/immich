@@ -179,10 +179,19 @@ void main() {
     });
 
     test("assetDeleteV1 records the server deleted checksums", () async {
+      late List<String> recordedRemoteIds;
+      when(() => mockTrashSyncRepo.recordHardDeletedChecksums(any())).thenAnswer((invocation) {
+        recordedRemoteIds = invocation.positionalArguments.single.toList().cast<String>();
+        return Future.value();
+      });
+
       await simulateEvents([SyncStreamStub.assetDeleteV1]);
 
-      verify(() => mockTrashSyncRepo.recordHardDeletedChecksums(any())).called(1);
-      verify(() => mockSyncStreamRepo.deleteAssetsV1(any())).called(1);
+      verifyInOrder([
+        () => mockTrashSyncRepo.recordHardDeletedChecksums(any()),
+        () => mockSyncStreamRepo.deleteAssetsV1(any()),
+      ]);
+      expect(recordedRemoteIds, ["remote-asset"]);
     });
 
     test("processes final batch correctly", () async {

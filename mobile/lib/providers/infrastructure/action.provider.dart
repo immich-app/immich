@@ -116,6 +116,21 @@ class ActionNotifier extends Notifier<void> {
     };
   }
 
+  Future<ActionResult> resolveRemoteTrash(ActionSource source, {required bool keep}) async {
+    final assets = _getAssets(source);
+    final assetIds = assets.map((asset) => asset.localId).nonNulls.toSet();
+    if (assetIds.isEmpty) {
+      return const ActionResult(count: 0, success: false, error: 'No assets to resolve');
+    }
+    try {
+      final result = await ref.read(actionServiceProvider).resolveRemoteTrash(assetIds, keep: keep);
+      return ActionResult(count: result.displayCount, success: result.success);
+    } catch (error, stack) {
+      _logger.severe('Failed to resolve remote trash review', error, stack);
+      return ActionResult(count: assetIds.length, success: false, error: error.toString());
+    }
+  }
+
   Future<ActionResult> troubleshoot(ActionSource source, BuildContext context) async {
     final assets = _getAssets(source);
     if (assets.length > 1) {
