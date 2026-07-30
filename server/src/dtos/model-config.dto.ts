@@ -82,6 +82,28 @@ export const TranscriptionConfigSchema = ModelConfigSchema.extend({
     .describe(
       'Confidence at or above which a detected change of language is believed. Below it a segment keeps the language established so far, which stops music, silence and ambient noise from switching the transcript into a language nobody is speaking.',
     ),
+  maxNoSpeechProbability: z
+    .number()
+    .meta({ format: 'double' })
+    .min(0)
+    .max(1)
+    .describe(
+      'Probability of there being no speech above which a segment is suspected of being a hallucination. Only suspected: it is discarded only if the average log-probability also falls below its own threshold, because quiet but genuine speech scores high here on its own.',
+    ),
+  minAvgLogProbability: z
+    .number()
+    .meta({ format: 'double' })
+    .max(0)
+    .describe(
+      'Average log-probability below which a segment is suspected of being a hallucination. Paired with the no-speech probability for the same reason: a low score alone also describes speech the model found merely difficult.',
+    ),
+  maxCompressionRatio: z
+    .number()
+    .meta({ format: 'double' })
+    .min(1)
+    .describe(
+      'Ratio of decoded text length to its compressed size above which a segment is discarded. Unlike the paired signals this one stands alone, because nothing but a repetition loop compresses that well.',
+    ),
 }).meta({ id: 'TranscriptionConfig' });
 
 export class CLIPConfig extends createZodDto(CLIPConfigSchema) {}

@@ -2484,6 +2484,12 @@ export type TranscriptionConfig = {
     enabled: boolean;
     /** ISO 639-1 code of the only language spoken in the library, or null to detect the language automatically. Forcing a language turns misdetection from unlikely into impossible, which is worth having wherever only one language is ever spoken. */
     language: string | null;
+    /** Ratio of decoded text length to its compressed size above which a segment is discarded. Unlike the paired signals this one stands alone, because nothing but a repetition loop compresses that well. */
+    maxCompressionRatio: number;
+    /** Probability of there being no speech above which a segment is suspected of being a hallucination. Only suspected: it is discarded only if the average log-probability also falls below its own threshold, because quiet but genuine speech scores high here on its own. */
+    maxNoSpeechProbability: number;
+    /** Average log-probability below which a segment is suspected of being a hallucination. Paired with the no-speech probability for the same reason: a low score alone also describes speech the model found merely difficult. */
+    minAvgLogProbability: number;
     /** Confidence at or above which a detected change of language is believed. Below it a segment keeps the language established so far, which stops music, silence and ambient noise from switching the transcript into a language nobody is speaking. */
     minLanguageConfidence: number;
     /** Name of the model to use */

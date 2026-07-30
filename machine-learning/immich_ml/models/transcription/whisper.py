@@ -88,6 +88,12 @@ class WhisperTranscriber(InferenceModel):
                     text=segment.text.strip(),
                     language=language,
                     languageConfidence=confidence,
+                    # Passed through as decoded. faster-whisper applies thresholds of its own
+                    # while decoding, but only to choose a temperature to retry at; it emits the
+                    # segment either way. Whether one is worth showing is decided at read time.
+                    noSpeechProbability=segment.no_speech_prob,
+                    avgLogProbability=segment.avg_logprob,
+                    compressionRatio=segment.compression_ratio,
                 )
                 for segment, (language, confidence) in zip(decoded, detections)
             ],

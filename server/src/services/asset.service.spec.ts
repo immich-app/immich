@@ -5,6 +5,7 @@ import { AssetEditAction } from 'src/dtos/editing.dto';
 import { AssetFileType, AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
+import { clearConfigCache } from 'src/utils/config';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -24,6 +25,20 @@ const statResponse: AssetStatsResponseDto = {
   videos: 23,
   total: 33,
 };
+
+/** A stored transcript segment, defaulting to the quality signals of ordinary speech. */
+const transcriptSegment = (startTime: number, text: string, quality: Record<string, number | null> = {}) => ({
+  id: newUuid(),
+  assetId: 'asset-1',
+  startTime,
+  endTime: startTime + 1,
+  text,
+  language: 'en',
+  noSpeechProbability: 0.02,
+  avgLogProbability: -0.2,
+  compressionRatio: 1.4,
+  ...quality,
+});
 
 describe(AssetService.name, () => {
   let sut: AssetService;
@@ -676,6 +691,72 @@ describe(AssetService.name, () => {
       await expect(sut.getOcr(authStub.admin, asset.id)).resolves.toEqual([]);
 
       expect(mocks.ocr.getByAssetId).toHaveBeenCalledWith(asset.id);
+    });
+  });
+
+  describe('getCaptions', () => {
+    beforeEach(() => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: new Date(), transcriptionProgressMs: 10_000 });
+    });
+
+    it('should render the segments that pass the thresholds', async () => {
+      mocks.transcript.getByAssetId.mockResolvedValue([
+        transcriptSegment(0, 'Hello there'),
+        transcriptSegment(2, 'General Kenobi'),
+      ]);
+
+      const vtt = await sut.getCaptions(authStub.admin, 'asset-1');
+
+      expect(vtt).toContain('Hello there');
+      expect(vtt).toContain('General Kenobi');
+    });
+
+    it('should exclude a hallucinated segment from the caption track', async () => {
+      mocks.transcript.getByAssetId.mockResolvedValue([
+        transcriptSegment(0, 'Hello there'),
+        // A stretch of music: the model heard no speech and did not believe what it wrote.
+        transcriptSegment(2, 'Subtitles by the Amara.org community', {
+          noSpeechProbability: 0.98,
+          avgLogProbability: -2.4,
+        }),
+        transcriptSegment(4, 'you you you you', { compressionRatio: 4.2 }),
+      ]);
+
+      const vtt = await sut.getCaptions(authStub.admin, 'asset-1');
+
+      expect(vtt).toContain('Hello there');
+      expect(vtt).not.toContain('Amara.org');
+      expect(vtt).not.toContain('you you you you');
+    });
+
+    it('should re-derive the caption track from changed thresholds without re-running inference', async () => {
+      const segments = [transcriptSegment(0, 'Hmm', { noSpeechProbability: 0.7, avgLogProbability: -1.2 })];
+      mocks.transcript.getByAssetId.mockResolvedValue(segments);
+
+      await expect(sut.getCaptions(authStub.admin, 'asset-1')).resolves.not.toContain('Hmm');
+
+      // Saving the setting is what invalidates the config cache in production, so the test does
+      // the same rather than reaching past it.
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: { transcription: { maxNoSpeechProbability: 0.9 } },
+      });
+      clearConfigCache();
+
+      await expect(sut.getCaptions(authStub.admin, 'asset-1')).resolves.toContain('Hmm');
+      expect(mocks.transcript.getByAssetId).toHaveBeenCalledTimes(2);
+    });
+
+    it('should still report progress when every segment is filtered out', async () => {
+      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: null, transcriptionProgressMs: 4000 });
+      mocks.transcript.getByAssetId.mockResolvedValue([
+        transcriptSegment(0, 'Thank you for watching', { noSpeechProbability: 0.99, avgLogProbability: -2.8 }),
+      ]);
+
+      const vtt = await sut.getCaptions(authStub.admin, 'asset-1');
+
+      expect(vtt).not.toContain('Thank you for watching');
+      expect(vtt).toContain('immich-transcription-progress-ms: 4000');
     });
   });
 

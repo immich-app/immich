@@ -64,7 +64,9 @@ export type OcrResponse = { [ModelTask.OCR]: OCR } & VisualResponse;
 /**
  * `language` and `languageConfidence` are the model's raw per-window detection, not a decision:
  * whether to believe a change of language is the server's call, and it needs the confidence to
- * make it.
+ * make it. The three quality signals are raw for the same reason — the model reports how much it
+ * believes its own output, and the thresholds that turn that into a keep-or-discard live at read
+ * time so they can be changed without re-running inference.
  */
 export type TranscriptSegment = {
   start: number;
@@ -72,6 +74,9 @@ export type TranscriptSegment = {
   text: string;
   language: string;
   languageConfidence: number;
+  noSpeechProbability: number;
+  avgLogProbability: number;
+  compressionRatio: number;
 };
 export type Transcript = { language: string; segments: TranscriptSegment[] };
 

@@ -155,6 +155,10 @@ export class TranscriptionService extends BaseService {
 
     // Segment times are relative to the chunk; shift them onto the asset's timeline. The end is
     // clamped because a model can overrun the audio it was given by a fraction of a second.
+    //
+    // Every segment is written, including the ones the quality signals condemn. The signals are
+    // stored alongside so that the caption track can exclude them at read time, which is what
+    // makes retuning the thresholds a query rather than a re-run of inference over the library.
     await this.transcriptRepository.appendChunk(
       id,
       segments.map((segment, index) => ({
@@ -163,6 +167,9 @@ export class TranscriptionService extends BaseService {
         endTime: Math.min(chunk.start + segment.end, chunk.end),
         text: segment.text,
         language: languages[index],
+        noSpeechProbability: segment.noSpeechProbability,
+        avgLogProbability: segment.avgLogProbability,
+        compressionRatio: segment.compressionRatio,
       })),
       progressMs,
     );

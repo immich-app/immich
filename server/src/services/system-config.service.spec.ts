@@ -145,6 +145,9 @@ const updatedConfig = Object.freeze<SystemConfig>({
       timeoutMultiplier: 30,
       language: null,
       minLanguageConfidence: 0.7,
+      maxNoSpeechProbability: 0.6,
+      minAvgLogProbability: -1,
+      maxCompressionRatio: 2.4,
     },
   },
   map: {

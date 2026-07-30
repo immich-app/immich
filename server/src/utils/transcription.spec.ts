@@ -1,4 +1,5 @@
 import {
+  filterHallucinations,
   getChunkByteRange,
   getInferenceTimeout,
   getPcmDuration,
@@ -7,6 +8,7 @@ import {
   planChunks,
   planResume,
   resolveSegmentLanguages,
+  SegmentQuality,
 } from 'src/utils/transcription';
 import { describe, expect, it } from 'vitest';
 
@@ -258,5 +260,93 @@ describe('resolveSegmentLanguages', () => {
     );
 
     expect(resolved).toEqual(['en', 'fr', 'fr', 'en']);
+  });
+});
+
+/** Ordinary speech, overridden per test with whichever signal is under examination. */
+const segment = (overrides: Partial<SegmentQuality & { text: string }> = {}) => ({
+  text: 'Hello there',
+  noSpeechProbability: 0.02,
+  avgLogProbability: -0.2,
+  compressionRatio: 1.4,
+  ...overrides,
+});
+
+describe('filterHallucinations', () => {
+  const thresholds = { maxNoSpeechProbability: 0.6, minAvgLogProbability: -1, maxCompressionRatio: 2.4 };
+
+  it('should keep segments passing every rule', () => {
+    const segments = [segment(), segment({ text: 'General Kenobi' })];
+
+    expect(filterHallucinations(segments, thresholds)).toEqual(segments);
+  });
+
+  it('should return nothing for a transcript with no segments', () => {
+    expect(filterHallucinations([], thresholds)).toEqual([]);
+  });
+
+  it('should keep a segment failing only the no-speech probability', () => {
+    // Quiet but genuine speech: the model doubts there is speech, then decodes it confidently.
+    const segments = [segment({ noSpeechProbability: 0.93 })];
+
+    expect(filterHallucinations(segments, thresholds)).toEqual(segments);
+  });
+
+  it('should keep a segment failing only the average log-probability', () => {
+    // A heavy accent or a noisy room: hard to decode, but the model does hear speech.
+    const segments = [segment({ avgLogProbability: -2.1 })];
+
+    expect(filterHallucinations(segments, thresholds)).toEqual(segments);
+  });
+
+  it('should discard a segment failing both paired signals', () => {
+    const segments = [segment({ noSpeechProbability: 0.93, avgLogProbability: -2.1 })];
+
+    expect(filterHallucinations(segments, thresholds)).toEqual([]);
+  });
+
+  it('should discard a segment on the repetition signal alone', () => {
+    // Everything else says speech; only the compression ratio gives the loop away.
+    const segments = [segment({ text: 'Thank you. Thank you. Thank you.', compressionRatio: 3.6 })];
+
+    expect(filterHallucinations(segments, thresholds)).toEqual([]);
+  });
+
+  it('should keep a segment at each threshold exactly', () => {
+    const segments = [segment({ noSpeechProbability: 0.6, avgLogProbability: -1 }), segment({ compressionRatio: 2.4 })];
+
+    expect(filterHallucinations(segments, thresholds)).toEqual(segments);
+  });
+
+  it('should keep only the good segments of a mixed transcript', () => {
+    const good = segment();
+    const segments = [
+      good,
+      segment({ text: 'Subtitles by the Amara.org community', noSpeechProbability: 0.98, avgLogProbability: -2.4 }),
+      segment({ text: 'you you you you', compressionRatio: 4.2 }),
+    ];
+
+    expect(filterHallucinations(segments, thresholds)).toEqual([good]);
+  });
+
+  it('should keep a segment stored before the signals existed', () => {
+    // Judging a missing signal would silently blank every transcript made before this change.
+    const segments = [segment({ noSpeechProbability: null, avgLogProbability: null, compressionRatio: null })];
+
+    expect(filterHallucinations(segments, thresholds)).toEqual(segments);
+  });
+
+  it('should keep a segment whose paired signals are only half recorded', () => {
+    const segments = [segment({ noSpeechProbability: 0.98, avgLogProbability: null })];
+
+    expect(filterHallucinations(segments, thresholds)).toEqual(segments);
+  });
+
+  it('should change what it discards when the thresholds change', () => {
+    // The point of filtering at read time: the same stored rows, judged differently.
+    const segments = [segment({ noSpeechProbability: 0.7, avgLogProbability: -1.2 })];
+
+    expect(filterHallucinations(segments, thresholds)).toEqual([]);
+    expect(filterHallucinations(segments, { ...thresholds, maxNoSpeechProbability: 0.9 })).toEqual(segments);
   });
 });

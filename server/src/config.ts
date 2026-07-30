@@ -112,6 +112,9 @@ export type SystemConfig = {
       timeoutMultiplier: number;
       language: string | null;
       minLanguageConfidence: number;
+      maxNoSpeechProbability: number;
+      minAvgLogProbability: number;
+      maxCompressionRatio: number;
     };
   };
   map: {
@@ -339,6 +342,9 @@ export const defaults = Object.freeze<SystemConfig>({
       timeoutMultiplier: 30,
       language: null,
       minLanguageConfidence: 0.7,
+      maxNoSpeechProbability: 0.6,
+      minAvgLogProbability: -1,
+      maxCompressionRatio: 2.4,
     },
   },
   map: {

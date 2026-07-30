@@ -26,4 +26,24 @@ export class TranscriptSegmentTable {
    */
   @Column({ type: 'text', nullable: true })
   language!: string | null;
+
+  /**
+   * The model's own signals about how much it believes this segment, stored rather than acted on.
+   * Recognition run on music, breathing or distant noise produces confident, plausibly-timed
+   * captions from its training data rather than nothing at all, and these are what identify them.
+   *
+   * Every segment is written whatever they say. Filtering at ingest would be a one-way door: the
+   * caption track and the search text are derived artifacts and can be re-derived, but inference
+   * discarded is inference that has to be re-run across the whole library to get back. Nullable
+   * only because segments written before this change carry no signals.
+   */
+  @Column({ type: 'real', nullable: true })
+  noSpeechProbability!: number | null;
+
+  @Column({ type: 'real', nullable: true })
+  avgLogProbability!: number | null;
+
+  /** Ratio of decoded text to its gzip size; a repetition loop compresses far better than speech. */
+  @Column({ type: 'real', nullable: true })
+  compressionRatio!: number | null;
 }

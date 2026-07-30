@@ -9,6 +9,9 @@ import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 /** An extracted stream holding `seconds` of 16 kHz mono 16-bit PCM. */
 const audioOf = (seconds: number) => ({ size: seconds * PCM_BYTES_PER_SECOND }) as Stats;
 
+/** The quality signals of ordinary speech, for the tests that are not about them. */
+const speechQuality = { noSpeechProbability: 0.02, avgLogProbability: -0.2, compressionRatio: 1.4 };
+
 describe(TranscriptionService.name, () => {
   let sut: TranscriptionService;
   let mocks: ServiceMocks;
@@ -30,7 +33,9 @@ describe(TranscriptionService.name, () => {
     mocks.transcript.getLastLanguage.mockResolvedValue(void 0);
     mocks.machineLearning.transcribe.mockResolvedValue({
       language: 'en',
-      segments: [{ start: 0, end: 1.5, text: 'Hello there', language: 'en', languageConfidence: 0.99 }],
+      segments: [
+        { start: 0, end: 1.5, text: 'Hello there', language: 'en', languageConfidence: 0.99, ...speechQuality },
+      ],
     });
   });
 
@@ -128,7 +133,7 @@ describe(TranscriptionService.name, () => {
       );
       expect(mocks.transcript.appendChunk).toHaveBeenCalledWith(
         'asset-id',
-        [{ assetId: 'asset-id', startTime: 0, endTime: 1.5, text: 'Hello there', language: 'en' }],
+        [{ assetId: 'asset-id', startTime: 0, endTime: 1.5, text: 'Hello there', language: 'en', ...speechQuality }],
         10_000,
       );
       expect(mocks.asset.upsertJobStatus).toHaveBeenCalledWith({
@@ -160,13 +165,15 @@ describe(TranscriptionService.name, () => {
       mocks.storage.stat.mockResolvedValue(audioOf(70));
       mocks.machineLearning.transcribe.mockResolvedValue({
         language: 'en',
-        segments: [{ start: 2, end: 4, text: 'Second chunk', language: 'en', languageConfidence: 0.99 }],
+        segments: [
+          { start: 2, end: 4, text: 'Second chunk', language: 'en', languageConfidence: 0.99, ...speechQuality },
+        ],
       });
 
       await sut.handleTranscribe({ id: 'asset-id' });
 
       expect(mocks.transcript.appendChunk.mock.calls[1][1]).toEqual([
-        { assetId: 'asset-id', startTime: 32, endTime: 34, text: 'Second chunk', language: 'en' },
+        { assetId: 'asset-id', startTime: 32, endTime: 34, text: 'Second chunk', language: 'en', ...speechQuality },
       ]);
     });
 
@@ -211,14 +218,67 @@ describe(TranscriptionService.name, () => {
     });
   });
 
+  describe('quality signals', () => {
+    it('should store the signals the model reported for every segment', async () => {
+      mocks.machineLearning.transcribe.mockResolvedValue({
+        language: 'en',
+        segments: [
+          {
+            start: 0,
+            end: 1,
+            text: 'Hello there',
+            language: 'en',
+            languageConfidence: 0.99,
+            noSpeechProbability: 0.03,
+            avgLogProbability: -0.31,
+            compressionRatio: 1.52,
+          },
+        ],
+      });
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.appendChunk.mock.calls[0][1][0]).toEqual(
+        expect.objectContaining({ noSpeechProbability: 0.03, avgLogProbability: -0.31, compressionRatio: 1.52 }),
+      );
+    });
+
+    it('should persist a segment the thresholds would reject rather than discarding it', async () => {
+      // Storing is what makes retuning a query. A row dropped here would need inference re-run
+      // across the library to get back, so ingest keeps everything and the reader decides.
+      mocks.machineLearning.transcribe.mockResolvedValue({
+        language: 'en',
+        segments: [
+          {
+            start: 0,
+            end: 4,
+            text: 'Subtitles by the Amara.org community',
+            language: 'en',
+            languageConfidence: 0.99,
+            noSpeechProbability: 0.98,
+            avgLogProbability: -2.4,
+            compressionRatio: 3.1,
+          },
+        ],
+      });
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.appendChunk.mock.calls[0][1]).toHaveLength(1);
+      expect(mocks.transcript.appendChunk.mock.calls[0][1][0]).toEqual(
+        expect.objectContaining({ text: 'Subtitles by the Amara.org community', noSpeechProbability: 0.98 }),
+      );
+    });
+  });
+
   describe('language resolution', () => {
     it('should store the resolved language on every segment', async () => {
       mocks.machineLearning.transcribe.mockResolvedValue({
         language: 'fr',
         segments: [
-          { start: 0, end: 1, text: 'Bonjour', language: 'fr', languageConfidence: 0.98 },
-          { start: 1, end: 2, text: 'la la la', language: 'cy', languageConfidence: 0.2 },
-          { start: 2, end: 3, text: 'Hello', language: 'en', languageConfidence: 0.95 },
+          { start: 0, end: 1, text: 'Bonjour', language: 'fr', languageConfidence: 0.98, ...speechQuality },
+          { start: 1, end: 2, text: 'la la la', language: 'cy', languageConfidence: 0.2, ...speechQuality },
+          { start: 2, end: 3, text: 'Hello', language: 'en', languageConfidence: 0.95, ...speechQuality },
         ],
       });
 
@@ -236,11 +296,13 @@ describe(TranscriptionService.name, () => {
       mocks.machineLearning.transcribe
         .mockResolvedValueOnce({
           language: 'de',
-          segments: [{ start: 0, end: 1, text: 'Guten Tag', language: 'de', languageConfidence: 0.97 }],
+          segments: [
+            { start: 0, end: 1, text: 'Guten Tag', language: 'de', languageConfidence: 0.97, ...speechQuality },
+          ],
         })
         .mockResolvedValueOnce({
           language: 'de',
-          segments: [{ start: 0, end: 1, text: '...', language: 'nn', languageConfidence: 0.11 }],
+          segments: [{ start: 0, end: 1, text: '...', language: 'nn', languageConfidence: 0.11, ...speechQuality }],
         });
 
       await sut.handleTranscribe({ id: 'asset-id' });
@@ -254,7 +316,7 @@ describe(TranscriptionService.name, () => {
       mocks.transcript.getLastLanguage.mockResolvedValue('ja');
       mocks.machineLearning.transcribe.mockResolvedValue({
         language: 'ja',
-        segments: [{ start: 0, end: 1, text: 'mmm', language: 'ko', languageConfidence: 0.3 }],
+        segments: [{ start: 0, end: 1, text: 'mmm', language: 'ko', languageConfidence: 0.3, ...speechQuality }],
       });
 
       await sut.handleTranscribe({ id: 'asset-id' });

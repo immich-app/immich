@@ -1046,10 +1046,10 @@ class TestOcr:
 
         rapid_recognizer.assert_called_once_with(
             OcrOptions(
-              session=ort_session.return_value,
-              rec_batch_num=6,
-              rec_img_shape=(3, 48, 320),
-              model_root_dir=text_recognizer.cache_dir,
+                session=ort_session.return_value,
+                rec_batch_num=6,
+                rec_img_shape=(3, 48, 320),
+                model_root_dir=text_recognizer.cache_dir,
             )
         )
 
@@ -1064,10 +1064,10 @@ class TestOcr:
 
         rapid_recognizer.assert_called_once_with(
             OcrOptions(
-              session=ort_session.return_value,
-              rec_batch_num=4,
-              rec_img_shape=(3, 48, 320),
-              model_root_dir=text_recognizer.cache_dir,
+                session=ort_session.return_value,
+                rec_batch_num=4,
+                rec_img_shape=(3, 48, 320),
+                model_root_dir=text_recognizer.cache_dir,
             )
         )
 
@@ -1084,12 +1084,31 @@ class TestOcr:
 
         rapid_recognizer.assert_called_once_with(
             OcrOptions(
-              session=ort_session.return_value,
-              rec_batch_num=6,
-              rec_img_shape=(3, 48, 320),
-              model_root_dir=text_recognizer.cache_dir,
+                session=ort_session.return_value,
+                rec_batch_num=6,
+                rec_img_shape=(3, 48, 320),
+                model_root_dir=text_recognizer.cache_dir,
             )
         )
+
+
+def whisper_segment(
+    start: float,
+    end: float,
+    text: str,
+    no_speech_prob: float = 0.01,
+    avg_logprob: float = -0.2,
+    compression_ratio: float = 1.4,
+) -> SimpleNamespace:
+    """A decoded segment as faster-whisper yields it, defaulting to the scores of ordinary speech."""
+    return SimpleNamespace(
+        start=start,
+        end=end,
+        text=text,
+        no_speech_prob=no_speech_prob,
+        avg_logprob=avg_logprob,
+        compression_ratio=compression_ratio,
+    )
 
 
 class TestTranscription:
@@ -1150,7 +1169,7 @@ class TestTranscription:
 
     def test_predict_enables_vad_and_multilingual_detection(self, path: mock.Mock) -> None:
         transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
-        segment = SimpleNamespace(start=0.0, end=1.5, text=" hello there ")
+        segment = whisper_segment(0.0, 1.5, " hello there ")
         info = SimpleNamespace(language="en")
         transcriber.model = mock.Mock()
         transcriber.model.transcribe.return_value = ([segment], info)
@@ -1165,17 +1184,49 @@ class TestTranscription:
         assert result == {
             "language": "en",
             "segments": [
-                {"start": 0.0, "end": 1.5, "text": "hello there", "language": "en", "languageConfidence": 0.99}
+                {
+                    "start": 0.0,
+                    "end": 1.5,
+                    "text": "hello there",
+                    "language": "en",
+                    "languageConfidence": 0.99,
+                    "noSpeechProbability": 0.01,
+                    "avgLogProbability": -0.2,
+                    "compressionRatio": 1.4,
+                }
             ],
         }
+
+    def test_predict_reports_quality_signals_without_acting_on_them(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        # Scores no threshold would accept, on a caption Whisper is well known to invent.
+        segment = whisper_segment(
+            0.0,
+            4.0,
+            " Subtitles by the Amara.org community",
+            no_speech_prob=0.98,
+            avg_logprob=-2.4,
+            compression_ratio=3.1,
+        )
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = ([segment], SimpleNamespace(language="en"))
+        transcriber.model.detect_language.return_value = ("en", 0.99, [])
+
+        result = transcriber._predict(b"\x00\x00" * (4 * 16_000))
+
+        # Reported, not withheld: what to do about it is a read-time decision the server takes.
+        assert len(result["segments"]) == 1
+        assert result["segments"][0]["noSpeechProbability"] == 0.98
+        assert result["segments"][0]["avgLogProbability"] == -2.4
+        assert result["segments"][0]["compressionRatio"] == 3.1
 
     def test_predict_detects_language_per_window(self, path: mock.Mock) -> None:
         transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
         # One segment in each of the first three 30 s encoder windows.
         segments = [
-            SimpleNamespace(start=1.0, end=2.0, text="one"),
-            SimpleNamespace(start=31.0, end=32.0, text="two"),
-            SimpleNamespace(start=61.0, end=62.0, text="three"),
+            whisper_segment(1.0, 2.0, "one"),
+            whisper_segment(31.0, 32.0, "two"),
+            whisper_segment(61.0, 62.0, "three"),
         ]
         transcriber.model = mock.Mock()
         transcriber.model.transcribe.return_value = (segments, SimpleNamespace(language="en"))
@@ -1192,9 +1243,9 @@ class TestTranscription:
     def test_predict_detects_each_window_once(self, path: mock.Mock) -> None:
         transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
         segments = [
-            SimpleNamespace(start=1.0, end=2.0, text="one"),
-            SimpleNamespace(start=3.0, end=4.0, text="two"),
-            SimpleNamespace(start=31.0, end=32.0, text="three"),
+            whisper_segment(1.0, 2.0, "one"),
+            whisper_segment(3.0, 4.0, "two"),
+            whisper_segment(31.0, 32.0, "three"),
         ]
         transcriber.model = mock.Mock()
         transcriber.model.transcribe.return_value = (segments, SimpleNamespace(language="en"))
@@ -1208,7 +1259,7 @@ class TestTranscription:
     def test_predict_labels_a_straddling_segment_by_its_midpoint(self, path: mock.Mock) -> None:
         transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
         # Starts in the first window but spends most of itself in the second.
-        segment = SimpleNamespace(start=29.0, end=40.0, text="across")
+        segment = whisper_segment(29.0, 40.0, "across")
         transcriber.model = mock.Mock()
         transcriber.model.transcribe.return_value = ([segment], SimpleNamespace(language="en"))
         transcriber.model.detect_language.return_value = ("fr", 0.88, [])
@@ -1222,7 +1273,7 @@ class TestTranscription:
     def test_predict_clamps_a_segment_overrunning_the_audio(self, path: mock.Mock) -> None:
         transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
         # A model can report past the end of what it was given; there is no window there to detect.
-        segment = SimpleNamespace(start=9.0, end=41.0, text="overrun")
+        segment = whisper_segment(9.0, 41.0, "overrun")
         transcriber.model = mock.Mock()
         transcriber.model.transcribe.return_value = ([segment], SimpleNamespace(language="en"))
         transcriber.model.detect_language.return_value = ("en", 0.99, [])
@@ -1234,7 +1285,7 @@ class TestTranscription:
 
     def test_predict_forces_an_overridden_language_without_detecting(self, path: mock.Mock) -> None:
         transcriber = WhisperTranscriber("tiny", cache_dir="test_cache", language="es")
-        segment = SimpleNamespace(start=0.0, end=1.5, text=" hola ")
+        segment = whisper_segment(0.0, 1.5, " hola ")
         transcriber.model = mock.Mock()
         transcriber.model.transcribe.return_value = ([segment], SimpleNamespace(language="es"))
 

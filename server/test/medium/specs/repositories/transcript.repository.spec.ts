@@ -187,6 +187,66 @@ describe(TranscriptRepository.name, () => {
     });
   });
 
+  describe('quality signals', () => {
+    it('should round-trip the signals a segment was stored with', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+
+      await sut.appendChunk(
+        asset.id,
+        [
+          {
+            ...segment(asset.id, 0, 1, 'Hello there', 'en'),
+            noSpeechProbability: 0.02,
+            avgLogProbability: -0.25,
+            compressionRatio: 1.5,
+          },
+        ],
+        1000,
+      );
+
+      const [stored] = await sut.getByAssetId(asset.id);
+      // `real` is single precision, so the stored values are close rather than identical. The
+      // thresholds they are compared against are nowhere near that fine.
+      expect(stored.noSpeechProbability).toBeCloseTo(0.02, 6);
+      expect(stored.avgLogProbability).toBeCloseTo(-0.25, 6);
+      expect(stored.compressionRatio).toBeCloseTo(1.5, 6);
+    });
+
+    it('should store a segment every threshold would reject', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+
+      await sut.appendChunk(
+        asset.id,
+        [
+          {
+            ...segment(asset.id, 0, 4, 'Subtitles by the Amara.org community', 'en'),
+            noSpeechProbability: 0.98,
+            avgLogProbability: -2.4,
+            compressionRatio: 3.1,
+          },
+        ],
+        4000,
+      );
+
+      // Nothing is discarded at ingest, so retuning the thresholds later has rows to work on.
+      await expect(sut.getByAssetId(asset.id)).resolves.toHaveLength(1);
+    });
+
+    it('should leave the signals null for a segment written without them', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+
+      await sut.appendChunk(asset.id, [segment(asset.id, 0, 1, 'Older transcript', 'en')], 1000);
+
+      const [stored] = await sut.getByAssetId(asset.id);
+      expect(stored.noSpeechProbability).toBeNull();
+      expect(stored.avgLogProbability).toBeNull();
+      expect(stored.compressionRatio).toBeNull();
+    });
+  });
+
   describe('resumption', () => {
     it('should produce no duplicate segments when an interrupted run is resumed', async () => {
       const { ctx, sut } = setup();

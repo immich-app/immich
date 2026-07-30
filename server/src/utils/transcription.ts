@@ -190,6 +190,72 @@ export const resolveSegmentLanguages = (
   return resolved;
 };
 
+/** The model's own signals about a segment, as stored. Null for segments written before they were. */
+export type SegmentQuality = {
+  noSpeechProbability: number | null;
+  avgLogProbability: number | null;
+  compressionRatio: number | null;
+};
+
+/** Read-time thresholds, taken from the administrator settings on every read. */
+export type QualityThresholds = {
+  maxNoSpeechProbability: number;
+  minAvgLogProbability: number;
+  maxCompressionRatio: number;
+};
+
+/**
+ * Whether a segment reads as a hallucination rather than as speech.
+ *
+ * Recognition run on near-silence does not produce nothing. It produces its training data's most
+ * common captions — subscription pleas, translation credits — confidently and with plausible
+ * timings, and it gets stuck repeating phrases. Voice activity detection cuts both down a long way
+ * but cannot remove them, because breathing, laughter and distant noise are speech as far as it is
+ * concerned.
+ *
+ * Two rules, taking the model's own numbers rather than a list of phrases. A blocklist would be
+ * per-language, unbounded and permanently out of date; these identify the same segments for a
+ * reason that holds in every language.
+ *
+ * The first rule needs both of its signals, because either alone has a legitimate explanation: a
+ * high no-speech probability also describes quiet but real speech, and a low average
+ * log-probability also describes real speech the model found hard — an accent, a crowd, a bad
+ * microphone. Together they say the model neither heard speech nor believed what it wrote down.
+ *
+ * The second stands alone. Compression ratio is text length over its compressed size, so nothing
+ * but a repetition loop reaches a high value; there is no innocent reading to pair it against.
+ *
+ * At a threshold exactly the segment is kept. The settings read as the worst still tolerated, so
+ * discarding at the boundary would be off by one.
+ */
+export const isHallucination = (segment: SegmentQuality, thresholds: QualityThresholds) => {
+  const { noSpeechProbability, avgLogProbability, compressionRatio } = segment;
+
+  if (compressionRatio !== null && compressionRatio > thresholds.maxCompressionRatio) {
+    return true;
+  }
+
+  // A segment stored before these signals existed has nothing to judge, and judging it on a
+  // missing number would mean silently dropping every transcript made before this change.
+  return (
+    noSpeechProbability !== null &&
+    avgLogProbability !== null &&
+    noSpeechProbability > thresholds.maxNoSpeechProbability &&
+    avgLogProbability < thresholds.minAvgLogProbability
+  );
+};
+
+/**
+ * Drops the segments that read as hallucinations, leaving the stored rows untouched.
+ *
+ * Applied when a transcript is read rather than when it is written. The rows are the record of
+ * what the model produced; the caption track and the search text are derived from them. Filtering
+ * at ingest would make every later change of threshold a re-run of inference across the whole
+ * library, whereas filtering here makes it a query.
+ */
+export const filterHallucinations = <T extends SegmentQuality>(segments: T[], thresholds: QualityThresholds): T[] =>
+  segments.filter((segment) => !isHallucination(segment, thresholds));
+
 /**
  * The same chunk takes seconds on a GPU and minutes on a low-power CPU, so the timeout scales with
  * chunk duration rather than being fixed.

@@ -53,8 +53,11 @@ insert into
     "startTime",
     "endTime",
     "text",
-    "language"
+    "language",
+    "noSpeechProbability",
+    "avgLogProbability",
+    "compressionRatio"
   )
 values
-  ($1, $2, $3, $4, $5)
+  ($1, $2, $3, $4, $5, $6, $7, $8)
 rollback
