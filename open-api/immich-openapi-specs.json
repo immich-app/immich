@@ -27210,6 +27210,19 @@
             "description": "Whether the task is enabled",
             "type": "boolean"
           },
+          "language": {
+            "description": "ISO 639-1 code of the only language spoken in the library, or null to detect the language automatically. Forcing a language turns misdetection from unlikely into impossible, which is worth having wherever only one language is ever spoken.",
+            "nullable": true,
+            "pattern": "^[a-z]{2,3}$",
+            "type": "string"
+          },
+          "minLanguageConfidence": {
+            "description": "Confidence at or above which a detected change of language is believed. Below it a segment keeps the language established so far, which stops music, silence and ambient noise from switching the transcript into a language nobody is speaking.",
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
           "modelName": {
             "description": "Name of the model to use",
             "type": "string"
@@ -27229,6 +27242,8 @@
         "required": [
           "chunkDuration",
           "enabled",
+          "language",
+          "minLanguageConfidence",
           "modelName",
           "threads",
           "timeoutMultiplier"

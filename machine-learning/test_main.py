@@ -1154,13 +1154,109 @@ class TestTranscription:
         info = SimpleNamespace(language="en")
         transcriber.model = mock.Mock()
         transcriber.model.transcribe.return_value = ([segment], info)
+        transcriber.model.detect_language.return_value = ("en", 0.99, [])
 
         result = transcriber._predict(b"\x00\x00\x01\x00")
 
         _, kwargs = transcriber.model.transcribe.call_args
         assert kwargs["vad_filter"] is True
         assert kwargs["multilingual"] is True
-        assert result == {"language": "en", "segments": [{"start": 0.0, "end": 1.5, "text": "hello there"}]}
+        assert kwargs["language"] is None
+        assert result == {
+            "language": "en",
+            "segments": [
+                {"start": 0.0, "end": 1.5, "text": "hello there", "language": "en", "languageConfidence": 0.99}
+            ],
+        }
+
+    def test_predict_detects_language_per_window(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        # One segment in each of the first three 30 s encoder windows.
+        segments = [
+            SimpleNamespace(start=1.0, end=2.0, text="one"),
+            SimpleNamespace(start=31.0, end=32.0, text="two"),
+            SimpleNamespace(start=61.0, end=62.0, text="three"),
+        ]
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = (segments, SimpleNamespace(language="en"))
+        transcriber.model.detect_language.side_effect = [("en", 0.99, []), ("fr", 0.88, []), ("de", 0.42, [])]
+
+        result = transcriber._predict(b"\x00\x00" * (90 * 16_000))
+
+        assert [(s["language"], s["languageConfidence"]) for s in result["segments"]] == [
+            ("en", 0.99),
+            ("fr", 0.88),
+            ("de", 0.42),
+        ]
+
+    def test_predict_detects_each_window_once(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        segments = [
+            SimpleNamespace(start=1.0, end=2.0, text="one"),
+            SimpleNamespace(start=3.0, end=4.0, text="two"),
+            SimpleNamespace(start=31.0, end=32.0, text="three"),
+        ]
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = (segments, SimpleNamespace(language="en"))
+        transcriber.model.detect_language.side_effect = [("en", 0.99, []), ("fr", 0.88, [])]
+
+        result = transcriber._predict(b"\x00\x00" * (60 * 16_000))
+
+        assert transcriber.model.detect_language.call_count == 2
+        assert [s["language"] for s in result["segments"]] == ["en", "en", "fr"]
+
+    def test_predict_labels_a_straddling_segment_by_its_midpoint(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        # Starts in the first window but spends most of itself in the second.
+        segment = SimpleNamespace(start=29.0, end=40.0, text="across")
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = ([segment], SimpleNamespace(language="en"))
+        transcriber.model.detect_language.return_value = ("fr", 0.88, [])
+
+        result = transcriber._predict(b"\x00\x00" * (60 * 16_000))
+
+        detected = transcriber.model.detect_language.call_args.args[0]
+        assert len(detected) == 30 * 16_000
+        assert result["segments"][0]["language"] == "fr"
+
+    def test_predict_clamps_a_segment_overrunning_the_audio(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        # A model can report past the end of what it was given; there is no window there to detect.
+        segment = SimpleNamespace(start=9.0, end=41.0, text="overrun")
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = ([segment], SimpleNamespace(language="en"))
+        transcriber.model.detect_language.return_value = ("en", 0.99, [])
+
+        result = transcriber._predict(b"\x00\x00" * (10 * 16_000))
+
+        assert len(transcriber.model.detect_language.call_args.args[0]) == 10 * 16_000
+        assert result["segments"][0]["language"] == "en"
+
+    def test_predict_forces_an_overridden_language_without_detecting(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache", language="es")
+        segment = SimpleNamespace(start=0.0, end=1.5, text=" hola ")
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = ([segment], SimpleNamespace(language="es"))
+
+        result = transcriber._predict(b"\x00\x00" * 16_000)
+
+        assert transcriber.model.transcribe.call_args.kwargs["language"] == "es"
+        assert transcriber.model.transcribe.call_args.kwargs["multilingual"] is False
+        transcriber.model.detect_language.assert_not_called()
+        assert result["segments"][0]["language"] == "es"
+        assert result["segments"][0]["languageConfidence"] == 1.0
+
+    def test_configure_updates_the_language_override(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache", language="es")
+
+        transcriber.configure(language="pt")
+        assert transcriber.language == "pt"
+
+        transcriber.configure(language=None)
+        assert transcriber.language is None
+
+        transcriber.configure(cpuThreads=8)
+        assert transcriber.language is None
 
     def test_predict_decodes_raw_pcm_to_normalised_float32(self, path: mock.Mock) -> None:
         transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")

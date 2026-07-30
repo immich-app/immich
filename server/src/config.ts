@@ -110,6 +110,8 @@ export type SystemConfig = {
       threads: number;
       chunkDuration: number;
       timeoutMultiplier: number;
+      language: string | null;
+      minLanguageConfidence: number;
     };
   };
   map: {
@@ -335,6 +337,8 @@ export const defaults = Object.freeze<SystemConfig>({
       threads: 4,
       chunkDuration: 30,
       timeoutMultiplier: 30,
+      language: null,
+      minLanguageConfidence: 0.7,
     },
   },
   map: {

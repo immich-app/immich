@@ -33,6 +33,24 @@ export class TranscriptRepository {
       .executeTakeFirst();
   }
 
+  /**
+   * The language established by the run so far, so a resumed run inherits it instead of starting
+   * over with nothing to fall back on. Without it the first segment after a restart would be
+   * treated as having no predecessor and could re-anchor the transcript on a misdetection.
+   */
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getLastLanguage(assetId: string) {
+    const segment = await this.db
+      .selectFrom('transcript_segment')
+      .select('transcript_segment.language')
+      .where('transcript_segment.assetId', '=', assetId)
+      .orderBy('transcript_segment.startTime', 'desc')
+      .limit(1)
+      .executeTakeFirst();
+
+    return segment?.language ?? undefined;
+  }
+
   async deleteAll() {
     await this.db.transaction().execute(async (trx) => {
       await sql`truncate ${sql.table('transcript_segment')}`.execute(trx);
@@ -60,7 +78,15 @@ export class TranscriptRepository {
   @GenerateSql({
     params: [
       DummyValue.UUID,
-      [{ assetId: DummyValue.UUID, startTime: DummyValue.NUMBER, endTime: DummyValue.NUMBER, text: DummyValue.STRING }],
+      [
+        {
+          assetId: DummyValue.UUID,
+          startTime: DummyValue.NUMBER,
+          endTime: DummyValue.NUMBER,
+          text: DummyValue.STRING,
+          language: DummyValue.STRING,
+        },
+      ],
       DummyValue.NUMBER,
     ],
   })

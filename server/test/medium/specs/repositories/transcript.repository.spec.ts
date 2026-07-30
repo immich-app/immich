@@ -25,11 +25,12 @@ const newTranscribableAsset = async (ctx: Awaited<ReturnType<typeof setup>>['ctx
   return asset;
 };
 
-const segment = (assetId: string, startTime: number, endTime: number, text: string) => ({
+const segment = (assetId: string, startTime: number, endTime: number, text: string, language?: string) => ({
   assetId,
   startTime,
   endTime,
   text,
+  language,
 });
 
 /** Mimics the job loop: transcribe the pending chunks, committing one at a time. */
@@ -114,6 +115,46 @@ describe(TranscriptRepository.name, () => {
 
       await expect(sut.getByAssetId(asset.id)).resolves.toEqual([expect.objectContaining({ text: 'First chunk' })]);
       await expect(sut.getStatus(asset.id)).resolves.toMatchObject({ transcriptionProgressMs: 30_000 });
+    });
+  });
+
+  describe('getLastLanguage', () => {
+    it('should report nothing for an asset with no segments', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+
+      await expect(sut.getLastLanguage(asset.id)).resolves.toBeUndefined();
+    });
+
+    it('should report the language of the latest segment, not the latest row written', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+
+      // Written in one chunk, so insertion order says nothing about which came last in the audio.
+      await sut.appendChunk(
+        asset.id,
+        [segment(asset.id, 30, 31, 'Später', 'de'), segment(asset.id, 0, 1, 'Hello', 'en')],
+        60_000,
+      );
+
+      await expect(sut.getLastLanguage(asset.id)).resolves.toBe('de');
+    });
+
+    it('should report nothing when the latest segment predates language detection', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+
+      await sut.appendChunk(asset.id, [segment(asset.id, 0, 1, 'Hello')], 30_000);
+
+      await expect(sut.getLastLanguage(asset.id)).resolves.toBeUndefined();
+    });
+
+    it('should not see another asset transcript', async () => {
+      const { ctx, sut } = setup();
+      const [asset, other] = [await newTranscribableAsset(ctx), await newTranscribableAsset(ctx)];
+      await sut.appendChunk(other.id, [segment(other.id, 0, 1, 'Bonjour', 'fr')], 30_000);
+
+      await expect(sut.getLastLanguage(asset.id)).resolves.toBeUndefined();
     });
   });
 

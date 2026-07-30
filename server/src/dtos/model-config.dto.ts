@@ -67,6 +67,21 @@ export const TranscriptionConfigSchema = ModelConfigSchema.extend({
     .describe(
       'Transcription request timeout as a multiple of the chunk duration. The same chunk takes seconds on a GPU and minutes on a low-power CPU, so the timeout scales with the audio rather than being fixed.',
     ),
+  language: z
+    .string()
+    .regex(/^[a-z]{2,3}$/)
+    .nullable()
+    .describe(
+      'ISO 639-1 code of the only language spoken in the library, or null to detect the language automatically. Forcing a language turns misdetection from unlikely into impossible, which is worth having wherever only one language is ever spoken.',
+    ),
+  minLanguageConfidence: z
+    .number()
+    .meta({ format: 'double' })
+    .min(0)
+    .max(1)
+    .describe(
+      'Confidence at or above which a detected change of language is believed. Below it a segment keeps the language established so far, which stops music, silence and ambient noise from switching the transcript into a language nobody is speaking.',
+    ),
 }).meta({ id: 'TranscriptionConfig' });
 
 export class CLIPConfig extends createZodDto(CLIPConfigSchema) {}

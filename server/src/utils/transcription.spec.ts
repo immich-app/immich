@@ -6,6 +6,7 @@ import {
   PCM_BYTES_PER_SECOND,
   planChunks,
   planResume,
+  resolveSegmentLanguages,
 } from 'src/utils/transcription';
 import { describe, expect, it } from 'vitest';
 
@@ -189,5 +190,73 @@ describe('getChunkByteRange', () => {
 describe('getPcmDuration', () => {
   it('should derive duration from the byte count', () => {
     expect(getPcmDuration(16 * PCM_BYTES_PER_SECOND)).toBe(16);
+  });
+});
+
+const detection = (language: string, languageConfidence: number) => ({ language, languageConfidence });
+
+describe('resolveSegmentLanguages', () => {
+  it('should honour a confident switch', () => {
+    const resolved = resolveSegmentLanguages([detection('en', 0.98), detection('fr', 0.95)], 0.7);
+
+    expect(resolved).toEqual(['en', 'fr']);
+  });
+
+  it('should inherit the previous language on a low-confidence switch', () => {
+    const resolved = resolveSegmentLanguages([detection('en', 0.98), detection('cy', 0.31)], 0.7);
+
+    expect(resolved).toEqual(['en', 'en']);
+  });
+
+  it('should take the first segment at face value, having nothing to inherit', () => {
+    const resolved = resolveSegmentLanguages([detection('en', 0.02)], 0.7);
+
+    expect(resolved).toEqual(['en']);
+  });
+
+  it('should not drift through a run of low-confidence detections', () => {
+    const resolved = resolveSegmentLanguages(
+      [
+        detection('en', 0.99),
+        detection('cy', 0.4),
+        detection('mi', 0.35),
+        detection('haw', 0.3),
+        detection('nn', 0.25),
+      ],
+      0.7,
+    );
+
+    expect(resolved).toEqual(['en', 'en', 'en', 'en', 'en']);
+  });
+
+  it('should believe a detection exactly at the threshold', () => {
+    const resolved = resolveSegmentLanguages([detection('en', 0.98), detection('fr', 0.7)], 0.7);
+
+    expect(resolved).toEqual(['en', 'fr']);
+  });
+
+  it('should inherit an established language from an earlier chunk', () => {
+    const resolved = resolveSegmentLanguages([detection('cy', 0.2)], 0.7, 'de');
+
+    expect(resolved).toEqual(['de']);
+  });
+
+  it('should let a confident detection override an established language', () => {
+    const resolved = resolveSegmentLanguages([detection('it', 0.93)], 0.7, 'de');
+
+    expect(resolved).toEqual(['it']);
+  });
+
+  it('should resolve nothing for a chunk with no segments', () => {
+    expect(resolveSegmentLanguages([], 0.7, 'de')).toEqual([]);
+  });
+
+  it('should return to a language it had already established', () => {
+    const resolved = resolveSegmentLanguages(
+      [detection('en', 0.96), detection('fr', 0.91), detection('xx', 0.1), detection('en', 0.94)],
+      0.7,
+    );
+
+    expect(resolved).toEqual(['en', 'fr', 'fr', 'en']);
   });
 });

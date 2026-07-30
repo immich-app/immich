@@ -143,6 +143,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
       threads: 4,
       chunkDuration: 30,
       timeoutMultiplier: 30,
+      language: null,
+      minLanguageConfidence: 0.7,
     },
   },
   map: {

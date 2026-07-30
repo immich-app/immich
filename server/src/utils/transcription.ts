@@ -145,6 +145,51 @@ export const planResume = (chunks: AudioChunk[], offset: number): AudioChunk[] =
   return pending;
 };
 
+/** One window's raw detection as the model reports it, before any decision is taken about it. */
+export type LanguageDetection = { language: string; languageConfidence: number };
+
+/**
+ * Resolves the language of each segment, holding on to the established language through detections
+ * the model is not confident about.
+ *
+ * Detecting continuously is what lets a recording that changes language mid-way transcribe
+ * correctly past the change, but it also multiplies exposure to the misdetection failure mode, in
+ * which the model transliterates phonetically into confident nonsense rather than failing visibly.
+ * Music, silence and ambient noise are the usual triggers, and they are exactly the cases the model
+ * is unsure about; a genuine change of language is not. So a detection is believed only at or above
+ * `minConfidence`, and below it the segment inherits what came before.
+ *
+ * Since a low-confidence segment resolves to the established language rather than to its own
+ * detection, the established language only ever moves on a confident detection: a run of unsure
+ * segments cannot walk the transcript away from the language actually being spoken, however long
+ * it runs. That also makes the last resolved language the established one, which is what the caller
+ * carries into the next chunk.
+ *
+ * The first segment of the first chunk is the one case with nothing to inherit. It keeps its own
+ * detection whatever the confidence, on the grounds that a guess is still better than no language
+ * at all, and the first confident detection after it takes over.
+ */
+export const resolveSegmentLanguages = (
+  detections: LanguageDetection[],
+  minConfidence: number,
+  established?: string,
+): string[] => {
+  const resolved: string[] = [];
+  let current = established;
+
+  for (const detection of detections) {
+    // At the threshold exactly the model is confident enough: the setting reads as the confidence
+    // required, so requiring more than it would be off by one detection's worth of hesitation.
+    if (current === undefined || detection.languageConfidence >= minConfidence) {
+      current = detection.language;
+    }
+
+    resolved.push(current);
+  }
+
+  return resolved;
+};
+
 /**
  * The same chunk takes seconds on a GPU and minutes on a low-power CPU, so the timeout scales with
  * chunk duration rather than being fixed.

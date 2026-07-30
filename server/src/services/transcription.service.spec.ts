@@ -27,9 +27,10 @@ describe(TranscriptionService.name, () => {
     mocks.storage.stat.mockResolvedValue(audioOf(10));
     mocks.storage.readFile.mockResolvedValue(Buffer.alloc(4));
     mocks.transcript.getStatus.mockResolvedValue(void 0);
+    mocks.transcript.getLastLanguage.mockResolvedValue(void 0);
     mocks.machineLearning.transcribe.mockResolvedValue({
       language: 'en',
-      segments: [{ start: 0, end: 1.5, text: 'Hello there' }],
+      segments: [{ start: 0, end: 1.5, text: 'Hello there', language: 'en', languageConfidence: 0.99 }],
     });
   });
 
@@ -127,7 +128,7 @@ describe(TranscriptionService.name, () => {
       );
       expect(mocks.transcript.appendChunk).toHaveBeenCalledWith(
         'asset-id',
-        [{ assetId: 'asset-id', startTime: 0, endTime: 1.5, text: 'Hello there' }],
+        [{ assetId: 'asset-id', startTime: 0, endTime: 1.5, text: 'Hello there', language: 'en' }],
         10_000,
       );
       expect(mocks.asset.upsertJobStatus).toHaveBeenCalledWith({
@@ -159,13 +160,13 @@ describe(TranscriptionService.name, () => {
       mocks.storage.stat.mockResolvedValue(audioOf(70));
       mocks.machineLearning.transcribe.mockResolvedValue({
         language: 'en',
-        segments: [{ start: 2, end: 4, text: 'Second chunk' }],
+        segments: [{ start: 2, end: 4, text: 'Second chunk', language: 'en', languageConfidence: 0.99 }],
       });
 
       await sut.handleTranscribe({ id: 'asset-id' });
 
       expect(mocks.transcript.appendChunk.mock.calls[1][1]).toEqual([
-        { assetId: 'asset-id', startTime: 32, endTime: 34, text: 'Second chunk' },
+        { assetId: 'asset-id', startTime: 32, endTime: 34, text: 'Second chunk', language: 'en' },
       ]);
     });
 
@@ -207,6 +208,81 @@ describe(TranscriptionService.name, () => {
 
       expect(mocks.machineLearning.transcribe).not.toHaveBeenCalled();
       expect(mocks.transcript.appendChunk).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('language resolution', () => {
+    it('should store the resolved language on every segment', async () => {
+      mocks.machineLearning.transcribe.mockResolvedValue({
+        language: 'fr',
+        segments: [
+          { start: 0, end: 1, text: 'Bonjour', language: 'fr', languageConfidence: 0.98 },
+          { start: 1, end: 2, text: 'la la la', language: 'cy', languageConfidence: 0.2 },
+          { start: 2, end: 3, text: 'Hello', language: 'en', languageConfidence: 0.95 },
+        ],
+      });
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.appendChunk.mock.calls[0][1].map((segment) => segment.language)).toEqual([
+        'fr',
+        'fr',
+        'en',
+      ]);
+    });
+
+    it('should carry the established language into the next chunk', async () => {
+      mocks.storage.stat.mockResolvedValue(audioOf(70));
+      mocks.machineLearning.transcribe
+        .mockResolvedValueOnce({
+          language: 'de',
+          segments: [{ start: 0, end: 1, text: 'Guten Tag', language: 'de', languageConfidence: 0.97 }],
+        })
+        .mockResolvedValueOnce({
+          language: 'de',
+          segments: [{ start: 0, end: 1, text: '...', language: 'nn', languageConfidence: 0.11 }],
+        });
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.appendChunk.mock.calls[1][1][0].language).toBe('de');
+    });
+
+    it('should inherit the established language of an interrupted run when resuming', async () => {
+      mocks.storage.stat.mockResolvedValue(audioOf(90));
+      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: null, transcriptionProgressMs: 60_000 });
+      mocks.transcript.getLastLanguage.mockResolvedValue('ja');
+      mocks.machineLearning.transcribe.mockResolvedValue({
+        language: 'ja',
+        segments: [{ start: 0, end: 1, text: 'mmm', language: 'ko', languageConfidence: 0.3 }],
+      });
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.getLastLanguage).toHaveBeenCalledWith('asset-id');
+      expect(mocks.transcript.appendChunk.mock.calls[0][1][0].language).toBe('ja');
+    });
+
+    it('should pass a configured override to the model instead of detecting', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({
+        machineLearning: { transcription: { language: 'es' } },
+      });
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.machineLearning.transcribe).toHaveBeenCalledWith(
+        expect.any(Buffer),
+        expect.objectContaining({ language: 'es' }),
+      );
+    });
+
+    it('should not ask for a language when detection is automatic', async () => {
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.machineLearning.transcribe).toHaveBeenCalledWith(
+        expect.any(Buffer),
+        expect.objectContaining({ language: null }),
+      );
     });
   });
 });

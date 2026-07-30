@@ -38,7 +38,7 @@ export type OcrOptions = ModelOptions & {
   minRecognitionScore: number;
   maxResolution: number;
 };
-export type TranscriptionOptions = ModelOptions & { threads: number; timeout: number };
+export type TranscriptionOptions = ModelOptions & { threads: number; timeout: number; language: string | null };
 type VisualResponse = { imageHeight: number; imageWidth: number };
 export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
 export type ClipVisualResponse = { [ModelTask.SEARCH]: string } & VisualResponse;
@@ -61,12 +61,23 @@ export type OcrRequest = {
 };
 export type OcrResponse = { [ModelTask.OCR]: OCR } & VisualResponse;
 
-export type TranscriptSegment = { start: number; end: number; text: string };
+/**
+ * `language` and `languageConfidence` are the model's raw per-window detection, not a decision:
+ * whether to believe a change of language is the server's call, and it needs the confidence to
+ * make it.
+ */
+export type TranscriptSegment = {
+  start: number;
+  end: number;
+  text: string;
+  language: string;
+  languageConfidence: number;
+};
 export type Transcript = { language: string; segments: TranscriptSegment[] };
 
 export type TranscriptionRequest = {
   [ModelTask.TRANSCRIPTION]: {
-    [ModelType.RECOGNITION]: ModelOptions & { options: { cpuThreads: number } };
+    [ModelType.RECOGNITION]: ModelOptions & { options: { cpuThreads: number; language: string | null } };
   };
 };
 export type TranscriptionResponse = { [ModelTask.TRANSCRIPTION]: Transcript };
@@ -252,10 +263,10 @@ export class MachineLearningRepository {
   }
 
   /** `audio` is raw little-endian signed 16-bit mono PCM at 16 kHz. */
-  async transcribe(audio: Buffer, { modelName, threads, timeout }: TranscriptionOptions) {
+  async transcribe(audio: Buffer, { modelName, threads, language, timeout }: TranscriptionOptions) {
     const request = {
       [ModelTask.TRANSCRIPTION]: {
-        [ModelType.RECOGNITION]: { modelName, options: { cpuThreads: threads } },
+        [ModelType.RECOGNITION]: { modelName, options: { cpuThreads: threads, language } },
       },
     };
     const response = await this.predict<TranscriptionResponse>({ audio }, request, timeout);

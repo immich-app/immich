@@ -2482,6 +2482,10 @@ export type TranscriptionConfig = {
     chunkDuration: number;
     /** Whether the task is enabled */
     enabled: boolean;
+    /** ISO 639-1 code of the only language spoken in the library, or null to detect the language automatically. Forcing a language turns misdetection from unlikely into impossible, which is worth having wherever only one language is ever spoken. */
+    language: string | null;
+    /** Confidence at or above which a detected change of language is believed. Below it a segment keeps the language established so far, which stops music, silence and ambient noise from switching the transcript into a language nobody is speaking. */
+    minLanguageConfidence: number;
     /** Name of the model to use */
     modelName: string;
     /** Maximum number of CPU threads to use for transcription */

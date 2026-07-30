@@ -19,6 +19,18 @@ from
 where
   "asset_job_status"."assetId" = $1
 
+-- TranscriptRepository.getLastLanguage
+select
+  "transcript_segment"."language"
+from
+  "transcript_segment"
+where
+  "transcript_segment"."assetId" = $1
+order by
+  "transcript_segment"."startTime" desc
+limit
+  $2
+
 -- TranscriptRepository.reset
 begin
 delete from "transcript_segment"
@@ -36,7 +48,13 @@ rollback
 -- TranscriptRepository.appendChunk
 begin
 insert into
-  "transcript_segment" ("assetId", "startTime", "endTime", "text")
+  "transcript_segment" (
+    "assetId",
+    "startTime",
+    "endTime",
+    "text",
+    "language"
+  )
 values
-  ($1, $2, $3, $4)
+  ($1, $2, $3, $4, $5)
 rollback
