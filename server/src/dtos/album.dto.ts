@@ -34,7 +34,7 @@ const AlbumUserCreateSchema = z
 const CreateAlbumSchema = z
   .object({
     albumName: z.string().describe('Album name'),
-    description: z.string().optional().describe('Album description'),
+    description: z.string().nullish().transform(v => v === '' ? null : v).describe('Album description'),
     albumUsers: z.array(AlbumUserCreateSchema).optional().describe('Album users'),
     assetIds: z.array(z.uuidv4()).optional().describe('Initial asset IDs'),
   })
@@ -57,7 +57,7 @@ const AlbumsAddAssetsResponseSchema = z
 const UpdateAlbumSchema = z
   .object({
     albumName: z.string().optional().describe('Album name'),
-    description: z.string().optional().describe('Album description'),
+    description: z.string().nullish().transform(v => v === '' ? null : v).describe('Album description'),
     albumThumbnailAssetId: z.uuidv4().optional().describe('Album thumbnail asset ID'),
     isActivityEnabled: z.boolean().optional().describe('Enable activity feed'),
     order: AssetOrderSchema.optional(),
@@ -110,7 +110,7 @@ export const AlbumResponseSchema = z
   .object({
     id: z.uuidv4().describe('Album ID'),
     albumName: z.string().describe('Album name'),
-    description: z.string().describe('Album description'),
+    description: z.string().nullable().describe('Album description'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
@@ -171,7 +171,7 @@ export type MapAlbumDto = {
   assets?: ShallowDehydrateObject<MapAsset>[];
   sharedLinks?: ShallowDehydrateObject<AuthSharedLink>[];
   albumName: string;
-  description: string;
+  description: string | null;
   albumThumbnailAssetId: string | null;
   createdAt: Date;
   updatedAt: Date;
