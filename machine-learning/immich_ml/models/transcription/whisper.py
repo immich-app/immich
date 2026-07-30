@@ -17,13 +17,46 @@ from .schemas import TranscriptionOutput, TranscriptSegment
 INT16_FULL_SCALE = 32768.0
 SAMPLE_RATE = 16_000
 
-# Whisper's encoder sees a fixed 30 s of audio at a time, so 30 s is the finest granularity at
-# which the model has an opinion about which language is being spoken.
-LANGUAGE_WINDOW_SAMPLES = 30 * SAMPLE_RATE
+# Whisper's encoder sees a fixed 30 s of audio at a time, so 30 s is the coarsest useful unit of
+# detection and the natural grid to start from.
+LANGUAGE_WINDOW_SECONDS = 30
+LANGUAGE_WINDOW_SAMPLES = LANGUAGE_WINDOW_SECONDS * SAMPLE_RATE
+
+# Below this the window is treated as possibly containing a switch rather than as a reading of one
+# language.
+#
+# Deliberately not the server's `minLanguageConfidence`, which answers a different question: that
+# one decides whether to *believe* a change of language, this one decides whether it is worth
+# *looking* for one. Suspecting costs a few encoder passes, so it can afford to be far readier than
+# believing.
+#
+# Measured: single-language windows scored 0.965 to 1.00, windows straddling a real switch scored
+# 0.64, 0.67 and 0.79 depending on how the chunk happened to align to the switch. 0.9 sits in the
+# gap with margin on both sides -- 0.7 does not, and misses the 0.79 case entirely.
+REFINE_BELOW_CONFIDENCE = 0.9
+
+# Length of a probe. Detection costs the same whatever it is given -- the encoder pads to 30 s
+# regardless -- so this is chosen for how much speech is enough to judge from, not for speed.
+# Measured: 5 s spans of single-language speech detect at 0.97-0.99.
+PROBE_SECONDS = 5.0
+
+# Each step halves the interval, so this locates a switch to within about a second of a 30 s
+# window. Going further costs a full encoder pass per bit and lands well inside a caption cue.
+MAX_BISECTION_STEPS = 4
 
 # An explicit override is a statement of fact rather than a guess, so it is reported at full
 # confidence and the caller's stickiness rule becomes a no-op.
 OVERRIDE_CONFIDENCE = 1.0
+
+
+def region_at(regions: list[tuple[float, str, float]], time: float) -> tuple[str, float]:
+    """Language and confidence of the region covering `time`, regions being ordered by end time."""
+    for end, language, confidence in regions:
+        if time < end:
+            return language, confidence
+    # A segment can overrun the audio it was transcribed from by a fraction of a second.
+    _, language, confidence = regions[-1]
+    return language, confidence
 
 
 def decode_pcm(inputs: bytes) -> "np.ndarray[Any, np.dtype[np.float32]]":
@@ -110,13 +143,17 @@ class WhisperTranscriber(InferenceModel):
         encoder pass per window, which is why windows are detected lazily and shared between every
         segment that falls in one: silent and music-only stretches produce no segments and so are
         never detected at all.
+
+        A window can resolve to more than one region when it is found to straddle a switch, so a
+        segment is placed by its midpoint rather than taking the window's reading wholesale.
         """
         segments = list(segments)
         if self.language is not None:
             return [(self.language, OVERRIDE_CONFIDENCE)] * len(segments)
 
-        detected: dict[int, tuple[str, float]] = {}
+        resolved: dict[int, list[tuple[float, str, float]]] = {}
         detections = []
+        duration = audio.size / SAMPLE_RATE
         last_window = max((audio.size - 1) // LANGUAGE_WINDOW_SAMPLES, 0)
         for segment in segments:
             # The midpoint picks the window holding most of a segment, so one straddling a boundary
@@ -124,13 +161,67 @@ class WhisperTranscriber(InferenceModel):
             # start. Clamping guards the case where a model overruns the audio it was given.
             midpoint = (segment.start + segment.end) / 2
             window = min(int(midpoint * SAMPLE_RATE) // LANGUAGE_WINDOW_SAMPLES, last_window)
-            if window not in detected:
-                samples = audio[window * LANGUAGE_WINDOW_SAMPLES : (window + 1) * LANGUAGE_WINDOW_SAMPLES]
-                language, confidence, _ = self.model.detect_language(samples)
-                detected[window] = (language, confidence)
-            detections.append(detected[window])
+            if window not in resolved:
+                resolved[window] = self._resolve_window(audio, window, duration)
+            detections.append(region_at(resolved[window], midpoint))
 
         return detections
+
+    def _resolve_window(
+        self, audio: "np.ndarray[Any, np.dtype[np.float32]]", window: int, duration: float
+    ) -> list[tuple[float, str, float]]:
+        """
+        Reads one window as a list of (end time, language, confidence) regions.
+
+        A window the model is sure about is one region and costs one pass, which is what a
+        monolingual recording pays and is why refinement is free on all but the videos that need
+        it. A window it is unsure about may be one that straddles a language switch, and the only
+        way to tell is to look: the two ends are probed, and if they disagree the switch between
+        them is bisected. Music and silence, the other cause of an unsure reading, never reach here
+        -- voice activity detection removes them before any segment exists to label.
+        """
+        start = window * LANGUAGE_WINDOW_SECONDS
+        end = min(start + LANGUAGE_WINDOW_SECONDS, duration)
+        language, confidence = self._detect(audio, start, end)
+
+        # Two probes that overlap cannot tell the ends of the window apart, so there is nothing to
+        # be learned from a window this short.
+        if confidence >= REFINE_BELOW_CONFIDENCE or end - start < 2 * PROBE_SECONDS:
+            return [(end, language, confidence)]
+
+        left = self._detect(audio, start, start + PROBE_SECONDS)
+        right = self._detect(audio, end - PROBE_SECONDS, end)
+        if left[0] != right[0]:
+            boundary = self._locate_switch(audio, start, end, left[0])
+            return [(boundary, *left), (end, *right)]
+
+        # Both ends read the same language, so whatever made the window unsure is not a switch
+        # between them. The reading is reported with the window's own hesitation rather than the
+        # probes' confidence, because the audio between the probes remains unaccounted for.
+        return [(end, left[0], confidence)]
+
+    def _locate_switch(
+        self, audio: "np.ndarray[Any, np.dtype[np.float32]]", start: float, end: float, before: str
+    ) -> float:
+        """Bisects `start`..`end` for the point at which the language stops being `before`."""
+        lo, hi = start, end
+        for _ in range(MAX_BISECTION_STEPS):
+            middle = (lo + hi) / 2
+            language, _ = self._detect(audio, max(middle - PROBE_SECONDS, start), middle)
+            if language == before:
+                lo = middle
+            else:
+                hi = middle
+
+        # A probe reports the whole span ending at its candidate, so it only changes its answer
+        # once the switch is half a probe behind that candidate. The search therefore settles that
+        # far late, and correcting for it stops the first seconds of the new language being
+        # attributed to the old one.
+        return min(max((lo + hi) / 2 - PROBE_SECONDS / 2, start), end)
+
+    def _detect(self, audio: "np.ndarray[Any, np.dtype[np.float32]]", start: float, end: float) -> tuple[str, float]:
+        language, confidence, _ = self.model.detect_language(audio[int(start * SAMPLE_RATE) : int(end * SAMPLE_RATE)])
+        return language, confidence
 
     @property
     def model_path(self) -> Path:

@@ -1111,6 +1111,33 @@ def whisper_segment(
     )
 
 
+def pcm_switching_at(duration: float, switch_at: float) -> bytes:
+    """Raw PCM whose samples are positive before `switch_at` and negative after it."""
+    samples = np.full(int(duration * 16_000), 1000, dtype="<i2")
+    samples[int(switch_at * 16_000) :] = -1000
+    return samples.tobytes()
+
+
+def fake_detect_language(samples: "np.ndarray[Any, np.dtype[np.float32]]") -> tuple[str, float, list[Any]]:
+    """
+    Stands in for Whisper's language head over audio built by `pcm_switching_at`.
+
+    A span lying wholly in one language is reported confidently and a span containing both is
+    reported unsurely, which is what the real model does. The unsure value is the highest measured
+    for a window straddling a real switch (0.64, 0.67 and 0.79 across alignments); the confident
+    one is near the lowest measured for a single-language window (0.965 to 1.00). Using the worst
+    case of each keeps the tests honest about how narrow the gap really is.
+    """
+    if samples.size == 0:
+        return ("en", 0.0, [])
+    positive = float((samples > 0).mean())
+    if positive >= 0.99:
+        return ("en", 0.97, [])
+    if positive <= 0.01:
+        return ("fr", 0.97, [])
+    return ("en" if positive >= 0.5 else "fr", 0.79, [])
+
+
 class TestTranscription:
     def test_model_path_is_a_directory(self, path: mock.Mock) -> None:
         transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
@@ -1230,14 +1257,16 @@ class TestTranscription:
         ]
         transcriber.model = mock.Mock()
         transcriber.model.transcribe.return_value = (segments, SimpleNamespace(language="en"))
-        transcriber.model.detect_language.side_effect = [("en", 0.99, []), ("fr", 0.88, []), ("de", 0.42, [])]
+        # All three confident, so each window is read once and refinement stays out of the way of
+        # what this test is about.
+        transcriber.model.detect_language.side_effect = [("en", 0.99, []), ("fr", 0.95, []), ("de", 0.95, [])]
 
         result = transcriber._predict(b"\x00\x00" * (90 * 16_000))
 
         assert [(s["language"], s["languageConfidence"]) for s in result["segments"]] == [
             ("en", 0.99),
-            ("fr", 0.88),
-            ("de", 0.42),
+            ("fr", 0.95),
+            ("de", 0.95),
         ]
 
     def test_predict_detects_each_window_once(self, path: mock.Mock) -> None:
@@ -1249,7 +1278,7 @@ class TestTranscription:
         ]
         transcriber.model = mock.Mock()
         transcriber.model.transcribe.return_value = (segments, SimpleNamespace(language="en"))
-        transcriber.model.detect_language.side_effect = [("en", 0.99, []), ("fr", 0.88, [])]
+        transcriber.model.detect_language.side_effect = [("en", 0.99, []), ("fr", 0.95, [])]
 
         result = transcriber._predict(b"\x00\x00" * (60 * 16_000))
 
@@ -1262,7 +1291,7 @@ class TestTranscription:
         segment = whisper_segment(29.0, 40.0, "across")
         transcriber.model = mock.Mock()
         transcriber.model.transcribe.return_value = ([segment], SimpleNamespace(language="en"))
-        transcriber.model.detect_language.return_value = ("fr", 0.88, [])
+        transcriber.model.detect_language.return_value = ("fr", 0.95, [])
 
         result = transcriber._predict(b"\x00\x00" * (60 * 16_000))
 
@@ -1282,6 +1311,101 @@ class TestTranscription:
 
         assert len(transcriber.model.detect_language.call_args.args[0]) == 10 * 16_000
         assert result["segments"][0]["language"] == "en"
+
+    def test_predict_refines_an_unsure_window_to_locate_the_switch(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        segments = [
+            whisper_segment(5.0, 10.0, "before"),
+            whisper_segment(22.0, 27.0, "after"),
+        ]
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = (segments, SimpleNamespace(language="en"))
+        transcriber.model.detect_language.side_effect = fake_detect_language
+
+        result = transcriber._predict(pcm_switching_at(30.0, 20.0))
+
+        # The window as a whole reads as one language unsurely; only refinement separates the two.
+        assert [s["language"] for s in result["segments"]] == ["en", "fr"]
+
+    def test_predict_reports_probe_confidence_for_a_refined_window(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        segments = [
+            whisper_segment(5.0, 10.0, "before"),
+            whisper_segment(22.0, 27.0, "after"),
+        ]
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = (segments, SimpleNamespace(language="en"))
+        transcriber.model.detect_language.side_effect = fake_detect_language
+
+        result = transcriber._predict(pcm_switching_at(30.0, 20.0))
+
+        # Refinement has direct evidence for each side, so reporting the window's own hesitation
+        # would make the server's stickiness rule discard the very thing refinement established.
+        assert [s["languageConfidence"] for s in result["segments"]] == [0.97, 0.97]
+
+    def test_predict_corrects_the_probe_bias_when_locating_a_switch(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        # Centred at 21.0s, just past a switch at 20.0s.
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = (
+            [whisper_segment(20.5, 21.5, "just after")],
+            SimpleNamespace(language="en"),
+        )
+        transcriber.model.detect_language.side_effect = fake_detect_language
+
+        result = transcriber._predict(pcm_switching_at(30.0, 20.0))
+
+        # A probe reports the average over the span ending at its candidate, so it only flips once
+        # the switch is half a probe behind it. Left uncorrected the search settles that far late
+        # and swallows the first seconds of the new language.
+        assert result["segments"][0]["language"] == "fr"
+
+    def test_predict_does_not_probe_a_confident_window(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = (
+            [whisper_segment(1.0, 2.0, "hello")],
+            SimpleNamespace(language="en"),
+        )
+        transcriber.model.detect_language.side_effect = fake_detect_language
+
+        result = transcriber._predict(pcm_switching_at(30.0, 30.0))
+
+        # The monolingual case must cost exactly what it costs today.
+        assert transcriber.model.detect_language.call_count == 1
+        assert result["segments"][0]["language"] == "en"
+
+    def test_predict_does_not_bisect_when_both_ends_of_an_unsure_window_agree(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        # Positive at both ends, negative in the middle: unsure overall, but no switch to find.
+        samples = np.full(30 * 16_000, 1000, dtype="<i2")
+        samples[10 * 16_000 : 20 * 16_000] = -1000
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = (
+            [whisper_segment(1.0, 2.0, "hello")],
+            SimpleNamespace(language="en"),
+        )
+        transcriber.model.detect_language.side_effect = fake_detect_language
+
+        result = transcriber._predict(samples.tobytes())
+
+        # The window plus one probe at each end, and no bisection beyond that.
+        assert transcriber.model.detect_language.call_count == 3
+        assert result["segments"][0]["language"] == "en"
+
+    def test_predict_does_not_refine_a_window_too_short_to_probe(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = (
+            [whisper_segment(1.0, 2.0, "hello")],
+            SimpleNamespace(language="en"),
+        )
+        transcriber.model.detect_language.side_effect = fake_detect_language
+
+        transcriber._predict(pcm_switching_at(8.0, 5.0))
+
+        # Two probes would overlap, so they could not tell the ends apart.
+        assert transcriber.model.detect_language.call_count == 1
 
     def test_predict_forces_an_overridden_language_without_detecting(self, path: mock.Mock) -> None:
         transcriber = WhisperTranscriber("tiny", cache_dir="test_cache", language="es")
