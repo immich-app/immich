@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -87,18 +89,18 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
     state = state.copyWith(selectedDate: date, assetsToDelete: []);
     if (date != null) {
       final daysAgo = DateTime.now().difference(date).inDays;
-      _settingsRepository.write(.cleanupCutoffDaysAgo, daysAgo);
+      unawaited(_settingsRepository.write(.cleanupCutoffDaysAgo, daysAgo));
     }
   }
 
   void setKeepMediaType(AssetKeepType keepMediaType) {
     state = state.copyWith(keepMediaType: keepMediaType, assetsToDelete: []);
-    _settingsRepository.write(.cleanupKeepMediaType, keepMediaType);
+    unawaited(_settingsRepository.write(.cleanupKeepMediaType, keepMediaType));
   }
 
   void setKeepFavorites(bool keepFavorites) {
     state = state.copyWith(keepFavorites: keepFavorites, assetsToDelete: []);
-    _settingsRepository.write(.cleanupKeepFavorites, keepFavorites);
+    unawaited(_settingsRepository.write(.cleanupKeepFavorites, keepFavorites));
   }
 
   void toggleKeepAlbum(String albumId) {
@@ -118,7 +120,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
   }
 
   void _persistExcludedAlbumIds(Set<String> albumIds) {
-    _settingsRepository.write(.cleanupKeepAlbumIds, albumIds.toList());
+    unawaited(_settingsRepository.write(.cleanupKeepAlbumIds, albumIds.toList()));
   }
 
   void cleanupStaleAlbumIds(Set<String> existingAlbumIds) {
@@ -144,7 +146,7 @@ class CleanupNotifier extends StateNotifier<CleanupState> {
       _persistExcludedAlbumIds(keepAlbumIds);
     }
 
-    _settingsRepository.write(.cleanupDefaultsInitialized, true);
+    unawaited(_settingsRepository.write(.cleanupDefaultsInitialized, true));
   }
 
   Future<void> scanAssets() async {

@@ -143,8 +143,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   void _handleOnConfigUpdate(dynamic _) {
-    _ref.read(serverInfoProvider.notifier).getServerFeatures();
-    _ref.read(serverInfoProvider.notifier).getServerConfig();
+    unawaited(_ref.read(serverInfoProvider.notifier).getServerFeatures());
+    unawaited(_ref.read(serverInfoProvider.notifier).getServerConfig());
   }
 
   void _handleReleaseUpdates(dynamic data) {
@@ -203,7 +203,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       unawaited(
         _ref.read(backgroundSyncProvider).syncWebsocketBatchV1(_batchedAssetUploadReady.toList()).then((_) {
           if (isSyncAlbumEnabled) {
-            _ref.read(backgroundSyncProvider).syncLinkedAlbum();
+            unawaited(_ref.read(backgroundSyncProvider).syncLinkedAlbum());
           }
         }),
       );
@@ -224,7 +224,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       unawaited(
         _ref.read(backgroundSyncProvider).syncWebsocketBatchV2(_batchedAssetUploadReady.toList()).then((_) {
           if (isSyncAlbumEnabled) {
-            _ref.read(backgroundSyncProvider).syncLinkedAlbum();
+            unawaited(_ref.read(backgroundSyncProvider).syncLinkedAlbum());
           }
         }),
       );

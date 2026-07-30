@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -20,7 +21,7 @@ class ServerUpdateNotification extends HookConsumerWidget {
     final Color infoColor = context.isDarkTheme
         ? context.primaryColor.withAlpha(55)
         : context.primaryColor.withAlpha(25);
-    void openUpdateLink() {
+    Future<void> openUpdateLink() {
       String url;
       if (serverInfoState.versionStatus == VersionStatus.serverOutOfDate) {
         url = kImmichLatestRelease;
@@ -35,7 +36,7 @@ class ServerUpdateNotification extends HookConsumerWidget {
         }
       }
 
-      launchUrlString(url, mode: LaunchMode.externalApplication);
+      return launchUrlString(url, mode: LaunchMode.externalApplication);
     }
 
     return SizedBox(
@@ -68,7 +69,7 @@ class ServerUpdateNotification extends HookConsumerWidget {
                 serverInfoState.versionStatus == VersionStatus.clientOutOfDate) ...[
               const SizedBox(width: 8),
               TextButton(
-                onPressed: openUpdateLink,
+                onPressed: () => unawaited(openUpdateLink()),
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.all(4),
                   minimumSize: Size.zero,

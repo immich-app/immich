@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -21,7 +23,7 @@ class NetworkingSettings extends HookConsumerWidget {
     final currentEndpoint = getServerUrl();
     final featureEnabled = useState(ref.read(appConfigProvider).network.autoEndpointSwitching);
     useValueChanged<bool, void>(featureEnabled.value, (_, __) {
-      ref.read(settingsProvider).write(.networkAutoEndpointSwitching, featureEnabled.value);
+      unawaited(ref.read(settingsProvider).write(.networkAutoEndpointSwitching, featureEnabled.value));
     });
 
     Future<void> checkWifiReadPermission() async {
@@ -83,7 +85,7 @@ class NetworkingSettings extends HookConsumerWidget {
 
     useEffect(() {
       if (featureEnabled.value == true) {
-        checkWifiReadPermission();
+        unawaited(checkWifiReadPermission());
       }
       return null;
     }, [featureEnabled.value]);

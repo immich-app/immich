@@ -38,8 +38,8 @@ class PinAuthPage extends HookConsumerWidget {
       }
     }
 
-    void enableBiometricAuth() {
-      showDialog(
+    Future<void> enableBiometricAuth() {
+      return showDialog(
         context: context,
         builder: (buildContext) {
           return SimpleDialog(
@@ -53,7 +53,7 @@ class PinAuthPage extends HookConsumerWidget {
                       description: 'enable_biometric_auth_description'.tr(),
                       onSuccess: (pinCode) {
                         Navigator.pop(buildContext);
-                        registerBiometric(pinCode);
+                        unawaited(registerBiometric(pinCode));
                       },
                       autoFocus: true,
                       icon: Icons.fingerprint_rounded,
@@ -83,7 +83,7 @@ class PinAuthPage extends HookConsumerWidget {
                         child: PinVerificationForm(
                           autoFocus: true,
                           onSuccess: (_) {
-                            context.replaceRoute(const DriftLockedFolderRoute());
+                            unawaited(context.replaceRoute(const DriftLockedFolderRoute()));
                           },
                         ),
                       ),
@@ -93,7 +93,7 @@ class PinAuthPage extends HookConsumerWidget {
                           padding: const EdgeInsets.only(right: 16.0),
                           child: TextButton.icon(
                             icon: const Icon(Icons.fingerprint, size: 28),
-                            onPressed: enableBiometricAuth,
+                            onPressed: () => unawaited(enableBiometricAuth()),
                             label: Text(
                               'use_biometric'.tr(),
                               style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor, fontSize: 18),

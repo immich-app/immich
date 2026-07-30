@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -61,7 +63,7 @@ class AppLogPage extends HookConsumerWidget {
               size: 20.0,
             ),
             onPressed: () {
-              immichLogger.clearLogs();
+              unawaited(immichLogger.clearLogs());
               shouldReload.value = !shouldReload.value;
             },
           ),
@@ -70,7 +72,7 @@ class AppLogPage extends HookConsumerWidget {
               return IconButton(
                 icon: Icon(Icons.share_rounded, color: context.primaryColor, semanticLabel: "Share logs", size: 20.0),
                 onPressed: () {
-                  ImmichLogger.shareLogs(iconContext);
+                  unawaited(ImmichLogger.shareLogs(iconContext));
                 },
               );
             },
@@ -78,7 +80,7 @@ class AppLogPage extends HookConsumerWidget {
         ],
         leading: IconButton(
           onPressed: () {
-            context.maybePop();
+            unawaited(context.maybePop());
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20.0),
         ),

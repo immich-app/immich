@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -12,12 +14,12 @@ class SlideshowActionButton extends ConsumerWidget {
 
   const SlideshowActionButton({super.key, this.iconOnly = false, this.menuItem = false});
 
-  void _onTap(BuildContext context, WidgetRef ref) {
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
 
-    context.pushRoute(DriftSlideshowRoute(timeline: ref.read(timelineServiceProvider)));
+    await context.pushRoute(DriftSlideshowRoute(timeline: ref.read(timelineServiceProvider)));
   }
 
   @override
@@ -27,7 +29,7 @@ class SlideshowActionButton extends ConsumerWidget {
       label: "slideshow".t(context: context),
       iconOnly: iconOnly,
       menuItem: menuItem,
-      onPressed: () => _onTap(context, ref),
+      onPressed: () => unawaited(_onTap(context, ref)),
       maxWidth: 100,
     );
   }

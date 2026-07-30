@@ -70,7 +70,8 @@ class LoginForm extends HookConsumerWidget {
     final isOauthEnable = useState<bool>(false);
     final isPasswordLoginEnable = useState<bool>(false);
     final oAuthButtonLabel = useState<String>('OAuth');
-    final logoAnimationController = useAnimationController(duration: const Duration(seconds: 60))..repeat();
+    final logoAnimationController = useAnimationController(duration: const Duration(seconds: 60));
+    unawaited(logoAnimationController.repeat());
     final serverInfo = ref.watch(serverInfoProvider);
     final warningMessage = useState<String?>(null);
     final loginFormKey = GlobalKey<FormState>();
@@ -358,7 +359,7 @@ class LoginForm extends HookConsumerWidget {
     }
 
     SingleChildRenderObjectWidget buildVersionCompatWarning() {
-      checkVersionMismatch();
+      unawaited(checkVersionMismatch());
 
       if (warningMessage.value == null) {
         return const SizedBox.shrink();

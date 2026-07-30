@@ -132,7 +132,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
           leading: const Icon(Icons.sync),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).localSyncStatus),
           onTap: () {
-            ref.read(backgroundSyncProvider).syncLocal(full: true);
+            unawaited(ref.read(backgroundSyncProvider).syncLocal(full: true));
           },
         ),
         SettingListTile(
@@ -141,7 +141,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
           leading: const Icon(Icons.cloud_sync),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).remoteSyncStatus),
           onTap: () {
-            ref.read(backgroundSyncProvider).syncRemote();
+            unawaited(ref.read(backgroundSyncProvider).syncRemote());
           },
         ),
         if (CurrentPlatform.isIOS && serverVersion.isAtLeast(major: 2, minor: 5))
@@ -158,7 +158,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
           subtitle: "tap_to_run_job".t(context: context),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).hashJobStatus),
           onTap: () {
-            ref.read(backgroundSyncProvider).hashAssets();
+            unawaited(ref.read(backgroundSyncProvider).hashAssets());
           },
         ),
         const Divider(height: 1),

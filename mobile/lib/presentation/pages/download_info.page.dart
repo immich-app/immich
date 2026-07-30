@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -15,7 +17,7 @@ class DownloadInfoPage extends ConsumerWidget {
     final tasks = ref.watch(downloadStateProvider.select((state) => state.taskProgress)).entries.toList();
 
     void onCancelDownload(String id) {
-      ref.watch(downloadStateProvider.notifier).cancelDownload(id);
+      unawaited(ref.watch(downloadStateProvider.notifier).cancelDownload(id));
     }
 
     return Scaffold(

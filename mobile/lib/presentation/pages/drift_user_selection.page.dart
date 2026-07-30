@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +55,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
     final sharedUsersList = useState<Set<UserDto>>({});
 
     void addNewUsersHandler() {
-      context.maybePop(sharedUsersList.value.map((e) => e.id).toList());
+      unawaited(context.maybePop(sharedUsersList.value.map((e) => e.id).toList()));
     }
 
     Widget buildTileIcon(UserDto user) {
@@ -122,12 +124,12 @@ class DriftUserSelectionPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () {
-            context.maybePop(null);
+            unawaited(context.maybePop(null));
           },
         ),
         actions: [
           TextButton(
-            onPressed: sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
+            onPressed: sharedUsersList.value.isEmpty ? null : () => addNewUsersHandler(),
             child: const Text("add", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)).tr(),
           ),
         ],

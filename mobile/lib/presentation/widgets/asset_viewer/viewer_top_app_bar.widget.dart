@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -52,11 +54,13 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.chat_outlined),
           onPressed: () {
-            context.router.push(
-              DriftActivitiesRoute(
-                album: album,
-                assetId: asset is RemoteAsset ? asset.id : null,
-                assetName: asset.name,
+            unawaited(
+              context.router.push(
+                DriftActivitiesRoute(
+                  album: album,
+                  assetId: asset is RemoteAsset ? asset.id : null,
+                  assetName: asset.name,
+                ),
               ),
             );
           },

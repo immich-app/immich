@@ -38,8 +38,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     useEffect(() {
-      ref.read(backupProvider.notifier).updateDiskInfo();
-      ref.read(currentUserProvider.notifier).refresh();
+      unawaited(ref.read(backupProvider.notifier).updateDiskInfo());
+      unawaited(ref.read(currentUserProvider.notifier).refresh());
       return null;
     }, []);
 
@@ -180,7 +180,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             InkWell(
               onTap: () {
                 ContextHelper(context).pop();
-                launchUrl(Uri.parse('https://docs.immich.app'), mode: LaunchMode.externalApplication);
+                unawaited(launchUrl(Uri.parse('https://docs.immich.app'), mode: LaunchMode.externalApplication));
               },
               child: Text("documentation", style: context.textTheme.bodySmall).tr(),
             ),
@@ -188,7 +188,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             InkWell(
               onTap: () {
                 ContextHelper(context).pop();
-                launchUrl(Uri.parse('https://github.com/immich-app/immich'), mode: LaunchMode.externalApplication);
+                unawaited(
+                  launchUrl(Uri.parse('https://github.com/immich-app/immich'), mode: LaunchMode.externalApplication),
+                );
               },
               child: Text("profile_drawer_github", style: context.textTheme.bodySmall).tr(),
             ),

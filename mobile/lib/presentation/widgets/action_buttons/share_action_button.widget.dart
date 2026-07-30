@@ -138,31 +138,33 @@ class ShareActionButton extends ConsumerWidget {
     await showDialog(
       context: context,
       builder: (BuildContext buildContext) {
-        ref
-            .read(actionProvider.notifier)
-            .shareAssets(
-              source,
-              context,
-              fileType: fileType,
-              cancelCompleter: cancelCompleter,
-              onAssetDownloadProgress: (value) => progress.value = value,
-            )
-            .then((ActionResult result) {
-              if (cancelCompleter.isCompleted || !context.mounted) {
-                return;
-              }
+        unawaited(
+          ref
+              .read(actionProvider.notifier)
+              .shareAssets(
+                source,
+                context,
+                fileType: fileType,
+                cancelCompleter: cancelCompleter,
+                onAssetDownloadProgress: (value) => progress.value = value,
+              )
+              .then((ActionResult result) {
+                if (cancelCompleter.isCompleted || !context.mounted) {
+                  return;
+                }
 
-              if (!result.success) {
-                ImmichToast.show(
-                  context: context,
-                  msg: context.t.scaffold_body_error_occurred,
-                  gravity: ToastGravity.BOTTOM,
-                  toastType: ToastType.error,
-                );
-              }
+                if (!result.success) {
+                  ImmichToast.show(
+                    context: context,
+                    msg: context.t.scaffold_body_error_occurred,
+                    gravity: ToastGravity.BOTTOM,
+                    toastType: ToastType.error,
+                  );
+                }
 
-              buildContext.pop();
-            });
+                buildContext.pop();
+              }),
+        );
 
         return preparingDialog;
       },

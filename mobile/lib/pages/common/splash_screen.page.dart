@@ -282,11 +282,13 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   @override
   void initState() {
     super.initState();
-    ref
-        .read(authProvider.notifier)
-        .setOpenApiServiceEndpoint()
-        .then(logConnectionInfo)
-        .whenComplete(() => resumeSession());
+    unawaited(
+      ref
+          .read(authProvider.notifier)
+          .setOpenApiServiceEndpoint()
+          .then(logConnectionInfo)
+          .whenComplete(() => resumeSession()),
+    );
   }
 
   void logConnectionInfo(String? endpoint) {
@@ -327,7 +329,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
               if (syncSuccess) {
                 await Future.wait([
                   backgroundManager.hashAssets().then((_) {
-                    _resumeBackup(backupProvider);
+                    unawaited(_resumeBackup(backupProvider));
                   }),
                   _resumeBackup(backupProvider),
                   // TODO: Bring back when the soft freeze issue is addressed

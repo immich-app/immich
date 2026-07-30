@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -15,7 +17,7 @@ class LayoutSettings extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tilesPerRow = useState(ref.read(appConfigProvider.select((s) => s.timeline.tilesPerRow)));
     useValueChanged<int, void>(tilesPerRow.value, (_, __) {
-      ref.read(settingsProvider).write(.timelineTilesPerRow, tilesPerRow.value);
+      unawaited(ref.read(settingsProvider).write(.timelineTilesPerRow, tilesPerRow.value));
     });
 
     return Column(

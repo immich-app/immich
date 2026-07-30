@@ -15,13 +15,15 @@ Future<Uint8List> imageToUint8List(Image image) async {
       .resolve(ImageConfiguration.empty)
       .addListener(
         ImageStreamListener((ImageInfo info, bool _) {
-          info.image.toByteData(format: ImageByteFormat.png).then((byteData) {
-            if (byteData != null) {
-              completer.complete(byteData.buffer.asUint8List());
-            } else {
-              completer.completeError('Failed to convert image to bytes');
-            }
-          });
+          unawaited(
+            info.image.toByteData(format: ImageByteFormat.png).then((byteData) {
+              if (byteData != null) {
+                completer.complete(byteData.buffer.asUint8List());
+              } else {
+                completer.completeError('Failed to convert image to bytes');
+              }
+            }),
+          );
         }, onError: (exception, stackTrace) => completer.completeError(exception)),
       );
   return completer.future;
