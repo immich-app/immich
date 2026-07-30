@@ -41,10 +41,13 @@ export class AlbumModalRowConverter {
     albums: AlbumResponseDto[],
     selectedRowIndex: number,
     multiSelectedAlbumIds: string[],
+    allowNew = true
   ): AlbumModalRow[] {
     // only show recent albums if no search was entered
     const recentAlbumsToShow = search.length === 0 ? recentAlbums : [];
-    const rows: AlbumModalRow[] = [{ type: AlbumModalRowType.NEW_ALBUM, selected: selectedRowIndex === 0 }];
+    const rows: AlbumModalRow[] = allowNew
+      ? [{ type: AlbumModalRowType.NEW_ALBUM, selected: selectedRowIndex === 0 }]
+      : [];
 
     const filteredAlbums = sortAlbums(
       search.length > 0 && albums.length > 0
