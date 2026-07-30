@@ -29,7 +29,7 @@ class PinVerificationForm extends HookConsumerWidget {
     final hasError = useState(false);
     final isVerified = useState(false);
 
-    verifyPin(String pinCode) async {
+    Future<void> verifyPin(String pinCode) async {
       final isUnlocked = await ref.read(authProvider.notifier).unlockPinCode(pinCode);
 
       if (isUnlocked) {

@@ -16,7 +16,7 @@ class AppLogDetailPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    buildTextWithCopyButton(String header, String text) {
+    Padding buildTextWithCopyButton(String header, String text) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -70,7 +70,7 @@ class AppLogDetailPage extends HookConsumerWidget {
       );
     }
 
-    buildLogContext(String logger) {
+    Padding buildLogContext(String logger) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -91,7 +91,7 @@ class AppLogDetailPage extends HookConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: SelectableText(
-                  logger.toString(),
+                  logger,
                   style: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold, fontFamily: "GoogleSansCode"),
                 ),
               ),

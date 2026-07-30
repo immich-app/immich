@@ -612,8 +612,8 @@ jobs:
       - name: Install dependencies
         run: mise //mobile:install:ci
 
-      - name: Generate translation files
-        run: mise //mobile:codegen:translation
+      - name: Perform codegen
+        run: mise //mobile:codegen
 
       - name: Run tests
         run: mise //mobile:test
@@ -742,7 +742,6 @@ jobs:
         id: verify-changed-files
         with:
           files: |
-            mobile/openapi
             packages/sdk
             open-api/immich-openapi-specs.json
 

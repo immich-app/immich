@@ -107,7 +107,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final maxPage = _totalAssets - 1;
     if (target >= 0 && target <= maxPage) {
       _pageController.jumpToPage(target);
-      _onAssetChanged(target);
+      unawaited(_onAssetChanged(target));
     }
   }
 
@@ -157,7 +157,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     final page = _pageController.page?.round();
     if (page != null && page != _currentPage) {
-      _onAssetChanged(page);
+      unawaited(_onAssetChanged(page));
     }
     return false;
   }
@@ -167,7 +167,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _handleCasting();
   }
 
-  void _onAssetChanged(int index) async {
+  Future<void> _onAssetChanged(int index) async {
     _currentPage = index;
 
     final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
@@ -222,7 +222,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         _onTimelineReloadEvent();
       case ViewerReloadAssetEvent():
         _onViewerReloadEvent();
-      case ViewerStackAssetDeletedEvent event:
+      case final ViewerStackAssetDeletedEvent event:
         unawaited(_onViewerStackAssetDeletedEvent(event));
       default:
     }
@@ -236,7 +236,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final index = _pageController.page?.round() ?? 0;
     final target = index >= _totalAssets - 1 ? index - 1 : index + 1;
     unawaited(_pageController.animateToPage(target, duration: Durations.medium1, curve: Curves.easeInOut));
-    _onAssetChanged(target);
+    unawaited(_onAssetChanged(target));
   }
 
   Future<void> _onViewerStackAssetDeletedEvent(ViewerStackAssetDeletedEvent event) async {
@@ -281,14 +281,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     if (index != _currentPage) {
       _pageController.jumpToPage(index);
-      _onAssetChanged(index);
+      unawaited(_onAssetChanged(index));
     } else if (currentAsset is RemoteAsset && currentAsset.stackId != null && assetIndex == null) {
       final timelineAsset = timelineService.getAssetSafe(index);
       if (timelineAsset is! RemoteAsset || currentAsset.stackId != timelineAsset.stackId) {
-        _onAssetChanged(index);
+        unawaited(_onAssetChanged(index));
       }
     } else if (currentAsset != null && assetIndex == null) {
-      _onAssetChanged(index);
+      unawaited(_onAssetChanged(index));
     }
 
     if (_totalAssets != totalAssets) {

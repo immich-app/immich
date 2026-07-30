@@ -21,20 +21,17 @@ class OpenInBrowserActionButton extends ConsumerWidget {
     this.menuItem = false,
   });
 
-  void _onTap() async {
+  Future<void> _onTap() async {
     final serverEndpoint = Store.get(StoreKey.serverEndpoint).replaceFirst('/api', '');
 
     String originPath = '';
     switch (origin) {
       case TimelineOrigin.favorite:
         originPath = '/favorites';
-        break;
       case TimelineOrigin.trash:
         originPath = '/trash';
-        break;
       case TimelineOrigin.archive:
         originPath = '/archive';
-        break;
       default:
         break;
     }

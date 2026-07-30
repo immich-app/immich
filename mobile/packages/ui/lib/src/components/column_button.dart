@@ -43,21 +43,10 @@ class _ImmichColumnButtonState extends State<ImmichColumnButton> {
     }
   }
 
-  Future<void>? _onPressed() {
-    if (_isDisabled) {
-      return null;
-    }
+  VoidCallback? get _onPressed => _isDisabled ? null : () => _runAction(widget.onPressed);
 
-    return _runAction(widget.onPressed);
-  }
-
-  Future<void>? _onLongPress() {
-    if (_isDisabled || widget.onLongPress == null) {
-      return null;
-    }
-
-    return _runAction(widget.onLongPress!);
-  }
+  VoidCallback? get _onLongPress =>
+      _isDisabled || widget.onLongPress == null ? null : () => _runAction(widget.onLongPress!);
 
   @override
   Widget build(BuildContext context) {

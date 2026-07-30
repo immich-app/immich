@@ -43,7 +43,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
       );
     }
 
-    void leaveAlbum() async {
+    Future<void> leaveAlbum() async {
       try {
         await ref.read(remoteAlbumProvider.notifier).leaveAlbum(album.id, userId: userId);
         unawaited(context.navigateTo(const DriftAlbumsRoute()));
@@ -52,7 +52,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
       }
     }
 
-    void removeUserFromAlbum(UserDto user) async {
+    Future<void> removeUserFromAlbum(UserDto user) async {
       try {
         await ref.read(remoteAlbumProvider.notifier).removeUser(album.id, user.id);
         ref.invalidate(remoteAlbumSharedUsersProvider(album.id));
@@ -83,11 +83,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
 
         ref.invalidate(remoteAlbumSharedUsersProvider(album.id));
       } catch (e) {
-        ImmichToast.show(
-          context: context,
-          msg: "Failed to add users to album: ${e.toString()}",
-          toastType: ToastType.error,
-        );
+        ImmichToast.show(context: context, msg: "Failed to add users to album: $e", toastType: ToastType.error);
       }
     }
 
@@ -131,7 +127,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
       );
     }
 
-    buildOwnerInfo() {
+    Widget buildOwnerInfo() {
       if (isOwner) {
         final owner = ref.watch(currentUserProvider);
         return ListTile(
@@ -162,7 +158,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
       }
     }
 
-    buildSharedUsersList() {
+    Widget buildSharedUsersList() {
       return sharedUsersAsync.maybeWhen(
         data: (sharedUsers) => ListView.builder(
           primary: false,
@@ -183,7 +179,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
       );
     }
 
-    buildSectionTitle(String text) {
+    Padding buildSectionTitle(String text) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: Text(text, style: context.textTheme.bodySmall),

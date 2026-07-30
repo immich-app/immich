@@ -17,22 +17,24 @@ class NotificationSetting extends HookConsumerWidget {
     final permissionService = ref.watch(notificationPermissionProvider);
     final hasPermission = permissionService == PermissionStatus.granted;
 
-    openAppNotificationSettings(BuildContext ctx) {
+    void openAppNotificationSettings(BuildContext ctx) {
       ctx.pop();
       unawaited(openAppSettings());
     }
 
     // When permissions are permanently denied, you need to go to settings to
     // allow them
-    Future<void> showPermissionsDialog() {
-      return showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          content: const Text('notification_permission_dialog_content').tr(),
-          actions: [
-            TextButton(child: const Text('cancel').tr(), onPressed: () => ctx.pop()),
-            TextButton(onPressed: () => openAppNotificationSettings(ctx), child: const Text('settings').tr()),
-          ],
+    void showPermissionsDialog() {
+      unawaited(
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            content: const Text('notification_permission_dialog_content').tr(),
+            actions: [
+              TextButton(child: const Text('cancel').tr(), onPressed: () => ctx.pop()),
+              TextButton(onPressed: () => openAppNotificationSettings(ctx), child: const Text('settings').tr()),
+            ],
+          ),
         ),
       );
     }
@@ -47,7 +49,7 @@ class NotificationSetting extends HookConsumerWidget {
           onButtonTap: () =>
               ref.watch(notificationPermissionProvider.notifier).requestNotificationPermission().then((permission) {
                 if (permission == PermissionStatus.permanentlyDenied) {
-                  unawaited(showPermissionsDialog());
+                  showPermissionsDialog();
                 }
               }),
         )

@@ -199,7 +199,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     switch (event) {
       case ScrollToTopEvent():
         _scrollToTop();
-      case ScrollToDateEvent scrollToDateEvent:
+      case final ScrollToDateEvent scrollToDateEvent:
         _scrollToDate(scrollToDateEvent.date);
       case TimelineReloadEvent():
         setState(() {});

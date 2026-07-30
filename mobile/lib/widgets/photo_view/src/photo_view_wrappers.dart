@@ -75,7 +75,7 @@ class ImageWrapper extends StatefulWidget {
   final int index;
 
   @override
-  createState() => _ImageWrapperState();
+  State<ImageWrapper> createState() => _ImageWrapperState();
 }
 
 class _ImageWrapperState extends State<ImageWrapper> {
@@ -121,7 +121,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
 
   // retrieve image from the provider
   void _resolveImage() {
-    final ImageStream newStream = widget.imageProvider.resolve(const ImageConfiguration());
+    final ImageStream newStream = widget.imageProvider.resolve(ImageConfiguration.empty);
     _updateSourceStream(newStream);
   }
 
@@ -134,7 +134,7 @@ class _ImageWrapperState extends State<ImageWrapper> {
     }
 
     void handleImageFrame(ImageInfo info, bool synchronousCall) {
-      setupCB() {
+      void setupCB() {
         _imageSize = Size(info.image.width.toDouble(), info.image.height.toDouble());
         _loading = false;
 

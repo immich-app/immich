@@ -51,7 +51,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
               if (assetName != null) Text(assetName!, style: context.textTheme.bodySmall),
             ],
           ),
-          actions: [const LikeActivityActionButton(iconOnly: true)],
+          actions: const [LikeActivityActionButton(iconOnly: true)],
           actionsPadding: const EdgeInsets.only(right: 8),
         ),
         body: activities.widgetWhen(

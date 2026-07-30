@@ -80,7 +80,7 @@ class DriftSearchPage extends HookConsumerWidget {
 
     final userPreferences = ref.watch(userMetadataPreferencesProvider);
 
-    search(SearchFilter f) {
+    void search(SearchFilter f) {
       if (f == filter.value) {
         return;
       }
@@ -94,8 +94,8 @@ class DriftSearchPage extends HookConsumerWidget {
       }
     }
 
-    Future<void> loadMoreSearchResults() {
-      return ref.read(paginatedSearchProvider.notifier).search(filter.value);
+    void loadMoreSearchResults() {
+      unawaited(ref.read(paginatedSearchProvider.notifier).search(filter.value));
     }
 
     // TODO: Use ref.listen with `fireImmediately` in the new riverpod version.
@@ -125,19 +125,19 @@ class DriftSearchPage extends HookConsumerWidget {
       return null;
     }, [preFilter]);
 
-    showPeoplePicker() {
+    void showPeoplePicker() {
       var people = filter.value.people;
 
-      handleOnSelect(Set<PersonDto> value) {
+      void handleOnSelect(Set<PersonDto> value) {
         people = value;
       }
 
-      handleClear() {
+      void handleClear() {
         peopleCurrentFilterWidget.value = null;
         search(filter.value.copyWith(people: {}));
       }
 
-      handleApply() {
+      void handleApply() {
         final label = people.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', ');
         peopleCurrentFilterWidget.value = label.isNotEmpty ? Text(label, style: context.textTheme.labelLarge) : null;
         search(filter.value.copyWith(people: people));
@@ -161,21 +161,21 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    showTagPicker() {
+    void showTagPicker() {
       var tagIds = filter.value.tagIds ?? [];
       String tagLabel = '';
 
-      handleOnSelect(Iterable<Tag> tags) {
+      void handleOnSelect(Iterable<Tag> tags) {
         tagIds = tags.map((t) => t.id).toList();
         tagLabel = tags.map((t) => t.value).join(', ');
       }
 
-      handleClear() {
+      void handleClear() {
         tagCurrentFilterWidget.value = null;
         search(filter.value.copyWith(tagIds: []));
       }
 
-      handleApply() {
+      void handleApply() {
         tagCurrentFilterWidget.value = tagLabel.isNotEmpty ? Text(tagLabel, style: context.textTheme.labelLarge) : null;
         search(filter.value.copyWith(tagIds: tagIds));
       }
@@ -198,19 +198,19 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    showLocationPicker() {
+    void showLocationPicker() {
       var location = filter.value.location;
 
-      handleOnSelect(Map<String, String?> value) {
+      void handleOnSelect(Map<String, String?> value) {
         location = SearchLocationFilter(country: value['country'], city: value['city'], state: value['state']);
       }
 
-      handleClear() {
+      void handleClear() {
         locationCurrentFilterWidget.value = null;
         search(filter.value.copyWith(location: SearchLocationFilter()));
       }
 
-      handleApply() {
+      void handleApply() {
         final locationText = [
           if (location.country != null) location.country!,
           if (location.state != null) location.state!,
@@ -246,19 +246,19 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    showCameraPicker() {
+    void showCameraPicker() {
       var camera = filter.value.camera;
 
-      handleOnSelect(Map<String, String?> value) {
+      void handleOnSelect(Map<String, String?> value) {
         camera = SearchCameraFilter(make: value['make'], model: value['model']);
       }
 
-      handleClear() {
+      void handleClear() {
         cameraCurrentFilterWidget.value = null;
         search(filter.value.copyWith(camera: SearchCameraFilter()));
       }
 
-      handleApply() {
+      void handleApply() {
         final make = camera.make ?? '';
         final model = camera.model ?? '';
         cameraCurrentFilterWidget.value = (make.isNotEmpty || model.isNotEmpty)
@@ -285,7 +285,7 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    datePicked(DateFilterInputModel? selectedDate) {
+    void datePicked(DateFilterInputModel? selectedDate) {
       dateInputFilter.value = selectedDate;
       if (selectedDate == null) {
         dateRangeCurrentFilterWidget.value = null;
@@ -308,7 +308,7 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    showDatePicker() async {
+    Future<void> showDatePicker() async {
       final firstDate = DateTime(1900);
       final lastDate = DateTime.now();
 
@@ -348,7 +348,7 @@ class DriftSearchPage extends HookConsumerWidget {
       }
     }
 
-    showQuickDatePicker() {
+    void showQuickDatePicker() {
       unawaited(
         showFilterBottomSheet(
           context: context,
@@ -373,19 +373,19 @@ class DriftSearchPage extends HookConsumerWidget {
     }
 
     // MEDIA PICKER
-    showMediaTypePicker() {
+    void showMediaTypePicker() {
       var mediaType = filter.value.mediaType;
 
-      handleOnSelected(AssetType assetType) {
+      void handleOnSelected(AssetType assetType) {
         mediaType = assetType;
       }
 
-      handleClear() {
+      void handleClear() {
         mediaTypeCurrentFilterWidget.value = null;
         search(filter.value.copyWith(mediaType: AssetType.other));
       }
 
-      handleApply() {
+      void handleApply() {
         mediaTypeCurrentFilterWidget.value = mediaType != AssetType.other
             ? Text(
                 mediaType == AssetType.image ? 'image'.t(context: context) : 'video'.t(context: context),
@@ -409,19 +409,19 @@ class DriftSearchPage extends HookConsumerWidget {
     }
 
     // STAR RATING PICKER
-    showStarRatingPicker() {
+    void showStarRatingPicker() {
       var rating = filter.value.rating;
 
-      handleOnSelected(SearchRatingFilter value) {
+      void handleOnSelected(SearchRatingFilter value) {
         rating = value;
       }
 
-      handleClear() {
+      void handleClear() {
         ratingCurrentFilterWidget.value = null;
         search(filter.value.copyWith(rating: SearchRatingFilter()));
       }
 
-      handleApply() {
+      void handleApply() {
         ratingCurrentFilterWidget.value = rating.rating.isSome
             ? Text(
                 'rating_count'.t(args: {'count': rating.rating.unwrapOrNull ?? 0}),
@@ -446,10 +446,10 @@ class DriftSearchPage extends HookConsumerWidget {
     }
 
     // DISPLAY OPTION
-    showDisplayOptionPicker() {
+    void showDisplayOptionPicker() {
       var display = filter.value.display;
 
-      handleOnSelect(Map<DisplayOption, bool> value) {
+      void handleOnSelect(Map<DisplayOption, bool> value) {
         display = display.copyWith(
           isNotInAlbum: value[DisplayOption.notInAlbum],
           isArchive: value[DisplayOption.archive],
@@ -457,7 +457,7 @@ class DriftSearchPage extends HookConsumerWidget {
         );
       }
 
-      handleClear() {
+      void handleClear() {
         displayOptionCurrentFilterWidget.value = null;
         search(
           filter.value.copyWith(
@@ -466,7 +466,7 @@ class DriftSearchPage extends HookConsumerWidget {
         );
       }
 
-      handleApply() {
+      void handleApply() {
         final filterText = [
           if (display.isNotInAlbum) 'search_filter_display_option_not_in_album'.t(context: context),
           if (display.isArchive) 'archive'.t(context: context),
@@ -491,7 +491,7 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    handleTextSubmitted(String value) => search(switch (textSearchType.value) {
+    void handleTextSubmitted(String value) => search(switch (textSearchType.value) {
       TextSearchType.context => filter.value.copyWith(filename: '', context: value, description: '', ocr: ''),
       TextSearchType.filename => filter.value.copyWith(filename: value, context: '', description: '', ocr: ''),
       TextSearchType.description => filter.value.copyWith(filename: '', context: '', description: value, ocr: ''),
@@ -715,7 +715,7 @@ class DriftSearchPage extends HookConsumerWidget {
           if (filter.value.isEmpty)
             const _SearchSuggestions()
           else
-            _SearchResultGrid(onScrollEnd: () => unawaited(loadMoreSearchResults())),
+            _SearchResultGrid(onScrollEnd: () => loadMoreSearchResults()),
         ],
       ),
     );

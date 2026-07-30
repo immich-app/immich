@@ -77,7 +77,7 @@ class LoginForm extends HookConsumerWidget {
     final loginFormKey = GlobalKey<FormState>();
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
 
-    checkVersionMismatch() async {
+    Future<void> checkVersionMismatch() async {
       try {
         final packageInfo = await PackageInfo.fromPlatform();
         final appSemVer = SemVer.fromString(packageInfo.version);
@@ -152,13 +152,13 @@ class LoginForm extends HookConsumerWidget {
       return null;
     }, []);
 
-    populateTestLoginInfo() {
+    void populateTestLoginInfo() {
       emailController.text = 'demo@immich.app';
       passwordController.text = 'demo';
       serverEndpointController.text = 'https://demo.immich.app';
     }
 
-    populateTestLoginInfo1() {
+    void populateTestLoginInfo1() {
       emailController.text = 'testuser@email.com';
       passwordController.text = 'password';
       serverEndpointController.text = 'http://10.1.15.216:2283/api';
@@ -178,7 +178,7 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
-    getManageMediaPermission() async {
+    Future<void> getManageMediaPermission() async {
       final hasPermission = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
       if (!hasPermission) {
         await showDialog(
@@ -227,7 +227,7 @@ class LoginForm extends HookConsumerWidget {
 
     bool isSyncRemoteDeletionsMode() => Platform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false);
 
-    login() async {
+    Future<void> login() async {
       TextInput.finishAutofillContext();
 
       // Invalidate all api repository provider instance to take into account new access token
@@ -278,13 +278,13 @@ class LoginForm extends HookConsumerWidget {
     }
 
     Future<String> generatePKCECodeChallenge(String codeVerifier) async {
-      var bytes = utf8.encode(codeVerifier);
-      var digest = sha256.convert(bytes);
+      final bytes = utf8.encode(codeVerifier);
+      final digest = sha256.convert(bytes);
       return base64Url.encode(digest.bytes).replaceAll('=', '');
     }
 
-    oAuthLogin() async {
-      var oAuthService = ref.watch(oAuthServiceProvider);
+    Future<void> oAuthLogin() async {
+      final oAuthService = ref.watch(oAuthServiceProvider);
       String? oAuthServerUrl;
 
       final state = generateRandomString(32);
@@ -358,7 +358,7 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
-    buildVersionCompatWarning() {
+    SingleChildRenderObjectWidget buildVersionCompatWarning() {
       unawaited(checkVersionMismatch());
 
       if (warningMessage.value == null) {

@@ -37,7 +37,7 @@ class ShareIntentPage extends ConsumerWidget {
       ref.read(shareIntentUploadProvider.notifier).addAttachments(attachments);
     }
 
-    void upload() async {
+    Future<void> upload() async {
       final files = candidates.map((candidate) => candidate.file).toList();
       await ref.read(shareIntentUploadProvider.notifier).uploadAll(files);
     }
@@ -104,7 +104,7 @@ class ShareIntentPage extends ConsumerWidget {
                         Icons.image,
                         color: Colors.white,
                         size: 20,
-                        shadows: [Shadow(offset: Offset(0, 0), blurRadius: 8.0, color: Colors.black45)],
+                        shadows: [Shadow(offset: Offset.zero, blurRadius: 8.0, color: Colors.black45)],
                       ),
                     ),
                 ],

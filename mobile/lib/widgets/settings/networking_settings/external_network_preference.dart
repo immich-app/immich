@@ -21,7 +21,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
     final entries = useState([const AuxilaryEndpoint(url: '', status: AuxCheckStatus.unknown)]);
     final canSave = useState(false);
 
-    saveEndpointList() {
+    Future<void> saveEndpointList() {
       canSave.value = entries.value.every((e) => e.status == AuxCheckStatus.valid);
 
       final urls = entries.value
@@ -32,7 +32,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
       return ref.read(settingsProvider).write(SettingsKey.networkExternalEndpointList, urls);
     }
 
-    updateValidationStatus(String url, int index, AuxCheckStatus status) async {
+    Future<void> updateValidationStatus(String url, int index, AuxCheckStatus status) async {
       entries.value[index] = entries.value[index].copyWith(url: url, status: status);
 
       await saveEndpointList();
@@ -41,7 +41,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
       }
     }
 
-    handleReorder(int oldIndex, int newIndex) {
+    void handleReorder(int oldIndex, int newIndex) {
       final entry = entries.value.removeAt(oldIndex);
       entries.value.insert(newIndex, entry);
       entries.value = [...entries.value];
@@ -49,7 +49,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
       unawaited(saveEndpointList());
     }
 
-    handleDismiss(int index) {
+    void handleDismiss(int index) {
       entries.value = [...entries.value..removeAt(index)];
 
       unawaited(saveEndpointList());

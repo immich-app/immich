@@ -83,7 +83,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) async {
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
     switch (state) {
       case AppLifecycleState.resumed:
         if (_shouldPlayOnForeground) {
@@ -198,7 +198,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     return localAsset;
   }
 
-  void _onPlaybackReady() async {
+  Future<void> _onPlaybackReady() async {
     if (!mounted || !widget.isCurrent) {
       return;
     }
@@ -257,7 +257,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     _controller?.onPlaybackEnded.removeListener(_onPlaybackEnded);
   }
 
-  void _loadVideo() async {
+  Future<void> _loadVideo() async {
     final nc = _controller;
     if (nc == null || nc.videoSource != null || !mounted) {
       return;
@@ -292,7 +292,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     _controller = nc;
 
     if (widget.isCurrent) {
-      _loadVideo();
+      unawaited(_loadVideo());
     }
   }
 

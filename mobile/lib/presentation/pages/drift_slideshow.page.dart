@@ -54,7 +54,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   bool _disableAnimations = false;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     _config = ref.read(appConfigProvider.select((s) => s.slideshow));
     final asset = ref.read(assetViewerProvider).currentAsset;
@@ -78,7 +78,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   }
 
   @override
-  dispose() {
+  void dispose() {
     _timer.cancel();
     _stopwatch.stop();
     _pageController.dispose();
@@ -96,7 +96,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     } else if (ref.read(videoPlayerProvider(asset.heroTag)).status == VideoPlaybackStatus.paused) {
       unawaited(ref.read(videoPlayerProvider(asset.heroTag).notifier).play());
     } else {
-      _nextPage();
+      unawaited(_nextPage());
     }
 
     _updateNextIndex();
@@ -151,7 +151,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     }
   }
 
-  void _nextPage() async {
+  Future<void> _nextPage() async {
     if (_nextIndex < 0 || _nextIndex >= widget.timeline.totalAssets) {
       if (_config.repeat) {
         final wrapped = _config.direction == SlideshowDirection.forward ? 0 : widget.timeline.totalAssets - 1;
@@ -240,7 +240,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _timer = Timer(Duration(milliseconds: _config.duration * 1000 - _stopwatch.elapsedMilliseconds), () {
       _stopwatch.stop();
       _stopwatch.reset();
-      _nextPage();
+      unawaited(_nextPage());
     });
 
     _stopwatch.start();
@@ -269,7 +269,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _updateNextIndex();
   }
 
-  void _onTapUp() async {
+  Future<void> _onTapUp() async {
     await (_showAppBar ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive) : restoreEdgeToEdge());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -297,7 +297,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     } else {
       return LinearProgressIndicator(
         color: context.colorScheme.primary,
-        borderRadius: const BorderRadius.all(Radius.zero),
+        borderRadius: BorderRadius.zero,
         minHeight: 5,
         value:
             ref.watch(videoPlayerProvider(asset.heroTag).select((s) => s.position)).inMilliseconds /
@@ -378,7 +378,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
       final position = ref.read(videoPlayerProvider(asset.heroTag)).position;
 
       if (status == VideoPlaybackStatus.completed && isCurrent && position.inMicroseconds > 0) {
-        _nextPage();
+        unawaited(_nextPage());
       } else if (status == VideoPlaybackStatus.playing) {
         unawaited(ref.read(videoPlayerProvider(asset.heroTag).notifier).setLoop(false));
       }
@@ -541,7 +541,7 @@ class _SlideshowProgressBarState extends State<_SlideshowProgressBar> with Singl
       animation: _controller,
       builder: (context, _) => LinearProgressIndicator(
         color: widget.color,
-        borderRadius: const BorderRadius.all(Radius.zero),
+        borderRadius: BorderRadius.zero,
         minHeight: 5,
         value: _controller.value,
       ),

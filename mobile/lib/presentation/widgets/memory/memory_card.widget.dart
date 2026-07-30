@@ -55,7 +55,7 @@ class DriftMemoryCard extends StatelessWidget {
               }
 
               if (asset.isImage) {
-                return FullImage(asset, fit: fit, size: const Size(double.infinity, double.infinity));
+                return FullImage(asset, fit: fit, size: Size.infinite);
               }
 
               return Center(

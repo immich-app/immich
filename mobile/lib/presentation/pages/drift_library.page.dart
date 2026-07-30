@@ -180,7 +180,11 @@ class _PeopleCollectionCard extends ConsumerWidget {
                       mainAxisSpacing: 8,
                       physics: const NeverScrollableScrollPhysics(),
                       children: people.take(4).map((person) {
-                        return CircleAvatar(backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)));
+                        return CircleAvatar(
+                          backgroundImage: RemoteImageProvider(
+                            url: getFaceThumbnailUrl(person.id, updatedAt: person.updatedAt),
+                          ),
+                        );
                       }).toList(),
                     );
                   },
@@ -366,7 +370,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
           ),
           child: ListView(
             shrinkWrap: true,
-            padding: const EdgeInsets.all(0),
+            padding: EdgeInsets.zero,
             physics: const NeverScrollableScrollPhysics(),
             children: [
               ListTile(
@@ -418,7 +422,7 @@ class _PartnerList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.all(0),
+      padding: EdgeInsets.zero,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: partners.length,
       shrinkWrap: true,

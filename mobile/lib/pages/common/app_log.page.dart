@@ -92,7 +92,7 @@ class AppLogPage extends HookConsumerWidget {
         },
         itemCount: logMessages.data?.length ?? 0,
         itemBuilder: (context, index) {
-          var logMessage = logMessages.data![index];
+          final logMessage = logMessages.data![index];
           return ListTile(
             onTap: () => context.pushRoute(AppLogDetailRoute(logMessage: logMessage)),
             trailing: const Icon(Icons.arrow_forward_ios_rounded),
@@ -118,7 +118,7 @@ class AppLogPage extends HookConsumerWidget {
   /// Truncate the log message to a certain number of lines
   /// @param int maxLines - Max number of lines to truncate
   String truncateLogMessage(String message, int maxLines) {
-    List<String> messageLines = message.split("\n");
+    final List<String> messageLines = message.split("\n");
     if (messageLines.length < maxLines) {
       return message;
     }

@@ -29,7 +29,7 @@ class PinRegistrationForm extends HookConsumerWidget {
       return true;
     }
 
-    createNewPinCode() async {
+    Future<void> createNewPinCode() async {
       final isValid = validatePinCode();
       if (!isValid) {
         hasError.value = true;

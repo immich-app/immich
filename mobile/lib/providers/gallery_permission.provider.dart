@@ -13,7 +13,7 @@ class GalleryPermissionNotifier extends StateNotifier<PermissionStatus> {
     unawaited(getGalleryPermissionStatus());
   }
 
-  get hasPermission => state.isGranted || state.isLimited;
+  bool get hasPermission => state.isGranted || state.isLimited;
 
   /// Requests the gallery permission
   Future<PermissionStatus> requestGalleryPermission() async {

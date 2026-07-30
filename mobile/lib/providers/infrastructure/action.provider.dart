@@ -110,7 +110,7 @@ class ActionNotifier extends Notifier<void> {
     return switch (source) {
       ActionSource.timeline => ref.read(multiSelectProvider).selectedAssets,
       ActionSource.viewer => switch (ref.read(assetViewerProvider).currentAsset) {
-        BaseAsset asset => {asset},
+        final BaseAsset asset => {asset},
         null => const {},
       },
     };
@@ -273,7 +273,7 @@ class ActionNotifier extends Notifier<void> {
 
   Future<ActionResult?> deleteLocal(ActionSource source, BuildContext context) async {
     final assets = _getAssets(source);
-    bool? backedUpOnly = assets.every((asset) => asset.storage == AssetState.merged)
+    final bool? backedUpOnly = assets.every((asset) => asset.storage == AssetState.merged)
         ? true
         : await showDialog<bool>(
             context: context,

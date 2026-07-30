@@ -15,31 +15,31 @@ class HapticNotifier extends StateNotifier<void> {
 
   HapticNotifier(this._ref) : super(null);
 
-  selectionClick() {
+  void selectionClick() {
     if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
       unawaited(HapticFeedback.selectionClick());
     }
   }
 
-  lightImpact() {
+  void lightImpact() {
     if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
       unawaited(HapticFeedback.lightImpact());
     }
   }
 
-  mediumImpact() {
+  void mediumImpact() {
     if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
       unawaited(HapticFeedback.mediumImpact());
     }
   }
 
-  heavyImpact() {
+  void heavyImpact() {
     if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
       unawaited(HapticFeedback.heavyImpact());
     }
   }
 
-  vibrate() {
+  void vibrate() {
     if (_ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableHapticFeedback)) {
       unawaited(HapticFeedback.vibrate());
     }
