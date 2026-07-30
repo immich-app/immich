@@ -343,7 +343,11 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     _scrollController.jumpTo(centeredOffset.clamp(0.0, maxScrollExtent));
   }
 
-  void _onDragEnd(DragEndDetails _) {
+  void _onDragEnd(DragEndDetails _) => _endDrag();
+
+  void _onDragCancel() => _endDrag();
+
+  void _endDrag() {
     _labelAnimationController.reverse();
     setState(() {
       _isDragging = false;
@@ -376,34 +380,42 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
           : null;
     }
 
-    return NotificationListener<ScrollNotification>(
-      onNotification: _onScrollNotification,
-      child: Stack(
-        children: [
-          RepaintBoundary(child: widget.child),
-          // Scroll Segments - wrapped in RepaintBoundary for better performance
-          RepaintBoundary(
-            child: _SegmentsLayer(
-              key: ValueKey('segments_${_isDragging}_${_segments.length}'),
-              segments: _segments,
-              topPadding: widget.topPadding,
-              isDragging: _isDragging,
-            ),
-          ),
-          if (_scrollController.hasClients && _scrollController.position.maxScrollExtent > 0)
-            PositionedDirectional(
-              top: _thumbTopOffset + widget.topPadding,
-              end: 0,
-              child: RepaintBoundary(
-                child: GestureDetector(
-                  onVerticalDragStart: _onDragStart,
-                  onVerticalDragUpdate: _onDragUpdate,
-                  onVerticalDragEnd: _onDragEnd,
-                  child: _Scrubber(thumbAnimation: _thumbAnimation, labelAnimation: _labelAnimation, label: label),
-                ),
+    return Listener(
+      onPointerDown: (_) {
+        if (_isDragging) {
+          _endDrag();
+        }
+      },
+      child: NotificationListener<ScrollNotification>(
+        onNotification: _onScrollNotification,
+        child: Stack(
+          children: [
+            RepaintBoundary(child: widget.child),
+            // Scroll Segments - wrapped in RepaintBoundary for better performance
+            RepaintBoundary(
+              child: _SegmentsLayer(
+                key: ValueKey('segments_${_isDragging}_${_segments.length}'),
+                segments: _segments,
+                topPadding: widget.topPadding,
+                isDragging: _isDragging,
               ),
             ),
-        ],
+            if (_scrollController.hasClients && _scrollController.position.maxScrollExtent > 0)
+              PositionedDirectional(
+                top: _thumbTopOffset + widget.topPadding,
+                end: 0,
+                child: RepaintBoundary(
+                  child: GestureDetector(
+                    onVerticalDragStart: _onDragStart,
+                    onVerticalDragUpdate: _onDragUpdate,
+                    onVerticalDragEnd: _onDragEnd,
+                    onVerticalDragCancel: _onDragCancel,
+                    child: _Scrubber(thumbAnimation: _thumbAnimation, labelAnimation: _labelAnimation, label: label),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
