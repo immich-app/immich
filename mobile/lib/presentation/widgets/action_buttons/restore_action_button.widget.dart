@@ -29,16 +29,17 @@ class RestoreActionButton extends ConsumerWidget {
       EventStream.shared.emit(const ViewerReloadAssetEvent());
     }
 
-    final successMessage = 'assets_restored_count'.t(context: context, args: {'count': result.count.toString()});
-
-    if (context.mounted) {
-      ImmichToast.show(
-        context: context,
-        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
-        gravity: ToastGravity.BOTTOM,
-        toastType: result.success ? ToastType.success : ToastType.error,
-      );
+    if (!context.mounted) {
+      return;
     }
+
+    final successMessage = 'assets_restored_count'.t(context: context, args: {'count': result.count.toString()});
+    ImmichToast.show(
+      context: context,
+      msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
+      gravity: ToastGravity.BOTTOM,
+      toastType: result.success ? ToastType.success : ToastType.error,
+    );
   }
 
   @override

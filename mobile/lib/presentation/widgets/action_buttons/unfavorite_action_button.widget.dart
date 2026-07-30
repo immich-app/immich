@@ -35,17 +35,17 @@ class UnFavoriteActionButton extends ConsumerWidget {
     }
 
     ref.read(multiSelectProvider.notifier).reset();
+    if (!context.mounted) {
+      return;
+    }
 
     final successMessage = 'unfavorite_action_prompt'.t(context: context, args: {'count': result.count.toString()});
-
-    if (context.mounted) {
-      ImmichToast.show(
-        context: context,
-        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
-        gravity: ToastGravity.BOTTOM,
-        toastType: result.success ? ToastType.success : ToastType.error,
-      );
-    }
+    ImmichToast.show(
+      context: context,
+      msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
+      gravity: ToastGravity.BOTTOM,
+      toastType: result.success ? ToastType.success : ToastType.error,
+    );
   }
 
   @override

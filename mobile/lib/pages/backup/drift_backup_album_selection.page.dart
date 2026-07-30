@@ -132,6 +132,10 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
             }
           }
 
+          if (!context.mounted) {
+            return;
+          }
+
           Navigator.of(context).pop();
         }
       },

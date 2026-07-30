@@ -74,7 +74,7 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
           .read(uploadProfileImageProvider.notifier)
           .upload(xFile, fileName: 'profile-picture.png');
 
-      if (!context.mounted) {
+      if (!mounted) {
         return;
       }
 
@@ -94,9 +94,7 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
           toastType: ToastType.success,
         );
 
-        if (context.mounted) {
-          unawaited(context.maybePop());
-        }
+        unawaited(context.maybePop());
       } else {
         ImmichToast.show(
           context: context,
@@ -106,7 +104,7 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
         );
       }
     } catch (e) {
-      if (!context.mounted) {
+      if (!mounted) {
         return;
       }
 

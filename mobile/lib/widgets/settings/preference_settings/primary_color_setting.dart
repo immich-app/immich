@@ -23,6 +23,10 @@ class PrimaryColorSetting extends HookConsumerWidget {
 
     void popBottomSheet() {
       Future.delayed(const Duration(milliseconds: 200), () {
+        if (!context.mounted) {
+          return;
+        }
+
         Navigator.pop(context);
       });
     }

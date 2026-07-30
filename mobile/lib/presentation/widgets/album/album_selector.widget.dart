@@ -755,6 +755,10 @@ class AddToAlbumHeader extends ConsumerWidget {
           .read(remoteAlbumProvider.notifier)
           .createAlbumWithAssets(title: albumName, assets: selectedAssets);
 
+      if (!context.mounted) {
+        return;
+      }
+
       if (newAlbum == null) {
         ImmichToast.show(context: context, toastType: ToastType.error, msg: 'errors.failed_to_create_album'.tr());
         return;
@@ -798,7 +802,7 @@ class CreateAlbumButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     Future<void> onCreateAlbum() async {
       final albumName = await showDialog<String?>(context: context, builder: (context) => const NewAlbumNameModal());
-      if (albumName == null) {
+      if (albumName == null || !context.mounted) {
         return;
       }
 
@@ -812,6 +816,10 @@ class CreateAlbumButton extends ConsumerWidget {
       final album = await ref
           .read(remoteAlbumProvider.notifier)
           .createAlbum(title: albumName, assetIds: [asset.remoteId!]);
+
+      if (!context.mounted) {
+        return;
+      }
 
       if (album == null) {
         ImmichToast.show(context: context, toastType: ToastType.error, msg: 'errors.failed_to_create_album'.tr());

@@ -37,6 +37,10 @@ class AppLogDetailPage extends HookConsumerWidget {
                   onPressed: () {
                     unawaited(
                       Clipboard.setData(ClipboardData(text: text)).then((_) {
+                        if (!context.mounted) {
+                          return;
+                        }
+
                         context.scaffoldMessenger.showSnackBar(
                           SnackBar(
                             content: Text(

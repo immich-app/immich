@@ -44,6 +44,9 @@ class FavoriteBottomSheet extends ConsumerWidget {
       final result = await ref
           .read(remoteAlbumProvider.notifier)
           .addAssets(album.id, remoteAssets.map((e) => e.id).toList());
+      if (!context.mounted) {
+        return;
+      }
 
       if (selectedAssets.length != remoteAssets.length) {
         ImmichToast.show(
