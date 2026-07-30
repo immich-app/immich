@@ -283,7 +283,7 @@ class DriftMemoryPage extends HookConsumerWidget {
                             final asset = memories[mIndex].assets[index];
                             return Stack(
                               children: [
-                                Container(
+                                ColoredBox(
                                   color: Colors.black,
                                   child: DriftMemoryCard(
                                     asset: asset,

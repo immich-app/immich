@@ -52,7 +52,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                 ),
               ],
             ),
-            Container(
+            DecoratedBox(
               decoration: BoxDecoration(
                 color: context.colorScheme.surfaceContainerHigh,
                 borderRadius: const BorderRadius.all(Radius.circular(15.0)),
@@ -83,7 +83,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                 style: TextStyle(fontSize: 12.0, color: context.primaryColor, fontWeight: FontWeight.bold),
               ),
             ),
-            Container(
+            DecoratedBox(
               decoration: BoxDecoration(
                 color: context.colorScheme.surfaceContainerHigh,
                 borderRadius: const BorderRadius.all(Radius.circular(15.0)),

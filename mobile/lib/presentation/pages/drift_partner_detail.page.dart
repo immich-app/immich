@@ -89,7 +89,7 @@ class _InfoBoxState extends ConsumerState<_InfoBox> {
         height: 110,
         child: Padding(
           padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0),
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               border: Border.all(color: context.colorScheme.onSurface.withAlpha(10), width: 1),
               borderRadius: const BorderRadius.all(Radius.circular(20)),

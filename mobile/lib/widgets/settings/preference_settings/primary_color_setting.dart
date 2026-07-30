@@ -71,7 +71,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
                 right: 0,
                 top: 0,
                 bottom: 0,
-                child: Container(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all(Radius.circular(100)),
                     color: Colors.grey[900]?.withValues(alpha: .4),

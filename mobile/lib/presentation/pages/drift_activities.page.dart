@@ -77,7 +77,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,
-                    child: Container(
+                    child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: context.scaffoldBackgroundColor,
                         border: Border(top: BorderSide(color: context.colorScheme.secondaryContainer, width: 1)),

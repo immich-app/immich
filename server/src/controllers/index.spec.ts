@@ -53,12 +53,10 @@ describe('controllers', () => {
     expect(new Set(reachableByNonAdmins)).toEqual(UNAUTHENTICATED_ADMIN_ROUTES);
   });
 
-  it('should not authenticate the bootstrap routes under admin/', () => {
-    const authenticated = routes
-      .filter((route) => UNAUTHENTICATED_ADMIN_ROUTES.has(route.id) && route.auth !== undefined)
-      .map((route) => route.label);
+  it('should declare authentication on every route', () => {
+    const undeclared = routes.filter((route) => route.auth === undefined).map((route) => route.label);
 
-    expect(authenticated).toEqual([]);
+    expect(undeclared).toEqual([]);
   });
 
   it('should require admin access for routes with an admin permission', () => {
