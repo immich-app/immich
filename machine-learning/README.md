@@ -22,6 +22,16 @@ To get started, you can simply run `locust --web-host 127.0.0.1` and open `local
 
 Note that in Locust's jargon, concurrency is measured in `users`, and each user runs one task at a time. To achieve a particular per-endpoint concurrency, multiply that number by the number of endpoints to be queried. For example, if there are 3 endpoints and you want each of them to receive 8 requests at a time, you should set the number of users to 24.
 
+## Transcription Throughput
+
+Locust needs a deployed app and measures the endpoint. To measure the transcription model itself — throughput, memory footprint and the effect of voice activity detection — use `scripts/benchmark_transcription.py`, which drives the production `WhisperTranscriber` directly and needs no running server:
+
+```bash
+uv run scripts/benchmark_transcription.py /path/to/video.mp4 --model small --threads 4
+```
+
+It reports throughput as a speed ratio against real time and exits non-zero if that ratio falls below 2x. Measure on representative personal video rather than a continuous-speech clip: real footage is mostly non-speech, VAD skips it, and a dense-speech clip therefore understates the throughput a real library sees. Recorded results and the model decision they support are in [docs/transcription-performance-gate.md](docs/transcription-performance-gate.md).
+
 # Facial Recognition
 
 ## Acknowledgements

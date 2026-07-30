@@ -1,0 +1,38 @@
+{
+  "video": "librivox-speech.mp3",
+  "media_seconds": 553.3,
+  "model_name": "small",
+  "cpu_threads": 4,
+  "compute_type": "int8",
+  "vad_speech_seconds": 541.7,
+  "vad_speech_fraction": 0.979,
+  "vad_detection_seconds": 1.54,
+  "audio_extraction_seconds": 1.03,
+  "model_load_seconds": 1.27,
+  "model_rss_mib": 397.1,
+  "baseline_rss_mib": 261.4,
+  "host_cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+  "loadavg_1min": 6.48,
+  "passes": [
+    {
+      "vad": true,
+      "wall_seconds": 157.62,
+      "speed_ratio": 3.51,
+      "segment_count": 118,
+      "segment_coverage_seconds": 480.4,
+      "segment_coverage_fraction": 0.868,
+      "language": "en",
+      "peak_rss_mib": 1188.2
+    },
+    {
+      "vad": false,
+      "wall_seconds": 187.49,
+      "speed_ratio": 2.95,
+      "segment_count": 82,
+      "segment_coverage_seconds": 546.0,
+      "segment_coverage_fraction": 0.987,
+      "language": "en",
+      "peak_rss_mib": 1440.3
+    }
+  ]
+}

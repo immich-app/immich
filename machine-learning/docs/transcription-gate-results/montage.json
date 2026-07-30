@@ -1,0 +1,38 @@
+{
+  "video": "matrimonio.mp4",
+  "media_seconds": 689.5,
+  "model_name": "small",
+  "cpu_threads": 4,
+  "compute_type": "int8",
+  "vad_speech_seconds": 0.0,
+  "vad_speech_fraction": 0.0,
+  "vad_detection_seconds": 1.9,
+  "audio_extraction_seconds": 0.95,
+  "model_load_seconds": 1.33,
+  "model_rss_mib": 397.1,
+  "baseline_rss_mib": 261.6,
+  "host_cpu": "Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz",
+  "loadavg_1min": 6.19,
+  "passes": [
+    {
+      "vad": true,
+      "wall_seconds": 5.4,
+      "speed_ratio": 127.58,
+      "segment_count": 0,
+      "segment_coverage_seconds": 0,
+      "segment_coverage_fraction": 0.0,
+      "language": "en",
+      "peak_rss_mib": 940.2
+    },
+    {
+      "vad": false,
+      "wall_seconds": 353.78,
+      "speed_ratio": 1.95,
+      "segment_count": 24,
+      "segment_coverage_seconds": 396.0,
+      "segment_coverage_fraction": 0.574,
+      "language": "en",
+      "peak_rss_mib": 1495.4
+    }
+  ]
+}
