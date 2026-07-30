@@ -1,5 +1,4 @@
 import 'package:immich_mobile/domain/models/feature_message.model.dart';
-import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 
 class FeatureMessageService {
@@ -12,5 +11,5 @@ class FeatureMessageService {
     return featureMessageHighlights.isNotEmpty && featureMessageRelease > seen;
   }
 
-  Future<void> markSeen() => _settingsRepository.write(SettingsKey.featureMessageSeenRelease, featureMessageRelease);
+  Future<void> markSeen() => _settingsRepository.write(.featureMessageSeenRelease, featureMessageRelease);
 }

@@ -23,6 +23,7 @@ const defaultConfig = AppConfig();
 
 class AppConfig {
   final LogLevel logLevel;
+  final bool onboardingComplete;
   final ThemeConfig theme;
   final CleanupConfig cleanup;
   final MapConfig map;
@@ -38,6 +39,7 @@ class AppConfig {
 
   const AppConfig({
     this.logLevel = .info,
+    this.onboardingComplete = true,
     this.theme = const .new(),
     this.cleanup = const .new(),
     this.map = const .new(),
@@ -54,6 +56,7 @@ class AppConfig {
 
   AppConfig copyWith({
     LogLevel? logLevel,
+    bool? onboardingComplete,
     ThemeConfig? theme,
     CleanupConfig? cleanup,
     MapConfig? map,
@@ -68,6 +71,7 @@ class AppConfig {
     FeatureMessageConfig? featureMessage,
   }) => .new(
     logLevel: logLevel ?? this.logLevel,
+    onboardingComplete: onboardingComplete ?? this.onboardingComplete,
     theme: theme ?? this.theme,
     cleanup: cleanup ?? this.cleanup,
     map: map ?? this.map,
@@ -87,6 +91,7 @@ class AppConfig {
       identical(this, other) ||
       (other is AppConfig &&
           other.logLevel == logLevel &&
+          other.onboardingComplete == onboardingComplete &&
           other.theme == theme &&
           other.cleanup == cleanup &&
           other.map == map &&
@@ -103,6 +108,7 @@ class AppConfig {
   @override
   int get hashCode => Object.hash(
     logLevel,
+    onboardingComplete,
     theme,
     cleanup,
     map,
@@ -119,7 +125,7 @@ class AppConfig {
 
   @override
   String toString() =>
-      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, featureMessage: $featureMessage)';
+      'AppConfig(logLevel: $logLevel, onboardingComplete: $onboardingComplete, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, featureMessage: $featureMessage)';
 
   T read<T>(SettingsKey<T> key) =>
       (switch (key) {
@@ -166,6 +172,7 @@ class AppConfig {
             .shareFileType => share.fileType,
             .slideshowRepeat => slideshow.repeat,
             .slideshowDuration => slideshow.duration,
+            .onboardingComplete => onboardingComplete,
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
             .featureMessageSeenRelease => featureMessage.seenRelease,
@@ -178,6 +185,7 @@ class AppConfig {
   AppConfig write<T, U extends T>(SettingsKey<T> key, U value) {
     return switch (key) {
       .logLevel => copyWith(logLevel: value as LogLevel),
+      .onboardingComplete => copyWith(onboardingComplete: value as bool),
       .themePrimaryColor => copyWith(theme: theme.copyWith(primaryColor: value as ImmichColorPreset)),
       .themeMode => copyWith(theme: theme.copyWith(mode: value as ThemeMode)),
       .themeDynamic => copyWith(theme: theme.copyWith(dynamicTheme: value as bool)),

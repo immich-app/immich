@@ -16,6 +16,7 @@ import 'package:immich_mobile/infrastructure/repositories/settings.repository.da
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/feature_message.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
@@ -354,7 +355,11 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     } else {
       log.severe('Missing crucial offline login info - Logging out completely');
       unawaited(ref.read(authProvider.notifier).logout());
-      unawaited(context.router.replaceAll([const LoginRoute()]));
+      unawaited(
+        context.router.replaceAll([
+          ref.read(onboardingServiceProvider).isComplete ? const LoginRoute() : const WelcomeRoute(),
+        ]),
+      );
       return;
     }
 
