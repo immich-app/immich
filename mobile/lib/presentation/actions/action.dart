@@ -29,7 +29,7 @@ final assetsActionProvider = Provider.family.autoDispose<AssetFilter<BaseAsset>,
   (ref, source) => AssetFilter(switch (source) {
     .timeline => ref.watch(multiSelectProvider.select((s) => s.selectedAssets)),
     .viewer => switch (ref.watch(assetViewerProvider.select((s) => s.currentAsset))) {
-      BaseAsset asset => {asset},
+      final BaseAsset asset => {asset},
       null => const <BaseAsset>{},
     },
   }),
