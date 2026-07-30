@@ -38,6 +38,7 @@ class BackgroundEngineLock(context: Context) : BackgroundWorkerLockApi, ImmichPl
 
   override fun unlock() {
     BackgroundWorkerPreferences(ctx).setLocked(false)
+    BackgroundWorkerApiImpl.rearmRetryWorker(ctx)
     Log.i(TAG, "Background worker is unlocked")
   }
 
