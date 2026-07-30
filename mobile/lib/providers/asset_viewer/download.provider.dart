@@ -37,7 +37,7 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
     );
   }
 
-  void cancelDownload(String id) async {
+  Future<void> cancelDownload(String id) async {
     final isCanceled = await _downloadService.cancelDownload(id);
 
     if (isCanceled) {
@@ -55,5 +55,5 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
 }
 
 final downloadStateProvider = StateNotifierProvider<DownloadStateNotifier, DownloadState>(
-  ((ref) => DownloadStateNotifier(ref.watch(downloadServiceProvider))),
+  (ref) => DownloadStateNotifier(ref.watch(downloadServiceProvider)),
 );

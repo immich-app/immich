@@ -89,7 +89,7 @@ class FolderPage extends HookConsumerWidget {
           if (folder == null) {
             return FolderContent(folder: rootFolder, root: rootFolder, sortOrder: sortOrder.value);
           } else {
-            return FolderContent(folder: currentFolder.value!, root: rootFolder, sortOrder: sortOrder.value);
+            return FolderContent(folder: currentFolder.value, root: rootFolder, sortOrder: sortOrder.value);
           }
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -126,7 +126,7 @@ class FolderContent extends HookConsumerWidget {
       return Center(child: const Text("folder_not_found").tr());
     }
 
-    getSubtitle(int subFolderCount) {
+    String getSubtitle(int subFolderCount) {
       if (subFolderCount > 0) {
         return "$subFolderCount ${tr("folders")}".toLowerCase();
       }

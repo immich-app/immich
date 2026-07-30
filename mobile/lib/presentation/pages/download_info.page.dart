@@ -14,14 +14,14 @@ class DownloadInfoPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tasks = ref.watch(downloadStateProvider.select((state) => state.taskProgress)).entries.toList();
 
-    onCancelDownload(String id) {
+    void onCancelDownload(String id) {
       ref.watch(downloadStateProvider.notifier).cancelDownload(id);
     }
 
     return Scaffold(
       appBar: AppBar(
         title: Text("download".t(context: context)),
-        actions: [],
+        actions: const [],
       ),
       body: ListView.builder(
         physics: const ClampingScrollPhysics(),

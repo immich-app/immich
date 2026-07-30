@@ -6,8 +6,8 @@ import 'package:immich_mobile/utils/async_mutex.dart';
 void main() {
   group('Test AsyncMutex grouped', () {
     test('test ordered execution', () async {
-      AsyncMutex lock = AsyncMutex();
-      List<int> events = [];
+      final AsyncMutex lock = AsyncMutex();
+      final List<int> events = [];
       expect(0, lock.enqueued);
       unawaited(lock.run(() => Future.delayed(const Duration(milliseconds: 10), () => events.add(1))));
       expect(1, lock.enqueued);

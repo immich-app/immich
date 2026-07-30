@@ -24,13 +24,13 @@ import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/deep_link.service.dart';
@@ -84,7 +84,7 @@ Future<void> initApp() async {
     FlutterError.presentError(details);
     log.severe(
       'FlutterError - Catch all',
-      "${details.toString()}\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}",
+      "$details\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}",
       details.stack,
     );
   };
@@ -130,23 +130,18 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         dPrint(() => "[APP STATE] resumed");
         ref.read(appStateProvider.notifier).handleAppResume();
         unawaited(ref.read(viewIntentHandlerProvider).onAppResumed());
-        break;
       case AppLifecycleState.inactive:
         dPrint(() => "[APP STATE] inactive");
         ref.read(appStateProvider.notifier).handleAppInactivity();
-        break;
       case AppLifecycleState.paused:
         dPrint(() => "[APP STATE] paused");
         ref.read(appStateProvider.notifier).handleAppPause();
-        break;
       case AppLifecycleState.detached:
         dPrint(() => "[APP STATE] detached");
         ref.read(appStateProvider.notifier).handleAppDetached();
-        break;
       case AppLifecycleState.hidden:
         dPrint(() => "[APP STATE] hidden");
         ref.read(appStateProvider.notifier).handleAppHidden();
-        break;
     }
   }
 
@@ -219,7 +214,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   }
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     initApp().then((_) => dPrint(() => "App Init Completed"));
     WidgetsBinding.instance.addPostFrameCallback((_) {

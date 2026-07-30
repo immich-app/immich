@@ -5,8 +5,8 @@ import 'package:immich_mobile/presentation/widgets/people/person_edit_birthday_m
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 
 String formatAge(DateTime birthDate, DateTime referenceDate) {
-  int ageInYears = _calculateAge(birthDate, referenceDate);
-  int ageInMonths = _calculateAgeInMonths(birthDate, referenceDate);
+  final int ageInYears = _calculateAge(birthDate, referenceDate);
+  final int ageInMonths = _calculateAgeInMonths(birthDate, referenceDate);
 
   if (ageInMonths <= 11) {
     return "person_age_months".t(args: {'months': ageInMonths.toString()});

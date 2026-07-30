@@ -12,8 +12,8 @@ import 'package:immich_mobile/infrastructure/repositories/settings.repository.da
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/backup/drift_album_info_list_tile.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
@@ -321,9 +321,9 @@ class _AlbumSelectionList extends StatelessWidget {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(((context, index) {
+        delegate: SliverChildBuilderDelegate((context, index) {
           return DriftAlbumInfoListTile(album: filteredAlbums[index]);
-        }), childCount: filteredAlbums.length),
+        }, childCount: filteredAlbums.length),
       ),
     );
   }
@@ -345,9 +345,9 @@ class _AlbumSelectionGrid extends StatelessWidget {
           crossAxisSpacing: 12,
         ),
         itemCount: filteredAlbums.length,
-        itemBuilder: ((context, index) {
+        itemBuilder: (context, index) {
           return DriftAlbumInfoListTile(album: filteredAlbums[index]);
-        }),
+        },
       ),
     );
   }

@@ -20,7 +20,7 @@ class DriftBackupAssetDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    AsyncValue<List<LocalAsset>> result = ref.watch(driftBackupCandidateProvider);
+    final AsyncValue<List<LocalAsset>> result = ref.watch(driftBackupCandidateProvider);
     return Scaffold(
       appBar: AppBar(title: Text('backup_controller_page_remainder'.t(context: context))),
       body: result.when(

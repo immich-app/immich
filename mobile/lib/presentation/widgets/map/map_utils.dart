@@ -71,7 +71,7 @@ class MapUtils {
     bool silent = false,
   }) async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled && !silent) {
         unawaited(showDialog(context: context, builder: (context) => _LocationServiceDisabledDialog(context)));
         return (null, LocationPermission.deniedForever);
@@ -98,7 +98,7 @@ class MapUtils {
         return (null, LocationPermission.deniedForever);
       }
 
-      Position currentUserLocation = await Geolocator.getCurrentPosition(
+      final Position currentUserLocation = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
           distanceFilter: 0,

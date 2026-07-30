@@ -55,7 +55,7 @@ class ChangePasswordForm extends HookConsumerWidget {
                       passwordController: passwordController,
                       onPressed: () async {
                         if (formKey.currentState!.validate()) {
-                          var isSuccess = await ref
+                          final isSuccess = await ref
                               .read(authProvider.notifier)
                               .changePassword(passwordController.value.text);
 

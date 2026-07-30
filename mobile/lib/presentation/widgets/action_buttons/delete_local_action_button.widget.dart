@@ -7,9 +7,9 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 
 /// This delete action has the following behavior:
 /// - Prompt to delete the asset locally
@@ -20,7 +20,7 @@ class DeleteLocalActionButton extends ConsumerWidget {
 
   const DeleteLocalActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
