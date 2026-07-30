@@ -441,6 +441,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Start Docker Compose
+        id: docker
         run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
 
@@ -448,13 +449,13 @@ jobs:
         env:
           VITEST_DISABLE_DOCKER_SETUP: true
         run: pnpm test
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.docker.outcome == 'success' }}
 
       - name: Run e2e tests (maintenance)
         env:
           VITEST_DISABLE_DOCKER_SETUP: true
         run: pnpm test:maintenance
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.docker.outcome == 'success' }}
 
       - name: Capture Docker logs
         if: always()
@@ -519,6 +520,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Docker build
+        id: docker
         run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
 
@@ -526,7 +528,7 @@ jobs:
         env:
           PLAYWRIGHT_DISABLE_WEBSERVER: true
         run: pnpm test:web
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.docker.outcome == 'success' }}
 
       - name: Archive e2e test (web) results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -539,7 +541,7 @@ jobs:
         env:
           PLAYWRIGHT_DISABLE_WEBSERVER: true
         run: pnpm test:web:ui
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.docker.outcome == 'success' }}
 
       - name: Archive ui test (web) results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -552,7 +554,7 @@ jobs:
         env:
           PLAYWRIGHT_DISABLE_WEBSERVER: true
         run: pnpm test:web:maintenance
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.docker.outcome == 'success' }}
 
       - name: Archive maintenance tests (web) results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
