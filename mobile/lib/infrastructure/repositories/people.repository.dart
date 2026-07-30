@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
@@ -72,6 +73,29 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
     final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
 
     return query.write(PersonEntityCompanion(birthDate: Value(birthday), updatedAt: Value(DateTime.now())));
+  }
+
+  Future<void> mergePeople(
+    String targetPersonId,
+    List<String> mergedPersonIds, {
+    required String name,
+    DateTime? birthDate,
+  }) {
+    if (mergedPersonIds.isEmpty) {
+      return Future.value();
+    }
+
+    return _db.transaction(() async {
+      await (_db.update(_db.assetFaceEntity)..where((face) => face.personId.isIn(mergedPersonIds))).write(
+        AssetFaceEntityCompanion(personId: Value(targetPersonId)),
+      );
+
+      await _db.personEntity.deleteWhere((row) => row.id.isIn(mergedPersonIds));
+
+      await (_db.update(_db.personEntity)..where((row) => row.id.equals(targetPersonId))).write(
+        PersonEntityCompanion(name: Value(name), birthDate: Value(birthDate), updatedAt: Value(DateTime.now())),
+      );
+    });
   }
 }
 
