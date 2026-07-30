@@ -9,7 +9,7 @@
 
   interface Props {
     id: string;
-    description: string;
+    description: string | null;
     isOwned: boolean;
   }
 
