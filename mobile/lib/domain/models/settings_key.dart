@@ -16,6 +16,7 @@ enum SettingsKey<T> {
 
   // Image
   imagePreferRemote<bool>(),
+  imageLoadPreview<bool>(),
   imageLoadOriginal<bool>(),
 
   // Viewer

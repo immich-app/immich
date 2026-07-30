@@ -12,7 +12,11 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isPreview = useState(ref.read(appConfigProvider).image.loadPreview);
     final isOriginal = useState(ref.read(appConfigProvider).image.loadOriginal);
+    useValueChanged<bool, void>(isPreview.value, (_, __) {
+      ref.read(settingsProvider).write(.imageLoadPreview, isPreview.value);
+    });
     useValueChanged<bool, void>(isOriginal.value, (_, __) {
       ref.read(settingsProvider).write(.imageLoadOriginal, isOriginal.value);
     });
@@ -24,6 +28,12 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
           title: "photos".t(context: context),
           icon: Icons.image_outlined,
           subtitle: "setting_image_viewer_help".t(context: context),
+        ),
+        SettingsSwitchListTile(
+          valueNotifier: isPreview,
+          title: "setting_image_viewer_preview_title".t(context: context),
+          subtitle: "setting_image_viewer_preview_subtitle".t(context: context),
+          onChanged: (_) => ref.invalidate(appSettingsServiceProvider),
         ),
         SettingsSwitchListTile(
           valueNotifier: isOriginal,
