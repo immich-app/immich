@@ -93,13 +93,13 @@ class ShareActionButton extends ConsumerWidget {
     return switch (source) {
       ActionSource.timeline => ref.read(multiSelectProvider).selectedAssets,
       ActionSource.viewer => switch (ref.read(assetViewerProvider).currentAsset) {
-        BaseAsset asset => {asset},
+        final BaseAsset asset => {asset},
         null => const {},
       },
     };
   }
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
@@ -108,7 +108,7 @@ class ShareActionButton extends ConsumerWidget {
     await _share(context, ref, fileType);
   }
 
-  void _onLongPress(BuildContext context, WidgetRef ref) async {
+  Future<void> _onLongPress(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }

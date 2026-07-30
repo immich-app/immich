@@ -25,12 +25,12 @@ class PrimaryColorSetting extends HookConsumerWidget {
       });
     }
 
-    onUseSystemColorChange(bool newValue) {
+    void onUseSystemColorChange(bool newValue) {
       ref.read(settingsProvider).write(.themeDynamic, newValue);
       popBottomSheet();
     }
 
-    onPrimaryColorChange(ImmichColorPreset colorPreset) {
+    void onPrimaryColorChange(ImmichColorPreset colorPreset) {
       ref.read(settingsProvider).write(.themePrimaryColor, colorPreset);
 
       //turn off system color setting
@@ -40,7 +40,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
       popBottomSheet();
     }
 
-    buildPrimaryColorTile({
+    Container buildPrimaryColorTile({
       required Color topColor,
       required Color bottomColor,
       required double tileSize,
@@ -85,7 +85,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
       );
     }
 
-    bottomSheetContent() {
+    Column bottomSheetContent() {
       return Column(
         mainAxisSize: MainAxisSize.min,
         children: [

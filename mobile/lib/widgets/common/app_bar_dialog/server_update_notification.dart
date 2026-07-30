@@ -16,8 +16,10 @@ class ServerUpdateNotification extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final serverInfoState = ref.watch(serverInfoProvider);
 
-    Color errorColor = const Color.fromARGB(85, 253, 97, 83);
-    Color infoColor = context.isDarkTheme ? context.primaryColor.withAlpha(55) : context.primaryColor.withAlpha(25);
+    const Color errorColor = Color.fromARGB(85, 253, 97, 83);
+    final Color infoColor = context.isDarkTheme
+        ? context.primaryColor.withAlpha(55)
+        : context.primaryColor.withAlpha(25);
     void openUpdateLink() {
       String url;
       if (serverInfoState.versionStatus == VersionStatus.serverOutOfDate) {
@@ -69,7 +71,7 @@ class ServerUpdateNotification extends HookConsumerWidget {
                 onPressed: openUpdateLink,
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.all(4),
-                  minimumSize: const Size(0, 0),
+                  minimumSize: Size.zero,
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
                 child: serverInfoState.versionStatus == VersionStatus.clientOutOfDate

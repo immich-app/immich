@@ -22,7 +22,7 @@ class FullImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = getFullImageProvider(asset, size: size);
     return OctoImage(
-      fadeInDuration: const Duration(milliseconds: 0),
+      fadeInDuration: Duration.zero,
       fadeOutDuration: const Duration(milliseconds: 100),
       placeholderBuilder: placeholder != null ? (_) => placeholder! : null,
       image: provider,

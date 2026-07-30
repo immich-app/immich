@@ -173,7 +173,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   }
 
   @override
-  dispose() {
+  void dispose() {
     super.dispose();
     WakelockPlus.disable();
   }

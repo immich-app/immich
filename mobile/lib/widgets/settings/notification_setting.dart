@@ -15,14 +15,14 @@ class NotificationSetting extends HookConsumerWidget {
     final permissionService = ref.watch(notificationPermissionProvider);
     final hasPermission = permissionService == PermissionStatus.granted;
 
-    openAppNotificationSettings(BuildContext ctx) {
+    void openAppNotificationSettings(BuildContext ctx) {
       ctx.pop();
       openAppSettings();
     }
 
     // When permissions are permanently denied, you need to go to settings to
     // allow them
-    showPermissionsDialog() {
+    void showPermissionsDialog() {
       showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
