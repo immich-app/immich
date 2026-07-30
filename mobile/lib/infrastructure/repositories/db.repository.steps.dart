@@ -17605,13 +17605,13 @@ final class Schema33 extends i0.VersionedSchema {
     ),
     alias: null,
   );
-  late final Shape55 serverDeletedChecksum = Shape55(
+  late final Shape53 serverDeletedChecksum = Shape53(
     source: i0.VersionedTable(
       entityName: 'server_deleted_checksum',
       withoutRowId: true,
       isStrict: true,
       tableConstraints: ['PRIMARY KEY(checksum)'],
-      columns: [_column_119, _column_229],
+      columns: [_column_119],
       attachedDatabase: database,
     ),
     alias: null,
@@ -17737,23 +17737,6 @@ class Shape54 extends i0.VersionedTable {
 i1.GeneratedColumn<String> _column_228(String aliasedName) =>
     i1.GeneratedColumn<String>(
       'remote_deleted_at',
-      aliasedName,
-      true,
-      type: i1.DriftSqlType.string,
-      $customConstraints: 'NULL',
-    );
-
-class Shape55 extends i0.VersionedTable {
-  Shape55({required super.source, required super.alias}) : super.aliased();
-  i1.GeneratedColumn<String> get checksum =>
-      columnsByName['checksum']! as i1.GeneratedColumn<String>;
-  i1.GeneratedColumn<String> get timelineAt =>
-      columnsByName['timeline_at']! as i1.GeneratedColumn<String>;
-}
-
-i1.GeneratedColumn<String> _column_229(String aliasedName) =>
-    i1.GeneratedColumn<String>(
-      'timeline_at',
       aliasedName,
       true,
       type: i1.DriftSqlType.string,

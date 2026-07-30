@@ -8205,16 +8205,8 @@ class ServerDeletedChecksum extends Table
     requiredDuringInsert: true,
     $customConstraints: 'NOT NULL',
   );
-  late final GeneratedColumn<String> timelineAt = GeneratedColumn<String>(
-    'timeline_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-    $customConstraints: 'NULL',
-  );
   @override
-  List<GeneratedColumn> get $columns => [checksum, timelineAt];
+  List<GeneratedColumn> get $columns => [checksum];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -8233,10 +8225,6 @@ class ServerDeletedChecksum extends Table
         DriftSqlType.string,
         data['${effectivePrefix}checksum'],
       )!,
-      timelineAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}timeline_at'],
-      ),
     );
   }
 
@@ -8258,15 +8246,11 @@ class ServerDeletedChecksum extends Table
 class ServerDeletedChecksumData extends DataClass
     implements Insertable<ServerDeletedChecksumData> {
   final String checksum;
-  final String? timelineAt;
-  const ServerDeletedChecksumData({required this.checksum, this.timelineAt});
+  const ServerDeletedChecksumData({required this.checksum});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['checksum'] = Variable<String>(checksum);
-    if (!nullToAbsent || timelineAt != null) {
-      map['timeline_at'] = Variable<String>(timelineAt);
-    }
     return map;
   }
 
@@ -8277,85 +8261,54 @@ class ServerDeletedChecksumData extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ServerDeletedChecksumData(
       checksum: serializer.fromJson<String>(json['checksum']),
-      timelineAt: serializer.fromJson<String?>(json['timelineAt']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'checksum': serializer.toJson<String>(checksum),
-      'timelineAt': serializer.toJson<String?>(timelineAt),
-    };
+    return <String, dynamic>{'checksum': serializer.toJson<String>(checksum)};
   }
 
-  ServerDeletedChecksumData copyWith({
-    String? checksum,
-    Value<String?> timelineAt = const Value.absent(),
-  }) => ServerDeletedChecksumData(
-    checksum: checksum ?? this.checksum,
-    timelineAt: timelineAt.present ? timelineAt.value : this.timelineAt,
-  );
+  ServerDeletedChecksumData copyWith({String? checksum}) =>
+      ServerDeletedChecksumData(checksum: checksum ?? this.checksum);
   ServerDeletedChecksumData copyWithCompanion(
     ServerDeletedChecksumCompanion data,
   ) {
     return ServerDeletedChecksumData(
       checksum: data.checksum.present ? data.checksum.value : this.checksum,
-      timelineAt: data.timelineAt.present
-          ? data.timelineAt.value
-          : this.timelineAt,
     );
   }
 
   @override
   String toString() {
     return (StringBuffer('ServerDeletedChecksumData(')
-          ..write('checksum: $checksum, ')
-          ..write('timelineAt: $timelineAt')
+          ..write('checksum: $checksum')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(checksum, timelineAt);
+  int get hashCode => checksum.hashCode;
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is ServerDeletedChecksumData &&
-          other.checksum == this.checksum &&
-          other.timelineAt == this.timelineAt);
+      (other is ServerDeletedChecksumData && other.checksum == this.checksum);
 }
 
 class ServerDeletedChecksumCompanion
     extends UpdateCompanion<ServerDeletedChecksumData> {
   final Value<String> checksum;
-  final Value<String?> timelineAt;
-  const ServerDeletedChecksumCompanion({
-    this.checksum = const Value.absent(),
-    this.timelineAt = const Value.absent(),
-  });
-  ServerDeletedChecksumCompanion.insert({
-    required String checksum,
-    this.timelineAt = const Value.absent(),
-  }) : checksum = Value(checksum);
+  const ServerDeletedChecksumCompanion({this.checksum = const Value.absent()});
+  ServerDeletedChecksumCompanion.insert({required String checksum})
+    : checksum = Value(checksum);
   static Insertable<ServerDeletedChecksumData> custom({
     Expression<String>? checksum,
-    Expression<String>? timelineAt,
   }) {
-    return RawValuesInsertable({
-      if (checksum != null) 'checksum': checksum,
-      if (timelineAt != null) 'timeline_at': timelineAt,
-    });
+    return RawValuesInsertable({if (checksum != null) 'checksum': checksum});
   }
 
-  ServerDeletedChecksumCompanion copyWith({
-    Value<String>? checksum,
-    Value<String?>? timelineAt,
-  }) {
-    return ServerDeletedChecksumCompanion(
-      checksum: checksum ?? this.checksum,
-      timelineAt: timelineAt ?? this.timelineAt,
-    );
+  ServerDeletedChecksumCompanion copyWith({Value<String>? checksum}) {
+    return ServerDeletedChecksumCompanion(checksum: checksum ?? this.checksum);
   }
 
   @override
@@ -8364,17 +8317,13 @@ class ServerDeletedChecksumCompanion
     if (checksum.present) {
       map['checksum'] = Variable<String>(checksum.value);
     }
-    if (timelineAt.present) {
-      map['timeline_at'] = Variable<String>(timelineAt.value);
-    }
     return map;
   }
 
   @override
   String toString() {
     return (StringBuffer('ServerDeletedChecksumCompanion(')
-          ..write('checksum: $checksum, ')
-          ..write('timelineAt: $timelineAt')
+          ..write('checksum: $checksum')
           ..write(')'))
         .toString();
   }

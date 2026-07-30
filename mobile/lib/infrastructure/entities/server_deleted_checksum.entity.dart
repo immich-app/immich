@@ -6,8 +6,6 @@ class ServerDeletedChecksumEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get checksum => text()();
 
-  DateTimeColumn get timelineAt => dateTime().nullable()();
-
   @override
   Set<Column> get primaryKey => {checksum};
 

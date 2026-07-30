@@ -35,14 +35,14 @@ class _TestReadOnlyModeNotifier extends ReadOnlyModeNotifier {
   bool build() => false;
 }
 
-final _reviewAsset = RemoteAsset(
+final _reviewAsset = LocalAsset(
   id: 'asset-1',
   name: 'review.jpg',
-  ownerId: 'user-1',
   checksum: 'checksum-1',
   type: AssetType.image,
   createdAt: DateTime(2026),
   updatedAt: DateTime(2026),
+  playbackStyle: AssetPlaybackStyle.image,
   isEdited: false,
 );
 
@@ -175,7 +175,7 @@ void main() {
     final result = await container.read(actionProvider.notifier).resolveRemoteTrash(ActionSource.timeline, keep: true);
 
     expect(result.success, isTrue);
-    verify(() => actionService.resolveRemoteTrash(['checksum-1'], keep: true)).called(1);
+    verify(() => actionService.resolveRemoteTrash(['asset-1'], keep: true)).called(1);
   });
 
   test('action notifier moves selected assets to device trash by approving remote trash', () async {
@@ -200,6 +200,6 @@ void main() {
     final result = await container.read(actionProvider.notifier).resolveRemoteTrash(ActionSource.timeline, keep: false);
 
     expect(result.success, isTrue);
-    verify(() => actionService.resolveRemoteTrash(['checksum-1'], keep: false)).called(1);
+    verify(() => actionService.resolveRemoteTrash(['asset-1'], keep: false)).called(1);
   });
 }

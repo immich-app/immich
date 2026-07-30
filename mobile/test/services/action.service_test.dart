@@ -166,28 +166,25 @@ void main() {
   });
 
   group('ActionService.resolveRemoteTrash', () {
-    test('rejecting review marks checksum rejected and leaves local row', () async {
-      const checksums = ['checksum-1'];
-      when(() => trashSyncRepository.rejectReviewChecksums(checksums)).thenAnswer((_) async => checksums.toSet());
+    test('rejecting review marks local asset rejected and leaves local row', () async {
+      const assetIds = ['asset-1'];
+      when(() => trashSyncRepository.rejectReviewAssets(assetIds)).thenAnswer((_) async => 1);
 
-      final result = await sut.resolveRemoteTrash(checksums, keep: true);
+      final result = await sut.resolveRemoteTrash(assetIds, keep: true);
 
       expect(result, (displayCount: 1, success: true));
-      verify(() => trashSyncRepository.rejectReviewChecksums(checksums)).called(1);
+      verify(() => trashSyncRepository.rejectReviewAssets(assetIds)).called(1);
       verifyNever(() => assetMediaRepository.deleteAll(any()));
     });
 
-    test('approving review trashes only matching actionable local ids before approving', () async {
-      const checksums = ['checksum-1'];
+    test('approving review trashes only requested actionable local ids before approving', () async {
       const assetIds = ['asset-1'];
-      when(
-        () => trashSyncRepository.getReviewableAssetIdsByChecksum(checksums),
-      ).thenAnswer((_) async => const {'checksum-1': assetIds});
+      when(() => trashSyncRepository.getReviewableAssetIds(assetIds)).thenAnswer((_) async => assetIds);
       when(() => assetMediaRepository.deleteAll(assetIds)).thenAnswer((_) async => assetIds);
       when(() => localAssetRepository.delete(assetIds)).thenAnswer((_) async {});
       when(() => trashSyncRepository.markReviewAssetsApproved(assetIds)).thenAnswer((_) async {});
 
-      final result = await sut.resolveRemoteTrash(checksums, keep: false);
+      final result = await sut.resolveRemoteTrash(assetIds, keep: false);
 
       expect(result, (displayCount: 1, success: true));
       verifyInOrder([
@@ -198,19 +195,16 @@ void main() {
     });
 
     test('approving review records successfully trashed ids when another copy fails', () async {
-      const checksums = ['checksum-1'];
       const assetIds = ['asset-1', 'asset-2'];
       const deletedIds = ['asset-1'];
-      when(
-        () => trashSyncRepository.getReviewableAssetIdsByChecksum(checksums),
-      ).thenAnswer((_) async => const {'checksum-1': assetIds});
+      when(() => trashSyncRepository.getReviewableAssetIds(assetIds)).thenAnswer((_) async => assetIds);
       when(() => assetMediaRepository.deleteAll(assetIds)).thenAnswer((_) async => deletedIds);
       when(() => localAssetRepository.delete(deletedIds)).thenAnswer((_) async {});
       when(() => trashSyncRepository.markReviewAssetsApproved(deletedIds)).thenAnswer((_) async {});
 
-      final result = await sut.resolveRemoteTrash(checksums, keep: false);
+      final result = await sut.resolveRemoteTrash(assetIds, keep: false);
 
-      expect(result, (displayCount: 0, success: false));
+      expect(result, (displayCount: 1, success: true));
       verifyInOrder([
         () => trashSyncRepository.markReviewAssetsApproved(deletedIds),
         () => localAssetRepository.delete(deletedIds),

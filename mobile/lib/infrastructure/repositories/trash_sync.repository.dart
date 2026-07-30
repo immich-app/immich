@@ -70,75 +70,75 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
 
   Future<void> recordHardDeletedChecksums(Iterable<String> remoteIds) async {
     for (final slice in remoteIds.toSet().slices(kDriftMaxChunk)) {
-      final timelineAt = coalesce([_db.remoteAssetEntity.localDateTime, _db.remoteAssetEntity.createdAt]);
-      final rows =
+      final checksums =
           await (_db.selectOnly(_db.remoteAssetEntity, distinct: true)
-                ..addColumns([_db.remoteAssetEntity.checksum, timelineAt])
+                ..addColumns([_db.remoteAssetEntity.checksum])
                 ..where(
                   _db.remoteAssetEntity.id.isIn(slice) & _db.remoteAssetEntity.ownerId.isInQuery(currentUserIdQuery()),
                 ))
-              .map((r) => (checksum: r.read(_db.remoteAssetEntity.checksum)!, timelineAt: r.read(timelineAt)))
+              .map((r) => r.read(_db.remoteAssetEntity.checksum)!)
               .get();
-      if (rows.isEmpty) {
+      if (checksums.isEmpty) {
         continue;
       }
 
       await _db.batch((batch) {
-        for (final row in rows) {
+        for (final checksum in checksums) {
           batch.insert(
             _db.serverDeletedChecksumEntity,
-            ServerDeletedChecksumEntityCompanion.insert(checksum: row.checksum, timelineAt: Value(row.timelineAt)),
-            onConflict: DoUpdate((_) => ServerDeletedChecksumEntityCompanion(timelineAt: Value(row.timelineAt))),
+            ServerDeletedChecksumEntityCompanion.insert(checksum: checksum),
+            mode: .insertOrIgnore,
           );
         }
       });
     }
   }
 
-  Future<void> recordSoftDeleteAssets() => _recordAssets(
-    innerJoin(
-      _db.remoteAssetEntity,
-      _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
-          _db.remoteAssetEntity.deletedAt.isNotNull() &
-          _db.remoteAssetEntity.ownerId.isInQuery(currentUserIdQuery()),
-      useColumns: false,
-    ),
-  );
+  Future<void> recordSoftDeleteAssets() {
+    final deletedRemoteAsset = _db.selectOnly(_db.remoteAssetEntity)
+      ..addColumns([_db.remoteAssetEntity.id])
+      ..where(
+        _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
+            _db.remoteAssetEntity.deletedAt.isNotNull() &
+            _db.remoteAssetEntity.ownerId.isInQuery(currentUserIdQuery()),
+      );
+    return _recordAssets(existsQuery(deletedRemoteAsset));
+  }
 
-  Future<void> recordHardDeletedAssets() => _recordAssets(
-    innerJoin(
-      _db.serverDeletedChecksumEntity,
-      _db.serverDeletedChecksumEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
-      useColumns: false,
-    ),
-  );
+  Future<void> recordHardDeletedAssets() {
+    final deletedChecksum = _db.selectOnly(_db.serverDeletedChecksumEntity)
+      ..addColumns([_db.serverDeletedChecksumEntity.checksum])
+      ..where(_db.serverDeletedChecksumEntity.checksum.equalsExp(_db.localAssetEntity.checksum));
+    return _recordAssets(existsQuery(deletedChecksum));
+  }
 
-  Future<void> recordSoftDeleteReviewAssets() => _recordReviewAssets(
-    innerJoin(
-      _db.remoteAssetEntity,
-      _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
-          _db.remoteAssetEntity.deletedAt.isNotNull() &
-          _db.remoteAssetEntity.ownerId.isInQuery(currentUserIdQuery()),
-      useColumns: false,
-    ),
-    remoteDeletedAt: _db.remoteAssetEntity.deletedAt,
-  );
+  Future<void> recordSoftDeleteReviewAssets() {
+    final latestRemoteDeletedAt = _db.remoteAssetEntity.deletedAt.max();
+    final deletedRemoteAssets = _db.selectOnly(_db.remoteAssetEntity)
+      ..addColumns([latestRemoteDeletedAt])
+      ..where(
+        _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
+            _db.remoteAssetEntity.deletedAt.isNotNull() &
+            _db.remoteAssetEntity.ownerId.isInQuery(currentUserIdQuery()),
+      );
+    final remoteDeletedAt = subqueryExpression<DateTime>(deletedRemoteAssets);
+    return _recordReviewAssets(remoteDeletedAt.isNotNull(), remoteDeletedAt: remoteDeletedAt);
+  }
 
-  Future<void> recordHardDeletedReviewAssets() => _recordReviewAssets(
-    innerJoin(
-      _db.serverDeletedChecksumEntity,
-      _db.serverDeletedChecksumEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
-      useColumns: false,
-    ),
-  );
+  Future<void> recordHardDeletedReviewAssets() {
+    final deletedChecksum = _db.selectOnly(_db.serverDeletedChecksumEntity)
+      ..addColumns([_db.serverDeletedChecksumEntity.checksum])
+      ..where(_db.serverDeletedChecksumEntity.checksum.equalsExp(_db.localAssetEntity.checksum));
+    return _recordReviewAssets(existsQuery(deletedChecksum));
+  }
 
-  Future<void> _recordReviewAssets(Join contentJoin, {Expression<DateTime>? remoteDeletedAt}) async {
+  Future<void> _recordReviewAssets(Expression<bool> contentExists, {Expression<DateTime>? remoteDeletedAt}) async {
     final pending = Constant(TrashSyncStatus.pending.index);
     final selectedAssetsQuery = _selectedAssetsQuery();
     final reviewDecisionsQuery = _db.selectOnly(_db.trashSyncEntity)
-      ..addColumns([_db.trashSyncEntity.checksum])
+      ..addColumns([_db.trashSyncEntity.assetId])
       ..where(
-        _db.trashSyncEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
+        _db.trashSyncEntity.assetId.equalsExp(_db.localAssetEntity.id) &
             _db.trashSyncEntity.status.isIn([
               TrashSyncStatus.reviewRejected.index,
               TrashSyncStatus.reviewApproved.index,
@@ -152,9 +152,9 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
       );
     final source = _db.selectOnly(_db.localAssetEntity)
       ..addColumns([_db.localAssetEntity.id, _db.localAssetEntity.checksum, pending, _db.localAssetEntity.updatedAt])
-      ..join([contentJoin])
       ..where(
         _db.localAssetEntity.checksum.isNotNull() &
+            contentExists &
             existsQuery(selectedAssetsQuery) &
             notExistsQuery(reviewDecisionsQuery) &
             notExistsQuery(nonPendingMarkerQuery),
@@ -194,108 +194,60 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
       return;
     }
 
-    final reviewApproved = Constant(TrashSyncStatus.reviewApproved.index);
-    final pendingReviewMarkerQuery = _db.selectOnly(_db.trashSyncEntity)
-      ..addColumns([_db.trashSyncEntity.assetId])
-      ..where(
-        _db.trashSyncEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
-            _db.trashSyncEntity.status.equalsValue(.pending),
-      );
     await _db.transaction(() async {
       for (final slice in set.slices(kDriftMaxChunk)) {
-        final source = _db.selectOnly(_db.localAssetEntity)
-          ..addColumns([
-            _db.localAssetEntity.id,
-            _db.localAssetEntity.checksum,
-            reviewApproved,
-            _db.localAssetEntity.updatedAt,
-          ])
-          ..where(_db.localAssetEntity.id.isIn(slice) & existsQuery(pendingReviewMarkerQuery));
-
-        await _db
-            .into(_db.trashSyncEntity)
-            .insertFromSelect(
-              source,
-              columns: {
-                _db.trashSyncEntity.assetId: _db.localAssetEntity.id,
-                _db.trashSyncEntity.checksum: _db.localAssetEntity.checksum,
-                _db.trashSyncEntity.status: reviewApproved,
-                _db.trashSyncEntity.assetUpdatedAt: _db.localAssetEntity.updatedAt,
-              },
-              mode: .insertOrReplace,
-            );
+        await (_db.update(_db.trashSyncEntity)
+              ..where((row) => row.assetId.isIn(slice) & row.status.equalsValue(.pending)))
+            .write(const TrashSyncEntityCompanion(status: .new(.reviewApproved), remoteDeletedAt: .new(null)));
       }
     });
   }
 
-  Future<Map<String, List<String>>> getReviewableAssetIdsByChecksum(Iterable<String> checksums) async {
-    final set = checksums.toSet();
+  Future<List<String>> getReviewableAssetIds(Iterable<String> assetIds) async {
+    final set = assetIds.toSet();
     if (set.isEmpty) {
-      return const {};
+      return const [];
     }
 
-    final assetIdsByChecksum = <String, List<String>>{};
-    final selectedAssetsQuery = _selectedAssetsQuery();
+    final reviewableAssetIds = <String>[];
+    final pendingMarker = _db.selectOnly(_db.trashSyncEntity)
+      ..addColumns([_db.trashSyncEntity.assetId])
+      ..where(
+        _db.trashSyncEntity.assetId.equalsExp(_db.localAssetEntity.id) &
+            _db.trashSyncEntity.status.equalsValue(.pending),
+      );
     for (final slice in set.slices(kDriftMaxChunk)) {
-      final rows =
-          await (_db.selectOnly(_db.localAssetEntity, distinct: true)
-                ..addColumns([_db.localAssetEntity.checksum, _db.localAssetEntity.id])
-                ..join([
-                  innerJoin(
-                    _db.trashSyncEntity,
-                    _db.trashSyncEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
-                    useColumns: false,
-                  ),
-                ])
-                ..where(
-                  _db.localAssetEntity.checksum.isIn(slice) &
-                      _db.trashSyncEntity.checksum.isIn(slice) &
-                      _db.trashSyncEntity.status.equalsValue(.pending) &
-                      existsQuery(selectedAssetsQuery),
-                ))
-              .map(
-                (row) =>
-                    (checksum: row.read(_db.localAssetEntity.checksum)!, assetId: row.read(_db.localAssetEntity.id)!),
-              )
-              .get();
-      for (final row in rows) {
-        (assetIdsByChecksum[row.checksum] ??= []).add(row.assetId);
-      }
+      reviewableAssetIds.addAll(
+        await (_db.selectOnly(_db.localAssetEntity)
+              ..addColumns([_db.localAssetEntity.id])
+              ..where(
+                _db.localAssetEntity.id.isIn(slice) & existsQuery(_selectedAssetsQuery()) & existsQuery(pendingMarker),
+              ))
+            .map((row) => row.read(_db.localAssetEntity.id)!)
+            .get(),
+      );
     }
-    return assetIdsByChecksum;
+    return reviewableAssetIds;
   }
 
-  Future<Set<String>> rejectReviewChecksums(Iterable<String> checksums) async {
-    final set = checksums.toSet();
+  Future<int> rejectReviewAssets(Iterable<String> assetIds) async {
+    final set = assetIds.toSet();
     if (set.isEmpty) {
-      return const {};
+      return 0;
     }
-    final rejectedChecksums = <String>{};
-    final matchingSelectedLocalAssets = _selectedLocalAssetsMatchingReviewChecksum(_db.trashSyncEntity);
-    for (final slice in set.slices(kDriftMaxChunk)) {
-      final matchingChecksums =
-          await (_db.selectOnly(_db.trashSyncEntity, distinct: true)
-                ..addColumns([_db.trashSyncEntity.checksum])
-                ..where(
-                  _db.trashSyncEntity.checksum.isIn(slice) &
-                      _db.trashSyncEntity.status.equalsValue(.pending) &
-                      existsQuery(matchingSelectedLocalAssets),
-                ))
-              .map((row) => row.read(_db.trashSyncEntity.checksum)!)
-              .get();
-      rejectedChecksums.addAll(matchingChecksums);
 
-      if (matchingChecksums.isNotEmpty) {
-        await (_db.update(_db.trashSyncEntity)..where(
-              (t) =>
-                  t.checksum.isIn(slice) &
-                  t.status.equalsValue(.pending) &
-                  existsQuery(_selectedLocalAssetsMatchingReviewChecksum(t)),
-            ))
-            .write(const TrashSyncEntityCompanion(status: .new(.reviewRejected)));
-      }
+    var rejectedCount = 0;
+    final selectedLocalAsset = _db.selectOnly(_db.localAssetEntity)
+      ..addColumns([_db.localAssetEntity.id])
+      ..where(_db.localAssetEntity.id.equalsExp(_db.trashSyncEntity.assetId) & existsQuery(_selectedAssetsQuery()));
+    for (final slice in set.slices(kDriftMaxChunk)) {
+      rejectedCount +=
+          await (_db.update(_db.trashSyncEntity)..where(
+                (row) => row.assetId.isIn(slice) & row.status.equalsValue(.pending) & existsQuery(selectedLocalAsset),
+              ))
+              .write(const TrashSyncEntityCompanion(status: .new(.reviewRejected)));
     }
-    return rejectedChecksums;
+    return rejectedCount;
   }
 
   JoinedSelectStatement _selectedAssetsQuery() => _db.selectOnly(_db.localAlbumAssetEntity)
@@ -309,7 +261,7 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
           ),
     );
 
-  Future<void> _recordAssets(Join contentJoin) async {
+  Future<void> _recordAssets(Expression<bool> contentExists) async {
     final excludedAssetIds = _db.selectOnly(_db.localAlbumAssetEntity)
       ..addColumns([_db.localAlbumAssetEntity.assetId])
       ..join([
@@ -332,9 +284,9 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
 
     final source = _db.selectOnly(_db.localAssetEntity)
       ..addColumns([_db.localAssetEntity.id, _db.localAssetEntity.checksum, _db.localAssetEntity.updatedAt])
-      ..join([contentJoin])
       ..where(
         _db.localAssetEntity.checksum.isNotNull() &
+            contentExists &
             existsQuery(selectedAssetsQuery) &
             _db.localAssetEntity.id.isNotInQuery(excludedAssetIds) &
             notExistsQuery(dismissedAssetsQuery),
@@ -444,19 +396,16 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
       _trashSyncAssetIdsWhere(_db.trashSyncEntity.status.equalsValue(.trashed));
 
   Stream<int> watchPendingReviewCount() {
-    final matchingSelectedLocalAssets = _selectedLocalAssetsMatchingReviewChecksum(_db.trashSyncEntity);
-    final pendingChecksumCount = _db.trashSyncEntity.checksum.count(distinct: true);
+    final selectedLocalAsset = _db.selectOnly(_db.localAssetEntity)
+      ..addColumns([_db.localAssetEntity.id])
+      ..where(_db.localAssetEntity.id.equalsExp(_db.trashSyncEntity.assetId) & existsQuery(_selectedAssetsQuery()));
+    final pendingAssetCount = _db.trashSyncEntity.assetId.count();
     return (_db.selectOnly(_db.trashSyncEntity)
-          ..addColumns([pendingChecksumCount])
-          ..where(_db.trashSyncEntity.status.equalsValue(.pending) & existsQuery(matchingSelectedLocalAssets)))
-        .map((row) => row.read(pendingChecksumCount) ?? 0)
+          ..addColumns([pendingAssetCount])
+          ..where(_db.trashSyncEntity.status.equalsValue(.pending) & existsQuery(selectedLocalAsset)))
+        .map((row) => row.read(pendingAssetCount) ?? 0)
         .watchSingle();
   }
-
-  JoinedSelectStatement _selectedLocalAssetsMatchingReviewChecksum($TrashSyncEntityTable trash) =>
-      _db.selectOnly(_db.localAssetEntity)
-        ..addColumns([_db.localAssetEntity.id])
-        ..where(_db.localAssetEntity.checksum.equalsExp(trash.checksum) & existsQuery(_selectedAssetsQuery()));
 
   Future<List<String>> _trashSyncAssetIdsWhere(Expression<bool> filter) {
     return (_db.selectOnly(_db.trashSyncEntity)

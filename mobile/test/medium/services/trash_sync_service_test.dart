@@ -152,7 +152,7 @@ void main() {
     final asset = await backedUpAsset(remoteDeletedAt: DateTime(2026, 1, 1));
 
     await sut.reconcile();
-    await ctx.trashSyncRepository.rejectReviewChecksums([asset.checksum]);
+    await ctx.trashSyncRepository.rejectReviewAssets([asset.localId]);
     expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewRejected);
 
     await sut.reconcile();
@@ -171,7 +171,7 @@ void main() {
     final asset = await backedUpAsset(remoteDeletedAt: DateTime(2026, 1, 1));
 
     await sut.reconcile();
-    await ctx.trashSyncRepository.rejectReviewChecksums([asset.checksum]);
+    await ctx.trashSyncRepository.rejectReviewAssets([asset.localId]);
     expect(await trashStatusOf(asset.localId), TrashSyncStatus.reviewRejected);
 
     await (ctx.db.update(

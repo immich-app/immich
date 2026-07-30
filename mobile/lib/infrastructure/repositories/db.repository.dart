@@ -324,7 +324,6 @@ class Drift extends $Drift {
               },
               from32To33: (m, v33) async {
                 await m.addColumn(v33.trashSync, v33.trashSync.remoteDeletedAt);
-                await m.addColumn(v33.serverDeletedChecksum, v33.serverDeletedChecksum.timelineAt);
               },
             ),
           ),

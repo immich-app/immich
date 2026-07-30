@@ -152,7 +152,7 @@ void main() {
       expect(assets, isEmpty);
     });
 
-    test('sync trash timeline shows a selected duplicate after the marked copy is unselected', () async {
+    test('sync trash timeline does not show a selected duplicate through another copy marker', () async {
       final markedAsset = await createPendingReviewAssetInSelectedAlbum();
       final selectedDuplicate = await ctx.newLocalAsset(checksum: 'pending-review-checksum');
       final selectedAlbum = await ctx.newLocalAlbum(backupSelection: .selected);
@@ -163,25 +163,66 @@ void main() {
 
       final assets = await sut.syncTrash(.day).assetSource(0, 10);
 
-      expect(assets.map((asset) => asset.localId), [selectedDuplicate.id]);
+      expect(assets, isEmpty);
     });
 
-    test('sync trash timeline groups selected duplicate checksums', () async {
+    test('sync trash timeline shows each selected local copy with the same checksum', () async {
       final older = await createPendingReviewAssetInSelectedAlbum(id: 'local-a');
       final newer = await ctx.newLocalAsset(id: 'local-z', checksum: 'pending-review-checksum');
       final selectedAlbum = await ctx.newLocalAlbum(backupSelection: .selected);
+      await ctx.db
+          .into(ctx.db.trashSyncEntity)
+          .insert(
+            TrashSyncEntityCompanion.insert(
+              assetId: newer.id,
+              checksum: newer.checksum!,
+              status: const Value(TrashSyncStatus.pending),
+            ),
+          );
       await ctx.newLocalAlbumAsset(albumId: selectedAlbum.id, assetId: newer.id);
 
       final timeline = sut.syncTrash(.day);
       final buckets = await timeline.bucketSource().first;
       final assets = await timeline.assetSource(0, 10);
 
-      expect(buckets.single.assetCount, 1);
-      expect(assets.map((asset) => asset.localId), [newer.id]);
-      expect(assets.map((asset) => asset.localId), isNot(contains(older.localId)));
+      expect(buckets.single.assetCount, 2);
+      expect(assets.map((asset) => asset.localId), unorderedEquals([older.localId, newer.id]));
     });
 
-    test('sync trash timeline groups soft-deleted assets by remote timeline date', () async {
+    test('sync trash timeline does not duplicate a local asset across server libraries', () async {
+      final user = await ctx.newUser();
+      await ctx.newAuthUser(id: user.id);
+      const checksum = 'multi-library-checksum';
+      final local = await createPendingReviewAssetInSelectedAlbum(
+        id: 'local-multi-library',
+        checksum: checksum,
+        createdAt: DateTime(2026, 1, 2),
+      );
+      await ctx.newRemoteAsset(
+        ownerId: user.id,
+        checksum: checksum,
+        createdAt: DateTime(2026, 2, 3),
+        deletedAt: DateTime(2026, 3, 4),
+        libraryId: 'library-a',
+      );
+      await ctx.newRemoteAsset(
+        ownerId: user.id,
+        checksum: checksum,
+        createdAt: DateTime(2026, 4, 5),
+        deletedAt: DateTime(2026, 5, 6),
+        libraryId: 'library-b',
+      );
+
+      final timeline = sut.syncTrash(.day);
+      final buckets = await timeline.bucketSource().first;
+      final assets = await timeline.assetSource(0, 10);
+
+      expect(buckets, [isA<TimeBucket>().having((bucket) => bucket.date, 'date', DateTime(2026, 1, 2))]);
+      expect(buckets.single.assetCount, 1);
+      expect(assets.map((asset) => asset.localId), [local.localId]);
+    });
+
+    test('sync trash timeline groups soft-deleted assets by local creation date', () async {
       final user = await ctx.newUser();
       await ctx.newAuthUser(id: user.id);
       const checksum = 'soft-deleted-checksum';
@@ -201,11 +242,11 @@ void main() {
       final buckets = await timeline.bucketSource().first;
       final assets = await timeline.assetSource(0, 10);
 
-      expect(buckets.single, isA<TimeBucket>().having((bucket) => bucket.date, 'date', DateTime(2026, 3, 4)));
+      expect(buckets.single, isA<TimeBucket>().having((bucket) => bucket.date, 'date', DateTime(2026, 1, 1)));
       expect(assets.map((asset) => asset.localId), [local.localId]);
     });
 
-    test('sync trash timeline groups hard-deleted assets by server deleted checksum timeline date', () async {
+    test('sync trash timeline groups hard-deleted assets by local creation date', () async {
       const checksum = 'hard-deleted-checksum';
       final local = await createPendingReviewAssetInSelectedAlbum(
         id: 'local-hard',
@@ -214,18 +255,13 @@ void main() {
       );
       await ctx.db
           .into(ctx.db.serverDeletedChecksumEntity)
-          .insert(
-            ServerDeletedChecksumEntityCompanion.insert(
-              checksum: checksum,
-              timelineAt: Value(DateTime(2026, 4, 5, 12)),
-            ),
-          );
+          .insert(ServerDeletedChecksumEntityCompanion.insert(checksum: checksum));
 
       final timeline = sut.syncTrash(.day);
       final buckets = await timeline.bucketSource().first;
       final assets = await timeline.assetSource(0, 10);
 
-      expect(buckets.single, isA<TimeBucket>().having((bucket) => bucket.date, 'date', DateTime(2026, 4, 5)));
+      expect(buckets.single, isA<TimeBucket>().having((bucket) => bucket.date, 'date', DateTime(2026, 1, 1)));
       expect(assets.map((asset) => asset.localId), [local.localId]);
     });
   });

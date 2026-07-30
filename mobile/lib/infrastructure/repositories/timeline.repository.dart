@@ -149,66 +149,24 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     return _db.selectOnly(_db.trashSyncEntity)
       ..addColumns([_db.trashSyncEntity.assetId])
       ..where(
-        _db.trashSyncEntity.checksum.equalsExp(asset.checksum) &
+        _db.trashSyncEntity.assetId.equalsExp(asset.id) &
             _db.trashSyncEntity.status.equalsValue(TrashSyncStatus.pending),
       );
   }
 
-  Expression<bool> _syncTrashRepresentativeFilter($LocalAssetEntityTable asset) {
-    final duplicate = _db.localAssetEntity.createAlias('sync_trash_duplicate');
-    final duplicateQuery = _db.selectOnly(duplicate)
-      ..addColumns([duplicate.id])
-      ..where(
-        duplicate.checksum.equalsExp(asset.checksum) &
-            existsQuery(_selectedBackupAssetsQuery(duplicate)) &
-            existsQuery(_pendingReviewMarkersQuery(duplicate)) &
-            duplicate.id.isBiggerThan(asset.id),
-      );
-
-    return existsQuery(_selectedBackupAssetsQuery(asset)) &
-        existsQuery(_pendingReviewMarkersQuery(asset)) &
-        notExistsQuery(duplicateQuery);
-  }
-
-  Expression<String> _syncTrashTimelineDate(GroupAssetsBy groupBy) => coalesce([
-    _db.remoteAssetEntity.effectiveCreatedAt(groupBy),
-    _db.serverDeletedChecksumEntity.timelineAt.dateFmt(groupBy),
-    _db.localAssetEntity.createdAt.dateFmt(groupBy, toLocal: true),
-  ]);
-
-  Expression<DateTime> _syncTrashTimelineOrder() => coalesce([
-    _db.remoteAssetEntity.localDateTime,
-    _db.remoteAssetEntity.createdAt,
-    _db.serverDeletedChecksumEntity.timelineAt,
-    _db.localAssetEntity.createdAt,
-  ]);
-
-  List<Join> _syncTrashTimelineJoins() => [
-    leftOuterJoin(
-      _db.remoteAssetEntity,
-      _db.remoteAssetEntity.checksum.equalsExp(_db.localAssetEntity.checksum) &
-          _db.remoteAssetEntity.deletedAt.isNotNull() &
-          _db.remoteAssetEntity.ownerId.isInQuery(currentUserIdQuery()),
-      useColumns: false,
-    ),
-    leftOuterJoin(
-      _db.serverDeletedChecksumEntity,
-      _db.serverDeletedChecksumEntity.checksum.equalsExp(_db.localAssetEntity.checksum),
-      useColumns: false,
-    ),
-  ];
+  Expression<bool> _syncTrashAssetFilter($LocalAssetEntityTable asset) =>
+      existsQuery(_selectedBackupAssetsQuery(asset)) & existsQuery(_pendingReviewMarkersQuery(asset));
 
   Stream<List<Bucket>> _watchSyncTrashBuckets({required GroupAssetsBy groupBy}) {
     if (groupBy == GroupAssetsBy.none) {
-      return _db.localAssetEntity.count(where: _syncTrashRepresentativeFilter).map(_generateBuckets).watchSingle();
+      return _db.localAssetEntity.count(where: _syncTrashAssetFilter).map(_generateBuckets).watchSingle();
     }
 
-    final assetCount = _db.localAssetEntity.checksum.count();
-    final date = _syncTrashTimelineDate(groupBy);
+    final assetCount = _db.localAssetEntity.id.count();
+    final date = _db.localAssetEntity.createdAt.dateFmt(groupBy, toLocal: true);
     final query = _db.localAssetEntity.selectOnly()
       ..addColumns([assetCount, date])
-      ..join(_syncTrashTimelineJoins())
-      ..where(_syncTrashRepresentativeFilter(_db.localAssetEntity))
+      ..where(_syncTrashAssetFilter(_db.localAssetEntity))
       ..groupBy([date])
       ..orderBy([OrderingTerm.desc(date)]);
 
@@ -218,13 +176,11 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
   }
 
   Future<List<BaseAsset>> _getSyncTrashAssets({required int offset, required int count}) {
-    final timelineOrder = _syncTrashTimelineOrder();
-    final query = _db.localAssetEntity.select().join(_syncTrashTimelineJoins())
-      ..addColumns([timelineOrder])
-      ..where(_syncTrashRepresentativeFilter(_db.localAssetEntity))
-      ..orderBy([OrderingTerm.desc(timelineOrder), OrderingTerm.desc(_db.localAssetEntity.id)])
+    final query = _db.localAssetEntity.select()
+      ..where((asset) => _syncTrashAssetFilter(asset))
+      ..orderBy([(asset) => OrderingTerm.desc(asset.createdAt), (asset) => OrderingTerm.desc(asset.id)])
       ..limit(count, offset: offset);
-    return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
+    return query.map((row) => row.toDto()).get();
   }
 
   Stream<List<Bucket>> _watchLocalAlbumBucket(String albumId, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {

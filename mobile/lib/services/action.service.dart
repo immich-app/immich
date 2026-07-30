@@ -145,32 +145,25 @@ class ActionService {
     return await _deleteLocalAssets(localIds);
   }
 
-  Future<({int displayCount, bool success})> resolveRemoteTrash(
-    Iterable<String> checksums, {
-    required bool keep,
-  }) async {
+  Future<({int displayCount, bool success})> resolveRemoteTrash(Iterable<String> assetIds, {required bool keep}) async {
     if (keep) {
-      final rejectedChecksums = await _trashSyncRepository.rejectReviewChecksums(checksums);
-      return (displayCount: rejectedChecksums.length, success: rejectedChecksums.isNotEmpty);
+      final rejectedCount = await _trashSyncRepository.rejectReviewAssets(assetIds);
+      return (displayCount: rejectedCount, success: rejectedCount > 0);
     }
 
-    final assetIdsByChecksum = await _trashSyncRepository.getReviewableAssetIdsByChecksum(checksums);
-    if (assetIdsByChecksum.isEmpty) {
-      return (displayCount: 0, success: false);
+    final reviewableAssetIds = await _trashSyncRepository.getReviewableAssetIds(assetIds);
+    if (reviewableAssetIds.isEmpty) {
+      return const (displayCount: 0, success: false);
     }
 
-    final requestedAssetIds = assetIdsByChecksum.values.expand((ids) => ids).toList();
-    final trashedAssetIds = await _assetMediaRepository.deleteAll(requestedAssetIds);
+    final trashedAssetIds = await _assetMediaRepository.deleteAll(reviewableAssetIds);
     if (trashedAssetIds.isEmpty) {
-      return (displayCount: 0, success: false);
+      return const (displayCount: 0, success: false);
     }
-
-    final trashedAssetIdSet = trashedAssetIds.toSet();
-    final resolvedCount = assetIdsByChecksum.values.where((ids) => ids.every(trashedAssetIdSet.contains)).length;
 
     await _trashSyncRepository.markReviewAssetsApproved(trashedAssetIds);
     await _localAssetRepository.delete(trashedAssetIds);
-    return (displayCount: resolvedCount, success: resolvedCount > 0);
+    return (displayCount: trashedAssetIds.length, success: true);
   }
 
   Future<bool> editLocation(List<String> remoteIds, BuildContext context) async {

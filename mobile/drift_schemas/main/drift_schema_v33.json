@@ -2621,16 +2621,6 @@
             "default_dart": null,
             "default_client_dart": null,
             "dsl_features": []
-          },
-          {
-            "name": "timeline_at",
-            "getter_name": "timelineAt",
-            "moor_type": "dateTime",
-            "nullable": true,
-            "customConstraints": null,
-            "default_dart": null,
-            "default_client_dart": null,
-            "dsl_features": []
           }
         ],
         "is_virtual": false,
@@ -3427,7 +3417,7 @@
       "sql": [
         {
           "dialect": "sqlite",
-          "sql": "CREATE TABLE IF NOT EXISTS \"server_deleted_checksum\" (\"checksum\" TEXT NOT NULL, \"timeline_at\" TEXT NULL, PRIMARY KEY (\"checksum\")) WITHOUT ROWID, STRICT;"
+          "sql": "CREATE TABLE IF NOT EXISTS \"server_deleted_checksum\" (\"checksum\" TEXT NOT NULL, PRIMARY KEY (\"checksum\")) WITHOUT ROWID, STRICT;"
         }
       ]
     },
