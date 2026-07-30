@@ -167,7 +167,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _handleCasting();
   }
 
-  void _onAssetChanged(int index) async {
+  Future<void> _onAssetChanged(int index) async {
     _currentPage = index;
 
     final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
@@ -222,7 +222,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         _onTimelineReloadEvent();
       case ViewerReloadAssetEvent():
         _onViewerReloadEvent();
-      case ViewerStackAssetDeletedEvent event:
+      case final ViewerStackAssetDeletedEvent event:
         _onViewerStackAssetDeletedEvent(event);
       default:
     }

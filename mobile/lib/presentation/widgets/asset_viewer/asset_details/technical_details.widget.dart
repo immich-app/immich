@@ -99,14 +99,14 @@ class TechnicalDetails extends ConsumerWidget {
   static String _getFileInfo(BaseAsset asset, ExifInfo? exifInfo) {
     final height = asset.height;
     final width = asset.width;
-    final resolution = (width != null && height != null) ? "${width.toInt()} x ${height.toInt()}" : null;
+    final resolution = (width != null && height != null) ? "$width x $height" : null;
     final fileSize = exifInfo?.fileSize != null ? formatBytes(exifInfo!.fileSize!) : null;
 
     return switch ((fileSize, resolution)) {
       (null, null) => '',
-      (String fileSize, null) => fileSize,
-      (null, String resolution) => resolution,
-      (String fileSize, String resolution) => '$fileSize$_kSeparator$resolution',
+      (final String fileSize, null) => fileSize,
+      (null, final String resolution) => resolution,
+      (final String fileSize, final String resolution) => '$fileSize$_kSeparator$resolution',
     };
   }
 
@@ -116,9 +116,9 @@ class TechnicalDetails extends ConsumerWidget {
     }
     return switch ((exifInfo.make, exifInfo.model)) {
       (null, null) => null,
-      (String make, null) => make,
-      (null, String model) => model,
-      (String make, String model) => '$make $model',
+      (final String make, null) => make,
+      (null, final String model) => model,
+      (final String make, final String model) => '$make $model',
     };
   }
 

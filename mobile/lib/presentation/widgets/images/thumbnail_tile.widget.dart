@@ -285,7 +285,7 @@ class _TileOverlayIcon extends StatelessWidget {
       icon,
       color: Colors.white,
       size: 16,
-      shadows: [const Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+      shadows: const [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset.zero)],
     );
   }
 }

@@ -53,7 +53,7 @@ sealed class BaseAsset {
     if (durationMs != null) {
       return Duration(milliseconds: durationMs);
     }
-    return const Duration();
+    return Duration.zero;
   }
 
   bool get hasRemote => storage == AssetState.remote || storage == AssetState.merged;

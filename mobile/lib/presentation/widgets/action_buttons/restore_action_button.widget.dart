@@ -17,7 +17,7 @@ class RestoreActionButton extends ConsumerWidget {
 
   const RestoreActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
