@@ -502,6 +502,38 @@ from
 where
   "asset"."id" = $1
 
+-- AssetJobRepository.getForTranscription
+select
+  "asset"."id",
+  "asset"."originalPath",
+  "asset"."visibility",
+  (
+    select
+      to_json(obj)
+    from
+      (
+        select
+          "asset_audio"."index",
+          "asset_audio"."codecName",
+          "asset_audio"."profile",
+          "asset_audio"."bitrate"
+        from
+          (
+            select
+              1
+          ) as "dummy"
+        where
+          "asset_audio"."assetId" is not null
+      ) as obj
+  ) as "audioStream"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+  left join "asset_audio" on "asset_audio"."assetId" = "asset"."id"
+where
+  "asset"."id" = $1
+  and "asset"."type" = 'VIDEO'
+
 -- AssetJobRepository.getForSyncAssets
 select
   "asset"."id",
@@ -847,6 +879,18 @@ from
   inner join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
 where
   "asset_job_status"."ocrAt" is null
+  and "asset"."deletedAt" is null
+  and "asset"."visibility" != $1
+
+-- AssetJobRepository.streamForTranscriptionJob
+select
+  "asset"."id"
+from
+  "asset"
+  inner join "asset_job_status" on "asset_job_status"."assetId" = "asset"."id"
+where
+  "asset_job_status"."transcribedAt" is null
+  and "asset"."type" = 'VIDEO'
   and "asset"."deletedAt" is null
   and "asset"."visibility" != $1
 
