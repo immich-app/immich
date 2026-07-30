@@ -30,3 +30,11 @@ class CurrentUserProvider extends StateNotifier<UserDto?> {
 final currentUserProvider = StateNotifierProvider<CurrentUserProvider, UserDto?>((ref) {
   return CurrentUserProvider(ref.watch(userServiceProvider));
 });
+
+final authUserProvider = Provider<UserDto>((ref) {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) {
+    throw Exception('User must be logged in to access this provider');
+  }
+  return user;
+});

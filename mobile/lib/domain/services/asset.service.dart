@@ -171,13 +171,4 @@ class AssetService {
   Future<LocalAsset?> getLocalAsset(String id) {
     return _localRepository.get(id);
   }
-
-  Future<void> updateFavorite(List<String> remoteIds, bool isFavorite) async {
-    if (remoteIds.isEmpty) {
-      return;
-    }
-
-    await _apiRepository.updateFavorite(remoteIds, isFavorite);
-    await _remoteRepository.updateFavorite(remoteIds, isFavorite);
-  }
 }
