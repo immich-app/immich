@@ -53,7 +53,7 @@ class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
   }
 
   @override
-  int get hashCode => id.hashCode ^ checksum.hashCode;
+  int get hashCode => Object.hash(id, checksum);
 }
 
 class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProvider>
@@ -179,5 +179,5 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   }
 
   @override
-  int get hashCode => id.hashCode ^ size.hashCode ^ isAnimated.hashCode ^ checksum.hashCode;
+  int get hashCode => Object.hash(id, size, isAnimated, checksum);
 }

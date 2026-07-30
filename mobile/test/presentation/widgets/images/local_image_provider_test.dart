@@ -4,6 +4,8 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_image_provider.dart';
 
+import '../../../unit/factories/local_asset_factory.dart';
+
 class _StubCompleter extends ImageStreamCompleter {}
 
 void main() {
@@ -54,16 +56,7 @@ void main() {
 
   group('factories', () {
     test('thumbnails are keyed by the asset checksum', () {
-      final asset = LocalAsset(
-        id: 'asset-1',
-        name: 'a.jpg',
-        checksum: 'abc',
-        type: AssetType.image,
-        createdAt: DateTime(2026),
-        updatedAt: DateTime(2026),
-        isEdited: false,
-        playbackStyle: AssetPlaybackStyle.image,
-      );
+      final asset = LocalAssetFactory.create().copyWith(checksum: 'abc');
 
       final provider = getThumbnailImageProvider(asset) as LocalThumbProvider;
 
