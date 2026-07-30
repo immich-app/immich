@@ -616,7 +616,16 @@ export class MetadataService extends BaseService {
 
     // don't use Exif Orientation for HEIF based images, it's usually missing or invalid.
     // prefer irot (ExifTool QuickTime:Rotation) mapped to ExifOrientation.
-    if (mimeTypes.isHeifImage(asset.originalPath)) {
+    //
+    // Some files carry a .heic/.heif/.avif extension without actually being encoded
+    // as such (e.g. converted to JPEG in place by external tools before being
+    // imported). Trusting the filename alone would discard a perfectly valid EXIF
+    // Orientation tag below and lead to a squished/stretched thumbnail, since the
+    // dimensions never get swapped for the sideways rotation. ExifTool's own
+    // content-detected FileTypeExtension is the source of truth here, not the name.
+    const isActuallyHeif =
+      mimeTypes.isHeifImage(asset.originalPath) && mimeTypes.isHeifImage(`file.${mediaTags.FileTypeExtension ?? ''}`);
+    if (isActuallyHeif) {
       const orientation = this.getHeifOrientation(mediaTags);
       if (orientation === null) {
         delete mediaTags.Orientation;
