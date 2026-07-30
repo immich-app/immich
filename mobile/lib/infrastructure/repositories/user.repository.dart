@@ -11,6 +11,9 @@ class UserRepository {
   const UserRepository(this._db);
 
   Stream<Iterable<User>> getAll() => _db.select(_db.userEntity).map(mapToUser).watch();
+
+  Stream<User?> watch(String id) =>
+      (_db.select(_db.userEntity)..where((u) => u.id.equals(id))).map(mapToUser).watchSingleOrNull();
 }
 
 class DriftAuthUserRepository extends DriftDatabaseRepository {

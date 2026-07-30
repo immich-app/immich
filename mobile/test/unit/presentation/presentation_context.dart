@@ -45,6 +45,7 @@ class PresentationContext {
 
   List<Override> get overrides => [
     currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
+    userServiceProvider.overrideWithValue(service.user.service),
     assetServiceProvider.overrideWithValue(service.asset.service),
     partnerServiceProvider.overrideWithValue(service.partner.service),
     gCastServiceProvider.overrideWithValue(service.cast),
