@@ -16,6 +16,7 @@ export enum ModelTask {
   FACIAL_RECOGNITION = 'facial-recognition',
   SEARCH = 'clip',
   OCR = 'ocr',
+  TRANSCRIPTION = 'transcription',
 }
 
 export enum ModelType {
@@ -27,7 +28,7 @@ export enum ModelType {
   OCR = 'ocr',
 }
 
-export type ModelPayload = { imagePath: string } | { text: string };
+export type ModelPayload = { imagePath: string } | { text: string } | { audioPath: string };
 
 type ModelOptions = { modelName: string };
 
@@ -37,6 +38,7 @@ export type OcrOptions = ModelOptions & {
   minRecognitionScore: number;
   maxResolution: number;
 };
+export type TranscriptionOptions = ModelOptions & { threads: number };
 type VisualResponse = { imageHeight: number; imageWidth: number };
 export type ClipVisualRequest = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: ModelOptions } };
 export type ClipVisualResponse = { [ModelTask.SEARCH]: string } & VisualResponse;
@@ -59,6 +61,16 @@ export type OcrRequest = {
 };
 export type OcrResponse = { [ModelTask.OCR]: OCR } & VisualResponse;
 
+export type TranscriptSegment = { start: number; end: number; text: string };
+export type Transcript = { language: string; segments: TranscriptSegment[] };
+
+export type TranscriptionRequest = {
+  [ModelTask.TRANSCRIPTION]: {
+    [ModelType.RECOGNITION]: ModelOptions & { options: { cpuThreads: number } };
+  };
+};
+export type TranscriptionResponse = { [ModelTask.TRANSCRIPTION]: Transcript };
+
 export type FacialRecognitionRequest = {
   [ModelTask.FACIAL_RECOGNITION]: {
     [ModelType.DETECTION]: ModelOptions & { options: { minScore: number } };
@@ -74,7 +86,8 @@ export interface Face {
 
 export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Face[] } & VisualResponse;
 export type DetectedFaces = { faces: Face[] } & VisualResponse;
-export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest | OcrRequest;
+export type MachineLearningRequest =
+  ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest | OcrRequest | TranscriptionRequest;
 export type TextEncodingOptions = ModelOptions & { language?: string };
 
 @Injectable()
@@ -229,6 +242,16 @@ export class MachineLearningRepository {
     return response[ModelTask.OCR];
   }
 
+  async transcribe(audioPath: string, { modelName, threads }: TranscriptionOptions) {
+    const request = {
+      [ModelTask.TRANSCRIPTION]: {
+        [ModelType.RECOGNITION]: { modelName, options: { cpuThreads: threads } },
+      },
+    };
+    const response = await this.predict<TranscriptionResponse>({ audioPath }, request);
+    return response[ModelTask.TRANSCRIPTION];
+  }
+
   private async getFormData(payload: ModelPayload, config: MachineLearningRequest): Promise<FormData> {
     const formData = new FormData();
     formData.append('entries', JSON.stringify(config));
@@ -238,6 +261,9 @@ export class MachineLearningRepository {
       formData.append('image', new Blob([new Uint8Array(fileBuffer)]));
     } else if ('text' in payload) {
       formData.append('text', payload.text);
+    } else if ('audioPath' in payload) {
+      const fileBuffer = await readFile(payload.audioPath);
+      formData.append('audio', new Blob([new Uint8Array(fileBuffer)]));
     } else {
       throw new Error('Invalid input');
     }

@@ -54,4 +54,8 @@ export const OcrConfigSchema = ModelConfigSchema.extend({
     .describe('Minimum confidence score for text recognition'),
 }).meta({ id: 'OcrConfig' });
 
+export const TranscriptionConfigSchema = ModelConfigSchema.extend({
+  threads: z.int().min(1).describe('Maximum number of CPU threads to use for transcription'),
+}).meta({ id: 'TranscriptionConfig' });
+
 export class CLIPConfig extends createZodDto(CLIPConfigSchema) {}

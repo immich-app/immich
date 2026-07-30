@@ -29,6 +29,7 @@ from immich_ml.models.facial_recognition.recognition import FaceRecognizer
 from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
 from immich_ml.models.ocr.schemas import OcrOptions
+from immich_ml.models.transcription.whisper import WhisperTranscriber
 from immich_ml.schemas import ModelFormat, ModelPrecision, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession
@@ -1089,6 +1090,77 @@ class TestOcr:
               model_root_dir=text_recognizer.cache_dir,
             )
         )
+
+
+class TestTranscription:
+    def test_model_path_is_a_directory(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+
+        assert transcriber.model_path == transcriber.model_dir
+
+    def test_cached_true_when_model_bin_exists(self, path: mock.Mock) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.is_file.return_value = True
+
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+
+        assert transcriber.cached is True
+        path.return_value.__truediv__.return_value.__truediv__.assert_called_with("model.bin")
+
+    def test_cached_false_when_model_bin_missing(self, path: mock.Mock) -> None:
+        path.return_value.__truediv__.return_value.__truediv__.return_value.is_file.return_value = False
+
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+
+        assert transcriber.cached is False
+
+    def test_download_uses_whisper_hf_namespace(self, mocker: MockerFixture, path: mock.Mock) -> None:
+        snapshot_download = mocker.patch("immich_ml.models.transcription.whisper.snapshot_download")
+
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        transcriber._download()
+
+        snapshot_download.assert_called_once_with(
+            "Systran/faster-whisper-tiny",
+            cache_dir=transcriber.cache_dir,
+            local_dir=transcriber.model_path,
+        )
+
+    def test_load_passes_cpu_thread_cap_to_whisper_model(self, mocker: MockerFixture, path: mock.Mock) -> None:
+        whisper_model = mocker.patch("immich_ml.models.transcription.whisper.WhisperModel")
+
+        transcriber = WhisperTranscriber("tiny", cpu_threads=2, cache_dir="test_cache")
+        transcriber._load()
+
+        whisper_model.assert_called_once_with(
+            str(transcriber.model_path), device="cpu", compute_type="int8", cpu_threads=2
+        )
+
+    def test_load_defaults_cpu_thread_cap(self, mocker: MockerFixture, path: mock.Mock) -> None:
+        whisper_model = mocker.patch("immich_ml.models.transcription.whisper.WhisperModel")
+
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        transcriber._load()
+
+        assert whisper_model.call_args.kwargs["cpu_threads"] == 4
+
+    def test_cpu_threads_kwarg_overrides_positional_default(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache", cpuThreads=8)
+
+        assert transcriber.cpu_threads == 8
+
+    def test_predict_enables_vad_and_multilingual_detection(self, path: mock.Mock) -> None:
+        transcriber = WhisperTranscriber("tiny", cache_dir="test_cache")
+        segment = SimpleNamespace(start=0.0, end=1.5, text=" hello there ")
+        info = SimpleNamespace(language="en")
+        transcriber.model = mock.Mock()
+        transcriber.model.transcribe.return_value = ([segment], info)
+
+        result = transcriber._predict(b"raw-pcm-bytes")
+
+        _, kwargs = transcriber.model.transcribe.call_args
+        assert kwargs["vad_filter"] is True
+        assert kwargs["multilingual"] is True
+        assert result == {"language": "en", "segments": [{"start": 0.0, "end": 1.5, "text": "hello there"}]}
 
 
 @pytest.mark.asyncio

@@ -31,6 +31,7 @@ class ModelTask(StrEnum):
     FACIAL_RECOGNITION = "facial-recognition"
     SEARCH = "clip"
     OCR = "ocr"
+    TRANSCRIPTION = "transcription"
 
 
 class ModelType(StrEnum):
@@ -51,6 +52,7 @@ class ModelSource(StrEnum):
     MCLIP = "mclip"
     OPENCLIP = "openclip"
     PADDLE = "paddle"
+    WHISPER = "whisper"
 
 
 class ModelPrecision(StrEnum):

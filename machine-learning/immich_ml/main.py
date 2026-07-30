@@ -168,21 +168,24 @@ async def predict(
     entries: InferenceEntries = Depends(get_entries),
     image: bytes | None = File(default=None),
     text: str | None = Form(default=None),
+    audio: bytes | None = File(default=None),
 ) -> Any:
     if image is not None:
         decoded = await run(lambda: decode_pil(image))
         if decoded.width == 0 or decoded.height == 0:
             raise HTTPException(400, "Image has zero width or height")
-        inputs: Image | str = decoded
+        inputs: Image | str | bytes = decoded
     elif text is not None:
         inputs = text
+    elif audio is not None:
+        inputs = audio
     else:
-        raise HTTPException(400, "Either image or text must be provided")
+        raise HTTPException(400, "Either image, text, or audio must be provided")
     response = await run_inference(inputs, entries)
     return ORJSONResponse(response)
 
 
-async def run_inference(payload: Image | str, entries: InferenceEntries) -> InferenceResponse:
+async def run_inference(payload: Image | str | bytes, entries: InferenceEntries) -> InferenceResponse:
     outputs: dict[ModelIdentity, Any] = {}
     response: InferenceResponse = {}
 

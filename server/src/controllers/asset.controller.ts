@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import { AssetResponseDto } from 'src/dtos/asset-response.dto';
@@ -188,6 +201,18 @@ export class AssetController {
   })
   getAssetOcr(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetOcrResponseDto[]> {
     return this.service.getOcr(auth, id);
+  }
+
+  @Get(':id/captions.vtt')
+  @Authenticated({ permission: Permission.AssetView, sharedLink: true })
+  @Header('Content-Type', 'text/vtt')
+  @Endpoint({
+    summary: 'Retrieve asset captions',
+    description: 'Renders the stored transcript for the specified asset as a WebVTT caption track.',
+    history: new HistoryBuilder().added('v3').alpha('v3'),
+  })
+  getAssetCaptions(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<string> {
+    return this.service.getCaptions(auth, id);
   }
 
   @Put(':id/metadata')

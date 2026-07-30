@@ -8,7 +8,13 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
   import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
-  import { getAssetHlsSessionUrl, getAssetHlsUrl, getAssetMediaUrl, getAssetPlaybackUrl } from '$lib/utils';
+  import {
+    getAssetCaptionsUrl,
+    getAssetHlsSessionUrl,
+    getAssetHlsUrl,
+    getAssetMediaUrl,
+    getAssetPlaybackUrl,
+  } from '$lib/utils';
   import { AssetMediaSize, type AssetResponseDto } from '@immich/sdk';
   import { Icon, LoadingSpinner, shortcuts } from '@immich/ui';
   import {
@@ -88,6 +94,7 @@
     return getAssetPlaybackUrl({ id: assetId, cacheKey });
   });
   const aspectRatio = $derived(asset.width && asset.height ? `${asset.width} / ${asset.height}` : undefined);
+  const captionsUrl = $derived(getAssetCaptionsUrl(assetId));
   let showVideo = $state(false);
   let hasFocused = $state(false);
   let activeSession: { assetId: string; id: string } | undefined;
@@ -275,6 +282,10 @@
   });
 
   const handleCanPlay = async (video: HTMLVideoElement) => {
+    if (video.textTracks.length > 0) {
+      video.textTracks[0].mode = 'showing';
+    }
+
     try {
       if (!video.paused) {
         await video.play();
@@ -397,7 +408,9 @@
             }}
             onclose={onClose}
             poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}
-          ></hls-video>
+          >
+            <track kind="subtitles" src={captionsUrl} default />
+          </hls-video>
         {:else}
           <video
             bind:this={videoPlayer}
@@ -422,7 +435,9 @@
             }}
             onclose={onClose}
             poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}
-          ></video>
+          >
+            <track kind="subtitles" src={captionsUrl} default />
+          </video>
         {/if}
 
         {#if extendedControls}

@@ -145,6 +145,44 @@ describe(AssetRepository.name, () => {
     });
   });
 
+  describe('upsertJobStatus', () => {
+    it('should insert a job status with only a single column set', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const transcribedAt = new Date('2026-03-09T00:30:00.000Z');
+
+      await sut.upsertJobStatus({ assetId: asset.id, transcribedAt });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_job_status')
+          .select('transcribedAt')
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ transcribedAt });
+    });
+
+    it('should update a single column on conflict without clobbering other columns', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id });
+      const ocrAt = new Date('2026-03-09T00:30:00.000Z');
+      const transcribedAt = new Date('2026-03-10T00:30:00.000Z');
+
+      await sut.upsertJobStatus({ assetId: asset.id, ocrAt });
+      await sut.upsertJobStatus({ assetId: asset.id, transcribedAt });
+
+      await expect(
+        ctx.database
+          .selectFrom('asset_job_status')
+          .select(['ocrAt', 'transcribedAt'])
+          .where('assetId', '=', asset.id)
+          .executeTakeFirstOrThrow(),
+      ).resolves.toEqual({ ocrAt, transcribedAt });
+    });
+  });
+
   describe('unlockProperties', () => {
     it('should unlock one property', async () => {
       const { ctx, sut } = setup();

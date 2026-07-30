@@ -3972,6 +3972,79 @@
         "x-immich-state": "Deprecated"
       }
     },
+    "/assets/{id}/captions.vtt": {
+      "get": {
+        "description": "Renders the stored transcript for the specified asset as a WebVTT caption track.",
+        "operationId": "getAssetCaptions",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve asset captions",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.view",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/assets/{id}/edits": {
       "delete": {
         "description": "Removes all edit actions (crop, rotate, mirror) associated with the specified asset.",
@@ -19338,6 +19411,8 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
+          "AssetTranscribeQueueAll",
+          "AssetTranscribe",
           "WorkflowAssetTrigger",
           "IntegrityUntrackedFilesQueueAll",
           "IntegrityUntrackedFiles",
@@ -21619,6 +21694,7 @@
           "notifications",
           "backupDatabase",
           "ocr",
+          "transcription",
           "workflow",
           "integrityCheck",
           "editor"
@@ -21788,6 +21864,9 @@
           "thumbnailGeneration": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
+          "transcription": {
+            "$ref": "#/components/schemas/QueueResponseLegacyDto"
+          },
           "videoConversion": {
             "$ref": "#/components/schemas/QueueResponseLegacyDto"
           },
@@ -21813,6 +21892,7 @@
           "smartSearch",
           "storageTemplateMigration",
           "thumbnailGeneration",
+          "transcription",
           "videoConversion",
           "workflow"
         ],
@@ -26055,6 +26135,9 @@
           "thumbnailGeneration": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
+          "transcription": {
+            "$ref": "#/components/schemas/JobSettingsDto"
+          },
           "videoConversion": {
             "$ref": "#/components/schemas/JobSettingsDto"
           },
@@ -26076,6 +26159,7 @@
           "sidecar",
           "smartSearch",
           "thumbnailGeneration",
+          "transcription",
           "videoConversion",
           "workflow"
         ],
@@ -26162,6 +26246,9 @@
           "ocr": {
             "$ref": "#/components/schemas/OcrConfig"
           },
+          "transcription": {
+            "$ref": "#/components/schemas/TranscriptionConfig"
+          },
           "urls": {
             "description": "ML service URLs",
             "items": {
@@ -26178,6 +26265,7 @@
           "enabled",
           "facialRecognition",
           "ocr",
+          "transcription",
           "urls"
         ],
         "type": "object"
@@ -27109,6 +27197,30 @@
           "disabled"
         ],
         "type": "string"
+      },
+      "TranscriptionConfig": {
+        "properties": {
+          "enabled": {
+            "description": "Whether the task is enabled",
+            "type": "boolean"
+          },
+          "modelName": {
+            "description": "Name of the model to use",
+            "type": "string"
+          },
+          "threads": {
+            "description": "Maximum number of CPU threads to use for transcription",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "modelName",
+          "threads"
+        ],
+        "type": "object"
       },
       "TrashResponseDto": {
         "properties": {

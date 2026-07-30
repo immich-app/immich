@@ -51,6 +51,7 @@ import { SyncRepository } from 'src/repositories/sync.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { TagRepository } from 'src/repositories/tag.repository';
 import { TelemetryRepository } from 'src/repositories/telemetry.repository';
+import { TranscriptRepository } from 'src/repositories/transcript.repository';
 import { TrashRepository } from 'src/repositories/trash.repository';
 import { UserRepository } from 'src/repositories/user.repository';
 import { VersionHistoryRepository } from 'src/repositories/version-history.repository';
@@ -110,6 +111,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   SystemMetadataRepository,
   TagRepository,
   TelemetryRepository,
+  TranscriptRepository,
   TrashRepository,
   UserRepository,
   VersionHistoryRepository,
@@ -170,6 +172,7 @@ export class BaseService {
     protected systemMetadataRepository: SystemMetadataRepository,
     protected tagRepository: TagRepository,
     protected telemetryRepository: TelemetryRepository,
+    protected transcriptRepository: TranscriptRepository,
     protected trashRepository: TrashRepository,
     protected userRepository: UserRepository,
     protected versionRepository: VersionHistoryRepository,
@@ -239,6 +242,7 @@ export class BaseService {
       ctx.systemMetadataRepository,
       ctx.tagRepository,
       ctx.telemetryRepository,
+      ctx.transcriptRepository,
       ctx.trashRepository,
       ctx.userRepository,
       ctx.versionRepository,

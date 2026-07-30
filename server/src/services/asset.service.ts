@@ -47,6 +47,7 @@ import {
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
 import { transformOcrBoundingBox } from 'src/utils/transform';
+import { toWebVtt } from 'src/utils/vtt';
 
 @Injectable()
 export class AssetService extends BaseService {
@@ -411,6 +412,12 @@ export class AssetService extends BaseService {
     });
 
     return ocr.map((item) => transformOcrBoundingBox(item, asset.edits, dimensions));
+  }
+
+  async getCaptions(auth: AuthDto, id: string): Promise<string> {
+    await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
+    const segments = await this.transcriptRepository.getByAssetId(id);
+    return toWebVtt(segments);
   }
 
   async upsertBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkUpsertDto): Promise<AssetMetadataBulkResponseDto[]> {

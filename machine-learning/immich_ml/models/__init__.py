@@ -5,6 +5,7 @@ from immich_ml.models.clip.textual import MClipTextualEncoder, OpenClipTextualEn
 from immich_ml.models.clip.visual import OpenClipVisualEncoder
 from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
+from immich_ml.models.transcription.whisper import WhisperTranscriber
 from immich_ml.schemas import ModelSource, ModelTask, ModelType
 
 from .constants import get_model_source
@@ -35,6 +36,9 @@ def get_model_class(model_name: str, model_type: ModelType, model_task: ModelTas
 
         case ModelSource.PADDLE, ModelType.RECOGNITION, ModelTask.OCR:
             return TextRecognizer
+
+        case ModelSource.WHISPER, ModelType.RECOGNITION, ModelTask.TRANSCRIPTION:
+            return WhisperTranscriber
 
         case _:
             raise ValueError(f"Unknown model combination: {source}, {model_type}, {model_task}")

@@ -410,6 +410,17 @@ export class MediaRepository {
     });
   }
 
+  extractAudio(input: string, output: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      ffmpeg(input, { niceness: 10 })
+        .outputOptions(['-vn', '-ac 1', '-ar 16000', '-f wav'])
+        .output(output)
+        .on('error', reject)
+        .on('end', () => resolve())
+        .run();
+    });
+  }
+
   async getImageMetadata(input: string | Buffer): Promise<ImageDimensions & { isTransparent: boolean }> {
     const { width = 0, height = 0, hasAlpha = false } = await sharp(input, { unlimited: true }).metadata();
     return { width, height, isTransparent: hasAlpha };

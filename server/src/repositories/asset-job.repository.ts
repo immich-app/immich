@@ -248,6 +248,19 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
+  @GenerateSql({ params: [DummyValue.UUID] })
+  getForTranscription(id: string) {
+    return this.db
+      .selectFrom('asset')
+      .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+      .leftJoin('asset_audio', 'asset_audio.assetId', 'asset.id')
+      .select(['asset.id', 'asset.originalPath', 'asset.visibility'])
+      .select((eb) => withAudioStream(eb).as('audioStream'))
+      .where('asset.id', '=', id)
+      .where('asset.type', '=', sql.lit(AssetType.Video))
+      .executeTakeFirst();
+  }
+
   @GenerateSql({ params: [[DummyValue.UUID]] })
   getForSyncAssets(ids: string[]) {
     return this.db
@@ -455,6 +468,22 @@ export class AssetJobRepository {
           .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
           .where('asset_job_status.ocrAt', 'is', null),
       )
+      .where('asset.deletedAt', 'is', null)
+      .where('asset.visibility', '!=', AssetVisibility.Hidden)
+      .stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamForTranscriptionJob(force?: boolean) {
+    return this.db
+      .selectFrom('asset')
+      .select(['asset.id'])
+      .$if(!force, (qb) =>
+        qb
+          .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+          .where('asset_job_status.transcribedAt', 'is', null),
+      )
+      .where('asset.type', '=', sql.lit(AssetType.Video))
       .where('asset.deletedAt', 'is', null)
       .where('asset.visibility', '!=', AssetVisibility.Hidden)
       .stream();

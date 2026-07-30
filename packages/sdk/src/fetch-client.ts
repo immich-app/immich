@@ -1246,6 +1246,7 @@ export type QueuesResponseLegacyDto = {
     smartSearch: QueueResponseLegacyDto;
     storageTemplateMigration: QueueResponseLegacyDto;
     thumbnailGeneration: QueueResponseLegacyDto;
+    transcription: QueueResponseLegacyDto;
     videoConversion: QueueResponseLegacyDto;
     workflow: QueueResponseLegacyDto;
 };
@@ -2411,6 +2412,7 @@ export type SystemConfigJobDto = {
     sidecar: JobSettingsDto;
     smartSearch: JobSettingsDto;
     thumbnailGeneration: JobSettingsDto;
+    transcription: JobSettingsDto;
     videoConversion: JobSettingsDto;
     workflow: JobSettingsDto;
 };
@@ -2475,6 +2477,14 @@ export type OcrConfig = {
     /** Name of the model to use */
     modelName: string;
 };
+export type TranscriptionConfig = {
+    /** Whether the task is enabled */
+    enabled: boolean;
+    /** Name of the model to use */
+    modelName: string;
+    /** Maximum number of CPU threads to use for transcription */
+    threads: number;
+};
 export type SystemConfigMachineLearningDto = {
     availabilityChecks: MachineLearningAvailabilityChecksDto;
     clip: ClipConfig;
@@ -2483,6 +2493,7 @@ export type SystemConfigMachineLearningDto = {
     enabled: boolean;
     facialRecognition: FacialRecognitionConfig;
     ocr: OcrConfig;
+    transcription: TranscriptionConfig;
     /** ML service URLs */
     urls: string[];
 };
@@ -4259,6 +4270,24 @@ export function updateAsset({ id, updateAssetDto }: {
         method: "PUT",
         body: updateAssetDto
     })));
+}
+/**
+ * Retrieve asset captions
+ */
+export function getAssetCaptions({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: string;
+    }>(`/assets/${encodeURIComponent(id)}/captions.vtt${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
 }
 /**
  * Remove edits from an existing asset
@@ -7395,6 +7424,7 @@ export enum QueueName {
     Notifications = "notifications",
     BackupDatabase = "backupDatabase",
     Ocr = "ocr",
+    Transcription = "transcription",
     Workflow = "workflow",
     IntegrityCheck = "integrityCheck",
     Editor = "editor"
@@ -7489,6 +7519,8 @@ export enum JobName {
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
+    AssetTranscribeQueueAll = "AssetTranscribeQueueAll",
+    AssetTranscribe = "AssetTranscribe",
     WorkflowAssetTrigger = "WorkflowAssetTrigger",
     IntegrityUntrackedFilesQueueAll = "IntegrityUntrackedFilesQueueAll",
     IntegrityUntrackedFiles = "IntegrityUntrackedFiles",

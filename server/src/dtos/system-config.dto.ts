@@ -6,6 +6,7 @@ import {
   DuplicateDetectionConfigSchema,
   FacialRecognitionConfigSchema,
   OcrConfigSchema,
+  TranscriptionConfigSchema,
 } from 'src/dtos/model-config.dto';
 import {
   AudioCodecSchema,
@@ -142,6 +143,7 @@ const SystemConfigJobSchema = z
     library: JobSettingsSchema,
     notifications: JobSettingsSchema,
     ocr: JobSettingsSchema,
+    transcription: JobSettingsSchema,
     workflow: JobSettingsSchema,
     editor: JobSettingsSchema,
     integrityCheck: JobSettingsSchema,
@@ -187,6 +189,7 @@ const SystemConfigMachineLearningSchema = z
     duplicateDetection: DuplicateDetectionConfigSchema,
     facialRecognition: FacialRecognitionConfigSchema,
     ocr: OcrConfigSchema,
+    transcription: TranscriptionConfigSchema,
   })
   .meta({ id: 'SystemConfigMachineLearningDto' });
 
