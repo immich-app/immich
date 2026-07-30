@@ -187,7 +187,7 @@ export class CliService extends BaseService {
       this.userRepository.getFileSamples(),
     ]);
 
-    const paths = Array.from(people, (person) => person.thumbnailPath);
+    const paths = Array.from(people, (person) => person.thumbnailPath).filter(Boolean) as string[];
 
     for (const user of users) {
       paths.push(user.profileImagePath);

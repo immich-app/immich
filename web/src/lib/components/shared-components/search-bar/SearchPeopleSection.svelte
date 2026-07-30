@@ -48,7 +48,7 @@
 
   const filterPeople = (list: PersonResponseDto[], name: string) => {
     const nameLower = name.toLowerCase();
-    return name ? list.filter((p) => p.name.toLowerCase().includes(nameLower)) : list;
+    return name ? list.filter((p) => p.name?.toLowerCase().includes(nameLower)) : list;
   };
 
   const styles = tv({
