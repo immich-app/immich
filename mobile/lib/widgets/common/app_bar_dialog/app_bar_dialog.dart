@@ -29,9 +29,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(localeProvider);
-    ServerDiskInfo backupState = ref.watch(backupProvider);
+    final ServerDiskInfo backupState = ref.watch(backupProvider);
     final theme = context.themeData;
-    bool isHorizontal = !context.isMobile;
+    final bool isHorizontal = !context.isMobile;
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
     final user = ref.watch(currentUserProvider);
     final isLoggingOut = useState(false);
@@ -43,7 +43,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return null;
     }, []);
 
-    buildTopRow() {
+    SizedBox buildTopRow() {
       return SizedBox(
         height: 56,
         child: Stack(
@@ -68,7 +68,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildActionButton(IconData icon, String text, Function() onTap, {Widget? trailing}) {
+    ListTile buildActionButton(IconData icon, String text, Function() onTap, {Widget? trailing}) {
       return ListTile(
         dense: true,
         visualDensity: VisualDensity.standard,
@@ -84,11 +84,11 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildSettingButton() {
+    ListTile buildSettingButton() {
       return buildActionButton(Icons.settings_outlined, "settings", () => context.pushRoute(const SettingsRoute()));
     }
 
-    buildFreeUpSpaceButton() {
+    ListTile buildFreeUpSpaceButton() {
       return buildActionButton(
         Icons.cleaning_services_outlined,
         "free_up_space",
@@ -96,7 +96,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildAppLogButton() {
+    ListTile buildAppLogButton() {
       return buildActionButton(
         Icons.assignment_outlined,
         "profile_drawer_app_logs",
@@ -104,7 +104,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildSignOutButton() {
+    ListTile buildSignOutButton() {
       return buildActionButton(
         Icons.logout_rounded,
         "sign_out",
@@ -171,7 +171,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildFooter() {
+    Padding buildFooter() {
       return Padding(
         padding: const EdgeInsets.only(top: 10, bottom: 20),
         child: Row(
@@ -213,7 +213,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildReadonlyMessage() {
+    Padding buildReadonlyMessage() {
       return Padding(
         padding: const EdgeInsets.only(left: 10.0, right: 10.0),
         child: ListTile(

@@ -24,7 +24,7 @@ void handleError(Object error, {StackTrace? stack, String? description}) {
   );
 
   final String message;
-  if (serverErrorMessage(error) case String serverMessage) {
+  if (serverErrorMessage(error) case final String serverMessage) {
     message = serverMessage;
   } else if (isConnectionError(error)) {
     message = StaticTranslations.instance.login_form_server_error;

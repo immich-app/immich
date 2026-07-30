@@ -66,7 +66,7 @@ class DriftTrashedLocalAssetRepository extends DriftDatabaseRepository {
       return;
     }
     final assetIds = trashedAssets.map((e) => e.asset.id).toSet();
-    Map<String, String> localChecksumById = await _getCachedChecksums(assetIds);
+    final Map<String, String> localChecksumById = await _getCachedChecksums(assetIds);
 
     return _db.transaction(() async {
       await _db.batch((batch) {
