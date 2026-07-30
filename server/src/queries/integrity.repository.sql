@@ -59,11 +59,11 @@ where
 
 -- IntegrityRepository.getPersonThumbnailPathsByPaths
 select
-  "person"."thumbnailPath"
+  "person_user"."thumbnailPath"
 from
-  "person"
+  "person_user"
 where
-  "person"."thumbnailPath" in $1
+  "person_user"."thumbnailPath" in $1
 
 -- IntegrityRepository.getAssetCount
 select

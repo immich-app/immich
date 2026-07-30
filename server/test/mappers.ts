@@ -9,6 +9,7 @@ import { AlbumFactory } from 'test/factories/album.factory';
 import { AssetFaceFactory } from 'test/factories/asset-face.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { MemoryFactory } from 'test/factories/memory.factory';
+import { PersonFactory } from 'test/factories/person.factory';
 import { SharedLinkFactory } from 'test/factories/shared-link.factory';
 import { StackFactory } from 'test/factories/stack.factory';
 import { UserFactory } from 'test/factories/user.factory';
@@ -97,7 +98,7 @@ export const getForAsset = (asset: ReturnType<AssetFactory['build']>) => {
     ...asset,
     faces: asset.faces.map((face) => ({
       ...getDehydrated(face),
-      person: face.person ? getDehydrated(face.person) : null,
+      person: face.person ? getDehydrated(getForPerson(face.person)) : null,
     })),
     owner: getDehydrated(asset.owner),
     stack: asset.stack
@@ -108,6 +109,15 @@ export const getForAsset = (asset: ReturnType<AssetFactory['build']>) => {
     edits: asset.edits.map(({ action, parameters }) => ({ action, parameters })) as AssetEditActionItem[],
   };
 };
+
+export const getForPerson = (person: ReturnType<PersonFactory['build']>) => ({
+  ...person,
+  ownerId: person.personUser.ownerId,
+  isFavorite: person.personUser.isFavorite,
+  isHidden: person.personUser.isHidden,
+  thumbnailFaceAssetId: person.personUser.thumbnailFaceAssetId,
+  thumbnailPath: person.personUser.thumbnailPath,
+});
 
 export const getForPartner = (
   partner: Selectable<PartnerTable> & Record<'sharedWith' | 'sharedBy', ReturnType<UserFactory['build']>>,
@@ -136,6 +146,7 @@ export const getForMetadataExtraction = (asset: ReturnType<AssetFactory['build']
   originalFileName: asset.originalFileName,
   originalPath: asset.originalPath,
   ownerId: asset.ownerId,
+  ownerTrustedGroupId: asset.owner.trustedGroupId,
   type: asset.type,
   isEdited: asset.isEdited,
   width: asset.width,
@@ -162,7 +173,7 @@ export const getForGenerateThumbnail = (asset: ReturnType<AssetFactory['build']>
 
 export const getForAssetFace = (face: ReturnType<AssetFaceFactory['build']>) => ({
   ...face,
-  person: face.person ? getDehydrated(face.person) : null,
+  person: face.person ? getDehydrated(getForPerson(face.person)) : null,
 });
 
 export const getForDetectedFaces = (asset: ReturnType<AssetFactory['build']>) => ({

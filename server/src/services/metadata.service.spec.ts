@@ -1434,13 +1434,13 @@ describe(MetadataService.name, () => {
         ],
         [],
       );
-      expect(mocks.person.updateAll).toHaveBeenCalledWith([
-        { id: 'random-uuid', ownerId: asset.ownerId, faceAssetId: 'random-uuid' },
+      expect(mocks.personUser.updateAll).toHaveBeenCalledWith([
+        { personId: 'random-uuid', ownerId: asset.ownerId, thumbnailFaceAssetId: 'random-uuid' },
       ]);
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {
           name: JobName.PersonGenerateThumbnail,
-          data: { id: person.id },
+          data: { personId: 'random-uuid', ownerId: asset.ownerId },
         },
       ]);
     });
@@ -1476,7 +1476,7 @@ describe(MetadataService.name, () => {
         ],
         [],
       );
-      expect(mocks.person.updateAll).not.toHaveBeenCalled();
+      expect(mocks.personUser.updateAll).not.toHaveBeenCalled();
       expect(mocks.job.queueAll).not.toHaveBeenCalledWith();
     });
 
@@ -1565,13 +1565,13 @@ describe(MetadataService.name, () => {
             ],
             [],
           );
-          expect(mocks.person.updateAll).toHaveBeenCalledWith([
-            { id: 'random-uuid', ownerId: asset.ownerId, faceAssetId: 'random-uuid' },
+          expect(mocks.personUser.updateAll).toHaveBeenCalledWith([
+            { personId: 'random-uuid', ownerId: asset.ownerId, thumbnailFaceAssetId: 'random-uuid' },
           ]);
           expect(mocks.job.queueAll).toHaveBeenCalledWith([
             {
               name: JobName.PersonGenerateThumbnail,
-              data: { id: person.id },
+              data: { personId: 'random-uuid', ownerId: asset.ownerId },
             },
           ]);
         },

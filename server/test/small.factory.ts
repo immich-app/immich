@@ -91,9 +91,10 @@ const authUserFactory = (authUser: Partial<AuthUser> = {}) => {
     email = 'test@immich.cloud',
     quotaUsageInBytes = 0,
     quotaSizeInBytes = null,
+    trustedGroupId = newUuid(),
   } = authUser;
 
-  return { id, isAdmin, name, email, quotaUsageInBytes, quotaSizeInBytes };
+  return { id, isAdmin, name, email, quotaUsageInBytes, quotaSizeInBytes, trustedGroupId };
 };
 
 const queueStatisticsFactory = (dto?: Partial<QueueStatisticsDto>) => ({
@@ -109,6 +110,7 @@ const queueStatisticsFactory = (dto?: Partial<QueueStatisticsDto>) => ({
 const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
   const {
     id = newUuid(),
+    trustedGroupId = newUuid(),
     name = 'Test User',
     email = 'test@immich.cloud',
     profileImagePath = '',
@@ -128,6 +130,7 @@ const userAdminFactory = (user: Partial<UserAdmin> = {}) => {
   } = user;
   return {
     id,
+    trustedGroupId,
     name,
     email,
     profileImagePath,

@@ -36,6 +36,7 @@ import { NotificationRepository } from 'src/repositories/notification.repository
 import { OAuthRepository } from 'src/repositories/oauth.repository';
 import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
+import { PersonUserRepository } from 'src/repositories/person-user.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { PluginRepository } from 'src/repositories/plugin.repository';
 import { ProcessRepository } from 'src/repositories/process.repository';
@@ -95,6 +96,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   OAuthRepository,
   OcrRepository,
   PartnerRepository,
+  PersonUserRepository,
   PersonRepository,
   PluginRepository,
   ProcessRepository,
@@ -155,6 +157,7 @@ export class BaseService {
     protected oauthRepository: OAuthRepository,
     protected ocrRepository: OcrRepository,
     protected partnerRepository: PartnerRepository,
+    protected personUserRepository: PersonUserRepository,
     protected personRepository: PersonRepository,
     protected pluginRepository: PluginRepository,
     protected processRepository: ProcessRepository,
@@ -184,7 +187,7 @@ export class BaseService {
       configRepository,
       cryptoRepository,
       moveRepository,
-      personRepository,
+      personUserRepository,
       storageRepository,
       systemMetadataRepository,
       this.logger,
@@ -224,6 +227,7 @@ export class BaseService {
       ctx.oauthRepository,
       ctx.ocrRepository,
       ctx.partnerRepository,
+      ctx.personUserRepository,
       ctx.personRepository,
       ctx.pluginRepository,
       ctx.processRepository,

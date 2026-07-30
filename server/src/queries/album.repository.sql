@@ -30,7 +30,8 @@ select
                   "email",
                   "avatarColor",
                   "profileImagePath",
-                  "profileChangedAt"
+                  "profileChangedAt",
+                  "trustedGroupId"
                 from
                   (
                     select
@@ -109,7 +110,8 @@ select
                   "email",
                   "avatarColor",
                   "profileImagePath",
-                  "profileChangedAt"
+                  "profileChangedAt",
+                  "trustedGroupId"
                 from
                   (
                     select
@@ -206,7 +208,8 @@ select
                   "email",
                   "avatarColor",
                   "profileImagePath",
-                  "profileChangedAt"
+                  "profileChangedAt",
+                  "trustedGroupId"
                 from
                   (
                     select
@@ -379,7 +382,8 @@ select
                   "email",
                   "avatarColor",
                   "profileImagePath",
-                  "profileChangedAt"
+                  "profileChangedAt",
+                  "trustedGroupId"
                 from
                   (
                     select

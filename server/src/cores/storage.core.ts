@@ -16,7 +16,7 @@ import { ConfigRepository } from 'src/repositories/config.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MoveRepository } from 'src/repositories/move.repository';
-import { PersonRepository } from 'src/repositories/person.repository';
+import { PersonUserRepository } from 'src/repositories/person-user.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { SystemMetadataRepository } from 'src/repositories/system-metadata.repository';
 import { VideoInterfaces } from 'src/types';
@@ -25,6 +25,7 @@ import { getConfig } from 'src/utils/config';
 
 export interface MoveRequest {
   entityId: string;
+  ownerId: string;
   pathType: PathType;
   oldPath: string | null;
   newPath: string;
@@ -52,7 +53,7 @@ export class StorageCore {
     private configRepository: ConfigRepository,
     private cryptoRepository: CryptoRepository,
     private moveRepository: MoveRepository,
-    private personRepository: PersonRepository,
+    private personUserRepository: PersonUserRepository,
     private storageRepository: StorageRepository,
     private systemMetadataRepository: SystemMetadataRepository,
     private logger: LoggingRepository,
@@ -65,7 +66,7 @@ export class StorageCore {
     configRepository: ConfigRepository,
     cryptoRepository: CryptoRepository,
     moveRepository: MoveRepository,
-    personRepository: PersonRepository,
+    personUserRepository: PersonUserRepository,
     storageRepository: StorageRepository,
     systemMetadataRepository: SystemMetadataRepository,
     logger: LoggingRepository,
@@ -76,7 +77,7 @@ export class StorageCore {
         configRepository,
         cryptoRepository,
         moveRepository,
-        personRepository,
+        personUserRepository,
         storageRepository,
         systemMetadataRepository,
         logger,
@@ -161,6 +162,7 @@ export class StorageCore {
     const oldFile = getAssetFile(files, fileType, { isEdited: false });
     return this.moveFile({
       entityId,
+      ownerId: asset.ownerId,
       pathType: fileType,
       oldPath: oldFile?.path || null,
       newPath: StorageCore.getImagePath(asset, { fileType, format, isEdited: false }),
@@ -171,6 +173,7 @@ export class StorageCore {
     const encodedVideoFile = getAssetFile(asset.files, AssetFileType.EncodedVideo, { isEdited: false });
     return this.moveFile({
       entityId: asset.id,
+      ownerId: asset.ownerId,
       pathType: AssetPathType.EncodedVideo,
       oldPath: encodedVideoFile?.path || null,
       newPath: StorageCore.getEncodedVideoPath(asset),
@@ -183,6 +186,7 @@ export class StorageCore {
       case PersonPathType.Face: {
         await this.moveFile({
           entityId,
+          ownerId: person.ownerId,
           pathType,
           oldPath: thumbnailPath,
           newPath: StorageCore.getPersonThumbnailPath(person),
@@ -192,7 +196,7 @@ export class StorageCore {
   }
 
   async moveFile(request: MoveRequest) {
-    const { entityId, pathType, oldPath, newPath, assetInfo } = request;
+    const { entityId, ownerId, pathType, oldPath, newPath, assetInfo } = request;
     if (!oldPath || oldPath === newPath) {
       return;
     }
@@ -265,7 +269,7 @@ export class StorageCore {
       }
     }
 
-    await this.savePath(pathType, entityId, newPath);
+    await this.savePath(pathType, entityId, ownerId, newPath);
     await this.moveRepository.delete(move.id);
   }
 
@@ -318,7 +322,7 @@ export class StorageCore {
     return { dri, mali };
   }
 
-  private savePath(pathType: PathType, id: string, newPath: string) {
+  private savePath(pathType: PathType, id: string, ownerId: string, newPath: string) {
     switch (pathType) {
       case AssetPathType.Original: {
         return this.assetRepository.update({ id, originalPath: newPath });
@@ -334,7 +338,7 @@ export class StorageCore {
       }
 
       case PersonPathType.Face: {
-        return this.personRepository.update({ id, thumbnailPath: newPath });
+        return this.personUserRepository.update({ personId: id, ownerId, thumbnailPath: newPath });
       }
 
       case UserPathType.Profile: {

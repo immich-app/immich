@@ -96,19 +96,26 @@ export class MediaService extends BaseService {
 
     await queueAll();
 
-    const people = this.personRepository.getAll(force ? undefined : { thumbnailPath: '' });
+    const people = this.personUserRepository.getAll(force ? undefined : { thumbnailPath: '' });
 
     for await (const person of people) {
-      if (!person.faceAssetId) {
-        const face = await this.personRepository.getRandomFace(person.id);
+      if (!person.thumbnailFaceAssetId) {
+        const face = await this.personRepository.getRandomFace(person.personId);
         if (!face) {
           continue;
         }
 
-        await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+        await this.personUserRepository.update({
+          personId: person.personId,
+          ownerId: person.ownerId,
+          thumbnailFaceAssetId: face.id,
+        });
       }
 
-      jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: person.id } });
+      jobs.push({
+        name: JobName.PersonGenerateThumbnail,
+        data: { personId: person.personId, ownerId: person.ownerId },
+      });
       if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
         await queueAll();
       }
@@ -140,8 +147,8 @@ export class MediaService extends BaseService {
     await this.jobRepository.queueAll(jobs);
     jobs = [];
 
-    for await (const person of this.personRepository.getAll()) {
-      jobs.push({ name: JobName.PersonFileMigration, data: { id: person.id } });
+    for await (const { personId, ownerId } of this.personUserRepository.getAll()) {
+      jobs.push({ name: JobName.PersonFileMigration, data: { personId, ownerId } });
 
       if (jobs.length === JOBS_ASSET_PAGINATION_SIZE) {
         await this.jobRepository.queueAll(jobs);
@@ -409,19 +416,22 @@ export class MediaService extends BaseService {
   }
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
-  async handleGeneratePersonThumbnail({ id }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
+  async handleGeneratePersonThumbnail({
+    personId,
+    ownerId,
+  }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
     const { image } = await this.getConfig({ withCache: true });
-    const data = await this.personRepository.getDataForThumbnailGenerationJob(id);
+    const data = await this.personUserRepository.getDataForThumbnailGenerationJob({ personId, ownerId });
     if (!data) {
-      this.logger.error(`Could not generate person thumbnail for ${id}: missing data`);
+      this.logger.error(`Could not generate person thumbnail for ${personId}: missing data`);
       return JobStatus.Failed;
     }
 
-    const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
+    const { x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
     let inputImage: string | Buffer;
     if (data.type === AssetType.Video) {
       if (!previewPath) {
-        this.logger.error(`Could not generate person thumbnail for video ${id}: missing preview path`);
+        this.logger.error(`Could not generate person thumbnail for video ${personId}: missing preview path`);
         return JobStatus.Failed;
       }
       inputImage = previewPath;
@@ -439,7 +449,7 @@ export class MediaService extends BaseService {
       orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
     });
 
-    const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
+    const thumbnailPath = StorageCore.getPersonThumbnailPath({ id: personId, ownerId });
     this.storageCore.ensureFolders(thumbnailPath);
 
     const thumbnailOptions: GenerateThumbnailOptions = {
@@ -462,7 +472,7 @@ export class MediaService extends BaseService {
     };
 
     await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
-    await this.personRepository.update({ id, thumbnailPath });
+    await this.personUserRepository.update({ personId, ownerId, thumbnailPath });
 
     return JobStatus.Success;
   }
@@ -856,7 +866,7 @@ export class MediaService extends BaseService {
       : undefined;
 
     const originalDimensions = getDimensions(asset.exifInfo!);
-    const assetFaces = await this.personRepository.getFaces(asset.id, {});
+    const assetFaces = await this.personRepository.getFaces(asset.id);
     const ocrData = await this.ocrRepository.getByAssetId(asset.id, {});
 
     const faceStatuses = checkFaceVisibility(assetFaces, originalDimensions, cropBox);

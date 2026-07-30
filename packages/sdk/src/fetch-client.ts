@@ -3273,6 +3273,28 @@ export type SyncPersonDeleteV1 = {
     /** Person ID */
     personId: string;
 };
+export type SyncPersonUserDeleteV1 = {
+    /** Owner ID */
+    ownerId: string;
+    /** Person ID */
+    personId: string;
+};
+export type SyncPersonUserV1 = {
+    /** Created at */
+    createdAt: string;
+    /** Is favorite */
+    isFavorite: boolean;
+    /** Is hidden */
+    isHidden: boolean;
+    /** Owner ID */
+    ownerId: string;
+    /** Person ID */
+    personId: string;
+    /** Face asset ID */
+    thumbnailFaceAssetId: string | null;
+    /** Updated at */
+    updatedAt: string;
+};
 export type SyncPersonV1 = {
     /** Birth date */
     birthDate: string | null;
@@ -3292,6 +3314,22 @@ export type SyncPersonV1 = {
     name: string;
     /** Owner ID */
     ownerId: string;
+    /** Updated at */
+    updatedAt: string;
+};
+export type SyncPersonV2 = {
+    /** Birth date */
+    birthDate: string | null;
+    /** Color */
+    color: string | null;
+    /** Created at */
+    createdAt: string;
+    /** Person ID */
+    id: string;
+    /** Person name */
+    name: string;
+    /** Trusted group ID */
+    trustedGroupId: string;
     /** Updated at */
     updatedAt: string;
 };
@@ -7569,7 +7607,10 @@ export enum SyncEntityType {
     StackV1 = "StackV1",
     StackDeleteV1 = "StackDeleteV1",
     PersonV1 = "PersonV1",
+    PersonV2 = "PersonV2",
     PersonDeleteV1 = "PersonDeleteV1",
+    PersonUserV1 = "PersonUserV1",
+    PersonUserDeleteV1 = "PersonUserDeleteV1",
     AssetFaceV1 = "AssetFaceV1",
     AssetFaceV2 = "AssetFaceV2",
     AssetFaceDeleteV1 = "AssetFaceDeleteV1",
@@ -7604,6 +7645,8 @@ export enum SyncRequestType {
     StacksV1 = "StacksV1",
     UsersV1 = "UsersV1",
     PeopleV1 = "PeopleV1",
+    PeopleV2 = "PeopleV2",
+    PersonUsersV1 = "PersonUsersV1",
     AssetFacesV1 = "AssetFacesV1",
     AssetFacesV2 = "AssetFacesV2",
     UserMetadataV1 = "UserMetadataV1"

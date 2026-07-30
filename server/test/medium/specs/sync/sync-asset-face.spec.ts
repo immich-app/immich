@@ -22,7 +22,8 @@ describe(SyncEntityType.AssetFaceV2, () => {
   it('should detect and sync the first asset face', async () => {
     const { auth, ctx } = await setup();
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
-    const { person } = await ctx.newPerson({ ownerId: auth.user.id });
+    const { person } = await ctx.newPerson({ trustedGroupId: auth.user.trustedGroupId });
+    await ctx.newPersonUser({ personId: person.id, ownerId: auth.user.id });
     const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetFacesV2]);
@@ -102,7 +103,8 @@ describe(SyncEntityType.AssetFaceV2, () => {
   it('should detect and sync the first asset face', async () => {
     const { auth, ctx } = await setup();
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
-    const { person } = await ctx.newPerson({ ownerId: auth.user.id });
+    const { person } = await ctx.newPerson({ trustedGroupId: auth.user.trustedGroupId });
+    await ctx.newPersonUser({ personId: person.id, ownerId: auth.user.id });
     const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
 
     const response = await ctx.syncStream(auth, [SyncRequestType.AssetFacesV2]);
@@ -181,7 +183,8 @@ describe(SyncEntityType.AssetFaceV2, () => {
     const { auth, ctx } = await setup();
     const personRepo = ctx.get(PersonRepository);
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
-    const { person } = await ctx.newPerson({ ownerId: auth.user.id });
+    const { person } = await ctx.newPerson({ trustedGroupId: auth.user.trustedGroupId });
+    await ctx.newPersonUser({ personId: person.id, ownerId: auth.user.id });
     const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
 
     let response = await ctx.syncStream(auth, [SyncRequestType.AssetFacesV2]);

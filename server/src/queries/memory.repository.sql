@@ -47,10 +47,11 @@ select
               $1 as "one"
             from
               "asset_face"
-              inner join "person" on "person"."id" = "asset_face"."personId"
+              inner join "person_user" on "person_user"."personId" = "asset_face"."personId"
+              and "person_user"."ownerId" = $2
             where
               "asset_face"."assetId" = "asset"."id"
-              and "person"."isHidden" = $2
+              and "person_user"."isHidden" = $3
           )
         order by
           "asset"."fileCreatedAt" asc
@@ -61,7 +62,7 @@ from
   "memory"
 where
   "deletedAt" is null
-  and "ownerId" = $3
+  and "ownerId" = $4
 order by
   "memoryAt" desc
 
@@ -86,10 +87,11 @@ select
               $1 as "one"
             from
               "asset_face"
-              inner join "person" on "person"."id" = "asset_face"."personId"
+              inner join "person_user" on "person_user"."personId" = "asset_face"."personId"
+              and "person_user"."ownerId" = $2
             where
               "asset_face"."assetId" = "asset"."id"
-              and "person"."isHidden" = $2
+              and "person_user"."isHidden" = $3
           )
         order by
           "asset"."fileCreatedAt" asc
@@ -101,14 +103,14 @@ from
 where
   (
     "showAt" is null
-    or "showAt" <= $3
+    or "showAt" <= $4
   )
   and (
     "hideAt" is null
-    or "hideAt" >= $4
+    or "hideAt" >= $5
   )
   and "deletedAt" is null
-  and "ownerId" = $5
+  and "ownerId" = $6
 order by
   "memoryAt" desc
 

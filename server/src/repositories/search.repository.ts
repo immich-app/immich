@@ -162,7 +162,9 @@ export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 
 export type LargeAssetSearchOptions = AssetSearchOptions & { minFileSize?: number };
 
-export interface FaceEmbeddingSearch extends SearchEmbeddingOptions {
+export interface FaceEmbeddingSearch {
+  embedding: string;
+  trustedGroupId: string;
   hasPerson?: boolean;
   numResults: number;
   maxDistance: number;
@@ -334,14 +336,14 @@ export class SearchRepository {
   @GenerateSql({
     params: [
       {
-        userIds: [DummyValue.UUID],
+        trustedGroupId: [DummyValue.UUID],
         embedding: DummyValue.VECTOR,
         numResults: 10,
         maxDistance: 0.6,
       },
     ],
   })
-  searchFaces({ userIds, embedding, numResults, maxDistance, hasPerson, minBirthDate }: FaceEmbeddingSearch) {
+  searchFaces({ trustedGroupId, embedding, numResults, maxDistance, hasPerson, minBirthDate }: FaceEmbeddingSearch) {
     if (!z.int().min(1).max(1000).safeParse(numResults).success) {
       throw new Error(`Invalid value for 'numResults': ${numResults}`);
     }
@@ -359,8 +361,9 @@ export class SearchRepository {
             ])
             .innerJoin('asset', 'asset.id', 'asset_face.assetId')
             .innerJoin('face_search', 'face_search.faceId', 'asset_face.id')
+            .innerJoin('user', 'user.id', 'asset.ownerId')
             .leftJoin('person', 'person.id', 'asset_face.personId')
-            .where('asset.ownerId', '=', anyUuid(userIds))
+            .where('user.trustedGroupId', '=', trustedGroupId)
             .where('asset.deletedAt', 'is', null)
             .$if(!!hasPerson, (qb) => qb.where('asset_face.personId', 'is not', null))
             .$if(!!minBirthDate, (qb) =>

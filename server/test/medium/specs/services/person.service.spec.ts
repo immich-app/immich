@@ -7,6 +7,7 @@ import { AssetRepository } from 'src/repositories/asset.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { PersonUserRepository } from 'src/repositories/person-user.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { StorageRepository } from 'src/repositories/storage.repository';
 import { DB } from 'src/schema';
@@ -20,7 +21,14 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(PersonService, {
     database: db || defaultDatabase,
-    real: [AccessRepository, DatabaseRepository, PersonRepository, AssetRepository, AssetEditRepository],
+    real: [
+      AccessRepository,
+      DatabaseRepository,
+      PersonUserRepository,
+      PersonRepository,
+      AssetRepository,
+      AssetEditRepository,
+    ],
     mock: [JobRepository, LoggingRepository, StorageRepository],
   });
 };
@@ -43,7 +51,8 @@ describe(PersonService.name, () => {
       const personRepo = ctx.get(PersonRepository);
       const storageMock = ctx.getMock(StorageRepository);
       const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      const { personUser } = await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
       const auth = factory.auth({ user });
       storageMock.unlink.mockResolvedValue();
 
@@ -51,7 +60,7 @@ describe(PersonService.name, () => {
       await expect(sut.delete(auth, person.id)).resolves.toBeUndefined();
       await expect(personRepo.getById(person.id)).resolves.toBeUndefined();
 
-      expect(storageMock.unlink).toHaveBeenCalledWith(person.thumbnailPath);
+      expect(storageMock.unlink).toHaveBeenCalledWith(personUser.thumbnailPath);
     });
   });
 
@@ -68,8 +77,10 @@ describe(PersonService.name, () => {
       const storageMock = ctx.getMock(StorageRepository);
       const personRepo = ctx.get(PersonRepository);
       const { user } = await ctx.newUser();
-      const { person: person1 } = await ctx.newPerson({ ownerId: user.id });
-      const { person: person2 } = await ctx.newPerson({ ownerId: user.id });
+      const { person: person1 } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      const { personUser: personUser1 } = await ctx.newPersonUser({ personId: person1.id, ownerId: user.id });
+      const { person: person2 } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      const { personUser: personUser2 } = await ctx.newPersonUser({ personId: person2.id, ownerId: user.id });
       const auth = factory.auth({ user });
       storageMock.unlink.mockResolvedValue();
 
@@ -78,8 +89,8 @@ describe(PersonService.name, () => {
       await expect(personRepo.getById(person2.id)).resolves.toBeUndefined();
 
       expect(storageMock.unlink).toHaveBeenCalledTimes(2);
-      expect(storageMock.unlink).toHaveBeenCalledWith(person1.thumbnailPath);
-      expect(storageMock.unlink).toHaveBeenCalledWith(person2.thumbnailPath);
+      expect(storageMock.unlink).toHaveBeenCalledWith(personUser1.thumbnailPath);
+      expect(storageMock.unlink).toHaveBeenCalledWith(personUser2.thumbnailPath);
     });
   });
 
@@ -87,7 +98,8 @@ describe(PersonService.name, () => {
     it('should store and retrieve the face as-is when there are no edits', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 200, height: 200 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 200 });
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
@@ -127,7 +139,8 @@ describe(PersonService.name, () => {
     it('should properly transform the coordinates when the asset is edited (Crop)', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 150, height: 200 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 200 });
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
@@ -199,7 +212,8 @@ describe(PersonService.name, () => {
     it('should properly transform the coordinates when the asset is edited (Rotate 90)', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 100, height: 200 });
       await ctx.newExif({ assetId: asset.id, exifImageWidth: 200, exifImageHeight: 100 });
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
@@ -264,7 +278,8 @@ describe(PersonService.name, () => {
     it('should properly transform the coordinates when the asset is edited (Mirror Horizontal)', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 200, height: 100 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 100, exifImageWidth: 200 });
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
@@ -329,7 +344,8 @@ describe(PersonService.name, () => {
     it('should properly transform the coordinates when the asset is edited (Crop + Rotate)', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 200, height: 150 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 200 });
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
@@ -403,7 +419,8 @@ describe(PersonService.name, () => {
     it('should properly transform the coordinates when the asset is edited (Crop + Mirror)', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 150, height: 100 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 100, exifImageWidth: 200 });
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
@@ -477,7 +494,8 @@ describe(PersonService.name, () => {
     it('should properly transform the coordinates when the asset is edited (Rotate + Mirror)', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 200, height: 150 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 150 });
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
@@ -548,7 +566,8 @@ describe(PersonService.name, () => {
     it('should properly transform the coordinates when the asset is edited (Crop + Rotate + Mirror)', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 150, height: 100 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 200 });
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
@@ -628,7 +647,8 @@ describe(PersonService.name, () => {
     it('should properly transform the coordinates with multiple mirrors in sequence', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 100, height: 100 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 100, exifImageWidth: 100 });
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();
@@ -699,7 +719,8 @@ describe(PersonService.name, () => {
     it('should properly handle exif orientation when creating a face on an edited asset', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
       const { asset } = await ctx.newAsset({ id: factory.uuid(), ownerId: user.id, width: 100, height: 100 });
       await ctx.newExif({ assetId: asset.id, exifImageHeight: 200, exifImageWidth: 100, orientation: '6' });
       ctx.getMock(JobRepository).queueAll.mockResolvedValue();

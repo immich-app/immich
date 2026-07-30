@@ -28,7 +28,7 @@ import { ReverseGeocodeResult } from 'src/repositories/map.repository';
 import { ImmichTags } from 'src/repositories/metadata.repository';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
-import { PersonTable } from 'src/schema/tables/person.table';
+import { PersonUserTable } from 'src/schema/tables/person-user.table';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
@@ -908,7 +908,13 @@ export class MetadataService extends BaseService {
   }
 
   private async applyTaggedFaces(
-    asset: { id: string; ownerId: string; faces: { id: string; sourceType: SourceType }[]; originalPath: string },
+    asset: {
+      id: string;
+      ownerId: string;
+      ownerTrustedGroupId: string;
+      faces: { id: string; sourceType: SourceType }[];
+      originalPath: string;
+    },
     tags: ImmichTags,
   ) {
     if (!tags.RegionInfo?.AppliedToDimensions || tags.RegionInfo.RegionList.length === 0) {
@@ -918,8 +924,8 @@ export class MetadataService extends BaseService {
     const facesToAdd: (Insertable<AssetFaceTable> & { assetId: string })[] = [];
     const existingNames = await this.personRepository.getDistinctNames(asset.ownerId, { withHidden: true });
     const existingNameMap = new Map(existingNames.map(({ id, name }) => [name.toLowerCase(), id]));
-    const missing: (Insertable<PersonTable> & { ownerId: string })[] = [];
-    const missingWithFaceAsset: { id: string; ownerId: string; faceAssetId: string }[] = [];
+    const missing: (Insertable<PersonUserTable> & { name: string; trustedGroupId: string })[] = [];
+    const missingWithFaceAsset: { personId: string; ownerId: string; thumbnailFaceAssetId: string }[] = [];
 
     const adjustedRegionInfo = this.orientRegionInfo(tags.RegionInfo, tags.Orientation);
     const imageWidth = adjustedRegionInfo.AppliedToDimensions.W;
@@ -953,16 +959,20 @@ export class MetadataService extends BaseService {
 
       facesToAdd.push(face);
       if (!existingNameMap.has(loweredName)) {
-        missing.push({ id: personId, ownerId: asset.ownerId, name: region.Name });
-        missingWithFaceAsset.push({ id: personId, ownerId: asset.ownerId, faceAssetId: face.id });
+        missing.push({
+          personId,
+          ownerId: asset.ownerId,
+          trustedGroupId: asset.ownerTrustedGroupId,
+          name: region.Name,
+        });
+        missingWithFaceAsset.push({ personId, ownerId: asset.ownerId, thumbnailFaceAssetId: face.id });
       }
     }
 
     if (missing.length > 0) {
-      this.logger.debugFn(() => `Creating missing persons: ${missing.map((p) => `${p.name}/${p.id}`)}`);
-      const newPersonIds = await this.personRepository.createAll(missing);
-      const jobs = newPersonIds.map((id) => ({ name: JobName.PersonGenerateThumbnail, data: { id } }) as const);
-      await this.jobRepository.queueAll(jobs);
+      this.logger.debugFn(() => `Creating missing persons: ${missing.map((p) => `${p.name}/${p.personId}`)}`);
+      await this.personRepository.createAll(missing);
+      await this.personUserRepository.createAll(missing);
     }
 
     const facesToRemove = asset.faces.filter((face) => face.sourceType === SourceType.Exif).map((face) => face.id);
@@ -981,7 +991,11 @@ export class MetadataService extends BaseService {
     }
 
     if (missingWithFaceAsset.length > 0) {
-      await this.personRepository.updateAll(missingWithFaceAsset);
+      await this.personUserRepository.updateAll(missingWithFaceAsset);
+      const jobs = missing.map(
+        ({ personId, ownerId }) => ({ name: JobName.PersonGenerateThumbnail, data: { personId, ownerId } }) as const,
+      );
+      await this.jobRepository.queueAll(jobs);
     }
   }
 

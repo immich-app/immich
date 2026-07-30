@@ -9,6 +9,7 @@ const authUser = {
     isAdmin: true,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
+    trustedGroupId: 'admin_trusted_group_id',
   },
   user1: {
     id: 'user-id',
@@ -17,6 +18,7 @@ const authUser = {
     isAdmin: false,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
+    trustedGroupId: 'user1_trusted_group_id',
   },
 };
 
@@ -36,6 +38,7 @@ export const authStub = {
       isAdmin: false,
       quotaSizeInBytes: null,
       quotaUsageInBytes: 0,
+      trustedGroupId: 'user2_trusted_group_id',
     },
     session: {
       id: 'token-id',

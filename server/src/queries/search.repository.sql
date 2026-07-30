@@ -224,9 +224,10 @@ with
       "asset_face"
       inner join "asset" on "asset"."id" = "asset_face"."assetId"
       inner join "face_search" on "face_search"."faceId" = "asset_face"."id"
+      inner join "user" on "user"."id" = "asset"."ownerId"
       left join "person" on "person"."id" = "asset_face"."personId"
     where
-      "asset"."ownerId" = any ($2::uuid[])
+      "user"."trustedGroupId" = ($2)
       and "asset"."deletedAt" is null
     order by
       "distance"

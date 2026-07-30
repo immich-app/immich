@@ -14,7 +14,8 @@ select
           "email",
           "avatarColor",
           "profileImagePath",
-          "profileChangedAt"
+          "profileChangedAt",
+          "trustedGroupId"
         from
           "user" as "sharedBy"
         where
@@ -32,7 +33,8 @@ select
           "email",
           "avatarColor",
           "profileImagePath",
-          "profileChangedAt"
+          "profileChangedAt",
+          "trustedGroupId"
         from
           "user" as "sharedWith"
         where
@@ -65,7 +67,8 @@ select
           "email",
           "avatarColor",
           "profileImagePath",
-          "profileChangedAt"
+          "profileChangedAt",
+          "trustedGroupId"
         from
           "user" as "sharedBy"
         where
@@ -83,7 +86,8 @@ select
           "email",
           "avatarColor",
           "profileImagePath",
-          "profileChangedAt"
+          "profileChangedAt",
+          "trustedGroupId"
         from
           "user" as "sharedWith"
         where
@@ -120,7 +124,8 @@ returning
           "email",
           "avatarColor",
           "profileImagePath",
-          "profileChangedAt"
+          "profileChangedAt",
+          "trustedGroupId"
         from
           "user" as "sharedBy"
         where
@@ -138,7 +143,8 @@ returning
           "email",
           "avatarColor",
           "profileImagePath",
-          "profileChangedAt"
+          "profileChangedAt",
+          "trustedGroupId"
         from
           "user" as "sharedWith"
         where

@@ -1035,7 +1035,14 @@ from
 where
   "person_audit"."id" < $1
   and "person_audit"."id" > $2
-  and "ownerId" = $3
+  and "trustedGroupId" = (
+    select
+      "trustedGroupId"
+    from
+      "user"
+    where
+      "user"."id" = $3
+  )
 order by
   "person_audit"."id" asc
 
@@ -1044,22 +1051,59 @@ select
   "id",
   "createdAt",
   "updatedAt",
-  "ownerId",
   "name",
   "birthDate",
-  "isHidden",
-  "isFavorite",
   "color",
   "updateId",
-  "faceAssetId"
+  "trustedGroupId"
 from
   "person" as "person"
 where
   "person"."updateId" < $1
   and "person"."updateId" > $2
-  and "ownerId" = $3
+  and "trustedGroupId" = (
+    select
+      "trustedGroupId"
+    from
+      "user"
+    where
+      "user"."id" = $3
+  )
 order by
   "person"."updateId" asc
+
+-- SyncRepository.personUser.getDeletes
+select
+  "id",
+  "personId",
+  "ownerId"
+from
+  "person_user_audit" as "person_user_audit"
+where
+  "person_user_audit"."id" < $1
+  and "person_user_audit"."id" > $2
+  and "ownerId" = $3
+order by
+  "person_user_audit"."id" asc
+
+-- SyncRepository.personUser.getUpserts
+select
+  "personId",
+  "ownerId",
+  "createdAt",
+  "updatedAt",
+  "isHidden",
+  "isFavorite",
+  "thumbnailFaceAssetId",
+  "updateId"
+from
+  "person_user" as "person_user"
+where
+  "person_user"."updateId" < $1
+  and "person_user"."updateId" > $2
+  and "ownerId" = $3
+order by
+  "person_user"."updateId" asc
 
 -- SyncRepository.stack.getDeletes
 select

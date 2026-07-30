@@ -42,6 +42,7 @@ import { MetadataRepository } from 'src/repositories/metadata.repository';
 import { NotificationRepository } from 'src/repositories/notification.repository';
 import { OcrRepository } from 'src/repositories/ocr.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
+import { PersonUserRepository } from 'src/repositories/person-user.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
 import { PluginRepository } from 'src/repositories/plugin.repository';
 import { SearchRepository } from 'src/repositories/search.repository';
@@ -67,6 +68,7 @@ import { AssetMetadataTable } from 'src/schema/tables/asset-metadata.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { MemoryTable } from 'src/schema/tables/memory.table';
+import { PersonUserTable } from 'src/schema/tables/person-user.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { SessionTable } from 'src/schema/tables/session.table';
 import { StackTable } from 'src/schema/tables/stack.table';
@@ -262,10 +264,16 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
     return { jobStatus, result };
   }
 
-  async newPerson(dto: Partial<Insertable<PersonTable>> & { ownerId: string }) {
+  async newPerson(dto: Partial<Insertable<PersonTable>> & { trustedGroupId: string }) {
     const person = mediumFactory.personInsert(dto);
     const result = await this.get(PersonRepository).create(person);
     return { person, result };
+  }
+
+  async newPersonUser(dto: Partial<Insertable<PersonUserTable>> & { personId: string; ownerId: string }) {
+    const personUser = mediumFactory.personUserInsert(dto);
+    const result = await this.get(PersonUserRepository).create(personUser);
+    return { personUser, result };
   }
 
   async newSession(dto: Partial<Insertable<SessionTable>> & { userId: string }) {
@@ -281,6 +289,7 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
       session,
       user: {
         id: user.id,
+        trustedGroupId: user.trustedGroupId,
         name: user.name,
         email: user.email,
       },
@@ -451,6 +460,7 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
+    case PersonUserRepository:
     case SearchRepository:
     case SessionRepository:
     case SharedLinkRepository:
@@ -519,6 +529,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case OcrRepository:
     case PartnerRepository:
     case PersonRepository:
+    case PersonUserRepository:
     case SessionRepository:
     case SyncRepository:
     case SyncCheckpointRepository:
@@ -675,23 +686,32 @@ const assetJobStatusInsert = (
   };
 };
 
-const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: string }) => {
+const personInsert = (person: Partial<Insertable<PersonTable>> & { trustedGroupId: string }) => {
   const defaults = {
     birthDate: person.birthDate || null,
     color: person.color || null,
     createdAt: person.createdAt || newDate(),
-    faceAssetId: person.faceAssetId || null,
     id: person.id || newUuid(),
-    isFavorite: person.isFavorite || false,
-    isHidden: person.isHidden || false,
     name: person.name || 'Test Name',
-    ownerId: person.ownerId || newUuid(),
-    thumbnailPath: person.thumbnailPath || '/path/to/thumbnail.jpg',
   };
   return {
     ...defaults,
     ...person,
   };
+};
+
+const personUserInsert = (personUser: Partial<Insertable<PersonUserTable>>) => {
+  const defaults = {
+    ownerId: newUuid(),
+    personId: newUuid(),
+    createdAt: newDate(),
+    isFavorite: false,
+    isHidden: false,
+    thumbnailFaceAssetId: null,
+    thumbnailPath: '/path/to/thumbnail.jpg',
+  } satisfies Insertable<PersonUserTable>;
+
+  return { ...defaults, ...personUser };
 };
 
 const sha256 = (value: string) => createHash('sha256').update(value).digest();
@@ -732,6 +752,7 @@ const userInsert = (user: Partial<Insertable<UserTable>> = {}) => {
     avatarColor: null,
     quotaSizeInBytes: null,
     quotaUsageInBytes: 0,
+    trustedGroupId: newUuid(),
   };
 
   return { ...defaults, ...user, id };
@@ -835,6 +856,7 @@ export const mediumFactory = {
   albumInsert,
   faceInsert,
   personInsert,
+  personUserInsert,
   sessionInsert,
   syncStream,
   userInsert,
