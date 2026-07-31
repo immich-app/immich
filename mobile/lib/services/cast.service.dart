@@ -109,7 +109,7 @@ class CastService {
     return bufferedExpiration.isAfter(DateTime.now());
   }
 
-  void loadMedia(RemoteAsset asset, bool reload) async {
+  Future<void> loadMedia(RemoteAsset asset, bool reload) async {
     if (!isConnected) {
       return;
     } else if (asset.id == currentAssetId && !reload) {

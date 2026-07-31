@@ -51,7 +51,7 @@ class CastNotifier extends StateNotifier<CastManagerState> {
   }
 
   void loadMedia(RemoteAsset asset, bool reload) {
-    _castService.loadMedia(asset, reload);
+    unawaited(_castService.loadMedia(asset, reload));
   }
 
   Future<void> connect(dynamic device) async {
