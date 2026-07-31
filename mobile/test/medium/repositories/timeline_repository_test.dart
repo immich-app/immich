@@ -102,4 +102,50 @@ void main() {
       expect(remote.localId, local.id);
     });
   });
+
+  group('main backup selection', () {
+    test('excludes local assets whose album is not selected for backup', () async {
+      final user = await ctx.newUser();
+      final album = await ctx.newLocalAlbum(backupSelection: .none);
+      final asset = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: asset.id);
+
+      final query = sut.main([user.id], .day);
+
+      expect(await query.bucketSource().first, isEmpty);
+      expect(await query.assetSource(0, 10), isEmpty);
+    });
+
+    test('excludes local assets in an excluded album even when also in a selected album', () async {
+      final user = await ctx.newUser();
+      final selected = await ctx.newLocalAlbum(backupSelection: .selected);
+      final excluded = await ctx.newLocalAlbum(backupSelection: .excluded);
+      final asset = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: selected.id, assetId: asset.id);
+      await ctx.newLocalAlbumAsset(albumId: excluded.id, assetId: asset.id);
+
+      final query = sut.main([user.id], .day);
+
+      expect(await query.bucketSource().first, isEmpty);
+      expect(await query.assetSource(0, 10), isEmpty);
+    });
+
+    test('ignoreBackupSelection includes local assets regardless of album selection', () async {
+      final user = await ctx.newUser();
+      final none = await ctx.newLocalAlbum(backupSelection: .none);
+      final excluded = await ctx.newLocalAlbum(backupSelection: .excluded);
+      final unselectedAsset = await ctx.newLocalAsset();
+      final excludedAsset = await ctx.newLocalAsset();
+      await ctx.newLocalAlbumAsset(albumId: none.id, assetId: unselectedAsset.id);
+      await ctx.newLocalAlbumAsset(albumId: excluded.id, assetId: excludedAsset.id);
+
+      final query = sut.main([user.id], .day, ignoreBackupSelection: true);
+
+      final buckets = await query.bucketSource().first;
+      expect(buckets.fold<int>(0, (sum, bucket) => sum + bucket.assetCount), 2);
+
+      final assets = await query.assetSource(0, 10);
+      expect(assets.map((asset) => (asset as LocalAsset).id), containsAll([unselectedAsset.id, excludedAsset.id]));
+    });
+  });
 }

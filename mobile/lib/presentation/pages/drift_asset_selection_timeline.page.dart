@@ -22,7 +22,7 @@ class DriftAssetSelectionTimelinePage extends ConsumerWidget {
         ),
         timelineServiceProvider.overrideWith((ref) {
           final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
-          final timelineService = ref.watch(timelineFactoryProvider).main(timelineUsers);
+          final timelineService = ref.watch(timelineFactoryProvider).main(timelineUsers, ignoreBackupSelection: true);
           ref.onDispose(timelineService.dispose);
           return timelineService;
         }),
