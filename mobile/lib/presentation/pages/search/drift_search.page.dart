@@ -59,7 +59,7 @@ class DriftSearchPage extends HookConsumerWidget {
         location: SearchLocationFilter(),
         camera: SearchCameraFilter(),
         date: SearchDateFilter(),
-        display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+        display: const SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
         rating: SearchRatingFilter(),
         mediaType: AssetType.other,
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
@@ -455,9 +455,9 @@ class DriftSearchPage extends HookConsumerWidget {
 
       void handleOnSelect(Map<DisplayOption, bool> value) {
         display = display.copyWith(
-          isNotInAlbum: value[DisplayOption.notInAlbum],
-          isArchive: value[DisplayOption.archive],
-          isFavorite: value[DisplayOption.favorite],
+          isNotInAlbum: value[DisplayOption.notInAlbum] ?? display.isNotInAlbum,
+          isArchive: value[DisplayOption.archive] ?? display.isArchive,
+          isFavorite: value[DisplayOption.favorite] ?? display.isFavorite,
         );
       }
 
@@ -465,7 +465,7 @@ class DriftSearchPage extends HookConsumerWidget {
         displayOptionCurrentFilterWidget.value = null;
         search(
           filter.value.copyWith(
-            display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+            display: const SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
           ),
         );
       }
