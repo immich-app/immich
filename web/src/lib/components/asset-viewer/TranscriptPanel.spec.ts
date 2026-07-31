@@ -1,6 +1,3 @@
-import { videoPlayerManager } from '$lib/managers/video-player-manager.svelte';
-import { renderWithTooltips } from '$tests/helpers';
-import { assetFactory } from '@test-data/factories/asset-factory';
 import {
   AssetTypeEnum,
   getAssetTranscript,
@@ -9,6 +6,9 @@ import {
   type TranscriptSegmentResponseDto,
 } from '@immich/sdk';
 import { fireEvent, waitFor } from '@testing-library/svelte';
+import { videoPlayerManager } from '$lib/managers/video-player-manager.svelte';
+import { renderWithTooltips } from '$tests/helpers';
+import { assetFactory } from '@test-data/factories/asset-factory';
 import TranscriptPanel from './TranscriptPanel.svelte';
 
 vi.mock('@immich/sdk', async () => {
@@ -135,6 +135,7 @@ describe('TranscriptPanel', () => {
     expect(queryByText('transcript_follow_playback')).toBeNull();
 
     const list = container.querySelector('ol') as HTMLElement;
+    list.scrollTop = 240;
     await fireEvent.scroll(list);
 
     expect(await findByText('transcript_follow_playback')).toBeInTheDocument();
@@ -142,6 +143,25 @@ describe('TranscriptPanel', () => {
     await fireEvent.click(await findByText('transcript_follow_playback'));
 
     await waitFor(() => expect(queryByText('transcript_follow_playback')).toBeNull());
+    videoPlayerManager.unregister(player);
+  });
+
+  it('does not mistake the list resizing under a filter for the reader scrolling', async () => {
+    const player = fakePlayer();
+    videoPlayerManager.register(asset.id, player);
+    vi.mocked(getAssetTranscript).mockResolvedValue(
+      transcript(TranscriptionStatus.Complete, [segment(0, 'Hello there'), segment(4, 'General Kenobi')]),
+    );
+
+    const { container, findByText, getByPlaceholderText, queryByText } = renderPanel();
+    await findByText('Hello there');
+
+    await fireEvent.input(getByPlaceholderText('filter_transcript'), { target: { value: 'kenobi' } });
+    // Fewer lines is a shorter scroll area, and the browser clamps the scroll position to fit,
+    // which reaches the panel as a scroll event it did not cause.
+    await fireEvent.scroll(container.querySelector('ol') as HTMLElement);
+
+    expect(queryByText('transcript_follow_playback')).toBeNull();
     videoPlayerManager.unregister(player);
   });
 

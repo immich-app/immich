@@ -123,28 +123,40 @@
     Duration.fromObject({ seconds: Math.floor(seconds) }).toFormat(timestampFormat);
 
   const scrollToActiveSegment = () => {
+    if (!listElement) {
+      return;
+    }
+
     const node = activeNode;
-    if (!listElement || !node) {
-      return;
+    if (node) {
+      const container = listElement.getBoundingClientRect();
+      const line = node.getBoundingClientRect();
+      // Only when the line has left the visible part of the panel, so that following playback is a
+      // nudge every few lines rather than a jump on every one.
+      if (line.top < container.top || line.bottom > container.bottom) {
+        listElement.scrollTop += line.top - container.top - (container.height - line.height) / 2;
+      }
     }
 
-    const container = listElement.getBoundingClientRect();
-    const line = node.getBoundingClientRect();
-    // Only when the line has left the visible part of the panel, so that following playback is a
-    // nudge every few lines rather than a jump on every one.
-    if (line.top >= container.top && line.bottom <= container.bottom) {
-      return;
-    }
-
-    listElement.scrollTop += line.top - container.top - (container.height - line.height) / 2;
     expectedScrollTop = listElement.scrollTop;
   };
 
-  // Re-runs whenever the highlighted line moves, including when filtering changes which lines exist.
+  // Re-runs whenever the highlighted line moves and whenever filtering changes which lines exist.
   $effect(() => {
-    if (followPlayback && activeNode) {
-      scrollToActiveSegment();
+    const count = visibleSegments.length;
+    if (!listElement) {
+      return;
     }
+
+    if (followPlayback && count > 0) {
+      scrollToActiveSegment();
+      return;
+    }
+
+    // Filtering resizes the scrollable area and the browser clamps the scroll position to fit.
+    // That is this panel's own doing rather than the reader's, so it is adopted instead of being
+    // read as manual scrolling and switching following off.
+    expectedScrollTop = listElement.scrollTop;
   });
 
   /**
