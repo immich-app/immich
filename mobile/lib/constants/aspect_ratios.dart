@@ -42,8 +42,8 @@ class CropAspectRatio {
   }
 }
 
-const aspectRatioFree = CropAspectRatio(customLabel: "Free", icon: Icons.crop_free);
-const aspectRatioOriginal = CropAspectRatio(customLabel: "Original", icon: Icons.crop_original);
+const aspectRatioFree = CropAspectRatio.free;
+const aspectRatioOriginal = CropAspectRatio.original;
 
 final aspectRatioPresets = [
   CropAspectRatio.free,

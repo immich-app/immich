@@ -70,13 +70,14 @@ class LoginForm extends HookConsumerWidget {
     final isOauthEnable = useState<bool>(false);
     final isPasswordLoginEnable = useState<bool>(false);
     final oAuthButtonLabel = useState<String>('OAuth');
-    final logoAnimationController = useAnimationController(duration: const Duration(seconds: 60))..repeat();
+    final logoAnimationController = useAnimationController(duration: const Duration(seconds: 60));
+    unawaited(logoAnimationController.repeat());
     final serverInfo = ref.watch(serverInfoProvider);
     final warningMessage = useState<String?>(null);
     final loginFormKey = GlobalKey<FormState>();
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
 
-    checkVersionMismatch() async {
+    Future<void> checkVersionMismatch() async {
       try {
         final packageInfo = await PackageInfo.fromPlatform();
         final appSemVer = SemVer.fromString(packageInfo.version);
@@ -114,6 +115,10 @@ class LoginForm extends HookConsumerWidget {
 
         serverEndpoint.value = endpoint;
       } on ApiException catch (e) {
+        if (!context.mounted) {
+          return;
+        }
+
         ImmichToast.show(
           context: context,
           msg: e.message ?? 'login_form_api_exception'.tr(),
@@ -123,6 +128,10 @@ class LoginForm extends HookConsumerWidget {
         isOauthEnable.value = false;
         isPasswordLoginEnable.value = true;
       } on HandshakeException {
+        if (!context.mounted) {
+          return;
+        }
+
         ImmichToast.show(
           context: context,
           msg: 'login_form_handshake_exception'.tr(),
@@ -132,6 +141,10 @@ class LoginForm extends HookConsumerWidget {
         isOauthEnable.value = false;
         isPasswordLoginEnable.value = true;
       } catch (e) {
+        if (!context.mounted) {
+          return;
+        }
+
         ImmichToast.show(
           context: context,
           msg: 'login_form_server_error'.tr(),
@@ -151,13 +164,13 @@ class LoginForm extends HookConsumerWidget {
       return null;
     }, []);
 
-    populateTestLoginInfo() {
+    void populateTestLoginInfo() {
       emailController.text = 'demo@immich.app';
       passwordController.text = 'demo';
       serverEndpointController.text = 'https://demo.immich.app';
     }
 
-    populateTestLoginInfo1() {
+    void populateTestLoginInfo1() {
       emailController.text = 'testuser@email.com';
       passwordController.text = 'password';
       serverEndpointController.text = 'http://10.1.15.216:2283/api';
@@ -177,8 +190,12 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
-    getManageMediaPermission() async {
+    Future<void> getManageMediaPermission() async {
       final hasPermission = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
+      if (!context.mounted) {
+        return;
+      }
+
       if (!hasPermission) {
         await showDialog(
           context: context,
@@ -226,7 +243,7 @@ class LoginForm extends HookConsumerWidget {
 
     bool isSyncRemoteDeletionsMode() => Platform.isAndroid && Store.get(StoreKey.manageLocalMediaAndroid, false);
 
-    login() async {
+    Future<void> login() async {
       TextInput.finishAutofillContext();
 
       // Invalidate all api repository provider instance to take into account new access token
@@ -234,6 +251,10 @@ class LoginForm extends HookConsumerWidget {
 
       try {
         final result = await ref.read(authProvider.notifier).login(emailController.text, passwordController.text);
+
+        if (!context.mounted) {
+          return;
+        }
 
         if (result.shouldChangePassword && !result.isAdmin) {
           unawaited(context.pushRoute(const ChangePasswordRoute()));
@@ -245,10 +266,18 @@ class LoginForm extends HookConsumerWidget {
           unawaited(handleSyncFlow());
           ref.read(websocketProvider.notifier).connect();
           unawaited(ref.read(featureMessageServiceProvider).markSeen());
+          if (!context.mounted) {
+            return;
+          }
+
           unawaited(context.router.replaceAll([const TabShellRoute()]));
           return;
         }
       } catch (error) {
+        if (!context.mounted) {
+          return;
+        }
+
         ImmichToast.show(
           context: context,
           msg: "login_form_failed_login".tr(),
@@ -277,13 +306,13 @@ class LoginForm extends HookConsumerWidget {
     }
 
     Future<String> generatePKCECodeChallenge(String codeVerifier) async {
-      var bytes = utf8.encode(codeVerifier);
-      var digest = sha256.convert(bytes);
+      final bytes = utf8.encode(codeVerifier);
+      final digest = sha256.convert(bytes);
       return base64Url.encode(digest.bytes).replaceAll('=', '');
     }
 
-    oAuthLogin() async {
-      var oAuthService = ref.watch(oAuthServiceProvider);
+    Future<void> oAuthLogin() async {
+      final oAuthService = ref.watch(oAuthServiceProvider);
       String? oAuthServerUrl;
 
       final state = generateRandomString(32);
@@ -302,6 +331,10 @@ class LoginForm extends HookConsumerWidget {
         invalidateAllApiRepositoryProviders(ref);
       } catch (error, stack) {
         log.severe('Error getting OAuth server Url: $error', stack);
+
+        if (!context.mounted) {
+          return;
+        }
 
         ImmichToast.show(
           context: context,
@@ -333,11 +366,19 @@ class LoginForm extends HookConsumerWidget {
             }
             unawaited(handleSyncFlow());
             unawaited(ref.read(featureMessageServiceProvider).markSeen());
+            if (!context.mounted) {
+              return;
+            }
+
             unawaited(context.router.replaceAll([const TabShellRoute()]));
             return;
           }
         } catch (error, stack) {
           log.severe('Error logging in with OAuth: $error', stack);
+
+          if (!context.mounted) {
+            return;
+          }
 
           ImmichToast.show(
             context: context,
@@ -347,6 +388,10 @@ class LoginForm extends HookConsumerWidget {
           );
         } finally {}
       } else {
+        if (!context.mounted) {
+          return;
+        }
+
         ImmichToast.show(
           context: context,
           msg: "login_form_failed_get_oauth_server_disable".tr(),
@@ -357,8 +402,8 @@ class LoginForm extends HookConsumerWidget {
       }
     }
 
-    buildVersionCompatWarning() {
-      checkVersionMismatch();
+    SingleChildRenderObjectWidget buildVersionCompatWarning() {
+      unawaited(checkVersionMismatch());
 
       if (warningMessage.value == null) {
         return const SizedBox.shrink();

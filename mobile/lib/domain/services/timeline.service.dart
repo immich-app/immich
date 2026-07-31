@@ -106,32 +106,34 @@ class TimelineService {
 
   TimelineService._({required this._assetSource, required this._bucketSource, required this.origin}) {
     _bucketSubscription = _bucketSource().listen((buckets) {
-      _mutex.run(() async {
-        final totalAssets = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
+      unawaited(
+        _mutex.run(() async {
+          final totalAssets = buckets.fold<int>(0, (acc, bucket) => acc + bucket.assetCount);
 
-        if (totalAssets == 0) {
-          _bufferOffset = 0;
-          _buffer = [];
-        } else {
-          final int offset;
-          final int count;
-          // When the buffer is empty or the old bufferOffset is greater than the new total assets,
-          // we need to reset the buffer and load the first batch of assets.
-          if (_bufferOffset >= totalAssets || _buffer.isEmpty) {
-            offset = 0;
-            count = kTimelineAssetLoadBatchSize;
+          if (totalAssets == 0) {
+            _bufferOffset = 0;
+            _buffer = [];
           } else {
-            offset = _bufferOffset;
-            count = math.min(_buffer.length, totalAssets - _bufferOffset);
+            final int offset;
+            final int count;
+            // When the buffer is empty or the old bufferOffset is greater than the new total assets,
+            // we need to reset the buffer and load the first batch of assets.
+            if (_bufferOffset >= totalAssets || _buffer.isEmpty) {
+              offset = 0;
+              count = kTimelineAssetLoadBatchSize;
+            } else {
+              offset = _bufferOffset;
+              count = math.min(_buffer.length, totalAssets - _bufferOffset);
+            }
+            _buffer = await _assetSource(offset, count);
+            _bufferOffset = offset;
           }
-          _buffer = await _assetSource(offset, count);
-          _bufferOffset = offset;
-        }
 
-        // change the state's total assets count only after the buffer is reloaded
-        _totalAssets = totalAssets;
-        EventStream.shared.emit(const TimelineReloadEvent());
-      });
+          // change the state's total assets count only after the buffer is reloaded
+          _totalAssets = totalAssets;
+          EventStream.shared.emit(const TimelineReloadEvent());
+        }),
+      );
     });
   }
 
@@ -178,7 +180,7 @@ class TimelineService {
     if (!hasRange(index, count)) {
       throw RangeError('TimelineService::getAssets Index out of range');
     }
-    int start = index - _bufferOffset;
+    final int start = index - _bufferOffset;
     return _buffer.slice(start, start + count);
   }
 

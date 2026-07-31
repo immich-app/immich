@@ -41,7 +41,7 @@ class _DateTimePicker extends HookWidget {
       }
     }
 
-    Duration? tzOffset = initialTZOffset ?? initialDateTime?.timeZoneOffset;
+    final Duration? tzOffset = initialTZOffset ?? initialDateTime?.timeZoneOffset;
 
     if (tzOffset != null) {
       final offsetInMilli = tzOffset.inMilliseconds;
@@ -80,7 +80,7 @@ class _DateTimePicker extends HookWidget {
         )
         .toList();
 
-    void pickDate() async {
+    Future<void> pickDate() async {
       final now = DateTime.now();
       // Handles cases where the date from the asset is far off in the future
       final initialDate = date.value.isAfter(now) ? now : date.value;
@@ -90,7 +90,7 @@ class _DateTimePicker extends HookWidget {
         firstDate: DateTime(1800),
         lastDate: now,
       );
-      if (newDate == null) {
+      if (newDate == null || !context.mounted) {
         return;
       }
 

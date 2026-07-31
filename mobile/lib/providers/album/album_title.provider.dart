@@ -3,11 +3,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 class AlbumTitleNotifier extends StateNotifier<String> {
   AlbumTitleNotifier() : super("");
 
-  setAlbumTitle(String title) {
+  void setAlbumTitle(String title) {
     state = title;
   }
 
-  clearAlbumTitle() {
+  void clearAlbumTitle() {
     state = "";
   }
 }

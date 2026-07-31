@@ -18,7 +18,7 @@ class FolderService {
     final paths = await _folderApiRepository.getAllUniquePaths();
 
     // Create folder structure
-    Map<String, List<RecursiveFolder>> folderMap = {};
+    final Map<String, List<RecursiveFolder>> folderMap = {};
 
     for (String fullPath in paths) {
       if (fullPath == '/') {
@@ -30,12 +30,12 @@ class FolderService {
         fullPath = '/$fullPath';
       }
 
-      List<String> segments = fullPath.split('/')..removeWhere((s) => s.isEmpty);
+      final List<String> segments = fullPath.split('/')..removeWhere((s) => s.isEmpty);
 
       String currentPath = '';
 
       for (int i = 0; i < segments.length; i++) {
-        String parentPath = currentPath.isEmpty ? '_root_' : currentPath;
+        final String parentPath = currentPath.isEmpty ? '_root_' : currentPath;
         currentPath = i == 0 ? '/${segments[i]}' : '$currentPath/${segments[i]}';
 
         if (!folderMap.containsKey(parentPath)) {
@@ -55,7 +55,7 @@ class FolderService {
     }
 
     void attachSubfolders(RecursiveFolder folder) {
-      String fullPath = folder.path.isEmpty ? '/${folder.name}' : '${folder.path}/${folder.name}';
+      final String fullPath = folder.path.isEmpty ? '/${folder.name}' : '${folder.path}/${folder.name}';
 
       if (folderMap.containsKey(fullPath)) {
         folder.subfolders.addAll(folderMap[fullPath]!);
@@ -67,7 +67,7 @@ class FolderService {
       }
     }
 
-    List<RecursiveFolder> rootSubfolders = folderMap['_root_'] ?? [];
+    final List<RecursiveFolder> rootSubfolders = folderMap['_root_'] ?? [];
     // Sort root subfolders based on order parameter
     rootSubfolders.sort((a, b) => order == SortOrder.desc ? b.name.compareTo(a.name) : a.name.compareTo(b.name));
 
@@ -83,7 +83,7 @@ class FolderService {
       if (folder is RecursiveFolder) {
         String fullPath = folder.path.isEmpty ? folder.name : '${folder.path}/${folder.name}';
         fullPath = fullPath[0] == '/' ? fullPath.substring(1) : fullPath;
-        var result = await _folderApiRepository.getAssetsForPath(fullPath);
+        final result = await _folderApiRepository.getAssetsForPath(fullPath);
 
         if (order == SortOrder.desc) {
           result.sort((a, b) => b.createdAt.compareTo(a.createdAt));

@@ -58,13 +58,13 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
           working_directory: ./mobile
@@ -76,34 +76,8 @@ jobs:
         run: flutter pub get --enforce-lockfile
         working-directory: ./mobile/packages/ui
 
-      - name: Generate translation files
-        run: mise //mobile:codegen:translation
-
-      - name: Run Build Runner
-        run: mise //mobile:codegen:dart
-
-      - name: Generate platform API
-        run: mise //mobile:codegen:pigeon
-
-      - name: Find file changes
-        uses: tj-actions/verify-changed-files@a1c6acee9df209257a246f2cc6ae8cb6581c1edf # v20.0.4
-        id: verify-changed-files
-        with:
-          files: |
-            mobile/**/*.g.dart
-            mobile/**/*.gr.dart
-            mobile/**/*.drift.dart
-            mobile/**/*.g.swift
-            mobile/**/*.g.kt
-
-      - name: Verify files have not changed
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
-        env:
-          CHANGED_FILES: ${{ steps.verify-changed-files.outputs.changed_files }}
-        run: |
-          echo "ERROR: Generated files not up to date! Run 'mise //mobile:codegen:dart' and 'mise //mobile:codegen:pigeon'"
-          echo "Changed files: ${CHANGED_FILES}"
-          exit 1
+      - name: Perform codegen
+        run: mise //mobile:codegen
 
       - name: Run analyze
         run: mise //mobile:analyze

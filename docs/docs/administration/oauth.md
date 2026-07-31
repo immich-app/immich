@@ -280,7 +280,7 @@ Configuration of OAuth in Immich System Settings
 | ---------------------------- | ----------------------------------------------------- |
 | Issuer URL                   | `https://<KEYCLOAK_DOMAIN>/realms/<YOUR_REALM>`       |
 | Client ID                    | immich                                                |
-| Client Secret                | can be optained from Clients -> immich -> Credentials |
+| Client Secret                | can be obtained from Clients -> immich -> Credentials |
 | Scope                        | openid email profile                                  |
 | Signing Algorithm            | RS256                                                 |
 | Storage Label Claim          | preferred_username                                    |

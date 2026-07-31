@@ -441,7 +441,12 @@ export class SyncService extends BaseService {
     const upserts = this.syncRepository.album.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
       const albumUsers = await this.syncRepository.album.getAlbumUsers(data.id);
-      send(response, { type: upsertType, ids: [updateId], data: syncAlbumV2ToV1(data, albumUsers) });
+      send(response, {
+        type: upsertType,
+        ids: [updateId],
+        // TODO: return null instead of '' in v4
+        data: syncAlbumV2ToV1({ ...data, description: data.description ?? '' }, albumUsers),
+      });
     }
   }
 
@@ -455,7 +460,8 @@ export class SyncService extends BaseService {
     const upsertType = SyncEntityType.AlbumV2;
     const upserts = this.syncRepository.album.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
-      send(response, { type: upsertType, ids: [updateId], data });
+      // TODO: return null instead of '' in v4
+      send(response, { type: upsertType, ids: [updateId], data: { ...data, description: data.description ?? '' } });
     }
   }
 

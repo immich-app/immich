@@ -186,13 +186,17 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
             assets: selectedAssets,
           );
 
-      if (album != null && context.mounted) {
-        unawaited(context.replaceRoute(RemoteAlbumRoute(album: album)));
+      if (!mounted || album == null) {
+        return;
       }
+
+      unawaited(context.replaceRoute(RemoteAlbumRoute(album: album)));
     } catch (_) {
-      if (context.mounted) {
-        ImmichToast.show(context: context, toastType: ToastType.error, msg: 'errors.failed_to_create_album'.t());
+      if (!mounted) {
+        return;
       }
+
+      ImmichToast.show(context: context, toastType: ToastType.error, msg: 'errors.failed_to_create_album'.t());
     } finally {
       if (mounted) {
         setState(() => isCreatingAlbum = false);

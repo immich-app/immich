@@ -1,8 +1,10 @@
+import 'package:immich_mobile/domain/services/tag.service.dart';
+import 'package:immich_mobile/infrastructure/repositories/remote_exif.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/auth.repository.dart';
 import 'package:immich_mobile/repositories/auth_api.repository.dart';
-import 'package:immich_mobile/domain/services/tag.service.dart';
+import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -17,3 +19,7 @@ class MockAuthApiRepository extends Mock implements AuthApiRepository {}
 class MockAuthRepository extends Mock implements AuthRepository {}
 
 class MockTagService extends Mock implements TagService {}
+
+class MockDownloadRepository extends Mock implements DownloadRepository {}
+
+class MockRemoteExifRepository extends Mock implements RemoteExifRepository {}
