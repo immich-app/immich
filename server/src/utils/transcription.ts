@@ -1,4 +1,5 @@
 import { TranscriptionStatus } from 'src/enum';
+import { tokenizeForSearch } from 'src/utils/database';
 
 /**
  * Audio handed to the transcription model is raw little-endian signed 16-bit mono PCM.
@@ -255,6 +256,28 @@ export const isHallucination = (segment: SegmentQuality, thresholds: QualityThre
  */
 export const filterHallucinations = <T extends SegmentQuality>(segments: T[], thresholds: QualityThresholds): T[] =>
   segments.filter((segment) => !isHallucination(segment, thresholds));
+
+/** A segment as read for indexing: the model's text, a possible human correction, and its quality signals. */
+export type SearchableSegment = SegmentQuality & { text: string; correctedText: string | null };
+
+/**
+ * Builds the flattened, searchable text for one asset's transcript, for storage in the trigram-indexed
+ * search table.
+ *
+ * A correction is preferred over the model's own text wherever one exists — search should find what
+ * the user fixed a misheard name to, not what the model originally wrote. Hallucinated segments are
+ * excluded by the same thresholds the caption track and transcript panel apply at read time; a
+ * hallucinated stock phrase indexed across hundreds of videos would match nearly everything, with no
+ * cause a user could diagnose.
+ *
+ * Tokenized with the same tokenizer the search query is tokenized with at read time, so indexing and
+ * querying agree on where one word ends and the next begins — this is what a shared trigram
+ * word-similarity match depends on.
+ */
+export const buildTranscriptSearchText = (segments: SearchableSegment[], thresholds: QualityThresholds): string =>
+  filterHallucinations(segments, thresholds)
+    .flatMap((segment) => tokenizeForSearch(segment.correctedText ?? segment.text))
+    .join(' ');
 
 /**
  * The same chunk takes seconds on a GPU and minutes on a low-power CPU, so the timeout scales with

@@ -95,6 +95,10 @@ export interface SearchOcrOptions {
   ocr?: string;
 }
 
+export interface SearchTranscriptOptions {
+  transcript?: string;
+}
+
 export interface SearchPeopleOptions {
   personIds?: string[];
 }
@@ -126,7 +130,8 @@ type BaseAssetSearchOptions = SearchDateOptions &
   SearchPeopleOptions &
   SearchTagOptions &
   SearchAlbumOptions &
-  SearchOcrOptions;
+  SearchOcrOptions &
+  SearchTranscriptOptions;
 
 export type AssetSearchOptions = Omit<BaseAssetSearchOptions, 'visibility'> &
   SearchRelationOptions & { visibility?: AssetVisibility | 'not-locked' };
@@ -156,7 +161,8 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchUserIdOptions &
   SearchPeopleOptions &
   SearchTagOptions &
-  SearchOcrOptions & { visibility?: AssetVisibility | 'not-locked' };
+  SearchOcrOptions &
+  SearchTranscriptOptions & { visibility?: AssetVisibility | 'not-locked' };
 
 export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
 

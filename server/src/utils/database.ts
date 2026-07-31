@@ -489,6 +489,14 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
         .innerJoin('ocr_search', 'asset.id', 'ocr_search.assetId')
         .where(() => sql`f_unaccent(ocr_search.text) %>> f_unaccent(${tokenizeForSearch(options.ocr!).join(' ')})`),
     )
+    .$if(!!options.transcript, (qb) =>
+      qb
+        .innerJoin('transcript_search', 'asset.id', 'transcript_search.assetId')
+        .where(
+          () =>
+            sql`f_unaccent(transcript_search.text) %>> f_unaccent(${tokenizeForSearch(options.transcript!).join(' ')})`,
+        ),
+    )
     .$if(!!options.type, (qb) => qb.where('asset.type', '=', options.type!))
     .$if(options.isFavorite !== undefined, (qb) => qb.where('asset.isFavorite', '=', options.isFavorite!))
     .$if(options.isOffline !== undefined, (qb) => qb.where('asset.isOffline', '=', options.isOffline!))
@@ -738,6 +746,18 @@ function branchPredicates(eb: AssetExpressionBuilder, branch: SearchFilterBranch
           ),
         ]
       : []),
+    ...(branch.transcript
+      ? [
+          eb.exists(
+            eb
+              .selectFrom('transcript_search')
+              .whereRef('transcript_search.assetId', '=', 'asset.id')
+              .where(
+                sql<SqlBool>`f_unaccent(transcript_search.text) %>> f_unaccent(${tokenizeForSearch(branch.transcript.matches).join(' ')})`,
+              ),
+          ),
+        ]
+      : []),
     ...comparisonPredicates(eb, 'asset_exif.rating', branch.rating),
     ...comparisonPredicates(eb, 'asset_exif.fileSizeInByte', branch.fileSizeInBytes),
     ...comparisonPredicates(eb, 'asset.fileCreatedAt', branch.takenAt),
@@ -838,6 +858,10 @@ export const searchMetadataV3Examples: GenerateSqlQueries[] = [
   {
     name: 'string-similarity-ocr',
     params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { ocr: { matches: DummyValue.STRING } } }],
+  },
+  {
+    name: 'string-similarity-transcript',
+    params: [{ size: 100 }, { userIds: [DummyValue.UUID], filter: { transcript: { matches: DummyValue.STRING } } }],
   },
   {
     name: 'ids-any',

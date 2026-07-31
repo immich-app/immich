@@ -384,6 +384,89 @@ describe('/search', () => {
       expect(status).toBe(200);
       expect(body.assets.items).toEqual([expect.objectContaining({ id: asset.id })]);
     });
+
+    describe('by transcript', () => {
+      let assetWithTranscript: AssetMediaResponseDto;
+      let assetStillProcessing: AssetMediaResponseDto;
+
+      beforeAll(async () => {
+        assetWithTranscript = await utils.createAsset(admin.accessToken, {
+          assetData: { filename: 'grandmother-farm.mp4' },
+        });
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: assetWithTranscript.id });
+        // Seeded directly: the ML container in e2e does not perform real speech recognition. This
+        // is what the transcription job itself writes once, at completion.
+        await utils.setTranscriptSearchText(assetWithTranscript.id, 'grandmother tells the story about the farm café');
+
+        // No transcript_search row, as if transcription were still in progress.
+        assetStillProcessing = await utils.createAsset(admin.accessToken, {
+          assetData: { filename: 'still-processing.mp4' },
+        });
+        await utils.waitForWebsocketEvent({ event: 'assetUpload', id: assetStillProcessing.id });
+      }, 30_000);
+
+      it('should return the video containing a spoken phrase', async () => {
+        const { status, body } = await request(app)
+          .post('/search/metadata')
+          .send({ transcript: 'story about the farm' })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body.assets.items).toEqual([expect.objectContaining({ id: assetWithTranscript.id })]);
+      });
+
+      it('should tolerate accents and diacritics', async () => {
+        const { status, body } = await request(app)
+          .post('/search/metadata')
+          .send({ transcript: 'cafe' })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body.assets.items).toEqual([expect.objectContaining({ id: assetWithTranscript.id })]);
+      });
+
+      it('should tolerate small differences in wording', async () => {
+        const { status, body } = await request(app)
+          .post('/search/metadata')
+          .send({ transcript: 'story about a farm' })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body.assets.items).toEqual([expect.objectContaining({ id: assetWithTranscript.id })]);
+      });
+
+      it('should combine with other search filters', async () => {
+        const { status, body } = await request(app)
+          .post('/search/metadata')
+          .send({ transcript: 'story about the farm', type: 'IMAGE' })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body.assets.items).toEqual([]);
+      });
+
+      it('should not return a video still being transcribed', async () => {
+        const { status, body } = await request(app)
+          .post('/search/metadata')
+          .send({ transcript: 'story' })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body.assets.items).not.toEqual(
+          expect.arrayContaining([expect.objectContaining({ id: assetStillProcessing.id })]),
+        );
+      });
+
+      it('should not match unrelated text', async () => {
+        const { status, body } = await request(app)
+          .post('/search/metadata')
+          .send({ transcript: 'something entirely unrelated to any of this' })
+          .set('Authorization', `Bearer ${admin.accessToken}`);
+
+        expect(status).toBe(200);
+        expect(body.assets.items).toEqual([]);
+      });
+    });
   });
 
   describe('POST /search/random', () => {

@@ -54,6 +54,7 @@ export class TranscriptRepository {
   async deleteAll() {
     await this.db.transaction().execute(async (trx) => {
       await sql`truncate ${sql.table('transcript_segment')}`.execute(trx);
+      await sql`truncate ${sql.table('transcript_search')}`.execute(trx);
       await trx
         .updateTable('asset_job_status')
         .set({ transcribedAt: null, transcriptionProgressMs: null })
@@ -62,13 +63,40 @@ export class TranscriptRepository {
     });
   }
 
-  /** Clears any earlier attempt and opens a run at offset zero, so a restart cannot see stale rows. */
+  /**
+   * Clears any earlier attempt and opens a run at offset zero, so a restart cannot see stale rows.
+   *
+   * The search text is cleared along with the segments: a video mid-reprocessing has no committed
+   * transcript, and search results should reflect that rather than continuing to show the previous
+   * run's text until the new one completes.
+   */
   @GenerateSql({ params: [DummyValue.UUID] })
   async reset(assetId: string) {
     await this.db.transaction().execute(async (trx) => {
       await trx.deleteFrom('transcript_segment').where('assetId', '=', assetId).execute();
+      await trx.deleteFrom('transcript_search').where('assetId', '=', assetId).execute();
       await upsertProgress(trx, assetId, 0);
     });
+  }
+
+  /**
+   * Writes the flattened search text for one asset, replacing whatever was there. An empty string
+   * means the transcript has no indexable text — nothing said, or everything said discarded as a
+   * hallucination — and the row is deleted rather than kept empty, so the asset simply matches no
+   * search rather than carrying a row that never contributes to one.
+   */
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.STRING] })
+  async upsertSearchText(assetId: string, text: string) {
+    if (text.length === 0) {
+      await this.db.deleteFrom('transcript_search').where('assetId', '=', assetId).execute();
+      return;
+    }
+
+    await this.db
+      .insertInto('transcript_search')
+      .values({ assetId, text })
+      .onConflict((oc) => oc.column('assetId').doUpdateSet((eb) => ({ text: eb.ref('excluded.text') })))
+      .execute();
   }
 
   /**

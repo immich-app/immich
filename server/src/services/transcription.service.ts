@@ -12,6 +12,7 @@ import { JobItem, JobOf } from 'src/types';
 import { isTranscriptionEnabled } from 'src/utils/misc';
 import {
   AudioChunk,
+  buildTranscriptSearchText,
   getChunkByteRange,
   getInferenceTimeout,
   getJobTimeout,
@@ -147,6 +148,11 @@ export class TranscriptionService extends BaseService {
     } finally {
       await rm(audioPath, { force: true });
     }
+
+    // Built once, here, rather than per chunk: search should transition from absent to fully
+    // present atomically, and a video still processing must not surface as a partial hit.
+    const segments = await this.transcriptRepository.getByAssetId(id);
+    await this.transcriptRepository.upsertSearchText(id, buildTranscriptSearchText(segments, transcription));
 
     await this.assetRepository.upsertJobStatus({ assetId: id, transcribedAt: new Date() });
 

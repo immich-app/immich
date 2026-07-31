@@ -42,6 +42,7 @@ const transcriptSegment = (startTime: number, text: string, quality: Record<stri
   startTime,
   endTime: startTime + 1,
   text,
+  correctedText: null,
   language: 'en',
   noSpeechProbability: 0.02,
   avgLogProbability: -0.2,

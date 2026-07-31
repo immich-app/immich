@@ -58,6 +58,7 @@
     return {
       query,
       ocr: searchQuery.ocr,
+      transcript: searchQuery.transcript,
       queryType: defaultQueryType(),
       queryAssetId: 'queryAssetId' in searchQuery ? searchQuery.queryAssetId : undefined,
       personIds: new SvelteSet('personIds' in searchQuery ? searchQuery.personIds : []),
@@ -102,6 +103,7 @@
     filter = {
       query: '',
       ocr: undefined,
+      transcript: undefined,
       queryType: defaultQueryType(), // retain from localStorage or default
       personIds: new SvelteSet(),
       tagIds: new SvelteSet(),
@@ -132,6 +134,7 @@
       query: filter.queryType === 'smart' ? query : undefined,
       queryAssetId: filter.queryAssetId || undefined,
       ocr: filter.queryType === 'ocr' ? query : undefined,
+      transcript: filter.queryType === 'transcript' ? query : undefined,
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
       description: filter.queryType === 'description' ? query : undefined,
       originalPath: filter.queryType === 'fullPath' ? filter.query.trim() || undefined : undefined,

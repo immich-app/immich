@@ -76,6 +76,7 @@ import { SystemMetadataTable } from 'src/schema/tables/system-metadata.table';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { TagClosureTable } from 'src/schema/tables/tag-closure.table';
 import { TagTable } from 'src/schema/tables/tag.table';
+import { TranscriptSearchTable } from 'src/schema/tables/transcript-search.table';
 import { TranscriptSegmentTable } from 'src/schema/tables/transcript-segment.table';
 import { UserAuditTable } from 'src/schema/tables/user-audit.table';
 import { UserMetadataAuditTable } from 'src/schema/tables/user-metadata-audit.table';
@@ -142,6 +143,7 @@ export class ImmichDatabase {
     TagTable,
     TagAssetTable,
     TagClosureTable,
+    TranscriptSearchTable,
     TranscriptSegmentTable,
     UserAuditTable,
     UserMetadataTable,
@@ -263,6 +265,7 @@ export interface DB {
   tag_asset: TagAssetTable;
   tag_closure: TagClosureTable;
 
+  transcript_search: TranscriptSearchTable;
   transcript_segment: TranscriptSegmentTable;
 
   user: UserTable;

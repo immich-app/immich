@@ -192,6 +192,7 @@
       description: $t('description'),
       queryAssetId: $t('query_asset_id'),
       ocr: $t('ocr'),
+      transcript: $t('transcript'),
     };
     return keyMap[key] || key;
   }

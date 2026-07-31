@@ -1,4 +1,6 @@
+import { tokenizeForSearch } from 'src/utils/database';
 import {
+  buildTranscriptSearchText,
   filterHallucinations,
   getChunkByteRange,
   getInferenceTimeout,
@@ -8,6 +10,7 @@ import {
   planChunks,
   planResume,
   resolveSegmentLanguages,
+  SearchableSegment,
   SegmentQuality,
 } from 'src/utils/transcription';
 import { describe, expect, it } from 'vitest';
@@ -348,5 +351,81 @@ describe('filterHallucinations', () => {
 
     expect(filterHallucinations(segments, thresholds)).toEqual([]);
     expect(filterHallucinations(segments, { ...thresholds, maxNoSpeechProbability: 0.9 })).toEqual(segments);
+  });
+});
+
+/** Ordinary speech, ready for indexing, overridden per test with whichever field is under examination. */
+const searchableSegment = (overrides: Partial<SearchableSegment> = {}): SearchableSegment => ({
+  text: 'Hello there',
+  correctedText: null,
+  noSpeechProbability: 0.02,
+  avgLogProbability: -0.2,
+  compressionRatio: 1.4,
+  ...overrides,
+});
+
+describe('buildTranscriptSearchText', () => {
+  const thresholds = { maxNoSpeechProbability: 0.6, minAvgLogProbability: -1, maxCompressionRatio: 2.4 };
+
+  it('should return an empty string for a transcript with no segments', () => {
+    expect(buildTranscriptSearchText([], thresholds)).toBe('');
+  });
+
+  it('should flatten every segment into one space-joined string', () => {
+    const segments = [searchableSegment({ text: 'Hello there' }), searchableSegment({ text: 'General Kenobi' })];
+
+    expect(buildTranscriptSearchText(segments, thresholds)).toBe('Hello there General Kenobi');
+  });
+
+  it('should prefer a correction over the model text', () => {
+    const segments = [searchableSegment({ text: 'Han Solo', correctedText: 'Han Solo the smuggler' })];
+
+    expect(buildTranscriptSearchText(segments, thresholds)).toBe('Han Solo the smuggler');
+  });
+
+  it('should fall back to the model text when there is no correction', () => {
+    const segments = [searchableSegment({ text: 'Hello there', correctedText: null })];
+
+    expect(buildTranscriptSearchText(segments, thresholds)).toBe('Hello there');
+  });
+
+  it('should exclude a segment failing the quality thresholds', () => {
+    const good = searchableSegment({ text: 'Hello there' });
+    const hallucinated = searchableSegment({
+      text: 'Subtitles by the Amara.org community',
+      noSpeechProbability: 0.98,
+      avgLogProbability: -2.4,
+    });
+
+    expect(buildTranscriptSearchText([good, hallucinated], thresholds)).toBe('Hello there');
+  });
+
+  it('should exclude a hallucination even when it carries a correction', () => {
+    // A correction fixes what a real segment says; it does not rescue a segment that was never
+    // speech to begin with.
+    const segments = [
+      searchableSegment({
+        text: 'Subtitles by the Amara.org community',
+        correctedText: 'something else entirely',
+        noSpeechProbability: 0.98,
+        avgLogProbability: -2.4,
+      }),
+    ];
+
+    expect(buildTranscriptSearchText(segments, thresholds)).toBe('');
+  });
+
+  it('should tokenize with the same tokenizer a query is tokenized with', () => {
+    const text = "Grandmother's café, straight ahead";
+    const segments = [searchableSegment({ text })];
+
+    expect(buildTranscriptSearchText(segments, thresholds)).toBe(tokenizeForSearch(text).join(' '));
+  });
+
+  it('should tokenize CJK text the same way the query tokenizer does', () => {
+    const text = '你好世界';
+    const segments = [searchableSegment({ text })];
+
+    expect(buildTranscriptSearchText(segments, thresholds)).toBe(tokenizeForSearch(text).join(' '));
   });
 });

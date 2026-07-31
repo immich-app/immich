@@ -46,4 +46,13 @@ export class TranscriptSegmentTable {
   /** Ratio of decoded text to its gzip size; a repetition loop compresses far better than speech. */
   @Column({ type: 'real', nullable: true })
   compressionRatio!: number | null;
+
+  /**
+   * A human correction of `text`, preferred over it wherever a segment's text is read. Nullable
+   * because most segments are never corrected. The write path belongs to transcript correction;
+   * this column exists ahead of it so the search index can already prefer a correction the moment
+   * one is written, rather than that becoming a second change to the index later.
+   */
+  @Column({ type: 'text', nullable: true })
+  correctedText!: string | null;
 }

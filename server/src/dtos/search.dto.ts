@@ -55,6 +55,7 @@ const BaseSearchSchema = z.object({
         .getExtensions(),
     }),
   ocr: z.string().optional().describe('Filter by OCR text content'),
+  transcript: z.string().optional().describe('Filter by video transcript content'),
 });
 
 const BaseSearchWithResultsSchema = BaseSearchSchema.extend({
@@ -286,6 +287,7 @@ const SearchFilterBranchSchema = z
     originalFileName: StringPatternFilterSchema,
     originalPath: StringPatternFilterSchema,
     ocr: StringSimilarityFilterSchema,
+    transcript: StringSimilarityFilterSchema,
     rating: NumberFilterNullableSchema,
     fileSizeInBytes: NumberFilterSchema,
     takenAt: DateFilterSchema,

@@ -442,6 +442,23 @@ export const utils = {
     await client.query('INSERT INTO asset_face ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
   },
 
+  /**
+   * Seeds the flattened transcript search text directly, bypassing the transcription model — the
+   * ML container used in e2e does not perform real speech recognition. This is what the
+   * transcription job itself writes once, at completion.
+   */
+  setTranscriptSearchText: async (assetId: string, text: string) => {
+    if (!client) {
+      return;
+    }
+
+    await client.query(
+      `INSERT INTO transcript_search ("assetId", "text") VALUES ($1, $2)
+       ON CONFLICT ("assetId") DO UPDATE SET "text" = excluded.text`,
+      [assetId, text],
+    );
+  },
+
   setPersonThumbnail: async (personId: string) => {
     if (!client) {
       return;

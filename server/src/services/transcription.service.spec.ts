@@ -40,6 +40,7 @@ describe(TranscriptionService.name, () => {
     mocks.storage.readFile.mockResolvedValue(Buffer.alloc(4));
     mocks.transcript.getStatus.mockResolvedValue(void 0);
     mocks.transcript.getLastLanguage.mockResolvedValue(void 0);
+    mocks.transcript.getByAssetId.mockResolvedValue([]);
     mocks.machineLearning.transcribe.mockResolvedValue({
       language: 'en',
       segments: [
@@ -302,6 +303,65 @@ describe(TranscriptionService.name, () => {
       expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Success);
 
       expect(mocks.machineLearning.transcribe).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('search text', () => {
+    it('should write the flattened search text once, at completion', async () => {
+      mocks.transcript.getByAssetId.mockResolvedValue([
+        {
+          id: 'segment-id',
+          assetId: 'asset-id',
+          startTime: 0,
+          endTime: 1.5,
+          text: 'Hello there',
+          correctedText: null,
+          language: 'en',
+          ...speechQuality,
+        },
+      ]);
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.getByAssetId).toHaveBeenCalledWith('asset-id');
+      expect(mocks.transcript.upsertSearchText).toHaveBeenCalledWith('asset-id', 'Hello there');
+      // Written before the asset is marked transcribed, so a poller that sees completion never
+      // observes a still-absent search row.
+      expect(mocks.transcript.upsertSearchText.mock.invocationCallOrder[0]).toBeLessThan(
+        mocks.asset.upsertJobStatus.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('should not write search text for a video skipped for having no audio track', async () => {
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ audioStream: null }));
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.upsertSearchText).not.toHaveBeenCalled();
+    });
+
+    it('should not write search text for a hidden asset', async () => {
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ visibility: AssetVisibility.Hidden }));
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.upsertSearchText).not.toHaveBeenCalled();
+    });
+
+    it('should not write search text for a run stopped by its time budget', async () => {
+      mocks.storage.stat.mockResolvedValue(audioOf(90));
+
+      let now = Date.now();
+      const clock = vi.spyOn(Date, 'now').mockImplementation(() => now);
+      onTestFinished(() => clock.mockRestore());
+      mocks.machineLearning.transcribe.mockImplementation(() => {
+        now += 40 * 60 * 1000;
+        return Promise.resolve({ language: 'en', segments: [] });
+      });
+
+      expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Failed);
+
+      expect(mocks.transcript.upsertSearchText).not.toHaveBeenCalled();
     });
   });
 

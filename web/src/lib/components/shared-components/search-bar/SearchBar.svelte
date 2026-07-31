@@ -95,6 +95,9 @@
       case 'ocr': {
         return { ocr: term };
       }
+      case 'transcript': {
+        return { transcript: term };
+      }
       default: {
         return { query: term };
       }
@@ -205,7 +208,8 @@
       case 'metadata':
       case 'description':
       case 'fullPath':
-      case 'ocr': {
+      case 'ocr':
+      case 'transcript': {
         currentSearchType = searchType;
         return searchType;
       }
@@ -233,6 +237,9 @@
       case 'ocr': {
         return $t('ocr');
       }
+      case 'transcript': {
+        return $t('transcript');
+      }
       default: {
         return $t('context');
       }
@@ -249,6 +256,7 @@
     { value: 'description', label: () => $t('description') },
     { value: 'fullPath', label: () => $t('full_path_or_folder') },
     { value: 'ocr', label: () => $t('ocr') },
+    { value: 'transcript', label: () => $t('transcript') },
   ] as const;
 </script>
 

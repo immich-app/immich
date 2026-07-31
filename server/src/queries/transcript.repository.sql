@@ -36,6 +36,9 @@ begin
 delete from "transcript_segment"
 where
   "assetId" = $1
+delete from "transcript_search"
+where
+  "assetId" = $1
 insert into
   "asset_job_status" ("assetId", "transcriptionProgressMs")
 values
@@ -44,6 +47,15 @@ on conflict ("assetId") do update
 set
   "transcriptionProgressMs" = $3
 rollback
+
+-- TranscriptRepository.upsertSearchText
+insert into
+  "transcript_search" ("assetId", "text")
+values
+  ($1, $2)
+on conflict ("assetId") do update
+set
+  "text" = "excluded"."text"
 
 -- TranscriptRepository.appendChunk
 begin

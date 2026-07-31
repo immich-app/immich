@@ -1829,6 +1829,8 @@
   "search_by_full_path_example": "/John/Projects/3D_Printing/2026-07-01 - you can search for Projects, 3D, Printing, 2026 etc.",
   "search_by_ocr": "Search by OCR",
   "search_by_ocr_example": "Latte",
+  "search_by_transcript": "Search by transcript",
+  "search_by_transcript_example": "the story about the farm",
   "search_camera_lens_model": "Search lens model...",
   "search_camera_make": "Search camera make...",
   "search_camera_model": "Search camera model...",

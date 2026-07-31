@@ -756,6 +756,55 @@ order by
 limit
   $3
 
+-- SearchRepository.searchMetadataV3 (string-similarity-transcript)
+select
+  "asset"."id",
+  "asset"."updateId",
+  "asset"."createdAt",
+  "asset"."updatedAt",
+  "asset"."deletedAt",
+  "asset"."status",
+  "asset"."checksum",
+  "asset"."checksumAlgorithm",
+  "asset"."duplicateId",
+  "asset"."duration",
+  "asset"."fileCreatedAt",
+  "asset"."fileModifiedAt",
+  "asset"."isExternal",
+  "asset"."isFavorite",
+  "asset"."isOffline",
+  "asset"."isEdited",
+  "asset"."visibility",
+  "asset"."libraryId",
+  "asset"."livePhotoVideoId",
+  "asset"."localDateTime",
+  "asset"."originalFileName",
+  "asset"."originalPath",
+  "asset"."ownerId",
+  "asset"."stackId",
+  "asset"."thumbhash",
+  "asset"."type",
+  "asset"."width",
+  "asset"."height"
+from
+  "asset"
+  left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."ownerId" = any ($1::uuid[])
+  and exists (
+    select
+    from
+      "transcript_search"
+    where
+      "transcript_search"."assetId" = "asset"."id"
+      and f_unaccent (transcript_search.text) %>> f_unaccent ($2)
+  )
+order by
+  "asset"."fileCreatedAt" desc,
+  "asset"."id" desc
+limit
+  $3
+
 -- SearchRepository.searchMetadataV3 (ids-any)
 select
   "asset"."id",
