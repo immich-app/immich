@@ -22,7 +22,7 @@ class AssetSelectionTimelinePage extends StatelessWidget {
         ),
         timelineServiceProvider.overrideWith((ref) {
           final timelineUsers = ref.watch(timelineUsersProvider).valueOrNull ?? [];
-          final timelineService = ref.watch(timelineFactoryProvider).main(timelineUsers);
+          final timelineService = ref.watch(timelineFactoryProvider).mainWithAllLocalAssets(timelineUsers);
           ref.onDispose(timelineService.dispose);
           return timelineService;
         }),
