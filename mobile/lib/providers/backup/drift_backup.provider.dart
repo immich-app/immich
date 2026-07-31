@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
@@ -11,6 +11,8 @@ import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/utils/upload_speed_calculator.dart';
 import 'package:logging/logging.dart';
+
+part 'drift_backup.provider.freezed.dart';
 
 class EnqueueStatus {
   final int enqueueCount;
@@ -26,75 +28,17 @@ class EnqueueStatus {
   String toString() => 'EnqueueStatus(enqueueCount: $enqueueCount, totalCount: $totalCount)';
 }
 
-class DriftUploadStatus {
-  final String taskId;
-  final String filename;
-  final double progress;
-  final int fileSize;
-  final String networkSpeedAsString;
-  final bool? isFailed;
-  final String? error;
-
-  const DriftUploadStatus({
-    required this.taskId,
-    required this.filename,
-    required this.progress,
-    required this.fileSize,
-    required this.networkSpeedAsString,
-    this.isFailed,
-    this.error,
-  });
-
-  DriftUploadStatus copyWith({
-    String? taskId,
-    String? filename,
-    double? progress,
-    int? fileSize,
-    String? networkSpeedAsString,
+@freezed
+abstract class DriftUploadStatus with _$DriftUploadStatus {
+  const factory DriftUploadStatus({
+    required String taskId,
+    required String filename,
+    required double progress,
+    required int fileSize,
+    required String networkSpeedAsString,
     bool? isFailed,
     String? error,
-  }) {
-    return DriftUploadStatus(
-      taskId: taskId ?? this.taskId,
-      filename: filename ?? this.filename,
-      progress: progress ?? this.progress,
-      fileSize: fileSize ?? this.fileSize,
-      networkSpeedAsString: networkSpeedAsString ?? this.networkSpeedAsString,
-      isFailed: isFailed ?? this.isFailed,
-      error: error ?? this.error,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'DriftUploadStatus(taskId: $taskId, filename: $filename, progress: $progress, fileSize: $fileSize, networkSpeedAsString: $networkSpeedAsString, isFailed: $isFailed, error: $error)';
-  }
-
-  @override
-  bool operator ==(covariant DriftUploadStatus other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.taskId == taskId &&
-        other.filename == filename &&
-        other.progress == progress &&
-        other.fileSize == fileSize &&
-        other.networkSpeedAsString == networkSpeedAsString &&
-        other.isFailed == isFailed &&
-        other.error == error;
-  }
-
-  @override
-  int get hashCode {
-    return taskId.hashCode ^
-        filename.hashCode ^
-        progress.hashCode ^
-        fileSize.hashCode ^
-        networkSpeedAsString.hashCode ^
-        isFailed.hashCode ^
-        error.hashCode;
-  }
+  }) = _DriftUploadStatus;
 }
 
 enum BackupError { none, syncFailed }
