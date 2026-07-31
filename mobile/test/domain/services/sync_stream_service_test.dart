@@ -70,7 +70,7 @@ void main() {
     await db.close();
   });
 
-  successHandler(Invocation _) async => true;
+  Future<bool> successHandler(Invocation _) async => true;
 
   setUp(() async {
     mockSyncStreamRepo = MockSyncStreamRepository();

@@ -62,17 +62,17 @@ class LocalNetworkPreference extends HookConsumerWidget {
       return null;
     }, []);
 
-    saveWifiName(String wifiName) {
+    Future<void> saveWifiName(String wifiName) {
       wifiNameText.value = wifiName;
       return ref.read(authProvider.notifier).saveWifiName(wifiName);
     }
 
-    saveLocalEndpoint(String url) {
+    Future<void> saveLocalEndpoint(String url) {
       localEndpointText.value = url;
       return ref.read(authProvider.notifier).saveLocalEndpoint(url);
     }
 
-    handleEditWifiName() async {
+    Future<void> handleEditWifiName() async {
       final wifiName = await _showEditDialog(context, "wifi_name".tr(), "your_wifi_name".tr(), wifiNameText.value);
 
       if (wifiName != null) {
@@ -80,7 +80,7 @@ class LocalNetworkPreference extends HookConsumerWidget {
       }
     }
 
-    handleEditServerEndpoint() async {
+    Future<void> handleEditServerEndpoint() async {
       final localEndpoint = await _showEditDialog(
         context,
         "server_endpoint".tr(),
@@ -94,8 +94,11 @@ class LocalNetworkPreference extends HookConsumerWidget {
       }
     }
 
-    autofillCurrentNetwork() async {
+    Future<void> autofillCurrentNetwork() async {
       final wifiName = await ref.read(networkProvider.notifier).getWifiName();
+      if (!context.mounted) {
+        return;
+      }
 
       if (wifiName == null) {
         context.showSnackBar(

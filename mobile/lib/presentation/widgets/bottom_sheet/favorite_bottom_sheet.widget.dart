@@ -6,7 +6,6 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
-import 'package:immich_mobile/presentation/actions/timeline.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
@@ -44,6 +43,9 @@ class FavoriteBottomSheet extends ConsumerWidget {
       final result = await ref
           .read(remoteAlbumProvider.notifier)
           .addAssets(album.id, remoteAssets.map((e) => e.id).toList());
+      if (!context.mounted) {
+        return;
+      }
 
       if (selectedAssets.length != remoteAssets.length) {
         ImmichToast.show(
@@ -74,9 +76,6 @@ class FavoriteBottomSheet extends ConsumerWidget {
       ref.read(multiSelectProvider.notifier).reset();
     }
 
-    final assets = multiselect.selectedAssets.toList(growable: false);
-    final actions = [FavoriteAction(assets: assets)];
-
     return BaseBottomSheet(
       initialChildSize: 0.4,
       maxChildSize: 0.7,
@@ -85,7 +84,7 @@ class FavoriteBottomSheet extends ConsumerWidget {
         const ShareActionButton(source: ActionSource.timeline),
         if (multiselect.hasRemote) ...[
           const ShareLinkActionButton(source: ActionSource.timeline),
-          ...actions.map((action) => ActionColumnButtonWidget(action: TimelineAction(action: action))),
+          const ActionColumnButton(action: FavoriteAction(source: .timeline)),
           const ArchiveActionButton(source: ActionSource.timeline),
           if (multiselect.onlyRemote) const DownloadActionButton(source: ActionSource.timeline),
           isTrashEnable

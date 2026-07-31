@@ -93,13 +93,13 @@ class ShareActionButton extends ConsumerWidget {
     return switch (source) {
       ActionSource.timeline => ref.read(multiSelectProvider).selectedAssets,
       ActionSource.viewer => switch (ref.read(assetViewerProvider).currentAsset) {
-        BaseAsset asset => {asset},
+        final BaseAsset asset => {asset},
         null => const {},
       },
     };
   }
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
@@ -108,7 +108,7 @@ class ShareActionButton extends ConsumerWidget {
     await _share(context, ref, fileType);
   }
 
-  void _onLongPress(BuildContext context, WidgetRef ref) async {
+  Future<void> _onLongPress(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
@@ -138,31 +138,33 @@ class ShareActionButton extends ConsumerWidget {
     await showDialog(
       context: context,
       builder: (BuildContext buildContext) {
-        ref
-            .read(actionProvider.notifier)
-            .shareAssets(
-              source,
-              context,
-              fileType: fileType,
-              cancelCompleter: cancelCompleter,
-              onAssetDownloadProgress: (value) => progress.value = value,
-            )
-            .then((ActionResult result) {
-              if (cancelCompleter.isCompleted || !context.mounted) {
-                return;
-              }
+        unawaited(
+          ref
+              .read(actionProvider.notifier)
+              .shareAssets(
+                source,
+                context,
+                fileType: fileType,
+                cancelCompleter: cancelCompleter,
+                onAssetDownloadProgress: (value) => progress.value = value,
+              )
+              .then((ActionResult result) {
+                if (cancelCompleter.isCompleted || !context.mounted) {
+                  return;
+                }
 
-              if (!result.success) {
-                ImmichToast.show(
-                  context: context,
-                  msg: context.t.scaffold_body_error_occurred,
-                  gravity: ToastGravity.BOTTOM,
-                  toastType: ToastType.error,
-                );
-              }
+                if (!result.success) {
+                  ImmichToast.show(
+                    context: context,
+                    msg: context.t.scaffold_body_error_occurred,
+                    gravity: ToastGravity.BOTTOM,
+                    toastType: ToastType.error,
+                  );
+                }
 
-              buildContext.pop();
-            });
+                buildContext.pop();
+              }),
+        );
 
         return preparingDialog;
       },

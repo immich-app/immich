@@ -35,7 +35,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     return state;
   }
 
-  void handleAppResume() async {
+  Future<void> handleAppResume() async {
     state = AppLifeCycleEnum.resumed;
 
     // Prevent overlapping resume operations
@@ -120,7 +120,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       if (syncSuccess) {
         await Future.wait([
           _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
-            _resumeBackup();
+            unawaited(_resumeBackup());
           }),
           _resumeBackup(),
           // TODO: Bring back when the soft freeze issue is addressed

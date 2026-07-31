@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
@@ -7,9 +8,9 @@ import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
@@ -35,31 +36,34 @@ class AdvancedSettings extends HookConsumerWidget {
     final preferRemote = useState(ref.read(appConfigProvider).image.preferRemote);
     useValueChanged(
       preferRemote.value,
-      (_, __) => ref.read(settingsProvider).write(.imagePreferRemote, preferRemote.value),
+      (_, __) => unawaited(ref.read(settingsProvider).write(.imagePreferRemote, preferRemote.value)),
     );
     final readonlyModeEnabled = useAppSettingsState(AppSettingsEnum.readonlyModeEnabled);
 
     final logLevel = Level.LEVELS[levelId.value].name;
 
-    useValueChanged(levelId.value, (_, __) => LogService.I.setLogLevel(Level.LEVELS[levelId.value].toLogLevel()));
+    useValueChanged(
+      levelId.value,
+      (_, __) => unawaited(LogService.I.setLogLevel(Level.LEVELS[levelId.value].toLogLevel())),
+    );
 
     Future<bool> checkAndroidVersion() async {
       if (Platform.isAndroid) {
-        DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-        int sdkVersion = androidInfo.version.sdkInt;
+        final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+        final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+        final int sdkVersion = androidInfo.version.sdkInt;
         return sdkVersion >= 31;
       }
       return false;
     }
 
     useEffect(() {
-      () async {
+      unawaited(() async {
         isManageMediaSupported.value = await checkAndroidVersion();
         if (isManageMediaSupported.value) {
           manageMediaAndroidPermission.value = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
         }
-      }();
+      }());
       return null;
     }, []);
 
@@ -141,6 +145,10 @@ class AdvancedSettings extends HookConsumerWidget {
           try {
             clearedBytes = await remoteImageApi.clearCache();
           } catch (e) {
+            if (!context.mounted) {
+              return;
+            }
+
             context.scaffoldMessenger.showSnackBar(
               SnackBar(
                 duration: const Duration(seconds: 2),
@@ -153,7 +161,7 @@ class AdvancedSettings extends HookConsumerWidget {
             return;
           }
 
-          if (clearedBytes < 0) {
+          if (clearedBytes < 0 || !context.mounted) {
             return;
           }
 
