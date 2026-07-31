@@ -536,8 +536,8 @@ importers:
         specifier: ^6.0.0
         version: 6.2.4
       js-yaml:
-        specifier: ^4.1.0
-        version: 4.3.0
+        specifier: ^5.0.0
+        version: 5.2.1
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.3

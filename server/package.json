@@ -82,7 +82,7 @@
     "i18n-iso-countries": "^7.6.0",
     "ioredis": "^5.8.2",
     "jose": "^6.0.0",
-    "js-yaml": "^4.1.0",
+    "js-yaml": "^5.0.0",
     "jsonwebtoken": "^9.0.2",
     "kysely": "0.28.17",
     "kysely-postgres-js": "^3.0.0",
