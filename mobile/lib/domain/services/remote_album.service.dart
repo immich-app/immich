@@ -105,10 +105,8 @@ class RemoteAlbumService {
       switch (filterMode) {
         case QuickFilterMode.myAlbums:
           filtered = filtered.where((album) => album.ownerId == userId).toList();
-          break;
         case QuickFilterMode.sharedWithMe:
           filtered = filtered.where((album) => album.ownerId != userId).toList();
-          break;
         case QuickFilterMode.all:
           break;
       }
@@ -340,5 +338,11 @@ class RemoteAlbumService {
     }
 
     return sortedAlbums;
+  }
+
+  Future<int> removeAssets({required String albumId, required List<String> assetIds}) async {
+    final result = await _albumApiRepository.removeAssets(albumId, assetIds);
+    await _repository.removeAssets(albumId, result.removed);
+    return result.removed.length;
   }
 }

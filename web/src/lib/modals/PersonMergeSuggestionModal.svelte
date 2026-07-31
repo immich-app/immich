@@ -116,6 +116,7 @@
           <button type="button" onclick={() => (choosePersonToMerge = false)}> <Icon icon={mdiArrowLeft} /></button>
         </div>
         <div class="flex items-center justify-center">
+          <!-- eslint-disable-next-line better-tailwindcss/no-concatenated-classes -->
           <div class="flex flex-wrap justify-center md:grid md:grid-cols-{potentialMergePeople.length}">
             {#each potentialMergePeople as person (person.id)}
               <div class="size-24 md:size-28">

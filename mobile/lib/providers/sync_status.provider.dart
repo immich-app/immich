@@ -7,7 +7,7 @@ enum SyncStatus {
   success,
   error;
 
-  localized() {
+  String localized() {
     return switch (this) {
       SyncStatus.idle => "idle".tr(),
       SyncStatus.syncing => "running".tr(),

@@ -41,7 +41,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     }
     setInitialHeaders.value = true;
 
-    var list = [
+    final list = [
       ...headers.value.map((headerValue) {
         return HeaderKeyValueSettings(
           header: headerValue,
@@ -81,7 +81,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     );
   }
 
-  saveHeaders(WidgetRef ref, List<SettingsHeader> headers) async {
+  Future<void> saveHeaders(WidgetRef ref, List<SettingsHeader> headers) async {
     final headersMap = <String, String>{};
     for (final header in headers) {
       final key = header.key.trim();

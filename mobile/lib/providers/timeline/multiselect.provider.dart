@@ -102,7 +102,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   }
 
   /// Bucket bulk operations
-  void selectBucket(int offset, int bucketCount) async {
+  Future<void> selectBucket(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
     final selectedAssets = state.selectedAssets.toSet();
 
@@ -111,7 +111,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     state = state.copyWith(selectedAssets: selectedAssets);
   }
 
-  void deselectBucket(int offset, int bucketCount) async {
+  Future<void> deselectBucket(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
     final selectedAssets = state.selectedAssets.toSet();
 
@@ -120,7 +120,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     state = state.copyWith(selectedAssets: selectedAssets);
   }
 
-  void toggleBucketSelection(int offset, int bucketCount) async {
+  Future<void> toggleBucketSelection(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
     toggleBucketSelectionByAssets(assets);
   }

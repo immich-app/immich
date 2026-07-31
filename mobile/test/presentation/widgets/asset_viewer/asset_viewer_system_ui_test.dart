@@ -14,6 +14,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 import '../../../fixtures/asset.stub.dart';
+import '../../../unit/presentation/presentation_context.dart';
 
 class _SeededAssetViewerNotifier extends AssetViewerStateNotifier {
   @override
@@ -32,6 +33,12 @@ TimelineService _stubTimelineService() {
 }
 
 void main() {
+  late PresentationContext context;
+
+  setUp(() async {
+    context = await PresentationContext.create();
+  });
+
   testWidgets('status bar icons are light while the asset viewer is open in light mode', (tester) async {
     // Emulate arriving from a light-themed page whose AppBar set dark status
     // bar icons (the state the viewer is opened from in light mode).
@@ -48,6 +55,7 @@ void main() {
         assetLoader: const CodegenLoader(),
         child: ProviderScope(
           overrides: [
+            ...context.overrides,
             timelineServiceProvider.overrideWithValue(_stubTimelineService()),
             assetViewerProvider.overrideWith(_SeededAssetViewerNotifier.new),
           ],

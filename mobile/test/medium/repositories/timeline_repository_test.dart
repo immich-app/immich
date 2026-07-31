@@ -27,7 +27,7 @@ void main() {
       // Regression check for #23273: a LEFT OUTER JOIN on checksum would fan out and create duplicates
       // happens when same photo exists in multiple albums on device
       final user = await ctx.newUser();
-      final checksum = 'yolo';
+      const checksum = 'yolo';
       final album = await ctx.newRemoteAlbum(ownerId: user.id);
       final remoteAsset = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
       await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: remoteAsset.id);

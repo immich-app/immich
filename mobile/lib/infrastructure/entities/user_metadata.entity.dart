@@ -17,5 +17,5 @@ class UserMetadataEntity extends Table with DriftDefaultsMixin {
 }
 
 final JsonTypeConverter2<Map<String, Object?>, Uint8List, Object?> userMetadataConverter = TypeConverter.jsonb(
-  fromJson: (json) => json as Map<String, Object?>,
+  fromJson: (json) => json! as Map<String, Object?>,
 );

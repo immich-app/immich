@@ -356,7 +356,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       return _deleteAssets(assetIds);
     }
 
-    List<String> assetsToDelete = [];
+    final List<String> assetsToDelete = [];
     List<String> assetsToUnLink = [];
 
     final uniqueAssets = await _getUniqueAssetsInAlbum(albumId);

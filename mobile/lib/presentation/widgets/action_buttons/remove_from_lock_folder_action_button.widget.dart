@@ -20,27 +20,27 @@ class RemoveFromLockFolderActionButton extends ConsumerWidget {
     this.menuItem = false,
   });
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
 
     final result = await ref.read(actionProvider.notifier).removeFromLockFolder(source);
     ref.read(multiSelectProvider.notifier).reset();
+    if (!context.mounted) {
+      return;
+    }
 
     final successMessage = 'remove_from_lock_folder_action_prompt'.t(
       context: context,
       args: {'count': result.count.toString()},
     );
-
-    if (context.mounted) {
-      ImmichToast.show(
-        context: context,
-        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
-        gravity: ToastGravity.BOTTOM,
-        toastType: result.success ? ToastType.success : ToastType.error,
-      );
-    }
+    ImmichToast.show(
+      context: context,
+      msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
+      gravity: ToastGravity.BOTTOM,
+      toastType: result.success ? ToastType.success : ToastType.error,
+    );
   }
 
   @override
