@@ -626,6 +626,20 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /*
+   * A player puts its captions at the bottom of the video box, which is exactly where the control
+   * bar sits, so an untouched caption track renders behind the play button and the progress bar.
+   * Lifting the whole cue container clears them while leaving the browser to wrap, align and style
+   * the cues, including a reader's own caption preferences.
+   *
+   * The offset covers the controls rather than the taller gradient above them, so captions stay
+   * near the bottom edge where they are expected. Blink and WebKit are the engines that expose the
+   * container; Firefox has no equivalent, so captions there stay where it puts them.
+   */
+  video::-webkit-media-text-track-container {
+    transform: translateY(-80px);
+  }
+
   immich-time-range,
   media-volume-range {
     --media-control-hover-background: none;
