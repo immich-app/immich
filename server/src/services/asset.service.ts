@@ -23,6 +23,7 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditAction, AssetEditActionItem, AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
+import { AssetTranscriptResponseDto } from 'src/dtos/transcript.dto';
 import {
   AssetFileType,
   AssetStatus,
@@ -416,10 +417,36 @@ export class AssetService extends BaseService {
   }
 
   async getCaptions(auth: AuthDto, id: string): Promise<string> {
+    const { segments, status, progressMs } = await this.readTranscript(auth, id);
+    return toWebVtt(segments, { status, progressMs });
+  }
+
+  async getTranscript(auth: AuthDto, id: string): Promise<AssetTranscriptResponseDto> {
+    const { segments, status, progressMs } = await this.readTranscript(auth, id);
+    return {
+      status,
+      progressMs,
+      segments: segments.map(({ id, startTime, endTime, text, language }) => ({
+        id,
+        startTime,
+        endTime,
+        text,
+        language,
+      })),
+    };
+  }
+
+  /**
+   * Shared by the caption track and the transcript panel, so the two can never disagree about which
+   * segments exist or about how far the job has got.
+   *
+   * Deliberately not gated on completion: a transcript still filling in reads just as well as a
+   * finished one, and the status is what lets a caller tell a job that has never run from one that
+   * is still running, and so know whether to ask again.
+   */
+  private async readTranscript(auth: AuthDto, id: string) {
     await this.requireAccess({ auth, permission: Permission.AssetView, ids: [id] });
-    // Deliberately not gated on completion: a transcript still filling in renders as a caption
-    // track just as well as a finished one, and the embedded status tells a client when to stop
-    // asking for more.
+
     const [segments, status, { machineLearning }] = await Promise.all([
       this.transcriptRepository.getByAssetId(id),
       this.transcriptRepository.getStatus(id),
@@ -427,11 +454,12 @@ export class AssetService extends BaseService {
     ]);
 
     // The thresholds are applied here rather than at ingest, so changing them changes what the
-    // next request renders without any transcript needing to be produced again.
-    return toWebVtt(filterHallucinations(segments, machineLearning.transcription), {
+    // next request returns without any transcript needing to be produced again.
+    return {
+      segments: filterHallucinations(segments, machineLearning.transcription),
       status: getTranscriptionStatus(status),
       progressMs: status?.transcriptionProgressMs ?? 0,
-    });
+    };
   }
 
   async upsertBulkMetadata(auth: AuthDto, dto: AssetMetadataBulkUpsertDto): Promise<AssetMetadataBulkResponseDto[]> {

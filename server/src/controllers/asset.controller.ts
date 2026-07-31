@@ -33,6 +33,7 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
+import { AssetTranscriptResponseDto } from 'src/dtos/transcript.dto';
 import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetService } from 'src/services/asset.service';
@@ -213,6 +214,18 @@ export class AssetController {
   })
   getAssetCaptions(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<string> {
     return this.service.getCaptions(auth, id);
+  }
+
+  @Get(':id/transcript')
+  @Authenticated({ permission: Permission.AssetView, sharedLink: true })
+  @Endpoint({
+    summary: 'Retrieve asset transcript',
+    description:
+      'Returns the stored transcript for the specified asset as timed segments, together with the state of its transcription job. Not gated on completion: a transcript still being produced is returned as far as it has got.',
+    history: new HistoryBuilder().added('v3').alpha('v3'),
+  })
+  getAssetTranscript(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetTranscriptResponseDto> {
+    return this.service.getTranscript(auth, id);
   }
 
   @Put(':id/metadata')

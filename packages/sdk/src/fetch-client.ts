@@ -1027,6 +1027,24 @@ export type AssetOcrResponseDto = {
     /** Normalized y coordinate of box corner 4 (0-1) */
     y4: number;
 };
+export type TranscriptSegmentResponseDto = {
+    /** End of the segment, in seconds from the start of the asset */
+    endTime: number;
+    id: string;
+    /** Resolved language of the segment as an ISO 639-1 code, or null for segments transcribed before */
+    language: string | null;
+    /** Start of the segment, in seconds from the start of the asset */
+    startTime: number;
+    /** Transcribed text of the segment */
+    text: string;
+};
+export type AssetTranscriptResponseDto = {
+    /** How far into the audio the transcript is committed, in milliseconds. Zero when it has not started */
+    progressMs: number;
+    /** Segments transcribed so far, ordered by start time */
+    segments: TranscriptSegmentResponseDto[];
+    status: TranscriptionStatus;
+};
 export type SignUpDto = {
     /** User email */
     email: string;
@@ -4456,6 +4474,24 @@ export function viewAsset({ edited, id, key, size, slug }: {
     }));
 }
 /**
+ * Retrieve asset transcript
+ */
+export function getAssetTranscript({ id, key, slug }: {
+    id: string;
+    key?: string;
+    slug?: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: AssetTranscriptResponseDto;
+    }>(`/assets/${encodeURIComponent(id)}/transcript${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, {
+        ...opts
+    }));
+}
+/**
  * Play asset video
  */
 export function playAssetVideo({ id, key, slug }: {
@@ -7401,6 +7437,11 @@ export enum AssetMediaSize {
     Fullsize = "fullsize",
     Preview = "preview",
     Thumbnail = "thumbnail"
+}
+export enum TranscriptionStatus {
+    NotStarted = "notStarted",
+    InProgress = "inProgress",
+    Complete = "complete"
 }
 export enum SourceType {
     MachineLearning = "machine-learning",

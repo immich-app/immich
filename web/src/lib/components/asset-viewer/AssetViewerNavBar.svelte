@@ -121,6 +121,7 @@
     <ActionButton action={Actions.Copy} />
     <ActionButton action={Actions.SharedLinkDownload} />
     <ActionButton action={Actions.Info} />
+    <ActionButton action={Actions.Transcript} />
     <ActionButton action={Actions.Favorite} />
     <ActionButton action={Actions.Unfavorite} />
 

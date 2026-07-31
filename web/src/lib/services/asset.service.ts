@@ -235,6 +235,14 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     shortcuts: { key: 'i' },
   };
 
+  const Transcript: ActionItem = {
+    title: $t('transcript'),
+    icon: mdiClosedCaptionOutline,
+    $if: () => asset.type === AssetTypeEnum.Video && transcriptionEnabled,
+    onAction: () => assetViewerManager.toggleTranscriptPanel(),
+    shortcuts: { key: 'c' },
+  };
+
   const Tag: ActionItem = {
     title: $t('add_tag'),
     icon: mdiTagPlusOutline,
@@ -328,6 +336,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     SharedLinkDownload,
     Offline,
     Info,
+    Transcript,
     Favorite,
     Unfavorite,
     PlayMotionPhoto,

@@ -7,6 +7,7 @@
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { mediaCapabilitiesManager } from '$lib/managers/media-capabilities-manager.svelte';
+  import { videoPlayerManager } from '$lib/managers/video-player-manager.svelte';
   import { autoPlayVideo, lang, loopVideo as loopVideoPreference } from '$lib/stores/preferences.store';
   import {
     getAssetCaptionsUrl,
@@ -270,6 +271,20 @@
     return releaseSession;
   });
 
+  // Published so the transcript panel can follow and steer playback without reaching for the
+  // element itself.
+  $effect(() => {
+    const player = videoPlayer;
+    if (!player) {
+      return;
+    }
+
+    videoPlayerManager.register(assetId, player);
+    return () => videoPlayerManager.unregister(player);
+  });
+
+  const onTimeUpdate = (event: Event) => videoPlayerManager.onTimeUpdate(event.currentTarget as HTMLVideoElement);
+
   const onPagehide = (event: PageTransitionEvent) => {
     if (!event.persisted) {
       releaseSession();
@@ -456,6 +471,7 @@
             oncanplay={(e: Event) => handleCanPlay(e.currentTarget as HTMLVideoElement)}
             onended={onVideoEnded}
             onseeking={onSeeking}
+            ontimeupdate={onTimeUpdate}
             onplaying={(e: Event) => {
               if (hasFocused) {
                 return;
@@ -485,6 +501,7 @@
             oncanplay={(e) => handleCanPlay(e.currentTarget)}
             onended={onVideoEnded}
             onseeking={onSeeking}
+            ontimeupdate={onTimeUpdate}
             onplaying={(e) => {
               if (hasFocused) {
                 return;

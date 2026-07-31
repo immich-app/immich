@@ -52,6 +52,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
     return !previewOrOriginalReady || loadingOriginal;
   });
   isShowActivityPanel = $state(false);
+  isShowTranscriptPanel = $state(false);
   isPlayingMotionPhoto = $state(false);
   isShowEditor = $state(false);
   #isFaceEditMode = $state(false);
@@ -169,6 +170,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
 
   toggleActivityPanel() {
     this.closeDetailPanel();
+    this.closeTranscriptPanel();
     this.isShowActivityPanel = !this.isShowActivityPanel;
   }
 
@@ -182,7 +184,20 @@ class AssetViewerManager extends BaseEventManager<Events> {
 
   toggleDetailPanel() {
     this.closeActivityPanel();
+    this.closeTranscriptPanel();
     this.isShowDetailPanel = !this.isShowDetailPanel;
+  }
+
+  // One side panel at a time, as the existing panels already do between themselves: each takes a
+  // column from the video, and two of them at once leave the asset itself with very little.
+  toggleTranscriptPanel() {
+    this.closeActivityPanel();
+    this.closeDetailPanel();
+    this.isShowTranscriptPanel = !this.isShowTranscriptPanel;
+  }
+
+  closeTranscriptPanel() {
+    this.isShowTranscriptPanel = false;
   }
 
   closeDetailPanel() {
@@ -191,6 +206,7 @@ class AssetViewerManager extends BaseEventManager<Events> {
 
   openEditor() {
     this.closeActivityPanel();
+    this.closeTranscriptPanel();
     this.isShowEditor = true;
   }
 

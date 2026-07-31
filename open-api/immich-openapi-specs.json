@@ -4739,6 +4739,79 @@
         "x-immich-state": "Stable"
       }
     },
+    "/assets/{id}/transcript": {
+      "get": {
+        "description": "Returns the stored transcript for the specified asset as timed segments, together with the state of its transcription job. Not gated on completion: a transcript still being produced is returned as far as it has got.",
+        "operationId": "getAssetTranscript",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "key",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "slug",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssetTranscriptResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve asset transcript",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.view",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/assets/{id}/video/playback": {
       "get": {
         "description": "Streams the video file for the specified asset. This endpoint also supports byte range requests.",
@@ -18216,6 +18289,32 @@
         ],
         "type": "object"
       },
+      "AssetTranscriptResponseDto": {
+        "properties": {
+          "progressMs": {
+            "description": "How far into the audio the transcript is committed, in milliseconds. Zero when it has not started",
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "segments": {
+            "description": "Segments transcribed so far, ordered by start time",
+            "items": {
+              "$ref": "#/components/schemas/TranscriptSegmentResponseDto"
+            },
+            "type": "array"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TranscriptionStatus"
+          }
+        },
+        "required": [
+          "progressMs",
+          "segments",
+          "status"
+        ],
+        "type": "object"
+      },
       "AssetTypeEnum": {
         "description": "Asset type",
         "enum": [
@@ -27204,6 +27303,42 @@
         ],
         "type": "string"
       },
+      "TranscriptSegmentResponseDto": {
+        "properties": {
+          "endTime": {
+            "description": "End of the segment, in seconds from the start of the asset",
+            "format": "double",
+            "type": "number"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "language": {
+            "description": "Resolved language of the segment as an ISO 639-1 code, or null for segments transcribed before",
+            "nullable": true,
+            "type": "string"
+          },
+          "startTime": {
+            "description": "Start of the segment, in seconds from the start of the asset",
+            "format": "double",
+            "type": "number"
+          },
+          "text": {
+            "description": "Transcribed text of the segment",
+            "type": "string"
+          }
+        },
+        "required": [
+          "endTime",
+          "id",
+          "language",
+          "startTime",
+          "text"
+        ],
+        "type": "object"
+      },
       "TranscriptionConfig": {
         "properties": {
           "chunkDuration": {
@@ -27277,6 +27412,15 @@
           "timeoutMultiplier"
         ],
         "type": "object"
+      },
+      "TranscriptionStatus": {
+        "description": "Whether transcription has never run, is still running, or has finished",
+        "enum": [
+          "notStarted",
+          "inProgress",
+          "complete"
+        ],
+        "type": "string"
       },
       "TrashResponseDto": {
         "properties": {

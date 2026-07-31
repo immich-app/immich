@@ -2,7 +2,16 @@ import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
 import { AssetEditAction } from 'src/dtos/editing.dto';
-import { AssetFileType, AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
+import {
+  AssetFileType,
+  AssetMetadataKey,
+  AssetStatus,
+  AssetType,
+  AssetVisibility,
+  JobName,
+  JobStatus,
+  TranscriptionStatus,
+} from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
 import { clearConfigCache } from 'src/utils/config';
@@ -757,6 +766,73 @@ describe(AssetService.name, () => {
 
       expect(vtt).not.toContain('Thank you for watching');
       expect(vtt).toContain('immich-transcription-progress-ms: 4000');
+    });
+  });
+
+  describe('getTranscript', () => {
+    beforeEach(() => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+    });
+
+    it('should return the segments with their timings', async () => {
+      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: new Date(), transcriptionProgressMs: 10_000 });
+      mocks.transcript.getByAssetId.mockResolvedValue([
+        transcriptSegment(0, 'Hello there'),
+        transcriptSegment(2, 'General Kenobi'),
+      ]);
+
+      await expect(sut.getTranscript(authStub.admin, 'asset-1')).resolves.toEqual({
+        status: TranscriptionStatus.Complete,
+        progressMs: 10_000,
+        segments: [
+          { id: expect.any(String), startTime: 0, endTime: 1, text: 'Hello there', language: 'en' },
+          { id: expect.any(String), startTime: 2, endTime: 3, text: 'General Kenobi', language: 'en' },
+        ],
+      });
+    });
+
+    it('should apply the same thresholds as the caption track', async () => {
+      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: new Date(), transcriptionProgressMs: 10_000 });
+      mocks.transcript.getByAssetId.mockResolvedValue([
+        transcriptSegment(0, 'Hello there'),
+        transcriptSegment(2, 'Subtitles by the Amara.org community', {
+          noSpeechProbability: 0.98,
+          avgLogProbability: -2.4,
+        }),
+      ]);
+
+      const { segments } = await sut.getTranscript(authStub.admin, 'asset-1');
+
+      expect(segments.map(({ text }) => text)).toEqual(['Hello there']);
+    });
+
+    it('should report a partial transcript as in progress rather than withholding it', async () => {
+      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: null, transcriptionProgressMs: 4000 });
+      mocks.transcript.getByAssetId.mockResolvedValue([transcriptSegment(0, 'Hello there')]);
+
+      await expect(sut.getTranscript(authStub.admin, 'asset-1')).resolves.toMatchObject({
+        status: TranscriptionStatus.InProgress,
+        progressMs: 4000,
+        segments: [expect.objectContaining({ text: 'Hello there' })],
+      });
+    });
+
+    it('should report an asset that has never been transcribed as not started', async () => {
+      mocks.transcript.getStatus.mockResolvedValue(void 0);
+      mocks.transcript.getByAssetId.mockResolvedValue([]);
+
+      await expect(sut.getTranscript(authStub.admin, 'asset-1')).resolves.toEqual({
+        status: TranscriptionStatus.NotStarted,
+        progressMs: 0,
+        segments: [],
+      });
+    });
+
+    it('should require view access to the asset', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
+
+      await expect(sut.getTranscript(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.transcript.getByAssetId).not.toHaveBeenCalled();
     });
   });
 

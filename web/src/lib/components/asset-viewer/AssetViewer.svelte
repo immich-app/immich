@@ -14,6 +14,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { editManager, EditToolType } from '$lib/managers/edit/edit-manager.svelte';
   import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
   import { getAssetActions } from '$lib/services/asset.service';
   import { faceManager } from '$lib/stores/face.svelte';
@@ -53,6 +54,7 @@
   import PhotoViewer from './PhotoViewer.svelte';
   import SlideshowBar from './SlideshowBar.svelte';
   import SlideshowMetadataOverlay from './SlideshowMetadataOverlay.svelte';
+  import TranscriptPanel from './TranscriptPanel.svelte';
   import VideoViewer from './VideoWrapperViewer.svelte';
 
   export type AssetCursor = {
@@ -461,6 +463,13 @@
   );
 
   const { Tag, TagPeople } = $derived(getAssetActions($t, asset));
+  const showTranscriptPanel = $derived(
+    asset.type === AssetTypeEnum.Video &&
+      featureFlagsManager.value.transcription &&
+      $slideshowState === SlideshowState.None &&
+      assetViewerManager.isShowTranscriptPanel &&
+      !assetViewerManager.isShowEditor,
+  );
   const showDetailPanel = $derived(
     asset.hasMetadata &&
       $slideshowState === SlideshowState.None &&
@@ -541,7 +550,15 @@
   {/if}
 
   <!-- Asset Viewer -->
-  <div data-viewer-content class="relative z-[-1] col-span-4 col-start-1 row-span-full row-start-1">
+  <div
+    data-viewer-content
+    class={[
+      'relative z-[-1] col-span-4 col-start-1 row-span-full row-start-1',
+      // On a narrow viewport the transcript sits under the video rather than beside it, so the
+      // video is given the rest of the height instead of being covered by the panel.
+      showTranscriptPanel && 'max-md:pb-[45svh]',
+    ]}
+  >
     {#if viewerKind === 'StackVideoViewer'}
       <VideoViewer
         asset={previewStackedAsset!}
@@ -633,6 +650,17 @@
       {:else if assetViewerManager.isShowEditor}
         <EditorPanel {asset} onClose={closeEditor} />
       {/if}
+    </div>
+  {/if}
+
+  {#if showTranscriptPanel}
+    <div
+      transition:fly={{ duration: 150 }}
+      id="transcript-panel"
+      class="row-span-full row-start-1 w-90 bg-light transition-all max-md:absolute max-md:inset-x-0 max-md:top-auto max-md:bottom-0 max-md:h-[45svh] max-md:w-full dark:border-l dark:border-s-immich-dark-gray"
+      translate="yes"
+    >
+      <TranscriptPanel {asset} onClose={() => assetViewerManager.closeTranscriptPanel()} />
     </div>
   {/if}
 
