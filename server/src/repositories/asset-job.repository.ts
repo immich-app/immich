@@ -250,15 +250,21 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [DummyValue.UUID] })
   getForTranscription(id: string) {
-    return this.db
-      .selectFrom('asset')
-      .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-      .leftJoin('asset_audio', 'asset_audio.assetId', 'asset.id')
-      .select(['asset.id', 'asset.originalPath', 'asset.visibility'])
-      .select((eb) => withAudioStream(eb).as('audioStream'))
-      .where('asset.id', '=', id)
-      .where('asset.type', '=', sql.lit(AssetType.Video))
-      .executeTakeFirst();
+    return (
+      this.db
+        .selectFrom('asset')
+        .leftJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
+        .leftJoin('asset_audio', 'asset_audio.assetId', 'asset.id')
+        .leftJoin('asset_video', 'asset_video.assetId', 'asset.id')
+        // A video the current extractor has seen always has a video stream row. Selecting it is what
+        // lets the caller tell "probed, and there is no audio" from "never probed": both leave the
+        // audio row absent, and only the first is a permanent answer.
+        .select(['asset.id', 'asset.originalPath', 'asset.visibility', 'asset_video.assetId as videoStreamId'])
+        .select((eb) => withAudioStream(eb).as('audioStream'))
+        .where('asset.id', '=', id)
+        .where('asset.type', '=', sql.lit(AssetType.Video))
+        .executeTakeFirst()
+    );
   }
 
   @GenerateSql({ params: [[DummyValue.UUID]] })

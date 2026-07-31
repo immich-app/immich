@@ -71,10 +71,23 @@ export class TranscriptionService extends BaseService {
     }
 
     if (!asset.audioStream) {
-      // Marked complete rather than merely skipped. Whether a file has audio is only known once it
-      // has been probed, so a silent video left unprocessed is re-probed by every bulk run from now
-      // until the end of the library's life — a tax that grows with the library. Recording the
-      // answer costs one row; a file that has since changed is covered by forced re-processing.
+      // An absent audio row has two readings. Either the file was probed and has no audio track, or
+      // it has never been probed by a version that records one — the tables holding stream details
+      // were added empty and are filled by metadata extraction, so a library that upgraded past
+      // that point without re-extracting has audio it has not written down yet.
+      //
+      // A video stream row separates them: any video the current extractor has seen has one. With
+      // it, "no audio" is a permanent fact and is recorded as such, so bulk runs stop re-examining
+      // a silent file forever — a queue that runs one job at a time should not spend every run
+      // re-enqueueing tens of thousands of them. Without it the answer is not knowable yet, so the
+      // asset is left alone to be picked up once its metadata has been extracted. Writing it off
+      // here would silently exclude a video with perfectly good audio until someone thought to run
+      // a forced re-transcription of the whole library.
+      if (!asset.videoStreamId) {
+        this.logger.debug(`Skipping transcription for asset ${id}: audio streams not yet extracted`);
+        return JobStatus.Skipped;
+      }
+
       this.logger.debug(`Marking asset ${id} as transcribed: no audio stream`);
       await this.assetRepository.upsertJobStatus({ assetId: id, transcribedAt: new Date() });
       return JobStatus.Skipped;

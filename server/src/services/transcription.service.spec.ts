@@ -12,6 +12,20 @@ const audioOf = (seconds: number) => ({ size: seconds * PCM_BYTES_PER_SECOND }) 
 /** The quality signals of ordinary speech, for the tests that are not about them. */
 const speechQuality = { noSpeechProbability: 0.02, avgLogProbability: -0.2, compressionRatio: 1.4 };
 
+/**
+ * An asset as `getForTranscription` returns it. `videoStreamId` stands for a video stream row, which
+ * every video the current metadata extractor has seen has; without one, an absent audio stream means
+ * "not yet extracted" rather than "silent".
+ */
+const transcribable = (overrides: Record<string, unknown> = {}) => ({
+  id: 'asset-id',
+  originalPath: '/uploads/user-id/original/video.mp4',
+  visibility: AssetVisibility.Timeline,
+  videoStreamId: 'asset-id',
+  audioStream: { index: 0, codecName: 'aac', profile: null, bitrate: 128_000 },
+  ...overrides,
+});
+
 describe(TranscriptionService.name, () => {
   let sut: TranscriptionService;
   let mocks: ServiceMocks;
@@ -20,12 +34,7 @@ describe(TranscriptionService.name, () => {
     ({ sut, mocks } = newTestService(TranscriptionService));
 
     mocks.config.getWorker.mockReturnValue(ImmichWorker.Microservices);
-    mocks.assetJob.getForTranscription.mockResolvedValue({
-      id: 'asset-id',
-      originalPath: '/uploads/user-id/original/video.mp4',
-      visibility: AssetVisibility.Timeline,
-      audioStream: { index: 0, codecName: 'aac', profile: null, bitrate: 128_000 },
-    });
+    mocks.assetJob.getForTranscription.mockResolvedValue(transcribable());
     mocks.media.extractAudio.mockResolvedValue([]);
     mocks.storage.stat.mockResolvedValue(audioOf(10));
     mocks.storage.readFile.mockResolvedValue(Buffer.alloc(4));
@@ -94,12 +103,7 @@ describe(TranscriptionService.name, () => {
     });
 
     it('should skip hidden assets', async () => {
-      mocks.assetJob.getForTranscription.mockResolvedValue({
-        id: 'asset-id',
-        originalPath: '/uploads/user-id/original/video.mp4',
-        visibility: AssetVisibility.Hidden,
-        audioStream: { index: 0, codecName: 'aac', profile: null, bitrate: 128_000 },
-      });
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ visibility: AssetVisibility.Hidden }));
 
       expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Skipped);
 
@@ -107,12 +111,7 @@ describe(TranscriptionService.name, () => {
     });
 
     it('should leave a hidden asset unmarked, so unhiding it queues it again', async () => {
-      mocks.assetJob.getForTranscription.mockResolvedValue({
-        id: 'asset-id',
-        originalPath: '/uploads/user-id/original/video.mp4',
-        visibility: AssetVisibility.Hidden,
-        audioStream: { index: 0, codecName: 'aac', profile: null, bitrate: 128_000 },
-      });
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ visibility: AssetVisibility.Hidden }));
 
       await sut.handleTranscribe({ id: 'asset-id' });
 
@@ -120,12 +119,7 @@ describe(TranscriptionService.name, () => {
     });
 
     it('should skip videos without an audio track', async () => {
-      mocks.assetJob.getForTranscription.mockResolvedValue({
-        id: 'asset-id',
-        originalPath: '/uploads/user-id/original/video.mp4',
-        visibility: AssetVisibility.Timeline,
-        audioStream: null,
-      });
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ audioStream: null }));
 
       expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Skipped);
 
@@ -134,13 +128,8 @@ describe(TranscriptionService.name, () => {
       expect(mocks.transcript.appendChunk).not.toHaveBeenCalled();
     });
 
-    it('should mark a video without an audio track as transcribed, so bulk runs stop re-probing it', async () => {
-      mocks.assetJob.getForTranscription.mockResolvedValue({
-        id: 'asset-id',
-        originalPath: '/uploads/user-id/original/video.mp4',
-        visibility: AssetVisibility.Timeline,
-        audioStream: null,
-      });
+    it('should mark a probed video without an audio track as transcribed, so bulk runs stop re-examining it', async () => {
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ audioStream: null }));
 
       await sut.handleTranscribe({ id: 'asset-id' });
 
@@ -148,6 +137,26 @@ describe(TranscriptionService.name, () => {
         assetId: 'asset-id',
         transcribedAt: expect.any(Date),
       });
+    });
+
+    it('should not write off a video whose streams have never been extracted', async () => {
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ audioStream: null, videoStreamId: null }));
+
+      expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Skipped);
+
+      expect(mocks.asset.upsertJobStatus).not.toHaveBeenCalled();
+      expect(mocks.machineLearning.transcribe).not.toHaveBeenCalled();
+    });
+
+    it('should transcribe an unextracted video once its audio stream is recorded', async () => {
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ audioStream: null, videoStreamId: null }));
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable());
+
+      expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Success);
+
+      expect(mocks.machineLearning.transcribe).toHaveBeenCalled();
     });
 
     it('should extract raw pcm with silence detection and persist the transcript', async () => {

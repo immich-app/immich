@@ -507,6 +507,7 @@ select
   "asset"."id",
   "asset"."originalPath",
   "asset"."visibility",
+  "asset_video"."assetId" as "videoStreamId",
   (
     select
       to_json(obj)
@@ -530,6 +531,7 @@ from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
   left join "asset_audio" on "asset_audio"."assetId" = "asset"."id"
+  left join "asset_video" on "asset_video"."assetId" = "asset"."id"
 where
   "asset"."id" = $1
   and "asset"."type" = 'VIDEO'

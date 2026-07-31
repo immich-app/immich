@@ -1,11 +1,32 @@
 import { Kysely } from 'kysely';
 import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
+import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
 import { BaseService } from 'src/services/base.service';
 import { newMediumService } from 'test/medium.factory';
 import { getKyselyDB } from 'test/utils';
+
+const videoStream = (assetId: string) => ({
+  assetId,
+  bitrate: 5_000_000,
+  frameCount: 300,
+  timeBase: 90_000,
+  index: 0,
+  profile: null,
+  level: null,
+  colorPrimaries: 1,
+  colorTransfer: 1,
+  colorMatrix: 1,
+  dvProfile: null,
+  dvLevel: null,
+  dvBlSignalCompatibilityId: null,
+  codecName: 'h264',
+  formatName: 'mov,mp4',
+  formatLongName: 'QuickTime / MOV',
+  pixelFormat: 'yuv420p',
+});
 
 const contains = (id: string) => expect.arrayContaining([expect.objectContaining({ id })]);
 
@@ -164,6 +185,52 @@ describe(AssetJobRepository.name, () => {
 
       await expect(consume(sut.streamForTranscriptionJob(false))).resolves.not.toEqual(contains(asset.id));
       await expect(consume(sut.streamForTranscriptionJob(true))).resolves.not.toEqual(contains(asset.id));
+    });
+  });
+
+  describe('getForTranscription', () => {
+    it('should report an extracted video with no audio as probed and silent', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      await ctx.get(AssetRepository).upsertExif({
+        exif: { assetId: asset.id, fps: 30 },
+        video: videoStream(asset.id),
+        lockedPropertiesBehavior: 'override',
+      });
+
+      const result = await sut.getForTranscription(asset.id);
+
+      expect(result?.audioStream).toBeNull();
+      expect(result?.videoStreamId).toBe(asset.id);
+    });
+
+    it('should report a video whose streams were never extracted as unprobed', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+
+      const result = await sut.getForTranscription(asset.id);
+
+      expect(result?.audioStream).toBeNull();
+      expect(result?.videoStreamId).toBeNull();
+    });
+
+    it('should report the audio stream of an extracted video that has one', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      await ctx.get(AssetRepository).upsertExif({
+        exif: { assetId: asset.id, fps: 30 },
+        video: videoStream(asset.id),
+        audio: { assetId: asset.id, bitrate: 128_000, index: 1, profile: null, codecName: 'aac' },
+        lockedPropertiesBehavior: 'override',
+      });
+
+      const result = await sut.getForTranscription(asset.id);
+
+      expect(result?.audioStream).toEqual(expect.objectContaining({ codecName: 'aac' }));
+      expect(result?.videoStreamId).toBe(asset.id);
     });
   });
 
