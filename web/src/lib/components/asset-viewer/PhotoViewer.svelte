@@ -23,6 +23,7 @@
   import { useSwipe, type SwipeCustomEvent } from 'svelte-gestures';
   import { t } from 'svelte-i18n';
   import type { AssetCursor } from './AssetViewer.svelte';
+  import { type ImageQuality } from '$lib/utils/adaptive-image-loader.svelte';
 
   type Props = {
     cursor: AssetCursor;
@@ -35,7 +36,14 @@
 
   let { cursor, element = $bindable(), sharedLink, onReady, onError, onSwipe }: Props = $props();
 
-  const { slideshowState, slideshowLook } = slideshowStore;
+  const {
+    slideshowState,
+    slideshowLook,
+    slideshowAnimate,
+    slideshowDelay,
+    //slideshowAnimatePanStrength,
+    slideshowAnimateZoomStrength,
+  } = slideshowStore;
   const asset = $derived(cursor.current);
 
   let visibleImageReady: boolean = $state(false);
@@ -198,6 +206,12 @@
 
     return result;
   });
+
+  function getRandomInt(min: number, max: number): number {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max + 1 - min)) + min;
+  }
 </script>
 
 <AssetViewerEvents {onCopy} {onZoom} {onFaceEditModeChange} />
@@ -227,8 +241,27 @@
     {container}
     objectFit={$slideshowState !== SlideshowState.None && $slideshowLook === SlideshowLook.Cover ? 'cover' : 'contain'}
     {onUrlChange}
-    onImageReady={() => {
+    onImageReady={(quality: ImageQuality) => {
       visibleImageReady = true;
+
+      console.log('onImageReady: ' + quality);
+      if (quality === 'thumbnail' && $slideshowState === SlideshowState.PlaySlideshow && $slideshowAnimate) {
+        let randomDirection = getRandomInt(0, 2);
+        let randomScale = (getRandomInt(50, 200) / 100) * ($slideshowAnimateZoomStrength / 100) + 1;
+        let duration = $slideshowDelay * 1000 - 600;
+        console.group('asset: ' + asset.id);
+        console.log('Direction: ' + randomDirection);
+        console.log('Scale: ' + randomScale);
+        console.groupEnd();
+        if (randomDirection == 1) {
+          assetViewerManager.animatedZoom(randomScale, duration);
+        } else if (randomDirection == 2) {
+          assetViewerManager.animatedZoom(randomScale, 20);
+          setTimeout(() => {
+            assetViewerManager.animatedZoom(1, duration - 40);
+          }, 40);
+        }
+      }
       onReady?.();
     }}
     onError={() => {
