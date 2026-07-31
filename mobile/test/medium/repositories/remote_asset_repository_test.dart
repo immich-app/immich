@@ -25,37 +25,43 @@ void main() {
       await ctx.newAuthUser(id: userId);
     });
 
-    test('returns the current user\'s asset when a partner shares the checksum', () async {
+    test('returns all assets when a partner shares the checksum', () async {
       const checksum = 'shared-partner-checksum';
       final mine = await ctx.newRemoteAsset(ownerId: userId, checksum: checksum);
       final partner = await ctx.newUser();
-      await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
+      final theirs = await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
 
-      final result = await sut.getByChecksum(checksum);
+      final result = await sut.getAllDebugForChecksum(checksum);
+      final mineResult = result.firstWhere((asset) => asset.id == mine.id);
+      final theirResult = result.firstWhere((asset) => asset.id == theirs.id);
 
-      expect(result, isNotNull);
-      expect(result!.id, mine.id);
-      expect(result.ownerId, userId);
+      expect(result, isNotEmpty);
+      expect(mineResult.id, mine.id);
+      expect(mineResult.ownerId, userId);
+
+      expect(theirResult.id, theirs.id);
+      expect(theirResult.ownerId, partner.id);
     });
 
-    test('returns null when current user does not own the checksum, but a partner does', () async {
+    test('returns partner asset only if there is no matching user asset', () async {
       const checksum = 'partner-only';
       final partner = await ctx.newUser();
-      await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
+      final theirs = await ctx.newRemoteAsset(ownerId: partner.id, checksum: checksum);
 
-      final result = await sut.getByChecksum(checksum);
+      final result = await sut.getAllDebugForChecksum(checksum);
 
-      expect(result, isNull);
+      expect(result.length, 1);
+      expect(result[0].id, theirs.id);
     });
 
     test('returns the current user\'s asset', () async {
       const checksum = 'simple';
       final remote = await ctx.newRemoteAsset(ownerId: userId, checksum: checksum);
 
-      final result = await sut.getByChecksum(checksum);
+      final result = await sut.getAllDebugForChecksum(checksum);
 
-      expect(result, isNotNull);
-      expect(result!.id, remote.id);
+      expect(result.length, 1);
+      expect(result[0].id, remote.id);
     });
   });
 }
