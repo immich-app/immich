@@ -17,7 +17,7 @@ class SlideshowSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final slideshow = ref.read(appConfigProvider).slideshow;
+    final slideshow = ref.watch(appConfigProvider).slideshow;
     final useRepeat = useState(slideshow.repeat);
     final useDuration = useState(slideshow.duration);
     final useLook = useState(slideshow.look);

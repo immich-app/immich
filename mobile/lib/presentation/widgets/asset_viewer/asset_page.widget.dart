@@ -401,7 +401,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
-    final timelineOrigin = ref.read(timelineServiceProvider).origin;
+    final timelineOrigin = ref.watch(timelineServiceProvider).origin;
     final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
     final asset = _asset;

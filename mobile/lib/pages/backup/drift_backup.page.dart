@@ -81,8 +81,8 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
 
     final error = ref.watch(driftBackupProvider.select((p) => p.error));
 
-    final backupNotifier = ref.read(driftBackupProvider.notifier);
-    final backupSyncManager = ref.read(backgroundSyncProvider);
+    final backupNotifier = ref.watch(driftBackupProvider.notifier);
+    final backupSyncManager = ref.watch(backgroundSyncProvider);
 
     Future<void> startBackup() async {
       final currentUser = Store.tryGet(StoreKey.currentUser);

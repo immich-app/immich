@@ -35,6 +35,7 @@ class UploadCallbacks {
 }
 
 final foregroundUploadServiceProvider = Provider((ref) {
+  // ignore: dispose-provided-instances
   return ForegroundUploadService(
     ref.watch(uploadRepositoryProvider),
     ref.watch(storageRepositoryProvider),
