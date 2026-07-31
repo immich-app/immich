@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +46,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
 
     final originalTheme = context.themeData;
-    final assetForAction = [asset];
 
     final actions = <Widget>[
       if (asset.isMotionPhoto) const MotionPhotoActionButton(iconOnly: true),
@@ -52,17 +53,19 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.chat_outlined),
           onPressed: () {
-            context.router.push(
-              DriftActivitiesRoute(
-                album: album,
-                assetId: asset is RemoteAsset ? asset.id : null,
-                assetName: asset.name,
+            unawaited(
+              context.router.push(
+                DriftActivitiesRoute(
+                  album: album,
+                  assetId: asset is RemoteAsset ? asset.id : null,
+                  assetName: asset.name,
+                ),
               ),
             );
           },
         ),
 
-      ActionIconButtonWidget(action: FavoriteAction(assets: assetForAction)),
+      const ActionIconButton(action: FavoriteAction(source: .viewer)),
 
       ImmichColorOverride(color: null, child: ViewerKebabMenu(originalTheme: originalTheme)),
     ];

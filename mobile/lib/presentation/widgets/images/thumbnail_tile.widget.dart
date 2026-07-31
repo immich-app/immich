@@ -351,7 +351,7 @@ class _UploadProgressOverlay extends StatelessWidget {
     final percentage = isError ? 0 : (progress * 100).toInt();
 
     return Positioned.fill(
-      child: Container(
+      child: ColoredBox(
         color: isError ? Colors.red.withValues(alpha: 0.6) : Colors.black54,
         child: Center(
           child: Column(

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,9 +23,11 @@ class LocalAuthNotifier extends StateNotifier<BiometricStatus> {
 
   LocalAuthNotifier(this._localAuthService, this._secureStorageService)
     : super(const BiometricStatus(availableBiometrics: [], canAuthenticate: false)) {
-    _localAuthService.getStatus().then((value) {
-      state = state.copyWith(canAuthenticate: value.canAuthenticate, availableBiometrics: value.availableBiometrics);
-    });
+    unawaited(
+      _localAuthService.getStatus().then((value) {
+        state = state.copyWith(canAuthenticate: value.canAuthenticate, availableBiometrics: value.availableBiometrics);
+      }),
+    );
   }
 
   Future<bool> registerBiometric(BuildContext context, String pinCode) async {

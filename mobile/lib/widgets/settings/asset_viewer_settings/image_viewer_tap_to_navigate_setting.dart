@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -13,7 +15,7 @@ class ImageViewerTapToNavigateSetting extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tapToNavigate = useState(ref.read(appConfigProvider).viewer.tapToNavigate);
     useValueChanged<bool, void>(tapToNavigate.value, (_, __) {
-      ref.read(settingsProvider).write(.viewerTapToNavigate, tapToNavigate.value);
+      unawaited(ref.read(settingsProvider).write(.viewerTapToNavigate, tapToNavigate.value));
     });
 
     return Column(

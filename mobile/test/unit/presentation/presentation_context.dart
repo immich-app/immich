@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
@@ -16,6 +17,7 @@ import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
+import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
@@ -50,6 +52,12 @@ class PresentationContext {
     gCastServiceProvider.overrideWithValue(service.cast),
     serverInfoServiceProvider.overrideWithValue(service.serverInfo),
     inLockedViewProvider.overrideWithValue(false),
+  ];
+
+  List<Override> selected(Set<BaseAsset> assets) => [
+    multiSelectProvider.overrideWith(
+      () => MultiSelectNotifier(MultiSelectState(selectedAssets: assets, lockedSelectionAssets: const {})),
+    ),
   ];
 
   static Future<PresentationContext> create() async {
@@ -103,10 +111,10 @@ extension PumpPresentationWidget on WidgetTester {
 
   Future<void> pumpTestAction(
     PresentationContext context,
-    BaseAction action, {
+    ActionBuilder action, {
     List<Override> overrides = const [],
   }) async {
-    await pumpTestWidget(context, ActionIconButtonWidget(action: action), overrides: overrides);
+    await pumpTestWidget(context, ActionIconButton(action: action), overrides: overrides);
     await tap(find.byType(ImmichIconButton));
     await pump();
   }

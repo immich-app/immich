@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -21,21 +23,25 @@ class PrimaryColorSetting extends HookConsumerWidget {
 
     void popBottomSheet() {
       Future.delayed(const Duration(milliseconds: 200), () {
+        if (!context.mounted) {
+          return;
+        }
+
         Navigator.pop(context);
       });
     }
 
     void onUseSystemColorChange(bool newValue) {
-      ref.read(settingsProvider).write(.themeDynamic, newValue);
+      unawaited(ref.read(settingsProvider).write(.themeDynamic, newValue));
       popBottomSheet();
     }
 
     void onPrimaryColorChange(ImmichColorPreset colorPreset) {
-      ref.read(settingsProvider).write(.themePrimaryColor, colorPreset);
+      unawaited(ref.read(settingsProvider).write(.themePrimaryColor, colorPreset));
 
       //turn off system color setting
       if (themeConfig.dynamicTheme) {
-        ref.read(settingsProvider).write(.themeDynamic, false);
+        unawaited(ref.read(settingsProvider).write(.themeDynamic, false));
       }
       popBottomSheet();
     }
@@ -69,7 +75,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
                 right: 0,
                 top: 0,
                 bottom: 0,
-                child: Container(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all(Radius.circular(100)),
                     color: Colors.grey[900]?.withValues(alpha: .4),

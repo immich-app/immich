@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -36,11 +38,11 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       case AddToMenuItem.album:
         _openAlbumSelector();
       case AddToMenuItem.archive:
-        performArchiveAction(context, ref, source: ActionSource.viewer);
+        unawaited(performArchiveAction(context, ref, source: ActionSource.viewer));
       case AddToMenuItem.unarchive:
-        performUnArchiveAction(context, ref, source: ActionSource.viewer);
+        unawaited(performUnArchiveAction(context, ref, source: ActionSource.viewer));
       case AddToMenuItem.lockedFolder:
-        performMoveToLockFolderAction(context, ref, source: ActionSource.viewer);
+        unawaited(performMoveToLockFolderAction(context, ref, source: ActionSource.viewer));
     }
   }
 
@@ -112,21 +114,23 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(album)),
     ];
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) {
-        return BaseBottomSheet(
-          actions: const [],
-          slivers: slivers,
-          initialChildSize: 0.6,
-          minChildSize: 0.3,
-          maxChildSize: 0.95,
-          expand: false,
-          backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
-        );
-      },
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) {
+          return BaseBottomSheet(
+            actions: const [],
+            slivers: slivers,
+            initialChildSize: 0.6,
+            minChildSize: 0.3,
+            maxChildSize: 0.95,
+            expand: false,
+            backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
+          );
+        },
+      ),
     );
   }
 
@@ -140,7 +144,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
 
     final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.viewer, album);
 
-    if (!context.mounted) {
+    if (!mounted) {
       return;
     }
 
@@ -171,7 +175,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       );
     }
 
-    if (!context.mounted) {
+    if (!mounted) {
       return;
     }
     await Navigator.of(context).maybePop();

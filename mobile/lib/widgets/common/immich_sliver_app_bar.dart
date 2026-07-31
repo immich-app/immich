@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
@@ -304,13 +305,13 @@ class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator> with
     // Control animations based on sync status
     if (isSyncing) {
       if (!_rotationController.isAnimating) {
-        _rotationController.repeat();
+        unawaited(_rotationController.repeat());
       }
       _dismissalController.reset();
     } else {
       _rotationController.stop();
       if (_dismissalController.status == AnimationStatus.dismissed) {
-        _dismissalController.forward();
+        unawaited(_dismissalController.forward());
       }
     }
 

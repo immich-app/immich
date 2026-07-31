@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -105,7 +107,7 @@ class _BulkSelectIconButton extends ConsumerWidget {
         ? const SizedBox.shrink()
         : IconButton(
             onPressed: () {
-              ref.read(multiSelectProvider.notifier).toggleBucketSelection(assetOffset, bucket.assetCount);
+              unawaited(ref.read(multiSelectProvider.notifier).toggleBucketSelection(assetOffset, bucket.assetCount));
               ref.read(hapticFeedbackProvider.notifier).heavyImpact();
             },
             icon: isAllSelected

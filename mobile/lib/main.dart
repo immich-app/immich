@@ -128,17 +128,17 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     switch (state) {
       case AppLifecycleState.resumed:
         dPrint(() => "[APP STATE] resumed");
-        ref.read(appStateProvider.notifier).handleAppResume();
+        unawaited(ref.read(appStateProvider.notifier).handleAppResume());
         unawaited(ref.read(viewIntentHandlerProvider).onAppResumed());
       case AppLifecycleState.inactive:
         dPrint(() => "[APP STATE] inactive");
         ref.read(appStateProvider.notifier).handleAppInactivity();
       case AppLifecycleState.paused:
         dPrint(() => "[APP STATE] paused");
-        ref.read(appStateProvider.notifier).handleAppPause();
+        unawaited(ref.read(appStateProvider.notifier).handleAppPause());
       case AppLifecycleState.detached:
         dPrint(() => "[APP STATE] detached");
-        ref.read(appStateProvider.notifier).handleAppDetached();
+        unawaited(ref.read(appStateProvider.notifier).handleAppDetached());
       case AppLifecycleState.hidden:
         dPrint(() => "[APP STATE] hidden");
         ref.read(appStateProvider.notifier).handleAppHidden();
@@ -147,20 +147,9 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
 
   Future<void> initApp() async {
     WidgetsBinding.instance.addObserver(this);
-
     // Draw the app from edge to edge
     unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
-
-    // Sets the navigation bar color
-    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent);
-    if (Platform.isAndroid) {
-      // Android 8 does not support transparent app bars
-      final info = await DeviceInfoPlugin().androidInfo;
-      if (info.version.sdkInt <= 26) {
-        overlayStyle = context.isDarkTheme ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light;
-      }
-    }
-    SystemChrome.setSystemUIOverlayStyle(overlayStyle);
+    await _setNavigationBarColor();
 
     await FlutterLocalNotificationsPlugin().initialize(
       const InitializationSettings(
@@ -168,6 +157,22 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         iOS: DarwinInitializationSettings(),
       ),
     );
+  }
+
+  Future<void> _setNavigationBarColor() async {
+    SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent);
+    if (Platform.isAndroid) {
+      // Android 8 does not support transparent app bars
+      final info = await DeviceInfoPlugin().androidInfo;
+      if (!mounted) {
+        return;
+      }
+
+      if (info.version.sdkInt <= 26) {
+        overlayStyle = context.isDarkTheme ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light;
+      }
+    }
+    SystemChrome.setSystemUIOverlayStyle(overlayStyle);
   }
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
@@ -216,17 +221,19 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   @override
   void initState() {
     super.initState();
-    initApp().then((_) => dPrint(() => "App Init Completed"));
+    unawaited(initApp().then((_) => dPrint(() => "App Init Completed")));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // needs to be delayed so that EasyLocalization is working
-      ref.read(backgroundWorkerFgServiceProvider).enable();
+      unawaited(ref.read(backgroundWorkerFgServiceProvider).enable());
       if (Platform.isAndroid) {
-        ref
-            .read(backgroundWorkerFgServiceProvider)
-            .saveNotificationMessage(
-              StaticTranslations.instance.uploading_media,
-              StaticTranslations.instance.backup_background_service_default_notification,
-            );
+        unawaited(
+          ref
+              .read(backgroundWorkerFgServiceProvider)
+              .saveNotificationMessage(
+                StaticTranslations.instance.uploading_media,
+                StaticTranslations.instance.backup_background_service_default_notification,
+              ),
+        );
       }
     });
 
@@ -243,7 +250,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   @override
   void reassemble() {
     if (kDebugMode) {
-      NetworkRepository.init();
+      unawaited(NetworkRepository.init());
     }
     super.reassemble();
   }

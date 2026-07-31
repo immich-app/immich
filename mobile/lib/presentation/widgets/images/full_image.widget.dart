@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
@@ -30,7 +32,7 @@ class FullImage extends StatelessWidget {
       height: size.height,
       fit: fit,
       errorBuilder: (context, error, stackTrace) {
-        provider.evict();
+        unawaited(provider.evict());
         return const Icon(Icons.image_not_supported_outlined, size: 32);
       },
     );

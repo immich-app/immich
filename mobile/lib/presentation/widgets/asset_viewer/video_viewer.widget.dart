@@ -66,7 +66,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
     if (!widget.isCurrent) {
       _loadTimer?.cancel();
-      _notifier.pause();
+      unawaited(_notifier.pause());
       return;
     }
 
@@ -112,6 +112,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final localFilePath = widget.localFilePath;
       if (localFilePath != null) {
         final file = File(localFilePath);
+        // ignore: avoid_slow_async_io
         if (!await file.exists()) {
           throw Exception('No file found for the video');
         }
@@ -292,7 +293,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     _controller = nc;
 
     if (widget.isCurrent) {
-      _loadVideo();
+      unawaited(_loadVideo());
     }
   }
 

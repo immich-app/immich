@@ -25,7 +25,9 @@ class DriftAlbumApiRepository extends ApiRepository {
       _api.createAlbum(
         CreateAlbumDto(
           albumName: name,
-          description: description == null ? const Optional.absent() : Optional.present(description),
+          description: description == null
+              ? const Optional.absent()
+              : Optional.present(description.isEmpty ? null : description),
           assetIds: Optional.present(assetIds.toList()),
         ),
       ),
@@ -88,7 +90,9 @@ class DriftAlbumApiRepository extends ApiRepository {
         albumId,
         UpdateAlbumDto(
           albumName: name == null ? const Optional.absent() : Optional.present(name),
-          description: description == null ? const Optional.absent() : Optional.present(description),
+          description: description == null
+              ? const Optional.absent()
+              : Optional.present(description.isEmpty ? null : description),
           albumThumbnailAssetId: thumbnailAssetId == null
               ? const Optional.absent()
               : Optional.present(thumbnailAssetId),

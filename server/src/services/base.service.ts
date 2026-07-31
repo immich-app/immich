@@ -280,6 +280,17 @@ export class BaseService {
     return checkAccess(this.accessRepository, request);
   }
 
+  async isSetupAvailable(): Promise<boolean> {
+    const { setup } = this.configRepository.getEnv();
+    return setup.allow && !(await this.userRepository.hasAdmin());
+  }
+
+  async requireSetupAvailable(): Promise<void> {
+    if (!(await this.isSetupAvailable())) {
+      throw new BadRequestException('Admin setup is not available');
+    }
+  }
+
   async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {
     const exists = await this.userRepository.getByEmail(dto.email);
     if (exists) {

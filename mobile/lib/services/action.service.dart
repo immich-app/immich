@@ -68,16 +68,6 @@ class ActionService {
     unawaited(context.pushRoute(SharedLinkEditRoute(assetsList: remoteIds)));
   }
 
-  Future<void> favorite(List<String> remoteIds) async {
-    await _assetApiRepository.updateFavorite(remoteIds, true);
-    await _remoteAssetRepository.updateFavorite(remoteIds, true);
-  }
-
-  Future<void> unFavorite(List<String> remoteIds) async {
-    await _assetApiRepository.updateFavorite(remoteIds, false);
-    await _remoteAssetRepository.updateFavorite(remoteIds, false);
-  }
-
   Future<void> archive(List<String> remoteIds) async {
     await _assetApiRepository.updateVisibility(remoteIds, .archive);
     await _remoteAssetRepository.updateVisibility(remoteIds, AssetVisibility.archive);
@@ -157,6 +147,10 @@ class ActionService {
       }
     }
 
+    if (!context.mounted) {
+      return false;
+    }
+
     final location = await showLocationPicker(context: context, initialLatLng: initialLatLng);
 
     if (location == null) {
@@ -193,6 +187,10 @@ class ActionService {
       }
 
       initialDate = dt;
+    }
+
+    if (!context.mounted) {
+      return false;
     }
 
     final dateTime = await showDateTimePicker(

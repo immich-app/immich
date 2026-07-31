@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -22,7 +24,7 @@ class LoginPage extends HookConsumerWidget {
     }
 
     useEffect(() {
-      getAppInfo();
+      unawaited(getAppInfo());
       return null;
     });
 
@@ -55,7 +57,7 @@ class LoginPage extends HookConsumerWidget {
                     ),
                   ),
                   onTap: () {
-                    context.pushRoute(const AppLogRoute());
+                    unawaited(context.pushRoute(const AppLogRoute()));
                   },
                 ),
               ],

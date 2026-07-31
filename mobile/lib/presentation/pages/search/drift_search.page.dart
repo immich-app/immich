@@ -105,20 +105,26 @@ class DriftSearchPage extends HookConsumerWidget {
         return null;
       }
 
-      Future.microtask(() {
-        textSearchController.clear();
-        peopleCurrentFilterWidget.value = null;
-        dateRangeCurrentFilterWidget.value = null;
-        cameraCurrentFilterWidget.value = null;
-        tagCurrentFilterWidget.value = null;
-        mediaTypeCurrentFilterWidget.value = null;
-        ratingCurrentFilterWidget.value = null;
-        displayOptionCurrentFilterWidget.value = null;
-        locationCurrentFilterWidget.value = preFilter.location.city != null
-            ? Text(preFilter.location.city!, style: context.textTheme.labelLarge)
-            : null;
-        search(preFilter);
-      });
+      unawaited(
+        Future.microtask(() {
+          if (!context.mounted) {
+            return;
+          }
+
+          textSearchController.clear();
+          peopleCurrentFilterWidget.value = null;
+          dateRangeCurrentFilterWidget.value = null;
+          cameraCurrentFilterWidget.value = null;
+          tagCurrentFilterWidget.value = null;
+          mediaTypeCurrentFilterWidget.value = null;
+          ratingCurrentFilterWidget.value = null;
+          displayOptionCurrentFilterWidget.value = null;
+          locationCurrentFilterWidget.value = preFilter.location.city != null
+              ? Text(preFilter.location.city!, style: context.textTheme.labelLarge)
+              : null;
+          search(preFilter);
+        }),
+      );
 
       return null;
     }, [preFilter]);
@@ -141,17 +147,19 @@ class DriftSearchPage extends HookConsumerWidget {
         search(filter.value.copyWith(people: people));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        child: FractionallySizedBox(
-          heightFactor: 0.8,
-          child: FilterBottomSheetScaffold(
-            title: 'search_filter_people_title'.t(context: context),
-            expanded: true,
-            onSearch: handleApply,
-            onClear: handleClear,
-            child: PeoplePicker(onSelect: handleOnSelect, filter: filter.value.people),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          child: FractionallySizedBox(
+            heightFactor: 0.8,
+            child: FilterBottomSheetScaffold(
+              title: 'search_filter_people_title'.t(context: context),
+              expanded: true,
+              onSearch: handleApply,
+              onClear: handleClear,
+              child: PeoplePicker(onSelect: handleOnSelect, filter: filter.value.people),
+            ),
           ),
         ),
       );
@@ -176,17 +184,19 @@ class DriftSearchPage extends HookConsumerWidget {
         search(filter.value.copyWith(tagIds: tagIds));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        child: FractionallySizedBox(
-          heightFactor: 0.8,
-          child: FilterBottomSheetScaffold(
-            title: 'search_filter_tags_title'.t(context: context),
-            expanded: true,
-            onSearch: handleApply,
-            onClear: handleClear,
-            child: TagPicker(onSelectExistingTag: handleOnSelect, filter: (filter.value.tagIds ?? []).toSet()),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          child: FractionallySizedBox(
+            heightFactor: 0.8,
+            child: FilterBottomSheetScaffold(
+              title: 'search_filter_tags_title'.t(context: context),
+              expanded: true,
+              onSearch: handleApply,
+              onClear: handleClear,
+              child: TagPicker(onSelectExistingTag: handleOnSelect, filter: (filter.value.tagIds ?? []).toSet()),
+            ),
           ),
         ),
       );
@@ -216,21 +226,23 @@ class DriftSearchPage extends HookConsumerWidget {
         search(filter.value.copyWith(location: location));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        isDismissible: true,
-        child: FilterBottomSheetScaffold(
-          title: 'search_filter_location_title'.t(context: context),
-          onSearch: handleApply,
-          onClear: handleClear,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Container(
-              padding: EdgeInsets.only(bottom: context.viewInsets.bottom),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: LocationPicker(onSelected: handleOnSelect, filter: filter.value.location),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          isDismissible: true,
+          child: FilterBottomSheetScaffold(
+            title: 'search_filter_location_title'.t(context: context),
+            onSearch: handleApply,
+            onClear: handleClear,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Container(
+                padding: EdgeInsets.only(bottom: context.viewInsets.bottom),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: LocationPicker(onSelected: handleOnSelect, filter: filter.value.location),
+                ),
               ),
             ),
           ),
@@ -259,17 +271,19 @@ class DriftSearchPage extends HookConsumerWidget {
         search(filter.value.copyWith(camera: camera));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        isDismissible: true,
-        child: FilterBottomSheetScaffold(
-          title: 'search_filter_camera_title'.t(context: context),
-          onSearch: handleApply,
-          onClear: handleClear,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: CameraPicker(onSelect: handleOnSelect, filter: filter.value.camera),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          isDismissible: true,
+          child: FilterBottomSheetScaffold(
+            title: 'search_filter_camera_title'.t(context: context),
+            onSearch: handleApply,
+            onClear: handleClear,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: CameraPicker(onSelect: handleOnSelect, filter: filter.value.camera),
+            ),
           ),
         ),
       );
@@ -339,22 +353,24 @@ class DriftSearchPage extends HookConsumerWidget {
     }
 
     void showQuickDatePicker() {
-      showFilterBottomSheet(
-        context: context,
-        child: FilterBottomSheetScaffold(
-          title: "pick_date_range".tr(),
-          expanded: true,
-          onClear: () => datePicked(null),
-          child: QuickDatePicker(
-            currentInput: dateInputFilter.value,
-            onRequestPicker: () {
-              ContextHelper(context).pop();
-              showDatePicker();
-            },
-            onSelect: (date) {
-              ContextHelper(context).pop();
-              datePicked(date);
-            },
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          child: FilterBottomSheetScaffold(
+            title: "pick_date_range".tr(),
+            expanded: true,
+            onClear: () => datePicked(null),
+            child: QuickDatePicker(
+              currentInput: dateInputFilter.value,
+              onRequestPicker: () {
+                ContextHelper(context).pop();
+                unawaited(showDatePicker());
+              },
+              onSelect: (date) {
+                ContextHelper(context).pop();
+                datePicked(date);
+              },
+            ),
           ),
         ),
       );
@@ -383,13 +399,15 @@ class DriftSearchPage extends HookConsumerWidget {
         search(filter.value.copyWith(mediaType: mediaType));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        child: FilterBottomSheetScaffold(
-          title: 'search_filter_media_type_title'.t(context: context),
-          onSearch: handleApply,
-          onClear: handleClear,
-          child: MediaTypePicker(onSelect: handleOnSelected, filter: filter.value.mediaType),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          child: FilterBottomSheetScaffold(
+            title: 'search_filter_media_type_title'.t(context: context),
+            onSearch: handleApply,
+            onClear: handleClear,
+            child: MediaTypePicker(onSelect: handleOnSelected, filter: filter.value.mediaType),
+          ),
         ),
       );
     }
@@ -417,14 +435,16 @@ class DriftSearchPage extends HookConsumerWidget {
         search(filter.value.copyWith(rating: rating));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        child: FilterBottomSheetScaffold(
-          title: 'rating'.t(context: context),
-          onSearch: handleApply,
-          onClear: handleClear,
-          child: StarRatingPicker(onSelect: handleOnSelected, filter: filter.value.rating),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          child: FilterBottomSheetScaffold(
+            title: 'rating'.t(context: context),
+            onSearch: handleApply,
+            onClear: handleClear,
+            child: StarRatingPicker(onSelect: handleOnSelected, filter: filter.value.rating),
+          ),
         ),
       );
     }
@@ -462,13 +482,15 @@ class DriftSearchPage extends HookConsumerWidget {
         search(filter.value.copyWith(display: display));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        child: FilterBottomSheetScaffold(
-          title: 'display_options'.t(context: context),
-          onSearch: handleApply,
-          onClear: handleClear,
-          child: DisplayOptionPicker(onSelect: handleOnSelect, filter: filter.value.display),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          child: FilterBottomSheetScaffold(
+            title: 'display_options'.t(context: context),
+            onSearch: handleApply,
+            onClear: handleClear,
+            child: DisplayOptionPicker(onSelect: handleOnSelect, filter: filter.value.display),
+          ),
         ),
       );
     }
@@ -598,7 +620,7 @@ class DriftSearchPage extends HookConsumerWidget {
             ),
           ),
         ],
-        title: Container(
+        title: DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: context.colorScheme.onSurface.withAlpha(0), width: 0),
             borderRadius: const BorderRadius.all(Radius.circular(24)),
@@ -697,7 +719,7 @@ class DriftSearchPage extends HookConsumerWidget {
           if (filter.value.isEmpty)
             const _SearchSuggestions()
           else
-            _SearchResultGrid(onScrollEnd: loadMoreSearchResults),
+            _SearchResultGrid(onScrollEnd: () => loadMoreSearchResults()),
         ],
       ),
     );
@@ -859,7 +881,7 @@ class _QuickLinkList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(20)),
         border: Border.all(color: context.colorScheme.outline.withAlpha(10), width: 1),

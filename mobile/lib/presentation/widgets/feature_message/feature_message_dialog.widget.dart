@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:easy_localization/easy_localization.dart';
@@ -60,7 +61,7 @@ class _FeatureMessageDialogState extends State<_FeatureMessageDialog> with Singl
       Navigator.of(context).pop();
       return;
     }
-    _controller.nextPage(duration: const Duration(milliseconds: 320), curve: Curves.easeOutCubic);
+    unawaited(_controller.nextPage(duration: const Duration(milliseconds: 320), curve: Curves.easeOutCubic));
   }
 
   List<Color> _borderColors(BuildContext context) {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:background_downloader/background_downloader.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +17,7 @@ class DownloadPanel extends ConsumerWidget {
     final tasks = ref.watch(downloadStateProvider.select((state) => state.taskProgress)).entries.toList();
 
     void onCancelDownload(String id) {
-      ref.watch(downloadStateProvider.notifier).cancelDownload(id);
+      unawaited(ref.watch(downloadStateProvider.notifier).cancelDownload(id));
     }
 
     return Positioned(

@@ -38,8 +38,8 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     useEffect(() {
-      ref.read(backupProvider.notifier).updateDiskInfo();
-      ref.read(currentUserProvider.notifier).refresh();
+      unawaited(ref.read(backupProvider.notifier).updateDiskInfo());
+      unawaited(ref.read(currentUserProvider.notifier).refresh());
       return null;
     }, []);
 
@@ -126,6 +126,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     await ref.read(authProvider.notifier).logout().whenComplete(() => isLoggingOut.value = false);
 
                     ref.read(websocketProvider.notifier).disconnect();
+                    if (!context.mounted) {
+                      return;
+                    }
+
                     unawaited(context.replaceRoute(const LoginRoute()));
                   },
                 );
@@ -180,7 +184,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             InkWell(
               onTap: () {
                 ContextHelper(context).pop();
-                launchUrl(Uri.parse('https://docs.immich.app'), mode: LaunchMode.externalApplication);
+                unawaited(launchUrl(Uri.parse('https://docs.immich.app'), mode: LaunchMode.externalApplication));
               },
               child: Text("documentation", style: context.textTheme.bodySmall).tr(),
             ),
@@ -188,7 +192,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             InkWell(
               onTap: () {
                 ContextHelper(context).pop();
-                launchUrl(Uri.parse('https://github.com/immich-app/immich'), mode: LaunchMode.externalApplication);
+                unawaited(
+                  launchUrl(Uri.parse('https://github.com/immich-app/immich'), mode: LaunchMode.externalApplication),
+                );
               },
               child: Text("profile_drawer_github", style: context.textTheme.bodySmall).tr(),
             ),
@@ -197,6 +203,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               onTap: () async {
                 ContextHelper(context).pop();
                 final packageInfo = await PackageInfo.fromPlatform();
+                if (!context.mounted) {
+                  return;
+                }
+
                 showLicensePage(
                   context: context,
                   applicationIcon: const Padding(

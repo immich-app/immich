@@ -96,6 +96,9 @@ class LocalNetworkPreference extends HookConsumerWidget {
 
     Future<void> autofillCurrentNetwork() async {
       final wifiName = await ref.read(networkProvider.notifier).getWifiName();
+      if (!context.mounted) {
+        return;
+      }
 
       if (wifiName == null) {
         context.showSnackBar(

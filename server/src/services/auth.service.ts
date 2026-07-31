@@ -197,16 +197,6 @@ export class AuthService extends BaseService {
   }
 
   async adminSignUp(dto: SignUpDto): Promise<UserAdminResponseDto> {
-    const { setup } = this.configRepository.getEnv();
-    if (!setup.allow) {
-      throw new BadRequestException('Admin setup is disabled');
-    }
-
-    const adminUser = await this.userRepository.getAdmin();
-    if (adminUser) {
-      throw new BadRequestException('The server already has an admin');
-    }
-
     const admin = await this.createUser({
       isAdmin: true,
       email: dto.email,

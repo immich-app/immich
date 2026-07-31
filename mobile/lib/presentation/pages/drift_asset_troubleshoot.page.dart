@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -78,11 +80,13 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
   @override
   void initState() {
     super.initState();
-    _buildAssetProperties(widget.asset).whenComplete(() {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    unawaited(
+      _buildAssetProperties(widget.asset).whenComplete(() {
+        if (mounted) {
+          setState(() {});
+        }
+      }),
+    );
   }
 
   @override

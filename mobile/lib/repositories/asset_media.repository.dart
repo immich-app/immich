@@ -324,7 +324,7 @@ class AssetMediaRepository {
       return 0;
     }
 
-    if (_isCancelled(cancelCompleter)) {
+    if (_isCancelled(cancelCompleter) || !context.mounted) {
       await _cleanupTempFiles(tempFiles);
       return 0;
     }

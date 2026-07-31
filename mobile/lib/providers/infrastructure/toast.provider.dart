@@ -1,4 +1,4 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/repositories/toast.repository.dart';
+import 'package:immich_mobile/services/toast.service.dart';
 
-final toastRepositoryProvider = Provider<ToastRepository>((ref) => const .new());
+final toastServiceProvider = Provider<ToastService>((ref) => const .new());
