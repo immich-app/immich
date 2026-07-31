@@ -1074,7 +1074,7 @@ void main() {
 
     test('should build correct widget for each button type', () {
       for (final buttonType in ActionButtonType.values) {
-        var buttonContext = context;
+        final buttonContext = context;
 
         if (buttonType == ActionButtonType.removeFromAlbum) {
           final album = createRemoteAlbum();

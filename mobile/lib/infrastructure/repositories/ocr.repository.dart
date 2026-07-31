@@ -1,7 +1,7 @@
+import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/ocr.model.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_ocr.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:drift/drift.dart';
 
 class OcrRepository extends DriftDatabaseRepository {
   final Drift _db;

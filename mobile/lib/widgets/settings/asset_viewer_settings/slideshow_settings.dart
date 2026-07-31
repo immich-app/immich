@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -22,16 +24,16 @@ class SlideshowSettings extends HookConsumerWidget {
     final useDirection = useState(slideshow.direction);
 
     useValueChanged<bool, void>(useRepeat.value, (_, __) {
-      ref.read(settingsProvider).write(.slideshowRepeat, useRepeat.value);
+      unawaited(ref.read(settingsProvider).write(.slideshowRepeat, useRepeat.value));
     });
     useValueChanged<int, void>(useDuration.value, (_, __) {
-      ref.read(settingsProvider).write(.slideshowDuration, useDuration.value);
+      unawaited(ref.read(settingsProvider).write(.slideshowDuration, useDuration.value));
     });
     useValueChanged<SlideshowLook, void>(useLook.value, (_, __) {
-      ref.read(settingsProvider).write(.slideshowLook, useLook.value);
+      unawaited(ref.read(settingsProvider).write(.slideshowLook, useLook.value));
     });
     useValueChanged<SlideshowDirection, void>(useDirection.value, (_, __) {
-      ref.read(settingsProvider).write(.slideshowDirection, useDirection.value);
+      unawaited(ref.read(settingsProvider).write(.slideshowDirection, useDirection.value));
     });
 
     return Column(

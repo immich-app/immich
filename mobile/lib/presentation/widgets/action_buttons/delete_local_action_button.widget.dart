@@ -7,9 +7,9 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 
 /// This delete action has the following behavior:
 /// - Prompt to delete the asset locally
@@ -20,7 +20,7 @@ class DeleteLocalActionButton extends ConsumerWidget {
 
   const DeleteLocalActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
@@ -42,16 +42,17 @@ class DeleteLocalActionButton extends ConsumerWidget {
 
     ref.invalidate(localAlbumProvider);
 
-    final successMessage = 'delete_local_action_prompt'.t(context: context, args: {'count': result.count.toString()});
-
-    if (context.mounted) {
-      ImmichToast.show(
-        context: context,
-        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
-        gravity: ToastGravity.BOTTOM,
-        toastType: result.success ? ToastType.success : ToastType.error,
-      );
+    if (!context.mounted) {
+      return;
     }
+
+    final successMessage = 'delete_local_action_prompt'.t(context: context, args: {'count': result.count.toString()});
+    ImmichToast.show(
+      context: context,
+      msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
+      gravity: ToastGravity.BOTTOM,
+      toastType: result.success ? ToastType.success : ToastType.error,
+    );
   }
 
   @override

@@ -1,25 +1,25 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
-
-import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-
-import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 enum AddToMenuItem { album, archive, unarchive, lockedFolder }
 
@@ -37,16 +37,12 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
     switch (selected) {
       case AddToMenuItem.album:
         _openAlbumSelector();
-        break;
       case AddToMenuItem.archive:
-        performArchiveAction(context, ref, source: ActionSource.viewer);
-        break;
+        unawaited(performArchiveAction(context, ref, source: ActionSource.viewer));
       case AddToMenuItem.unarchive:
-        performUnArchiveAction(context, ref, source: ActionSource.viewer);
-        break;
+        unawaited(performUnArchiveAction(context, ref, source: ActionSource.viewer));
       case AddToMenuItem.lockedFolder:
-        performMoveToLockFolderAction(context, ref, source: ActionSource.viewer);
-        break;
+        unawaited(performMoveToLockFolderAction(context, ref, source: ActionSource.viewer));
     }
   }
 
@@ -118,21 +114,23 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       AlbumSelector(onAlbumSelected: (album) => _addCurrentAssetToAlbum(album)),
     ];
 
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) {
-        return BaseBottomSheet(
-          actions: const [],
-          slivers: slivers,
-          initialChildSize: 0.6,
-          minChildSize: 0.3,
-          maxChildSize: 0.95,
-          expand: false,
-          backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
-        );
-      },
+    unawaited(
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (_) {
+          return BaseBottomSheet(
+            actions: const [],
+            slivers: slivers,
+            initialChildSize: 0.6,
+            minChildSize: 0.3,
+            maxChildSize: 0.95,
+            expand: false,
+            backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
+          );
+        },
+      ),
     );
   }
 
@@ -146,7 +144,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
 
     final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.viewer, album);
 
-    if (!context.mounted) {
+    if (!mounted) {
       return;
     }
 
@@ -177,7 +175,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
       );
     }
 
-    if (!context.mounted) {
+    if (!mounted) {
       return;
     }
     await Navigator.of(context).maybePop();

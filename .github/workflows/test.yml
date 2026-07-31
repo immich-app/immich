@@ -85,13 +85,13 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -114,13 +114,13 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -146,13 +146,13 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -178,13 +178,13 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -223,13 +223,13 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -262,13 +262,13 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -291,13 +291,13 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -342,13 +342,13 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -375,14 +375,14 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           submodules: 'recursive'
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -412,7 +412,7 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           submodules: 'recursive'
@@ -441,6 +441,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Start Docker Compose
+        id: docker
         run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
 
@@ -448,13 +449,13 @@ jobs:
         env:
           VITEST_DISABLE_DOCKER_SETUP: true
         run: pnpm test
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.docker.outcome == 'success' }}
 
       - name: Run e2e tests (maintenance)
         env:
           VITEST_DISABLE_DOCKER_SETUP: true
         run: pnpm test:maintenance
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.docker.outcome == 'success' }}
 
       - name: Capture Docker logs
         if: always()
@@ -490,7 +491,7 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           submodules: 'recursive'
@@ -519,6 +520,7 @@ jobs:
         if: ${{ !cancelled() }}
 
       - name: Docker build
+        id: docker
         run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
 
@@ -526,7 +528,7 @@ jobs:
         env:
           PLAYWRIGHT_DISABLE_WEBSERVER: true
         run: pnpm test:web
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.docker.outcome == 'success' }}
 
       - name: Archive e2e test (web) results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -539,7 +541,7 @@ jobs:
         env:
           PLAYWRIGHT_DISABLE_WEBSERVER: true
         run: pnpm test:web:ui
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.docker.outcome == 'success' }}
 
       - name: Archive ui test (web) results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -552,7 +554,7 @@ jobs:
         env:
           PLAYWRIGHT_DISABLE_WEBSERVER: true
         run: pnpm test:web:maintenance
-        if: ${{ !cancelled() }}
+        if: ${{ !cancelled() && steps.docker.outcome == 'success' }}
 
       - name: Archive maintenance tests (web) results
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -598,23 +600,22 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
           permission-contents: read
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
           working_directory: ./mobile
 
       - name: Install dependencies
-        run: flutter pub get
-        working-directory: ./mobile
+        run: mise //mobile:install:ci
 
-      - name: Generate translation files
-        run: mise //mobile:codegen:translation
+      - name: Perform codegen
+        run: mise //mobile:codegen
 
       - name: Run tests
         run: mise //mobile:test
@@ -637,13 +638,13 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
           permission-contents: read
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -669,13 +670,13 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -699,7 +700,7 @@ jobs:
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
           permission-contents: read
 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
@@ -722,13 +723,13 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -743,7 +744,6 @@ jobs:
         id: verify-changed-files
         with:
           files: |
-            mobile/openapi
             packages/sdk
             open-api/immich-openapi-specs.json
 
@@ -781,13 +781,13 @@ jobs:
           permission-contents: read
 
       - name: Checkout code
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@3bca63ca3c15020293b36b51737a3ee2c773340b # use-mise-action-v3.1.0
+        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -920,6 +920,6 @@ jobs:
 #           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
 #           disable-animations: true
 #           script: |
-#             flutter pub get
+#             flutter pub get --enforce-lockfile
 #             flutter test integration_test
 #         attempt_limit: 3

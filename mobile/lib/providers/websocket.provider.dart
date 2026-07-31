@@ -71,7 +71,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         final endpoint = Uri.parse(Store.get(StoreKey.serverEndpoint));
         dPrint(() => "Attempting to connect to websocket");
         // Configure socket transports must be specified
-        Socket socket = io(
+        final Socket socket = io(
           endpoint.origin,
           OptionBuilder()
               .setPath("${endpoint.path}/socket.io")
@@ -107,7 +107,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('on_config_update', _handleOnConfigUpdate);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
-        dPrint(() => "[WEBSOCKET] Catch Websocket Error - ${e.toString()}");
+        dPrint(() => "[WEBSOCKET] Catch Websocket Error - $e");
       }
     }
   }
@@ -143,11 +143,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   }
 
   void _handleOnConfigUpdate(dynamic _) {
-    _ref.read(serverInfoProvider.notifier).getServerFeatures();
-    _ref.read(serverInfoProvider.notifier).getServerConfig();
+    unawaited(_ref.read(serverInfoProvider.notifier).getServerFeatures());
+    unawaited(_ref.read(serverInfoProvider.notifier).getServerConfig());
   }
 
-  _handleReleaseUpdates(dynamic data) {
+  void _handleReleaseUpdates(dynamic data) {
     // Json guard
     if (data is! Map) {
       return;
@@ -203,7 +203,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       unawaited(
         _ref.read(backgroundSyncProvider).syncWebsocketBatchV1(_batchedAssetUploadReady.toList()).then((_) {
           if (isSyncAlbumEnabled) {
-            _ref.read(backgroundSyncProvider).syncLinkedAlbum();
+            unawaited(_ref.read(backgroundSyncProvider).syncLinkedAlbum());
           }
         }),
       );
@@ -224,7 +224,7 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
       unawaited(
         _ref.read(backgroundSyncProvider).syncWebsocketBatchV2(_batchedAssetUploadReady.toList()).then((_) {
           if (isSyncAlbumEnabled) {
-            _ref.read(backgroundSyncProvider).syncLinkedAlbum();
+            unawaited(_ref.read(backgroundSyncProvider).syncLinkedAlbum());
           }
         }),
       );

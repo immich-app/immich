@@ -115,7 +115,7 @@ void main() {
     final route = await sut.handleMyImmichApp(link('/albums/$_albumId/photos/$_assetId'), ref);
 
     expect(route, isA<AssetViewerRoute>());
-    expect((route!.args as AssetViewerRouteArgs).currentAlbum, _album);
+    expect((route!.args! as AssetViewerRouteArgs).currentAlbum, _album);
   });
 
   test('still opens the viewer when the album cannot be resolved', () async {
@@ -125,7 +125,7 @@ void main() {
     final route = await sut.handleMyImmichApp(link('/albums/$_albumId/photos/$_assetId'), ref);
 
     expect(route, isA<AssetViewerRoute>());
-    expect((route!.args as AssetViewerRouteArgs).currentAlbum, isNull);
+    expect((route!.args! as AssetViewerRouteArgs).currentAlbum, isNull);
   });
 
   test('plain photo link has no album', () async {
@@ -134,7 +134,7 @@ void main() {
     final route = await sut.handleMyImmichApp(link('/photos/$_assetId'), ref);
 
     expect(route, isA<AssetViewerRoute>());
-    expect((route!.args as AssetViewerRouteArgs).currentAlbum, isNull);
+    expect((route!.args! as AssetViewerRouteArgs).currentAlbum, isNull);
     verifyNever(() => remoteAlbumService.get(any()));
   });
 }

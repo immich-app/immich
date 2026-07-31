@@ -25,7 +25,7 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/widgets/common/immich_logo.dart';
 import 'package:immich_mobile/widgets/common/immich_title_text.dart';
 import 'package:logging/logging.dart';
-import 'package:url_launcher/url_launcher.dart' show launchUrl, LaunchMode;
+import 'package:url_launcher/url_launcher.dart' show LaunchMode, launchUrl;
 
 class BootstrapErrorWidget extends StatelessWidget {
   final String error;
@@ -135,9 +135,11 @@ class _BottomPanelState extends State<_BottomPanel> {
       return;
     }
 
-    if (mounted) {
-      setState(() => _cleared = true);
+    if (!mounted) {
+      return;
     }
+
+    setState(() => _cleared = true);
   }
 
   @override
@@ -282,11 +284,13 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
   @override
   void initState() {
     super.initState();
-    ref
-        .read(authProvider.notifier)
-        .setOpenApiServiceEndpoint()
-        .then(logConnectionInfo)
-        .whenComplete(() => resumeSession());
+    unawaited(
+      ref
+          .read(authProvider.notifier)
+          .setOpenApiServiceEndpoint()
+          .then(logConnectionInfo)
+          .whenComplete(() => resumeSession()),
+    );
   }
 
   void logConnectionInfo(String? endpoint) {
@@ -297,7 +301,7 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     log.info("Resuming session at $endpoint");
   }
 
-  void resumeSession() async {
+  Future<void> resumeSession() async {
     final serverUrl = Store.tryGet(StoreKey.serverUrl);
     final endpoint = Store.tryGet(StoreKey.serverEndpoint);
     final accessToken = Store.tryGet(StoreKey.accessToken);
@@ -310,46 +314,53 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
       final viewIntentHandler = ref.read(viewIntentHandlerProvider);
 
       unawaited(
-        ref.read(authProvider.notifier).saveAuthInfo(accessToken: accessToken).then(
-          (_) async {
-            try {
-              wsProvider.connect();
-              unawaited(infoProvider.getServerInfo());
+        ref
+            .read(authProvider.notifier)
+            .saveAuthInfo(accessToken: accessToken)
+            .then(
+              (_) async {
+                try {
+                  wsProvider.connect();
+                  unawaited(infoProvider.getServerInfo());
 
-              bool syncSuccess = false;
-              await Future.wait([
-                backgroundManager.syncLocal(full: true),
-                backgroundManager.syncRemote().then((success) => syncSuccess = success),
-              ]);
+                  bool syncSuccess = false;
+                  await Future.wait([
+                    backgroundManager.syncLocal(full: true),
+                    backgroundManager.syncRemote().then((success) => syncSuccess = success),
+                  ]);
 
-              await viewIntentHandler.flushDeferredViewIntent();
+                  await viewIntentHandler.flushDeferredViewIntent();
 
-              if (syncSuccess) {
-                await Future.wait([
-                  backgroundManager.hashAssets().then((_) {
-                    _resumeBackup(backupProvider);
-                  }),
-                  _resumeBackup(backupProvider),
-                  // TODO: Bring back when the soft freeze issue is addressed
-                  // backgroundManager.syncCloudIds(),
-                ]);
-              } else {
-                await backgroundManager.hashAssets();
-              }
+                  if (syncSuccess) {
+                    await Future.wait([
+                      backgroundManager.hashAssets().then((_) {
+                        unawaited(_resumeBackup(backupProvider));
+                      }),
+                      _resumeBackup(backupProvider),
+                      // TODO: Bring back when the soft freeze issue is addressed
+                      // backgroundManager.syncCloudIds(),
+                    ]);
+                  } else {
+                    await backgroundManager.hashAssets();
+                  }
 
-              if (SettingsRepository.instance.appConfig.backup.syncAlbums) {
-                await backgroundManager.syncLinkedAlbum();
-              }
-            } catch (e) {
-              log.severe('Failed establishing connection to the server: $e');
-            }
-          },
-          onError: (exception) => {
-            log.severe('Failed to update auth info with access token: $accessToken'),
-            ref.read(authProvider.notifier).logout(),
-            context.router.replaceAll([const LoginRoute()]),
-          },
-        ),
+                  if (SettingsRepository.instance.appConfig.backup.syncAlbums) {
+                    await backgroundManager.syncLinkedAlbum();
+                  }
+                } catch (e) {
+                  log.severe('Failed establishing connection to the server: $e');
+                }
+              },
+              onError: (exception) {
+                log.severe('Failed to update auth info with access token: $accessToken');
+                unawaited(ref.read(authProvider.notifier).logout());
+                if (!mounted) {
+                  return;
+                }
+
+                unawaited(context.router.replaceAll([const LoginRoute()]));
+              },
+            ),
       );
     } else {
       log.severe('Missing crucial offline login info - Logging out completely');
