@@ -537,7 +537,7 @@ importers:
         version: 6.2.4
       js-yaml:
         specifier: ^5.0.0
-        version: 5.2.1
+        version: 5.2.2
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.3
@@ -8794,6 +8794,10 @@ packages:
 
   js-yaml@5.2.1:
     resolution: {integrity: sha512-zfLtNfQqxVqq3uaTqSkh4x4hZw3KHobGUA0fJUj4wawW8bsQLTVqpHdXSIzidh7o+4lEW36tANuAGdaFx6Zgnw==}
+    hasBin: true
+
+  js-yaml@5.2.2:
+    resolution: {integrity: sha512-dayzUzKkJ1MkuUtZglSebU43utNXH0OWQByK9rKOOuYIO8M5TV1y+n8ALMdG0rdzBnfNkOmZEqrURepb0ejqBw==}
     hasBin: true
 
   jsdom@26.1.0:
@@ -22079,6 +22083,10 @@ snapshots:
       argparse: 2.0.1
 
   js-yaml@5.2.1:
+    dependencies:
+      argparse: 2.0.1
+
+  js-yaml@5.2.2:
     dependencies:
       argparse: 2.0.1
 
