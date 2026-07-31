@@ -17,7 +17,7 @@ class ServerConfig {
     required this.mapLightStyleUrl,
   });
 
-  ServerConfig copyWith({int? trashDays, String? oauthButtonText, String? externalDomain}) {
+  ServerConfig copyWith({int? trashDays, String? oauthButtonText, String? externalDomain, String? sharedLinkDomain}) {
     return ServerConfig(
       trashDays: trashDays ?? this.trashDays,
       oauthButtonText: oauthButtonText ?? this.oauthButtonText,
@@ -53,5 +53,6 @@ class ServerConfig {
   }
 
   @override
-  int get hashCode => trashDays.hashCode ^ oauthButtonText.hashCode ^ externalDomain.hashCode ^ sharedLinkDomain.hashCode;
+  int get hashCode =>
+      trashDays.hashCode ^ oauthButtonText.hashCode ^ externalDomain.hashCode ^ sharedLinkDomain.hashCode;
 }
