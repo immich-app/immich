@@ -2,8 +2,6 @@ PODS:
   - cupertino_http (0.0.1):
     - Flutter
     - FlutterMacOS
-  - fcast_sender_sdk (0.0.1):
-    - Flutter
   - Flutter (1.0.0)
   - flutter_local_notifications (0.0.1):
     - Flutter
@@ -24,7 +22,6 @@ PODS:
 
 DEPENDENCIES:
   - cupertino_http (from `.symlinks/plugins/cupertino_http/darwin`)
-  - fcast_sender_sdk (from `.symlinks/plugins/fcast_sender_sdk/ios`)
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
@@ -36,8 +33,6 @@ DEPENDENCIES:
 EXTERNAL SOURCES:
   cupertino_http:
     :path: ".symlinks/plugins/cupertino_http/darwin"
-  fcast_sender_sdk:
-    :path: ".symlinks/plugins/fcast_sender_sdk/ios"
   Flutter:
     :path: Flutter
   flutter_local_notifications:
@@ -55,7 +50,6 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   cupertino_http: 94ac07f5ff090b8effa6c5e2c47871d48ab7c86c
-  fcast_sender_sdk: 8bf227a5cbcedaea2e580a633ff0f706f1e90328
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_local_notifications: ad39620c743ea4c15127860f4b5641649a988100
   flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
@@ -64,6 +58,6 @@ SPEC CHECKSUMS:
   share_handler_ios: e2244e990f826b2c8eaa291ac3831569438ba0fb
   share_handler_ios_models: fc638c9b4330dc7f082586c92aee9dfa0b87b871
 
-PODFILE CHECKSUM: 44895462563291c3e4328a856c6482a25165b507
+PODFILE CHECKSUM: 3bbbe7bbbc538e252ee25bb56e007b3c9e69bd7f
 
 COCOAPODS: 1.17.0

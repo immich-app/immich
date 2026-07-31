@@ -1,6 +1,8 @@
 [tools]
 "aqua:flutter/flutter" = "3.44.8"
 java = "21.0.2"
+rust = "1.93.1"
+protoc = "31.1"
 
 [tools."github:CQLabs/homebrew-dcm"]
 version = "1.37.0"

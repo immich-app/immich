@@ -82,6 +82,7 @@ class CastService {
         onCastState?.call(CastState.buffering);
         break;
       case PlaybackState.idle:
+      case PlaybackState.ended:
         onCastState?.call(CastState.idle);
         break;
     }
@@ -177,10 +178,12 @@ class CastService {
   Future<List<(String, CastDestinationType, dynamic)>> getDevices() async {
     final dests = await _castRepository.listDestinations();
 
-    final fCastNames = dests
-        .where((dest) => dest.$1.protocol == ProtocolType.fCast)
-        .map((dest) => dest.$1.name)
-        .toSet();
+    final fCastDevices = dests.where((dest) => dest.$1.protocol == ProtocolType.fCast).map((dest) => dest.$1);
+    final fCastNames = fCastDevices.map((device) => device.name).toSet();
+    final fCastAddresses = fCastDevices.expand((device) => device.addresses).toSet();
+
+    bool hasFCastTwin(DeviceInfo device) =>
+        fCastNames.contains(device.name) || device.addresses.any(fCastAddresses.contains);
 
     return dests
         .where((dest) {
@@ -190,7 +193,7 @@ class CastService {
             return true;
           }
 
-          return isDisplay(gcastCaps ?? 0) && !fCastNames.contains(device.name);
+          return isDisplay(gcastCaps ?? 0) && !hasFCastTwin(device);
         })
         .map((dest) {
           final device = dest.$1;

@@ -77,50 +77,50 @@ packages:
     dependency: transitive
     description:
       name: bonsoir
-      sha256: "1b112a966302a739d253c8dbc7ea4c1cb3eca6d8110dc59e36d76f7cf0b6edf2"
+      sha256: "86a8f55539d29c17ac2cb8a16698978aaa9e7c5d14139fb2234dad33b6ecfc33"
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.0"
+    version: "7.1.4"
   bonsoir_android:
     dependency: transitive
     description:
       name: bonsoir_android
-      sha256: bfa3ab7e2f65473cb369bce639dbdbdc75064848c01ac11b3c2bc3e16031ff3a
+      sha256: c6413e82150074d56e71ffe2e54bb1dfe66a59310affc4486d33e9eee6b362e6
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.2"
+    version: "7.1.2"
   bonsoir_darwin:
     dependency: transitive
     description:
       name: bonsoir_darwin
-      sha256: d62fd62ed433aa09ec99f71f95dae53ffa0adf788c9051ff3d6b903463045d3c
+      sha256: "04425a8657e3131683c7966689d4e65e114cb5181de94aac89d2fba84cfaaca4"
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.0"
+    version: "7.1.0"
   bonsoir_linux:
     dependency: transitive
     description:
       name: bonsoir_linux
-      sha256: a49d5f328a197b27a3901b833f92c93366f2cd7085dcb495fa11ee6d9f2509a9
+      sha256: "9afae7bb9509c5bd20a0ea2ca02a0f2b1ef09cca1ceb2ea288ed58a0f03d1e11"
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.3"
+    version: "7.1.0"
   bonsoir_platform_interface:
     dependency: transitive
     description:
       name: bonsoir_platform_interface
-      sha256: ba1cc30daaa172dfc76f88e4fee8d090674179439201997ba2b3bd9e1cca84c0
+      sha256: "6c55c786b01ad279f675ae72cea3a885aa746e416d2e8c1f0c46e9d2c06420b0"
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.0"
+    version: "7.0.0"
   bonsoir_windows:
     dependency: transitive
     description:
       name: bonsoir_windows
-      sha256: "01aba2516b776eb1deb68845124dc0a41095da108276d4b307bf19c4c3e2d9b1"
+      sha256: aaabbb652fe68d3eb26a9b2cddefaae26cd9ca6ebe737d476ab9ed535c7c2516
       url: "https://pub.dev"
     source: hosted
-    version: "6.0.3"
+    version: "7.3.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -422,10 +422,10 @@ packages:
     dependency: "direct main"
     description:
       name: fcast_sender_sdk
-      sha256: "4c4e0f51749a0930e26e42e6a3f456293c7f5f0ffed2ecd1e283c28de5e11b33"
+      sha256: "6416b01466341cb29529773a995ba5c533e70441783a51c610cd60dad0e6ca29"
       url: "https://pub.dev"
     source: hosted
-    version: "0.0.3"
+    version: "0.0.5"
   ffi:
     dependency: "direct main"
     description:
@@ -581,10 +581,18 @@ packages:
     dependency: transitive
     description:
       name: flutter_rust_bridge
-      sha256: "37ef40bc6f863652e865f0b2563ea07f0d3c58d8efad803cc01933a4b2ee067e"
+      sha256: d9d819e3f39efe08a68309ff7cadc9d8bcfd65d86319e0c5735cd4f4fee16c4a
       url: "https://pub.dev"
     source: hosted
-    version: "2.11.1"
+    version: "2.13.0-beta.5"
+  flutter_rust_bridge_hooks:
+    dependency: transitive
+    description:
+      name: flutter_rust_bridge_hooks
+      sha256: "33f96e930af9016405f519696574f6fcb96ec37a515188d1da484fa81f9a90f7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.13.0-beta.5"
   flutter_secure_storage:
     dependency: "direct main"
     description:
@@ -1148,6 +1156,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.19.1"
+  native_toolchain_rust:
+    dependency: transitive
+    description:
+      name: native_toolchain_rust
+      sha256: faa57d2258a3b0fd2a634054f54e4496c9fcbd971977e7d2b7e6916d56892857
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4+0"
   native_video_player:
     dependency: "direct main"
     description:
@@ -1772,6 +1788,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.4"
+  toml:
+    dependency: transitive
+    description:
+      name: toml
+      sha256: "35a35f782228656a2af31e8c73d1353cc4ef3d683fd68af1111b44631879c05e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.18.0"
   typed_data:
     dependency: transitive
     description:
