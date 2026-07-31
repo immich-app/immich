@@ -1,5 +1,6 @@
 import 'package:fcast_sender_sdk/fcast_sender_sdk.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/models/sessions/session_create_response.model.dart';
@@ -38,30 +39,32 @@ class CastService {
   void Function(CastState)? onCastState;
 
   CastService(this._castRepository, this._sessionsApiService, this._assetApiRepository) {
-    _castRepository.onConnectionState = _onCastStatusCallback;
-    _castRepository.onDeviceEvent = _onDeviceEventCallback;
+    _castRepository.onConnectionState = _onConnectionState;
+    _castRepository.onDeviceEvent = _onDeviceEvent;
   }
 
-  void _onCastStatusCallback(DeviceConnectionState state) {
+  void _onConnectionState(DeviceConnectionState state) {
     if (state is DeviceConnectionState_Connected) {
-      onConnectionState?.call(true);
       isConnected = true;
+
+      onConnectionState?.call(true);
     } else if (state is DeviceConnectionState_Disconnected) {
-      onConnectionState?.call(false);
       isConnected = false;
-      onReceiverName?.call("");
       currentAssetId = null;
+
+      onConnectionState?.call(false);
+      onReceiverName?.call("");
     }
   }
 
-  void _onDeviceEventCallback(DeviceEvent event) {
+  void _onDeviceEvent(DeviceEvent event) {
     switch (event) {
       case DeviceEvent_PlaybackStateChanged():
         _handlePlaybackState(event.newPlaybackState);
       case DeviceEvent_TimeChanged():
-        onCurrentTime?.call(Duration(milliseconds: (event.newTime * 1000).toInt()));
+        onCurrentTime?.call(Duration(seconds: event.newTime.toInt()));
       case DeviceEvent_DurationChanged():
-        onDuration?.call(Duration(milliseconds: (event.newDuration * 1000).toInt()));
+        onDuration?.call(Duration(seconds: event.newDuration.toInt()));
       default:
         break;
     }
@@ -102,9 +105,9 @@ class CastService {
 
     final tokenExpiration = DateTime.parse(sessionKey!.expiresAt!);
 
-    // we want to make sure we have at least 10 seconds remaining in the session
+    // we want to make sure we have at least 1 minute remaining in the session
     // this is to account for network latency and other delays when sending the request
-    final bufferedExpiration = tokenExpiration.subtract(const Duration(seconds: 10));
+    final bufferedExpiration = tokenExpiration.subtract(kCastSessionRenewalBuffer);
 
     return bufferedExpiration.isAfter(DateTime.now());
   }
@@ -119,17 +122,11 @@ class CastService {
     // create a session key
     if (!isSessionValid()) {
       sessionKey = await _sessionsApiService.createSession(
-        "Cast",
-        "Cast",
-        duration: const Duration(minutes: 15).inSeconds,
+        kCastDeviceType,
+        kCastDeviceOS,
+        duration: kCastSessionDuration.inSeconds,
       );
     }
-
-    final unauthenticatedUrl = asset.isVideo
-        ? getPlaybackUrlForRemoteId(asset.id)
-        : getThumbnailUrlForRemoteId(asset.id, type: AssetMediaSize.fullsize);
-
-    final authenticatedURL = "$unauthenticatedUrl&sessionKey=${sessionKey?.token}";
 
     // get image mime type
     final mimeType = await _assetApiRepository.getAssetMIMEType(asset.id);
@@ -138,9 +135,15 @@ class CastService {
       return;
     }
 
+    final baseUrl = asset.isVideo
+        ? getPlaybackUrlForRemoteId(asset.id)
+        : getThumbnailUrlForRemoteId(asset.id, type: AssetMediaSize.fullsize);
+
+    final authenticatedUrl = "$baseUrl&sessionKey=${sessionKey?.token}";
+
     final request = asset.isVideo
-        ? LoadRequest.video(contentType: mimeType, url: authenticatedURL, resumePosition: 0.0)
-        : LoadRequest.image(contentType: mimeType, url: authenticatedURL);
+        ? LoadRequest.video(contentType: mimeType, url: authenticatedUrl, resumePosition: 0.0)
+        : LoadRequest.image(contentType: mimeType, url: authenticatedUrl);
 
     _castRepository.loadMedia(request);
 
@@ -165,8 +168,7 @@ class CastService {
     currentAssetId = null;
   }
 
-  // 0x01 is display capability bitmask
-  bool isDisplay(int ca) => (ca & 0x01) != 0;
+  bool hasDisplayCapability(int capabilities) => (capabilities & 0x01) != 0;
 
   Future<List<(String, CastDestinationType, dynamic)>> getDevices() async {
     final dests = await _castRepository.listDestinations();
@@ -182,17 +184,17 @@ class CastService {
         .where((dest) {
           final (device, gcastCaps) = dest;
 
-          if (device.protocol == ProtocolType.fCast) {
-            return true;
-          }
-
-          return isDisplay(gcastCaps ?? 0) && !hasFCastTwin(device);
+          return switch (device.protocol) {
+            ProtocolType.fCast => true,
+            ProtocolType.chromecast => hasDisplayCapability(gcastCaps ?? 0) && !hasFCastTwin(device),
+          };
         })
         .map((dest) {
           final device = dest.$1;
-          final type = device.protocol == ProtocolType.fCast
-              ? CastDestinationType.fCast
-              : CastDestinationType.googleCast;
+          final type = switch (device.protocol) {
+            ProtocolType.fCast => CastDestinationType.fCast,
+            ProtocolType.chromecast => CastDestinationType.googleCast,
+          };
 
           return (device.name, type, device as dynamic);
         })

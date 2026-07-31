@@ -22,7 +22,8 @@ class CastRepository {
     final device = _castContext!.createDeviceFromInfo(info: deviceInfo);
     _device = device;
 
-    final thisDeviceGeneration = ++_currentDeviceGeneration;
+    _currentDeviceGeneration += 1;
+    final thisDeviceGeneration = _currentDeviceGeneration;
     device.connect(
       eventHandler: DeviceEventHandler(
         onEvent: (event) {
@@ -48,7 +49,7 @@ class CastRepository {
     }
 
     _device = null;
-    _currentDeviceGeneration++;
+    _currentDeviceGeneration += 1;
 
     if (device.isReady()) {
       device.stopPlayback();
@@ -64,7 +65,7 @@ class CastRepository {
   void play() => _device?.resumePlayback();
   void pause() => _device?.pausePlayback();
   void stop() => _device?.stopPlayback();
-  void seekTo(Duration position) => _device?.seek(timeSeconds: position.inMilliseconds / 1000);
+  void seekTo(Duration position) => _device?.seek(timeSeconds: position.inSeconds.toDouble());
 
   Future<List<(DeviceInfo, int?)>> listDestinations() async {
     final isFirstScan = _initialized == null;

@@ -10,7 +10,6 @@ final castProvider = StateNotifierProvider<CastNotifier, CastManagerState>(
 );
 
 class CastNotifier extends StateNotifier<CastManagerState> {
-  // more cast providers can be added here (ie Fcast)
   final CastService _castService;
 
   CastNotifier(this._castService)
