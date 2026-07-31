@@ -182,11 +182,8 @@ class SearchRatingFilter {
 
 @freezed
 abstract class SearchDisplayFilters with _$SearchDisplayFilters {
-  const factory SearchDisplayFilters({
-    required bool isNotInAlbum,
-    required bool isArchive,
-    required bool isFavorite,
-  }) = _SearchDisplayFilters;
+  const factory SearchDisplayFilters({required bool isNotInAlbum, required bool isArchive, required bool isFavorite}) =
+      _SearchDisplayFilters;
 }
 
 class SearchFilter {

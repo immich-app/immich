@@ -32,7 +32,6 @@ abstract class MultiSelectState with _$MultiSelectState {
   bool get onlyLocal => selectedAssets.any((asset) => asset.storage == AssetState.local);
 
   bool get onlyRemote => selectedAssets.any((asset) => asset.storage == AssetState.remote);
-
 }
 
 class MultiSelectNotifier extends Notifier<MultiSelectState> {

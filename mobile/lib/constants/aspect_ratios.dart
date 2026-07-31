@@ -23,7 +23,6 @@ abstract class CropAspectRatio with _$CropAspectRatio {
   CropAspectRatio get flipped {
     return CropAspectRatio(numerator: denominator, denominator: numerator, customLabel: customLabel, icon: icon);
   }
-
 }
 
 const aspectRatioFree = CropAspectRatio.free;
