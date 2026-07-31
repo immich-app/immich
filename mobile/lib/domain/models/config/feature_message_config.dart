@@ -5,7 +5,6 @@ part 'feature_message_config.freezed.dart';
 
 @freezed
 abstract class FeatureMessageConfig with _$FeatureMessageConfig {
-  const factory FeatureMessageConfig({
-    @Default(SemVer(major: 0, minor: 0, patch: 0)) SemVer seenRelease,
-  }) = _FeatureMessageConfig;
+  const factory FeatureMessageConfig({@Default(SemVer(major: 0, minor: 0, patch: 0)) SemVer seenRelease}) =
+      _FeatureMessageConfig;
 }
