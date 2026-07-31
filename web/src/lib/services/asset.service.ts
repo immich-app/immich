@@ -13,6 +13,7 @@ import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import {
   mdiAccountCircleOutline,
   mdiAlertOutline,
+  mdiClosedCaptionOutline,
   mdiCogRefreshOutline,
   mdiCompare,
   mdiContentCopy,
@@ -96,7 +97,22 @@ export const getAssetBulkActions = ($t: MessageFormatter) => {
     $if: () => ownedAssets.every((asset) => asset.isVideo),
   };
 
-  return { AddToAlbum, RefreshFacesJob, RefreshMetadataJob, RegenerateThumbnailJob, TranscodeVideoJob };
+  const RefreshTranscriptJob: ActionItem = {
+    title: $t('refresh_transcripts'),
+    icon: mdiClosedCaptionOutline,
+    onAction: () => onAction(AssetJobName.RefreshTranscript),
+    $if: () =>
+      featureFlagsManager.value.transcription && ownedAssets.length > 0 && ownedAssets.every((asset) => asset.isVideo),
+  };
+
+  return {
+    AddToAlbum,
+    RefreshFacesJob,
+    RefreshMetadataJob,
+    RegenerateThumbnailJob,
+    TranscodeVideoJob,
+    RefreshTranscriptJob,
+  };
 };
 
 export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & { stackPrimaryAssetId?: string }) => {
@@ -104,6 +120,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
   const authUser = authManager.authenticated ? authManager.user : undefined;
   const isOwner = !!(authUser && authUser.id === asset.ownerId);
   const smartSearchEnabled = featureFlagsManager.value.smartSearch;
+  const transcriptionEnabled = featureFlagsManager.value.transcription;
 
   const Share: ActionItem = {
     title: $t('share'),
@@ -297,6 +314,13 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     $if: () => asset.type === AssetTypeEnum.Video,
   };
 
+  const RefreshTranscriptJob: ActionItem = {
+    title: $t('refresh_transcript'),
+    icon: mdiClosedCaptionOutline,
+    onAction: () => handleRunAssetJob({ name: AssetJobName.RefreshTranscript, assetIds: [asset.id] }),
+    $if: () => asset.type === AssetTypeEnum.Video && transcriptionEnabled,
+  };
+
   return {
     Share,
     Download,
@@ -323,6 +347,7 @@ export const getAssetActions = ($t: MessageFormatter, asset: AssetResponseDto & 
     RefreshMetadataJob,
     RegenerateThumbnailJob,
     TranscodeVideoJob,
+    RefreshTranscriptJob,
   };
 };
 
@@ -406,6 +431,7 @@ const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
     [AssetJobName.RefreshMetadata]: $t('refreshing_metadata'),
     [AssetJobName.RegenerateThumbnail]: $t('regenerating_thumbnails'),
     [AssetJobName.TranscodeVideo]: $t('refreshing_encoded_video'),
+    [AssetJobName.RefreshTranscript]: $t('refreshing_transcript'),
   };
 
   return messages[job];

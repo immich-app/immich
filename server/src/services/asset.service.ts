@@ -511,6 +511,15 @@ export class AssetService extends BaseService {
           jobs.push({ name: JobName.AssetEncodeVideo, data: { id } });
           break;
         }
+
+        // Forced, because asking for one asset to be re-transcribed is asking for the existing
+        // transcript to be replaced. Left unforced it would resume a run that has already reached
+        // the end of the file and do nothing. This is the re-run people actually want: the
+        // library-wide one is an hours-long operation nobody starts by accident.
+        case AssetJobName.REFRESH_TRANSCRIPT: {
+          jobs.push({ name: JobName.AssetTranscribe, data: { id, force: true } });
+          break;
+        }
       }
     }
 

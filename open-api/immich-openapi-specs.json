@@ -17540,7 +17540,8 @@
           "refresh-faces",
           "refresh-metadata",
           "regenerate-thumbnail",
-          "transcode-video"
+          "transcode-video",
+          "refresh-transcript"
         ],
         "type": "string"
       },
@@ -22697,6 +22698,10 @@
             "description": "Whether smart search is enabled",
             "type": "boolean"
           },
+          "transcription": {
+            "description": "Whether video transcription is enabled",
+            "type": "boolean"
+          },
           "trash": {
             "description": "Whether trash feature is enabled",
             "type": "boolean"
@@ -22718,6 +22723,7 @@
           "search",
           "sidecar",
           "smartSearch",
+          "transcription",
           "trash"
         ],
         "type": "object"

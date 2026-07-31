@@ -253,7 +253,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   async newJobStatus(dto: Partial<Insertable<AssetJobStatusTable>> & { assetId: string }) {
-    const jobStatus = mediumFactory.assetJobStatusInsert({ assetId: dto.assetId });
+    const jobStatus = mediumFactory.assetJobStatusInsert(dto);
     const result = await this.get(AssetRepository).upsertJobStatus(jobStatus);
     return { jobStatus, result };
   }

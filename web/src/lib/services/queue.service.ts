@@ -10,6 +10,7 @@ import {
 import { modalManager, toastManager, type ActionItem, type IconLike } from '@immich/ui';
 import {
   mdiClose,
+  mdiClosedCaptionOutline,
   mdiCog,
   mdiContentDuplicate,
   mdiDatabaseOutline,
@@ -207,6 +208,11 @@ export const asQueueItem = ($t: MessageFormatter, queue: { name: QueueName }): Q
       icon: mdiOcr,
       title: $t('admin.machine_learning_ocr'),
       subtitle: $t('admin.ocr_job_description'),
+    },
+    [QueueName.Transcription]: {
+      icon: mdiClosedCaptionOutline,
+      title: $t('admin.machine_learning_transcription'),
+      subtitle: $t('admin.transcription_job_description'),
     },
     [QueueName.VideoConversion]: {
       icon: mdiVideo,

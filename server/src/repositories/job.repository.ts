@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
 import { JobsOptions, Queue, Worker } from 'bullmq';
 import { setTimeout } from 'node:timers/promises';
+import { TRANSCRIPTION_JOB_ATTEMPTS } from 'src/constants';
 import { JobConfig } from 'src/decorators';
 import { QueueJobResponseDto, QueueJobSearchDto } from 'src/dtos/queue.dto';
 import { ImmichWorker, JobName, JobStatus, MetadataKey, QueueCleanType, QueueJobStatus, QueueName } from 'src/enum';
@@ -276,6 +277,9 @@ export class JobRepository {
       }
       case JobName.DatabaseBackup: {
         return { deduplication: { id: JobName.DatabaseBackup } };
+      }
+      case JobName.AssetTranscribe: {
+        return { attempts: TRANSCRIPTION_JOB_ATTEMPTS };
       }
       default: {
         return null;

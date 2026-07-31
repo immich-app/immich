@@ -796,6 +796,28 @@ describe(AssetService.name, () => {
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetEncodeVideo, data: { id: 'asset-1' } }]);
     });
+
+    it('should force the transcript refresh so it replaces the existing one', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+
+      await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_TRANSCRIPT });
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.AssetTranscribe, data: { id: 'asset-1', force: true } },
+      ]);
+    });
+
+    it('should refresh the transcript of one asset without touching the others', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+
+      await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.REFRESH_TRANSCRIPT });
+
+      expect(mocks.job.queueAll).toHaveBeenCalledTimes(1);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        expect.objectContaining({ data: { id: 'asset-1', force: true } }),
+      ]);
+      expect(mocks.transcript.deleteAll).not.toHaveBeenCalled();
+    });
   });
 
   describe('upsertMetadata', () => {

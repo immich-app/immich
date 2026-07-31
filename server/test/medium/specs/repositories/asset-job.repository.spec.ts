@@ -1,11 +1,13 @@
 import { Kysely } from 'kysely';
-import { AssetFileType } from 'src/enum';
+import { AssetFileType, AssetType, AssetVisibility } from 'src/enum';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
 import { BaseService } from 'src/services/base.service';
 import { newMediumService } from 'test/medium.factory';
 import { getKyselyDB } from 'test/utils';
+
+const contains = (id: string) => expect.arrayContaining([expect.objectContaining({ id })]);
 
 const consume = async <T>(generator: AsyncIterableIterator<T>) => {
   const values: T[] = await Array.fromAsync(generator);
@@ -109,6 +111,59 @@ describe(AssetJobRepository.name, () => {
       await expect(consume(stream)).resolves.not.toEqual(
         expect.arrayContaining([expect.objectContaining({ id: asset.id })]),
       );
+    });
+  });
+
+  describe('streamForTranscriptionJob', () => {
+    it('should queue a video that has not been transcribed', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      await ctx.newJobStatus({ assetId: asset.id, transcribedAt: null });
+
+      await expect(consume(sut.streamForTranscriptionJob(false))).resolves.toEqual(contains(asset.id));
+    });
+
+    it('should skip a video that has already been transcribed', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      await ctx.newJobStatus({ assetId: asset.id, transcribedAt: new Date() });
+
+      await expect(consume(sut.streamForTranscriptionJob(false))).resolves.not.toEqual(contains(asset.id));
+    });
+
+    it('should queue a video that has already been transcribed when forced', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      await ctx.newJobStatus({ assetId: asset.id, transcribedAt: new Date() });
+
+      await expect(consume(sut.streamForTranscriptionJob(true))).resolves.toEqual(contains(asset.id));
+    });
+
+    it('should skip hidden videos, which is what keeps live photo components out', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({
+        ownerId: user.id,
+        type: AssetType.Video,
+        visibility: AssetVisibility.Hidden,
+      });
+      await ctx.newJobStatus({ assetId: asset.id, transcribedAt: null });
+
+      await expect(consume(sut.streamForTranscriptionJob(false))).resolves.not.toEqual(contains(asset.id));
+      await expect(consume(sut.streamForTranscriptionJob(true))).resolves.not.toEqual(contains(asset.id));
+    });
+
+    it('should skip assets that are not videos', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Image });
+      await ctx.newJobStatus({ assetId: asset.id, transcribedAt: null });
+
+      await expect(consume(sut.streamForTranscriptionJob(false))).resolves.not.toEqual(contains(asset.id));
+      await expect(consume(sut.streamForTranscriptionJob(true))).resolves.not.toEqual(contains(asset.id));
     });
   });
 

@@ -2050,6 +2050,8 @@ export type ServerFeaturesDto = {
     sidecar: boolean;
     /** Whether smart search is enabled */
     smartSearch: boolean;
+    /** Whether video transcription is enabled */
+    transcription: boolean;
     /** Whether trash feature is enabled */
     trash: boolean;
 };
@@ -7376,7 +7378,8 @@ export enum AssetJobName {
     RefreshFaces = "refresh-faces",
     RefreshMetadata = "refresh-metadata",
     RegenerateThumbnail = "regenerate-thumbnail",
-    TranscodeVideo = "transcode-video"
+    TranscodeVideo = "transcode-video",
+    RefreshTranscript = "refresh-transcript"
 }
 export enum AssetTypeEnum {
     Image = "IMAGE",

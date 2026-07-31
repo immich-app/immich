@@ -24,6 +24,7 @@ import {
   isFacialRecognitionEnabled,
   isOcrEnabled,
   isSmartSearchEnabled,
+  isTranscriptionEnabled,
 } from 'src/utils/misc';
 
 @Injectable()
@@ -103,6 +104,7 @@ export class ServerService extends BaseService {
       oauth: oauth.enabled,
       oauthAutoLaunch: oauth.autoLaunch,
       ocr: isOcrEnabled(machineLearning),
+      transcription: isTranscriptionEnabled(machineLearning),
       passwordLogin: passwordLogin.enabled,
       configFile: !!configFile,
       email: notifications.smtp.enabled,

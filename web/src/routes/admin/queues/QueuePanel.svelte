@@ -75,6 +75,11 @@
       missingText: $t('missing'),
       disabled: !featureFlags.ocr,
     },
+    [QueueName.Transcription]: {
+      allText: $t('all'),
+      missingText: $t('missing'),
+      disabled: !featureFlags.transcription,
+    },
     [QueueName.VideoConversion]: {
       allText: $t('all'),
       missingText: $t('missing'),
@@ -93,18 +98,20 @@
   const handleCommand = async (name: QueueName, dto: QueueCommandDto) => {
     const item = asQueueItem($t, { name });
 
-    switch (name) {
-      case QueueName.FaceDetection:
-      case QueueName.FacialRecognition: {
-        if (dto.force) {
-          const confirmed = await modalManager.showDialog({ prompt: $t('admin.confirm_reprocess_all_faces') });
-          if (!confirmed) {
-            return;
-          }
-          break;
-        }
+    // Running one of these over the whole library discards work that took hours to produce, so it
+    // is confirmed before it starts.
+    const confirmation = {
+      [QueueName.FaceDetection]: $t('admin.confirm_reprocess_all_faces'),
+      [QueueName.FacialRecognition]: $t('admin.confirm_reprocess_all_faces'),
+      [QueueName.Transcription]: $t('admin.confirm_reprocess_all_transcripts'),
+    } as Partial<Record<QueueName, string>>;
+
+    const prompt = confirmation[name];
+    if (dto.force && prompt) {
+      const confirmed = await modalManager.showDialog({ prompt });
+      if (!confirmed) {
+        return;
       }
-      // no default
     }
 
     try {

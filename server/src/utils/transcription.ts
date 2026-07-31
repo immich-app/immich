@@ -263,6 +263,20 @@ export const filterHallucinations = <T extends SegmentQuality>(segments: T[], th
 export const getInferenceTimeout = (chunk: AudioChunk, multiplier: number) =>
   Math.max(MINIMUM_INFERENCE_TIMEOUT, Math.round((chunk.end - chunk.start) * multiplier * 1000));
 
+/**
+ * Whole-asset budget for one transcription job, in milliseconds.
+ *
+ * The inference timeout bounds a single model call and says nothing about how long the job as a
+ * whole may run; a long video is hundreds of calls. Budgeting against the asset's own duration is
+ * what stops a pathological file — every chunk returning just under its ceiling — from holding a
+ * queue that runs one job at a time for the rest of the day.
+ *
+ * The floor is the inference floor because the budget is only ever consulted between chunks: the
+ * first chunk of a run always goes ahead, so no job is killed having transcribed nothing.
+ */
+export const getJobTimeout = (duration: number, multiplier: number) =>
+  Math.max(MINIMUM_INFERENCE_TIMEOUT, Math.round(duration * multiplier * 1000));
+
 /** Byte range of a chunk within the extracted PCM stream, clamped to what was actually written. */
 export const getChunkByteRange = (chunk: AudioChunk, byteLength: number) => {
   const align = (seconds: number) => Math.min(Math.round(seconds * PCM_SAMPLE_RATE) * PCM_BYTES_PER_SAMPLE, byteLength);

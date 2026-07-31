@@ -14,6 +14,7 @@ import {
   AudioChunk,
   getChunkByteRange,
   getInferenceTimeout,
+  getJobTimeout,
   getPcmDuration,
   planChunks,
   planResume,
@@ -54,7 +55,7 @@ export class TranscriptionService extends BaseService {
   }
 
   @OnJob({ name: JobName.AssetTranscribe, queue: QueueName.Transcription })
-  async handleTranscribe({ id }: JobOf<JobName.AssetTranscribe>): Promise<JobStatus> {
+  async handleTranscribe({ id, force }: JobOf<JobName.AssetTranscribe>): Promise<JobStatus> {
     const { machineLearning } = await this.getConfig({ withCache: true });
     if (!isTranscriptionEnabled(machineLearning)) {
       return JobStatus.Skipped;
@@ -70,7 +71,12 @@ export class TranscriptionService extends BaseService {
     }
 
     if (!asset.audioStream) {
-      this.logger.debug(`Skipping transcription for asset ${id}: no audio stream`);
+      // Marked complete rather than merely skipped. Whether a file has audio is only known once it
+      // has been probed, so a silent video left unprocessed is re-probed by every bulk run from now
+      // until the end of the library's life — a tax that grows with the library. Recording the
+      // answer costs one row; a file that has since changed is covered by forced re-processing.
+      this.logger.debug(`Marking asset ${id} as transcribed: no audio stream`);
+      await this.assetRepository.upsertJobStatus({ assetId: id, transcribedAt: new Date() });
       return JobStatus.Skipped;
     }
 
@@ -83,16 +89,17 @@ export class TranscriptionService extends BaseService {
         silenceMinDuration: SILENCE_MIN_DURATION,
       });
       const { size } = await this.storageRepository.stat(audioPath);
-      const chunks = planChunks({
-        duration: getPcmDuration(size),
-        silences,
-        targetDuration: transcription.chunkDuration,
-      });
+      const duration = getPcmDuration(size);
+      const chunks = planChunks({ duration, silences, targetDuration: transcription.chunkDuration });
 
       // A recorded offset means an earlier run got part of the way through. The plan is recomputed
       // from scratch rather than replayed, so a change to the chunk size or the silence thresholds
       // between the failure and this retry is harmless.
-      const status = await this.transcriptRepository.getStatus(id);
+      //
+      // A forced run ignores the offset. That is what makes re-processing a single asset actually
+      // re-transcribe it: a finished asset's offset sits at the end of the file, so honouring it
+      // would leave nothing to do and the re-run would be a no-op.
+      const status = force ? undefined : await this.transcriptRepository.getStatus(id);
       const progressMs = status?.transcriptionProgressMs;
       let pending: AudioChunk[];
       // The language established so far is carried from chunk to chunk so that stickiness holds
@@ -110,7 +117,18 @@ export class TranscriptionService extends BaseService {
         }
       }
 
+      const deadline = Date.now() + getJobTimeout(duration, transcription.timeoutMultiplier);
       for (const chunk of pending) {
+        if (Date.now() >= deadline) {
+          // Reported as a failure rather than a success, because the transcript is not finished.
+          // The offset of the last committed chunk stays recorded, so a later run picks up here
+          // instead of starting the asset over.
+          this.logger.warn(
+            `Transcription of asset ${id} exceeded its time budget at ${chunk.start.toFixed(1)}s of ${duration.toFixed(1)}s`,
+          );
+          return JobStatus.Failed;
+        }
+
         language = await this.transcribeChunk(id, audioPath, size, chunk, transcription, language);
       }
     } finally {

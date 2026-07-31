@@ -60,9 +60,10 @@ describe(TranscriptionService.name, () => {
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetTranscribe, data: { id: asset.id } }]);
       expect(mocks.assetJob.streamForTranscriptionJob).toHaveBeenCalledWith(false);
+      expect(mocks.transcript.deleteAll).not.toHaveBeenCalled();
     });
 
-    it('should truncate existing transcripts when forced', async () => {
+    it('should queue every video and truncate existing transcripts when forced', async () => {
       const asset = AssetFactory.create();
       mocks.assetJob.streamForTranscriptionJob.mockReturnValue(makeStream([asset]));
 
@@ -70,6 +71,7 @@ describe(TranscriptionService.name, () => {
 
       expect(mocks.transcript.deleteAll).toHaveBeenCalled();
       expect(mocks.assetJob.streamForTranscriptionJob).toHaveBeenCalledWith(true);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetTranscribe, data: { id: asset.id } }]);
     });
   });
 
@@ -104,6 +106,19 @@ describe(TranscriptionService.name, () => {
       expect(mocks.media.extractAudio).not.toHaveBeenCalled();
     });
 
+    it('should leave a hidden asset unmarked, so unhiding it queues it again', async () => {
+      mocks.assetJob.getForTranscription.mockResolvedValue({
+        id: 'asset-id',
+        originalPath: '/uploads/user-id/original/video.mp4',
+        visibility: AssetVisibility.Hidden,
+        audioStream: { index: 0, codecName: 'aac', profile: null, bitrate: 128_000 },
+      });
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.asset.upsertJobStatus).not.toHaveBeenCalled();
+    });
+
     it('should skip videos without an audio track', async () => {
       mocks.assetJob.getForTranscription.mockResolvedValue({
         id: 'asset-id',
@@ -117,6 +132,22 @@ describe(TranscriptionService.name, () => {
       expect(mocks.media.extractAudio).not.toHaveBeenCalled();
       expect(mocks.machineLearning.transcribe).not.toHaveBeenCalled();
       expect(mocks.transcript.appendChunk).not.toHaveBeenCalled();
+    });
+
+    it('should mark a video without an audio track as transcribed, so bulk runs stop re-probing it', async () => {
+      mocks.assetJob.getForTranscription.mockResolvedValue({
+        id: 'asset-id',
+        originalPath: '/uploads/user-id/original/video.mp4',
+        visibility: AssetVisibility.Timeline,
+        audioStream: null,
+      });
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.asset.upsertJobStatus).toHaveBeenCalledWith({
+        assetId: 'asset-id',
+        transcribedAt: expect.any(Date),
+      });
     });
 
     it('should extract raw pcm with silence detection and persist the transcript', async () => {
@@ -215,6 +246,53 @@ describe(TranscriptionService.name, () => {
 
       expect(mocks.machineLearning.transcribe).not.toHaveBeenCalled();
       expect(mocks.transcript.appendChunk).not.toHaveBeenCalled();
+    });
+
+    it('should re-transcribe a complete asset from the start when forced', async () => {
+      mocks.storage.stat.mockResolvedValue(audioOf(90));
+      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: new Date(), transcriptionProgressMs: 90_000 });
+
+      expect(await sut.handleTranscribe({ id: 'asset-id', force: true })).toEqual(JobStatus.Success);
+
+      expect(mocks.transcript.getStatus).not.toHaveBeenCalled();
+      expect(mocks.transcript.reset).toHaveBeenCalledWith('asset-id');
+      expect(mocks.machineLearning.transcribe).toHaveBeenCalledTimes(3);
+    });
+
+    it('should stop a run that outlasts its whole-asset budget, leaving the offset to resume from', async () => {
+      // Ninety seconds of audio at the default multiplier is a budget of forty-five minutes, and
+      // three chunks; a chunk that takes forty minutes puts the third one past the deadline.
+      mocks.storage.stat.mockResolvedValue(audioOf(90));
+
+      let now = Date.now();
+      const clock = vi.spyOn(Date, 'now').mockImplementation(() => now);
+      onTestFinished(() => clock.mockRestore());
+      mocks.machineLearning.transcribe.mockImplementation(() => {
+        now += 40 * 60 * 1000;
+        return Promise.resolve({ language: 'en', segments: [] });
+      });
+
+      expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Failed);
+
+      expect(mocks.machineLearning.transcribe).toHaveBeenCalledTimes(2);
+      expect(mocks.transcript.appendChunk).toHaveBeenCalledTimes(2);
+      expect(mocks.asset.upsertJobStatus).not.toHaveBeenCalled();
+    });
+
+    it('should always transcribe at least one chunk, however short the budget', async () => {
+      mocks.storage.stat.mockResolvedValue(audioOf(10));
+
+      let now = Date.now();
+      const clock = vi.spyOn(Date, 'now').mockImplementation(() => now);
+      onTestFinished(() => clock.mockRestore());
+      mocks.machineLearning.transcribe.mockImplementation(() => {
+        now += 24 * 60 * 60 * 1000;
+        return Promise.resolve({ language: 'en', segments: [] });
+      });
+
+      expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Success);
+
+      expect(mocks.machineLearning.transcribe).toHaveBeenCalledTimes(1);
     });
   });
 

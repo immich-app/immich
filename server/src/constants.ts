@@ -27,6 +27,18 @@ export const VECTOR_VERSION_RANGE = '>=0.5 <1';
 export const JOBS_ASSET_PAGINATION_SIZE = 1000;
 export const JOBS_LIBRARY_PAGINATION_SIZE = 10_000;
 
+/**
+ * Attempts allowed for one asset's transcription, pinned rather than inherited.
+ *
+ * The failures worth retrying here are the transient ones — the machine-learning service
+ * restarting, the worker being killed mid-file — and one retry catches them, cheaply, because a
+ * retry resumes from the last committed chunk instead of starting the file again. The rest are
+ * deterministic: a corrupt stream, a codec ffmpeg cannot decode, a model that will not fit in
+ * memory. Those re-hit the same wall on every attempt, at whole-video cost each time, on a queue
+ * that runs one job at a time.
+ */
+export const TRANSCRIPTION_JOB_ATTEMPTS = 2;
+
 export const EXTENSION_NAMES: Record<DatabaseExtension, string> = {
   cube: 'cube',
   earthdistance: 'earthdistance',
