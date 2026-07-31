@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
@@ -68,6 +69,20 @@ class MediumRepositoryContext {
             avatarColor: .new(avatarColor ?? TestUtils.randElement(AvatarColor.values)),
             profileChangedAt: .new(TestUtils.date(profileChangedAt)),
             hasProfileImage: .new(hasProfileImage ?? false),
+          ),
+        );
+  }
+
+  Future<AuthUserEntityData> newAuthUser({String? id, String? email, AvatarColor? avatarColor}) async {
+    id ??= TestUtils.uuid();
+    return await db
+        .into(db.authUserEntity)
+        .insertReturning(
+          AuthUserEntityCompanion(
+            id: .new(id),
+            email: .new(email ?? '$id@test.com'),
+            name: .new('user_$id'),
+            avatarColor: .new(avatarColor ?? TestUtils.randElement(AvatarColor.values)),
           ),
         );
   }
