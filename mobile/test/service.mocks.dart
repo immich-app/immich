@@ -7,9 +7,9 @@ import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/app_settings.service.dart';
+import 'package:immich_mobile/services/cast.service.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
-import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_mobile/services/network.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_mobile/services/toast.service.dart';
@@ -35,7 +35,7 @@ class MockUserService extends Mock implements UserService {}
 
 class MockRemoteAlbumService extends Mock implements RemoteAlbumService {}
 
-class MockGCastService extends Mock implements GCastService {}
+class MockCastService extends Mock implements CastService {}
 
 class MockForegroundUploadService extends Mock implements ForegroundUploadService {}
 

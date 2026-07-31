@@ -22,8 +22,8 @@ import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/services/cast.service.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
-import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
@@ -54,7 +54,7 @@ class PresentationContext {
     cleanupServiceProvider.overrideWithValue(service.cleanup.service),
     remoteAlbumServiceProvider.overrideWithValue(service.album.service),
     partnerServiceProvider.overrideWithValue(service.partner.service),
-    gCastServiceProvider.overrideWithValue(service.cast),
+    castServiceProvider.overrideWithValue(service.cast),
     serverInfoServiceProvider.overrideWithValue(service.serverInfo),
     inLockedViewProvider.overrideWithValue(false),
     remoteAssetRepositoryProvider.overrideWithValue(repository.remoteAsset.repo),

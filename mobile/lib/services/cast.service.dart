@@ -58,13 +58,10 @@ class CastService {
     switch (event) {
       case DeviceEvent_PlaybackStateChanged():
         _handlePlaybackState(event.newPlaybackState);
-        break;
       case DeviceEvent_TimeChanged():
         onCurrentTime?.call(Duration(milliseconds: (event.newTime * 1000).toInt()));
-        break;
       case DeviceEvent_DurationChanged():
         onDuration?.call(Duration(milliseconds: (event.newDuration * 1000).toInt()));
-        break;
       default:
         break;
     }
@@ -74,17 +71,13 @@ class CastService {
     switch (state) {
       case PlaybackState.playing:
         onCastState?.call(CastState.playing);
-        break;
       case PlaybackState.paused:
         onCastState?.call(CastState.paused);
-        break;
       case PlaybackState.buffering:
         onCastState?.call(CastState.buffering);
-        break;
       case PlaybackState.idle:
       case PlaybackState.ended:
         onCastState?.call(CastState.idle);
-        break;
     }
   }
 
