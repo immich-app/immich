@@ -59,10 +59,10 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     return _assetSelectable(id).getSingleOrNull();
   }
 
-  Future<RemoteAsset?> getByChecksum(String checksum) {
+  Future<List<RemoteAsset>> getAllDebugForChecksum(String checksum) {
     final query = _db.remoteAssetEntity.select()..where((row) => row.checksum.equals(checksum));
 
-    return query.map((row) => row.toDto()).getSingleOrNull();
+    return query.map((row) => row.toDto()).get();
   }
 
   Future<List<RemoteAsset>> getStackChildren(RemoteAsset asset) {

@@ -36,8 +36,8 @@ class AssetService {
     return _localRepository.getByChecksum(checksum);
   }
 
-  Future<RemoteAsset?> getRemoteAssetByChecksum(String checksum) {
-    return _remoteRepository.getByChecksum(checksum);
+  Future<List<RemoteAsset>> getAllRemoteAssetDebugByChecksum(String checksum) {
+    return _remoteRepository.getAllDebugForChecksum(checksum);
   }
 
   Future<RemoteAsset?> getRemoteAsset(String id) {
