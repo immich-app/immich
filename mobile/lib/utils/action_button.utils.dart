@@ -192,7 +192,7 @@ enum ActionButtonType {
     bool menuItem = false,
   ]) {
     return switch (this) {
-      ActionButtonType.advancedInfo => ActionMenuItemWidget(action: AssetDebugAction(assets: [context.asset])),
+      ActionButtonType.advancedInfo => ActionMenuItem(action: AssetDebugAction(source: context.source)),
       ActionButtonType.share => ShareActionButton(source: context.source, iconOnly: iconOnly, menuItem: menuItem),
       ActionButtonType.shareLink => ShareLinkActionButton(
         source: context.source,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
@@ -48,12 +50,12 @@ class _LocationDetailsState extends ConsumerState<LocationDetails> {
     if (widget.exifInfo != oldWidget.exifInfo) {
       final exif = widget.exifInfo;
       if (exif != null && exif.hasCoordinates) {
-        _mapController?.moveCamera(CameraUpdate.newLatLng(LatLng(exif.latitude!, exif.longitude!)));
+        unawaited(_mapController?.moveCamera(CameraUpdate.newLatLng(LatLng(exif.latitude!, exif.longitude!))));
       }
     }
   }
 
-  void editLocation() async {
+  Future<void> editLocation() async {
     await ref.read(actionProvider.notifier).editLocation(ActionSource.viewer, context);
   }
 

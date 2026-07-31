@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -114,7 +116,7 @@ class DropdownSearchMenu<T> extends HookWidget {
                           final bool highlight = AutocompleteHighlightedOption.of(context) == index;
                           if (highlight) {
                             SchedulerBinding.instance.addPostFrameCallback((Duration timeStamp) {
-                              Scrollable.ensureVisible(context, alignment: 0.5);
+                              unawaited(Scrollable.ensureVisible(context, alignment: 0.5));
                             }, debugLabel: 'AutocompleteOptions.ensureVisible');
                           }
                           return Container(

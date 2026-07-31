@@ -43,16 +43,20 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
       );
     }
 
-    void leaveAlbum() async {
+    Future<void> leaveAlbum() async {
       try {
         await ref.read(remoteAlbumProvider.notifier).leaveAlbum(album.id, userId: userId);
+        if (!context.mounted) {
+          return;
+        }
+
         unawaited(context.navigateTo(const DriftAlbumsRoute()));
       } catch (_) {
         showErrorMessage();
       }
     }
 
-    void removeUserFromAlbum(UserDto user) async {
+    Future<void> removeUserFromAlbum(UserDto user) async {
       try {
         await ref.read(remoteAlbumProvider.notifier).removeUser(album.id, user.id);
         ref.invalidate(remoteAlbumSharedUsersProvider(album.id));
@@ -72,22 +76,22 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
 
       try {
         await ref.read(remoteAlbumProvider.notifier).addUsers(album.id, newUsers);
-
-        if (newUsers.isNotEmpty) {
-          ImmichToast.show(
-            context: context,
-            msg: "users_added_to_album_count".t(context: context, args: {'count': newUsers.length}),
-            toastType: ToastType.success,
-          );
+        ref.invalidate(remoteAlbumSharedUsersProvider(album.id));
+        if (!context.mounted) {
+          return;
         }
 
-        ref.invalidate(remoteAlbumSharedUsersProvider(album.id));
-      } catch (e) {
         ImmichToast.show(
           context: context,
-          msg: "Failed to add users to album: ${e.toString()}",
-          toastType: ToastType.error,
+          msg: "users_added_to_album_count".t(context: context, args: {'count': newUsers.length}),
+          toastType: ToastType.success,
         );
+      } catch (e) {
+        if (!context.mounted) {
+          return;
+        }
+
+        ImmichToast.show(context: context, msg: "Failed to add users to album: $e", toastType: ToastType.error);
       }
     }
 
@@ -114,22 +118,24 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
         ];
       }
 
-      showModalBottomSheet(
-        backgroundColor: context.colorScheme.surfaceContainer,
-        isScrollControlled: false,
-        context: context,
-        builder: (context) {
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.only(top: 24.0),
-              child: Column(mainAxisSize: MainAxisSize.min, children: [...actions]),
-            ),
-          );
-        },
+      unawaited(
+        showModalBottomSheet(
+          backgroundColor: context.colorScheme.surfaceContainer,
+          isScrollControlled: false,
+          context: context,
+          builder: (context) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.only(top: 24.0),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [...actions]),
+              ),
+            );
+          },
+        ),
       );
     }
 
-    buildOwnerInfo() {
+    Widget buildOwnerInfo() {
       if (isOwner) {
         final owner = ref.watch(currentUserProvider);
         return ListTile(
@@ -160,7 +166,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
       }
     }
 
-    buildSharedUsersList() {
+    Widget buildSharedUsersList() {
       return sharedUsersAsync.maybeWhen(
         data: (sharedUsers) => ListView.builder(
           primary: false,
@@ -181,7 +187,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
       );
     }
 
-    buildSectionTitle(String text) {
+    Padding buildSectionTitle(String text) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: Text(text, style: context.textTheme.bodySmall),
