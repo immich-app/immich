@@ -6,6 +6,7 @@ import {
   getAssetInfo,
   getMyUser,
   LoginResponseDto,
+  SharedLinkResponseDto,
   SharedLinkType,
 } from '@immich/sdk';
 import { exiftool } from 'exiftool-vendored';
@@ -608,6 +609,79 @@ describe('/asset', () => {
 
       expect(status).toBe(200);
       expect(body).toMatchObject({ id: segmentId, text: 'Misheard name', correctedText: null });
+    });
+  });
+
+  describe('transcript access via shared link', () => {
+    let videoAsset: AssetMediaResponseDto;
+    let segmentId: string;
+    let sharedLink: SharedLinkResponseDto;
+
+    beforeAll(async () => {
+      videoAsset = await utils.createAsset(user1.accessToken, { assetData: { filename: 'example.mp4' } });
+      segmentId = await utils.createTranscriptSegment({
+        assetId: videoAsset.id,
+        startTime: 0,
+        endTime: 1.5,
+        text: 'Hello there',
+      });
+      sharedLink = await utils.createSharedLink(user1.accessToken, {
+        type: SharedLinkType.Individual,
+        assetIds: [videoAsset.id],
+      });
+    });
+
+    it('should retrieve captions with a valid shared link', async () => {
+      const { status, text } = await request(app).get(`/assets/${videoAsset.id}/captions.vtt?key=${sharedLink.key}`);
+
+      expect(status).toBe(200);
+      expect(text).toContain('Hello there');
+    });
+
+    it('should retrieve the transcript with a valid shared link', async () => {
+      const { status, body } = await request(app).get(`/assets/${videoAsset.id}/transcript?key=${sharedLink.key}`);
+
+      expect(status).toBe(200);
+      expect(body.segments).toEqual([expect.objectContaining({ text: 'Hello there' })]);
+    });
+
+    it('should reject captions for an invalid shared link', async () => {
+      const { status, body } = await request(app).get(`/assets/${videoAsset.id}/captions.vtt?key=${sharedLink.key}foo`);
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.invalidShareKey);
+    });
+
+    it('should reject the transcript for an invalid shared link', async () => {
+      const { status, body } = await request(app).get(`/assets/${videoAsset.id}/transcript?key=${sharedLink.key}foo`);
+
+      expect(status).toBe(401);
+      expect(body).toEqual(errorDto.invalidShareKey);
+    });
+
+    it('should reject captions and the transcript for an expired shared link', async () => {
+      const expiredLink = await utils.createSharedLink(user1.accessToken, {
+        type: SharedLinkType.Individual,
+        assetIds: [videoAsset.id],
+        expiresAt: yesterday.toISO(),
+      });
+
+      const captions = await request(app).get(`/assets/${videoAsset.id}/captions.vtt?key=${expiredLink.key}`);
+      expect(captions.status).toBe(401);
+      expect(captions.body).toEqual(errorDto.invalidShareKey);
+
+      const transcript = await request(app).get(`/assets/${videoAsset.id}/transcript?key=${expiredLink.key}`);
+      expect(transcript.status).toBe(401);
+      expect(transcript.body).toEqual(errorDto.invalidShareKey);
+    });
+
+    it('should reject a correction attempt from a shared-link caller', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/${videoAsset.id}/transcript/segments/${segmentId}?key=${sharedLink.key}`)
+        .send({ correctedText: 'Corrected name' });
+
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.forbidden);
     });
   });
 
