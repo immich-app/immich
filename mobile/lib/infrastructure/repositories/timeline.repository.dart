@@ -50,26 +50,39 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         .map((users) => users..add(userId));
   }
 
-  TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy) => (
-    bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
-    assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
-    origin: TimelineOrigin.main,
+  TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy, {bool ignoreBackupSelection = false}) => (
+    bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy, ignoreBackupSelection: ignoreBackupSelection),
+    assetSource: (offset, count) =>
+        _getMainBucketAssets(userIds, offset: offset, count: count, ignoreBackupSelection: ignoreBackupSelection),
+    origin: .main,
   );
 
-  Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
-    if (groupBy == GroupAssetsBy.none) {
+  Stream<List<Bucket>> _watchMainBucket(
+    List<String> userIds, {
+    GroupAssetsBy groupBy = .day,
+    bool ignoreBackupSelection = false,
+  }) {
+    if (groupBy == .none) {
       throw UnsupportedError("GroupAssetsBy.none is not supported for watchMainBucket");
     }
 
-    return _db.mergedAssetDrift.mergedBucket(userIds: userIds, groupBy: groupBy.index).map((row) {
-      final date = row.bucketDate.truncateDate(groupBy);
-      return TimeBucket(date: date, assetCount: row.assetCount);
-    }).watch();
+    return _db.mergedAssetDrift
+        .mergedBucket(userIds: userIds, groupBy: groupBy.index, ignoreBackupSelection: ignoreBackupSelection)
+        .map((row) {
+          final date = row.bucketDate.truncateDate(groupBy);
+          return TimeBucket(date: date, assetCount: row.assetCount);
+        })
+        .watch();
   }
 
-  Future<List<BaseAsset>> _getMainBucketAssets(List<String> userIds, {required int offset, required int count}) {
+  Future<List<BaseAsset>> _getMainBucketAssets(
+    List<String> userIds, {
+    required int offset,
+    required int count,
+    bool ignoreBackupSelection = false,
+  }) {
     return _db.mergedAssetDrift
-        .mergedAsset(userIds: userIds, limit: (_) => Limit(count, offset))
+        .mergedAsset(userIds: userIds, limit: (_) => Limit(count, offset), ignoreBackupSelection: ignoreBackupSelection)
         .map(
           (row) => row.remoteId != null && row.ownerId != null
               ? RemoteAsset(

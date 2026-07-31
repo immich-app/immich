@@ -4,7 +4,7 @@ import 'local_asset.entity.dart';
 import 'local_album.entity.dart';
 import 'local_album_asset.entity.dart';
 
-mergedAsset:
+mergedAsset(:ignore_backup_selection AS BOOLEAN):
 SELECT
 	rae.id as remote_id,
 	(SELECT lae.id FROM local_asset_entity lae WHERE lae.checksum = rae.checksum LIMIT 1) as local_id,
@@ -73,20 +73,25 @@ FROM
 WHERE NOT EXISTS (
 	SELECT 1 FROM remote_asset_entity rae WHERE rae.checksum = lae.checksum AND rae.owner_id IN :user_ids
 )
-AND EXISTS (
-	SELECT 1 FROM local_album_asset_entity laa
-	INNER JOIN local_album_entity la on laa.album_id = la.id
-	WHERE laa.asset_id = lae.id AND la.backup_selection = 0 -- selected
-)
-AND NOT EXISTS (
-    SELECT 1 FROM local_album_asset_entity laa
-    INNER JOIN local_album_entity la on laa.album_id = la.id
-    WHERE laa.asset_id = lae.id AND la.backup_selection = 2 -- excluded
+AND (
+	:ignore_backup_selection
+	OR (
+		EXISTS (
+			SELECT 1 FROM local_album_asset_entity laa
+			INNER JOIN local_album_entity la on laa.album_id = la.id
+			WHERE laa.asset_id = lae.id AND la.backup_selection = 0 -- selected
+		)
+		AND NOT EXISTS (
+			SELECT 1 FROM local_album_asset_entity laa
+			INNER JOIN local_album_entity la on laa.album_id = la.id
+			WHERE laa.asset_id = lae.id AND la.backup_selection = 2 -- excluded
+		)
+	)
 )
 ORDER BY created_at DESC
 LIMIT $limit;
 
-mergedBucket(:group_by AS INTEGER):
+mergedBucket(:group_by AS INTEGER, :ignore_backup_selection AS BOOLEAN):
 SELECT
 	COUNT(*) as asset_count,
 	bucket_date
@@ -106,7 +111,7 @@ FROM
 	FROM
 		remote_asset_entity rae
 	LEFT JOIN
-        stack_entity se ON rae.stack_id = se.id
+		stack_entity se ON rae.stack_id = se.id
 	WHERE
 		rae.deleted_at IS NULL
 		AND rae.visibility = 0 -- timeline visibility
@@ -126,15 +131,20 @@ FROM
 	WHERE NOT EXISTS (
 		SELECT 1 FROM remote_asset_entity rae WHERE rae.checksum = lae.checksum AND rae.owner_id IN :user_ids
 	)
-	AND EXISTS (
-		SELECT 1 FROM local_album_asset_entity laa
-		INNER JOIN local_album_entity la on laa.album_id = la.id
-		WHERE laa.asset_id = lae.id AND la.backup_selection = 0 -- selected
-	)
-	AND NOT EXISTS (
-		SELECT 1 FROM local_album_asset_entity laa
-		INNER JOIN local_album_entity la on laa.album_id = la.id
-		WHERE laa.asset_id = lae.id AND la.backup_selection = 2 -- excluded
+	AND (
+		:ignore_backup_selection
+		OR (
+			EXISTS (
+				SELECT 1 FROM local_album_asset_entity laa
+				INNER JOIN local_album_entity la on laa.album_id = la.id
+				WHERE laa.asset_id = lae.id AND la.backup_selection = 0 -- selected
+			)
+			AND NOT EXISTS (
+				SELECT 1 FROM local_album_asset_entity laa
+				INNER JOIN local_album_entity la on laa.album_id = la.id
+				WHERE laa.asset_id = lae.id AND la.backup_selection = 2 -- excluded
+			)
+		)
 	)
 )
 GROUP BY bucket_date

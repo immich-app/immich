@@ -43,7 +43,9 @@ void main() {
           ),
         );
 
-    final buckets = await db.mergedAssetDrift.mergedBucket(groupBy: GroupAssetsBy.day.index, userIds: [userId]).get();
+    final buckets = await db.mergedAssetDrift
+        .mergedBucket(groupBy: GroupAssetsBy.day.index, userIds: [userId], ignoreBackupSelection: false)
+        .get();
 
     expect(buckets, hasLength(1));
     expect(buckets.single.assetCount, 1);
