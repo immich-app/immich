@@ -48,8 +48,8 @@ struct RandomConfigurationAppIntent: WidgetConfigurationIntent {
   @Parameter(title: "Show Album Name", default: false)
   var showAlbumName: Bool
 
-  @Parameter(title: "Match Icon Theme", default: true)
-  var matchIconTheme: Bool
+  @Parameter(title: "Always Display in Full Color", default: true)
+  var forceFullColor: Bool
 }
 
 // MARK: Provider
@@ -80,7 +80,7 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
         api: api,
         asset: randomImage,
         dateOffset: 0,
-        matchIconTheme: configuration.matchIconTheme
+        forceFullColor: configuration.forceFullColor
       )
     else {
       return ImageEntry.handleError(for: cacheKey).entries.first!
@@ -119,7 +119,7 @@ struct ImmichRandomProvider: AppIntentTimelineProvider {
         count: 12,
         filter: album.filter,
         subtitle: configuration.showAlbumName ? albumName : nil,
-        matchIconTheme: configuration.matchIconTheme
+        forceFullColor: configuration.forceFullColor
       )
 
       // Load or save a cached asset for when network conditions are bad

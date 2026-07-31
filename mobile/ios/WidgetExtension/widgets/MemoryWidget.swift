@@ -10,8 +10,8 @@ struct MemoryConfigurationAppIntent: WidgetConfigurationIntent {
     "See memories from Immich."
   }
 
-  @Parameter(title: "Match Icon Theme", default: true)
-  var matchIconTheme: Bool
+  @Parameter(title: "Always Display in Full Color", default: true)
+  var forceFullColor: Bool
 }
 
 // MARK: Provider
@@ -51,7 +51,7 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
           asset: asset,
           dateOffset: 0,
           subtitle: getYearDifferenceSubtitle(assetYear: memory.data.year),
-          matchIconTheme: configuration.matchIconTheme
+          forceFullColor: configuration.forceFullColor
         )
       {
         return entry
@@ -65,7 +65,7 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
         api: api,
         asset: randomImage,
         dateOffset: 0,
-        matchIconTheme: configuration.matchIconTheme
+        forceFullColor: configuration.forceFullColor
       )
     else {
       return ImageEntry.handleError(for: cacheKey).entries.first!
@@ -107,7 +107,7 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
                   subtitle: getYearDifferenceSubtitle(
                     assetYear: memory.data.year
                   ),
-                  matchIconTheme: configuration.matchIconTheme
+                  forceFullColor: configuration.forceFullColor
                 )
               }
 
@@ -137,7 +137,7 @@ struct ImmichMemoryProvider: AppIntentTimelineProvider {
           api: api,
           now: now,
           count: 12,
-          matchIconTheme: configuration.matchIconTheme
+          forceFullColor: configuration.forceFullColor
         )
 
         // Load or save a cached asset for when network conditions are bad

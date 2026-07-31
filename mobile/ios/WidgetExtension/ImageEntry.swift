@@ -12,7 +12,7 @@ struct ImageEntry: TimelineEntry {
     var subtitle: String? = nil
     var error: WidgetError? = nil
     var deepLink: URL? = nil
-    var matchIconTheme: Bool = true
+    var forceFullColor: Bool = true
   }
 
   static func build(
@@ -20,7 +20,7 @@ struct ImageEntry: TimelineEntry {
     asset: Asset,
     dateOffset: Int,
     subtitle: String? = nil,
-    matchIconTheme: Bool = true
+    forceFullColor: Bool = true
   )
     async throws -> Self
   {
@@ -37,7 +37,7 @@ struct ImageEntry: TimelineEntry {
       metadata: EntryMetadata(
         subtitle: subtitle,
         deepLink: asset.deepLink,
-        matchIconTheme: matchIconTheme
+        forceFullColor: forceFullColor
       )
     )
   }
@@ -122,8 +122,8 @@ extension ImageEntry.Metadata {
     error = try container.decodeIfPresent(WidgetError.self, forKey: .error)
     deepLink = try container.decodeIfPresent(URL.self, forKey: .deepLink)
 
-    matchIconTheme =
-      try container.decodeIfPresent(Bool.self, forKey: .matchIconTheme) ?? true
+    forceFullColor =
+      try container.decodeIfPresent(Bool.self, forKey: .forceFullColor) ?? true
   }
 }
 
@@ -133,7 +133,7 @@ func generateRandomEntries(
   count: Int,
   filter: SearchFilter = Album.NONE.filter,
   subtitle: String? = nil,
-  matchIconTheme: Bool = true
+  forceFullColor: Bool = true
 )
   async throws -> [ImageEntry]
 {
@@ -150,7 +150,7 @@ func generateRandomEntries(
           asset: asset,
           dateOffset: dateOffset,
           subtitle: subtitle,
-          matchIconTheme: matchIconTheme
+          forceFullColor: forceFullColor
         )
       }
     }
