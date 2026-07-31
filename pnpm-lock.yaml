@@ -219,6 +219,9 @@ importers:
       micromatch:
         specifier: ^4.0.8
         version: 4.0.8
+      semver:
+        specifier: ^7.8.1
+        version: 7.8.5
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.0
