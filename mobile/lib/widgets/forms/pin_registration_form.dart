@@ -29,7 +29,7 @@ class PinRegistrationForm extends HookConsumerWidget {
       return true;
     }
 
-    createNewPinCode() async {
+    Future<void> createNewPinCode() async {
       final isValid = validatePinCode();
       if (!isValid) {
         hasError.value = true;
@@ -42,6 +42,10 @@ class PinRegistrationForm extends HookConsumerWidget {
         onDone();
       } catch (error) {
         hasError.value = true;
+        if (!context.mounted) {
+          return;
+        }
+
         context.showSnackBar(SnackBar(content: Text(error.toString())));
       }
     }

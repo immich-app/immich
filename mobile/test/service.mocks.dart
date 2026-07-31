@@ -12,6 +12,7 @@ import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_mobile/services/network.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
+import 'package:immich_mobile/services/toast.service.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockApiService extends Mock implements ApiService {}
@@ -43,3 +44,5 @@ class MockServerInfoService extends Mock implements ServerInfoService {}
 class MockCleanupService extends Mock implements CleanupService {}
 
 class MockBackgroundSyncManager extends Mock implements BackgroundSyncManager {}
+
+class MockToastService extends Mock implements ToastService {}

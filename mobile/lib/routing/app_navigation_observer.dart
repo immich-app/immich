@@ -13,10 +13,12 @@ class AppNavigationObserver extends AutoRouterObserver {
 
   @override
   void didPush(Route route, Route? previousRoute) {
-    Future(() {
-      ref.read(currentRouteNameProvider.notifier).state = route.settings.name;
-      ref.read(previousRouteNameProvider.notifier).state = previousRoute?.settings.name;
-      ref.read(previousRouteDataProvider.notifier).state = previousRoute?.settings;
-    });
+    unawaited(
+      Future(() {
+        ref.read(currentRouteNameProvider.notifier).state = route.settings.name;
+        ref.read(previousRouteNameProvider.notifier).state = previousRoute?.settings.name;
+        ref.read(previousRouteDataProvider.notifier).state = previousRoute?.settings;
+      }),
+    );
   }
 }

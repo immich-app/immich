@@ -12,7 +12,7 @@ class ShareLinkActionButton extends ConsumerWidget {
 
   const ShareLinkActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
-  _onTap(BuildContext context, WidgetRef ref) async {
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }

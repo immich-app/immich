@@ -1,6 +1,6 @@
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
@@ -14,7 +14,7 @@ class DownloadActionButton extends ConsumerWidget {
   final bool menuItem;
   const DownloadActionButton({super.key, required this.source, this.iconOnly = false, this.menuItem = false});
 
-  void _onTap(BuildContext context, WidgetRef ref, BackgroundSyncManager backgroundSyncManager) async {
+  Future<void> _onTap(BuildContext context, WidgetRef ref, BackgroundSyncManager backgroundSyncManager) async {
     if (!context.mounted) {
       return;
     }

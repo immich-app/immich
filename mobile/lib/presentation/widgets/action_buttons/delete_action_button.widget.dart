@@ -30,7 +30,7 @@ class DeleteActionButton extends ConsumerWidget {
     this.menuItem = false,
   });
 
-  void _onTap(BuildContext context, WidgetRef ref) async {
+  Future<void> _onTap(BuildContext context, WidgetRef ref) async {
     if (!context.mounted) {
       return;
     }
@@ -73,17 +73,17 @@ class DeleteActionButton extends ConsumerWidget {
         shouldRefreshStack ? ViewerStackAssetDeletedEvent(stackIndex: stackIndex) : const ViewerReloadAssetEvent(),
       );
     }
+    if (!context.mounted) {
+      return;
+    }
 
     final successMessage = 'delete_action_prompt'.t(context: context, args: {'count': result.count.toString()});
-
-    if (context.mounted) {
-      ImmichToast.show(
-        context: context,
-        msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
-        gravity: ToastGravity.BOTTOM,
-        toastType: result.success ? ToastType.success : ToastType.error,
-      );
-    }
+    ImmichToast.show(
+      context: context,
+      msg: result.success ? successMessage : 'scaffold_body_error_occurred'.t(context: context),
+      gravity: ToastGravity.BOTTOM,
+      toastType: result.success ? ToastType.success : ToastType.error,
+    );
   }
 
   @override

@@ -135,12 +135,12 @@ class BackgroundUploadService {
     if (!_taskStatusController.isClosed) {
       _taskStatusController.add(update);
     }
-    _handleTaskStatusUpdate(update);
+    unawaited(_handleTaskStatusUpdate(update));
   }
 
   void dispose() {
-    _taskStatusController.close();
-    _taskProgressController.close();
+    unawaited(_taskStatusController.close());
+    unawaited(_taskProgressController.close());
   }
 
   /// Enqueue tasks to the background upload queue
@@ -171,7 +171,7 @@ class BackgroundUploadService {
 
     const batchSize = 100;
     final batch = candidates.take(batchSize).toList();
-    List<UploadTask> tasks = [];
+    final List<UploadTask> tasks = [];
 
     for (final asset in batch) {
       final task = await getUploadTask(asset);
@@ -205,7 +205,7 @@ class BackgroundUploadService {
     return _uploadRepository.start();
   }
 
-  void _handleTaskStatusUpdate(TaskStatusUpdate update) async {
+  Future<void> _handleTaskStatusUpdate(TaskStatusUpdate update) async {
     switch (update.status) {
       case TaskStatus.complete:
         unawaited(_handleLivePhoto(update));
@@ -218,8 +218,6 @@ class BackgroundUploadService {
             _logger.severe('Error deleting file path for iOS: $e');
           }
         }
-
-        break;
 
       default:
         break;
@@ -295,7 +293,7 @@ class BackgroundUploadService {
     final extension = p.extension(file.path).isNotEmpty ? p.extension(file.path) : p.extension(asset.name);
     final originalFileName = p.setExtension(fileName, extension);
 
-    String metadata = UploadTaskMetadata(
+    final String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
       isLivePhotos: entity.isLivePhoto,
       livePhotoVideoId: '',

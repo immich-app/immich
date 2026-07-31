@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
@@ -10,8 +11,8 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -304,13 +305,13 @@ class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator> with
     // Control animations based on sync status
     if (isSyncing) {
       if (!_rotationController.isAnimating) {
-        _rotationController.repeat();
+        unawaited(_rotationController.repeat());
       }
       _dismissalController.reset();
     } else {
       _rotationController.stop();
       if (_dismissalController.status == AnimationStatus.dismissed) {
-        _dismissalController.forward();
+        unawaited(_dismissalController.forward());
       }
     }
 

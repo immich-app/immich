@@ -1,95 +1,71 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
-import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_ui/immich_ui.dart';
 
-class _ActionWidgetScope {
-  final String label;
-  final VoidCallback onAction;
+abstract class ActionWidget extends ConsumerWidget {
+  final ActionBuilder action;
 
-  const _ActionWidgetScope({required this.label, required this.onAction});
-}
+  const ActionWidget({super.key, required this.action});
 
-class _ActionWidget extends ConsumerWidget {
-  final BaseAction action;
-  final Widget Function(_ActionWidgetScope context) builder;
-
-  const _ActionWidget({required this.action, required this.builder});
-
-  Future<void> _onAction(ActionScope scope) async {
-    try {
-      await action.onAction(scope);
-    } catch (error, stackTrace) {
-      handleError(scope.context, stack: stackTrace, description: 'Action failed: ${action.runtimeType}');
-    }
-  }
+  Widget builder(BuildContext context, WidgetRef ref, ActionItem action);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authUser = ref.watch(currentUserProvider);
-    if (authUser == null) {
+    final actionItem = action.create(context, ref);
+    if (actionItem == null) {
       return const SizedBox.shrink();
     }
 
-    final scope = ActionScope(context: context, ref: ref, authUser: authUser);
-    if (!action.isVisible(scope)) {
-      return const SizedBox.shrink();
-    }
-
-    return builder(.new(label: action.label(scope), onAction: () => _onAction(scope)));
+    return builder(context, ref, actionItem);
   }
 }
 
-class ActionIconButtonWidget extends StatelessWidget {
-  final BaseAction action;
+class ActionColumnButton extends ActionWidget {
+  const ActionColumnButton({super.key, required super.action});
+
+  @override
+  Widget builder(BuildContext context, WidgetRef ref, ActionItem action) => ImmichColumnButton(
+    icon: action.icon,
+    label: action.label,
+    onPressed: action.onAction,
+    onLongPress: action.onSecondaryAction,
+  );
+}
+
+class ActionIconButton extends ActionWidget {
   final ImmichVariant variant;
 
-  const ActionIconButtonWidget({super.key, required this.action, this.variant = .ghost});
+  const ActionIconButton({super.key, required super.action, this.variant = .ghost});
 
   @override
-  Widget build(BuildContext context) => _ActionWidget(
-    action: action,
-    builder: (ctx) => ImmichIconButton(icon: action.icon, onPressed: ctx.onAction, variant: variant),
+  Widget builder(BuildContext context, WidgetRef ref, ActionItem action) => ImmichIconButton(
+    icon: action.icon,
+    onPressed: action.onAction,
+    onLongPress: action.onSecondaryAction,
+    variant: variant,
   );
 }
 
-class ActionButtonWidget extends StatelessWidget {
-  final BaseAction action;
+class ActionButton extends ActionWidget {
   final ImmichVariant variant;
 
-  const ActionButtonWidget({super.key, required this.action, this.variant = .ghost});
+  const ActionButton({super.key, required super.action, this.variant = .ghost});
 
   @override
-  Widget build(BuildContext context) => _ActionWidget(
-    action: action,
-    builder: (ctx) =>
-        ImmichTextButton(labelText: ctx.label, icon: action.icon, onPressed: ctx.onAction, variant: variant),
+  Widget builder(BuildContext context, WidgetRef ref, ActionItem action) => ImmichTextButton(
+    labelText: action.label,
+    icon: action.icon,
+    onPressed: action.onAction,
+    onLongPress: action.onSecondaryAction,
+    variant: variant,
   );
 }
 
-class ActionColumnButtonWidget extends StatelessWidget {
-  final BaseAction action;
-
-  const ActionColumnButtonWidget({super.key, required this.action});
+class ActionMenuItem extends ActionWidget {
+  const ActionMenuItem({super.key, required super.action});
 
   @override
-  Widget build(BuildContext context) => _ActionWidget(
-    action: action,
-    builder: (ctx) => ImmichColumnButton(icon: action.icon, label: ctx.label, onPressed: ctx.onAction),
-  );
-}
-
-class ActionMenuItemWidget extends StatelessWidget {
-  final BaseAction action;
-
-  const ActionMenuItemWidget({super.key, required this.action});
-
-  @override
-  Widget build(BuildContext context) => _ActionWidget(
-    action: action,
-    builder: (ctx) => ImmichMenuItem(icon: action.icon, label: ctx.label, onPressed: ctx.onAction),
-  );
+  Widget builder(BuildContext context, WidgetRef ref, ActionItem action) =>
+      ImmichMenuItem(icon: action.icon, label: action.label, onPressed: action.onAction);
 }

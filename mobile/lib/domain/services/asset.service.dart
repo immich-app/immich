@@ -36,8 +36,8 @@ class AssetService {
     return _localRepository.getByChecksum(checksum);
   }
 
-  Future<RemoteAsset?> getRemoteAssetByChecksum(String checksum) {
-    return _remoteRepository.getByChecksum(checksum);
+  Future<List<RemoteAsset>> getAllRemoteAssetDebugByChecksum(String checksum) {
+    return _remoteRepository.getAllDebugForChecksum(checksum);
   }
 
   Future<RemoteAsset?> getRemoteAsset(String id) {
@@ -170,14 +170,5 @@ class AssetService {
   // TODO(shenlong): remove after action migration
   Future<LocalAsset?> getLocalAsset(String id) {
     return _localRepository.get(id);
-  }
-
-  Future<void> updateFavorite(List<String> remoteIds, bool isFavorite) async {
-    if (remoteIds.isEmpty) {
-      return;
-    }
-
-    await _apiRepository.updateFavorite(remoteIds, isFavorite);
-    await _remoteRepository.updateFavorite(remoteIds, isFavorite);
   }
 }

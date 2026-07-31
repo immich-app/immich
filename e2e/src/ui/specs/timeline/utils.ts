@@ -223,7 +223,7 @@ export const pageUtils = {
     await section.locator('.w-8').click();
   },
   async pauseTestDebug() {
-    console.log('NOTE: pausing test indefinately for debug');
+    console.log('NOTE: pausing test indefinitely for debug');
     await new Promise(() => void 0);
   },
 };

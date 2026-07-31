@@ -429,7 +429,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
               SizedBox(
                 width: 48,
                 height: 48,
-                child: Container(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: context.colorScheme.outline.withValues(alpha: 0.1),
                     borderRadius: const BorderRadius.all(Radius.circular(8)),
@@ -520,7 +520,7 @@ class _CurrentUploadThumbnail extends ConsumerWidget {
             ),
             clipBehavior: Clip.antiAlias,
             child: snapshot.data != null
-                ? Thumbnail.fromAsset(asset: snapshot.data!, size: const Size(48, 48), fit: BoxFit.cover)
+                ? Thumbnail.fromAsset(asset: snapshot.data, size: const Size(48, 48), fit: BoxFit.cover)
                 : Icon(Icons.image, size: 24, color: context.colorScheme.primary),
           ),
         );
