@@ -76,7 +76,12 @@
         }}
         class="sidebar:hidden"
       />
-      <a data-sveltekit-preload-data="hover" href={Route.photos()}>
+      <a
+        data-sveltekit-preload-data="hover"
+        href={Route.photos()}
+        draggable="false"
+        ondragstart={(event) => event.preventDefault()}
+      >
         <Logo variant={mediaQueryManager.isFullSidebar ? 'inline' : 'icon'} class="max-md:h-12" />
       </a>
     </div>
