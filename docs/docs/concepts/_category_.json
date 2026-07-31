@@ -1,0 +1,9 @@
+{
+  "label": "Concepts",
+  "position": 3,
+  "link": {
+    "type": "generated-index",
+    "title": "Concepts",
+    "description": "Background and discussion of how Immich works and why it works that way. Read these to deepen your understanding, not to complete a task."
+  }
+}

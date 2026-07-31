@@ -2,7 +2,7 @@
 sidebar_position: 50
 ---
 
-# Portainer
+# Install with Portainer
 
 Install Immich using Portainer's Stack feature.
 
@@ -45,5 +45,5 @@ alt="Dot Env Example"
 11. Click on "**Deploy the stack**".
 
 :::tip
-For more information on how to use the application, please refer to the [Post Installation](/install/post-install.mdx) guide.
+For more information on how to use the application, please refer to [Next steps](/introduction/next-steps).
 :::

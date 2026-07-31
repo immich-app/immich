@@ -2,14 +2,15 @@
 sidebar_position: 65
 ---
 
-# One-Click [Cloud Service]
+import CommunityDisclaimer from '@site/src/components/community-disclaimer';
 
-:::note
-This version of Immich is provided via cloud service providers' one-click marketplaces. Hosting costs are set by the cloud service providers.
-Support for these are provided by the individual cloud service providers.
+# Install with one click [Cloud Service]
 
-**Please report issues to the corresponding [Github Repository][github].**
-:::
+<CommunityDisclaimer>
+
+Immich is provided here via cloud service providers' one-click marketplaces. Hosting costs are set by the provider, and support is provided by the individual cloud service provider.
+
+</CommunityDisclaimer>
 
 ## Installation
 
@@ -24,9 +25,3 @@ https://marketplace.digitalocean.com/apps/immich
 ### Vultr
 
 https://www.vultr.com/marketplace/apps/immich
-
-## Issues
-
-For issues, open an issue on the associated [GitHub Repository][github].
-
-[github]: https://github.com/immich-app/immich/

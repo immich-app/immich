@@ -49,13 +49,13 @@
 ## Inhoud
 
 - [Officiële documentatie](https://docs.immich.app/)
-- [Introductie](https://docs.immich.app/overview/introduction)
-- [Installatie](https://docs.immich.app/install/requirements)
+- [Introductie](https://docs.immich.app/introduction/getting-started)
+- [Installatie](https://docs.immich.app/reference/requirements)
 - [Toekomstplannen](https://immich.app/roadmap)
 - [Demo](#demo)
 - [Functies](#functies)
 - [Vertalingen](https://docs.immich.app/developer/translations)
-- [Richtlijnen voor bijdragen](https://docs.immich.app/overview/support-the-project)
+- [Richtlijnen voor bijdragen](https://docs.immich.app/support-the-project)
 
 ## Demo
 

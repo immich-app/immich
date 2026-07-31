@@ -51,13 +51,13 @@
 ## 링크
 
 - [문서](https://docs.immich.app)
-- [소개](https://docs.immich.app/overview/introduction)
-- [설치](https://docs.immich.app/install/requirements)
+- [소개](https://docs.immich.app/introduction/getting-started)
+- [설치](https://docs.immich.app/reference/requirements)
 - [로드맵](https://immich.app/roadmap)
 - [데모](#데모)
 - [기능](#기능)
 - [번역](https://docs.immich.app/developer/translations)
-- [기여](https://docs.immich.app/overview/support-the-project)
+- [기여](https://docs.immich.app/support-the-project)
 
 ## 데모
 

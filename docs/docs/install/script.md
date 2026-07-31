@@ -2,15 +2,15 @@
 sidebar_position: 20
 ---
 
-# Install script [Experimental]
+# Install with the install script [Experimental]
 
 :::caution
-This method is experimental and not currently recommended for production use. For production, please refer to installing with [Docker Compose](/install/docker-compose.mdx).
+This method is experimental and not currently recommended for production use. For production, please refer to installing with [Docker Compose](/install/docker-compose).
 :::
 
 ## Requirements
 
-Follow the [requirements page](/install/requirements) to get started.
+Follow the [requirements page](/reference/requirements) to get started.
 
 The install script only supports Linux operating systems and requires Docker to be already installed on the system.
 
@@ -32,5 +32,5 @@ The web application and mobile app will be available at `http://<machine-ip-addr
 The directory which is used to store the library files is `./immich-app` relative to the current directory.
 
 :::tip
-For common next steps, see [Post Install Steps](/install/post-install.mdx).
+For what to do after installing, see [Next steps](/introduction/next-steps).
 :::

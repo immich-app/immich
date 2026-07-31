@@ -24,7 +24,7 @@ Immich has three main clients:
 3. CLI - Command-line utility for bulk upload
 
 :::info
-All three clients use [OpenAPI](/api.md) to auto-generate rest clients for easy integration. For more information about this process, see [OpenAPI](/api.md).
+All three clients use [OpenAPI](/developer/open-api) to auto-generate rest clients for easy integration. For more information about this process, see [OpenAPI](/developer/open-api).
 :::
 
 ### Mobile App
@@ -44,7 +44,7 @@ The web app is a [TypeScript](https://www.typescriptlang.org/) project that uses
 
 ### CLI
 
-The Immich CLI is an [npm](https://www.npmjs.com/) package that lets users control their Immich instance from the command line. It uses the API to perform various tasks, especially uploading assets. See the [CLI documentation](/features/command-line-interface.md) for more information.
+The Immich CLI is an [npm](https://www.npmjs.com/) package that lets users control their Immich instance from the command line. It uses the API to perform various tasks, especially uploading assets. See the [CLI documentation](/reference/immich-cli) for more information.
 
 ## Server
 
@@ -71,7 +71,7 @@ An incoming HTTP request is mapped to a controller (`src/controllers`). Controll
 
 ### Domain Transfer Objects (DTOs)
 
-The server uses [Domain Transfer Objects](https://en.wikipedia.org/wiki/Data_transfer_object) as public interfaces for the inputs (query, params, and body) and outputs (response) for each endpoint. DTOs translate to [OpenAPI](/api.md) schemas and control the generated code used by each client.
+The server uses [Domain Transfer Objects](https://en.wikipedia.org/wiki/Data_transfer_object) as public interfaces for the inputs (query, params, and body) and outputs (response) for each endpoint. DTOs translate to [OpenAPI](/developer/open-api) schemas and control the generated code used by each client.
 
 ### Background Jobs
 
@@ -83,11 +83,11 @@ Immich uses a [worker](https://github.com/immich-app/immich/blob/main/server/src
 - Smart Search
 - Facial Recognition
 - Storage Template Migration
-- Sidecar (see [XMP Sidecars](/features/xmp-sidecars.md))
+- Sidecar (see [XMP Sidecars](/reference/xmp-sidecars))
 - Background jobs (file deletion, user deletion)
 
 :::info
-This list closely matches what is available on the [Administration > Jobs](/administration/jobs-workers/#jobs) page, which provides some remote queue management capabilities.
+This list closely matches what is available on the [Administration > Jobs](/reference/jobs) page, which provides some remote queue management capabilities.
 :::
 
 ### Machine Learning

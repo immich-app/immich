@@ -73,7 +73,7 @@
         <FormatMessage key="maintenance_description">
           {#snippet children({ tag, message })}
             {#if tag === 'link'}
-              <Link href="https://docs.immich.app/administration/maintenance-mode">
+              <Link href="https://docs.immich.app/administration/use-maintenance-mode">
                 {message}
               </Link>
             {/if}

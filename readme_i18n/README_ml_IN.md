@@ -51,13 +51,13 @@
 ## ലിങ്കുകൾ
 
 - [ഡോക്യുമെന്റേഷൻ](https://docs.immich.app/)
-- [വിവരങ്ങൾ](https://docs.immich.app/overview/introduction)
-- [ഇൻസ്റ്റാളേഷൻ](https://docs.immich.app/install/requirements)
+- [വിവരങ്ങൾ](https://docs.immich.app/introduction/getting-started)
+- [ഇൻസ്റ്റാളേഷൻ](https://docs.immich.app/reference/requirements)
 - [റോഡ്മാപ്പ്](https://immich.app/roadmap)
 - [ഡെമോ](#ഡെമോ)
 - [സവിശേഷതകൾ](#സവിശേഷതകൾ)
 - [വിവർത്തനങ്ങൾ](https://docs.immich.app/developer/translations)
-- [സംഭാവന നൽകൽ](https://docs.immich.app/overview/support-the-project)
+- [സംഭാവന നൽകൽ](https://docs.immich.app/support-the-project)
 
 ## ഡെമോ
 

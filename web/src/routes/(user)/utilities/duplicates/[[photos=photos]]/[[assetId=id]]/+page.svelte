@@ -255,7 +255,10 @@
   <div>
     {#if duplicates && duplicates.length > 0}
       <Text size="small" color="muted" class="mb-4">
-        <p>{$t('duplicates_description')} <LinkToDocs href="https://docs.immich.app/features/duplicates-utility" /></p>
+        <p>
+          {$t('duplicates_description')}
+          <LinkToDocs href="https://docs.immich.app/user-guide/review-duplicates" />
+        </p>
       </Text>
 
       {#key duplicates[duplicatesIndex].duplicateId}
