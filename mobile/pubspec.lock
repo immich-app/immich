@@ -1186,7 +1186,7 @@ packages:
   openapi:
     dependency: "direct main"
     description:
-      path: openapi
+      path: "generated/openapi"
       relative: true
     source: path
     version: "1.0.0"

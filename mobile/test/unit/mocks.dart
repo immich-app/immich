@@ -30,7 +30,6 @@ class RepositoryMocks {
   final remoteAsset = RemoteAssetRepositoryStub(MockRemoteAssetRepository());
   final remoteExif = RemoteExifRepositoryStub(MockRemoteExifRepository());
   final trashedAsset = MockTrashedLocalAssetRepository();
-  final toast = MockToastRepository();
   final remoteAlbum = MockRemoteAlbumRepository();
   final albumApi = MockDriftAlbumApiRepository();
 
@@ -56,7 +55,6 @@ class RepositoryMocks {
     assetApi.reset();
     assetMedia.reset();
     download.reset();
-    reset(toast);
     _stubLocalAlbumRepository();
     _stubLocalAssetRepository();
     _stubRemoteAssetRepository();
@@ -115,6 +113,7 @@ class ServiceMocks {
   final upload = MockForegroundUploadService();
   final cast = MockGCastService();
   final serverInfo = MockServerInfoService();
+  final toast = MockToastService();
 
   ServiceMocks() {
     resetAll();
@@ -132,6 +131,7 @@ class ServiceMocks {
     reset(serverInfo);
     reset(backgroundSync);
     reset(upload);
+    reset(toast);
     _stubUserService();
     _stubPartnerService();
     _stubAssetService();

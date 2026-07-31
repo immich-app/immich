@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -53,7 +55,7 @@ class EndpointInputState extends ConsumerState<EndpointInput> {
 
   void _onOutFocus() {
     if (!focusNode.hasFocus && isInputValid) {
-      validateAuxilaryServerUrl();
+      unawaited(validateAuxilaryServerUrl());
     }
   }
 
