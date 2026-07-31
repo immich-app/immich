@@ -60,7 +60,7 @@ class AdvancedSettings extends HookConsumerWidget {
     useEffect(() {
       unawaited(() async {
         isManageMediaSupported.value = await checkAndroidVersion();
-        if (isManageMediaSupported.value) {
+        if (isManageMediaSupported.value && context.mounted) {
           manageMediaAndroidPermission.value = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
         }
       }());

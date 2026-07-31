@@ -76,6 +76,10 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     }
 
     try {
+      if (!context.mounted) {
+        return;
+      }
+
       await ref.read(remoteAlbumProvider.notifier).addUsers(_album.id, newUsers);
       ref.invalidate(remoteAlbumSharedUsersProvider(_album.id));
       if (!context.mounted) {
@@ -133,6 +137,10 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
     if (confirmed == true) {
       try {
+        if (!context.mounted) {
+          return;
+        }
+
         await ref.read(remoteAlbumProvider.notifier).deleteAlbum(_album.id);
         if (!context.mounted) {
           return;

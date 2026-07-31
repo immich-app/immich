@@ -113,7 +113,7 @@ class _ProfileIndicator extends ConsumerWidget {
     final isIpad = defaultTargetPlatform == TargetPlatform.iOS && !context.isMobile;
 
     void toggleReadonlyMode() {
-      final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+      final isReadonlyModeEnabled = ref.read(readonlyModeProvider);
       ref.read(readonlyModeProvider.notifier).toggleReadonlyMode();
 
       context.scaffoldMessenger.showSnackBar(
@@ -193,11 +193,11 @@ class _BackupIndicator extends ConsumerWidget {
   }
 
   Widget? _getBackupBadgeIcon(BuildContext context, WidgetRef ref) {
-    final backupEnabled = ref.watch(appConfigProvider.select((c) => c.backup.enabled));
-    final hasError = ref.watch(driftBackupProvider.select((state) => state.error != BackupError.none));
+    final backupEnabled = ref.read(appConfigProvider.select((c) => c.backup.enabled));
+    final hasError = ref.read(driftBackupProvider.select((state) => state.error != BackupError.none));
     final isDarkTheme = context.isDarkTheme;
     final iconColor = isDarkTheme ? Colors.white : Colors.black;
-    final isUploading = ref.watch(driftBackupProvider.select((state) => state.uploadItems.isNotEmpty));
+    final isUploading = ref.read(driftBackupProvider.select((state) => state.uploadItems.isNotEmpty));
 
     if (!backupEnabled) {
       return _BadgeLabel(
