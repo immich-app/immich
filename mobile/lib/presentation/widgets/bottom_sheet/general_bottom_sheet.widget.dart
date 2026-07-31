@@ -28,9 +28,10 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class GeneralBottomSheet extends ConsumerStatefulWidget {
-  final double? minChildSize;
-  const GeneralBottomSheet({super.key, this.minChildSize});
+class GeneralBottomSheet extends ConsumerStatefulWidget implements TimelineBottomSheet {
+  @override
+  final double minChildSize;
+  const GeneralBottomSheet({super.key, this.minChildSize = 0.15});
 
   @override
   ConsumerState<GeneralBottomSheet> createState() => _GeneralBottomSheetState();
@@ -83,7 +84,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
 
     return BaseBottomSheet(
       controller: sheetController,
-      initialChildSize: widget.minChildSize ?? 0.15,
+      initialChildSize: widget.minChildSize,
       minChildSize: widget.minChildSize,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,

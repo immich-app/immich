@@ -11,8 +11,11 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_shee
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class LocalAlbumBottomSheet extends ConsumerStatefulWidget {
+class LocalAlbumBottomSheet extends ConsumerStatefulWidget implements TimelineBottomSheet {
   const LocalAlbumBottomSheet({super.key});
+
+  @override
+  double get minChildSize => 0.15;
 
   @override
   ConsumerState<LocalAlbumBottomSheet> createState() => _LocalAlbumBottomSheetState();

@@ -25,8 +25,11 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class FavoriteBottomSheet extends ConsumerWidget {
+class FavoriteBottomSheet extends ConsumerWidget implements TimelineBottomSheet {
   const FavoriteBottomSheet({super.key});
+
+  @override
+  double get minChildSize => 0.15;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

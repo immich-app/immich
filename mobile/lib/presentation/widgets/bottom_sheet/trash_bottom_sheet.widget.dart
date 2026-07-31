@@ -4,9 +4,13 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/restore_trash_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 
-class TrashBottomBar extends ConsumerWidget {
+class TrashBottomBar extends ConsumerWidget implements TimelineBottomSheet {
   const TrashBottomBar({super.key});
+
+  @override
+  double get minChildSize => 0.1;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
