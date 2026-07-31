@@ -528,6 +528,89 @@ describe('/asset', () => {
     });
   });
 
+  describe('PUT /assets/:id/transcript/segments/:segmentId', () => {
+    let videoAsset: AssetMediaResponseDto;
+    let segmentId: string;
+
+    beforeAll(async () => {
+      videoAsset = await utils.createAsset(user1.accessToken, { assetData: { filename: 'example.mp4' } });
+      segmentId = await utils.createTranscriptSegment({
+        assetId: videoAsset.id,
+        startTime: 0,
+        endTime: 1.5,
+        text: 'Misheard name',
+      });
+    });
+
+    it('should require access', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/${videoAsset.id}/transcript/segments/${segmentId}`)
+        .set('Authorization', `Bearer ${user2.accessToken}`)
+        .send({ correctedText: 'Corrected name' });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.noPermission);
+    });
+
+    it('should reject a blank correction', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/${videoAsset.id}/transcript/segments/${segmentId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ correctedText: '  ' });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.validationError());
+    });
+
+    it('should reject a segment that does not belong to the asset', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/${user1Assets[0].id}/transcript/segments/${segmentId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ correctedText: 'Corrected name' });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.badRequest());
+    });
+
+    it('should correct a segment', async () => {
+      const { status, body } = await request(app)
+        .put(`/assets/${videoAsset.id}/transcript/segments/${segmentId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ correctedText: 'Corrected name' });
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ id: segmentId, text: 'Misheard name', correctedText: 'Corrected name' });
+
+      const { body: transcript } = await request(app)
+        .get(`/assets/${videoAsset.id}/transcript`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(transcript.segments).toEqual([
+        expect.objectContaining({ text: 'Misheard name', correctedText: 'Corrected name' }),
+      ]);
+
+      const { text: caption } = await request(app)
+        .get(`/assets/${videoAsset.id}/captions.vtt`)
+        .set('Authorization', `Bearer ${user1.accessToken}`);
+      expect(caption).toContain('Corrected name');
+      expect(caption).not.toContain('Misheard name');
+    });
+
+    it('should revert a correction back to the model text', async () => {
+      await request(app)
+        .put(`/assets/${videoAsset.id}/transcript/segments/${segmentId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ correctedText: 'Corrected name' });
+
+      const { status, body } = await request(app)
+        .put(`/assets/${videoAsset.id}/transcript/segments/${segmentId}`)
+        .set('Authorization', `Bearer ${user1.accessToken}`)
+        .send({ correctedText: null });
+
+      expect(status).toBe(200);
+      expect(body).toMatchObject({ id: segmentId, text: 'Misheard name', correctedText: null });
+    });
+  });
+
   describe('DELETE /assets', () => {
     it('should throw an error when the id is not found', async () => {
       const { status, body } = await request(app)

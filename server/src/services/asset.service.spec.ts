@@ -786,10 +786,35 @@ describe(AssetService.name, () => {
         status: TranscriptionStatus.Complete,
         progressMs: 10_000,
         segments: [
-          { id: expect.any(String), startTime: 0, endTime: 1, text: 'Hello there', language: 'en' },
-          { id: expect.any(String), startTime: 2, endTime: 3, text: 'General Kenobi', language: 'en' },
+          {
+            id: expect.any(String),
+            startTime: 0,
+            endTime: 1,
+            text: 'Hello there',
+            correctedText: null,
+            language: 'en',
+          },
+          {
+            id: expect.any(String),
+            startTime: 2,
+            endTime: 3,
+            text: 'General Kenobi',
+            correctedText: null,
+            language: 'en',
+          },
         ],
       });
+    });
+
+    it('should return a correction alongside the model text', async () => {
+      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: new Date(), transcriptionProgressMs: 10_000 });
+      mocks.transcript.getByAssetId.mockResolvedValue([
+        { ...transcriptSegment(0, 'Misheard name'), correctedText: 'Corrected name' },
+      ]);
+
+      const { segments } = await sut.getTranscript(authStub.admin, 'asset-1');
+
+      expect(segments).toEqual([expect.objectContaining({ text: 'Misheard name', correctedText: 'Corrected name' })]);
     });
 
     it('should apply the same thresholds as the caption track', async () => {
@@ -834,6 +859,63 @@ describe(AssetService.name, () => {
 
       await expect(sut.getTranscript(authStub.admin, 'asset-1')).rejects.toBeInstanceOf(BadRequestException);
       expect(mocks.transcript.getByAssetId).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateTranscriptSegment', () => {
+    beforeEach(() => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
+    });
+
+    it('should write the correction and rebuild the search text', async () => {
+      const segment = { ...transcriptSegment(0, 'Misheard name'), correctedText: 'Corrected name' };
+      mocks.transcript.updateSegment.mockResolvedValue(segment);
+      mocks.transcript.getByAssetId.mockResolvedValue([segment]);
+
+      await expect(
+        sut.updateTranscriptSegment(authStub.admin, 'asset-1', segment.id, { correctedText: 'Corrected name' }),
+      ).resolves.toEqual({
+        id: segment.id,
+        startTime: 0,
+        endTime: 1,
+        text: 'Misheard name',
+        correctedText: 'Corrected name',
+        language: 'en',
+      });
+
+      expect(mocks.transcript.updateSegment).toHaveBeenCalledWith(segment.id, 'asset-1', 'Corrected name');
+      expect(mocks.transcript.upsertSearchText).toHaveBeenCalledWith('asset-1', 'Corrected name');
+    });
+
+    it('should revert a correction back to the model text when set to null', async () => {
+      const segment = transcriptSegment(0, 'Misheard name');
+      mocks.transcript.updateSegment.mockResolvedValue(segment);
+      mocks.transcript.getByAssetId.mockResolvedValue([segment]);
+
+      await expect(
+        sut.updateTranscriptSegment(authStub.admin, 'asset-1', segment.id, { correctedText: null }),
+      ).resolves.toMatchObject({ correctedText: null });
+
+      expect(mocks.transcript.updateSegment).toHaveBeenCalledWith(segment.id, 'asset-1', null);
+      expect(mocks.transcript.upsertSearchText).toHaveBeenCalledWith('asset-1', 'Misheard name');
+    });
+
+    it('should reject a segment that does not belong to the asset', async () => {
+      mocks.transcript.updateSegment.mockResolvedValue(undefined);
+
+      await expect(
+        sut.updateTranscriptSegment(authStub.admin, 'asset-1', 'other-segment', { correctedText: 'Nope' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.transcript.upsertSearchText).not.toHaveBeenCalled();
+    });
+
+    it('should require asset-update access, not just view access', async () => {
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set());
+
+      await expect(
+        sut.updateTranscriptSegment(authStub.admin, 'asset-1', 'segment-1', { correctedText: 'Nope' }),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      expect(mocks.transcript.updateSegment).not.toHaveBeenCalled();
     });
   });
 

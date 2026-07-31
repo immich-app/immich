@@ -2,13 +2,17 @@ import {
   AssetTypeEnum,
   getAssetTranscript,
   TranscriptionStatus,
+  updateTranscriptSegment,
   type AssetTranscriptResponseDto,
   type TranscriptSegmentResponseDto,
 } from '@immich/sdk';
 import { fireEvent, waitFor } from '@testing-library/svelte';
+import { authManager } from '$lib/managers/auth-manager.svelte';
 import { videoPlayerManager } from '$lib/managers/video-player-manager.svelte';
 import { renderWithTooltips } from '$tests/helpers';
 import { assetFactory } from '@test-data/factories/asset-factory';
+import { preferencesFactory } from '@test-data/factories/preferences-factory';
+import { userAdminFactory } from '@test-data/factories/user-factory';
 import TranscriptPanel from './TranscriptPanel.svelte';
 
 vi.mock('@immich/sdk', async () => {
@@ -16,14 +20,20 @@ vi.mock('@immich/sdk', async () => {
   return {
     ...sdk,
     getAssetTranscript: vi.fn(),
+    updateTranscriptSegment: vi.fn(),
   };
 });
 
-const segment = (startTime: number, text: string): TranscriptSegmentResponseDto => ({
+const segment = (
+  startTime: number,
+  text: string,
+  correctedText: string | null = null,
+): TranscriptSegmentResponseDto => ({
   id: `segment-${startTime}`,
   startTime,
   endTime: startTime + 2,
   text,
+  correctedText,
   language: 'en',
 });
 
@@ -37,11 +47,18 @@ const transcript = (
 const fakePlayer = () => ({ currentTime: 0 }) as HTMLVideoElement;
 
 describe('TranscriptPanel', () => {
-  const asset = assetFactory.build({ type: AssetTypeEnum.Video, duration: 600_000 });
+  const asset = assetFactory.build({ type: AssetTypeEnum.Video, duration: 600_000, ownerId: 'owner-id' });
 
   const renderPanel = () => renderWithTooltips(TranscriptPanel, { asset, onClose: () => {} });
 
+  /** Edit and revert are only offered to whoever holds asset-update permission. */
+  const signInAsOwner = () => {
+    authManager.setUser(userAdminFactory.build({ id: asset.ownerId }));
+    authManager.setPreferences(preferencesFactory.build());
+  };
+
   afterEach(() => {
+    authManager.reset();
     vi.clearAllMocks();
   });
 
@@ -227,5 +244,113 @@ describe('TranscriptPanel', () => {
 
     expect(getAssetTranscript).toHaveBeenCalledTimes(2);
     vi.useRealTimers();
+  });
+
+  it('distinguishes a corrected line from machine output and keeps the original viewable', async () => {
+    vi.mocked(getAssetTranscript).mockResolvedValue(
+      transcript(TranscriptionStatus.Complete, [segment(0, 'Hello Jon', 'Hello John')]),
+    );
+
+    const { findByText, getByTestId } = renderPanel();
+
+    expect(await findByText('Hello John')).toBeInTheDocument();
+    expect(getByTestId('transcript-corrected-badge')).toBeInTheDocument();
+    expect(getByTestId('transcript-original-text')).toBeInTheDocument();
+  });
+
+  it('does not offer edit or revert controls to someone without asset-update access', async () => {
+    vi.mocked(getAssetTranscript).mockResolvedValue(
+      transcript(TranscriptionStatus.Complete, [segment(0, 'Hello there', 'Corrected')]),
+    );
+
+    const { findByText, queryByTestId } = renderPanel();
+    await findByText('Corrected');
+
+    expect(queryByTestId('transcript-edit-button')).toBeNull();
+    expect(queryByTestId('transcript-revert-button')).toBeNull();
+  });
+
+  it('lets the owner correct a line inline', async () => {
+    signInAsOwner();
+    vi.mocked(getAssetTranscript).mockResolvedValue(
+      transcript(TranscriptionStatus.Complete, [segment(0, 'Misheard name')]),
+    );
+    vi.mocked(updateTranscriptSegment).mockResolvedValue(segment(0, 'Misheard name', 'Corrected name'));
+
+    const { findByText, getByTestId } = renderPanel();
+    await findByText('Misheard name');
+
+    await fireEvent.click(getByTestId('transcript-edit-button'));
+    const input = getByTestId('transcript-segment-input') as HTMLTextAreaElement;
+    await fireEvent.input(input, { target: { value: 'Corrected name' } });
+    await fireEvent.focusOut(input);
+
+    await waitFor(() =>
+      expect(updateTranscriptSegment).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: asset.id,
+          segmentId: 'segment-0',
+          updateTranscriptSegmentDto: { correctedText: 'Corrected name' },
+        }),
+      ),
+    );
+    expect(await findByText('Corrected name')).toBeInTheDocument();
+    expect(getByTestId('transcript-corrected-badge')).toBeInTheDocument();
+  });
+
+  it('discards the edit on Escape without saving', async () => {
+    signInAsOwner();
+    vi.mocked(getAssetTranscript).mockResolvedValue(
+      transcript(TranscriptionStatus.Complete, [segment(0, 'Misheard name')]),
+    );
+
+    const { findByText, getByTestId } = renderPanel();
+    await findByText('Misheard name');
+
+    await fireEvent.click(getByTestId('transcript-edit-button'));
+    const input = getByTestId('transcript-segment-input') as HTMLTextAreaElement;
+    await fireEvent.input(input, { target: { value: 'Something else entirely' } });
+    await fireEvent.keyDown(input, { key: 'Escape' });
+
+    expect(await findByText('Misheard name')).toBeInTheDocument();
+    expect(updateTranscriptSegment).not.toHaveBeenCalled();
+  });
+
+  it('lets the owner revert a correction back to the model text', async () => {
+    signInAsOwner();
+    vi.mocked(getAssetTranscript).mockResolvedValue(
+      transcript(TranscriptionStatus.Complete, [segment(0, 'Misheard name', 'Corrected name')]),
+    );
+    vi.mocked(updateTranscriptSegment).mockResolvedValue(segment(0, 'Misheard name'));
+
+    const { findByText, getByTestId, queryByTestId } = renderPanel();
+    await findByText('Corrected name');
+
+    await fireEvent.click(getByTestId('transcript-revert-button'));
+
+    await waitFor(() =>
+      expect(updateTranscriptSegment).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: asset.id,
+          segmentId: 'segment-0',
+          updateTranscriptSegmentDto: { correctedText: null },
+        }),
+      ),
+    );
+    expect(await findByText('Misheard name')).toBeInTheDocument();
+    expect(queryByTestId('transcript-corrected-badge')).toBeNull();
+  });
+
+  it('matches a corrected line by its corrected text when filtering', async () => {
+    vi.mocked(getAssetTranscript).mockResolvedValue(
+      transcript(TranscriptionStatus.Complete, [segment(0, 'Misheard name', 'Corrected name')]),
+    );
+
+    const { findByText, getByPlaceholderText, queryByText } = renderPanel();
+    await findByText('Corrected name');
+
+    await fireEvent.input(getByPlaceholderText('filter_transcript'), { target: { value: 'corrected' } });
+
+    await waitFor(() => expect(queryByText('Corrected name')).toBeInTheDocument());
   });
 });

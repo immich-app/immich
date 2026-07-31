@@ -4812,6 +4812,85 @@
         "x-immich-state": "Alpha"
       }
     },
+    "/assets/{id}/transcript/segments/{segmentId}": {
+      "put": {
+        "description": "Overwrites one segment's displayed text with a human correction, or clears it back to the model's own text when `correctedText` is null. Preferred over the model's output for the caption track, the transcript panel and search as soon as it is written.",
+        "operationId": "updateTranscriptSegment",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Asset ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "segmentId",
+            "required": true,
+            "in": "path",
+            "description": "Transcript segment ID",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTranscriptSegmentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscriptSegmentResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Correct a transcript segment",
+        "tags": [
+          "Assets"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          },
+          {
+            "version": "v3",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "asset.update",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/assets/{id}/video/playback": {
       "get": {
         "description": "Streams the video file for the specified asset. This endpoint also supports byte range requests.",
@@ -27330,6 +27409,11 @@
       },
       "TranscriptSegmentResponseDto": {
         "properties": {
+          "correctedText": {
+            "description": "Human-corrected text for the segment, or null if uncorrected. Preferred over `text` for display and search wherever it is set.",
+            "nullable": true,
+            "type": "string"
+          },
           "endTime": {
             "description": "End of the segment, in seconds from the start of the asset",
             "format": "double",
@@ -27351,11 +27435,12 @@
             "type": "number"
           },
           "text": {
-            "description": "Transcribed text of the segment",
+            "description": "The model's own transcription of the segment, unaffected by any correction",
             "type": "string"
           }
         },
         "required": [
+          "correctedText",
           "endTime",
           "id",
           "language",
@@ -27596,6 +27681,20 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "UpdateTranscriptSegmentDto": {
+        "properties": {
+          "correctedText": {
+            "description": "Corrected text for the segment, or null to revert to the transcribed text",
+            "minLength": 1,
+            "nullable": true,
+            "type": "string"
+          }
+        },
+        "required": [
+          "correctedText"
+        ],
         "type": "object"
       },
       "UsageByUserDto": {

@@ -23,7 +23,11 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditAction, AssetEditActionItem, AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { AssetTranscriptResponseDto } from 'src/dtos/transcript.dto';
+import {
+  AssetTranscriptResponseDto,
+  TranscriptSegmentResponseDto,
+  UpdateTranscriptSegmentDto,
+} from 'src/dtos/transcript.dto';
 import {
   AssetFileType,
   AssetStatus,
@@ -47,7 +51,7 @@ import {
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
-import { filterHallucinations, getTranscriptionStatus } from 'src/utils/transcription';
+import { buildTranscriptSearchText, filterHallucinations, getTranscriptionStatus } from 'src/utils/transcription';
 import { transformOcrBoundingBox } from 'src/utils/transform';
 import { toWebVtt } from 'src/utils/vtt';
 
@@ -426,13 +430,50 @@ export class AssetService extends BaseService {
     return {
       status,
       progressMs,
-      segments: segments.map(({ id, startTime, endTime, text, language }) => ({
+      segments: segments.map(({ id, startTime, endTime, text, correctedText, language }) => ({
         id,
         startTime,
         endTime,
         text,
+        correctedText,
         language,
       })),
+    };
+  }
+
+  /**
+   * Writes a human correction over one segment's model output, or clears it back to that output
+   * when `correctedText` is null. The flattened search text is rebuilt immediately afterward: a
+   * correction that search cannot find is pointless, and derived text like this does not update
+   * itself.
+   */
+  async updateTranscriptSegment(
+    auth: AuthDto,
+    id: string,
+    segmentId: string,
+    dto: UpdateTranscriptSegmentDto,
+  ): Promise<TranscriptSegmentResponseDto> {
+    await this.requireAccess({ auth, permission: Permission.AssetUpdate, ids: [id] });
+
+    const segment = await this.transcriptRepository.updateSegment(segmentId, id, dto.correctedText);
+    if (!segment) {
+      throw new BadRequestException(`Transcript segment not found for asset "${id}"`);
+    }
+
+    const { machineLearning } = await this.getConfig({ withCache: true });
+    const segments = await this.transcriptRepository.getByAssetId(id);
+    await this.transcriptRepository.upsertSearchText(
+      id,
+      buildTranscriptSearchText(segments, machineLearning.transcription),
+    );
+
+    return {
+      id: segment.id,
+      startTime: segment.startTime,
+      endTime: segment.endTime,
+      text: segment.text,
+      correctedText: segment.correctedText,
+      language: segment.language,
     };
   }
 

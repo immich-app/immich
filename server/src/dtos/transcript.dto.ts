@@ -18,13 +18,37 @@ const TranscriptSegmentResponseSchema = z
       .number()
       .meta({ format: 'double' })
       .describe('End of the segment, in seconds from the start of the asset'),
-    text: z.string().describe('Transcribed text of the segment'),
+    text: z.string().describe("The model's own transcription of the segment, unaffected by any correction"),
+    correctedText: z
+      .string()
+      .nullable()
+      .describe(
+        'Human-corrected text for the segment, or null if uncorrected. Preferred over `text` for display and search wherever it is set.',
+      ),
     language: z
       .string()
       .nullable()
       .describe('Resolved language of the segment as an ISO 639-1 code, or null for segments transcribed before'),
   })
   .meta({ id: 'TranscriptSegmentResponseDto' });
+
+const UpdateTranscriptSegmentSchema = z
+  .object({
+    correctedText: z
+      .string()
+      .trim()
+      .min(1)
+      .nullable()
+      .describe('Corrected text for the segment, or null to revert to the transcribed text'),
+  })
+  .meta({ id: 'UpdateTranscriptSegmentDto' });
+
+const TranscriptSegmentParamsSchema = z
+  .object({
+    id: z.uuidv4().describe('Asset ID'),
+    segmentId: z.uuidv4().describe('Transcript segment ID'),
+  })
+  .meta({ id: 'TranscriptSegmentParams' });
 
 /**
  * Deliberately carries the job state alongside the segments, because a read is not gated on
@@ -43,3 +67,6 @@ const AssetTranscriptResponseSchema = z
   .meta({ id: 'AssetTranscriptResponseDto' });
 
 export class AssetTranscriptResponseDto extends createZodDto(AssetTranscriptResponseSchema) {}
+export class TranscriptSegmentResponseDto extends createZodDto(TranscriptSegmentResponseSchema) {}
+export class UpdateTranscriptSegmentDto extends createZodDto(UpdateTranscriptSegmentSchema) {}
+export class TranscriptSegmentParams extends createZodDto(TranscriptSegmentParamsSchema) {}

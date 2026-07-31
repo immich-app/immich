@@ -895,6 +895,15 @@ where
   and "asset"."type" = 'VIDEO'
   and "asset"."deletedAt" is null
   and "asset"."visibility" != $1
+  and not exists (
+    select
+      "transcript_segment"."assetId"
+    from
+      "transcript_segment"
+    where
+      "transcript_segment"."assetId" = "asset"."id"
+      and "transcript_segment"."correctedText" is not null
+  )
 
 -- AssetJobRepository.streamForMigrationJob
 select

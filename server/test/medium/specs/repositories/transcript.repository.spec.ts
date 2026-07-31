@@ -169,6 +169,25 @@ describe(TranscriptRepository.name, () => {
       await expect(sut.getByAssetId(asset.id)).resolves.toEqual([]);
       await expect(sut.getStatus(asset.id)).resolves.toMatchObject({ transcriptionProgressMs: 0 });
     });
+
+    it('should preserve a corrected segment rather than deleting it with the rest', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+      await sut.appendChunk(
+        asset.id,
+        [segment(asset.id, 0, 1, 'Stale'), segment(asset.id, 30, 31, 'Misheard name')],
+        60_000,
+      );
+      const [, misheard] = await sut.getByAssetId(asset.id);
+      await sut.updateSegment(misheard.id, asset.id, 'Corrected name');
+
+      await sut.reset(asset.id);
+
+      await expect(sut.getByAssetId(asset.id)).resolves.toEqual([
+        expect.objectContaining({ id: misheard.id, text: 'Misheard name', correctedText: 'Corrected name' }),
+      ]);
+      await expect(sut.getStatus(asset.id)).resolves.toMatchObject({ transcriptionProgressMs: 0 });
+    });
   });
 
   describe('deleteAll', () => {
@@ -184,6 +203,72 @@ describe(TranscriptRepository.name, () => {
         transcribedAt: null,
         transcriptionProgressMs: null,
       });
+    });
+
+    it('should leave an asset with any corrected segment completely untouched', async () => {
+      const { ctx, sut } = setup();
+      const corrected = await newTranscribableAsset(ctx);
+      const plain = await newTranscribableAsset(ctx);
+      await sut.appendChunk(
+        corrected.id,
+        [segment(corrected.id, 0, 1, 'Stale'), segment(corrected.id, 30, 31, 'Misheard name')],
+        60_000,
+      );
+      const [, misheard] = await sut.getByAssetId(corrected.id);
+      await sut.updateSegment(misheard.id, corrected.id, 'Corrected name');
+      await sut.appendChunk(plain.id, [segment(plain.id, 0, 1, 'Stale')], 30_000);
+
+      await sut.deleteAll();
+
+      await expect(sut.getByAssetId(corrected.id)).resolves.toEqual([
+        expect.objectContaining({ text: 'Stale', correctedText: null }),
+        expect.objectContaining({ id: misheard.id, text: 'Misheard name', correctedText: 'Corrected name' }),
+      ]);
+      await expect(sut.getStatus(corrected.id)).resolves.toMatchObject({ transcriptionProgressMs: 60_000 });
+      await expect(sut.getByAssetId(plain.id)).resolves.toEqual([]);
+      await expect(sut.getStatus(plain.id)).resolves.toEqual({
+        transcribedAt: null,
+        transcriptionProgressMs: null,
+      });
+    });
+  });
+
+  describe('updateSegment', () => {
+    it('should write a correction and return the updated segment', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+      await sut.appendChunk(asset.id, [segment(asset.id, 0, 1, 'Misheard name')], 1000);
+      const [stored] = await sut.getByAssetId(asset.id);
+
+      const result = await sut.updateSegment(stored.id, asset.id, 'Corrected name');
+
+      expect(result).toMatchObject({ id: stored.id, text: 'Misheard name', correctedText: 'Corrected name' });
+      await expect(sut.getByAssetId(asset.id)).resolves.toEqual([
+        expect.objectContaining({ correctedText: 'Corrected name' }),
+      ]);
+    });
+
+    it('should clear a correction back to the model text when set to null', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+      await sut.appendChunk(asset.id, [segment(asset.id, 0, 1, 'Misheard name')], 1000);
+      const [stored] = await sut.getByAssetId(asset.id);
+      await sut.updateSegment(stored.id, asset.id, 'Corrected name');
+
+      const result = await sut.updateSegment(stored.id, asset.id, null);
+
+      expect(result).toMatchObject({ correctedText: null });
+    });
+
+    it('should not update a segment belonging to another asset', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+      const other = await newTranscribableAsset(ctx);
+      await sut.appendChunk(asset.id, [segment(asset.id, 0, 1, 'Hello')], 1000);
+      const [stored] = await sut.getByAssetId(asset.id);
+
+      await expect(sut.updateSegment(stored.id, other.id, 'Nope')).resolves.toBeUndefined();
+      await expect(sut.getByAssetId(asset.id)).resolves.toEqual([expect.objectContaining({ correctedText: null })]);
     });
   });
 

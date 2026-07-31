@@ -186,6 +186,20 @@ describe(AssetJobRepository.name, () => {
       await expect(consume(sut.streamForTranscriptionJob(false))).resolves.not.toEqual(contains(asset.id));
       await expect(consume(sut.streamForTranscriptionJob(true))).resolves.not.toEqual(contains(asset.id));
     });
+
+    it('should skip a video with any corrected segment even when forced', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { asset } = await ctx.newAsset({ ownerId: user.id, type: AssetType.Video });
+      await ctx.newJobStatus({ assetId: asset.id, transcribedAt: new Date() });
+      await ctx.database
+        .insertInto('transcript_segment')
+        .values({ assetId: asset.id, startTime: 0, endTime: 1, text: 'Misheard name', correctedText: 'Corrected name' })
+        .execute();
+
+      await expect(consume(sut.streamForTranscriptionJob(false))).resolves.not.toEqual(contains(asset.id));
+      await expect(consume(sut.streamForTranscriptionJob(true))).resolves.not.toEqual(contains(asset.id));
+    });
   });
 
   describe('getForTranscription', () => {

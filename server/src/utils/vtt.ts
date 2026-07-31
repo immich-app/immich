@@ -23,14 +23,15 @@ export type TranscriptProgress = {
  * wants to keep polling can tell a transcript that has not started from one still filling in.
  */
 export const toWebVtt = (
-  segments: { startTime: number; endTime: number; text: string }[],
+  segments: { startTime: number; endTime: number; text: string; correctedText: string | null }[],
   progress: TranscriptProgress,
 ): string => {
   let vtt = 'WEBVTT\n\n';
   vtt += `NOTE immich-transcription-status: ${progress.status}\n`;
   vtt += `NOTE immich-transcription-progress-ms: ${progress.progressMs}\n\n`;
   for (const segment of segments) {
-    vtt += `${formatVttTimestamp(segment.startTime)} --> ${formatVttTimestamp(segment.endTime)}\n${segment.text}\n\n`;
+    const text = segment.correctedText ?? segment.text;
+    vtt += `${formatVttTimestamp(segment.startTime)} --> ${formatVttTimestamp(segment.endTime)}\n${text}\n\n`;
   }
   return vtt;
 };

@@ -481,18 +481,33 @@ export class AssetJobRepository {
 
   @GenerateSql({ params: [], stream: true })
   streamForTranscriptionJob(force?: boolean) {
-    return this.db
-      .selectFrom('asset')
-      .select(['asset.id'])
-      .$if(!force, (qb) =>
-        qb
-          .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
-          .where('asset_job_status.transcribedAt', 'is', null),
-      )
-      .where('asset.type', '=', sql.lit(AssetType.Video))
-      .where('asset.deletedAt', 'is', null)
-      .where('asset.visibility', '!=', AssetVisibility.Hidden)
-      .stream();
+    return (
+      this.db
+        .selectFrom('asset')
+        .select(['asset.id'])
+        .$if(!force, (qb) =>
+          qb
+            .innerJoin('asset_job_status', 'asset_job_status.assetId', 'asset.id')
+            .where('asset_job_status.transcribedAt', 'is', null),
+        )
+        .where('asset.type', '=', sql.lit(AssetType.Video))
+        .where('asset.deletedAt', 'is', null)
+        .where('asset.visibility', '!=', AssetVisibility.Hidden)
+        // A corrected asset is locked against re-processing: reattaching a correction to whatever a
+        // re-run produces cannot be done safely (see `TranscriptRepository.reset`), so the only safe
+        // bulk behaviour is to leave it out entirely, forced or not.
+        .where(({ not, exists, selectFrom }) =>
+          not(
+            exists(
+              selectFrom('transcript_segment')
+                .select('transcript_segment.assetId')
+                .whereRef('transcript_segment.assetId', '=', 'asset.id')
+                .where('transcript_segment.correctedText', 'is not', null),
+            ),
+          ),
+        )
+        .stream()
+    );
   }
 
   @GenerateSql({ params: [DummyValue.DATE], stream: true })

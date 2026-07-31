@@ -1,18 +1,22 @@
 <script lang="ts">
+  import { shortcuts } from '$lib/actions/shortcut';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { videoPlayerManager } from '$lib/managers/video-player-manager.svelte';
+  import { handleError } from '$lib/utils/handle-error';
   import {
     getAssetTranscript,
+    updateTranscriptSegment,
     TranscriptionStatus,
     type AssetResponseDto,
     type AssetTranscriptResponseDto,
     type TranscriptSegmentResponseDto,
   } from '@immich/sdk';
-  import { Button, IconButton, LoadingSpinner, Text } from '@immich/ui';
-  import { mdiClose, mdiCrosshairsGps } from '@mdi/js';
+  import { Button, IconButton, LoadingSpinner, Text, Textarea, toastManager } from '@immich/ui';
+  import { mdiClose, mdiCrosshairsGps, mdiHistory, mdiPencilOutline } from '@mdi/js';
   import { Duration } from 'luxon';
   import { t } from 'svelte-i18n';
+  import { fromAction } from 'svelte/attachments';
 
   interface Props {
     asset: AssetResponseDto;
@@ -20,6 +24,8 @@
   }
 
   let { asset, onClose }: Props = $props();
+
+  const isOwner = $derived(authManager.authenticated && authManager.user.id === asset.ownerId);
 
   /** A transcript that is still being produced grows on the server; the panel asks again for it. */
   const POLL_INTERVAL = 15_000;
@@ -90,7 +96,9 @@
 
   const query = $derived(filter.trim().toLocaleLowerCase());
   const visibleSegments = $derived(
-    query ? segments.filter((segment) => segment.text.toLocaleLowerCase().includes(query)) : segments,
+    query
+      ? segments.filter((segment) => (segment.correctedText ?? segment.text).toLocaleLowerCase().includes(query))
+      : segments,
   );
 
   /**
@@ -181,6 +189,66 @@
     // Jumping to a line is a statement about where attention is, so the panel takes it as one.
     followPlayback = true;
   };
+
+  let editingSegmentId = $state<string>();
+  let editValue = $state('');
+  /** Distinguishes an Escape-triggered blur, which should discard the edit, from every other blur. */
+  let editCancelled = false;
+
+  const startEditing = (segment: TranscriptSegmentResponseDto) => {
+    editingSegmentId = segment.id;
+    editValue = segment.correctedText ?? segment.text;
+  };
+
+  const cancelEditing = () => {
+    editCancelled = true;
+  };
+
+  const applyCorrection = async (segment: TranscriptSegmentResponseDto, correctedText: string | null) => {
+    try {
+      const updated = await updateTranscriptSegment({
+        ...authManager.params,
+        id: asset.id,
+        segmentId: segment.id,
+        updateTranscriptSegmentDto: { correctedText },
+      });
+
+      if (transcript) {
+        transcript = {
+          ...transcript,
+          segments: transcript.segments.map((existing) => (existing.id === segment.id ? updated : existing)),
+        };
+      }
+
+      toastManager.primary(
+        correctedText === null ? $t('transcript_correction_reverted') : $t('transcript_correction_saved'),
+      );
+    } catch (error) {
+      handleError(error, $t('errors.unable_to_save_transcript_correction'));
+    }
+  };
+
+  const saveEditing = (segment: TranscriptSegmentResponseDto) => {
+    editingSegmentId = undefined;
+
+    if (editCancelled) {
+      editCancelled = false;
+      return;
+    }
+
+    const trimmed = editValue.trim();
+    const current = segment.correctedText ?? segment.text;
+    if (trimmed === current) {
+      return;
+    }
+
+    // An empty line, or one typed back to exactly what the model said, both mean "no correction of
+    // my own belongs here" — the same as pressing revert — rather than a blank or redundant
+    // correction sent to the server.
+    void applyCorrection(segment, trimmed.length === 0 || trimmed === segment.text ? null : trimmed);
+  };
+
+  const revertSegment = (segment: TranscriptSegmentResponseDto) => void applyCorrection(segment, null);
 </script>
 
 <section class="flex h-full flex-col overflow-hidden bg-light" data-testid="transcript-panel">
@@ -236,6 +304,8 @@
     {:else}
       {#each visibleSegments as segment (segment.id)}
         {@const isActive = segment.id === activeSegment?.id}
+        {@const isCorrected = segment.correctedText !== null}
+        {@const isEditing = editingSegmentId === segment.id}
         <li
           {@attach (node) => {
             if (!isActive) {
@@ -251,22 +321,95 @@
             };
           }}
         >
-          <button
-            type="button"
-            aria-current={isActive ? 'true' : undefined}
+          <div
             class={[
-              'flex w-full gap-3 rounded-lg px-2 py-1.5 text-start hover:bg-gray-200 dark:hover:bg-immich-dark-gray',
+              'flex w-full items-start gap-2 rounded-lg px-2 py-1.5',
+              !isEditing && 'hover:bg-gray-200 dark:hover:bg-immich-dark-gray',
               isActive && 'bg-primary/10 dark:bg-primary/25',
             ]}
-            onclick={() => handleSegmentClick(segment)}
           >
-            <span class="shrink-0 pt-0.5 font-mono text-xs text-immich-fg/60 tabular-nums dark:text-immich-dark-fg/60">
-              {formatTimestamp(segment.startTime)}
-            </span>
-            <span class={['text-sm', isActive ? 'font-medium' : 'text-immich-fg/90 dark:text-immich-dark-fg/90']}>
-              {segment.text}
-            </span>
-          </button>
+            {#if isEditing}
+              <span
+                class="shrink-0 pt-1.5 font-mono text-xs text-immich-fg/60 tabular-nums dark:text-immich-dark-fg/60"
+              >
+                {formatTimestamp(segment.startTime)}
+              </span>
+              <Textarea
+                bind:value={editValue}
+                autofocus
+                rows={1}
+                grow
+                class="text-sm"
+                data-testid="transcript-segment-input"
+                onfocusout={() => saveEditing(segment)}
+                {@attach fromAction(shortcuts, () => [
+                  { shortcut: { key: 'Enter' }, onShortcut: (e) => e.currentTarget.blur() },
+                  {
+                    shortcut: { key: 'Escape' },
+                    onShortcut: (e) => {
+                      cancelEditing();
+                      e.currentTarget.blur();
+                    },
+                  },
+                ])}
+              />
+            {:else}
+              <button
+                type="button"
+                aria-current={isActive ? 'true' : undefined}
+                class="flex grow gap-3 text-start"
+                onclick={() => handleSegmentClick(segment)}
+              >
+                <span
+                  class="shrink-0 pt-0.5 font-mono text-xs text-immich-fg/60 tabular-nums dark:text-immich-dark-fg/60"
+                >
+                  {formatTimestamp(segment.startTime)}
+                </span>
+                <span class="min-w-0 grow">
+                  <span class={['text-sm', isActive ? 'font-medium' : 'text-immich-fg/90 dark:text-immich-dark-fg/90']}>
+                    {segment.correctedText ?? segment.text}
+                  </span>
+                  {#if isCorrected}
+                    <span
+                      class="ms-1.5 rounded-sm bg-primary/10 px-1 py-0.5 text-[10px] font-medium text-primary uppercase"
+                      data-testid="transcript-corrected-badge"
+                    >
+                      {$t('transcript_corrected')}
+                    </span>
+                    <Text size="tiny" color="muted" class="mt-0.5 block italic" data-testid="transcript-original-text">
+                      {$t('transcript_original_text', { values: { text: segment.text } })}
+                    </Text>
+                  {/if}
+                </span>
+              </button>
+              {#if isOwner}
+                <div class="flex shrink-0 gap-0.5">
+                  <IconButton
+                    icon={mdiPencilOutline}
+                    aria-label={$t('edit')}
+                    onclick={() => startEditing(segment)}
+                    shape="round"
+                    color="secondary"
+                    variant="ghost"
+                    size="small"
+                    data-testid="transcript-edit-button"
+                  />
+                  {#if isCorrected}
+                    <IconButton
+                      icon={mdiHistory}
+                      aria-label={$t('restore')}
+                      onclick={() => revertSegment(segment)}
+                      shape="round"
+                      color="secondary"
+                      variant="ghost"
+                      size="small"
+                      data-testid="transcript-revert-button"
+                    />
+                  {/if}
+                </div>
+              {/if}
+            {/if}
+          </div>
         </li>
       {/each}
     {/if}

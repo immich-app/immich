@@ -1,5 +1,5 @@
-import { getAssetInfo } from '@immich/sdk';
-import { toastManager } from '@immich/ui';
+import { AssetJobName, AssetTypeEnum, getAssetInfo, runAssetJobs } from '@immich/sdk';
+import { modalManager, toastManager } from '@immich/ui';
 import { vitest } from 'vitest';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { getAssetActions, handleDownloadAsset } from '$lib/services/asset.service';
@@ -13,6 +13,9 @@ import { userAdminFactory } from '@test-data/factories/user-factory';
 vitest.mock('@immich/ui', () => ({
   toastManager: {
     primary: vitest.fn(),
+  },
+  modalManager: {
+    showDialog: vitest.fn(),
   },
 }));
 
@@ -68,6 +71,52 @@ describe('AssetService', () => {
       setSharedLink(sharedLinkFactory.build({ allowDownload: true }));
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.SharedLinkDownload.$if?.()).toStrictEqual(true);
+    });
+  });
+
+  describe('handleRunAssetJob', () => {
+    const $t = vitest.fn((key: string) => key);
+
+    beforeEach(() => {
+      vitest.mocked(getFormatter).mockResolvedValue($t as never);
+    });
+
+    afterEach(() => {
+      vitest.mocked(modalManager.showDialog).mockReset();
+      vitest.mocked(runAssetJobs).mockReset();
+    });
+
+    it('should confirm before re-transcribing a single asset, and skip the job if declined', async () => {
+      vitest.mocked(modalManager.showDialog).mockResolvedValue(false);
+      const asset = assetFactory.build({ type: AssetTypeEnum.Video });
+      const action = getAssetActions(() => '', asset).RefreshTranscriptJob;
+
+      await action.onAction(action);
+
+      expect(modalManager.showDialog).toHaveBeenCalledWith({ prompt: 'confirm_reprocess_transcript' });
+      expect(runAssetJobs).not.toHaveBeenCalled();
+    });
+
+    it('should re-transcribe a single asset once the confirmation is accepted', async () => {
+      vitest.mocked(modalManager.showDialog).mockResolvedValue(true);
+      const asset = assetFactory.build({ type: AssetTypeEnum.Video });
+      const action = getAssetActions(() => '', asset).RefreshTranscriptJob;
+
+      await action.onAction(action);
+
+      expect(runAssetJobs).toHaveBeenCalledWith({
+        assetJobsDto: { name: AssetJobName.RefreshTranscript, assetIds: [asset.id] },
+      });
+    });
+
+    it('should not confirm before running an unrelated job', async () => {
+      const asset = assetFactory.build();
+      const action = getAssetActions(() => '', asset).RefreshFacesJob;
+
+      await action.onAction(action);
+
+      expect(modalManager.showDialog).not.toHaveBeenCalled();
+      expect(runAssetJobs).toHaveBeenCalled();
     });
   });
 

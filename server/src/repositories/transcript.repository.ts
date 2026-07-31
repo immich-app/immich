@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, sql } from 'kysely';
+import { Insertable, Kysely } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { DB } from 'src/schema';
@@ -51,13 +51,28 @@ export class TranscriptRepository {
     return segment?.language ?? undefined;
   }
 
+  /**
+   * Wipes every transcript except the ones carrying a human correction. A corrected asset is left
+   * completely untouched rather than partially cleared, because this is the library-wide run
+   * nobody starts by accident — the one asset this asset guards against is losing a correction to a
+   * bulk operation nobody meant to run over it.
+   */
   async deleteAll() {
     await this.db.transaction().execute(async (trx) => {
-      await sql`truncate ${sql.table('transcript_segment')}`.execute(trx);
-      await sql`truncate ${sql.table('transcript_search')}`.execute(trx);
+      // An asset qualifies for the sweep only if none of its segments carry a correction; one
+      // corrected segment is enough to keep the whole asset out of it, corrected and uncorrected
+      // segments alike, which is what "excluded from bulk runs" means.
+      const correctedAssetIds = trx
+        .selectFrom('transcript_segment')
+        .select('assetId')
+        .where('correctedText', 'is not', null);
+
+      await trx.deleteFrom('transcript_segment').where('assetId', 'not in', correctedAssetIds).execute();
+      await trx.deleteFrom('transcript_search').where('assetId', 'not in', correctedAssetIds).execute();
       await trx
         .updateTable('asset_job_status')
         .set({ transcribedAt: null, transcriptionProgressMs: null })
+        .where('assetId', 'not in', correctedAssetIds)
         .where((eb) => eb.or([eb('transcribedAt', 'is not', null), eb('transcriptionProgressMs', 'is not', null)]))
         .execute();
     });
@@ -66,17 +81,44 @@ export class TranscriptRepository {
   /**
    * Clears any earlier attempt and opens a run at offset zero, so a restart cannot see stale rows.
    *
-   * The search text is cleared along with the segments: a video mid-reprocessing has no committed
-   * transcript, and search results should reflect that rather than continuing to show the previous
-   * run's text until the new one completes.
+   * Segments carrying a human correction are kept rather than cleared. Re-transcription does not
+   * produce stable boundaries — different seams, voice-detection variance and model nondeterminism
+   * all shift them — so a correction cannot be safely reattached to whatever the new run produces.
+   * The safe expression of "start over" is therefore "delete where not corrected", leaving a
+   * correction exactly as written rather than risking it silently landing on text it does not
+   * match.
+   *
+   * The search text is cleared along with the uncorrected segments: a video mid-reprocessing has no
+   * committed transcript, and search results should reflect that rather than continuing to show the
+   * previous run's text until the new one completes.
    */
   @GenerateSql({ params: [DummyValue.UUID] })
   async reset(assetId: string) {
     await this.db.transaction().execute(async (trx) => {
-      await trx.deleteFrom('transcript_segment').where('assetId', '=', assetId).execute();
+      await trx
+        .deleteFrom('transcript_segment')
+        .where('assetId', '=', assetId)
+        .where('correctedText', 'is', null)
+        .execute();
       await trx.deleteFrom('transcript_search').where('assetId', '=', assetId).execute();
       await upsertProgress(trx, assetId, 0);
     });
+  }
+
+  /**
+   * Writes a human correction for one segment, or clears it back to the model's own text when
+   * `correctedText` is null. Scoped to `assetId` as well as the segment's own id, so a caller that
+   * has already checked access to one asset cannot use a guessed segment id to reach another's.
+   */
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.STRING] })
+  updateSegment(id: string, assetId: string, correctedText: string | null) {
+    return this.db
+      .updateTable('transcript_segment')
+      .set({ correctedText })
+      .where('id', '=', id)
+      .where('assetId', '=', assetId)
+      .returningAll()
+      .executeTakeFirst();
   }
 
   /**

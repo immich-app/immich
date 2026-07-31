@@ -449,6 +449,16 @@ const getAssetJobMessage = ($t: MessageFormatter, job: AssetJobName) => {
 const handleRunAssetJob = async (dto: AssetJobsDto) => {
   const $t = await getFormatter();
 
+  // Re-transcribing regenerates every uncorrected line, so this is confirmed before it starts —
+  // corrections themselves are kept (see `TranscriptRepository.reset` on the server), but a
+  // collaborator's edit made after this dialog was dismissed could still be caught by it.
+  if (dto.name === AssetJobName.RefreshTranscript) {
+    const confirmed = await modalManager.showDialog({ prompt: $t('confirm_reprocess_transcript') });
+    if (!confirmed) {
+      return;
+    }
+  }
+
   try {
     await runAssetJobs({ assetJobsDto: dto });
     toastManager.primary(getAssetJobMessage($t, dto.name));

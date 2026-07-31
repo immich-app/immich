@@ -33,7 +33,12 @@ import {
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetEditsCreateDto, AssetEditsResponseDto } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { AssetTranscriptResponseDto } from 'src/dtos/transcript.dto';
+import {
+  AssetTranscriptResponseDto,
+  TranscriptSegmentParams,
+  TranscriptSegmentResponseDto,
+  UpdateTranscriptSegmentDto,
+} from 'src/dtos/transcript.dto';
 import { ApiTag, Permission, RouteKey } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AssetService } from 'src/services/asset.service';
@@ -226,6 +231,22 @@ export class AssetController {
   })
   getAssetTranscript(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AssetTranscriptResponseDto> {
     return this.service.getTranscript(auth, id);
+  }
+
+  @Put(':id/transcript/segments/:segmentId')
+  @Authenticated({ permission: Permission.AssetUpdate })
+  @Endpoint({
+    summary: 'Correct a transcript segment',
+    description:
+      "Overwrites one segment's displayed text with a human correction, or clears it back to the model's own text when `correctedText` is null. Preferred over the model's output for the caption track, the transcript panel and search as soon as it is written.",
+    history: new HistoryBuilder().added('v3').alpha('v3'),
+  })
+  updateTranscriptSegment(
+    @Auth() auth: AuthDto,
+    @Param() { id, segmentId }: TranscriptSegmentParams,
+    @Body() dto: UpdateTranscriptSegmentDto,
+  ): Promise<TranscriptSegmentResponseDto> {
+    return this.service.updateTranscriptSegment(auth, id, segmentId, dto);
   }
 
   @Put(':id/metadata')

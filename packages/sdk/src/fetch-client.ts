@@ -1028,6 +1028,8 @@ export type AssetOcrResponseDto = {
     y4: number;
 };
 export type TranscriptSegmentResponseDto = {
+    /** Human-corrected text for the segment, or null if uncorrected. Preferred over `text` for display and search wherever it is set. */
+    correctedText: string | null;
     /** End of the segment, in seconds from the start of the asset */
     endTime: number;
     id: string;
@@ -1035,7 +1037,7 @@ export type TranscriptSegmentResponseDto = {
     language: string | null;
     /** Start of the segment, in seconds from the start of the asset */
     startTime: number;
-    /** Transcribed text of the segment */
+    /** The model's own transcription of the segment, unaffected by any correction */
     text: string;
 };
 export type AssetTranscriptResponseDto = {
@@ -1044,6 +1046,10 @@ export type AssetTranscriptResponseDto = {
     /** Segments transcribed so far, ordered by start time */
     segments: TranscriptSegmentResponseDto[];
     status: TranscriptionStatus;
+};
+export type UpdateTranscriptSegmentDto = {
+    /** Corrected text for the segment, or null to revert to the transcribed text */
+    correctedText: string | null;
 };
 export type SignUpDto = {
     /** User email */
@@ -4498,6 +4504,23 @@ export function getAssetTranscript({ id, key, slug }: {
     }))}`, {
         ...opts
     }));
+}
+/**
+ * Correct a transcript segment
+ */
+export function updateTranscriptSegment({ id, segmentId, updateTranscriptSegmentDto }: {
+    id: string;
+    segmentId: string;
+    updateTranscriptSegmentDto: UpdateTranscriptSegmentDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: TranscriptSegmentResponseDto;
+    }>(`/assets/${encodeURIComponent(id)}/transcript/segments/${encodeURIComponent(segmentId)}`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: updateTranscriptSegmentDto
+    })));
 }
 /**
  * Play asset video

@@ -36,6 +36,7 @@ begin
 delete from "transcript_segment"
 where
   "assetId" = $1
+  and "correctedText" is null
 delete from "transcript_search"
 where
   "assetId" = $1
@@ -47,6 +48,16 @@ on conflict ("assetId") do update
 set
   "transcriptionProgressMs" = $3
 rollback
+
+-- TranscriptRepository.updateSegment
+update "transcript_segment"
+set
+  "correctedText" = $1
+where
+  "id" = $2
+  and "assetId" = $3
+returning
+  *
 
 -- TranscriptRepository.upsertSearchText
 insert into

@@ -459,6 +459,24 @@ export const utils = {
     );
   },
 
+  /**
+   * Seeds a transcript segment directly, bypassing the transcription model — the ML container used
+   * in e2e does not perform real speech recognition. This is what the transcription job itself
+   * writes for each segment it produces.
+   */
+  createTranscriptSegment: async (dto: { assetId: string; startTime: number; endTime: number; text: string }) => {
+    if (!client) {
+      return '';
+    }
+
+    const result = await client.query<{ id: string }>(
+      `INSERT INTO transcript_segment ("assetId", "startTime", "endTime", "text") VALUES ($1, $2, $3, $4) RETURNING id`,
+      [dto.assetId, dto.startTime, dto.endTime, dto.text],
+    );
+
+    return result.rows[0].id;
+  },
+
   setPersonThumbnail: async (personId: string) => {
     if (!client) {
       return;
