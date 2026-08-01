@@ -19,7 +19,6 @@ import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
@@ -48,7 +47,6 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
 
   @override
   Widget build(BuildContext context) {
-    final multiselect = ref.watch(multiSelectProvider);
     final ownsAlbum = ref.watch(currentUserProvider)?.id == widget.album.ownerId;
 
     Future<void> addToAlbum(RemoteAlbum album) async {
@@ -85,25 +83,23 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
       minChildSize: 0.22,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
-      actions: [
-        const ActionColumnButton(action: ShareAction(source: .timeline)),
-        if (multiselect.hasRemote) ...[
-          const ActionColumnButton(action: ShareLinkAction(source: .timeline)),
+      actions: <ActionColumnButton>[
+        const .new(action: ShareAction(source: .timeline)),
+        const .new(action: ShareLinkAction(source: .timeline)),
 
-          if (ownsAlbum) ...[
-            const ActionColumnButton(action: ArchiveAction(source: .timeline)),
-            const ActionColumnButton(action: FavoriteAction(source: .timeline)),
-          ],
-          const ActionColumnButton(action: DownloadAction(source: .timeline)),
-          if (ownsAlbum) ...[
-            const ActionColumnButton(action: DeleteAction(source: .timeline)),
-            const ActionColumnButton(action: EditDateTimeAction(source: .timeline)),
-            const ActionColumnButton(action: EditLocationAction(source: .timeline)),
-            const ActionColumnButton(action: LockAction(source: .timeline)),
-            const ActionColumnButton(action: StackAction(source: .timeline)),
-          ],
+        if (ownsAlbum) ...const [
+          .new(action: ArchiveAction(source: .timeline)),
+          .new(action: FavoriteAction(source: .timeline)),
         ],
-        const ActionColumnButton(action: CleanupLocalAction(source: .timeline)),
+        const .new(action: DownloadAction(source: .timeline)),
+        if (ownsAlbum) ...const [
+          .new(action: DeleteAction(source: .timeline)),
+          .new(action: EditDateTimeAction(source: .timeline)),
+          .new(action: EditLocationAction(source: .timeline)),
+          .new(action: LockAction(source: .timeline)),
+          .new(action: StackAction(source: .timeline)),
+        ],
+        const .new(action: CleanupLocalAction(source: .timeline)),
         if (ownsAlbum) ...[
           ActionColumnButton(
             action: RemoveFromAlbumAction(source: .timeline, albumId: widget.album.id),

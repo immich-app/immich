@@ -65,11 +65,11 @@ class _LocalAlbumBottomSheetState extends ConsumerState<LocalAlbumBottomSheet> {
       initialChildSize: 0.25,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
-      actions: const [
-        ActionColumnButton(action: ShareAction(source: .timeline)),
-        ActionColumnButton(action: DeleteAction(source: .timeline)),
-        ActionColumnButton(action: CleanupLocalAction(source: .timeline)),
-        ActionColumnButton(action: UploadAction(source: .timeline)),
+      actions: const <ActionColumnButton>[
+        .new(action: ShareAction(source: .timeline)),
+        .new(action: DeleteAction(source: .timeline)),
+        .new(action: CleanupLocalAction(source: .timeline)),
+        .new(action: UploadAction(source: .timeline)),
       ],
       slivers: [
         const AddToAlbumHeader(),

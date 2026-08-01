@@ -74,20 +74,18 @@ class FavoriteBottomSheet extends ConsumerWidget {
       initialChildSize: 0.4,
       maxChildSize: 0.7,
       shouldCloseOnMinExtent: false,
-      actions: [
-        const ActionColumnButton(action: ShareAction(source: .timeline)),
-        if (multiselect.hasRemote) ...[
-          const ActionColumnButton(action: ShareLinkAction(source: .timeline)),
-          const ActionColumnButton(action: FavoriteAction(source: .timeline)),
-          const ActionColumnButton(action: ArchiveAction(source: .timeline)),
-          const ActionColumnButton(action: DownloadAction(source: .timeline)),
-          const ActionColumnButton(action: DeleteAction(source: .timeline)),
-          const ActionColumnButton(action: EditDateTimeAction(source: .timeline)),
-          const ActionColumnButton(action: EditLocationAction(source: .timeline)),
-          const ActionColumnButton(action: LockAction(source: .timeline)),
-          const ActionColumnButton(action: StackAction(source: .timeline)),
-        ],
-        const ActionColumnButton(action: CleanupLocalAction(source: .timeline)),
+      actions: const <ActionColumnButton>[
+        .new(action: ShareAction(source: .timeline)),
+        .new(action: ShareLinkAction(source: .timeline)),
+        .new(action: FavoriteAction(source: .timeline)),
+        .new(action: ArchiveAction(source: .timeline)),
+        .new(action: DownloadAction(source: .timeline)),
+        .new(action: DeleteAction(source: .timeline)),
+        .new(action: EditDateTimeAction(source: .timeline)),
+        .new(action: EditLocationAction(source: .timeline)),
+        .new(action: LockAction(source: .timeline)),
+        .new(action: StackAction(source: .timeline)),
+        .new(action: CleanupLocalAction(source: .timeline)),
       ],
       slivers: multiselect.hasRemote
           ? [const AddToAlbumHeader(), AlbumSelector(onAlbumSelected: addAssetsToAlbum)]

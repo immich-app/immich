@@ -27,8 +27,8 @@ void main() {
     uploadService = context.service.upload;
   });
 
-  tearDown(() {
-    context.dispose();
+  tearDown(() async {
+    await context.dispose();
   });
 
   List<Override> uploadOverrides() => [

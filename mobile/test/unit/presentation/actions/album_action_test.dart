@@ -26,8 +26,8 @@ void main() {
     albumService = context.service.album.service;
   });
 
-  tearDown(() {
-    context.dispose();
+  tearDown(() async {
+    await context.dispose();
   });
 
   List<Override> withMockToast() => [toastServiceProvider.overrideWithValue(context.service.toast)];

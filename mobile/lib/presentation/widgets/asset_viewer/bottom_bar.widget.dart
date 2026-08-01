@@ -43,13 +43,14 @@ class ViewerBottomBar extends ConsumerWidget {
     final originalTheme = context.themeData;
 
     final actions = <Widget>[
-      ..._actionColumnButtons(context, ref, const [RestoreAction(source: .viewer)]),
-      ..._actionColumnButtons(context, ref, const [ShareAction(source: .viewer)]),
+      ..._actionColumnButtons(context, ref, const [RestoreAction(source: .viewer), ShareAction(source: .viewer)]),
 
       if (!isInLockedView) ...[
         if (!isInTrash) ...[
-          ..._actionColumnButtons(context, ref, const [UploadAction(source: .viewer, showProgress: true)]),
-          ..._actionColumnButtons(context, ref, const [EditAssetAction(source: .viewer)]),
+          ..._actionColumnButtons(context, ref, const [
+            UploadAction(source: .viewer, showProgress: true),
+            EditAssetAction(source: .viewer),
+          ]),
           if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
         ],
         ..._actionColumnButtons(context, ref, const [DeleteAction(source: .viewer)]),
