@@ -129,6 +129,9 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
     ]);
 
     properties.insert(4, _PropertyItem(label: 'Orientation', value: asset.orientation.toString()));
+    if (CurrentPlatform.isAndroid) {
+      properties.insert(5, _PropertyItem(label: 'Size', value: asset.size != null ? '${asset.size} bytes' : null));
+    }
     final albums = await ref.read(assetServiceProvider).getSourceAlbums(asset.id);
     properties.add(_PropertyItem(label: 'Album', value: albums.map((a) => a.name).join(', ')));
     if (CurrentPlatform.isIOS) {
