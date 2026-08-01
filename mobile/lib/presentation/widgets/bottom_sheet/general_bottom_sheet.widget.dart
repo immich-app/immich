@@ -15,7 +15,7 @@ import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
 import 'package:immich_mobile/presentation/actions/tag.action.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -93,7 +93,7 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
         ],
         const ActionColumnButton(action: DeleteAction(source: .timeline)),
         const ActionColumnButton(action: CleanupLocalAction(source: .timeline)),
-        if (multiselect.onlyLocal) const UploadActionButton(source: ActionSource.timeline),
+        const ActionColumnButton(action: UploadAction(source: .timeline)),
       ],
       slivers: [
         const AddToAlbumHeader(),
