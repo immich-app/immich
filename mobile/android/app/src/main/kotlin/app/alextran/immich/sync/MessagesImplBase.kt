@@ -82,6 +82,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
       add(MediaStore.MediaColumns.HEIGHT)
       add(MediaStore.MediaColumns.DURATION)
       add(MediaStore.MediaColumns.ORIENTATION)
+      add(MediaStore.MediaColumns.SIZE)
       // IS_FAVORITE is only available on Android 11 and above
       if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
         add(MediaStore.MediaColumns.IS_FAVORITE)
@@ -149,6 +150,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
         val durationColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.DURATION)
         val orientationColumn =
           c.getColumnIndexOrThrow(MediaStore.MediaColumns.ORIENTATION)
+        val sizeColumn = c.getColumnIndexOrThrow(MediaStore.MediaColumns.SIZE)
         val favoriteColumn = c.getColumnIndex(MediaStore.MediaColumns.IS_FAVORITE)
         val specialFormatColumn = c.getColumnIndex(SPECIAL_FORMAT_COLUMN)
         val xmpColumn = c.getColumnIndex(MediaStore.MediaColumns.XMP)
@@ -186,6 +188,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
           val duration = if (rawMediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0L
           else c.getLong(durationColumn)
           val orientation = c.getInt(orientationColumn)
+          val size = c.getLong(sizeColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
 
           val playbackStyle = detectPlaybackStyle(
@@ -204,6 +207,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
             duration,
             0L,
             isFavorite,
+            size = size,
             playbackStyle = playbackStyle,
           )
           yield(AssetResult.ValidAsset(asset, bucketId))

@@ -279,6 +279,7 @@ class MediumRepositoryContext {
     int? height,
     int? durationMs,
     int? orientation,
+    int? size,
     DateTime? updatedAt,
   }) async {
     id ??= TestUtils.uuid();
@@ -292,6 +293,7 @@ class MediumRepositoryContext {
             width: .new(width ?? TestUtils.randInt(1000)),
             durationMs: .new(durationMs ?? 0),
             orientation: .new(orientation ?? 0),
+            size: .new(size),
             updatedAt: .new(TestUtils.date(updatedAt)),
             checksum: _resolveUndefined(checksum, checksumOption, const Uuid().v4()),
             createdAt: .new(TestUtils.date(createdAt)),

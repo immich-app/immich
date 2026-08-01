@@ -12,6 +12,8 @@ class LocalAsset extends BaseAsset {
   final double? latitude;
   final double? longitude;
 
+  final int? size;
+
   const LocalAsset({
     required this.id,
     String? remoteId,
@@ -30,6 +32,7 @@ class LocalAsset extends BaseAsset {
     this.adjustmentTime,
     this.latitude,
     this.longitude,
+    this.size,
     required super.isEdited,
   }) : remoteAssetId = remoteId;
 
@@ -86,7 +89,8 @@ class LocalAsset extends BaseAsset {
         playbackStyle == other.playbackStyle &&
         adjustmentTime == other.adjustmentTime &&
         latitude == other.latitude &&
-        longitude == other.longitude;
+        longitude == other.longitude &&
+        size == other.size;
   }
 
   @override
@@ -98,7 +102,8 @@ class LocalAsset extends BaseAsset {
       playbackStyle.hashCode ^
       adjustmentTime.hashCode ^
       latitude.hashCode ^
-      longitude.hashCode;
+      longitude.hashCode ^
+      size.hashCode;
 
   LocalAsset copyWith({
     String? id,
@@ -118,6 +123,7 @@ class LocalAsset extends BaseAsset {
     DateTime? adjustmentTime,
     double? latitude,
     double? longitude,
+    int? size,
     bool? isEdited,
   }) {
     return LocalAsset(
@@ -138,6 +144,7 @@ class LocalAsset extends BaseAsset {
       adjustmentTime: adjustmentTime ?? this.adjustmentTime,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+      size: size ?? this.size,
       isEdited: isEdited ?? this.isEdited,
     );
   }
