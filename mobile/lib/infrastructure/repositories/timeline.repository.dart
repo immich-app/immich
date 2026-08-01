@@ -53,29 +53,20 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     origin: TimelineOrigin.main,
   );
 
-  Stream<List<Bucket>> _watchMainBucket(
-    List<String> userIds, {
-    GroupAssetsBy groupBy = GroupAssetsBy.day,
-    required AssetOriginFilter filter,
-  }) {
+  Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
       throw UnsupportedError("GroupAssetsBy.none is not supported for watchMainBucket");
     }
 
-    return _db.mergedAssetDrift.mergedBucket(userIds: userIds, groupBy: groupBy.index, filter: filter.index).map((row) {
+    return _db.mergedAssetDrift.mergedBucket(userIds: userIds, groupBy: groupBy.index).map((row) {
       final date = row.bucketDate.truncateDate(groupBy);
       return TimeBucket(date: date, assetCount: row.assetCount);
     }).watch();
   }
 
-  Future<List<BaseAsset>> _getMainBucketAssets(
-    List<String> userIds, {
-    required int offset,
-    required int count,
-    required AssetOriginFilter filter,
-  }) {
+  Future<List<BaseAsset>> _getMainBucketAssets(List<String> userIds, {required int offset, required int count}) {
     return _db.mergedAssetDrift
-        .mergedAsset(userIds: userIds, limit: Limit(count, offset), filter: filter.index)
+        .mergedAsset(userIds: userIds, limit: (_) => Limit(count, offset))
         .map(
           (row) => row.remoteId != null && row.ownerId != null
               ? RemoteAsset(
