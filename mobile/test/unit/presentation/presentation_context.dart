@@ -14,6 +14,7 @@ import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
@@ -51,6 +52,7 @@ class PresentationContext {
     currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
     assetServiceProvider.overrideWithValue(service.asset.service),
     cleanupServiceProvider.overrideWithValue(service.cleanup.service),
+    remoteAlbumServiceProvider.overrideWithValue(service.album.service),
     partnerServiceProvider.overrideWithValue(service.partner.service),
     gCastServiceProvider.overrideWithValue(service.cast),
     serverInfoServiceProvider.overrideWithValue(service.serverInfo),
