@@ -11,7 +11,7 @@ import 'package:immich_mobile/utils/error_handler.dart';
 final _stateProvider = Provider.family.autoDispose<String?, ActionSource>((ref, source) {
   final assets = ref.watch(assetsActionProvider(source));
   return assets.remote().map((asset) => asset.id).singleOrNull;
-});
+}, dependencies: [assetsActionProvider]);
 
 class SetAlbumCoverAction extends AssetActionBuilder {
   final String albumId;

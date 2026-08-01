@@ -21,7 +21,7 @@ final _stateProvider = Provider.family.autoDispose<List<String>?, ActionSource>(
   final assets = ref.watch(ownedAssetsActionProvider(source));
   final assetIds = assets.map((asset) => asset.id).toList(growable: false);
   return assetIds.isEmpty ? null : assetIds;
-});
+}, dependencies: [ownedAssetsActionProvider]);
 
 class TagAction extends AssetActionBuilder {
   const TagAction({required super.source});
