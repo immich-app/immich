@@ -63,13 +63,16 @@
   <div class="flex items-center justify-center gap-2 py-4 md:h-36">
     {#if !choosePersonToMerge}
       <div class="flex size-20 items-center px-1 md:size-24 md:px-2">
-        <ImageThumbnail
-          circle
-          shadow
-          url={getPeopleThumbnailUrl(personToMerge)}
-          altText={personToMerge.name}
-          widthStyle="100%"
-        />
+        <!-- Trigger a re-render on person change as <Image> captures only the first src -->
+        {#key personToMerge.id}
+          <ImageThumbnail
+            circle
+            shadow
+            url={getPeopleThumbnailUrl(personToMerge)}
+            altText={personToMerge.name}
+            widthStyle="100%"
+          />
+        {/key}
       </div>
 
       <div class="grid grid-rows-3">
@@ -101,14 +104,16 @@
           }
         }}
       >
-        <ImageThumbnail
-          border={potentialMergePeople.length > 0}
-          circle
-          shadow
-          url={getPeopleThumbnailUrl(personToBeMergedInto)}
-          altText={personToBeMergedInto.name}
-          widthStyle="100%"
-        />
+        {#key personToBeMergedInto.id}
+          <ImageThumbnail
+            border={potentialMergePeople.length > 0}
+            circle
+            shadow
+            url={getPeopleThumbnailUrl(personToBeMergedInto)}
+            altText={personToBeMergedInto.name}
+            widthStyle="100%"
+          />
+        {/key}
       </button>
     {:else}
       <div class="grid w-full grid-cols-1 gap-2">
