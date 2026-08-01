@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
+import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
@@ -109,6 +110,92 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                   isEdited: row.isEdited,
                 ),
         )
+        .get();
+  }
+
+  TimelineQuery cloudOnly(List<String> userIds, GroupAssetsBy groupBy) => _remoteQueryBuilder(
+    filter: (row) =>
+        row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.isIn(userIds),
+    groupBy: groupBy,
+    origin: TimelineOrigin.main,
+    joinLocal: true,
+  );
+
+  TimelineQuery localOnly(GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchLocalOnlyBucket(groupBy: groupBy),
+    assetSource: (offset, count) => _getLocalOnlyAssets(offset: offset, count: count),
+    origin: TimelineOrigin.main,
+  );
+
+  Expression<bool> _localOnlyFilter() {
+    return existsQuery(
+          _db.localAlbumAssetEntity.selectOnly()
+            ..addColumns([_db.localAlbumAssetEntity.assetId])
+            ..join([
+              innerJoin(
+                _db.localAlbumEntity,
+                _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
+                useColumns: false,
+              ),
+            ])
+            ..where(
+              _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
+                  _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected),
+            ),
+        ) &
+        existsQuery(
+          _db.localAlbumAssetEntity.selectOnly()
+            ..addColumns([_db.localAlbumAssetEntity.assetId])
+            ..join([
+              innerJoin(
+                _db.localAlbumEntity,
+                _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
+                useColumns: false,
+              ),
+            ])
+            ..where(
+              _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
+                  _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.excluded),
+            ),
+        ).not();
+  }
+
+  Stream<List<Bucket>> _watchLocalOnlyBucket({GroupAssetsBy groupBy = GroupAssetsBy.day}) {
+    if (groupBy == GroupAssetsBy.none) {
+      return _db.localAssetEntity.count(where: (_) => _localOnlyFilter()).map(_generateBuckets).watchSingle();
+    }
+
+    final assetCountExp = _db.localAssetEntity.id.count();
+    final dateExp = _db.localAssetEntity.createdAt.dateFmt(groupBy, toLocal: true);
+
+    final query = _db.localAssetEntity.selectOnly()
+      ..addColumns([assetCountExp, dateExp])
+      ..where(_localOnlyFilter())
+      ..groupBy([dateExp])
+      ..orderBy([OrderingTerm.desc(dateExp)]);
+
+    return query.map((row) {
+      final timeline = row.read(dateExp)!.truncateDate(groupBy);
+      final assetCount = row.read(assetCountExp)!;
+      return TimeBucket(date: timeline, assetCount: assetCount);
+    }).watch();
+  }
+
+  Future<List<BaseAsset>> _getLocalOnlyAssets({required int offset, required int count}) {
+    final query =
+        _db.localAssetEntity.select().addColumns([_db.remoteAssetEntity.id]).join([
+            leftOuterJoin(
+              _db.remoteAssetEntity,
+              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+              useColumns: false,
+            ),
+          ])
+          ..where(_localOnlyFilter())
+          ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)])
+          ..limit(count, offset: offset);
+
+    return query
+        .map((row) => row.readTable(_db.localAssetEntity).toDto(remoteId: row.read(_db.remoteAssetEntity.id)))
         .get();
   }
 
