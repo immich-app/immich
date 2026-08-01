@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
+import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
 import 'package:immich_mobile/presentation/actions/edit_location.action.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
@@ -13,13 +14,11 @@ import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/share_link.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/bulk_tag_assets_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/tag.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
@@ -48,9 +47,6 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
   @override
   Widget build(BuildContext context) {
     final multiselect = ref.watch(multiSelectProvider);
-    final tagsEnabled = ref.watch(
-      userMetadataPreferencesProvider.select((value) => value.valueOrNull?.tagsEnabled ?? false),
-    );
 
     Future<void> addToAlbum(RemoteAlbum album) async {
       final result = await ref.read(actionProvider.notifier).addToAlbum(ActionSource.timeline, album);
@@ -86,10 +82,10 @@ class _GeneralBottomSheetState extends ConsumerState<GeneralBottomSheet> {
         const ActionColumnButton(action: ShareAction(source: .timeline)),
         if (multiselect.hasRemote) ...[
           const ActionColumnButton(action: ShareLinkAction(source: .timeline)),
-          if (multiselect.onlyRemote) const DownloadActionButton(source: ActionSource.timeline),
+          const ActionColumnButton(action: DownloadAction(source: .timeline)),
           const ActionColumnButton(action: FavoriteAction(source: .timeline)),
           const ActionColumnButton(action: ArchiveAction(source: .timeline)),
-          if (tagsEnabled) const BulkTagAssetsActionButton(source: ActionSource.timeline),
+          const ActionColumnButton(action: TagAction(source: .timeline)),
           const ActionColumnButton(action: EditDateTimeAction(source: .timeline)),
           const ActionColumnButton(action: EditLocationAction(source: .timeline)),
           const ActionColumnButton(action: LockAction(source: .timeline)),

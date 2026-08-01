@@ -10,9 +10,7 @@ import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
@@ -57,11 +55,6 @@ class ActionNotifier extends Notifier<void> {
     return _getAssets(source).whereType<RemoteAsset>().toIds().toList(growable: false);
   }
 
-  List<String> _getOwnedRemoteIdsForSource(ActionSource source) {
-    final ownerId = ref.read(currentUserProvider)?.id;
-    return _getAssets(source).whereType<RemoteAsset>().ownedAssets(ownerId).toIds().toList(growable: false);
-  }
-
   Set<BaseAsset> _getAssets(ActionSource source) {
     return switch (source) {
       ActionSource.timeline => ref.read(multiSelectProvider).selectedAssets,
@@ -99,23 +92,6 @@ class ActionNotifier extends Notifier<void> {
     } catch (error, stack) {
       _logger.severe('Failed to restore all trash assets', error, stack);
       return ActionResult(count: 0, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult?> tagAssets(ActionSource source, BuildContext context) async {
-    final ids = _getOwnedRemoteIdsForSource(source);
-    try {
-      final count = await _service.tagAssets(ids, context);
-      if (count == null) {
-        return null;
-      }
-
-      ref.invalidate(tagProvider);
-      return ActionResult(count: count, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to tag assets', error, stack);
-      ref.invalidate(tagProvider);
-      return ActionResult(count: ids.length, success: false, error: error.toString());
     }
   }
 
@@ -198,18 +174,6 @@ class ActionNotifier extends Notifier<void> {
     } catch (error, stack) {
       _logger.severe('Failed to update rating for asset', error, stack);
       return ActionResult(count: 1, success: false, error: error.toString());
-    }
-  }
-
-  Future<ActionResult> downloadAll(ActionSource source) async {
-    final assets = _getAssets(source).whereType<RemoteAsset>().toList(growable: false);
-    try {
-      final didEnqueue = await _service.downloadAll(assets);
-      final enqueueCount = didEnqueue.where((e) => e).length;
-      return ActionResult(count: enqueueCount, success: true);
-    } catch (error, stack) {
-      _logger.severe('Failed to download assets', error, stack);
-      return ActionResult(count: assets.length, success: false, error: error.toString());
     }
   }
 
@@ -297,11 +261,4 @@ class ActionNotifier extends Notifier<void> {
 
 extension on Iterable<RemoteAsset> {
   Iterable<String> toIds() => map((e) => e.id);
-
-  Iterable<RemoteAsset> ownedAssets(String? ownerId) {
-    if (ownerId == null) {
-      return const [];
-    }
-    return whereType<RemoteAsset>().where((a) => a.ownerId == ownerId);
-  }
 }

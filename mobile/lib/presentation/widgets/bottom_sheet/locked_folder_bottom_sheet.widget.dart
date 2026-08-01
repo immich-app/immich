@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
+import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 
 class LockedFolderBottomSheet extends ConsumerWidget {
@@ -19,7 +18,7 @@ class LockedFolderBottomSheet extends ConsumerWidget {
       shouldCloseOnMinExtent: false,
       actions: [
         ActionColumnButton(action: ShareAction(source: .timeline)),
-        DownloadActionButton(source: ActionSource.timeline),
+        ActionColumnButton(action: DownloadAction(source: .timeline)),
         ActionColumnButton(action: DeleteAction(source: .timeline)),
         ActionColumnButton(action: LockAction(source: .timeline)),
       ],
