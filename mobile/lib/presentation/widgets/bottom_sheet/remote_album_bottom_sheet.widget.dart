@@ -5,11 +5,10 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
+import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/actions/stack.action.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_date_time_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_location_action_button.widget.dart';
@@ -17,11 +16,9 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/remove_from_al
 import 'package:immich_mobile/presentation/widgets/action_buttons/set_album_cover.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_link_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
-import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -52,7 +49,6 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
   @override
   Widget build(BuildContext context) {
     final multiselect = ref.watch(multiSelectProvider);
-    final isTrashEnable = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
     final ownsAlbum = ref.watch(currentUserProvider)?.id == widget.album.ownerId;
 
     Future<void> addToAlbum(RemoteAlbum album) async {
@@ -100,16 +96,14 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
           ],
           const DownloadActionButton(source: ActionSource.timeline),
           if (ownsAlbum) ...[
-            isTrashEnable
-                ? const TrashActionButton(source: ActionSource.timeline)
-                : const DeletePermanentActionButton(source: ActionSource.timeline),
+            const ActionColumnButton(action: DeleteAction(source: .timeline)),
             const EditDateTimeActionButton(source: ActionSource.timeline),
             const EditLocationActionButton(source: ActionSource.timeline),
             const ActionColumnButton(action: LockAction(source: .timeline)),
             const ActionColumnButton(action: StackAction(source: .timeline)),
           ],
         ],
-        if (multiselect.hasMerged) const DeleteLocalActionButton(source: ActionSource.timeline),
+        const ActionColumnButton(action: CleanupLocalAction(source: .timeline)),
         if (ownsAlbum) RemoveFromAlbumActionButton(source: ActionSource.timeline, albumId: widget.album.id),
         if (ownsAlbum && multiselect.selectedAssets.length == 1)
           SetAlbumCoverActionButton(source: ActionSource.timeline, albumId: widget.album.id),
