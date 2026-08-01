@@ -48,11 +48,17 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         .map((users) => users..add(userId));
   }
 
-  TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy, AssetOriginFilter filter) => (
-    bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy, filter: filter),
-    assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count, filter: filter),
-    origin: TimelineOrigin.main,
-  );
+  TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy, AssetOriginFilter filter) {
+    return switch (filter) {
+      AssetOriginFilter.remote => cloudOnly(userIds, groupBy),
+      AssetOriginFilter.localOnly => localOnly(groupBy),
+      AssetOriginFilter.all => (
+        bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
+        assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
+        origin: TimelineOrigin.main,
+      ),
+    };
+  }
 
   Stream<List<Bucket>> _watchMainBucket(List<String> userIds, {GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
