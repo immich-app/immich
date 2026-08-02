@@ -104,6 +104,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('AssetEditReadyV1', _handleSyncAssetEditReadyV1);
         socket.on('AssetEditReadyV2', _handleSyncAssetEditReadyV2);
         socket.on('on_album_update', _handleAlbumUpdate);
+        socket.on('on_asset_delete', _handleAlbumUpdate);
+        socket.on('on_asset_trash', _handleAlbumUpdate);
+        socket.on('on_asset_restore', _handleAlbumUpdate);
+        socket.on('on_asset_hidden', _handleAlbumUpdate);
+        socket.on('on_asset_update', _handleAlbumUpdate);
         socket.on('on_config_update', _handleOnConfigUpdate);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
