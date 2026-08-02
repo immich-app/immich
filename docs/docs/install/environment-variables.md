@@ -22,6 +22,8 @@ If this does not work, try running `docker compose up -d --force-recreate`.
 | `IMMICH_VERSION`   | Image tags                      |  `v3`   | server, machine learning |
 | `UPLOAD_LOCATION`  | Host path for uploads           |         | server                   |
 | `DB_DATA_LOCATION` | Host path for Postgres database |         | database                 |
+| `COMPOSE_PROFILES` | Optional Compose services (`fuji-raw`) | | Docker Compose |
+| `FUJI_PROFILE_LOCATION` | Host path for the local X-T5 profile bundle | | Fuji renderer |
 
 :::tip
 These environment variables are used by the `docker-compose.yml` file and do **NOT** affect the containers directly.
@@ -46,6 +48,9 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_TRUSTED_PROXIES`            | List of comma-separated IPs set as trusted proxies                                                                                                                   |                              | server                   | api                |
 | `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/administration/system-integrity)                                                                                                             |                              | server                   | api, microservices |
 | `IMMICH_ALLOW_SETUP`                | When `false` disables the `/auth/admin-sign-up` and `/admin/database-backups/start-restore` endpoints                                                                |            `true`            | server                   | api                |
+| `IMMICH_FUJI_RENDERER_ENABLED`      | Enable independent Fujifilm X-T5 RAW editing                                                                                                                        |           `false`            | server                   | microservices      |
+| `IMMICH_FUJI_RENDERER_URL`          | Internal Fuji renderer URL                                                                                                                                           | `http://immich-fuji-renderer:8000` | server            | microservices      |
+| `IMMICH_FUJI_RENDERER_TIMEOUT_MS`   | Full-resolution Fuji render request timeout in milliseconds                                                                                                          |         `1800000`            | server                   | microservices      |
 
 \*1: `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 `TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata. It is also used for logfile timestamps and cron job execution.

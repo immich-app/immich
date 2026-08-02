@@ -1,0 +1,16 @@
+annotated-types==0.7.0
+anyio==4.8.0
+click==8.1.8
+fastapi==0.115.6
+h11==0.14.0
+idna==3.10
+numpy==1.24.3
+opencv-python==4.9.0.80
+pillow==10.2.0
+pydantic==2.10.5
+pydantic-core==2.27.2
+rawpy==0.21.0
+sniffio==1.3.1
+starlette==0.41.3
+typing-extensions==4.12.2
+uvicorn==0.34.0

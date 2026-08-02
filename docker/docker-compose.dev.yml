@@ -77,6 +77,8 @@ services:
     env_file:
       - .env
     environment:
+      IMMICH_FUJI_RENDERER_ENABLED: '${IMMICH_FUJI_RENDERER_ENABLED:-false}'
+      IMMICH_FUJI_RENDERER_URL: ${IMMICH_FUJI_RENDERER_URL:-http://immich-fuji-renderer:8000}
       IMMICH_REPOSITORY: immich-app/immich
       IMMICH_REPOSITORY_URL: https://github.com/immich-app/immich
       IMMICH_SOURCE_REF: local
@@ -104,6 +106,31 @@ services:
         condition: service_started
     healthcheck:
       disable: false
+
+  immich-fuji-renderer:
+    profiles: ['fuji-raw']
+    container_name: immich_fuji_renderer
+    image: immich-fuji-renderer-dev:latest
+    build:
+      context: ../fuji-renderer
+      dockerfile: Dockerfile
+    volumes:
+      - ${UPLOAD_LOCATION}/photos:/data
+      - ${FUJI_PROFILE_LOCATION:-./fuji-profiles}:/profiles:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      FUJI_RENDERER_INPUT_ROOTS: '${FUJI_RENDERER_INPUT_ROOTS:-/data}'
+      FUJI_RENDERER_OUTPUT_ROOT: /data/thumbs
+      FUJI_RENDERER_PROFILE_ROOT: /profiles
+      OMP_NUM_THREADS: '1'
+    read_only: true
+    tmpfs:
+      - /tmp:size=2G
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    restart: unless-stopped
 
   immich-web:
     extends:

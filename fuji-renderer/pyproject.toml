@@ -1,0 +1,23 @@
+[project]
+name = "immich-fuji-renderer"
+version = "0.1.0"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+  "fastapi==0.115.6",
+  "numpy==1.24.3",
+  "opencv-python==4.9.0.80",
+  "pillow==10.2.0",
+  "pydantic==2.10.5",
+  "rawpy==0.21.0",
+  "uvicorn==0.34.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
