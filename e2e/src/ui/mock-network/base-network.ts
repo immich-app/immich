@@ -120,6 +120,7 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
       json: {
         smartSearch: false,
         facialRecognition: false,
+        fujiRawDevelop: false,
         duplicateDetection: false,
         map: true,
         reverseGeocoding: true,

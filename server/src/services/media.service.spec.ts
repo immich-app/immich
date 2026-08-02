@@ -1581,6 +1581,22 @@ describe(MediaService.name, () => {
       ]);
     });
 
+    it('fails when derivative publication is refused for the current edit revision', async () => {
+      const asset = AssetFactory.from().exif().edit().build();
+      const revision = getAssetEditRevision(asset.edits);
+      mocks.assetEdit.getAll.mockResolvedValue(asset.edits);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.asset.commitEditedFilesIfCurrent.mockResolvedValue({
+        committed: false,
+        standardPathsToDelete: [],
+        fujiCleanupPending: false,
+      });
+
+      await expect(sut.handleAssetEditThumbnailGeneration({ id: asset.id, revision })).resolves.toBe(
+        JobStatus.Failed,
+      );
+    });
+
     it('recognizes and cleans up Fuji-specific derivative paths without a job ownership hint', async () => {
       const asset = AssetFactory.from({ thumbhash: factory.buffer() })
         .exif()

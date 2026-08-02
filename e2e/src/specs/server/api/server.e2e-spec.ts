@@ -111,6 +111,7 @@ describe('/server', () => {
         configFile: false,
         duplicateDetection: false,
         facialRecognition: false,
+        fujiRawDevelop: false,
         map: true,
         reverseGeocoding: true,
         importFaces: false,

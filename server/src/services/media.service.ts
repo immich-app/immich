@@ -238,7 +238,16 @@ export class MediaService extends BaseService {
       fullsizeDimensions,
       revision: job.revision,
     });
-    return committed ? JobStatus.Success : JobStatus.Skipped;
+    if (committed) {
+      return JobStatus.Success;
+    }
+
+    // A stale job is safe to acknowledge: a newer revision owns publication.
+    // If the requested revision is still current, however, publication failed
+    // for another reason (for example, a missing render-output reservation).
+    // Report that as a failure so JobService cannot emit AssetEditReadyV2 for
+    // derivatives that were never committed.
+    return (await this.isEditRevisionCurrent(id, job.revision)) ? JobStatus.Failed : JobStatus.Skipped;
   }
 
   @OnJob({ name: JobName.AssetGenerateThumbnails, queue: QueueName.ThumbnailGeneration })
