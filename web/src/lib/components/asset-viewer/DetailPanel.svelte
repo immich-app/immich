@@ -277,7 +277,12 @@
       {/if}
 
       {#if asset.exifInfo?.filmMode || isFujiXt5RawAsset(asset)}
-        <DetailPanelFilmSimulation filmMode={asset.exifInfo?.filmMode ?? 'PROVIA/Standard'} {asset} {isOwner} />
+        <DetailPanelFilmSimulation
+          filmMode={asset.exifInfo?.filmMode ?? 'PROVIA/Standard'}
+          {asset}
+          {isOwner}
+          developEnabled={featureFlagsManager.value.fujiRawDevelop}
+        />
       {/if}
 
       <DetailPanelLocation {isOwner} {asset} />

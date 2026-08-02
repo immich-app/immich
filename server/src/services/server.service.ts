@@ -107,6 +107,8 @@ export class ServerService extends BaseService {
       configFile: !!configFile,
       email: notifications.smtp.enabled,
       realtimeTranscoding: ffmpeg.realtime.enabled,
+      fujiRawDevelop:
+        process.env.IMMICH_FUJI_RENDERER_ENABLED === 'true' && Boolean(process.env.IMMICH_FUJI_RENDERER_URL?.trim()),
     };
   }
 

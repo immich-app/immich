@@ -41,11 +41,12 @@
     filmMode: string;
     asset?: AssetResponseDto;
     isOwner?: boolean;
+    developEnabled?: boolean;
   }
 
   type RenderState = 'idle' | 'rendering' | 'pending' | 'ready' | 'error';
 
-  let { filmMode, asset, isOwner = false }: Props = $props();
+  let { filmMode, asset, isOwner = false, developEnabled = true }: Props = $props();
   let selectorOpen = $state(false);
   let levelsOpen = $state(false);
   let isLoading = $state(false);
@@ -60,7 +61,7 @@
   let loadSequence = 0;
   let applySequence = 0;
 
-  let canEdit = $derived(Boolean(asset && isOwner && !asset.isOffline && isFujiXt5RawAsset(asset)));
+  let canEdit = $derived(Boolean(developEnabled && asset && isOwner && !asset.isOffline && isFujiXt5RawAsset(asset)));
   let isApplying = $derived(Boolean(asset?.id && activeApply?.assetId === asset.id));
   let selectedGraphic = $derived(getFilmSimulationBySlug(profileSlug));
   let graphic = $derived(canEdit ? selectedGraphic : getFilmSimulationGraphic(filmMode));

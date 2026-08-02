@@ -22712,6 +22712,10 @@
             "description": "Whether facial recognition is enabled",
             "type": "boolean"
           },
+          "fujiRawDevelop": {
+            "description": "Whether Fujifilm RAW development is enabled",
+            "type": "boolean"
+          },
           "importFaces": {
             "description": "Whether face import is enabled",
             "type": "boolean"
@@ -22766,6 +22770,7 @@
           "duplicateDetection",
           "email",
           "facialRecognition",
+          "fujiRawDevelop",
           "importFaces",
           "map",
           "oauth",

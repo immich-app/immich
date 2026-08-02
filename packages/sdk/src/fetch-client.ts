@@ -2056,6 +2056,8 @@ export type ServerFeaturesDto = {
     facialRecognition: boolean;
     /** Whether face import is enabled */
     importFaces: boolean;
+    /** Whether Fujifilm RAW development is enabled */
+    fujiRawDevelop: boolean;
     /** Whether map feature is enabled */
     map: boolean;
     /** Whether OAuth is enabled */
