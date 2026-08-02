@@ -115,4 +115,44 @@ describe('DetailPanelFilmSimulation', () => {
       },
     });
   });
+
+  it('does not leave a new asset disabled while an earlier render is in flight', async () => {
+    const assetA = assetFactory.build({
+      id: 'asset-a',
+      originalFileName: 'DXT51946.RAF',
+      originalPath: '/photos/DXT51946.RAF',
+      isOffline: false,
+      exifInfo: { make: 'FUJIFILM', model: 'X-T5', filmMode: 'Nostalgic Neg.' },
+    });
+    const assetB = assetFactory.build({
+      id: 'asset-b',
+      originalFileName: 'DXT50894.RAF',
+      originalPath: '/photos/DXT50894.RAF',
+      isOffline: false,
+      exifInfo: { make: 'FUJIFILM', model: 'X-T5', filmMode: 'PROVIA/Standard' },
+    });
+    let resolveEdit!: (value: Awaited<ReturnType<typeof editAsset>>) => void;
+    const pendingEdit = new Promise<Awaited<ReturnType<typeof editAsset>>>((resolve) => (resolveEdit = resolve));
+    vi.mocked(editAsset).mockReturnValue(pendingEdit);
+    vi.mocked(getAssetInfo).mockResolvedValue(assetA);
+
+    const { getByRole, getByText, rerender } = render(DetailPanelFilmSimulation, {
+      filmMode: 'Nostalgic Neg.',
+      asset: assetA,
+      isOwner: true,
+    });
+
+    await waitFor(() => expect(getByRole('button', { name: 'Choose' })).not.toBeDisabled());
+    await fireEvent.click(getByRole('button', { name: 'Choose' }));
+    await fireEvent.click(getByText('Velvia'));
+    await waitFor(() => expect(editAsset).toHaveBeenCalledOnce());
+
+    await rerender({ filmMode: 'PROVIA/Standard', asset: assetB, isOwner: true });
+
+    await waitFor(() => expect(getAssetEdits).toHaveBeenCalledWith({ id: 'asset-b' }));
+    await waitFor(() => expect(getByRole('button', { name: 'Choose' })).not.toBeDisabled());
+
+    resolveEdit({ assetId: assetA.id, edits: [] });
+    await pendingEdit;
+  });
 });

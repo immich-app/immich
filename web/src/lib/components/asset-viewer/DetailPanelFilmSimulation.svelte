@@ -49,7 +49,7 @@
   let selectorOpen = $state(false);
   let levelsOpen = $state(false);
   let isLoading = $state(false);
-  let isApplying = $state(false);
+  let activeApply = $state<{ assetId: string; sequence: number }>();
   let loadError = $state('');
   let applyError = $state('');
   let renderState = $state<RenderState>('idle');
@@ -58,8 +58,10 @@
   let profileSlug = $state<FujiFilmSimulationSlug>(getAsShotFujiProfileSlug(filmMode));
   let savedSignature = $state<string>();
   let loadSequence = 0;
+  let applySequence = 0;
 
   let canEdit = $derived(Boolean(asset && isOwner && !asset.isOffline && isFujiXt5RawAsset(asset)));
+  let isApplying = $derived(Boolean(asset?.id && activeApply?.assetId === asset.id));
   let selectedGraphic = $derived(getFilmSimulationBySlug(profileSlug));
   let graphic = $derived(canEdit ? selectedGraphic : getFilmSimulationGraphic(filmMode));
   let displayTitle = $derived(canEdit ? selectedGraphic.label : filmMode);
@@ -67,7 +69,7 @@
   let bannerConfig = $derived(graphic?.banner ? filmSimulationBannerConfigs[graphic.banner] : undefined);
   let isVectorBanner = $derived(isClassicChrome || Boolean(bannerConfig));
   let draftParameters = $derived(createFujiDevelopParameters(profileSlug, settings));
-  let controlsDisabled = $derived(isLoading || isApplying);
+  let controlsDisabled = $derived(isLoading || isApplying || Boolean(loadError));
   let hasUnsavedChanges = $derived(
     !isLoading && (savedSignature === undefined || savedSignature !== fujiDevelopSignature(draftParameters)),
   );
@@ -151,7 +153,7 @@
   });
 
   const saveParameters = async (parameters: FujiDevelopParameters) => {
-    if (!asset || !canEdit || isApplying || isLoading) {
+    if (!asset || !canEdit || isApplying || isLoading || loadError) {
       return;
     }
 
@@ -163,9 +165,10 @@
     }
 
     const assetId = asset.id;
+    const sequence = ++applySequence;
     const mergedEdits = mergeFujiDevelopEdit(storedEdits, parameters);
     const requestedSignature = fujiDevelopSignature(parameters);
-    isApplying = true;
+    activeApply = { assetId, sequence };
     applyError = '';
     renderState = 'rendering';
 
@@ -197,14 +200,14 @@
       const refreshedAsset = await getAssetInfo({ id: assetId });
       eventManager.emit('AssetUpdate', refreshedAsset);
 
-      if (asset?.id === assetId) {
+      if (asset?.id === assetId && activeApply?.sequence === sequence) {
         storedEdits = mergedEdits;
         savedSignature = requestedSignature;
         renderState = 'ready';
+        toastManager.primary($t('fuji_develop_success'));
       }
-      toastManager.primary($t('fuji_develop_success'));
     } catch (error) {
-      if (asset?.id !== assetId) {
+      if (asset?.id !== assetId || activeApply?.sequence !== sequence) {
         return;
       }
 
@@ -217,8 +220,8 @@
         applyError = handleError(error, $t('fuji_develop_apply_error')) ?? $t('fuji_develop_apply_error');
       }
     } finally {
-      if (asset?.id === assetId) {
-        isApplying = false;
+      if (activeApply?.sequence === sequence) {
+        activeApply = undefined;
       }
     }
   };
@@ -290,7 +293,7 @@
         aria-label={$t('fuji_develop_change_simulation')}
         aria-expanded={selectorOpen}
         onclick={() => (selectorOpen = !selectorOpen)}
-        disabled={isLoading || isApplying}
+        disabled={controlsDisabled}
       >
         {@render simulationGraphic()}
       </button>
@@ -312,7 +315,7 @@
           type="button"
           class="shrink-0 rounded-full border border-black/10 px-3 py-1.5 text-xs font-medium hover:bg-immich-primary/10 disabled:opacity-50 dark:border-white/10 dark:hover:bg-immich-dark-primary/20"
           onclick={() => (selectorOpen = !selectorOpen)}
-          disabled={isLoading || isApplying}
+          disabled={controlsDisabled}
         >
           {$t('fuji_develop_choose')}
         </button>
@@ -332,7 +335,7 @@
               ]}
               aria-pressed={profileSlug === simulation.slug}
               onclick={() => selectProfile(simulation.slug)}
-              disabled={isLoading || isApplying}
+              disabled={controlsDisabled}
             >
               <span>{simulation.label}</span>
               {#if profileSlug === simulation.slug}
