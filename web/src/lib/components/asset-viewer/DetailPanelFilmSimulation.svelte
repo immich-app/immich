@@ -164,7 +164,8 @@
       return;
     }
 
-    const assetId = asset.id;
+    const sourceAsset = asset;
+    const assetId = sourceAsset.id;
     const sequence = ++applySequence;
     const mergedEdits = mergeFujiDevelopEdit(storedEdits, parameters);
     const requestedSignature = fujiDevelopSignature(parameters);
@@ -188,7 +189,7 @@
         FUJI_DEVELOP_READY_TIMEOUT_MS,
       );
 
-      await Promise.all([
+      const [, [completedEvent]] = await Promise.all([
         editAsset({
           id: assetId,
           assetEditsCreateDto: { edits: mergedEdits } as unknown as AssetEditsCreateDto,
@@ -197,8 +198,6 @@
       ]);
 
       eventManager.emit('AssetEditsApplied', assetId);
-      const refreshedAsset = await getAssetInfo({ id: assetId });
-      eventManager.emit('AssetUpdate', refreshedAsset);
 
       if (asset?.id === assetId && activeApply?.sequence === sequence) {
         storedEdits = mergedEdits;
@@ -206,6 +205,20 @@
         renderState = 'ready';
         toastManager.primary($t('fuji_develop_success'));
       }
+
+      eventManager.emit('AssetUpdate', {
+        ...sourceAsset,
+        thumbhash: completedEvent.asset.thumbhash,
+        width: completedEvent.asset.width,
+        height: completedEvent.asset.height,
+        isEdited: completedEvent.asset.isEdited,
+        // The matched completion proves new bytes are published. Use a fresh
+        // client cache token immediately; the canonical server value follows.
+        updatedAt: new Date().toISOString(),
+      });
+      void getAssetInfo({ id: assetId })
+        .then((refreshedAsset) => eventManager.emit('AssetUpdate', refreshedAsset))
+        .catch(() => undefined);
     } catch (error) {
       if (asset?.id !== assetId || activeApply?.sequence !== sequence) {
         return;

@@ -13,7 +13,14 @@ vi.mock('@immich/sdk', async (importOriginal) => {
   };
 });
 
-vi.mock('$lib/stores/websocket', () => ({ waitForWebsocketEvent: vi.fn().mockResolvedValue([]) }));
+vi.mock('$lib/stores/websocket', () => ({
+  waitForWebsocketEvent: vi.fn().mockResolvedValue([
+    {
+      asset: { id: 'asset-id', thumbhash: 'rendered-thumbhash', width: 7728, height: 5152, isEdited: true },
+      edit: [],
+    },
+  ]),
+}));
 
 describe('DetailPanelFilmSimulation', () => {
   beforeEach(() => {
@@ -154,5 +161,6 @@ describe('DetailPanelFilmSimulation', () => {
 
     resolveEdit({ assetId: assetA.id, edits: [] });
     await pendingEdit;
+    await waitFor(() => expect(getAssetInfo).toHaveBeenCalledWith({ id: assetA.id }));
   });
 });
