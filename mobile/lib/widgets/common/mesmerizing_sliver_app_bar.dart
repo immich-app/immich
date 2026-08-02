@@ -134,7 +134,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
 
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
-        _slideController.forward();
+        unawaited(_slideController.forward());
       }
     });
   }
@@ -228,7 +228,7 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
 
   @override
   void dispose() {
-    _reloadSubscription?.cancel();
+    unawaited(_reloadSubscription?.cancel());
     super.dispose();
   }
 
@@ -311,13 +311,17 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
 
   void _startAnimationCycle() {
     if (_isZoomingIn) {
-      _zoomController.forward().then((_) {
-        _loadNextAsset();
-      });
+      unawaited(
+        _zoomController.forward().then((_) {
+          unawaited(_loadNextAsset());
+        }),
+      );
     } else {
-      _zoomController.reverse().then((_) {
-        _loadNextAsset();
-      });
+      unawaited(
+        _zoomController.reverse().then((_) {
+          unawaited(_loadNextAsset());
+        }),
+      );
     }
   }
 
@@ -393,10 +397,8 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
       builder: (context, child) {
         return Transform.scale(
           scale: _zoomAnimation.value,
-          filterQuality: Platform.isAndroid ? FilterQuality.low : null,
           child: Transform.translate(
             offset: _panAnimation.value,
-            filterQuality: Platform.isAndroid ? FilterQuality.low : null,
             child: Stack(
               fit: StackFit.expand,
               children: [

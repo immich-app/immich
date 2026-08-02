@@ -83,35 +83,42 @@ struct ImmichMemoryProvider: TimelineProvider {
         return
       }
 
-      let memories = try await api.fetchMemory(for: Date.now)
+      let memories: [MemoryResult]
+      do {
+        memories = try await api.fetchMemory(for: Date.now)
 
-      await withTaskGroup(of: ImageEntry?.self) { group in
-        var totalAssets = 0
+        await withTaskGroup(of: ImageEntry?.self) { group in
+          var totalAssets = 0
 
-        for memory in memories {
-          for asset in memory.assets {
-            if asset.type == .image && totalAssets < 12 {
-              group.addTask {
-                try? await ImageEntry.build(
-                  api: api,
-                  asset: asset,
-                  dateOffset: totalAssets,
-                  subtitle: getYearDifferenceSubtitle(
-                    assetYear: memory.data.year
+          for memory in memories {
+            for asset in memory.assets {
+              if asset.type == .image && totalAssets < 12 {
+                group.addTask {
+                  try? await ImageEntry.build(
+                    api: api,
+                    asset: asset,
+                    dateOffset: totalAssets,
+                    subtitle: getYearDifferenceSubtitle(
+                      assetYear: memory.data.year
+                    )
                   )
-                )
-              }
+                }
 
-              totalAssets += 1
+                totalAssets += 1
+              }
+            }
+          }
+
+          for await result in group {
+            if let entry = result {
+              entries.append(entry)
             }
           }
         }
 
-        for await result in group {
-          if let entry = result {
-            entries.append(entry)
-          }
-        }
+      } catch {
+        completion(ImageEntry.handleError(for: cacheKey))
+        return
       }
 
       // If we didn't add any memory images (some failure occurred or no images in memory),

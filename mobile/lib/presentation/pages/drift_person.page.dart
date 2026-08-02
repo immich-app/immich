@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -24,7 +26,7 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
   late DriftPerson _person;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     _person = widget.person;
   }
@@ -49,8 +51,8 @@ class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
     }
   }
 
-  void showOptionSheet(BuildContext context) {
-    showModalBottomSheet(
+  Future<void> showOptionSheet(BuildContext context) {
+    return showModalBottomSheet(
       context: context,
       backgroundColor: context.colorScheme.surface,
       isScrollControlled: false,

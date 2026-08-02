@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -35,7 +37,7 @@ class ShareIntentPage extends ConsumerWidget {
       ref.read(shareIntentUploadProvider.notifier).addAttachments(attachments);
     }
 
-    void upload() async {
+    Future<void> upload() async {
       final files = candidates.map((candidate) => candidate.file).toList();
       await ref.read(shareIntentUploadProvider.notifier).uploadAll(files);
     }
@@ -65,7 +67,7 @@ class ShareIntentPage extends ConsumerWidget {
         ),
         leading: IconButton(
           onPressed: () {
-            context.navigateTo(const TabShellRoute());
+            unawaited(context.navigateTo(const TabShellRoute()));
           },
           icon: const Icon(Icons.arrow_back),
         ),
@@ -102,7 +104,7 @@ class ShareIntentPage extends ConsumerWidget {
                         Icons.image,
                         color: Colors.white,
                         size: 20,
-                        shadows: [Shadow(offset: Offset(0, 0), blurRadius: 8.0, color: Colors.black45)],
+                        shadows: [Shadow(offset: Offset.zero, blurRadius: 8.0, color: Colors.black45)],
                       ),
                     ),
                 ],

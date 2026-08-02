@@ -58,23 +58,27 @@
     hoveredDetent = progress * (horizontalDetentCount - 1);
 
     if (!isTrackingPointer) {
-      window.addEventListener('pointermove', handleWindowPointerMove, { passive: true });
+      addEventListener('pointermove', handleWindowPointerMove, { passive: true });
       isTrackingPointer = true;
     }
   };
 
   const stopPointerTracking = () => {
-    if (isTrackingPointer) {
-      window.removeEventListener('pointermove', handleWindowPointerMove);
-      isTrackingPointer = false;
+    if (!isTrackingPointer) {
+      return;
     }
+
+    removeEventListener('pointermove', handleWindowPointerMove);
+    isTrackingPointer = false;
   };
 
   const handleWindowPointerMove = (event: PointerEvent) => {
-    if (hoveredDetent !== null && !detentHitArea.contains(event.target as Node)) {
-      hoveredDetent = null;
-      stopPointerTracking();
+    if (hoveredDetent === null || detentHitArea.contains(event.target as Node)) {
+      return;
     }
+
+    hoveredDetent = null;
+    stopPointerTracking();
   };
 
   onMount(() => {
@@ -162,7 +166,7 @@
 
   <!-- Vertical frame scale -->
   <g class="scale-rule vertical-detents" style:transform={`translateY(${verticalDetentOffset}px)`}>
-    {#each verticalDetents as _, index}
+    {#each verticalDetents as _, index (index)}
       <line
         x1={index % 7 === 0 ? 1828 : 1840}
         x2="1870"
@@ -217,7 +221,7 @@
 
   <!-- Bottom calibration ticks -->
   <g class="bottom-ticks">
-    {#each horizontalDetents as _, index}
+    {#each horizontalDetents as _, index (index)}
       <line
         x1={horizontalDetentStart + index * horizontalDetentStep}
         x2={horizontalDetentStart + index * horizontalDetentStep}

@@ -88,17 +88,21 @@
   };
 
   const stopPointerTracking = () => {
-    if (isTrackingPointer) {
-      window.removeEventListener('pointermove', handleWindowPointerMove);
-      isTrackingPointer = false;
+    if (!isTrackingPointer) {
+      return;
     }
+
+    removeEventListener('pointermove', handleWindowPointerMove);
+    isTrackingPointer = false;
   };
 
   const handleWindowPointerMove = (event: PointerEvent) => {
-    if (hoveredDetent !== null && !detentHitArea.contains(event.target as Node)) {
-      hoveredDetent = null;
-      stopPointerTracking();
+    if (hoveredDetent === null || detentHitArea.contains(event.target as Node)) {
+      return;
     }
+
+    hoveredDetent = null;
+    stopPointerTracking();
   };
 
   const handleHorizontalDetentMove = (event: PointerEvent) => {
@@ -106,7 +110,7 @@
     const progress = Math.max(0, Math.min(0.999, (event.clientX - bounds.left) / bounds.width));
     hoveredDetent = progress * (horizontalDetentCount - 1);
     if (!isTrackingPointer) {
-      window.addEventListener('pointermove', handleWindowPointerMove, { passive: true });
+      addEventListener('pointermove', handleWindowPointerMove, { passive: true });
       isTrackingPointer = true;
     }
   };
@@ -307,7 +311,7 @@
     />
 
     <g class="scale-rule vertical-detents" aria-hidden="true" style:transform={`translateY(${verticalDetentOffset}px)`}>
-      {#each verticalDetents as _, index}
+      {#each verticalDetents as _, index (index)}
         <line
           x1={index % 7 === 0 ? 1828 : 1840}
           x2="1870"
@@ -317,13 +321,13 @@
       {/each}
     </g>
     <g class="scale-numbers">
-      {#each config.scaleLabels as label, index}
+      {#each config.scaleLabels as label, index (index)}
         <text x="1950" y={167 + index * 142} text-anchor="end">{label}</text>
       {/each}
     </g>
 
     <g class="parameter-strip">
-      {#each config.parameters as parameter, index}
+      {#each config.parameters as parameter, index (index)}
         <g>
           <text
             x={parameterCenters[index]}
@@ -348,7 +352,7 @@
     </g>
 
     <g class="bottom-ticks" aria-hidden="true">
-      {#each horizontalDetents as _, index}
+      {#each horizontalDetents as _, index (index)}
         <line
           x1={horizontalDetentStart + index * horizontalDetentStep}
           x2={horizontalDetentStart + index * horizontalDetentStep}

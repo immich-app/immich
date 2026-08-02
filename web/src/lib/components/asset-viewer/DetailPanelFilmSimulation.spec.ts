@@ -6,12 +6,12 @@ describe('DetailPanelFilmSimulation', () => {
     const { baseElement } = render(DetailPanelFilmSimulation, { filmMode: 'Classic Chrome' });
     const figure = baseElement.querySelector('[data-testid="film-simulation-graphic"]');
 
-    expect(figure?.querySelector('svg')).not.toBeNull();
-    expect(figure?.querySelector('img')).toBeNull();
-    expect(figure?.querySelector('.classic-chrome-monogram')?.textContent).toBe('CC');
-    expect(figure?.querySelectorAll('.vertical-detents line')).toHaveLength(25);
-    expect(figure?.querySelectorAll('.bottom-ticks line')).toHaveLength(27);
-    expect(figure?.querySelector('.horizontal-detent-highlight')).toBeNull();
+    expect(figure?.querySelector(':scope svg')).not.toBeNull();
+    expect(figure?.querySelector(':scope img')).toBeNull();
+    expect(figure?.querySelector(':scope .classic-chrome-monogram')?.textContent).toBe('CC');
+    expect(figure?.querySelectorAll(':scope .vertical-detents line')).toHaveLength(25);
+    expect(figure?.querySelectorAll(':scope .bottom-ticks line')).toHaveLength(27);
+    expect(figure?.querySelector(':scope .horizontal-detent-highlight')).toBeNull();
   });
 
   it.each([
@@ -32,11 +32,11 @@ describe('DetailPanelFilmSimulation', () => {
     const { baseElement } = render(DetailPanelFilmSimulation, { filmMode });
     const figure = baseElement.querySelector('[data-testid="film-simulation-graphic"]');
 
-    expect(figure?.querySelector('svg')).not.toBeNull();
-    expect(figure?.querySelector('img')).toBeNull();
-    expect(figure?.querySelectorAll('.vertical-detents line')).toHaveLength(25);
-    expect(figure?.querySelectorAll('.bottom-ticks line')).toHaveLength(27);
-    expect(figure?.querySelector('.horizontal-detent-highlight')).toBeNull();
+    expect(figure?.querySelector(':scope svg')).not.toBeNull();
+    expect(figure?.querySelector(':scope img')).toBeNull();
+    expect(figure?.querySelectorAll(':scope .vertical-detents line')).toHaveLength(25);
+    expect(figure?.querySelectorAll(':scope .bottom-ticks line')).toHaveLength(27);
+    expect(figure?.querySelector(':scope .horizontal-detent-highlight')).toBeNull();
   });
 
   it('falls back to a text badge for an unknown film simulation', () => {

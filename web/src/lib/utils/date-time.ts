@@ -27,23 +27,23 @@ export const getShortDateRange = (startTimestamp: string, endTimestamp: string) 
       // Same year and month.
       // e.g.: aug. 2024
       return endDateLocalized;
-    } else {
-      // Same year but different month.
-      // e.g.: jul. - sept. 2024
-      const startMonthLocalized = startDate.toLocaleString({
-        month: 'short',
-      });
-      return `${startMonthLocalized} - ${endDateLocalized}`;
     }
-  } else {
-    // Different year.
-    // e.g.: feb. 2021 - sept. 2024
-    const startDateLocalized = startDate.toLocaleString({
+
+    // Same year but different month.
+    // e.g.: jul. - sept. 2024
+    const startMonthLocalized = startDate.toLocaleString({
       month: 'short',
-      year: 'numeric',
     });
-    return `${startDateLocalized} - ${endDateLocalized}`;
+    return `${startMonthLocalized} - ${endDateLocalized}`;
   }
+
+  // Different year.
+  // e.g.: feb. 2021 - sept. 2024
+  const startDateLocalized = startDate.toLocaleString({
+    month: 'short',
+    year: 'numeric',
+  });
+  return `${startDateLocalized} - ${endDateLocalized}`;
 };
 
 const formatDate = (date?: string) => {

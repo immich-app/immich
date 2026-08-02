@@ -87,23 +87,23 @@ describe('/search', () => {
 
     // note: the coordinates here are not the actual coordinates of the images and are random for most of them
     const coordinates = [
-      { latitude: 48.853_41, longitude: 2.3488 }, // paris
-      { latitude: 35.6895, longitude: 139.691_71 }, // tokyo
-      { latitude: 52.524_37, longitude: 13.410_53 }, // berlin
-      { latitude: 1.314_663_1, longitude: 103.845_409_3 }, // singapore
-      { latitude: 41.013_84, longitude: 28.949_66 }, // istanbul
-      { latitude: 5.556_02, longitude: -0.1969 }, // accra
-      { latitude: 37.544_270_6, longitude: -4.727_752_8 }, // andalusia
-      { latitude: 23.133_02, longitude: -82.383_04 }, // havana
-      { latitude: 41.694_11, longitude: 44.833_68 }, // tbilisi
-      { latitude: 31.222_22, longitude: 121.458_06 }, // shanghai
+      { latitude: 48.85341, longitude: 2.3488 }, // paris
+      { latitude: 35.6895, longitude: 139.69171 }, // tokyo
+      { latitude: 52.52437, longitude: 13.41053 }, // berlin
+      { latitude: 1.3146631, longitude: 103.8454093 }, // singapore
+      { latitude: 41.01384, longitude: 28.94966 }, // istanbul
+      { latitude: 5.55602, longitude: -0.1969 }, // accra
+      { latitude: 37.5442706, longitude: -4.7277528 }, // andalusia
+      { latitude: 23.13302, longitude: -82.38304 }, // havana
+      { latitude: 41.69411, longitude: 44.83368 }, // tbilisi
+      { latitude: 31.22222, longitude: 121.45806 }, // shanghai
       { latitude: 38.9711, longitude: -109.7137 }, // thompson springs
-      { latitude: 40.714_27, longitude: -74.005_97 }, // new york
-      { latitude: 47.040_57, longitude: 9.068_04 }, // glarus
-      { latitude: 32.771_52, longitude: -89.116_73 }, // philadelphia
-      { latitude: 31.634_16, longitude: -7.999_94 }, // marrakesh
-      { latitude: 38.523_735_4, longitude: -78.488_619_4 }, // tanners ridge
-      { latitude: 59.938_63, longitude: 30.314_13 }, // st. petersburg
+      { latitude: 40.71427, longitude: -74.00597 }, // new york
+      { latitude: 47.04057, longitude: 9.06804 }, // glarus
+      { latitude: 32.77152, longitude: -89.11673 }, // philadelphia
+      { latitude: 31.63416, longitude: -7.99994 }, // marrakesh
+      { latitude: 38.5237354, longitude: -78.4886194 }, // tanners ridge
+      { latitude: 59.93863, longitude: 30.31413 }, // st. petersburg
       { latitude: 0, longitude: 0 }, // null island
     ];
 
@@ -112,7 +112,7 @@ describe('/search', () => {
     );
 
     await Promise.all(updates);
-    for (const [i] of coordinates.entries()) {
+    for (const i of coordinates.keys()) {
       await utils.waitForWebsocketEvent({ event: 'assetUpdate', id: assets[i].id });
     }
 

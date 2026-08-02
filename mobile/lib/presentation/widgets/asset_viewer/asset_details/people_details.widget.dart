@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -74,7 +76,7 @@ class PeopleDetails extends ConsumerWidget {
                             return;
                           }
                           ContextHelper(context).pop();
-                          context.pushRoute(DriftPersonRoute(person: person));
+                          unawaited(context.pushRoute(DriftPersonRoute(person: person)));
                         },
                         onNameTap: () => showNameEditModal(person),
                       ),
@@ -121,7 +123,9 @@ class _Avatar extends StatelessWidget {
                   elevation: 3,
                   child: CircleAvatar(
                     maxRadius: imageSize / 2,
-                    backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
+                    backgroundImage: RemoteImageProvider(
+                      url: getFaceThumbnailUrl(person.id, updatedAt: person.updatedAt),
+                    ),
                   ),
                 ),
               ),

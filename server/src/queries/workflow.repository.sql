@@ -25,6 +25,8 @@ select
           inner join "plugin" on "plugin"."id" = "plugin_method"."pluginId"
         where
           "workflow"."id" = "workflow_step"."workflowId"
+        order by
+          "workflow_step"."order" asc
       ) as agg
   ) as "steps"
 from
@@ -57,6 +59,8 @@ select
           inner join "plugin" on "plugin"."id" = "plugin_method"."pluginId"
         where
           "workflow"."id" = "workflow_step"."workflowId"
+        order by
+          "workflow_step"."order" asc
       ) as agg
   ) as "steps"
 from

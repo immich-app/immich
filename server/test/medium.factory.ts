@@ -4,6 +4,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { resolve } from 'node:path';
 import { Writable } from 'node:stream';
+import { SystemConfig } from 'src/config';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
 import { AssetEditActionItem, AssetEditsCreateDto } from 'src/dtos/editing.dto';
@@ -76,6 +77,7 @@ import { BASE_SERVICE_DEPENDENCIES, BaseService } from 'src/services/base.servic
 import { MetadataService } from 'src/services/metadata.service';
 import { SyncService } from 'src/services/sync.service';
 import { ClassConstructor, UploadFile } from 'src/types';
+import { getConfig, updateConfig } from 'src/utils/config';
 import { mockEnvData } from 'test/repositories/config.repository.mock';
 import { newTelemetryRepositoryMock } from 'test/repositories/telemetry.repository.mock';
 import { factory, newDate, newEmbedding, newUuid } from 'test/small.factory';
@@ -138,7 +140,7 @@ export class MediumTestContext<S extends BaseService = BaseService> {
   }
 
   get<T>(key: ClassConstructor<T>): T {
-    if (!this.repoCache[key.name]) {
+    if (!Object.hasOwn(this.repoCache, key.name)) {
       const real = newRealRepository(key, this.options.database);
       this.repoCache[key.name] = real;
     }
@@ -302,6 +304,28 @@ export class MediumTestContext<S extends BaseService = BaseService> {
     const edits = await this.get(AssetEditRepository).replaceAll(assetId, dto.edits as AssetEditActionItem[]);
     return { edits };
   }
+
+  async getConfig({ withCache = true }: { withCache?: boolean } = {}) {
+    return getConfig(
+      {
+        configRepo: this.get(ConfigRepository),
+        metadataRepo: this.get(SystemMetadataRepository),
+        logger: this.get(LoggingRepository),
+      },
+      { withCache },
+    );
+  }
+
+  async updateConfig(config: SystemConfig) {
+    return updateConfig(
+      {
+        configRepo: this.get(ConfigRepository),
+        metadataRepo: this.get(SystemMetadataRepository),
+        logger: this.get(LoggingRepository),
+      },
+      config,
+    );
+  }
 }
 
 export class SyncTestContext extends MediumTestContext<SyncService> {
@@ -313,11 +337,11 @@ export class SyncTestContext extends MediumTestContext<SyncService> {
     });
   }
 
-  async syncStream(auth: AuthDto, types: SyncRequestType[], reset?: boolean) {
+  async syncStream(auth: AuthDto, types: SyncRequestType[], shouldReset?: boolean) {
     const stream = mediumFactory.syncStream();
     // Wait for 2ms to ensure all updates are available and account for setTimeout inaccuracy
     await wait(2);
-    await this.sut.stream(auth, stream, { types, reset });
+    await this.sut.stream(auth, stream, { types, reset: shouldReset });
 
     return stream.getResponse();
   }
@@ -750,6 +774,8 @@ const tagInsert = (tag: Partial<Insertable<TagTable>>) => {
 class CustomWritable extends Writable {
   private data = '';
 
+  // determined by Writable interface
+  // eslint-disable-next-line unicorn/prefer-private-class-fields
   _write(chunk: any, encoding: string, callback: () => void) {
     this.data += chunk.toString();
     callback();
