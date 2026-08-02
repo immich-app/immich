@@ -8,20 +8,20 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/archive_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/archive.action.dart';
+import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_lock_folder_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/unarchive_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_ui/immich_ui.dart';
 
-enum AddToMenuItem { album, archive, unarchive, lockedFolder }
+enum AddToMenuItem { album }
 
 class AddActionButton extends ConsumerStatefulWidget {
   const AddActionButton({super.key, this.originalTheme});
@@ -37,12 +37,6 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
     switch (selected) {
       case AddToMenuItem.album:
         _openAlbumSelector();
-      case AddToMenuItem.archive:
-        unawaited(performArchiveAction(context, ref, source: ActionSource.viewer));
-      case AddToMenuItem.unarchive:
-        unawaited(performUnArchiveAction(context, ref, source: ActionSource.viewer));
-      case AddToMenuItem.lockedFolder:
-        unawaited(performMoveToLockFolderAction(context, ref, source: ActionSource.viewer));
     }
   }
 
@@ -54,11 +48,6 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
 
     final user = ref.read(currentUserProvider);
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
-    final isInLockedView = ref.watch(inLockedViewProvider);
-    final isArchived = asset is RemoteAsset && asset.visibility == AssetVisibility.archive;
-    final hasRemote = asset is RemoteAsset;
-    final showArchive = isOwner && !isInLockedView && hasRemote && !isArchived;
-    final showUnarchive = isOwner && !isInLockedView && hasRemote && isArchived;
 
     return [
       Padding(
@@ -78,26 +67,8 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Text("move_to".tr(), style: context.textTheme.labelMedium),
         ),
-        if (showArchive)
-          BaseActionButton(
-            iconData: Icons.archive_outlined,
-            label: "archive".tr(),
-            menuItem: true,
-            onPressed: () => _handleMenuSelection(AddToMenuItem.archive),
-          ),
-        if (showUnarchive)
-          BaseActionButton(
-            iconData: Icons.unarchive_outlined,
-            label: "unarchive".tr(),
-            menuItem: true,
-            onPressed: () => _handleMenuSelection(AddToMenuItem.unarchive),
-          ),
-        BaseActionButton(
-          iconData: Icons.lock_outline,
-          label: "locked_folder".tr(),
-          menuItem: true,
-          onPressed: () => _handleMenuSelection(AddToMenuItem.lockedFolder),
-        ),
+        const ActionMenuItem(action: ArchiveAction(source: .viewer)),
+        const ActionMenuItem(action: LockAction(source: .viewer)),
       ],
     ];
   }
@@ -190,7 +161,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
 
     final themeData = widget.originalTheme ?? context.themeData;
 
-    return MenuAnchor(
+    return ImmichMenu(
       consumeOutsideTap: true,
       style: MenuStyle(
         backgroundColor: WidgetStatePropertyAll(themeData.scaffoldBackgroundColor),
@@ -201,7 +172,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
         ),
         padding: const WidgetStatePropertyAll(EdgeInsets.symmetric(vertical: 6)),
       ),
-      menuChildren: widget.originalTheme != null
+      children: widget.originalTheme != null
           ? [
               Theme(
                 data: widget.originalTheme!,

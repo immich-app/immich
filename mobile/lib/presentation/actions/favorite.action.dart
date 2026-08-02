@@ -43,16 +43,16 @@ class FavoriteAction extends AssetActionBuilder {
       return;
     }
 
-    final _State(:shouldFavorite, :assetIds) = state;
+    final (:shouldFavorite, :assetIds) = state;
     final message = shouldFavorite
         ? context.t.favorite_action_prompt(count: assetIds.length)
         : context.t.unfavorite_action_prompt(count: assetIds.length);
-    final assertService = ref.read(assetServiceProvider);
+    final assetService = ref.read(assetServiceProvider);
     final toastService = ref.read(toastServiceProvider);
     final clearSelection = ref.read(clearSelectionProvider(source));
 
     try {
-      await assertService.update(assetIds, isFavorite: .some(shouldFavorite));
+      await assetService.update(assetIds, isFavorite: .some(shouldFavorite));
       toastService.success(message);
       clearSelection();
     } catch (error, stack) {

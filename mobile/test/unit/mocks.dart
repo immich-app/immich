@@ -95,6 +95,7 @@ class RepositoryMocks {
 
   void _stubAssetMediaRepository() {
     when(assetMedia.shareAssets).thenAnswer((_) async => 1);
+    when(assetMedia.getOriginalFilename).thenAnswer((_) async => null);
   }
 
   void _stubDownloadRepository() {
@@ -167,6 +168,7 @@ class ServiceMocks {
     when(asset.trash).thenAnswer((_) async {});
     when(asset.delete).thenAnswer((_) async {});
     when(asset.applyEdits).thenAnswer((_) async {});
+    when(asset.deleteLocal).thenAnswer((_) async => 0);
   }
 
   void _stubRemoteAlbumService() {
@@ -342,6 +344,9 @@ extension type const AssetServiceStub(MockAssetService service) implements Stub<
 
   Future<void> Function() get applyEdits =>
       () => service.applyEdits(any(), any());
+
+  Future<int> Function() get deleteLocal =>
+      () => service.deleteLocal(any());
 }
 
 extension type const RemoteAlbumServiceStub(MockRemoteAlbumService service) implements Stub<MockRemoteAlbumService> {
@@ -385,6 +390,9 @@ extension type const AssetMediaRepositoryStub(MockAssetMediaRepository api) impl
         cancelCompleter: any(named: 'cancelCompleter'),
         onAssetDownloadProgress: any(named: 'onAssetDownloadProgress'),
       );
+
+  Future<String?> Function() get getOriginalFilename =>
+      () => api.getOriginalFilename(any());
 }
 
 extension type const DownloadRepositoryStub(MockDownloadRepository repo) implements Stub<MockDownloadRepository> {

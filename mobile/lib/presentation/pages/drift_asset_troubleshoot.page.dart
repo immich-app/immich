@@ -280,8 +280,8 @@ class _RemoteAssetSection extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return FutureBuilder<RemoteAsset?>(
-      future: assetService.getRemoteAssetByChecksum(asset.checksum!),
+    return FutureBuilder<List<RemoteAsset>>(
+      future: assetService.getAllRemoteAssetDebugByChecksum(asset.checksum!),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const _PropertySectionCard(
@@ -297,7 +297,7 @@ class _RemoteAssetSection extends ConsumerWidget {
           );
         }
 
-        final remoteAsset = snapshot.data;
+        final remoteAsset = snapshot.data?.firstOrNull;
 
         if (remoteAsset == null) {
           return _PropertySectionCard(
