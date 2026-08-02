@@ -9,9 +9,13 @@ from typing import Iterable
 
 
 RAF_SIGNATURE = b"FUJIFILMCCD-RAW "
+FUJI_EDITED_DERIVATIVE = re.compile(
+    r"^(?P<asset>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})_"
+    r"(?P<kind>fullsize|preview|thumbnail)_fuji_edited\.(?P<format>jpeg|webp)$"
+)
 EDITED_DERIVATIVE = re.compile(
     r"^(?P<asset>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})_"
-    r"(?P<kind>fullsize|preview|thumbnail)_edited\.(?P<format>jpeg|webp)$"
+    r"(?P<kind>fullsize|preview|thumbnail)_(?:fuji_)?edited\.(?P<format>jpeg|webp)$"
 )
 
 
@@ -89,7 +93,7 @@ def canonical_render_outputs(
             raise PathPolicyError(f"{name} output path must be absolute")
         if str(path) != value or path != Path(os.path.abspath(path)):
             raise PathPolicyError(f"{name} output path must already be canonical")
-        match = EDITED_DERIVATIVE.fullmatch(path.name)
+        match = FUJI_EDITED_DERIVATIVE.fullmatch(path.name)
         if match is None or match.group("kind") != expected_kinds[name]:
             raise PathPolicyError(f"{name} output path has an invalid edited-derivative name")
         expected_format = formats[name]

@@ -1,4 +1,6 @@
+import { createHash } from 'node:crypto';
 import { AssetFace } from 'src/database';
+import { AssetEditAction, AssetEditActionItem } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { ImageDimensions } from 'src/types';
 
@@ -8,6 +10,34 @@ type BoundingBox = {
   x2: number;
   y2: number;
 };
+
+export type SpatialAssetEdit = Exclude<AssetEditActionItem, { action: AssetEditAction.FujiDevelop }>;
+
+/**
+ * Fingerprint an ordered edit-list revision using the row IDs created by replaceAll.
+ * Parameter JSON is deliberately excluded because PostgreSQL JSONB key ordering is
+ * not guaranteed to match the request that created the edit.
+ */
+export const getAssetEditRevision = (edits: ReadonlyArray<{ id: string }>): string =>
+  createHash('sha256')
+    .update(edits.map(({ id }) => id).join('\0'))
+    .digest('hex');
+
+export const getSpatialAssetEdits = (edits: AssetEditActionItem[]): SpatialAssetEdit[] =>
+  edits
+    .filter(({ action }) => {
+      switch (action) {
+        case AssetEditAction.Crop:
+        case AssetEditAction.Rotate:
+        case AssetEditAction.Mirror: {
+          return true;
+        }
+        case AssetEditAction.FujiDevelop: {
+          return false;
+        }
+      }
+    })
+    .map(({ action, parameters }) => ({ action, parameters }) as SpatialAssetEdit);
 
 export const boundingBoxOverlap = (boxA: BoundingBox, boxB: BoundingBox) => {
   const overlapX1 = Math.max(boxA.x1, boxB.x1);

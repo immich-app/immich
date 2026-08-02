@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
@@ -46,7 +46,18 @@ import {
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
+import { getAssetEditRevision } from 'src/utils/editor';
+import { mimeTypes } from 'src/utils/mime-types';
 import { transformOcrBoundingBox } from 'src/utils/transform';
+
+const requireFujiRenderer = () => {
+  if (
+    process.env.IMMICH_FUJI_RENDERER_ENABLED !== 'true' ||
+    !process.env.IMMICH_FUJI_RENDERER_URL?.trim()
+  ) {
+    throw new ServiceUnavailableException('Fuji RAW renderer is not enabled');
+  }
+};
 
 @Injectable()
 export class AssetService extends BaseService {
@@ -583,6 +594,21 @@ export class AssetService extends BaseService {
     }
 
     const edits = dto.edits as AssetEditActionItem[];
+    const fujiDevelop = edits.find((edit) => edit.action === AssetEditAction.FujiDevelop);
+    if (fujiDevelop) {
+      if (!mimeTypes.isRaw(asset.originalFileName) || !asset.originalFileName.toLowerCase().endsWith('.raf')) {
+        throw new BadRequestException('Fuji development is only supported for RAF files');
+      }
+
+      if (asset.make?.trim().toUpperCase() !== 'FUJIFILM' || asset.model?.trim().toUpperCase() !== 'X-T5') {
+        throw new BadRequestException('Fuji development is only supported for Fujifilm X-T5 RAW files');
+      }
+
+      if (asset.isOffline) {
+        throw new BadRequestException('Offline assets cannot be developed');
+      }
+    }
+
     const crop = edits.find((e) => e.action === AssetEditAction.Crop);
     if (crop) {
       if (edits[0].action !== AssetEditAction.Crop) {
@@ -602,8 +628,17 @@ export class AssetService extends BaseService {
       }
     }
 
+    const previousEdits = await this.assetEditRepository.getAll(id);
+    const previousHasFujiDevelop = previousEdits.some((edit) => edit.action === AssetEditAction.FujiDevelop);
+    const cleanupFuji = previousHasFujiDevelop || !!fujiDevelop;
+    if (cleanupFuji) {
+      requireFujiRenderer();
+    }
     const newEdits = await this.assetEditRepository.replaceAll(id, edits);
-    await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
+    await this.jobRepository.queue({
+      name: JobName.AssetEditThumbnailGeneration,
+      data: { id, revision: getAssetEditRevision(newEdits), cleanupFuji },
+    });
 
     // Return the asset and its applied edits
     return {
@@ -620,7 +655,12 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Asset not found');
     }
 
+    const previousEdits = await this.assetEditRepository.getAll(id);
+    const cleanupFuji = previousEdits.some((edit) => edit.action === AssetEditAction.FujiDevelop);
     await this.assetEditRepository.replaceAll(id, []);
-    await this.jobRepository.queue({ name: JobName.AssetEditThumbnailGeneration, data: { id } });
+    await this.jobRepository.queue({
+      name: JobName.AssetEditThumbnailGeneration,
+      data: { id, revision: getAssetEditRevision([]), cleanupFuji },
+    });
   }
 }

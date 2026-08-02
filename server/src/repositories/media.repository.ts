@@ -9,7 +9,13 @@ import { Writable } from 'node:stream';
 import sharp from 'sharp';
 import { ORIENTATION_TO_SHARP_ROTATION } from 'src/constants';
 import { Exif } from 'src/database';
-import { AssetEditActionItem } from 'src/dtos/editing.dto';
+import {
+  AssetEditAction,
+  AssetEditActionItem,
+  FujiDevelopParameters,
+  FujiDevelopProcessModel,
+  FujiProfileSlug,
+} from 'src/dtos/editing.dto';
 import {
   AacProfile,
   Av1Profile,
@@ -21,6 +27,7 @@ import {
   DvSignalCompatibility,
   H264Profile,
   HevcProfile,
+  ImageFormat,
   LogLevel,
   RawExtractedFormat,
 } from 'src/enum';
@@ -35,6 +42,7 @@ import {
   VideoInfo,
   VideoPacketInfo,
 } from 'src/types';
+import { getSpatialAssetEdits, SpatialAssetEdit } from 'src/utils/editor';
 import { handlePromiseError } from 'src/utils/misc';
 import { createAffineMatrix } from 'src/utils/transform';
 
@@ -59,12 +67,195 @@ export type ExtractResult = {
   format: RawExtractedFormat;
 };
 
+type FujiRenderSettings = Omit<FujiDevelopParameters, 'profileSlug' | 'processModel'>;
+
+type FujiRenderOutputOptions = {
+  format: ImageFormat;
+  quality: number;
+  progressive: boolean;
+  size: number;
+};
+
+export type FujiRenderRequest = {
+  inputPath: string;
+  profileSlug: FujiProfileSlug;
+  renderRevision: string;
+  settings: FujiRenderSettings;
+  spatialEdits: SpatialAssetEdit[];
+  outputs: {
+    fullSizePath: string;
+    previewPath: string;
+    thumbnailPath: string;
+  };
+  image: {
+    preview: FujiRenderOutputOptions;
+    thumbnail: FujiRenderOutputOptions;
+  };
+};
+
+type FujiRenderedFile = ImageDimensions & { path: string };
+
+export type FujiRenderResponse = ImageDimensions & {
+  outputPath: string;
+  profileSlug: FujiProfileSlug;
+  rendererVersion: FujiDevelopProcessModel;
+  rendererRelease: string;
+  renderRevision: string;
+  outputs: {
+    fullSize: FujiRenderedFile;
+    preview: FujiRenderedFile;
+    thumbnail: FujiRenderedFile;
+  };
+  renderSummary: {
+    processModel: FujiDevelopProcessModel;
+    cameraModel: 'X-T5';
+    fullResolutionDemosaic: true;
+    rawHighlightHeadroomEffective: boolean;
+    multiRawFusionEnabled: boolean;
+  };
+};
+
+export class FujiRenderSupersededError extends Error {
+  constructor() {
+    super('Fuji render was superseded by a newer edit revision');
+    this.name = FujiRenderSupersededError.name;
+  }
+}
+
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const isRenderedFile = (value: unknown, expectedPath: string): value is FujiRenderedFile =>
+  isObject(value) &&
+  value.path === expectedPath &&
+  Number.isInteger(value.width) &&
+  Number(value.width) > 0 &&
+  Number.isInteger(value.height) &&
+  Number(value.height) > 0;
+
+const getFujiRendererTimeout = () => {
+  const configured = Number.parseInt(process.env.IMMICH_FUJI_RENDERER_TIMEOUT_MS ?? '', 10);
+  return Number.isSafeInteger(configured) && configured > 0 ? configured : 30 * 60 * 1000;
+};
+
+const getFujiRendererBaseUrl = () => {
+  if (process.env.IMMICH_FUJI_RENDERER_ENABLED !== 'true') {
+    throw new Error('Fuji RAW renderer is not enabled');
+  }
+  const baseUrl = process.env.IMMICH_FUJI_RENDERER_URL?.trim();
+  if (!baseUrl) {
+    throw new Error('IMMICH_FUJI_RENDERER_URL is not configured');
+  }
+  return baseUrl;
+};
+
 @Injectable()
 export class MediaRepository {
   constructor(private logger: LoggingRepository) {
     this.logger.setContext(MediaRepository.name);
     sharp.concurrency(0);
     sharp.cache({ files: 0 });
+  }
+
+  async renderFujiRaw(request: FujiRenderRequest): Promise<FujiRenderResponse> {
+    const baseUrl = getFujiRendererBaseUrl();
+
+    const endpoint = new URL('render', baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`);
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(request),
+      signal: AbortSignal.timeout(getFujiRendererTimeout()),
+    });
+
+    if (response.status === 409) {
+      throw new FujiRenderSupersededError();
+    }
+
+    if (!response.ok) {
+      const detail = (await response.text()).slice(0, 500);
+      throw new Error(
+        `Fuji renderer request failed with status ${response.status}${detail ? `: ${detail}` : ''}`,
+      );
+    }
+
+    const result: unknown = await response.json();
+    if (
+      !isObject(result) ||
+      result.outputPath !== request.outputs.fullSizePath ||
+      result.profileSlug !== request.profileSlug ||
+      result.renderRevision !== request.renderRevision ||
+      result.rendererVersion !== FujiDevelopProcessModel.LightroomPv2012IndependentV6 ||
+      typeof result.rendererRelease !== 'string' ||
+      result.rendererRelease.trim().length === 0 ||
+      !Number.isInteger(result.width) ||
+      Number(result.width) <= 0 ||
+      !Number.isInteger(result.height) ||
+      Number(result.height) <= 0 ||
+      !isObject(result.outputs) ||
+      !isRenderedFile(result.outputs.fullSize, request.outputs.fullSizePath) ||
+      result.width !== result.outputs.fullSize.width ||
+      result.height !== result.outputs.fullSize.height ||
+      !isRenderedFile(result.outputs.preview, request.outputs.previewPath) ||
+      !isRenderedFile(result.outputs.thumbnail, request.outputs.thumbnailPath) ||
+      !isObject(result.renderSummary) ||
+      result.renderSummary.processModel !== FujiDevelopProcessModel.LightroomPv2012IndependentV6 ||
+      result.renderSummary.cameraModel !== 'X-T5' ||
+      result.renderSummary.fullResolutionDemosaic !== true ||
+      typeof result.renderSummary.rawHighlightHeadroomEffective !== 'boolean' ||
+      typeof result.renderSummary.multiRawFusionEnabled !== 'boolean'
+    ) {
+      throw new Error('Fuji renderer returned an invalid response');
+    }
+
+    return result as FujiRenderResponse;
+  }
+
+  async cleanupFujiRenderedFiles(paths: string[]): Promise<void> {
+    const requestedPaths = [...new Set(paths)];
+    if (requestedPaths.length === 0) {
+      return;
+    }
+    if (requestedPaths.length > 64) {
+      throw new Error('Fuji renderer cleanup accepts at most 64 paths');
+    }
+
+    const baseUrl = getFujiRendererBaseUrl();
+
+    const endpoint = new URL('cleanup', baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`);
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ paths: requestedPaths }),
+      signal: AbortSignal.timeout(getFujiRendererTimeout()),
+    });
+
+    if (!response.ok) {
+      const detail = (await response.text()).slice(0, 500);
+      throw new Error(
+        `Fuji renderer cleanup failed with status ${response.status}${detail ? `: ${detail}` : ''}`,
+      );
+    }
+
+    const result: unknown = await response.json();
+    if (
+      !isObject(result) ||
+      !Array.isArray(result.removedPaths) ||
+      !result.removedPaths.every((path) => typeof path === 'string') ||
+      !Array.isArray(result.missingPaths) ||
+      !result.missingPaths.every((path) => typeof path === 'string')
+    ) {
+      throw new Error('Fuji renderer returned an invalid cleanup response');
+    }
+
+    const handledPaths = [...result.removedPaths, ...result.missingPaths];
+    if (
+      handledPaths.length !== requestedPaths.length ||
+      new Set(handledPaths).size !== requestedPaths.length ||
+      requestedPaths.some((path) => !handledPaths.includes(path))
+    ) {
+      throw new Error('Fuji renderer cleanup response did not account for every requested path');
+    }
   }
 
   /**
@@ -150,6 +341,7 @@ export class MediaRepository {
   }
 
   private applyEdits(pipeline: sharp.Sharp, edits: AssetEditActionItem[]): sharp.Sharp {
+    edits = getSpatialAssetEdits(edits);
     const crop = edits.find((edit) => edit.action === 'crop');
     if (crop) {
       pipeline = pipeline.extract({
@@ -160,7 +352,9 @@ export class MediaRepository {
       });
     }
 
-    const affineEditOperations = edits.filter((edit) => edit.action !== 'crop');
+    const affineEditOperations = edits.filter(
+      (edit) => edit.action === AssetEditAction.Rotate || edit.action === AssetEditAction.Mirror,
+    );
     if (affineEditOperations.length > 0) {
       const { a, b, c, d } = createAffineMatrix(affineEditOperations);
       pipeline = pipeline.affine([

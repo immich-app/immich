@@ -1,11 +1,20 @@
 import sharp from 'sharp';
 import { AssetFace } from 'src/database';
-import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
+import {
+  AssetEditAction,
+  FujiDevelopProcessModel,
+  FujiProfileSlug,
+  MirrorAxis,
+} from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
-import { SourceType } from 'src/enum';
+import { ImageFormat, SourceType } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
-import { MediaRepository } from 'src/repositories/media.repository';
+import {
+  FujiRenderRequest,
+  FujiRenderSupersededError,
+  MediaRepository,
+} from 'src/repositories/media.repository';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { automock } from 'test/utils';
 
@@ -67,6 +76,114 @@ describe(MediaRepository.name, () => {
   beforeEach(() => {
     // eslint-disable-next-line no-sparse-arrays
     sut = new MediaRepository(automock(LoggingRepository, { args: [, { getEnv: () => ({}) }], strict: false }));
+  });
+
+  describe('Fuji renderer client', () => {
+    const request: FujiRenderRequest = {
+      inputPath: '/data/library/DXT00001.RAF',
+      profileSlug: FujiProfileSlug.NostalgicNeg,
+      renderRevision: 'a'.repeat(64),
+      settings: {
+        exposure: 0,
+        contrast: 0,
+        highlights: -25,
+        shadows: 0,
+        whites: 0,
+        blacks: 0,
+        temperature: null,
+        tint: null,
+        vibrance: 0,
+        saturation: 0,
+      },
+      spatialEdits: [],
+      outputs: {
+        fullSizePath: '/data/thumbs/01234567-89ab-4cde-8fab-0123456789ab_fullsize_fuji_edited.jpeg',
+        previewPath: '/data/thumbs/01234567-89ab-4cde-8fab-0123456789ab_preview_fuji_edited.jpeg',
+        thumbnailPath: '/data/thumbs/01234567-89ab-4cde-8fab-0123456789ab_thumbnail_fuji_edited.webp',
+      },
+      image: {
+        preview: { format: ImageFormat.Jpeg, quality: 80, progressive: false, size: 1440 },
+        thumbnail: { format: ImageFormat.Webp, quality: 80, progressive: false, size: 250 },
+      },
+    };
+
+    it('posts the strict JSON path contract to a base URL without a trailing slash', async () => {
+      process.env.IMMICH_FUJI_RENDERER_ENABLED = 'true';
+      process.env.IMMICH_FUJI_RENDERER_URL = 'http://fuji-renderer:8000';
+      const body = {
+        outputPath: request.outputs.fullSizePath,
+        profileSlug: request.profileSlug,
+        renderRevision: request.renderRevision,
+        rendererVersion: FujiDevelopProcessModel.LightroomPv2012IndependentV6,
+        rendererRelease: 'film-simulation-baseline-v2',
+        width: 7728,
+        height: 5152,
+        outputs: {
+          fullSize: { path: request.outputs.fullSizePath, width: 7728, height: 5152 },
+          preview: { path: request.outputs.previewPath, width: 1440, height: 960 },
+          thumbnail: { path: request.outputs.thumbnailPath, width: 250, height: 167 },
+        },
+        renderSummary: {
+          processModel: FujiDevelopProcessModel.LightroomPv2012IndependentV6,
+          cameraModel: 'X-T5',
+          fullResolutionDemosaic: true,
+          rawHighlightHeadroomEffective: true,
+          multiRawFusionEnabled: false,
+        },
+      };
+      const fetchMock = vi.fn().mockResolvedValue(
+        new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } }),
+      );
+      vi.stubGlobal('fetch', fetchMock);
+
+      try {
+        await expect(sut.renderFujiRaw(request)).resolves.toEqual(body);
+        expect(fetchMock).toHaveBeenCalledWith(
+          new URL('http://fuji-renderer:8000/render'),
+          expect.objectContaining({ method: 'POST', body: JSON.stringify(request) }),
+        );
+      } finally {
+        delete process.env.IMMICH_FUJI_RENDERER_ENABLED;
+        delete process.env.IMMICH_FUJI_RENDERER_URL;
+        vi.unstubAllGlobals();
+      }
+    });
+
+    it('reports a superseded render distinctly', async () => {
+      process.env.IMMICH_FUJI_RENDERER_ENABLED = 'true';
+      process.env.IMMICH_FUJI_RENDERER_URL = 'http://fuji-renderer:8000/';
+      vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 409 })));
+
+      try {
+        await expect(sut.renderFujiRaw(request)).rejects.toBeInstanceOf(FujiRenderSupersededError);
+      } finally {
+        delete process.env.IMMICH_FUJI_RENDERER_ENABLED;
+        delete process.env.IMMICH_FUJI_RENDERER_URL;
+        vi.unstubAllGlobals();
+      }
+    });
+
+    it('validates cleanup accounting from the renderer', async () => {
+      process.env.IMMICH_FUJI_RENDERER_ENABLED = 'true';
+      process.env.IMMICH_FUJI_RENDERER_URL = 'http://fuji-renderer:8000';
+      const paths = [request.outputs.previewPath, request.outputs.thumbnailPath];
+      const fetchMock = vi.fn().mockResolvedValue(
+        new Response(JSON.stringify({ removedPaths: [paths[0]], missingPaths: [paths[1]] }), { status: 200 }),
+      );
+      vi.stubGlobal('fetch', fetchMock);
+
+      try {
+        await expect(sut.cleanupFujiRenderedFiles(paths)).resolves.toBeUndefined();
+        expect(fetchMock).toHaveBeenCalledWith(
+          new URL('http://fuji-renderer:8000/cleanup'),
+          expect.objectContaining({ method: 'POST', body: JSON.stringify({ paths }) }),
+        );
+      } finally {
+        delete process.env.IMMICH_FUJI_RENDERER_ENABLED;
+        delete process.env.IMMICH_FUJI_RENDERER_URL;
+        vi.unstubAllGlobals();
+      }
+    });
   });
 
   describe('applyEdits (single actions)', () => {

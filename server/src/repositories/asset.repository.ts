@@ -820,6 +820,7 @@ export class AssetRepository {
             'asset.status',
             sql`asset."fileCreatedAt" at time zone 'utc'`.as('fileCreatedAt'),
             sql`asset."createdAt" at time zone 'utc'`.as('createdAt'),
+            'asset.updatedAt',
             eb.fn('encode', ['asset.thumbhash', sql.lit('base64')]).as('thumbhash'),
             'asset_exif.projectionType',
             eb.fn
@@ -922,6 +923,7 @@ export class AssetRepository {
             eb.fn.coalesce(eb.fn('array_agg', ['fileCreatedAt']), sql.lit('{}')).as('fileCreatedAt'),
             eb.fn.coalesce(eb.fn('array_agg', ['localOffsetHours']), sql.lit('{}')).as('localOffsetHours'),
             eb.fn.coalesce(eb.fn('array_agg', ['createdAt']), sql.lit('{}')).as('createdAt'),
+            eb.fn.coalesce(eb.fn('array_agg', ['updatedAt']), sql.lit('{}')).as('updatedAt'),
             eb.fn.coalesce(eb.fn('array_agg', ['ownerId']), sql.lit('{}')).as('ownerId'),
             eb.fn.coalesce(eb.fn('array_agg', ['projectionType']), sql.lit('{}')).as('projectionType'),
             eb.fn.coalesce(eb.fn('array_agg', ['ratio']), sql.lit('{}')).as('ratio'),
@@ -1188,7 +1190,13 @@ export class AssetRepository {
   async getForEdit(id: string) {
     return this.db
       .selectFrom('asset')
-      .select(['asset.type', 'asset.livePhotoVideoId', 'asset.originalPath', 'asset.originalFileName'])
+      .select([
+        'asset.type',
+        'asset.livePhotoVideoId',
+        'asset.originalPath',
+        'asset.originalFileName',
+        'asset.isOffline',
+      ])
       .where('asset.id', '=', id)
       .innerJoin('asset_exif', (join) => join.onRef('asset_exif.assetId', '=', 'asset.id'))
       .select([
@@ -1196,6 +1204,8 @@ export class AssetRepository {
         'asset_exif.exifImageHeight',
         'asset_exif.orientation',
         'asset_exif.projectionType',
+        'asset_exif.make',
+        'asset_exif.model',
       ])
       .executeTakeFirst();
   }

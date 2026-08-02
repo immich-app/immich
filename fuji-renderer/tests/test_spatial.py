@@ -1,8 +1,10 @@
 from types import SimpleNamespace
 
+import pytest
 from PIL import Image
 
 from fuji_renderer.engine import _resize_long_edge, _spatial_transform
+from fuji_renderer.models import MirrorEdit, MirrorParameters, RenderRequest
 
 
 def edit(action: str, **parameters: object) -> SimpleNamespace:
@@ -23,6 +25,24 @@ def test_mirror_axis_matches_immich_semantics() -> None:
     image.putpixel((0, 1), (0, 0, 255))
     transformed = _spatial_transform([edit("mirror", axis="horizontal")])(image)
     assert transformed.getpixel((0, 0)) == (0, 0, 255)
+
+
+def test_spatial_contract_allows_one_mirror_per_axis() -> None:
+    horizontal = MirrorEdit(
+        action="mirror",
+        parameters=MirrorParameters(axis="horizontal"),
+    )
+    vertical = MirrorEdit(
+        action="mirror",
+        parameters=MirrorParameters(axis="vertical"),
+    )
+
+    assert RenderRequest.validate_spatial_edits([horizontal, vertical]) == [
+        horizontal,
+        vertical,
+    ]
+    with pytest.raises(ValueError, match="mirror:horizontal"):
+        RenderRequest.validate_spatial_edits([horizontal, horizontal])
 
 
 def test_derivative_size_is_a_long_edge_cap() -> None:

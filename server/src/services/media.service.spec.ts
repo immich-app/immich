@@ -2,7 +2,12 @@ import { ShallowDehydrateObject } from 'kysely';
 import { OutputInfo } from 'sharp';
 import { SystemConfig } from 'src/config';
 import { Exif } from 'src/database';
-import { AssetEditAction } from 'src/dtos/editing.dto';
+import {
+  AssetEditAction,
+  FujiDevelopParameters,
+  FujiDevelopProcessModel,
+  FujiProfileSlug,
+} from 'src/dtos/editing.dto';
 import {
   AssetFileType,
   AssetPathType,
@@ -22,6 +27,7 @@ import {
 } from 'src/enum';
 import { MediaService } from 'src/services/media.service';
 import { AudioStreamInfo, JobCounts, RawImageInfo, VideoFormat, VideoStreamInfo } from 'src/types';
+import { getAssetEditRevision } from 'src/utils/editor';
 import { AssetFaceFactory } from 'test/factories/asset-face.factory';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { PersonFactory } from 'test/factories/person.factory';
@@ -36,12 +42,28 @@ const fullsizeBuffer = Buffer.from('embedded image data');
 const rawBuffer = Buffer.from('raw image data');
 const extractedBuffer = Buffer.from('embedded image file');
 
+const fujiDevelopParameters: FujiDevelopParameters = {
+  profileSlug: FujiProfileSlug.NostalgicNeg,
+  processModel: FujiDevelopProcessModel.LightroomPv2012IndependentV6,
+  exposure: 0.25,
+  contrast: 10,
+  highlights: -30,
+  shadows: 20,
+  whites: -5,
+  blacks: 3,
+  temperature: 5600,
+  tint: -8,
+  vibrance: 12,
+  saturation: -4,
+};
+
 describe(MediaService.name, () => {
   let sut: MediaService;
   let mocks: ServiceMocks;
 
   beforeEach(() => {
     ({ sut, mocks } = newTestService(MediaService));
+    mocks.assetEdit.getAll.mockResolvedValue([]);
   });
 
   it('should be defined', () => {
@@ -398,6 +420,30 @@ describe(MediaService.name, () => {
 
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
       expect(mocks.asset.update).not.toHaveBeenCalledWith();
+    });
+
+    it('does not register an initially standard edit snapshot superseded by Fuji development', async () => {
+      const asset = AssetFactory.from()
+        .exif()
+        .edit({ action: AssetEditAction.Rotate, parameters: { angle: 90 } })
+        .build();
+      const standardEdits = [
+        { id: newUuid(), action: AssetEditAction.Rotate, parameters: { angle: 90 } },
+      ] as const;
+      const newerFujiEdits = [
+        { id: newUuid(), action: AssetEditAction.FujiDevelop, parameters: fujiDevelopParameters },
+      ] as const;
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.assetEdit.getAll
+        .mockResolvedValueOnce([...standardEdits])
+        .mockResolvedValueOnce([...newerFujiEdits]);
+
+      await expect(sut.handleGenerateThumbnails({ id: asset.id })).resolves.toBe(JobStatus.Success);
+
+      const upsertedFiles = mocks.asset.upsertFiles.mock.calls[0][0];
+      expect(upsertedFiles.every((file) => !file.isEdited)).toBe(true);
+      expect(mocks.media.cleanupFujiRenderedFiles).not.toHaveBeenCalled();
+      expect(mocks.asset.update).not.toHaveBeenCalled();
     });
 
     it('should delete previous preview if different path', async () => {
@@ -1404,6 +1450,169 @@ describe(MediaService.name, () => {
           expect.objectContaining({ type: AssetFileType.Preview, isEdited: true }),
           expect.objectContaining({ type: AssetFileType.Thumbnail, isEdited: true }),
         ]),
+      );
+    });
+
+    it('delegates X-T5 RAW development and all derivative writes to the Fuji renderer', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'DXT00001.RAF' })
+        .exif({ make: 'FUJIFILM', model: 'X-T5' })
+        .edit({ action: AssetEditAction.FujiDevelop, parameters: fujiDevelopParameters })
+        .edit({ action: AssetEditAction.Rotate, parameters: { angle: 90 } })
+        .build();
+      const revision = getAssetEditRevision(asset.edits);
+      mocks.assetEdit.getAll.mockResolvedValue(asset.edits);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.media.renderFujiRaw.mockImplementation(async (request) => ({
+        outputPath: request.outputs.fullSizePath,
+        profileSlug: request.profileSlug,
+        renderRevision: request.renderRevision,
+        rendererVersion: FujiDevelopProcessModel.LightroomPv2012IndependentV6,
+        rendererRelease: 'film-simulation-baseline-v2',
+        width: 100,
+        height: 200,
+        outputs: {
+          fullSize: { path: request.outputs.fullSizePath, width: 100, height: 200 },
+          preview: { path: request.outputs.previewPath, width: 100, height: 200 },
+          thumbnail: { path: request.outputs.thumbnailPath, width: 100, height: 200 },
+        },
+        renderSummary: {
+          processModel: FujiDevelopProcessModel.LightroomPv2012IndependentV6,
+          cameraModel: 'X-T5',
+          fullResolutionDemosaic: true,
+          rawHighlightHeadroomEffective: true,
+          multiRawFusionEnabled: false,
+        },
+      }));
+      const thumbhash = factory.buffer();
+      mocks.media.generateThumbhash.mockResolvedValue(thumbhash);
+
+      await expect(
+        sut.handleAssetEditThumbnailGeneration({ id: asset.id, revision, cleanupFuji: true }),
+      ).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.media.renderFujiRaw).toHaveBeenCalledWith(
+        expect.objectContaining({
+          inputPath: asset.originalPath,
+          profileSlug: FujiProfileSlug.NostalgicNeg,
+          renderRevision: revision,
+          settings: expect.objectContaining({ highlights: -30, temperature: 5600 }),
+          spatialEdits: [{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }],
+          outputs: {
+            fullSizePath: expect.stringContaining('_fullsize_fuji_edited.jpeg'),
+            previewPath: expect.stringContaining('_preview_fuji_edited.jpeg'),
+            thumbnailPath: expect.stringContaining('_thumbnail_fuji_edited.webp'),
+          },
+        }),
+      );
+      expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
+      expect(mocks.storage.rename).not.toHaveBeenCalled();
+      expect(mocks.storage.unlink).not.toHaveBeenCalled();
+      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith(
+        expect.arrayContaining([
+          expect.objectContaining({ type: AssetFileType.FullSize, isEdited: true }),
+          expect.objectContaining({ type: AssetFileType.Preview, isEdited: true }),
+          expect.objectContaining({ type: AssetFileType.Thumbnail, isEdited: true }),
+        ]),
+      );
+      expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, width: 100, height: 200 });
+    });
+
+    it('does not register a Fuji render whose edit revision changed while rendering', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'DXT00001.RAF' })
+        .exif({ make: 'FUJIFILM', model: 'X-T5' })
+        .edit({ action: AssetEditAction.FujiDevelop, parameters: fujiDevelopParameters })
+        .build();
+      const revision = getAssetEditRevision(asset.edits);
+      const newerEdits = [{ ...asset.edits[0], id: newUuid() }];
+      mocks.assetEdit.getAll
+        .mockResolvedValueOnce(asset.edits)
+        .mockResolvedValueOnce(asset.edits)
+        .mockResolvedValueOnce(newerEdits);
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.media.renderFujiRaw.mockImplementation(async (request) => ({
+        outputPath: request.outputs.fullSizePath,
+        profileSlug: request.profileSlug,
+        renderRevision: request.renderRevision,
+        rendererVersion: FujiDevelopProcessModel.LightroomPv2012IndependentV6,
+        rendererRelease: 'film-simulation-baseline-v2',
+        width: 100,
+        height: 100,
+        outputs: {
+          fullSize: { path: request.outputs.fullSizePath, width: 100, height: 100 },
+          preview: { path: request.outputs.previewPath, width: 100, height: 100 },
+          thumbnail: { path: request.outputs.thumbnailPath, width: 100, height: 100 },
+        },
+        renderSummary: {
+          processModel: FujiDevelopProcessModel.LightroomPv2012IndependentV6,
+          cameraModel: 'X-T5',
+          fullResolutionDemosaic: true,
+          rawHighlightHeadroomEffective: true,
+          multiRawFusionEnabled: false,
+        },
+      }));
+
+      await expect(sut.handleAssetEditThumbnailGeneration({ id: asset.id, revision })).resolves.toBe(
+        JobStatus.Skipped,
+      );
+      expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
+      expect(mocks.media.generateThumbhash).not.toHaveBeenCalled();
+    });
+
+    it('recognizes and cleans up Fuji-specific derivative paths without a job ownership hint', async () => {
+      const asset = AssetFactory.from({ thumbhash: factory.buffer() })
+        .exif()
+        .files([
+          {
+            type: AssetFileType.Preview,
+            path: `/data/thumbs/${newUuid()}_preview_fuji_edited.jpeg`,
+            isEdited: true,
+          },
+          {
+            type: AssetFileType.Thumbnail,
+            path: `/data/thumbs/${newUuid()}_thumbnail_fuji_edited.webp`,
+            isEdited: true,
+          },
+          {
+            type: AssetFileType.FullSize,
+            path: `/data/thumbs/${newUuid()}_fullsize_fuji_edited.jpeg`,
+            isEdited: true,
+          },
+        ])
+        .build();
+      mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      const revision = getAssetEditRevision([]);
+
+      await expect(sut.handleAssetEditThumbnailGeneration({ id: asset.id, revision })).resolves.toBe(
+        JobStatus.Success,
+      );
+
+      expect(mocks.media.cleanupFujiRenderedFiles).toHaveBeenCalledWith(
+        expect.arrayContaining(asset.files.map(({ path }) => path)),
+      );
+      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.FileDelete }));
+    });
+
+    it('partitions Fuji-owned and ordinary file cleanup', async () => {
+      const ordinaryPath = `/data/thumbs/${newUuid()}_preview.jpeg`;
+      const legacyFujiPath = `/data/thumbs/${newUuid()}_thumbnail_edited.webp`;
+      const fujiPath = `/data/thumbs/${newUuid()}_fullsize_fuji_edited.jpeg`;
+      const asset = AssetFactory.from()
+        .files([
+          { type: AssetFileType.Preview, path: ordinaryPath, isEdited: false },
+          { type: AssetFileType.Thumbnail, path: legacyFujiPath, isEdited: true },
+          { type: AssetFileType.FullSize, path: fujiPath, isEdited: true },
+        ])
+        .build();
+
+      await sut['syncFiles'](asset.files, [], { deleteWithFujiRenderer: true });
+
+      expect(mocks.media.cleanupFujiRenderedFiles).toHaveBeenCalledWith([legacyFujiPath, fujiPath]);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: [ordinaryPath] },
+      });
+      expect(mocks.asset.deleteFiles.mock.invocationCallOrder[0]).toBeLessThan(
+        mocks.media.cleanupFujiRenderedFiles.mock.invocationCallOrder[0],
       );
     });
 

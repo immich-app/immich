@@ -16,8 +16,8 @@ payload is included in this repository or image.
   rawpy/LibRaw ABI or library hash.
 - A read-only `/profiles` mount containing the locally extracted profile
   bundle listed below.
-- The same media paths visible to Immich, with `/data/thumbs` writable by this
-  sidecar.
+- The same media paths visible to Immich. The broad `/data` mount is read-only;
+  a nested `/data/thumbs` bind is the sidecar's only writable media mount.
 - Exactly one service replica. Full-resolution RAF development has a large
   memory working set, and the process serializes renders with one semaphore.
 
@@ -73,9 +73,10 @@ IMMICH_FUJI_RENDERER_TIMEOUT_MS=1800000
 ```
 
 The sidecar is internal-only and publishes no host port. The stock server
-mount remains unchanged. A custom deployment may give the main application a
-read-only view of originals, but the sidecar needs a writable view of the
-generated-image tree because it owns atomic publication and cleanup.
+mount remains unchanged. The sidecar mounts the broad media tree at `/data`
+read-only and overlays the host `thumbs` directory as writable at
+`/data/thumbs`; it cannot modify RAW originals, but still owns atomic
+derivative publication and cleanup.
 
 For an external library, mount it into both containers at the exact same
 container path, add that path to the sidecar's colon-separated allowlist, and
@@ -120,9 +121,9 @@ profile map:
   },
   "spatialEdits": [],
   "outputs": {
-    "fullSizePath": "/data/thumbs/user/01/23/01234567-89ab-4cde-8fab-0123456789ab_fullsize_edited.jpeg",
-    "previewPath": "/data/thumbs/user/01/23/01234567-89ab-4cde-8fab-0123456789ab_preview_edited.jpeg",
-    "thumbnailPath": "/data/thumbs/user/01/23/01234567-89ab-4cde-8fab-0123456789ab_thumbnail_edited.webp"
+    "fullSizePath": "/data/thumbs/user/01/23/01234567-89ab-4cde-8fab-0123456789ab_fullsize_fuji_edited.jpeg",
+    "previewPath": "/data/thumbs/user/01/23/01234567-89ab-4cde-8fab-0123456789ab_preview_fuji_edited.jpeg",
+    "thumbnailPath": "/data/thumbs/user/01/23/01234567-89ab-4cde-8fab-0123456789ab_thumbnail_fuji_edited.webp"
   },
   "image": {
     "preview": { "format": "jpeg", "quality": 80, "progressive": false, "size": 1440 },
@@ -140,7 +141,9 @@ before any file is published.
 
 `POST /cleanup` accepts `{ "paths": [...] }`, at most 64 unique paths. It can
 only unlink non-symlink regular files under the output root whose basename is
-`UUID_(fullsize|preview|thumbnail)_edited.(jpeg|webp)`. Missing files are an
+`UUID_(fullsize|preview|thumbnail)_fuji_edited.(jpeg|webp)`. Cleanup also
+accepts legacy `UUID_(fullsize|preview|thumbnail)_edited.(jpeg|webp)` names so
+upgrades can remove older derivatives. Missing files are an
 idempotent success.
 
 ## Source layout

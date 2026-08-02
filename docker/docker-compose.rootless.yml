@@ -52,7 +52,8 @@ services:
     cap_drop:
       - ALL
     volumes:
-      - ${UPLOAD_LOCATION}:/data
+      - ${UPLOAD_LOCATION}:/data:ro
+      - ${UPLOAD_LOCATION}/thumbs:/data/thumbs
       - ${FUJI_PROFILE_LOCATION:-./fuji-profiles}:/profiles:ro
       - /etc/localtime:/etc/localtime:ro
     environment:

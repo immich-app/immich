@@ -399,6 +399,7 @@ with
       "asset"."status",
       asset."fileCreatedAt" at time zone 'utc' as "fileCreatedAt",
       asset."createdAt" at time zone 'utc' as "createdAt",
+      "asset"."updatedAt",
       encode("asset"."thumbhash", 'base64') as "thumbhash",
       "asset_exif"."projectionType",
       coalesce(
@@ -458,6 +459,7 @@ with
       coalesce(array_agg("fileCreatedAt"), '{}') as "fileCreatedAt",
       coalesce(array_agg("localOffsetHours"), '{}') as "localOffsetHours",
       coalesce(array_agg("createdAt"), '{}') as "createdAt",
+      coalesce(array_agg("updatedAt"), '{}') as "updatedAt",
       coalesce(array_agg("ownerId"), '{}') as "ownerId",
       coalesce(array_agg("projectionType"), '{}') as "projectionType",
       coalesce(array_agg("ratio"), '{}') as "ratio",
@@ -642,10 +644,13 @@ select
   "asset"."livePhotoVideoId",
   "asset"."originalPath",
   "asset"."originalFileName",
+  "asset"."isOffline",
   "asset_exif"."exifImageWidth",
   "asset_exif"."exifImageHeight",
   "asset_exif"."orientation",
-  "asset_exif"."projectionType"
+  "asset_exif"."projectionType",
+  "asset_exif"."make",
+  "asset_exif"."model"
 from
   "asset"
   inner join "asset_exif" on "asset_exif"."assetId" = "asset"."id"

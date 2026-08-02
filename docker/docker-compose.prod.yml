@@ -44,7 +44,8 @@ services:
       context: ../fuji-renderer
       dockerfile: Dockerfile
     volumes:
-      - ${UPLOAD_LOCATION}/photos:/data
+      - ${UPLOAD_LOCATION}/photos:/data:ro
+      - ${UPLOAD_LOCATION}/photos/thumbs:/data/thumbs
       - ${FUJI_PROFILE_LOCATION:-./fuji-profiles}:/profiles:ro
       - /etc/localtime:/etc/localtime:ro
     environment:

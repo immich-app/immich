@@ -1,8 +1,38 @@
 import { AssetFace } from 'src/database';
+import { AssetEditAction, AssetEditActionItem } from 'src/dtos/editing.dto';
 import { AssetOcrResponseDto } from 'src/dtos/ocr.dto';
 import { SourceType } from 'src/enum';
-import { boundingBoxOverlap, checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
+import {
+  boundingBoxOverlap,
+  checkFaceVisibility,
+  checkOcrVisibility,
+  getAssetEditRevision,
+  getSpatialAssetEdits,
+} from 'src/utils/editor';
 import { describe, expect, it } from 'vitest';
+
+describe('asset edit revisions', () => {
+  it('is stable for the same ordered edit row IDs', () => {
+    expect(getAssetEditRevision([{ id: 'one' }, { id: 'two' }])).toBe(
+      getAssetEditRevision([{ id: 'one' }, { id: 'two' }]),
+    );
+  });
+
+  it('changes when row IDs or their order change', () => {
+    const revision = getAssetEditRevision([{ id: 'one' }, { id: 'two' }]);
+    expect(getAssetEditRevision([{ id: 'two' }, { id: 'one' }])).not.toBe(revision);
+    expect(getAssetEditRevision([{ id: 'one' }, { id: 'three' }])).not.toBe(revision);
+  });
+
+  it('removes Fuji development from Sharp spatial edits', () => {
+    const edits = [
+      { id: 'fuji-edit-id', action: AssetEditAction.FujiDevelop, parameters: {} },
+      { id: 'rotate-edit-id', action: AssetEditAction.Rotate, parameters: { angle: 90 } },
+    ] as unknown as AssetEditActionItem[];
+
+    expect(getSpatialAssetEdits(edits)).toEqual([{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }]);
+  });
+});
 
 describe('boundingBoxOverlap', () => {
   it('should return 1 for identical boxes', () => {

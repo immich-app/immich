@@ -16,11 +16,14 @@ export class AssetEditRepository {
       await trx.deleteFrom('asset_edit').where('assetId', '=', assetId).execute();
 
       if (edits.length > 0) {
-        return trx
+        const inserted = await trx
           .insertInto('asset_edit')
           .values(edits.map((edit, i) => ({ assetId, sequence: i, ...edit })))
-          .returning(['id', 'action', 'parameters'])
+          .returning(['id', 'action', 'parameters', 'sequence'])
           .execute();
+        return inserted
+          .toSorted((left, right) => left.sequence - right.sequence)
+          .map(({ id, action, parameters }) => ({ id, action, parameters }));
       }
 
       return [];

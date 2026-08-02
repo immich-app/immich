@@ -240,6 +240,13 @@ export interface IEntityJob extends IBaseJob {
   notify?: boolean;
 }
 
+export interface IAssetEditJob extends IEntityJob {
+  /** SHA-256 fingerprint of the ordered asset_edit row IDs this job renders. */
+  revision?: string;
+  /** Delete superseded derivatives through the Fuji sidecar, which owns the writable media mount. */
+  cleanupFuji?: boolean;
+}
+
 export interface IAssetDeleteJob extends IEntityJob {
   deleteOnDisk: boolean;
 }
@@ -476,7 +483,7 @@ export type JobItem =
   | { name: JobName.IntegrityDeleteReports; data: IIntegrityDeleteReportsJob }
 
   // Editor
-  | { name: JobName.AssetEditThumbnailGeneration; data: IEntityJob };
+  | { name: JobName.AssetEditThumbnailGeneration; data: IAssetEditJob };
 
 export type VectorExtension = (typeof VECTOR_EXTENSIONS)[number];
 

@@ -4,7 +4,11 @@ import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
-import { AssetEditAction, CropParameters } from 'src/dtos/editing.dto';
+import {
+  AssetEditAction,
+  CropParameters,
+  FujiDevelopParametersSchema,
+} from 'src/dtos/editing.dto';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
@@ -27,6 +31,7 @@ import {
 } from 'src/enum';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { BoundingBox } from 'src/repositories/machine-learning.repository';
+import { FujiRenderSupersededError } from 'src/repositories/media.repository';
 import { BaseService } from 'src/services/base.service';
 import {
   AudioStreamInfo,
@@ -40,11 +45,21 @@ import {
   VideoStreamInfo,
 } from 'src/types';
 import { getAssetFile, getDimensions } from 'src/utils/asset.util';
-import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
+import {
+  checkFaceVisibility,
+  checkOcrVisibility,
+  getAssetEditRevision,
+  getSpatialAssetEdits,
+} from 'src/utils/editor';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
 import { clamp } from 'src/utils/misc';
 import { getOutputDimensions } from 'src/utils/transform';
+
+const isFujiRenderedPath = (path: string) =>
+  /_(?:fullsize|preview|thumbnail)_fuji_edited\.(?:jpeg|webp)$/.test(path);
+const isLegacyEditedPath = (path: string) =>
+  /_(?:fullsize|preview|thumbnail)_edited\.(?:jpeg|webp)$/.test(path);
 
 interface UpsertFileOptions {
   assetId: string;
@@ -171,7 +186,20 @@ export class MediaService extends BaseService {
   }
 
   @OnJob({ name: JobName.AssetEditThumbnailGeneration, queue: QueueName.Editor })
-  async handleAssetEditThumbnailGeneration({ id }: JobOf<JobName.AssetEditThumbnailGeneration>): Promise<JobStatus> {
+  async handleAssetEditThumbnailGeneration(job: JobOf<JobName.AssetEditThumbnailGeneration>): Promise<JobStatus> {
+    const { id } = job;
+    const currentEdits = await this.assetEditRepository.getAll(id);
+    const currentRevision = getAssetEditRevision(currentEdits);
+    job.revision ??= currentRevision;
+    if (job.revision !== currentRevision) {
+      this.logger.debug(`Skipping stale edit render for asset ${id}`);
+      return JobStatus.Skipped;
+    }
+
+    if (currentEdits.some((edit) => edit.action === AssetEditAction.FujiDevelop)) {
+      job.cleanupFuji = true;
+    }
+
     const asset = await this.assetJobRepository.getForGenerateThumbnailJob(id);
     const config = await this.getConfig({ withCache: true });
 
@@ -180,10 +208,21 @@ export class MediaService extends BaseService {
       return JobStatus.Failed;
     }
 
-    const generated = await this.generateEditedThumbnails(asset, config);
+    const editSnapshot = { ...asset, edits: currentEdits };
+    const generated = await this.generateEditedThumbnails(editSnapshot, config, job.revision);
+    if (generated?.isStale) {
+      return JobStatus.Skipped;
+    }
+
+    if (!(await this.isEditRevisionCurrent(id, job.revision))) {
+      this.logger.debug(`Discarding stale edit render result for asset ${id}`);
+      return JobStatus.Skipped;
+    }
+
     await this.syncFiles(
       asset.files.filter((file) => file.isEdited),
       generated?.files ?? [],
+      { deleteWithFujiRenderer: job.cleanupFuji === true },
     );
 
     let thumbhash: Buffer | undefined = generated?.thumbhash;
@@ -236,15 +275,33 @@ export class MediaService extends BaseService {
       return JobStatus.Skipped;
     }
 
-    const editedGenerated = await this.generateEditedThumbnails(asset, config);
-    if (editedGenerated) {
+    const queriedHasFujiDevelop = asset.edits.some((edit) => edit.action === AssetEditAction.FujiDevelop);
+    const persistedEdits = await this.assetEditRepository.getAll(asset.id);
+    const editSnapshot = { ...asset, edits: persistedEdits };
+    const hasFujiDevelop = persistedEdits.some((edit) => edit.action === AssetEditAction.FujiDevelop);
+    const cleanupFuji = queriedHasFujiDevelop || hasFujiDevelop;
+    const editRevision = getAssetEditRevision(persistedEdits);
+    const editedGenerated = await this.generateEditedThumbnails(editSnapshot, config, editRevision);
+    let isEditedGenerationStale = editedGenerated?.isStale === true;
+    if (
+      editRevision &&
+      !isEditedGenerationStale &&
+      !(await this.isEditRevisionCurrent(asset.id, editRevision))
+    ) {
+      isEditedGenerationStale = true;
+    }
+    if (editedGenerated && !isEditedGenerationStale) {
       generated.files.push(...editedGenerated.files);
     }
 
-    await this.syncFiles(asset.files, generated.files);
-    const thumbhash = editedGenerated?.thumbhash || generated.thumbhash;
+    await this.syncFiles(
+      isEditedGenerationStale ? asset.files.filter((file) => !file.isEdited) : asset.files,
+      generated.files,
+      { deleteWithFujiRenderer: cleanupFuji && !isEditedGenerationStale },
+    );
+    const thumbhash = editedGenerated && !isEditedGenerationStale ? editedGenerated.thumbhash : generated.thumbhash;
 
-    if (!asset.thumbhash || Buffer.compare(asset.thumbhash, thumbhash) !== 0) {
+    if (!isEditedGenerationStale && (!asset.thumbhash || Buffer.compare(asset.thumbhash, thumbhash) !== 0)) {
       await this.assetRepository.update({ id: asset.id, thumbhash });
     }
 
@@ -792,6 +849,7 @@ export class MediaService extends BaseService {
   private async syncFiles(
     oldFiles: (AssetFile & { isProgressive: boolean; isTransparent: boolean })[],
     newFiles: UpsertFileOptions[],
+    { deleteWithFujiRenderer = false }: { deleteWithFujiRenderer?: boolean } = {},
   ) {
     const toUpsert: UpsertFileOptions[] = [];
     const pathsToDelete: string[] = [];
@@ -821,29 +879,165 @@ export class MediaService extends BaseService {
       }
     }
 
+    if (toDelete.size > 0) {
+      const toDeleteArray = [...toDelete];
+      for (const file of toDeleteArray) {
+        pathsToDelete.push(file.path);
+      }
+    }
+
+    const fujiPathsToDelete = pathsToDelete.filter(
+      (path) => isFujiRenderedPath(path) || (deleteWithFujiRenderer && isLegacyEditedPath(path)),
+    );
+    const standardPathsToDelete = pathsToDelete.filter((path) => !fujiPathsToDelete.includes(path));
+
     if (toUpsert.length > 0) {
       await this.assetRepository.upsertFiles(toUpsert);
     }
 
     if (toDelete.size > 0) {
       const toDeleteArray = [...toDelete];
-      for (const file of toDeleteArray) {
-        pathsToDelete.push(file.path);
-      }
       await this.assetRepository.deleteFiles(toDeleteArray);
     }
 
-    if (pathsToDelete.length > 0) {
-      await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: pathsToDelete } });
+    if (fujiPathsToDelete.length > 0) {
+      await this.mediaRepository.cleanupFujiRenderedFiles(fujiPathsToDelete);
+    }
+
+    if (standardPathsToDelete.length > 0) {
+      await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: standardPathsToDelete } });
     }
   }
 
-  private async generateEditedThumbnails(asset: ThumbnailAsset, config: SystemConfig) {
+  private async isEditRevisionCurrent(assetId: string, revision: string): Promise<boolean> {
+    const edits = await this.assetEditRepository.getAll(assetId);
+    return getAssetEditRevision(edits) === revision;
+  }
+
+  private async generateFujiEditedThumbnails(
+    asset: ThumbnailAsset,
+    { image }: SystemConfig,
+    revision: string,
+  ) {
+    const fujiEdit = asset.edits.find((edit) => edit.action === AssetEditAction.FujiDevelop);
+    if (!fujiEdit) {
+      throw new Error(`Missing Fuji development edit for asset ${asset.id}`);
+    }
+
+    if (!(await this.isEditRevisionCurrent(asset.id, revision))) {
+      return null;
+    }
+
+    const parameters = FujiDevelopParametersSchema.parse(fujiEdit.parameters);
+    const spatialEdits = getSpatialAssetEdits(asset.edits);
+    const fullSizeFile = this.getFujiImageFile(asset, {
+      fileType: AssetFileType.FullSize,
+      format: ImageFormat.Jpeg,
+      isEdited: true,
+      isProgressive: false,
+      isTransparent: false,
+    });
+    const previewFile = this.getFujiImageFile(asset, {
+      fileType: AssetFileType.Preview,
+      format: image.preview.format,
+      isEdited: true,
+      isProgressive: !!image.preview.progressive && image.preview.format !== ImageFormat.Webp,
+      isTransparent: false,
+    });
+    const thumbnailFile = this.getFujiImageFile(asset, {
+      fileType: AssetFileType.Thumbnail,
+      format: image.thumbnail.format,
+      isEdited: true,
+      isProgressive: !!image.thumbnail.progressive && image.thumbnail.format !== ImageFormat.Webp,
+      isTransparent: false,
+    });
+
+    const settings = {
+      exposure: parameters.exposure,
+      contrast: parameters.contrast,
+      highlights: parameters.highlights,
+      shadows: parameters.shadows,
+      whites: parameters.whites,
+      blacks: parameters.blacks,
+      temperature: parameters.temperature,
+      tint: parameters.tint,
+      vibrance: parameters.vibrance,
+      saturation: parameters.saturation,
+    };
+
+    let rendered;
+    try {
+      rendered = await this.mediaRepository.renderFujiRaw({
+        inputPath: asset.originalPath,
+        profileSlug: parameters.profileSlug,
+        renderRevision: revision,
+        settings,
+        spatialEdits,
+        outputs: {
+          fullSizePath: fullSizeFile.path,
+          previewPath: previewFile.path,
+          thumbnailPath: thumbnailFile.path,
+        },
+        image: {
+          preview: {
+            format: image.preview.format,
+            quality: image.preview.quality,
+            progressive: !!image.preview.progressive,
+            size: image.preview.size,
+          },
+          thumbnail: {
+            format: image.thumbnail.format,
+            quality: image.thumbnail.quality,
+            progressive: !!image.thumbnail.progressive,
+            size: image.thumbnail.size,
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof FujiRenderSupersededError) {
+        return null;
+      }
+      throw error;
+    }
+
+    if (!(await this.isEditRevisionCurrent(asset.id, revision))) {
+      return null;
+    }
+
+    const thumbhash = await this.mediaRepository.generateThumbhash(rendered.outputs.fullSize.path, {
+      colorspace: Colorspace.Srgb,
+      processInvalidImages: false,
+      edits: [],
+    });
+
+    return {
+      files: [previewFile, thumbnailFile, fullSizeFile],
+      thumbhash,
+      fullsizeDimensions: {
+        width: rendered.outputs.fullSize.width,
+        height: rendered.outputs.fullSize.height,
+      },
+    };
+  }
+
+  private async generateEditedThumbnails(asset: ThumbnailAsset, config: SystemConfig, revision?: string) {
     if (asset.type !== AssetType.Image || (asset.files.length === 0 && asset.edits.length === 0)) {
       return;
     }
 
-    const generated = asset.edits.length > 0 ? await this.generateImageThumbnails(asset, config, true) : undefined;
+    const hasFujiDevelop = asset.edits.some((edit) => edit.action === AssetEditAction.FujiDevelop);
+    let generated;
+    if (hasFujiDevelop) {
+      if (!revision) {
+        throw new Error(`Missing edit revision for Fuji development of asset ${asset.id}`);
+      }
+      generated = await this.generateFujiEditedThumbnails(asset, config, revision);
+      if (!generated) {
+        return { isStale: true as const };
+      }
+    } else {
+      generated = asset.edits.length > 0 ? await this.generateImageThumbnails(asset, config, true) : undefined;
+    }
 
     const crop = asset.edits.find((e) => e.action === AssetEditAction.Crop);
     const cropBox = crop
@@ -865,7 +1059,7 @@ export class MediaService extends BaseService {
     const ocrStatuses = checkOcrVisibility(ocrData, originalDimensions, cropBox);
     await this.ocrRepository.updateOcrVisibilities(asset.id, ocrStatuses.visible, ocrStatuses.hidden);
 
-    return generated;
+    return generated ? { ...generated, isStale: false as const } : undefined;
   }
 
   private warnOnTransparencyLoss(isTransparent: boolean, format: ImageFormat, assetId: string) {
@@ -889,5 +1083,13 @@ export class MediaService extends BaseService {
       isProgressive: options.isProgressive,
       isTransparent: options.isTransparent,
     };
+  }
+
+  private getFujiImageFile(
+    asset: ThumbnailPathEntity,
+    options: ImagePathOptions & { isProgressive: boolean; isTransparent: boolean },
+  ) {
+    const file = this.getImageFile(asset, options);
+    return { ...file, path: file.path.replace(/_edited(\.[^./]+)$/, '_fuji_edited$1') };
   }
 }

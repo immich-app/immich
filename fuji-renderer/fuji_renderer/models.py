@@ -72,7 +72,7 @@ class DerivativeSettings(StrictModel):
     format: Literal["jpeg", "webp"]
     quality: int = Field(ge=1, le=100)
     progressive: bool = False
-    size: int = Field(ge=1, le=16_384)
+    size: int = Field(ge=1)
 
 
 class RenderImageSettings(StrictModel):
@@ -109,8 +109,13 @@ class RenderRequest(StrictModel):
     def validate_spatial_edits(cls, value: list[SpatialEdit]) -> list[SpatialEdit]:
         counts: dict[str, int] = {}
         for edit in value:
-            counts[edit.action] = counts.get(edit.action, 0) + 1
-        duplicates = sorted(action for action, count in counts.items() if count > 1)
+            key = (
+                f"mirror:{edit.parameters.axis}"
+                if edit.action == "mirror"
+                else edit.action
+            )
+            counts[key] = counts.get(key, 0) + 1
+        duplicates = sorted(key for key, count in counts.items() if count > 1)
         if duplicates:
             raise ValueError(f"duplicate spatial edits are not allowed: {', '.join(duplicates)}")
         crop_index = next((index for index, edit in enumerate(value) if edit.action == "crop"), None)

@@ -7,6 +7,7 @@ import { ArgsOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
 import { JobItem } from 'src/types';
 import { hexOrBufferToBase64 } from 'src/utils/bytes';
+import { getAssetEditRevision } from 'src/utils/editor';
 
 const asJobItem = (dto: JobCreateDto): JobItem => {
   switch (dto.name) {
@@ -135,6 +136,10 @@ export class JobService extends BaseService {
       case JobName.AssetEditThumbnailGeneration: {
         const asset = await this.assetRepository.getById(item.data.id);
         const edits = await this.assetEditRepository.getWithSyncInfo(item.data.id);
+
+        if (item.data.revision && getAssetEditRevision(edits) !== item.data.revision) {
+          break;
+        }
 
         if (asset) {
           this.websocketRepository.clientSend('AssetEditReadyV2', asset.ownerId, {

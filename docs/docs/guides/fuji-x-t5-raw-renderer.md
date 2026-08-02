@@ -38,12 +38,11 @@ colors.
 
 The sidecar sees the normal Immich media volume at `/data`, reads RAF originals,
 and is the only component needed to publish Fuji edited FullSize, Preview, and
-Thumbnail derivatives. It stages each output in the destination directory and
-atomically replaces the final file. Custom deployments may therefore keep the
-main application's view read-only for this workflow while leaving the
-sidecar's generated-image mount writable. The stock Compose mounts are not
-changed to read-only because ordinary Immich uploads and maintenance still
-need writes.
+Thumbnail derivatives. The stock Compose definitions mount the broad media
+tree read-only in the sidecar, then overlay only `/data/thumbs` with a writable
+bind. It stages each output in that destination directory and atomically
+replaces the final file. The main server mount remains unchanged because
+ordinary Immich uploads and maintenance still need writes.
 
 External libraries must be mounted into both `immich-server` and
 `immich-fuji-renderer` at the same absolute container path. Add each renderer

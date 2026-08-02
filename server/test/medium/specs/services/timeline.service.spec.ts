@@ -121,7 +121,7 @@ describe(TimelineService.name, () => {
       const auth = factory.auth({ user: { id: user.id } });
       const rawResponse = await sut.getTimeBucket(auth, { timeBucket: '1970-02-01', isTrashed: true });
       const response = JSON.parse(rawResponse);
-      expect(response).toEqual(expect.objectContaining({ isTrashed: [true] }));
+      expect(response).toEqual(expect.objectContaining({ isTrashed: [true], updatedAt: [expect.any(String)] }));
     });
 
     it('should handle a bucket without any assets', async () => {
@@ -146,6 +146,7 @@ describe(TimelineService.name, () => {
         ratio: [],
         status: [],
         thumbhash: [],
+        updatedAt: [],
       });
     });
 

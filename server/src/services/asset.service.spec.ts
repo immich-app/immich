@@ -1,10 +1,16 @@
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, ServiceUnavailableException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { AssetJobName, AssetStatsResponseDto } from 'src/dtos/asset.dto';
-import { AssetEditAction } from 'src/dtos/editing.dto';
+import {
+  AssetEditAction,
+  FujiDevelopParameters,
+  FujiDevelopProcessModel,
+  FujiProfileSlug,
+} from 'src/dtos/editing.dto';
 import { AssetFileType, AssetMetadataKey, AssetStatus, AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
 import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
+import { getAssetEditRevision } from 'src/utils/editor';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
 import { authStub } from 'test/fixtures/auth.stub';
@@ -23,6 +29,21 @@ const statResponse: AssetStatsResponseDto = {
   images: 10,
   videos: 23,
   total: 33,
+};
+
+const fujiDevelopParameters: FujiDevelopParameters = {
+  profileSlug: FujiProfileSlug.NostalgicNeg,
+  processModel: FujiDevelopProcessModel.LightroomPv2012IndependentV6,
+  exposure: 0,
+  contrast: 0,
+  highlights: 0,
+  shadows: 0,
+  whites: 0,
+  blacks: 0,
+  temperature: null,
+  tint: null,
+  vibrance: 0,
+  saturation: 0,
 };
 
 describe(AssetService.name, () => {
@@ -771,6 +792,173 @@ describe(AssetService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.assetEdit.replaceAll).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      { originalFileName: 'DXT00001.NEF', make: 'FUJIFILM', model: 'X-T5', isOffline: false },
+      { originalFileName: 'DXT00001.RAF', make: 'FUJIFILM', model: 'X-T4', isOffline: false },
+      { originalFileName: 'DXT00001.RAF', make: 'NIKON', model: 'X-T5', isOffline: false },
+      { originalFileName: 'DXT00001.RAF', make: 'FUJIFILM', model: 'X-T5', isOffline: true },
+    ])(
+      'rejects Fuji development for unsupported source metadata',
+      async ({ originalFileName, make, model, isOffline }) => {
+        const asset = AssetFactory.from({ originalFileName, isOffline }).exif({ make, model }).build();
+        mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+        mocks.asset.getForEdit.mockResolvedValue({
+          type: asset.type,
+          livePhotoVideoId: asset.livePhotoVideoId,
+          originalPath: asset.originalPath,
+          originalFileName: asset.originalFileName,
+          isOffline,
+          exifImageWidth: asset.exifInfo.exifImageWidth,
+          exifImageHeight: asset.exifInfo.exifImageHeight,
+          orientation: asset.exifInfo.orientation,
+          projectionType: asset.exifInfo.projectionType,
+          make,
+          model,
+        });
+
+        await expect(
+          sut.editAsset(authStub.admin, asset.id, {
+            edits: [{ action: AssetEditAction.FujiDevelop, parameters: fujiDevelopParameters }],
+          }),
+        ).rejects.toBeInstanceOf(BadRequestException);
+        expect(mocks.assetEdit.replaceAll).not.toHaveBeenCalled();
+      },
+    );
+
+    it('queues a revisioned Fuji development job for an online X-T5 RAF', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'DXT00001.RAF' })
+        .exif({ make: 'FUJIFILM', model: 'X-T5' })
+        .build();
+      const edit = { action: AssetEditAction.FujiDevelop, parameters: fujiDevelopParameters } as const;
+      const persistedEdits = [{ id: newUuid(), ...edit }];
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: asset.type,
+        livePhotoVideoId: asset.livePhotoVideoId,
+        originalPath: asset.originalPath,
+        originalFileName: asset.originalFileName,
+        isOffline: false,
+        exifImageWidth: asset.exifInfo.exifImageWidth,
+        exifImageHeight: asset.exifInfo.exifImageHeight,
+        orientation: asset.exifInfo.orientation,
+        projectionType: asset.exifInfo.projectionType,
+        make: asset.exifInfo.make,
+        model: asset.exifInfo.model,
+      });
+      mocks.assetEdit.getAll.mockResolvedValue([]);
+      mocks.assetEdit.replaceAll.mockResolvedValue(persistedEdits);
+      process.env.IMMICH_FUJI_RENDERER_ENABLED = 'true';
+      process.env.IMMICH_FUJI_RENDERER_URL = 'http://fuji-renderer:8000';
+
+      try {
+        await expect(sut.editAsset(authStub.admin, asset.id, { edits: [edit] })).resolves.toEqual({
+          assetId: asset.id,
+          edits: persistedEdits,
+        });
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.AssetEditThumbnailGeneration,
+          data: { id: asset.id, revision: getAssetEditRevision(persistedEdits), cleanupFuji: true },
+        });
+      } finally {
+        delete process.env.IMMICH_FUJI_RENDERER_ENABLED;
+        delete process.env.IMMICH_FUJI_RENDERER_URL;
+      }
+    });
+
+    it('keeps Fuji cleanup enabled when replacing Fuji development with standard edits', async () => {
+      const asset = AssetFactory.from({ originalFileName: 'DXT00001.RAF' })
+        .exif({ make: 'FUJIFILM', model: 'X-T5' })
+        .build();
+      const replacement = { id: newUuid(), action: AssetEditAction.Rotate, parameters: { angle: 90 } } as const;
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: asset.type,
+        livePhotoVideoId: asset.livePhotoVideoId,
+        originalPath: asset.originalPath,
+        originalFileName: asset.originalFileName,
+        isOffline: false,
+        exifImageWidth: asset.exifInfo.exifImageWidth,
+        exifImageHeight: asset.exifInfo.exifImageHeight,
+        orientation: asset.exifInfo.orientation,
+        projectionType: asset.exifInfo.projectionType,
+        make: asset.exifInfo.make,
+        model: asset.exifInfo.model,
+      });
+      mocks.assetEdit.getAll.mockResolvedValue([
+        { id: newUuid(), action: AssetEditAction.FujiDevelop, parameters: fujiDevelopParameters },
+      ]);
+      mocks.assetEdit.replaceAll.mockResolvedValue([replacement]);
+      process.env.IMMICH_FUJI_RENDERER_ENABLED = 'true';
+      process.env.IMMICH_FUJI_RENDERER_URL = 'http://fuji-renderer:8000';
+
+      try {
+        await expect(
+          sut.editAsset(authStub.admin, asset.id, {
+            edits: [{ action: replacement.action, parameters: replacement.parameters }],
+          }),
+        ).resolves.toEqual({ assetId: asset.id, edits: [replacement] });
+        expect(mocks.job.queue).toHaveBeenCalledWith({
+          name: JobName.AssetEditThumbnailGeneration,
+          data: { id: asset.id, revision: getAssetEditRevision([replacement]), cleanupFuji: true },
+        });
+      } finally {
+        delete process.env.IMMICH_FUJI_RENDERER_ENABLED;
+        delete process.env.IMMICH_FUJI_RENDERER_URL;
+      }
+    });
+
+    it('does not persist Fuji development when the optional renderer is disabled', async () => {
+      delete process.env.IMMICH_FUJI_RENDERER_ENABLED;
+      delete process.env.IMMICH_FUJI_RENDERER_URL;
+      const asset = AssetFactory.from({ originalFileName: 'DXT00001.RAF' })
+        .exif({ make: 'FUJIFILM', model: 'X-T5' })
+        .build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getForEdit.mockResolvedValue({
+        type: asset.type,
+        livePhotoVideoId: asset.livePhotoVideoId,
+        originalPath: asset.originalPath,
+        originalFileName: asset.originalFileName,
+        isOffline: false,
+        exifImageWidth: asset.exifInfo.exifImageWidth,
+        exifImageHeight: asset.exifInfo.exifImageHeight,
+        orientation: asset.exifInfo.orientation,
+        projectionType: asset.exifInfo.projectionType,
+        make: asset.exifInfo.make,
+        model: asset.exifInfo.model,
+      });
+      mocks.assetEdit.getAll.mockResolvedValue([]);
+
+      await expect(
+        sut.editAsset(authStub.admin, asset.id, {
+          edits: [{ action: AssetEditAction.FujiDevelop, parameters: fujiDevelopParameters }],
+        }),
+      ).rejects.toBeInstanceOf(ServiceUnavailableException);
+      expect(mocks.assetEdit.replaceAll).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('removeAssetEdits', () => {
+    it('clears Fuji development while the optional renderer is disabled', async () => {
+      delete process.env.IMMICH_FUJI_RENDERER_ENABLED;
+      delete process.env.IMMICH_FUJI_RENDERER_URL;
+      const asset = AssetFactory.from()
+        .edit({ action: AssetEditAction.FujiDevelop, parameters: fujiDevelopParameters })
+        .build();
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.assetEdit.getAll.mockResolvedValue(asset.edits);
+      mocks.assetEdit.replaceAll.mockResolvedValue([]);
+
+      await expect(sut.removeAssetEdits(authStub.admin, asset.id)).resolves.toBeUndefined();
+
+      expect(mocks.assetEdit.replaceAll).toHaveBeenCalledWith(asset.id, []);
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.AssetEditThumbnailGeneration,
+        data: { id: asset.id, revision: getAssetEditRevision([]), cleanupFuji: true },
+      });
     });
   });
 });

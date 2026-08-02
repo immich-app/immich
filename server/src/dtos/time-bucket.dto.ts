@@ -88,6 +88,10 @@ const TimeBucketAssetResponseSchema = z
     createdAt: z
       .array(z.string())
       .describe('Array of UTC timestamps when each asset was originally uploaded to Immich'),
+    updatedAt: z
+      .array(z.string())
+      .describe('Array of UTC timestamps when each asset was last updated, aligned with the asset ID array')
+      .optional(),
     fileCreatedAt: z.array(z.string()).describe('Array of file creation timestamps in UTC'),
     localOffsetHours: z
       .array(z.number())
