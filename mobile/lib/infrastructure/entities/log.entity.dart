@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/log.model.dart' as domain;
 import 'package:immich_mobile/infrastructure/entities/log.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/utils/datetime.converter.dart';
 
 class LogMessageEntity extends Table {
   const LogMessageEntity();
@@ -12,7 +13,7 @@ class LogMessageEntity extends Table {
   TextColumn get message => text()();
   TextColumn get details => text().nullable()();
   IntColumn get level => intEnum<domain.LogLevel>()();
-  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get createdAt => dateTime().map(const DateTimeClampConverter())();
   TextColumn get logger => text().nullable()();
   TextColumn get stack => text().nullable()();
 }

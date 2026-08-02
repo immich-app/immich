@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/utils/datetime.converter.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_asset_face_person_id ON asset_face_entity (person_id)')
@@ -35,7 +36,7 @@ class AssetFaceEntity extends Table with DriftDefaultsMixin {
 
   BoolColumn get isVisible => boolean().withDefault(const Constant(true))();
 
-  DateTimeColumn get deletedAt => dateTime().nullable()();
+  DateTimeColumn get deletedAt => dateTime().nullable().map(const DateTimeClampConverter())();
 
   @override
   Set<Column> get primaryKey => {id};

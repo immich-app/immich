@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/infrastructure/utils/datetime.converter.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 class AuthUserEntity extends Table with DriftDefaultsMixin {
@@ -12,7 +13,8 @@ class AuthUserEntity extends Table with DriftDefaultsMixin {
 
   // Profile image
   BoolColumn get hasProfileImage => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get profileChangedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get profileChangedAt =>
+      dateTime().withDefault(currentDateAndTime).map(const DateTimeClampConverter())();
   IntColumn get avatarColor => intEnum<AvatarColor>()();
 
   // Quota

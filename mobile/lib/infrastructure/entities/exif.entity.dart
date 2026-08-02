@@ -2,6 +2,7 @@ import 'package:drift/drift.dart' hide Query;
 import 'package:immich_mobile/domain/models/exif.model.dart' as domain;
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/utils/datetime.converter.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
 
@@ -21,7 +22,7 @@ class RemoteExifEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get country => text().nullable()();
 
-  DateTimeColumn get dateTimeOriginal => dateTime().nullable()();
+  DateTimeColumn get dateTimeOriginal => dateTime().nullable().map(const DateTimeClampConverter())();
 
   TextColumn get description => text().nullable()();
 
