@@ -967,12 +967,36 @@ export type RotateParameters = {
 export type MirrorParameters = {
     axis: MirrorAxis;
 };
+export type FujiDevelopParameters = {
+    /** Blacks adjustment */
+    blacks: number;
+    /** Contrast adjustment */
+    contrast: number;
+    /** Exposure adjustment in stops */
+    exposure: number;
+    /** Highlights adjustment */
+    highlights: number;
+    processModel: FujiDevelopProcessModel;
+    profileSlug: FujiProfileSlug;
+    /** Saturation adjustment */
+    saturation: number;
+    /** Shadows adjustment */
+    shadows: number;
+    /** White balance temperature in kelvin */
+    temperature: number | null;
+    /** White balance tint adjustment */
+    tint: number | null;
+    /** Vibrance adjustment */
+    vibrance: number;
+    /** Whites adjustment */
+    whites: number;
+};
 export type AssetEditActionItemResponseDto = {
     action: AssetEditAction;
     /** Asset edit ID */
     id: string;
-    /** List of edit actions to apply (crop, rotate, or mirror) */
-    parameters: CropParameters | RotateParameters | MirrorParameters;
+    /** Parameters for an asset edit action */
+    parameters: CropParameters | RotateParameters | MirrorParameters | FujiDevelopParameters;
 };
 export type AssetEditsResponseDto = {
     /** Asset ID these edits belong to */
@@ -982,11 +1006,11 @@ export type AssetEditsResponseDto = {
 };
 export type AssetEditActionItemDto = {
     action: AssetEditAction;
-    /** List of edit actions to apply (crop, rotate, or mirror) */
-    parameters: CropParameters | RotateParameters | MirrorParameters;
+    /** Parameters for an asset edit action */
+    parameters: CropParameters | RotateParameters | MirrorParameters | FujiDevelopParameters;
 };
 export type AssetEditsCreateDto = {
-    /** List of edit actions to apply (crop, rotate, or mirror) */
+    /** List of edit actions to apply */
     edits: AssetEditActionItemDto[];
 };
 export type AssetMetadataResponseDto = {
@@ -2733,6 +2757,8 @@ export type TimeBucketAssetResponseDto = {
     stack?: (string[] | null)[];
     /** Array of BlurHash strings for generating asset previews (base64 encoded) */
     thumbhash: (string | null)[];
+    /** Array of UTC timestamps when each asset was last updated, aligned with the asset ID array */
+    updatedAt?: string[];
     /** Array of visibility statuses for each asset (e.g., ARCHIVE, TIMELINE, HIDDEN, LOCKED) */
     visibility: AssetVisibility[];
 };
@@ -7347,11 +7373,37 @@ export enum AssetTypeEnum {
 export enum AssetEditAction {
     Crop = "crop",
     Rotate = "rotate",
-    Mirror = "mirror"
+    Mirror = "mirror",
+    FujiDevelop = "fuji_develop"
 }
 export enum MirrorAxis {
     Horizontal = "horizontal",
     Vertical = "vertical"
+}
+export enum FujiProfileSlug {
+    ProviaStandard = "provia-standard",
+    VelviaVivid = "velvia-vivid",
+    AstiaSoft = "astia-soft",
+    ClassicChrome = "classic-chrome",
+    RealaAceV2 = "reala-ace-v2",
+    ProNegHi = "pro-neg-hi",
+    ProNegStd = "pro-neg-std",
+    ClassicNeg = "classic-neg",
+    NostalgicNeg = "nostalgic-neg",
+    EternaCinema = "eterna-cinema",
+    BleachBypass = "bleach-bypass",
+    Acros = "acros",
+    AcrosGFilter = "acros-g-filter",
+    AcrosRFilter = "acros-r-filter",
+    AcrosYeFilter = "acros-ye-filter",
+    Monochrome = "monochrome",
+    MonochromeGFilter = "monochrome-g-filter",
+    MonochromeRFilter = "monochrome-r-filter",
+    MonochromeYeFilter = "monochrome-ye-filter",
+    Sepia = "sepia"
+}
+export enum FujiDevelopProcessModel {
+    LightroomPv2012IndependentV6 = "lightroom-pv2012-independent-v6"
 }
 export enum AssetMediaSize {
     Original = "original",

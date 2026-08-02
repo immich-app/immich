@@ -17132,7 +17132,8 @@
         "enum": [
           "crop",
           "rotate",
-          "mirror"
+          "mirror",
+          "fuji_develop"
         ],
         "type": "string"
       },
@@ -17151,9 +17152,12 @@
               },
               {
                 "$ref": "#/components/schemas/MirrorParameters"
+              },
+              {
+                "$ref": "#/components/schemas/FujiDevelopParameters"
               }
             ],
-            "description": "List of edit actions to apply (crop, rotate, or mirror)"
+            "description": "Parameters for an asset edit action"
           }
         },
         "required": [
@@ -17183,9 +17187,12 @@
               },
               {
                 "$ref": "#/components/schemas/MirrorParameters"
+              },
+              {
+                "$ref": "#/components/schemas/FujiDevelopParameters"
               }
             ],
-            "description": "List of edit actions to apply (crop, rotate, or mirror)"
+            "description": "Parameters for an asset edit action"
           }
         },
         "required": [
@@ -17198,7 +17205,7 @@
       "AssetEditsCreateDto": {
         "properties": {
           "edits": {
-            "description": "List of edit actions to apply (crop, rotate, or mirror)",
+            "description": "List of edit actions to apply",
             "items": {
               "$ref": "#/components/schemas/AssetEditActionItemDto"
             },
@@ -20343,6 +20350,126 @@
           }
         },
         "type": "object"
+      },
+      "FujiDevelopParameters": {
+        "properties": {
+          "blacks": {
+            "description": "Blacks adjustment",
+            "maximum": 100,
+            "minimum": -100,
+            "type": "number"
+          },
+          "contrast": {
+            "description": "Contrast adjustment",
+            "maximum": 100,
+            "minimum": -100,
+            "type": "number"
+          },
+          "exposure": {
+            "description": "Exposure adjustment in stops",
+            "maximum": 5,
+            "minimum": -5,
+            "type": "number"
+          },
+          "highlights": {
+            "description": "Highlights adjustment",
+            "maximum": 100,
+            "minimum": -100,
+            "type": "number"
+          },
+          "processModel": {
+            "$ref": "#/components/schemas/FujiDevelopProcessModel"
+          },
+          "profileSlug": {
+            "$ref": "#/components/schemas/FujiProfileSlug"
+          },
+          "saturation": {
+            "description": "Saturation adjustment",
+            "maximum": 100,
+            "minimum": -100,
+            "type": "number"
+          },
+          "shadows": {
+            "description": "Shadows adjustment",
+            "maximum": 100,
+            "minimum": -100,
+            "type": "number"
+          },
+          "temperature": {
+            "description": "White balance temperature in kelvin",
+            "maximum": 50000,
+            "minimum": 2000,
+            "nullable": true,
+            "type": "number"
+          },
+          "tint": {
+            "description": "White balance tint adjustment",
+            "maximum": 150,
+            "minimum": -150,
+            "nullable": true,
+            "type": "number"
+          },
+          "vibrance": {
+            "description": "Vibrance adjustment",
+            "maximum": 100,
+            "minimum": -100,
+            "type": "number"
+          },
+          "whites": {
+            "description": "Whites adjustment",
+            "maximum": 100,
+            "minimum": -100,
+            "type": "number"
+          }
+        },
+        "required": [
+          "profileSlug",
+          "processModel",
+          "exposure",
+          "contrast",
+          "highlights",
+          "shadows",
+          "whites",
+          "blacks",
+          "temperature",
+          "tint",
+          "vibrance",
+          "saturation"
+        ],
+        "type": "object"
+      },
+      "FujiDevelopProcessModel": {
+        "description": "Versioned Fuji RAW development process model",
+        "enum": [
+          "lightroom-pv2012-independent-v6"
+        ],
+        "type": "string"
+      },
+      "FujiProfileSlug": {
+        "description": "Fujifilm film simulation profile",
+        "enum": [
+          "provia-standard",
+          "velvia-vivid",
+          "astia-soft",
+          "classic-chrome",
+          "reala-ace-v2",
+          "pro-neg-hi",
+          "pro-neg-std",
+          "classic-neg",
+          "nostalgic-neg",
+          "eterna-cinema",
+          "bleach-bypass",
+          "acros",
+          "acros-g-filter",
+          "acros-r-filter",
+          "acros-ye-filter",
+          "monochrome",
+          "monochrome-g-filter",
+          "monochrome-r-filter",
+          "monochrome-ye-filter",
+          "sepia"
+        ],
+        "type": "string"
       },
       "MirrorAxis": {
         "description": "Axis to mirror along",
@@ -27039,6 +27166,13 @@
             "description": "Array of BlurHash strings for generating asset previews (base64 encoded)",
             "items": {
               "nullable": true,
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "updatedAt": {
+            "description": "Array of UTC timestamps when each asset was last updated, aligned with the asset ID array",
+            "items": {
               "type": "string"
             },
             "type": "array"
