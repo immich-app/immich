@@ -368,6 +368,7 @@ export class AssetRepository {
               metadataExtractedAt: eb.ref('excluded.metadataExtractedAt'),
               ocrAt: eb.ref('excluded.ocrAt'),
               transcribedAt: eb.ref('excluded.transcribedAt'),
+              transcriptionMaxDurationExceeded: eb.ref('excluded.transcriptionMaxDurationExceeded'),
             },
             values[0],
           ),

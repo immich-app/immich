@@ -70,7 +70,19 @@ describe(TranscriptRepository.name, () => {
       await expect(sut.getStatus(asset.id)).resolves.toEqual({
         transcribedAt: null,
         transcriptionProgressMs: 30_000,
+        transcriptionMaxDurationExceeded: false,
       });
+    });
+
+    it('should report a video skipped for exceeding the maximum duration', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+      await ctx.database
+        .insertInto('asset_job_status')
+        .values({ assetId: asset.id, transcribedAt: new Date(), transcriptionMaxDurationExceeded: true })
+        .execute();
+
+      await expect(sut.getStatus(asset.id)).resolves.toMatchObject({ transcriptionMaxDurationExceeded: true });
     });
   });
 
@@ -170,6 +182,19 @@ describe(TranscriptRepository.name, () => {
       await expect(sut.getStatus(asset.id)).resolves.toMatchObject({ transcriptionProgressMs: 0 });
     });
 
+    it('should clear the max-duration-exceeded flag so a re-run re-evaluates it fresh', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+      await ctx.database
+        .insertInto('asset_job_status')
+        .values({ assetId: asset.id, transcribedAt: new Date(), transcriptionMaxDurationExceeded: true })
+        .execute();
+
+      await sut.reset(asset.id);
+
+      await expect(sut.getStatus(asset.id)).resolves.toMatchObject({ transcriptionMaxDurationExceeded: false });
+    });
+
     it('should preserve a corrected segment rather than deleting it with the rest', async () => {
       const { ctx, sut } = setup();
       const asset = await newTranscribableAsset(ctx);
@@ -202,7 +227,21 @@ describe(TranscriptRepository.name, () => {
       await expect(sut.getStatus(asset.id)).resolves.toEqual({
         transcribedAt: null,
         transcriptionProgressMs: null,
+        transcriptionMaxDurationExceeded: null,
       });
+    });
+
+    it('should clear the max-duration-exceeded flag along with everything else', async () => {
+      const { ctx, sut } = setup();
+      const asset = await newTranscribableAsset(ctx);
+      await ctx.database
+        .insertInto('asset_job_status')
+        .values({ assetId: asset.id, transcribedAt: new Date(), transcriptionMaxDurationExceeded: true })
+        .execute();
+
+      await sut.deleteAll();
+
+      await expect(sut.getStatus(asset.id)).resolves.toMatchObject({ transcriptionMaxDurationExceeded: null });
     });
 
     it('should leave an asset with any corrected segment completely untouched', async () => {
@@ -229,6 +268,7 @@ describe(TranscriptRepository.name, () => {
       await expect(sut.getStatus(plain.id)).resolves.toEqual({
         transcribedAt: null,
         transcriptionProgressMs: null,
+        transcriptionMaxDurationExceeded: null,
       });
     });
   });

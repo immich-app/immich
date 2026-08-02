@@ -22,13 +22,18 @@ export class TranscriptRepository {
   /**
    * Reads progress without gating on completion, so a partial transcript is legible while the job
    * is still running. A missing row means transcription has never started, a progress marker with
-   * no `transcribedAt` means it is in flight, and `transcribedAt` means it finished.
+   * no `transcribedAt` means it is in flight, and `transcribedAt` means it finished — unless
+   * `transcriptionMaxDurationExceeded` is also set, in which case it never ran at all.
    */
   @GenerateSql({ params: [DummyValue.UUID] })
   getStatus(assetId: string) {
     return this.db
       .selectFrom('asset_job_status')
-      .select(['asset_job_status.transcribedAt', 'asset_job_status.transcriptionProgressMs'])
+      .select([
+        'asset_job_status.transcribedAt',
+        'asset_job_status.transcriptionProgressMs',
+        'asset_job_status.transcriptionMaxDurationExceeded',
+      ])
       .where('asset_job_status.assetId', '=', assetId)
       .executeTakeFirst();
   }
@@ -71,9 +76,15 @@ export class TranscriptRepository {
       await trx.deleteFrom('transcript_search').where('assetId', 'not in', correctedAssetIds).execute();
       await trx
         .updateTable('asset_job_status')
-        .set({ transcribedAt: null, transcriptionProgressMs: null })
+        .set({ transcribedAt: null, transcriptionProgressMs: null, transcriptionMaxDurationExceeded: null })
         .where('assetId', 'not in', correctedAssetIds)
-        .where((eb) => eb.or([eb('transcribedAt', 'is not', null), eb('transcriptionProgressMs', 'is not', null)]))
+        .where((eb) =>
+          eb.or([
+            eb('transcribedAt', 'is not', null),
+            eb('transcriptionProgressMs', 'is not', null),
+            eb('transcriptionMaxDurationExceeded', 'is not', null),
+          ]),
+        )
         .execute();
     });
   }
@@ -176,9 +187,15 @@ export class TranscriptRepository {
   }
 }
 
+// A progress marker is only ever written while a chunk is genuinely being processed, so every call
+// site doubles as proof the asset is not (or no longer) skipped for exceeding the maximum duration.
 const upsertProgress = (trx: Kysely<DB>, assetId: string, progressMs: number) =>
   trx
     .insertInto('asset_job_status')
-    .values({ assetId, transcriptionProgressMs: progressMs })
-    .onConflict((oc) => oc.column('assetId').doUpdateSet({ transcriptionProgressMs: progressMs }))
+    .values({ assetId, transcriptionProgressMs: progressMs, transcriptionMaxDurationExceeded: false })
+    .onConflict((oc) =>
+      oc
+        .column('assetId')
+        .doUpdateSet({ transcriptionProgressMs: progressMs, transcriptionMaxDurationExceeded: false }),
+    )
     .execute();

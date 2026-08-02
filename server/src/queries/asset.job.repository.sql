@@ -507,6 +507,7 @@ select
   "asset"."id",
   "asset"."originalPath",
   "asset"."visibility",
+  "asset"."duration",
   "asset_video"."assetId" as "videoStreamId",
   (
     select

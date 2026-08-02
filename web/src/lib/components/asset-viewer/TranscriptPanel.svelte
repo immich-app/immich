@@ -70,8 +70,9 @@
 
       isLoading = false;
 
-      // A finished transcript never changes again, so polling stops rather than asking forever.
-      if (status !== TranscriptionStatus.Complete) {
+      // A finished transcript never changes again, and neither does a video that was never going to
+      // be transcribed at all, so polling stops for both rather than asking forever.
+      if (status !== TranscriptionStatus.Complete && status !== TranscriptionStatus.SkippedMaxDuration) {
         timer = setTimeout(() => void load(), POLL_INTERVAL);
       }
     };
@@ -292,6 +293,8 @@
         <Text color="muted">
           {#if status === TranscriptionStatus.InProgress}
             {$t('transcript_pending_lines')}
+          {:else if status === TranscriptionStatus.SkippedMaxDuration}
+            {$t('transcript_skipped_max_duration')}
           {:else if status === TranscriptionStatus.Complete}
             {$t('transcript_no_speech')}
           {:else}

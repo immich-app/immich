@@ -55,6 +55,13 @@ export const OcrConfigSchema = ModelConfigSchema.extend({
 }).meta({ id: 'OcrConfig' });
 
 export const TranscriptionConfigSchema = ModelConfigSchema.extend({
+  maxDuration: z
+    .int()
+    .min(1)
+    .nullable()
+    .describe(
+      'Maximum duration in seconds of a video eligible for transcription, or null for no limit. A video that exceeds it is marked so it is never re-examined, and the reason is reported alongside its transcript, rather than being silently skipped on every queue run.',
+    ),
   threads: z.int().min(1).describe('Maximum number of CPU threads to use for transcription'),
   chunkDuration: z
     .int()

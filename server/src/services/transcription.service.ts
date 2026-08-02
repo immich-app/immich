@@ -71,6 +71,22 @@ export class TranscriptionService extends BaseService {
       return JobStatus.Skipped;
     }
 
+    const { maxDuration } = machineLearning.transcription;
+    // A queue running at concurrency one should not keep re-examining a video already known to be
+    // too long, so this is recorded exactly like the no-audio case below: `transcribedAt` is set so
+    // it drops out of future bulk sweeps, but distinguishably so via the flag alongside it, which is
+    // what lets a forced re-run against a raised limit tell "too long" from "already transcribed"
+    // instead of treating both the same way a bare `transcribedAt` would.
+    if (maxDuration !== null && asset.duration !== null && asset.duration / 1000 > maxDuration) {
+      this.logger.debug(`Skipping transcription for asset ${id}: duration exceeds the configured maximum`);
+      await this.assetRepository.upsertJobStatus({
+        assetId: id,
+        transcribedAt: new Date(),
+        transcriptionMaxDurationExceeded: true,
+      });
+      return JobStatus.Skipped;
+    }
+
     if (!asset.audioStream) {
       // An absent audio row has two readings. Either the file was probed and has no audio track, or
       // it has never been probed by a version that records one — the tables holding stream details

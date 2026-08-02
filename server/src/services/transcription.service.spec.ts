@@ -23,6 +23,7 @@ const transcribable = (overrides: Record<string, unknown> = {}) => ({
   visibility: AssetVisibility.Timeline,
   videoStreamId: 'asset-id',
   audioStream: { index: 0, codecName: 'aac', profile: null, bitrate: 128_000 },
+  duration: 90_000,
   ...overrides,
 });
 
@@ -149,6 +150,59 @@ describe(TranscriptionService.name, () => {
       expect(mocks.machineLearning.transcribe).not.toHaveBeenCalled();
     });
 
+    it('should skip a video that exceeds the configured maximum duration', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { transcription: { maxDuration: 60 } } });
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ duration: 90_000 }));
+
+      expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Skipped);
+
+      expect(mocks.media.extractAudio).not.toHaveBeenCalled();
+      expect(mocks.machineLearning.transcribe).not.toHaveBeenCalled();
+    });
+
+    it('should mark a video exceeding the maximum duration distinguishably from an ordinary completion', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { transcription: { maxDuration: 60 } } });
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ duration: 90_000 }));
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.asset.upsertJobStatus).toHaveBeenCalledWith({
+        assetId: 'asset-id',
+        transcribedAt: expect.any(Date),
+        transcriptionMaxDurationExceeded: true,
+      });
+    });
+
+    it('should transcribe a video at exactly the maximum duration', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { transcription: { maxDuration: 90 } } });
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ duration: 90_000 }));
+
+      expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Success);
+
+      expect(mocks.machineLearning.transcribe).toHaveBeenCalled();
+    });
+
+    it('should transcribe a video of any duration when no maximum is configured', async () => {
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ duration: 999_000_000 }));
+
+      expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Success);
+
+      expect(mocks.machineLearning.transcribe).toHaveBeenCalled();
+    });
+
+    it('should re-check a previously too-long video against a since-raised limit', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { transcription: { maxDuration: 120 } } });
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ duration: 90_000 }));
+
+      expect(await sut.handleTranscribe({ id: 'asset-id', force: true })).toEqual(JobStatus.Success);
+
+      expect(mocks.machineLearning.transcribe).toHaveBeenCalled();
+      expect(mocks.asset.upsertJobStatus).toHaveBeenCalledWith({
+        assetId: 'asset-id',
+        transcribedAt: expect.any(Date),
+      });
+    });
+
     it('should transcribe an unextracted video once its audio stream is recorded', async () => {
       mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ audioStream: null, videoStreamId: null }));
       await sut.handleTranscribe({ id: 'asset-id' });
@@ -231,7 +285,11 @@ describe(TranscriptionService.name, () => {
 
     it('should resume from the recorded offset instead of restarting', async () => {
       mocks.storage.stat.mockResolvedValue(audioOf(90));
-      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: null, transcriptionProgressMs: 60_000 });
+      mocks.transcript.getStatus.mockResolvedValue({
+        transcribedAt: null,
+        transcriptionProgressMs: 60_000,
+        transcriptionMaxDurationExceeded: null,
+      });
 
       await sut.handleTranscribe({ id: 'asset-id' });
 
@@ -250,7 +308,11 @@ describe(TranscriptionService.name, () => {
     });
 
     it('should mark an already complete asset done without re-running inference', async () => {
-      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: new Date(), transcriptionProgressMs: 10_000 });
+      mocks.transcript.getStatus.mockResolvedValue({
+        transcribedAt: new Date(),
+        transcriptionProgressMs: 10_000,
+        transcriptionMaxDurationExceeded: null,
+      });
 
       expect(await sut.handleTranscribe({ id: 'asset-id' })).toEqual(JobStatus.Success);
 
@@ -260,7 +322,11 @@ describe(TranscriptionService.name, () => {
 
     it('should re-transcribe a complete asset from the start when forced', async () => {
       mocks.storage.stat.mockResolvedValue(audioOf(90));
-      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: new Date(), transcriptionProgressMs: 90_000 });
+      mocks.transcript.getStatus.mockResolvedValue({
+        transcribedAt: new Date(),
+        transcriptionProgressMs: 90_000,
+        transcriptionMaxDurationExceeded: null,
+      });
 
       expect(await sut.handleTranscribe({ id: 'asset-id', force: true })).toEqual(JobStatus.Success);
 
@@ -334,6 +400,15 @@ describe(TranscriptionService.name, () => {
 
     it('should not write search text for a video skipped for having no audio track', async () => {
       mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ audioStream: null }));
+
+      await sut.handleTranscribe({ id: 'asset-id' });
+
+      expect(mocks.transcript.upsertSearchText).not.toHaveBeenCalled();
+    });
+
+    it('should not write search text for a video skipped for exceeding the maximum duration', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { transcription: { maxDuration: 60 } } });
+      mocks.assetJob.getForTranscription.mockResolvedValue(transcribable({ duration: 90_000 }));
 
       await sut.handleTranscribe({ id: 'asset-id' });
 
@@ -459,7 +534,11 @@ describe(TranscriptionService.name, () => {
 
     it('should inherit the established language of an interrupted run when resuming', async () => {
       mocks.storage.stat.mockResolvedValue(audioOf(90));
-      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: null, transcriptionProgressMs: 60_000 });
+      mocks.transcript.getStatus.mockResolvedValue({
+        transcribedAt: null,
+        transcriptionProgressMs: 60_000,
+        transcriptionMaxDurationExceeded: null,
+      });
       mocks.transcript.getLastLanguage.mockResolvedValue('ja');
       mocks.machineLearning.transcribe.mockResolvedValue({
         language: 'ja',

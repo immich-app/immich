@@ -311,14 +311,21 @@ export const getChunkByteRange = (chunk: AudioChunk, byteLength: number) => {
 export const getPcmDuration = (byteLength: number) => byteLength / PCM_BYTES_PER_SECOND;
 
 /**
- * Never started, in flight and complete are three different answers, and no single column gives
- * all three: `transcribedAt` alone cannot distinguish a job that is running from one that was
- * never queued, and the progress marker alone cannot say whether the last chunk landed.
+ * Never started, in flight, complete and skipped-for-duration are four different answers, and no
+ * single column gives all of them: `transcribedAt` alone cannot distinguish a job that is running
+ * from one that was never queued, the progress marker alone cannot say whether the last chunk
+ * landed, and `transcribedAt` alone cannot distinguish a real completion from a video that was
+ * never attempted because it exceeds the configured maximum duration — both set only that column.
  */
 export const getTranscriptionStatus = (status?: {
   transcribedAt: unknown | null;
   transcriptionProgressMs: number | null;
+  transcriptionMaxDurationExceeded?: boolean | null;
 }) => {
+  if (status?.transcriptionMaxDurationExceeded) {
+    return TranscriptionStatus.SkippedMaxDuration;
+  }
+
   if (status?.transcribedAt) {
     return TranscriptionStatus.Complete;
   }

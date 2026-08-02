@@ -33,4 +33,12 @@ export class AssetJobStatusTable {
    */
   @Column({ type: 'integer', nullable: true })
   transcriptionProgressMs!: number | null;
+
+  /**
+   * Set alongside `transcribedAt` when the asset was never transcribed because its duration exceeds
+   * the configured maximum, so that "done, and why" survives the read that only `transcribedAt`
+   * alone cannot answer — it looks identical to a normal completion otherwise.
+   */
+  @Column({ type: 'boolean', nullable: true })
+  transcriptionMaxDurationExceeded!: boolean | null;
 }

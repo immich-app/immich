@@ -107,6 +107,7 @@ export type SystemConfig = {
     transcription: {
       enabled: boolean;
       modelName: string;
+      maxDuration: number | null;
       threads: number;
       chunkDuration: number;
       timeoutMultiplier: number;
@@ -337,6 +338,7 @@ export const defaults = Object.freeze<SystemConfig>({
     transcription: {
       enabled: true,
       modelName: 'small',
+      maxDuration: null,
       threads: 4,
       chunkDuration: 30,
       timeoutMultiplier: 30,

@@ -259,7 +259,13 @@ export class AssetJobRepository {
         // A video the current extractor has seen always has a video stream row. Selecting it is what
         // lets the caller tell "probed, and there is no audio" from "never probed": both leave the
         // audio row absent, and only the first is a permanent answer.
-        .select(['asset.id', 'asset.originalPath', 'asset.visibility', 'asset_video.assetId as videoStreamId'])
+        .select([
+          'asset.id',
+          'asset.originalPath',
+          'asset.visibility',
+          'asset.duration',
+          'asset_video.assetId as videoStreamId',
+        ])
         .select((eb) => withAudioStream(eb).as('audioStream'))
         .where('asset.id', '=', id)
         .where('asset.type', '=', sql.lit(AssetType.Video))

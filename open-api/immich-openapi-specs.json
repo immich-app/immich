@@ -27473,6 +27473,13 @@
             "minimum": 1,
             "type": "number"
           },
+          "maxDuration": {
+            "description": "Maximum duration in seconds of a video eligible for transcription, or null for no limit. A video that exceeds it is marked so it is never re-examined, and the reason is reported alongside its transcript, rather than being silently skipped on every queue run.",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "nullable": true,
+            "type": "integer"
+          },
           "maxNoSpeechProbability": {
             "description": "Probability of there being no speech above which a segment is suspected of being a hallucination. Only suspected: it is discarded only if the average log-probability also falls below its own threshold, because quiet but genuine speech scores high here on its own.",
             "format": "double",
@@ -27514,6 +27521,7 @@
           "enabled",
           "language",
           "maxCompressionRatio",
+          "maxDuration",
           "maxNoSpeechProbability",
           "minAvgLogProbability",
           "minLanguageConfidence",
@@ -27528,7 +27536,8 @@
         "enum": [
           "notStarted",
           "inProgress",
-          "complete"
+          "complete",
+          "skippedMaxDuration"
         ],
         "type": "string"
       },

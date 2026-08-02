@@ -13,7 +13,8 @@ order by
 -- TranscriptRepository.getStatus
 select
   "asset_job_status"."transcribedAt",
-  "asset_job_status"."transcriptionProgressMs"
+  "asset_job_status"."transcriptionProgressMs",
+  "asset_job_status"."transcriptionMaxDurationExceeded"
 from
   "asset_job_status"
 where
@@ -41,12 +42,17 @@ delete from "transcript_search"
 where
   "assetId" = $1
 insert into
-  "asset_job_status" ("assetId", "transcriptionProgressMs")
+  "asset_job_status" (
+    "assetId",
+    "transcriptionProgressMs",
+    "transcriptionMaxDurationExceeded"
+  )
 values
-  ($1, $2)
+  ($1, $2, $3)
 on conflict ("assetId") do update
 set
-  "transcriptionProgressMs" = $3
+  "transcriptionProgressMs" = $4,
+  "transcriptionMaxDurationExceeded" = $5
 rollback
 
 -- TranscriptRepository.updateSegment

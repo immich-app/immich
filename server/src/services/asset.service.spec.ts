@@ -707,7 +707,11 @@ describe(AssetService.name, () => {
   describe('getCaptions', () => {
     beforeEach(() => {
       mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['asset-1']));
-      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: new Date(), transcriptionProgressMs: 10_000 });
+      mocks.transcript.getStatus.mockResolvedValue({
+        transcribedAt: new Date(),
+        transcriptionProgressMs: 10_000,
+        transcriptionMaxDurationExceeded: null,
+      });
     });
 
     it('should render the segments that pass the thresholds', async () => {
@@ -758,7 +762,11 @@ describe(AssetService.name, () => {
     });
 
     it('should still report progress when every segment is filtered out', async () => {
-      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: null, transcriptionProgressMs: 4000 });
+      mocks.transcript.getStatus.mockResolvedValue({
+        transcribedAt: null,
+        transcriptionProgressMs: 4000,
+        transcriptionMaxDurationExceeded: null,
+      });
       mocks.transcript.getByAssetId.mockResolvedValue([
         transcriptSegment(0, 'Thank you for watching', { noSpeechProbability: 0.99, avgLogProbability: -2.8 }),
       ]);
@@ -776,7 +784,11 @@ describe(AssetService.name, () => {
     });
 
     it('should return the segments with their timings', async () => {
-      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: new Date(), transcriptionProgressMs: 10_000 });
+      mocks.transcript.getStatus.mockResolvedValue({
+        transcribedAt: new Date(),
+        transcriptionProgressMs: 10_000,
+        transcriptionMaxDurationExceeded: null,
+      });
       mocks.transcript.getByAssetId.mockResolvedValue([
         transcriptSegment(0, 'Hello there'),
         transcriptSegment(2, 'General Kenobi'),
@@ -807,7 +819,11 @@ describe(AssetService.name, () => {
     });
 
     it('should return a correction alongside the model text', async () => {
-      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: new Date(), transcriptionProgressMs: 10_000 });
+      mocks.transcript.getStatus.mockResolvedValue({
+        transcribedAt: new Date(),
+        transcriptionProgressMs: 10_000,
+        transcriptionMaxDurationExceeded: null,
+      });
       mocks.transcript.getByAssetId.mockResolvedValue([
         { ...transcriptSegment(0, 'Misheard name'), correctedText: 'Corrected name' },
       ]);
@@ -818,7 +834,11 @@ describe(AssetService.name, () => {
     });
 
     it('should apply the same thresholds as the caption track', async () => {
-      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: new Date(), transcriptionProgressMs: 10_000 });
+      mocks.transcript.getStatus.mockResolvedValue({
+        transcribedAt: new Date(),
+        transcriptionProgressMs: 10_000,
+        transcriptionMaxDurationExceeded: null,
+      });
       mocks.transcript.getByAssetId.mockResolvedValue([
         transcriptSegment(0, 'Hello there'),
         transcriptSegment(2, 'Subtitles by the Amara.org community', {
@@ -833,7 +853,11 @@ describe(AssetService.name, () => {
     });
 
     it('should report a partial transcript as in progress rather than withholding it', async () => {
-      mocks.transcript.getStatus.mockResolvedValue({ transcribedAt: null, transcriptionProgressMs: 4000 });
+      mocks.transcript.getStatus.mockResolvedValue({
+        transcribedAt: null,
+        transcriptionProgressMs: 4000,
+        transcriptionMaxDurationExceeded: null,
+      });
       mocks.transcript.getByAssetId.mockResolvedValue([transcriptSegment(0, 'Hello there')]);
 
       await expect(sut.getTranscript(authStub.admin, 'asset-1')).resolves.toMatchObject({
@@ -849,6 +873,21 @@ describe(AssetService.name, () => {
 
       await expect(sut.getTranscript(authStub.admin, 'asset-1')).resolves.toEqual({
         status: TranscriptionStatus.NotStarted,
+        progressMs: 0,
+        segments: [],
+      });
+    });
+
+    it('should report a video skipped for exceeding the maximum duration distinguishably from a real completion', async () => {
+      mocks.transcript.getStatus.mockResolvedValue({
+        transcribedAt: new Date(),
+        transcriptionProgressMs: null,
+        transcriptionMaxDurationExceeded: true,
+      });
+      mocks.transcript.getByAssetId.mockResolvedValue([]);
+
+      await expect(sut.getTranscript(authStub.admin, 'asset-1')).resolves.toEqual({
+        status: TranscriptionStatus.SkippedMaxDuration,
         progressMs: 0,
         segments: [],
       });

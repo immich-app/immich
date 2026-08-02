@@ -210,6 +210,14 @@ describe('TranscriptPanel', () => {
     complete.unmount();
   });
 
+  it('reports a video that exceeds the configured maximum duration, distinguishably from no speech found', async () => {
+    vi.mocked(getAssetTranscript).mockResolvedValue(transcript(TranscriptionStatus.SkippedMaxDuration, []));
+
+    const { findByText } = renderPanel();
+
+    expect(await findByText('transcript_skipped_max_duration')).toBeInTheDocument();
+  });
+
   it('reports a failed load rather than an empty transcript', async () => {
     vi.mocked(getAssetTranscript).mockRejectedValue(new Error('offline'));
 
@@ -223,6 +231,19 @@ describe('TranscriptPanel', () => {
     vi.mocked(getAssetTranscript).mockResolvedValue(
       transcript(TranscriptionStatus.Complete, [segment(0, 'Hello there')]),
     );
+
+    renderPanel();
+    await vi.waitFor(() => expect(getAssetTranscript).toHaveBeenCalledTimes(1));
+
+    await vi.advanceTimersByTimeAsync(60_000);
+
+    expect(getAssetTranscript).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+
+  it('stops asking for a transcript once it is skipped for exceeding the maximum duration', async () => {
+    vi.useFakeTimers();
+    vi.mocked(getAssetTranscript).mockResolvedValue(transcript(TranscriptionStatus.SkippedMaxDuration, []));
 
     renderPanel();
     await vi.waitFor(() => expect(getAssetTranscript).toHaveBeenCalledTimes(1));

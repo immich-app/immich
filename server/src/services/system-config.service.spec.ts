@@ -140,6 +140,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     transcription: {
       enabled: true,
       modelName: 'small',
+      maxDuration: null,
       threads: 4,
       chunkDuration: 30,
       timeoutMultiplier: 30,

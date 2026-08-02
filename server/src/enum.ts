@@ -830,6 +830,8 @@ export enum TranscriptionStatus {
   NotStarted = 'notStarted',
   InProgress = 'inProgress',
   Complete = 'complete',
+  /** Never attempted because the video exceeds the configured maximum duration. Terminal, like `Complete`. */
+  SkippedMaxDuration = 'skippedMaxDuration',
 }
 
 export enum JobName {

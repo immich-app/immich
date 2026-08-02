@@ -2520,6 +2520,8 @@ export type TranscriptionConfig = {
     language: string | null;
     /** Ratio of decoded text length to its compressed size above which a segment is discarded. Unlike the paired signals this one stands alone, because nothing but a repetition loop compresses that well. */
     maxCompressionRatio: number;
+    /** Maximum duration in seconds of a video eligible for transcription, or null for no limit. A video that exceeds it is marked so it is never re-examined, and the reason is reported alongside its transcript, rather than being silently skipped on every queue run. */
+    maxDuration: number | null;
     /** Probability of there being no speech above which a segment is suspected of being a hallucination. Only suspected: it is discarded only if the average log-probability also falls below its own threshold, because quiet but genuine speech scores high here on its own. */
     maxNoSpeechProbability: number;
     /** Average log-probability below which a segment is suspected of being a hallucination. Paired with the no-speech probability for the same reason: a low score alone also describes speech the model found merely difficult. */
@@ -7474,7 +7476,8 @@ export enum AssetMediaSize {
 export enum TranscriptionStatus {
     NotStarted = "notStarted",
     InProgress = "inProgress",
-    Complete = "complete"
+    Complete = "complete",
+    SkippedMaxDuration = "skippedMaxDuration"
 }
 export enum SourceType {
     MachineLearning = "machine-learning",
