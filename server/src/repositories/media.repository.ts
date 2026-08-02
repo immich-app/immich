@@ -133,7 +133,7 @@ const isRenderedFile = (value: unknown, expectedPath: string): value is FujiRend
   Number.isInteger(value.height) &&
   Number(value.height) > 0;
 
-const getFujiRendererTimeout = () => {
+export const getFujiRendererTimeout = () => {
   const configured = Number.parseInt(process.env.IMMICH_FUJI_RENDERER_TIMEOUT_MS ?? '', 10);
   return Number.isSafeInteger(configured) && configured > 0 ? configured : 30 * 60 * 1000;
 };
@@ -145,6 +145,14 @@ const getFujiRendererBaseUrl = () => {
   const baseUrl = process.env.IMMICH_FUJI_RENDERER_URL?.trim();
   if (!baseUrl) {
     throw new Error('IMMICH_FUJI_RENDERER_URL is not configured');
+  }
+  return baseUrl;
+};
+
+const getFujiRendererCleanupBaseUrl = () => {
+  const baseUrl = process.env.IMMICH_FUJI_RENDERER_URL?.trim();
+  if (!baseUrl) {
+    throw new Error('IMMICH_FUJI_RENDERER_URL is not configured for pending Fuji cleanup');
   }
   return baseUrl;
 };
@@ -220,7 +228,7 @@ export class MediaRepository {
       throw new Error('Fuji renderer cleanup accepts at most 64 paths');
     }
 
-    const baseUrl = getFujiRendererBaseUrl();
+    const baseUrl = getFujiRendererCleanupBaseUrl();
 
     const endpoint = new URL('cleanup', baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`);
     const response = await fetch(endpoint, {

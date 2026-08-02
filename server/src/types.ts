@@ -431,6 +431,7 @@ export type JobItem =
 
   // Filesystem
   | { name: JobName.FileDelete; data: IDeleteFilesJob }
+  | { name: JobName.FujiFileCleanup; data: IDelayedJob }
 
   // Cleanup
   | { name: JobName.SessionCleanup; data?: IBaseJob }

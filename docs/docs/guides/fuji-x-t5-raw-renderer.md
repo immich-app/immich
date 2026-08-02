@@ -44,6 +44,14 @@ bind. It stages each output in that destination directory and atomically
 replaces the final file. The main server mount remains unchanged because
 ordinary Immich uploads and maintenance still need writes.
 
+Fuji output filenames include the edit revision. Immich swaps the three native
+edited `asset_file` slots only when that exact ordered edit list is still
+current, so a slow stale render cannot overwrite a newer result. Superseded and
+abandoned paths are recorded in a database cleanup outbox before rendering;
+the sidecar removes them after they are no longer referenced. Cleanup remains
+available when new Fuji rendering is disabled, allowing edits to be reset
+without making the original photo volume writable.
+
 External libraries must be mounted into both `immich-server` and
 `immich-fuji-renderer` at the same absolute container path. Add each renderer
 path to `FUJI_RENDERER_INPUT_ROOTS`, separated by colons. External mounts can

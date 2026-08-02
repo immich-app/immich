@@ -144,6 +144,7 @@ def create_app(config: RendererConfig | None = None) -> FastAPI:
                     "preview": request.image.preview.format,
                     "thumbnail": request.image.thumbnail.format,
                 },
+                request.render_revision,
                 resolved_config.output_root,
             )
         except PathPolicyError as exc:

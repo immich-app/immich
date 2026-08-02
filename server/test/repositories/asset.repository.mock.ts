@@ -33,6 +33,13 @@ export const newAssetRepositoryMock = (): Mocked<RepositoryInterface<AssetReposi
     getTimeBuckets: vitest.fn(),
     getAssetIdByCity: vitest.fn(),
     getRecentlyCreatedAssetIds: vitest.fn(),
+    reserveFujiRenderOutputs: vitest.fn(),
+    commitEditedFilesIfCurrent: vitest.fn().mockResolvedValue({
+      committed: true,
+      standardPathsToDelete: [],
+      fujiCleanupPending: false,
+    }),
+    drainFujiCleanup: vitest.fn().mockResolvedValue({ processed: 0 }),
     upsertFile: vitest.fn(),
     upsertFiles: vitest.fn(),
     deleteFile: vitest.fn(),

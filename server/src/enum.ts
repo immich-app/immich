@@ -852,6 +852,7 @@ export enum JobName {
 
   FileDelete = 'FileDelete',
   FileMigrationQueueAll = 'FileMigrationQueueAll',
+  FujiFileCleanup = 'FujiFileCleanup',
 
   LibraryDeleteCheck = 'LibraryDeleteCheck',
   LibraryDelete = 'LibraryDelete',

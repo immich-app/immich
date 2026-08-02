@@ -13,6 +13,10 @@ export class AssetEditRepository {
   @GenerateSql({ params: [DummyValue.UUID] })
   replaceAll(assetId: string, edits: AssetEditActionItem[]): Promise<AssetEditActionItemResponseDto[]> {
     return this.db.transaction().execute(async (trx) => {
+      // Serialize edit-list mutations with derivative publication. The media
+      // repository takes this same row lock while checking the revision and
+      // swapping asset_file rows, closing the check-to-commit race.
+      await trx.selectFrom('asset').select('id').where('id', '=', assetId).forUpdate().executeTakeFirstOrThrow();
       await trx.deleteFrom('asset_edit').where('assetId', '=', assetId).execute();
 
       if (edits.length > 0) {

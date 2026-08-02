@@ -53,9 +53,26 @@ import {
   withTagId,
   withTags,
 } from 'src/utils/database';
+import { isFujiRenderedPath, isLegacyEditedPath } from 'src/utils/fuji';
 import { globToSqlPattern } from 'src/utils/misc';
 
 export type AssetStats = Record<AssetType, number>;
+
+type EditedFileUpsert = Pick<
+  Insertable<AssetFileTable>,
+  'assetId' | 'path' | 'type' | 'isEdited' | 'isProgressive' | 'isTransparent'
+>;
+
+export type CommitEditedFilesResult = {
+  committed: boolean;
+  standardPathsToDelete: string[];
+  fujiCleanupPending: boolean;
+};
+
+export type FujiCleanupDrainResult = {
+  processed: number;
+  nextAvailableAt?: Date;
+};
 
 export interface BoundingBox {
   west: number;
@@ -552,6 +569,262 @@ export class AssetRepository {
   @GenerateSql()
   getFileSamples() {
     return this.db.selectFrom('asset_file').select(['assetId', 'path']).limit(sql.lit(3)).execute();
+  }
+
+  /**
+   * Reserve revision-qualified renderer outputs in the cleanup outbox before
+   * asking the sidecar to create them. A server crash can therefore leak at
+   * most until the reservation deadline, rather than losing the paths.
+   */
+  async reserveFujiRenderOutputs(assetId: string, paths: string[], availableAt: Date): Promise<void> {
+    const uniquePaths = [...new Set(paths)];
+    if (uniquePaths.length === 0) {
+      return;
+    }
+
+    await this.db
+      .insertInto('fuji_cleanup_outbox')
+      .values(uniquePaths.map((path) => ({ assetId, path, availableAt })))
+      .onConflict((oc) =>
+        oc.column('path').doUpdateSet({
+          assetId,
+          availableAt,
+        }),
+      )
+      .execute();
+  }
+
+  /**
+   * Atomically compare the ordered edit IDs, swap edited asset_file rows, and
+   * transfer renderer-owned old paths to the durable cleanup outbox. The asset
+   * row lock is shared with AssetEditRepository.replaceAll().
+   */
+  async commitEditedFilesIfCurrent({
+    assetId,
+    expectedEditIds,
+    files,
+    reservedFujiPaths,
+    deleteLegacyWithFujiRenderer,
+    thumbhash,
+    width,
+    height,
+  }: {
+    assetId: string;
+    expectedEditIds: string[];
+    files: EditedFileUpsert[];
+    reservedFujiPaths: string[];
+    deleteLegacyWithFujiRenderer: boolean;
+    thumbhash: Buffer;
+    width: number;
+    height: number;
+  }): Promise<CommitEditedFilesResult> {
+    const uniqueReservedPaths = [...new Set(reservedFujiPaths)];
+    return this.db.transaction().execute(async (tx) => {
+      const releaseReservedPaths = async () => {
+        if (uniqueReservedPaths.length === 0) {
+          return;
+        }
+        await tx
+          .updateTable('fuji_cleanup_outbox')
+          .set({ availableAt: new Date() })
+          .where('assetId', '=', assetId)
+          .where('path', 'in', uniqueReservedPaths)
+          .execute();
+      };
+
+      if (uniqueReservedPaths.length > 0) {
+        // Lock every reservation before taking the asset lock. Cleanup may be
+        // waiting for an in-flight render in the sidecar, and must not make a
+        // concurrent edit-list mutation wait behind that unrelated I/O.
+        const reservations = await tx
+          .selectFrom('fuji_cleanup_outbox')
+          .select('path')
+          .where('assetId', '=', assetId)
+          .where('path', 'in', uniqueReservedPaths)
+          .forUpdate()
+          .execute();
+        if (reservations.length !== uniqueReservedPaths.length) {
+          await releaseReservedPaths();
+          return {
+            committed: false,
+            standardPathsToDelete: [],
+            fujiCleanupPending: reservations.length > 0,
+          };
+        }
+      }
+
+      const asset = await tx
+        .selectFrom('asset')
+        .select('id')
+        .where('id', '=', assetId)
+        .forUpdate()
+        .executeTakeFirst();
+      if (!asset) {
+        await releaseReservedPaths();
+        return {
+          committed: false,
+          standardPathsToDelete: [],
+          fujiCleanupPending: uniqueReservedPaths.length > 0,
+        };
+      }
+
+      const currentEdits = await tx
+        .selectFrom('asset_edit')
+        .select('id')
+        .where('assetId', '=', assetId)
+        .orderBy('sequence', 'asc')
+        .execute();
+      const currentEditIds = currentEdits.map(({ id }) => id);
+      const isCurrent =
+        currentEditIds.length === expectedEditIds.length &&
+        currentEditIds.every((id, index) => id === expectedEditIds[index]);
+      if (!isCurrent) {
+        await releaseReservedPaths();
+        return {
+          committed: false,
+          standardPathsToDelete: [],
+          fujiCleanupPending: uniqueReservedPaths.length > 0,
+        };
+      }
+
+      const oldFiles = await tx
+        .selectFrom('asset_file')
+        .select(['id', 'assetId', 'type', 'path', 'isEdited', 'isProgressive', 'isTransparent'])
+        .where('assetId', '=', assetId)
+        .where('isEdited', '=', true)
+        .execute();
+      const toDelete = new Set(oldFiles);
+      const toUpsert: EditedFileUpsert[] = [];
+      const pathsToDelete: string[] = [];
+
+      for (const file of files) {
+        if (file.assetId !== assetId || file.isEdited !== true) {
+          throw new Error('Edited file commit received an invalid asset or non-edited file');
+        }
+        const existing = oldFiles.find((item) => item.type === file.type);
+        if (existing) {
+          toDelete.delete(existing);
+        }
+        if (
+          existing?.path !== file.path ||
+          existing.isProgressive !== file.isProgressive ||
+          existing.isTransparent !== file.isTransparent
+        ) {
+          toUpsert.push(file);
+          if (existing && existing.path !== file.path) {
+            pathsToDelete.push(existing.path);
+          }
+        }
+      }
+
+      for (const file of toDelete) {
+        pathsToDelete.push(file.path);
+      }
+
+      if (toUpsert.length > 0) {
+        await tx
+          .insertInto('asset_file')
+          .values(toUpsert)
+          .onConflict((oc) =>
+            oc.columns(['assetId', 'type', 'isEdited']).doUpdateSet((eb) => ({
+              path: eb.ref('excluded.path'),
+              isProgressive: eb.ref('excluded.isProgressive'),
+              isTransparent: eb.ref('excluded.isTransparent'),
+            })),
+          )
+          .execute();
+      }
+      if (toDelete.size > 0) {
+        await tx
+          .deleteFrom('asset_file')
+          .where(
+            'id',
+            'in',
+            [...toDelete].map(({ id }) => id),
+          )
+          .execute();
+      }
+
+      const fujiPathsToDelete = pathsToDelete.filter(
+        (path) => isFujiRenderedPath(path) || (deleteLegacyWithFujiRenderer && isLegacyEditedPath(path)),
+      );
+      const standardPathsToDelete = pathsToDelete.filter((path) => !fujiPathsToDelete.includes(path));
+      if (fujiPathsToDelete.length > 0) {
+        await tx
+          .insertInto('fuji_cleanup_outbox')
+          .values([...new Set(fujiPathsToDelete)].map((path) => ({ assetId, path, availableAt: new Date() })))
+          .onConflict((oc) => oc.column('path').doUpdateSet({ availableAt: new Date() }))
+          .execute();
+      }
+
+      if (uniqueReservedPaths.length > 0) {
+        await tx
+          .deleteFrom('fuji_cleanup_outbox')
+          .where('assetId', '=', assetId)
+          .where('path', 'in', uniqueReservedPaths)
+          .execute();
+      }
+
+      await tx.updateTable('asset').set({ thumbhash, width, height }).where('id', '=', assetId).execute();
+      return {
+        committed: true,
+        standardPathsToDelete,
+        fujiCleanupPending: fujiPathsToDelete.length > 0,
+      };
+    });
+  }
+
+  /**
+   * Drain one locked cleanup batch. Holding the outbox row locks across the
+   * sidecar call makes the final asset_file reference check authoritative with
+   * respect to the CAS transaction above.
+   */
+  async drainFujiCleanup(
+    cleanup: (paths: string[]) => Promise<void>,
+    limit = 64,
+  ): Promise<FujiCleanupDrainResult> {
+    return this.db.transaction().execute(async (tx) => {
+      const rows = await tx
+        .selectFrom('fuji_cleanup_outbox')
+        .select(['id', 'path'])
+        .where('availableAt', '<=', new Date())
+        .orderBy('availableAt', 'asc')
+        .limit(limit)
+        .forUpdate()
+        .skipLocked()
+        .execute();
+
+      if (rows.length > 0) {
+        const paths = rows.map(({ path }) => path);
+        const referenced = await tx
+          .selectFrom('asset_file')
+          .select('path')
+          .where('path', 'in', paths)
+          .execute();
+        const referencedPaths = new Set(referenced.map(({ path }) => path));
+        const cleanupPaths = paths.filter((path) => !referencedPaths.has(path));
+        if (cleanupPaths.length > 0) {
+          await cleanup(cleanupPaths);
+        }
+
+        await tx
+          .deleteFrom('fuji_cleanup_outbox')
+          .where(
+            'id',
+            'in',
+            rows.map(({ id }) => id),
+          )
+          .execute();
+      }
+
+      const next = await tx
+        .selectFrom('fuji_cleanup_outbox')
+        .select('availableAt')
+        .orderBy('availableAt', 'asc')
+        .limit(1)
+        .executeTakeFirst();
+      return { processed: rows.length, nextAvailableAt: next?.availableAt };
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })

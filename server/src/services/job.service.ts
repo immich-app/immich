@@ -94,6 +94,13 @@ export class JobService extends BaseService {
       }
     } catch (error: Error | any) {
       await this.eventRepository.emit('JobError', { job, error });
+      // Most Immich handlers historically report failures without asking
+      // BullMQ to retry. Fuji cleanup is backed by a durable DB outbox and is
+      // intentionally different: preserving the thrown error activates its
+      // explicit attempts/backoff policy while leaving every path in the DB.
+      if (job.name === JobName.FujiFileCleanup) {
+        throw error;
+      }
     } finally {
       await this.eventRepository.emit('JobComplete', queueName, job);
     }

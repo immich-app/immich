@@ -6,6 +6,7 @@ import { OnEvent, OnJob } from 'src/decorators';
 import {
   BootstrapEventPriority,
   DatabaseLock,
+  ImmichWorker,
   JobName,
   JobStatus,
   QueueName,
@@ -132,6 +133,15 @@ export class StorageService extends BaseService {
     });
   }
 
+  @OnEvent({
+    name: 'AppBootstrap',
+    priority: BootstrapEventPriority.JobService + 1,
+    workers: [ImmichWorker.Microservices],
+  })
+  async queueFujiCleanupOnBootstrap() {
+    await this.jobRepository.queue({ name: JobName.FujiFileCleanup, data: {} });
+  }
+
   @OnJob({ name: JobName.FileDelete, queue: QueueName.BackgroundTask })
   async handleDeleteFiles(job: JobOf<JobName.FileDelete>): Promise<JobStatus> {
     const { files } = job;
@@ -149,6 +159,19 @@ export class StorageService extends BaseService {
       }
     }
 
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.FujiFileCleanup, queue: QueueName.BackgroundTask })
+  async handleFujiFileCleanup(): Promise<JobStatus> {
+    const { nextAvailableAt } = await this.assetRepository.drainFujiCleanup((paths) =>
+      this.mediaRepository.cleanupFujiRenderedFiles(paths),
+    );
+
+    if (nextAvailableAt) {
+      const delay = Math.max(0, nextAvailableAt.getTime() - Date.now());
+      await this.jobRepository.queue({ name: JobName.FujiFileCleanup, data: { delay } });
+    }
     return JobStatus.Success;
   }
 

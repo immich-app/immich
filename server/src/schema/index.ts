@@ -48,6 +48,7 @@ import { AssetOcrAuditTable } from 'src/schema/tables/asset-ocr-audit.table';
 import { AssetOcrTable } from 'src/schema/tables/asset-ocr.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
+import { FujiCleanupOutboxTable } from 'src/schema/tables/fuji-cleanup-outbox.table';
 import { GeodataPlacesTable } from 'src/schema/tables/geodata-places.table';
 import { IntegrityReportTable } from 'src/schema/tables/integrity-report.table';
 import { LibraryTable } from 'src/schema/tables/library.table';
@@ -115,6 +116,7 @@ export class ImmichDatabase {
     AssetFileTable,
     AssetExifTable,
     FaceSearchTable,
+    FujiCleanupOutboxTable,
     GeodataPlacesTable,
     IntegrityReportTable,
     LibraryTable,
@@ -218,6 +220,7 @@ export interface DB {
   ocr_search: OcrSearchTable;
 
   face_search: FaceSearchTable;
+  fuji_cleanup_outbox: FujiCleanupOutboxTable;
 
   geodata_places: GeodataPlacesTable;
 

@@ -97,9 +97,9 @@ describe(MediaRepository.name, () => {
       },
       spatialEdits: [],
       outputs: {
-        fullSizePath: '/data/thumbs/01234567-89ab-4cde-8fab-0123456789ab_fullsize_fuji_edited.jpeg',
-        previewPath: '/data/thumbs/01234567-89ab-4cde-8fab-0123456789ab_preview_fuji_edited.jpeg',
-        thumbnailPath: '/data/thumbs/01234567-89ab-4cde-8fab-0123456789ab_thumbnail_fuji_edited.webp',
+        fullSizePath: `/data/thumbs/01234567-89ab-4cde-8fab-0123456789ab_fullsize_fuji_${'a'.repeat(64)}_edited.jpeg`,
+        previewPath: `/data/thumbs/01234567-89ab-4cde-8fab-0123456789ab_preview_fuji_${'a'.repeat(64)}_edited.jpeg`,
+        thumbnailPath: `/data/thumbs/01234567-89ab-4cde-8fab-0123456789ab_thumbnail_fuji_${'a'.repeat(64)}_edited.webp`,
       },
       image: {
         preview: { format: ImageFormat.Jpeg, quality: 80, progressive: false, size: 1440 },
@@ -164,7 +164,7 @@ describe(MediaRepository.name, () => {
     });
 
     it('validates cleanup accounting from the renderer', async () => {
-      process.env.IMMICH_FUJI_RENDERER_ENABLED = 'true';
+      delete process.env.IMMICH_FUJI_RENDERER_ENABLED;
       process.env.IMMICH_FUJI_RENDERER_URL = 'http://fuji-renderer:8000';
       const paths = [request.outputs.previewPath, request.outputs.thumbnailPath];
       const fetchMock = vi.fn().mockResolvedValue(

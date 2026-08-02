@@ -395,6 +395,7 @@ describe(MediaService.name, () => {
         .exif()
         .build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.assetEdit.getAll.mockResolvedValue(asset.edits);
 
       await expect(sut.handleGenerateThumbnails({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
@@ -467,6 +468,7 @@ describe(MediaService.name, () => {
         .files([AssetFileType.Preview, AssetFileType.Thumbnail])
         .build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.assetEdit.getAll.mockResolvedValue(asset.edits);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
 
@@ -1437,6 +1439,7 @@ describe(MediaService.name, () => {
         .build();
 
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.assetEdit.getAll.mockResolvedValue(asset.edits);
       const thumbhashBuffer = Buffer.from('a thumbhash', 'utf8');
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       mocks.person.getFaces.mockResolvedValue([]);
@@ -1444,12 +1447,15 @@ describe(MediaService.name, () => {
 
       await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
 
-      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith(
-        expect.arrayContaining([
-          expect.objectContaining({ type: AssetFileType.FullSize, isEdited: true }),
-          expect.objectContaining({ type: AssetFileType.Preview, isEdited: true }),
-          expect.objectContaining({ type: AssetFileType.Thumbnail, isEdited: true }),
-        ]),
+      expect(mocks.asset.commitEditedFilesIfCurrent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          expectedEditIds: asset.edits.map(({ id }) => id),
+          files: expect.arrayContaining([
+            expect.objectContaining({ type: AssetFileType.FullSize, isEdited: true }),
+            expect.objectContaining({ type: AssetFileType.Preview, isEdited: true }),
+            expect.objectContaining({ type: AssetFileType.Thumbnail, isEdited: true }),
+          ]),
+        }),
       );
     });
 
@@ -1498,23 +1504,32 @@ describe(MediaService.name, () => {
           settings: expect.objectContaining({ highlights: -30, temperature: 5600 }),
           spatialEdits: [{ action: AssetEditAction.Rotate, parameters: { angle: 90 } }],
           outputs: {
-            fullSizePath: expect.stringContaining('_fullsize_fuji_edited.jpeg'),
-            previewPath: expect.stringContaining('_preview_fuji_edited.jpeg'),
-            thumbnailPath: expect.stringContaining('_thumbnail_fuji_edited.webp'),
+            fullSizePath: expect.stringContaining(`_fullsize_fuji_${revision}_edited.jpeg`),
+            previewPath: expect.stringContaining(`_preview_fuji_${revision}_edited.jpeg`),
+            thumbnailPath: expect.stringContaining(`_thumbnail_fuji_${revision}_edited.webp`),
           },
         }),
       );
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
       expect(mocks.storage.rename).not.toHaveBeenCalled();
       expect(mocks.storage.unlink).not.toHaveBeenCalled();
-      expect(mocks.asset.upsertFiles).toHaveBeenCalledWith(
+      expect(mocks.asset.reserveFujiRenderOutputs).toHaveBeenCalledWith(
+        asset.id,
         expect.arrayContaining([
-          expect.objectContaining({ type: AssetFileType.FullSize, isEdited: true }),
-          expect.objectContaining({ type: AssetFileType.Preview, isEdited: true }),
-          expect.objectContaining({ type: AssetFileType.Thumbnail, isEdited: true }),
+          expect.stringContaining(`_fullsize_fuji_${revision}_edited.jpeg`),
+          expect.stringContaining(`_preview_fuji_${revision}_edited.jpeg`),
+          expect.stringContaining(`_thumbnail_fuji_${revision}_edited.webp`),
         ]),
+        expect.any(Date),
       );
-      expect(mocks.asset.update).toHaveBeenCalledWith({ id: asset.id, width: 100, height: 200 });
+      expect(mocks.asset.commitEditedFilesIfCurrent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          assetId: asset.id,
+          expectedEditIds: asset.edits.map(({ id }) => id),
+          width: 100,
+          height: 200,
+        }),
+      );
     });
 
     it('does not register a Fuji render whose edit revision changed while rendering', async () => {
@@ -1550,12 +1565,20 @@ describe(MediaService.name, () => {
           multiRawFusionEnabled: false,
         },
       }));
+      mocks.asset.commitEditedFilesIfCurrent.mockResolvedValue({
+        committed: false,
+        standardPathsToDelete: [],
+        fujiCleanupPending: true,
+      });
+      mocks.media.generateThumbhash.mockResolvedValue(factory.buffer());
 
       await expect(sut.handleAssetEditThumbnailGeneration({ id: asset.id, revision })).resolves.toBe(
         JobStatus.Skipped,
       );
-      expect(mocks.asset.upsertFiles).not.toHaveBeenCalled();
-      expect(mocks.media.generateThumbhash).not.toHaveBeenCalled();
+      expect(mocks.asset.commitEditedFilesIfCurrent).toHaveBeenCalled();
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.FujiFileCleanup, data: {} },
+      ]);
     });
 
     it('recognizes and cleans up Fuji-specific derivative paths without a job ownership hint', async () => {
@@ -1580,19 +1603,24 @@ describe(MediaService.name, () => {
         ])
         .build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.asset.commitEditedFilesIfCurrent.mockResolvedValue({
+        committed: true,
+        standardPathsToDelete: [],
+        fujiCleanupPending: true,
+      });
       const revision = getAssetEditRevision([]);
 
       await expect(sut.handleAssetEditThumbnailGeneration({ id: asset.id, revision })).resolves.toBe(
         JobStatus.Success,
       );
 
-      expect(mocks.media.cleanupFujiRenderedFiles).toHaveBeenCalledWith(
-        expect.arrayContaining(asset.files.map(({ path }) => path)),
+      expect(mocks.asset.commitEditedFilesIfCurrent).toHaveBeenCalledWith(
+        expect.objectContaining({ assetId: asset.id, expectedEditIds: [], files: [] }),
       );
-      expect(mocks.job.queue).not.toHaveBeenCalledWith(expect.objectContaining({ name: JobName.FileDelete }));
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.FujiFileCleanup, data: {} }]);
     });
 
-    it('partitions Fuji-owned and ordinary file cleanup', async () => {
+    it('rejects Fuji-owned paths outside the revision-checked cleanup outbox', async () => {
       const ordinaryPath = `/data/thumbs/${newUuid()}_preview.jpeg`;
       const legacyFujiPath = `/data/thumbs/${newUuid()}_thumbnail_edited.webp`;
       const fujiPath = `/data/thumbs/${newUuid()}_fullsize_fuji_edited.jpeg`;
@@ -1604,16 +1632,10 @@ describe(MediaService.name, () => {
         ])
         .build();
 
-      await sut['syncFiles'](asset.files, [], { deleteWithFujiRenderer: true });
-
-      expect(mocks.media.cleanupFujiRenderedFiles).toHaveBeenCalledWith([legacyFujiPath, fujiPath]);
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.FileDelete,
-        data: { files: [ordinaryPath] },
-      });
-      expect(mocks.asset.deleteFiles.mock.invocationCallOrder[0]).toBeLessThan(
-        mocks.media.cleanupFujiRenderedFiles.mock.invocationCallOrder[0],
+      await expect(sut['syncFiles'](asset.files, [], { deleteWithFujiRenderer: true })).rejects.toThrow(
+        'revision-checked cleanup outbox',
       );
+      expect(mocks.asset.deleteFiles).not.toHaveBeenCalled();
     });
 
     it('should apply edits when generating thumbnails', async () => {
@@ -1622,6 +1644,7 @@ describe(MediaService.name, () => {
         .edit({ action: AssetEditAction.Crop, parameters: { height: 1152, width: 1512, x: 216, y: 1512 } })
         .build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.assetEdit.getAll.mockResolvedValue(asset.edits);
       mocks.person.getFaces.mockResolvedValue([]);
       mocks.ocr.getByAssetId.mockResolvedValue([]);
 
@@ -1650,15 +1673,20 @@ describe(MediaService.name, () => {
         ])
         .build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.asset.commitEditedFilesIfCurrent.mockResolvedValue({
+        committed: true,
+        standardPathsToDelete: ['edited1.jpg', 'edited2.jpg', 'edited3.jpg'],
+        fujiCleanupPending: false,
+      });
 
       const status = await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
 
-      expect(mocks.job.queue).toHaveBeenCalledWith({
-        name: JobName.FileDelete,
-        data: {
-          files: expect.arrayContaining(['edited1.jpg', 'edited2.jpg', 'edited3.jpg']),
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        {
+          name: JobName.FileDelete,
+          data: { files: ['edited1.jpg', 'edited2.jpg', 'edited3.jpg'] },
         },
-      });
+      ]);
 
       expect(status).toBe(JobStatus.Success);
       expect(mocks.media.generateThumbnail).not.toHaveBeenCalled();
@@ -1668,6 +1696,7 @@ describe(MediaService.name, () => {
     it('should generate all 3 edited files if an asset has edits', async () => {
       const asset = AssetFactory.from().exif().edit().build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.assetEdit.getAll.mockResolvedValue(asset.edits);
       mocks.person.getFaces.mockResolvedValue([]);
       mocks.ocr.getByAssetId.mockResolvedValue([]);
 
@@ -1704,6 +1733,7 @@ describe(MediaService.name, () => {
     it('should apply thumbhash if job source is edit and edits exist', async () => {
       const asset = AssetFactory.from().exif().edit().build();
       mocks.assetJob.getForGenerateThumbnailJob.mockResolvedValue(getForGenerateThumbnail(asset));
+      mocks.assetEdit.getAll.mockResolvedValue(asset.edits);
       const thumbhashBuffer = factory.buffer();
       mocks.media.generateThumbhash.mockResolvedValue(thumbhashBuffer);
       mocks.person.getFaces.mockResolvedValue([]);
@@ -1711,7 +1741,9 @@ describe(MediaService.name, () => {
 
       await sut.handleAssetEditThumbnailGeneration({ id: asset.id });
 
-      expect(mocks.asset.update).toHaveBeenCalledWith(expect.objectContaining({ thumbhash: thumbhashBuffer }));
+      expect(mocks.asset.commitEditedFilesIfCurrent).toHaveBeenCalledWith(
+        expect.objectContaining({ thumbhash: thumbhashBuffer }),
+      );
     });
   });
 

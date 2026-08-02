@@ -268,6 +268,13 @@ export class JobRepository {
       case JobName.PersonGenerateThumbnail: {
         return { priority: 1 };
       }
+      case JobName.FujiFileCleanup: {
+        return {
+          attempts: 10,
+          backoff: { type: 'exponential', delay: 5000 },
+          delay: item.data.delay,
+        };
+      }
       case JobName.FacialRecognitionQueueAll: {
         return { deduplication: { id: JobName.FacialRecognitionQueueAll } };
       }

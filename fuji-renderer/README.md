@@ -121,9 +121,9 @@ profile map:
   },
   "spatialEdits": [],
   "outputs": {
-    "fullSizePath": "/data/thumbs/user/01/23/01234567-89ab-4cde-8fab-0123456789ab_fullsize_fuji_edited.jpeg",
-    "previewPath": "/data/thumbs/user/01/23/01234567-89ab-4cde-8fab-0123456789ab_preview_fuji_edited.jpeg",
-    "thumbnailPath": "/data/thumbs/user/01/23/01234567-89ab-4cde-8fab-0123456789ab_thumbnail_fuji_edited.webp"
+    "fullSizePath": "/data/thumbs/user/01/23/01234567-89ab-4cde-8fab-0123456789ab_fullsize_fuji_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef_edited.jpeg",
+    "previewPath": "/data/thumbs/user/01/23/01234567-89ab-4cde-8fab-0123456789ab_preview_fuji_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef_edited.jpeg",
+    "thumbnailPath": "/data/thumbs/user/01/23/01234567-89ab-4cde-8fab-0123456789ab_thumbnail_fuji_0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef_edited.webp"
   },
   "image": {
     "preview": { "format": "jpeg", "quality": 80, "progressive": false, "size": 1440 },
@@ -136,15 +136,15 @@ Crop is applied first; ordered rotations and mirrors follow. FullSize is the
 validated non-progressive JPEG at quality 95 with 4:4:4 subsampling. Preview
 and thumbnail use their requested JPEG/WebP settings and maximum long edge.
 All three files are staged beside their destinations and published with
-`os.replace`. A newer 64-hex edit revision supersedes an older queued render
-before any file is published.
+`os.replace`. Physical filenames include the 64-hex edit revision; the Immich
+server performs the authoritative revision check and asset-file swap.
 
 `POST /cleanup` accepts `{ "paths": [...] }`, at most 64 unique paths. It can
 only unlink non-symlink regular files under the output root whose basename is
-`UUID_(fullsize|preview|thumbnail)_fuji_edited.(jpeg|webp)`. Cleanup also
-accepts legacy `UUID_(fullsize|preview|thumbnail)_edited.(jpeg|webp)` names so
-upgrades can remove older derivatives. Missing files are an
-idempotent success.
+`UUID_(fullsize|preview|thumbnail)_fuji_REVISION_edited.(jpeg|webp)`. Cleanup
+also accepts the pre-revision Fuji form and legacy
+`UUID_(fullsize|preview|thumbnail)_edited.(jpeg|webp)` names so upgrades can
+remove older derivatives. Missing files are an idempotent success.
 
 ## Source layout
 
