@@ -135,9 +135,9 @@ class BackgroundSyncManager {
         });
   }
 
-  Future<bool> syncRemote() {
+  Future<bool> syncRemote({bool fresh = false}) {
     if (_syncTask != null) {
-      _syncQueued = true;
+      _syncQueued |= fresh;
       return _syncTask!.future.then((result) => result ?? false).catchError((_) => false);
     }
 
