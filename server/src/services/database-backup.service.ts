@@ -143,6 +143,10 @@ export class DatabaseBackupService {
 
         databaseUsername = parsedUrl.username || parsedUrl.searchParams.get('user');
 
+        // Strip the password from the URL — it is passed via the PGPASSWORD
+        // env var on every spawn call, so keeping it here only exposes the
+        // credential in the process argument list (visible via `ps`).
+        parsedUrl.password = '';
         url = parsedUrl.toString();
       }
 
