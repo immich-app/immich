@@ -189,6 +189,13 @@ const createUrl = (path: string, parameters?: Record<string, unknown>) => {
 
 type AssetUrlOptions = { id: string; cacheKey?: string | null; edited?: boolean; size?: AssetMediaSize };
 
+/**
+ * Asset renders can change without changing the source file or thumbhash.
+ * Including updatedAt makes a completed edit publish a new browser cache URL.
+ */
+export const getAssetCacheKey = (asset: { thumbhash: string | null; updatedAt?: string | null }): string =>
+  `${asset.thumbhash ?? ''}:${asset.updatedAt ?? ''}`;
+
 export const getAssetUrl = ({
   asset,
   sharedLink,
@@ -202,7 +209,7 @@ export const getAssetUrl = ({
     return;
   }
   const id = asset.id;
-  const cacheKey = asset.thumbhash;
+  const cacheKey = getAssetCacheKey(asset);
   if (sharedLink && (!sharedLink.allowDownload || !sharedLink.showMetadata)) {
     return getAssetMediaUrl({ id, size: AssetMediaSize.Preview, cacheKey });
   }
@@ -211,8 +218,9 @@ export const getAssetUrl = ({
 };
 
 export function getAssetUrls(asset: AssetResponseDto, sharedLink?: SharedLinkResponseDto) {
+  const cacheKey = getAssetCacheKey(asset);
   return {
-    thumbnail: getAssetMediaUrl({ id: asset.id, cacheKey: asset.thumbhash, size: AssetMediaSize.Thumbnail }),
+    thumbnail: getAssetMediaUrl({ id: asset.id, cacheKey, size: AssetMediaSize.Thumbnail }),
     preview: getAssetUrl({ asset, sharedLink })!,
     original: getAssetUrl({ asset, sharedLink, forceOriginal: true })!,
   };

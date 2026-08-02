@@ -20,7 +20,7 @@
   import { ocrManager } from '$lib/stores/ocr.svelte';
   import { alwaysLoadOriginalVideo } from '$lib/stores/preferences.store';
   import { SlideshowNavigation, SlideshowState, slideshowStore } from '$lib/stores/slideshow.store';
-  import { getSharedLink, handlePromiseError } from '$lib/utils';
+  import { getAssetCacheKey, getSharedLink, handlePromiseError } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
   import { handleError } from '$lib/utils/handle-error';
@@ -545,7 +545,7 @@
     {#if viewerKind === 'StackVideoViewer'}
       <VideoViewer
         asset={previewStackedAsset!}
-        cacheKey={previewStackedAsset!.thumbhash}
+        cacheKey={getAssetCacheKey(previewStackedAsset!)}
         projectionType={previewStackedAsset!.exifInfo?.projectionType}
         loopVideo={true}
         onPreviousAsset={() => navigateAsset('previous')}
@@ -559,7 +559,7 @@
       <VideoViewer
         {asset}
         assetId={asset.livePhotoVideoId!}
-        cacheKey={asset.thumbhash}
+        cacheKey={getAssetCacheKey(asset)}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
         onPreviousAsset={() => navigateAsset('previous')}
@@ -576,7 +576,7 @@
     {:else if viewerKind === 'VideoViewer'}
       <VideoViewer
         {asset}
-        cacheKey={asset.thumbhash}
+        cacheKey={getAssetCacheKey(asset)}
         projectionType={asset.exifInfo?.projectionType}
         loopVideo={$slideshowState !== SlideshowState.PlaySlideshow}
         extendedControls

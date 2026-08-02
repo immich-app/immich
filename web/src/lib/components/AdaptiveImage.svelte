@@ -56,7 +56,7 @@
   import ImageLayer from '$lib/components/ImageLayer.svelte';
   import Thumbhash from '$lib/components/Thumbhash.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
-  import { getAssetUrls } from '$lib/utils';
+  import { getAssetCacheKey, getAssetUrls } from '$lib/utils';
   import { AdaptiveImageLoader, type QualityList } from '$lib/utils/adaptive-image-loader.svelte';
   import { scaleToCover, scaleToFit, type Size } from '$lib/utils/container-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
@@ -121,7 +121,7 @@
     return qualityList;
   };
 
-  const loaderKey = $derived(`${asset.id}:${asset.thumbhash}:${sharedLink?.id}`);
+  const loaderKey = $derived(`${asset.id}:${getAssetCacheKey(asset)}:${sharedLink?.id}`);
 
   const adaptiveImageLoader = $derived.by(() => {
     void loaderKey;

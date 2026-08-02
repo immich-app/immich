@@ -1,45 +1,93 @@
 import type { FilmSimulationBannerId } from './film-simulation-banner';
 
+export const FUJI_FILM_SIMULATION_SLUGS = [
+  'provia-standard',
+  'velvia-vivid',
+  'astia-soft',
+  'classic-chrome',
+  'reala-ace-v2',
+  'pro-neg-hi',
+  'pro-neg-std',
+  'classic-neg',
+  'nostalgic-neg',
+  'eterna-cinema',
+  'bleach-bypass',
+  'acros',
+  'acros-g-filter',
+  'acros-r-filter',
+  'acros-ye-filter',
+  'monochrome',
+  'monochrome-g-filter',
+  'monochrome-r-filter',
+  'monochrome-ye-filter',
+  'sepia',
+] as const;
+
+export type FujiFilmSimulationSlug = (typeof FUJI_FILM_SIMULATION_SLUGS)[number];
+
 export type FilmSimulationGraphic = {
+  slug: FujiFilmSimulationSlug;
   label: string;
   src: string;
   banner?: FilmSimulationBannerId;
 };
 
-const graphic = (label: string, filename: string, banner?: FilmSimulationBannerId): FilmSimulationGraphic => ({
+const graphic = (
+  slug: FujiFilmSimulationSlug,
+  label: string,
+  filename: string,
+  banner?: FilmSimulationBannerId,
+): FilmSimulationGraphic => ({
+  slug,
   label,
   src: `/film-simulations/${filename}.png`,
   banner,
 });
 
-const graphics = {
-  acros: graphic('ACROS', 'acros', 'acros'),
-  acrosGreen: graphic('ACROS+ G FILTER', 'acros-g-filter', 'acros'),
-  acrosRed: graphic('ACROS+ R FILTER', 'acros-r-filter', 'acros'),
-  acrosYellow: graphic('ACROS+ Ye FILTER', 'acros-ye-filter', 'acros'),
-  astia: graphic('ASTIA', 'astia', 'astia'),
-  classicChrome: graphic('CLASSIC CHROME', 'classic-chrome'),
-  classicNegative: graphic('CLASSIC Neg.', 'classic-neg', 'classicNeg'),
-  eterna: graphic('ETERNA', 'eterna', 'eterna'),
-  eternaBleachBypass: graphic('ETERNA BLEACH BYPASS', 'eterna-bleach-bypass', 'eternaBleachBypass'),
-  monochrome: graphic('MONOCHROME', 'monochrome', 'monochrome'),
-  monochromeGreen: graphic('MONOCHROME+ G FILTER', 'monochrome-g-filter', 'monochrome'),
-  monochromeRed: graphic('MONOCHROME+ R FILTER', 'monochrome-r-filter', 'monochrome'),
-  monochromeYellow: graphic('MONOCHROME+ Ye FILTER', 'monochrome-ye-filter', 'monochrome'),
-  nostalgicNegative: graphic('NOSTALGIC Neg.', 'nostalgic-neg', 'nostalgicNeg'),
-  proNegHi: graphic('PRO Neg. Hi', 'pro-neg-hi', 'proNegHi'),
-  proNegStd: graphic('PRO Neg. Std', 'pro-neg-std', 'proNegStd'),
-  provia: graphic('PROVIA', 'provia', 'provia'),
-  realaAce: graphic('REALA ACE', 'reala-ace', 'realaAce'),
-  sepia: graphic('SEPIA', 'sepia', 'sepia'),
-  velvia: graphic('Velvia', 'velvia', 'velvia'),
-};
+/**
+ * Canonical renderer profiles, in the order shown by the RAW editor.
+ *
+ * Keep this as the single source of truth for both the selectable renderer
+ * slugs and the existing EXIF-to-banner presentation mapping. In particular,
+ * REALA ACE intentionally resolves to the validated v2 renderer profile.
+ */
+export const FUJI_FILM_SIMULATIONS: readonly FilmSimulationGraphic[] = [
+  graphic('provia-standard', 'PROVIA', 'provia', 'provia'),
+  graphic('velvia-vivid', 'Velvia', 'velvia', 'velvia'),
+  graphic('astia-soft', 'ASTIA', 'astia', 'astia'),
+  graphic('classic-chrome', 'CLASSIC CHROME', 'classic-chrome'),
+  graphic('reala-ace-v2', 'REALA ACE', 'reala-ace', 'realaAce'),
+  graphic('pro-neg-hi', 'PRO Neg. Hi', 'pro-neg-hi', 'proNegHi'),
+  graphic('pro-neg-std', 'PRO Neg. Std', 'pro-neg-std', 'proNegStd'),
+  graphic('classic-neg', 'CLASSIC Neg.', 'classic-neg', 'classicNeg'),
+  graphic('nostalgic-neg', 'NOSTALGIC Neg.', 'nostalgic-neg', 'nostalgicNeg'),
+  graphic('eterna-cinema', 'ETERNA', 'eterna', 'eterna'),
+  graphic('bleach-bypass', 'ETERNA BLEACH BYPASS', 'eterna-bleach-bypass', 'eternaBleachBypass'),
+  graphic('acros', 'ACROS', 'acros', 'acros'),
+  graphic('acros-g-filter', 'ACROS+ G FILTER', 'acros-g-filter', 'acros'),
+  graphic('acros-r-filter', 'ACROS+ R FILTER', 'acros-r-filter', 'acros'),
+  graphic('acros-ye-filter', 'ACROS+ Ye FILTER', 'acros-ye-filter', 'acros'),
+  graphic('monochrome', 'MONOCHROME', 'monochrome', 'monochrome'),
+  graphic('monochrome-g-filter', 'MONOCHROME+ G FILTER', 'monochrome-g-filter', 'monochrome'),
+  graphic('monochrome-r-filter', 'MONOCHROME+ R FILTER', 'monochrome-r-filter', 'monochrome'),
+  graphic('monochrome-ye-filter', 'MONOCHROME+ Ye FILTER', 'monochrome-ye-filter', 'monochrome'),
+  graphic('sepia', 'SEPIA', 'sepia', 'sepia'),
+];
+
+const simulationsBySlug = new Map(FUJI_FILM_SIMULATIONS.map((simulation) => [simulation.slug, simulation]));
+
+export const isFujiFilmSimulationSlug = (value: unknown): value is FujiFilmSimulationSlug =>
+  typeof value === 'string' && simulationsBySlug.has(value as FujiFilmSimulationSlug);
+
+export const getFilmSimulationBySlug = (slug: FujiFilmSimulationSlug): FilmSimulationGraphic =>
+  simulationsBySlug.get(slug)!;
 
 const hasFilter = (value: string, color: 'green' | 'red' | 'yellow') => {
   const aliases = color === 'yellow' ? ['yellow', ' ye '] : [color];
   return aliases.some((alias) => value.includes(alias));
 };
 
+/** Resolve the many EXIF spellings emitted by Fujifilm cameras and ExifTool. */
 export const getFilmSimulationGraphic = (filmMode: string): FilmSimulationGraphic | undefined => {
   const value = ` ${filmMode
     .toLowerCase()
@@ -48,76 +96,76 @@ export const getFilmSimulationGraphic = (filmMode: string): FilmSimulationGraphi
     .trim()} `;
 
   if (value.includes(' reala ace ')) {
-    return graphics.realaAce;
+    return getFilmSimulationBySlug('reala-ace-v2');
   }
 
   if (value.includes(' bleach bypass ')) {
-    return graphics.eternaBleachBypass;
+    return getFilmSimulationBySlug('bleach-bypass');
   }
 
   if (value.includes(' nostalgic neg')) {
-    return graphics.nostalgicNegative;
+    return getFilmSimulationBySlug('nostalgic-neg');
   }
 
   if (value.includes(' classic neg')) {
-    return graphics.classicNegative;
+    return getFilmSimulationBySlug('classic-neg');
   }
 
   if (value.includes(' classic chrome ')) {
-    return graphics.classicChrome;
+    return getFilmSimulationBySlug('classic-chrome');
   }
 
   if (value.includes(' pro neg hi ')) {
-    return graphics.proNegHi;
+    return getFilmSimulationBySlug('pro-neg-hi');
   }
 
   if (value.includes(' pro neg std ')) {
-    return graphics.proNegStd;
+    return getFilmSimulationBySlug('pro-neg-std');
   }
 
   if (value.includes(' acros ')) {
     if (hasFilter(value, 'green')) {
-      return graphics.acrosGreen;
+      return getFilmSimulationBySlug('acros-g-filter');
     }
     if (hasFilter(value, 'red')) {
-      return graphics.acrosRed;
+      return getFilmSimulationBySlug('acros-r-filter');
     }
     if (hasFilter(value, 'yellow')) {
-      return graphics.acrosYellow;
+      return getFilmSimulationBySlug('acros-ye-filter');
     }
-    return graphics.acros;
+    return getFilmSimulationBySlug('acros');
   }
 
   if (value.includes(' monochrome ') || value.includes(' b&w ')) {
     if (hasFilter(value, 'green')) {
-      return graphics.monochromeGreen;
+      return getFilmSimulationBySlug('monochrome-g-filter');
     }
     if (hasFilter(value, 'red')) {
-      return graphics.monochromeRed;
+      return getFilmSimulationBySlug('monochrome-r-filter');
     }
     if (hasFilter(value, 'yellow')) {
-      return graphics.monochromeYellow;
+      return getFilmSimulationBySlug('monochrome-ye-filter');
     }
-    return graphics.monochrome;
+    return getFilmSimulationBySlug('monochrome');
   }
 
   if (value.includes(' sepia ')) {
-    return graphics.sepia;
+    return getFilmSimulationBySlug('sepia');
   }
 
   if (value.includes(' eterna ')) {
-    return graphics.eterna;
+    return getFilmSimulationBySlug('eterna-cinema');
   }
 
   if (value.includes(' astia ') || value.includes(' studio portrait ')) {
-    return graphics.astia;
+    return getFilmSimulationBySlug('astia-soft');
   }
 
   if (value.includes(' velvia ') || value.includes(' fujichrome ')) {
-    return graphics.velvia;
+    return getFilmSimulationBySlug('velvia-vivid');
   }
 
   if (value.includes(' provia ') || value.includes(' standard ')) {
-    return graphics.provia;
+    return getFilmSimulationBySlug('provia-standard');
   }
 };

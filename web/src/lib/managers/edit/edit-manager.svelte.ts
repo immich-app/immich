@@ -6,6 +6,7 @@ import TransformTool from '$lib/components/asset-viewer/editor/transform-tool/Tr
 import { transformManager } from '$lib/managers/edit/transform-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { waitForWebsocketEvent } from '$lib/stores/websocket';
+import { FUJI_DEVELOP_ACTION, FUJI_DEVELOP_READY_TIMEOUT_MS } from '$lib/utils/fuji-develop';
 import { getFormatter } from '$lib/utils/i18n';
 
 export type EditAction = AssetEditsCreateDto['edits'][number];
@@ -43,6 +44,7 @@ export class EditManager {
 
   currentAsset = $state<AssetResponseDto | null>(null);
   selectedTool = $state<EditTool | null>(null);
+  passthroughEdits = $state<EditActions>([]);
 
   // used to disable multiple confirm dialogs and mouse events while one is open
   isShowingConfirmDialog = $state(false);
@@ -86,11 +88,16 @@ export class EditManager {
 
   async activateTool(toolType: EditToolType, asset: AssetResponseDto, edits: AssetEditsCreateDto) {
     this.hasAppliedEdits = false;
+    this.currentAsset = asset;
+    this.passthroughEdits = (
+      edits.edits as unknown as Array<{ action: string; parameters: Record<string, unknown> }>
+    )
+      .filter((edit) => edit.action === FUJI_DEVELOP_ACTION)
+      .map(({ action, parameters }) => ({ action, parameters })) as unknown as EditActions;
+
     if (this.selectedTool?.type === toolType) {
       return;
     }
-
-    this.currentAsset = asset;
 
     this.selectedTool?.manager.onDeactivate?.();
     const newTool = this.tools.find((t) => t.type === toolType);
@@ -106,6 +113,7 @@ export class EditManager {
     }
     this.currentAsset = null;
     this.selectedTool = null;
+    this.passthroughEdits = [];
   }
 
   async resetAllChanges() {
@@ -117,7 +125,7 @@ export class EditManager {
   async applyEdits(): Promise<boolean> {
     this.isApplyingEdits = true;
 
-    const edits = this.tools.flatMap((tool) => tool.manager.edits);
+    const edits = [...this.tools.flatMap((tool) => tool.manager.edits), ...this.passthroughEdits];
     if (!this.currentAsset) {
       return false;
     }
@@ -127,7 +135,10 @@ export class EditManager {
 
     try {
       // Setup the websocket listener before sending the edit request
-      const editCompleted = waitForWebsocketEvent('AssetEditReadyV2', (event) => event.asset.id === assetId, 10_000);
+      const timeout = this.passthroughEdits.some((edit) => edit.action === FUJI_DEVELOP_ACTION)
+        ? FUJI_DEVELOP_READY_TIMEOUT_MS
+        : 10_000;
+      const editCompleted = waitForWebsocketEvent('AssetEditReadyV2', (event) => event.asset.id === assetId, timeout);
 
       await (edits.length === 0
         ? removeAssetEdits({ id: assetId })

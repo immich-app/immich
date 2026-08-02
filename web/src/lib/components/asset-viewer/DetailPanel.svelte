@@ -15,6 +15,7 @@
   import { getAssetMediaUrl } from '$lib/utils';
   import { delay, getDimensions } from '$lib/utils/asset-utils';
   import { getByteUnitString } from '$lib/utils/byte-units';
+  import { isFujiXt5RawAsset } from '$lib/utils/fuji-develop';
   import { handleError } from '$lib/utils/handle-error';
   import { getParentPath } from '$lib/utils/tree-utils';
   import {
@@ -275,8 +276,8 @@
         </div>
       {/if}
 
-      {#if asset.exifInfo?.filmMode}
-        <DetailPanelFilmSimulation filmMode={asset.exifInfo.filmMode} />
+      {#if asset.exifInfo?.filmMode || isFujiXt5RawAsset(asset)}
+        <DetailPanelFilmSimulation filmMode={asset.exifInfo?.filmMode ?? 'PROVIA/Standard'} {asset} {isOwner} />
       {/if}
 
       <DetailPanelLocation {isOwner} {asset} />

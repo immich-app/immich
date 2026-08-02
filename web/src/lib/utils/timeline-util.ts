@@ -177,6 +177,7 @@ export const toTimelineAsset = (unknownAsset: AssetResponseDto | TimelineAsset):
     tags: assetResponse.tags?.map((tag) => tag.id),
     ratio,
     thumbhash: assetResponse.thumbhash,
+    updatedAt: assetResponse.updatedAt,
     localDateTime,
     createdAt,
     fileCreatedAt,

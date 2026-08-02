@@ -37,6 +37,7 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
   ownerId: Sync.each(() => faker.string.uuid()),
   tags: [],
   thumbhash: Sync.each(() => faker.string.alphanumeric(28)),
+  updatedAt: Sync.each(() => faker.date.past().toISOString()),
   localDateTime: Sync.each(() => fromISODateTimeUTCToObject(faker.date.past().toISOString())),
   createdAt: Sync.each(() => fromISODateTimeUTCToObject(faker.date.past().toISOString())),
   fileCreatedAt: Sync.each(() => fromISODateTimeUTCToObject(faker.date.past().toISOString())),
@@ -55,7 +56,7 @@ export const timelineAssetFactory = Sync.makeFactory<TimelineAsset>({
 });
 
 export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
-  const bucketAssets: TimeBucketAssetResponseDto = {
+  const bucketAssets: TimeBucketAssetResponseDto & { updatedAt: string[] } = {
     city: [],
     country: [],
     duration: [],
@@ -68,6 +69,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     fileCreatedAt: [],
     localOffsetHours: [],
     createdAt: [],
+    updatedAt: [],
     ownerId: [],
     projectionType: [],
     ratio: [],
@@ -86,6 +88,7 @@ export const toResponseDto = (...timelineAsset: TimelineAsset[]) => {
     bucketAssets.isTrashed.push(asset.isTrashed);
     bucketAssets.livePhotoVideoId.push(asset.livePhotoVideoId!);
     bucketAssets.fileCreatedAt.push(fileCreatedAt);
+    bucketAssets.updatedAt.push(asset.updatedAt ?? fileCreatedAt);
     bucketAssets.ownerId.push(asset.ownerId);
     bucketAssets.projectionType.push(asset.projectionType!);
     bucketAssets.ratio.push(asset.ratio);

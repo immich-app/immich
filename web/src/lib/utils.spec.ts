@@ -1,5 +1,5 @@
 import { AssetTypeEnum } from '@immich/sdk';
-import { getAssetUrl, semverToName } from '$lib/utils';
+import { getAssetCacheKey, getAssetUrl, semverToName } from '$lib/utils';
 import { assetFactory } from '@test-data/factories/asset-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 
@@ -159,6 +159,23 @@ describe('utils', () => {
       expect(url).toContain('/thumbnail');
       expect(url).not.toContain('/original');
       expect(url).toContain(asset.id);
+    });
+
+    it('changes edited media URLs when the asset updatedAt changes', () => {
+      const asset = assetFactory.build({
+        originalPath: 'image.jpg',
+        originalMimeType: 'image/jpeg',
+        type: AssetTypeEnum.Image,
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      });
+      const updatedAsset = { ...asset, updatedAt: '2026-01-01T00:00:01.000Z' };
+
+      const firstUrl = getAssetUrl({ asset })!;
+      const secondUrl = getAssetUrl({ asset: updatedAsset })!;
+
+      expect(firstUrl).not.toBe(secondUrl);
+      expect(new URL(firstUrl, 'https://example.com').searchParams.get('c')).toBe(getAssetCacheKey(asset));
+      expect(new URL(secondUrl, 'https://example.com').searchParams.get('c')).toBe(getAssetCacheKey(updatedAsset));
     });
   });
   describe('semverToName', () => {

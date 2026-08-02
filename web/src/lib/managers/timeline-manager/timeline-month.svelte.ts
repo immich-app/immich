@@ -174,6 +174,7 @@ export class TimelineMonth {
 
   addAssets(bucketAssets: TimeBucketAssetResponseDto, preSorted: boolean) {
     const addContext = new GroupInsertionCache();
+    const updatedAt = (bucketAssets as TimeBucketAssetResponseDto & { updatedAt?: string[] }).updatedAt;
     for (let i = 0; i < bucketAssets.id.length; i++) {
       const { localDateTime, fileCreatedAt } = getTimes(
         bucketAssets.fileCreatedAt[i],
@@ -205,6 +206,7 @@ export class TimelineMonth {
             }
           : null,
         thumbhash: bucketAssets.thumbhash[i],
+        updatedAt: updatedAt?.[i],
         people: null, // People are not included in the bucket assets
       };
 

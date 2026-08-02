@@ -1,7 +1,27 @@
-import { render } from '@testing-library/svelte';
+import { fireEvent, render, waitFor } from '@testing-library/svelte';
+import { editAsset, getAssetEdits, getAssetInfo } from '@immich/sdk';
+import { assetFactory } from '@test-data/factories/asset-factory';
 import DetailPanelFilmSimulation from './DetailPanelFilmSimulation.svelte';
 
+vi.mock('@immich/sdk', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@immich/sdk')>();
+  return {
+    ...original,
+    editAsset: vi.fn(),
+    getAssetEdits: vi.fn(),
+    getAssetInfo: vi.fn(),
+  };
+});
+
+vi.mock('$lib/stores/websocket', () => ({ waitForWebsocketEvent: vi.fn().mockResolvedValue([]) }));
+
 describe('DetailPanelFilmSimulation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getAssetEdits).mockResolvedValue({ assetId: 'asset-id', edits: [] });
+    vi.mocked(editAsset).mockResolvedValue({ assetId: 'asset-id', edits: [] });
+  });
+
   it('renders Classic Chrome as a code-native vector banner', () => {
     const { baseElement } = render(DetailPanelFilmSimulation, { filmMode: 'Classic Chrome' });
     const figure = baseElement.querySelector('[data-testid="film-simulation-graphic"]');
@@ -43,5 +63,56 @@ describe('DetailPanelFilmSimulation', () => {
     const { getByText } = render(DetailPanelFilmSimulation, { filmMode: 'Future Film Mode' });
 
     expect(getByText('Future Film Mode')).toBeTruthy();
+  });
+
+  it('keeps the EXIF banner read-only for viewers who cannot edit the asset', () => {
+    const asset = assetFactory.build({
+      originalFileName: 'DXT51946.RAF',
+      originalPath: '/photos/DXT51946.RAF',
+      isOffline: false,
+      exifInfo: { make: 'FUJIFILM', model: 'X-T5', filmMode: 'Nostalgic Neg.' },
+    });
+    const { queryByTestId } = render(DetailPanelFilmSimulation, {
+      filmMode: 'Nostalgic Neg.',
+      asset,
+      isOwner: false,
+    });
+
+    expect(queryByTestId('fuji-raw-editor')).toBeNull();
+    expect(getAssetEdits).not.toHaveBeenCalled();
+  });
+
+  it('immediately applies a selected simulation while retaining the level editor', async () => {
+    const asset = assetFactory.build({
+      id: 'asset-id',
+      originalFileName: 'DXT51946.RAF',
+      originalPath: '/photos/DXT51946.RAF',
+      isOffline: false,
+      exifInfo: { make: 'FUJIFILM', model: 'X-T5', filmMode: 'Nostalgic Neg.' },
+    });
+    vi.mocked(getAssetInfo).mockResolvedValue(asset);
+    const { findByTestId, getByRole, getByText } = render(DetailPanelFilmSimulation, {
+      filmMode: 'Nostalgic Neg.',
+      asset,
+      isOwner: true,
+    });
+
+    expect(await findByTestId('fuji-develop-levels')).toBeTruthy();
+    await waitFor(() => expect(getByRole('button', { name: 'Choose' })).not.toBeDisabled());
+    await fireEvent.click(getByRole('button', { name: 'Choose' }));
+    await fireEvent.click(getByText('Velvia'));
+
+    await waitFor(() => expect(editAsset).toHaveBeenCalledOnce());
+    expect(vi.mocked(editAsset).mock.calls[0][0]).toMatchObject({
+      id: 'asset-id',
+      assetEditsCreateDto: {
+        edits: [
+          {
+            action: 'fuji_develop',
+            parameters: { profileSlug: 'velvia-vivid', processModel: 'lightroom-pv2012-independent-v6' },
+          },
+        ],
+      },
+    });
   });
 });
