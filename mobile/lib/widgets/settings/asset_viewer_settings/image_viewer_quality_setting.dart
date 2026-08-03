@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -14,7 +16,7 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isOriginal = useState(ref.read(appConfigProvider).image.loadOriginal);
     useValueChanged<bool, void>(isOriginal.value, (_, __) {
-      ref.read(settingsProvider).write(.imageLoadOriginal, isOriginal.value);
+      unawaited(ref.read(settingsProvider).write(.imageLoadOriginal, isOriginal.value));
     });
 
     return Column(

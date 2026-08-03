@@ -60,12 +60,13 @@ COPY --from=ghcr.io/jdx/mise:2026.7.15@sha256:e62097049bfc980de5d9a25fbe16431e24
 
 WORKDIR /app
 COPY ./mise.toml ./mise.toml
+COPY ./mise.lock ./mise.lock
 COPY ./packages/plugin-core/mise.toml ./packages/plugin-core/
 ENV MISE_TRUSTED_CONFIG_PATHS=/app/mise.toml
 ENV MISE_DATA_DIR=/buildcache/mise
 ENV MISE_DISABLE_TOOLS=flutter
 RUN --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
-  mise install
+  mise install --locked
 
 COPY ./packages/sdk ./packages/sdk/
 COPY ./packages/plugin-core ./packages/plugin-core/

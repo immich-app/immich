@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/models/server_info/server_config.model.dart';
@@ -56,11 +58,11 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     }
   }
 
-  _checkServerVersionMismatch(ServerVersion serverVersion, {ServerVersion? latestVersion}) async {
+  Future<void> _checkServerVersionMismatch(ServerVersion serverVersion, {ServerVersion? latestVersion}) async {
     state = state.copyWith(serverVersion: serverVersion, latestVersion: latestVersion);
 
-    var packageInfo = await PackageInfo.fromPlatform();
-    SemVer clientVersion = SemVer.fromString(packageInfo.version);
+    final packageInfo = await PackageInfo.fromPlatform();
+    final SemVer clientVersion = SemVer.fromString(packageInfo.version);
 
     if (serverVersion < clientVersion || (latestVersion != null && serverVersion < latestVersion)) {
       state = state.copyWith(versionStatus: VersionStatus.serverOutOfDate);
@@ -75,12 +77,12 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     state = state.copyWith(versionStatus: VersionStatus.upToDate);
   }
 
-  handleReleaseInfo(ServerVersion serverVersion, ServerVersion? latestVersion) {
+  void handleReleaseInfo(ServerVersion serverVersion, ServerVersion? latestVersion) {
     // Update local server version
-    _checkServerVersionMismatch(serverVersion, latestVersion: latestVersion);
+    unawaited(_checkServerVersionMismatch(serverVersion, latestVersion: latestVersion));
   }
 
-  getServerFeatures() async {
+  Future<void> getServerFeatures() async {
     final serverFeatures = await _serverInfoService.getServerFeatures();
     if (serverFeatures == null) {
       return;
@@ -88,7 +90,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
     state = state.copyWith(serverFeatures: serverFeatures);
   }
 
-  getServerConfig() async {
+  Future<void> getServerConfig() async {
     final serverConfig = await _serverInfoService.getServerConfig();
     if (serverConfig == null) {
       return;

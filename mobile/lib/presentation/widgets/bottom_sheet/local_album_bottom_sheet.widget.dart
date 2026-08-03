@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/delete.action.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
+import 'package:immich_mobile/presentation/actions/upload.action.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -64,10 +65,11 @@ class _LocalAlbumBottomSheetState extends ConsumerState<LocalAlbumBottomSheet> {
       initialChildSize: 0.25,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
-      actions: const [
-        ShareActionButton(source: ActionSource.timeline),
-        DeleteLocalActionButton(source: ActionSource.timeline),
-        UploadActionButton(source: ActionSource.timeline),
+      actions: const <ActionColumnButton>[
+        .new(action: ShareAction(source: .timeline)),
+        .new(action: DeleteAction(source: .timeline)),
+        .new(action: CleanupLocalAction(source: .timeline)),
+        .new(action: UploadAction(source: .timeline)),
       ],
       slivers: [
         const AddToAlbumHeader(),

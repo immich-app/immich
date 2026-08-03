@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -22,7 +24,7 @@ class ThemeSetting extends HookConsumerWidget {
 
     void onThemeChange(bool isDark) {
       currentTheme.value = isDark ? ThemeMode.dark : ThemeMode.light;
-      ref.read(settingsProvider).write(.themeMode, currentTheme.value);
+      unawaited(ref.read(settingsProvider).write(.themeMode, currentTheme.value));
     }
 
     void onSystemThemeChange(bool isSystem) {
@@ -39,11 +41,11 @@ class ThemeSetting extends HookConsumerWidget {
           currentTheme.value = ThemeMode.dark;
         }
       }
-      ref.read(settingsProvider).write(.themeMode, currentTheme.value);
+      unawaited(ref.read(settingsProvider).write(.themeMode, currentTheme.value));
     }
 
     void onSurfaceColorSettingChange(bool useColorfulInterface) {
-      ref.read(settingsProvider).write(.themeColorfulInterface, useColorfulInterface);
+      unawaited(ref.read(settingsProvider).write(.themeColorfulInterface, useColorfulInterface));
       colorfulInterface.value = useColorfulInterface;
     }
 

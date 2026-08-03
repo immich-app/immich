@@ -540,7 +540,7 @@ export type CreateAlbumDto = {
     /** Initial asset IDs */
     assetIds?: string[];
     /** Album description */
-    description?: string;
+    description?: string | null;
 };
 export type AlbumsAddAssetsDto = {
     /** Album IDs */
@@ -567,7 +567,7 @@ export type UpdateAlbumDto = {
     /** Album thumbnail asset ID */
     albumThumbnailAssetId?: string;
     /** Album description */
-    description?: string;
+    description?: string | null;
     /** Enable activity feed */
     isActivityEnabled?: boolean;
     order?: AssetOrder;

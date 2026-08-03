@@ -232,7 +232,7 @@ class _BackupOnlyWhenChargingButton extends ConsumerWidget {
       titleKey: "charging",
       subtitleKey: "charging_requirement_mobile_backup",
       onChanged: (value) {
-        fgService.configure(requireCharging: value);
+        unawaited(fgService.configure(requireCharging: value));
       },
     );
   }

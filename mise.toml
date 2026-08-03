@@ -16,9 +16,9 @@ config_roots = [
 
 [tools]
 node = "24.15.0"
-pnpm = "11.13.1"
+pnpm = "11.17.0"
 terragrunt = "1.1.1"
-opentofu = "1.12.4"
+opentofu = "1.12.5"
 "npm:@openapitools/openapi-generator-cli" = "2.40.1"
 "npm:oazapfts" = "7.5.0"
 "github:extism/cli" = "1.6.3"
@@ -69,7 +69,7 @@ sources = [
   "patch/*",
   "bin/generate-dart-sdk.sh",
 ]
-outputs = ["../mobile/openapi/lib/"]
+outputs = ["../mobile/generated/openapi/"]
 run = "bash ./bin/generate-dart-sdk.sh"
 
 [tasks.open-api]
