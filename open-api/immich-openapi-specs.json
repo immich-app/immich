@@ -4947,7 +4947,6 @@
             "in": "query",
             "description": "Return edited asset if available",
             "schema": {
-              "default": false,
               "type": "boolean"
             }
           },
@@ -5035,7 +5034,6 @@
             "in": "query",
             "description": "Return edited asset if available",
             "schema": {
-              "default": false,
               "type": "boolean"
             }
           },
@@ -25478,7 +25476,6 @@
             "type": "string"
           },
           "expiresAt": {
-            "default": null,
             "description": "Expiration date",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
