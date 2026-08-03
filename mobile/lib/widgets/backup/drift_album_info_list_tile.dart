@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -20,7 +22,7 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
     final bool isSelected = album.backupSelection == BackupSelection.selected;
     final bool isExcluded = album.backupSelection == BackupSelection.excluded;
 
-    buildTileColor() {
+    Color? buildTileColor() {
       if (isSelected) {
         return context.isDarkTheme ? context.primaryColor.withAlpha(100) : context.primaryColor.withAlpha(25);
       } else if (isExcluded) {
@@ -30,7 +32,7 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
       }
     }
 
-    buildIcon() {
+    Icon buildIcon() {
       if (isSelected) {
         return Icon(Icons.check_circle_rounded, color: context.colorScheme.primary);
       }
@@ -54,7 +56,7 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
         ref.watch(hapticFeedbackProvider.notifier).selectionClick();
 
         if (isExcluded) {
-          ref.read(backupAlbumProvider.notifier).deselectAlbum(album);
+          unawaited(ref.read(backupAlbumProvider.notifier).deselectAlbum(album));
         } else {
           if (album.id == 'isAll' || album.name == 'Recents') {
             ImmichToast.show(
@@ -66,7 +68,7 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
             return;
           }
 
-          ref.read(backupAlbumProvider.notifier).excludeAlbum(album);
+          unawaited(ref.read(backupAlbumProvider.notifier).excludeAlbum(album));
         }
       },
       child: ListTile(
@@ -75,9 +77,9 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
         onTap: () {
           ref.read(hapticFeedbackProvider.notifier).selectionClick();
           if (isSelected) {
-            ref.read(backupAlbumProvider.notifier).deselectAlbum(album);
+            unawaited(ref.read(backupAlbumProvider.notifier).deselectAlbum(album));
           } else {
-            ref.read(backupAlbumProvider.notifier).selectAlbum(album);
+            unawaited(ref.read(backupAlbumProvider.notifier).selectAlbum(album));
           }
         },
         leading: buildIcon(),
@@ -85,7 +87,7 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
         subtitle: buildSubtitle(),
         trailing: IconButton(
           onPressed: () {
-            context.pushRoute(LocalTimelineRoute(album: album));
+            unawaited(context.pushRoute(LocalTimelineRoute(album: album)));
           },
           icon: Icon(Icons.image_outlined, color: context.primaryColor, size: 24),
           splashRadius: 25,

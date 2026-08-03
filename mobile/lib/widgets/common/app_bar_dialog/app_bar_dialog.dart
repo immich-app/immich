@@ -29,21 +29,21 @@ class ImmichAppBarDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(localeProvider);
-    ServerDiskInfo backupState = ref.watch(backupProvider);
+    final ServerDiskInfo backupState = ref.watch(backupProvider);
     final theme = context.themeData;
-    bool isHorizontal = !context.isMobile;
+    final bool isHorizontal = !context.isMobile;
     final horizontalPadding = isHorizontal ? 100.0 : 20.0;
     final user = ref.watch(currentUserProvider);
     final isLoggingOut = useState(false);
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
     useEffect(() {
-      ref.read(backupProvider.notifier).updateDiskInfo();
-      ref.read(currentUserProvider.notifier).refresh();
+      unawaited(ref.read(backupProvider.notifier).updateDiskInfo());
+      unawaited(ref.read(currentUserProvider.notifier).refresh());
       return null;
     }, []);
 
-    buildTopRow() {
+    SizedBox buildTopRow() {
       return SizedBox(
         height: 56,
         child: Stack(
@@ -68,7 +68,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildActionButton(IconData icon, String text, Function() onTap, {Widget? trailing}) {
+    ListTile buildActionButton(IconData icon, String text, Function() onTap, {Widget? trailing}) {
       return ListTile(
         dense: true,
         visualDensity: VisualDensity.standard,
@@ -84,11 +84,11 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildSettingButton() {
+    ListTile buildSettingButton() {
       return buildActionButton(Icons.settings_outlined, "settings", () => context.pushRoute(const SettingsRoute()));
     }
 
-    buildFreeUpSpaceButton() {
+    ListTile buildFreeUpSpaceButton() {
       return buildActionButton(
         Icons.cleaning_services_outlined,
         "free_up_space",
@@ -96,7 +96,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildAppLogButton() {
+    ListTile buildAppLogButton() {
       return buildActionButton(
         Icons.assignment_outlined,
         "profile_drawer_app_logs",
@@ -104,7 +104,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildSignOutButton() {
+    ListTile buildSignOutButton() {
       return buildActionButton(
         Icons.logout_rounded,
         "sign_out",
@@ -126,6 +126,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                     await ref.read(authProvider.notifier).logout().whenComplete(() => isLoggingOut.value = false);
 
                     ref.read(websocketProvider.notifier).disconnect();
+                    if (!context.mounted) {
+                      return;
+                    }
+
                     unawaited(context.replaceRoute(const LoginRoute()));
                   },
                 );
@@ -171,7 +175,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildFooter() {
+    Padding buildFooter() {
       return Padding(
         padding: const EdgeInsets.only(top: 10, bottom: 20),
         child: Row(
@@ -180,7 +184,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             InkWell(
               onTap: () {
                 ContextHelper(context).pop();
-                launchUrl(Uri.parse('https://docs.immich.app'), mode: LaunchMode.externalApplication);
+                unawaited(launchUrl(Uri.parse('https://docs.immich.app'), mode: LaunchMode.externalApplication));
               },
               child: Text("documentation", style: context.textTheme.bodySmall).tr(),
             ),
@@ -188,7 +192,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             InkWell(
               onTap: () {
                 ContextHelper(context).pop();
-                launchUrl(Uri.parse('https://github.com/immich-app/immich'), mode: LaunchMode.externalApplication);
+                unawaited(
+                  launchUrl(Uri.parse('https://github.com/immich-app/immich'), mode: LaunchMode.externalApplication),
+                );
               },
               child: Text("profile_drawer_github", style: context.textTheme.bodySmall).tr(),
             ),
@@ -197,6 +203,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               onTap: () async {
                 ContextHelper(context).pop();
                 final packageInfo = await PackageInfo.fromPlatform();
+                if (!context.mounted) {
+                  return;
+                }
+
                 showLicensePage(
                   context: context,
                   applicationIcon: const Padding(
@@ -213,7 +223,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       );
     }
 
-    buildReadonlyMessage() {
+    Padding buildReadonlyMessage() {
       return Padding(
         padding: const EdgeInsets.only(left: 10.0, right: 10.0),
         child: ListTile(

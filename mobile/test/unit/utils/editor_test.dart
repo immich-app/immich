@@ -4,7 +4,7 @@ import 'package:immich_mobile/utils/editor.utils.dart';
 import 'package:openapi/api.dart' show MirrorAxis, MirrorParameters, RotateParameters;
 
 List<AssetEdit> normalizedToEdits(NormalizedTransform transform) {
-  List<AssetEdit> edits = [];
+  final List<AssetEdit> edits = [];
 
   if (transform.mirrorHorizontal) {
     edits.add(MirrorEdit(MirrorParameters(axis: MirrorAxis.horizontal)));
@@ -25,10 +25,10 @@ bool compareEditAffines(List<AssetEdit> editsA, List<AssetEdit> editsB) {
   final normA = buildAffineFromEdits(editsA);
   final normB = buildAffineFromEdits(editsB);
 
-  return ((normA.a - normB.a).abs() < 0.0001 &&
+  return (normA.a - normB.a).abs() < 0.0001 &&
       (normA.b - normB.b).abs() < 0.0001 &&
       (normA.c - normB.c).abs() < 0.0001 &&
-      (normA.d - normB.d).abs() < 0.0001);
+      (normA.d - normB.d).abs() < 0.0001;
 }
 
 void main() {

@@ -89,7 +89,8 @@ const methods = wrapper<Manifest>({
     }
   },
 
-  assetFileFilter: ({ data, config }) => matchValueResult(data.asset.originalFileName || '', config),
+  assetFileFilter: ({ data, config }) =>
+    matchValueResult(config.usePath ? data.asset.originalPath : data.asset.originalFileName, config),
 
   assetLocationFilter: ({ config, data }) => {
     if (

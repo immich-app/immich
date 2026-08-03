@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/services/local_album.service.dart';
@@ -10,7 +12,7 @@ final backupAlbumProvider = StateNotifierProvider<BackupAlbumNotifier, List<Loca
 
 class BackupAlbumNotifier extends StateNotifier<List<LocalAlbum>> {
   BackupAlbumNotifier(this._localAlbumService) : super([]) {
-    getAll();
+    unawaited(getAll());
   }
 
   final LocalAlbumService _localAlbumService;

@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
@@ -86,7 +86,7 @@ class TagPicker extends HookConsumerWidget {
     final searchQuery = useState('');
     final tags = ref.watch(tagProvider);
     final selectedTagIds = useState<Set<String>>(filter);
-    final borderRadius = const BorderRadius.all(Radius.circular(10));
+    const borderRadius = BorderRadius.all(Radius.circular(10));
     final selectedNewTagValues = useState<Set<String>>({});
 
     return Column(
@@ -125,7 +125,7 @@ class TagPicker extends HookConsumerWidget {
                     // Create new tag tile
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 2.0),
-                      child: Container(
+                      child: DecoratedBox(
                         decoration: BoxDecoration(
                           color: isCreateSelected ? context.primaryColor : context.primaryColor.withAlpha(25),
                           borderRadius: const BorderRadius.all(Radius.circular(10)),
@@ -160,7 +160,7 @@ class TagPicker extends HookConsumerWidget {
 
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 2.0),
-                    child: Container(
+                    child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: isSelected ? context.primaryColor : context.primaryColor.withAlpha(25),
                         borderRadius: borderRadius,

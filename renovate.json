@@ -39,7 +39,6 @@
     }
   ],
   "ignorePaths": [
-    "mobile/openapi/pubspec.yaml",
     "mobile/ios",
     "mobile/android"
   ],

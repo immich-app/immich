@@ -161,12 +161,14 @@ describe(SyncRequestType.AlbumToAssetsV1, () => {
 
     // backfill needs assets with an older updateId
     const { asset: sharedAsset1 } = await ctx.newAsset({ ownerId: user2.id });
+    await wait(2);
     const { asset: sharedAsset2 } = await ctx.newAsset({ ownerId: user2.id });
 
     await wait(2);
 
     const { album: sharedAlbum } = await ctx.newAlbum({ ownerId: user2.id });
     await ctx.newAlbumAsset({ albumId: sharedAlbum.id, assetId: sharedAsset1.id });
+    await wait(2);
     await ctx.newAlbumAsset({ albumId: sharedAlbum.id, assetId: sharedAsset2.id });
 
     await wait(2);

@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/download_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/download.action.dart';
+import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -63,9 +64,9 @@ class _PartnerDetailBottomSheetState extends ConsumerState<PartnerDetailBottomSh
       initialChildSize: 0.25,
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
-      actions: const [
-        ShareActionButton(source: ActionSource.timeline),
-        DownloadActionButton(source: ActionSource.timeline),
+      actions: const <ActionColumnButton>[
+        .new(action: ShareAction(source: .timeline)),
+        .new(action: DownloadAction(source: .timeline)),
       ],
       slivers: [
         const AddToAlbumHeader(),
