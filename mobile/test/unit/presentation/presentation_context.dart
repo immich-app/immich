@@ -11,14 +11,18 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/services/cleanup.service.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
 import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_ui/immich_ui.dart';
@@ -34,7 +38,6 @@ class PresentationContext {
       service = ServiceMocks(),
       repository = RepositoryMocks() {
     setup();
-    addTearDown(dispose);
   }
 
   static const String serverEndpoint = 'http://localhost:3000';
@@ -48,10 +51,14 @@ class PresentationContext {
   List<Override> get overrides => [
     currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
     assetServiceProvider.overrideWithValue(service.asset.service),
+    cleanupServiceProvider.overrideWithValue(service.cleanup.service),
+    remoteAlbumServiceProvider.overrideWithValue(service.album.service),
     partnerServiceProvider.overrideWithValue(service.partner.service),
     gCastServiceProvider.overrideWithValue(service.cast),
     serverInfoServiceProvider.overrideWithValue(service.serverInfo),
     inLockedViewProvider.overrideWithValue(false),
+    remoteAssetRepositoryProvider.overrideWithValue(repository.remoteAsset.repo),
+    assetMediaRepositoryProvider.overrideWithValue(repository.assetMedia.api),
   ];
 
   List<Override> selected(Set<BaseAsset> assets) => [
@@ -68,6 +75,7 @@ class PresentationContext {
       await StoreService.I.put(StoreKey.serverEndpoint, serverEndpoint);
       _db = db;
     }
+    await SettingsRepository.ensureInitialized(_db!);
     return PresentationContext._(user: UserFactory.createDto());
   }
 
@@ -75,7 +83,8 @@ class PresentationContext {
     when(service.user.tryGetMyUser).thenReturn(currentUser);
   }
 
-  void dispose() {
+  Future<void> dispose() async {
+    await SettingsRepository.reset();
     service.resetAll();
   }
 }
@@ -92,15 +101,18 @@ extension PumpPresentationWidget on WidgetTester {
         useFallbackTranslations: true,
         assetLoader: const CodegenLoader(),
         child: ProviderScope(
-          overrides: [...context.overrides, ...overrides],
+          overrides: context.overrides,
           child: Builder(
-            builder: (context) => MaterialApp(
-              debugShowCheckedModeBanner: false,
-              scaffoldMessengerKey: scaffoldMessengerKey,
-              localizationsDelegates: context.localizationDelegates,
-              supportedLocales: context.supportedLocales,
-              locale: context.locale,
-              home: Scaffold(body: widget),
+            builder: (context) => ProviderScope(
+              overrides: overrides,
+              child: MaterialApp(
+                debugShowCheckedModeBanner: false,
+                scaffoldMessengerKey: scaffoldMessengerKey,
+                localizationsDelegates: context.localizationDelegates,
+                supportedLocales: context.supportedLocales,
+                locale: context.locale,
+                home: Scaffold(body: widget),
+              ),
             ),
           ),
         ),

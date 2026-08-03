@@ -15,7 +15,7 @@ void main() {
   late PresentationContext context;
 
   setUp(() async => context = await PresentationContext.create());
-  tearDown(() => context.dispose());
+  tearDown(() async => await context.dispose());
 
   group('PartnerSharedByList', () {
     testWidgets('shows the empty-state add button when there are no partners', (tester) async {
