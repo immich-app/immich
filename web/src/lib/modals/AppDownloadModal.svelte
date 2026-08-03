@@ -17,7 +17,7 @@
       <img class="mt-2 w-full" alt="Download on the App Store" src={appStoreBadge} />
     </a>
 
-    <a href="https://f-droid.org/packages/app.alextran.immich/" target="_blank" id="fdroid-link">
+    <a href="https://app.futo.org/fdroid/repo/" target="_blank" id="fdroid-link">
       <img class="mt-2 w-full" alt="Get it on F-Droid" src={fdroidBadge} />
     </a>
   </div>
