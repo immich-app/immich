@@ -1,12 +1,14 @@
 import 'dart:convert';
 
+import 'package:immich_mobile/utils/option.dart';
+
 enum CastDestinationType { googleCast, fCast }
 
 enum CastState { idle, playing, paused, buffering }
 
 class CastManagerState {
   final bool isCasting;
-  final String receiverName;
+  final String? receiverName;
   final CastState castState;
   final Duration currentTime;
   final Duration duration;
@@ -21,14 +23,14 @@ class CastManagerState {
 
   CastManagerState copyWith({
     bool? isCasting,
-    String? receiverName,
+    Option<String>? receiverName,
     CastState? castState,
     Duration? currentTime,
     Duration? duration,
   }) {
     return CastManagerState(
       isCasting: isCasting ?? this.isCasting,
-      receiverName: receiverName ?? this.receiverName,
+      receiverName: receiverName.patch(this.receiverName),
       castState: castState ?? this.castState,
       currentTime: currentTime ?? this.currentTime,
       duration: duration ?? this.duration,
@@ -50,7 +52,7 @@ class CastManagerState {
   factory CastManagerState.fromMap(Map<String, dynamic> map) {
     return CastManagerState(
       isCasting: map['isCasting'] ?? false,
-      receiverName: map['receiverName'] ?? '',
+      receiverName: map['receiverName'],
       castState: map['castState'] ?? CastState.idle,
       currentTime: Duration(seconds: map['currentTime']?.toInt() ?? 0),
       duration: Duration(seconds: map['duration']?.toInt() ?? 0),

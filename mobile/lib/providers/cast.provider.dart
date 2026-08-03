@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/services/cast.service.dart';
+import 'package:immich_mobile/utils/option.dart';
 
 final castProvider = StateNotifierProvider<CastNotifier, CastManagerState>(
   (ref) => CastNotifier(ref.watch(castServiceProvider)),
@@ -18,7 +19,7 @@ class CastNotifier extends StateNotifier<CastManagerState> {
           isCasting: false,
           currentTime: Duration.zero,
           duration: Duration.zero,
-          receiverName: '',
+          receiverName: null,
           castState: CastState.idle,
         ),
       ) {
@@ -41,8 +42,8 @@ class CastNotifier extends StateNotifier<CastManagerState> {
     state = state.copyWith(duration: duration);
   }
 
-  void _onReceiverName(String receiverName) {
-    state = state.copyWith(receiverName: receiverName);
+  void _onReceiverName(String? receiverName) {
+    state = state.copyWith(receiverName: Option.fromNullable(receiverName));
   }
 
   void _onCastState(CastState castState) {

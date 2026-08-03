@@ -34,7 +34,7 @@ class CastService {
 
   void Function(Duration)? onDuration;
 
-  void Function(String)? onReceiverName;
+  void Function(String?)? onReceiverName;
 
   void Function(CastState)? onCastState;
 
@@ -53,7 +53,7 @@ class CastService {
       currentAssetId = null;
 
       onConnectionState?.call(false);
-      onReceiverName?.call("");
+      onReceiverName?.call(null);
     }
   }
 
@@ -91,7 +91,7 @@ class CastService {
   }
 
   Future<void> disconnect() async {
-    onReceiverName?.call("");
+    onReceiverName?.call(null);
     currentAssetId = null;
     await _castRepository.disconnect();
   }
