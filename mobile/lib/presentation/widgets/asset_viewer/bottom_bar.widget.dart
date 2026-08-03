@@ -30,8 +30,6 @@ class ViewerBottomBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-
-    debugPrint('ViewerBottomBar,ViewerBottomBar ViewerBottomBar');
     final asset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
     if (asset == null) {
       return const SizedBox.shrink();
