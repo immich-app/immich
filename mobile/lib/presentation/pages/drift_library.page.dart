@@ -354,7 +354,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
     return SliverPadding(
       padding: const EdgeInsets.only(left: 16, top: 12, right: 16, bottom: 32),
       sliver: SliverToBoxAdapter(
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: context.colorScheme.onSurface.withAlpha(10), width: 1),
             borderRadius: const BorderRadius.all(Radius.circular(20)),
@@ -370,7 +370,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
           ),
           child: ListView(
             shrinkWrap: true,
-            padding: const EdgeInsets.all(0),
+            padding: EdgeInsets.zero,
             physics: const NeverScrollableScrollPhysics(),
             children: [
               ListTile(
@@ -422,7 +422,7 @@ class _PartnerList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.all(0),
+      padding: EdgeInsets.zero,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: partners.length,
       shrinkWrap: true,

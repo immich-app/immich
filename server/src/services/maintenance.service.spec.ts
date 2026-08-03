@@ -134,6 +134,22 @@ describe(MaintenanceService.name, () => {
     });
   });
 
+  describe('startRestoreFlow', () => {
+    it('should start maintenance mode and return a jwt', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });
+
+      await expect(sut.startRestoreFlow()).resolves.toMatchObject({ jwt: expect.any(String) });
+
+      expect(mocks.systemMetadata.set).toHaveBeenCalledWith(SystemMetadataKey.MaintenanceMode, {
+        isMaintenanceMode: true,
+        secret: expect.stringMatching(/^\w{128}$/),
+        action: {
+          action: MaintenanceAction.SelectDatabaseRestore,
+        },
+      });
+    });
+  });
+
   describe('createLoginUrl', () => {
     it('should fail outside of maintenance mode without secret', async () => {
       mocks.systemMetadata.get.mockResolvedValue({ isMaintenanceMode: false });

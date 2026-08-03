@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -33,7 +35,7 @@ class DriftMemoryLane extends ConsumerWidget {
           if (memories[index].assets.isNotEmpty) {
             DriftMemoryPage.setMemory(ref, memories[index]);
           }
-          context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index));
+          unawaited(context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index)));
         },
         children: memories
             .map((memory) => DriftMemoryCard(key: Key(memory.id), memory: memory))

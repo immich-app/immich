@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
@@ -21,7 +21,7 @@ class PeoplePicker extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final formFocus = useFocusNode();
-    final imageSize = 60.0;
+    const imageSize = 60.0;
     final searchQuery = useState('');
     final people = ref.watch(getAllPeopleProvider);
     final selectedPeople = useState<Set<PersonDto>>(filter ?? {});

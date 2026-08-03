@@ -34,7 +34,7 @@ class LargeLeadingTile extends StatelessWidget {
     return InkWell(
       borderRadius: BorderRadius.circular(borderRadius),
       onTap: disabled ? null : onTap,
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           color: selected
               ? selectedTileColor ?? Theme.of(context).primaryColor.withAlpha(30)

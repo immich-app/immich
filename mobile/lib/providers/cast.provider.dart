@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
@@ -51,14 +53,13 @@ class CastNotifier extends StateNotifier<CastManagerState> {
   }
 
   void loadMedia(RemoteAsset asset, bool reload) {
-    _gCastService.loadMedia(asset, reload);
+    unawaited(_gCastService.loadMedia(asset, reload));
   }
 
   Future<void> connect(CastDestinationType type, dynamic device) async {
     switch (type) {
       case CastDestinationType.googleCast:
         await _gCastService.connect(device);
-        break;
     }
   }
 

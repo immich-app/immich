@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
@@ -21,7 +23,7 @@ class AssetListSettings extends HookConsumerWidget {
         valueNotifier: storageIndicator,
         title: 'theme_setting_asset_list_storage_indicator_title'.tr(),
         onChanged: (value) {
-          ref.read(settingsProvider).write(.timelineStorageIndicator, value);
+          unawaited(ref.read(settingsProvider).write(.timelineStorageIndicator, value));
           ref.invalidate(appSettingsServiceProvider);
           ref.invalidate(settingsProvider);
         },

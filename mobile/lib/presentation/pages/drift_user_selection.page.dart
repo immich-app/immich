@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -52,11 +54,11 @@ class DriftUserSelectionPage extends HookConsumerWidget {
     final AsyncValue<List<UserDto>> suggestedShareUsers = ref.watch(driftUsersProvider);
     final sharedUsersList = useState<Set<UserDto>>({});
 
-    addNewUsersHandler() {
-      context.maybePop(sharedUsersList.value.map((e) => e.id).toList());
+    void addNewUsersHandler() {
+      unawaited(context.maybePop(sharedUsersList.value.map((e) => e.id).toList()));
     }
 
-    buildTileIcon(UserDto user) {
+    Widget buildTileIcon(UserDto user) {
       if (sharedUsersList.value.contains(user)) {
         return CircleAvatar(backgroundColor: context.primaryColor, child: const Icon(Icons.check_rounded, size: 25));
       } else {
@@ -64,8 +66,8 @@ class DriftUserSelectionPage extends HookConsumerWidget {
       }
     }
 
-    buildUserList(List<UserDto> users) {
-      List<Widget> usersChip = [];
+    ListView buildUserList(List<UserDto> users) {
+      final List<Widget> usersChip = [];
 
       for (var user in sharedUsersList.value) {
         usersChip.add(
@@ -91,7 +93,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
           ListView.builder(
             primary: false,
             shrinkWrap: true,
-            itemBuilder: ((context, index) {
+            itemBuilder: (context, index) {
               return ListTile(
                 leading: buildTileIcon(users[index]),
                 dense: true,
@@ -107,7 +109,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
                   }
                 },
               );
-            }),
+            },
             itemCount: users.length,
           ),
         ],
@@ -122,12 +124,12 @@ class DriftUserSelectionPage extends HookConsumerWidget {
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () {
-            context.maybePop(null);
+            unawaited(context.maybePop(null));
           },
         ),
         actions: [
           TextButton(
-            onPressed: sharedUsersList.value.isEmpty ? null : addNewUsersHandler,
+            onPressed: sharedUsersList.value.isEmpty ? null : () => addNewUsersHandler(),
             child: const Text("add", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)).tr(),
           ),
         ],

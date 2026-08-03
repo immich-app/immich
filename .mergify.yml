@@ -1,2 +1,7 @@
 merge_queue:
   status_comments: outcomes
+
+queue_rules:
+  - name: default
+    batch_size: 3
+    batch_max_wait_time: 2 min
