@@ -80,7 +80,7 @@
     "@sveltejs/kit": "^2.56.1",
     "@sveltejs/vite-plugin-svelte": "7.2.0",
     "@tailwindcss/vite": "^4.2.4",
-    "@testing-library/jest-dom": "^6.4.2",
+    "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/svelte": "^5.2.8",
     "@testing-library/user-event": "^14.5.2",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
