@@ -20,7 +20,7 @@ class FilterBottomSheetScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    buildChildWidget() {
+    Widget buildChildWidget() {
       if (expanded != null && expanded == true) {
         return Expanded(child: child);
       }

@@ -53,10 +53,10 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
     RegionList: {
       Area: {
         // (X,Y) // center of the rectangle
-        X: number;
-        Y: number;
-        W: number;
-        H: number;
+        X: number | string;
+        Y: number | string;
+        W: number | string;
+        H: number | string;
         Unit: string;
       };
       Rotation?: number;
@@ -108,6 +108,7 @@ export class MetadataRepository {
 
   readTags(path: string): Promise<ImmichTags> {
     const options: ReadTaskOptions | undefined = mimeTypes.isVideo(path) ? { readArgs: ['-ee'] } : undefined;
+
     return this.exiftool.read(path, options).catch((error) => {
       this.logger.warn(`Error reading exif data (${path}): ${error}\n${error?.stack}`);
       return {};

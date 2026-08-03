@@ -63,6 +63,7 @@
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto, SharedLinkResponseDto } from '@immich/sdk';
   import { untrack, type Snippet } from 'svelte';
+  import { languageManager } from '$lib/managers/language-manager.svelte';
 
   type Props = {
     asset: AssetResponseDto;
@@ -232,7 +233,7 @@
       style:width={rasterWidth}
       style:height={rasterHeight}
       style:transform="scale({rasterScale})"
-      style:transform-origin="0 0"
+      style:transform-origin={languageManager.rtl ? 'right top' : 'left top'}
       style:will-change={maxRasterPixels > 0 ? 'transform' : undefined}
     >
       {#if show.alphaBackground}

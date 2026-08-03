@@ -106,65 +106,57 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
               borderRadius: const BorderRadius.all(Radius.circular(18.5)),
               color: context.colorScheme.surfaceContainerLow,
             ),
-            child: Material(
-              color: context.colorScheme.surfaceContainerLow,
-              borderRadius: const BorderRadius.all(Radius.circular(20.5)),
-              child: InkWell(
-                borderRadius: const BorderRadius.all(Radius.circular(20.5)),
-                onTap: () => _onToggle(!_isEnabled),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [
-                              context.primaryColor.withValues(alpha: 0.2),
-                              context.primaryColor.withValues(alpha: 0.1),
-                            ],
-                          ),
-                        ),
-                        child: isProcessing
-                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
-                            : Icon(Icons.cloud_upload_outlined, color: context.primaryColor, size: 24),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          context.primaryColor.withValues(alpha: 0.2),
+                          context.primaryColor.withValues(alpha: 0.1),
+                        ],
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                    ),
+                    child: isProcessing
+                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2))
+                        : Icon(Icons.cloud_upload_outlined, color: context.primaryColor, size: 24),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    "enable_backup".t(context: context),
-                                    style: context.textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: context.primaryColor,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (errorCount > 0)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: Text(
-                                  "upload_error_with_count".t(context: context, args: {'count': '$errorCount'}),
-                                  style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.error),
+                            Flexible(
+                              child: Text(
+                                "enable_backup".t(context: context),
+                                style: context.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: context.primaryColor,
                                 ),
                               ),
+                            ),
                           ],
                         ),
-                      ),
-                      Switch.adaptive(value: _isEnabled, onChanged: (value) => _onToggle(value)),
-                    ],
+                        if (errorCount > 0)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2),
+                            child: Text(
+                              "upload_error_with_count".t(context: context, args: {'count': '$errorCount'}),
+                              style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.error),
+                            ),
+                          ),
+                      ],
+                    ),
                   ),
-                ),
+                  Switch.adaptive(value: _isEnabled, onChanged: (value) => _onToggle(value)),
+                ],
               ),
             ),
           ),

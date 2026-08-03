@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -7,11 +9,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_bottom_info.widget.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_card.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
 import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
 
@@ -46,21 +49,21 @@ class DriftMemoryPage extends HookConsumerWidget {
 
     useEffect(() {
       // Memories is an immersive activity
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+      unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive));
       return () {
         // Clean up to normal edge to edge when we are done
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        unawaited(restoreEdgeToEdge());
       };
     });
 
-    toNextMemory() {
-      memoryPageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
+    void toNextMemory() {
+      unawaited(memoryPageController.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn));
     }
 
     void toPreviousMemory() {
       if (currentMemoryIndex.value > 0) {
         // Move to the previous memory page
-        memoryPageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn);
+        unawaited(memoryPageController.previousPage(duration: const Duration(milliseconds: 500), curve: Curves.easeIn));
 
         // Wait for the next frame to ensure the page is built
         SchedulerBinding.instance.addPostFrameCallback((_) {
@@ -82,36 +85,36 @@ class DriftMemoryPage extends HookConsumerWidget {
       }
     }
 
-    toNextAsset(int currentAssetIndex) {
+    void toNextAsset(int currentAssetIndex) {
       if (currentAssetIndex + 1 < currentMemory.value.assets.length) {
         // Go to the next asset
-        PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
+        final PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
-        controller.nextPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500));
+        unawaited(controller.nextPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500)));
       } else {
         // Go to the next memory since we are at the end of our assets
         toNextMemory();
       }
     }
 
-    toPreviousAsset(int currentAssetIndex) {
+    void toPreviousAsset(int currentAssetIndex) {
       if (currentAssetIndex > 0) {
         // Go to the previous asset
-        PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
+        final PageController controller = memoryAssetPageControllers[currentMemoryIndex.value];
 
-        controller.previousPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500));
+        unawaited(controller.previousPage(curve: Curves.easeInOut, duration: const Duration(milliseconds: 500)));
       } else {
         // Go to the previous memory since we are at the end of our assets
         toPreviousMemory();
       }
     }
 
-    updateProgressText() {
+    void updateProgressText() {
       assetProgress.value = "${currentAssetPage.value + 1}|${currentMemory.value.assets.length}";
     }
 
     /// Downloads and caches the image for the asset at this [currentMemory]'s index
-    precacheAsset(int index) async {
+    Future<void> precacheAsset(int index) async {
       // Guard index out of range
       if (index < 0) {
         return;
@@ -152,7 +155,7 @@ class DriftMemoryPage extends HookConsumerWidget {
 
     // Precache the next page right away if we are on the first page
     if (currentAssetPage.value == 0) {
-      Future.delayed(const Duration(milliseconds: 200)).then((_) => precacheAsset(1));
+      unawaited(Future.delayed(const Duration(milliseconds: 200)).then((_) => precacheAsset(1)));
     }
 
     Future<void> onAssetChanged(int otherIndex) async {
@@ -197,7 +200,7 @@ class DriftMemoryPage extends HookConsumerWidget {
 
           final offset = notification.metrics.pixels;
           if (isEpiloguePage && (offset > notification.metrics.maxScrollExtent + 150)) {
-            context.maybePop();
+            unawaited(context.maybePop());
             return true;
           }
         }
@@ -280,7 +283,7 @@ class DriftMemoryPage extends HookConsumerWidget {
                             final asset = memories[mIndex].assets[index];
                             return Stack(
                               children: [
-                                Container(
+                                ColoredBox(
                                   color: Colors.black,
                                   child: DriftMemoryCard(
                                     asset: asset,
@@ -327,8 +330,8 @@ class DriftMemoryPage extends HookConsumerWidget {
                               // auto_route doesn't invoke pop scope, so
                               // turn off full screen mode here
                               // https://github.com/Milad-Akarie/auto_route_library/issues/1799
-                              context.maybePop();
-                              SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                              unawaited(context.maybePop());
+                              unawaited(restoreEdgeToEdge());
                             },
                             shape: const CircleBorder(),
                             color: Colors.white.withValues(alpha: 0.2),

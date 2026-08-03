@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -25,7 +26,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
 
   ImageInfo? getInitialImage(CancellableImageProvider provider) {
     final completer = CancelableCompleter<ImageInfo?>(onCancel: provider.cancel);
-    final cachedStream = provider.resolve(const ImageConfiguration());
+    final cachedStream = provider.resolve(ImageConfiguration.empty);
     ImageInfo? cachedImage;
     final listener = ImageStreamListener((image, synchronousCall) {
       if (synchronousCall) {
@@ -43,10 +44,12 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
       return cachedImage;
     }
 
-    completer.operation.valueOrCancellation().whenComplete(() {
-      cachedStream.removeListener(listener);
-      cachedOperation = null;
-    });
+    unawaited(
+      completer.operation.valueOrCancellation().whenComplete(() {
+        cachedStream.removeListener(listener);
+        cachedOperation = null;
+      }),
+    );
     cachedOperation = completer.operation;
     return null;
   }
@@ -138,7 +141,7 @@ mixin CancellableImageProviderMixin<T extends Object> on CancellableImageProvide
     final operation = cachedOperation;
     if (operation != null) {
       cachedOperation = null;
-      operation.cancel();
+      unawaited(operation.cancel());
     }
 
     if (hasActiveWork) {

@@ -51,7 +51,7 @@ class AlbumTile extends ConsumerWidget {
               : SizedBox(
                   width: 80,
                   height: 80,
-                  child: Container(
+                  child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: context.colorScheme.surfaceContainer,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),

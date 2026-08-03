@@ -18,7 +18,7 @@ abstract class ImageRequest {
   final int requestId = _nextRequestId++;
   bool _isCancelled = false;
 
-  get isCancelled => _isCancelled;
+  bool get isCancelled => _isCancelled;
 
   ImageRequest();
 

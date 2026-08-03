@@ -153,11 +153,8 @@ export function getMockAsset(
   const isInDifferentPeriod = (date1: DateTime, date2: DateTime): boolean => {
     if (unit === 'day') {
       return !date1.startOf('day').equals(date2.startOf('day'));
-    } else if (unit === 'month') {
-      return date1.year !== date2.year || date1.month !== date2.month;
-    } else {
-      return date1.year !== date2.year;
     }
+    return unit === 'month' ? date1.year !== date2.year || date1.month !== date2.month : date1.year !== date2.year;
   };
 
   if (direction === 'next') {

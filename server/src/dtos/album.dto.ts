@@ -1,6 +1,7 @@
 import { ShallowDehydrateObject } from 'kysely';
 import { createZodDto } from 'nestjs-zod';
 import { AlbumUser, AuthSharedLink } from 'src/database';
+import { HistoryBuilder } from 'src/decorators';
 import { BulkIdErrorReasonSchema } from 'src/dtos/asset-ids.response.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { UserResponseSchema, mapUser } from 'src/dtos/user.dto';
@@ -33,7 +34,22 @@ const AlbumUserCreateSchema = z
 const CreateAlbumSchema = z
   .object({
     albumName: z.string().describe('Album name'),
-    description: z.string().optional().describe('Album description'),
+    // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
+    description: z
+      .string()
+      .nullable()
+      .transform((value) => (value === '' ? null : value))
+      .optional()
+      .describe('Album description')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+          )
+          .getExtensions(),
+      }),
     albumUsers: z.array(AlbumUserCreateSchema).optional().describe('Album users'),
     assetIds: z.array(z.uuidv4()).optional().describe('Initial asset IDs'),
   })
@@ -56,7 +72,22 @@ const AlbumsAddAssetsResponseSchema = z
 const UpdateAlbumSchema = z
   .object({
     albumName: z.string().optional().describe('Album name'),
-    description: z.string().optional().describe('Album description'),
+    // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
+    description: z
+      .string()
+      .nullable()
+      .transform((value) => (value === '' ? null : value))
+      .optional()
+      .describe('Album description')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+          )
+          .getExtensions(),
+      }),
     albumThumbnailAssetId: z.uuidv4().optional().describe('Album thumbnail asset ID'),
     isActivityEnabled: z.boolean().optional().describe('Enable activity feed'),
     order: AssetOrderSchema.optional(),
@@ -109,7 +140,18 @@ export const AlbumResponseSchema = z
   .object({
     id: z.uuidv4().describe('Album ID'),
     albumName: z.string().describe('Album name'),
-    description: z.string().describe('Album description'),
+    description: z
+      .string()
+      .describe('Album description')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'An empty string is returned instead of null for backwards compatibility; null will be returned in v4.',
+          )
+          .getExtensions(),
+      }),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
@@ -140,6 +182,19 @@ export const AlbumResponseSchema = z
   })
   .meta({ id: 'AlbumResponseDto' });
 
+const AlbumUserParamSchema = z.object({
+  id: z.uuidv4().describe('Album ID'),
+  // TODO: disallow 'me' as a shortcut in v4 and type userId as uuidv4
+  userId: z
+    .string()
+    .refine((value) => value === 'me' || z.uuidv4().safeParse(value).success, {
+      error: 'Must be a UUID v4 or "me"',
+    })
+    .describe('Album user ID, or "me" to reference the current user.')
+    .meta(new HistoryBuilder().updated('v3', '"me" as a value is deprecated').getExtensions()),
+});
+
+export class AlbumUserParamDto extends createZodDto(AlbumUserParamSchema) {}
 export class AddUsersDto extends createZodDto(AddUsersSchema) {}
 export class AlbumUserCreateDto extends createZodDto(AlbumUserCreateSchema) {}
 export class CreateAlbumDto extends createZodDto(CreateAlbumSchema) {}
@@ -157,7 +212,7 @@ export type MapAlbumDto = {
   assets?: ShallowDehydrateObject<MapAsset>[];
   sharedLinks?: ShallowDehydrateObject<AuthSharedLink>[];
   albumName: string;
-  description: string;
+  description: string | null;
   albumThumbnailAssetId: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -193,7 +248,8 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
 
   return {
     albumName: entity.albumName,
-    description: entity.description,
+    // TODO: return null instead of '' in v4
+    description: entity.description ?? '',
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
     createdAt: asDateTimeString(entity.createdAt),
     updatedAt: asDateTimeString(entity.updatedAt),

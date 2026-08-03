@@ -39,7 +39,8 @@ export class WorkflowRepository {
               'plugin_method.name as methodName',
               'workflow_step.config',
               'workflow_step.enabled',
-            ]),
+            ])
+            .orderBy('workflow_step.order', 'asc'),
         ).as('steps'),
       ]);
   }
@@ -79,6 +80,7 @@ export class WorkflowRepository {
               'plugin_method.name as methodName',
               'plugin_method.types as types',
               'plugin_method.hostFunctions',
+              'plugin_method.allowedHosts',
             ]),
         ).as('steps'),
       ])

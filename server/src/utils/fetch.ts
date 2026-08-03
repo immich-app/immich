@@ -1,7 +1,8 @@
 import { serverVersion } from 'src/constants';
 
 export function configureUserAgent() {
-  const originalFetch = globalThis.fetch;
+  const originalFetch = fetch;
+  // eslint-disable-next-line unicorn/no-global-object-property-assignment
   globalThis.fetch = (input, init) => {
     const headers = new Headers(init?.headers);
     if (!headers.has('User-Agent')) {

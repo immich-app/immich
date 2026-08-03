@@ -134,10 +134,12 @@ class AssetViewerManager extends BaseEventManager<Events> {
   }
 
   cancelZoomAnimation() {
-    if (this.#animationFrameId !== null) {
-      cancelAnimationFrame(this.#animationFrameId);
-      this.#animationFrameId = null;
+    if (this.#animationFrameId === null) {
+      return;
     }
+
+    cancelAnimationFrame(this.#animationFrameId);
+    this.#animationFrameId = null;
   }
 
   animatedZoom(targetZoom: number, duration = 300) {

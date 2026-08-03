@@ -22,7 +22,7 @@ export const setDifference = <T>(setA: Set<T>, ...sets: Set<T>[]): Set<T> => {
   return difference;
 };
 
-export const setIsSuperset = <T>(set: Set<T>, subset: Set<T>): boolean => {
+export const isSetSuperset = <T>(set: Set<T>, subset: Set<T>): boolean => {
   for (const element of subset) {
     if (!set.has(element)) {
       return false;
@@ -31,6 +31,6 @@ export const setIsSuperset = <T>(set: Set<T>, subset: Set<T>): boolean => {
   return true;
 };
 
-export const setIsEqual = <T>(setA: Set<T>, setB: Set<T>): boolean => {
-  return setA.size === setB.size && setIsSuperset(setA, setB);
+export const areSetsEqual = <T>(setA: Set<T>, setB: Set<T>): boolean => {
+  return setA.size === setB.size && isSetSuperset(setA, setB);
 };

@@ -4,13 +4,13 @@ import { HistoryBuilder } from 'src/decorators';
 import { AssetResponseSchema, mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AssetOrderWithRandomSchema, MemoryType, MemoryTypeSchema } from 'src/enum';
-import { isoDatetimeToDate, nonEmptyPartial, stringToBool } from 'src/validation';
+import { isoDatetimeToDate, isoDateToDate, nonEmptyPartial, stringToBool } from 'src/validation';
 import z from 'zod';
 
 const MemorySearchSchema = z
   .object({
     type: MemoryTypeSchema.optional(),
-    for: isoDatetimeToDate.optional().describe('Filter by date'),
+    for: isoDateToDate.optional().describe('Filter by date'),
     isTrashed: stringToBool.optional().describe('Include trashed memories'),
     isSaved: stringToBool.optional().describe('Filter by saved status'),
     size: z.coerce.number().int().min(1).optional().describe('Number of memories to return'),

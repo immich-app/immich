@@ -20,6 +20,7 @@ export class SharedLinkService extends BaseService {
   async getAll(auth: AuthDto, { id, albumId }: SharedLinkSearchDto): Promise<SharedLinkResponseDto[]> {
     return this.sharedLinkRepository
       .getAll({ userId: auth.user.id, id, albumId })
+
       .then((links) => links.map((link) => mapSharedLink(link, { stripAssetMetadata: false })));
   }
 
@@ -200,7 +201,7 @@ export class SharedLinkService extends BaseService {
 
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
-      const wasRemoved = removedAssetIds.find((id) => id === assetId);
+      const wasRemoved = removedAssetIds.includes(assetId);
       if (!wasRemoved) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.NOT_FOUND });
         continue;

@@ -11,6 +11,7 @@ import {
   AudioCodecSchema,
   ColorspaceSchema,
   CQModeSchema,
+  HlsVideoResolutionSchema,
   ImageFormatSchema,
   LogLevelSchema,
   OAuthTokenEndpointAuthMethodSchema,
@@ -73,7 +74,12 @@ const SystemConfigIntegrityJobSchema = z
 
 const SystemConfigIntegrityChecksumJobSchema = SystemConfigIntegrityJobSchema.extend({
   timeLimit: z.int().nonnegative().describe('How long the integrity checksum job may run for'),
-  percentageLimit: z.int().nonnegative().describe('Percentage limit of the integrity checksum job'),
+  percentageLimit: z
+    .float32()
+    .nonnegative()
+    .max(1)
+    .describe('Percentage limit of the integrity checksum job')
+    .meta({ format: 'double' }),
 })
   .describe('Integrity checksum job config')
   .meta({ id: 'SystemConfigIntegrityChecksumJob' });
@@ -115,6 +121,8 @@ const SystemConfigFFmpegSchema = z
     realtime: z
       .object({
         enabled: configBool.describe('Enable real-time HLS transcoding (alpha)'),
+        videoCodecs: z.array(VideoCodecSchema).describe('Video codecs to use for real-time HLS transcoding'),
+        resolutions: z.array(HlsVideoResolutionSchema).describe('Resolutions to use for real-time HLS transcoding'),
       })
       .meta({ id: 'SystemConfigFFmpegRealtimeDto' }),
   })
