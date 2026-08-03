@@ -10,6 +10,7 @@
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
     "target": "es2023",
+    "lib": ["ESNext"],
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,

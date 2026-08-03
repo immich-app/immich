@@ -247,7 +247,7 @@ export class BaseService {
       ctx.workflowRepository,
     );
 
-    service.logger.setContext(this.name);
+    service.logger.setContext(BaseService.name);
 
     return service as T;
   }
@@ -278,6 +278,17 @@ export class BaseService {
 
   checkAccess(request: AccessRequest) {
     return checkAccess(this.accessRepository, request);
+  }
+
+  async isSetupAvailable(): Promise<boolean> {
+    const { setup } = this.configRepository.getEnv();
+    return setup.allow && !(await this.userRepository.hasAdmin());
+  }
+
+  async requireSetupAvailable(): Promise<void> {
+    if (!(await this.isSetupAvailable())) {
+      throw new BadRequestException('Admin setup is not available');
+    }
   }
 
   async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {

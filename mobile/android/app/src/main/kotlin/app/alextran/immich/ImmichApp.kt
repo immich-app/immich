@@ -23,6 +23,6 @@ class ImmichApp : Application() {
       // as the previous start might have been killed without unlocking.
       if (BackgroundEngineLock.connectEngines > 0) return@postDelayed
       BackgroundWorkerApiImpl.enqueueBackgroundWorker(this)
-    }, 5000)
+    }, 15000)
   }
 }

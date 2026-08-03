@@ -178,19 +178,19 @@ export class UserService extends BaseService {
 
     const { licensePublicKey } = this.configRepository.getEnv();
 
-    const clientLicenseValid = this.cryptoRepository.verifySha256(
+    const isClientLicenseValid = this.cryptoRepository.verifySha256(
       license.licenseKey,
       license.activationKey,
       licensePublicKey.client,
     );
 
-    const serverLicenseValid = this.cryptoRepository.verifySha256(
+    const isServerLicenseValid = this.cryptoRepository.verifySha256(
       license.licenseKey,
       license.activationKey,
       licensePublicKey.server,
     );
 
-    if (!clientLicenseValid && !serverLicenseValid) {
+    if (!isClientLicenseValid && !isServerLicenseValid) {
       throw new BadRequestException('Invalid license key');
     }
 
@@ -239,7 +239,9 @@ export class UserService extends BaseService {
 
   @OnEvent({ name: 'AssetCreate' })
   async onAssetCreate({ asset, file }: ArgOf<'AssetCreate'>) {
-    await this.userRepository.updateUsage(asset.ownerId, file.size);
+    if (file) {
+      await this.userRepository.updateUsage(asset.ownerId, file.size);
+    }
   }
 
   @OnJob({ name: JobName.UserSyncUsage, queue: QueueName.BackgroundTask })
@@ -292,12 +294,12 @@ export class UserService extends BaseService {
     await this.eventRepository.emit('UserDelete', user);
   }
 
-  private isReadyForDeletion(user: { id: string; deletedAt?: Date | null }, deleteDelay: number): boolean {
+  private isReadyForDeletion(user: { id: string; deletedAt?: Date | null }, delayUntilDeletion: number): boolean {
     if (!user.deletedAt) {
       return false;
     }
 
-    return DateTime.now().minus({ days: deleteDelay }) > DateTime.fromJSDate(user.deletedAt);
+    return DateTime.now().minus({ days: delayUntilDeletion }) > DateTime.fromJSDate(user.deletedAt);
   }
 
   private async findOrFail(id: string, options: UserFindOptions) {

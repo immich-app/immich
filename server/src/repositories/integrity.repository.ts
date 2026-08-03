@@ -154,8 +154,7 @@ export class IntegrityRepository {
       .select(['allPaths.path as path', 'allPaths.assetId', 'allPaths.fileAssetId', 'integrity_report.id as reportId'])
       .stream() as AsyncIterableIterator<
       { path: string; reportId: string | null } & (
-        | { assetId: string; fileAssetId: null }
-        | { assetId: null; fileAssetId: string }
+        { assetId: string; fileAssetId: null } | { assetId: null; fileAssetId: string }
       )
     >;
   }

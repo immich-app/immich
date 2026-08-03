@@ -42,6 +42,9 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
   Future<void> addAssets(BuildContext context) async {
     final notifier = ref.read(remoteAlbumProvider.notifier);
     final albumAssets = await notifier.getAssets(_album.id);
+    if (!context.mounted) {
+      return;
+    }
 
     final newAssets = await context.pushRoute<Set<BaseAsset>>(
       DriftAssetSelectionTimelineRoute(lockedSelectionAssets: albumAssets.toSet()),
@@ -52,8 +55,11 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     }
 
     final added = await notifier.addAssetsToAlbum(_album.id, newAssets);
+    if (!context.mounted) {
+      return;
+    }
 
-    if (added > 0 && context.mounted) {
+    if (added > 0) {
       ImmichToast.show(
         context: context,
         msg: "assets_added_to_album_count".t(context: context, args: {'count': added.toString()}),
@@ -71,22 +77,22 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
     try {
       await ref.read(remoteAlbumProvider.notifier).addUsers(_album.id, newUsers);
-
-      if (newUsers.isNotEmpty) {
-        ImmichToast.show(
-          context: context,
-          msg: "users_added_to_album_count".t(context: context, args: {'count': newUsers.length}),
-          toastType: ToastType.success,
-        );
+      ref.invalidate(remoteAlbumSharedUsersProvider(_album.id));
+      if (!context.mounted) {
+        return;
       }
 
-      ref.invalidate(remoteAlbumSharedUsersProvider(_album.id));
-    } catch (e) {
       ImmichToast.show(
         context: context,
-        msg: "Failed to add users to album: ${e.toString()}",
-        toastType: ToastType.error,
+        msg: "users_added_to_album_count".t(context: context, args: {'count': newUsers.length}),
+        toastType: ToastType.success,
       );
+    } catch (e) {
+      if (!context.mounted) {
+        return;
+      }
+
+      ImmichToast.show(context: context, msg: "Failed to add users to album: $e", toastType: ToastType.error);
     }
   }
 
@@ -128,6 +134,9 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     if (confirmed == true) {
       try {
         await ref.read(remoteAlbumProvider.notifier).deleteAlbum(_album.id);
+        if (!context.mounted) {
+          return;
+        }
 
         ImmichToast.show(
           context: context,
@@ -137,6 +146,10 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
         unawaited(context.pushRoute(const DriftAlbumsRoute()));
       } catch (e) {
+        if (!context.mounted) {
+          return;
+        }
+
         ImmichToast.show(
           context: context,
           msg: 'album_viewer_appbar_share_err_delete'.t(context: context),
@@ -153,7 +166,11 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       builder: (context) => _EditAlbumDialog(album: _album),
     );
 
-    if (result != null && context.mounted) {
+    if (!context.mounted) {
+      return;
+    }
+
+    if (result != null) {
       setState(() {
         _album = _album.copyWith(name: result.name, description: result.description ?? '');
       });
@@ -251,20 +268,23 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
       await ref
           .read(remoteAlbumProvider.notifier)
           .updateAlbum(widget.album.id, name: newTitle, description: newDescription);
+      if (!mounted) {
+        return;
+      }
 
-      if (mounted) {
-        Navigator.of(
-          context,
-        ).pop(_EditAlbumData(name: newTitle, description: newDescription.isEmpty ? null : newDescription));
-      }
+      Navigator.of(
+        context,
+      ).pop(_EditAlbumData(name: newTitle, description: newDescription.isEmpty ? null : newDescription));
     } catch (e) {
-      if (mounted) {
-        ImmichToast.show(
-          context: context,
-          msg: 'album_update_error'.t(context: context),
-          toastType: ToastType.error,
-        );
+      if (!mounted) {
+        return;
       }
+
+      ImmichToast.show(
+        context: context,
+        msg: 'album_update_error'.t(context: context),
+        toastType: ToastType.error,
+      );
     }
   }
 

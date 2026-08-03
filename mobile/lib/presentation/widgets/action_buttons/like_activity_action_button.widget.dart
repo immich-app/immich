@@ -25,7 +25,7 @@ class LikeActivityActionButton extends ConsumerWidget {
 
     final activities = ref.watch(albumActivityProvider((album?.id ?? "", asset?.id)));
 
-    onTap(Activity? liked) async {
+    Future<void> onTap(Activity? liked) async {
       if (user == null) {
         return;
       }

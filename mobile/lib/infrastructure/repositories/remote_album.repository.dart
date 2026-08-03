@@ -217,7 +217,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     });
   }
 
-  FutureOr<(DateTime, DateTime)> getDateRange(String albumId) {
+  Stream<(DateTime, DateTime)> watchDateRange(String albumId) {
     final query = _db.remoteAlbumAssetEntity.selectOnly()
       ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
       ..addColumns([_db.remoteAssetEntity.createdAt.min(), _db.remoteAssetEntity.createdAt.max()])
@@ -229,7 +229,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       final minDate = row.read(_db.remoteAssetEntity.createdAt.min());
       final maxDate = row.read(_db.remoteAssetEntity.createdAt.max());
       return (minDate ?? DateTime.now(), maxDate ?? DateTime.now());
-    }).getSingle();
+    }).watchSingle();
   }
 
   Future<List<UserDto>> getSharedUsers(String albumId) async {

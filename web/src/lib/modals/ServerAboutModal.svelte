@@ -61,7 +61,7 @@
         <ServerAboutItem id="build" title={$t('build')} version={info.build} versionHref={info.buildUrl} />
       {/if}
 
-      {#if info.buildImage && info.buildImage}
+      {#if info.buildImage && info.buildImageUrl}
         <ServerAboutItem
           id="build-image"
           title={$t('build_image')}

@@ -64,6 +64,7 @@ class ViewIntentService {
 
     try {
       final file = File(normalizedPath);
+      // ignore: avoid_slow_async_io
       if (await file.exists()) {
         await file.delete();
       }

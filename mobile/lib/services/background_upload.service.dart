@@ -135,12 +135,12 @@ class BackgroundUploadService {
     if (!_taskStatusController.isClosed) {
       _taskStatusController.add(update);
     }
-    _handleTaskStatusUpdate(update);
+    unawaited(_handleTaskStatusUpdate(update));
   }
 
   void dispose() {
-    _taskStatusController.close();
-    _taskProgressController.close();
+    unawaited(_taskStatusController.close());
+    unawaited(_taskProgressController.close());
   }
 
   /// Enqueue tasks to the background upload queue
@@ -171,7 +171,7 @@ class BackgroundUploadService {
 
     const batchSize = 100;
     final batch = candidates.take(batchSize).toList();
-    List<UploadTask> tasks = [];
+    final List<UploadTask> tasks = [];
 
     for (final asset in batch) {
       final task = await getUploadTask(asset);
@@ -205,7 +205,7 @@ class BackgroundUploadService {
     return _uploadRepository.start();
   }
 
-  void _handleTaskStatusUpdate(TaskStatusUpdate update) async {
+  Future<void> _handleTaskStatusUpdate(TaskStatusUpdate update) async {
     switch (update.status) {
       case TaskStatus.complete:
         unawaited(_handleLivePhoto(update));
@@ -218,8 +218,6 @@ class BackgroundUploadService {
             _logger.severe('Error deleting file path for iOS: $e');
           }
         }
-
-        break;
 
       default:
         break;
@@ -290,15 +288,12 @@ class BackgroundUploadService {
       return null;
     }
 
-    String fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
-    final hasExtension = p.extension(fileName).isNotEmpty;
-    if (!hasExtension) {
-      fileName = p.setExtension(fileName, p.extension(asset.name));
-    }
+    final fileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;
+    // Some apps (e.g. DJI/Fusion) return names without an extension; fall back to the asset name for those.
+    final extension = p.extension(file.path).isNotEmpty ? p.extension(file.path) : p.extension(asset.name);
+    final originalFileName = p.setExtension(fileName, extension);
 
-    final originalFileName = entity.isLivePhoto ? p.setExtension(fileName, p.extension(file.path)) : fileName;
-
-    String metadata = UploadTaskMetadata(
+    final String metadata = UploadTaskMetadata(
       localAssetId: asset.id,
       isLivePhotos: entity.isLivePhoto,
       livePhotoVideoId: '',
@@ -317,6 +312,8 @@ class BackgroundUploadService {
       priority: priority,
       isFavorite: asset.isFavorite,
       requiresWiFi: requiresWiFi,
+      // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
+      fields: entity.isLivePhoto ? {'visibility': api.AssetVisibility.hidden.toString()} : null,
       cloudId: entity.isLivePhoto ? null : asset.cloudId,
       adjustmentTime: entity.isLivePhoto ? null : asset.adjustmentTime?.toIso8601String(),
       latitude: entity.isLivePhoto ? null : asset.latitude?.toString(),
@@ -336,8 +333,7 @@ class BackgroundUploadService {
       return null;
     }
 
-    // Visibility hidden on upload to prevent the server from running regular jobs on the live photo asset
-    final fields = {'livePhotoVideoId': livePhotoVideoId, 'visibility': api.AssetVisibility.hidden.value};
+    final fields = {'livePhotoVideoId': livePhotoVideoId};
 
     final requiresWiFi = _shouldRequireWiFi(asset);
     final originalFileName = await _assetMediaRepository.getOriginalFilename(asset.id) ?? asset.name;

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 
 class AssetStackRow extends ConsumerWidget {
@@ -23,7 +23,8 @@ class AssetStackRow extends ConsumerWidget {
     }
 
     final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
-    double opacity = ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
+    final double opacity =
+        ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
 
     return IgnorePointer(
       ignoring: opacity < 1.0,
@@ -75,7 +76,7 @@ class _StackItemState extends ConsumerState<_StackItem> {
         Icons.play_circle_outline_rounded,
         color: Colors.white,
         size: 16,
-        shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+        shadows: [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset.zero)],
       ),
     );
     const selectedDecoration = BoxDecoration(

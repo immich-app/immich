@@ -1,15 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart'
     show
-        PhotoViewScaleState,
         PhotoViewHeroAttributes,
-        PhotoViewImageTapDownCallback,
-        PhotoViewImageTapUpCallback,
-        PhotoViewImageScaleEndCallback,
         PhotoViewImageDragEndCallback,
         PhotoViewImageDragStartCallback,
         PhotoViewImageDragUpdateCallback,
         PhotoViewImageLongPressStartCallback,
+        PhotoViewImageScaleEndCallback,
+        PhotoViewImageTapDownCallback,
+        PhotoViewImageTapUpCallback,
+        PhotoViewScaleState,
         ScaleStateCycle;
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller_delegate.dart';
@@ -240,9 +242,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       return;
     }
     _scaleAnimation = Tween<double>(begin: from, end: to).animate(_scaleAnimationController);
-    _scaleAnimationController
-      ..value = 0.0
-      ..fling(velocity: 0.4);
+    _scaleAnimationController.value = 0.0;
+    unawaited(_scaleAnimationController.fling(velocity: 0.4));
   }
 
   void animatePosition(Offset from, Offset to) {
@@ -250,9 +251,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       return;
     }
     _positionAnimation = Tween<Offset>(begin: from, end: to).animate(_positionAnimationController);
-    _positionAnimationController
-      ..value = 0.0
-      ..fling(velocity: 0.4);
+    _positionAnimationController.value = 0.0;
+    unawaited(_positionAnimationController.fling(velocity: 0.4));
   }
 
   void animateRotation(double from, double to) {
@@ -260,9 +260,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       return;
     }
     _rotationAnimation = Tween<double>(begin: from, end: to).animate(_rotationAnimationController);
-    _rotationAnimationController
-      ..value = 0.0
-      ..fling(velocity: 0.4);
+    _rotationAnimationController.value = 0.0;
+    unawaited(_rotationAnimationController.fling(velocity: 0.4));
   }
 
   void onAnimationStatus(AnimationStatus status) {
@@ -436,7 +435,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
         ? SizedBox(
             width: scaleBoundaries.childSize.width * scale,
             height: scaleBoundaries.childSize.height * scale,
-            child: widget.customChild!,
+            child: widget.customChild,
           )
         : Image(
             key: widget.heroAttributes?.tag != null ? ObjectKey(widget.heroAttributes!.tag) : null,
