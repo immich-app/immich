@@ -9,6 +9,7 @@ import semver from 'semver';
 import {
   EXTENSION_NAMES,
   POSTGRES_VERSION_RANGE,
+  serverVersion,
   VECTOR_EXTENSIONS,
   VECTOR_INDEX_TABLES,
   VECTOR_VERSION_RANGE,
@@ -382,6 +383,17 @@ export class DatabaseRepository {
 
     if (error) {
       this.logger.error(`Migrations failed: ${error}`);
+
+      const missing =
+        error instanceof Error ? error.message.match(/previously executed migration (.+) is missing/u) : null;
+      if (missing) {
+        throw new Error(
+          `Migration "${missing[1]}" was already applied to this database but is not in this version of Immich (${serverVersion}). ` +
+            `This usually means the database was migrated by a newer version. Downgrades are not supported.`,
+          { cause: error },
+        );
+      }
+
       throw error;
     }
 
