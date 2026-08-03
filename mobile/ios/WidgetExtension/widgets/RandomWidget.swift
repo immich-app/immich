@@ -48,7 +48,7 @@ struct RandomConfigurationAppIntent: WidgetConfigurationIntent {
   @Parameter(title: "Show Album Name", default: false)
   var showAlbumName: Bool
 
-  @Parameter(title: "Always Display in Full Color", default: true)
+  @Parameter(title: "Always Display in Full Color", default: false)
   var forceFullColor: Bool
 }
 

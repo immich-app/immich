@@ -10,7 +10,7 @@ struct MemoryConfigurationAppIntent: WidgetConfigurationIntent {
     "See memories from Immich."
   }
 
-  @Parameter(title: "Always Display in Full Color", default: true)
+  @Parameter(title: "Always Display in Full Color", default: false)
   var forceFullColor: Bool
 }
 
