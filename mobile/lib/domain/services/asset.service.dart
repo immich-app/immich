@@ -13,6 +13,7 @@ import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 class AssetService {
   final RemoteAssetRepository _remoteRepository;
@@ -37,12 +38,18 @@ class AssetService {
   }
 
   Stream<BaseAsset?> watchAsset(BaseAsset asset) {
-    final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).id;
-    return asset is LocalAsset ? _localRepository.watch(id) : _remoteRepository.watch(id);
-  }
+    if (asset is RemoteAsset) {
+      return _remoteRepository.watch(asset.id);
+    }
 
-  Stream<RemoteAsset?> watchRemoteAsset(String id) {
-    return _remoteRepository.watch(id);
+    return _localRepository.watch((asset as LocalAsset).id).switchMap((localAsset) {
+      final remoteId = localAsset?.remoteId;
+      if (localAsset == null || remoteId == null) {
+        return Stream.value(localAsset);
+      }
+
+      return _remoteRepository.watch(remoteId).map((remoteAsset) => remoteAsset ?? localAsset);
+    });
   }
 
   Future<List<LocalAsset?>> getLocalAssetsByChecksum(String checksum) {

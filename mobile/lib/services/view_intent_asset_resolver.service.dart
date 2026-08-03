@@ -57,7 +57,7 @@ class ViewIntentAssetResolver {
       resolvedLocal = await _resolveLocalAsset(localAssetId);
       final remoteAsset = await _resolveRemoteAsset(localAssetId, resolvedLocal.asset?.remoteId);
       if (remoteAsset != null) {
-        return ViewIntentResolvedAsset(asset: remoteAsset, timelineService: timelineFor(remoteAsset));
+        return ViewIntentResolvedAsset(asset: remoteAsset, timelineService: _timelineFor(remoteAsset));
       }
     }
 
@@ -65,12 +65,12 @@ class ViewIntentAssetResolver {
 
     return ViewIntentResolvedAsset(
       asset: asset,
-      timelineService: timelineFor(asset),
+      timelineService: _timelineFor(asset),
       viewIntentFilePath: resolvedLocal.asset == null ? path : null,
     );
   }
 
-  TimelineService timelineFor(BaseAsset asset) {
+  TimelineService _timelineFor(BaseAsset asset) {
     final origin = asset is RemoteAsset && asset.isTrashed ? TimelineOrigin.deepLinkTrash : TimelineOrigin.deepLink;
     return _timelineFactory.fromAssets([asset], origin);
   }
