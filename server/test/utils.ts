@@ -89,6 +89,7 @@ import { assert, Mock, Mocked, vitest } from 'vitest';
 
 export type ControllerContext = {
   authenticate: Mock;
+  requireSetupAvailable: Mock;
   getHttpServer: () => any;
   reset: () => void;
   close: () => Promise<void>;
@@ -124,7 +125,7 @@ export const controllerSetup = async (controller: new (...args: any[]) => unknow
       { provide: APP_GUARD, useClass: AuthGuard },
       { provide: LoggingRepository, useValue: LoggingRepository.create() },
       { provide: ClsService, useValue: { getId: vi.fn() } },
-      { provide: AuthService, useValue: { authenticate: vi.fn() } },
+      { provide: AuthService, useValue: { authenticate: vi.fn(), requireSetupAvailable: vi.fn() } },
       ...providers,
     ],
   })
@@ -137,13 +138,17 @@ export const controllerSetup = async (controller: new (...args: any[]) => unknow
   await app.init();
 
   // allow the AuthController to override the AuthService itself
-  const authenticate = app.get<Mocked<AuthService>>(AuthService).authenticate as Mock;
+  const resolvedAuthService = app.get<Mocked<AuthService>>(AuthService);
+  const authenticate = resolvedAuthService.authenticate as Mock;
+  const requireSetupAvailable = resolvedAuthService.requireSetupAvailable as Mock;
 
   return {
     authenticate,
+    requireSetupAvailable,
     getHttpServer: () => app.getHttpServer(),
     reset: () => {
       authenticate.mockReset();
+      requireSetupAvailable.mockReset();
     },
     close: async () => {
       await app.close();
@@ -184,10 +189,12 @@ export const automock = <T>(
   const mocks: Mock[] = [];
 
   const instance = new Dependency(...args);
-  const propertyNames = new Set([
-    ...Object.getOwnPropertyNames(Dependency.prototype),
-    ...Object.getOwnPropertyNames(instance),
-  ]);
+  const propertyNames = new Set(Object.getOwnPropertyNames(instance));
+  for (let proto = Dependency.prototype; proto && proto !== Object.prototype; proto = Object.getPrototypeOf(proto)) {
+    for (const property of Object.getOwnPropertyNames(proto)) {
+      propertyNames.add(property);
+    }
+  }
   for (const property of propertyNames) {
     if (property === 'constructor') {
       continue;

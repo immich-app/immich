@@ -21,6 +21,10 @@ class LanguageSettings extends HookConsumerWidget {
     isLoading.value = true;
     await Future.delayed(const Duration(milliseconds: 500));
     try {
+      if (!context.mounted) {
+        return;
+      }
+
       await context.setLocale(selectedLocale.value);
       await loadTranslations();
     } finally {

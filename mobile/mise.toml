@@ -17,7 +17,7 @@ windows-x64 = { asset_pattern = "dcm-windows-release.zip" }
 [tasks.codegen]
 alias = "codegen"
 description = "Generate all codegen artifacts"
-depends = ["codegen:dart", "codegen:drift:schema", "codegen:pigeon", "codegen:translation"]
+depends = ["//:open-api-dart", "codegen:dart", "codegen:drift:schema", "codegen:pigeon", "codegen:translation"]
 
 [tasks."codegen:dart"]
 description = "Execute build_runner to auto-generate dart code"
@@ -29,20 +29,22 @@ sources = [
 ]
 outputs = { auto = true }
 run = [
-  "dart run build_runner build --delete-conflicting-outputs",
+  "dart run build_runner build", 
   "dart format lib/routing/router.gr.dart",
 ]
+depends = ["//:open-api-dart"]
 
 [tasks."codegen:drift:schema"]
 description = "Generate Drift migration schema test code"
 sources = ["drift_schemas/main/*.json"]
 outputs = { auto = true }
 run = "dart run drift_dev schema generate --data-classes --companions drift_schemas/main/ test/drift/main/generated/"
+depends = ["//:open-api-dart"]
 
 [tasks."codegen:watch"]
 alias = "watch"
 description = "Watch and auto-generate dart code"
-run = "dart run build_runner watch --delete-conflicting-outputs"
+run = "dart run build_runner watch"
 
 [tasks."codegen:pigeon"]
 alias = "pigeon"
@@ -51,6 +53,7 @@ run = [
   "ls pigeon/*.dart | xargs -n1 -P4 -I{} dart run pigeon --input {}",
   "dart format lib/platform/",
 ]
+depends = ["//:open-api-dart"]
 
 [tasks."codegen:translation"]
 alias = "translation"
@@ -123,6 +126,7 @@ run = [
   "dart run easy_localization:generate -S ../i18n",
   "dart format lib/generated/codegen_loader.g.dart",
 ]
+depends = ["//:open-api-dart"]
 
 [tasks."i18n:keys"]
 description = "Generate i18n keys"

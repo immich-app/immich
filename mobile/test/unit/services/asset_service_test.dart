@@ -24,6 +24,8 @@ void main() {
       exifRepository: exifRepository,
       localRepository: MockDriftLocalAssetRepository(),
       apiRepository: apiRepository,
+      mediaRepository: mocks.assetMedia.api,
+      trashedLocalRepository: mocks.trashedAsset,
     );
   });
 
