@@ -42,7 +42,8 @@ void main() {
     timelineFactory = MockTimelineFactory();
     createdTimelineServices = [];
 
-    when(() => assetService.getRemoteAssetByChecksum(any())).thenAnswer((_) async => null);
+    when(() => mockLocalAssetRepository.get(any())).thenAnswer((_) async => null);
+    when(() => assetService.getRemoteAsset(any())).thenAnswer((_) async => null);
     when(() => nativeSyncApi.hashAssets(any())).thenAnswer((_) async => const []);
     when(() => mockLocalAssetRepository.updateHashes(any())).thenAnswer((_) async {});
 
@@ -68,7 +69,7 @@ void main() {
 
   test('returns DB-backed local asset wrapped in a 1-element deep-link timeline', () async {
     final localAsset = _localAsset(id: 'local-1', checksum: 'checksum-1');
-    when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => localAsset);
+    when(() => mockLocalAssetRepository.get('local-1')).thenAnswer((_) async => localAsset);
 
     final result = await _resolve(container, _payload(localAssetId: 'local-1'));
 
@@ -78,10 +79,10 @@ void main() {
   });
 
   test('returns remote merged asset when local checksum matches remote asset', () async {
-    final localAsset = _localAsset(id: 'local-1', checksum: 'checksum-1');
+    final localAsset = _localAsset(id: 'local-1', checksum: 'checksum-1', remoteId: 'remote-1');
     final remoteAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1');
-    when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => localAsset);
-    when(() => assetService.getRemoteAssetByChecksum('checksum-1')).thenAnswer((_) async => remoteAsset);
+    when(() => mockLocalAssetRepository.get('local-1')).thenAnswer((_) async => localAsset);
+    when(() => assetService.getRemoteAsset('remote-1')).thenAnswer((_) async => remoteAsset);
 
     final result = await _resolve(container, _payload(localAssetId: 'local-1'));
 
@@ -93,10 +94,10 @@ void main() {
   });
 
   test('returns remote trashed asset in a 1-element deep-link trash timeline', () async {
-    final localAsset = _localAsset(id: 'local-1', checksum: 'checksum-1');
+    final localAsset = _localAsset(id: 'local-1', checksum: 'checksum-1', remoteId: 'remote-1');
     final remoteAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1', deletedAt: DateTime(2026, 4, 21));
-    when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => localAsset);
-    when(() => assetService.getRemoteAssetByChecksum('checksum-1')).thenAnswer((_) async => remoteAsset);
+    when(() => mockLocalAssetRepository.get('local-1')).thenAnswer((_) async => localAsset);
+    when(() => assetService.getRemoteAsset('remote-1')).thenAnswer((_) async => remoteAsset);
 
     final result = await _resolve(container, _payload(localAssetId: 'local-1'));
 
@@ -108,12 +109,17 @@ void main() {
 
   test('hashes local asset without checksum and returns remote merged asset', () async {
     final localAsset = _localAsset(id: 'local-1');
+    final mergedLocalAsset = _localAsset(id: 'local-1', checksum: 'checksum-1', remoteId: 'remote-1');
     final remoteAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1');
-    when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => localAsset);
+    var getCallCount = 0;
+    when(() => mockLocalAssetRepository.get('local-1')).thenAnswer((_) async {
+      getCallCount++;
+      return getCallCount == 1 ? localAsset : mergedLocalAsset;
+    });
     when(
       () => nativeSyncApi.hashAssets(['local-1']),
     ).thenAnswer((_) async => [HashResult(assetId: 'local-1', hash: 'checksum-1')]);
-    when(() => assetService.getRemoteAssetByChecksum('checksum-1')).thenAnswer((_) async => remoteAsset);
+    when(() => assetService.getRemoteAsset('remote-1')).thenAnswer((_) async => remoteAsset);
 
     final result = await _resolve(container, _payload(localAssetId: 'local-1'));
 
@@ -122,10 +128,12 @@ void main() {
     expect(result.timelineService.origin, TimelineOrigin.deepLink);
     expect(result.viewIntentFilePath, isNull);
     verify(() => nativeSyncApi.hashAssets(['local-1'])).called(1);
+    verify(() => mockLocalAssetRepository.updateHashes({'local-1': 'checksum-1'})).called(1);
+    verify(() => mockLocalAssetRepository.get('local-1')).called(2);
   });
 
   test('returns transient asset with temp file path when localAssetId has no DB row', () async {
-    when(() => mockLocalAssetRepository.getById('local-1')).thenAnswer((_) async => null);
+    when(() => mockLocalAssetRepository.get('local-1')).thenAnswer((_) async => null);
 
     final result = await _resolve(container, _payload(localAssetId: 'local-1', path: '/tmp/incoming.jpg'));
 
@@ -163,9 +171,10 @@ ViewIntentPayload _payload({String? localAssetId = 'local-1', String? path, Stri
   return ViewIntentPayload(path: path, mimeType: mimeType, localAssetId: localAssetId);
 }
 
-LocalAsset _localAsset({required String id, String? checksum}) {
+LocalAsset _localAsset({required String id, String? checksum, String? remoteId}) {
   return LocalAsset(
     id: id,
+    remoteId: remoteId,
     name: '$id.jpg',
     checksum: checksum,
     type: AssetType.image,

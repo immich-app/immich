@@ -312,7 +312,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     return localAssetId != null && currentAsset.localId == localAssetId;
   }
 
-  void _setSystemUIMode(bool controls, bool details) {
+  Future<void> _setSystemUIMode(bool controls, bool details) {
     final immersive = !controls || (CurrentPlatform.isIOS && details);
     return immersive ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky) : restoreEdgeToEdge();
   }

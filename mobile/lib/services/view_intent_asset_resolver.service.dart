@@ -55,7 +55,7 @@ class ViewIntentAssetResolver {
     ({LocalAsset? asset, String? checksum}) resolvedLocal = (asset: null, checksum: null);
     if (localAssetId != null) {
       resolvedLocal = await _resolveLocalAsset(localAssetId);
-      final remoteAsset = await _resolveRemoteAsset(localAssetId, resolvedLocal.checksum);
+      final remoteAsset = await _resolveRemoteAsset(localAssetId, resolvedLocal.asset?.remoteId);
       if (remoteAsset != null) {
         return ViewIntentResolvedAsset(asset: remoteAsset, timelineService: timelineFor(remoteAsset));
       }
@@ -76,7 +76,7 @@ class ViewIntentAssetResolver {
   }
 
   Future<({LocalAsset? asset, String? checksum})> _resolveLocalAsset(String localAssetId) async {
-    final localAsset = await _localAssetRepository.getById(localAssetId);
+    final localAsset = await _localAssetRepository.get(localAssetId);
     final checksum = localAsset?.checksum ?? await _hashLocalAsset(localAssetId);
 
     if (checksum == null || checksum == localAsset?.checksum) {
@@ -85,9 +85,11 @@ class ViewIntentAssetResolver {
 
     if (localAsset != null) {
       await _localAssetRepository.updateHashes({localAssetId: checksum});
+      final resolvedAsset = await _localAssetRepository.get(localAssetId);
+      return (asset: resolvedAsset ?? localAsset.copyWith(checksum: checksum), checksum: checksum);
     }
 
-    return (asset: localAsset?.copyWith(checksum: checksum), checksum: checksum);
+    return (asset: null, checksum: checksum);
   }
 
   Future<String?> _hashLocalAsset(String localAssetId) async {
@@ -109,18 +111,18 @@ class ViewIntentAssetResolver {
     }
   }
 
-  Future<RemoteAsset?> _resolveRemoteAsset(String localAssetId, String? checksum) async {
-    if (checksum == null) {
+  Future<RemoteAsset?> _resolveRemoteAsset(String localAssetId, String? remoteAssetId) async {
+    if (remoteAssetId == null) {
       return null;
     }
 
-    final remoteAsset = await _assetService.getRemoteAssetByChecksum(checksum);
+    final remoteAsset = await _assetService.getRemoteAsset(remoteAssetId);
     if (remoteAsset == null) {
       return null;
     }
 
     final asset = remoteAsset.copyWith(localId: localAssetId);
-    _logger.fine('resolve matched remote asset by checksum: $checksum, asset=$asset');
+    _logger.fine('resolve matched remote asset by id: $remoteAssetId, asset=$asset');
     return asset;
   }
 

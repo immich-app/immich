@@ -30,6 +30,8 @@ class ViewerBottomBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+
+    debugPrint('ViewerBottomBar,ViewerBottomBar ViewerBottomBar');
     final asset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
     if (asset == null) {
       return const SizedBox.shrink();
@@ -38,7 +40,7 @@ class ViewerBottomBar extends ConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isInLockedView = ref.watch(inLockedViewProvider);
-    final isInTrash = ref.read(timelineServiceProvider).origin == TimelineOrigin.trash;
+    final isInTrash = ref.read(timelineServiceProvider).origin.isTrash;
 
     final originalTheme = context.themeData;
 
