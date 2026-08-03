@@ -7492,6 +7492,7 @@ export enum JobName {
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
     WorkflowAssetTrigger = "WorkflowAssetTrigger",
+    WorkflowAlbumAssetTrigger = "WorkflowAlbumAssetTrigger",
     IntegrityUntrackedFilesQueueAll = "IntegrityUntrackedFilesQueueAll",
     IntegrityUntrackedFiles = "IntegrityUntrackedFiles",
     IntegrityUntrackedRefresh = "IntegrityUntrackedRefresh",

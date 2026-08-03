@@ -21,6 +21,7 @@ import {
   JobName,
   JobStatus,
   QueueName,
+  SystemMetadataKey,
   WorkflowType,
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
@@ -28,6 +29,7 @@ import { AlbumService } from 'src/services/album.service';
 import { AssetService } from 'src/services/asset.service';
 import { BaseService } from 'src/services/base.service';
 import { JobItem, JobOf } from 'src/types';
+import { withImpliedItems } from 'src/utils/workflow';
 
 const dummy = () => {
   throw new Error(
@@ -41,8 +43,6 @@ type ExecuteOptions<T extends WorkflowType> = {
 };
 
 type AssetTrigger = { userId: string; assetId: string; trigger: WorkflowTrigger };
-
-type AlbumAssetTrigger = { userIds: string[]; albumId: string; assetIds: string[]; trigger: WorkflowTrigger };
 
 type HostContext = {
   allowedHosts: string[];
@@ -312,13 +312,8 @@ export class WorkflowExecutionService extends BaseService {
   }
 
   @OnEvent({ name: 'AlbumAssetsAdded' })
-  onAlbumAssetsAdded({ albumId, userIds, recipientIds, assetIds }: ArgOf<'AlbumAssetsAdded'>) {
-    return this.onAlbumAssetTrigger({
-      albumId,
-      userIds: [...userIds, ...recipientIds],
-      assetIds,
-      trigger: WorkflowTrigger.AlbumAssetAdded,
-    });
+  onAlbumAssetsAdded() {
+    return this.onAlbumAssetTrigger(WorkflowTrigger.AlbumAssetAdded);
   }
 
   private async onAssetTrigger({ userId, assetId, trigger }: AssetTrigger) {
@@ -331,30 +326,53 @@ export class WorkflowExecutionService extends BaseService {
     );
   }
 
-  private async onAlbumAssetTrigger({ albumId, userIds, assetIds, trigger }: AlbumAssetTrigger) {
-    let jobs: JobItem[] = [];
-    for (const userId of userIds) {
-      const items = await this.workflowRepository.search({ userId, trigger });
-      if (!items.length) {
-        continue;
-      }
+  private async onAlbumAssetTrigger(trigger: WorkflowTrigger) {
+    let checkpoint = await this.systemMetadataRepository.get(SystemMetadataKey.AlbumAssetWorkflowCheckpoint);
+    const now = await this.syncCheckpointRepository.getNow();
 
-      let batch: JobItem[] = items.flatMap(({ id: workflowId }) =>
-        assetIds.map((assetId) => ({
-          name: JobName.WorkflowAlbumAssetTrigger,
-          data: { workflowId, assetId, albumId, trigger },
-        })),
-      );
-      jobs.push(...batch);
+    if (!checkpoint) {
+      checkpoint = { lastUuid: now.nowId };
+      await this.systemMetadataRepository.set(SystemMetadataKey.AlbumAssetWorkflowCheckpoint, checkpoint);
     }
 
-    await this.jobRepository.queueAll(jobs);
+    const workflows = new Map();
+
+    while (checkpoint.lastUuid < now.nowId) {
+      const albumAssets = await this.workflowRepository.getForAlbumAssetV1(checkpoint.lastUuid);
+      if (albumAssets.length === 0) {
+        break;
+      }
+
+      const jobs: JobItem[] = [];
+      for (const albumAsset of albumAssets) {
+        const userId = albumAsset.asset?.ownerId;
+
+        if (!workflows.has(userId)) {
+          workflows.set(userId, await this.workflowRepository.search({ userId, trigger }));
+        }
+
+        for (const workflow of workflows.get(userId)) {
+          jobs.push({
+            name: JobName.WorkflowAlbumAssetTrigger,
+            data: {
+              workflowId: workflow.id,
+              albumAsset: { asset: albumAsset.asset as any, album: { id: albumAsset.albumId } },
+              userId: workflow.ownerId,
+            },
+          });
+        }
+      }
+
+      await this.jobRepository.queueAll(jobs);
+      checkpoint!.lastUuid = albumAssets[0].updateId;
+      await this.systemMetadataRepository.set(SystemMetadataKey.AlbumAssetWorkflowCheckpoint, checkpoint);
+    }
   }
 
-  private writeAssetV1(assetId: string, type: WorkflowType) {
+  private writeAssetV1<T extends WorkflowType>(assetId: string) {
     const assetService = BaseService.create(AssetService, this);
 
-    return async (auth: AuthDto, changes: WorkflowChanges<typeof type>) => {
+    return async (auth: AuthDto, changes: WorkflowChanges<T>) => {
       const asset = changes.asset;
       if (!asset) {
         return;
@@ -399,37 +417,36 @@ export class WorkflowExecutionService extends BaseService {
                 authUserId: asset.ownerId,
               };
             },
-            write: this.writeAssetV1(assetId, type),
+            write: this.writeAssetV1<typeof type>(assetId),
           } satisfies ExecuteOptions<typeof type>;
+        }
+        default: {
+          return;
         }
       }
     });
   }
 
   @OnJob({ name: JobName.WorkflowAlbumAssetTrigger, queue: QueueName.Workflow })
-  handleAlbumAssetTrigger({ workflowId, assetId, albumId }: JobOf<JobName.WorkflowAlbumAssetTrigger>) {
+  handleAlbumAssetTrigger({ workflowId, userId, albumAsset }: JobOf<JobName.WorkflowAlbumAssetTrigger>) {
     return this.execute(workflowId, (type) => {
       switch (type) {
-        case WorkflowType.AssetV1: {
+        case WorkflowType.AlbumAssetV1: {
           return {
-            read: async () => {
-              const asset = await this.workflowRepository.getForAssetV1(assetId);
-              const workflow = await this.workflowRepository.get(workflowId);
-
-              return {
-                data: { asset, album: { id: albumId } } as any,
-                authUserId: workflow!.ownerId,
-              };
-            },
+            read: () =>
+              Promise.resolve({
+                data: albumAsset,
+                authUserId: userId,
+              }),
             write: async (auth, changes) => {
-              const asset = await this.workflowRepository.getForAssetV1(assetId);
-              const workflow = await this.workflowRepository.get(workflowId);
-
-              if (asset.ownerId === workflow!.ownerId) {
-                await this.writeAssetV1(assetId, type)(auth, changes);
+              if (albumAsset.asset.ownerId === userId) {
+                await this.writeAssetV1<typeof type>(albumAsset.asset.id)(auth, changes);
               }
             },
           } satisfies ExecuteOptions<typeof type>;
+        }
+        default: {
+          return;
         }
       }
     });
@@ -447,7 +464,8 @@ export class WorkflowExecutionService extends BaseService {
     // TODO infer from steps
     let type: T | undefined;
     for (const targetType of Object.values(WorkflowType)) {
-      const isMissing = workflow.steps.some((step) => !step.types.includes(targetType));
+      const implied = withImpliedItems(targetType);
+      const isMissing = workflow.steps.some((step) => step.types.every((type) => !implied.includes(type)));
       if (!isMissing) {
         type = targetType as unknown as T;
         break;

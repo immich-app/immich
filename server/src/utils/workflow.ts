@@ -19,7 +19,7 @@ const inferredMap: Record<WorkflowType, WorkflowType[]> = {
   // [WorkflowType.AssetPersonV1]: [WorkflowType.AssetV1],
 };
 
-const withImpliedItems = (type: WorkflowType): WorkflowType[] => {
+export const withImpliedItems = (type: WorkflowType): WorkflowType[] => {
   const childTypes = inferredMap[type];
   const results = [type];
   for (const child of childTypes) {

@@ -193,12 +193,7 @@ export class AlbumService extends BaseService {
       const userIds = album.albumUsers.map(({ user }) => user.id);
       const recipientIds = userIds.filter((userId) => userId !== auth.user.id);
       await this.eventRepository.emit('AlbumUpdate', { id, userIds, recipientIds });
-      await this.eventRepository.emit('AlbumAssetsAdded', {
-        albumId: id,
-        userIds,
-        recipientIds,
-        assetIds: results.filter((a) => a.success).map((a) => a.id),
-      });
+      await this.eventRepository.emit('AlbumAssetsAdded');
     }
 
     return results;
@@ -228,7 +223,6 @@ export class AlbumService extends BaseService {
 
     const albumAssetValues: { albumId: string; assetId: string }[] = [];
     const updateEvents: { id: string; userIds: string[]; recipientIds: string[] }[] = [];
-    const addedEvents: { albumId: string; userIds: string[]; recipientIds: string[]; assetIds: string[] }[] = [];
     for (const albumId of allowedAlbumIds) {
       const existingAssetIds = await this.albumRepository.getAssetIds(albumId, [...allowedAssetIds]);
       const notPresentAssetIds = [...allowedAssetIds.difference(existingAssetIds)];
@@ -254,16 +248,13 @@ export class AlbumService extends BaseService {
       const userIds = album.albumUsers.map(({ user }) => user.id);
       const recipientIds = userIds.filter((userId) => userId !== auth.user.id);
       updateEvents.push({ id: albumId, userIds, recipientIds });
-      addedEvents.push({ albumId, userIds, recipientIds, assetIds: notPresentAssetIds });
     }
 
     await this.albumRepository.addAssetIdsToAlbums(albumAssetValues);
     for (const event of updateEvents) {
       await this.eventRepository.emit('AlbumUpdate', event);
     }
-    for (const event of addedEvents) {
-      await this.eventRepository.emit('AlbumAssetsAdded', event);
-    }
+    await this.eventRepository.emit('AlbumAssetsAdded');
 
     return results;
   }

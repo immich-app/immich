@@ -344,6 +344,7 @@ export enum SystemMetadataKey {
   VersionCheckState = 'version-check-state',
   License = 'license',
   IntegrityChecksumCheckpoint = 'integrity-checksum-checkpoint',
+  AlbumAssetWorkflowCheckpoint = 'album-asset-workflow-checkpoint',
 }
 
 export enum UserMetadataKey {
