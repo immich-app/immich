@@ -34,9 +34,7 @@ final Map<String, Map<String, Object?>> openApiPatches = {
     'minFaces': 3,
     'sharedLinkDomain': '',
   },
-  'SystemConfigServerDto': {
-    'sharedLinkDomain': '',
-  },
+  'SystemConfigServerDto': {'sharedLinkDomain': ''},
   'UserResponseDto': {'profileChangedAt': _now},
   'AssetResponseDto': {'visibility': 'timeline', 'createdAt': _now, 'isEdited': false},
   'UserAdminResponseDto': {'profileChangedAt': _now},
