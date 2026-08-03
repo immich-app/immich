@@ -2,8 +2,8 @@ import { Kysely } from 'kysely';
 import { SyncEntityType, SyncRequestType } from 'src/enum';
 import { OcrRepository } from 'src/repositories/ocr.repository';
 import { DB } from 'src/schema';
-import { factory } from 'test/small.factory';
 import { SyncTestContext } from 'test/medium.factory';
+import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
 
 let defaultDatabase: Kysely<DB>;
