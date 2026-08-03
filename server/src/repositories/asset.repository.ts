@@ -15,7 +15,7 @@ import { jsonArrayFrom } from 'kysely/helpers/postgres';
 import { isEmpty, isUndefined, omitBy } from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { LockableProperty, Stack } from 'src/database';
-import { Chunked, ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
+import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   AssetFileType,
@@ -93,6 +93,13 @@ interface AssetBuilderOptions {
   visibility?: AssetVisibility;
   withCoordinates?: boolean;
   bbox?: BoundingBox;
+  /**
+   * When true (and `albumId` is set), Locked-visibility assets are included alongside the
+   * normal default visibility set. Callers must only set this after already verifying the
+   * requester has elevated access to that specific locked album -- this flag does not perform
+   * any access check itself, it only changes which visibility values are included in results.
+   */
+  includeLockedAlbumAssets?: boolean;
 }
 
 export interface TimeBucketOptions extends AssetBuilderOptions {
@@ -623,6 +630,27 @@ export class AssetRepository {
     await this.db.updateTable('asset').set(options).where('id', '=', anyUuid(ids)).execute();
   }
 
+  /**
+   * Which of the given asset IDs currently have Locked visibility -- used to detect a transition
+   * *away* from Locked (e.g. via the single-asset "remove from locked folder" toggle) so callers
+   * can decide whether album-membership cleanup is needed, without touching assets whose
+   * visibility isn't actually changing away from Locked.
+   */
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedSet()
+  async getLockedAssetIds(ids: string[]): Promise<Set<string>> {
+    if (ids.length === 0) {
+      return new Set();
+    }
+    return this.db
+      .selectFrom('asset')
+      .select('asset.id')
+      .where('asset.id', '=', anyUuid(ids))
+      .where('asset.visibility', '=', sql.lit(AssetVisibility.Locked))
+      .execute()
+      .then((rows) => new Set(rows.map((row) => row.id)));
+  }
+
   async updateByLibraryId(libraryId: string, options: Updateable<AssetTable>): Promise<void> {
     await this.db.updateTable('asset').set(options).where('libraryId', '=', asUuid(libraryId)).execute();
   }
@@ -763,8 +791,15 @@ export class AssetRepository {
 
             return withBoundingBox(withBoundingCircle, bbox);
           })
-          .$if(options.visibility === undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
+          .$if(options.visibility === undefined && !(options.includeLockedAlbumAssets && options.albumId), withDefaultVisibility)
+          .$if(options.visibility === undefined && !!options.includeLockedAlbumAssets && !!options.albumId, (qb) =>
+            qb.where('asset.visibility', 'in', [
+              sql.lit(AssetVisibility.Archive),
+              sql.lit(AssetVisibility.Timeline),
+              sql.lit(AssetVisibility.Locked),
+            ]),
+          )
           .$if(!!options.albumId, (qb) =>
             qb
               .innerJoin('album_asset', 'asset.id', 'album_asset.assetId')
@@ -838,8 +873,15 @@ export class AssetRepository {
           )
           .$if(!!options.withCoordinates, (qb) => qb.select(['asset_exif.latitude', 'asset_exif.longitude']))
           .where('asset.deletedAt', options.isTrashed ? 'is not' : 'is', null)
-          .$if(options.visibility == undefined, withDefaultVisibility)
           .$if(!!options.visibility, (qb) => qb.where('asset.visibility', '=', options.visibility!))
+          .$if(options.visibility === undefined && !(options.includeLockedAlbumAssets && options.albumId), withDefaultVisibility)
+          .$if(options.visibility === undefined && !!options.includeLockedAlbumAssets && !!options.albumId, (qb) =>
+            qb.where('asset.visibility', 'in', [
+              sql.lit(AssetVisibility.Archive),
+              sql.lit(AssetVisibility.Timeline),
+              sql.lit(AssetVisibility.Locked),
+            ]),
+          )
           .$if(!!options.bbox, (qb) => {
             const bbox = options.bbox!;
             const circle = getBoundingCircle(bbox);

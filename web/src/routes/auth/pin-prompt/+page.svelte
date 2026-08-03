@@ -2,6 +2,7 @@
   import { goto } from '$app/navigation';
   import AuthPageLayout from '$lib/components/layouts/AuthPageLayout.svelte';
   import PinCodeCreateForm from '$lib/components/user-settings-page/PinCodeCreateForm.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { handleError } from '$lib/utils/handle-error';
   import { unlockAuthSession } from '@immich/sdk';
@@ -25,6 +26,7 @@
   const handleUnlockSession = async (code: string) => {
     try {
       await unlockAuthSession({ sessionUnlockDto: { pinCode: code } });
+      await authManager.refreshElevation();
 
       isVerified = true;
 

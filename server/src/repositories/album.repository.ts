@@ -14,7 +14,7 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { Chunked, ChunkedArray, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
 import { AlbumUserCreateDto, MapAlbumDto } from 'src/dtos/album.dto';
-import { AlbumUserRole } from 'src/enum';
+import { AlbumUserRole, AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { AlbumTable } from 'src/schema/tables/album.table';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
@@ -157,9 +157,16 @@ export class AlbumRepository {
     return map;
   }
 
+  /**
+   * @param includeLockedAlbumAssets When true, Locked-visibility assets are counted too, instead
+   * of only the default (Archive/Timeline) set. Only pass true when every album ID in `ids` has
+   * already had its access verified for the current session (elevated, if locked) -- e.g. the
+   * single-album detail fetch. The album list view must NOT set this, since it would leak asset
+   * counts for locked albums to sessions that haven't unlocked them.
+   */
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
-  async getMetadataForIds(ids: string[]): Promise<AlbumAssetCount[]> {
+  async getMetadataForIds(ids: string[], includeLockedAlbumAssets = false): Promise<AlbumAssetCount[]> {
     // Guard against running invalid query when ids list is empty.
     if (ids.length === 0) {
       return [];
@@ -168,7 +175,14 @@ export class AlbumRepository {
     return (
       this.db
         .selectFrom('asset')
-        .$call(withDefaultVisibility)
+        .$if(!includeLockedAlbumAssets, withDefaultVisibility)
+        .$if(includeLockedAlbumAssets, (qb) =>
+          qb.where('asset.visibility', 'in', [
+            sql.lit(AssetVisibility.Archive),
+            sql.lit(AssetVisibility.Timeline),
+            sql.lit(AssetVisibility.Locked),
+          ]),
+        )
         .innerJoin('album_asset', 'album_asset.assetId', 'asset.id')
         .select('album_asset.albumId as albumId')
         .select((eb) => eb.fn.min(sql<Date>`("asset"."localDateTime" AT TIME ZONE 'UTC'::text)::date`).as('startDate'))
@@ -248,6 +262,84 @@ export class AlbumRepository {
   @Chunked()
   async removeAssetsFromAll(assetIds: string[]): Promise<void> {
     await this.db.deleteFrom('album_asset').where('album_asset.assetId', 'in', assetIds).execute();
+  }
+
+  /**
+   * Which of the given album IDs are currently locked -- used to enforce the "an asset can only be
+   * added to one locked album at a time" rule server-side, mirroring the client-side check in the
+   * album picker, so any caller (not just the web UI) is held to the same rule.
+   */
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @ChunkedSet()
+  async getLockedAlbumIds(albumIds: string[]): Promise<Set<string>> {
+    if (albumIds.length === 0) {
+      return new Set();
+    }
+
+    return this.db
+      .selectFrom('album')
+      .select('album.id')
+      .where('album.id', 'in', albumIds)
+      .where('album.isLocked', '=', true)
+      .execute()
+      .then((rows) => new Set(rows.map((row) => row.id)));
+  }
+
+  /**
+   * Remove the given assets from any album they're in, but only if that album is locked. Used
+   * when an asset's visibility is changing away from Locked (e.g. "remove from locked folder"):
+   * a visible asset can never remain counted as a locked album's member, but this deliberately
+   * leaves ties to ordinary unlocked albums alone -- unlocking a single asset shouldn't touch
+   * album memberships that have nothing to do with the lock itself.
+   */
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @Chunked()
+  async removeAssetsFromLockedAlbums(assetIds: string[]): Promise<void> {
+    if (assetIds.length === 0) {
+      return;
+    }
+
+    await this.db
+      .deleteFrom('album_asset')
+      .where('album_asset.assetId', 'in', assetIds)
+      .where('album_asset.albumId', 'in', (eb) => eb.selectFrom('album').select('album.id').where('isLocked', '=', true))
+      .execute();
+  }
+
+  /**
+   * Of the given asset IDs, return the ones that already belong to some locked album other than
+   * `excludeAlbumId`. An asset can only ever be in one locked album at a time, so this is used to
+   * reject adding an already-locked-album asset into a different locked album, rather than
+   * silently moving it.
+   */
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.UUID] })
+  async getAssetIdsInOtherLockedAlbums(assetIds: string[], excludeAlbumId: string): Promise<Set<string>> {
+    if (assetIds.length === 0) {
+      return new Set();
+    }
+
+    return this.db
+      .selectFrom('album_asset')
+      .innerJoin('album', 'album.id', 'album_asset.albumId')
+      .select('album_asset.assetId')
+      .where('album_asset.assetId', 'in', assetIds)
+      .where('album.isLocked', '=', true)
+      .where('album.id', '!=', excludeAlbumId)
+      .execute()
+      .then((rows) => new Set(rows.map((row) => row.assetId)));
+  }
+
+  /**
+   * Get every asset ID currently in the given album (no filter).
+   */
+  @GenerateSql({ params: [DummyValue.UUID] })
+  async getAllAssetIds(albumId: string): Promise<string[]> {
+    const rows = await this.db
+      .selectFrom('album_asset')
+      .select('album_asset.assetId')
+      .where('album_asset.albumId', '=', albumId)
+      .execute();
+    return rows.map((r) => r.assetId);
   }
 
   @Chunked({ paramIndex: 1 })

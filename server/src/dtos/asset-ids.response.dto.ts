@@ -28,6 +28,9 @@ export enum BulkIdErrorReason {
   NOT_FOUND = 'not_found',
   UNKNOWN = 'unknown',
   VALIDATION = 'validation',
+  // Asset already belongs to a different locked album. An asset can only ever be in one locked
+  // album at a time, so adding it to a second one is rejected rather than moving it.
+  ALREADY_IN_LOCKED_ALBUM = 'already_in_locked_album',
 }
 
 export const BulkIdErrorReasonSchema = z

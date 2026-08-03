@@ -132,7 +132,11 @@ describe(AssetService.name, () => {
 
       await sut.get(authStub.admin, asset.id);
 
-      expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set([asset.id]));
+      expect(mocks.access.asset.checkAlbumAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([asset.id]),
+        undefined,
+      );
     });
 
     it('should throw an error for no access', async () => {

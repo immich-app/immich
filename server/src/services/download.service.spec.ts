@@ -252,7 +252,11 @@ describe(DownloadService.name, () => {
 
       await expect(sut.getDownloadInfo(authStub.admin, { albumId: 'album-1' })).resolves.toEqual(downloadResponse);
 
-      expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set(['album-1']));
+      expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set(['album-1']),
+        undefined,
+      );
       expect(mocks.downloadRepository.downloadAlbumId).toHaveBeenCalledWith('album-1');
     });
 

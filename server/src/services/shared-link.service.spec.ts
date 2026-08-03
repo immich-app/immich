@@ -146,7 +146,11 @@ describe(SharedLinkService.name, () => {
 
       await sut.create(authStub.admin, { type: SharedLinkType.Album, albumId: album.id });
 
-      expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(authStub.admin.user.id, new Set([album.id]));
+      expect(mocks.access.album.checkOwnerAccess).toHaveBeenCalledWith(
+        authStub.admin.user.id,
+        new Set([album.id]),
+        undefined,
+      );
       expect(mocks.sharedLink.create).toHaveBeenCalledWith({
         type: SharedLinkType.Album,
         userId: authStub.admin.user.id,

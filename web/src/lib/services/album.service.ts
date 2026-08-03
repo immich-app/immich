@@ -19,6 +19,7 @@ import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiImageOutline, mdiLink, mdiPlus, mdiPlusBoxOutline, mdiShareVariantOutline, mdiUpload } from '@mdi/js';
 import { type MessageFormatter } from 'svelte-i18n';
 import { goto } from '$app/navigation';
+import { page } from '$app/state';
 import { authManager } from '$lib/managers/auth-manager.svelte';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
@@ -49,21 +50,36 @@ export const getAlbumActions = ($t: MessageFormatter, album: AlbumResponseDto) =
     title: $t('share'),
     icon: mdiShareVariantOutline,
     $if: () => isOwned,
-    onAction: () => modalManager.show(AlbumOptionsModal, { album }),
+    onAction: async () => {
+      if (await redirectIfLockedAndNotElevated(album)) {
+        return;
+      }
+      modalManager.show(AlbumOptionsModal, { album });
+    },
   };
 
   const AddUsers: ActionItem = {
     title: $t('invite_people'),
     icon: mdiPlus,
     color: 'primary',
-    onAction: () => modalManager.show(AlbumAddUsersModal, { album }),
+    onAction: async () => {
+      if (await redirectIfLockedAndNotElevated(album)) {
+        return;
+      }
+      modalManager.show(AlbumAddUsersModal, { album });
+    },
   };
 
   const CreateSharedLink: ActionItem = {
     title: $t('create_link'),
     icon: mdiLink,
     color: 'primary',
-    onAction: () => modalManager.show(SharedLinkCreateModal, { albumId: album.id }),
+    onAction: async () => {
+      if (await redirectIfLockedAndNotElevated(album)) {
+        return;
+      }
+      modalManager.show(SharedLinkCreateModal, { albumId: album.id });
+    },
   };
 
   return { Share, AddUsers, CreateSharedLink };
@@ -85,12 +101,16 @@ export const getAlbumAssetsActions = ($t: MessageFormatter, album: AlbumResponse
     color: 'primary',
     icon: mdiPlusBoxOutline,
     $if: () => assets.length > 0,
-    onAction: () =>
-      addAssetsToAlbums(
+    onAction: async () => {
+      if (await redirectIfLockedAndNotElevated(album)) {
+        return;
+      }
+      await addAssetsToAlbums(
         [album.id],
         assets.map(({ id }) => id),
         { notify: true },
-      ).then(() => undefined),
+      );
+    },
   };
 
   const Upload: ActionItem = {
@@ -132,18 +152,28 @@ export const addAssetsToAlbums = async (albumIds: string[], assetIds: string[], 
 
 const notifyAddToAlbum = ($t: MessageFormatter, albumId: string, assetIds: string[], results: BulkIdResponseDto[]) => {
   const successCount = results.filter(({ success }) => success).length;
-  const duplicateCount = results.filter(({ error }) => error === 'duplicate').length;
+  const duplicateCount = results.filter(({ error }) => error === BulkIdErrorReason.Duplicate).length;
+  const alreadyInLockedAlbumCount = results.filter(
+    ({ error }) => error === BulkIdErrorReason.AlreadyInLockedAlbum,
+  ).length;
   let description = $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } });
+  let severity: 'primary' | 'info' | 'warning' = 'warning';
 
   if (duplicateCount === assetIds.length) {
     description = $t('assets_were_part_of_album_count', { values: { count: duplicateCount } });
+    severity = 'info';
+  } else if (alreadyInLockedAlbumCount === assetIds.length) {
+    description = $t('assets_already_in_another_locked_album_count', { values: { count: alreadyInLockedAlbumCount } });
+    severity = 'warning';
   } else if (successCount === assetIds.length) {
     description = $t('assets_added_to_album_count', { values: { count: successCount } });
+    severity = 'primary';
   } else if (successCount > 0) {
     description = $t('assets_added_to_album_partial_count', { values: { successCount, totalCount: assetIds.length } });
+    severity = 'primary';
   }
 
-  toastManager.primary(
+  toastManager[severity](
     { description, button: { label: $t('view_album'), onclick: () => goto(Route.viewAlbum({ id: albumId })) } },
     { timeout: 5000 },
   );
@@ -157,6 +187,8 @@ const notifyAddToAlbums = (
 ) => {
   if (results.error === BulkIdErrorReason.Duplicate) {
     toastManager.info($t('assets_were_part_of_albums_count', { values: { count: assetIds.length } }));
+  } else if (results.error === BulkIdErrorReason.AlreadyInLockedAlbum) {
+    toastManager.warning($t('assets_already_in_another_locked_album_count', { values: { count: assetIds.length } }));
   } else if (results.error) {
     toastManager.warning($t('assets_cannot_be_added_to_albums', { values: { count: assetIds.length } }));
   } else {
@@ -237,8 +269,13 @@ const handleUpdateThumbnail = async (album: AlbumResponseDto, assetId: string) =
   }
 };
 
-export const handleUpdateAlbum = async ({ id }: { id: string }, dto: UpdateAlbumDto) => {
+export const handleUpdateAlbum = async (album: AlbumResponseDto, dto: UpdateAlbumDto) => {
   const $t = await getFormatter();
+  const { id } = album;
+
+  if (await redirectIfLockedAndNotElevated(album)) {
+    return false;
+  }
 
   try {
     const response = await updateAlbumInfo({ id, updateAlbumDto: dto });
@@ -254,9 +291,35 @@ export const handleUpdateAlbum = async ({ id }: { id: string }, dto: UpdateAlbum
   }
 };
 
+/**
+ * True (and redirects to the PIN prompt) if `album` is locked and the current session isn't
+ * elevated -- the server rejects any mutation on a locked album's contents (deleting the album,
+ * etc.) in that state, same as it does for viewing/unlocking. Call this before attempting such a
+ * mutation to get a proper PIN-prompt redirect instead of a raw "no access" error surfacing from
+ * a failed API call.
+ *
+ * Deliberately does NOT carry the original action through as a resume-after-PIN action (unlike
+ * lock/unlock) -- delete is destructive enough that we want the user to land on the album itself
+ * and take a fresh, deliberate action once elevated, rather than have a delete silently fire the
+ * moment they enter their PIN.
+ */
+export const redirectIfLockedAndNotElevated = async (album: AlbumResponseDto): Promise<boolean> => {
+  if (!album.isLocked || authManager.isElevated) {
+    return false;
+  }
+
+  const continueUrl = new URL(Route.viewAlbum({ id: album.id }), page.url);
+  await goto(Route.pinPrompt({ continue: `${continueUrl.pathname}${continueUrl.search}` }));
+  return true;
+};
+
 export const handleDeleteAlbum = async (album: AlbumResponseDto, options?: { prompt?: boolean; notify?: boolean }) => {
   const $t = await getFormatter();
   const { prompt = true, notify = true } = options ?? {};
+
+  if (await redirectIfLockedAndNotElevated(album)) {
+    return false;
+  }
 
   if (prompt) {
     const confirmation =
@@ -284,6 +347,10 @@ export const handleDeleteAlbum = async (album: AlbumResponseDto, options?: { pro
 };
 
 export const handleDownloadAlbum = async (album: AlbumResponseDto) => {
+  if (await redirectIfLockedAndNotElevated(album)) {
+    return;
+  }
+
   await downloadArchive(`${album.albumName}.zip`, { albumId: album.id });
 };
 

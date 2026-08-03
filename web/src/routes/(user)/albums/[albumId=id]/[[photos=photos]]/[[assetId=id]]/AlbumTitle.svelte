@@ -1,20 +1,22 @@
 <script lang="ts">
-  import { shortcut } from '$lib/actions/shortcut';
-  import { eventManager } from '$lib/managers/event-manager.svelte';
-  import { handleError } from '$lib/utils/handle-error';
-  import { updateAlbumInfo } from '@immich/sdk';
+  import { updateAlbumInfo, type AlbumResponseDto } from '@immich/sdk';
   import { Textarea } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { fromAction } from 'svelte/attachments';
+  import { shortcut } from '$lib/actions/shortcut';
+  import { eventManager } from '$lib/managers/event-manager.svelte';
+  import { redirectIfLockedAndNotElevated } from '$lib/services/album.service';
+  import { handleError } from '$lib/utils/handle-error';
 
   type Props = {
-    id: string;
+    album: AlbumResponseDto;
     albumName: string;
     isOwned: boolean;
     onUpdate: (albumName: string) => void;
   };
 
-  let { id, albumName = $bindable(), isOwned, onUpdate }: Props = $props();
+  let { album, albumName = $bindable(), isOwned, onUpdate }: Props = $props();
+  const id = $derived(album.id);
 
   let newAlbumName = $derived(albumName);
 
@@ -22,6 +24,10 @@
     newAlbumName = newAlbumName.replaceAll('\n', ' ').trim();
 
     if (newAlbumName === albumName) {
+      return;
+    }
+
+    if (await redirectIfLockedAndNotElevated(album)) {
       return;
     }
 

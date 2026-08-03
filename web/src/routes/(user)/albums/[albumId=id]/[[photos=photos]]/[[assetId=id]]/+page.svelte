@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { goto, invalidate, onNavigate } from '$app/navigation';
+  import { goto, invalidate, onNavigate, replaceState } from '$app/navigation';
+  import { page } from '$app/state';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
@@ -364,7 +365,7 @@
             <!-- ALBUM TITLE -->
             <section class="pt-8 md:pt-24">
               <AlbumTitle
-                id={album.id}
+                {album}
                 albumName={album.albumName}
                 {isOwned}
                 onUpdate={(albumName) => (album = { ...album, albumName })}
@@ -458,10 +459,18 @@
     {#if assetMultiSelectManager.selectionActive}
       <AssetSelectControlBar>
         {@const Actions = getAssetBulkActions($t)}
-        <CommandPaletteDefaultProvider name={$t('assets')} actions={Object.values(Actions)} />
+        <CommandPaletteDefaultProvider
+          name={$t('assets')}
+          actions={Object.values(Actions).filter((action) => !album.isLocked || action !== Actions.AddToAlbum)}
+        />
         <CreateSharedLink />
         <SelectAllAssets {timelineManager} assetInteraction={assetMultiSelectManager} />
-        <ActionButton action={Actions.AddToAlbum} />
+        {#if !album.isLocked}
+          <!-- Every asset shown here already belongs to this album. If it's locked, "Add to
+               album" can only ever be a no-op duplicate or a rejected cross-locked-album error,
+               so there's nothing useful it can do here. -->
+          <ActionButton action={Actions.AddToAlbum} />
+        {/if}
         {#if assetMultiSelectManager.isAllUserOwned}
           <FavoriteAction
             removeFavorite={assetMultiSelectManager.isAllFavorite}
@@ -479,7 +488,7 @@
               unarchive={assetMultiSelectManager.isAllArchived}
               onArchive={(ids, visibility) => timelineManager.update(ids, (asset) => (asset.visibility = visibility))}
             />
-            <SetVisibilityAction menuItem onVisibilitySet={handleSetVisibility} />
+            <SetVisibilityAction menuItem unlock={album.isLocked} onVisibilitySet={handleSetVisibility} />
           {/if}
           {#if assetMultiSelectManager.assets.length === 1}
             <MenuOption

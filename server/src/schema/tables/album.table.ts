@@ -45,6 +45,9 @@ export class AlbumTable {
   @Column({ type: 'boolean', default: true })
   isActivityEnabled!: Generated<boolean>;
 
+  @Column({ type: 'boolean', default: false })
+  isLocked!: Generated<boolean>;
+
   @Column({ default: AssetOrder.Desc })
   order!: Generated<AssetOrder>;
 
