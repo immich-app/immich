@@ -3,8 +3,15 @@ import { Place } from 'src/database';
 import { HistoryBuilder } from 'src/decorators';
 import { AlbumResponseSchema } from 'src/dtos/album.dto';
 import { AssetResponseSchema } from 'src/dtos/asset-response.dto';
-import { AssetOrder, AssetOrderSchema, AssetTypeSchema, AssetVisibilitySchema } from 'src/enum';
-import { isoDatetimeToDate, stringToBool } from 'src/validation';
+import {
+  AssetOrder,
+  AssetOrderSchema,
+  AssetTypeSchema,
+  AssetVisibilitySchema,
+  SearchOrderField,
+  SearchOrderFieldSchema,
+} from 'src/enum';
+import { isoDatetimeToDate, nonEmptyPartial, stringToBool } from 'src/validation';
 import z from 'zod';
 
 const BaseSearchSchema = z.object({
@@ -141,6 +148,176 @@ const SearchSuggestionRequestSchema = z
       .meta(new HistoryBuilder().added('v1.111.0').stable('v2').getExtensions()),
   })
   .meta({ id: 'SearchSuggestionRequestDto' });
+
+const IdFilterSchema = nonEmptyPartial({
+  eq: z.uuidv4(),
+  ne: z.uuidv4(),
+}).meta({ id: 'IdFilter' });
+
+const IdFilterNullableSchema = nonEmptyPartial({
+  eq: z.uuidv4().nullable(),
+  ne: z.uuidv4().nullable(),
+}).meta({ id: 'IdFilterNullable' });
+
+const IdsFilterSchema = nonEmptyPartial({
+  any: z.array(z.uuidv4()).min(1),
+  all: z.array(z.uuidv4()).min(1),
+  none: z.array(z.uuidv4()).min(1),
+}).meta({ id: 'IdsFilter' });
+
+const stringListShape = {
+  in: z.array(z.string()).min(1),
+  notIn: z.array(z.string()).min(1),
+};
+
+const StringFilterSchema = nonEmptyPartial({
+  eq: z.string(),
+  ne: z.string(),
+  ...stringListShape,
+}).meta({ id: 'StringFilter' });
+
+const stringNullableShape = {
+  eq: z.string().nullable(),
+  ne: z.string().nullable(),
+  ...stringListShape,
+};
+
+const StringFilterNullableSchema = nonEmptyPartial(stringNullableShape).meta({ id: 'StringFilterNullable' });
+
+const StringPatternFilterSchema = nonEmptyPartial({
+  ...stringNullableShape,
+  like: z.string().min(1),
+  notLike: z.string().min(1),
+  startsWith: z.string().min(1),
+  endsWith: z.string().min(1),
+}).meta({ id: 'StringPatternFilter' });
+
+const numberRangeShape = {
+  lt: z.number(),
+  lte: z.number(),
+  gt: z.number(),
+  gte: z.number(),
+  in: z.array(z.number()).min(1),
+  notIn: z.array(z.number()).min(1),
+};
+
+const NumberFilterSchema = nonEmptyPartial({
+  eq: z.number(),
+  ne: z.number(),
+  ...numberRangeShape,
+}).meta({ id: 'NumberFilter' });
+
+const NumberFilterNullableSchema = nonEmptyPartial({
+  eq: z.number().nullable(),
+  ne: z.number().nullable(),
+  ...numberRangeShape,
+}).meta({ id: 'NumberFilterNullable' });
+
+const dateRangeShape = {
+  gt: isoDatetimeToDate,
+  gte: isoDatetimeToDate,
+  lt: isoDatetimeToDate,
+  lte: isoDatetimeToDate,
+};
+
+const DateFilterSchema = nonEmptyPartial({
+  eq: isoDatetimeToDate,
+  ne: isoDatetimeToDate,
+  ...dateRangeShape,
+}).meta({ id: 'DateFilter' });
+
+const DateFilterNullableSchema = nonEmptyPartial({
+  eq: isoDatetimeToDate.nullable(),
+  ne: isoDatetimeToDate.nullable(),
+  ...dateRangeShape,
+}).meta({ id: 'DateFilterNullable' });
+
+const BoolFilterSchema = z.object({ eq: z.boolean() }).meta({ id: 'BoolFilter' });
+
+const enumFilterSchema = <T extends z.core.util.EnumLike>(values: z.ZodEnum<T>, id: string) =>
+  nonEmptyPartial({
+    eq: values,
+    ne: values,
+    in: z.array(values).min(1),
+    notIn: z.array(values).min(1),
+  }).meta({ id });
+
+const EnumFilterAssetTypeSchema = enumFilterSchema(AssetTypeSchema, 'EnumFilterAssetType');
+const EnumFilterAssetVisibilitySchema = enumFilterSchema(AssetVisibilitySchema, 'EnumFilterAssetVisibility');
+
+const StringSimilarityFilterSchema = z
+  .object({
+    matches: z.string().min(1),
+  })
+  .meta({ id: 'StringSimilarityFilter' });
+
+export const DEFAULT_SEARCH_ORDER = {
+  field: SearchOrderField.FileCreatedAt,
+  direction: AssetOrder.Desc,
+};
+
+export const SearchOrderSchema = z
+  .object({
+    field: SearchOrderFieldSchema.default(DEFAULT_SEARCH_ORDER.field),
+    direction: AssetOrderSchema.default(DEFAULT_SEARCH_ORDER.direction),
+  })
+  .meta({ id: 'SearchOrder' });
+
+const SearchFilterBranchSchema = z
+  .object({
+    id: IdFilterSchema,
+    libraryId: IdFilterNullableSchema,
+    type: EnumFilterAssetTypeSchema,
+    visibility: EnumFilterAssetVisibilitySchema,
+    isFavorite: BoolFilterSchema,
+    isMotion: BoolFilterSchema,
+    isOffline: BoolFilterSchema,
+    isEncoded: BoolFilterSchema,
+    hasAlbums: BoolFilterSchema,
+    hasPeople: BoolFilterSchema,
+    hasTags: BoolFilterSchema,
+    city: StringFilterNullableSchema,
+    state: StringFilterNullableSchema,
+    country: StringFilterNullableSchema,
+    make: StringFilterNullableSchema,
+    model: StringFilterNullableSchema,
+    lensModel: StringFilterNullableSchema,
+    description: StringPatternFilterSchema,
+    originalFileName: StringPatternFilterSchema,
+    originalPath: StringPatternFilterSchema,
+    ocr: StringSimilarityFilterSchema,
+    rating: NumberFilterNullableSchema,
+    fileSizeInBytes: NumberFilterSchema,
+    takenAt: DateFilterSchema,
+    createdAt: DateFilterSchema,
+    updatedAt: DateFilterSchema,
+    trashedAt: DateFilterNullableSchema,
+    personIds: IdsFilterSchema,
+    tagIds: IdsFilterSchema,
+    albumIds: IdsFilterSchema,
+    checksum: StringFilterSchema,
+    encodedVideoPath: StringFilterSchema,
+  })
+  .partial()
+  .meta({ id: 'SearchFilterBranch' });
+
+export const SearchFilterSchema = SearchFilterBranchSchema.extend({
+  or: z.array(SearchFilterBranchSchema).min(1).optional(),
+}).meta({ id: 'SearchFilter' });
+
+export type IdFilter = z.infer<typeof IdFilterSchema>;
+export type IdFilterNullable = z.infer<typeof IdFilterNullableSchema>;
+export type IdsFilter = z.infer<typeof IdsFilterSchema>;
+export type StringFilter = z.infer<typeof StringFilterSchema>;
+export type StringFilterNullable = z.infer<typeof StringFilterNullableSchema>;
+export type StringPatternFilter = z.infer<typeof StringPatternFilterSchema>;
+export type NumberFilter = z.infer<typeof NumberFilterSchema>;
+export type NumberFilterNullable = z.infer<typeof NumberFilterNullableSchema>;
+export type DateFilter = z.infer<typeof DateFilterSchema>;
+export type DateFilterNullable = z.infer<typeof DateFilterNullableSchema>;
+export type SearchOrder = z.infer<typeof SearchOrderSchema>;
+export type SearchFilter = z.infer<typeof SearchFilterSchema>;
+export type SearchFilterBranch = z.infer<typeof SearchFilterBranchSchema>;
 
 export class RandomSearchDto extends createZodDto(RandomSearchSchema) {}
 export class LargeAssetSearchDto extends createZodDto(LargeAssetSearchSchema) {}

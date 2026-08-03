@@ -60,6 +60,7 @@ export const websocketStore = {
 
 export const websocketEvents = createEventEmitter(websocket);
 
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 websocket
   .on('connect', () => {
     eventManager.emit('WebsocketConnect');
@@ -113,16 +114,18 @@ export const waitForWebsocketEvent = <T extends keyof Events>(
   return new Promise((resolve, reject) => {
     // @ts-expect-error: The typings are weird on this?
     const cleanup = websocketEvents.on(event, (...args: Parameters<Events[T]>) => {
-      if (!predicate || predicate(...args)) {
-        cleanup();
-        clearTimeout(timer);
-        resolve(args);
+      if (predicate && !predicate(...args)) {
+        return;
       }
+
+      cleanup();
+      clearTimeout(timer);
+      resolve(args);
     });
 
     const timer = setTimeout(() => {
       cleanup();
-      reject(new Error(`Timeout waiting for event: ${String(event)}`));
+      reject(new Error(`Timeout waiting for event: ${event}`));
     }, timeout);
   });
 };

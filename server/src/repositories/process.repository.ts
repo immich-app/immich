@@ -7,7 +7,7 @@ export class ProcessRepository {
   spawn = spawn;
 
   spawnDuplexStream(command: string, args?: readonly string[], options?: SpawnOptionsWithoutStdio): Duplex {
-    let stdinClosed = false;
+    let isStdinClosed = false;
     let drainCallback: undefined | (() => void);
 
     const process = this.spawn(command, args, options);
@@ -15,7 +15,7 @@ export class ProcessRepository {
       // duplex -> stdin
       write(chunk, encoding, callback) {
         // drain the input if process dies
-        if (stdinClosed) {
+        if (isStdinClosed) {
           return callback();
         }
 
@@ -36,7 +36,7 @@ export class ProcessRepository {
       },
 
       final(callback) {
-        if (stdinClosed) {
+        if (isStdinClosed) {
           callback();
         } else {
           process.stdin.end(callback);
@@ -55,19 +55,19 @@ export class ProcessRepository {
     duplex.on('resume', () => process.stdout.resume());
 
     // end handling
-    let stdoutClosed = false;
+    let isStdoutClosed = false;
     function close(error?: Error) {
-      stdinClosed = true;
+      isStdinClosed = true;
 
       if (error) {
         duplex.destroy(error);
-      } else if (stdoutClosed && typeof process.exitCode === 'number') {
+      } else if (isStdoutClosed && typeof process.exitCode === 'number') {
         duplex.push(null);
       }
     }
 
     process.stdout.on('close', () => {
-      stdoutClosed = true;
+      isStdoutClosed = true;
       close();
     });
 

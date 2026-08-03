@@ -120,6 +120,7 @@ describe('/albums', () => {
       }),
     ]);
 
+    // eslint-disable-next-line unicorn/no-unreadable-array-destructuring
     [user2Albums[0]] = await Promise.all([
       getAlbumInfo({ id: user2Albums[0].id }, { headers: asBearerAuth(user2.accessToken) }),
       deleteUserAdmin({ id: user3.userId, userAdminDeleteDto: {} }, { headers: asBearerAuth(admin.accessToken) }),

@@ -312,12 +312,14 @@ export class IntegrityService extends BaseService {
     this.logger.log(`Processing batch of ${items.length} reports to check if they are out of date.`);
 
     const results = await Promise.all(
-      items.map(({ reportId, path }) =>
-        this.storageRepository
-          .stat(path)
-          .then(() => void 0)
-          .catch(() => reportId),
-      ),
+      items.map(async ({ reportId, path }) => {
+        try {
+          await this.storageRepository.stat(path);
+          return;
+        } catch {
+          return reportId;
+        }
+      }),
     );
 
     const reportIds = results.filter(Boolean) as string[];
@@ -383,12 +385,14 @@ export class IntegrityService extends BaseService {
     this.logger.log(`Processing batch of ${items.length} files to check if they are missing.`);
 
     const results = await Promise.all(
-      items.map((item) =>
-        this.storageRepository
-          .stat(item.path)
-          .then(() => ({ ...item, exists: true }))
-          .catch(() => ({ ...item, exists: false })),
-      ),
+      items.map(async (item) => {
+        try {
+          await this.storageRepository.stat(item.path);
+          return { ...item, exists: true };
+        } catch {
+          return { ...item, exists: false };
+        }
+      }),
     );
 
     const outdatedReports = results
@@ -420,12 +424,14 @@ export class IntegrityService extends BaseService {
     this.logger.log(`Processing batch of ${paths.length} reports to check if they are out of date.`);
 
     const results = await Promise.all(
-      paths.map(({ reportId, path }) =>
-        this.storageRepository
-          .stat(path)
-          .then(() => reportId)
-          .catch(() => void 0),
-      ),
+      paths.map(async ({ reportId, path }) => {
+        try {
+          await this.storageRepository.stat(path);
+          return reportId;
+        } catch {
+          return;
+        }
+      }),
     );
 
     const reportIds = results.filter(Boolean) as string[];

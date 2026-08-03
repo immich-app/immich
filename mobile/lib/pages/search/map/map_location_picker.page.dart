@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
@@ -37,17 +38,17 @@ class MapLocationPickerPage extends HookConsumerWidget {
     }
 
     void onClose([LatLng? selected]) {
-      context.maybePop(selected);
+      unawaited(context.maybePop(selected));
     }
 
     Future<void> getCurrentLocation() async {
-      var (currentLocation, _) = await MapUtils.checkPermAndGetLocation(context: context);
+      final (currentLocation, _) = await MapUtils.checkPermAndGetLocation(context: context);
 
       if (currentLocation == null) {
         return;
       }
 
-      var currentLatLng = LatLng(currentLocation.latitude, currentLocation.longitude);
+      final currentLatLng = LatLng(currentLocation.latitude, currentLocation.longitude);
       selectedLatLng.value = currentLatLng;
       await controller.value?.animateCamera(CameraUpdate.newLatLngZoom(currentLatLng, 12));
     }

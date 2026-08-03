@@ -61,10 +61,8 @@
   {@const isTimelineDaySelected = assetInteraction.selectedGroup.has(timelineDay.groupTitle)}
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <section
-    class={[
-      { 'transition-all': !timelineMonth.timelineManager.suspendTransitions },
-      !timelineMonth.timelineManager.suspendTransitions && `delay-${transitionDuration}`,
-    ]}
+    class={[{ 'transition-all': !timelineMonth.timelineManager.suspendTransitions }]}
+    style:transition-delay={timelineMonth.timelineManager.suspendTransitions ? undefined : `${transitionDuration}ms`}
     data-group
     style:position="absolute"
     style:inset-inline-start={timelineDay.start + 'px'}

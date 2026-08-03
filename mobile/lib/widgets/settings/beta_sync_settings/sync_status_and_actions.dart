@@ -39,12 +39,15 @@ class SyncStatusAndActions extends HookConsumerWidget {
         final documentsDir = await getApplicationDocumentsDirectory();
         final dbFile = File(path.join(documentsDir.path, 'immich.sqlite'));
 
+        // ignore: avoid_slow_async_io
         if (!await dbFile.exists()) {
-          if (context.mounted) {
-            context.scaffoldMessenger.showSnackBar(
-              SnackBar(content: Text("Database file not found".t(context: context))),
-            );
+          if (!context.mounted) {
+            return;
           }
+
+          context.scaffoldMessenger.showSnackBar(
+            SnackBar(content: Text("Database file not found".t(context: context))),
+          );
           return;
         }
 
@@ -52,6 +55,10 @@ class SyncStatusAndActions extends HookConsumerWidget {
         final exportFile = File(path.join(documentsDir.path, 'immich_export_$timestamp.sqlite'));
 
         await dbFile.copy(exportFile.path);
+
+        if (!context.mounted) {
+          return;
+        }
 
         final size = MediaQuery.of(context).size;
         await Share.shareXFiles(
@@ -61,22 +68,26 @@ class SyncStatusAndActions extends HookConsumerWidget {
         );
 
         Future.delayed(const Duration(seconds: 30), () async {
+          // ignore: avoid_slow_async_io
           if (await exportFile.exists()) {
             await exportFile.delete();
           }
         });
+        if (!context.mounted) {
+          return;
+        }
 
-        if (context.mounted) {
-          context.scaffoldMessenger.showSnackBar(
-            SnackBar(content: Text("Database exported successfully".t(context: context))),
-          );
-        }
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text("Database exported successfully".t(context: context))),
+        );
       } catch (e) {
-        if (context.mounted) {
-          context.scaffoldMessenger.showSnackBar(
-            SnackBar(content: Text("Failed to export database: $e".t(context: context))),
-          );
+        if (!context.mounted) {
+          return;
         }
+
+        context.scaffoldMessenger.showSnackBar(
+          SnackBar(content: Text("Failed to export database: $e".t(context: context))),
+        );
       }
     }
 
@@ -96,6 +107,10 @@ class SyncStatusAndActions extends HookConsumerWidget {
               TextButton(
                 onPressed: () async {
                   await ref.read(driftProvider).reset();
+                  if (!context.mounted) {
+                    return;
+                  }
+
                   context.pop();
                   unawaited(
                     showDialog<void>(
@@ -130,7 +145,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
           leading: const Icon(Icons.sync),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).localSyncStatus),
           onTap: () {
-            ref.read(backgroundSyncProvider).syncLocal(full: true);
+            unawaited(ref.read(backgroundSyncProvider).syncLocal(full: true));
           },
         ),
         SettingListTile(
@@ -139,7 +154,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
           leading: const Icon(Icons.cloud_sync),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).remoteSyncStatus),
           onTap: () {
-            ref.read(backgroundSyncProvider).syncRemote();
+            unawaited(ref.read(backgroundSyncProvider).syncRemote());
           },
         ),
         if (CurrentPlatform.isIOS && serverVersion.isAtLeast(major: 2, minor: 5))
@@ -156,7 +171,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
           subtitle: "tap_to_run_job".t(context: context),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).hashJobStatus),
           onTap: () {
-            ref.read(backgroundSyncProvider).hashAssets();
+            unawaited(ref.read(backgroundSyncProvider).hashAssets());
           },
         ),
         const Divider(height: 1),
