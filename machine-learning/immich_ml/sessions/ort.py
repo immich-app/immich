@@ -15,9 +15,54 @@ from ..config import log, settings
 
 MigraphxInputSignature = tuple[tuple[str, str, tuple[int, ...]], ...]
 
+# Provider libraries that expose an OrtEpFactory and are looked up as plugin EP devices
+# before the built-in provider is used. See _register_ep_library().
+_EP_LIBRARIES = {"CUDAExecutionProvider": "libonnxruntime_providers_cuda.so"}
+
+_ep_library_lock = Lock()
+_registered_ep_libraries: set[str] = set()
+
 _migraphx_registry_lock = Lock()
 _migraphx_model_locks: dict[str, Lock] = {}
 _migraphx_compiled_inputs: set[tuple[str, MigraphxInputSignature]] = set()
+
+
+def _register_ep_library(provider: str) -> None:
+    """Register the provider's shared library as a plugin EP library.
+
+    Since ORT 1.23 a session first looks for a registered plugin EP device matching the
+    provider name and its `device_id` option, and only then falls back to the built-in
+    provider. Without a registered library that lookup logs a warning on every session:
+
+        No registered plugin EP device found for 'CUDAExecutionProvider' with device_id=0
+
+    Registering the library makes the device discoverable, so the lookup succeeds and the
+    provider options are applied to the session as usual.
+    """
+
+    library = _EP_LIBRARIES.get(provider)
+    register = getattr(ort, "register_execution_provider_library", None)
+    if library is None or register is None:
+        return
+
+    with _ep_library_lock:
+        if provider in _registered_ep_libraries:
+            return
+        # Mark as attempted regardless of the outcome: a failure here is not fatal, the
+        # provider is still created from the built-in implementation, and retrying it for
+        # every session is pointless.
+        _registered_ep_libraries.add(provider)
+
+        try:
+            library_path = Path(ort.__file__).parent / "capi" / library
+            if not library_path.is_file():
+                log.debug(f"EP library {library} not found, skipping plugin EP registration for {provider}")
+                return
+
+            register(provider, library_path.as_posix())
+            log.debug(f"Registered plugin EP library {library_path} for {provider}")
+        except Exception as e:
+            log.debug(f"Could not register plugin EP library {library} for {provider}: {e}")
 
 
 def _migraphx_get_model_lock(model_key: str) -> Lock:
@@ -59,6 +104,8 @@ class OrtSession:
         self.providers = providers if providers is not None else self._providers_default
         self.provider_options = provider_options if provider_options is not None else self._provider_options_default
         self.sess_options = sess_options if sess_options is not None else self._sess_options_default
+        for provider in self.providers:
+            _register_ep_library(provider)
         self.session = ort.InferenceSession(
             self.model_path.as_posix(),
             providers=self.providers,

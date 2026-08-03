@@ -30,6 +30,7 @@ from immich_ml.models.ocr.detection import TextDetector
 from immich_ml.models.ocr.recognition import TextRecognizer
 from immich_ml.models.ocr.schemas import OcrOptions
 from immich_ml.schemas import ModelFormat, ModelPrecision, ModelTask, ModelType
+from immich_ml.sessions import ort as ort_module
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession
 from immich_ml.sessions.rknn import RknnSession, run_inference
@@ -329,6 +330,40 @@ class TestOrtSession:
         session = OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider"])
 
         assert session.provider_options == [{"arena_extend_strategy": "kSameAsRequested", "device_id": "1"}]
+
+    def test_registers_cuda_ep_library(self, mocker: MockerFixture) -> None:
+        mocker.patch.dict(ort_module._registered_ep_libraries, clear=True)
+        mocker.patch("immich_ml.sessions.ort.Path.is_file", return_value=True)
+        register = mocker.patch("immich_ml.sessions.ort.ort.register_execution_provider_library")
+
+        OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
+        OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider", "CPUExecutionProvider"])
+
+        register.assert_called_once()
+        provider, library_path = register.call_args[0]
+        assert provider == "CUDAExecutionProvider"
+        assert library_path.endswith("/capi/libonnxruntime_providers_cuda.so")
+
+    def test_does_not_register_cuda_ep_library_if_missing(self, mocker: MockerFixture) -> None:
+        mocker.patch.dict(ort_module._registered_ep_libraries, clear=True)
+        mocker.patch("immich_ml.sessions.ort.Path.is_file", return_value=False)
+        register = mocker.patch("immich_ml.sessions.ort.ort.register_execution_provider_library")
+
+        OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider"])
+
+        register.assert_not_called()
+
+    def test_ignores_cuda_ep_library_registration_failure(self, mocker: MockerFixture) -> None:
+        mocker.patch.dict(ort_module._registered_ep_libraries, clear=True)
+        mocker.patch("immich_ml.sessions.ort.Path.is_file", return_value=True)
+        mocker.patch(
+            "immich_ml.sessions.ort.ort.register_execution_provider_library",
+            side_effect=RuntimeError("registration failed"),
+        )
+
+        session = OrtSession("ViT-B-32__openai", providers=["CUDAExecutionProvider"])
+
+        assert session.providers == ["CUDAExecutionProvider"]
 
     def test_sets_provider_options_for_rocm(self, mocker: MockerFixture) -> None:
         model_path = "/cache/ViT-B-32__openai/textual/model.onnx"
