@@ -6,7 +6,7 @@ final castRepositoryProvider = Provider((_) => CastRepository());
 
 class CastRepository {
   CastContext? _castContext;
-  CastingDevice? _device;
+  CastingDevice? _activeDevice;
 
   void Function(DeviceConnectionState)? onConnectionState;
   void Function(DeviceEvent)? onDeviceEvent;
@@ -18,9 +18,9 @@ class CastRepository {
   Future<void> connect(DeviceInfo deviceInfo) async {
     await _ensureInitialized();
 
-    _device?.disconnect();
+    _activeDevice?.disconnect();
     final device = _castContext!.createDeviceFromInfo(info: deviceInfo);
-    _device = device;
+    _activeDevice = device;
 
     _currentDeviceGeneration += 1;
     final thisDeviceGeneration = _currentDeviceGeneration;
@@ -43,29 +43,29 @@ class CastRepository {
   }
 
   Future<void> disconnect() async {
-    final device = _device;
-    if (device == null) {
+    final previousDevice = _activeDevice;
+    if (previousDevice == null) {
       return;
     }
 
-    _device = null;
+    _activeDevice = null;
     _currentDeviceGeneration += 1;
 
-    if (device.isReady()) {
-      device.stopPlayback();
+    if (previousDevice.isReady()) {
+      previousDevice.stopPlayback();
 
       await Future.delayed(const Duration(milliseconds: 500));
     }
 
-    device.disconnect();
+    previousDevice.disconnect();
     onConnectionState?.call(const DeviceConnectionState.disconnected());
   }
 
-  void loadMedia(LoadRequest request) => _device?.load(request: request);
-  void play() => _device?.resumePlayback();
-  void pause() => _device?.pausePlayback();
-  void stop() => _device?.stopPlayback();
-  void seekTo(Duration position) => _device?.seek(timeSeconds: position.inSeconds.toDouble());
+  void loadMedia(LoadRequest request) => _activeDevice?.load(request: request);
+  void play() => _activeDevice?.resumePlayback();
+  void pause() => _activeDevice?.pausePlayback();
+  void stop() => _activeDevice?.stopPlayback();
+  void seekTo(Duration position) => _activeDevice?.seek(timeSeconds: position.inSeconds.toDouble());
 
   Future<List<(DeviceInfo, int?)>> listDestinations() async {
     final isFirstScan = _initialized == null;
