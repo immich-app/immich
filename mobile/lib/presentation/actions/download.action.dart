@@ -14,7 +14,7 @@ final _stateProvider = Provider.family.autoDispose<List<RemoteAsset>?, ActionSou
   final assets = ref.watch(assetsActionProvider(source));
   final remote = assets.remote().toList(growable: false);
   return remote.isEmpty ? null : remote;
-});
+}, dependencies: [assetsActionProvider]);
 
 class DownloadAction extends AssetActionBuilder {
   const DownloadAction({required super.source});

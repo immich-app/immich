@@ -40,7 +40,7 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
   final trash = trashEnabled && !ownedRemote.every((asset) => asset.isTrashed || asset.isLocked);
 
   return (localIds: localIds, remoteIds: ownedRemote.map((asset) => asset.id).toList(growable: false), trash: trash);
-});
+}, dependencies: [assetsActionProvider]);
 
 class DeleteAction extends AssetActionBuilder {
   const DeleteAction({required super.source});
@@ -149,7 +149,7 @@ final _cleanupStateProvider = Provider.family.autoDispose<List<String>?, ActionS
   final assets = ref.watch(assetsActionProvider(source));
   final assetIds = assets.backedUp().map((asset) => asset.localId).nonNulls.toList(growable: false);
   return assetIds.isEmpty ? null : assetIds;
-});
+}, dependencies: [assetsActionProvider]);
 
 class CleanupLocalAction extends AssetActionBuilder {
   const CleanupLocalAction({required super.source});

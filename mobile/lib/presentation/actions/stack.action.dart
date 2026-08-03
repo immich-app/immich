@@ -23,7 +23,7 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
     assetIds: assets.map((asset) => asset.id).toList(growable: false),
     stackIds: assets.map((asset) => asset.stackId).nonNulls.toList(growable: false),
   );
-});
+}, dependencies: [ownedAssetsActionProvider]);
 
 class StackAction extends AssetActionBuilder {
   const StackAction({required super.source});

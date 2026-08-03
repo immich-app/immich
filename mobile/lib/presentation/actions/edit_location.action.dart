@@ -21,7 +21,7 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
   }
 
   return (assetIds: assets.map((asset) => asset.id).toList(growable: false), origin: assets.singleOrNull);
-});
+}, dependencies: [ownedAssetsActionProvider]);
 
 class EditLocationAction extends AssetActionBuilder {
   const EditLocationAction({required super.source});

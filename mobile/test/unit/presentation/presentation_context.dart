@@ -101,15 +101,18 @@ extension PumpPresentationWidget on WidgetTester {
         useFallbackTranslations: true,
         assetLoader: const CodegenLoader(),
         child: ProviderScope(
-          overrides: [...context.overrides, ...overrides],
+          overrides: context.overrides,
           child: Builder(
-            builder: (context) => MaterialApp(
-              debugShowCheckedModeBanner: false,
-              scaffoldMessengerKey: scaffoldMessengerKey,
-              localizationsDelegates: context.localizationDelegates,
-              supportedLocales: context.supportedLocales,
-              locale: context.locale,
-              home: Scaffold(body: widget),
+            builder: (context) => ProviderScope(
+              overrides: overrides,
+              child: MaterialApp(
+                debugShowCheckedModeBanner: false,
+                scaffoldMessengerKey: scaffoldMessengerKey,
+                localizationsDelegates: context.localizationDelegates,
+                supportedLocales: context.supportedLocales,
+                locale: context.locale,
+                home: Scaffold(body: widget),
+              ),
             ),
           ),
         ),
