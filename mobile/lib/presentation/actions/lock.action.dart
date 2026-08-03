@@ -23,7 +23,7 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
     // Only locking has an on-device copy to clean up; unlocking leaves the device alone.
     localIds: shouldLock ? targets.map((asset) => asset.localId).nonNulls.toList(growable: false) : const [],
   );
-});
+}, dependencies: [ownedAssetsActionProvider]);
 
 class LockAction extends AssetActionBuilder {
   const LockAction({required super.source});

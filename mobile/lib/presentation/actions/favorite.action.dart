@@ -18,7 +18,7 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
   final shouldFavorite = assets.favorite(isFavorite: false).isNotEmpty;
   final assetIds = assets.favorite(isFavorite: !shouldFavorite).map((asset) => asset.id).toList(growable: false);
   return (shouldFavorite: shouldFavorite, assetIds: assetIds);
-});
+}, dependencies: [ownedAssetsActionProvider]);
 
 class FavoriteAction extends AssetActionBuilder {
   const FavoriteAction({required super.source});

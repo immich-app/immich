@@ -22,7 +22,7 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
       .map((asset) => asset.id)
       .toList(growable: false);
   return assetIds.isEmpty ? null : (shouldArchive: shouldArchive, assetIds: assetIds);
-});
+}, dependencies: [ownedAssetsActionProvider]);
 
 class ArchiveAction extends AssetActionBuilder {
   const ArchiveAction({required super.source});
