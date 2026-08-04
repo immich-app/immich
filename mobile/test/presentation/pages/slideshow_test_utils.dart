@@ -1,0 +1,173 @@
+import 'dart:async';
+import 'dart:math' as math;
+
+import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/locales.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/config/app_config.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/generated/codegen_loader.g.dart';
+import 'package:immich_mobile/presentation/pages/drift_slideshow.page.dart';
+import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/services/gcast.service.dart';
+import 'package:mocktail/mocktail.dart';
+
+import '../../service.mocks.dart';
+
+class FakeVideoPlayerNotifier extends VideoPlayerNotifier {
+  FakeVideoPlayerNotifier(VideoPlayerState initial) {
+    state = initial;
+    latest = this;
+  }
+
+  // the provider is autoDispose: page churn disposes and recreates it, so the
+  // override hands out a fresh notifier each time and this tracks the live one
+  static FakeVideoPlayerNotifier? latest;
+
+  // a restart can land on an instance that later churn disposes; count globally
+  static int restartCalls = 0;
+
+  static void reset() {
+    latest = null;
+    restartCalls = 0;
+  }
+
+  // the real restart() no-ops without a controller (seekTo early-returns); this
+  // mirrors what it does with one attached: a synchronous reset then playing
+  @override
+  Future<void> restart() async {
+    restartCalls++;
+    state = state.copyWith(position: Duration.zero, status: VideoPlaybackStatus.playing);
+  }
+
+  void emit(VideoPlayerState next) => state = next;
+}
+
+final kVideo = LocalAsset(
+  id: 'video1',
+  name: 'video1.mp4',
+  type: AssetType.video,
+  createdAt: DateTime(2025, 3),
+  updatedAt: DateTime(2025, 4),
+  playbackStyle: AssetPlaybackStyle.video,
+  durationMs: 30000,
+  width: 1920,
+  height: 1080,
+  isEdited: false,
+);
+
+const kVideoDuration = Duration(seconds: 30);
+const kPlaying = VideoPlayerState(
+  position: Duration.zero,
+  duration: kVideoDuration,
+  status: VideoPlaybackStatus.playing,
+);
+const kBuffering = VideoPlayerState(
+  position: Duration.zero,
+  duration: kVideoDuration,
+  status: VideoPlaybackStatus.buffering,
+);
+
+TimelineService stubTimeline(List<BaseAsset> assets) => TimelineService((
+  assetSource: (index, count) async => assets.sublist(index, math.min(index + count, assets.length)),
+  bucketSource: () => Stream.value([Bucket(assetCount: assets.length)]),
+  origin: TimelineOrigin.main,
+));
+
+double? currentPage(WidgetTester tester) => tester.widget<PageView>(find.byType(PageView)).controller?.page;
+
+bool _isExpectedImageError(Object error) =>
+    error.toString().contains('Null check operator used on a null value') ||
+    (error is PlatformException && error.toString().contains('ImageApi'));
+
+// Image providers cannot resolve in the test environment (no platform channels,
+// no HTTP). Only their known failures may be drained; anything else fails loudly.
+void drainImageErrors(WidgetTester tester) {
+  for (var i = 0; i < 200; i++) {
+    final error = tester.takeException();
+    if (error == null) {
+      return;
+    }
+    if (!_isExpectedImageError(error)) {
+      fail('unexpected framework exception: $error');
+    }
+  }
+}
+
+Future<void> elapse(WidgetTester tester, Duration duration) async {
+  await tester.pump(duration);
+  await tester.pump();
+  drainImageErrors(tester);
+}
+
+Future<void> pumpSlideshow(
+  WidgetTester tester, {
+  required List<BaseAsset> assets,
+  VideoPlayerState? initialPlayerState,
+  AppConfig config = const AppConfig(),
+  TimelineService? timeline,
+}) async {
+  final effectiveTimeline = timeline ?? stubTimeline(assets);
+
+  // the bucket stream delivers on the fake-async timer queue, so pump until the
+  // initial asset batch has loaded before the page reads totalAssets
+  var attempts = 0;
+  while (effectiveTimeline.totalAssets != assets.length && attempts < 20) {
+    attempts++;
+    await tester.pump();
+  }
+  if (effectiveTimeline.totalAssets != assets.length) {
+    fail('timeline did not load: totalAssets=${effectiveTimeline.totalAssets}');
+  }
+
+  final assetService = MockAssetService();
+  when(
+    () => assetService.getAsset(any()),
+  ).thenAnswer((invocation) async => invocation.positionalArguments.first as BaseAsset);
+
+  await tester.pumpWidget(
+    EasyLocalization(
+      supportedLocales: locales.values.toList(),
+      path: translationsPath,
+      startLocale: locales.values.first,
+      fallbackLocale: locales.values.first,
+      saveLocale: false,
+      useFallbackTranslations: true,
+      assetLoader: const CodegenLoader(),
+      child: ProviderScope(
+        overrides: [
+          appConfigProvider.overrideWithValue(config),
+          assetServiceProvider.overrideWithValue(assetService),
+          gCastServiceProvider.overrideWithValue(MockGCastService()),
+          if (initialPlayerState != null)
+            videoPlayerProvider.overrideWith((_, _) => FakeVideoPlayerNotifier(initialPlayerState)),
+        ],
+        child: Builder(
+          builder: (context) => MaterialApp(
+            debugShowCheckedModeBanner: false,
+            localizationsDelegates: context.localizationDelegates,
+            supportedLocales: context.supportedLocales,
+            locale: context.locale,
+            home: DriftSlideshowPage(timeline: effectiveTimeline),
+          ),
+        ),
+      ),
+    ),
+  );
+  addTearDown(() => tester.pumpWidget(const SizedBox.shrink()));
+  await tester.pump();
+  drainImageErrors(tester);
+}
+
+Future<void> advanceToVideoSlide(WidgetTester tester) async {
+  // first slide is an image shown for the configured 5 seconds
+  await elapse(tester, const Duration(seconds: 6));
+  expect(currentPage(tester), 1.0, reason: 'the slideshow should have advanced onto the video slide');
+}

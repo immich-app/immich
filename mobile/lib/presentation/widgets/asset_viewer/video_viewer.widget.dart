@@ -24,6 +24,8 @@ class NativeVideoViewer extends ConsumerStatefulWidget {
   final bool isCurrent;
   final bool showControls;
   final Widget image;
+  final bool? loopVideo;
+  final void Function(String heroTag)? onPlaybackEnded;
 
   const NativeVideoViewer({
     super.key,
@@ -32,6 +34,8 @@ class NativeVideoViewer extends ConsumerStatefulWidget {
     required this.image,
     this.isCurrent = false,
     this.showControls = true,
+    this.loopVideo,
+    this.onPlaybackEnded,
   });
 
   @override
@@ -235,6 +239,8 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     if (_controller?.playbackInfo?.status == PlaybackStatus.stopped) {
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
     }
+
+    widget.onPlaybackEnded?.call(widget.asset.heroTag);
   }
 
   void _onPlaybackPositionChanged() {
@@ -270,11 +276,11 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     }
 
     // Grab refs to prevent reading after dispose
-    final loopVideo = ref.read(appConfigProvider).viewer.loopVideo;
+    final loopVideo = widget.loopVideo ?? ref.read(appConfigProvider).viewer.loopVideo;
     final localNotifier = _notifier;
 
-    await localNotifier.load(source);
     await localNotifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
+    await localNotifier.load(source);
     await localNotifier.setVolume(1);
   }
 
