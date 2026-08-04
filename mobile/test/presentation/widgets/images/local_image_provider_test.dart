@@ -106,7 +106,7 @@ void main() {
     test('thumbnails are keyed by the asset checksum', () {
       final asset = LocalAssetFactory.create().copyWith(checksum: 'abc');
 
-      final provider = getThumbnailImageProvider(asset) as LocalThumbProvider;
+      final provider = getThumbnailImageProvider(asset)! as LocalThumbProvider;
 
       expect(provider.checksum, 'abc');
     });
