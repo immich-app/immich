@@ -7,7 +7,7 @@ const Map<String, Locale> locales = {
   'Arabic (ar)': Locale('ar'),
   'Basque (eu)': Locale('eu'),
   'Belarusian (be)': Locale('be'),
-  'Bosnian (bl)': Locale('bn'),
+  'Bengali (bn)': Locale('bn'),
   'Brazilian Portuguese (pt_BR)': Locale('pt', 'BR'),
   'Bulgarian (bg)': Locale('bg'),
   'Catalan (ca)': Locale('ca'),

@@ -11,7 +11,7 @@ final _stateProvider = Provider.family.autoDispose<List<String>?, ActionSource>(
   final assets = ref.watch(ownedAssetsActionProvider(source));
   final assetIds = assets.trashed().map((asset) => asset.id).toList(growable: false);
   return assetIds.isEmpty ? null : assetIds;
-});
+}, dependencies: [ownedAssetsActionProvider]);
 
 class RestoreAction extends AssetActionBuilder {
   const RestoreAction({required super.source});
