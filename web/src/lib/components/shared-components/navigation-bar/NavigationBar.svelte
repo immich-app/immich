@@ -45,6 +45,10 @@
   });
 
   const { Cast } = $derived(getGlobalActions($t));
+
+  const preventLogoDrag = (node: HTMLElement) => {
+    node.querySelector('img')?.setAttribute('draggable', 'false');
+  };
 </script>
 
 <svelte:window bind:innerWidth />
@@ -80,7 +84,8 @@
         data-sveltekit-preload-data="hover"
         href={Route.photos()}
         draggable="false"
-        ondragstart={(event) => event.preventDefault()}
+        class="logo-link"
+        use:preventLogoDrag
       >
         <Logo variant={mediaQueryManager.isFullSidebar ? 'inline' : 'icon'} class="max-md:h-12" />
       </a>
@@ -190,3 +195,13 @@
     </div>
   </div>
 </nav>
+
+<style>
+  .logo-link,
+  .logo-link :global(img) {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+</style>
