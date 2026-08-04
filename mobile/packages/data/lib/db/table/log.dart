@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/models/log.model.dart' as domain;
-import 'package:immich_mobile/infrastructure/entities/log.entity.drift.dart';
+import 'package:immich_data/db/table/log.drift.dart';
+import 'package:immich_data/model/log.dart' as domain;
 
 class LogMessageEntity extends Table {
   const LogMessageEntity();

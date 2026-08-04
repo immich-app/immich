@@ -1,15 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/infrastructure/repositories/people.repository.dart';
+import 'package:immich_data/db/person.dart';
 
 import '../repository_context.dart';
 
 void main() {
   late MediumRepositoryContext ctx;
-  late DriftPeopleRepository sut;
+  late PersonDatabaseRepository sut;
 
   setUp(() {
     ctx = MediumRepositoryContext();
-    sut = DriftPeopleRepository(ctx.db);
+    sut = PersonDatabaseRepository(ctx.db);
   });
 
   tearDown(() async {

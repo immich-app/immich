@@ -26,13 +26,14 @@ void main() {
 
   setUpAll(() async {
     await app.initApp();
-    (drift, _) = await Bootstrap.initDomain();
+    final (data, _) = await Bootstrap.initDomain();
+    drift = data.db;
   });
 
   setUp(() async {
     await workerManagerPatch.init(dynamicSpawning: true);
     server = await FakeImmichServer.start();
-    await ApiService().resolveAndSetEndpoint(server.endpoint);
+    await ApiService("").resolveAndSetEndpoint(server.endpoint);
     await drift.delete(drift.userEntity).go();
     await Store.delete(StoreKey.syncMigrationStatus);
   });

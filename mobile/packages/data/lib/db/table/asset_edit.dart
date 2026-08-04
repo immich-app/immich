@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/models/asset_edit.model.dart';
-import 'package:immich_mobile/extensions/object_extensions.dart';
-import 'package:immich_mobile/infrastructure/entities/asset_edit.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
+import 'package:immich_data/db/table/asset_edit.drift.dart';
+import 'package:immich_data/db/table/remote_asset.dart';
+import 'package:immich_data/db/util/defaults_mixin.dart';
+import 'package:immich_data/model/asset_edit.dart';
+import 'package:immich_data/util/object.dart';
 import 'package:openapi/api.dart' hide AssetEditAction;
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_asset_edit_asset_id ON asset_edit_entity (asset_id)')

@@ -1,15 +1,14 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/person.model.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/repositories/api.repository.dart';
+import 'package:immich_data/model/person.dart';
+import 'package:immich_data/server/api_repository.dart';
+import 'package:meta/meta.dart';
 import 'package:openapi/api.dart';
 
-final personApiRepositoryProvider = Provider((ref) => PersonApiRepository(ref.watch(apiServiceProvider).peopleApi));
-
+/// Immich HTTP API for Person operations
 class PersonApiRepository extends ApiRepository {
   final PeopleApi _api;
 
-  PersonApiRepository(this._api);
+  @internal
+  const PersonApiRepository(this._api);
 
   Future<List<PersonDto>> getAll() async {
     final dto = await checkNull(_api.getAllPeople());

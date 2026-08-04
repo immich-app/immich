@@ -5,8 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/data_store.dart' as data_store;
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/wm_executor.dart';
 import 'package:logging/logging.dart';
@@ -34,9 +35,13 @@ Cancelable<T?> runInIsolateGentle<T>({
     DartPluginRegistrant.ensureInitialized();
 
     final log = Logger("IsolateLogger");
-    final (drift, logDb) = await Bootstrap.initDomain(shouldBufferLogs: false, listenStoreUpdates: false);
+    final (data, apiService) = await Bootstrap.initDomain(shouldBufferLogs: false, listenStoreUpdates: false);
     final ref = ProviderContainer(
-      overrides: [cancellationProvider.overrideWithValue(onCancel), driftProvider.overrideWith(driftOverride(drift))],
+      overrides: [
+        cancellationProvider.overrideWithValue(onCancel),
+        data_store.Store.overrideWithValue(data),
+        apiServiceProvider.overrideWithValue(apiService),
+      ],
     );
 
     try {
@@ -48,8 +53,7 @@ Cancelable<T?> runInIsolateGentle<T>({
       ref.dispose();
       await Store.dispose();
       await LogService.I.dispose();
-      await logDb.close();
-      await drift.close();
+      await data.close();
     }
   });
 }

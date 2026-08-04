@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
+import 'package:immich_data/db/table/local_album.dart';
+import 'package:immich_data/db/table/local_asset.dart';
+import 'package:immich_data/db/util/defaults_mixin.dart';
 
 @TableIndex.sql(
   'CREATE INDEX IF NOT EXISTS idx_local_album_asset_album_asset ON local_album_asset_entity (album_id, asset_id)',

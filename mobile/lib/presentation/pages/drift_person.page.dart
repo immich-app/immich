@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/person.model.dart';
+import 'package:immich_data/model/person.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_option_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
@@ -14,7 +14,7 @@ import 'package:immich_mobile/widgets/common/person_sliver_app_bar.dart';
 
 @RoutePage()
 class DriftPersonPage extends ConsumerStatefulWidget {
-  final DriftPerson person;
+  final Person person;
 
   const DriftPersonPage({super.key, required this.person});
 
@@ -23,7 +23,7 @@ class DriftPersonPage extends ConsumerStatefulWidget {
 }
 
 class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
-  late DriftPerson _person;
+  late Person _person;
 
   @override
   void initState() {

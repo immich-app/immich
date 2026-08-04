@@ -1,4 +1,4 @@
-part of 'base_asset.model.dart';
+part of 'base_asset.dart';
 
 class LocalAsset extends BaseAsset {
   final String id;

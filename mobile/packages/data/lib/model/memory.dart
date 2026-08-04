@@ -2,7 +2,7 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_data/model/asset/base_asset.dart';
 
 enum MemoryTypeEnum {
   // do not change this order!

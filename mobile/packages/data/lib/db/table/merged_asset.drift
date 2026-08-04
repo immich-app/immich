@@ -1,8 +1,8 @@
-import 'remote_asset.entity.dart';
-import 'stack.entity.dart';
-import 'local_asset.entity.dart';
-import 'local_album.entity.dart';
-import 'local_album_asset.entity.dart';
+import 'remote_asset.dart';
+import 'stack.dart';
+import 'local_asset.dart';
+import 'local_album.dart';
+import 'local_album_asset.dart';
 
 mergedAsset:
 SELECT

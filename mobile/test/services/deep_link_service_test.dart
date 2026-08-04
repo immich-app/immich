@@ -1,12 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_data/store/person.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/memory.service.dart';
-import 'package:immich_mobile/domain/services/people.service.dart';
 import 'package:immich_mobile/domain/services/remote_album.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -22,7 +22,7 @@ class MockRemoteAlbumService extends Mock implements RemoteAlbumService {}
 
 class MockDriftMemoryService extends Mock implements DriftMemoryService {}
 
-class MockDriftPeopleService extends Mock implements DriftPeopleService {}
+class MockPeopleService extends Mock implements PersonService {}
 
 class MockPlatformDeepLink extends Mock implements PlatformDeepLink {}
 
@@ -91,7 +91,7 @@ void main() {
       assetService,
       remoteAlbumService,
       MockDriftMemoryService(),
-      MockDriftPeopleService(),
+      MockPeopleService(),
       null,
     );
 

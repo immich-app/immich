@@ -1,18 +1,18 @@
 import 'package:background_downloader/background_downloader.dart';
+import 'package:immich_data/data_controller.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/log.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:logging/logging.dart';
 import 'package:photo_manager/photo_manager.dart';
-import 'package:sqlite3/common.dart';
 
 void configureFileDownloaderNotifications() {
   FileDownloader().configureNotificationForGroup(
@@ -45,50 +45,40 @@ void configureFileDownloaderNotifications() {
 }
 
 abstract final class Bootstrap {
-  static Future<(Drift, DriftLogger)> initDomain({bool listenStoreUpdates = true, bool shouldBufferLogs = true}) async {
-    await configureSqliteCache();
-    final (db, updatePool) = await openSqliteConnectionWithUpdatePool(name: 'immich');
-    final drift = Drift.sqlite(db, updatePool);
-    final DriftStoreRepository storeRepo = DriftStoreRepository(drift);
-
-    await StoreService.init(storeRepository: storeRepo, listenUpdates: listenStoreUpdates);
-
-    final settingsRepo = await SettingsRepository.ensureInitialized(drift);
-    final logDb = await _initLogger(settingsRepository: settingsRepo, shouldBufferLogs: shouldBufferLogs);
-
+  static Future<(DataController, ApiService)> initDomain({
+    bool listenStoreUpdates = true,
+    bool shouldBufferLogs = true,
+  }) async {
     await NetworkRepository.init();
+
+    final apiService = ApiService("");
+
+    final data = await DataController.init(apiClient: apiService.apiClient);
+
+    await StoreService.init(storeRepository: DriftStoreRepository(data.db), listenUpdates: listenStoreUpdates);
+
+    // TODO(rewrite): This is really bad
+    final endpoint = Store.tryGet(StoreKey.serverEndpoint);
+
+    if (endpoint != null) {
+      apiService.setEndpoint(endpoint);
+    }
+
+    final settingsRepo = await SettingsRepository.ensureInitialized(data.db);
+
+    // Take [DataController]'s logging DB and register it with the logging service
+    await LogService.init(
+      logRepository: LogRepository(data.logDb),
+      settingsRepository: settingsRepo,
+      shouldBuffer: shouldBufferLogs,
+    );
+
+    if (data.loggerDatabaseWasRecreated) {
+      Logger('bootstrap:initLogger').warning('Logs database was corrupt and has been recreated');
+    }
+
     // Remove once all asset operations are migrated to Native APIs
     await PhotoManager.setIgnorePermissionCheck(true);
-    return (drift, logDb);
+    return (data, apiService);
   }
-}
-
-Future<DriftLogger> _initLogger({required SettingsRepository settingsRepository, bool shouldBufferLogs = true}) async {
-  Future<DriftLogger> open() async => DriftLogger.sqlite(await openSqliteConnection(name: 'immich_logs'));
-
-  DriftLogger logDb = await open();
-  bool wasCorrupt = false;
-  try {
-    await logDb.customSelect('SELECT COUNT(*) FROM logger_messages').get();
-  } on SqliteException catch (error) {
-    if (error.resultCode != SqlError.SQLITE_CORRUPT && error.resultCode != SqlError.SQLITE_NOTADB) {
-      await logDb.close();
-      rethrow;
-    }
-    dPrint(() => 'Logs database is corrupt, recreating it');
-    await logDb.close();
-    await deleteSqliteDatabase(name: 'immich_logs');
-    logDb = await open();
-    wasCorrupt = true;
-  }
-
-  await LogService.init(
-    logRepository: LogRepository(logDb),
-    settingsRepository: settingsRepository,
-    shouldBuffer: shouldBufferLogs,
-  );
-  if (wasCorrupt) {
-    Logger('bootstrap:initLogger').warning('Logs database was corrupt and has been recreated');
-  }
-  return logDb;
 }

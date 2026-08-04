@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_data/model/person.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
@@ -30,7 +30,7 @@ class PeopleDetails extends ConsumerWidget {
 
     final peopleFuture = ref.watch(driftPeopleAssetProvider(asset.id));
 
-    Future<void> showNameEditModal(DriftPerson person) async {
+    Future<void> showNameEditModal(Person person) async {
       await showDialog(
         context: context,
         useRootNavigator: false,
@@ -96,7 +96,7 @@ class PeopleDetails extends ConsumerWidget {
 }
 
 class _Avatar extends StatelessWidget {
-  final DriftPerson person;
+  final Person person;
   final DateTime assetFileCreatedAt;
   final VoidCallback? onTap;
   final VoidCallback? onNameTap;

@@ -5,15 +5,15 @@ import 'package:immich_mobile/repositories/activity_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/drift_album_api_repository.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
-import 'package:immich_mobile/repositories/person_api.repository.dart';
 
 void invalidateAllApiRepositoryProviders(WidgetRef ref) {
   ref.invalidate(userApiRepositoryProvider);
   ref.invalidate(activityApiRepositoryProvider);
   ref.invalidate(partnerApiRepositoryProvider);
-  ref.invalidate(personApiRepositoryProvider);
   ref.invalidate(assetApiRepositoryProvider);
   ref.invalidate(searchApiRepositoryProvider);
+
+  // `immich_data` repositories self invalidate
 
   // Drift
   ref.invalidate(driftAlbumApiRepositoryProvider);

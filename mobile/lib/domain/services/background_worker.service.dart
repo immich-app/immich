@@ -5,6 +5,7 @@ import 'dart:ui';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_data/data_controller.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/services/hash.service.dart';
 import 'package:immich_mobile/domain/services/local_sync.service.dart';
@@ -12,8 +13,6 @@ import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/domain/services/sync_stream.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
@@ -21,12 +20,13 @@ import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/data_store.dart' as data_store;
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/permission.repository.dart';
+import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
@@ -61,8 +61,7 @@ class BackgroundWorkerFgService {
 
 class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   ProviderContainer? _ref;
-  final Drift _drift;
-  final DriftLogger _driftLogger;
+  final DataController _data;
   final BackgroundWorkerBgHostApi _backgroundHostApi;
   final _cancellationToken = Completer<void>();
   final Logger _logger = Logger('BackgroundWorkerBgService');
@@ -72,9 +71,11 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   bool _isCleanedUp = false;
 
-  BackgroundWorkerBgService({required this._drift, required this._driftLogger})
+  BackgroundWorkerBgService({required this._data, required ApiService apiService})
     : _backgroundHostApi = BackgroundWorkerBgHostApi() {
-    final ref = ProviderContainer(overrides: [driftProvider.overrideWith(driftOverride(_drift))]);
+    final ref = ProviderContainer(
+      overrides: [data_store.Store.overrideWithValue(_data), apiServiceProvider.overrideWithValue(apiService)],
+    );
     _ref = ref;
     _localSyncService = LocalSyncService(
       localAlbumRepository: ref.read(localAlbumRepository),
@@ -249,7 +250,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
   Future<void> _optimizeDB() async {
     try {
-      await (_drift.optimize(allTables: true), _driftLogger.optimize()).wait;
+      await (_data.db.optimize(allTables: true), _data.logDb.optimize()).wait;
     } catch (error, stack) {
       dPrint(() => "Error during background worker optimize: $error, $stack");
     }
@@ -280,8 +281,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       await Future.wait([if (nativeSyncApi != null) nativeSyncApi.cancelHashing()]);
       await workerManagerPatch.dispose().catchError((_) async {});
       await Future.wait([LogService.I.dispose(), Store.dispose()]);
-      await _drift.close();
-      await _driftLogger.close();
+      await _data.close();
 
       _ref?.dispose();
       _ref = null;
@@ -372,6 +372,6 @@ Future<void> backgroundSyncNativeEntrypoint() async {
   WidgetsFlutterBinding.ensureInitialized();
   DartPluginRegistrant.ensureInitialized();
 
-  final (drift, logDB) = await Bootstrap.initDomain(shouldBufferLogs: false, listenStoreUpdates: false);
-  await BackgroundWorkerBgService(drift: drift, driftLogger: logDB).init();
+  final (data, apiService) = await Bootstrap.initDomain(shouldBufferLogs: false, listenStoreUpdates: false);
+  await BackgroundWorkerBgService(data: data, apiService: apiService).init();
 }
