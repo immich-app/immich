@@ -93,7 +93,7 @@ class PersonDto {
 }
 
 // Model for a person stored in the server
-class DriftPerson {
+class Person {
   final String id;
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -105,7 +105,7 @@ class DriftPerson {
   final String? color;
   final DateTime? birthDate;
 
-  const DriftPerson({
+  const Person({
     required this.id,
     required this.createdAt,
     required this.updatedAt,
@@ -118,7 +118,7 @@ class DriftPerson {
     this.birthDate,
   });
 
-  DriftPerson copyWith({
+  Person copyWith({
     String? id,
     DateTime? createdAt,
     DateTime? updatedAt,
@@ -130,7 +130,7 @@ class DriftPerson {
     String? color,
     DateTime? birthDate,
   }) {
-    return DriftPerson(
+    return Person(
       id: id ?? this.id,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
@@ -161,7 +161,7 @@ class DriftPerson {
   }
 
   @override
-  bool operator ==(covariant DriftPerson other) {
+  bool operator ==(covariant Person other) {
     if (identical(this, other)) {
       return true;
     }

@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart' hide Index;
-import 'package:immich_mobile/domain/models/user.model.dart';
-import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
+import 'package:immich_data/db/util/defaults_mixin.dart';
+import 'package:immich_data/model/user/user.dart';
 
 class UserEntity extends Table with DriftDefaultsMixin {
   const UserEntity();

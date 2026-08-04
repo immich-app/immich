@@ -2,15 +2,16 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/person.model.dart';
+import 'package:immich_data/model/person.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/providers/infrastructure/data_store.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class DriftPersonNameEditForm extends ConsumerStatefulWidget {
-  final DriftPerson person;
+  final Person person;
 
   const DriftPersonNameEditForm({super.key, required this.person});
 
@@ -29,7 +30,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
 
   Future<void> onEdit(String personId, String newName) async {
     try {
-      final result = await ref.read(driftPeopleServiceProvider).updateName(personId, newName);
+      final result = await ref.read(Store.people).updateName(personId, newName);
       if (result != 0) {
         ref.invalidate(driftGetAllPeopleProvider);
         if (!mounted) {

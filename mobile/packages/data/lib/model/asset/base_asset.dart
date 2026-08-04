@@ -1,7 +1,7 @@
-import 'package:immich_mobile/domain/models/exif.model.dart';
+import 'package:immich_data/model/exif.dart';
 
-part 'local_asset.model.dart';
-part 'remote_asset.model.dart';
+part 'local_asset.dart';
+part 'remote_asset.dart';
 
 enum AssetType {
   // do not change this order!

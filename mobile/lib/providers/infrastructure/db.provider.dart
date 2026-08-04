@@ -1,14 +1,5 @@
-import 'dart:async';
+import 'package:immich_mobile/providers/infrastructure/data_store.dart';
 
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
-
-Drift Function(Ref ref) driftOverride(Drift drift) => (ref) {
-  ref.onDispose(() => unawaited(drift.close()));
-  ref.keepAlive();
-  return drift;
-};
-
-final driftProvider = Provider<Drift>(
-  (ref) => throw UnimplementedError("driftProvider must be overridden in the isolate's ProviderContainer before use"),
-);
+/// Direct database access for the repositories that have not yet moved into `immich_data`
+// TODO(rewrite): Remove this provider once all repositories have migrated to `immich_data`
+final driftProvider = Store.db;

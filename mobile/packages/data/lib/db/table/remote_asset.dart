@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
-import 'package:immich_mobile/infrastructure/utils/asset.mixin.dart';
-import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
+import 'package:immich_data/db/table/remote_asset.drift.dart';
+import 'package:immich_data/db/table/user.dart';
+import 'package:immich_data/db/util/asset_mixin.dart';
+import 'package:immich_data/db/util/defaults_mixin.dart';
+import 'package:immich_data/model/asset/base_asset.dart';
 
 @TableIndex.sql('''
 CREATE UNIQUE INDEX IF NOT EXISTS UQ_remote_assets_owner_checksum

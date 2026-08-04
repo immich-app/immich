@@ -1,21 +1,21 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/person.model.dart';
-import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_data/db/database.dart';
+import 'package:immich_data/db/table/person.drift.dart';
+import 'package:immich_data/model/asset/base_asset.dart';
+import 'package:immich_data/model/person.dart';
 
-class DriftPeopleRepository extends DriftDatabaseRepository {
+class PersonDatabaseRepository extends DriftDatabaseRepository {
   final Drift _db;
-  const DriftPeopleRepository(this._db) : super(_db);
+  const PersonDatabaseRepository(this._db) : super(_db);
 
-  Future<DriftPerson?> get(String personId) async {
+  Future<Person?> get(String personId) async {
     final query = _db.select(_db.personEntity)..where((row) => row.id.equals(personId));
 
     final result = await query.getSingleOrNull();
     return result?.toDto();
   }
 
-  Future<List<DriftPerson>> getAssetPeople(String assetId) async {
+  Future<List<Person>> getAssetPeople(String assetId) async {
     // An asset can have multiple face records for the same person (e.g., metadata
     // imports alongside ML detections). Use a subquery instead of a join so each
     // person is returned once, regardless of how many of their faces are on the asset
@@ -33,7 +33,7 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
     return query.map((row) => row.toDto()).get();
   }
 
-  Future<List<DriftPerson>> getAllPeople({int minFaces = 3}) async {
+  Future<List<Person>> getAllPeople({int minFaces = 3}) async {
     final people = _db.personEntity;
     final faces = _db.assetFaceEntity;
     final assets = _db.remoteAssetEntity;
@@ -76,8 +76,8 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
 }
 
 extension on PersonEntityData {
-  DriftPerson toDto() {
-    return DriftPerson(
+  Person toDto() {
+    return Person(
       id: id,
       createdAt: createdAt,
       updatedAt: updatedAt,

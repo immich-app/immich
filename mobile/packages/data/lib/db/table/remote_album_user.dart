@@ -1,8 +1,8 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart';
-import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
-import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
+import 'package:immich_data/db/table/remote_album.dart';
+import 'package:immich_data/db/table/user.dart';
+import 'package:immich_data/db/util/defaults_mixin.dart';
+import 'package:immich_data/model/album/album.dart';
 
 class RemoteAlbumUserEntity extends Table with DriftDefaultsMixin {
   const RemoteAlbumUserEntity();

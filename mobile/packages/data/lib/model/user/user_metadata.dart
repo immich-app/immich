@@ -1,4 +1,4 @@
-import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_data/model/user/user.dart';
 
 enum UserMetadataKey {
   // do not change this order!

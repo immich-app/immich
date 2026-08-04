@@ -1,9 +1,9 @@
 import 'package:drift/drift.dart' hide Query;
-import 'package:immich_mobile/domain/models/exif.model.dart' as domain;
-import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
-import 'package:immich_mobile/infrastructure/utils/exif.converter.dart';
+import 'package:immich_data/db/table/exif.drift.dart';
+import 'package:immich_data/db/table/remote_asset.dart';
+import 'package:immich_data/db/util/defaults_mixin.dart';
+import 'package:immich_data/db/util/exif_converter.dart';
+import 'package:immich_data/model/exif.dart' as domain;
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_lat_lng ON remote_exif_entity (latitude, longitude)')
 @TableIndex.sql('''

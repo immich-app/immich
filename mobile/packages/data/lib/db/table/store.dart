@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
+import 'package:immich_data/db/util/defaults_mixin.dart';
 
 class StoreEntity extends Table with DriftDefaultsMixin {
   IntColumn get id => integer()();

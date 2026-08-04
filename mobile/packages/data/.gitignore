@@ -1,0 +1,7 @@
+# Generated drift code
+lib/**/*.drift.dart
+
+# Build artifacts
+build/
+.dart_tool/
+pubspec.lock

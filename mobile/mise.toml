@@ -25,20 +25,24 @@ sources = [
   "pubspec.yaml",
   "build.yaml",
   "lib/**/*.dart",
-  "infrastructure/**/*.drift",
+  "packages/data/pubspec.yaml",
+  "packages/data/build.yaml",
+  "packages/data/lib/**/*.dart",
+  "packages/data/lib/**/*.drift",
 ]
 outputs = { auto = true }
 run = [
-  "dart run build_runner build", 
+  "sh -c 'cd packages/data && flutter pub get && dart run build_runner build'",
+  "dart run build_runner build",
   "dart format lib/routing/router.gr.dart",
 ]
 depends = ["//:open-api-dart"]
 
 [tasks."codegen:drift:schema"]
 description = "Generate Drift migration schema test code"
-sources = ["drift_schemas/main/*.json"]
+sources = ["packages/data/drift_schemas/main/*.json"]
 outputs = { auto = true }
-run = "dart run drift_dev schema generate --data-classes --companions drift_schemas/main/ test/drift/main/generated/"
+run = "dart run drift_dev schema generate --data-classes --companions packages/data/drift_schemas/main/ test/drift/main/generated/"
 depends = ["//:open-api-dart"]
 
 [tasks."codegen:watch"]
@@ -99,7 +103,7 @@ run = "flutter build appbundle"
 [tasks."drift:migration"]
 alias = "migration"
 description = "Generate database migrations"
-run = "dart run drift_dev make-migrations"
+run = "cd packages/data && dart run drift_dev make-migrations"
 
 [tasks.install]
 alias = "install"
