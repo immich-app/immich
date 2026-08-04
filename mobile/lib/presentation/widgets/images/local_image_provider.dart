@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -7,6 +9,9 @@ import 'package:immich_mobile/presentation/widgets/images/animated_image_stream_
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/one_frame_multi_image_stream_completer.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
+
+// iOS GPU textures max out at 16384px; larger images squish.
+const _kMaxPixelSize = 16384;
 
 class LocalThumbProvider extends CancellableImageProvider<LocalThumbProvider>
     with CancellableImageProviderMixin<LocalThumbProvider> {
@@ -62,6 +67,8 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
   final Size size;
   final AssetType assetType;
   final bool isAnimated;
+  final int? width;
+  final int? height;
   final String? checksum;
 
   LocalFullImageProvider({
@@ -69,8 +76,29 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     required this.assetType,
     required this.size,
     required this.isAnimated,
+    this.width,
+    this.height,
     this.checksum,
   });
+
+  Size _previewTarget(double dpr, bool previewIsFinal) =>
+      previewTargetSize(size.width * dpr, size.height * dpr, width, height, previewIsFinal: previewIsFinal);
+
+  // Use an aspect-correct target when aspectFill would exceed the texture limit.
+  @visibleForTesting
+  static Size previewTargetSize(double boxW, double boxH, int? width, int? height, {required bool previewIsFinal}) {
+    if (width == null || height == null || width <= 0 || height <= 0) {
+      return Size(boxW, boxH);
+    }
+    final imgLong = math.max(width, height).toDouble();
+    final coverLong = imgLong * math.max(boxW / width, boxH / height);
+    if (coverLong <= _kMaxPixelSize) {
+      return Size(boxW, boxH);
+    }
+    final bound = previewIsFinal ? _kMaxPixelSize.toDouble() : math.max(boxW, boxH);
+    final scale = math.min(1.0, bound / imgLong);
+    return Size(math.max(1.0, width * scale), math.max(1.0, height * scale));
+  }
 
   @override
   Future<LocalFullImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -118,7 +146,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
     var request = this.request = LocalImageRequest(
       localId: key.id,
-      size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
+      size: _previewTarget(devicePixelRatio, !loadOriginal),
       assetType: key.assetType,
     );
     yield* loadRequest(request, decode, isFinal: !loadOriginal);
@@ -146,7 +174,7 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
     final devicePixelRatio = PlatformDispatcher.instance.views.first.devicePixelRatio;
     final previewRequest = request = LocalImageRequest(
       localId: key.id,
-      size: Size(size.width * devicePixelRatio, size.height * devicePixelRatio),
+      size: _previewTarget(devicePixelRatio, false),
       assetType: key.assetType,
     );
     yield* loadRequest(previewRequest, decode, isFinal: false);
@@ -173,11 +201,16 @@ class LocalFullImageProvider extends CancellableImageProvider<LocalFullImageProv
       return true;
     }
     if (other is LocalFullImageProvider) {
-      return id == other.id && size == other.size && isAnimated == other.isAnimated && checksum == other.checksum;
+      return id == other.id &&
+          size == other.size &&
+          isAnimated == other.isAnimated &&
+          width == other.width &&
+          height == other.height &&
+          checksum == other.checksum;
     }
     return false;
   }
 
   @override
-  int get hashCode => Object.hash(id, size, isAnimated, checksum);
+  int get hashCode => Object.hash(id, size, isAnimated, width, height, checksum);
 }

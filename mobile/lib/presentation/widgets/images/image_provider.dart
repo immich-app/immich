@@ -167,6 +167,8 @@ ImageProvider getFullImageProvider(
       size: size,
       assetType: asset.type,
       isAnimated: asset.isAnimatedImage,
+      width: asset.width,
+      height: asset.height,
       checksum: asset.checksum,
     );
   } else {
