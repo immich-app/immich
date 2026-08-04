@@ -16,7 +16,7 @@ final _stateProvider = Provider.family.autoDispose<List<BaseAsset>?, ActionSourc
   final assets = ref.watch(assetsActionProvider(source));
   final shareable = assets.toList(growable: false);
   return shareable.isEmpty ? null : shareable;
-});
+}, dependencies: [assetsActionProvider]);
 
 class ShareAction extends AssetActionBuilder {
   const ShareAction({required super.source});

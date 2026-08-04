@@ -11,7 +11,7 @@ final _stateProvider = Provider.family.autoDispose<List<String>?, ActionSource>(
   final assets = ref.watch(assetsActionProvider(source));
   final assetIds = assets.remote().map((asset) => asset.id).toList(growable: false);
   return assetIds.isEmpty ? null : assetIds;
-});
+}, dependencies: [assetsActionProvider]);
 
 class RemoveFromAlbumAction extends AssetActionBuilder {
   final String albumId;

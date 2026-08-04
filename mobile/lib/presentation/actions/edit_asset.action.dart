@@ -28,7 +28,7 @@ final _stateProvider = Provider.family.autoDispose<RemoteAsset?, ActionSource>((
 
   final assets = ref.watch(ownedAssetsActionProvider(source));
   return assets.where((asset) => asset.isEditable).singleOrNull;
-});
+}, dependencies: [ownedAssetsActionProvider]);
 
 class EditAssetAction extends AssetActionBuilder {
   const EditAssetAction({required super.source});

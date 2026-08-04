@@ -12,7 +12,7 @@ final _stateProvider = Provider.family.autoDispose<List<String>?, ActionSource>(
   final assets = ref.watch(assetsActionProvider(source));
   final remoteIds = assets.remote().map((asset) => asset.id).toList(growable: false);
   return remoteIds.isEmpty ? null : remoteIds;
-});
+}, dependencies: [assetsActionProvider]);
 
 class ShareLinkAction extends AssetActionBuilder {
   const ShareLinkAction({required super.source});
