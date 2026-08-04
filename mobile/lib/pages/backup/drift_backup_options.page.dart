@@ -46,7 +46,7 @@ class DriftBackupOptionsPage extends ConsumerWidget {
 
           await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
           final isBackupEnabled = SettingsRepository.instance.appConfig.backup.enabled;
-          if (!isBackupEnabled) {
+          if (!isBackupEnabled || !context.mounted) {
             return;
           }
 

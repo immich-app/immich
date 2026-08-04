@@ -70,6 +70,12 @@ class RemoteAsset extends BaseAsset {
 
   bool get isTrashed => deletedAt != null;
 
+  bool get isStacked => stackId != null;
+
+  bool get isArchived => visibility == .archive;
+
+  bool get isLocked => visibility == .locked;
+
   @override
   String toString() {
     return '''Asset {

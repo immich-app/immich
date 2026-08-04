@@ -38,11 +38,11 @@ type EventMap = {
   ConfigValidate: [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  AlbumUpdate: [{ id: string; recipientId: string }];
+  AlbumUpdate: [{ id: string; userIds: string[]; recipientIds: string[] }];
   AlbumInvite: [{ id: string; userId: string; senderName: string }];
 
   // asset events
-  AssetCreate: [{ asset: Asset; file: UploadFile }];
+  AssetCreate: [{ asset: Pick<Asset, 'id' | 'ownerId'>; file?: UploadFile }];
   AssetTag: [{ assetId: string }];
   AssetUntag: [{ assetId: string }];
   AssetHide: [{ assetId: string; userId: string }];
@@ -213,11 +213,11 @@ export class EventRepository {
   private addHandler<T extends EmitEvent>(item: Item<T>): void {
     const event = item.event;
 
-    if (!this.emitHandlers[event]) {
+    if (!Object.hasOwn(this.emitHandlers, event)) {
       this.emitHandlers[event] = [];
     }
 
-    this.emitHandlers[event].push(item);
+    this.emitHandlers[event]!.push(item);
   }
 
   emit<T extends EmitEvent>(event: T, ...args: ArgsOf<T>): Promise<void> {

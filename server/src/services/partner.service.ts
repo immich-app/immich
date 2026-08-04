@@ -16,6 +16,12 @@ export class PartnerService extends BaseService {
       throw new BadRequestException(`Partner already exists`);
     }
 
+    const user = await this.userRepository.get(sharedWithId, {});
+    if (!user) {
+      this.logger.debug('Partner creation failed: user not found');
+      throw new BadRequestException('Invalid user');
+    }
+
     const partner = await this.partnerRepository.create(partnerId);
     return this.mapPartner(partner, PartnerDirection.SharedBy);
   }

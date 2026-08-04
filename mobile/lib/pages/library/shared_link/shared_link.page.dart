@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -17,7 +19,7 @@ class SharedLinkPage extends HookConsumerWidget {
     final sharedLinks = ref.watch(sharedLinksStateProvider);
 
     useEffect(() {
-      ref.read(sharedLinksStateProvider.notifier).fetchLinks();
+      unawaited(ref.read(sharedLinksStateProvider.notifier).fetchLinks());
       return () {
         if (!context.mounted) {
           return;

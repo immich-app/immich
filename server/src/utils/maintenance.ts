@@ -38,23 +38,23 @@ export async function detectPriorInstall(
         const files = await storageRepository.readdir(path);
         const filename = join(StorageCore.getBaseFolder(folder), '.immich');
 
-        let readable = false,
-          writable = false;
+        let isReadable = false,
+          isWritable = false;
 
         try {
           await storageRepository.readFile(filename);
-          readable = true;
+          isReadable = true;
 
-          await storageRepository.overwriteFile(filename, Buffer.from(`${Date.now()}`));
-          writable = true;
+          await storageRepository.overwriteFile(filename, Buffer.from(Date.now().toString()));
+          isWritable = true;
         } catch {
           // no-op
         }
 
         return {
           folder,
-          readable,
-          writable,
+          readable: isReadable,
+          writable: isWritable,
           files: files.filter((fn) => fn !== '.immich').length,
         };
       }),

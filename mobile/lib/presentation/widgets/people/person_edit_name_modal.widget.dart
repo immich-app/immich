@@ -6,8 +6,8 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
-import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 class DriftPersonNameEditForm extends ConsumerStatefulWidget {
   final DriftPerson person;
@@ -27,17 +27,21 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
     _formController = TextEditingController(text: widget.person.name);
   }
 
-  void onEdit(String personId, String newName) async {
+  Future<void> onEdit(String personId, String newName) async {
     try {
       final result = await ref.read(driftPeopleServiceProvider).updateName(personId, newName);
       if (result != 0) {
         ref.invalidate(driftGetAllPeopleProvider);
+        if (!mounted) {
+          return;
+        }
+
         context.pop<String>(newName);
       }
     } catch (error) {
       dPrint(() => 'Error updating name: $error');
 
-      if (!context.mounted) {
+      if (!mounted) {
         return;
       }
 

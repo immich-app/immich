@@ -211,6 +211,10 @@ class _AssetTileWidget extends ConsumerWidget {
       ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
     } else {
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
+      if (!ctx.mounted) {
+        return;
+      }
+
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
       AssetViewer.setAsset(ref, asset);
       unawaited(
