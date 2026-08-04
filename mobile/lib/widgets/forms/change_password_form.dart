@@ -69,12 +69,16 @@ class ChangePasswordForm extends HookConsumerWidget {
                             return;
                           }
 
-                          await ref.read(authProvider.notifier).logout();
-                          ref.read(websocketProvider.notifier).disconnect();
                           if (!context.mounted) {
                             return;
                           }
 
+                          await ref.read(authProvider.notifier).logout();
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          ref.read(websocketProvider.notifier).disconnect();
                           AutoRouter.of(context).back();
                           ImmichToast.show(
                             context: context,

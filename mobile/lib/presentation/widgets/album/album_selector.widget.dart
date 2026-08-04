@@ -746,7 +746,7 @@ class AddToAlbumHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     Future<void> onCreateAlbum() async {
       final albumName = await showDialog<String?>(context: context, builder: (context) => const NewAlbumNameModal());
-      if (albumName == null) {
+      if (albumName == null || !context.mounted) {
         return;
       }
 

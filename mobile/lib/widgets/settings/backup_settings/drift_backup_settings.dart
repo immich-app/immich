@@ -68,8 +68,9 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
     });
 
     try {
-      await ref.read(backgroundSyncProvider).syncLinkedAlbum();
-      await ref.read(backgroundSyncProvider).syncRemote();
+      final backgroundSync = ref.read(backgroundSyncProvider);
+      await backgroundSync.syncLinkedAlbum();
+      await backgroundSync.syncRemote();
     } catch (_) {
     } finally {
       Future.delayed(const Duration(seconds: 1), () {

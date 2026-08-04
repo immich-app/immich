@@ -39,11 +39,11 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   }
 
   Future<void> _initializeAlbumDefaults() async {
+    final notifier = ref.read(cleanupProvider.notifier);
     final albums = await ref.read(localAlbumProvider.future);
     final existingAlbumIds = albums.map((a) => a.id).toSet();
     final albumsWithNames = albums.map((a) => (a.id, a.name)).toList();
 
-    final notifier = ref.read(cleanupProvider.notifier);
     notifier.applyDefaultAlbumSelections(albumsWithNames);
     notifier.cleanupStaleAlbumIds(existingAlbumIds);
   }
@@ -105,7 +105,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
       lastDate: DateTime.now(),
     );
 
-    if (picked != null) {
+    if (picked != null && context.mounted) {
       ref.read(cleanupProvider.notifier).setSelectedDate(picked);
       setState(() => _hasScanned = false);
     }
@@ -122,6 +122,10 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
     ref.read(hapticFeedbackProvider.notifier).mediumImpact();
 
     await ref.read(cleanupProvider.notifier).scanAssets();
+    if (!mounted) {
+      return;
+    }
+
     final state = ref.read(cleanupProvider);
 
     setState(() {
@@ -146,7 +150,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
           _DeleteConfirmationDialog(assetCount: state.assetsToDelete.length, cutoffDate: state.selectedDate!),
     );
 
-    if (confirmed != true) {
+    if (confirmed != true || !context.mounted) {
       return;
     }
 

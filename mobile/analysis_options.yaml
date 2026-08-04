@@ -110,3 +110,9 @@ dart_code_metrics:
     - prefer-const-border-radius
     - prefer-declaring-const-constructor
     - prefer-switch-expression
+
+    # Riverpod
+    - avoid-ref-watch-outside-build
+    - prefer-immutable-provider-arguments
+    - use-ref-and-state-synchronously
+    - use-ref-read-synchronously
