@@ -121,6 +121,7 @@
     <ActionButton action={Actions.Copy} />
     <ActionButton action={Actions.SharedLinkDownload} />
     <ActionButton action={Actions.Info} />
+    <ActionButton action={Actions.ViewSimilar} />
     <ActionButton action={Actions.Favorite} />
     <ActionButton action={Actions.Unfavorite} />
 
@@ -177,7 +178,6 @@
           <ArchiveAction {asset} {onAction} {preAction} />
         {/if}
         <ActionMenuItem action={Actions.ViewInTimeline} />
-        <ActionMenuItem action={Actions.ViewSimilar} />
 
         {#if !asset.isTrashed && isOwner}
           <SetVisibilityAction asset={toTimelineAsset(asset)} {onAction} {preAction} />
