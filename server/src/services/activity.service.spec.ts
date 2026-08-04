@@ -114,6 +114,29 @@ describe(ActivityService.name, () => {
       ]);
     });
 
+    it('should keep a batch of additions adjacent when a reaction shares their timestamp', async () => {
+      const [albumId, assetId1, assetId2, userId] = newUuids();
+      const user = getDehydrated(UserFactory.create());
+      const createdAt = new Date('2026-01-01T00:00:00Z');
+      const comment = ActivityFactory.create({ albumId, comment: 'same instant', createdAt });
+
+      mocks.access.album.checkOwnerAccess.mockResolvedValue(new Set([albumId]));
+      mocks.activity.search.mockResolvedValue([getForActivity(comment)]);
+      mocks.activity.searchAssetAdditions.mockResolvedValue([
+        { albumId, assetId: assetId1, assetType: AssetType.Image, createdAt, user },
+        { albumId, assetId: assetId2, assetType: AssetType.Image, createdAt, user },
+      ]);
+
+      const result = await sut.getAll(AuthFactory.create({ id: userId }), { albumId, withAdditions: true });
+
+      expect(result.map(({ type }) => type)).toEqual([
+        ReactionType.COMMENT,
+        ReactionType.ASSET_ADDED,
+        ReactionType.ASSET_ADDED,
+      ]);
+      expect(result[1].groupId).toEqual(result[2].groupId);
+    });
+
     it('should not query asset additions for asset-level queries', async () => {
       const [albumId, assetId] = newUuids();
 
