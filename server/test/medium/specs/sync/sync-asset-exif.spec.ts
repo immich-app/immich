@@ -32,7 +32,7 @@ describe(SyncRequestType.AssetExifsV1, () => {
           city: null,
           country: null,
           dateTimeOriginal: null,
-          description: '',
+          description: null,
           exifImageHeight: null,
           exifImageWidth: null,
           exposureTime: null,

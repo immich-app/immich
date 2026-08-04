@@ -111,7 +111,7 @@ describe(MetadataService.name, () => {
       const { filePath } = await createTestFile(exifData);
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
-      await ctx.newExif({ assetId: asset.id, description: '' });
+      await ctx.newExif({ assetId: asset.id, description: null });
 
       await sut.handleMetadataExtraction({ id: asset.id });
 
@@ -138,7 +138,7 @@ describe(MetadataService.name, () => {
       const { filePath } = await createTestFile({ CreateDate: '42603:05:04 04:12:48' });
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
-      await ctx.newExif({ assetId: asset.id, description: '' });
+      await ctx.newExif({ assetId: asset.id, description: null });
 
       await sut.handleMetadataExtraction({ id: asset.id });
 
@@ -159,7 +159,7 @@ describe(MetadataService.name, () => {
     const { filePath } = await createTestFile({ LensModel: 1.8 });
     const { user } = await ctx.newUser();
     const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
-    await ctx.newExif({ assetId: asset.id, description: '' });
+    await ctx.newExif({ assetId: asset.id, description: null });
 
     await sut.handleMetadataExtraction({ id: asset.id });
 

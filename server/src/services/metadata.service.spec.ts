@@ -1296,7 +1296,7 @@ describe(MetadataService.name, () => {
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
         expect.objectContaining({
           exif: expect.objectContaining({
-            description: '',
+            description: null,
           }),
           lockedPropertiesBehavior: 'skip',
         }),

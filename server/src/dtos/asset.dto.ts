@@ -29,7 +29,12 @@ const UpdateAssetBaseSchema = z
           .updated('v3', 'Using 0 as a rating is no longer valid.')
           .getExtensions(),
       }),
-    description: z.string().optional().describe('Asset description'),
+    description: z
+      .string()
+      .nullable()
+      .transform((value) => (value === '' ? null : value))
+      .optional()
+      .describe('Asset description'),
   })
   .refine(
     (data) =>
