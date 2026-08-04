@@ -30,11 +30,8 @@
   const getNextVisibility = (toggleVisibility: ToggleVisibility) => {
     if (toggleVisibility === ToggleVisibility.SHOW_ALL) {
       return ToggleVisibility.HIDE_UNNANEMD;
-    } else if (toggleVisibility === ToggleVisibility.HIDE_UNNANEMD) {
-      return ToggleVisibility.HIDE_ALL;
-    } else {
-      return ToggleVisibility.SHOW_ALL;
     }
+    return toggleVisibility === ToggleVisibility.HIDE_UNNANEMD ? ToggleVisibility.HIDE_ALL : ToggleVisibility.SHOW_ALL;
   };
 
   const handleToggleVisibility = () => {

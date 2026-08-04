@@ -55,30 +55,33 @@ class ChangePasswordForm extends HookConsumerWidget {
                       passwordController: passwordController,
                       onPressed: () async {
                         if (formKey.currentState!.validate()) {
-                          var isSuccess = await ref
+                          final isSuccess = await ref
                               .read(authProvider.notifier)
                               .changePassword(passwordController.value.text);
 
-                          if (isSuccess) {
-                            await ref.read(authProvider.notifier).logout();
-                            ref.read(websocketProvider.notifier).disconnect();
-
-                            AutoRouter.of(context).back();
-
-                            ImmichToast.show(
-                              context: context,
-                              msg: "login_password_changed_success".tr(),
-                              toastType: ToastType.success,
-                              gravity: ToastGravity.TOP,
-                            );
-                          } else {
+                          if (!isSuccess && context.mounted) {
                             ImmichToast.show(
                               context: context,
                               msg: "login_password_changed_error".tr(),
                               toastType: ToastType.error,
                               gravity: ToastGravity.TOP,
                             );
+                            return;
                           }
+
+                          await ref.read(authProvider.notifier).logout();
+                          ref.read(websocketProvider.notifier).disconnect();
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          AutoRouter.of(context).back();
+                          ImmichToast.show(
+                            context: context,
+                            msg: "login_password_changed_success".tr(),
+                            toastType: ToastType.success,
+                            gravity: ToastGravity.TOP,
+                          );
                         }
                       },
                     ),

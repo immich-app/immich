@@ -1,11 +1,13 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/widgets/forms/login/login_form.dart';
 import 'package:immich_mobile/routing/router.dart';
+import 'package:immich_mobile/widgets/forms/login/login_form.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 @RoutePage()
@@ -16,13 +18,13 @@ class LoginPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final appVersion = useState('0.0.0');
 
-    getAppInfo() async {
-      PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    Future<void> getAppInfo() async {
+      final PackageInfo packageInfo = await PackageInfo.fromPlatform();
       appVersion.value = packageInfo.version;
     }
 
     useEffect(() {
-      getAppInfo();
+      unawaited(getAppInfo());
       return null;
     });
 
@@ -55,7 +57,7 @@ class LoginPage extends HookConsumerWidget {
                     ),
                   ),
                   onTap: () {
-                    context.pushRoute(const AppLogRoute());
+                    unawaited(context.pushRoute(const AppLogRoute()));
                   },
                 ),
               ],

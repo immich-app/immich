@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -45,8 +47,8 @@ class PendingUploadsBanner extends ConsumerWidget {
     );
   }
 
-  static void _openSheet(BuildContext context, String albumId) {
-    showModalBottomSheet(
+  static Future<void> _openSheet(BuildContext context, String albumId) {
+    return showModalBottomSheet(
       context: context,
       showDragHandle: true,
       builder: (_) => _PendingUploadsSheet(albumId: albumId),
@@ -97,7 +99,7 @@ class _PendingUploadsBannerContent extends StatelessWidget {
     return Material(
       color: hasFailures ? context.colorScheme.errorContainer : context.colorScheme.surfaceContainerHigh,
       child: InkWell(
-        onTap: () => PendingUploadsBanner._openSheet(context, albumId),
+        onTap: () => unawaited(PendingUploadsBanner._openSheet(context, albumId)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

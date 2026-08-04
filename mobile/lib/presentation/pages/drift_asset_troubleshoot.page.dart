@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -78,11 +80,13 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
   @override
   void initState() {
     super.initState();
-    _buildAssetProperties(widget.asset).whenComplete(() {
-      if (mounted) {
-        setState(() {});
-      }
-    });
+    unawaited(
+      _buildAssetProperties(widget.asset).whenComplete(() {
+        if (mounted) {
+          setState(() {});
+        }
+      }),
+    );
   }
 
   @override
@@ -114,7 +118,6 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
       _PropertyItem(label: 'Height', value: asset.height?.toString()),
       _PropertyItem(label: 'Duration', value: asset.durationMs != null ? '${asset.durationMs} ms' : null),
       _PropertyItem(label: 'Is Favorite', value: asset.isFavorite.toString()),
-      _PropertyItem(label: 'Live Photo Video ID', value: asset.livePhotoVideoId),
       _PropertyItem(label: 'Is Edited', value: asset.isEdited.toString()),
     ]);
   }
@@ -151,6 +154,7 @@ class _AssetPropertiesSectionState extends ConsumerState<_AssetPropertiesSection
       _PropertyItem(label: 'Thumb Hash', value: asset.thumbHash),
       _PropertyItem(label: 'Visibility', value: asset.visibility.toString()),
       _PropertyItem(label: 'Stack ID', value: asset.stackId),
+      _PropertyItem(label: 'Live Photo Video ID', value: asset.livePhotoVideoId),
     ];
 
     properties.insertAll(4, additionalProps);
@@ -276,8 +280,8 @@ class _RemoteAssetSection extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return FutureBuilder<RemoteAsset?>(
-      future: assetService.getRemoteAssetByChecksum(asset.checksum!),
+    return FutureBuilder<List<RemoteAsset>>(
+      future: assetService.getAllRemoteAssetDebugByChecksum(asset.checksum!),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const _PropertySectionCard(
@@ -293,7 +297,7 @@ class _RemoteAssetSection extends ConsumerWidget {
           );
         }
 
-        final remoteAsset = snapshot.data;
+        final remoteAsset = snapshot.data?.firstOrNull;
 
         if (remoteAsset == null) {
           return _PropertySectionCard(

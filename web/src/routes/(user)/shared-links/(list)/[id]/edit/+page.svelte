@@ -56,8 +56,10 @@
 
   {#if shareType === SharedLinkType.Individual}
     <div class="text-sm">
-      {$t('individual_share')} |
-      <span class="text-primary">{sharedLink.description || ''}</span>
+      {$t('individual_share')}
+      {#if description !== ''}
+        | <span class="text-primary">{description}</span>
+      {/if}
     </div>
   {/if}
 

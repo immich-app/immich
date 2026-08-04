@@ -25,21 +25,23 @@ class PinAuthPage extends HookConsumerWidget {
     Future<void> registerBiometric(String pinCode) async {
       final isRegistered = await ref.read(localAuthProvider.notifier).registerBiometric(context, pinCode);
 
-      if (isRegistered) {
-        context.showSnackBar(
-          SnackBar(
-            content: Text('biometric_auth_enabled'.tr(), style: context.textTheme.labelLarge),
-            duration: const Duration(seconds: 3),
-            backgroundColor: context.colorScheme.primaryContainer,
-          ),
-        );
-
-        unawaited(context.replaceRoute(const DriftLockedFolderRoute()));
+      if (!isRegistered || !context.mounted) {
+        return;
       }
+
+      context.showSnackBar(
+        SnackBar(
+          content: Text('biometric_auth_enabled'.tr(), style: context.textTheme.labelLarge),
+          duration: const Duration(seconds: 3),
+          backgroundColor: context.colorScheme.primaryContainer,
+        ),
+      );
+
+      unawaited(context.replaceRoute(const DriftLockedFolderRoute()));
     }
 
-    enableBiometricAuth() {
-      showDialog(
+    Future<void> enableBiometricAuth() {
+      return showDialog(
         context: context,
         builder: (buildContext) {
           return SimpleDialog(
@@ -53,7 +55,7 @@ class PinAuthPage extends HookConsumerWidget {
                       description: 'enable_biometric_auth_description'.tr(),
                       onSuccess: (pinCode) {
                         Navigator.pop(buildContext);
-                        registerBiometric(pinCode);
+                        unawaited(registerBiometric(pinCode));
                       },
                       autoFocus: true,
                       icon: Icons.fingerprint_rounded,
@@ -83,7 +85,7 @@ class PinAuthPage extends HookConsumerWidget {
                         child: PinVerificationForm(
                           autoFocus: true,
                           onSuccess: (_) {
-                            context.replaceRoute(const DriftLockedFolderRoute());
+                            unawaited(context.replaceRoute(const DriftLockedFolderRoute()));
                           },
                         ),
                       ),
@@ -93,7 +95,7 @@ class PinAuthPage extends HookConsumerWidget {
                           padding: const EdgeInsets.only(right: 16.0),
                           child: TextButton.icon(
                             icon: const Icon(Icons.fingerprint, size: 28),
-                            onPressed: enableBiometricAuth,
+                            onPressed: () => unawaited(enableBiometricAuth()),
                             label: Text(
                               'use_biometric'.tr(),
                               style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor, fontSize: 18),

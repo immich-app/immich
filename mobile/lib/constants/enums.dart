@@ -9,8 +9,6 @@ enum SortOrder {
 
 enum TextSearchType { context, filename, description, ocr }
 
-enum AssetVisibilityEnum { timeline, hidden, archive, locked }
-
 enum ActionSource { timeline, viewer }
 
 enum ShareAssetType { original, preview }

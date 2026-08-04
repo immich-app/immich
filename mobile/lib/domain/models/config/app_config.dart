@@ -4,6 +4,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/config/album_config.dart';
 import 'package:immich_mobile/domain/models/config/backup_config.dart';
 import 'package:immich_mobile/domain/models/config/cleanup_config.dart';
+import 'package:immich_mobile/domain/models/config/feature_message_config.dart';
 import 'package:immich_mobile/domain/models/config/image_config.dart';
 import 'package:immich_mobile/domain/models/config/map_config.dart';
 import 'package:immich_mobile/domain/models/config/network_config.dart';
@@ -16,6 +17,7 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/utils/semver.dart';
 
 const defaultConfig = AppConfig();
 
@@ -32,6 +34,7 @@ class AppConfig {
   final BackupConfig backup;
   final NetworkConfig network;
   final ShareConfig share;
+  final FeatureMessageConfig featureMessage;
 
   const AppConfig({
     this.logLevel = .info,
@@ -46,6 +49,7 @@ class AppConfig {
     this.backup = const .new(),
     this.network = const .new(),
     this.share = const .new(),
+    this.featureMessage = const .new(),
   });
 
   AppConfig copyWith({
@@ -61,6 +65,7 @@ class AppConfig {
     BackupConfig? backup,
     NetworkConfig? network,
     ShareConfig? share,
+    FeatureMessageConfig? featureMessage,
   }) => .new(
     logLevel: logLevel ?? this.logLevel,
     theme: theme ?? this.theme,
@@ -74,6 +79,7 @@ class AppConfig {
     backup: backup ?? this.backup,
     network: network ?? this.network,
     share: share ?? this.share,
+    featureMessage: featureMessage ?? this.featureMessage,
   );
 
   @override
@@ -91,15 +97,29 @@ class AppConfig {
           other.album == album &&
           other.backup == backup &&
           other.network == network &&
-          other.share == share);
+          other.share == share &&
+          other.featureMessage == featureMessage);
 
   @override
-  int get hashCode =>
-      Object.hash(logLevel, theme, cleanup, map, timeline, image, viewer, slideshow, album, backup, network, share);
+  int get hashCode => Object.hash(
+    logLevel,
+    theme,
+    cleanup,
+    map,
+    timeline,
+    image,
+    viewer,
+    slideshow,
+    album,
+    backup,
+    network,
+    share,
+    featureMessage,
+  );
 
   @override
   String toString() =>
-      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share)';
+      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, featureMessage: $featureMessage)';
 
   T read<T>(SettingsKey<T> key) =>
       (switch (key) {
@@ -133,6 +153,8 @@ class AppConfig {
             .timelineStorageIndicator => timeline.storageIndicator,
             .mapShowFavoriteOnly => map.favoritesOnly,
             .mapRelativeDate => map.relativeDays,
+            .mapCustomFrom => map.customFrom,
+            .mapCustomTo => map.customTo,
             .mapIncludeArchived => map.includeArchived,
             .mapThemeMode => map.themeMode,
             .mapWithPartners => map.withPartners,
@@ -146,6 +168,7 @@ class AppConfig {
             .slideshowDuration => slideshow.duration,
             .slideshowLook => slideshow.look,
             .slideshowDirection => slideshow.direction,
+            .featureMessageSeenRelease => featureMessage.seenRelease,
           })
           as T;
 
@@ -167,9 +190,9 @@ class AppConfig {
       .viewerTapToNavigate => copyWith(viewer: viewer.copyWith(tapToNavigate: value as bool)),
       .networkAutoEndpointSwitching => copyWith(network: network.copyWith(autoEndpointSwitching: value as bool)),
       .networkPreferredWifiName => copyWith(
-        network: network.copyWith(preferredWifiName: .fromNullable((value as String?))),
+        network: network.copyWith(preferredWifiName: .fromNullable(value as String?)),
       ),
-      .networkLocalEndpoint => copyWith(network: network.copyWith(localEndpoint: .fromNullable((value as String?)))),
+      .networkLocalEndpoint => copyWith(network: network.copyWith(localEndpoint: .fromNullable(value as String?))),
       .networkExternalEndpointList => copyWith(network: network.copyWith(externalEndpointList: value as List<String>)),
       .networkCustomHeaders => copyWith(network: network.copyWith(customHeaders: value as Map<String, String>)),
       .albumSortMode => copyWith(album: album.copyWith(sortMode: value as AlbumSortMode)),
@@ -186,6 +209,8 @@ class AppConfig {
       .timelineStorageIndicator => copyWith(timeline: timeline.copyWith(storageIndicator: value as bool)),
       .mapShowFavoriteOnly => copyWith(map: map.copyWith(favoritesOnly: value as bool)),
       .mapRelativeDate => copyWith(map: map.copyWith(relativeDays: value as int)),
+      .mapCustomFrom => copyWith(map: map.copyWith(customFrom: .fromNullable(value as DateTime?))),
+      .mapCustomTo => copyWith(map: map.copyWith(customTo: .fromNullable(value as DateTime?))),
       .mapIncludeArchived => copyWith(map: map.copyWith(includeArchived: value as bool)),
       .mapThemeMode => copyWith(map: map.copyWith(themeMode: value as ThemeMode)),
       .mapWithPartners => copyWith(map: map.copyWith(withPartners: value as bool)),
@@ -199,6 +224,7 @@ class AppConfig {
       .slideshowDuration => copyWith(slideshow: slideshow.copyWith(duration: value as int)),
       .slideshowLook => copyWith(slideshow: slideshow.copyWith(look: value as SlideshowLook)),
       .slideshowDirection => copyWith(slideshow: slideshow.copyWith(direction: value as SlideshowDirection)),
+      .featureMessageSeenRelease => copyWith(featureMessage: featureMessage.copyWith(seenRelease: value as SemVer)),
     };
   }
 }

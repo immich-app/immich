@@ -54,6 +54,7 @@
   };
 
   let duplicates = $state(data.duplicates);
+  let showMore = $state(false);
 
   const correctDuplicatesIndex = (index: number) => {
     return Math.max(0, Math.min(index, duplicates.length - 1));
@@ -62,7 +63,7 @@
   let duplicatesIndex = $derived(
     (() => {
       const indexParam = page.url.searchParams.get('index') ?? '0';
-      const parsedIndex = Number.parseInt(indexParam, 10);
+      const parsedIndex = Math.trunc(Number(indexParam));
       return correctDuplicatesIndex(Number.isNaN(parsedIndex) ? 0 : parsedIndex);
     })(),
   );
@@ -261,6 +262,7 @@
         <DuplicatesCompareControl
           assets={duplicates[duplicatesIndex].assets}
           suggestedKeepAssetIds={duplicates[duplicatesIndex].suggestedKeepAssetIds}
+          bind:showMore
           onResolve={(duplicateAssetIds, trashIds) =>
             handleResolve(duplicates[duplicatesIndex].duplicateId, duplicateAssetIds, trashIds)}
           onStack={(assets) => handleStack(duplicates[duplicatesIndex].duplicateId, assets)}

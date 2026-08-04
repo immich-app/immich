@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
@@ -25,13 +27,17 @@ class DriftActivitiesPage extends HookConsumerWidget {
     final activities = ref.watch(albumActivityProvider((album.id, assetId)));
     final listViewScrollController = useScrollController();
 
-    void scrollToBottom() {
-      listViewScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.fastOutSlowIn);
+    Future<void> scrollToBottom() {
+      return listViewScrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.fastOutSlowIn,
+      );
     }
 
     Future<void> onAddComment(String comment) async {
       await activityNotifier.addComment(comment);
-      scrollToBottom();
+      unawaited(scrollToBottom());
     }
 
     return ProviderScope(
@@ -45,7 +51,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
               if (assetName != null) Text(assetName!, style: context.textTheme.bodySmall),
             ],
           ),
-          actions: [const LikeActivityActionButton(iconOnly: true)],
+          actions: const [LikeActivityActionButton(iconOnly: true)],
           actionsPadding: const EdgeInsets.only(right: 8),
         ),
         body: activities.widgetWhen(
@@ -71,7 +77,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,
-                    child: Container(
+                    child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: context.scaffoldBackgroundColor,
                         border: Border(top: BorderSide(color: context.colorScheme.secondaryContainer, width: 1)),

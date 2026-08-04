@@ -51,7 +51,7 @@
     if (!url || !castManager.isCasting) {
       return;
     }
-    const fullUrl = new URL(url, globalThis.location.href);
+    const fullUrl = new URL(url, location.href);
 
     try {
       await castManager.loadMedia(fullUrl.href, force);
@@ -63,7 +63,7 @@
   };
 
   function handleSeek(event: Event) {
-    const newTime = Number.parseFloat((event.target as HTMLInputElement).value);
+    const newTime = Number((event.target as HTMLInputElement).value);
     castManager.seekTo(newTime);
   }
 </script>

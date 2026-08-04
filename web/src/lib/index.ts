@@ -3,8 +3,7 @@ import { twMerge } from 'tailwind-merge';
 
 export const cleanClass = (...classNames: unknown[]) => {
   return twMerge(
-    classNames
-      .flatMap((className) => (Array.isArray(className) ? className : [className]))
+    flattenClass(classNames)
       .filter((className) => {
         if (!className || typeof className === 'boolean') {
           return false;
@@ -15,6 +14,9 @@ export const cleanClass = (...classNames: unknown[]) => {
       .join(' '),
   );
 };
+
+const flattenClass = (classNames: unknown[]): unknown[] =>
+  classNames.flatMap((className) => (Array.isArray(className) ? flattenClass(className) : [className]));
 
 export const isDefined = <T>(value: T): value is NonNullable<T> => value !== null && value !== undefined;
 

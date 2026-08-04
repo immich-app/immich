@@ -25,7 +25,6 @@ class LocalAsset extends BaseAsset {
     super.height,
     super.durationMs,
     super.isFavorite = false,
-    super.livePhotoVideoId,
     this.orientation = 0,
     required this.playbackStyle,
     this.adjustmentTime,

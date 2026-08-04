@@ -37,9 +37,9 @@ class AssetMediaRepository {
 
   Future<bool> _androidSupportsTrash() async {
     if (Platform.isAndroid) {
-      DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      int sdkVersion = androidInfo.version.sdkInt;
+      final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+      final AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      final int sdkVersion = androidInfo.version.sdkInt;
       return sdkVersion >= 31;
     }
     return false;
@@ -324,7 +324,7 @@ class AssetMediaRepository {
       return 0;
     }
 
-    if (_isCancelled(cancelCompleter)) {
+    if (_isCancelled(cancelCompleter) || !context.mounted) {
       await _cleanupTempFiles(tempFiles);
       return 0;
     }

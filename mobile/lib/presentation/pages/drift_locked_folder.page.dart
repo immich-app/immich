@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -39,8 +41,8 @@ class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage> w
       return;
     }
     if (state == AppLifecycleState.paused) {
-      ref.read(authProvider.notifier).lockPinCode();
-      context.navigateTo(const TabShellRoute());
+      unawaited(ref.read(authProvider.notifier).lockPinCode());
+      unawaited(context.navigateTo(const TabShellRoute()));
       return;
     }
     setState(() {
