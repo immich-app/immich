@@ -28,6 +28,7 @@ class BackgroundSyncManager {
   final SyncErrorCallback? onCloudIdSyncError;
 
   Cancelable<bool?>? _syncTask;
+  bool _syncQueued = false;
   Cancelable<void>? _syncWebsocketTask;
   Cancelable<void>? _cloudIdSyncTask;
   Cancelable<void>? _deviceAlbumSyncTask;
@@ -50,6 +51,7 @@ class BackgroundSyncManager {
   });
 
   Future<void> cancel() async {
+    _syncQueued = false;
     final tasks = [
       _syncTask,
       _syncWebsocketTask,
@@ -133,8 +135,9 @@ class BackgroundSyncManager {
         });
   }
 
-  Future<bool> syncRemote() {
+  Future<bool> syncRemote({bool enqueue = false}) {
     if (_syncTask != null) {
+      _syncQueued |= enqueue;
       return _syncTask!.future.then((result) => result ?? false).catchError((_) => false);
     }
 
@@ -148,15 +151,20 @@ class BackgroundSyncManager {
         .then((result) {
           final success = result ?? false;
           onRemoteSyncComplete?.call(success);
+          _syncQueued &= success;
           return success;
         })
         .catchError((error) {
           onRemoteSyncError?.call(error.toString());
-          _syncTask = null;
+          _syncQueued = false;
           return false;
         })
         .whenComplete(() {
           _syncTask = null;
+          if (_syncQueued) {
+            _syncQueued = false;
+            unawaited(syncRemote());
+          }
         });
   }
 
