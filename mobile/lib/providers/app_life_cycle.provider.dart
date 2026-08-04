@@ -81,6 +81,10 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       await _ref.read(serverInfoProvider.notifier).getServerVersion();
     }
 
+    if (!_shouldContinueOperation()) {
+      _wasPaused = true;
+      return;
+    }
     _ref.read(websocketProvider.notifier).connect();
     await _handleBetaTimelineResume();
 
