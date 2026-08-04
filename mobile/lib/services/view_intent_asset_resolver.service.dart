@@ -128,6 +128,7 @@ class ViewIntentAssetResolver {
 
   LocalAsset _toTransientAsset(ViewIntentPayload attachment, String? checksum) {
     final now = DateTime.now();
+    // A FileBackedAsset could model the path more explicitly, but would require broader changes to the asset hierarchy.
     return LocalAsset(
       id: attachment.localAssetId ?? '-${attachment.path!.hashCode.abs()}',
       name: attachment.fileName,

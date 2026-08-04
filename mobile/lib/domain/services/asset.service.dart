@@ -52,6 +52,10 @@ class AssetService {
     });
   }
 
+  Stream<RemoteAsset?> watchRemoteAsset(String id) {
+    return _remoteRepository.watch(id);
+  }
+
   Future<List<LocalAsset?>> getLocalAssetsByChecksum(String checksum) {
     return _localRepository.getByChecksum(checksum);
   }

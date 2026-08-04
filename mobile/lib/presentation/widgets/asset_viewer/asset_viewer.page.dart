@@ -283,16 +283,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     if (index != _currentPage) {
       _pageController.jumpToPage(index);
       unawaited(_onAssetChanged(index));
-    } else if (currentAsset is RemoteAsset &&
-        currentAsset.stackId != null &&
+    } else if (currentAsset != null &&
         assetIndex == null &&
         !_shouldIgnoreMissingAssetOnTimelineReload(currentAsset, timelineService)) {
-      final timelineAsset = timelineService.getAssetSafe(index);
-      if (timelineAsset is! RemoteAsset || currentAsset.stackId != timelineAsset.stackId) {
+      if (currentAsset is RemoteAsset && currentAsset.stackId != null) {
+        final timelineAsset = timelineService.getAssetSafe(index);
+        if (timelineAsset is! RemoteAsset || currentAsset.stackId != timelineAsset.stackId) {
+          unawaited(_onAssetChanged(index));
+        }
+      } else {
         unawaited(_onAssetChanged(index));
       }
-    } else if (currentAsset != null && assetIndex == null) {
-      unawaited(_onAssetChanged(index));
     }
 
     if (_totalAssets != totalAssets) {
