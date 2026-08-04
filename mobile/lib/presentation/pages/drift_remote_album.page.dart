@@ -439,7 +439,7 @@ class _AlbumKebabMenu extends ConsumerWidget {
 
     return FutureBuilder<bool>(
       future: ref
-          .read(remoteAlbumServiceProvider)
+          .watch(remoteAlbumServiceProvider)
           .getUserRole(album.id, user?.id ?? '')
           .then((role) => role == AlbumUserRole.editor),
       builder: (context, snapshot) {

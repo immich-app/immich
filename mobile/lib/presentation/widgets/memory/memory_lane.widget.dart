@@ -45,13 +45,13 @@ class DriftMemoryLane extends ConsumerWidget {
   }
 }
 
-class DriftMemoryCard extends ConsumerWidget {
+class DriftMemoryCard extends StatelessWidget {
   const DriftMemoryCard({super.key, required this.memory});
 
   final DriftMemory memory;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final yearsAgo = DateTime.now().year - memory.data.year;
     final title = 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
     return Center(

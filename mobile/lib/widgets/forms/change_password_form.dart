@@ -153,13 +153,13 @@ class ConfirmPasswordInput extends StatelessWidget {
   }
 }
 
-class ChangePasswordButton extends ConsumerWidget {
+class ChangePasswordButton extends StatelessWidget {
   final TextEditingController passwordController;
   final VoidCallback onPressed;
   const ChangePasswordButton({super.key, required this.passwordController, required this.onPressed});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         visualDensity: VisualDensity.standard,
