@@ -2,7 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { Insertable } from 'kysely';
 import { DateTime, Duration } from 'luxon';
 import { Writable } from 'node:stream';
-import { OnJob } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
 import {
   SyncAckDeleteDto,
@@ -12,7 +12,8 @@ import {
   SyncItem,
   SyncStreamDto,
 } from 'src/dtos/sync.dto';
-import { JobName, QueueName, SyncEntityType, SyncRequestType } from 'src/enum';
+import { ImmichWorker, JobName, QueueName, SyncEntityType, SyncRequestType } from 'src/enum';
+import { ArgOf } from 'src/repositories/event.repository';
 import { SyncQueryOptions } from 'src/repositories/sync.repository';
 import { SessionSyncCheckpointTable } from 'src/schema/tables/sync-checkpoint.table';
 import { BaseService } from 'src/services/base.service';
@@ -86,6 +87,13 @@ const throwSessionRequired = () => {
 
 @Injectable()
 export class SyncService extends BaseService {
+  @OnEvent({ name: 'ConfigUpdate', workers: [ImmichWorker.Microservices] })
+  async onConfigUpdate({ newConfig, oldConfig }: ArgOf<'ConfigUpdate'>) {
+    if (oldConfig.server.publicUsers && !newConfig.server.publicUsers) {
+      await this.sessionRepository.requireFullSyncForNonAdmins();
+    }
+  }
+
   getAcks(auth: AuthDto) {
     const sessionId = auth.session?.id;
     if (!sessionId) {

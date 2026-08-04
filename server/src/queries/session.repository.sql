@@ -88,6 +88,20 @@ set
 where
   "userId" = $2
 
+-- SessionRepository.requireFullSyncForNonAdmins
+update "session"
+set
+  "isPendingSyncReset" = $1
+where
+  "userId" in (
+    select
+      "user"."id"
+    from
+      "user"
+    where
+      "user"."isAdmin" = $2
+  )
+
 -- SessionRepository.resetSyncProgress
 begin
 update "session"
