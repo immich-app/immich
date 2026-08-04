@@ -332,7 +332,7 @@ export class SyncTestContext extends MediumTestContext<SyncService> {
   constructor(database: Kysely<DB>) {
     super(SyncService, {
       database,
-      real: [SyncRepository, SyncCheckpointRepository, SessionRepository],
+      real: [SyncRepository, SyncCheckpointRepository, SessionRepository, ConfigRepository, SystemMetadataRepository],
       mock: [LoggingRepository],
     });
   }

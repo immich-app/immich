@@ -1121,6 +1121,58 @@ where
 order by
   "user"."updateId" asc
 
+-- SyncRepository.user.getRelatedUpserts
+select
+  "id",
+  "name",
+  "email",
+  "avatarColor",
+  "deletedAt",
+  "updateId",
+  "profileImagePath",
+  "profileChangedAt"
+from
+  "user" as "user"
+where
+  "user"."updateId" < $1
+  and "user"."updateId" > $2
+  and (
+    "id" = $3
+    or "id" in (
+      select
+        "partner"."sharedWithId" as "id"
+      from
+        "partner"
+      where
+        "partner"."sharedById" = $4
+    )
+    or "id" in (
+      select
+        "partner"."sharedById" as "id"
+      from
+        "partner"
+      where
+        "partner"."sharedWithId" = $5
+    )
+    or "id" in (
+      select
+        "album_user"."userId" as "id"
+      from
+        "album_user"
+      where
+        "album_user"."albumId" in (
+          select
+            "album_user"."albumId" as "id"
+          from
+            "album_user"
+          where
+            "album_user"."userId" = $6
+        )
+    )
+  )
+order by
+  "user"."updateId" asc
+
 -- SyncRepository.userMetadata.getDeletes
 select
   "id",

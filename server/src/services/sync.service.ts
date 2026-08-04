@@ -166,7 +166,7 @@ export class SyncService extends BaseService {
       [SyncRequestType.AlbumAssetsV1]: () => this.syncAlbumAssetsV1(),
 
       [SyncRequestType.AuthUsersV1]: () => this.syncAuthUsersV1(options, response, checkpointMap),
-      [SyncRequestType.UsersV1]: () => this.syncUsersV1(options, response, checkpointMap),
+      [SyncRequestType.UsersV1]: () => this.syncUsersV1(options, response, checkpointMap, auth),
       [SyncRequestType.PartnersV1]: () => this.syncPartnersV1(options, response, checkpointMap),
       [SyncRequestType.AssetsV2]: () => this.syncAssetsV2(options, response, checkpointMap),
       [SyncRequestType.AssetExifsV1]: () => this.syncAssetExifsV1(options, response, checkpointMap),
@@ -246,7 +246,7 @@ export class SyncService extends BaseService {
     }
   }
 
-  private async syncUsersV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap) {
+  private async syncUsersV1(options: SyncQueryOptions, response: Writable, checkpointMap: CheckpointMap, auth: AuthDto) {
     const deleteType = SyncEntityType.UserDeleteV1;
     const deletes = this.syncRepository.user.getDeletes({ ...options, ack: checkpointMap[deleteType] });
     for await (const { id, ...data } of deletes) {
@@ -254,7 +254,11 @@ export class SyncService extends BaseService {
     }
 
     const upsertType = SyncEntityType.UserV1;
-    const upserts = this.syncRepository.user.getUpserts({ ...options, ack: checkpointMap[upsertType] });
+    const { server } = await this.getConfig({ withCache: false });
+    const canViewAllUsers = auth.user.isAdmin || server.publicUsers;
+    const upserts = canViewAllUsers
+      ? this.syncRepository.user.getUpserts({ ...options, ack: checkpointMap[upsertType] })
+      : this.syncRepository.user.getRelatedUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, profileImagePath, ...data } of upserts) {
       send(response, { type: upsertType, ids: [updateId], data: { ...data, hasProfileImage: !!profileImagePath } });
     }
