@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
-import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
@@ -14,32 +13,11 @@ import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/services/auth.service.dart';
-import 'package:immich_mobile/services/background_upload.service.dart';
-import 'package:immich_mobile/services/foreground_upload.service.dart';
-import 'package:immich_mobile/services/secure_storage.service.dart';
-import 'package:immich_mobile/services/server_info.service.dart';
-import 'package:immich_mobile/services/widget.service.dart';
 import 'package:immich_mobile/utils/upload_speed_calculator.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../domain/service.mock.dart';
 import '../infrastructure/repository.mock.dart';
 import '../service.mocks.dart';
-
-class MockAuthService extends Mock implements AuthService {}
-
-class MockSecureStorageService extends Mock implements SecureStorageService {}
-
-class MockWidgetService extends Mock implements WidgetService {}
-
-class MockServerInfoService extends Mock implements ServerInfoService {}
-
-class MockForegroundUploadService extends Mock implements ForegroundUploadService {}
-
-class MockBackgroundUploadService extends Mock implements BackgroundUploadService {}
-
-class MockBackgroundWorkerLockService extends Mock implements BackgroundWorkerLockService {}
 
 class FakeLogMessage extends Fake implements LogMessage {}
 
@@ -149,7 +127,7 @@ void main() {
 
   Future<void> startResume() async {
     await lifeCycle.handleAppPause();
-    lifeCycle.handleAppResume();
+    unawaited(lifeCycle.handleAppResume());
     await untilCalled(() => serverInfoService.getServerVersion());
   }
 
@@ -174,7 +152,7 @@ void main() {
     lifeCycle.handleAppInactivity();
     await releaseResume();
 
-    lifeCycle.handleAppResume();
+    unawaited(lifeCycle.handleAppResume());
     await websocket.connectCalled.future;
 
     expect(lifeCycle.getAppState(), AppLifeCycleEnum.resumed);
@@ -189,9 +167,9 @@ void main() {
     await releaseResume();
     await lifeCycle.handleAppPause();
 
-    lifeCycle.handleAppResume();
+    unawaited(lifeCycle.handleAppResume());
     await websocket.connectCalled.future;
-    lifeCycle.handleAppResume();
+    unawaited(lifeCycle.handleAppResume());
     await Future<void>.delayed(Duration.zero);
 
     expect(lifeCycle.getAppState(), AppLifeCycleEnum.resumed);
