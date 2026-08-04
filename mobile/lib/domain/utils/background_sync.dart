@@ -135,9 +135,9 @@ class BackgroundSyncManager {
         });
   }
 
-  Future<bool> syncRemote({bool fresh = false}) {
+  Future<bool> syncRemote({bool enqueue = false}) {
     if (_syncTask != null) {
-      _syncQueued |= fresh;
+      _syncQueued |= enqueue;
       return _syncTask!.future.then((result) => result ?? false).catchError((_) => false);
     }
 
@@ -157,12 +157,15 @@ class BackgroundSyncManager {
           onRemoteSyncError?.call(error.toString());
           return false;
         })
-        .whenComplete(() {
+        .then((success) {
           _syncTask = null;
           if (_syncQueued) {
             _syncQueued = false;
-            unawaited(syncRemote());
+            if (success) {
+              unawaited(syncRemote());
+            }
           }
+          return success;
         });
   }
 
