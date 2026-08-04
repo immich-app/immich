@@ -328,8 +328,7 @@ export class AssetJobRepository {
                   .where('asset_file.type', '=', sql.lit(AssetFileType.EncodedVideo)),
               ),
             ),
-          )
-          .where('asset.visibility', '!=', sql.lit(AssetVisibility.Hidden)),
+          ),
       )
       .where('asset.deletedAt', 'is', null)
       .stream();
