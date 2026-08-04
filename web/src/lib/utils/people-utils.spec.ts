@@ -1,6 +1,6 @@
 import type { Faces } from '$lib/managers/asset-viewer-manager.svelte';
 import type { Size } from '$lib/utils/container-utils';
-import { getBoundingBox } from '$lib/utils/people-utils';
+import { getBoundingBox, getRelativeFaceLabelLeft } from '$lib/utils/people-utils';
 
 const makeFace = (overrides: Partial<Faces> = {}): Faces => ({
   id: 'face-1',
@@ -66,5 +66,43 @@ describe('getBoundingBox', () => {
 
     expect(boxes).toHaveLength(2);
     expect(boxes[0].left).toBeLessThan(boxes[1].left);
+  });
+});
+
+describe('getRelativeFaceLabelLeft', () => {
+  it('should right align face label by default inside container bounds', () => {
+    // box: left 100, width 50; label: width 80; overlay: 1000
+    // preferred absolute X = 100 + 50 - 80 = 70 (clamped: 70)
+    // localLeft = 70 - 100 = -30
+    expect(getRelativeFaceLabelLeft(100, 50, 80, 1000)).toBe(-30);
+  });
+
+  it('should clamp left edge when label overflows container left boundary', () => {
+    // box: left 10, width 40; label: width 150; overlay: 1000
+    // preferred absolute X = 10 + 40 - 150 = -100 -> clamped to 0
+    // localLeft = 0 - 10 = -10 (label left edge aligns to 0px in container)
+    expect(getRelativeFaceLabelLeft(10, 40, 150, 1000)).toBe(-10);
+  });
+
+  it('should clamp right edge when label overflows container right boundary', () => {
+    // box: left 950, width 40; label: width 200; overlay: 1000
+    // preferred absolute X = 950 + 40 - 200 = 790
+    // clamped absolute X = min(790, 800) = 790
+    expect(getRelativeFaceLabelLeft(950, 40, 200, 1000)).toBe(-160);
+  });
+
+  it('should handle boundary case when label exactly fits inside face box', () => {
+    // box: left 100, width 100; label: width 100; overlay: 1000
+    // preferred absolute X = 100 + 100 - 100 = 100
+    // localLeft = 100 - 100 = 0
+    expect(getRelativeFaceLabelLeft(100, 100, 100, 1000)).toBe(0);
+  });
+
+  it('should clamp gracefully when label width exceeds narrow overlay width', () => {
+    // box: left 10, width 30; label: width 160; overlay: 80 (narrow viewport)
+    // maxX = max(0, 80 - 160) = 0
+    // preferred absolute X = 10 + 30 - 160 = -120 -> clamped to 0
+    // localLeft = 0 - 10 = -10
+    expect(getRelativeFaceLabelLeft(10, 30, 160, 80)).toBe(-10);
   });
 });

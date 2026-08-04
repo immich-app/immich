@@ -21,6 +21,23 @@ export const getBoundingBox = (faces: Faces[], imageSize: Size): BoundingBox[] =
   return boxes;
 };
 
+/**
+ * Calculates the horizontal left offset relative to the face bounding box wrapper,
+ * keeping the label bounded within the container overlay [0, overlayWidth].
+ */
+export const getRelativeFaceLabelLeft = (
+  boxLeft: number,
+  boxWidth: number,
+  labelWidth: number,
+  overlayWidth: number,
+): number => {
+  const preferredLabelLeft = boxLeft + boxWidth - labelWidth;
+  const minX = 0;
+  const maxX = Math.max(0, overlayWidth - labelWidth);
+  const clampedAbsoluteX = Math.max(minX, Math.min(preferredLabelLeft, maxX));
+  return clampedAbsoluteX - boxLeft;
+};
+
 export const zoomImageToBase64 = async (
   face: AssetFaceResponseDto,
   assetId: string,
