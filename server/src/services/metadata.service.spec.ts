@@ -2019,6 +2019,25 @@ describe(MetadataService.name, () => {
       ]);
     });
 
+    it('should retain locked properties when writing tags fails', async () => {
+      const asset = AssetFactory.from()
+        .file({ type: AssetFileType.Sidecar })
+        .exif({ description: 'database description' })
+        .build();
+      const error = new Error('read-only file system');
+
+      mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue(['description']);
+      mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+      mocks.metadata.writeTags.mockRejectedValue(error);
+
+      await expect(sut.handleSidecarWrite({ id: asset.id })).rejects.toBe(error);
+      expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, {
+        Description: 'database description',
+        ImageDescription: 'database description',
+      });
+      expect(mocks.asset.unlockProperties).not.toHaveBeenCalled();
+    });
+
     it('should write rating', async () => {
       const asset = AssetFactory.from().file({ type: AssetFileType.Sidecar }).exif().build();
       asset.exifInfo.rating = 4;
