@@ -12,8 +12,7 @@ class UserEntity extends Table with DriftDefaultsMixin {
 
   // Profile image
   BoolColumn get hasProfileImage => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get profileChangedAt =>
-      dateTime().withDefault(currentDateAndTime).map(const DateTimeClampConverter())();
+  DateTimeColumn get profileChangedAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
   IntColumn get avatarColor => intEnum<AvatarColor>().withDefault(const Constant(0))();
 
   @override

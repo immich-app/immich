@@ -22,7 +22,7 @@ class RemoteExifEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get country => text().nullable()();
 
-  DateTimeColumn get dateTimeOriginal => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get dateTimeOriginal => customType(clampedDateTime).nullable()();
 
   TextColumn get description => text().nullable()();
 

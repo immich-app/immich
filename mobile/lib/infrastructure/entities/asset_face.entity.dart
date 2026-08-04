@@ -36,7 +36,7 @@ class AssetFaceEntity extends Table with DriftDefaultsMixin {
 
   BoolColumn get isVisible => boolean().withDefault(const Constant(true))();
 
-  DateTimeColumn get deletedAt => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get deletedAt => customType(clampedDateTime).nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

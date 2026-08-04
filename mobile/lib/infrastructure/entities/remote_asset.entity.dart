@@ -34,13 +34,13 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
 
   TextColumn get ownerId => text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
-  DateTimeColumn get localDateTime => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get localDateTime => customType(clampedDateTime).nullable()();
 
   TextColumn get thumbHash => text().nullable()();
 
-  DateTimeColumn get deletedAt => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get deletedAt => customType(clampedDateTime).nullable()();
 
-  DateTimeColumn get uploadedAt => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get uploadedAt => customType(clampedDateTime).nullable()();
 
   TextColumn get livePhotoVideoId => text().nullable()();
 

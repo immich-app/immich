@@ -21,7 +21,7 @@ class LocalAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin {
 
   TextColumn get iCloudId => text().nullable()();
 
-  DateTimeColumn get adjustmentTime => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get adjustmentTime => customType(clampedDateTime).nullable()();
 
   RealColumn get latitude => real().nullable()();
 

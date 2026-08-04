@@ -9,11 +9,11 @@ class MemoryEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get id => text()();
 
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime).map(const DateTimeClampConverter())();
+  DateTimeColumn get createdAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
 
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime).map(const DateTimeClampConverter())();
+  DateTimeColumn get updatedAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
 
-  DateTimeColumn get deletedAt => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get deletedAt => customType(clampedDateTime).nullable()();
 
   TextColumn get ownerId => text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
@@ -23,13 +23,13 @@ class MemoryEntity extends Table with DriftDefaultsMixin {
 
   BoolColumn get isSaved => boolean().withDefault(const Constant(false))();
 
-  DateTimeColumn get memoryAt => dateTime().map(const DateTimeClampConverter())();
+  DateTimeColumn get memoryAt => customType(clampedDateTime)();
 
-  DateTimeColumn get seenAt => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get seenAt => customType(clampedDateTime).nullable()();
 
-  DateTimeColumn get showAt => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get showAt => customType(clampedDateTime).nullable()();
 
-  DateTimeColumn get hideAt => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get hideAt => customType(clampedDateTime).nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

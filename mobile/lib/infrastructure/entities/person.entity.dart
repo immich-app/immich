@@ -9,9 +9,9 @@ class PersonEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get id => text()();
 
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime).map(const DateTimeClampConverter())();
+  DateTimeColumn get createdAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
 
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime).map(const DateTimeClampConverter())();
+  DateTimeColumn get updatedAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
 
   TextColumn get ownerId => text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
@@ -25,7 +25,7 @@ class PersonEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get color => text().nullable()();
 
-  DateTimeColumn get birthDate => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get birthDate => customType(clampedDateTime).nullable()();
 
   @override
   Set<Column> get primaryKey => {id};

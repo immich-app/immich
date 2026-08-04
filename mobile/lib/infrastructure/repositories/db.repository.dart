@@ -348,7 +348,7 @@ class Drift extends $Drift {
 }
 
 // hardcoded on purpose: datetimes are stored as text, so versioned schema tables type
-// these columns String and the set cannot be derived — migration_test pins it to drift_schema_v32.json
+// these columns String and the set cannot be derived — migration_test pins it to drift_schema_v31.json
 @visibleForTesting
 const healDateTimeColumns = <String, List<String>>{
   'auth_user_entity': ['profile_changed_at'],

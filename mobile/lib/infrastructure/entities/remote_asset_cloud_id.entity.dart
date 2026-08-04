@@ -9,9 +9,9 @@ class RemoteAssetCloudIdEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get cloudId => text().nullable()();
 
-  DateTimeColumn get createdAt => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get createdAt => customType(clampedDateTime).nullable()();
 
-  DateTimeColumn get adjustmentTime => dateTime().nullable().map(const DateTimeClampConverter())();
+  DateTimeColumn get adjustmentTime => customType(clampedDateTime).nullable()();
 
   RealColumn get latitude => real().nullable()();
 

@@ -10,7 +10,7 @@ class LocalAlbumEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get id => text()();
   TextColumn get name => text()();
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime).map(const DateTimeClampConverter())();
+  DateTimeColumn get updatedAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
   IntColumn get backupSelection => intEnum<BackupSelection>()();
   BoolColumn get isIosSharedAlbum => boolean().withDefault(const Constant(false))();
 

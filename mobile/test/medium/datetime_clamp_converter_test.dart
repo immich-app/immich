@@ -200,7 +200,7 @@ void main() {
     for (final table in ctx.db.allTables) {
       final dateColumns = [
         for (final column in table.$columns)
-          if (column.type == DriftSqlType.dateTime) column.$name,
+          if (column is GeneratedColumn<DateTime>) column.$name,
       ];
       if (dateColumns.isEmpty) {
         continue;

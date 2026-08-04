@@ -13,9 +13,9 @@ class RemoteAlbumEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get description => text().withDefault(const Constant(''))();
 
-  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime).map(const DateTimeClampConverter())();
+  DateTimeColumn get createdAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
 
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime).map(const DateTimeClampConverter())();
+  DateTimeColumn get updatedAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
 
   TextColumn get thumbnailAssetId =>
       text().references(RemoteAssetEntity, #id, onDelete: KeyAction.setNull).nullable()();

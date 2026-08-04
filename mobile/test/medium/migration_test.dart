@@ -112,8 +112,8 @@ void main() {
       expect(row.createdAt, local);
     });
 
-    test('the heal column map matches the datetime columns of the v32 schema json', () async {
-      final schemaJson = jsonDecode(await File('drift_schemas/main/drift_schema_v32.json').readAsString());
+    test('the heal column map matches the datetime columns of the v31 schema json', () async {
+      final schemaJson = jsonDecode(await File('drift_schemas/main/drift_schema_v31.json').readAsString());
       final expected = <String>{
         for (final entity in schemaJson['entities'] as List)
           if (entity['type'] == 'table')
@@ -128,10 +128,10 @@ void main() {
 
       final missing = expected.difference(mapped);
       final extra = mapped.difference(expected);
-      expect(missing, isEmpty, reason: 'heal map misses v32 datetime columns: ${missing.join(', ')}');
-      expect(extra, isEmpty, reason: 'heal map has columns that are not v32 datetimes: ${extra.join(', ')}');
+      expect(missing, isEmpty, reason: 'heal map misses v31 datetime columns: ${missing.join(', ')}');
+      expect(extra, isEmpty, reason: 'heal map has columns that are not v31 datetimes: ${extra.join(', ')}');
       final mappedCount = healDateTimeColumns.values.fold(0, (sum, columns) => sum + columns.length);
-      expect(mappedCount, expected.length, reason: 'heal map count differs from the v32 schema json');
+      expect(mappedCount, expected.length, reason: 'heal map count differs from the v31 schema json');
     });
   });
 }

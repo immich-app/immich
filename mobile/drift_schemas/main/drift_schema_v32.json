@@ -62,16 +62,12 @@
           {
             "name": "profile_changed_at",
             "getter_name": "profileChangedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "avatar_color",
@@ -134,30 +130,22 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "width",
@@ -252,16 +240,12 @@
           {
             "name": "local_date_time",
             "getter_name": "localDateTime",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "thumb_hash",
@@ -276,30 +260,22 @@
           {
             "name": "deleted_at",
             "getter_name": "deletedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "uploaded_at",
             "getter_name": "uploadedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "live_photo_video_id",
@@ -392,30 +368,22 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "owner_id",
@@ -498,30 +466,22 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "width",
@@ -610,16 +570,12 @@
           {
             "name": "adjustment_time",
             "getter_name": "adjustmentTime",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "latitude",
@@ -708,30 +664,22 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "thumbnail_asset_id",
@@ -830,16 +778,12 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "backup_selection",
@@ -1230,16 +1174,12 @@
           {
             "name": "profile_changed_at",
             "getter_name": "profileChangedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "avatar_color",
@@ -1526,16 +1466,12 @@
           {
             "name": "date_time_original",
             "getter_name": "dateTimeOriginal",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "description",
@@ -1928,30 +1864,22 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "adjustment_time",
             "getter_name": "adjustmentTime",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "latitude",
@@ -2006,44 +1934,32 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "deleted_at",
             "getter_name": "deletedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "owner_id",
@@ -2112,58 +2028,42 @@
           {
             "name": "memory_at",
             "getter_name": "memoryAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "seen_at",
             "getter_name": "seenAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "show_at",
             "getter_name": "showAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "hide_at",
             "getter_name": "hideAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           }
         ],
         "is_virtual": false,
@@ -2272,30 +2172,22 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "owner_id",
@@ -2384,16 +2276,12 @@
           {
             "name": "birth_date",
             "getter_name": "birthDate",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           }
         ],
         "is_virtual": false,
@@ -2565,16 +2453,12 @@
           {
             "name": "deleted_at",
             "getter_name": "deletedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": true,
             "customConstraints": null,
             "default_dart": null,
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           }
         ],
         "is_virtual": false,
@@ -2669,30 +2553,22 @@
           {
             "name": "created_at",
             "getter_name": "createdAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           },
           {
             "name": "width",
@@ -2942,16 +2818,12 @@
           {
             "name": "updated_at",
             "getter_name": "updatedAt",
-            "moor_type": "dateTime",
+            "moor_type": "string",
             "nullable": false,
             "customConstraints": null,
             "default_dart": "const CustomExpression('CURRENT_TIMESTAMP')",
             "default_client_dart": null,
-            "dsl_features": [],
-            "type_converter": {
-              "dart_expr": "const DateTimeClampConverter()",
-              "dart_type_name": "DateTime"
-            }
+            "dsl_features": []
           }
         ],
         "is_virtual": false,

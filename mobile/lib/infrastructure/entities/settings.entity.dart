@@ -9,7 +9,7 @@ class SettingsEntity extends Table with DriftDefaultsMixin {
 
   TextColumn get value => text().nullable()();
 
-  DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime).map(const DateTimeClampConverter())();
+  DateTimeColumn get updatedAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
 
   @override
   Set<Column> get primaryKey => {key};
