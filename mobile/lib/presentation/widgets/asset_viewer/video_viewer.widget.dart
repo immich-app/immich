@@ -225,11 +225,6 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
     final autoPlayVideo = ref.read(appConfigProvider).viewer.autoPlayVideo;
     if (autoPlayVideo || widget.asset.isMotionPhoto) {
-      // a loop override must land before autoplay: a looping video never ends
-      final loopOverride = widget.loopVideo;
-      if (loopOverride != null) {
-        await _notifier.setLoop(loopOverride);
-      }
       await _notifier.play();
     }
   }
@@ -284,8 +279,8 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     final loopVideo = widget.loopVideo ?? ref.read(appConfigProvider).viewer.loopVideo;
     final localNotifier = _notifier;
 
-    await localNotifier.load(source);
     await localNotifier.setLoop(!widget.asset.isMotionPhoto && loopVideo);
+    await localNotifier.load(source);
     await localNotifier.setVolume(1);
   }
 

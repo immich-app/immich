@@ -35,8 +35,7 @@ class DriftSlideshowPage extends ConsumerStatefulWidget {
   ConsumerState<DriftSlideshowPage> createState() => _DriftSlideshowPageState();
 }
 
-class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
-    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with SingleTickerProviderStateMixin {
   static const double _kenBurnsZoom = 0.1;
 
   late SlideshowConfig _config;
@@ -44,6 +43,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
   late final Stopwatch _stopwatch;
   Timer? _timer;
   late int _index;
+  int? _nextIndex;
   bool _paused = false;
   bool _showAppBar = false;
   String? _endedHeroTag;
@@ -60,16 +60,16 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
   void initState() {
     super.initState();
     _config = ref.read(appConfigProvider.select((s) => s.slideshow));
-    final asset = ref.read(assetViewerProvider).currentAsset;
-    _index = asset == null ? 0 : widget.timeline.getIndex(asset.heroTag) ?? 0;
+    // the viewer's current asset can sit outside the loaded timeline buffer
+    final viewerAsset = ref.read(assetViewerProvider).currentAsset;
+    _index = viewerAsset == null ? 0 : widget.timeline.getIndex(viewerAsset.heroTag) ?? 0;
     _pageController = PageController(initialPage: _index);
     _crossfadeController = AnimationController(vsync: this, duration: Durations.extralong2);
     _crossfadeOpacity = Tween<double>(begin: 1.0, end: 0.0).animate(_crossfadeController);
     _stopwatch = Stopwatch();
     _startTimer(widget.timeline.getAssetSafe(_index));
-    _preloadDestination();
+    _updateNextIndex();
     ref.listenManual(appConfigProvider.select((s) => s.slideshow), _onConfigChanged);
-    WidgetsBinding.instance.addObserver(this);
 
     unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive));
     unawaited(WakelockPlus.enable());
@@ -83,7 +83,6 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     _timer?.cancel();
     _stopwatch.stop();
     _pageController.dispose();
@@ -91,21 +90,6 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
     unawaited(WakelockPlus.disable());
     unawaited(restoreEdgeToEdge());
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state != AppLifecycleState.resumed) {
-      _timer?.cancel();
-      _stopwatch.stop();
-      return;
-    }
-
-    if (_paused) {
-      return;
-    }
-
-    _settleCurrentSlide();
   }
 
   void _play() {
@@ -122,7 +106,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
     });
 
     _settleCurrentSlide();
-    _preloadDestination();
+    _updateNextIndex();
   }
 
   void _pause() {
@@ -147,7 +131,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
 
     final durationChanged = _config.duration != next.duration;
     _config = next;
-    _preloadDestination();
+    _updateNextIndex();
 
     final asset = widget.timeline.getAssetSafe(_index);
     if (durationChanged && !_paused && asset != null) {
@@ -157,38 +141,22 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
     setState(() {});
   }
 
-  // the next slide the show will move to, or null when there is nowhere to go
-  int? _resolveDestination() {
+  void _updateNextIndex() {
     final total = widget.timeline.totalAssets;
     if (total == 0) {
-      return null;
+      _nextIndex = null;
+      return;
     }
 
-    var candidate = switch (_config.direction) {
+    final next = switch (_config.direction) {
       SlideshowDirection.forward => _index + 1,
       SlideshowDirection.backward => _index - 1,
       SlideshowDirection.shuffle => widget.timeline.getIndex(widget.timeline.getRandomAsset().heroTag)!,
     };
+    _nextIndex = next;
 
-    // a shuffle that lands on the current slide gets one reroll
-    if (_config.direction == SlideshowDirection.shuffle && candidate == _index && total > 1) {
-      candidate = widget.timeline.getIndex(widget.timeline.getRandomAsset().heroTag)!;
-    }
-
-    if (candidate < 0 || candidate >= total) {
-      if (!_config.repeat) {
-        return null;
-      }
-      candidate = _config.direction == SlideshowDirection.forward ? 0 : total - 1;
-    }
-
-    return candidate;
-  }
-
-  void _preloadDestination() {
-    final destination = _resolveDestination();
-    if (destination != null && destination != _index && !widget.timeline.hasRange(destination, 1)) {
-      unawaited(widget.timeline.preloadAssets(destination));
+    if (next >= 0 && next < total && next != _index && !widget.timeline.hasRange(next, 1)) {
+      unawaited(widget.timeline.preloadAssets(next));
     }
   }
 
@@ -199,7 +167,14 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
 
     _moveInFlight = true;
     try {
-      final destination = _resolveDestination();
+      final total = widget.timeline.totalAssets;
+      var destination = _nextIndex;
+      if (destination != null && (destination < 0 || destination >= total)) {
+        destination = _config.repeat && total > 0
+            ? (_config.direction == SlideshowDirection.forward ? 0 : total - 1)
+            : null;
+      }
+
       if (destination == null) {
         // nowhere to go: an emptied timeline or the no-repeat end stops the show
         setState(() {
@@ -218,7 +193,6 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
       }
 
       if (destination == _index) {
-        // a video that ended with nowhere to go replays on repeat, stops without
         final asset = widget.timeline.getAssetSafe(_index);
         if (asset != null && !asset.isImage && _endedHeroTag == asset.heroTag && !_config.repeat) {
           setState(() {
@@ -395,7 +369,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
       _settleCurrentSlide();
     }
 
-    _preloadDestination();
+    _updateNextIndex();
   }
 
   Future<void> _onTapUp() async {

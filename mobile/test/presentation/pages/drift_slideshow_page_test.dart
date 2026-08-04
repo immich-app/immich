@@ -1,14 +1,12 @@
-import 'dart:async';
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/pages/drift_slideshow.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
+import 'package:mocktail/mocktail.dart';
 
+import '../../fixtures/asset.stub.dart';
 import 'slideshow_test_utils.dart';
 
 void main() {
@@ -16,35 +14,37 @@ void main() {
   final messenger = TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
 
   setUp(() {
-    mockSlideshowChannels(messenger);
-    swallowedErrors.clear();
+    const codec = StandardMessageCodec();
+    messenger.setMockMessageHandler(
+      'dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.toggle',
+      (message) async => codec.encodeMessage([null]),
+    );
+    // the binding never answers SystemChrome.setEnabledSystemUIMode, without
+    // this the slideshow's app bar toggle hangs and its buttons stay untappable
+    messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async => null);
+    registerFallbackValue(LocalAssetStub.image1);
     FakeVideoPlayerNotifier.reset();
   });
 
-  testWidgets('a never-ready video advances, and resume after backgrounding gets a fresh bound', (tester) async {
-    addTearDown(() => tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed));
-
+  testWidgets('a never-ready video advances after one slide duration', (tester) async {
     // no player override: the source cannot be created in this environment, so
     // the video stays at the default (never ready) state forever
-    await pumpSlideshow(tester, assets: [kVideo, kImage1]);
+    await pumpSlideshow(tester, assets: [kVideo, LocalAssetStub.image1]);
     expect(currentPage(tester), 0.0);
 
-    await elapse(tester, const Duration(seconds: 1));
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
-
-    await elapse(tester, const Duration(seconds: 8));
-    expect(currentPage(tester), 0.0, reason: 'no advance while the app is backgrounded');
-
-    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    await elapse(tester, const Duration(seconds: 2));
-    expect(currentPage(tester), 0.0, reason: 'resume starts a fresh full bound');
-
     await elapse(tester, const Duration(seconds: 4));
-    expect(currentPage(tester), 1.0, reason: 'the fresh bound fires one full duration after resume');
+    expect(currentPage(tester), 0.0, reason: 'the bound has not run out yet');
+
+    await elapse(tester, const Duration(seconds: 2));
+    expect(currentPage(tester), 1.0, reason: 'one full duration with no playback progress advances');
   });
 
   testWidgets('a progressing video is not skipped, and a later stall advances', (tester) async {
-    await pumpSlideshow(tester, assets: [kImage1, kVideo, kImage2], initialPlayerState: kBuffering);
+    await pumpSlideshow(
+      tester,
+      assets: [LocalAssetStub.image1, kVideo, LocalAssetStub.image2],
+      initialPlayerState: kBuffering,
+    );
     await advanceToVideoSlide(tester);
 
     for (var seconds = 1; seconds <= 8; seconds++) {
@@ -65,7 +65,11 @@ void main() {
   });
 
   testWidgets('the ended callback advances once and a late repeat is ignored', (tester) async {
-    await pumpSlideshow(tester, assets: [kImage1, kVideo, kImage2], initialPlayerState: kPlaying);
+    await pumpSlideshow(
+      tester,
+      assets: [LocalAssetStub.image1, kVideo, LocalAssetStub.image2],
+      initialPlayerState: kPlaying,
+    );
     await advanceToVideoSlide(tester);
 
     final viewer = tester.widget<NativeVideoViewer>(find.byType(NativeVideoViewer));
@@ -77,20 +81,6 @@ void main() {
     viewer.onPlaybackEnded!(kVideo.heroTag);
     await elapse(tester, const Duration(seconds: 1));
     expect(currentPage(tester), 2.0, reason: 'the stale ended event must not advance again');
-  });
-
-  testWidgets('a video that ended restarts when it becomes current again', (tester) async {
-    await pumpSlideshow(tester, assets: [kVideo, kImage1], initialPlayerState: kPlaying);
-    expect(currentPage(tester), 0.0);
-
-    tester.widget<NativeVideoViewer>(find.byType(NativeVideoViewer)).onPlaybackEnded!(kVideo.heroTag);
-    await tester.pump();
-    expect(currentPage(tester), 1.0, reason: 'the ended video advances');
-
-    tester.widget<PageView>(find.byType(PageView)).controller!.jumpToPage(0);
-    await tester.pump();
-    await tester.pump();
-    expect(FakeVideoPlayerNotifier.restartCalls, 1, reason: 'swiping back to the ended video replays it');
   });
 
   testWidgets('a single ended video restarts and stays armed on repeat', (tester) async {
@@ -111,34 +101,5 @@ void main() {
     await tester.pump();
     await tester.pump();
     expect(find.byIcon(Icons.pause), findsOneWidget, reason: 'the show keeps running after the in-place restart');
-  });
-
-  testWidgets('a gated preload cannot overwrite a manual swipe', (tester) async {
-    final assets = [imageAsset('img0'), imageAsset('img1'), imageAsset('img2'), imageAsset('img3')];
-    final timeline = GatedTimelineService((
-      assetSource: (index, count) async => assets.sublist(index, math.min(index + count, assets.length)),
-      bucketSource: () => Stream.value([Bucket(assetCount: assets.length)]),
-      origin: TimelineOrigin.main,
-    ));
-
-    await pumpSlideshow(tester, assets: assets, timeline: timeline, startAsset: assets[1]);
-    expect(currentPage(tester), 1.0);
-
-    // the image bound fires; advancing onto the "unloaded" slide 2 parks on the gate
-    await elapse(tester, const Duration(seconds: 6));
-    expect(currentPage(tester), 1.0, reason: 'the advance parks behind the gated preload');
-
-    // a swipe settles the show on the first slide while the preload is pending
-    tester.widget<PageView>(find.byType(PageView)).controller!.jumpToPage(0);
-    await tester.pump();
-    expect(currentPage(tester), 0.0);
-
-    timeline.gate.complete();
-    await tester.pump();
-    await tester.pump();
-    expect(currentPage(tester), 0.0, reason: 'the stale advance must not clobber the slide the swipe settled on');
-
-    await elapse(tester, const Duration(seconds: 6));
-    expect(currentPage(tester), 1.0, reason: 'the show keeps running from the settled slide');
   });
 }

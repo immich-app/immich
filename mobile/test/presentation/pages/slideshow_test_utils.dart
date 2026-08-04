@@ -10,46 +10,16 @@ import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
-import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
-import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/presentation/pages/drift_slideshow.page.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/services/gcast.service.dart';
+import 'package:mocktail/mocktail.dart';
 
-class StubAssetService implements AssetService {
-  const StubAssetService();
-
-  @override
-  Future<BaseAsset?> getAsset(BaseAsset asset) async => asset;
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-class StubGCastService implements GCastService {
-  @override
-  void Function(bool)? onConnectionState;
-
-  @override
-  void Function(Duration)? onCurrentTime;
-
-  @override
-  void Function(Duration)? onDuration;
-
-  @override
-  void Function(String)? onReceiverName;
-
-  @override
-  void Function(CastState)? onCastState;
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
+import '../../service.mocks.dart';
 
 class FakeVideoPlayerNotifier extends VideoPlayerNotifier {
   FakeVideoPlayerNotifier(VideoPlayerState initial) {
@@ -80,52 +50,6 @@ class FakeVideoPlayerNotifier extends VideoPlayerNotifier {
   void emit(VideoPlayerState next) => state = next;
 }
 
-class SeededAssetViewerNotifier extends AssetViewerStateNotifier {
-  SeededAssetViewerNotifier(this._asset);
-
-  final BaseAsset _asset;
-
-  @override
-  AssetViewerState build() {
-    super.build();
-    return AssetViewerState(currentAsset: _asset);
-  }
-}
-
-// reports everything from index 2 on as not loaded and parks its preload behind
-// the gate, so a test can hold an advance mid-preload without a giant timeline
-class GatedTimelineService extends TimelineService {
-  GatedTimelineService(super.query);
-
-  final Completer<void> gate = Completer<void>();
-
-  @override
-  bool hasRange(int index, int count) => index < 2 && super.hasRange(index, count);
-
-  @override
-  Future<void> preloadAssets(int index) => index < 2 ? super.preloadAssets(index) : gate.future;
-}
-
-final kImage1 = LocalAsset(
-  id: 'image1',
-  name: 'image1.jpg',
-  type: AssetType.image,
-  createdAt: DateTime(2025),
-  updatedAt: DateTime(2025, 2),
-  playbackStyle: AssetPlaybackStyle.image,
-  isEdited: false,
-);
-
-final kImage2 = LocalAsset(
-  id: 'image2',
-  name: 'image2.jpg',
-  type: AssetType.image,
-  createdAt: DateTime(2025, 5),
-  updatedAt: DateTime(2025, 6),
-  playbackStyle: AssetPlaybackStyle.image,
-  isEdited: false,
-);
-
 final kVideo = LocalAsset(
   id: 'video1',
   name: 'video1.mp4',
@@ -136,16 +60,6 @@ final kVideo = LocalAsset(
   durationMs: 30000,
   width: 1920,
   height: 1080,
-  isEdited: false,
-);
-
-LocalAsset imageAsset(String id) => LocalAsset(
-  id: id,
-  name: '$id.jpg',
-  type: AssetType.image,
-  createdAt: DateTime(2025),
-  updatedAt: DateTime(2025, 2),
-  playbackStyle: AssetPlaybackStyle.image,
   isEdited: false,
 );
 
@@ -167,20 +81,7 @@ TimelineService stubTimeline(List<BaseAsset> assets) => TimelineService((
   origin: TimelineOrigin.main,
 ));
 
-void mockSlideshowChannels(TestDefaultBinaryMessenger messenger) {
-  const codec = StandardMessageCodec();
-  messenger.setMockMessageHandler(
-    'dev.flutter.pigeon.wakelock_plus_platform_interface.WakelockPlusApi.toggle',
-    (message) async => codec.encodeMessage([null]),
-  );
-  // the binding never answers SystemChrome.setEnabledSystemUIMode, without
-  // this the slideshow's app bar toggle hangs and its buttons stay untappable
-  messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async => null);
-}
-
 double? currentPage(WidgetTester tester) => tester.widget<PageView>(find.byType(PageView)).controller?.page;
-
-final swallowedErrors = <Object>[];
 
 bool _isExpectedImageError(Object error) =>
     error.toString().contains('Null check operator used on a null value') ||
@@ -197,7 +98,6 @@ void drainImageErrors(WidgetTester tester) {
     if (!_isExpectedImageError(error)) {
       fail('unexpected framework exception: $error');
     }
-    swallowedErrors.add(error);
   }
 }
 
@@ -207,13 +107,12 @@ Future<void> elapse(WidgetTester tester, Duration duration) async {
   drainImageErrors(tester);
 }
 
-Future<ProviderContainer> pumpSlideshow(
+Future<void> pumpSlideshow(
   WidgetTester tester, {
   required List<BaseAsset> assets,
   VideoPlayerState? initialPlayerState,
   AppConfig config = const AppConfig(),
   TimelineService? timeline,
-  BaseAsset? startAsset,
 }) async {
   final effectiveTimeline = timeline ?? stubTimeline(assets);
 
@@ -228,18 +127,10 @@ Future<ProviderContainer> pumpSlideshow(
     fail('timeline did not load: totalAssets=${effectiveTimeline.totalAssets}');
   }
 
-  final container = ProviderContainer(
-    overrides: [
-      appConfigProvider.overrideWithValue(config),
-      assetServiceProvider.overrideWithValue(const StubAssetService()),
-      gCastServiceProvider.overrideWithValue(StubGCastService()),
-      if (startAsset != null) assetViewerProvider.overrideWith(() => SeededAssetViewerNotifier(startAsset)),
-      if (initialPlayerState != null)
-        videoPlayerProvider.overrideWith((_, _) => FakeVideoPlayerNotifier(initialPlayerState)),
-    ],
-  );
-  addTearDown(container.dispose);
-  addTearDown(() => tester.pumpWidget(const SizedBox.shrink()));
+  final assetService = MockAssetService();
+  when(
+    () => assetService.getAsset(any()),
+  ).thenAnswer((invocation) async => invocation.positionalArguments.first as BaseAsset);
 
   await tester.pumpWidget(
     EasyLocalization(
@@ -250,8 +141,14 @@ Future<ProviderContainer> pumpSlideshow(
       saveLocale: false,
       useFallbackTranslations: true,
       assetLoader: const CodegenLoader(),
-      child: UncontrolledProviderScope(
-        container: container,
+      child: ProviderScope(
+        overrides: [
+          appConfigProvider.overrideWithValue(config),
+          assetServiceProvider.overrideWithValue(assetService),
+          gCastServiceProvider.overrideWithValue(MockGCastService()),
+          if (initialPlayerState != null)
+            videoPlayerProvider.overrideWith((_, _) => FakeVideoPlayerNotifier(initialPlayerState)),
+        ],
         child: Builder(
           builder: (context) => MaterialApp(
             debugShowCheckedModeBanner: false,
@@ -264,9 +161,9 @@ Future<ProviderContainer> pumpSlideshow(
       ),
     ),
   );
+  addTearDown(() => tester.pumpWidget(const SizedBox.shrink()));
   await tester.pump();
   drainImageErrors(tester);
-  return container;
 }
 
 Future<void> advanceToVideoSlide(WidgetTester tester) async {
