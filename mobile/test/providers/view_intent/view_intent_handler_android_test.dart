@@ -13,6 +13,7 @@ import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler_android.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
@@ -30,6 +31,8 @@ class MockViewIntentHostApi extends Mock implements ViewIntentHostApi {}
 class MockViewIntentAssetResolver extends Mock implements ViewIntentAssetResolver {}
 
 class MockAssetService extends Mock implements AssetService {}
+
+class MockTimelineFactory extends Mock implements TimelineFactory {}
 
 class MockAppRouter extends Mock implements AppRouter {}
 
@@ -100,6 +103,7 @@ void main() {
   late TestViewIntentService viewIntentService;
   late MockViewIntentAssetResolver resolver;
   late MockAssetService assetService;
+  late MockTimelineFactory timelineFactory;
   late MockAppRouter router;
   late TestAuthNotifier authNotifier;
   late ProviderContainer container;
@@ -112,6 +116,7 @@ void main() {
     registerFallbackValue(FakePageRouteInfo());
     registerFallbackValue(<PageRouteInfo<dynamic>>[]);
     registerFallbackValue(FakeTimelineService());
+    registerFallbackValue(<BaseAsset>[]);
     registerFallbackValue(_remoteAsset(id: 'fallback-remote', localId: 'fallback-local'));
     registerFallbackValue(
       ViewIntentPayload(path: '/tmp/fallback.jpg', mimeType: 'image/jpeg', localAssetId: 'fallback'),
@@ -122,6 +127,7 @@ void main() {
     viewIntentService = TestViewIntentService();
     resolver = MockViewIntentAssetResolver();
     assetService = MockAssetService();
+    timelineFactory = MockTimelineFactory();
     router = MockAppRouter();
     payload = ViewIntentPayload(path: '/tmp/incoming.jpg', mimeType: 'image/jpeg', localAssetId: 'local-1');
     deepLinkAsset = _localAsset(id: 'local-1');
@@ -137,6 +143,7 @@ void main() {
         viewIntentServiceProvider.overrideWithValue(viewIntentService),
         viewIntentAssetResolverProvider.overrideWithValue(resolver),
         assetServiceProvider.overrideWithValue(assetService),
+        timelineFactoryProvider.overrideWithValue(timelineFactory),
         appRouterProvider.overrideWithValue(router),
         authProvider.overrideWith((ref) {
           authNotifier = TestAuthNotifier(ref, _authState(isAuthenticated: true));
@@ -258,6 +265,65 @@ void main() {
     verifyNever(() => router.replace(any()));
     verifyNever(() => router.replaceAll(any()));
   });
+
+  test('reopenRemoteAsset opens the restored asset in a regular deep-link timeline', () async {
+    final restoredAsset = _remoteAsset(id: 'remote-1', localId: 'local-1');
+    final restoredTimeline = await _createReadyTimelineService([restoredAsset], TimelineOrigin.deepLink);
+    addTearDown(restoredTimeline.dispose);
+    container.read(viewIntentCurrentProvider.notifier).setPayload(payload);
+
+    when(() => assetService.getRemoteAsset(restoredAsset.id)).thenAnswer((_) async => restoredAsset);
+    when(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink)).thenReturn(restoredTimeline);
+
+    final reopened = await handler.reopenRemoteAsset(restoredAsset.id);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(reopened, isTrue);
+    expect(container.read(assetViewerProvider).currentAsset, restoredAsset);
+    verify(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink)).called(1);
+    verify(() => router.popUntilRoot()).called(1);
+    final route = verify(() => router.push<Object?>(captureAny())).captured.single as PageRouteInfo<dynamic>;
+    expect(route.routeName, AssetViewerRoute.name);
+  });
+
+  test('reopenRemoteAsset opens a trashed asset in a trash deep-link timeline', () async {
+    final trashedAsset = _remoteAsset(id: 'remote-trashed', localId: 'local-1', deletedAt: DateTime(2026, 8, 4));
+    final trashTimeline = await _createReadyTimelineService([trashedAsset], TimelineOrigin.deepLinkTrash);
+    addTearDown(trashTimeline.dispose);
+    container.read(viewIntentCurrentProvider.notifier).setPayload(payload);
+
+    when(() => assetService.getRemoteAsset(trashedAsset.id)).thenAnswer((_) async => trashedAsset);
+    when(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLinkTrash)).thenReturn(trashTimeline);
+
+    final reopened = await handler.reopenRemoteAsset(trashedAsset.id);
+    await Future<void>.delayed(Duration.zero);
+
+    expect(reopened, isTrue);
+    expect(container.read(assetViewerProvider).currentAsset, trashedAsset);
+    expect(trashTimeline.origin, TimelineOrigin.deepLinkTrash);
+    verify(() => router.popUntilRoot()).called(1);
+    final route = verify(() => router.push<Object?>(captureAny())).captured.single as PageRouteInfo<dynamic>;
+    expect(route.routeName, AssetViewerRoute.name);
+  });
+
+  test('reopenRemoteAsset does not replace a newer view intent', () async {
+    final restoredAsset = _remoteAsset(id: 'remote-delayed', localId: 'local-1');
+    final lookup = Completer<RemoteAsset?>();
+    final newerPayload = ViewIntentPayload(path: '/tmp/newer.jpg', mimeType: 'image/jpeg', localAssetId: 'local-2');
+    container.read(viewIntentCurrentProvider.notifier).setPayload(payload);
+    when(() => assetService.getRemoteAsset(restoredAsset.id)).thenAnswer((_) => lookup.future);
+
+    final reopening = handler.reopenRemoteAsset(restoredAsset.id);
+    await pumpEventQueue();
+    container.read(viewIntentCurrentProvider.notifier).setPayload(newerPayload);
+    lookup.complete(restoredAsset);
+
+    expect(await reopening, isFalse);
+    verifyNever(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink));
+    verifyNever(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLinkTrash));
+    verifyNever(() => router.popUntilRoot());
+    verifyNever(() => router.push<Object?>(any()));
+  });
 }
 
 AuthState _authState({required bool isAuthenticated}) {
@@ -286,7 +352,7 @@ LocalAsset _localAsset({required String id, String? checksum = 'checksum-1', Str
   );
 }
 
-RemoteAsset _remoteAsset({required String id, required String? localId}) {
+RemoteAsset _remoteAsset({required String id, required String? localId, DateTime? deletedAt}) {
   return RemoteAsset(
     id: id,
     localId: localId,
@@ -296,6 +362,7 @@ RemoteAsset _remoteAsset({required String id, required String? localId}) {
     type: AssetType.image,
     createdAt: DateTime(2026, 4, 20),
     updatedAt: DateTime(2026, 4, 20),
+    deletedAt: deletedAt,
     isEdited: false,
   );
 }

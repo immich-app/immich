@@ -47,6 +47,39 @@ void main() {
     addTearDown(container.dispose);
   });
 
+  test('replaces a device-backed viewer asset after upload when the local database cannot link it', () async {
+    final localAsset = LocalAssetFactory.create(id: 'local-outside-backup');
+    final remoteAsset = RemoteAssetFactory.create(id: 'remote-outside-backup');
+
+    container.read(assetViewerProvider.notifier).setAsset(localAsset);
+    when(() => assetService.watchRemoteAsset(remoteAsset.id)).thenAnswer((_) => Stream.value(remoteAsset));
+    when(
+      () => uploadService.uploadManual(
+        any(),
+        cancelToken: any(named: 'cancelToken'),
+        callbacks: any(named: 'callbacks'),
+      ),
+    ).thenAnswer((invocation) async {
+      final callbacks = invocation.namedArguments[#callbacks] as UploadCallbacks;
+      callbacks.onSuccess?.call(localAsset.id, remoteAsset.id);
+    });
+
+    await container
+        .read(assetUploadCoordinatorProvider)
+        .upload(
+          source: ActionSource.viewer,
+          assets: [localAsset],
+          cancelToken: Completer<void>(),
+          callbacks: const UploadCallbacks(),
+        );
+
+    final currentAsset = container.read(assetViewerProvider).currentAsset;
+    expect(currentAsset, isA<RemoteAsset>());
+    expect(currentAsset?.remoteId, remoteAsset.id);
+    expect(currentAsset?.localId, localAsset.id);
+    expect(currentAsset?.isMerged, isTrue);
+  });
+
   test('uploads a path-only viewer asset as a file and replaces it with the synchronized remote asset', () async {
     const path = 'C:/cache/view_intent_1.jpg';
     final localAsset = LocalAssetFactory.create(id: '-1');

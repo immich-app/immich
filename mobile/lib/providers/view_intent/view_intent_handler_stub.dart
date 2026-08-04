@@ -15,4 +15,7 @@ class StubViewIntentHandler implements ViewIntentHandler {
 
   @override
   Future<void> handle(ViewIntentPayload attachment) async {}
+
+  @override
+  Future<bool> reopenRemoteAsset(String remoteAssetId) async => false;
 }

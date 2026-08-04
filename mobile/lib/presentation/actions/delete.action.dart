@@ -10,6 +10,7 @@ import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_asset_action_coordinator.provider.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
@@ -47,6 +48,11 @@ class DeleteAction extends AssetActionBuilder {
 
   @override
   ActionItem? create(BuildContext context, WidgetRef ref) {
+    final viewIntentCoordinator = ref.watch(viewIntentAssetActionCoordinatorProvider);
+    if (!viewIntentCoordinator.canDelete(source)) {
+      return null;
+    }
+
     final trash = ref.watch(_stateProvider(source).select((state) => state?.trash));
     if (trash == null) {
       return null;
@@ -68,6 +74,7 @@ class DeleteAction extends AssetActionBuilder {
     final (:localIds, :remoteIds, :trash) = state;
     final toastService = ref.read(toastServiceProvider);
     final clearSelection = ref.read(clearSelectionProvider(source));
+    final viewIntentCoordinator = ref.read(viewIntentAssetActionCoordinatorProvider);
 
     try {
       final String? message;
@@ -85,6 +92,7 @@ class DeleteAction extends AssetActionBuilder {
 
       toastService.success(message);
       clearSelection();
+      await viewIntentCoordinator.afterDelete(source: source, remoteAssetIds: remoteIds, movedToTrash: trash);
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to delete assets");
     }
@@ -92,11 +100,11 @@ class DeleteAction extends AssetActionBuilder {
 
   Future<String?> _removeLocalAssets(BuildContext context, WidgetRef ref, List<String> localIds) async {
     final count = await _cleanupLocalAssets(context, ref, localIds);
-    if (count <= 0 || !context.mounted) {
+    if (count <= 0) {
       return null;
     }
 
-    return context.t.cleanup_deleted_assets(count: count);
+    return StaticTranslations.instance.cleanup_deleted_assets(count: count);
   }
 
   Future<String?> _moveToTrash(
@@ -106,14 +114,11 @@ class DeleteAction extends AssetActionBuilder {
     List<String> localIds,
   ) async {
     final assetService = ref.read(assetServiceProvider);
+    final message = context.t.trash_action_prompt(count: remoteIds.length);
     if (localIds.isNotEmpty) {
       await _cleanupLocalAssets(context, ref, localIds);
-      if (!context.mounted) {
-        return null;
-      }
     }
 
-    final message = context.t.trash_action_prompt(count: remoteIds.length);
     await assetService.trash(remoteIds);
     return message;
   }

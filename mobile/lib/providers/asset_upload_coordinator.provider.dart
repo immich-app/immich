@@ -27,9 +27,39 @@ class AssetUploadCoordinator {
   }) async {
     final viewIntentFilePath = source == ActionSource.viewer ? _ref.read(viewIntentFilePathProvider) : null;
     if (viewIntentFilePath == null) {
+      final viewerAsset = source == ActionSource.viewer && assets.length == 1 ? assets.single : null;
+      String? uploadedRemoteAssetId;
+      final viewerNotifier = _ref.read(assetViewerProvider.notifier);
       await _ref
           .read(foregroundUploadServiceProvider)
-          .uploadManual(assets, cancelToken: cancelToken, callbacks: callbacks);
+          .uploadManual(
+            assets,
+            cancelToken: cancelToken,
+            callbacks: UploadCallbacks(
+              onProgress: callbacks.onProgress,
+              onSuccess: (localId, remoteId) {
+                if (localId == viewerAsset?.localId) {
+                  uploadedRemoteAssetId = remoteId;
+                }
+                callbacks.onSuccess?.call(localId, remoteId);
+              },
+              onError: callbacks.onError,
+              onICloudProgress: callbacks.onICloudProgress,
+            ),
+          );
+
+      final remoteAssetId = uploadedRemoteAssetId;
+      if (viewerAsset == null || remoteAssetId == null || cancelToken.isCompleted) {
+        return;
+      }
+
+      final remoteAsset = await _waitForRemoteAsset(remoteAssetId);
+      final latestAsset = _ref.read(assetViewerProvider).currentAsset;
+      if (remoteAsset == null || latestAsset == null || !latestAsset.refersToSameAsset(viewerAsset)) {
+        return;
+      }
+
+      viewerNotifier.setAsset(remoteAsset.copyWith(localId: viewerAsset.id));
       return;
     }
 

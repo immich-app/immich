@@ -12,6 +12,8 @@ abstract class ViewIntentHandler {
   Future<void> flushDeferredViewIntent();
 
   Future<void> handle(ViewIntentPayload attachment);
+
+  Future<bool> reopenRemoteAsset(String remoteAssetId);
 }
 
 final viewIntentHandlerProvider = Provider<ViewIntentHandler>((ref) {
