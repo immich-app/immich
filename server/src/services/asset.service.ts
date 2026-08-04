@@ -506,7 +506,7 @@ export class AssetService extends BaseService {
 
   private async updateExif(dto: {
     id: string;
-    description?: string;
+    description?: string | null;
     dateTimeOriginal?: string;
     latitude?: number;
     longitude?: number;

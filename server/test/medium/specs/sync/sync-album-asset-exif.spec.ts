@@ -51,7 +51,7 @@ describe(SyncRequestType.AlbumAssetExifsV1, () => {
           city: null,
           country: null,
           dateTimeOriginal: null,
-          description: '',
+          description: null,
           exifImageHeight: null,
           exifImageWidth: null,
           exposureTime: null,

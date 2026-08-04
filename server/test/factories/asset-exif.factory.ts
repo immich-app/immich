@@ -21,7 +21,7 @@ export class AssetExifFactory {
       colorspace: null,
       country: 'United States of America',
       dateTimeOriginal: factory.date(),
-      description: '',
+      description: null,
       exifImageHeight: 420,
       exifImageWidth: 42,
       exposureTime: null,
