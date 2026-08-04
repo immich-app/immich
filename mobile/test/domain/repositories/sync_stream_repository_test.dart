@@ -349,5 +349,30 @@ void main() {
       expect(rows, hasLength(1));
       expect(rows.single.id, equals('new-id'));
     });
+
+    test('one payload with duplicate (ownerId, checksum) and null library keeps the last asset', () async {
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateAssetsV1([
+        _createAsset(id: 'first-id', checksum: 'AAA', fileName: 'photo.jpg'),
+        _createAsset(id: 'last-id', checksum: 'AAA', fileName: 'photo.jpg'),
+      ]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows, hasLength(1));
+      expect(rows.single.id, equals('last-id'));
+    });
+
+    test('one payload with duplicate (ownerId, libraryId, checksum) keeps the last asset', () async {
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateAssetsV1([
+        _createAsset(id: 'first-id', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1'),
+        _createAsset(id: 'last-id', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1'),
+      ]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows, hasLength(1));
+      expect(rows.single.id, equals('last-id'));
+      expect(rows.single.libraryId, equals('lib-1'));
+    });
   });
 }

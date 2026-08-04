@@ -198,9 +198,15 @@ class SyncStreamRepository extends DriftDatabaseRepository {
   Future<void> updateAssetsV1(Iterable<SyncAssetV1> data, {String debugLabel = 'user'}) async {
     try {
       await _db.batch((batch) {
+        // Keep only the last asset per partial-index key; server order is authoritative
+        final deduped = <(String, String, String?), SyncAssetV1>{};
         for (final asset in data) {
-          // Avoid SqliteException(2067) when server re-issues a new id for
-          // the same (ownerId, checksum). #22522 #27186
+          deduped[(asset.ownerId, asset.checksum, asset.libraryId)] = asset;
+        }
+
+        // Avoid SqliteException(2067) when server re-issues a new id for
+        // the same (ownerId, checksum). #22522 #27186
+        for (final asset in deduped.values) {
           _enqueueRemoteAssetDedupe(
             batch,
             id: asset.id,
@@ -208,7 +214,9 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             checksum: asset.checksum,
             libraryId: asset.libraryId,
           );
+        }
 
+        for (final asset in deduped.values) {
           final companion = RemoteAssetEntityCompanion(
             name: Value(asset.originalFileName),
             type: Value(asset.type.toAssetType()),
@@ -247,8 +255,14 @@ class SyncStreamRepository extends DriftDatabaseRepository {
   Future<void> updateAssetsV2(Iterable<SyncAssetV2> data, {String debugLabel = 'user'}) async {
     try {
       await _db.batch((batch) {
+        // Keep only the last asset per partial-index key; server order is authoritative
+        final deduped = <(String, String, String?), SyncAssetV2>{};
         for (final asset in data) {
-          // See updateAssetsV1 for why this dedupe is required. #22522 #27186
+          deduped[(asset.ownerId, asset.checksum, asset.libraryId)] = asset;
+        }
+
+        // See updateAssetsV1 for why this dedupe is required. #22522 #27186
+        for (final asset in deduped.values) {
           _enqueueRemoteAssetDedupe(
             batch,
             id: asset.id,
@@ -256,7 +270,9 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             checksum: asset.checksum,
             libraryId: asset.libraryId,
           );
+        }
 
+        for (final asset in deduped.values) {
           final companion = RemoteAssetEntityCompanion(
             name: Value(asset.originalFileName),
             type: Value(asset.type.toAssetType()),
