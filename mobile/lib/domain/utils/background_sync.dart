@@ -151,9 +151,7 @@ class BackgroundSyncManager {
         .then((result) {
           final success = result ?? false;
           onRemoteSyncComplete?.call(success);
-          if (!success) {
-            _syncQueued = false;
-          }
+          _syncQueued &= success;
           return success;
         })
         .catchError((error) {
