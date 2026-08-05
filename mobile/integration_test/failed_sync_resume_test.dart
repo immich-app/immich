@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/main.dart' as app;
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
-import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/wm_executor.dart';
 import 'package:integration_test/integration_test.dart';
 
@@ -137,7 +137,7 @@ void main() {
     // future, so it is not awaited here.
     final notifier = container.read(appStateProvider.notifier);
     await notifier.handleAppPause();
-    notifier.handleAppResume();
+    unawaited(notifier.handleAppResume());
 
     await server
         .streamOpenedNth(2)
