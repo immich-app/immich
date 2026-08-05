@@ -30,7 +30,7 @@ class MotionPhotoPlayButton extends ConsumerWidget {
             child: Center(
               child: _MotionButton(
                 isPlaying: isPlaying,
-                onPressed: ref.read(isPlayingMotionVideoProvider.notifier).toggle,
+                onPressed: ref.watch(isPlayingMotionVideoProvider.notifier).toggle,
               ),
             ),
           ),

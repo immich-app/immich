@@ -16,7 +16,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final themeProvider = ref.read(immichThemeProvider);
+    final themeProvider = ref.watch(immichThemeProvider);
     final themeConfig = ref.watch(appConfigProvider.select((config) => config.theme));
 
     const tileSize = 55.0;

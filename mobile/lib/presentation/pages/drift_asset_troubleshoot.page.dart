@@ -10,13 +10,13 @@ import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 
 @RoutePage()
-class AssetTroubleshootPage extends ConsumerWidget {
+class AssetTroubleshootPage extends StatelessWidget {
   final BaseAsset asset;
 
   const AssetTroubleshootPage({super.key, required this.asset});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('asset_troubleshoot'.tr())),
       body: SingleChildScrollView(
@@ -29,13 +29,13 @@ class AssetTroubleshootPage extends ConsumerWidget {
   }
 }
 
-class _AssetDetailsView extends ConsumerWidget {
+class _AssetDetailsView extends StatelessWidget {
   final BaseAsset asset;
 
   const _AssetDetailsView({required this.asset});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

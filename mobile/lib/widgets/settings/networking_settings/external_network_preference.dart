@@ -36,7 +36,7 @@ class ExternalNetworkPreference extends HookConsumerWidget {
       entries.value[index] = entries.value[index].copyWith(url: url, status: status);
 
       await saveEndpointList();
-      if (status == AuxCheckStatus.valid) {
+      if (status == AuxCheckStatus.valid && context.mounted) {
         await ref.read(apiServiceProvider).updateHeaders();
       }
     }

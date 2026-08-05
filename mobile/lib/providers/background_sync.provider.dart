@@ -9,6 +9,7 @@ final backgroundSyncProvider = Provider<BackgroundSyncManager>((ref) {
   final manager = BackgroundSyncManager(
     onRemoteSyncStart: () {
       syncStatusNotifier.startRemoteSync();
+      // ignore: dispose-provided-instances
       final backupProvider = ref.read(driftBackupProvider.notifier);
       if (backupProvider.mounted) {
         backupProvider.updateError(BackupError.none);
@@ -16,6 +17,7 @@ final backgroundSyncProvider = Provider<BackgroundSyncManager>((ref) {
     },
     onRemoteSyncComplete: (isSuccess) {
       syncStatusNotifier.completeRemoteSync();
+      // ignore: dispose-provided-instances
       final backupProvider = ref.read(driftBackupProvider.notifier);
       if (backupProvider.mounted) {
         backupProvider.updateError(isSuccess == true ? BackupError.none : BackupError.syncFailed);
