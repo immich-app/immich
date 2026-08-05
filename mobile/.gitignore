@@ -32,6 +32,9 @@
 .pub/
 /build/
 lib/**/*.drift.dart
+# ...except the hand-written forwarding shims that point at package:immich_data
+!lib/infrastructure/entities/*.entity.drift.dart
+!lib/infrastructure/repositories/*.repository.drift.dart
 lib/routing/router.gr.dart
 test/drift/main/generated/
 

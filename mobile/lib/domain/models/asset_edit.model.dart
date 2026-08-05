@@ -1,25 +1,3 @@
-import "package:openapi/api.dart" show CropParameters, MirrorParameters, RotateParameters;
-
-enum AssetEditAction { rotate, crop, mirror, other }
-
-sealed class AssetEdit {
-  const AssetEdit();
-}
-
-class CropEdit extends AssetEdit {
-  final CropParameters parameters;
-
-  const CropEdit(this.parameters);
-}
-
-class RotateEdit extends AssetEdit {
-  final RotateParameters parameters;
-
-  const RotateEdit(this.parameters);
-}
-
-class MirrorEdit extends AssetEdit {
-  final MirrorParameters parameters;
-
-  const MirrorEdit(this.parameters);
-}
+// MOVED to package:immich_data — this shim keeps existing imports working
+// during the migration. New code should import the package path directly.
+export 'package:immich_data/model/asset_edit.dart';

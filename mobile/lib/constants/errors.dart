@@ -1,11 +1,3 @@
-/// Base class which is used to check if an Exception is a custom exception
-sealed class ImmichErrors {
-  const ImmichErrors();
-}
-
-class NoResponseDtoError extends ImmichErrors implements Exception {
-  const NoResponseDtoError();
-
-  @override
-  String toString() => "Response Dto is null";
-}
+// Moved to package:immich_data. Import that instead
+// TODO(agg23): Remove
+export 'package:immich_data/server/errors.dart';
