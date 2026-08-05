@@ -263,15 +263,17 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
 
     state = state.copyWith(error: BackupError.none);
 
+    // A pause during the recount below nulls _cancelToken, so the run keeps its own reference.
+    final cancelToken = Completer<void>();
+    _cancelToken = cancelToken;
+
     // Re-baseline the counters against the same DB read that feeds this run's candidate list,
     // otherwise a resume counts duplicate successes against the old baseline (#26215).
     await getBackupStatus(userId);
 
-    _cancelToken = Completer<void>();
-
     return _foregroundUploadService.uploadCandidates(
       userId,
-      _cancelToken!,
+      cancelToken,
       callbacks: UploadCallbacks(
         onProgress: _handleForegroundBackupProgress,
         onSuccess: _handleForegroundBackupSuccess,
