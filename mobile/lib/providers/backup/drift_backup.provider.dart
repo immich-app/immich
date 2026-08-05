@@ -258,7 +258,7 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   Future<void> startForegroundBackup(String userId) async {
     // Cancel any existing backup before starting a new one
     if (_cancelToken != null) {
-      stopForegroundBackup();
+      stopForegroundBackup(reason: "restarting the backup");
     }
 
     state = state.copyWith(error: BackupError.none);
@@ -283,7 +283,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  void stopForegroundBackup() {
+  void stopForegroundBackup({required String reason}) {
+    if (_cancelToken != null) {
+      _logger.info("Foreground backup cancelled: $reason");
+    }
     _cancelToken?.complete();
     _cancelToken = null;
     _uploadSpeedManager.clear();

@@ -143,7 +143,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                     onStart: () async => await startBackup(),
                     onStop: () {
                       syncSuccess = null;
-                      backupNotifier.stopForegroundBackup();
+                      backupNotifier.stopForegroundBackup(reason: "backup button toggled off");
                     },
                   ),
                   switch (error) {

@@ -199,7 +199,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _performPause() {
     if (_ref.read(authProvider).isAuthenticated) {
-      _ref.read(driftBackupProvider.notifier).stopForegroundBackup();
+      _ref.read(driftBackupProvider.notifier).stopForegroundBackup(reason: "the app being sent to the background");
 
       _ref.read(websocketProvider.notifier).disconnect();
     }
