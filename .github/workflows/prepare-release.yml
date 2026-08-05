@@ -17,10 +17,6 @@ on:
           - prepatch
           - prerelease
           - release
-      mobileBump:
-        description: 'Bump mobile build number'
-        required: false
-        type: boolean
       skipTranslations:
         description: 'Skip translations'
         required: false
@@ -79,8 +75,7 @@ jobs:
       - name: Bump version
         env:
           RELEASE_TYPE: ${{ inputs.releaseType }}
-          MOBILE_BUMP: ${{ inputs.mobileBump }}
-        run: mise //:release --type "${RELEASE_TYPE}" --mobile "${MOBILE_BUMP}"
+        run: mise //:release --type "${RELEASE_TYPE}"
 
       - id: output
         run: |
