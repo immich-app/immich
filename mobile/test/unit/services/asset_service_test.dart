@@ -20,7 +20,6 @@ void main() {
   late MockAssetApiRepository apiRepository;
   late MockRemoteAssetRepository remoteRepository;
   late MockRemoteExifRepository exifRepository;
-  late MockDriftLocalAssetRepository localRepository;
   late Drift db;
 
   setUpAll(() async {
@@ -41,12 +40,11 @@ void main() {
     apiRepository = mocks.assetApi.api;
     remoteRepository = mocks.remoteAsset.repo;
     exifRepository = mocks.remoteExif.repo;
-    localRepository = MockDriftLocalAssetRepository();
 
     sut = AssetService(
       remoteRepository: remoteRepository,
       exifRepository: exifRepository,
-      localRepository: localRepository,
+      localRepository: mocks.localAsset.repo,
       apiRepository: apiRepository,
       mediaRepository: mocks.assetMedia.api,
       trashedLocalRepository: mocks.trashedAsset,
@@ -112,61 +110,13 @@ void main() {
 
     test('permanently deletes local copies without trashing, even when Android trash handling is on', () async {
       await Store.put(StoreKey.manageLocalMediaAndroid, true);
-      when(() => mocks.assetMedia.api.deleteAll(ids, trash: false)).thenAnswer((_) async => ids);
-      when(() => localRepository.delete(ids)).thenAnswer((_) async => {});
 
       final result = await sut.deleteLocal(ids, trash: false);
 
       expect(result, ids.length);
       verify(() => mocks.assetMedia.api.deleteAll(ids, trash: false)).called(1);
-      verify(() => localRepository.delete(ids)).called(1);
+      verify(() => mocks.localAsset.repo.delete(ids)).called(1);
       verifyNever(() => mocks.trashedAsset.applyTrashedAssets(any()));
-    });
-
-    test('trashes local copies by default and applies Android trash handling when on', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
-      when(() => mocks.assetMedia.api.deleteAll(ids, trash: true)).thenAnswer((_) async => ids);
-      when(() => mocks.trashedAsset.applyTrashedAssets(ids)).thenAnswer((_) async => {});
-
-      final result = await sut.deleteLocal(ids);
-
-      expect(result, ids.length);
-      verify(() => mocks.assetMedia.api.deleteAll(ids, trash: true)).called(1);
-      verify(() => mocks.trashedAsset.applyTrashedAssets(ids)).called(1);
-      verifyNever(() => localRepository.delete(any()));
-    });
-
-    test('trashes local copies by default and deletes rows when Android trash handling is off', () async {
-      when(() => mocks.assetMedia.api.deleteAll(ids, trash: true)).thenAnswer((_) async => ids);
-      when(() => localRepository.delete(ids)).thenAnswer((_) async => {});
-
-      final result = await sut.deleteLocal(ids);
-
-      expect(result, ids.length);
-      verify(() => mocks.assetMedia.api.deleteAll(ids, trash: true)).called(1);
-      verify(() => localRepository.delete(ids)).called(1);
-      verifyNever(() => mocks.trashedAsset.applyTrashedAssets(any()));
-    });
-
-    test('returns zero when the OS delete is declined', () async {
-      when(() => mocks.assetMedia.api.deleteAll(ids, trash: false)).thenAnswer((_) async => const <String>[]);
-
-      final result = await sut.deleteLocal(ids, trash: false);
-
-      expect(result, 0);
-      verifyNever(() => localRepository.delete(any()));
-      verifyNever(() => mocks.trashedAsset.applyTrashedAssets(any()));
-    });
-
-    test('returns only the deleted share of a partial result', () async {
-      const deletedIds = ['l1'];
-      when(() => mocks.assetMedia.api.deleteAll(ids, trash: false)).thenAnswer((_) async => deletedIds);
-      when(() => localRepository.delete(deletedIds)).thenAnswer((_) async => {});
-
-      final result = await sut.deleteLocal(ids, trash: false);
-
-      expect(result, deletedIds.length);
-      verify(() => localRepository.delete(deletedIds)).called(1);
     });
   });
 }

@@ -63,6 +63,7 @@ class RepositoryMocks {
     _stubAssetApiRepository();
     _stubAssetMediaRepository();
     _stubDownloadRepository();
+    _stubTrashedAssetRepository();
   }
 
   void _stubRemoteAssetRepository() {
@@ -83,6 +84,7 @@ class RepositoryMocks {
   void _stubLocalAssetRepository() {
     when(localAsset.reconcileHashesFromCloudId).thenAnswer((_) async => {});
     when(localAsset.updateHashes).thenAnswer((_) async => {});
+    when(localAsset.delete).thenAnswer((_) async => {});
   }
 
   void _stubNativeSyncApi() {
@@ -94,12 +96,17 @@ class RepositoryMocks {
   }
 
   void _stubAssetMediaRepository() {
+    when(assetMedia.deleteAll).thenAnswer((inv) async => inv.positionalArguments.first as List<String>);
     when(assetMedia.shareAssets).thenAnswer((_) async => 1);
     when(assetMedia.getOriginalFilename).thenAnswer((_) async => null);
   }
 
   void _stubDownloadRepository() {
     when(download.downloadAllAssets).thenAnswer((_) async => const []);
+  }
+
+  void _stubTrashedAssetRepository() {
+    when(() => trashedAsset.applyTrashedAssets(any())).thenAnswer((_) async => {});
   }
 }
 
@@ -243,6 +250,9 @@ extension type const LocalAssetRepositoryStub(MockDriftLocalAssetRepository repo
 
   Future<void> Function() get updateHashes =>
       () => repo.updateHashes(any());
+
+  Future<void> Function() get delete =>
+      () => repo.delete(any());
 }
 
 extension type const RemoteAssetRepositoryStub(MockRemoteAssetRepository repo)
@@ -382,6 +392,9 @@ extension type const AssetApiRepositoryStub(MockAssetApiRepository api) implemen
 }
 
 extension type const AssetMediaRepositoryStub(MockAssetMediaRepository api) implements Stub<MockAssetMediaRepository> {
+  Future<List<String>> Function() get deleteAll =>
+      () => api.deleteAll(any(), trash: any(named: 'trash'));
+
   Future<int> Function() get shareAssets =>
       () => api.shareAssets(
         any(),

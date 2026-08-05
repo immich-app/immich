@@ -46,14 +46,10 @@ class AssetMediaRepository {
   }
 
   Future<List<String>> deleteAll(List<String> ids, {bool trash = true}) async {
-    if (CurrentPlatform.isAndroid) {
-      if (trash && await _androidSupportsTrash()) {
-        return PhotoManager.editor.android.moveToTrash(
-          ids.map((e) => AssetEntity(id: e, width: 1, height: 1, typeInt: 0)).toList(),
-        );
-      } else {
-        return PhotoManager.editor.deleteWithIds(ids);
-      }
+    if (trash && CurrentPlatform.isAndroid && await _androidSupportsTrash()) {
+      return PhotoManager.editor.android.moveToTrash(
+        ids.map((e) => AssetEntity(id: e, width: 1, height: 1, typeInt: 0)).toList(),
+      );
     }
     return PhotoManager.editor.deleteWithIds(ids);
   }
