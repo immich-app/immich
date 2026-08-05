@@ -84,7 +84,7 @@ export const searchTypeTitle = (type: string) => {
       return $t('full_path_or_folder');
     }
     case 'ocr': {
-      return $t('text_in_images');
+      return $t('ocr');
     }
     default: {
       return undefined;

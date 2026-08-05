@@ -88,6 +88,7 @@
       {#if showAllPeople || people.length > peopleList.length}
         <div class="mt-2 flex justify-center">
           <Button
+            size="small"
             color="primary"
             variant="ghost"
             shape="round"

@@ -37,6 +37,7 @@
   } from './search-bar-utils';
   import { onMount } from 'svelte';
   import { searchManager } from '$lib/managers/search-manager.svelte';
+  import SearchButton from './SearchButton.svelte';
 
   interface Props {
     id: string;
@@ -196,16 +197,14 @@
         <Text class="py-5" fontWeight="medium" aria-hidden={true}>{$t('filter_by')}</Text>
         <div class="flex flex-wrap gap-2">
           {#each filters as item (item.name)}
-            <Button
-              shape="round"
-              color={activeFilter === item.name || item.activeTitle() ? 'primary' : 'secondary'}
-              variant="outline"
+            <SearchButton
+              active={activeFilter === item.name || item.activeTitle()}
               leadingIcon={item.icon}
+              class={activeFilter === item.name ? 'border-2' : undefined}
               onclick={() => (activeFilter = item.name)}
-              class="{activeFilter === item.name || item.activeTitle() ? undefined : 'bg-transparent'}
-              {activeFilter === item.name ? 'border-2' : undefined}"
-              >{item.activeTitle() ?? item.title}
-            </Button>
+            >
+              {item.activeTitle() ?? item.title}
+            </SearchButton>
           {/each}
         </div>
       </div>
@@ -238,6 +237,7 @@
       <div class="my-5 h-px w-full bg-light-200 dark:bg-dark-600"></div>
       <div class="flex gap-2 px-5 pb-5">
         <Button
+          size="small"
           variant={advancedFiltersSet ? 'outline' : 'ghost'}
           leadingIcon={mdiTune}
           trailingIcon={activeFilter === 'advanced' ? mdiChevronUp : mdiChevronDown}
@@ -245,10 +245,15 @@
           >{$t('advanced_filters')}</Button
         >
         <div class="flex-1"></div>
-        <Button shape="round" variant="outline" color="secondary" class="bg-transparent" onclick={() => clear()}
-          >{$t('clear_all')}</Button
+        <Button
+          size="small"
+          shape="round"
+          variant="outline"
+          color="secondary"
+          class="bg-transparent"
+          onclick={() => clear()}>{$t('clear_all')}</Button
         >
-        <Button shape="round" onclick={() => onSearch()}>{$t('search')}</Button>
+        <Button size="small" shape="round" onclick={() => onSearch()}>{$t('search')}</Button>
       </div>
     </div>
   {/if}

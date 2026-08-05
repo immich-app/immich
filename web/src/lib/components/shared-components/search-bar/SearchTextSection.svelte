@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { searchTypeTitle } from '$lib/components/shared-components/search-bar/search-bar-utils';
+  import { searchTypeTitle } from './search-bar-utils';
+  import SearchButton from './SearchButton.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { searchManager } from '$lib/managers/search-manager.svelte';
-  import { Button, Text } from '@immich/ui';
-  import { mdiCheck } from '@mdi/js';
+  import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
   let queryType = $derived(searchManager.filter.queryType);
@@ -18,53 +18,23 @@
     <Text class="mb-5">{$t('search_type_description')}</Text>
     <div class="flex flex-wrap gap-2">
       {#if featureFlagsManager.value.smartSearch}
-        <Button
-          shape="round"
-          color={queryType === 'smart' ? 'primary' : 'secondary'}
-          variant="outline"
-          onclick={() => setType('smart')}
-          class={queryType === 'smart' ? undefined : 'bg-transparent'}
-          leadingIcon={queryType === 'smart' ? mdiCheck : undefined}
-          >{$t('context')}
-        </Button>
+        <SearchButton checked active={queryType === 'smart'} onclick={() => setType('smart')}>
+          {$t('context')}
+        </SearchButton>
       {/if}
-      <Button
-        shape="round"
-        color={queryType === 'metadata' ? 'primary' : 'secondary'}
-        variant="outline"
-        onclick={() => setType('metadata')}
-        class={queryType === 'metadata' ? undefined : 'bg-transparent'}
-        leadingIcon={queryType === 'metadata' ? mdiCheck : undefined}
-        >{searchTypeTitle('metadata')}
-      </Button>
-      <Button
-        shape="round"
-        color={queryType === 'description' ? 'primary' : 'secondary'}
-        variant="outline"
-        onclick={() => setType('description')}
-        class={queryType === 'description' ? undefined : 'bg-transparent'}
-        leadingIcon={queryType === 'description' ? mdiCheck : undefined}
-        >{searchTypeTitle('description')}
-      </Button>
-      <Button
-        shape="round"
-        color={queryType === 'fullPath' ? 'primary' : 'secondary'}
-        variant="outline"
-        onclick={() => setType('fullPath')}
-        class={queryType === 'fullPath' ? undefined : 'bg-transparent'}
-        leadingIcon={queryType === 'fullPath' ? mdiCheck : undefined}
-        >{searchTypeTitle('fullPath')}
-      </Button>
+      <SearchButton checked active={queryType === 'metadata'} onclick={() => setType('metadata')}>
+        {searchTypeTitle('metadata')}
+      </SearchButton>
+      <SearchButton checked active={queryType === 'description'} onclick={() => setType('description')}>
+        {searchTypeTitle('description')}
+      </SearchButton>
+      <SearchButton checked active={queryType === 'fullPath'} onclick={() => setType('fullPath')}>
+        {searchTypeTitle('fullPath')}
+      </SearchButton>
       {#if featureFlagsManager.value.ocr}
-        <Button
-          shape="round"
-          color={queryType === 'ocr' ? 'primary' : 'secondary'}
-          variant="outline"
-          onclick={() => setType('ocr')}
-          class={queryType === 'ocr' ? undefined : 'bg-transparent'}
-          leadingIcon={queryType === 'ocr' ? mdiCheck : undefined}
-          >{searchTypeTitle('ocr')}
-        </Button>
+        <SearchButton checked active={queryType === 'ocr'} onclick={() => setType('ocr')}>
+          {searchTypeTitle('ocr')}
+        </SearchButton>
       {/if}
     </div>
   </fieldset>

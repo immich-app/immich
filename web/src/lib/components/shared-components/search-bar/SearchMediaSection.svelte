@@ -1,10 +1,10 @@
 <script lang="ts">
   import { searchMediaTitle } from './search-bar-utils';
   import { MediaType } from '$lib/constants';
-  import { Button, Text } from '@immich/ui';
-  import { mdiCheck } from '@mdi/js';
+  import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import { searchManager } from '$lib/managers/search-manager.svelte';
+  import SearchButton from './SearchButton.svelte';
 
   interface Props {
     title: string | undefined;
@@ -25,33 +25,15 @@
     <Text class="pb-5">{$t('media_type_description')}</Text>
 
     <div class="flex flex-wrap gap-2">
-      <Button
-        shape="round"
-        color={filteredMedia === MediaType.All ? 'primary' : 'secondary'}
-        variant="outline"
-        onclick={() => setMedia(MediaType.All)}
-        class={filteredMedia === MediaType.All ? undefined : 'bg-transparent'}
-        leadingIcon={filteredMedia === MediaType.All ? mdiCheck : undefined}
-        >{$t('all')}
-      </Button>
-      <Button
-        shape="round"
-        color={filteredMedia === MediaType.Image ? 'primary' : 'secondary'}
-        variant="outline"
-        onclick={() => setMedia(MediaType.Image)}
-        class={filteredMedia === MediaType.Image ? undefined : 'bg-transparent'}
-        leadingIcon={filteredMedia === MediaType.Image ? mdiCheck : undefined}
-        >{$t('image')}
-      </Button>
-      <Button
-        shape="round"
-        color={filteredMedia === MediaType.Video ? 'primary' : 'secondary'}
-        variant="outline"
-        onclick={() => setMedia(MediaType.Video)}
-        class={filteredMedia === MediaType.Video ? undefined : 'bg-transparent'}
-        leadingIcon={filteredMedia === MediaType.Video ? mdiCheck : undefined}
-        >{$t('video')}
-      </Button>
+      <SearchButton checked active={filteredMedia === MediaType.All} onclick={() => setMedia(MediaType.All)}>
+        {$t('all')}
+      </SearchButton>
+      <SearchButton checked active={filteredMedia === MediaType.Image} onclick={() => setMedia(MediaType.Image)}>
+        {$t('image')}
+      </SearchButton>
+      <SearchButton checked active={filteredMedia === MediaType.Video} onclick={() => setMedia(MediaType.Video)}>
+        {$t('video')}
+      </SearchButton>
     </div>
   </fieldset>
 </div>

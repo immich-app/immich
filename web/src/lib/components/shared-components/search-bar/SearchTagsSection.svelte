@@ -72,6 +72,7 @@
           {@const tag = tagMap[tagId]}
           {#if tag}
             <Button
+              size="small"
               shape="round"
               color="primary"
               variant="outline"

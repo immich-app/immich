@@ -1,7 +1,8 @@
 <script lang="ts">
   import { searchManager } from '$lib/managers/search-manager.svelte';
-  import { Button, Text } from '@immich/ui';
+  import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
+  import SearchButton from './SearchButton.svelte';
 
   let rating = $derived(searchManager.filter.rating);
 
@@ -18,14 +19,12 @@
   <Text class="my-5" fontWeight="medium">{$t('rating')}</Text>
   <div class="flex flex-wrap gap-2">
     {#each options as option (option.value)}
-      <Button
-        shape="round"
-        color={rating === option.value ? 'primary' : 'secondary'}
-        variant="outline"
+      <SearchButton
+        active={rating === option.value}
         onclick={() => (searchManager.filter.rating = rating === option.value ? undefined : option.value)}
-        class={rating === option.value ? undefined : 'bg-transparent'}
-        >{option.label}
-      </Button>
+      >
+        {option.label}
+      </SearchButton>
     {/each}
   </div>
 </div>
