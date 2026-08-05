@@ -51,7 +51,7 @@ class ViewerBottomBar extends ConsumerWidget {
             UploadAction(source: .viewer, showProgress: true),
             EditAssetAction(source: .viewer),
           ]),
-          if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
+          if (asset.hasRemote) ImmichColorOverride(color: null, child: AddActionButton(originalTheme: originalTheme)),
         ],
         ..._actionColumnButtons(context, ref, const [DeleteAction(source: .viewer)]),
       ],
@@ -94,7 +94,10 @@ class ViewerBottomBar extends ConsumerWidget {
                           if (asset.isImage) OcrToggleButton(asset: asset),
                           if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
                           if (!isReadonlyModeEnabled)
-                            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                            ImmichColorOverride(
+                              color: Colors.white,
+                              child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                            ),
                         ],
                       ),
                     ),
