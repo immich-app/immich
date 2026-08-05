@@ -8,6 +8,7 @@ permissions: {}
 
 jobs:
   validate-release-label:
+    if: ${{ !startsWith(github.event.pull_request.head.ref, 'mergify/merge-queue/') }}
     runs-on: ubuntu-latest
     permissions:
       issues: write

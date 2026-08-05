@@ -69,7 +69,7 @@ class _BorderedMapThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Container(
+        DecoratedBox(
           decoration: BoxDecoration(
             border: Border.fromBorderSide(
               BorderSide(width: 4, color: shouldHighlight ? context.colorScheme.onSurface : Colors.transparent),

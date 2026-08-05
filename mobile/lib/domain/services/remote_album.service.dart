@@ -105,10 +105,8 @@ class RemoteAlbumService {
       switch (filterMode) {
         case QuickFilterMode.myAlbums:
           filtered = filtered.where((album) => album.ownerId == userId).toList();
-          break;
         case QuickFilterMode.sharedWithMe:
           filtered = filtered.where((album) => album.ownerId != userId).toList();
-          break;
         case QuickFilterMode.all:
           break;
       }

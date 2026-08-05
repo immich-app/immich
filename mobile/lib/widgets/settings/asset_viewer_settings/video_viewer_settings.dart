@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -11,19 +13,19 @@ class VideoViewerSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewer = ref.read(appConfigProvider).viewer;
+    final viewer = ref.watch(appConfigProvider).viewer;
     final useAutoPlayVideo = useState(viewer.autoPlayVideo);
     final useLoopVideo = useState(viewer.loopVideo);
     final useOriginalVideo = useState(viewer.loadOriginalVideo);
 
     useValueChanged<bool, void>(useAutoPlayVideo.value, (_, __) {
-      ref.read(settingsProvider).write(.viewerAutoPlayVideo, useAutoPlayVideo.value);
+      unawaited(ref.read(settingsProvider).write(.viewerAutoPlayVideo, useAutoPlayVideo.value));
     });
     useValueChanged<bool, void>(useLoopVideo.value, (_, __) {
-      ref.read(settingsProvider).write(.viewerLoopVideo, useLoopVideo.value);
+      unawaited(ref.read(settingsProvider).write(.viewerLoopVideo, useLoopVideo.value));
     });
     useValueChanged<bool, void>(useOriginalVideo.value, (_, __) {
-      ref.read(settingsProvider).write(.viewerLoadOriginalVideo, useOriginalVideo.value);
+      unawaited(ref.read(settingsProvider).write(.viewerLoadOriginalVideo, useOriginalVideo.value));
     });
 
     return Column(

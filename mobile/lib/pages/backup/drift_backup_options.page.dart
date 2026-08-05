@@ -19,7 +19,7 @@ class DriftBackupOptionsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     bool hasPopped = false;
-    final previousBackup = ref.read(appConfigProvider).backup;
+    final previousBackup = ref.watch(appConfigProvider.select((s) => s.backup));
     final previousCellularForVideos = previousBackup.useCellularForVideos;
     final previousCellularForPhotos = previousBackup.useCellularForPhotos;
     return PopScope(
@@ -46,7 +46,7 @@ class DriftBackupOptionsPage extends ConsumerWidget {
 
           await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
           final isBackupEnabled = SettingsRepository.instance.appConfig.backup.enabled;
-          if (!isBackupEnabled) {
+          if (!isBackupEnabled || !context.mounted) {
             return;
           }
 

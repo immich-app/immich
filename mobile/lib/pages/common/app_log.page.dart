@@ -1,8 +1,9 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -11,11 +12,11 @@ import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/immich_logger.service.dart';
 
 @RoutePage()
-class AppLogPage extends HookConsumerWidget {
+class AppLogPage extends HookWidget {
   const AppLogPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final immichLogger = LogService.I;
     final shouldReload = useState(false);
     final logMessages = useFuture(useMemoized(() => immichLogger.getMessages(), [shouldReload.value]));
@@ -61,7 +62,7 @@ class AppLogPage extends HookConsumerWidget {
               size: 20.0,
             ),
             onPressed: () {
-              immichLogger.clearLogs();
+              unawaited(immichLogger.clearLogs());
               shouldReload.value = !shouldReload.value;
             },
           ),
@@ -70,7 +71,7 @@ class AppLogPage extends HookConsumerWidget {
               return IconButton(
                 icon: Icon(Icons.share_rounded, color: context.primaryColor, semanticLabel: "Share logs", size: 20.0),
                 onPressed: () {
-                  ImmichLogger.shareLogs(iconContext);
+                  unawaited(ImmichLogger.shareLogs(iconContext));
                 },
               );
             },
@@ -78,7 +79,7 @@ class AppLogPage extends HookConsumerWidget {
         ],
         leading: IconButton(
           onPressed: () {
-            context.maybePop();
+            unawaited(context.maybePop());
           },
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20.0),
         ),
@@ -90,7 +91,7 @@ class AppLogPage extends HookConsumerWidget {
         },
         itemCount: logMessages.data?.length ?? 0,
         itemBuilder: (context, index) {
-          var logMessage = logMessages.data![index];
+          final logMessage = logMessages.data![index];
           return ListTile(
             onTap: () => context.pushRoute(AppLogDetailRoute(logMessage: logMessage)),
             trailing: const Icon(Icons.arrow_forward_ios_rounded),
@@ -116,7 +117,7 @@ class AppLogPage extends HookConsumerWidget {
   /// Truncate the log message to a certain number of lines
   /// @param int maxLines - Max number of lines to truncate
   String truncateLogMessage(String message, int maxLines) {
-    List<String> messageLines = message.split("\n");
+    final List<String> messageLines = message.split("\n");
     if (messageLines.length < maxLines) {
       return message;
     }
