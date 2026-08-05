@@ -76,7 +76,7 @@ void main() {
       firstRun('asset-1', 'remote-1');
       expect(notifier.state.remainderCount, 0);
 
-      notifier.stopForegroundBackup();
+      notifier.stopForegroundBackup(reason: "test");
 
       final resumedRun = await startAndCaptureOnSuccess();
       expect(notifier.state.remainderCount, 1);
