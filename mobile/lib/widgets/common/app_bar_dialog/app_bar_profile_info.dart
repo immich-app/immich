@@ -24,7 +24,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final user = ref.watch(currentUserProvider);
 
-    buildUserProfileImage() {
+    Widget buildUserProfileImage() {
       if (user == null) {
         return const CircleAvatar(
           radius: 20,
@@ -42,17 +42,17 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
       return userImage;
     }
 
-    pickUserProfileImage() async {
+    Future<void> pickUserProfileImage() async {
       final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery, maxHeight: 1024, maxWidth: 1024);
 
-      if (image != null) {
-        var success = await ref.watch(uploadProfileImageProvider.notifier).upload(image);
+      if (image != null && context.mounted) {
+        final success = await ref.read(uploadProfileImageProvider.notifier).upload(image);
 
-        if (success) {
+        if (success && context.mounted) {
           final profileImagePath = ref.read(uploadProfileImageProvider).profileImagePath;
-          ref.watch(authProvider.notifier).updateUserProfileImagePath(profileImagePath);
+          ref.read(authProvider.notifier).updateUserProfileImagePath(profileImagePath);
           if (user != null) {
-            ref.read(currentUserProvider.notifier).refresh();
+            unawaited(ref.read(currentUserProvider.notifier).refresh());
           }
 
           unawaited(ref.read(backupProvider.notifier).updateDiskInfo());
@@ -61,7 +61,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
     }
 
     void toggleReadonlyMode() {
-      final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+      final isReadonlyModeEnabled = ref.read(readonlyModeProvider);
       ref.read(readonlyModeProvider.notifier).toggleReadonlyMode();
 
       context.scaffoldMessenger.showSnackBar(

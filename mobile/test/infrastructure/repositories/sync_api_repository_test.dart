@@ -37,7 +37,7 @@ void main() {
   late MockHttpClient mockHttpClient;
   late MockStreamedResponse mockStreamedResponse;
   late StreamController<List<int>> responseStreamController;
-  late int testBatchSize = 3;
+  const int testBatchSize = 3;
 
   setUpAll(() async {
     final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));

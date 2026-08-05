@@ -21,7 +21,7 @@ import 'package:timezone/timezone.dart';
     return (dt, dt.timeZoneOffset);
   } on LocationNotFoundException {
     // Handle UTC offset format (e.g., "UTC+08:00")
-    RegExp re = RegExp(r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$', caseSensitive: false);
+    final RegExp re = RegExp(r'^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$', caseSensitive: false);
     final m = re.firstMatch(timeZone);
     if (m != null) {
       final hours = int.parse(m.group(1) ?? '0');

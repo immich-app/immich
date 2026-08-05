@@ -17,6 +17,10 @@ void main() {
     mediumFactory = MediumFactory(db);
   });
 
+  tearDown(() async {
+    await db.close();
+  });
+
   group('getAll', () {
     test('sorts albums by backupSelection & isIosSharedAlbum', () async {
       final localAlbumRepo = mediumFactory.getRepository<DriftLocalAlbumRepository>();

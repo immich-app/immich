@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
@@ -87,32 +89,32 @@ class MapStateNotifier extends Notifier<MapState> {
   }
 
   void switchFavoriteOnly(bool isFavoriteOnly) {
-    ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly);
+    unawaited(ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly));
     state = state.copyWith(onlyFavorites: isFavoriteOnly);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void switchIncludeArchived(bool isIncludeArchived) {
-    ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived);
+    unawaited(ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived));
     state = state.copyWith(includeArchived: isIncludeArchived);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void switchWithPartners(bool isWithPartners) {
-    ref.read(settingsProvider).write(.mapWithPartners, isWithPartners);
+    unawaited(ref.read(settingsProvider).write(.mapWithPartners, isWithPartners));
     state = state.copyWith(withPartners: isWithPartners);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void setRelativeTime(int relativeDays) {
-    ref.read(settingsProvider).write(.mapRelativeDate, relativeDays);
+    unawaited(ref.read(settingsProvider).write(.mapRelativeDate, relativeDays));
     state = state.copyWith(relativeDays: relativeDays);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void setCustomTimeRange(TimeRange range) {
-    ref.read(settingsProvider).write(.mapCustomFrom, range.from);
-    ref.read(settingsProvider).write(.mapCustomTo, range.to);
+    unawaited(ref.read(settingsProvider).write(.mapCustomFrom, range.from));
+    unawaited(ref.read(settingsProvider).write(.mapCustomTo, range.to));
     state = state.copyWith(timeRange: range);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }

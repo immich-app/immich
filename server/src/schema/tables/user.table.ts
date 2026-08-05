@@ -31,8 +31,8 @@ export class UserTable {
   @Column({ unique: true })
   email!: string;
 
-  @Column({ default: '' })
-  password!: Generated<string>;
+  @Column({ nullable: true, default: null })
+  password!: string | null;
 
   @Column({ nullable: true })
   pinCode!: string | null;

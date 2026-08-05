@@ -126,7 +126,7 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
 
   // Album page
   if (index == kAlbumTabIndex) {
-    ref.read(remoteAlbumProvider.notifier).refresh();
+    unawaited(ref.read(remoteAlbumProvider.notifier).refresh());
   }
 
   // Library page
@@ -168,7 +168,7 @@ class _BottomNavigationBarState extends ConsumerState<_BottomNavigationBar> {
 
   @override
   void dispose() {
-    _eventSubscription?.cancel();
+    unawaited(_eventSubscription?.cancel());
     super.dispose();
   }
 

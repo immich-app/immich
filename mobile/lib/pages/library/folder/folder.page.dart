@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -53,7 +55,7 @@ class FolderPage extends HookConsumerWidget {
 
     useEffect(() {
       if (folder == null) {
-        ref.read(folderStructureProvider.notifier).fetchFolders(sortOrder.value);
+        unawaited(ref.read(folderStructureProvider.notifier).fetchFolders(sortOrder.value));
       }
       return null;
     }, []);
@@ -72,7 +74,7 @@ class FolderPage extends HookConsumerWidget {
     void onToggleSortOrder() {
       final newOrder = sortOrder.value == SortOrder.asc ? SortOrder.desc : SortOrder.asc;
 
-      ref.read(folderStructureProvider.notifier).fetchFolders(newOrder);
+      unawaited(ref.read(folderStructureProvider.notifier).fetchFolders(newOrder));
 
       sortOrder.value = newOrder;
     }
@@ -89,7 +91,7 @@ class FolderPage extends HookConsumerWidget {
           if (folder == null) {
             return FolderContent(folder: rootFolder, root: rootFolder, sortOrder: sortOrder.value);
           } else {
-            return FolderContent(folder: currentFolder.value!, root: rootFolder, sortOrder: sortOrder.value);
+            return FolderContent(folder: currentFolder.value, root: rootFolder, sortOrder: sortOrder.value);
           }
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -118,7 +120,7 @@ class FolderContent extends HookConsumerWidget {
       if (folder == null) {
         return;
       }
-      ref.read(folderRenderListProvider(folder!).notifier).fetchAssets(sortOrder);
+      unawaited(ref.read(folderRenderListProvider(folder!).notifier).fetchAssets(sortOrder));
       return null;
     }, [folder]);
 
@@ -126,7 +128,7 @@ class FolderContent extends HookConsumerWidget {
       return Center(child: const Text("folder_not_found").tr());
     }
 
-    getSubtitle(int subFolderCount) {
+    String getSubtitle(int subFolderCount) {
       if (subFolderCount > 0) {
         return "$subFolderCount ${tr("folders")}".toLowerCase();
       }
@@ -176,12 +178,14 @@ class FolderContent extends HookConsumerWidget {
                       (index, asset) => LargeLeadingTile(
                         onTap: () {
                           AssetViewer.setAsset(ref, asset);
-                          context.pushRoute(
-                            AssetViewerRoute(
-                              initialIndex: index,
-                              timelineService: ref
-                                  .read(timelineFactoryProvider)
-                                  .fromAssets(folderAssets, TimelineOrigin.folder),
+                          unawaited(
+                            context.pushRoute(
+                              AssetViewerRoute(
+                                initialIndex: index,
+                                timelineService: ref
+                                    .read(timelineFactoryProvider)
+                                    .fromAssets(folderAssets, TimelineOrigin.folder),
+                              ),
                             ),
                           );
                         },
