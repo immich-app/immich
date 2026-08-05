@@ -220,7 +220,7 @@ class _AspectRatioSelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final editorState = ref.watch(editorStateProvider);
-    final editorNotifier = ref.read(editorStateProvider.notifier);
+    final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -245,7 +245,7 @@ class _TransformControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final editorNotifier = ref.read(editorStateProvider.notifier);
+    final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -333,7 +333,7 @@ class _ResetEditsButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final editorState = ref.watch(editorStateProvider);
-    final editorNotifier = ref.read(editorStateProvider.notifier);
+    final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     return ImmichTextButton(
       labelText: 'reset'.tr(),
@@ -384,7 +384,7 @@ class _EditorPreviewState extends ConsumerState<_EditorPreview> with TickerProvi
   @override
   Widget build(BuildContext context) {
     final editorState = ref.watch(editorStateProvider);
-    final editorNotifier = ref.read(editorStateProvider.notifier);
+    final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     ref.listen(editorStateProvider, (previous, current) {
       // Only re-apply the aspect ratio when it changes, otherwise the crop rect will shrink on every rotation

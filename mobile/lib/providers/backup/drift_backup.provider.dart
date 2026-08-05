@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
@@ -134,19 +135,25 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     state = state.copyWith(isSyncing: isSyncing);
   }
 
-  Future<void> startForegroundBackup(String userId) {
+  Future<void> startForegroundBackup(String userId) async {
     // Cancel any existing backup before starting a new one
     if (_cancelToken != null) {
-      stopForegroundBackup();
+      stopForegroundBackup(reason: "restarting the backup");
     }
 
     state = state.copyWith(error: BackupError.none);
 
-    _cancelToken = Completer<void>();
+    // A pause during the recount below nulls _cancelToken, so the run keeps its own reference.
+    final cancelToken = Completer<void>();
+    _cancelToken = cancelToken;
+
+    // Re-baseline the counters against the same DB read that feeds this run's candidate list,
+    // otherwise a resume counts duplicate successes against the old baseline (#26215).
+    await getBackupStatus(userId);
 
     return _foregroundUploadService.uploadCandidates(
       userId,
-      _cancelToken!,
+      cancelToken,
       callbacks: UploadCallbacks(
         onProgress: _handleForegroundBackupProgress,
         onSuccess: _handleForegroundBackupSuccess,
@@ -156,7 +163,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  void stopForegroundBackup() {
+  void stopForegroundBackup({required String reason}) {
+    if (_cancelToken != null) {
+      _logger.info("Foreground backup cancelled: $reason");
+    }
     _cancelToken?.complete();
     _cancelToken = null;
     _uploadSpeedManager.clear();
@@ -212,6 +222,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _handleForegroundBackupSuccess(String localAssetId, String remoteAssetId) {
+    if (!mounted) {
+      _logger.warning("Skip _handleForegroundBackupSuccess: notifier disposed");
+      return;
+    }
     state = state.copyWith(backupCount: state.backupCount + 1, remainderCount: state.remainderCount - 1);
     _uploadSpeedManager.removeTask(localAssetId);
 

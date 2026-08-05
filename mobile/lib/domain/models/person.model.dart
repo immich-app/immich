@@ -2,6 +2,11 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'person.model.freezed.dart';
 
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'person.model.freezed.dart';
+
 // TODO: Remove PersonDto once Isar is removed
 @freezed
 abstract class PersonDto with _$PersonDto {

@@ -32,8 +32,8 @@ class AdvancedSettings extends HookConsumerWidget {
     final manageLocalMediaAndroid = useAppSettingsState(AppSettingsEnum.manageLocalMediaAndroid);
     final isManageMediaSupported = useState(false);
     final manageMediaAndroidPermission = useState(false);
-    final levelId = useState<int>(ref.read(appConfigProvider).logLevel.index);
-    final preferRemote = useState(ref.read(appConfigProvider).image.preferRemote);
+    final levelId = useState<int>(ref.watch(appConfigProvider).logLevel.index);
+    final preferRemote = useState(ref.watch(appConfigProvider).image.preferRemote);
     useValueChanged(
       preferRemote.value,
       (_, __) => unawaited(ref.read(settingsProvider).write(.imagePreferRemote, preferRemote.value)),
@@ -60,7 +60,7 @@ class AdvancedSettings extends HookConsumerWidget {
     useEffect(() {
       unawaited(() async {
         isManageMediaSupported.value = await checkAndroidVersion();
-        if (isManageMediaSupported.value) {
+        if (isManageMediaSupported.value && context.mounted) {
           manageMediaAndroidPermission.value = await ref.read(permissionRepositoryProvider).hasManageMediaPermission();
         }
       }());

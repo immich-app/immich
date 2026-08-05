@@ -76,6 +76,10 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     }
 
     try {
+      if (!context.mounted) {
+        return;
+      }
+
       await ref.read(remoteAlbumProvider.notifier).addUsers(_album.id, newUsers);
       ref.invalidate(remoteAlbumSharedUsersProvider(_album.id));
       if (!context.mounted) {
@@ -133,6 +137,10 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
     if (confirmed == true) {
       try {
+        if (!context.mounted) {
+          return;
+        }
+
         await ref.read(remoteAlbumProvider.notifier).deleteAlbum(_album.id);
         if (!context.mounted) {
           return;
@@ -431,7 +439,7 @@ class _AlbumKebabMenu extends ConsumerWidget {
 
     return FutureBuilder<bool>(
       future: ref
-          .read(remoteAlbumServiceProvider)
+          .watch(remoteAlbumServiceProvider)
           .getUserRole(album.id, user?.id ?? '')
           .then((role) => role == AlbumUserRole.editor),
       builder: (context, snapshot) {

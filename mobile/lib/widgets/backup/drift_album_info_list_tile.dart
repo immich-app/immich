@@ -53,7 +53,7 @@ class DriftAlbumInfoListTile extends HookConsumerWidget {
 
     return GestureDetector(
       onDoubleTap: () {
-        ref.watch(hapticFeedbackProvider.notifier).selectionClick();
+        ref.read(hapticFeedbackProvider.notifier).selectionClick();
 
         if (isExcluded) {
           unawaited(ref.read(backupAlbumProvider.notifier).deselectAlbum(album));

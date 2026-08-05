@@ -353,11 +353,11 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
               },
               onError: (exception) {
                 log.severe('Failed to update auth info with access token: $accessToken');
-                unawaited(ref.read(authProvider.notifier).logout());
                 if (!mounted) {
                   return;
                 }
 
+                unawaited(ref.read(authProvider.notifier).logout());
                 unawaited(context.router.replaceAll([const LoginRoute()]));
               },
             ),

@@ -23,7 +23,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activityNotifier = ref.read(albumActivityProvider((album.id, assetId)).notifier);
+    final activityNotifier = ref.watch(albumActivityProvider((album.id, assetId)).notifier);
     final activities = ref.watch(albumActivityProvider((album.id, assetId)));
     final listViewScrollController = useScrollController();
 

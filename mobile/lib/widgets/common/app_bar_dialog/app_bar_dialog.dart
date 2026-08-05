@@ -124,6 +124,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                   onOk: () async {
                     isLoggingOut.value = true;
                     await ref.read(authProvider.notifier).logout().whenComplete(() => isLoggingOut.value = false);
+                    if (!context.mounted) {
+                      return;
+                    }
 
                     ref.read(websocketProvider.notifier).disconnect();
                     if (!context.mounted) {

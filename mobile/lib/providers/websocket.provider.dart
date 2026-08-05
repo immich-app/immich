@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
@@ -38,14 +39,16 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   @override
   void dispose() {
     _batchDebouncer.dispose();
+    state.socket?.dispose();
     super.dispose();
   }
 
-  /// Connects websocket to server unless already connected
+  /// Connects websocket to server unless an active socket already exists
   void connect() {
-    if (state.isConnected) {
+    if (state.socket?.active == true) {
       return;
     }
+    state.socket?.dispose();
     final authenticationState = _ref.read(authProvider);
 
     if (authenticationState.isAuthenticated) {
@@ -66,6 +69,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
               .build(),
         );
 
+        state = WebsocketState(isConnected: false, socket: socket);
+
         socket.onConnect((_) {
           dPrint(() => "Established Websocket Connection");
           state = WebsocketState(isConnected: true, socket: socket);
@@ -73,12 +78,12 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
         socket.onDisconnect((_) {
           dPrint(() => "Disconnect to Websocket Connection");
-          state = const WebsocketState(isConnected: false, socket: null);
+          state = WebsocketState(isConnected: false, socket: socket);
         });
 
         socket.on('error', (errorMessage) {
           _log.severe("Websocket Error - $errorMessage");
-          state = const WebsocketState(isConnected: false, socket: null);
+          state = WebsocketState(isConnected: false, socket: socket);
         });
 
         socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReadyV1);
@@ -87,6 +92,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('AssetEditReadyV2', _handleSyncAssetEditReadyV2);
         socket.on('on_album_update', _handleRemoteChange);
         socket.on('on_asset_stack_update', _handleRemoteChange);
+        socket.on('on_asset_delete', _handleRemoteChange);
+        socket.on('on_asset_trash', _handleRemoteChange);
+        socket.on('on_asset_restore', _handleRemoteChange);
+        socket.on('on_asset_hidden', _handleRemoteChange);
+        socket.on('on_asset_update', _handleRemoteChange);
         socket.on('on_config_update', _handleOnConfigUpdate);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {

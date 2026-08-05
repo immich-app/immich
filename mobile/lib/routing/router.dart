@@ -84,6 +84,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 part 'router.gr.dart';
 
 final appRouterProvider = Provider(
+  // ignore: dispose-provided-instances
   (ref) => AppRouter(
     ref.watch(apiServiceProvider),
     ref.watch(authServiceProvider),
