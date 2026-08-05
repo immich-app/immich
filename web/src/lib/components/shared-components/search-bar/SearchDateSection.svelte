@@ -9,7 +9,7 @@
   let filters = $derived(searchManager.filter.date);
   let invalid = $derived(filters.takenAfter && filters.takenBefore && filters.takenAfter > filters.takenBefore);
 
-  let currentPreset: SearchDatePreset | undefined = $state(
+  let currentPreset: SearchDatePreset | undefined = $derived(
     getSearchDatePreset(filters.takenAfter, filters.takenBefore),
   );
 
