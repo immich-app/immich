@@ -51,7 +51,7 @@ class _ImmichPasswordInputState extends State<ImmichPasswordInput> {
         onPressed: _toggleVisibility,
         icon: Icon(_visible ? Icons.visibility_off_rounded : Icons.visibility_rounded),
       ),
-      autofillHints: [AutofillHints.password],
+      autofillHints: const [AutofillHints.password],
     );
   }
 }

@@ -83,7 +83,7 @@ export class OAuthRepository {
     url: string,
     expectedState: string,
     codeVerifier: string,
-  ): Promise<{ profile: OAuthProfile; sid?: string }> {
+  ): Promise<{ profile: OAuthProfile; sid?: string; idToken?: string }> {
     const client = await this.getClient(config);
     const pkceCodeVerifier = client.serverMetadata().supportsPKCE() ? codeVerifier : undefined;
 
@@ -111,7 +111,7 @@ export class OAuthRepository {
         }
       }
 
-      return { profile, sid };
+      return { profile, sid, idToken: tokens.id_token };
     } catch (error: Error | any) {
       if (error.message.includes('unexpected JWT alg received')) {
         this.logger.warn(

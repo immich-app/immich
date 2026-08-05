@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/maplibre/maplibre-gl-native-distribution.git",
       "state" : {
-        "revision" : "60d9bb85c94ce6e7fc4406cd32529fd12bdb7809",
-        "version" : "6.14.0"
+        "revision" : "84a79bc375a301169390ac110c868f06c857b83f",
+        "version" : "6.27.0"
       }
     },
     {
@@ -140,8 +140,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-structured-queries",
       "state" : {
-        "revision" : "8da8818fccd9959bd683934ddc62cf45bb65b3c8",
-        "version" : "0.31.1"
+        "revision" : "dafddd843f10630aa6b5be47c1b6a59cc4ab6586",
+        "version" : "0.34.0"
       }
     },
     {

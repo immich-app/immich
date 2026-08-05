@@ -108,6 +108,19 @@ describe('Album Modal', () => {
     ]);
   });
 
+  it('search matches on description as well as name', () => {
+    const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
+    const holidayAlbum = albumFactory.build({ albumName: 'Vacances 2019', description: 'Crete' });
+    const constructionAlbum = albumFactory.build({ albumName: 'Construction' });
+    const modalRows = converter.toModalRows('Crete', [], [holidayAlbum, constructionAlbum], -1, []);
+
+    expect(modalRows).toStrictEqual([
+      createNewAlbumRow(false),
+      createSectionRow('ALBUMS'),
+      createAlbumRow(holidayAlbum, false),
+    ]);
+  });
+
   it('selection can select new album row', () => {
     const converter = new AlbumModalRowConverter(AlbumSortBy.MostRecentPhoto, SortOrder.Desc);
     const holidayAlbum = albumFactory.build({ albumName: 'Holidays' });

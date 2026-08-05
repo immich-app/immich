@@ -1,3 +1,5 @@
+// ignore_for_file: use-ref-and-state-synchronously
+
 import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -21,8 +23,6 @@ class MultiSelectState {
   /// Cloud only
   bool get hasRemote =>
       selectedAssets.any((asset) => asset.storage == AssetState.remote || asset.storage == AssetState.merged);
-
-  bool get hasStacked => selectedAssets.any((asset) => asset is RemoteAsset && asset.stackId != null);
 
   bool get hasMerged => selectedAssets.any((asset) => asset.storage == AssetState.merged);
 
@@ -102,7 +102,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
   }
 
   /// Bucket bulk operations
-  void selectBucket(int offset, int bucketCount) async {
+  Future<void> selectBucket(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
     final selectedAssets = state.selectedAssets.toSet();
 
@@ -111,7 +111,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     state = state.copyWith(selectedAssets: selectedAssets);
   }
 
-  void deselectBucket(int offset, int bucketCount) async {
+  Future<void> deselectBucket(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
     final selectedAssets = state.selectedAssets.toSet();
 
@@ -120,7 +120,7 @@ class MultiSelectNotifier extends Notifier<MultiSelectState> {
     state = state.copyWith(selectedAssets: selectedAssets);
   }
 
-  void toggleBucketSelection(int offset, int bucketCount) async {
+  Future<void> toggleBucketSelection(int offset, int bucketCount) async {
     final assets = await _timelineService.loadAssets(offset, bucketCount);
     toggleBucketSelectionByAssets(assets);
   }

@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
@@ -28,6 +28,15 @@ class SettingsRepository extends CachedKeyValueRepository<SettingsKey, AppConfig
       _instance = instance;
     }
     return _instance!;
+  }
+
+  @visibleForTesting
+  static Future<void> reset() async {
+    final instance = _instance;
+    if (instance != null) {
+      await instance.clear(SettingsKey.values);
+      _instance = null;
+    }
   }
 
   @override

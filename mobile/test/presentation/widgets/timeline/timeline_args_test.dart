@@ -1,3 +1,5 @@
+// ignore_for_file: close_sinks
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -111,7 +113,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          timelineServiceProvider.overrideWithValue(_EmptyBucketService()),
+          timelineServiceProvider.overrideWithValue(const _EmptyBucketService()),
           appConfigProvider.overrideWithValue(const AppConfig()),
         ],
         child: MaterialApp(

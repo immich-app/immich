@@ -19,6 +19,7 @@ String getPlaybackUrlForRemoteId(final String id) {
   return '${SessionRepository.instance.session.serverEndpoint!}/assets/$id/video/playback?';
 }
 
-String getFaceThumbnailUrl(final String personId) {
-  return '${SessionRepository.instance.session.serverEndpoint!}/people/$personId/thumbnail';
+String getFaceThumbnailUrl(final String personId, {DateTime? updatedAt}) {
+  final url = '${SessionRepository.instance.session.serverEndpoint!}/people/$personId/thumbnail';
+  return updatedAt != null ? '$url?c=${updatedAt.millisecondsSinceEpoch}' : url;
 }

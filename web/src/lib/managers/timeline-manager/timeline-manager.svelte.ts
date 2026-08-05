@@ -625,6 +625,10 @@ export class TimelineManager extends VirtualScrollManager {
     return this.#options.order ?? AssetOrder.Desc;
   }
 
+  getOrderBy() {
+    return this.#options.orderBy ?? AssetOrderBy.TakenAt;
+  }
+
   protected postCreateSegments(): void {
     this.months.sort((a, b) => {
       return a.yearMonth.year === b.yearMonth.year

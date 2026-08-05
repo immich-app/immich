@@ -11,7 +11,7 @@ class ThumbnailPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var gradientColors = [
+    final gradientColors = [
       context.colorScheme.surfaceContainer,
       context.colorScheme.surfaceContainer.darken(amount: .1),
     ];
