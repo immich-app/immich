@@ -171,8 +171,8 @@ export class MaintenanceWorkerService {
     const candidates = ['/data', '/usr/src/app/upload'];
 
     for (const candidate of candidates) {
-      const exists = this.storageRepository.existsSync(candidate);
-      if (exists) {
+      const isExists = this.storageRepository.existsSync(candidate);
+      if (isExists) {
         targets.push(candidate);
       }
     }
@@ -295,8 +295,8 @@ export class MaintenanceWorkerService {
   }
 
   async runRestoreDatabase(action: SetMaintenanceModeDto) {
-    const lock = await this.databaseRepository.tryLock(DatabaseLock.MaintenanceOperation);
-    if (!lock) {
+    const isLock = await this.databaseRepository.tryLock(DatabaseLock.MaintenanceOperation);
+    if (!isLock) {
       return;
     }
 

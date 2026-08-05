@@ -68,9 +68,9 @@ class Workers {
     const { database } = new ConfigRepository().getEnv();
     const kysely = new Kysely<DB>(getKyselyConfig(database.config));
 
-    let locked = false;
-    while (!locked) {
-      locked = await kysely.connection().execute(async (conn) => {
+    let isLocked = false;
+    while (!isLocked) {
+      isLocked = await kysely.connection().execute(async (conn) => {
         const { rows } = await sql<{
           pg_try_advisory_lock: boolean;
         }>`SELECT pg_try_advisory_lock(${DatabaseLock.MaintenanceOperation})`.execute(conn);
@@ -110,6 +110,7 @@ class Workers {
       });
 
       kill = (signal) => void worker.kill(signal);
+      // eslint-disable-next-line unicorn/prefer-hoisting-branch-code
       anyWorker = worker;
     } else {
       const worker = new Worker(workerFile);
@@ -151,9 +152,9 @@ class Workers {
     if (exitCode !== 0) {
       console.error(`${name} worker exited with code ${exitCode}`);
 
-      if (this.workers[ImmichWorker.Api] && name !== ImmichWorker.Api) {
+      if (Object.hasOwn(this.workers, ImmichWorker.Api) && name !== ImmichWorker.Api) {
         console.error('Killing api process');
-        void this.workers[ImmichWorker.Api].kill('SIGTERM');
+        void this.workers[ImmichWorker.Api]!.kill('SIGTERM');
       }
     }
 

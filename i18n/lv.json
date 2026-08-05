@@ -762,7 +762,6 @@
   "custom_date": "Pielāgots datums",
   "custom_locale": "Pielāgota lokalizācija",
   "custom_locale_description": "Formatēt datumus, laikus un skaitļus atbilstoši valodai un reģionam",
-  "custom_url": "Pielāgots URL",
   "cutoff_date_description": "Paturēt fotoattēlus no pēdējā…",
   "cutoff_day": "{count, plural, one {dienas} other {dienām}}",
   "cutoff_year": "{count, plural, one {gada} other {gadiem}}",

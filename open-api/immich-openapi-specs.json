@@ -1639,6 +1639,7 @@
         "tags": [
           "Users (admin)"
         ],
+        "x-immich-admin-only": true,
         "x-immich-history": [
           {
             "version": "v3",
@@ -1649,7 +1650,7 @@
             "state": "Stable"
           }
         ],
-        "x-immich-permission": "user.read",
+        "x-immich-permission": "adminUser.read",
         "x-immich-state": "Stable"
       }
     },
@@ -2702,6 +2703,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Album ID",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -2712,6 +2714,14 @@
             "name": "userId",
             "required": true,
             "in": "path",
+            "description": "Album user ID, or \"me\" to reference the current user.",
+            "x-immich-history": [
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "\"me\" as a value is deprecated"
+              }
+            ],
             "schema": {
               "type": "string"
             }
@@ -2762,6 +2772,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Album ID",
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
@@ -2772,6 +2783,14 @@
             "name": "userId",
             "required": true,
             "in": "path",
+            "description": "Album user ID, or \"me\" to reference the current user.",
+            "x-immich-history": [
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "\"me\" as a value is deprecated"
+              }
+            ],
             "schema": {
               "type": "string"
             }
@@ -7139,9 +7158,9 @@
             "in": "query",
             "description": "Filter by date",
             "schema": {
-              "format": "date-time",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-              "example": "2024-01-01T00:00:00.000Z",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
               "type": "string"
             }
           },
@@ -7308,9 +7327,9 @@
             "in": "query",
             "description": "Filter by date",
             "schema": {
-              "format": "date-time",
-              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-              "example": "2024-01-01T00:00:00.000Z",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+              "example": "2024-01-01",
               "type": "string"
             }
           },
@@ -16223,7 +16242,7 @@
   "info": {
     "title": "Immich",
     "description": "Immich API",
-    "version": "3.0.2",
+    "version": "3.1.0",
     "contact": {}
   },
   "tags": [
@@ -16566,7 +16585,18 @@
           },
           "description": {
             "description": "Album description",
-            "type": "string"
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "An empty string is returned instead of null for backwards compatibility; null will be returned in v4."
+              }
+            ]
           },
           "endDate": {
             "description": "End date (latest asset)",
@@ -18424,7 +18454,19 @@
           },
           "description": {
             "description": "Album description",
-            "type": "string"
+            "nullable": true,
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4."
+              }
+            ]
           }
         },
         "required": [
@@ -27096,7 +27138,19 @@
           },
           "description": {
             "description": "Album description",
-            "type": "string"
+            "nullable": true,
+            "type": "string",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3",
+                "state": "Updated",
+                "description": "Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4."
+              }
+            ]
           },
           "isActivityEnabled": {
             "description": "Enable activity feed",

@@ -4,11 +4,11 @@ import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
-import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/widgets/asset_viewer/animated_play_pause.dart';
 
 class VideoControls extends ConsumerStatefulWidget {
@@ -99,7 +99,7 @@ class _VideoControlsState extends ConsumerState<VideoControls> {
     });
     ref.listen(_provider.select((v) => v.status), (_, __) => _hideTimer.reset());
 
-    final notifier = ref.read(_provider.notifier);
+    final notifier = ref.watch(_provider.notifier);
     final isLoaded = duration != Duration.zero;
 
     return Padding(

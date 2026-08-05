@@ -28,6 +28,7 @@ class BackgroundSyncManager {
   final SyncErrorCallback? onCloudIdSyncError;
 
   Cancelable<bool?>? _syncTask;
+  bool _syncQueued = false;
   Cancelable<void>? _syncWebsocketTask;
   Cancelable<void>? _cloudIdSyncTask;
   Cancelable<void>? _deviceAlbumSyncTask;
@@ -58,6 +59,7 @@ class BackgroundSyncManager {
   List<Cancelable?> get _allTasks => [_syncWebsocketTask, _cloudIdSyncTask, ..._resumeSyncTasks];
 
   Future<void> cancel() async {
+    _syncQueued = false;
     final tasks = _allTasks;
     _syncTask = null;
     _syncWebsocketTask = null;
@@ -69,6 +71,7 @@ class BackgroundSyncManager {
   }
 
   Future<void> cancelResumeSyncs() async {
+    _syncQueued = false;
     final tasks = _resumeSyncTasks;
     _syncTask = null;
     _deviceAlbumSyncTask = null;
@@ -154,8 +157,9 @@ class BackgroundSyncManager {
         });
   }
 
-  Future<bool> syncRemote() {
+  Future<bool> syncRemote({bool enqueue = false}) {
     if (_syncTask != null) {
+      _syncQueued |= enqueue;
       return _syncTask!.future.then((result) => result ?? false).catchError((_) => false);
     }
 
@@ -169,12 +173,14 @@ class BackgroundSyncManager {
         .then((result) {
           final success = result ?? false;
           onRemoteSyncComplete?.call(success);
+          _syncQueued &= success;
           return success;
         })
         .catchError((error) {
           if (error is! CanceledError) {
             onRemoteSyncError?.call(error.toString());
           }
+          _syncQueued = false;
           return false;
         })
         // A task clears only its own slot: one that was cancelled and superseded by a
@@ -182,6 +188,10 @@ class BackgroundSyncManager {
         .whenComplete(() {
           if (identical(_syncTask, task)) {
             _syncTask = null;
+            if (_syncQueued) {
+              _syncQueued = false;
+              unawaited(syncRemote());
+            }
           }
         });
   }

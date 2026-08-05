@@ -152,13 +152,13 @@
     },
     useMediaCapabilities: false,
     xhrSetup: (xhr: XMLHttpRequest, url: string) => {
-      const authenticatedUrl = new URL(url, globalThis.location.origin);
+      const authenticatedUrl = new URL(url, location.origin);
       for (const [key, value] of Object.entries(authManager.params)) {
         if (value) {
           authenticatedUrl.searchParams.set(key, value as string);
         }
       }
-      xhr.open('GET', authenticatedUrl.toString());
+      xhr.open('GET', authenticatedUrl.href);
     },
   };
 
@@ -308,8 +308,7 @@
   const onSwipe = (event: SwipeCustomEvent) => {
     if (event.detail.direction === 'left') {
       onNextAsset();
-    }
-    if (event.detail.direction === 'right') {
+    } else if (event.detail.direction === 'right') {
       onPreviousAsset();
     }
   };
@@ -389,10 +388,12 @@
             onended={onVideoEnded}
             onseeking={onSeeking}
             onplaying={(e: Event) => {
-              if (!hasFocused) {
-                (e.currentTarget as HTMLElement).focus();
-                hasFocused = true;
+              if (hasFocused) {
+                return;
               }
+
+              (e.currentTarget as HTMLElement).focus();
+              hasFocused = true;
             }}
             onclose={onClose}
             poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}
@@ -412,10 +413,12 @@
             onended={onVideoEnded}
             onseeking={onSeeking}
             onplaying={(e) => {
-              if (!hasFocused) {
-                e.currentTarget.focus();
-                hasFocused = true;
+              if (hasFocused) {
+                return;
               }
+
+              e.currentTarget.focus();
+              hasFocused = true;
             }}
             onclose={onClose}
             poster={getAssetMediaUrl({ id: asset.id, size: AssetMediaSize.Preview, cacheKey })}

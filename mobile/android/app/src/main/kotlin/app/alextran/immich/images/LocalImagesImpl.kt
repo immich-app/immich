@@ -64,13 +64,7 @@ fun Bitmap.toNativeBuffer(): Map<String, Long>  {
     // native convert declined (OOM/lock) -> fall through to the Skia copy path below.
   }
   // Other non-8888 configs (e.g. HDR F16) still need Skia's convert; 8-bit is copied as-is.
-  val bitmap = if (config != Bitmap.Config.ARGB_8888) {
-    val converted = copy(Bitmap.Config.ARGB_8888, false)
-    recycle()
-    converted ?: throw IOException("could not convert bitmap to ARGB_8888")
-  } else {
-    this
-  }
+  val bitmap = toArgb8888()
   val size = bitmap.width * bitmap.height * 4
   val pointer = NativeBuffer.allocate(size)
   try {
@@ -217,7 +211,7 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
         if (orientation == ExifInterface.ORIENTATION_NORMAL || orientation == ExifInterface.ORIENTATION_UNDEFINED) {
           bitmap.toNativeBuffer()
         } else {
-          rotateToNativeBuffer(bitmap, orientation, signal)
+          rotateToNativeBuffer(bitmap, orientation)
         }
       }
       // Don't re-check cancellation here: res owns a malloc'd buffer, and bailing to CANCELLED would
@@ -257,39 +251,7 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
   }
 
   private fun rawOrientation(uri: Uri): Int {
-    return resolver.openInputStream(uri)?.use {
-      ExifInterface(it).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-    } ?: ExifInterface.ORIENTATION_NORMAL
-  }
-
-  // ImageDecoder / loadThumbnail skip EXIF orientation for raw (e.g. DNG) on Q+, so the decoded
-  // bitmap comes back unrotated. Rotate it into the output buffer in native code (one pass, no
-  // intermediate rotated bitmap).
-  private fun rotateToNativeBuffer(bitmap: Bitmap, orientation: Int, signal: CancellationSignal): Map<String, Long> {
-    signal.throwIfCanceled()
-    // Force ARGB_8888: the native rotate needs a lockable 8888 buffer, and toNativeBuffer() below
-    // allocates width*height*4 (an F16/HDR decode would otherwise under-allocate). No-op for the
-    // common already-8888 case.
-    val src = if (bitmap.config != Bitmap.Config.ARGB_8888) {
-      val converted = bitmap.copy(Bitmap.Config.ARGB_8888, false)
-      bitmap.recycle()
-      converted ?: throw IOException("could not convert bitmap to ARGB_8888")
-    } else {
-      bitmap
-    }
-    try {
-      val info = IntArray(3)
-      val pointer = NativeImage.rotate(src, orientation, info)
-      if (pointer == 0L) throw IOException("native rotate failed for orientation $orientation")
-      return mapOf(
-        "pointer" to pointer,
-        "width" to info[0].toLong(),
-        "height" to info[1].toLong(),
-        "rowBytes" to info[2].toLong()
-      )
-    } finally {
-      if (!src.isRecycled) src.recycle()
-    }
+    return resolver.openInputStream(uri)?.use { readOrientation(it) } ?: ExifInterface.ORIENTATION_NORMAL
   }
 
   private fun decodeVideoThumbnail(id: Long, target: Size, signal: CancellationSignal): Bitmap {

@@ -35,7 +35,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     return state;
   }
 
-  void handleAppResume() async {
+  Future<void> handleAppResume() async {
     state = AppLifeCycleEnum.resumed;
 
     // Prevent overlapping resume operations
@@ -81,6 +81,10 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       await _ref.read(serverInfoProvider.notifier).getServerVersion();
     }
 
+    if (!_shouldContinueOperation()) {
+      _wasPaused = true;
+      return;
+    }
     _ref.read(websocketProvider.notifier).connect();
     await _handleBetaTimelineResume();
 
@@ -126,7 +130,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       if (syncSuccess) {
         await Future.wait([
           _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
-            _resumeBackup();
+            unawaited(_resumeBackup());
           }),
           _resumeBackup(),
           // TODO: Bring back when the soft freeze issue is addressed
@@ -201,7 +205,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _performPause() {
     if (_ref.read(authProvider).isAuthenticated) {
-      _ref.read(driftBackupProvider.notifier).stopForegroundBackup();
+      _ref.read(driftBackupProvider.notifier).stopForegroundBackup(reason: "the app being sent to the background");
 
       _ref.read(websocketProvider.notifier).disconnect();
     }

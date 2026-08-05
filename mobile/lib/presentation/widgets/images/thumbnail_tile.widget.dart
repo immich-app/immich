@@ -285,7 +285,7 @@ class _TileOverlayIcon extends StatelessWidget {
       icon,
       color: Colors.white,
       size: 16,
-      shadows: [const Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset(0.0, 0.0))],
+      shadows: const [Shadow(blurRadius: 5.0, color: Color.fromRGBO(0, 0, 0, 0.6), offset: Offset.zero)],
     );
   }
 }
@@ -346,7 +346,7 @@ class _UploadProgressOverlay extends StatelessWidget {
     final percentage = isError ? 0 : (progress * 100).toInt();
 
     return Positioned.fill(
-      child: Container(
+      child: ColoredBox(
         color: isError ? Colors.red.withValues(alpha: 0.6) : Colors.black54,
         child: Center(
           child: Column(

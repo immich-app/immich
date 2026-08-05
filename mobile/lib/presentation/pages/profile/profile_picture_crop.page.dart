@@ -70,11 +70,15 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
       final croppedImage = await _cropController.croppedImage();
       final pngBytes = await imageToUint8List(croppedImage);
       final xFile = XFile.fromData(pngBytes, mimeType: 'image/png');
+      if (!context.mounted) {
+        return;
+      }
+
       final success = await ref
           .read(uploadProfileImageProvider.notifier)
           .upload(xFile, fileName: 'profile-picture.png');
 
-      if (!context.mounted) {
+      if (!mounted) {
         return;
       }
 
@@ -94,9 +98,7 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
           toastType: ToastType.success,
         );
 
-        if (context.mounted) {
-          unawaited(context.maybePop());
-        }
+        unawaited(context.maybePop());
       } else {
         ImmichToast.show(
           context: context,
@@ -106,7 +108,7 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
         );
       }
     } catch (e) {
-      if (!context.mounted) {
+      if (!mounted) {
         return;
       }
 
@@ -157,7 +159,7 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
             return Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxHeight: context.height * 0.7, maxWidth: context.width * 0.9),
-                child: Container(
+                child: DecoratedBox(
                   decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all(Radius.circular(7)),
                     boxShadow: [

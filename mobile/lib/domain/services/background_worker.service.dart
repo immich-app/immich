@@ -6,7 +6,10 @@ import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/services/hash.service.dart';
+import 'package:immich_mobile/domain/services/local_sync.service.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
+import 'package:immich_mobile/domain/services/sync_stream.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -14,11 +17,16 @@ import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.d
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
+import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/platform.provider.dart' show nativeSyncApiProvider;
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:immich_mobile/repositories/permission.repository.dart';
 import 'package:immich_mobile/services/auth.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/localization.service.dart';
@@ -58,12 +66,43 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   final BackgroundWorkerBgHostApi _backgroundHostApi;
   final _cancellationToken = Completer<void>();
   final Logger _logger = Logger('BackgroundWorkerBgService');
+  late LocalSyncService _localSyncService;
+  late SyncStreamService _remoteSyncService;
+  late HashService _hashService;
 
   bool _isCleanedUp = false;
 
   BackgroundWorkerBgService({required this._drift, required this._driftLogger})
     : _backgroundHostApi = BackgroundWorkerBgHostApi() {
-    _ref = ProviderContainer(overrides: [driftProvider.overrideWith(driftOverride(_drift))]);
+    final ref = ProviderContainer(overrides: [driftProvider.overrideWith(driftOverride(_drift))]);
+    _ref = ref;
+    _localSyncService = LocalSyncService(
+      localAlbumRepository: ref.read(localAlbumRepository),
+      localAssetRepository: ref.read(localAssetRepository),
+      nativeSyncApi: ref.read(nativeSyncApiProvider),
+      trashedLocalAssetRepository: ref.read(trashedLocalAssetRepository),
+      assetMediaRepository: ref.read(assetMediaRepositoryProvider),
+      permissionRepository: ref.read(permissionRepositoryProvider),
+      cancellation: _cancellationToken,
+    );
+    _remoteSyncService = SyncStreamService(
+      syncApiRepository: ref.read(syncApiRepositoryProvider),
+      syncStreamRepository: ref.read(syncStreamRepositoryProvider),
+      localAssetRepository: ref.read(localAssetRepository),
+      trashedLocalAssetRepository: ref.read(trashedLocalAssetRepository),
+      assetMediaRepository: ref.read(assetMediaRepositoryProvider),
+      permissionRepository: ref.read(permissionRepositoryProvider),
+      syncMigrationRepository: ref.read(syncMigrationRepositoryProvider),
+      api: ref.read(apiServiceProvider),
+      cancellation: _cancellationToken,
+    );
+    _hashService = HashService(
+      localAlbumRepository: ref.read(localAlbumRepository),
+      localAssetRepository: ref.read(localAssetRepository),
+      nativeSyncApi: ref.read(nativeSyncApiProvider),
+      trashedLocalAssetRepository: ref.read(trashedLocalAssetRepository),
+      cancellation: _cancellationToken,
+    );
     BackgroundWorkerFlutterApi.setUp(this);
   }
 
@@ -119,11 +158,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     try {
       final budget = maxSeconds != null ? Duration(seconds: maxSeconds - 1) : null;
 
-      final sync = _ref?.read(backgroundSyncProvider);
-      if (sync == null) {
-        return;
-      }
-
       // Only for Background Processing tasks
       if (maxSeconds == null) {
         await _optimizeDB();
@@ -135,9 +169,23 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       // hash and handle_backup read drift state and tolerate stale reads
       // (server-side dedup catches the rare race). The single budget caps the
       // whole batch; no phase needs its own timeout.
-      final all = Future.wait<dynamic>([sync.syncLocal(), sync.syncRemote(), sync.hashAssets(), _handleBackup()]);
+      final all = Future.wait<dynamic>([
+        _localSyncService.sync(),
+        _remoteSyncService.sync(),
+        _hashService.hashAssets(),
+        _handleBackup(),
+      ]);
       if (budget != null) {
-        await all.timeout(budget, onTimeout: () => <dynamic>[]);
+        await all.timeout(
+          budget,
+          onTimeout: () {
+            if (!_cancellationToken.isCompleted) {
+              _logger.warning("iOS background upload timed out after ${budget.inSeconds}s, cancelling tasks");
+              _cancellationToken.complete();
+            }
+            return <dynamic>[];
+          },
+        );
       } else {
         await all;
       }
@@ -221,7 +269,6 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
 
     try {
       _isCleanedUp = true;
-      final backgroundSyncManager = _ref?.read(backgroundSyncProvider);
       final nativeSyncApi = _ref?.read(nativeSyncApiProvider);
 
       _logger.info("Cleaning up background worker");
@@ -230,10 +277,7 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
       }
 
       // Workers share one sqlite connection, so DB teardown must wait until every worker has stopped using it.
-      await Future.wait([
-        if (backgroundSyncManager != null) backgroundSyncManager.cancel(),
-        if (nativeSyncApi != null) nativeSyncApi.cancelHashing(),
-      ]);
+      await Future.wait([if (nativeSyncApi != null) nativeSyncApi.cancelHashing()]);
       await workerManagerPatch.dispose().catchError((_) async {});
       await Future.wait([LogService.I.dispose(), Store.dispose()]);
       await _drift.close();
@@ -279,18 +323,18 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
   }
 
   Future<bool> _syncAssets({Duration? hashTimeout}) async {
-    await _ref?.read(backgroundSyncProvider).syncLocal();
+    await _localSyncService.sync();
     if (_isCleanedUp) {
       return false;
     }
 
-    final isSuccess = await _ref?.read(backgroundSyncProvider).syncRemote() ?? false;
+    final isSuccess = await _remoteSyncService.sync();
     if (_isCleanedUp) {
       return isSuccess;
     }
 
-    var hashFuture = _ref?.read(backgroundSyncProvider).hashAssets();
-    if (hashTimeout != null && hashFuture != null) {
+    var hashFuture = _hashService.hashAssets();
+    if (hashTimeout != null) {
       hashFuture = hashFuture.timeout(
         hashTimeout,
         onTimeout: () {

@@ -5,6 +5,7 @@ import android.graphics.ImageDecoder
 import android.os.Build
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
+import androidx.exifinterface.media.ExifInterface
 import app.alextran.immich.INITIAL_BUFFER_SIZE
 import app.alextran.immich.NativeBuffer
 import app.alextran.immich.NativeByteBuffer
@@ -29,6 +30,35 @@ import java.util.concurrent.Executors
 private const val MAX_PREALLOC_BYTES = 128 * 1024 * 1024
 
 private class RemoteRequest(val cancellationSignal: CancellationSignal)
+
+// The full mimeTypes.raw set the server can serve (short + vendor forms).
+private val RAW_MIME_TYPES = setOf(
+  "image/3fr", "image/ari", "image/arw",
+  "image/cap", "image/cin", "image/cr2",
+  "image/cr3", "image/crw", "image/dcr",
+  "image/dng", "image/erf", "image/fff",
+  "image/iiq", "image/k25", "image/kdc",
+  "image/mrw", "image/nef", "image/nrw",
+  "image/orf", "image/ori", "image/pef",
+  "image/psd", "image/raf", "image/raw",
+  "image/rw2", "image/rwl", "image/sr2",
+  "image/srf", "image/srw", "image/vnd.adobe.photoshop",
+  "image/x-adobe-dng", "image/x-arriflex-ari", "image/x-canon-cr2",
+  "image/x-canon-cr3", "image/x-canon-crw", "image/x-epson-erf",
+  "image/x-fuji-raf", "image/x-hasselblad-3fr", "image/x-hasselblad-fff",
+  "image/x-kodak-dcr", "image/x-kodak-k25", "image/x-kodak-kdc",
+  "image/x-leica-rwl", "image/x-minolta-mrw", "image/x-nikon-nef",
+  "image/x-nikon-nrw", "image/x-olympus-orf", "image/x-olympus-ori",
+  "image/x-panasonic-raw", "image/x-panasonic-rw2", "image/x-pentax-pef",
+  "image/x-phantom-cin", "image/x-phaseone-cap", "image/x-phaseone-iiq",
+  "image/x-samsung-srw", "image/x-sigma-x3f", "image/x-sony-arw",
+  "image/x-sony-sr2", "image/x-sony-srf", "image/x3f",
+)
+
+private fun isRawMime(contentType: String?): Boolean {
+  val mime = contentType?.substringBefore(';')?.trim()?.lowercase() ?: return false
+  return mime in RAW_MIME_TYPES
+}
 
 class RemoteImagesImpl(context: Context) : RemoteImageApi {
   private val requestMap = ConcurrentHashMap<Long, RemoteRequest>()
@@ -57,7 +87,7 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
     ImageFetcherManager.fetch(
       url,
       signal,
-      onSuccess = { buffer ->
+      onSuccess = { buffer, contentType ->
         if (signal.isCanceled) {
           requestMap.remove(requestId)
           buffer.free()
@@ -72,8 +102,18 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
         if (!preferEncoded && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
           decodeExecutor.execute {
             val res = if (signal.isCanceled) null else try {
-              val source = ImageDecoder.createSource(NativeBuffer.wrap(buffer.pointer, buffer.offset))
-              source.decodeBitmap().toNativeBuffer()
+              val bitmap = ImageDecoder.createSource(NativeBuffer.wrap(buffer.pointer, buffer.offset)).decodeBitmap()
+              // The embedded preview a raw decodes to has no orientation, so read the container's.
+              val orientation = if (isRawMime(contentType)) {
+                readRawOrientation(NativeBuffer.wrap(buffer.pointer, buffer.offset), buffer.offset)
+              } else {
+                ExifInterface.ORIENTATION_NORMAL
+              }
+              if (orientation == ExifInterface.ORIENTATION_NORMAL || orientation == ExifInterface.ORIENTATION_UNDEFINED) {
+                bitmap.toNativeBuffer()
+              } else {
+                rotateToNativeBuffer(bitmap, orientation)
+              }
             } catch (_: Throwable) {
               null
             }
@@ -154,7 +194,7 @@ private object ImageFetcherManager {
   fun fetch(
     url: String,
     signal: CancellationSignal,
-    onSuccess: (NativeByteBuffer) -> Unit,
+    onSuccess: (NativeByteBuffer, String?) -> Unit,
     onFailure: (Exception) -> Unit,
   ) {
     fetcher.fetch(url, signal, onSuccess, onFailure)
@@ -185,7 +225,7 @@ private sealed interface ImageFetcher {
   fun fetch(
     url: String,
     signal: CancellationSignal,
-    onSuccess: (NativeByteBuffer) -> Unit,
+    onSuccess: (NativeByteBuffer, String?) -> Unit,
     onFailure: (Exception) -> Unit,
   )
 
@@ -203,7 +243,7 @@ private class CronetImageFetcher : ImageFetcher {
   override fun fetch(
     url: String,
     signal: CancellationSignal,
-    onSuccess: (NativeByteBuffer) -> Unit,
+    onSuccess: (NativeByteBuffer, String?) -> Unit,
     onFailure: (Exception) -> Unit,
   ) {
     synchronized(stateLock) {
@@ -271,7 +311,7 @@ private class CronetImageFetcher : ImageFetcher {
   }
 
   private class FetchCallback(
-    private val onSuccess: (NativeByteBuffer) -> Unit,
+    private val onSuccess: (NativeByteBuffer, String?) -> Unit,
     private val onFailure: (Exception) -> Unit,
     private val onComplete: () -> Unit,
   ) : UrlRequest.Callback() {
@@ -328,7 +368,9 @@ private class CronetImageFetcher : ImageFetcher {
     }
 
     override fun onSucceeded(request: UrlRequest, info: UrlResponseInfo) {
-      onSuccess(buffer!!)
+      val contentType = info.allHeaders.entries
+        .firstOrNull { it.key.equals("content-type", ignoreCase = true) }?.value?.firstOrNull()
+      onSuccess(buffer!!, contentType)
       onComplete()
     }
 
@@ -379,7 +421,7 @@ private class OkHttpImageFetcher private constructor(
   override fun fetch(
     url: String,
     signal: CancellationSignal,
-    onSuccess: (NativeByteBuffer) -> Unit,
+    onSuccess: (NativeByteBuffer, String?) -> Unit,
     onFailure: (Exception) -> Unit,
   ) {
     synchronized(stateLock) {
@@ -433,7 +475,7 @@ private class OkHttpImageFetcher private constructor(
                   buffer.ensureHeadroom()
                 }
               }
-              onSuccess(buffer)
+              onSuccess(buffer, response.header("Content-Type"))
             } catch (e: Exception) {
               buffer.free()
               onFailure(e)

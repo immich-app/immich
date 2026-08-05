@@ -130,7 +130,10 @@ class AlbumAccess {
       .where('shared_link.albumId', 'in', [...albumIds])
       .execute()
       .then(
-        (sharedLinks) => new Set(sharedLinks.flatMap((sharedLink) => (sharedLink.albumId ? [sharedLink.albumId] : []))),
+        (sharedLinks) =>
+          new Set(
+            sharedLinks.filter((sharedLink) => sharedLink.albumId).map((sharedLink) => sharedLink.albumId),
+          ) as Set<string>,
       );
   }
 }

@@ -26,7 +26,6 @@ const String kDownloadGroupLivePhoto = 'group_livephoto';
 const String kShareDownloadGroup = 'group_share';
 
 // Timeline constants
-const int kTimelineNoneSegmentSize = 120;
 const int kTimelineAssetLoadBatchSize = 1024;
 const int kTimelineAssetLoadOppositeSize = 64;
 

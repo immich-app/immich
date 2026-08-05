@@ -71,7 +71,11 @@ class MapUtils {
     bool silent = false,
   }) async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!context.mounted) {
+        return (null, LocationPermission.unableToDetermine);
+      }
+
       if (!serviceEnabled && !silent) {
         unawaited(showDialog(context: context, builder: (context) => _LocationServiceDisabledDialog(context)));
         return (null, LocationPermission.deniedForever);
@@ -81,6 +85,10 @@ class MapUtils {
       bool shouldRequestPermission = false;
 
       if (permission == LocationPermission.denied && !silent) {
+        if (!context.mounted) {
+          return (null, LocationPermission.unableToDetermine);
+        }
+
         shouldRequestPermission = await showDialog(
           context: context,
           builder: (context) => _LocationPermissionDisabledDialog(context),
@@ -98,7 +106,7 @@ class MapUtils {
         return (null, LocationPermission.deniedForever);
       }
 
-      Position currentUserLocation = await Geolocator.getCurrentPosition(
+      final Position currentUserLocation = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
           distanceFilter: 0,
