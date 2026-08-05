@@ -22,7 +22,9 @@ import 'package:immich_ui/immich_ui.dart';
 List<Widget> _actionColumnButtons(BuildContext context, WidgetRef ref, List<ActionBuilder> actions) => actions
     .map((a) => a.create(context, ref))
     .nonNulls
-    .map((item) => ImmichColumnButton(icon: item.icon, label: item.label, onPressed: item.onAction))
+    .map<ImmichColumnButton>(
+      (item) => .new(icon: item.icon, label: item.label, onPressed: item.onAction, onLongPress: item.onSecondaryAction),
+    )
     .toList(growable: false);
 
 class ViewerBottomBar extends ConsumerWidget {
