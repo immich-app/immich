@@ -149,26 +149,29 @@ export class PersonRepository {
 
   @GenerateSql({ params: [{ take: 1, skip: 0 }, DummyValue.UUID] })
   async getAllForUser(pagination: PaginationOptions, userId: string, options?: PersonSearchOptions) {
-    const items = await this.db
-      .selectFrom('person')
-      .selectAll('person')
-      .innerJoin('asset_face', 'asset_face.personId', 'person.id')
+    const faceCounts = this.db
+      .selectFrom('asset_face')
       .innerJoin('asset', (join) =>
         join
           .onRef('asset_face.assetId', '=', 'asset.id')
           .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
           .on('asset.deletedAt', 'is', null),
       )
-      .where('person.ownerId', '=', userId)
+      .select(['asset_face.personId as personId', (eb) => eb.fn.count('asset_face.assetId').as('faceCount')])
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
-      .orderBy('person.isHidden', 'asc')
-      .orderBy('person.isFavorite', 'desc')
-      .having((eb) =>
+      .groupBy('asset_face.personId');
+
+    const items = await this.db
+      .selectFrom('person')
+      .selectAll('person')
+      .innerJoin(faceCounts.as('face_counts'), 'face_counts.personId', 'person.id')
+      .where('person.ownerId', '=', userId)
+      .where((eb) =>
         eb.or([
           eb('person.name', '!=', ''),
           eb(
-            (innerEb) => innerEb.fn.count('asset_face.assetId'),
+            'face_counts.faceCount',
             '>=',
             sql<number>`COALESCE(
               (SELECT value -> 'people' ->> 'minimumFaces'
@@ -180,7 +183,8 @@ export class PersonRepository {
           ),
         ]),
       )
-      .groupBy('person.id')
+      .orderBy('person.isHidden', 'asc')
+      .orderBy('person.isFavorite', 'desc')
       .$if(!!options?.closestFaceAssetId, (qb) =>
         qb.orderBy((eb) =>
           eb(
@@ -201,7 +205,7 @@ export class PersonRepository {
       .$if(!options?.closestFaceAssetId, (qb) =>
         qb
           .orderBy(sql`NULLIF(person.name, '') is null`, 'asc')
-          .orderBy((eb) => eb.fn.count('asset_face.assetId'), 'desc')
+          .orderBy('face_counts.faceCount', 'desc')
           .orderBy(sql`NULLIF(person.name, '')`, (om) => om.asc().nullsLast())
           .orderBy('person.createdAt'),
       )

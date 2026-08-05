@@ -28,38 +28,44 @@ select
   "person".*
 from
   "person"
-  inner join "asset_face" on "asset_face"."personId" = "person"."id"
-  inner join "asset" on "asset_face"."assetId" = "asset"."id"
-  and "asset"."visibility" = 'timeline'
-  and "asset"."deletedAt" is null
+  inner join (
+    select
+      "asset_face"."personId" as "personId",
+      count("asset_face"."assetId") as "faceCount"
+    from
+      "asset_face"
+      inner join "asset" on "asset_face"."assetId" = "asset"."id"
+      and "asset"."visibility" = 'timeline'
+      and "asset"."deletedAt" is null
+    where
+      "asset_face"."deletedAt" is null
+      and "asset_face"."isVisible" is true
+    group by
+      "asset_face"."personId"
+  ) as "face_counts" on "face_counts"."personId" = "person"."id"
 where
   "person"."ownerId" = $1
-  and "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" is true
-  and "person"."isHidden" = $2
-group by
-  "person"."id"
-having
-  (
-    "person"."name" != $3
-    or count("asset_face"."assetId") >= COALESCE(
+  and (
+    "person"."name" != $2
+    or "face_counts"."faceCount" >= COALESCE(
       (
         SELECT
           value -> 'people' ->> 'minimumFaces'
         FROM
           user_metadata
         WHERE
-          "userId" = $4
+          "userId" = $3
           AND key = 'preferences'
       ),
       '3'
     )::int
   )
+  and "person"."isHidden" = $4
 order by
   "person"."isHidden" asc,
   "person"."isFavorite" desc,
   NULLIF(person.name, '') is null asc,
-  count("asset_face"."assetId") desc,
+  "face_counts"."faceCount" desc,
   NULLIF(person.name, '') asc nulls last,
   "person"."createdAt"
 limit
