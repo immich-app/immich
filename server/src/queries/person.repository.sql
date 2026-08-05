@@ -38,7 +38,7 @@ where
   and "asset_face"."isVisible" is true
   and "person"."isHidden" = $2
 group by
-  "person"."id"
+  "person".*
 having
   (
     "person"."name" != $3
@@ -77,7 +77,7 @@ where
   "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
 group by
-  "person"."id"
+  "person".*
 having
   count("asset_face"."assetId") = $1
 

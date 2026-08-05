@@ -180,7 +180,7 @@ export class PersonRepository {
           ),
         ]),
       )
-      .groupBy('person.id')
+      .groupBy(sql`"person".*`)
       .$if(!!options?.closestFaceAssetId, (qb) =>
         qb.orderBy((eb) =>
           eb(
@@ -222,7 +222,7 @@ export class PersonRepository {
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
       .having((eb) => eb.fn.count('asset_face.assetId'), '=', 0)
-      .groupBy('person.id')
+      .groupBy(sql`"person".*`)
       .execute();
   }
 
