@@ -360,7 +360,6 @@ class Drift extends $Drift {
               },
               from30To31: (m, v31) async {
                 await m.createIndex(v31.idxRemoteAssetUploaded);
-                // await m.createTable(v31.session);
               },
               from31To32: (m, v32) async {
                 await m.createTable(v32.session);
