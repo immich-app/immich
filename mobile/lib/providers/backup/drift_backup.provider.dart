@@ -261,11 +261,11 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
       stopForegroundBackup();
     }
 
+    state = state.copyWith(error: BackupError.none);
+
     // Re-baseline the counters against the same DB read that feeds this run's candidate list,
     // otherwise a resume counts duplicate successes against the old baseline (#26215).
     await getBackupStatus(userId);
-
-    state = state.copyWith(error: BackupError.none);
 
     _cancelToken = Completer<void>();
 
