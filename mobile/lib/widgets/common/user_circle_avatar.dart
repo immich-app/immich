@@ -4,7 +4,7 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/session.provider.dart';
 
-class UserCircleAvatar extends StatelessWidget {
+class UserCircleAvatar extends ConsumerWidget {
   final UserDto user;
   final double size;
   final bool hasBorder;
@@ -13,10 +13,10 @@ class UserCircleAvatar extends StatelessWidget {
   const UserCircleAvatar({super.key, this.size = 44, this.hasBorder = false, this.opacity = 1, required this.user});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final userAvatarColor = user.avatarColor.toColor().withValues(alpha: opacity);
     final profileImageUrl =
-        '${ref.read(sessionProvider).serverEndpoint}/users/${user.id}/profile-image?d=${user.profileChangedAt.millisecondsSinceEpoch}';
+        '${ref.watch(sessionProvider.select((s) => s.serverEndpoint))!}/users/${user.id}/profile-image?d=${user.profileChangedAt.millisecondsSinceEpoch}';
 
     final textColor = (user.avatarColor.toColor().computeLuminance() > 0.5 ? Colors.black : Colors.white).withValues(
       alpha: opacity,

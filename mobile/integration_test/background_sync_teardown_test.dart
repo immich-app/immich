@@ -40,7 +40,6 @@ void main() {
   tearDown(() async {
     await workerManagerPatch.dispose();
     await server.close();
-    await Store.delete(StoreKey.legacyServerEndpoint);
     await Store.delete(StoreKey.syncMigrationStatus);
   });
 

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
+import 'package:immich_mobile/domain/models/session.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
@@ -302,12 +303,8 @@ class SplashScreenPageState extends ConsumerState<SplashScreenPage> {
     log.info("Resuming session at $endpoint");
   }
 
-  void resumeSession() async {
-    final session = ref.read(sessionProvider);
-    final serverUrl = session.serverUrl;
-    final endpoint = session.serverEndpoint;
-    final accessToken = session.accessToken;
-
+  Future<void> resumeSession() async {
+    final Session(:serverUrl, serverEndpoint: endpoint, :accessToken) = ref.read(sessionProvider);
     if (accessToken != null && serverUrl != null && endpoint != null) {
       final infoProvider = ref.read(serverInfoProvider.notifier);
       final wsProvider = ref.read(websocketProvider.notifier);

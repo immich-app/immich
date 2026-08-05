@@ -53,7 +53,6 @@ abstract final class Bootstrap {
     final DriftStoreRepository storeRepo = DriftStoreRepository(drift);
 
     await StoreService.init(storeRepository: storeRepo, listenUpdates: listenStoreUpdates);
-
     await SessionRepository.ensureInitialized(drift);
 
     final settingsRepo = await SettingsRepository.ensureInitialized(drift);
