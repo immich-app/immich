@@ -346,7 +346,7 @@ extension type const AssetServiceStub(MockAssetService service) implements Stub<
       () => service.applyEdits(any(), any());
 
   Future<int> Function() get deleteLocal =>
-      () => service.deleteLocal(any());
+      () => service.deleteLocal(any(), trash: any(named: 'trash'));
 }
 
 extension type const RemoteAlbumServiceStub(MockRemoteAlbumService service) implements Stub<MockRemoteAlbumService> {
