@@ -99,7 +99,7 @@ class _VideoControlsState extends ConsumerState<VideoControls> {
     });
     ref.listen(_provider.select((v) => v.status), (_, __) => _hideTimer.reset());
 
-    final notifier = ref.read(_provider.notifier);
+    final notifier = ref.watch(_provider.notifier);
     final isLoaded = duration != Duration.zero;
 
     return Padding(

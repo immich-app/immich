@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
@@ -15,7 +14,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 /// User can provide either a [assetMarkerRemoteId] to display the asset's thumbnail or set
 /// [showMarkerPin] to true which would display a marker pin instead. If both are provided,
 /// [assetMarkerRemoteId] will take precedence
-class MapThumbnail extends HookConsumerWidget {
+class MapThumbnail extends HookWidget {
   final Function(Point<double>, LatLng)? onTap;
   final LatLng centre;
   final String? assetMarkerRemoteId;
@@ -44,7 +43,7 @@ class MapThumbnail extends HookConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final controller = useRef<MapLibreMapController?>(null);
     final styleLoaded = useState(false);
 

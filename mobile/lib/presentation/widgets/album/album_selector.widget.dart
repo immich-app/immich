@@ -669,7 +669,7 @@ class _GridAlbumCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albumThumbnailAsset = ref.read(assetServiceProvider).getRemoteAsset(album.thumbnailAssetId ?? "");
+    final albumThumbnailAsset = ref.watch(assetServiceProvider).getRemoteAsset(album.thumbnailAssetId ?? "");
 
     return GestureDetector(
       onTap: () => onAlbumSelected(album),
@@ -746,7 +746,7 @@ class AddToAlbumHeader extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     Future<void> onCreateAlbum() async {
       final albumName = await showDialog<String?>(context: context, builder: (context) => const NewAlbumNameModal());
-      if (albumName == null) {
+      if (albumName == null || !context.mounted) {
         return;
       }
 

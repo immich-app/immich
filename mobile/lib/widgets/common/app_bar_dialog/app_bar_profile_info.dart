@@ -45,12 +45,12 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
     Future<void> pickUserProfileImage() async {
       final XFile? image = await ImagePicker().pickImage(source: ImageSource.gallery, maxHeight: 1024, maxWidth: 1024);
 
-      if (image != null) {
-        final success = await ref.watch(uploadProfileImageProvider.notifier).upload(image);
+      if (image != null && context.mounted) {
+        final success = await ref.read(uploadProfileImageProvider.notifier).upload(image);
 
-        if (success) {
+        if (success && context.mounted) {
           final profileImagePath = ref.read(uploadProfileImageProvider).profileImagePath;
-          ref.watch(authProvider.notifier).updateUserProfileImagePath(profileImagePath);
+          ref.read(authProvider.notifier).updateUserProfileImagePath(profileImagePath);
           if (user != null) {
             unawaited(ref.read(currentUserProvider.notifier).refresh());
           }
@@ -61,7 +61,7 @@ class AppBarProfileInfoBox extends HookConsumerWidget {
     }
 
     void toggleReadonlyMode() {
-      final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+      final isReadonlyModeEnabled = ref.read(readonlyModeProvider);
       ref.read(readonlyModeProvider.notifier).toggleReadonlyMode();
 
       context.scaffoldMessenger.showSnackBar(

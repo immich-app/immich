@@ -16,7 +16,7 @@ final _stateProvider = Provider.family.autoDispose<List<LocalAsset>?, ActionSour
   final assets = ref.watch(assetsActionProvider(source));
   final local = assets.backedUp(isBackedUp: false).local().toList(growable: false);
   return local.isEmpty ? null : local;
-});
+}, dependencies: [assetsActionProvider]);
 
 class UploadAction extends AssetActionBuilder {
   final bool showProgress;

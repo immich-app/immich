@@ -13,7 +13,7 @@ class VideoViewerSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final viewer = ref.read(appConfigProvider).viewer;
+    final viewer = ref.watch(appConfigProvider).viewer;
     final useAutoPlayVideo = useState(viewer.autoPlayVideo);
     final useLoopVideo = useState(viewer.loopVideo);
     final useOriginalVideo = useState(viewer.loadOriginalVideo);

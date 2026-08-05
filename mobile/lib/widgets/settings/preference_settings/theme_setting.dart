@@ -15,7 +15,7 @@ class ThemeSetting extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentTheme = useState(ref.read(appConfigProvider.select((config) => config.theme.mode)));
+    final currentTheme = useState(ref.watch(appConfigProvider.select((config) => config.theme.mode)));
     final isDarkTheme = useValueNotifier(currentTheme.value == ThemeMode.dark);
     final isSystemTheme = useValueNotifier(currentTheme.value == ThemeMode.system);
     final colorfulInterface = useValueNotifier(
