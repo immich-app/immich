@@ -89,7 +89,7 @@ const throwSessionRequired = () => {
 export class SyncService extends BaseService {
   @OnEvent({ name: 'ConfigUpdate', workers: [ImmichWorker.Api] })
   async onConfigUpdate({ newConfig, oldConfig }: ArgOf<'ConfigUpdate'>) {
-    if (oldConfig.server.publicUsers && !newConfig.server.publicUsers) {
+    if (oldConfig.server.publicUsers !== newConfig.server.publicUsers) {
       await this.sessionRepository.requireFullSyncForNonAdmins();
     }
   }
