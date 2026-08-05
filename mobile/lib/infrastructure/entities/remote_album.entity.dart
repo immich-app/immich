@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/utils/datetime.converter.dart';
+import 'package:immich_mobile/infrastructure/utils/datetime_clamp.type.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 class RemoteAlbumEntity extends Table with DriftDefaultsMixin {

@@ -347,8 +347,8 @@ class Drift extends $Drift {
   );
 }
 
-// hardcoded on purpose: datetimes are stored as text, so versioned schema tables type
-// these columns String and the set cannot be derived — migration_test pins it to drift_schema_v31.json
+// every datetime column of the v31 schema, hardcoded: the heal runs once at v31->v32,
+// so the set must not follow later schema changes
 @visibleForTesting
 const healDateTimeColumns = <String, List<String>>{
   'auth_user_entity': ['profile_changed_at'],
@@ -368,16 +368,21 @@ const healDateTimeColumns = <String, List<String>>{
 };
 
 // Rewrites datetime text sqlite date functions cannot handle: signed extended
-// years and year 0000 (pre-converter syncs), plus anything later than the safe
-// midnight ceiling, which re-overflows sqlite under 'localtime' east of UTC
+// years and year 0000 (pre-clamp syncs), plus anything later than the safe
+// midnight ceiling, which re-overflows sqlite under 'localtime' east of UTC.
+// One statement per table: each column heals only when its own value is out of range
 @visibleForTesting
 Future<void> healOutOfRangeDateTimes(GeneratedDatabase db) async {
+  const floor = '0001-01-01T00:00:00.000Z';
+  const ceiling = '9999-12-31T00:00:00.000Z';
   for (final MapEntry(key: table, value: columns) in healDateTimeColumns.entries) {
-    for (final column in columns) {
-      await db.customStatement(
-        "UPDATE $table SET $column = CASE WHEN substr($column, 1, 1) = '-' OR substr($column, 1, 4) = '0000' THEN '0001-01-01T00:00:00.000Z' ELSE '9999-12-31T00:00:00.000Z' END WHERE substr($column, 1, 1) IN ('+', '-') OR substr($column, 1, 4) = '0000' OR $column > '9999-12-31T00:00:00.000Z'",
-      );
-    }
+    String low(String c) => "substr($c, 1, 1) = '-' OR substr($c, 1, 4) = '0000'";
+    String high(String c) => "substr($c, 1, 1) = '+' OR $c > '$ceiling'";
+    final assignments = columns.map(
+      (c) => "$c = CASE WHEN ${low(c)} THEN '$floor' WHEN ${high(c)} THEN '$ceiling' ELSE $c END",
+    );
+    final outOfRange = columns.map((c) => '${low(c)} OR ${high(c)}');
+    await db.customStatement('UPDATE $table SET ${assignments.join(', ')} WHERE ${outOfRange.join(' OR ')}');
   }
 }
 

@@ -1,6 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
-import 'package:immich_mobile/infrastructure/utils/datetime.converter.dart';
+import 'package:immich_mobile/infrastructure/utils/datetime_clamp.type.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 @TableIndex.sql('CREATE INDEX IF NOT EXISTS idx_remote_asset_cloud_id ON remote_asset_cloud_id_entity (cloud_id)')

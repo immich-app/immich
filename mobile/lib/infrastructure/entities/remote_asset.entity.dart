@@ -3,7 +3,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/asset.mixin.dart';
-import 'package:immich_mobile/infrastructure/utils/datetime.converter.dart';
+import 'package:immich_mobile/infrastructure/utils/datetime_clamp.type.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 @TableIndex.sql('''

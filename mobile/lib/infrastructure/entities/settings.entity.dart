@@ -1,5 +1,5 @@
 import 'package:drift/drift.dart';
-import 'package:immich_mobile/infrastructure/utils/datetime.converter.dart';
+import 'package:immich_mobile/infrastructure/utils/datetime_clamp.type.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 class SettingsEntity extends Table with DriftDefaultsMixin {

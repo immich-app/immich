@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/log.model.dart' as domain;
 import 'package:immich_mobile/infrastructure/entities/log.entity.drift.dart';
-import 'package:immich_mobile/infrastructure/utils/datetime.converter.dart';
+import 'package:immich_mobile/infrastructure/utils/datetime_clamp.type.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 class LogMessageEntity extends Table with DriftDefaultsMixin {

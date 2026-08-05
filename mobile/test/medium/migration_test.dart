@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:drift/drift.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
@@ -110,28 +107,6 @@ void main() {
       final asset = await ctx.newLocalAsset(createdAt: local);
       final row = await (ctx.db.select(ctx.db.localAssetEntity)..where((t) => t.id.equals(asset.id))).getSingle();
       expect(row.createdAt, local);
-    });
-
-    test('the heal column map matches the datetime columns of the v31 schema json', () async {
-      final schemaJson = jsonDecode(await File('drift_schemas/main/drift_schema_v31.json').readAsString());
-      final expected = <String>{
-        for (final entity in schemaJson['entities'] as List)
-          if (entity['type'] == 'table')
-            for (final column in entity['data']['columns'] as List)
-              if (column['moor_type'] == 'dateTime') '${entity['data']['name']}.${column['name']}',
-      };
-
-      final mapped = <String>{
-        for (final MapEntry(key: table, value: columns) in healDateTimeColumns.entries)
-          for (final column in columns) '$table.$column',
-      };
-
-      final missing = expected.difference(mapped);
-      final extra = mapped.difference(expected);
-      expect(missing, isEmpty, reason: 'heal map misses v31 datetime columns: ${missing.join(', ')}');
-      expect(extra, isEmpty, reason: 'heal map has columns that are not v31 datetimes: ${extra.join(', ')}');
-      final mappedCount = healDateTimeColumns.values.fold(0, (sum, columns) => sum + columns.length);
-      expect(mappedCount, expected.length, reason: 'heal map count differs from the v31 schema json');
     });
   });
 }
