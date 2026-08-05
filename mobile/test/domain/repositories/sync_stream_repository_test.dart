@@ -3,16 +3,23 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart' as domain;
+import 'package:immich_mobile/domain/models/memory.model.dart';
+import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
 import 'package:openapi/api.dart';
 
-SyncUserV1 _createUser({String id = 'user-1'}) {
+SyncUserV1 _createUser({String id = 'user-1', String name = 'Test User'}) {
   return SyncUserV1(
     id: id,
-    name: 'Test User',
+    name: name,
     email: 'test@test.com',
     deletedAt: null,
     avatarColor: const Optional.absent(),
@@ -29,6 +36,14 @@ SyncAssetV1 _createAsset({
   int? width,
   int? height,
   String? libraryId,
+  bool isFavorite = false,
+  AssetVisibility visibility = AssetVisibility.timeline,
+  String? stackId,
+  String? livePhotoVideoId,
+  String? thumbhash,
+  DateTime? deletedAt,
+  DateTime? fileCreatedAt,
+  DateTime? fileModifiedAt,
 }) {
   return SyncAssetV1(
     id: id,
@@ -36,20 +51,20 @@ SyncAssetV1 _createAsset({
     originalFileName: fileName,
     type: AssetTypeEnum.IMAGE,
     ownerId: ownerId,
-    isFavorite: false,
-    fileCreatedAt: DateTime(2024, 1, 1),
-    fileModifiedAt: DateTime(2024, 1, 1),
+    isFavorite: isFavorite,
+    fileCreatedAt: fileCreatedAt ?? DateTime(2024, 1, 1),
+    fileModifiedAt: fileModifiedAt ?? DateTime(2024, 1, 1),
     createdAt: DateTime(2024, 1, 1),
     localDateTime: DateTime(2024, 1, 1),
-    visibility: AssetVisibility.timeline,
+    visibility: visibility,
     width: width,
     height: height,
-    deletedAt: null,
+    deletedAt: deletedAt,
     duration: null,
     libraryId: libraryId,
-    livePhotoVideoId: null,
-    stackId: null,
-    thumbhash: null,
+    livePhotoVideoId: livePhotoVideoId,
+    stackId: stackId,
+    thumbhash: thumbhash,
     isEdited: false,
   );
 }
@@ -273,106 +288,229 @@ void main() {
     });
   });
 
-  group('SyncStreamRepository - updateAssetsV1 dedupe (#22522 #27186)', () {
-    test('replaces stale row when new id arrives with same (ownerId, checksum) and library is null', () async {
+  group('SyncStreamRepository - updateAssets upsert dedupe (#22522 #27186)', () {
+    Future<void> pragmaOn(String testName) async {
+      await db.customStatement('PRAGMA foreign_keys = ON');
+      final row = await db.customSelect('PRAGMA foreign_keys').getSingle();
+      // ignore: avoid_print
+      print('RECEIPT test=$testName pragma foreign_keys=${row.read<int>('foreign_keys')}');
+    }
+
+    Future<void> seedChildren(String assetId, String tag) async {
+      await db.remoteExifEntity.insertOne(RemoteExifEntityCompanion.insert(assetId: assetId));
+      await db.remoteAlbumEntity.insertOne(
+        RemoteAlbumEntityCompanion.insert(id: 'album-$tag', name: 'Album', order: AlbumAssetOrder.desc),
+      );
+      await db.remoteAlbumAssetEntity.insertOne(
+        RemoteAlbumAssetEntityCompanion.insert(assetId: assetId, albumId: 'album-$tag'),
+      );
+      await db.memoryEntity.insertOne(
+        MemoryEntityCompanion.insert(
+          id: 'memory-$tag',
+          ownerId: 'user-1',
+          type: MemoryTypeEnum.onThisDay,
+          data: '{"year":2024}',
+          memoryAt: DateTime(2024, 1, 1),
+        ),
+      );
+      await db.memoryAssetEntity.insertOne(
+        MemoryAssetEntityCompanion.insert(assetId: assetId, memoryId: 'memory-$tag'),
+      );
+      await db.assetFaceEntity.insertOne(
+        AssetFaceEntityCompanion.insert(
+          id: 'face-$tag',
+          assetId: assetId,
+          imageWidth: 100,
+          imageHeight: 100,
+          boundingBoxX1: 0,
+          boundingBoxY1: 0,
+          boundingBoxX2: 10,
+          boundingBoxY2: 10,
+          sourceType: 'ml',
+        ),
+      );
+    }
+
+    Future<int> countChildren(String assetId) async {
+      final exif = await (db.remoteExifEntity.select()..where((t) => t.assetId.equals(assetId))).get();
+      final albumAsset = await (db.remoteAlbumAssetEntity.select()..where((t) => t.assetId.equals(assetId))).get();
+      final memoryAsset = await (db.memoryAssetEntity.select()..where((t) => t.assetId.equals(assetId))).get();
+      final faces = await (db.assetFaceEntity.select()..where((t) => t.assetId.equals(assetId))).get();
+      return exif.length + albumAsset.length + memoryAsset.length + faces.length;
+    }
+
+    test('same-id update keeps children and updates fields', () async {
+      await pragmaOn('same-id');
       await sut.updateUsersV1([_createUser()]);
-      await sut.updateAssetsV1([_createAsset(id: 'old-id', checksum: 'AAA', fileName: 'photo.jpg')]);
+      await sut.updateAssetsV1([_createAsset(id: 'a', checksum: 'AAA', fileName: 'photo.jpg')]);
+      await seedChildren('a', 't1');
 
-      // Server re-issues a new id for the same content (replace-with-upload, immich-go, etc.)
-      await sut.updateAssetsV1([_createAsset(id: 'new-id', checksum: 'AAA', fileName: 'photo.jpg')]);
+      await sut.updateAssetsV1([_createAsset(id: 'a', checksum: 'AAA', fileName: 'renamed.jpg', isFavorite: true)]);
 
-      final rows = await db.remoteAssetEntity.select().get();
-      expect(rows, hasLength(1));
-      expect(rows.single.id, equals('new-id'));
-      expect(rows.single.checksum, equals('AAA'));
+      expect(await countChildren('a'), 4, reason: 'DO UPDATE keeps the row, children survive');
+      final row = await (db.remoteAssetEntity.select()..where((t) => t.id.equals('a'))).getSingle();
+      expect(row.name, 'renamed.jpg');
+      expect(row.isFavorite, isTrue);
     });
 
-    test('replaces stale row by (ownerId, libraryId, checksum) when library is not null', () async {
+    test('reupload with a new id replaces the stale row and cascades its children', () async {
+      await pragmaOn('reupload');
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateAssetsV1([_createAsset(id: 'stale', checksum: 'AAA', fileName: 'photo.jpg')]);
+      await seedChildren('stale', 't2');
+
+      await sut.updateAssetsV1([_createAsset(id: 'fresh', checksum: 'AAA', fileName: 'photo.jpg')]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows.map((r) => r.id), ['fresh'], reason: 'no 2067, stale row replaced away');
+      expect(await countChildren('stale'), 0, reason: 'stale children cascade with the replaced row');
+
+      // same scenario through V2
+      await sut.updateAssetsV2([_createAssetV2(id: 'stale2', checksum: 'BBB', fileName: 'photo2.jpg')]);
+      await seedChildren('stale2', 't2b');
+      await sut.updateAssetsV2([_createAssetV2(id: 'fresh2', checksum: 'BBB', fileName: 'photo2.jpg')]);
+
+      final rows2 = await db.remoteAssetEntity.select().get();
+      expect(rows2.map((r) => r.id), containsAllInOrder(['fresh', 'fresh2']));
+      expect(await countChildren('stale2'), 0);
+    });
+
+    test('library variant replaces only the matching library row', () async {
+      await pragmaOn('library');
       await sut.updateUsersV1([_createUser()]);
       await sut.updateAssetsV1([
-        _createAsset(id: 'old-id', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1'),
+        _createAsset(id: 'stale-lib', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1'),
+        _createAsset(id: 'keep-null', checksum: 'AAA', fileName: 'photo.jpg'),
       ]);
 
       await sut.updateAssetsV1([
-        _createAsset(id: 'new-id', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1'),
+        _createAsset(id: 'fresh-lib', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1'),
       ]);
 
       final rows = await db.remoteAssetEntity.select().get();
-      expect(rows, hasLength(1));
-      expect(rows.single.id, equals('new-id'));
-      expect(rows.single.libraryId, equals('lib-1'));
+      expect(rows.map((r) => r.id).toSet(), {
+        'fresh-lib',
+        'keep-null',
+      }, reason: 'library NULL and NOT NULL match different partial indexes');
     });
 
-    test('library and non-library rows with same (ownerId, checksum) coexist', () async {
+    test('batch-internal duplicates keep the last payload asset', () async {
+      await pragmaOn('batch-dupes');
       await sut.updateUsersV1([_createUser()]);
-      await sut.updateAssetsV1([
-        _createAsset(id: 'lib-row', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1'),
-        _createAsset(id: 'main-row', checksum: 'AAA', fileName: 'photo.jpg'),
-      ]);
 
-      final rows = await db.remoteAssetEntity.select().get();
-      expect(rows, hasLength(2), reason: 'library NULL and NOT NULL match different partial indexes');
-      expect(rows.map((r) => r.id).toSet(), equals({'lib-row', 'main-row'}));
-    });
-
-    test('different owners with same checksum coexist', () async {
-      await sut.updateUsersV1([_createUser(id: 'user-1')]);
-      await sut.updateUsersV1([_createUser(id: 'user-2')]);
-      await sut.updateAssetsV1([
-        _createAsset(id: 'a-id', checksum: 'AAA', fileName: 'photo.jpg', ownerId: 'user-1'),
-        _createAsset(id: 'b-id', checksum: 'AAA', fileName: 'photo.jpg', ownerId: 'user-2'),
-      ]);
-
-      final rows = await db.remoteAssetEntity.select().get();
-      expect(rows, hasLength(2));
-    });
-
-    test('same id arriving again updates in place (no self-delete)', () async {
-      await sut.updateUsersV1([_createUser()]);
-      await sut.updateAssetsV1([_createAsset(id: 'same-id', checksum: 'AAA', fileName: 'photo.jpg')]);
-
-      await sut.updateAssetsV1([_createAsset(id: 'same-id', checksum: 'AAA', fileName: 'renamed.jpg')]);
-
-      final rows = await db.remoteAssetEntity.select().get();
-      expect(rows, hasLength(1));
-      expect(rows.single.id, equals('same-id'));
-      expect(rows.single.name, equals('renamed.jpg'), reason: 'ON CONFLICT(id) DO UPDATE path still works');
-    });
-
-    test('updateAssetsV2 dedupes the same way', () async {
-      await sut.updateUsersV1([_createUser()]);
-      await sut.updateAssetsV2([_createAssetV2(id: 'old-id', checksum: 'AAA', fileName: 'photo.jpg')]);
-
-      await sut.updateAssetsV2([_createAssetV2(id: 'new-id', checksum: 'AAA', fileName: 'photo.jpg')]);
-
-      final rows = await db.remoteAssetEntity.select().get();
-      expect(rows, hasLength(1));
-      expect(rows.single.id, equals('new-id'));
-    });
-
-    test('one payload with duplicate (ownerId, checksum) and null library keeps the last asset', () async {
-      await sut.updateUsersV1([_createUser()]);
       await sut.updateAssetsV1([
         _createAsset(id: 'first-id', checksum: 'AAA', fileName: 'photo.jpg'),
         _createAsset(id: 'last-id', checksum: 'AAA', fileName: 'photo.jpg'),
+        _createAsset(id: 'first-lib', checksum: 'BBB', fileName: 'photo.jpg', libraryId: 'lib-1'),
+        _createAsset(id: 'last-lib', checksum: 'BBB', fileName: 'photo.jpg', libraryId: 'lib-1'),
       ]);
 
       final rows = await db.remoteAssetEntity.select().get();
-      expect(rows, hasLength(1));
-      expect(rows.single.id, equals('last-id'));
+      expect(rows, hasLength(2), reason: 'REPLACE makes batch-internal duplicates last-wins, no crash');
+      expect(rows.map((r) => r.id).toSet(), {'last-id', 'last-lib'});
     });
 
-    test('one payload with duplicate (ownerId, libraryId, checksum) keeps the last asset', () async {
+    test('mixed batch of new, updated, and colliding assets all land', () async {
+      await pragmaOn('mixed');
       await sut.updateUsersV1([_createUser()]);
       await sut.updateAssetsV1([
-        _createAsset(id: 'first-id', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1'),
-        _createAsset(id: 'last-id', checksum: 'AAA', fileName: 'photo.jpg', libraryId: 'lib-1'),
+        _createAsset(id: 'up', checksum: 'UUU', fileName: 'up.jpg'),
+        _createAsset(id: 'stale', checksum: 'CCC', fileName: 'collide.jpg'),
+      ]);
+      await seedChildren('up', 't5a');
+      await seedChildren('stale', 't5b');
+
+      await sut.updateAssetsV1([
+        _createAsset(id: 'up', checksum: 'UUU', fileName: 'up-renamed.jpg'),
+        _createAsset(id: 'new', checksum: 'NNN', fileName: 'new.jpg'),
+        _createAsset(id: 'fresh', checksum: 'CCC', fileName: 'collide.jpg'),
       ]);
 
       final rows = await db.remoteAssetEntity.select().get();
+      expect(rows.map((r) => r.id).toSet(), {'up', 'new', 'fresh'});
+      expect(rows.singleWhere((r) => r.id == 'up').name, 'up-renamed.jpg');
+      expect(await countChildren('up'), 4, reason: 'in-place update keeps children');
+      expect(await countChildren('stale'), 0, reason: 'collided row replaced and cascaded');
+    });
+
+    test('a trashed stale row is replaced cleanly', () async {
+      await pragmaOn('trashed');
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateAssetsV1([
+        _createAsset(id: 'stale', checksum: 'AAA', fileName: 'photo.jpg', deletedAt: DateTime(2024, 2, 1)),
+      ]);
+
+      await sut.updateAssetsV1([_createAsset(id: 'fresh', checksum: 'AAA', fileName: 'photo.jpg')]);
+
+      final rows = await db.remoteAssetEntity.select().get();
+      expect(rows.map((r) => r.id), ['fresh']);
+      expect(rows.single.deletedAt, isNull, reason: 'payload deletedAt wins through REPLACE');
+    });
+
+    test('fields survive a cross-id replace exactly as sent', () async {
+      await pragmaOn('fields');
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateAssetsV1([_createAsset(id: 'stale', checksum: 'AAA', fileName: 'photo.jpg')]);
+
+      await sut.updateAssetsV1([
+        _createAsset(
+          id: 'fresh',
+          checksum: 'AAA',
+          fileName: 'rich.jpg',
+          isFavorite: true,
+          visibility: AssetVisibility.archive,
+          stackId: 'stack-1',
+          livePhotoVideoId: 'vid-1',
+          thumbhash: 'th-1',
+          width: 100,
+          height: 200,
+          fileCreatedAt: DateTime(2024, 5, 5),
+          fileModifiedAt: DateTime(2024, 6, 6),
+        ),
+      ]);
+
+      final row = await (db.remoteAssetEntity.select()..where((t) => t.id.equals('fresh'))).getSingle();
+      expect(row.name, 'rich.jpg');
+      expect(row.isFavorite, isTrue);
+      expect(row.visibility, domain.AssetVisibility.archive);
+      expect(row.stackId, 'stack-1');
+      expect(row.livePhotoVideoId, 'vid-1');
+      expect(row.thumbHash, 'th-1');
+      expect(row.width, 100);
+      expect(row.height, 200);
+      expect(row.createdAt, DateTime(2024, 5, 5));
+      expect(row.updatedAt, DateTime(2024, 6, 6));
+    });
+
+    test('emits a single INSERT OR REPLACE statement with an id DO UPDATE arm', () async {
+      final captured = <String>[];
+      final originalDebugPrint = drift.driftRuntimeOptions.debugPrint;
+      drift.driftRuntimeOptions.debugPrint = captured.add;
+      addTearDown(() => drift.driftRuntimeOptions.debugPrint = originalDebugPrint);
+      final logDb = Drift(
+        drift.DatabaseConnection(NativeDatabase.memory(logStatements: true), closeStreamsSynchronously: true),
+      );
+      addTearDown(logDb.close);
+      final logSut = SyncStreamRepository(logDb);
+
+      await logSut.updateUsersV1([_createUser()]);
+      await logSut.updateAssetsV1([_createAsset(id: 'a', checksum: 'AAA', fileName: 'photo.jpg')]);
+
+      final lines = captured.where((l) => l.contains('remote_asset_entity')).toList();
+      // ignore: avoid_print
+      print('RECEIPT emitted=$lines');
+      expect(lines, isNotEmpty);
+      expect(lines.join('\n'), contains('INSERT OR REPLACE INTO "remote_asset_entity"'));
+      expect(lines.join('\n'), contains('ON CONFLICT("id") DO UPDATE'));
+    });
+
+    test('updateUsersV1 still upserts users', () async {
+      await sut.updateUsersV1([_createUser()]);
+      await sut.updateUsersV1([_createUser(name: 'Renamed User')]);
+
+      final rows = await db.userEntity.select().get();
       expect(rows, hasLength(1));
-      expect(rows.single.id, equals('last-id'));
-      expect(rows.single.libraryId, equals('lib-1'));
+      expect(rows.single.name, 'Renamed User');
     });
   });
 }

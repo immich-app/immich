@@ -198,25 +198,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
   Future<void> updateAssetsV1(Iterable<SyncAssetV1> data, {String debugLabel = 'user'}) async {
     try {
       await _db.batch((batch) {
-        // Keep only the last asset per partial-index key; server order is authoritative
-        final deduped = <(String, String, String?), SyncAssetV1>{};
         for (final asset in data) {
-          deduped[(asset.ownerId, asset.checksum, asset.libraryId)] = asset;
-        }
-
-        // Avoid SqliteException(2067) when server re-issues a new id for
-        // the same (ownerId, checksum). #22522 #27186
-        for (final asset in deduped.values) {
-          _enqueueRemoteAssetDedupe(
-            batch,
-            id: asset.id,
-            ownerId: asset.ownerId,
-            checksum: asset.checksum,
-            libraryId: asset.libraryId,
-          );
-        }
-
-        for (final asset in deduped.values) {
           final companion = RemoteAssetEntityCompanion(
             name: Value(asset.originalFileName),
             type: Value(asset.type.toAssetType()),
@@ -242,6 +224,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           batch.insert(
             _db.remoteAssetEntity,
             companion.copyWith(id: Value(asset.id)),
+            mode: InsertMode.insertOrReplace,
             onConflict: DoUpdate((_) => companion),
           );
         }
@@ -255,24 +238,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
   Future<void> updateAssetsV2(Iterable<SyncAssetV2> data, {String debugLabel = 'user'}) async {
     try {
       await _db.batch((batch) {
-        // Keep only the last asset per partial-index key; server order is authoritative
-        final deduped = <(String, String, String?), SyncAssetV2>{};
         for (final asset in data) {
-          deduped[(asset.ownerId, asset.checksum, asset.libraryId)] = asset;
-        }
-
-        // See updateAssetsV1 for why this dedupe is required. #22522 #27186
-        for (final asset in deduped.values) {
-          _enqueueRemoteAssetDedupe(
-            batch,
-            id: asset.id,
-            ownerId: asset.ownerId,
-            checksum: asset.checksum,
-            libraryId: asset.libraryId,
-          );
-        }
-
-        for (final asset in deduped.values) {
           final companion = RemoteAssetEntityCompanion(
             name: Value(asset.originalFileName),
             type: Value(asset.type.toAssetType()),
@@ -298,6 +264,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
           batch.insert(
             _db.remoteAssetEntity,
             companion.copyWith(id: Value(asset.id)),
+            mode: InsertMode.insertOrReplace,
             onConflict: DoUpdate((_) => companion),
           );
         }
@@ -305,39 +272,6 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     } catch (error, stack) {
       _logger.severe('Error: updateAssetsV2 - $debugLabel', error, stack);
       rethrow;
-    }
-  }
-
-  /// Queues a DELETE that prunes any stale remote_asset row matching the
-  /// partial UNIQUE index for the incoming asset:
-  ///   - libraryId IS NULL  -> (owner_id, checksum)
-  ///   - libraryId NOT NULL -> (owner_id, library_id, checksum)
-  /// The current id is excluded so a same-id update does not delete itself.
-  void _enqueueRemoteAssetDedupe(
-    Batch batch, {
-    required String id,
-    required String ownerId,
-    required String checksum,
-    required String? libraryId,
-  }) {
-    if (libraryId == null) {
-      batch.deleteWhere(
-        _db.remoteAssetEntity,
-        (row) =>
-            row.ownerId.equals(ownerId) &
-            row.checksum.equals(checksum) &
-            row.libraryId.isNull() &
-            row.id.equals(id).not(),
-      );
-    } else {
-      batch.deleteWhere(
-        _db.remoteAssetEntity,
-        (row) =>
-            row.ownerId.equals(ownerId) &
-            row.checksum.equals(checksum) &
-            row.libraryId.equals(libraryId) &
-            row.id.equals(id).not(),
-      );
     }
   }
 
