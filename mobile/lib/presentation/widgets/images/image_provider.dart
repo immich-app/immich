@@ -162,7 +162,15 @@ ImageProvider getFullImageProvider(
     provider = FileImage(File(localFilePath));
   } else if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    provider = LocalFullImageProvider(id: id, size: size, assetType: asset.type, isAnimated: asset.isAnimatedImage);
+    provider = LocalFullImageProvider(
+      id: id,
+      size: size,
+      assetType: asset.type,
+      isAnimated: asset.isAnimatedImage,
+      width: asset.width,
+      height: asset.height,
+      checksum: asset.checksum,
+    );
   } else {
     final String assetId;
     final String thumbhash;
@@ -190,7 +198,7 @@ ImageProvider getFullImageProvider(
 ImageProvider? getThumbnailImageProvider(BaseAsset asset, {Size size = kThumbnailResolution, bool edited = true}) {
   if (_shouldUseLocalAsset(asset)) {
     final id = asset is LocalAsset ? asset.id : (asset as RemoteAsset).localId!;
-    return LocalThumbProvider(id: id, size: size, assetType: asset.type);
+    return LocalThumbProvider(id: id, size: size, assetType: asset.type, checksum: asset.checksum);
   }
 
   final assetId = asset is RemoteAsset ? asset.id : (asset as LocalAsset).remoteId;

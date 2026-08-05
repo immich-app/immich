@@ -102,6 +102,9 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
       onPopInvokedWithResult: (didPop, _) async {
         if (!didPop) {
           await _handlePagePopped();
+          if (!mounted) {
+            return;
+          }
 
           final user = ref.read(currentUserProvider);
           if (user == null) {
@@ -110,6 +113,10 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
 
           final isBackupEnabled = SettingsRepository.instance.appConfig.backup.enabled;
           await ref.read(driftBackupProvider.notifier).getBackupStatus(user.id);
+          if (!mounted) {
+            return;
+          }
+
           final currentTotalAssetCount = ref.read(driftBackupProvider.select((p) => p.totalCount));
           final totalChanged = currentTotalAssetCount != _initialTotalAssetCount;
           final backupNotifier = ref.read(driftBackupProvider.notifier);
@@ -119,7 +126,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
             // Waits for hashing to be cancelled before starting a new one
             unawaited(nativeSync.cancelHashing().whenComplete(() => backgroundSync.hashAssets()));
             if (isBackupEnabled) {
-              backupNotifier.stopForegroundBackup();
+              backupNotifier.stopForegroundBackup(reason: "backup albums updated");
               unawaited(
                 backgroundSync.syncRemote().then((success) {
                   if (success) {

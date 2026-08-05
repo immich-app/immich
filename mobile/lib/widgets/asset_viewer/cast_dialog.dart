@@ -28,7 +28,7 @@ class CastDialog extends ConsumerWidget {
         width: 250,
         height: 250,
         child: FutureBuilder<List<(String, CastDestinationType, dynamic)>>(
-          future: ref.read(castProvider.notifier).getDevices(),
+          future: ref.watch(castProvider.notifier).getDevices(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
               return Text('error_saving_image'.tr(args: [snapshot.error.toString()]));
