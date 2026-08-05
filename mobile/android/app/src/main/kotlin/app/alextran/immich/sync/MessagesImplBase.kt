@@ -1,8 +1,10 @@
 package app.alextran.immich.sync
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
+import android.content.pm.PackageManager
 import android.database.Cursor
 import android.os.Build
 import android.os.Bundle
@@ -10,6 +12,7 @@ import android.os.ext.SdkExtensions
 import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.core.database.getStringOrNull
 import app.alextran.immich.core.ImmichPlugin
 import com.bumptech.glide.Glide
@@ -107,6 +110,12 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
         (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
           SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 21)
   }
+
+  fun hasMediaReadPermission(): Boolean =
+    (if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+      arrayOf(Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VIDEO)
+    } else arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE))
+      .all { ContextCompat.checkSelfPermission(ctx, it) == PackageManager.PERMISSION_GRANTED }
 
   protected fun getCursor(
     volume: String,
@@ -315,13 +324,14 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
     val selection =
       "(${MediaStore.Files.FileColumns.BUCKET_ID} IS NOT NULL) AND $MEDIA_SELECTION"
 
-    getCursor(
+    val cursor = getCursor(
       MediaStore.VOLUME_EXTERNAL,
       selection,
       MEDIA_SELECTION_ARGS,
       projection,
       "${MediaStore.Files.FileColumns.DATE_MODIFIED} DESC"
-    )?.use { cursor ->
+    ) ?: error("MediaStore album query failed")
+    cursor.use {
       val bucketIdColumn =
         cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.BUCKET_ID)
       val bucketNameColumn =
@@ -396,7 +406,9 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
       selectionArgs.addAll(listOf(updatedTimeCond.toString(), updatedTimeCond.toString()))
     }
 
-    return getAssets(getCursor(MediaStore.VOLUME_EXTERNAL, selection, selectionArgs.toTypedArray()))
+    val cursor = getCursor(MediaStore.VOLUME_EXTERNAL, selection, selectionArgs.toTypedArray())
+      ?: error("MediaStore asset query failed")
+    return getAssets(cursor)
       .mapNotNull { result -> (result as? AssetResult.ValidAsset)?.asset }
       .toList()
   }

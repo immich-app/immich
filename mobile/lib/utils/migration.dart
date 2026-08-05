@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
@@ -14,16 +15,21 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/feature_message.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
+import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
+import 'package:immich_mobile/platform/permission_api.g.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 
 const int targetVersion = 27;
 
-Future<void> migrateDatabaseIfNeeded(Drift drift) async {
+Future<void> migrateDatabaseIfNeeded(Drift drift, NativeSyncApi nativeSyncApi, PermissionApi permissionApi) async {
   final int? storedVersion = Store.tryGet(StoreKey.version);
   final version = storedVersion ?? targetVersion;
 
@@ -35,7 +41,7 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
     await _migrateTo26(drift);
   }
 
-  if (version < 27 && !await _migrateTo27(drift)) {
+  if (version < 27 && !await _migrateTo27(drift, nativeSyncApi, permissionApi)) {
     await Store.put(StoreKey.version, 26);
     return;
   }
@@ -48,22 +54,66 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   return;
 }
 
-Future<bool> _migrateTo27(Drift drift) async {
-  // DATE_ADDED can be later than DATE_MODIFIED after a file is copied.
+Future<bool> _migrateTo27(Drift drift, NativeSyncApi nativeSyncApi, PermissionApi permissionApi) async {
   if (!CurrentPlatform.isAndroid) {
     return true;
   }
   try {
-    await drift.customStatement(
-      "UPDATE local_asset_entity SET created_at = updated_at "
-      "WHERE julianday(updated_at) > julianday('1970-01-01T00:00:00Z') "
-      "AND julianday(created_at) > julianday(updated_at)",
-    );
-    await drift.customStatement(
-      "UPDATE trashed_local_asset_entity SET created_at = updated_at "
-      "WHERE julianday(updated_at) > julianday('1970-01-01T00:00:00Z') "
-      "AND julianday(created_at) > julianday(updated_at)",
-    );
+    if (!await nativeSyncApi.hasMediaReadPermission()) {
+      return false;
+    }
+
+    final dates = <String, DateTime>{};
+    void addDates(Iterable<PlatformAsset> assets) {
+      for (final asset in assets) {
+        dates[asset.id] = tryFromSecondsSinceEpoch(asset.createdAt, isUtc: true) ?? DateTime.timestamp();
+      }
+    }
+
+    for (final album in await nativeSyncApi.getAlbums()) {
+      addDates(await nativeSyncApi.getAssetsForAlbum(album.id));
+    }
+    if (await permissionApi.hasManageMediaPermission()) {
+      final trashed = await nativeSyncApi.getTrashedAssets();
+      addDates(trashed.values.flattened);
+    }
+
+    await drift.transaction(() async {
+      final localDates = {
+        for (final row in await (drift.selectOnly(
+          drift.localAssetEntity,
+        )..addColumns([drift.localAssetEntity.id, drift.localAssetEntity.createdAt])).get())
+          row.read(drift.localAssetEntity.id)!: row.read(drift.localAssetEntity.createdAt)!,
+      };
+      final trashedDates = {
+        for (final row in await (drift.selectOnly(
+          drift.trashedLocalAssetEntity,
+        )..addColumns([drift.trashedLocalAssetEntity.id, drift.trashedLocalAssetEntity.createdAt])).get())
+          row.read(drift.trashedLocalAssetEntity.id)!: row.read(drift.trashedLocalAssetEntity.createdAt)!,
+      };
+      for (final chunk in dates.entries.slices(kDriftMaxChunk)) {
+        await drift.batch((batch) {
+          for (final entry in chunk) {
+            final localDate = localDates[entry.key];
+            if (localDate != null && !localDate.isAtSameMomentAs(entry.value)) {
+              batch.update(
+                drift.localAssetEntity,
+                LocalAssetEntityCompanion(createdAt: Value(entry.value)),
+                where: (row) => row.id.equals(entry.key),
+              );
+            }
+            final trashedDate = trashedDates[entry.key];
+            if (trashedDate != null && !trashedDate.isAtSameMomentAs(entry.value)) {
+              batch.update(
+                drift.trashedLocalAssetEntity,
+                TrashedLocalAssetEntityCompanion(createdAt: Value(entry.value)),
+                where: (row) => row.id.equals(entry.key),
+              );
+            }
+          }
+        });
+      }
+    });
     return true;
   } catch (_) {
     return false;
