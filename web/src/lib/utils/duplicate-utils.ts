@@ -27,6 +27,11 @@ import type { MessageFormatter } from 'svelte-i18n';
 import { getAssetResolution, getFileSize } from '$lib/utils/asset-utils';
 import { fromISODateTime, fromISODateTimeUTC } from '$lib/utils/timeline-util';
 
+// Stands in for a value that is absent, so that "present on one asset, absent on another" counts as a difference.
+// Every value below collapses to it, since the metadata renderers fall back to "unknown" for each of them.
+const MISSING = Symbol('missing');
+const MISSING_VALUES = new Set<unknown>([undefined, null, '']);
+
 const truncateMiddle = (path: string, maxLength = 50): string => {
   if (path.length <= maxLength) {
     return path;
@@ -289,9 +294,7 @@ export const computeDifferingMetadataFields = (assets: AssetResponseDto[]): Diff
 
     for (const asset of assets) {
       const value = getValueForAsset(asset, key);
-      if (value !== undefined && value !== null) {
-        uniqueValues.add(normalizeForComparison(key, value));
-      }
+      uniqueValues.add(MISSING_VALUES.has(value) ? MISSING : normalizeForComparison(key, value));
     }
 
     diffs[key] = uniqueValues.size > 1;
