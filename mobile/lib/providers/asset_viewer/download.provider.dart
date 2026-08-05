@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:background_downloader/background_downloader.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/download/download_state.model.dart';
@@ -42,10 +40,6 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
 
   void _downloadStatusCallback(TaskStatusUpdate update) {
     _updateDownloadStatus(update.task.taskId, update.status);
-
-    if (update.status == TaskStatus.complete) {
-      _onDownloadComplete(update.task.taskId);
-    }
   }
 
   void _taskProgressCallback(TaskProgressUpdate update) {
@@ -66,24 +60,6 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
           ),
         }),
     );
-  }
-
-  void _onDownloadComplete(String id) {
-    Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) {
-        return;
-      }
-
-      state = state.copyWith(
-        taskProgress: <String, DownloadInfo>{}
-          ..addAll(state.taskProgress)
-          ..remove(id),
-      );
-
-      if (state.taskProgress.isEmpty) {
-        state = state.copyWith(showProgress: false);
-      }
-    });
   }
 
   Future<void> cancelDownload(String id) async {

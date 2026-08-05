@@ -34,7 +34,7 @@ void main() {
         verify(() => service.onLivePhotoDownloadStatus = captureAny()).captured.last as void Function(TaskStatusUpdate);
   });
 
-  test('complete flips the entry then removes it after the delay', () {
+  test('complete flips the entry and keeps it visible', () {
     fakeAsync((async) {
       final task = _task('task-1');
       onProgress(TaskProgressUpdate(task, 0.4));
@@ -43,10 +43,10 @@ void main() {
       expect(notifier.state.taskProgress['task-1']?.status, TaskStatus.complete);
       expect(notifier.state.showProgress, isTrue);
 
-      async.elapse(const Duration(seconds: 2));
+      async.elapse(const Duration(seconds: 5));
 
-      expect(notifier.state.taskProgress, isEmpty);
-      expect(notifier.state.showProgress, isFalse);
+      expect(notifier.state.taskProgress['task-1']?.status, TaskStatus.complete);
+      expect(notifier.state.showProgress, isTrue);
     });
   });
 
@@ -65,7 +65,7 @@ void main() {
     });
   });
 
-  test('a live photo part completion removes that part entry', () {
+  test('a live photo part completion keeps both entries', () {
     fakeAsync((async) {
       final image = _task(
         'live-image',
@@ -80,10 +80,10 @@ void main() {
       onProgress(TaskProgressUpdate(video, 0.9));
       onLivePhoto(TaskStatusUpdate(image, TaskStatus.complete));
 
-      async.elapse(const Duration(seconds: 2));
+      async.elapse(const Duration(seconds: 5));
 
-      expect(notifier.state.taskProgress.containsKey('live-image'), isFalse);
-      expect(notifier.state.taskProgress.containsKey('live-video'), isTrue);
+      expect(notifier.state.taskProgress['live-image']?.status, TaskStatus.complete);
+      expect(notifier.state.taskProgress['live-video']?.status, TaskStatus.running);
       expect(notifier.state.showProgress, isTrue);
     });
   });
@@ -99,27 +99,6 @@ void main() {
 
       onImage(TaskStatusUpdate(_task('ghost'), TaskStatus.canceled));
       expect(notifier.state.taskProgress.containsKey('ghost'), isFalse);
-    });
-  });
-
-  test('showProgress clears when the last entry is removed', () {
-    fakeAsync((async) {
-      final a = _task('a');
-      final b = _task('b');
-      onProgress(TaskProgressUpdate(a, 1.0));
-      onProgress(TaskProgressUpdate(b, 1.0));
-      onImage(TaskStatusUpdate(a, TaskStatus.complete));
-
-      async.elapse(const Duration(seconds: 2));
-
-      expect(notifier.state.showProgress, isTrue);
-
-      onImage(TaskStatusUpdate(b, TaskStatus.complete));
-
-      async.elapse(const Duration(seconds: 2));
-
-      expect(notifier.state.taskProgress, isEmpty);
-      expect(notifier.state.showProgress, isFalse);
     });
   });
 }
