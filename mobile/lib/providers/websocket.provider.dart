@@ -56,14 +56,16 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
   @override
   void dispose() {
     _batchDebouncer.dispose();
+    state.socket?.dispose();
     super.dispose();
   }
 
-  /// Connects websocket to server unless already connected
+  /// Connects websocket to server unless an active socket already exists
   void connect() {
-    if (state.isConnected) {
+    if (state.socket?.active == true) {
       return;
     }
+    state.socket?.dispose();
     final authenticationState = _ref.read(authProvider);
 
     if (authenticationState.isAuthenticated) {
@@ -84,6 +86,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
               .build(),
         );
 
+        state = WebsocketState(isConnected: false, socket: socket);
+
         socket.onConnect((_) {
           dPrint(() => "Established Websocket Connection");
           state = WebsocketState(isConnected: true, socket: socket);
@@ -91,24 +95,25 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
 
         socket.onDisconnect((_) {
           dPrint(() => "Disconnect to Websocket Connection");
-          state = const WebsocketState(isConnected: false, socket: null);
+          state = WebsocketState(isConnected: false, socket: socket);
         });
 
         socket.on('error', (errorMessage) {
           _log.severe("Websocket Error - $errorMessage");
-          state = const WebsocketState(isConnected: false, socket: null);
+          state = WebsocketState(isConnected: false, socket: socket);
         });
 
         socket.on('AssetUploadReadyV1', _handleSyncAssetUploadReadyV1);
         socket.on('AssetUploadReadyV2', _handleSyncAssetUploadReadyV2);
         socket.on('AssetEditReadyV1', _handleSyncAssetEditReadyV1);
         socket.on('AssetEditReadyV2', _handleSyncAssetEditReadyV2);
-        socket.on('on_album_update', _handleAlbumUpdate);
-        socket.on('on_asset_delete', _handleAlbumUpdate);
-        socket.on('on_asset_trash', _handleAlbumUpdate);
-        socket.on('on_asset_restore', _handleAlbumUpdate);
-        socket.on('on_asset_hidden', _handleAlbumUpdate);
-        socket.on('on_asset_update', _handleAlbumUpdate);
+        socket.on('on_album_update', _handleRemoteChange);
+        socket.on('on_asset_stack_update', _handleRemoteChange);
+        socket.on('on_asset_delete', _handleRemoteChange);
+        socket.on('on_asset_trash', _handleRemoteChange);
+        socket.on('on_asset_restore', _handleRemoteChange);
+        socket.on('on_asset_hidden', _handleRemoteChange);
+        socket.on('on_asset_update', _handleRemoteChange);
         socket.on('on_config_update', _handleOnConfigUpdate);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {
@@ -190,8 +195,8 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
     unawaited(_ref.read(backgroundSyncProvider).syncWebsocketEditV1(data));
   }
 
-  void _handleAlbumUpdate(dynamic _) {
-    unawaited(_ref.read(backgroundSyncProvider).syncRemote());
+  void _handleRemoteChange(dynamic _) {
+    unawaited(_ref.read(backgroundSyncProvider).syncRemote(enqueue: true));
   }
 
   void _handleSyncAssetEditReadyV2(dynamic data) {

@@ -150,6 +150,10 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final remoteAsset = videoAsset as RemoteAsset;
 
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+      if (!context.mounted) {
+        return null;
+      }
+
       final isOriginalVideo = ref.read(appConfigProvider).viewer.loadOriginalVideo;
       final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
       final String assetId = remoteAsset.livePhotoVideoId ?? remoteAsset.id;

@@ -15,7 +15,7 @@ class LayoutSettings extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tilesPerRow = useState(ref.read(appConfigProvider.select((s) => s.timeline.tilesPerRow)));
+    final tilesPerRow = useState(ref.watch(appConfigProvider.select((s) => s.timeline.tilesPerRow)));
     useValueChanged<int, void>(tilesPerRow.value, (_, __) {
       unawaited(ref.read(settingsProvider).write(.timelineTilesPerRow, tilesPerRow.value));
     });

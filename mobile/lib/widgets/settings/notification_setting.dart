@@ -47,7 +47,7 @@ class NotificationSetting extends HookConsumerWidget {
           subtileText: 'notification_permission_list_tile_content'.tr(),
           buttonText: 'notification_permission_list_tile_enable_button'.tr(),
           onButtonTap: () =>
-              ref.watch(notificationPermissionProvider.notifier).requestNotificationPermission().then((permission) {
+              ref.read(notificationPermissionProvider.notifier).requestNotificationPermission().then((permission) {
                 if (permission == PermissionStatus.permanentlyDenied) {
                   showPermissionsDialog();
                 }

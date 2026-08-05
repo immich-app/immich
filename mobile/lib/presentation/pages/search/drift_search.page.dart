@@ -749,7 +749,7 @@ class _SearchResultGrid extends ConsumerWidget {
   }
 
   Widget? _bottomWidget(BuildContext context, WidgetRef ref) {
-    final isLoading = ref.watch(paginatedSearchProvider.select((s) => s.isLoading));
+    final isLoading = ref.read(paginatedSearchProvider.select((s) => s.isLoading));
 
     if (isLoading) {
       return const SliverFillRemaining(
@@ -761,7 +761,7 @@ class _SearchResultGrid extends ConsumerWidget {
       );
     }
 
-    final hasMore = ref.watch(paginatedSearchProvider.select((s) => s.nextPage != null));
+    final hasMore = ref.read(paginatedSearchProvider.select((s) => s.nextPage != null));
 
     if (hasMore) {
       return null;
