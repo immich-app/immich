@@ -176,15 +176,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAwa
             else -> 0L
           }
           // Date taken is in ms; added/modified are in seconds, and modified can be 0 when unset.
-          // No-EXIF assets use the earliest positive added/modified date, or raw added if neither is positive.
+          // If EXIF date taken exists use it, else if modified is empty use added, else the earliest of the two.
           val modifiedAt = c.getLong(dateModifiedColumn)
           val addedAt = c.getLong(dateAddedColumn)
           val createdAt = (c.getLong(dateTakenColumn).takeIf { it > 0 }?.div(1000))
-            ?: when {
-              modifiedAt <= 0 -> addedAt
-              addedAt <= 0 -> modifiedAt
-              else -> minOf(modifiedAt, addedAt)
-            }
+            ?: if (modifiedAt <= 0) addedAt else minOf(modifiedAt, addedAt)
           val width = c.getInt(widthColumn).toLong()
           val height = c.getInt(heightColumn).toLong()
           // Duration is milliseconds
