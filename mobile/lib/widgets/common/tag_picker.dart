@@ -17,13 +17,13 @@ Future<(Set<String>, Set<String>)?> showTagPickerModal({required BuildContext co
   );
 }
 
-class _TagPickerModal extends HookConsumerWidget {
+class _TagPickerModal extends HookWidget {
   final Set<String>? initialSelection;
 
   const _TagPickerModal({this.initialSelection});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final selectedTagIds = useState<Set<String>>(initialSelection ?? {});
     final newTagValues = useState<Set<String>>({});
 

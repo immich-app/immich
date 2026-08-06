@@ -1,3 +1,5 @@
+// ignore_for_file: use-ref-and-state-synchronously
+
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';

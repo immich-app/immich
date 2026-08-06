@@ -22,7 +22,9 @@ import 'package:immich_ui/immich_ui.dart';
 List<Widget> _actionColumnButtons(BuildContext context, WidgetRef ref, List<ActionBuilder> actions) => actions
     .map((a) => a.create(context, ref))
     .nonNulls
-    .map((item) => ImmichColumnButton(icon: item.icon, label: item.label, onPressed: item.onAction))
+    .map<ImmichColumnButton>(
+      (item) => .new(icon: item.icon, label: item.label, onPressed: item.onAction, onLongPress: item.onSecondaryAction),
+    )
     .toList(growable: false);
 
 class ViewerBottomBar extends ConsumerWidget {
@@ -51,7 +53,7 @@ class ViewerBottomBar extends ConsumerWidget {
             UploadAction(source: .viewer, showProgress: true),
             EditAssetAction(source: .viewer),
           ]),
-          if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
+          if (asset.hasRemote) ImmichColorOverride(color: null, child: AddActionButton(originalTheme: originalTheme)),
         ],
         ..._actionColumnButtons(context, ref, const [DeleteAction(source: .viewer)]),
       ],
@@ -94,7 +96,10 @@ class ViewerBottomBar extends ConsumerWidget {
                           if (asset.isImage) OcrToggleButton(asset: asset),
                           if (asset.isVideo) VideoControls(videoPlayerName: asset.heroTag),
                           if (!isReadonlyModeEnabled)
-                            Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                            ImmichColorOverride(
+                              color: Colors.white,
+                              child: Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: actions),
+                            ),
                         ],
                       ),
                     ),

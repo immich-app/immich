@@ -137,7 +137,7 @@ class DriftUserSelectionPage extends HookConsumerWidget {
       body: suggestedShareUsers.widgetWhen(
         onData: (users) {
           // Get shared users for this album from the database
-          final sharedUsers = ref.watch(remoteAlbumSharedUsersProvider(album.id));
+          final sharedUsers = ref.read(remoteAlbumSharedUsersProvider(album.id));
 
           return sharedUsers.when(
             data: (albumSharedUsers) {

@@ -300,7 +300,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
         borderRadius: BorderRadius.zero,
         minHeight: 5,
         value:
-            ref.watch(videoPlayerProvider(asset.heroTag).select((s) => s.position)).inMilliseconds /
+            ref.read(videoPlayerProvider(asset.heroTag).select((s) => s.position)).inMilliseconds /
             asset.duration.inMilliseconds,
       );
     }
@@ -374,7 +374,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
         builder: (context, value, _) => buildPhotoView(scale * (1.0 + value * _kenBurnsZoom)),
       );
     } else {
-      final status = ref.watch(videoPlayerProvider(asset.heroTag).select((s) => s.status));
+      final status = ref.read(videoPlayerProvider(asset.heroTag).select((s) => s.status));
       final position = ref.read(videoPlayerProvider(asset.heroTag)).position;
 
       if (status == VideoPlaybackStatus.completed && isCurrent && position.inMicroseconds > 0) {

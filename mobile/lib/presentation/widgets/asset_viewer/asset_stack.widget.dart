@@ -17,7 +17,7 @@ class AssetStackRow extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final hideAssetStack = ref.read(timelineServiceProvider).origin.isTrash;
+    final hideAssetStack = ref.watch(timelineServiceProvider).origin.isTrash;
     if (hideAssetStack) {
       return const SizedBox.shrink();
     }

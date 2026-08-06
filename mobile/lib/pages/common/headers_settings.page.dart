@@ -21,7 +21,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     final headers = useState<List<SettingsHeader>>([]);
     final setInitialHeaders = useState(false);
 
-    final storedHeaders = ref.read(appConfigProvider).network.customHeaders;
+    final storedHeaders = ref.watch(appConfigProvider.select((s) => s.network.customHeaders));
     if (!setInitialHeaders.value) {
       storedHeaders.forEach((k, v) {
         final header = SettingsHeader();
@@ -93,8 +93,9 @@ class HeaderSettingsPage extends HookConsumerWidget {
       headersMap[key] = value;
     }
 
+    final apiService = ref.read(apiServiceProvider);
     await ref.read(settingsProvider).write(.networkCustomHeaders, headersMap);
-    await ref.read(apiServiceProvider).updateHeaders();
+    await apiService.updateHeaders();
   }
 }
 

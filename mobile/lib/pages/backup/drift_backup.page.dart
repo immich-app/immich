@@ -81,8 +81,8 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
 
     final error = ref.watch(driftBackupProvider.select((p) => p.error));
 
-    final backupNotifier = ref.read(driftBackupProvider.notifier);
-    final backupSyncManager = ref.read(backgroundSyncProvider);
+    final backupNotifier = ref.watch(driftBackupProvider.notifier);
+    final backupSyncManager = ref.watch(backgroundSyncProvider);
 
     Future<void> startBackup() async {
       final currentUser = Store.tryGet(StoreKey.currentUser);
@@ -143,7 +143,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                     onStart: () async => await startBackup(),
                     onStop: () {
                       syncSuccess = null;
-                      backupNotifier.stopForegroundBackup();
+                      backupNotifier.stopForegroundBackup(reason: "backup button toggled off");
                     },
                   ),
                   switch (error) {
@@ -321,7 +321,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
     Widget buildSelectedAlbumName() {
       String text = "backup_controller_page_backup_selected".tr();
       final albums = ref
-          .watch(backupAlbumProvider)
+          .read(backupAlbumProvider)
           .where((album) => album.backupSelection == BackupSelection.selected)
           .toList();
 
@@ -355,7 +355,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
     Widget buildExcludedAlbumName() {
       String text = "backup_controller_page_excluded".tr();
       final albums = ref
-          .watch(backupAlbumProvider)
+          .read(backupAlbumProvider)
           .where((album) => album.backupSelection == BackupSelection.excluded)
           .toList();
 
@@ -403,6 +403,10 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
         trailing: ElevatedButton(
           onPressed: () async {
             await context.pushRoute(const DriftBackupAlbumSelectionRoute());
+            if (!context.mounted) {
+              return;
+            }
+
             final currentUser = ref.read(currentUserProvider);
             if (currentUser == null) {
               return;
@@ -562,6 +566,11 @@ class _PreparingStatusState extends ConsumerState {
       final currentUser = ref.read(currentUserProvider);
       if (currentUser != null && mounted) {
         await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+        if (!context.mounted) {
+          timer.cancel();
+          _pollingTimer = null;
+          return;
+        }
 
         // Stop polling if processing count reaches 0
         final updatedProcessingCount = ref.read(driftBackupProvider.select((p) => p.processingCount));
