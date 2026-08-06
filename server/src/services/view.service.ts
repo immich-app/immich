@@ -11,6 +11,11 @@ export class ViewService extends BaseService {
 
   async getAssetsByOriginalPath(auth: AuthDto, path: string): Promise<AssetResponseDto[]> {
     const assets = await this.viewRepository.getAssetsByOriginalPath(auth.user.id, path);
-    return assets.map((asset) => mapAsset(asset, { auth }));
+
+    const nsCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
+    return assets.map((asset) => mapAsset(asset, { auth })).sort(({ originalFileName: name1 }, { originalFileName: name2 }) =>
+      nsCollator.compare(name1, name2),
+    );
   }
 }
