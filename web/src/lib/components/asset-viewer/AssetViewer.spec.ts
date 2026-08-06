@@ -1,4 +1,4 @@
-import { updateAsset } from '@immich/sdk';
+import { AssetTypeEnum, updateAsset } from '@immich/sdk';
 import { fireEvent, waitFor } from '@testing-library/svelte';
 import { getAnimateMock } from '$lib/__mocks__/animate.mock';
 import { getResizeObserverMock } from '$lib/__mocks__/resize-observer.mock';
@@ -75,5 +75,24 @@ describe('AssetViewer', () => {
       expect(updateAsset).toHaveBeenCalledWith({ id: asset.id, updateAssetDto: { isFavorite: true } }),
     );
     await waitFor(() => expect(getByLabelText('unfavorite')).toBeInTheDocument());
+  });
+
+  it('renders the viewer content as a focusable, non-tabbing container', () => {
+    const ownerId = 'owner-id';
+    const user = userAdminFactory.build({ id: ownerId });
+    const asset = assetFactory.build({ ownerId, type: AssetTypeEnum.Image, hasMetadata: false });
+
+    authManager.setUser(user);
+    authManager.setPreferences(preferencesFactory.build({ cast: { gCastEnabled: false } }));
+
+    const { container } = renderWithTooltips(AssetViewer, {
+      cursor: { current: asset },
+      showNavigation: false,
+    });
+
+    const viewerContent = container.querySelector<HTMLElement>('[data-viewer-content]');
+    expect(viewerContent).not.toBeNull();
+    expect(viewerContent?.getAttribute('tabindex')).toBe('-1');
+    expect(viewerContent?.getAttribute('role')).toBe('presentation');
   });
 });
