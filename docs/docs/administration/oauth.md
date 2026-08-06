@@ -81,7 +81,11 @@ Once you have a new OAuth client application configured, Immich can be configure
 
 :::note Claim Options [1]
 
-Claim is only used on user creation and not synchronized after that.
+Claims are applied when a user is first registered. On subsequent logins, claims present in the OAuth profile are synchronized to the Immich user profile. Claims that are absent from the profile are left unchanged.
+
+The storage label is an exception: with the default claim (`preferred_username`), it is only set at registration and is not updated on later logins. To keep the storage label in sync with the IdP, configure a different Storage Label Claim (for example `uid`).
+
+The storage quota claim is a number in GiB: `-1` for unlimited, `0` to block uploads, any positive value for a fixed quota.
 
 :::
 
