@@ -11,6 +11,8 @@ abstract final class Store {
 
   static final people = _store((c) => c.people);
 
+  static final activities = _store((c) => c.activities);
+
   /// Direct database access for the repositories that have not yet moved into `immich_data`
   // TODO(rewrite): Remove this provider once all repositories have migrated to `immich_data`
   static final db = _store((c) => c.db);

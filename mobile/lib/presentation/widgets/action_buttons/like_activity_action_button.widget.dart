@@ -2,14 +2,14 @@ import 'package:collection/collection.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_data/model/activity.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
-import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/store/activity.dart';
 
 class LikeActivityActionButton extends ConsumerWidget {
   const LikeActivityActionButton({super.key, this.iconOnly = false, this.menuItem = false});
@@ -35,8 +35,6 @@ class LikeActivityActionButton extends ConsumerWidget {
       } else {
         await ref.read(albumActivityProvider((album?.id ?? "", asset?.id)).notifier).addLike();
       }
-
-      ref.invalidate(albumActivityProvider((album?.id ?? "", asset?.id)));
     }
 
     return activities.when(

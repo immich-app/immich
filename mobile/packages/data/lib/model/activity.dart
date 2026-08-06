@@ -1,4 +1,4 @@
-import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_data/model/user/user.dart';
 
 enum ActivityType { comment, like }
 
@@ -60,10 +60,4 @@ class Activity {
   int get hashCode {
     return id.hashCode ^ assetId.hashCode ^ comment.hashCode ^ createdAt.hashCode ^ type.hashCode ^ user.hashCode;
   }
-}
-
-class ActivityStats {
-  final int comments;
-
-  const ActivityStats({required this.comments});
 }

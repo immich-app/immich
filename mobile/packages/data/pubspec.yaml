@@ -27,6 +27,7 @@ dev_dependencies:
   flutter_lints: ^5.0.0
   flutter_test:
     sdk: flutter
+  mocktail: ^1.0.5
 
 # The generated openapi client depends back on immich_mobile, so resolving
 # this package pulls in the app's dependency graph. Pub only honors the root

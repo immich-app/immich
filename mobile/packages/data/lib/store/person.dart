@@ -3,11 +3,11 @@ import 'package:immich_data/model/person.dart';
 import 'package:immich_data/server/person.dart';
 import 'package:meta/meta.dart';
 
+// TODO(rewrite): This needs to be made reactive
 class PersonService {
   final PersonDatabaseRepository _db;
   final PersonApiRepository _api;
 
-  /// Constructed by [ImmichData]; the app obtains instances from there.
   @internal
   const PersonService(this._db, this._api);
 
