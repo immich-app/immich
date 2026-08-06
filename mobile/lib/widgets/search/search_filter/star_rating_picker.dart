@@ -28,7 +28,7 @@ class StarRatingPicker extends HookWidget {
           6,
           (index) => RadioListTile<int>(
             key: Key("star_$index"),
-            title: Text('rating_count'.t(args: {'count': (index)})),
+            title: Text('rating_count'.t(args: {'count': index})),
             value: index,
           ),
         ),

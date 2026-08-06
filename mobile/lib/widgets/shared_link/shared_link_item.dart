@@ -179,7 +179,7 @@ class SharedLinkItem extends ConsumerWidget {
           ),
         );
 
-        if (confirmed == true) {
+        if (confirmed == true && context.mounted) {
           await ref.read(sharedLinksStateProvider.notifier).deleteLink(sharedLink.id);
           return true;
         }

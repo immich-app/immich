@@ -66,7 +66,7 @@ class _DriftMapState extends ConsumerState<DriftMap> {
   void dispose() {
     _debouncer.dispose();
     bottomSheetOffset.dispose();
-    _eventSubscription?.cancel();
+    unawaited(_eventSubscription?.cancel());
     super.dispose();
   }
 

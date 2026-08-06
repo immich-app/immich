@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_slow_async_io
+
 import 'dart:async';
 import 'dart:io';
 
@@ -63,7 +65,7 @@ class DownloadService {
     onVideoDownloadStatus?.call(update);
   }
 
-  void _onLivePhotoRecordComplete(TaskRecord record) async {
+  Future<void> _onLivePhotoRecordComplete(TaskRecord record) async {
     final livePhotosId = LivePhotosMetadata.fromJson(record.task.metaData).id;
     await _saveLivePhotos(livePhotosId);
   }

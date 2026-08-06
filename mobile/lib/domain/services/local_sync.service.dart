@@ -40,7 +40,7 @@ class LocalSyncService {
     required this._permissionRepository,
     this._cancellation,
   }) {
-    _cancellation?.future.then((_) => _nativeSyncApi.cancelSync().onError(_log.warning));
+    unawaited(_cancellation?.future.then((_) => _nativeSyncApi.cancelSync().onError(_log.warning)));
   }
 
   bool get _isCancelled => _cancellation?.isCompleted ?? false;

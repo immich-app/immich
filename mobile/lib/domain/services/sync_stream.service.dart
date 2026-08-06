@@ -155,7 +155,7 @@ class SyncStreamService {
   }
 
   Future<void> _handleEvents(List<SyncEvent> events, Function() abort, Function() reset) async {
-    List<SyncEvent> items = [];
+    final List<SyncEvent> items = [];
     for (final event in events) {
       if (isCancelled) {
         _logger.warning("Sync stream cancelled");

@@ -13,11 +13,11 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
-import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
+import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
-import 'package:immich_mobile/utils/people.utils.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
+import 'package:immich_mobile/utils/people.utils.dart';
 
 class PersonSliverAppBar extends ConsumerStatefulWidget {
   const PersonSliverAppBar({
@@ -56,8 +56,8 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
   @override
   Widget build(BuildContext context) {
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
-    Color? actionIconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
-    List<Shadow> actionIconShadows = [
+    final Color? actionIconColor = Color.lerp(Colors.white, context.primaryColor, _scrollProgress);
+    final List<Shadow> actionIconShadows = [
       if (_scrollProgress < 0.95)
         Shadow(offset: const Offset(0, 2), blurRadius: 5, color: Colors.black.withValues(alpha: 0.5))
       else
@@ -169,7 +169,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
 
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
-        _slideController.forward();
+        unawaited(_slideController.forward());
       }
     });
   }
@@ -335,7 +335,7 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
 
   @override
   void dispose() {
-    _reloadSubscription?.cancel();
+    unawaited(_reloadSubscription?.cancel());
     super.dispose();
   }
 
@@ -416,13 +416,17 @@ class _RandomAssetBackgroundState extends State<_RandomAssetBackground> with Tic
 
   void _startAnimationCycle() {
     if (_isZoomingIn) {
-      _zoomController.forward().then((_) {
-        _loadNextAsset();
-      });
+      unawaited(
+        _zoomController.forward().then((_) {
+          unawaited(_loadNextAsset());
+        }),
+      );
     } else {
-      _zoomController.reverse().then((_) {
-        _loadNextAsset();
-      });
+      unawaited(
+        _zoomController.reverse().then((_) {
+          unawaited(_loadNextAsset());
+        }),
+      );
     }
   }
 
