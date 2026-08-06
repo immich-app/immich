@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { join } from 'node:path';
 import { SystemConfig } from 'src/config';
 import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
@@ -12,6 +13,7 @@ import {
   AssetVisibility,
   AudioCodec,
   Colorspace,
+  CQMode,
   ImageFormat,
   ImmichWorker,
   JobName,
@@ -249,6 +251,107 @@ export class MediaService extends BaseService {
     }
 
     return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.FrameSamplingQueueAll, queue: QueueName.VideoConversion })
+  async handleQueueSampledFrames({ force }: JobOf<JobName.FrameSamplingQueueAll>): Promise<JobStatus> {
+    const { frameSampling } = await this.getConfig({ withCache: true });
+    if (!frameSampling.enabled) {
+      return JobStatus.Skipped;
+    }
+
+    let jobs: JobItem[] = [];
+    const queueAll = async () => {
+      await this.jobRepository.queueAll(jobs);
+      jobs = [];
+    };
+
+    for await (const asset of this.assetJobRepository.streamForFrameSampling(force)) {
+      jobs.push({ name: JobName.FrameSampling, data: { id: asset.id } });
+      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
+        await queueAll();
+      }
+    }
+
+    await queueAll();
+
+    return JobStatus.Success;
+  }
+
+  @OnJob({ name: JobName.FrameSampling, queue: QueueName.VideoConversion })
+  async handleSampledFrames({ id }: JobOf<JobName.FrameSampling>): Promise<JobStatus> {
+    const { frameSampling, ffmpeg } = await this.getConfig({ withCache: true });
+    if (!frameSampling.enabled) {
+      return JobStatus.Skipped;
+    }
+
+    const asset = await this.assetJobRepository.getForFrameSampling(id);
+    if (!asset) {
+      return JobStatus.Failed;
+    }
+
+    const artifactPath = StorageCore.getVideoFrameArtifactPath(asset);
+    this.storageCore.ensureFolders(artifactPath);
+
+    const tempDir = await this.storageRepository.mkdtemp(`immich-video-frames-${asset.id}`);
+    const playlistPath = join(tempDir, 'frames.m3u8');
+    const scoresPath = join(tempDir, 'scores.txt');
+
+    try {
+      const overrideConfig: SystemConfigFFmpegDto = {
+        ...ffmpeg,
+        targetVideoCodec: VideoCodec.H264,
+        targetResolution: String(frameSampling.targetResolution),
+        crf: frameSampling.qp,
+        cqMode: CQMode.Icq,
+        maxBitrate: '0',
+      };
+      const config = BaseConfig.create(overrideConfig, this.videoInterfaces, { strictGop: true, lowLatency: false });
+      const command = config.getFrameSamplingCommand(
+        {
+          inputPath: asset.originalPath,
+          segmentFilename: artifactPath,
+          playlistFilename: playlistPath,
+          scoresFilename: scoresPath,
+          frameInterval: frameSampling.frameInterval,
+        },
+        asset.videoStream,
+      );
+
+      let result;
+      try {
+        result = await this.mediaRepository.sampleFrames(command, { playlistPath, scoresPath });
+      } catch (error) {
+        this.logger.error(`Failed to generate video frames for asset ${asset.id}: ${error}`);
+        return JobStatus.Failed;
+      }
+
+      const { byteRanges, intervalChanges } = result;
+      if (byteRanges.length === 0) {
+        this.logger.warn(`No frames extracted for video ${asset.id}`);
+        return JobStatus.Failed;
+      }
+
+      const frames = {
+        byteOffset: byteRanges.map((range) => range.byteOffset),
+        byteSize: byteRanges.map((range) => range.byteSize),
+        intervalChange: byteRanges.map((_, frameIndex) => intervalChanges[frameIndex] ?? 0),
+      };
+
+      await this.videoFrameRepository.upsertFrames(asset.id, frames);
+      await this.assetRepository.upsertFile({
+        assetId: asset.id,
+        type: AssetFileType.SampledVideo,
+        path: artifactPath,
+        isEdited: false,
+      });
+
+      this.logger.log(`Extracted ${frames.byteOffset.length} frame(s) for video ${asset.id}`);
+
+      return JobStatus.Success;
+    } finally {
+      await this.storageRepository.unlinkDir(tempDir, { recursive: true, force: true });
+    }
   }
 
   private async extractImage(originalPath: string, minSize: number) {

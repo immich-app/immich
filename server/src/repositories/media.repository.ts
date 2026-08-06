@@ -35,6 +35,7 @@ import {
   VideoInfo,
   VideoPacketInfo,
 } from 'src/types';
+import { parseByteRangePlaylist, parseIntervalChangeScores } from 'src/utils/frame-sampling';
 import { handlePromiseError } from 'src/utils/misc';
 import { createAffineMatrix } from 'src/utils/transform';
 
@@ -555,5 +556,33 @@ export class MediaRepository {
     }
     const median = history.sort((a, b) => a - b)[1];
     return outputFrames + median;
+  }
+
+  async sampleFrames(
+    command: string[],
+    artifacts: { playlistPath: string; scoresPath: string },
+  ): Promise<{ byteRanges: ReturnType<typeof parseByteRangePlaylist>['byteRanges']; intervalChanges: number[] }> {
+    return new Promise((resolve, reject) => {
+      const ffmpeg = spawn('ffmpeg', command, { stdio: ['ignore', 'ignore', 'pipe'] });
+
+      let stderr = '';
+      ffmpeg.stderr.setEncoding('utf8');
+      ffmpeg.stderr.on('data', (chunk: string) => (stderr += chunk));
+
+      ffmpeg.on('error', reject);
+      ffmpeg.on('close', (code) => {
+        if (code !== 0) {
+          return reject(new Error(`ffmpeg exited with code ${code}: ${stderr.trim()}`));
+        }
+        Promise.all([fs.readFile(artifacts.playlistPath, 'utf8'), fs.readFile(artifacts.scoresPath, 'utf8')])
+          .then(([playlist, scores]) =>
+            resolve({
+              byteRanges: parseByteRangePlaylist(playlist).byteRanges,
+              intervalChanges: parseIntervalChangeScores(scores),
+            }),
+          )
+          .catch(reject);
+      });
+    });
   }
 }

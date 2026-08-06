@@ -19348,7 +19348,9 @@
           "IntegrityChecksumFiles",
           "IntegrityChecksumFilesRefresh",
           "IntegrityDeleteReportType",
-          "IntegrityDeleteReports"
+          "IntegrityDeleteReports",
+          "FrameSamplingQueueAll",
+          "FrameSampling"
         ],
         "type": "string"
       },
@@ -25603,6 +25605,9 @@
           "ffmpeg": {
             "$ref": "#/components/schemas/SystemConfigFFmpegDto"
           },
+          "frameSampling": {
+            "$ref": "#/components/schemas/SystemConfigFrameSamplingDto"
+          },
           "image": {
             "$ref": "#/components/schemas/SystemConfigImageDto"
           },
@@ -25667,6 +25672,7 @@
         "required": [
           "backup",
           "ffmpeg",
+          "frameSampling",
           "image",
           "integrityChecks",
           "job",
@@ -25856,6 +25862,39 @@
         },
         "required": [
           "import"
+        ],
+        "type": "object"
+      },
+      "SystemConfigFrameSamplingDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enable frame sampling",
+            "type": "boolean"
+          },
+          "frameInterval": {
+            "description": "Seconds between sampled frames",
+            "format": "double",
+            "minimum": 0.01,
+            "type": "number"
+          },
+          "qp": {
+            "description": "Target quality (CRF-equivalent) used for the all-intra frame encode",
+            "maximum": 51,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "targetResolution": {
+            "description": "Target short-side resolution (px) of extracted frames",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "frameInterval",
+          "qp",
+          "targetResolution"
         ],
         "type": "object"
       },

@@ -2346,6 +2346,16 @@ export type SystemConfigFFmpegDto = {
     /** Two pass */
     twoPass: boolean;
 };
+export type SystemConfigFrameSamplingDto = {
+    /** Enable frame sampling */
+    enabled: boolean;
+    /** Seconds between sampled frames */
+    frameInterval: number;
+    /** Target quality (CRF-equivalent) used for the all-intra frame encode */
+    qp: number;
+    /** Target short-side resolution (px) of extracted frames */
+    targetResolution: number;
+};
 export type SystemConfigGeneratedFullsizeImageDto = {
     /** Enabled */
     enabled: boolean;
@@ -2618,6 +2628,7 @@ export type SystemConfigUserDto = {
 export type SystemConfigDto = {
     backup: SystemConfigBackupsDto;
     ffmpeg: SystemConfigFFmpegDto;
+    frameSampling: SystemConfigFrameSamplingDto;
     image: SystemConfigImageDto;
     integrityChecks: SystemConfigIntegrityChecks;
     job: SystemConfigJobDto;
@@ -7499,7 +7510,9 @@ export enum JobName {
     IntegrityChecksumFiles = "IntegrityChecksumFiles",
     IntegrityChecksumFilesRefresh = "IntegrityChecksumFilesRefresh",
     IntegrityDeleteReportType = "IntegrityDeleteReportType",
-    IntegrityDeleteReports = "IntegrityDeleteReports"
+    IntegrityDeleteReports = "IntegrityDeleteReports",
+    FrameSamplingQueueAll = "FrameSamplingQueueAll",
+    FrameSampling = "FrameSampling"
 }
 export enum SearchSuggestionType {
     Country = "country",

@@ -13,6 +13,7 @@ import {
   watch,
 } from 'node:fs';
 import fs from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { PassThrough, Readable, Writable } from 'node:stream';
 import { createGunzip, createGzip } from 'node:zlib';
@@ -207,6 +208,10 @@ export class StorageRepository {
 
   existsSync(filepath: string) {
     return existsSync(filepath);
+  }
+
+  async mkdtemp(prefix: string): Promise<string> {
+    return fs.mkdtemp(path.join(tmpdir(), `${prefix}-`));
   }
 
   async checkDiskUsage(folder: string): Promise<DiskUsage> {

@@ -17,6 +17,7 @@ import {
   mdiFileCheckOutline,
   mdiFileJpgBox,
   mdiFileXmlBox,
+  mdiFilmstripBoxMultiple,
   mdiFolderMove,
   mdiImageSearch,
   mdiLibraryShelves,

@@ -13,6 +13,8 @@ import {
 import {
   AudioStreamInfo,
   BitrateDistribution,
+  FrameSamplingConfig,
+  FrameSamplingOptions,
   HlsCommandOptions,
   TranscodeCommand,
   VideoCodecSWConfig,
@@ -59,7 +61,7 @@ export const getCodecString = (codec: VideoCodec, width: number, height: number,
   }
 };
 
-export class BaseConfig implements VideoCodecSWConfig {
+export class BaseConfig implements VideoCodecSWConfig, FrameSamplingConfig {
   readonly presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
   protected constructor(
     protected config: SystemConfigFFmpegDto,
@@ -73,7 +75,10 @@ export class BaseConfig implements VideoCodecSWConfig {
     return BaseConfig.getHWCodecConfig(config, interfaces, tune);
   }
 
-  private static getSWCodecConfig(config: SystemConfigFFmpegDto, tune?: VideoTuning): VideoCodecSWConfig {
+  private static getSWCodecConfig(
+    config: SystemConfigFFmpegDto,
+    tune?: VideoTuning,
+  ): VideoCodecSWConfig & FrameSamplingConfig {
     switch (config.targetVideoCodec) {
       case VideoCodec.H264: {
         return new H264Config(config, tune);
@@ -100,7 +105,7 @@ export class BaseConfig implements VideoCodecSWConfig {
       );
     }
 
-    let handler: VideoCodecSWConfig;
+    let handler: VideoCodecSWConfig & FrameSamplingConfig;
     switch (config.accel) {
       case TranscodeHardwareAcceleration.Nvenc: {
         handler = config.accelDecode
@@ -209,6 +214,62 @@ export class BaseConfig implements VideoCodecSWConfig {
     }
     args.push(options.playlistFilename);
     return args;
+  }
+
+  getFrameSamplingCommand(options: FrameSamplingOptions, video: VideoStreamInfo): string[] {
+    const fps = 1 / options.frameInterval;
+    const scoreFilterPrefix =
+      this.config.accel === TranscodeHardwareAcceleration.Disabled ? '' : 'hwdownload,format=nv12,';
+    const filterComplex = [
+      `[0:v]${[...this.getFilterOptions(video), `fps=${fps}`].join(',')},split[enc][an]`,
+      `[an]${scoreFilterPrefix}scdet=threshold=100,metadata=print:file=${options.scoresFilename}[scored]`,
+    ].join(';');
+
+    return [
+      '-nostdin',
+      '-nostats',
+      '-v',
+      'verbose',
+      ...this.getBaseInputOptions(video),
+      '-i',
+      options.inputPath,
+      '-filter_complex',
+      filterComplex,
+      '-map',
+      '[enc]',
+      '-c:v',
+      this.getVideoCodec(),
+      '-g',
+      '1',
+      '-bf',
+      '0',
+      ...this.getBitrateOptions(),
+      ...this.getEncoderOptions(),
+      ...this.getFrameSamplingEncoderOptions(),
+      '-an',
+      '-f',
+      'hls',
+      '-hls_segment_type',
+      'fmp4',
+      '-hls_flags',
+      'single_file',
+      '-hls_time',
+      '0',
+      '-hls_list_size',
+      '0',
+      '-hls_segment_filename',
+      options.segmentFilename,
+      options.playlistFilename,
+      '-map',
+      '[scored]',
+      '-f',
+      'null',
+      '-',
+    ];
+  }
+
+  protected getFrameSamplingEncoderOptions(): string[] {
+    return [];
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -471,7 +532,7 @@ export class BaseHWConfig extends BaseConfig {
 }
 
 export class ThumbnailConfig extends BaseConfig {
-  static create(config: SystemConfigFFmpegDto): VideoCodecSWConfig {
+  static create(config: SystemConfigFFmpegDto): VideoCodecSWConfig & FrameSamplingConfig {
     return new ThumbnailConfig(config);
   }
 
@@ -534,7 +595,6 @@ export class ThumbnailConfig extends BaseConfig {
     return super.getScaling(videoStream) + ':flags=lanczos+accurate_rnd+full_chroma_int:out_range=pc';
   }
 }
-
 export class H264Config extends BaseConfig {
   getEncoderOptions(): string[] {
     const out = this.getOutputThreadOptions();
@@ -857,6 +917,10 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
     }
     return out;
   }
+
+  protected getFrameSamplingEncoderOptions(): string[] {
+    return ['-low_power', '1'];
+  }
 }
 
 export class QsvHwDecodeConfig extends QsvSwDecodeConfig {
@@ -980,6 +1044,10 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
       out.push('-idr_interval', '0');
     }
     return out;
+  }
+
+  protected getFrameSamplingEncoderOptions(): string[] {
+    return ['-low_power', '1'];
   }
 }
 
