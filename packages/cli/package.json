@@ -59,13 +59,14 @@
     "check": "tsc --noEmit"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   },
   "dependencies": {
     "chokidar": "^4.0.3",
     "fast-glob": "^3.3.2",
     "fastq": "^1.17.1",
     "lodash-es": "^4.17.21",
-    "micromatch": "^4.0.8"
+    "micromatch": "^4.0.8",
+    "semver": "^7.8.1"
   }
 }
