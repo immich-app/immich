@@ -55,7 +55,11 @@ class ViewIntentAssetResolver {
     ({LocalAsset? asset, String? checksum}) resolvedLocal = (asset: null, checksum: null);
     if (localAssetId != null) {
       resolvedLocal = await _resolveLocalAsset(localAssetId);
-      final remoteAsset = await _resolveRemoteAsset(localAssetId, resolvedLocal.asset?.remoteId);
+      final remoteAsset = await _resolveRemoteAsset(
+        localAssetId,
+        remoteAssetId: resolvedLocal.asset?.remoteId,
+        checksum: resolvedLocal.checksum,
+      );
       if (remoteAsset != null) {
         return ViewIntentResolvedAsset(asset: remoteAsset, timelineService: _timelineFor(remoteAsset));
       }
@@ -111,19 +115,43 @@ class ViewIntentAssetResolver {
     }
   }
 
-  Future<RemoteAsset?> _resolveRemoteAsset(String localAssetId, String? remoteAssetId) async {
-    if (remoteAssetId == null) {
-      return null;
+  Future<RemoteAsset?> _resolveRemoteAsset(
+    String localAssetId, {
+    required String? remoteAssetId,
+    required String? checksum,
+  }) async {
+    RemoteAsset? remoteAsset;
+    if (remoteAssetId != null) {
+      remoteAsset = await _assetService.getRemoteAsset(remoteAssetId);
+      if (remoteAsset != null) {
+        _logger.fine('resolve matched remote asset by id: $remoteAssetId, asset=$remoteAsset');
+      }
     }
 
-    final remoteAsset = await _assetService.getRemoteAsset(remoteAssetId);
+    if (remoteAsset == null && checksum != null) {
+      final candidates = await _assetService.getAllRemoteAssetDebugByChecksum(checksum);
+      if (candidates.isNotEmpty) {
+        remoteAsset = ([...candidates]..sort(_compareRemoteAssetCandidates)).first;
+        _logger.fine('resolve matched remote asset by checksum: $checksum, asset=$remoteAsset');
+      }
+    }
+
     if (remoteAsset == null) {
       return null;
     }
-
     final asset = remoteAsset.copyWith(localId: localAssetId);
-    _logger.fine('resolve matched remote asset by id: $remoteAssetId, asset=$asset');
     return asset;
+  }
+
+  static int _compareRemoteAssetCandidates(RemoteAsset first, RemoteAsset second) {
+    if (first.isTrashed != second.isTrashed) {
+      return first.isTrashed ? 1 : -1;
+    }
+
+    final firstDate = first.uploadedAt ?? first.createdAt;
+    final secondDate = second.uploadedAt ?? second.createdAt;
+    final date = secondDate.compareTo(firstDate);
+    return date != 0 ? date : first.id.compareTo(second.id);
   }
 
   LocalAsset _toTransientAsset(ViewIntentPayload attachment, String? checksum) {

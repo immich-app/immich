@@ -44,6 +44,7 @@ void main() {
 
     when(() => mockLocalAssetRepository.get(any())).thenAnswer((_) async => null);
     when(() => assetService.getRemoteAsset(any())).thenAnswer((_) async => null);
+    when(() => assetService.getAllRemoteAssetDebugByChecksum(any())).thenAnswer((_) async => const []);
     when(() => nativeSyncApi.hashAssets(any())).thenAnswer((_) async => const []);
     when(() => mockLocalAssetRepository.updateHashes(any())).thenAnswer((_) async {});
 
@@ -140,6 +141,22 @@ void main() {
     expect(result.asset, isA<LocalAsset>());
     expect(result.timelineService.origin, TimelineOrigin.deepLink);
     expect(result.viewIntentFilePath, '/tmp/incoming.jpg');
+  });
+
+  test('returns cached remote asset when local Drift row is absent but checksum matches', () async {
+    final remoteAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1');
+    when(
+      () => nativeSyncApi.hashAssets(['local-1']),
+    ).thenAnswer((_) async => [HashResult(assetId: 'local-1', hash: 'checksum-1')]);
+    when(() => assetService.getAllRemoteAssetDebugByChecksum('checksum-1')).thenAnswer((_) async => [remoteAsset]);
+
+    final result = await _resolve(container, _payload(localAssetId: 'local-1'));
+
+    expect(result.asset, isA<RemoteAsset>());
+    expect((result.asset as RemoteAsset).id, 'remote-1');
+    expect((result.asset as RemoteAsset).localId, 'local-1');
+    expect(result.timelineService.origin, TimelineOrigin.deepLink);
+    verify(() => assetService.getAllRemoteAssetDebugByChecksum('checksum-1')).called(1);
   });
 
   test('returns transient asset for path-only attachment', () async {
