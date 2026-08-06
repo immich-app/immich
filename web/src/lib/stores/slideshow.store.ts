@@ -43,7 +43,6 @@ function createSlideshowStore() {
 
   const showProgressBar = persisted<boolean>('slideshow-show-progressbar', true);
   const slideshowAnimate = persisted<boolean>('slideshow-animate', false);
-  const slideshowAnimatePanStrength = persisted<number>('slideshow-animate-pan-strength', 50, {});
   const slideshowAnimateZoomStrength = persisted<number>('slideshow-animate-zoom-strength', 50, {});
   const slideshowDelay = persisted<number>('slideshow-delay', 5, {});
   const slideshowTransition = persisted<boolean>('slideshow-transition', true);
@@ -93,7 +92,6 @@ function createSlideshowStore() {
     slideshowShowMetadataOverlay,
     slideshowMetadataOverlayMode,
     slideshowAnimate,
-    slideshowAnimatePanStrength,
     slideshowAnimateZoomStrength,
   };
 }

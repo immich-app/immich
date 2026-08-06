@@ -23,7 +23,6 @@
     slideshowDelay,
     showProgressBar,
     slideshowAnimate,
-    slideshowAnimatePanStrength,
     slideshowAnimateZoomStrength,
     slideshowNavigation,
     slideshowLook,
@@ -45,7 +44,6 @@
   let tempSlideshowDelay = $state($slideshowDelay);
   let tempShowProgressBar = $state($showProgressBar);
   let tempSlideshowAnimate = $state($slideshowAnimate);
-  let tempSlideshowAnimatePanStrength = $state($slideshowAnimatePanStrength);
   let tempSlideshowAnimateZoomStrength = $state($slideshowAnimateZoomStrength);
   let tempSlideshowNavigation = $state($slideshowNavigation);
   let tempSlideshowLook = $state($slideshowLook);
@@ -91,7 +89,6 @@
     $slideshowDelay = tempSlideshowDelay;
     $showProgressBar = tempShowProgressBar;
     $slideshowAnimate = tempSlideshowAnimate;
-    $slideshowAnimatePanStrength = tempSlideshowAnimatePanStrength;
     $slideshowAnimateZoomStrength = tempSlideshowAnimateZoomStrength;
     $slideshowNavigation = tempSlideshowNavigation;
     $slideshowLook = tempSlideshowLook;
@@ -163,9 +160,6 @@
 
     <Field label={$t('slideshow_animate')}>
       <Switch bind:checked={tempSlideshowAnimate} />
-    </Field>
-    <Field label={$t('slideshow_animate_pan_strength')}>
-      <NumberInput bind:value={tempSlideshowAnimatePanStrength} min={1} max={100} disabled={!tempSlideshowAnimate} />
     </Field>
     <Field label={$t('slideshow_animate_zoom_strength')}>
       <NumberInput bind:value={tempSlideshowAnimateZoomStrength} min={1} max={100} disabled={!tempSlideshowAnimate} />

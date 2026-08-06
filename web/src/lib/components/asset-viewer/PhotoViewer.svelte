@@ -36,14 +36,8 @@
 
   let { cursor, element = $bindable(), sharedLink, onReady, onError, onSwipe }: Props = $props();
 
-  const {
-    slideshowState,
-    slideshowLook,
-    slideshowAnimate,
-    slideshowDelay,
-    //slideshowAnimatePanStrength,
-    slideshowAnimateZoomStrength,
-  } = slideshowStore;
+  const { slideshowState, slideshowLook, slideshowAnimate, slideshowDelay, slideshowAnimateZoomStrength } =
+    slideshowStore;
   const asset = $derived(cursor.current);
 
   let visibleImageReady: boolean = $state(false);
