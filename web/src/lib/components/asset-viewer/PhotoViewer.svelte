@@ -115,6 +115,20 @@
 
   const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
 
+  const animateSlideshow = () => {
+    let randomDirection = getRandomInt(0, 2);
+    let randomScale = (getRandomInt(50, 200) / 100) * ($slideshowAnimateZoomStrength / 100) + 1;
+    let duration = $slideshowDelay * 1000 - 600;
+    if (randomDirection == 1) {
+      assetViewerManager.animatedZoom(randomScale, duration);
+    } else if (randomDirection == 2) {
+      assetViewerManager.animatedZoom(randomScale, 20);
+      setTimeout(() => {
+        assetViewerManager.animatedZoom(1, duration - 40);
+      }, 40);
+    }
+  };
+
   // TODO move to action + command palette
   const onCopyShortcut = (event: KeyboardEvent) => {
     // eslint-disable-next-line unicorn/no-unnecessary-global-this
@@ -239,17 +253,7 @@
       visibleImageReady = true;
 
       if (quality === 'thumbnail' && $slideshowState === SlideshowState.PlaySlideshow && $slideshowAnimate) {
-        let randomDirection = getRandomInt(0, 2);
-        let randomScale = (getRandomInt(50, 200) / 100) * ($slideshowAnimateZoomStrength / 100) + 1;
-        let duration = $slideshowDelay * 1000 - 600;
-        if (randomDirection == 1) {
-          assetViewerManager.animatedZoom(randomScale, duration);
-        } else if (randomDirection == 2) {
-          assetViewerManager.animatedZoom(randomScale, 20);
-          setTimeout(() => {
-            assetViewerManager.animatedZoom(1, duration - 40);
-          }, 40);
-        }
+        animateSlideshow();
       }
       onReady?.();
     }}
