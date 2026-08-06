@@ -283,7 +283,7 @@
 
   afterNavigate(({ from, to }) => {
     if (from?.url !== null && !from?.url.searchParams.has(QueryParameter.ID)) {
-      previousPage = from!.url.toString();
+      previousPage = from!.url.href;
     }
 
     memoryManager

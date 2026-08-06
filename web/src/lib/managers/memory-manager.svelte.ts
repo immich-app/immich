@@ -191,17 +191,18 @@ class MemoryManager {
   }
 
   private async load(page: number) {
-    if (this.#filters !== undefined) {
-      const items = await searchMemories({ size: PAGE_SIZE, ...this.#filters, page });
-      this.memories.push(...items);
-
-      if (this.#total === undefined) {
-        const { total } = await memoriesStatistics(this.#filters);
-        this.#total = total;
-      }
-
-      this.#hasNextPage = this.memories.length < this.#total;
+    if (this.#filters === undefined) {
+      return;
     }
+    const items = await searchMemories({ size: PAGE_SIZE, ...this.#filters, page });
+    this.memories.push(...items);
+
+    if (this.#total === undefined) {
+      const { total } = await memoriesStatistics(this.#filters);
+      this.#total = total;
+    }
+
+    this.#hasNextPage = this.memories.length < this.#total;
   }
 
   private scheduleHourlyRefresh() {
@@ -223,10 +224,11 @@ class MemoryManager {
       // Schedule subsequent events hourly
       setInterval(
         () => {
-          if (this.#page <= 2) {
-            this.clearCache();
-            this.loadNextPage();
+          if (this.#page > 2) {
+            return;
           }
+          this.clearCache();
+          this.loadNextPage();
         },
         60 * 60 * 1000,
       );

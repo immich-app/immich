@@ -43,10 +43,11 @@
   });
 
   $effect(() => {
-    if (lastElement) {
-      intersectionObserver.disconnect();
-      intersectionObserver.observe(lastElement);
+    if (lastElement === undefined) {
+      return;
     }
+    intersectionObserver.disconnect();
+    intersectionObserver.observe(lastElement);
   });
 
   const rotation = () => {
