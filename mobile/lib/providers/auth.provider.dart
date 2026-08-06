@@ -134,7 +134,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
 
     // Get the deviceid from the store if it exists, otherwise generate a new one
-    String deviceId = Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
+    final String deviceId = Store.tryGet(StoreKey.deviceId) ?? await FlutterUdid.consistentUdid;
 
     UserDto? user = _userService.tryGetMyUser();
 
@@ -183,6 +183,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> saveLocalEndpoint(String url) async {
     await _ref.read(settingsProvider).write(.networkLocalEndpoint, url);
+    await _apiService.updateHeaders();
   }
 
   String? getSavedWifiName() {

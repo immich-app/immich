@@ -63,6 +63,5 @@
     {required}
     {value}
     oninput={handleInput}
-    {disabled}
-  ></textarea>
+    {disabled}></textarea>
 </div>

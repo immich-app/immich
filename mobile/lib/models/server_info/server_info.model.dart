@@ -1,8 +1,12 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/models/server_info/server_config.model.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/models/server_info/server_features.model.dart';
 import 'package:immich_mobile/models/server_info/server_version.model.dart';
+
+part 'server_info.model.freezed.dart';
 
 enum VersionStatus {
   upToDate,
@@ -18,68 +22,14 @@ enum VersionStatus {
   };
 }
 
-class ServerInfo {
-  final ServerVersion serverVersion;
-  final ServerVersion? latestVersion;
-  final ServerFeatures serverFeatures;
-  final ServerConfig serverConfig;
-  final ServerDiskInfo serverDiskInfo;
-  final VersionStatus versionStatus;
-
-  const ServerInfo({
-    required this.serverVersion,
-    this.latestVersion,
-    required this.serverFeatures,
-    required this.serverConfig,
-    required this.serverDiskInfo,
-    required this.versionStatus,
-  });
-
-  ServerInfo copyWith({
-    ServerVersion? serverVersion,
+@freezed
+abstract class ServerInfo with _$ServerInfo {
+  const factory ServerInfo({
+    required ServerVersion serverVersion,
     ServerVersion? latestVersion,
-    ServerFeatures? serverFeatures,
-    ServerConfig? serverConfig,
-    ServerDiskInfo? serverDiskInfo,
-    VersionStatus? versionStatus,
-  }) {
-    return ServerInfo(
-      serverVersion: serverVersion ?? this.serverVersion,
-      latestVersion: latestVersion ?? this.latestVersion,
-      serverFeatures: serverFeatures ?? this.serverFeatures,
-      serverConfig: serverConfig ?? this.serverConfig,
-      serverDiskInfo: serverDiskInfo ?? this.serverDiskInfo,
-      versionStatus: versionStatus ?? this.versionStatus,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'ServerInfo(serverVersion: $serverVersion, latestVersion: $latestVersion, serverFeatures: $serverFeatures, serverConfig: $serverConfig, serverDiskInfo: $serverDiskInfo, versionStatus: $versionStatus)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other is ServerInfo &&
-        other.serverVersion == serverVersion &&
-        other.latestVersion == latestVersion &&
-        other.serverFeatures == serverFeatures &&
-        other.serverConfig == serverConfig &&
-        other.serverDiskInfo == serverDiskInfo &&
-        other.versionStatus == versionStatus;
-  }
-
-  @override
-  int get hashCode {
-    return serverVersion.hashCode ^
-        latestVersion.hashCode ^
-        serverFeatures.hashCode ^
-        serverConfig.hashCode ^
-        serverDiskInfo.hashCode ^
-        versionStatus.hashCode;
-  }
+    required ServerFeatures serverFeatures,
+    required ServerConfig serverConfig,
+    required ServerDiskInfo serverDiskInfo,
+    required VersionStatus versionStatus,
+  }) = _ServerInfo;
 }

@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.0.0
+ * 3.1.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -540,7 +540,7 @@ export type CreateAlbumDto = {
     /** Initial asset IDs */
     assetIds?: string[];
     /** Album description */
-    description?: string;
+    description?: string | null;
 };
 export type AlbumsAddAssetsDto = {
     /** Album IDs */
@@ -567,7 +567,7 @@ export type UpdateAlbumDto = {
     /** Album thumbnail asset ID */
     albumThumbnailAssetId?: string;
     /** Album description */
-    description?: string;
+    description?: string | null;
     /** Enable activity feed */
     isActivityEnabled?: boolean;
     order?: AssetOrder;
@@ -2302,6 +2302,10 @@ export type SystemConfigBackupsDto = {
 export type SystemConfigFFmpegRealtimeDto = {
     /** Enable real-time HLS transcoding (alpha) */
     enabled: boolean;
+    /** Resolutions to use for real-time HLS transcoding */
+    resolutions: HlsVideoResolution[];
+    /** Video codecs to use for real-time HLS transcoding */
+    videoCodecs: VideoCodec[];
 };
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
@@ -5764,13 +5768,18 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
 /**
  * Search assets by metadata
  */
-export function searchAssets({ metadataSearchDto }: {
+export function searchAssets({ key, slug, metadataSearchDto }: {
+    key?: string;
+    slug?: string;
     metadataSearchDto: MetadataSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: SearchResponseDto;
-    }>("/search/metadata", oazapfts.json({
+    }>(`/search/metadata${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
         ...opts,
         method: "POST",
         body: metadataSearchDto
@@ -7632,6 +7641,13 @@ export enum CQMode {
     Auto = "auto",
     Cqp = "cqp",
     Icq = "icq"
+}
+export enum HlsVideoResolution {
+    $480 = 480,
+    $720 = 720,
+    $1080 = 1080,
+    $1440 = 1440,
+    $2160 = 2160
 }
 export enum ToneMapping {
     Hable = "hable",

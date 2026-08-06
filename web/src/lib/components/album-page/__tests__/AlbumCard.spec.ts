@@ -96,7 +96,7 @@ describe('AlbumCard component', () => {
     });
 
     it('dispatches "onShowContextMenu" event on context menu click with mouse coordinates', async () => {
-      const contextMenuButton = sut.getByTestId('context-button-parent').children[0];
+      const contextMenuButton = sut.getByTestId('context-button-parent').firstElementChild!;
       expect(contextMenuButton).toBeDefined();
 
       // Mock getBoundingClientRect to return a bounding rectangle that will result in the expected position

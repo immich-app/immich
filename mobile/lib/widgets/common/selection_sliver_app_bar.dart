@@ -23,7 +23,7 @@ class _SelectionSliverAppBarState extends ConsumerState<SelectionSliverAppBar> {
       return !toExclude.contains(asset);
     }).toSet();
 
-    onDone(Set<BaseAsset> selected) {
+    void onDone(Set<BaseAsset> selected) {
       ref.read(multiSelectProvider.notifier).reset();
       context.pop<Set<BaseAsset>>(selected);
     }

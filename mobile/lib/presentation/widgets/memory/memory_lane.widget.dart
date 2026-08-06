@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -33,7 +35,7 @@ class DriftMemoryLane extends ConsumerWidget {
           if (memories[index].assets.isNotEmpty) {
             DriftMemoryPage.setMemory(ref, memories[index]);
           }
-          context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index));
+          unawaited(context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index)));
         },
         children: memories
             .map((memory) => DriftMemoryCard(key: Key(memory.id), memory: memory))
@@ -43,13 +45,13 @@ class DriftMemoryLane extends ConsumerWidget {
   }
 }
 
-class DriftMemoryCard extends ConsumerWidget {
+class DriftMemoryCard extends StatelessWidget {
   const DriftMemoryCard({super.key, required this.memory});
 
   final DriftMemory memory;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final yearsAgo = DateTime.now().year - memory.data.year;
     final title = 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
     return Center(

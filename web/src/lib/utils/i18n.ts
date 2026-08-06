@@ -13,6 +13,14 @@ export const getFormatter = async () => {
   return get(t);
 };
 
+const aliases: Record<string, string> = {
+  'zh-CN': 'zh-Hans',
+  'zh-HK': 'zh-Hant',
+  'zh-MO': 'zh-Hant',
+  'zh-SG': 'zh-Hans',
+  'zh-TW': 'zh-Hant',
+};
+
 const modules = import.meta.glob('$i18n/*.json');
 
 const fileCodes = Object.keys(modules)
@@ -33,7 +41,9 @@ const getSubLocales = (locale: string) => {
 
 export const getClosestAvailableLocale = (locales: readonly string[], allLocales: readonly string[]) => {
   const allLocalesSet = new Set(allLocales.map((locale) => convertBCP47(locale)));
-  return locales.find((locale) => getSubLocales(locale).some((subLocale) => allLocalesSet.has(subLocale)));
+  return locales
+    .map((locale) => aliases[locale] ?? locale)
+    .find((locale) => getSubLocales(locale).some((subLocale) => allLocalesSet.has(subLocale)));
 };
 
 export const getPreferredLocale = () => getClosestAvailableLocale(navigator.languages, langCodes);

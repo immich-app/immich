@@ -1,5 +1,10 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'person.model.freezed.dart';
+
 // TODO: Remove PersonDto once Isar is removed
 class PersonDto {
   const PersonDto({
@@ -93,102 +98,18 @@ class PersonDto {
 }
 
 // Model for a person stored in the server
-class DriftPerson {
-  final String id;
-  final DateTime createdAt;
-  final DateTime updatedAt;
-  final String ownerId;
-  final String name;
-  final String? faceAssetId;
-  final bool isFavorite;
-  final bool isHidden;
-  final String? color;
-  final DateTime? birthDate;
-
-  const DriftPerson({
-    required this.id,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.ownerId,
-    required this.name,
-    this.faceAssetId,
-    required this.isFavorite,
-    required this.isHidden,
-    required this.color,
-    this.birthDate,
-  });
-
-  DriftPerson copyWith({
-    String? id,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    String? ownerId,
-    String? name,
+@freezed
+abstract class DriftPerson with _$DriftPerson {
+  const factory DriftPerson({
+    required String id,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    required String ownerId,
+    required String name,
     String? faceAssetId,
-    bool? isFavorite,
-    bool? isHidden,
-    String? color,
+    required bool isFavorite,
+    required bool isHidden,
+    required String? color,
     DateTime? birthDate,
-  }) {
-    return DriftPerson(
-      id: id ?? this.id,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      ownerId: ownerId ?? this.ownerId,
-      name: name ?? this.name,
-      faceAssetId: faceAssetId ?? this.faceAssetId,
-      isFavorite: isFavorite ?? this.isFavorite,
-      isHidden: isHidden ?? this.isHidden,
-      color: color ?? this.color,
-      birthDate: birthDate ?? this.birthDate,
-    );
-  }
-
-  @override
-  String toString() {
-    return '''Person {
-    id: $id,
-    createdAt: $createdAt,
-    updatedAt: $updatedAt,
-    ownerId: $ownerId,
-    name: $name,
-    faceAssetId: ${faceAssetId ?? "<NA>"},
-    isFavorite: $isFavorite,
-    isHidden: $isHidden,
-    color: ${color ?? "<NA>"},
-    birthDate: ${birthDate ?? "<NA>"}
-}''';
-  }
-
-  @override
-  bool operator ==(covariant DriftPerson other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.id == id &&
-        other.createdAt == createdAt &&
-        other.updatedAt == updatedAt &&
-        other.ownerId == ownerId &&
-        other.name == name &&
-        other.faceAssetId == faceAssetId &&
-        other.isFavorite == isFavorite &&
-        other.isHidden == isHidden &&
-        other.color == color &&
-        other.birthDate == birthDate;
-  }
-
-  @override
-  int get hashCode {
-    return id.hashCode ^
-        createdAt.hashCode ^
-        updatedAt.hashCode ^
-        ownerId.hashCode ^
-        name.hashCode ^
-        faceAssetId.hashCode ^
-        isFavorite.hashCode ^
-        isHidden.hashCode ^
-        color.hashCode ^
-        birthDate.hashCode;
-  }
+  }) = _DriftPerson;
 }

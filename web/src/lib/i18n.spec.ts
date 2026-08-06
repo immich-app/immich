@@ -58,5 +58,14 @@ describe('i18n', () => {
       expect(getClosestAvailableLocale(['sr_Cyrl'], allLocales)).toBe('sr_Cyrl');
       expect(getClosestAvailableLocale(['zh_Hant'], allLocales)).toBe('zh_Hant');
     });
+
+    it('should handle language aliases', () => {
+      const allLocales = ['zh-Hans', 'zh-Hant'];
+      expect(getClosestAvailableLocale(['zh-CN'], allLocales)).toBe('zh-Hans');
+      expect(getClosestAvailableLocale(['zh-HK'], allLocales)).toBe('zh-Hant');
+      expect(getClosestAvailableLocale(['zh-MO'], allLocales)).toBe('zh-Hant');
+      expect(getClosestAvailableLocale(['zh-SG'], allLocales)).toBe('zh-Hans');
+      expect(getClosestAvailableLocale(['zh-TW'], allLocales)).toBe('zh-Hant');
+    });
   });
 });
