@@ -1,13 +1,16 @@
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
@@ -43,7 +46,19 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   Future<void> flushDeferredViewIntent() => _flushPending();
 
   Future<void> _checkForViewIntent() async {
-    final attachment = await _viewIntentService.consumeViewIntent();
+    final ViewIntentPayload? attachment;
+    try {
+      attachment = await _viewIntentService.consumeViewIntent();
+    } on PlatformException catch (error, stackTrace) {
+      if (error.code != viewIntentUnavailableErrorCode) {
+        rethrow;
+      }
+
+      _logger.warning('Incoming view intent is unavailable', error, stackTrace);
+      _ref.read(toastServiceProvider).error(StaticTranslations.instance.asset_not_found_on_device_android);
+      await _router.replaceAll([const TabShellRoute()]);
+      return;
+    }
     if (attachment != null) {
       await handle(attachment);
       return;

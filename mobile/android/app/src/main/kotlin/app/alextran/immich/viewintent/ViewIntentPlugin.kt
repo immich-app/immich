@@ -22,6 +22,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
 private const val TAG = "ViewIntentPlugin"
+private const val VIEW_INTENT_UNAVAILABLE = "VIEW_INTENT_UNAVAILABLE"
 
 class ViewIntentPlugin : FlutterPlugin, ActivityAware, PluginRegistry.NewIntentListener, ViewIntentHostApi {
   private var context: Context? = null
@@ -92,7 +93,15 @@ class ViewIntentPlugin : FlutterPlugin, ActivityAware, PluginRegistry.NewIntentL
         val localAssetId = extractLocalAssetId(context, uri, mimeType)
         val tempFilePath = if (localAssetId == null) {
           copyUriToTempFile(context, uri, mimeType)?.absolutePath ?: run {
-            callback(Result.success(null))
+            consumeViewIntent(intent)
+            callback(
+              Result.failure(
+                FlutterError(
+                  VIEW_INTENT_UNAVAILABLE,
+                  "Unable to access the file referenced by the incoming view intent",
+                ),
+              ),
+            )
             return@launch
           }
         } else {
@@ -153,7 +162,8 @@ class ViewIntentPlugin : FlutterPlugin, ActivityAware, PluginRegistry.NewIntentL
         }
       } ?: return null
       tempFile
-    } catch (_: Exception) {
+    } catch (e: Exception) {
+      Log.w(TAG, "Failed to materialize view intent URI as a temporary file", e)
       null
     }
   }
