@@ -36,9 +36,9 @@
       <Icon icon={mdiAndroid} size="40" />
     {:else if session.deviceOS === 'iOS' || session.deviceOS === 'macOS'}
       <Icon icon={mdiApple} size="40" />
-    {:else if session.deviceOS.includes('Safari')}
+    {:else if session.deviceOS?.includes('Safari')}
       <Icon icon={mdiAppleSafari} size="40" />
-    {:else if session.deviceOS.includes('Windows')}
+    {:else if session.deviceOS?.includes('Windows')}
       <Icon icon={mdiMicrosoftWindows} size="40" />
     {:else if session.deviceOS === 'Linux'}
       <Icon icon={mdiLinux} size="40" />

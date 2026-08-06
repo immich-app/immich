@@ -16,7 +16,7 @@
 
   const onSave = async (color: UserAvatarColor) => {
     try {
-      if (authManager.user.profileImagePath !== '') {
+      if (authManager.user.profileImagePath) {
         await deleteProfileImage();
       }
 
@@ -38,7 +38,7 @@
         <button type="button" onclick={() => onSave(color)}>
           <UserAvatar
             label={color}
-            user={{ ...authManager.user, profileImagePath: '', avatarColor: color }}
+            user={{ ...authManager.user, profileImagePath: null, avatarColor: color }}
             size="xl"
           />
         </button>
