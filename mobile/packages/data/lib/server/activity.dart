@@ -1,18 +1,15 @@
-import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/infrastructure/utils/user.converter.dart';
-import 'package:immich_mobile/models/activities/activity.model.dart';
-import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/repositories/api.repository.dart';
+import 'package:immich_data/model/activity.dart';
+import 'package:immich_data/server/api_repository.dart';
+import 'package:immich_data/server/util/convert.dart';
+import 'package:meta/meta.dart';
 import 'package:openapi/api.dart';
 
-final activityApiRepositoryProvider = Provider(
-  (ref) => ActivityApiRepository(ref.watch(apiServiceProvider).activitiesApi),
-);
-
+/// Immich HTTP API for album activity (comments and likes)
 class ActivityApiRepository extends ApiRepository {
   final ActivitiesApi _api;
 
-  ActivityApiRepository(this._api);
+  @internal
+  const ActivityApiRepository(this._api);
 
   Future<List<Activity>> getAll(String albumId, {String? assetId}) async {
     final response = await checkNull(_api.getActivities(albumId, assetId: assetId));
@@ -31,19 +28,15 @@ class ActivityApiRepository extends ApiRepository {
   }
 
   Future<void> delete(String id) {
+    // TODO(agg23): I think this is a bug; `checkNull` will always throw here
     return checkNull(_api.deleteActivity(id));
-  }
-
-  Future<ActivityStats> getStats(String albumId, {String? assetId}) async {
-    final response = await checkNull(_api.getActivityStatistics(albumId, assetId: assetId));
-    return ActivityStats(comments: response.comments);
   }
 
   static Activity _toActivity(ActivityResponseDto dto) => Activity(
     id: dto.id,
     createdAt: dto.createdAt,
     type: dto.type == ReactionType.comment ? ActivityType.comment : ActivityType.like,
-    user: UserConverter.fromSimpleUserDto(dto.user),
+    user: DtoConverter.toUser(dto.user),
     assetId: dto.assetId,
     comment: dto.comment.orElse(null),
   );

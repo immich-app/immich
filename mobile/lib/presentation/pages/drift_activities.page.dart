@@ -9,8 +9,8 @@ import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/drift_activity_text_field.dart';
-import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/store/activity.dart';
 import 'package:immich_mobile/widgets/activities/comment_bubble.dart';
 
 @RoutePage()
