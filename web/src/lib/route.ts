@@ -149,7 +149,7 @@ export const Route = {
   viewWorkflow: ({ id }: { id: string }) => `/workflows/${id}`,
 
   // backups
-  backups: () => '/backups',
+  backups: () => '/admin/backups',
 
   // queues
   queues: () => '/admin/queues',

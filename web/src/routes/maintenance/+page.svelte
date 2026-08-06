@@ -7,7 +7,7 @@
   import { maintenanceStore } from '$lib/stores/maintenance.store';
   import { MaintenanceAction } from '@immich/sdk';
   import { Button, Heading, Link, ProgressBar, Scrollable, Text } from '@immich/ui';
-  import { YuccaContext, ViewLogModal } from '@futo-org/backups-orchestrator-ui';
+  import { YuccaContext, ViewStatusModal } from '@futo-org/backups-orchestrator-ui';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
 
@@ -44,7 +44,7 @@
   );
 </script>
 
-<YuccaContext baseUrl={globalThis.location.origin}>
+<YuccaContext baseUrl={location.origin}>
   <AuthPageLayout
     withHeader={$status?.action === MaintenanceAction.Start || $status?.action === MaintenanceAction.End}
     withBackdrop={$status?.action === MaintenanceAction.Start}
@@ -72,8 +72,8 @@
             <Text>{$t('maintenance_task_rollback')}</Text>
           {/if}
         {/if}
-      {:else if $status?.action === MaintenanceAction.Rollback}
-        <ViewLogModal logId={$status!.yuccaLogId} onClose={() => void 0} />
+      {:else if $status?.action === MaintenanceAction.Rollback && $status.yuccaLogId}
+        <ViewStatusModal logId={$status.yuccaLogId} onClose={() => void 0} />
       {:else if $status?.action === MaintenanceAction.SelectDatabaseRestore && $auth}
         <MaintenanceRestoreFlow {end} expectedVersion={data.expectedVersion} />
       {:else}

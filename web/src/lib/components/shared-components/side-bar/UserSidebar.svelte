@@ -14,7 +14,6 @@
     mdiAccountOutline,
     mdiArchiveArrowDown,
     mdiArchiveArrowDownOutline,
-    mdiBackupRestore,
     mdiFolderOutline,
     mdiHeart,
     mdiHeartOutline,
@@ -95,10 +94,6 @@
 
   {#if authManager.preferences.folders.enabled && authManager.preferences.folders.sidebarWeb}
     <NavbarItem title={$t('folders')} href={Route.folders()} icon={{ icon: mdiFolderOutline, flipped: true }} />
-  {/if}
-
-  {#if featureFlagsManager.value.backups && authManager.user.isAdmin}
-    <NavbarItem title="Backups" href={Route.backups()} icon={mdiBackupRestore} />
   {/if}
 
   <NavbarItem title={$t('utilities')} href={Route.utilities()} icon={mdiToolboxOutline} activeIcon={mdiToolbox} />

@@ -19608,6 +19608,9 @@
           "name": {
             "type": "string"
           },
+          "paused": {
+            "type": "boolean"
+          },
           "retentionPolicy": {
             "allOf": [
               {
@@ -20639,11 +20642,19 @@
           "name": {
             "type": "string"
           },
+          "siteCode": {
+            "nullable": true,
+            "type": "string"
+          },
           "snapshots": {
             "items": {
               "$ref": "#/components/schemas/SnapshotDto"
             },
             "type": "array"
+          },
+          "storageClusterCode": {
+            "nullable": true,
+            "type": "string"
           },
           "worm": {
             "type": "boolean"
@@ -20653,7 +20664,9 @@
           "id",
           "metrics",
           "name",
+          "siteCode",
           "snapshots",
+          "storageClusterCode",
           "worm"
         ],
         "type": "object"
@@ -21001,6 +21014,14 @@
           "name": {
             "type": "string"
           },
+          "siteCode": {
+            "nullable": true,
+            "type": "string"
+          },
+          "storageClusterCode": {
+            "nullable": true,
+            "type": "string"
+          },
           "worm": {
             "type": "boolean"
           }
@@ -21009,6 +21030,8 @@
           "id",
           "metrics",
           "name",
+          "siteCode",
+          "storageClusterCode",
           "worm"
         ],
         "type": "object"
@@ -23798,6 +23821,10 @@
             },
             "type": "array"
           },
+          "site": {
+            "description": "Internal site code from environment metadata",
+            "type": "string"
+          },
           "worm": {
             "type": "boolean"
           }
@@ -23943,6 +23970,9 @@
             ],
             "nullable": true,
             "type": "object"
+          },
+          "worm": {
+            "type": "boolean"
           }
         },
         "type": "object"

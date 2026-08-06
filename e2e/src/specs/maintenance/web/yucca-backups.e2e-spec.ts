@@ -60,7 +60,7 @@ test.describe('Yucca Backups', () => {
     test.setTimeout(30_000);
     await utils.setAuthCookies(context, admin.accessToken);
 
-    await page.goto('/backups');
+    await page.goto('/admin/backups');
 
     const dialog = page.getByRole('dialog');
     await expect(dialog.filter({ hasText: 'Backup options' })).toBeVisible();
@@ -81,7 +81,7 @@ test.describe('Yucca Backups', () => {
     test.setTimeout(60_000);
     await utils.setAuthCookies(context, admin.accessToken);
 
-    await page.goto('/backups/repositories');
+    await page.goto('/admin/backups/repositories');
     const backupNow = page.getByRole('button', { name: 'Backup Now' });
     await expect(backupNow).toBeVisible();
 
