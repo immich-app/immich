@@ -244,15 +244,10 @@
     onImageReady={(quality: ImageQuality) => {
       visibleImageReady = true;
 
-      console.log('onImageReady: ' + quality);
       if (quality === 'thumbnail' && $slideshowState === SlideshowState.PlaySlideshow && $slideshowAnimate) {
         let randomDirection = getRandomInt(0, 2);
         let randomScale = (getRandomInt(50, 200) / 100) * ($slideshowAnimateZoomStrength / 100) + 1;
         let duration = $slideshowDelay * 1000 - 600;
-        console.group('asset: ' + asset.id);
-        console.log('Direction: ' + randomDirection);
-        console.log('Scale: ' + randomScale);
-        console.groupEnd();
         if (randomDirection == 1) {
           assetViewerManager.animatedZoom(randomScale, duration);
         } else if (randomDirection == 2) {

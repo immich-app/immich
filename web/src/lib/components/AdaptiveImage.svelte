@@ -202,7 +202,6 @@
 
   // $effect(() => {
   //   if (assetViewerManager.zoom > 1 && status.quality.original !== 'success') {
-  //     //console.log('effect trigger original');
   //     //untrack(() => void adaptiveImageLoader.trigger('original'));
   //   }
   // });
