@@ -200,11 +200,11 @@
     assetViewerManager.imageLoaderStatus = status;
   });
 
-  // $effect(() => {
-  //   if (assetViewerManager.zoom > 1 && status.quality.original !== 'success') {
-  //     //untrack(() => void adaptiveImageLoader.trigger('original'));
-  //   }
-  // });
+  $effect(() => {
+    if (assetViewerManager.zoom > 1 && status.quality.original !== 'success') {
+      untrack(() => void adaptiveImageLoader.trigger('original'));
+    }
+  });
 
   let thumbnailElement = $state<HTMLImageElement>();
   let previewElement = $state<HTMLImageElement>();
