@@ -25635,6 +25635,12 @@
           "summary": {
             "$ref": "#/components/schemas/SnapshotSummaryDto"
           },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "time": {
             "type": "string"
           }

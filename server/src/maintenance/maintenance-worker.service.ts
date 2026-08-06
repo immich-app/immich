@@ -6,6 +6,7 @@ import { NextFunction, Request, Response } from 'express';
 import { jwtVerify } from 'jose';
 import { readFileSync } from 'node:fs';
 import { IncomingHttpHeaders } from 'node:http';
+import { basename } from 'node:path';
 import { serverVersion } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import {
@@ -375,8 +376,10 @@ export class MaintenanceWorkerService {
       action: MaintenanceAction.Rollback,
     });
 
+    // code needs to be pulled back into yucca sdk
+
     const yucca = this.moduleRef.get(YuccaService, { strict: false });
-    const { logId, task } = await yucca.restoreSnapshotInplace(repositoryId, snapshotId);
+    const { logId, task, tags } = await yucca.restoreSnapshotInplace(repositoryId, snapshotId);
 
     this.setStatus({
       active: true,
@@ -386,15 +389,19 @@ export class MaintenanceWorkerService {
 
     await task;
 
-    const { backups } = await this.databaseBackupService.listBackups();
-    const latest = getLatestDatabaseBackup(backups);
-    if (!latest) {
+    enum ResticTagPrefix {
+      ImmichBackupFileName = 'yucca.v1.immichBackupFileName',
+    }
+
+    const backupFileNameTag = tags.find((item) => item.startsWith(`${ResticTagPrefix.ImmichBackupFileName}=`));
+    if (!backupFileNameTag) {
       return this.setAction({
         action: MaintenanceAction.SelectDatabaseRestore,
       });
     }
 
-    await this.restoreBackup(latest.filename);
+    const backupFileName = basename(backupFileNameTag.slice(ResticTagPrefix.ImmichBackupFileName.length + 1));
+    await this.restoreBackup(backupFileName);
   }
 
   private async endMaintenance(): Promise<void> {

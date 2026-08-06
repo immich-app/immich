@@ -44,8 +44,8 @@ export class YuccaService {
     });
   }
 
-  private async createDatabaseBackup() {
-    await this.databaseBackupService.createDatabaseBackup();
+  private createDatabaseBackup() {
+    return this.databaseBackupService.createDatabaseBackup();
   }
 
   private enterMaintenanceRollback(repositoryId: string, snapshotId: string) {
