@@ -18,7 +18,12 @@
     transition:fly={{ x: -100, duration: 350 }}
     class="fixed inset-s-2 bottom-10 z-60 max-h-67.5 w-79 rounded-2xl border bg-subtle p-4 shadow-lg dark:border-white/10"
   >
-    <Heading size="tiny">{$t('downloading')}</Heading>
+    <Heading size="tiny">
+      {$t('downloading')}
+      {#if downloadManager.archiveProgress}
+        &nbsp;({downloadManager.archiveProgress.index}/{downloadManager.archiveProgress.total})
+      {/if}
+    </Heading>
     <div class="my-2 mb-2 flex max-h-50 flex-col overflow-y-auto text-sm">
       {#each Object.keys(downloadManager.assets) as downloadKey (downloadKey)}
         {@const download = downloadManager.assets[downloadKey]}
