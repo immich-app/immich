@@ -16,7 +16,7 @@ import 'package:logging/logging.dart';
 final assetUploadCoordinatorProvider = Provider(AssetUploadCoordinator.new);
 
 class AssetUploadCoordinator {
-  AssetUploadCoordinator(this._ref);
+  const AssetUploadCoordinator(this._ref);
 
   final Ref _ref;
   static final Logger _logger = Logger('AssetUploadCoordinator');
