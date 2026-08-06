@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -30,18 +32,18 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   @override
   void initState() {
     super.initState();
-    WakelockPlus.enable();
+    unawaited(WakelockPlus.enable());
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeAlbumDefaults();
+      unawaited(_initializeAlbumDefaults());
     });
   }
 
   Future<void> _initializeAlbumDefaults() async {
+    final notifier = ref.read(cleanupProvider.notifier);
     final albums = await ref.read(localAlbumProvider.future);
     final existingAlbumIds = albums.map((a) => a.id).toSet();
     final albumsWithNames = albums.map((a) => (a.id, a.name)).toList();
 
-    final notifier = ref.read(cleanupProvider.notifier);
     notifier.applyDefaultAlbumSelections(albumsWithNames);
     notifier.cleanupStaleAlbumIds(existingAlbumIds);
   }
@@ -68,7 +70,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
   void _goToScanStep() {
     ref.read(hapticFeedbackProvider.notifier).mediumImpact();
     setState(() => _currentStep = CleanupStep.scan);
-    _scanAssets();
+    unawaited(_scanAssets());
   }
 
   void _setPresetDate(int daysAgo) {
@@ -103,7 +105,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
       lastDate: DateTime.now(),
     );
 
-    if (picked != null) {
+    if (picked != null && context.mounted) {
       ref.read(cleanupProvider.notifier).setSelectedDate(picked);
       setState(() => _hasScanned = false);
     }
@@ -120,6 +122,10 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
     ref.read(hapticFeedbackProvider.notifier).mediumImpact();
 
     await ref.read(cleanupProvider.notifier).scanAssets();
+    if (!mounted) {
+      return;
+    }
+
     final state = ref.read(cleanupProvider);
 
     setState(() {
@@ -144,7 +150,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
           _DeleteConfirmationDialog(assetCount: state.assetsToDelete.length, cutoffDate: state.selectedDate!),
     );
 
-    if (confirmed != true) {
+    if (confirmed != true || !context.mounted) {
       return;
     }
 
@@ -169,13 +175,13 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
 
   void _showAssetsPreview(List<LocalAsset> assets) {
     ref.read(hapticFeedbackProvider.notifier).mediumImpact();
-    context.pushRoute(CleanupPreviewRoute(assets: assets));
+    unawaited(context.pushRoute(CleanupPreviewRoute(assets: assets)));
   }
 
   @override
-  dispose() {
+  void dispose() {
     super.dispose();
-    WakelockPlus.disable();
+    unawaited(WakelockPlus.disable());
   }
 
   @override
@@ -773,7 +779,7 @@ class _DatePresetCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: const BorderRadius.all(Radius.circular(12)),
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.all(Radius.circular(12)),
             border: Border.all(color: isSelected ? context.colorScheme.primary : Colors.transparent, width: 1),

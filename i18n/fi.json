@@ -767,7 +767,6 @@
   "custom_date": "Mukautettu päivä",
   "custom_locale": "Mukautettu alueasetus",
   "custom_locale_description": "Muotoile päivämäärät, kellonajat ja numerot valitun kielen ja alueen mukaan",
-  "custom_url": "Mukautettu URL",
   "cutoff_date_description": "Säilytä kuvat viimeisimmältä…",
   "cutoff_day": "{count, plural, one {päivä} other {päivää}}",
   "cutoff_year": "{count, plural, one {vuosi} other {vuotta}}",

@@ -82,7 +82,7 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
   }
 
   void _detachController() {
-    _controllerSub?.cancel();
+    unawaited(_controllerSub?.cancel());
     _controllerSub = null;
   }
 

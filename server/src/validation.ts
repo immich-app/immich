@@ -42,7 +42,7 @@ export function nonEmptyPartial<T extends z.ZodRawShape>(shape: T) {
     .object(shape)
     .partial()
     .refine((data) => Object.values(data as Record<string, unknown>).some((value) => value !== undefined), {
-      message: 'At least one field must be provided',
+      message: `At least one of the following fields is required: ${Object.keys(shape).join(', ')}`,
     });
 }
 

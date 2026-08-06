@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:math' as math;
 
+import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
@@ -184,13 +185,21 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 
   // Capture iOS status bar tap
   @override
-  void handleStatusBarTap() => _scrollToTop();
+  void handleStatusBarTap() {
+    // Routes may be pushed non-opaquely on top of the timeline (such as the asset viewer), or the timeline
+    // may be in a background tab. In either case, `handleStatusBarTap()` still fires
+    // Make sure the timeline is the primary route before scrolling to the top
+    final routeData = context.findAncestorWidgetOfExactType<RouteDataScope>()?.routeData;
+    if (ModalRoute.of(context)?.isCurrent == true && routeData?.isActive == true) {
+      _scrollToTop();
+    }
+  }
 
   void _onEvent(Event event) {
     switch (event) {
       case ScrollToTopEvent():
         _scrollToTop();
-      case ScrollToDateEvent scrollToDateEvent:
+      case final ScrollToDateEvent scrollToDateEvent:
         _scrollToDate(scrollToDateEvent.date);
       case TimelineReloadEvent():
         setState(() {});
@@ -249,7 +258,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
-    _eventSubscription?.cancel();
+    unawaited(_eventSubscription?.cancel());
     super.dispose();
   }
 
@@ -260,9 +269,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 
     final timelineState = ref.read(timelineStateProvider.notifier);
     timelineState.setScrubbing(true);
-    _scrollController
-        .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
-        .whenComplete(() => timelineState.setScrubbing(false));
+    unawaited(
+      _scrollController
+          .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
+          .whenComplete(() => timelineState.setScrubbing(false)),
+    );
   }
 
   void _scrollToDate(DateTime date) {
@@ -294,13 +305,15 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
         // Scroll to the segment with a small offset to show the header
         final targetOffset = fallbackSegment.startOffset - 50;
         timelineState.setScrubbing(true);
-        _scrollController
-            .animateTo(
-              targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-            )
-            .whenComplete(() => timelineState.setScrubbing(false));
+        unawaited(
+          _scrollController
+              .animateTo(
+                targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+              )
+              .whenComplete(() => timelineState.setScrubbing(false)),
+        );
       } else {
         timelineState.setScrubbing(false);
       }
@@ -335,8 +348,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     });
   }
 
-  void _dragScroll(ScrollDirection direction) {
-    _scrollController.animateTo(
+  Future<void> _dragScroll(ScrollDirection direction) {
+    return _scrollController.animateTo(
       _scrollController.offset + (direction == ScrollDirection.forward ? 175 : -175),
       duration: const Duration(milliseconds: 125),
       curve: Curves.easeOut,
@@ -479,7 +492,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                             _restoreAssetIndex = targetAssetIndex;
                           });
 
-                          ref.read(settingsProvider).write(.timelineTilesPerRow, _perRow);
+                          unawaited(ref.read(settingsProvider).write(.timelineTilesPerRow, _perRow));
                         }
                       };
                     },
@@ -489,7 +502,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                   onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
                   onAssetEnter: _handleDragAssetEnter,
                   onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
-                  onScroll: _dragScroll,
+                  onScroll: (direction) => unawaited(_dragScroll(direction)),
                   onScrollStart: () {
                     // Minimize the bottom sheet when drag selection starts
                     ref.read(timelineStateProvider.notifier).setScrolling(true);

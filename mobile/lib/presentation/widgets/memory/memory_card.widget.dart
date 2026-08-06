@@ -55,7 +55,7 @@ class DriftMemoryCard extends StatelessWidget {
               }
 
               if (asset.isImage) {
-                return FullImage(asset, fit: fit, size: const Size(double.infinity, double.infinity));
+                return FullImage(asset, fit: fit, size: Size.infinite);
               }
 
               return Center(
@@ -97,7 +97,7 @@ class _BlurredBackdrop extends HookWidget {
     final blurhash = useDriftBlurHashRef(asset).value;
     if (blurhash != null) {
       // Use a nice cheap blur hash image decoration
-      return Container(
+      return DecoratedBox(
         decoration: BoxDecoration(
           image: DecorationImage(image: MemoryImage(blurhash), fit: BoxFit.cover),
         ),
@@ -109,7 +109,7 @@ class _BlurredBackdrop extends HookWidget {
       // safely use that as the image provider
       return ImageFiltered(
         imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             image: DecorationImage(
               image: getFullImageProvider(asset, size: Size(context.width, context.height)),

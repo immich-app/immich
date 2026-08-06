@@ -1,11 +1,15 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
+import 'package:immich_mobile/utils/option.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class MapState {
@@ -15,6 +19,7 @@ class MapState {
   final bool includeArchived;
   final bool withPartners;
   final int relativeDays;
+  final TimeRange timeRange;
 
   const MapState({
     this.themeMode = ThemeMode.system,
@@ -23,6 +28,7 @@ class MapState {
     this.includeArchived = false,
     this.withPartners = false,
     this.relativeDays = 0,
+    this.timeRange = const TimeRange(),
   });
 
   @override
@@ -40,6 +46,7 @@ class MapState {
     bool? includeArchived,
     bool? withPartners,
     int? relativeDays,
+    TimeRange? timeRange,
   }) {
     return MapState(
       bounds: bounds ?? this.bounds,
@@ -48,6 +55,7 @@ class MapState {
       includeArchived: includeArchived ?? this.includeArchived,
       withPartners: withPartners ?? this.withPartners,
       relativeDays: relativeDays ?? this.relativeDays,
+      timeRange: timeRange ?? this.timeRange,
     );
   }
 
@@ -57,6 +65,7 @@ class MapState {
     includeArchived: includeArchived,
     withPartners: withPartners,
     relativeDays: relativeDays,
+    timeRange: timeRange,
   );
 }
 
@@ -80,27 +89,45 @@ class MapStateNotifier extends Notifier<MapState> {
   }
 
   void switchFavoriteOnly(bool isFavoriteOnly) {
-    ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly);
+    unawaited(ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly));
     state = state.copyWith(onlyFavorites: isFavoriteOnly);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void switchIncludeArchived(bool isIncludeArchived) {
-    ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived);
+    unawaited(ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived));
     state = state.copyWith(includeArchived: isIncludeArchived);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void switchWithPartners(bool isWithPartners) {
-    ref.read(settingsProvider).write(.mapWithPartners, isWithPartners);
+    unawaited(ref.read(settingsProvider).write(.mapWithPartners, isWithPartners));
     state = state.copyWith(withPartners: isWithPartners);
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void setRelativeTime(int relativeDays) {
-    ref.read(settingsProvider).write(.mapRelativeDate, relativeDays);
+    unawaited(ref.read(settingsProvider).write(.mapRelativeDate, relativeDays));
     state = state.copyWith(relativeDays: relativeDays);
     EventStream.shared.emit(const MapMarkerReloadEvent());
+  }
+
+  void setCustomTimeRange(TimeRange range) {
+    unawaited(ref.read(settingsProvider).write(.mapCustomFrom, range.from));
+    unawaited(ref.read(settingsProvider).write(.mapCustomTo, range.to));
+    state = state.copyWith(timeRange: range);
+    EventStream.shared.emit(const MapMarkerReloadEvent());
+  }
+
+  Option<DateTime> parseDateOption(String s) {
+    try {
+      if (s.trim().isEmpty) {
+        return const Option.none();
+      }
+      return Option.some(DateTime.parse(s));
+    } catch (_) {
+      return const Option.none();
+    }
   }
 
   @override
@@ -113,6 +140,7 @@ class MapStateNotifier extends Notifier<MapState> {
       withPartners: mapConfig.withPartners,
       relativeDays: mapConfig.relativeDays,
       bounds: LatLngBounds(northeast: const LatLng(0, 0), southwest: const LatLng(0, 0)),
+      timeRange: TimeRange(from: mapConfig.customFrom, to: mapConfig.customTo),
     );
   }
 }

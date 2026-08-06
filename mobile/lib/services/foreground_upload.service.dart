@@ -35,6 +35,7 @@ class UploadCallbacks {
 }
 
 final foregroundUploadServiceProvider = Provider((ref) {
+  // ignore: dispose-provided-instances
   return ForegroundUploadService(
     ref.watch(uploadRepositoryProvider),
     ref.watch(storageRepositoryProvider),
@@ -383,7 +384,6 @@ class ForegroundUploadService {
       if (result.isSuccess && result.remoteAssetId != null) {
         callbacks.onSuccess?.call(asset.localId!, result.remoteAssetId!);
       } else if (result.isCancelled) {
-        _logger.warning(() => "Backup was cancelled by the user");
         shouldAbortUpload = true;
       } else if (result.errorMessage != null) {
         _logger.severe(
@@ -398,7 +398,7 @@ class ForegroundUploadService {
         }
       }
     } catch (error, stackTrace) {
-      _logger.severe(() => "Error backup asset: ${error.toString()}", stackTrace);
+      _logger.severe(() => "Error backup asset: $error", stackTrace);
       callbacks.onError?.call(asset.localId!, error.toString());
     } finally {
       if (Platform.isIOS) {
@@ -406,7 +406,7 @@ class ForegroundUploadService {
           await file?.delete();
           await livePhotoFile?.delete();
         } catch (error, stackTrace) {
-          _logger.severe(() => "ERROR deleting file: ${error.toString()}", stackTrace);
+          _logger.severe(() => "ERROR deleting file: $error", stackTrace);
         }
       }
     }
@@ -419,6 +419,7 @@ class ForegroundUploadService {
     void Function(int bytes, int totalBytes)? onProgress,
   }) async {
     try {
+      // ignore: avoid_slow_async_io
       final stats = await file.stat();
       final fileCreatedAt = stats.changed;
       final fileModifiedAt = stats.modified;
