@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -57,7 +59,7 @@ class _DriftMemoryListPageState extends ConsumerState<DriftMemoryListPage> {
                       if (memories[index].assets.isNotEmpty) {
                         DriftMemoryPage.setMemory(ref, memories[index]);
                       }
-                      context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index));
+                      unawaited(context.pushRoute(DriftMemoryRoute(memories: memories, memoryIndex: index)));
                     },
                     child: Stack(
                       children: [
