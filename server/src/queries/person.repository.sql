@@ -28,21 +28,15 @@ select
   "person".*
 from
   "person"
-  inner join "asset_face" on "asset_face"."personId" = "person"."id"
-  inner join "asset" on "asset_face"."assetId" = "asset"."id"
-  and "asset"."visibility" = 'timeline'
-  and "asset"."deletedAt" is null
 where
   "person"."ownerId" = $1
-  and "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" is true
   and "person"."isHidden" = $2
 group by
   "person"."id"
 having
   (
     "person"."name" != $3
-    or count("asset_face"."assetId") >= COALESCE(
+    or "person"."assetCount" >= COALESCE(
       (
         SELECT
           value -> 'people' ->> 'minimumFaces'
@@ -59,7 +53,7 @@ order by
   "person"."isHidden" asc,
   "person"."isFavorite" desc,
   NULLIF(person.name, '') is null asc,
-  count("asset_face"."assetId") desc,
+  "person"."assetCount" desc,
   NULLIF(person.name, '') asc nulls last,
   "person"."createdAt"
 limit
@@ -262,24 +256,7 @@ select
 from
   "person"
 where
-  exists (
-    select
-    from
-      "asset_face"
-    where
-      "asset_face"."personId" = "person"."id"
-      and "asset_face"."deletedAt" is null
-      and "asset_face"."isVisible" = $2
-      and exists (
-        select
-        from
-          "asset"
-        where
-          "asset"."id" = "asset_face"."assetId"
-          and "asset"."visibility" = 'timeline'
-          and "asset"."deletedAt" is null
-      )
-  )
+  "person"."assetCount" > $2
   and "person"."ownerId" = $3
 
 -- PersonRepository.refreshFaces

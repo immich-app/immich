@@ -205,6 +205,66 @@ export const person_delete_audit = registerFunction({
     END`,
 });
 
+export const person_increment_asset_count = registerFunction({
+  name: 'person_increment_asset_count',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      IF NEW."deletedAt" IS NULL AND NEW."isVisible" IS true THEN
+        UPDATE person SET "assetCount" = "assetCount" + 1 WHERE id = NEW."personId";
+      END IF;
+      RETURN NULL;
+    END`,
+});
+
+export const person_update_asset_count = registerFunction({
+  name: 'person_update_asset_count',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      IF OLD."personId" != NEW."personId" AND OLD."deletedAt" IS NULL AND OLD."isVisible" IS true THEN
+        UPDATE person SET "assetCount" = "assetCount" - 1 WHERE id = OLD."personId";
+      END IF;
+
+      IF OLD."personId" != NEW."personId" AND NEW."deletedAt" IS NULL AND OLD."isVisible" IS true THEN
+        UPDATE person SET "assetCount" = "assetCount" + 1 WHERE id = NEW."personId";
+      END IF;
+
+      IF
+        OLD."personId" = NEW."personId" AND
+        (OLD."deletedAt" IS NULL AND NEW."deletedAt" IS NOT NULL) OR
+        (OLD."isVisible" IS true AND NEW."isVisible" IS false)
+      THEN
+         UPDATE person SET "assetCount" = "assetCount" - 1 WHERE id = NEW."personId";
+      END IF;
+
+      IF
+        OLD."personId" = NEW."personId" AND
+        (OLD."deletedAt" IS NOT NULL AND NEW."deletedAt" IS NULL) OR
+        (OLD."isVisible" IS false AND NEW."isVisible" IS true)
+      THEN
+         UPDATE person SET "assetCount" = "assetCount" + 1 WHERE id = NEW."personId";
+      END IF;
+
+      RETURN NULL;
+    END`,
+});
+
+export const person_decrement_asset_count = registerFunction({
+  name: 'person_decrement_asset_count',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      IF OLD."deletedAt" IS NULL AND OLD."isVisible" IS true THEN
+        UPDATE person SET "assetCount" = "assetCount" - 1 WHERE id = OLD."personId";
+      END IF;
+      RETURN NULL;
+    END`,
+});
+
 export const user_metadata_audit = registerFunction({
   name: 'user_metadata_audit',
   returnType: 'TRIGGER',
