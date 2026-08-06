@@ -230,8 +230,8 @@ export type Session = {
   createdAt: Date;
   updatedAt: Date;
   expiresAt: Date | null;
-  deviceOS: string;
-  deviceType: string;
+  deviceOS: string | null;
+  deviceType: string | null;
   appVersion: string | null;
   pinExpiresAt: Date | null;
   isPendingSyncReset: boolean;
@@ -251,7 +251,7 @@ export type Person = {
   color: string | null;
   faceAssetId: string | null;
   isHidden: boolean;
-  thumbnailPath: string;
+  thumbnailPath: string | null;
 };
 
 export type AssetFace = {
