@@ -14,6 +14,7 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
@@ -144,7 +145,11 @@ class SyncStatusAndActions extends HookConsumerWidget {
           subtitle: "tap_to_run_job".t(context: context),
           leading: const Icon(Icons.sync),
           trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).localSyncStatus),
-          onTap: () {
+          onTap: () async {
+            await ref.read(localSyncServiceProvider).resetFullSync();
+            if (!context.mounted) {
+              return;
+            }
             unawaited(ref.read(backgroundSyncProvider).syncLocal(full: true));
           },
         ),
