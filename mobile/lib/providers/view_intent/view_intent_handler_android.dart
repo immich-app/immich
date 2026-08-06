@@ -69,11 +69,25 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
     );
 
     if (!_ref.read(authProvider).isAuthenticated) {
+      _clearCurrentViewIntent();
       _ref.read(viewIntentPendingProvider.notifier).defer(attachment);
       return;
     }
 
-    final resolvedAsset = await _viewIntentAssetResolver.resolve(attachment);
+    _activateViewIntent(attachment);
+
+    final ViewIntentResolvedAsset resolvedAsset;
+    try {
+      resolvedAsset = await _viewIntentAssetResolver.resolve(attachment);
+    } catch (_) {
+      _ref.read(viewIntentCurrentProvider.notifier).clearIfMatch(attachment);
+      rethrow;
+    }
+    if (!identical(_ref.read(viewIntentCurrentProvider), attachment)) {
+      await resolvedAsset.timelineService.dispose();
+      return;
+    }
+
     _logger.fine('resolved view intent asset: ${resolvedAsset.asset}');
     await _openAssetViewer(
       asset: resolvedAsset.asset,
@@ -95,10 +109,17 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       return false;
     }
 
+    final reopenedAttachment = ViewIntentPayload(
+      path: attachment.path,
+      mimeType: attachment.mimeType,
+      localAssetId: attachment.localAssetId,
+    );
+    _activateViewIntent(reopenedAttachment);
+
     final origin = asset.isTrashed ? TimelineOrigin.deepLinkTrash : TimelineOrigin.deepLink;
     final timelineService = _ref.read(timelineFactoryProvider).fromAssets([asset], origin);
     unawaited(
-      _openAssetViewer(asset: asset, timelineService: timelineService, attachment: attachment).catchError((
+      _openAssetViewer(asset: asset, timelineService: timelineService, attachment: reopenedAttachment).catchError((
         Object error,
         StackTrace stackTrace,
       ) {
@@ -106,6 +127,19 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       }),
     );
     return true;
+  }
+
+  void _activateViewIntent(ViewIntentPayload attachment) {
+    _ref.read(viewIntentCurrentProvider.notifier).setPayload(attachment);
+    _ref.read(viewIntentFilePathProvider.notifier).clear();
+    unawaited(_viewIntentService.cleanupManagedTempFile());
+    _router.popUntilRoot();
+  }
+
+  void _clearCurrentViewIntent() {
+    _ref.read(viewIntentCurrentProvider.notifier).clear();
+    _ref.read(viewIntentFilePathProvider.notifier).clear();
+    unawaited(_viewIntentService.cleanupManagedTempFile());
   }
 
   Future<void> _openAssetViewer({
@@ -119,7 +153,6 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
     if (asset.isVideo) {
       notifier.setControls(false);
     }
-    _ref.read(viewIntentCurrentProvider.notifier).setPayload(attachment);
     notifier.setAsset(asset);
 
     if (viewIntentFilePath != null) {
@@ -130,7 +163,14 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       unawaited(_viewIntentService.cleanupManagedTempFile());
     }
 
-    _router.popUntilRoot();
-    await _router.push(AssetViewerRoute(initialIndex: 0, timelineService: timelineService));
+    try {
+      await _router.push(AssetViewerRoute(initialIndex: 0, timelineService: timelineService));
+    } finally {
+      _ref.read(viewIntentCurrentProvider.notifier).clearIfMatch(attachment);
+      if (viewIntentFilePath != null) {
+        _ref.read(viewIntentFilePathProvider.notifier).clearIfMatch(viewIntentFilePath);
+        await _viewIntentService.cleanupManagedTempFileIfCurrent(viewIntentFilePath);
+      }
+    }
   }
 }

@@ -15,6 +15,7 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler_android.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -55,6 +56,7 @@ class TestViewIntentService extends ViewIntentService {
   int cleanupStaleTempFilesCalls = 0;
   int cleanupManagedTempFileCalls = 0;
   final List<String> managedTempPaths = [];
+  final List<String> cleanedManagedTempPaths = [];
 
   TestViewIntentService() : super(MockViewIntentHostApi());
 
@@ -74,6 +76,11 @@ class TestViewIntentService extends ViewIntentService {
   @override
   Future<void> setManagedTempFilePath(String path) async {
     managedTempPaths.add(path);
+  }
+
+  @override
+  Future<void> cleanupManagedTempFileIfCurrent(String path) async {
+    cleanedManagedTempPaths.add(path);
   }
 }
 
@@ -252,18 +259,73 @@ void main() {
 
     await handler.handle(payload);
     expect(container.read(assetViewerProvider).currentAsset, deepLinkAsset);
-    expect(container.read(viewIntentCurrentProvider), payload);
+    expect(container.read(viewIntentCurrentProvider), isNull);
 
     await handler.handle(secondPayload);
 
     expect(container.read(assetViewerProvider).currentAsset, secondAsset);
-    expect(container.read(viewIntentCurrentProvider), secondPayload);
+    expect(container.read(viewIntentCurrentProvider), isNull);
     verify(() => resolver.resolve(payload)).called(1);
     verify(() => resolver.resolve(secondPayload)).called(1);
     verify(() => router.popUntilRoot()).called(2);
     verify(() => router.push<Object?>(any())).called(2);
     verifyNever(() => router.replace(any()));
     verifyNever(() => router.replaceAll(any()));
+  });
+
+  test('a slower view intent cannot replace a newer one', () async {
+    final firstResolution = Completer<ViewIntentResolvedAsset>();
+    final secondPayload = ViewIntentPayload(
+      path: '/tmp/incoming-b.jpg',
+      mimeType: 'image/jpeg',
+      localAssetId: 'local-2',
+    );
+    final secondAsset = _localAsset(id: 'local-2');
+    final secondTimelineService = await _createReadyTimelineService([secondAsset], TimelineOrigin.deepLink);
+    addTearDown(secondTimelineService.dispose);
+
+    when(() => resolver.resolve(payload)).thenAnswer((_) => firstResolution.future);
+    when(
+      () => resolver.resolve(secondPayload),
+    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: secondAsset, timelineService: secondTimelineService));
+
+    final firstHandle = handler.handle(payload);
+    await pumpEventQueue();
+    await handler.handle(secondPayload);
+
+    firstResolution.complete(ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
+    await firstHandle;
+
+    expect(container.read(assetViewerProvider).currentAsset, secondAsset);
+    expect(container.read(viewIntentCurrentProvider), isNull);
+    verify(() => router.popUntilRoot()).called(2);
+    verify(() => router.push<Object?>(any())).called(1);
+  });
+
+  test('closing a file-backed view intent clears only its session state', () async {
+    const path = '/tmp/view_intent_1.jpg';
+    final routeClosed = Completer<Object?>();
+    when(() => router.push<Object?>(any())).thenAnswer((_) => routeClosed.future);
+    when(() => resolver.resolve(payload)).thenAnswer(
+      (_) async => ViewIntentResolvedAsset(
+        asset: deepLinkAsset,
+        timelineService: deepLinkTimelineService,
+        viewIntentFilePath: path,
+      ),
+    );
+
+    final handling = handler.handle(payload);
+    await pumpEventQueue();
+
+    expect(container.read(viewIntentCurrentProvider), same(payload));
+    expect(container.read(viewIntentFilePathProvider), path);
+
+    routeClosed.complete(null);
+    await handling;
+
+    expect(container.read(viewIntentCurrentProvider), isNull);
+    expect(container.read(viewIntentFilePathProvider), isNull);
+    expect(viewIntentService.cleanedManagedTempPaths, [path]);
   });
 
   test('reopenRemoteAsset opens the restored asset in a regular deep-link timeline', () async {

@@ -5,9 +5,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_upload_coordinator.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
@@ -78,6 +80,45 @@ void main() {
     expect(currentAsset?.remoteId, remoteAsset.id);
     expect(currentAsset?.localId, localAsset.id);
     expect(currentAsset?.isMerged, isTrue);
+  });
+
+  test('does not let a device-backed upload from an older view intent replace the viewer', () async {
+    final oldPayload = ViewIntentPayload(path: '/tmp/old.jpg', mimeType: 'image/jpeg', localAssetId: 'local-old');
+    final newPayload = ViewIntentPayload(path: '/tmp/new.jpg', mimeType: 'image/jpeg', localAssetId: 'local-new');
+    final localAsset = LocalAssetFactory.create(id: 'local-old');
+    final remoteAsset = RemoteAssetFactory.create(id: 'remote-old');
+    final remoteController = StreamController<RemoteAsset?>.broadcast();
+    addTearDown(remoteController.close);
+
+    container.read(viewIntentCurrentProvider.notifier).setPayload(oldPayload);
+    container.read(assetViewerProvider.notifier).setAsset(localAsset);
+    when(() => assetService.watchRemoteAsset(remoteAsset.id)).thenAnswer((_) => remoteController.stream);
+    when(
+      () => uploadService.uploadManual(
+        any(),
+        cancelToken: any(named: 'cancelToken'),
+        callbacks: any(named: 'callbacks'),
+      ),
+    ).thenAnswer((invocation) async {
+      final callbacks = invocation.namedArguments[#callbacks] as UploadCallbacks;
+      callbacks.onSuccess?.call(localAsset.id, remoteAsset.id);
+    });
+
+    final upload = container
+        .read(assetUploadCoordinatorProvider)
+        .upload(
+          source: ActionSource.viewer,
+          assets: [localAsset],
+          cancelToken: Completer<void>(),
+          callbacks: const UploadCallbacks(),
+        );
+    await pumpEventQueue();
+
+    container.read(viewIntentCurrentProvider.notifier).setPayload(newPayload);
+    remoteController.add(remoteAsset);
+    await upload;
+
+    expect(container.read(assetViewerProvider).currentAsset, same(localAsset));
   });
 
   test('uploads a path-only viewer asset as a file and replaces it with the synchronized remote asset', () async {
@@ -272,5 +313,53 @@ void main() {
     expect(container.read(viewIntentFilePathProvider), newPath);
     verifyNever(() => viewIntentService.cleanupManagedTempFileIfCurrent(oldPath));
     verify(() => viewIntentService.markUploadInactive(oldPath)).called(1);
+  });
+
+  test('does not let an older file upload replace a newer session for the same asset', () async {
+    const path = 'C:/cache/view_intent_same.jpg';
+    final oldPayload = ViewIntentPayload(path: path, mimeType: 'image/jpeg');
+    final newPayload = ViewIntentPayload(path: path, mimeType: 'image/jpeg');
+    final localAsset = LocalAssetFactory.create(id: '-6');
+    final uploadedRemote = RemoteAssetFactory.create(id: 'remote-same');
+    final remoteController = StreamController<RemoteAsset?>.broadcast();
+    addTearDown(remoteController.close);
+
+    container.read(viewIntentCurrentProvider.notifier).setPayload(oldPayload);
+    container.read(viewIntentFilePathProvider.notifier).setPath(path);
+    container.read(assetViewerProvider.notifier).setAsset(localAsset);
+    when(() => viewIntentService.markUploadActive(path)).thenReturn(null);
+    when(() => viewIntentService.cleanupManagedTempFileIfCurrent(path)).thenAnswer((_) async {});
+    when(() => viewIntentService.markUploadInactive(path)).thenAnswer((_) async {});
+    when(() => assetService.watchRemoteAsset(uploadedRemote.id)).thenAnswer((_) => remoteController.stream);
+    when(
+      () => uploadService.uploadShareIntent(
+        any(),
+        cancelToken: any(named: 'cancelToken'),
+        onProgress: any(named: 'onProgress'),
+        onSuccess: any(named: 'onSuccess'),
+        onError: any(named: 'onError'),
+      ),
+    ).thenAnswer((invocation) async {
+      final onSuccess = invocation.namedArguments[#onSuccess] as void Function(String, String)?;
+      onSuccess?.call('file-id', uploadedRemote.id);
+    });
+
+    final upload = container
+        .read(assetUploadCoordinatorProvider)
+        .upload(
+          source: ActionSource.viewer,
+          assets: [localAsset],
+          cancelToken: Completer<void>(),
+          callbacks: const UploadCallbacks(),
+        );
+    await pumpEventQueue();
+
+    container.read(viewIntentCurrentProvider.notifier).setPayload(newPayload);
+    remoteController.add(uploadedRemote);
+    await upload;
+
+    expect(container.read(assetViewerProvider).currentAsset, same(localAsset));
+    expect(container.read(viewIntentFilePathProvider), path);
+    verifyNever(() => viewIntentService.cleanupManagedTempFileIfCurrent(path));
   });
 }

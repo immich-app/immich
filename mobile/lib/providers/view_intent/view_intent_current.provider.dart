@@ -12,6 +12,13 @@ class ViewIntentCurrentNotifier extends Notifier<ViewIntentPayload?> {
   void clear() {
     state = null;
   }
+
+  void clearIfMatch(ViewIntentPayload payload) {
+    if (!identical(state, payload)) {
+      return;
+    }
+    state = null;
+  }
 }
 
 final viewIntentCurrentProvider = NotifierProvider<ViewIntentCurrentNotifier, ViewIntentPayload?>(
