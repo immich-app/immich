@@ -31,7 +31,7 @@ const LoginResponseSchema = z
     accessToken: z.string().describe('Access token'),
     userId: z.uuidv4().describe('User ID'),
     userEmail: toEmail.describe('User email'),
-    name: z.string().describe('User name'),
+    name: z.string().nullable().describe('User name'),
     profileImagePath: z.string().describe('Profile image path'),
     isAdmin: z.boolean().describe('Is admin user'),
     shouldChangePassword: z.boolean().describe('Should change password'),
@@ -64,7 +64,7 @@ const LogoutResponseSchema = z
   .meta({ id: 'LogoutResponseDto' });
 
 const SignUpSchema = LoginCredentialSchema.extend({
-  name: z.string().describe('User name').meta({ example: 'Admin' }),
+  name: z.string().transform(v => v === '' ? null : v).describe('User name').meta({ example: 'Admin' }),
 }).meta({ id: 'SignUpDto' });
 
 const ChangePasswordSchema = z
