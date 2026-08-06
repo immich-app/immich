@@ -170,7 +170,7 @@ class CastService {
 
   bool hasDisplayCapability(int capabilities) => (capabilities & 0x01) != 0;
 
-  Future<List<(String, CastDestinationType, dynamic)>> getDevices() async {
+  Future<List<CastDestination>> getDevices() async {
     final dests = await _castRepository.listDestinations();
 
     final fCastDevices = dests.where((dest) => dest.$1.protocol == ProtocolType.fCast).map((dest) => dest.$1);

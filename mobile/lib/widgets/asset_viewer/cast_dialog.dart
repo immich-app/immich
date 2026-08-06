@@ -27,7 +27,7 @@ class CastDialog extends ConsumerWidget {
       content: SizedBox(
         width: 250,
         height: 250,
-        child: FutureBuilder<List<(String, CastDestinationType, dynamic)>>(
+        child: FutureBuilder<List<CastDestination>>(
           future: ref.watch(castProvider.notifier).getDevices(),
           builder: (context, snapshot) {
             if (snapshot.hasError) {
@@ -69,7 +69,7 @@ class CastDialog extends ConsumerWidget {
                     child: Text(item, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)).tr(),
                   );
                 } else {
-                  final (deviceName, _, deviceObj) = item as (String, CastDestinationType, dynamic);
+                  final (deviceName, _, deviceObj) = item as CastDestination;
 
                   return ListTile(
                     title: Text(
