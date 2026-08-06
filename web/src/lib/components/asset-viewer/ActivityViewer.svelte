@@ -56,6 +56,8 @@
   let previousAssetId: string | undefined = $state(assetId);
   let message = $state('');
   let isSendingMessage = $state(false);
+  let scrollContainer: HTMLElement | undefined = $state();
+  let hasScrolledToBottom = false;
   const isAlbumOwner = $derived(albumUsers[0].user.id === authManager.user.id);
 
   const timeOptions: Intl.DateTimeFormatOptions = {
@@ -101,6 +103,14 @@
   $effect(() => {
     if (assetId && previousAssetId != assetId) {
       previousAssetId = assetId;
+      hasScrolledToBottom = false;
+    }
+  });
+
+  $effect(() => {
+    if (scrollContainer && activityManager.activities.length > 0 && !hasScrolledToBottom) {
+      hasScrolledToBottom = true;
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
   });
 
@@ -128,6 +138,7 @@
     </div>
     {#if innerHeight}
       <div
+        bind:this={scrollContainer}
         class="relative w-full immich-scrollbar overflow-y-auto px-2"
         style="height: {divHeight}px;padding-bottom: {chatHeight}px"
       >
