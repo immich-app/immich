@@ -116,15 +116,20 @@
   const onPlaySlideshow = () => ($slideshowState = SlideshowState.PlaySlideshow);
 
   const animateSlideshow = () => {
-    let randomDirection = getRandomInt(0, 2);
-    let randomScale = (getRandomInt(50, 200) / 100) * ($slideshowAnimateZoomStrength / 100) + 1;
+    let randomDirection = getRandomInt(0, 9);
+    if (randomDirection == 0) {
+      return;
+    }
+    let randomScale1 = (getRandomInt(0, 200) / 100) * ($slideshowAnimateZoomStrength / 100) + 1;
     let duration = $slideshowDelay * 1000 - 600;
-    if (randomDirection == 1) {
-      assetViewerManager.animatedZoom(randomScale, duration);
-    } else if (randomDirection == 2) {
-      assetViewerManager.animatedZoom(randomScale, 20);
+    let randomDuration = Math.round(duration * (getRandomInt(50, 100) / 100));
+    let randomScale2 = (getRandomInt(0, 200) / 100) * ($slideshowAnimateZoomStrength / 100) + 1;
+    if (randomDirection <= 2) {
+      assetViewerManager.animatedZoom(randomScale1, randomDuration);
+    } else if (randomDirection > 2) {
+      assetViewerManager.animatedZoom(randomScale1, 20);
       setTimeout(() => {
-        assetViewerManager.animatedZoom(1, duration - 40);
+        assetViewerManager.animatedZoom(randomScale2, randomDuration - 40);
       }, 40);
     }
   };
