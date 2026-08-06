@@ -125,11 +125,11 @@
     let randomDuration = Math.round(duration * (getRandomInt(50, 100) / 100));
     let randomScale2 = (getRandomInt(0, 200) / 100) * ($slideshowAnimateZoomStrength / 100) + 1;
     if (randomDirection <= 2) {
-      assetViewerManager.animatedZoom(randomScale1, randomDuration);
+      assetViewerManager.animatedZoom(randomScale1, randomDuration, true);
     } else if (randomDirection > 2) {
       assetViewerManager.animatedZoom(randomScale1, 20);
       setTimeout(() => {
-        assetViewerManager.animatedZoom(randomScale2, randomDuration - 40);
+        assetViewerManager.animatedZoom(randomScale2, randomDuration - 40, true);
       }, 40);
     }
   };
