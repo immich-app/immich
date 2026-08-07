@@ -127,7 +127,7 @@ type UserEvent = {
   isAdmin: boolean;
   shouldChangePassword: boolean;
   avatarColor: UserAvatarColor | null;
-  oauthId: string;
+  oauthId: string | null;
   storageLabel: string | null;
   quotaSizeInBytes: number | null;
   quotaUsageInBytes: number;

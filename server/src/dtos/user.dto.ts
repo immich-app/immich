@@ -122,7 +122,7 @@ const UserAdminResponseSchema = UserResponseSchema.extend({
   createdAt: isoDatetimeToDate.describe('Creation date'),
   deletedAt: isoDatetimeToDate.nullable().describe('Deletion date'),
   updatedAt: isoDatetimeToDate.describe('Last update date'),
-  oauthId: z.string().describe('OAuth ID'),
+  oauthId: z.string().nullable().describe('OAuth ID'),
   quotaSizeInBytes: z.int().min(0).nullable().describe('Storage quota in bytes'),
   quotaUsageInBytes: z.int().min(0).nullable().describe('Storage usage in bytes'),
   status: UserStatusSchema,
