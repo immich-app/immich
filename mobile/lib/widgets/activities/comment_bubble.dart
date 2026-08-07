@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_data/model/activity.dart';
+import 'package:immich_data/store/store.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/datetime_extensions.dart';
@@ -12,7 +13,6 @@ import 'package:immich_mobile/providers/infrastructure/current_album.provider.da
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/store/activity.dart';
 import 'package:immich_mobile/widgets/activities/dismissible_activity.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
@@ -31,10 +31,6 @@ class CommentBubble extends ConsumerWidget {
     final showThumbnail = !isAssetActivity && activity.assetId != null && activity.assetId!.isNotEmpty;
     final isLike = activity.type == ActivityType.like;
     final bgColor = isOwn ? context.colorScheme.primaryContainer : context.colorScheme.surfaceContainer;
-
-    final activityNotifier = ref.read(
-      albumActivityProvider((album.id, isAssetActivity ? activity.assetId : null)).notifier,
-    );
 
     Future<void> openAssetViewer() async {
       final asset = await ref.read(assetServiceProvider).getRemoteAsset(activity.assetId!);
@@ -120,7 +116,7 @@ class CommentBubble extends ConsumerWidget {
     final List<Widget> contentChildren = [thumbnail, likes, commentBubble].whereType<Widget>().toList();
 
     return DismissibleActivity(
-      onDismiss: canDelete ? (id) async => await activityNotifier.removeActivity(id) : null,
+      onDismiss: canDelete ? (id) async => await ref.read(Store.activity).remove(album.id, id) : null,
       activity.id,
       Align(
         alignment: isOwn ? Alignment.centerRight : Alignment.centerLeft,

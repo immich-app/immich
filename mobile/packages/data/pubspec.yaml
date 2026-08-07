@@ -17,6 +17,7 @@ dependencies:
     path: ../../generated/openapi
   path: ^1.9.1
   path_provider: ^2.1.5
+  riverpod: ^2.6.1
   sqlite3: ^3.3.2
   sqlite3_connection_pool: ^0.2.6
   sqlite_async: 0.14.2
