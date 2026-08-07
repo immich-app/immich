@@ -232,9 +232,10 @@ describe('DateSelectionModal component', () => {
     ];
 
     for (const testCase of testCases) {
-      expect(calcNewDate(testCase.timestamp, testCase.duration, testCase.timezone), JSON.stringify(testCase)).toBe(
-        testCase.expectedResult,
-      );
+      expect(
+        calcNewDate(testCase.timestamp, testCase.duration, testCase.timezone).toFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"),
+        JSON.stringify(testCase),
+      ).toBe(testCase.expectedResult);
     }
   });
 });

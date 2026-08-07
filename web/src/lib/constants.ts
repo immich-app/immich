@@ -40,6 +40,16 @@ export const dateFormats = {
     day: 'numeric',
     year: 'numeric',
   } satisfies Intl.DateTimeFormatOptions,
+  fullDateTime: {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    timeZoneName: 'longOffset',
+  } satisfies Intl.DateTimeFormatOptions,
 };
 
 export enum QueryParameter {
