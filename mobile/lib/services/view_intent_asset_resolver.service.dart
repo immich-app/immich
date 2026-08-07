@@ -11,13 +11,13 @@ import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:logging/logging.dart';
 
-class ViewIntentResolvedAsset {
+class ViewIntentResolution {
   final BaseAsset asset;
   final TimelineService timelineService;
 
   final String? viewIntentFilePath;
 
-  const ViewIntentResolvedAsset({required this.asset, required this.timelineService, this.viewIntentFilePath});
+  const ViewIntentResolution({required this.asset, required this.timelineService, this.viewIntentFilePath});
 }
 
 final viewIntentAssetResolverProvider = Provider<ViewIntentAssetResolver>(
@@ -43,7 +43,7 @@ class ViewIntentAssetResolver {
     required this._timelineFactory,
   });
 
-  Future<ViewIntentResolvedAsset> resolve(ViewIntentPayload attachment) async {
+  Future<ViewIntentResolution> resolve(ViewIntentPayload attachment) async {
     final localAssetId = attachment.localAssetId;
     final path = attachment.path;
     _logger.fine('resolve start, localAssetId=$localAssetId, path=$path, mimeType=${attachment.mimeType}');
@@ -61,13 +61,13 @@ class ViewIntentAssetResolver {
         checksum: resolvedLocal.checksum,
       );
       if (remoteAsset != null) {
-        return ViewIntentResolvedAsset(asset: remoteAsset, timelineService: _timelineFor(remoteAsset));
+        return ViewIntentResolution(asset: remoteAsset, timelineService: _timelineFor(remoteAsset));
       }
     }
 
     final asset = resolvedLocal.asset ?? _toTransientAsset(attachment, resolvedLocal.checksum);
 
-    return ViewIntentResolvedAsset(
+    return ViewIntentResolution(
       asset: asset,
       timelineService: _timelineFor(asset),
       viewIntentFilePath: resolvedLocal.asset == null ? path : null,

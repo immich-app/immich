@@ -4,7 +4,7 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
+import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -13,10 +13,10 @@ import 'package:logging/logging.dart';
 final viewIntentAssetActionCoordinatorProvider = Provider((ref) {
   return ViewIntentAssetActionCoordinator(
     ref,
-    viewIntent: ref.watch(viewIntentCurrentProvider),
+    viewIntent: ref.watch(activeViewIntentPayloadProvider),
     isFileBacked: ref.watch(viewIntentFilePathProvider) != null,
   );
-}, dependencies: [assetViewerProvider, timelineServiceProvider, viewIntentCurrentProvider, viewIntentFilePathProvider]);
+}, dependencies: [assetViewerProvider, timelineServiceProvider, activeViewIntentPayloadProvider, viewIntentFilePathProvider]);
 
 class ViewIntentAssetActionCoordinator {
   const ViewIntentAssetActionCoordinator(this._ref, {required this._viewIntent, required this._isFileBacked});
@@ -66,7 +66,7 @@ class ViewIntentAssetActionCoordinator {
       return false;
     }
 
-    if (!identical(_ref.read(viewIntentCurrentProvider), _viewIntent)) {
+    if (!identical(_ref.read(activeViewIntentPayloadProvider), _viewIntent)) {
       return false;
     }
 

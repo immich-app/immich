@@ -7,7 +7,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
+import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
@@ -27,7 +27,7 @@ class AssetUploadCoordinator {
     required Completer<void> cancelToken,
     required UploadCallbacks callbacks,
   }) async {
-    final activeViewIntent = source == ActionSource.viewer ? _ref.read(viewIntentCurrentProvider) : null;
+    final activeViewIntent = source == ActionSource.viewer ? _ref.read(activeViewIntentPayloadProvider) : null;
     final viewIntentFilePath = source == ActionSource.viewer ? _ref.read(viewIntentFilePathProvider) : null;
     if (viewIntentFilePath == null) {
       final viewerAsset = source == ActionSource.viewer && assets.length == 1 ? assets.single : null;
@@ -59,7 +59,7 @@ class AssetUploadCoordinator {
       final remoteAsset = await _waitForRemoteAsset(remoteAssetId);
       final latestAsset = _ref.read(assetViewerProvider).currentAsset;
       final isCurrentViewIntent =
-          activeViewIntent == null || identical(_ref.read(viewIntentCurrentProvider), activeViewIntent);
+          activeViewIntent == null || identical(_ref.read(activeViewIntentPayloadProvider), activeViewIntent);
       if (remoteAsset == null ||
           latestAsset == null ||
           !latestAsset.refersToSameAsset(viewerAsset) ||
@@ -147,7 +147,7 @@ class AssetUploadCoordinator {
   }
 
   bool _isCurrentUpload(LocalAsset asset, String path, ViewIntentPayload? activeViewIntent) {
-    if (activeViewIntent != null && !identical(_ref.read(viewIntentCurrentProvider), activeViewIntent)) {
+    if (activeViewIntent != null && !identical(_ref.read(activeViewIntentPayloadProvider), activeViewIntent)) {
       return false;
     }
 

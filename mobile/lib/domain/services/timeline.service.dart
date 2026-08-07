@@ -42,10 +42,6 @@ extension TimelineOriginX on TimelineOrigin {
   bool get isDeepLink => this == TimelineOrigin.deepLink || this == TimelineOrigin.deepLinkTrash;
 
   bool get isTrash => this == TimelineOrigin.trash || this == TimelineOrigin.deepLinkTrash;
-
-  bool get isNotDeepLink => !isDeepLink;
-
-  bool get isNotTrash => !isTrash;
 }
 
 class TimelineFactory {

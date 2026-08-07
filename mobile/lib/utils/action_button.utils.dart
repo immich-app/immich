@@ -135,13 +135,13 @@ enum ActionButtonType {
             context.selectedCount == 1,
       ActionButtonType.unstack =>
         context.isOwner && //
-            context.timelineOrigin.isNotTrash &&
+            !context.timelineOrigin.isTrash &&
             !context.isInLockedView && //
             context.isStacked,
       ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView,
       ActionButtonType.likeActivity =>
         !context.isInLockedView &&
-            context.timelineOrigin.isNotDeepLink &&
+            !context.timelineOrigin.isDeepLink &&
             context.currentAlbum != null &&
             context.currentAlbum!.isActivityEnabled &&
             context.currentAlbum!.isShared,
@@ -155,8 +155,8 @@ enum ActionButtonType {
       ActionButtonType.openInfo => true,
       ActionButtonType.viewInTimeline =>
         context.timelineOrigin != TimelineOrigin.main &&
-            context.timelineOrigin.isNotDeepLink &&
-            context.timelineOrigin.isNotTrash &&
+            !context.timelineOrigin.isDeepLink &&
+            !context.timelineOrigin.isTrash &&
             context.timelineOrigin != TimelineOrigin.lockedFolder &&
             context.timelineOrigin != TimelineOrigin.archive &&
             context.timelineOrigin != TimelineOrigin.localAlbum &&

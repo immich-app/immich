@@ -180,7 +180,7 @@ void main() {
   });
 }
 
-Future<ViewIntentResolvedAsset> _resolve(ProviderContainer container, ViewIntentPayload payload) {
+Future<ViewIntentResolution> _resolve(ProviderContainer container, ViewIntentPayload payload) {
   return container.read(viewIntentAssetResolverProvider).resolve(payload);
 }
 

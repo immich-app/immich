@@ -8,8 +8,8 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_asset_action_coordinator.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -29,7 +29,7 @@ class _TestViewIntentHandler implements ViewIntentHandler {
   Future<void> flushDeferredViewIntent() async {}
 
   @override
-  Future<void> handle(ViewIntentPayload attachment) async {}
+  Future<void> handle(ViewIntentPayload payload) async {}
 
   @override
   void init() {}
@@ -100,7 +100,7 @@ void main() {
     final scope = ProviderScope.containerOf(tester.element(find.byKey(const Key('root'))), listen: false);
     if (activeViewIntent) {
       scope
-          .read(viewIntentCurrentProvider.notifier)
+          .read(activeViewIntentPayloadProvider.notifier)
           .setPayload(
             ViewIntentPayload(path: '/tmp/view-intent.jpg', mimeType: 'image/jpeg', localAssetId: asset.localId),
           );
@@ -181,7 +181,7 @@ void main() {
       mimeType: 'image/jpeg',
       localAssetId: 'newer-local',
     );
-    harness.scope.read(viewIntentCurrentProvider.notifier).setPayload(newerPayload);
+    harness.scope.read(activeViewIntentPayloadProvider.notifier).setPayload(newerPayload);
 
     await harness.coordinator.afterDelete(source: ActionSource.viewer, remoteAssetIds: [asset.id], movedToTrash: false);
 

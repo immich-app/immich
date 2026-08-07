@@ -410,7 +410,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     }
 
     BaseAsset displayAsset = asset;
-    final showAssetStack = ref.watch(timelineServiceProvider.select((s) => s.origin.isNotTrash));
+    final showAssetStack = ref.watch(timelineServiceProvider.select((s) => !s.origin.isTrash));
     final stackChildren = showAssetStack ? ref.watch(stackChildrenNotifier(asset)).valueOrNull : null;
     if (stackChildren != null && stackChildren.isNotEmpty) {
       final safeStackIndex = stackIndex.clamp(0, stackChildren.length - 1);

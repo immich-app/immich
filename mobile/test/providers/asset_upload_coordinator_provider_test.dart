@@ -9,7 +9,7 @@ import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:immich_mobile/providers/asset_upload_coordinator.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
+import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
@@ -90,7 +90,7 @@ void main() {
     final remoteController = StreamController<RemoteAsset?>.broadcast();
     addTearDown(remoteController.close);
 
-    container.read(viewIntentCurrentProvider.notifier).setPayload(oldPayload);
+    container.read(activeViewIntentPayloadProvider.notifier).setPayload(oldPayload);
     container.read(assetViewerProvider.notifier).setAsset(localAsset);
     when(() => assetService.watchRemoteAsset(remoteAsset.id)).thenAnswer((_) => remoteController.stream);
     when(
@@ -114,7 +114,7 @@ void main() {
         );
     await pumpEventQueue();
 
-    container.read(viewIntentCurrentProvider.notifier).setPayload(newPayload);
+    container.read(activeViewIntentPayloadProvider.notifier).setPayload(newPayload);
     remoteController.add(remoteAsset);
     await upload;
 
@@ -324,7 +324,7 @@ void main() {
     final remoteController = StreamController<RemoteAsset?>.broadcast();
     addTearDown(remoteController.close);
 
-    container.read(viewIntentCurrentProvider.notifier).setPayload(oldPayload);
+    container.read(activeViewIntentPayloadProvider.notifier).setPayload(oldPayload);
     container.read(viewIntentFilePathProvider.notifier).setPath(path);
     container.read(assetViewerProvider.notifier).setAsset(localAsset);
     when(() => viewIntentService.markUploadActive(path)).thenReturn(null);
@@ -354,7 +354,7 @@ void main() {
         );
     await pumpEventQueue();
 
-    container.read(viewIntentCurrentProvider.notifier).setPayload(newPayload);
+    container.read(activeViewIntentPayloadProvider.notifier).setPayload(newPayload);
     remoteController.add(uploadedRemote);
     await upload;
 

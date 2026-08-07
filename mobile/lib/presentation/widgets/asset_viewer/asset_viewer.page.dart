@@ -24,7 +24,7 @@ import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart'
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
+import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart';
 
@@ -310,7 +310,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
       return true;
     }
 
-    final localAssetId = ref.read(viewIntentCurrentProvider)?.localAssetId;
+    final localAssetId = ref.read(activeViewIntentPayloadProvider)?.localAssetId;
     return localAssetId != null && currentAsset.localId == localAssetId;
   }
 

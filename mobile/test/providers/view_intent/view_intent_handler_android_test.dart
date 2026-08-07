@@ -17,7 +17,7 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
+import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler_android.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
@@ -205,7 +205,7 @@ void main() {
     authNotifier.setAuthenticated(true);
 
     when(() => resolver.resolve(payload)).thenAnswer((_) async {
-      return ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService);
+      return ViewIntentResolution(asset: deepLinkAsset, timelineService: deepLinkTimelineService);
     });
 
     unawaited(handler.flushDeferredViewIntent());
@@ -256,7 +256,7 @@ void main() {
     viewIntentService.consumedAttachment = payload;
     when(
       () => resolver.resolve(payload),
-    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
+    ).thenAnswer((_) async => ViewIntentResolution(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
 
     unawaited(handler.onAppResumed());
     await tester.pump();
@@ -284,19 +284,19 @@ void main() {
 
     when(
       () => resolver.resolve(payload),
-    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
+    ).thenAnswer((_) async => ViewIntentResolution(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
     when(
       () => resolver.resolve(secondPayload),
-    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: secondAsset, timelineService: secondTimelineService));
+    ).thenAnswer((_) async => ViewIntentResolution(asset: secondAsset, timelineService: secondTimelineService));
 
     await handler.handle(payload);
     expect(container.read(assetViewerProvider).currentAsset, deepLinkAsset);
-    expect(container.read(viewIntentCurrentProvider), isNull);
+    expect(container.read(activeViewIntentPayloadProvider), isNull);
 
     await handler.handle(secondPayload);
 
     expect(container.read(assetViewerProvider).currentAsset, secondAsset);
-    expect(container.read(viewIntentCurrentProvider), isNull);
+    expect(container.read(activeViewIntentPayloadProvider), isNull);
     verify(() => resolver.resolve(payload)).called(1);
     verify(() => resolver.resolve(secondPayload)).called(1);
     verify(() => router.popUntilRoot()).called(2);
@@ -306,7 +306,7 @@ void main() {
   });
 
   test('a slower view intent cannot replace a newer one', () async {
-    final firstResolution = Completer<ViewIntentResolvedAsset>();
+    final firstResolution = Completer<ViewIntentResolution>();
     final secondPayload = ViewIntentPayload(
       path: '/tmp/incoming-b.jpg',
       mimeType: 'image/jpeg',
@@ -319,17 +319,17 @@ void main() {
     when(() => resolver.resolve(payload)).thenAnswer((_) => firstResolution.future);
     when(
       () => resolver.resolve(secondPayload),
-    ).thenAnswer((_) async => ViewIntentResolvedAsset(asset: secondAsset, timelineService: secondTimelineService));
+    ).thenAnswer((_) async => ViewIntentResolution(asset: secondAsset, timelineService: secondTimelineService));
 
     final firstHandle = handler.handle(payload);
     await pumpEventQueue();
     await handler.handle(secondPayload);
 
-    firstResolution.complete(ViewIntentResolvedAsset(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
+    firstResolution.complete(ViewIntentResolution(asset: deepLinkAsset, timelineService: deepLinkTimelineService));
     await firstHandle;
 
     expect(container.read(assetViewerProvider).currentAsset, secondAsset);
-    expect(container.read(viewIntentCurrentProvider), isNull);
+    expect(container.read(activeViewIntentPayloadProvider), isNull);
     verify(() => router.popUntilRoot()).called(2);
     verify(() => router.push<Object?>(any())).called(1);
   });
@@ -339,7 +339,7 @@ void main() {
     final routeClosed = Completer<Object?>();
     when(() => router.push<Object?>(any())).thenAnswer((_) => routeClosed.future);
     when(() => resolver.resolve(payload)).thenAnswer(
-      (_) async => ViewIntentResolvedAsset(
+      (_) async => ViewIntentResolution(
         asset: deepLinkAsset,
         timelineService: deepLinkTimelineService,
         viewIntentFilePath: path,
@@ -349,13 +349,13 @@ void main() {
     final handling = handler.handle(payload);
     await pumpEventQueue();
 
-    expect(container.read(viewIntentCurrentProvider), same(payload));
+    expect(container.read(activeViewIntentPayloadProvider), same(payload));
     expect(container.read(viewIntentFilePathProvider), path);
 
     routeClosed.complete(null);
     await handling;
 
-    expect(container.read(viewIntentCurrentProvider), isNull);
+    expect(container.read(activeViewIntentPayloadProvider), isNull);
     expect(container.read(viewIntentFilePathProvider), isNull);
     expect(viewIntentService.cleanedManagedTempPaths, [path]);
   });
@@ -364,7 +364,7 @@ void main() {
     final restoredAsset = _remoteAsset(id: 'remote-1', localId: 'local-1');
     final restoredTimeline = await _createReadyTimelineService([restoredAsset], TimelineOrigin.deepLink);
     addTearDown(restoredTimeline.dispose);
-    container.read(viewIntentCurrentProvider.notifier).setPayload(payload);
+    container.read(activeViewIntentPayloadProvider.notifier).setPayload(payload);
 
     when(() => assetService.getRemoteAsset(restoredAsset.id)).thenAnswer((_) async => restoredAsset);
     when(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink)).thenReturn(restoredTimeline);
@@ -384,7 +384,7 @@ void main() {
     final trashedAsset = _remoteAsset(id: 'remote-trashed', localId: 'local-1', deletedAt: DateTime(2026, 8, 4));
     final trashTimeline = await _createReadyTimelineService([trashedAsset], TimelineOrigin.deepLinkTrash);
     addTearDown(trashTimeline.dispose);
-    container.read(viewIntentCurrentProvider.notifier).setPayload(payload);
+    container.read(activeViewIntentPayloadProvider.notifier).setPayload(payload);
 
     when(() => assetService.getRemoteAsset(trashedAsset.id)).thenAnswer((_) async => trashedAsset);
     when(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLinkTrash)).thenReturn(trashTimeline);
@@ -404,12 +404,12 @@ void main() {
     final restoredAsset = _remoteAsset(id: 'remote-delayed', localId: 'local-1');
     final lookup = Completer<RemoteAsset?>();
     final newerPayload = ViewIntentPayload(path: '/tmp/newer.jpg', mimeType: 'image/jpeg', localAssetId: 'local-2');
-    container.read(viewIntentCurrentProvider.notifier).setPayload(payload);
+    container.read(activeViewIntentPayloadProvider.notifier).setPayload(payload);
     when(() => assetService.getRemoteAsset(restoredAsset.id)).thenAnswer((_) => lookup.future);
 
     final reopening = handler.reopenRemoteAsset(restoredAsset.id);
     await pumpEventQueue();
-    container.read(viewIntentCurrentProvider.notifier).setPayload(newerPayload);
+    container.read(activeViewIntentPayloadProvider.notifier).setPayload(newerPayload);
     lookup.complete(restoredAsset);
 
     expect(await reopening, isFalse);

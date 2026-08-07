@@ -11,7 +11,7 @@ import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
-import 'package:immich_mobile/providers/view_intent/view_intent_current.provider.dart';
+import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
@@ -78,27 +78,27 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   }
 
   @override
-  Future<void> handle(ViewIntentPayload attachment) async {
+  Future<void> handle(ViewIntentPayload payload) async {
     _logger.info(
-      'handle attachment, mimeType:${attachment.mimeType}, localAssetId=${attachment.localAssetId}, path=${attachment.path}, isAuthenticated:${_ref.read(authProvider).isAuthenticated}',
+      'handle attachment, mimeType:${payload.mimeType}, localAssetId=${payload.localAssetId}, path=${payload.path}, isAuthenticated:${_ref.read(authProvider).isAuthenticated}',
     );
 
     if (!_ref.read(authProvider).isAuthenticated) {
       _clearCurrentViewIntent();
-      _ref.read(viewIntentPendingProvider.notifier).defer(attachment);
+      _ref.read(viewIntentPendingProvider.notifier).defer(payload);
       return;
     }
 
-    _activateViewIntent(attachment);
+    _activateViewIntent(payload);
 
-    final ViewIntentResolvedAsset resolvedAsset;
+    final ViewIntentResolution resolvedAsset;
     try {
-      resolvedAsset = await _viewIntentAssetResolver.resolve(attachment);
+      resolvedAsset = await _viewIntentAssetResolver.resolve(payload);
     } catch (_) {
-      _ref.read(viewIntentCurrentProvider.notifier).clearIfMatch(attachment);
+      _ref.read(activeViewIntentPayloadProvider.notifier).clearIfMatch(payload);
       rethrow;
     }
-    if (!identical(_ref.read(viewIntentCurrentProvider), attachment)) {
+    if (!identical(_ref.read(activeViewIntentPayloadProvider), payload)) {
       await resolvedAsset.timelineService.dispose();
       return;
     }
@@ -107,20 +107,20 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
     await _openAssetViewer(
       asset: resolvedAsset.asset,
       timelineService: resolvedAsset.timelineService,
-      attachment: attachment,
+      attachment: payload,
       viewIntentFilePath: resolvedAsset.viewIntentFilePath,
     );
   }
 
   @override
   Future<bool> reopenRemoteAsset(String remoteAssetId) async {
-    final attachment = _ref.read(viewIntentCurrentProvider);
+    final attachment = _ref.read(activeViewIntentPayloadProvider);
     if (attachment == null) {
       return false;
     }
 
     final asset = await _ref.read(assetServiceProvider).getRemoteAsset(remoteAssetId);
-    if (asset == null || !identical(_ref.read(viewIntentCurrentProvider), attachment)) {
+    if (asset == null || !identical(_ref.read(activeViewIntentPayloadProvider), attachment)) {
       return false;
     }
 
@@ -145,14 +145,14 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   }
 
   void _activateViewIntent(ViewIntentPayload attachment) {
-    _ref.read(viewIntentCurrentProvider.notifier).setPayload(attachment);
+    _ref.read(activeViewIntentPayloadProvider.notifier).setPayload(attachment);
     _ref.read(viewIntentFilePathProvider.notifier).clear();
     unawaited(_viewIntentService.cleanupManagedTempFile());
     _router.popUntilRoot();
   }
 
   void _clearCurrentViewIntent() {
-    _ref.read(viewIntentCurrentProvider.notifier).clear();
+    _ref.read(activeViewIntentPayloadProvider.notifier).clear();
     _ref.read(viewIntentFilePathProvider.notifier).clear();
     unawaited(_viewIntentService.cleanupManagedTempFile());
   }
@@ -181,7 +181,7 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
     try {
       await _router.push(AssetViewerRoute(initialIndex: 0, timelineService: timelineService));
     } finally {
-      _ref.read(viewIntentCurrentProvider.notifier).clearIfMatch(attachment);
+      _ref.read(activeViewIntentPayloadProvider.notifier).clearIfMatch(attachment);
       if (viewIntentFilePath != null) {
         _ref.read(viewIntentFilePathProvider.notifier).clearIfMatch(viewIntentFilePath);
         await _viewIntentService.cleanupManagedTempFileIfCurrent(viewIntentFilePath);

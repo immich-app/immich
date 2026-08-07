@@ -1,7 +1,7 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 
-class ViewIntentCurrentNotifier extends Notifier<ViewIntentPayload?> {
+class ActiveViewIntentNotifier extends Notifier<ViewIntentPayload?> {
   @override
   ViewIntentPayload? build() => null;
 
@@ -21,6 +21,6 @@ class ViewIntentCurrentNotifier extends Notifier<ViewIntentPayload?> {
   }
 }
 
-final viewIntentCurrentProvider = NotifierProvider<ViewIntentCurrentNotifier, ViewIntentPayload?>(
-  ViewIntentCurrentNotifier.new,
+final activeViewIntentPayloadProvider = NotifierProvider<ActiveViewIntentNotifier, ViewIntentPayload?>(
+  ActiveViewIntentNotifier.new,
 );
