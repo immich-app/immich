@@ -3,11 +3,11 @@ import 'dart:ui';
 
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_data/store/store.dart' as data_store;
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/data_store.dart' as data_store;
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/wm_executor.dart';
 import 'package:logging/logging.dart';

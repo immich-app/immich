@@ -4,13 +4,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_data/store/store.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/drift_activity_text_field.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
-import 'package:immich_mobile/store/activity.dart';
 import 'package:immich_mobile/widgets/activities/comment_bubble.dart';
 
 @RoutePage()
@@ -23,8 +23,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activityNotifier = ref.read(albumActivityProvider((album.id, assetId)).notifier);
-    final activities = ref.watch(albumActivityProvider((album.id, assetId)));
+    final activities = ref.watch(Store.activity.list(album.id, assetId: assetId));
     final listViewScrollController = useScrollController();
 
     Future<void> scrollToBottom() {
@@ -36,7 +35,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
     }
 
     Future<void> onAddComment(String comment) async {
-      await activityNotifier.addComment(comment);
+      await ref.read(Store.activity).addComment(album.id, comment, assetId: assetId);
       unawaited(scrollToBottom());
     }
 

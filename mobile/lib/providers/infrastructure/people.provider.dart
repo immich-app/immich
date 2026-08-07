@@ -1,6 +1,6 @@
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_data/model/person.dart';
-import 'package:immich_mobile/providers/infrastructure/data_store.dart';
+import 'package:immich_data/store/store.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 
 final driftPeopleAssetProvider = FutureProvider.family<List<Person>, String>((ref, assetId) async {

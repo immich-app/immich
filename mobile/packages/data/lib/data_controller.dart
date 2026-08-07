@@ -2,12 +2,20 @@ import 'package:flutter/foundation.dart';
 import 'package:immich_data/db/database.dart';
 import 'package:immich_data/db/logger.dart';
 import 'package:immich_data/db/person.dart';
-import 'package:immich_data/server/activity.dart';
 import 'package:immich_data/server/person.dart';
-import 'package:immich_data/store/activity.dart';
 import 'package:immich_data/store/person.dart';
 import 'package:openapi/api.dart';
+import 'package:riverpod/riverpod.dart';
 import 'package:sqlite3/common.dart';
+
+/// The [DataController] backing this container's store
+///
+/// Must be overridden with a constructed instance (`Store.overrideWithValue`)
+final dataControllerProvider = Provider<DataController>(
+  (ref) => throw UnimplementedError(
+    "dataControllerProvider must be overridden in the isolate's ProviderContainer before use",
+  ),
+);
 
 /// Controls all data access. Serves request against the HTTP API and the Drift DB
 class DataController {
@@ -64,9 +72,8 @@ class DataController {
     PersonApiRepository(PeopleApi(_apiClient)),
   );
 
-  // This is optional and not lazy so we only call `dispose` if necessary
-  ActivityService? _activities;
-  ActivityService get activities => _activities ??= ActivityService(ActivityApiRepository(ActivitiesApi(_apiClient)));
+  /// The authenticated HTTP client. Internal: only for the store's server repository providers
+  ApiClient get apiClient => _apiClient;
 
   /// Direct database access for the logic that has not yet moved into this package
   // TODO(rewrite): Remove once all repositories have migrated into this package
@@ -77,9 +84,6 @@ class DataController {
   DriftLogger get logDb => _logDb;
 
   Future<void> close() async {
-    await _activities?.dispose();
-    _activities = null;
-
     await _db.close();
 
     // Close after the primary DB to ensure all logs are captured
