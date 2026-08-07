@@ -23,6 +23,11 @@ class AssetStackRow extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
+    final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
+    if (showingDetails) {
+      return const SizedBox.shrink();
+    }
+
     final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
     final double opacity =
         ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
