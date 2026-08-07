@@ -13,11 +13,13 @@ class CastRepository {
 
   final Map<(String, ProtocolType), (DeviceInfo, int?)> _discoveredDevices = {};
   int _currentDeviceGeneration = 0;
-  Future<void>? _initialized;
+  late final Future<void> _initialized;
+
+  void init() {
+    _initialized = _initialize();
+  }
 
   Future<void> connect(DeviceInfo deviceInfo) async {
-    await _ensureInitialized();
-
     _activeDevice?.disconnect();
     final device = _castContext!.createDeviceFromInfo(info: deviceInfo);
     _activeDevice = device;
@@ -68,17 +70,10 @@ class CastRepository {
   void seekTo(Duration position) => _activeDevice?.seek(timeSeconds: position.inSeconds.toDouble());
 
   Future<List<(DeviceInfo, int?)>> listDestinations() async {
-    final isFirstScan = _initialized == null;
-    await _ensureInitialized();
-
-    if (isFirstScan) {
-      await Future.delayed(const Duration(seconds: 3));
-    }
+    await _initialized;
 
     return _discoveredDevices.values.toList(growable: false);
   }
-
-  Future<void> _ensureInitialized() => _initialized ??= _initialize();
 
   Future<void> _initialize() async {
     await FCastSenderSdkLib.init();
@@ -96,5 +91,6 @@ class CastRepository {
     });
 
     await discoverer.init();
+    await Future.delayed(const Duration(seconds: 3));
   }
 }

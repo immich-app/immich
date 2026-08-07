@@ -41,6 +41,7 @@ class CastService {
   CastService(this._castRepository, this._sessionsApiService, this._assetApiRepository) {
     _castRepository.onConnectionState = _onConnectionState;
     _castRepository.onDeviceEvent = _onDeviceEvent;
+    _castRepository.init();
   }
 
   void _onConnectionState(DeviceConnectionState state) {
@@ -71,17 +72,7 @@ class CastService {
   }
 
   void _handlePlaybackState(PlaybackState state) {
-    switch (state) {
-      case PlaybackState.playing:
-        onCastState?.call(CastState.playing);
-      case PlaybackState.paused:
-        onCastState?.call(CastState.paused);
-      case PlaybackState.buffering:
-        onCastState?.call(CastState.buffering);
-      case PlaybackState.idle:
-      case PlaybackState.ended:
-        onCastState?.call(CastState.idle);
-    }
+    onCastState?.call(CastState.fromPlaybackState(state));
   }
 
   Future<void> connect(dynamic device) async {
