@@ -6,10 +6,11 @@ import 'package:immich_mobile/models/search/search_filter.model.dart';
 enum DisplayOption { notInAlbum, favorite, archive }
 
 class DisplayOptionPicker extends HookWidget {
-  const DisplayOptionPicker({super.key, required this.onSelect, this.filter});
+  const DisplayOptionPicker({super.key, required this.onSelect, this.filter, this.disabledOptions = const []});
 
   final Function(Map<DisplayOption, bool>) onSelect;
   final SearchDisplayFilters? filter;
+  final List<DisplayOption> disabledOptions;
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +24,7 @@ class DisplayOptionPicker extends HookWidget {
       shrinkWrap: true,
       children: [
         CheckboxListTile(
+          enabled: !disabledOptions.contains(DisplayOption.notInAlbum),
           title: const Text('search_filter_display_option_not_in_album').tr(),
           value: options.value[DisplayOption.notInAlbum],
           onChanged: (bool? value) {
@@ -31,6 +33,7 @@ class DisplayOptionPicker extends HookWidget {
           },
         ),
         CheckboxListTile(
+          enabled: !disabledOptions.contains(DisplayOption.favorite),
           title: const Text('favorite').tr(),
           value: options.value[DisplayOption.favorite],
           onChanged: (value) {
@@ -39,6 +42,7 @@ class DisplayOptionPicker extends HookWidget {
           },
         ),
         CheckboxListTile(
+          enabled: !disabledOptions.contains(DisplayOption.archive),
           title: const Text('archive').tr(),
           value: options.value[DisplayOption.archive],
           onChanged: (value) {

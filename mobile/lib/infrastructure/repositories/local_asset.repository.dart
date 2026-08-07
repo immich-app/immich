@@ -9,7 +9,10 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
 
 class RemovalCandidatesResult {
   final List<LocalAsset> assets;
@@ -20,6 +23,8 @@ class RemovalCandidatesResult {
 
 class DriftLocalAssetRepository extends DriftDatabaseRepository {
   final Drift _db;
+
+  static const int searchPageSize = 100;
 
   const DriftLocalAssetRepository(this._db) : super(_db);
 
@@ -220,6 +225,56 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
   Future<List<LocalAsset>> getEmptyCloudIdAssets() {
     final query = _db.localAssetEntity.select()..where((row) => row.iCloudId.isNull());
     return query.map((row) => row.toDto()).get();
+  }
+
+  Future<Set<String>> getExistingChecksums(Iterable<String> checksums) async {
+    if (checksums.isEmpty) return {};
+    final result = <String>{};
+    for (final slice in checksums.toSet().slices(kDriftMaxChunk)) {
+      final query = _db.localAssetEntity.selectOnly()
+        ..addColumns([_db.localAssetEntity.checksum])
+        ..where(_db.localAssetEntity.checksum.isIn(slice));
+      final rows = await query.get();
+      result.addAll(rows.map((row) => row.read(_db.localAssetEntity.checksum)!));
+    }
+    return result;
+  }
+
+  Future<List<LocalAsset>> searchDeviceOnlyAssets(SearchFilter filter, int page) async {
+    final query = _db.localAssetEntity.select().join([
+      leftOuterJoin(
+        _db.remoteAssetEntity,
+        _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+      ),
+    ]);
+
+    Expression<bool> whereClause = _db.remoteAssetEntity.id.isNull();
+
+    if (filter.date.takenAfter != null) {
+      whereClause = whereClause & _db.localAssetEntity.createdAt.isBiggerOrEqualValue(filter.date.takenAfter!);
+    }
+    if (filter.date.takenBefore != null) {
+      whereClause = whereClause & _db.localAssetEntity.createdAt.isSmallerOrEqualValue(filter.date.takenBefore!);
+    }
+    if (filter.mediaType == AssetType.image) {
+      whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.image);
+    } else if (filter.mediaType == AssetType.video) {
+      whereClause = whereClause & _db.localAssetEntity.type.equalsValue(AssetType.video);
+    }
+    if (filter.display.isFavorite) {
+      whereClause = whereClause & _db.localAssetEntity.isFavorite.equals(true);
+    }
+    if (filter.filename != null && filter.filename!.isNotEmpty) {
+       whereClause = whereClause & _db.localAssetEntity.name.like('%${filter.filename!}%');
+    }
+
+    query.where(whereClause);
+    query.orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)]);
+    
+    query.limit(searchPageSize, offset: (page - 1) * searchPageSize);
+
+    final rows = await query.get();
+    return rows.map((row) => row.readTable(_db.localAssetEntity).toDto()).toList();
   }
 
   Future<void> reconcileHashesFromCloudId() async {

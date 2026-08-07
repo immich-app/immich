@@ -225,6 +225,8 @@ class SearchDisplayFilters {
   int get hashCode => isNotInAlbum.hashCode ^ isArchive.hashCode ^ isFavorite.hashCode;
 }
 
+enum SearchStorageStatus { all, notBackedUp, serverOnly }
+
 class SearchFilter {
   String? context;
   String? filename;
@@ -239,6 +241,7 @@ class SearchFilter {
   SearchDateFilter date;
   SearchRatingFilter rating;
   SearchDisplayFilters display;
+  SearchStorageStatus storage;
 
   // Enum
   AssetType mediaType;
@@ -256,9 +259,26 @@ class SearchFilter {
     required this.camera,
     required this.date,
     required this.display,
+    required this.storage,
     required this.rating,
     required this.mediaType,
   });
+
+  bool get hasServerOnlyFilters {
+    return people.isNotEmpty ||
+        location.country != null ||
+        location.state != null ||
+        location.city != null ||
+        camera.make != null ||
+        camera.model != null ||
+        rating.rating.isSome ||
+        display.isArchive ||
+        display.isNotInAlbum ||
+        (tagIds != null && tagIds!.isNotEmpty) ||
+        (context != null && context!.isNotEmpty) ||
+        (description != null && description!.isNotEmpty) ||
+        (ocr != null && ocr!.isNotEmpty);
+  }
 
   bool get isEmpty {
     return (context == null || (context != null && context!.isEmpty)) &&
@@ -278,6 +298,7 @@ class SearchFilter {
         display.isNotInAlbum == false &&
         display.isArchive == false &&
         display.isFavorite == false &&
+        storage == SearchStorageStatus.all &&
         rating.rating.isNone &&
         mediaType == AssetType.other;
   }
@@ -295,6 +316,7 @@ class SearchFilter {
     SearchCameraFilter? camera,
     SearchDateFilter? date,
     SearchDisplayFilters? display,
+    SearchStorageStatus? storage,
     SearchRatingFilter? rating,
     AssetType? mediaType,
   }) {
@@ -310,6 +332,7 @@ class SearchFilter {
       camera: camera ?? this.camera,
       date: date ?? this.date,
       display: display ?? this.display,
+      storage: storage ?? this.storage,
       rating: rating ?? this.rating,
       mediaType: mediaType ?? this.mediaType,
       tagIds: tagIds ?? this.tagIds,
@@ -318,7 +341,7 @@ class SearchFilter {
 
   @override
   String toString() {
-    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, tagIds: $tagIds, camera: $camera, date: $date, display: $display, rating: $rating, mediaType: $mediaType, assetId: $assetId)';
+    return 'SearchFilter(context: $context, filename: $filename, description: $description, language: $language, ocr: $ocr, people: $people, location: $location, tagIds: $tagIds, camera: $camera, date: $date, display: $display, storage: $storage, rating: $rating, mediaType: $mediaType, assetId: $assetId)';
   }
 
   @override
@@ -339,6 +362,7 @@ class SearchFilter {
         other.camera == camera &&
         other.date == date &&
         other.display == display &&
+        other.storage == storage &&
         other.rating == rating &&
         other.mediaType == mediaType;
   }
@@ -357,6 +381,7 @@ class SearchFilter {
         camera.hashCode ^
         date.hashCode ^
         display.hashCode ^
+        storage.hashCode ^
         rating.hashCode ^
         mediaType.hashCode;
   }

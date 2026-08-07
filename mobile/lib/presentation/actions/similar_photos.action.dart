@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
+import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -32,8 +33,10 @@ class SimilarPhotosAction extends ActionBuilder {
           camera: .new(),
           date: .new(),
           display: .new(isNotInAlbum: false, isArchive: false, isFavorite: false),
+          storage: SearchStorageStatus.all,
           rating: .new(),
           mediaType: .other,
+          language: '',
         ),
       );
 

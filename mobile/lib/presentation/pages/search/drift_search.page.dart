@@ -17,6 +17,8 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
+import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
 import 'package:immich_mobile/presentation/widgets/search/quick_date_picker.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -34,8 +36,8 @@ import 'package:immich_mobile/widgets/search/search_filter/location_picker.dart'
 import 'package:immich_mobile/widgets/search/search_filter/media_type_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/people_picker.dart';
 import 'package:immich_mobile/widgets/search/search_filter/search_filter_chip.dart';
-import 'package:immich_mobile/widgets/search/search_filter/search_filter_utils.dart';
 import 'package:immich_mobile/widgets/search/search_filter/star_rating_picker.dart';
+import 'package:immich_mobile/widgets/search/search_filter/storage_status_picker.dart';
 
 @RoutePage()
 class DriftSearchPage extends HookConsumerWidget {
@@ -60,6 +62,7 @@ class DriftSearchPage extends HookConsumerWidget {
         camera: SearchCameraFilter(),
         date: SearchDateFilter(),
         display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+        storage: SearchStorageStatus.all,
         rating: SearchRatingFilter(),
         mediaType: AssetType.other,
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
@@ -77,6 +80,7 @@ class DriftSearchPage extends HookConsumerWidget {
     final mediaTypeCurrentFilterWidget = useState<Widget?>(null);
     final ratingCurrentFilterWidget = useState<Widget?>(null);
     final displayOptionCurrentFilterWidget = useState<Widget?>(null);
+    final storageStatusCurrentFilterWidget = useState<Widget?>(null);
 
     final userPreferences = ref.watch(userMetadataPreferencesProvider);
 
@@ -85,12 +89,55 @@ class DriftSearchPage extends HookConsumerWidget {
         return;
       }
 
-      filter.value = f;
+      var activeFilter = f;
+
+      if (f.storage == SearchStorageStatus.notBackedUp) {
+        if (f.hasServerOnlyFilters) {
+          activeFilter = activeFilter.copyWith(
+            people: {},
+            location: SearchLocationFilter(),
+            camera: SearchCameraFilter(),
+            rating: SearchRatingFilter(),
+            display: f.display.copyWith(isArchive: false, isNotInAlbum: false),
+            tagIds: [],
+            context: '',
+            description: '',
+            ocr: '',
+          );
+
+          peopleCurrentFilterWidget.value = null;
+          locationCurrentFilterWidget.value = null;
+          cameraCurrentFilterWidget.value = null;
+          tagCurrentFilterWidget.value = null;
+          ratingCurrentFilterWidget.value = null;
+          
+          if (textSearchType.value != TextSearchType.filename) {
+            textSearchController.clear();
+            textSearchType.value = TextSearchType.filename;
+            searchHintText.value = 'file_name_or_extension'.t(context: context);
+          }
+
+          final displayFilterText = [
+            if (activeFilter.display.isFavorite) 'favorite'.t(context: context),
+          ];
+          displayOptionCurrentFilterWidget.value = displayFilterText.isNotEmpty
+              ? Text(displayFilterText.join(', '), style: context.textTheme.labelLarge)
+              : null;
+
+          ImmichToast.show(
+            context: context,
+            msg: "smart_filters_cleared_device_only".t(context: context),
+            toastType: ToastType.info,
+          );
+        }
+      }
+
+      filter.value = activeFilter;
 
       ref.read(paginatedSearchProvider.notifier).clear();
 
-      if (!f.isEmpty) {
-        unawaited(ref.read(paginatedSearchProvider.notifier).search(f));
+      if (!activeFilter.isEmpty) {
+        unawaited(ref.read(paginatedSearchProvider.notifier).search(activeFilter));
       }
     }
 
@@ -119,6 +166,7 @@ class DriftSearchPage extends HookConsumerWidget {
           mediaTypeCurrentFilterWidget.value = null;
           ratingCurrentFilterWidget.value = null;
           displayOptionCurrentFilterWidget.value = null;
+          storageStatusCurrentFilterWidget.value = null;
           locationCurrentFilterWidget.value = preFilter.location.city != null
               ? Text(preFilter.location.city!, style: context.textTheme.labelLarge)
               : null;
@@ -489,7 +537,54 @@ class DriftSearchPage extends HookConsumerWidget {
             title: 'display_options'.t(context: context),
             onSearch: handleApply,
             onClear: handleClear,
-            child: DisplayOptionPicker(onSelect: handleOnSelect, filter: filter.value.display),
+            child: DisplayOptionPicker(
+              onSelect: handleOnSelect, 
+              filter: filter.value.display,
+              disabledOptions: filter.value.storage == SearchStorageStatus.notBackedUp 
+                  ? [DisplayOption.notInAlbum, DisplayOption.archive] 
+                  : [],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // STORAGE STATUS
+    void showStorageStatusPicker() {
+      var storage = filter.value.storage;
+
+      void handleOnSelect(SearchStorageStatus value) {
+        storage = value;
+      }
+
+      void handleClear() {
+        storageStatusCurrentFilterWidget.value = null;
+        search(
+          filter.value.copyWith(
+            storage: SearchStorageStatus.all,
+          ),
+        );
+      }
+
+      void handleApply() {
+        final filterText = [
+          if (storage == SearchStorageStatus.notBackedUp) 'search_filter_storage_not_backed_up'.t(context: context),
+          if (storage == SearchStorageStatus.serverOnly) 'search_filter_storage_server_only'.t(context: context),
+        ];
+        storageStatusCurrentFilterWidget.value = filterText.isNotEmpty
+            ? Text(filterText.join(', '), style: context.textTheme.labelLarge)
+            : null;
+        search(filter.value.copyWith(storage: storage));
+      }
+
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          child: FilterBottomSheetScaffold(
+            title: 'search_filter_storage_title'.t(context: context),
+            onSearch: handleApply,
+            onClear: handleClear,
+            child: StorageStatusPicker(onSelect: handleOnSelect, filter: filter.value.storage),
           ),
         ),
       );
@@ -553,7 +648,7 @@ class DriftSearchPage extends HookConsumerWidget {
                       selectedColor: context.colorScheme.primary,
                       selected: textSearchType.value == TextSearchType.context,
                     ),
-                    onPressed: () {
+                    onPressed: filter.value.storage == SearchStorageStatus.notBackedUp ? null : () {
                       textSearchType.value = TextSearchType.context;
                       searchHintText.value = 'sunrise_on_the_beach'.t(context: context);
                     },
@@ -590,7 +685,7 @@ class DriftSearchPage extends HookConsumerWidget {
                     selectedColor: context.colorScheme.primary,
                     selected: textSearchType.value == TextSearchType.description,
                   ),
-                  onPressed: () {
+                  onPressed: filter.value.storage == SearchStorageStatus.notBackedUp ? null : () {
                     textSearchType.value = TextSearchType.description;
                     searchHintText.value = 'search_by_description_example'.t(context: context);
                   },
@@ -610,7 +705,7 @@ class DriftSearchPage extends HookConsumerWidget {
                       selectedColor: context.colorScheme.primary,
                       selected: textSearchType.value == TextSearchType.ocr,
                     ),
-                    onPressed: () {
+                    onPressed: filter.value.storage == SearchStorageStatus.notBackedUp ? null : () {
                       textSearchType.value = TextSearchType.ocr;
                       searchHintText.value = 'search_by_ocr_example'.t(context: context);
                     },
@@ -665,12 +760,14 @@ class DriftSearchPage extends HookConsumerWidget {
                       onTap: showPeoplePicker,
                       label: 'people'.t(context: context),
                       currentFilter: peopleCurrentFilterWidget.value,
+                      isEnabled: filter.value.storage != SearchStorageStatus.notBackedUp,
                     ),
                     SearchFilterChip(
                       icon: Icons.location_on_outlined,
                       onTap: showLocationPicker,
                       label: 'search_filter_location'.t(context: context),
                       currentFilter: locationCurrentFilterWidget.value,
+                      isEnabled: filter.value.storage != SearchStorageStatus.notBackedUp,
                     ),
                     if (userPreferences.valueOrNull?.tagsEnabled ?? false)
                       SearchFilterChip(
@@ -678,12 +775,14 @@ class DriftSearchPage extends HookConsumerWidget {
                         onTap: showTagPicker,
                         label: 'tags'.t(context: context),
                         currentFilter: tagCurrentFilterWidget.value,
+                        isEnabled: filter.value.storage != SearchStorageStatus.notBackedUp,
                       ),
                     SearchFilterChip(
                       icon: Icons.camera_alt_outlined,
                       onTap: showCameraPicker,
                       label: 'camera'.t(context: context),
                       currentFilter: cameraCurrentFilterWidget.value,
+                      isEnabled: filter.value.storage != SearchStorageStatus.notBackedUp,
                     ),
                     SearchFilterChip(
                       icon: Icons.date_range_outlined,
@@ -704,12 +803,19 @@ class DriftSearchPage extends HookConsumerWidget {
                         onTap: showStarRatingPicker,
                         label: 'search_filter_star_rating'.t(context: context),
                         currentFilter: ratingCurrentFilterWidget.value,
+                        isEnabled: filter.value.storage != SearchStorageStatus.notBackedUp,
                       ),
                     SearchFilterChip(
                       icon: Icons.display_settings_outlined,
                       onTap: showDisplayOptionPicker,
                       label: 'search_filter_display_options'.t(context: context),
                       currentFilter: displayOptionCurrentFilterWidget.value,
+                    ),
+                    SearchFilterChip(
+                      icon: Icons.sd_storage_outlined,
+                      onTap: showStorageStatusPicker,
+                      label: 'search_filter_storage_title'.t(context: context),
+                      currentFilter: storageStatusCurrentFilterWidget.value,
                     ),
                   ],
                 ),

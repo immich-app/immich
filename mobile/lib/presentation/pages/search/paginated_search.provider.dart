@@ -53,14 +53,12 @@ class PaginatedSearchNotifier extends StateNotifier<SearchState> {
     final result = await _searchService.search(filter, state.nextPage!);
 
     if (result == null) {
-      state = SearchState(assets: state.assets, nextPage: state.nextPage);
+      state = SearchState(assets: state.assets, nextPage: null, isLoading: false);
       return;
     }
 
-    final assets = [...state.assets, ...result.assets];
-    state = SearchState(assets: assets, nextPage: result.nextPage);
-
-    _assetCountController.add(assets.length);
+    state = SearchState(assets: [...state.assets, ...result.assets], nextPage: result.nextPage, isLoading: false);
+    _assetCountController.add(state.assets.length);
   }
 
   void clear() {
