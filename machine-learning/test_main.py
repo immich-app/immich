@@ -516,7 +516,7 @@ class TestAnnSession:
         inputs = session.get_inputs()
 
         assert len(inputs) == 1
-        assert inputs[0].name is None
+        assert inputs[0].name == "input.1"
         assert inputs[0].shape == (1, 3, 224, 224)
 
     def test_get_outputs(self, ann_session: mock.Mock) -> None:
@@ -527,7 +527,7 @@ class TestAnnSession:
         outputs = session.get_outputs()
 
         assert len(outputs) == 1
-        assert outputs[0].name is None
+        assert outputs[0].name == "output.1"
         assert outputs[0].shape == (1, 3, 224, 224)
 
     def test_run(self, ann_session: mock.Mock, mocker: MockerFixture) -> None:
