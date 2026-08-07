@@ -44,7 +44,8 @@ extension BaseAssetTimelineX on BaseAsset? {
   // origin — that can change while the timeline is still open (e.g. after a restore).
   bool isEffectivelyTrashed(TimelineOrigin origin) {
     final asset = this;
-    return origin == TimelineOrigin.trash || (origin == TimelineOrigin.deepLink && asset is RemoteAsset && asset.isTrashed);
+    return origin == TimelineOrigin.trash ||
+        (origin == TimelineOrigin.deepLink && asset is RemoteAsset && asset.isTrashed);
   }
 }
 
