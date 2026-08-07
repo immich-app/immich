@@ -52,7 +52,7 @@ def decode_scrfd(
 
 def nms(boxes: NDArray[np.float32], scores: NDArray[np.float32], threshold: float = 0.4) -> NDArray[np.intp]:
     wh = np.column_stack([boxes[:, 0], boxes[:, 1], boxes[:, 2] - boxes[:, 0], boxes[:, 3] - boxes[:, 1]])
-    keep = cv2.dnn.NMSBoxes(wh.tolist(), scores.tolist(), 0.0, threshold) # NMSBoxes treats the inputs as Sequences
+    keep = cv2.dnn.NMSBoxes(wh.tolist(), scores.tolist(), 0.0, threshold)  # NMSBoxes treats the inputs as Sequences
     return np.asarray(keep, dtype=np.intp).reshape(-1)
 
 
