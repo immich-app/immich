@@ -2,13 +2,15 @@
 sidebar_position: 70
 ---
 
-# Unraid [ Community ]
+import CommunityDisclaimer from '@site/src/components/community-disclaimer';
 
-:::note
-This is a community contribution and not officially supported by the Immich team, but included here for convenience.
+# Install on Unraid
 
-Community support can be found in the dedicated channel on the [Discord Server](https://discord.immich.app/).
-:::
+<CommunityDisclaimer>
+
+Community support can be found in the dedicated channel on the [Discord server](https://discord.immich.app/), not from the Immich team.
+
+</CommunityDisclaimer>
 
 Immich can easily be installed and updated on Unraid via:
 
@@ -131,13 +133,13 @@ alt="Go to Docker Tab and visit the address listed next to immich-web"
 </details>
 
 :::tip
-For more information on how to use the application once installed, please refer to the [Post Install](/install/post-install.mdx) guide.
+For more information on how to use the application once installed, please refer to [Next steps](/introduction/next-steps).
 :::
 
 ## Updating Steps
 
 :::danger
-Make sure to read the general [upgrade instructions](/install/upgrading.md).
+Make sure to read the general [upgrade instructions](/install/upgrading).
 :::
 
 Updating is extremely easy however it's important to be aware that containers managed via the Docker Compose Manager plugin do not integrate with Unraid's native dockerman UI, the label "_update ready_" will always be present on containers installed via the Docker Compose Manager.

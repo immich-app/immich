@@ -2,13 +2,15 @@
 sidebar_position: 70
 ---
 
-# All-In-One [Community]
+import CommunityDisclaimer from '@site/src/components/community-disclaimer';
 
-:::note
-This is a community contribution and not officially supported by the Immich team, but included here for convenience.
+# Install with All-in-One
 
-**Please report issues to the corresponding [Github Repository][github].**
-:::
+<CommunityDisclaimer>
+
+Support and issue reports go to the [imagegenius/docker-immich][github] repository, not to the Immich team.
+
+</CommunityDisclaimer>
 
 ## Installation
 

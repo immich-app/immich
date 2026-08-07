@@ -1,0 +1,9 @@
+{
+  "label": "Introduction",
+  "position": 1,
+  "link": {
+    "type": "generated-index",
+    "title": "Introduction",
+    "description": "Start here. These lessons take you from nothing to a working Immich instance, step by step, with every step spelled out. Follow them in order and don't worry about why each step is needed yet."
+  }
+}

@@ -49,13 +49,13 @@
 ## Връзки
 
 - [Документация](https://docs.immich.app)
-- [За проекта](https://docs.immich.app/overview/introduction)
-- [Инсталиране](https://docs.immich.app/install/requirements)
+- [За проекта](https://docs.immich.app/introduction/getting-started)
+- [Инсталиране](https://docs.immich.app/reference/requirements)
 - [Пътна карта](https://immich.app/roadmap)
 - [Демо](#демо)
 - [Функции](#функции)
 - [Преводи](https://docs.immich.app/developer/translations)
-- [Принос към проекта](https://docs.immich.app/overview/support-the-project)
+- [Принос към проекта](https://docs.immich.app/support-the-project)
 
 ## Демо
 

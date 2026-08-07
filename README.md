@@ -53,13 +53,13 @@
 ## Links
 
 - [Documentation](https://docs.immich.app/)
-- [About](https://docs.immich.app/overview/introduction)
-- [Installation](https://docs.immich.app/install/requirements)
+- [About](https://docs.immich.app/introduction/getting-started)
+- [Installation](https://docs.immich.app/reference/requirements)
 - [Roadmap](https://immich.app/roadmap)
 - [Demo](#demo)
 - [Features](#features)
 - [Translations](https://docs.immich.app/developer/translations)
-- [Contributing](https://docs.immich.app/overview/support-the-project)
+- [Contributing](https://docs.immich.app/support-the-project)
 
 ## Demo
 

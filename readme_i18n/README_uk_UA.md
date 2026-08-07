@@ -51,13 +51,13 @@
 ## Посилання
 
 - [Документація](https://docs.immich.app)
-- [Про проєкт](https://docs.immich.app/overview/introduction)
-- [Встановлення](https://docs.immich.app/install/requirements)
+- [Про проєкт](https://docs.immich.app/introduction/getting-started)
+- [Встановлення](https://docs.immich.app/reference/requirements)
 - [Дорожня карта](https://immich.app/roadmap)
 - [Демо](#демо)
 - [Функції](#функції)
 - [Переклади](https://docs.immich.app/developer/translations)
-- [Гід для розробки проєкту](https://docs.immich.app/overview/support-the-project)
+- [Гід для розробки проєкту](https://docs.immich.app/support-the-project)
 
 ## Демо
 

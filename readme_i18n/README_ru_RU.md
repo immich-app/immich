@@ -51,13 +51,13 @@
 ## Содержание
 
 - [Официальная документация](https://docs.immich.app)
-- [Введение](https://docs.immich.app/overview/introduction)
-- [Установка](https://docs.immich.app/install/requirements)
+- [Введение](https://docs.immich.app/introduction/getting-started)
+- [Установка](https://docs.immich.app/reference/requirements)
 - [План разработки](https://immich.app/roadmap)
 - [Демо](#demo)
 - [Возможности](#features)
 - [Перевод](https://docs.immich.app/developer/translations)
-- [Гид по участию и поддержке проекта](https://docs.immich.app/overview/support-the-project)
+- [Гид по участию и поддержке проекта](https://docs.immich.app/support-the-project)
 
 ## Демо
 

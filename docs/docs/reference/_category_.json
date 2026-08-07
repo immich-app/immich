@@ -1,0 +1,9 @@
+{
+  "label": "Reference",
+  "position": 7,
+  "link": {
+    "type": "generated-index",
+    "title": "Reference",
+    "description": "Technical description of the machinery: every setting, environment variable, command, and supported format. Consult it when you need to look something up, not to learn how to do something."
+  }
+}

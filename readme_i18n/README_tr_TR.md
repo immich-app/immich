@@ -49,13 +49,13 @@
 ## Bağlantılar
 
 - [Resmi Belgeler](https://docs.immich.app/)
-- [Giriş](https://docs.immich.app/overview/introduction)
-- [Kurulum](https://docs.immich.app/install/requirements)
+- [Giriş](https://docs.immich.app/introduction/getting-started)
+- [Kurulum](https://docs.immich.app/reference/requirements)
 - [Yol Haritası](https://immich.app/roadmap)
 - [Demo](#demo)
 - [Özellikler](#özellikler)
 - [Çeviriler](https://docs.immich.app/developer/translations)
-- [Katkı Sağlama Rehberi](https://docs.immich.app/overview/support-the-project)
+- [Katkı Sağlama Rehberi](https://docs.immich.app/support-the-project)
 
 ## Demo
 

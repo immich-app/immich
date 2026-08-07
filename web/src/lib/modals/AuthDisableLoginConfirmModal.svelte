@@ -18,7 +18,7 @@
       <p>
         <FormatMessage key="admin.authentication_settings_reenable">
           {#snippet children({ message })}
-            <Link href="https://docs.immich.app/administration/server-commands">{message}</Link>
+            <Link href="https://docs.immich.app/administration/run-a-server-command">{message}</Link>
           {/snippet}
         </FormatMessage>
       </p>

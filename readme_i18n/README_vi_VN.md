@@ -53,13 +53,13 @@
 ## Liên kết
 
 - [Tài liệu](https://docs.immich.app)
-- [Giới thiệu](https://docs.immich.app/overview/introduction)
-- [Cài đặt](https://docs.immich.app/install/requirements)
+- [Giới thiệu](https://docs.immich.app/introduction/getting-started)
+- [Cài đặt](https://docs.immich.app/reference/requirements)
 - [Lộ trình](https://immich.app/roadmap)
 - [Demo](#demo)
 - [Tính năng](#Tính-năng)
 - [Dịch thuật](https://docs.immich.app/developer/translations)
-- [Đóng góp](https://docs.immich.app/overview/support-the-project)
+- [Đóng góp](https://docs.immich.app/support-the-project)
 
 ## Demo
 

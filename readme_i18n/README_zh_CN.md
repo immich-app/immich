@@ -55,13 +55,13 @@
 ## 目录
 
 - [官方文档](https://docs.immich.app)
-- [项目总览](https://docs.immich.app/overview/introduction)
-- [安装教程](https://docs.immich.app/install/requirements)
+- [项目总览](https://docs.immich.app/introduction/getting-started)
+- [安装教程](https://docs.immich.app/reference/requirements)
 - [路线图](https://immich.app/roadmap)
 - [在线演示](#示例)
 - [功能特性](#功能特性)
 - [多语言](https://docs.immich.app/developer/translations)
-- [贡献者](https://docs.immich.app/overview/support-the-project)
+- [贡献者](https://docs.immich.app/support-the-project)
 
 ## 示例
 
