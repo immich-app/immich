@@ -109,7 +109,7 @@ enum ActionButtonType {
         context.isOwner && //
             !context.isInLockedView && //
             context.asset.hasRemote && //
-            context.timelineOrigin.isTrash,
+            context.asset.isEffectivelyTrashed(context.timelineOrigin),
       ActionButtonType.delete => true,
       ActionButtonType.moveToLockFolder =>
         context.isOwner && //
@@ -135,13 +135,13 @@ enum ActionButtonType {
             context.selectedCount == 1,
       ActionButtonType.unstack =>
         context.isOwner && //
-            !context.timelineOrigin.isTrash &&
+            !context.asset.isEffectivelyTrashed(context.timelineOrigin) &&
             !context.isInLockedView && //
             context.isStacked,
       ActionButtonType.openInBrowser => context.asset.hasRemote && !context.isInLockedView,
       ActionButtonType.likeActivity =>
         !context.isInLockedView &&
-            !context.timelineOrigin.isDeepLink &&
+            context.timelineOrigin != TimelineOrigin.deepLink &&
             context.currentAlbum != null &&
             context.currentAlbum!.isActivityEnabled &&
             context.currentAlbum!.isShared,
@@ -155,8 +155,8 @@ enum ActionButtonType {
       ActionButtonType.openInfo => true,
       ActionButtonType.viewInTimeline =>
         context.timelineOrigin != TimelineOrigin.main &&
-            !context.timelineOrigin.isDeepLink &&
-            !context.timelineOrigin.isTrash &&
+            !context.asset.isEffectivelyTrashed(context.timelineOrigin) &&
+            context.timelineOrigin != TimelineOrigin.deepLink &&
             context.timelineOrigin != TimelineOrigin.lockedFolder &&
             context.timelineOrigin != TimelineOrigin.archive &&
             context.timelineOrigin != TimelineOrigin.localAlbum &&

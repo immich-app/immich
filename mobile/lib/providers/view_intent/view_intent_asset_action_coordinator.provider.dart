@@ -7,16 +7,26 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_trash_scope.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:logging/logging.dart';
 
-final viewIntentAssetActionCoordinatorProvider = Provider((ref) {
-  return ViewIntentAssetActionCoordinator(
-    ref,
-    viewIntent: ref.watch(activeViewIntentPayloadProvider),
-    isFileBacked: ref.watch(viewIntentFilePathProvider) != null,
-  );
-}, dependencies: [assetViewerProvider, timelineServiceProvider, activeViewIntentPayloadProvider, viewIntentFilePathProvider]);
+final viewIntentAssetActionCoordinatorProvider = Provider(
+  (ref) {
+    return ViewIntentAssetActionCoordinator(
+      ref,
+      viewIntent: ref.watch(activeViewIntentPayloadProvider),
+      isFileBacked: ref.watch(viewIntentFilePathProvider) != null,
+    );
+  },
+  dependencies: [
+    assetViewerProvider,
+    timelineServiceProvider,
+    activeViewIntentPayloadProvider,
+    viewIntentFilePathProvider,
+    viewIntentTrashScopeProvider,
+  ],
+);
 
 class ViewIntentAssetActionCoordinator {
   const ViewIntentAssetActionCoordinator(this._ref, {required this._viewIntent, required this._isFileBacked});
@@ -71,7 +81,11 @@ class ViewIntentAssetActionCoordinator {
     }
 
     final origin = _ref.read(timelineServiceProvider).origin;
-    return requireTrash ? origin == TimelineOrigin.deepLinkTrash : origin.isDeepLink;
+    if (origin != TimelineOrigin.deepLink) {
+      return false;
+    }
+
+    return requireTrash ? _ref.read(viewIntentTrashScopeProvider) : true;
   }
 
   Future<void> _reopen(String remoteAssetId) async {

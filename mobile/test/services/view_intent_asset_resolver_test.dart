@@ -49,7 +49,6 @@ void main() {
     when(() => mockLocalAssetRepository.updateHashes(any())).thenAnswer((_) async {});
 
     _mockTimelineFactoryOrigin(timelineFactory, createdTimelineServices, TimelineOrigin.deepLink);
-    _mockTimelineFactoryOrigin(timelineFactory, createdTimelineServices, TimelineOrigin.deepLinkTrash);
 
     container = ProviderContainer(
       overrides: [
@@ -94,7 +93,7 @@ void main() {
     verifyNever(() => nativeSyncApi.hashAssets(any()));
   });
 
-  test('returns remote trashed asset in a 1-element deep-link trash timeline', () async {
+  test('returns remote trashed asset in a trash-scoped deep-link timeline', () async {
     final localAsset = _localAsset(id: 'local-1', checksum: 'checksum-1', remoteId: 'remote-1');
     final remoteAsset = _remoteAsset(id: 'remote-1', checksum: 'checksum-1', deletedAt: DateTime(2026, 4, 21));
     when(() => mockLocalAssetRepository.get('local-1')).thenAnswer((_) async => localAsset);
@@ -104,7 +103,8 @@ void main() {
 
     expect(result.asset, isA<RemoteAsset>());
     expect((result.asset as RemoteAsset).localId, 'local-1');
-    expect(result.timelineService.origin, TimelineOrigin.deepLinkTrash);
+    expect(result.timelineService.origin, TimelineOrigin.deepLink);
+    expect(result.isTrashScoped, isTrue);
     expect(result.viewIntentFilePath, isNull);
   });
 

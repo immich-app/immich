@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_p
 import 'package:immich_mobile/providers/view_intent/view_intent_asset_action_coordinator.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_trash_scope.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -72,6 +73,7 @@ void main() {
     required TimelineOrigin origin,
     required _TestViewIntentHandler handler,
     bool activeViewIntent = true,
+    bool isTrashScoped = false,
   }) async {
     final timeline = TimelineService((
       assetSource: (_, __) async => [asset],
@@ -98,6 +100,7 @@ void main() {
     await tester.pumpAndSettle();
 
     final scope = ProviderScope.containerOf(tester.element(find.byKey(const Key('root'))), listen: false);
+    scope.read(viewIntentTrashScopeProvider.notifier).set(isTrashScoped);
     if (activeViewIntent) {
       scope
           .read(activeViewIntentPayloadProvider.notifier)
@@ -156,7 +159,13 @@ void main() {
   testWidgets('reopens a restored remote asset from a trash deep link', (tester) async {
     final asset = RemoteAssetFactory.create(deletedAt: DateTime(2026, 8, 4));
     final handler = _TestViewIntentHandler();
-    final harness = await pumpHarness(tester, asset: asset, origin: TimelineOrigin.deepLinkTrash, handler: handler);
+    final harness = await pumpHarness(
+      tester,
+      asset: asset,
+      origin: TimelineOrigin.deepLink,
+      handler: handler,
+      isTrashScoped: true,
+    );
 
     await harness.coordinator.afterRestore(source: ActionSource.viewer, remoteAssetIds: [asset.id]);
 
@@ -166,7 +175,7 @@ void main() {
   testWidgets('closes the viewer after permanently deleting a remote asset', (tester) async {
     final asset = RemoteAssetFactory.create(deletedAt: DateTime(2026, 8, 4));
     final handler = _TestViewIntentHandler();
-    final harness = await pumpHarness(tester, asset: asset, origin: TimelineOrigin.deepLinkTrash, handler: handler);
+    final harness = await pumpHarness(tester, asset: asset, origin: TimelineOrigin.deepLink, handler: handler);
 
     await harness.coordinator.afterDelete(source: ActionSource.viewer, remoteAssetIds: [asset.id], movedToTrash: false);
     verify(() => harness.router.maybePop()).called(1);
@@ -175,7 +184,7 @@ void main() {
   testWidgets('does not apply a completed delete transition to a newer view intent', (tester) async {
     final asset = RemoteAssetFactory.create(deletedAt: DateTime(2026, 8, 4));
     final handler = _TestViewIntentHandler();
-    final harness = await pumpHarness(tester, asset: asset, origin: TimelineOrigin.deepLinkTrash, handler: handler);
+    final harness = await pumpHarness(tester, asset: asset, origin: TimelineOrigin.deepLink, handler: handler);
     final newerPayload = ViewIntentPayload(
       path: '/tmp/newer-view-intent.jpg',
       mimeType: 'image/jpeg',
@@ -260,7 +269,13 @@ void main() {
   testWidgets('does not propagate a reopen exception', (tester) async {
     final asset = RemoteAssetFactory.create(deletedAt: DateTime(2026, 8, 4));
     final handler = _TestViewIntentHandler(reopenError: StateError('reopen failed'));
-    final harness = await pumpHarness(tester, asset: asset, origin: TimelineOrigin.deepLinkTrash, handler: handler);
+    final harness = await pumpHarness(
+      tester,
+      asset: asset,
+      origin: TimelineOrigin.deepLink,
+      handler: handler,
+      isTrashScoped: true,
+    );
 
     await harness.coordinator.afterRestore(source: ActionSource.viewer, remoteAssetIds: [asset.id]);
 

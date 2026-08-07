@@ -113,7 +113,7 @@ void main() {
       final timeline = TimelineService((
         assetSource: (_, __) async => [asset],
         bucketSource: () => Stream.value(const [Bucket(assetCount: 1)]),
-        origin: TimelineOrigin.deepLinkTrash,
+        origin: TimelineOrigin.deepLink,
       ));
       addTearDown(timeline.dispose);
       when(

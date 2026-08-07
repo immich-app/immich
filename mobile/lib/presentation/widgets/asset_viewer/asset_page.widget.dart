@@ -404,13 +404,13 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final timelineOrigin = ref.watch(timelineServiceProvider).origin;
     final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
-    final asset = timelineOrigin.isDeepLink && currentAsset != null ? currentAsset : _asset;
+    final asset = timelineOrigin == TimelineOrigin.deepLink && currentAsset != null ? currentAsset : _asset;
     if (asset == null) {
       return const Center(child: ImmichLoadingIndicator());
     }
 
     BaseAsset displayAsset = asset;
-    final showAssetStack = ref.watch(timelineServiceProvider.select((s) => !s.origin.isTrash));
+    final showAssetStack = !asset.isEffectivelyTrashed(timelineOrigin);
     final stackChildren = showAssetStack ? ref.watch(stackChildrenNotifier(asset)).valueOrNull : null;
     if (stackChildren != null && stackChildren.isNotEmpty) {
       final safeStackIndex = stackIndex.clamp(0, stackChildren.length - 1);
@@ -432,7 +432,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       _scrollController.snapPosition.snapOffset = _snapOffset;
     }
 
-    final viewIntentFilePath = timelineOrigin.isDeepLink ? ref.watch(viewIntentFilePathProvider) : null;
+    final viewIntentFilePath = timelineOrigin == TimelineOrigin.deepLink ? ref.watch(viewIntentFilePathProvider) : null;
 
     return Stack(
       children: [

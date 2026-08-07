@@ -14,10 +14,16 @@ import 'package:logging/logging.dart';
 class ViewIntentResolution {
   final BaseAsset asset;
   final TimelineService timelineService;
+  final bool isTrashScoped;
 
   final String? viewIntentFilePath;
 
-  const ViewIntentResolution({required this.asset, required this.timelineService, this.viewIntentFilePath});
+  const ViewIntentResolution({
+    required this.asset,
+    required this.timelineService,
+    this.isTrashScoped = false,
+    this.viewIntentFilePath,
+  });
 }
 
 final viewIntentAssetResolverProvider = Provider<ViewIntentAssetResolver>(
@@ -61,7 +67,11 @@ class ViewIntentAssetResolver {
         checksum: resolvedLocal.checksum,
       );
       if (remoteAsset != null) {
-        return ViewIntentResolution(asset: remoteAsset, timelineService: _timelineFor(remoteAsset));
+        return ViewIntentResolution(
+          asset: remoteAsset,
+          timelineService: _timelineFor(remoteAsset),
+          isTrashScoped: remoteAsset.isTrashed,
+        );
       }
     }
 
@@ -74,10 +84,7 @@ class ViewIntentAssetResolver {
     );
   }
 
-  TimelineService _timelineFor(BaseAsset asset) {
-    final origin = asset is RemoteAsset && asset.isTrashed ? TimelineOrigin.deepLinkTrash : TimelineOrigin.deepLink;
-    return _timelineFactory.fromAssets([asset], origin);
-  }
+  TimelineService _timelineFor(BaseAsset asset) => _timelineFactory.fromAssets([asset], TimelineOrigin.deepLink);
 
   Future<({LocalAsset? asset, String? checksum})> _resolveLocalAsset(String localAssetId) async {
     final localAsset = await _localAssetRepository.get(localAssetId);

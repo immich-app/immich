@@ -21,6 +21,7 @@ import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_p
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler_android.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_trash_scope.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/services/auth.service.dart';
@@ -374,27 +375,29 @@ void main() {
 
     expect(reopened, isTrue);
     expect(container.read(assetViewerProvider).currentAsset, restoredAsset);
+    expect(container.read(viewIntentTrashScopeProvider), isFalse);
     verify(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink)).called(1);
     verify(() => router.popUntilRoot()).called(1);
     final route = verify(() => router.push<Object?>(captureAny())).captured.single as PageRouteInfo<dynamic>;
     expect(route.routeName, AssetViewerRoute.name);
   });
 
-  test('reopenRemoteAsset opens a trashed asset in a trash deep-link timeline', () async {
+  test('reopenRemoteAsset opens a trashed asset in a trash-scoped deep-link timeline', () async {
     final trashedAsset = _remoteAsset(id: 'remote-trashed', localId: 'local-1', deletedAt: DateTime(2026, 8, 4));
-    final trashTimeline = await _createReadyTimelineService([trashedAsset], TimelineOrigin.deepLinkTrash);
+    final trashTimeline = await _createReadyTimelineService([trashedAsset], TimelineOrigin.deepLink);
     addTearDown(trashTimeline.dispose);
     container.read(activeViewIntentPayloadProvider.notifier).setPayload(payload);
 
     when(() => assetService.getRemoteAsset(trashedAsset.id)).thenAnswer((_) async => trashedAsset);
-    when(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLinkTrash)).thenReturn(trashTimeline);
+    when(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink)).thenReturn(trashTimeline);
 
     final reopened = await handler.reopenRemoteAsset(trashedAsset.id);
     await Future<void>.delayed(Duration.zero);
 
     expect(reopened, isTrue);
     expect(container.read(assetViewerProvider).currentAsset, trashedAsset);
-    expect(trashTimeline.origin, TimelineOrigin.deepLinkTrash);
+    expect(trashTimeline.origin, TimelineOrigin.deepLink);
+    expect(container.read(viewIntentTrashScopeProvider), isTrue);
     verify(() => router.popUntilRoot()).called(1);
     final route = verify(() => router.push<Object?>(captureAny())).captured.single as PageRouteInfo<dynamic>;
     expect(route.routeName, AssetViewerRoute.name);
@@ -414,7 +417,6 @@ void main() {
 
     expect(await reopening, isFalse);
     verifyNever(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLink));
-    verifyNever(() => timelineFactory.fromAssets(any(), TimelineOrigin.deepLinkTrash));
     verifyNever(() => router.popUntilRoot());
     verifyNever(() => router.push<Object?>(any()));
   });

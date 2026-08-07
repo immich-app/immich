@@ -15,6 +15,7 @@ import 'package:immich_mobile/providers/view_intent/active_view_intent_payload_p
 import 'package:immich_mobile/providers/view_intent/view_intent_file_path.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_pending.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_trash_scope.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/services/view_intent.service.dart';
 import 'package:immich_mobile/services/view_intent_asset_resolver.service.dart';
@@ -103,6 +104,7 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
       return;
     }
 
+    _ref.read(viewIntentTrashScopeProvider.notifier).set(resolvedAsset.isTrashScoped);
     _logger.fine('resolved view intent asset: ${resolvedAsset.asset}');
     await _openAssetViewer(
       asset: resolvedAsset.asset,
@@ -131,8 +133,8 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
     );
     _activateViewIntent(reopenedAttachment);
 
-    final origin = asset.isTrashed ? TimelineOrigin.deepLinkTrash : TimelineOrigin.deepLink;
-    final timelineService = _ref.read(timelineFactoryProvider).fromAssets([asset], origin);
+    _ref.read(viewIntentTrashScopeProvider.notifier).set(asset.isTrashed);
+    final timelineService = _ref.read(timelineFactoryProvider).fromAssets([asset], TimelineOrigin.deepLink);
     unawaited(
       _openAssetViewer(asset: asset, timelineService: timelineService, attachment: reopenedAttachment).catchError((
         Object error,
@@ -154,6 +156,7 @@ class AndroidViewIntentHandler implements ViewIntentHandler {
   void _clearCurrentViewIntent() {
     _ref.read(activeViewIntentPayloadProvider.notifier).clear();
     _ref.read(viewIntentFilePathProvider.notifier).clear();
+    _ref.read(viewIntentTrashScopeProvider.notifier).clear();
     unawaited(_viewIntentService.cleanupManagedTempFile());
   }
 

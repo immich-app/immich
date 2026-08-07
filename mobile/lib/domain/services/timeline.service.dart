@@ -32,16 +32,20 @@ enum TimelineOrigin {
   map,
   search,
   deepLink,
-  deepLinkTrash,
   albumActivities,
   folder,
   recentlyAdded,
 }
 
-extension TimelineOriginX on TimelineOrigin {
-  bool get isDeepLink => this == TimelineOrigin.deepLink || this == TimelineOrigin.deepLinkTrash;
-
-  bool get isTrash => this == TimelineOrigin.trash || this == TimelineOrigin.deepLinkTrash;
+extension BaseAssetTimelineX on BaseAsset? {
+  // Whether this asset should currently be presented as trashed, given the timeline it's
+  // shown in. The full trash gallery has no single asset to check against; a deep-link
+  // timeline defers to the asset's own (live) trashed state instead, since — unlike
+  // origin — that can change while the timeline is still open (e.g. after a restore).
+  bool isEffectivelyTrashed(TimelineOrigin origin) {
+    final asset = this;
+    return origin == TimelineOrigin.trash || (origin == TimelineOrigin.deepLink && asset is RemoteAsset && asset.isTrashed);
+  }
 }
 
 class TimelineFactory {
