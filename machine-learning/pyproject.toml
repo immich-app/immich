@@ -21,7 +21,7 @@ dependencies = [
     "rich>=13.4.2",
     "tokenizers>=0.15.0,<1.0",
     "uvicorn[standard]>=0.22.0,<1.0",
-    "rapidocr>=3.1.0",
+    "rapidocr>=3.9.1",
 ]
 
 [dependency-groups]
