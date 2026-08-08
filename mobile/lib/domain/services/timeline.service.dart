@@ -85,8 +85,12 @@ class TimelineFactory {
   TimelineService fromAssetsWithBuckets(List<BaseAsset> assets, TimelineOrigin type) =>
       TimelineService(_timelineRepository.fromAssetsWithBuckets(assets, type));
 
-  TimelineService map(List<String> userIds, TimelineMapOptions options) =>
-      TimelineService(_timelineRepository.map(userIds, options, groupBy));
+  /// Creates a TimelineService for serving geographical map queries, such assets within bounded locations
+  TimelineService geographicMap(
+    List<String> userIds,
+    TimelineMapOptions Function() currentOptions,
+    Stream<TimelineMapOptions> optionsStream,
+  ) => TimelineService(_timelineRepository.geographicMap(userIds, currentOptions, optionsStream, groupBy));
 }
 
 class TimelineService {
