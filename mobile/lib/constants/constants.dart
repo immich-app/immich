@@ -55,3 +55,9 @@ const int kLibraryTabIndex = 3;
 
 // Workaround for SQLite's variable limit (SQLITE_MAX_VARIABLE_NUMBER = 32766)
 const int kDriftMaxChunk = 32000;
+
+// cast constants
+const String kCastDeviceType = "Cast";
+const String kCastDeviceOS = "Cast";
+const Duration kCastSessionDuration = Duration(minutes: 15);
+const Duration kCastSessionRenewalBuffer = Duration(minutes: 1);

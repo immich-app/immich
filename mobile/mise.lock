@@ -126,3 +126,39 @@ url = "https://download.java.net/java/GA/jdk21.0.2/f2283984656d49d69e91c55847602
 [[tools."npm:@openapitools/openapi-generator-cli"]]
 version = "2.40.1"
 backend = "npm:@openapitools/openapi-generator-cli"
+[[tools.protoc]]
+version = "31.1"
+backend = "aqua:protocolbuffers/protobuf/protoc"
+
+[tools.protoc."platforms.linux-arm64"]
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protoc-31.1-linux-aarch_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/258922984"
+
+[tools.protoc."platforms.linux-arm64-musl"]
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protoc-31.1-linux-aarch_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/258922984"
+
+[tools.protoc."platforms.linux-x64"]
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protoc-31.1-linux-x86_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/258922987"
+
+[tools.protoc."platforms.linux-x64-musl"]
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protoc-31.1-linux-x86_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/258922987"
+
+[tools.protoc."platforms.macos-arm64"]
+checksum = "blake3:ab170cb340494cab122b645c3e1abdeec0a26742b3272eac71af20836513c8ba"
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protoc-31.1-osx-aarch_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/258922988"
+
+[tools.protoc."platforms.macos-x64"]
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protoc-31.1-osx-x86_64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/258922990"
+
+[tools.protoc."platforms.windows-x64"]
+url = "https://github.com/protocolbuffers/protobuf/releases/download/v31.1/protoc-31.1-win64.zip"
+url_api = "https://api.github.com/repos/protocolbuffers/protobuf/releases/assets/258922991"
+
+[[tools.rust]]
+version = "1.93.1"
+backend = "core:rust"

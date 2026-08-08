@@ -1,7 +1,4 @@
 PODS:
-  - bonsoir_darwin (0.0.1):
-    - Flutter
-    - FlutterMacOS
   - cupertino_http (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -24,7 +21,6 @@ PODS:
   - share_handler_ios_models (0.0.9)
 
 DEPENDENCIES:
-  - bonsoir_darwin (from `.symlinks/plugins/bonsoir_darwin/darwin`)
   - cupertino_http (from `.symlinks/plugins/cupertino_http/darwin`)
   - Flutter (from `Flutter`)
   - flutter_local_notifications (from `.symlinks/plugins/flutter_local_notifications/ios`)
@@ -35,8 +31,6 @@ DEPENDENCIES:
   - share_handler_ios_models (from `.symlinks/plugins/share_handler_ios/ios/Models`)
 
 EXTERNAL SOURCES:
-  bonsoir_darwin:
-    :path: ".symlinks/plugins/bonsoir_darwin/darwin"
   cupertino_http:
     :path: ".symlinks/plugins/cupertino_http/darwin"
   Flutter:
@@ -55,7 +49,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/share_handler_ios/ios/Models"
 
 SPEC CHECKSUMS:
-  bonsoir_darwin: 29c7ccf356646118844721f36e1de4b61f6cbd0e
   cupertino_http: 94ac07f5ff090b8effa6c5e2c47871d48ab7c86c
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_local_notifications: ad39620c743ea4c15127860f4b5641649a988100
