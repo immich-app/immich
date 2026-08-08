@@ -459,6 +459,11 @@ describe(SystemConfigService.name, () => {
       },
       { should: 'warn for top level unknown options', warn: true, config: { unknownOption: true } },
       { should: 'warn for nested unknown options', warn: true, config: { ffmpeg: { unknownOption: true } } },
+      {
+        should: 'validate av1 parallelism setting',
+        config: { ffmpeg: { targetVideoCodec: VideoCodec.Av1, threads: 7 } },
+        throws: '[ffmpeg] Threads: for AV1, parallelism must be 0–6',
+      },
     ];
 
     for (const test of tests) {

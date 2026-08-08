@@ -241,7 +241,9 @@
               inputType={SettingInputFieldType.NUMBER}
               {disabled}
               label={$t('admin.transcoding_threads')}
-              description={$t('admin.transcoding_threads_description')}
+              description={$t('admin.transcoding_threads_description', {
+                values: { av1: configToEdit.ffmpeg.targetVideoCodec === VideoCodec.Av1 },
+              })}
               bind:value={configToEdit.ffmpeg.threads}
               isEdited={configToEdit.ffmpeg.threads !== config.ffmpeg.threads}
             />
