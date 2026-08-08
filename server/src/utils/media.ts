@@ -152,6 +152,13 @@ export class BaseConfig implements VideoCodecSWConfig {
       twoPass: this.eligibleForTwoPass(),
       progress: { frameCount: video.frameCount, percentInterval: 5 },
     } as TranscodeCommand;
+
+    // Skip two-pass and encoder-specific options when we're only remuxing streams.
+    if (target === TranscodeTarget.None) {
+      options.twoPass = false;
+      return options;
+    }
+
     if ([TranscodeTarget.All, TranscodeTarget.Video].includes(target)) {
       const filters = this.getFilterOptions(video);
       if (filters.length > 0) {
