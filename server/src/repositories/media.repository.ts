@@ -287,8 +287,13 @@ export class MediaRepository {
   /**
    * Needed for accurate segments, especially when remuxing, seeking and/or VFR is involved.
    * Scanning packets for keyframes in JS is much faster than -skip_frame nokey since it avoids decoding the video.
+   *
+   * Values are normalized to fit int32 columns: (1) PTS values are made relative by subtracting the
+   * first packet's PTS (handles MPEG-TS absolute PTS clock), and (2) when timeBase exceeds 90 kHz,
+   * all values are rescaled to 90 kHz or lower (handles nanosecond time_base from IP cameras, etc.).
+   * See https://github.com/immich-app/immich/issues/29600
    */
-  probePackets(input: string, streamIndex: number): Promise<VideoPacketInfo | null> {
+  probePackets(input: string, streamIndex: number, timeBase?: number): Promise<VideoPacketInfo | null> {
     const ffprobe = spawn(
       'ffprobe',
       [
@@ -305,7 +310,15 @@ export class MediaRepository {
       { stdio: ['ignore', 'pipe', 'pipe'] },
     );
 
+    // Normalize to 90 kHz target to prevent int32 overflow in asset_keyframe columns.
+    // Two overflow paths: (1) nanosecond time_base (1/1e9) → totalDuration overflow,
+    // (2) MPEG-TS absolute PTS clock → pts array overflow. See #29600.
+    const TARGET_TIME_BASE = 90_000;
+    const rescaleFactor = timeBase && timeBase > TARGET_TIME_BASE ? Math.ceil(timeBase / TARGET_TIME_BASE) : 1;
+    const rescaledTimeBase = timeBase ? Math.floor(timeBase / rescaleFactor) : 0;
+
     let totalDuration = 0;
+    let firstPts: number | null = null;
     const keyframePts: number[] = [];
     const keyframeAccDuration: number[] = [];
     const keyframeOwnDuration: number[] = [];
@@ -315,10 +328,21 @@ export class MediaRepository {
         return;
       }
       const [ptsStr, durationStr, flags] = line.split(',', 3);
-      const pts = Number.parseInt(ptsStr);
-      const duration = Number.parseInt(durationStr);
+      let pts = Number.parseInt(ptsStr);
+      let duration = Number.parseInt(durationStr);
       if (Number.isNaN(pts) || Number.isNaN(duration) || !flags) {
         return;
+      }
+      // Make PTS relative to the first packet to handle MPEG-TS absolute PTS clock
+      // (PTS can start at ~5.5e9 with 90kHz time_base, overflowing int32).
+      if (firstPts === null) {
+        firstPts = pts;
+      }
+      pts -= firstPts;
+      // Rescale for large time_base (e.g. nanosecond 1/1e9 → ~90kHz)
+      if (rescaleFactor > 1) {
+        pts = Math.floor(pts / rescaleFactor);
+        duration = Math.floor(duration / rescaleFactor);
       }
       // Discarded packets don't contribute to packet count, but still contribute to video duration
       totalDuration += duration;
@@ -367,6 +391,7 @@ export class MediaRepository {
           keyframePts,
           keyframeAccDuration,
           keyframeOwnDuration,
+          timeBase: rescaledTimeBase,
         });
       });
     });
