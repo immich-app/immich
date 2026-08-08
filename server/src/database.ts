@@ -26,6 +26,7 @@ export type AuthUser = {
   email: string;
   quotaUsageInBytes: number;
   quotaSizeInBytes: number | null;
+  trustedGroupId: string;
 };
 
 export type AlbumUser = {
@@ -130,6 +131,7 @@ export type User = {
   avatarColor: UserAvatarColor | null;
   profileImagePath: string;
   profileChangedAt: Date;
+  trustedGroupId: string;
 };
 
 export type UserAdmin = User & {
@@ -249,7 +251,7 @@ export type Person = {
   name: string;
   birthDate: Date | null;
   color: string | null;
-  faceAssetId: string | null;
+  thumbnailFaceAssetId: string | null;
   isHidden: boolean;
   thumbnailPath: string;
 };
@@ -274,7 +276,15 @@ export type AssetFace = {
 
 export type Plugin = Selectable<PluginTable>;
 
-const userColumns = ['id', 'name', 'email', 'avatarColor', 'profileImagePath', 'profileChangedAt'] as const;
+const userColumns = [
+  'id',
+  'name',
+  'email',
+  'avatarColor',
+  'profileImagePath',
+  'profileChangedAt',
+  'trustedGroupId',
+] as const;
 const userWithPrefixColumns = [
   'user2.id',
   'user2.name',
@@ -282,6 +292,7 @@ const userWithPrefixColumns = [
   'user2.avatarColor',
   'user2.profileImagePath',
   'user2.profileChangedAt',
+  'user2.trustedGroupId',
 ] as const;
 
 export const columns = {
@@ -369,7 +380,15 @@ export const columns = {
     'asset_file.isProgressive',
     'asset_file.isTransparent',
   ],
-  authUser: ['user.id', 'user.name', 'user.email', 'user.isAdmin', 'user.quotaUsageInBytes', 'user.quotaSizeInBytes'],
+  authUser: [
+    'user.id',
+    'user.name',
+    'user.email',
+    'user.isAdmin',
+    'user.quotaUsageInBytes',
+    'user.quotaSizeInBytes',
+    'user.trustedGroupId',
+  ],
   authApiKey: ['api_key.id', 'api_key.permissions'],
   authSession: ['session.id', 'session.updatedAt', 'session.pinExpiresAt', 'session.appVersion'],
   user: userColumns,

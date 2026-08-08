@@ -20,6 +20,7 @@ import {
   memory_delete_audit,
   partner_delete_audit,
   person_delete_audit,
+  person_user_delete_audit,
   stack_delete_audit,
   updated_at,
   user_delete_audit,
@@ -62,6 +63,8 @@ import { OcrSearchTable } from 'src/schema/tables/ocr-search.table';
 import { PartnerAuditTable } from 'src/schema/tables/partner-audit.table';
 import { PartnerTable } from 'src/schema/tables/partner.table';
 import { PersonAuditTable } from 'src/schema/tables/person-audit.table';
+import { PersonUserAuditTable } from 'src/schema/tables/person-user-audit.table';
+import { PersonUserTable } from 'src/schema/tables/person-user.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { PluginMethodTable } from 'src/schema/tables/plugin-method.table';
 import { PluginTable } from 'src/schema/tables/plugin.table';
@@ -130,6 +133,8 @@ export class ImmichDatabase {
     PartnerTable,
     PersonTable,
     PersonAuditTable,
+    PersonUserTable,
+    PersonUserAuditTable,
     SessionTable,
     SharedLinkAssetTable,
     SharedLinkTable,
@@ -170,6 +175,7 @@ export class ImmichDatabase {
     memory_asset_delete_audit,
     stack_delete_audit,
     person_delete_audit,
+    person_user_delete_audit,
     user_metadata_audit,
     asset_metadata_audit,
     asset_face_audit,
@@ -243,6 +249,8 @@ export interface DB {
 
   person: PersonTable;
   person_audit: PersonAuditTable;
+  person_user: PersonUserTable;
+  person_user_audit: PersonUserAuditTable;
 
   session: SessionTable;
   session_sync_checkpoint: SessionSyncCheckpointTable;

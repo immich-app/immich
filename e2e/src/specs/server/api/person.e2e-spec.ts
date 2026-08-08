@@ -37,40 +37,40 @@ describe('/people', () => {
       nameBillPersonFavourite,
       nameFreddyPersonFavourite,
     ] = await Promise.all([
-      utils.createPerson(admin.accessToken, {
+      utils.createPerson(admin, {
         name: 'visible_person',
       }),
-      utils.createPerson(admin.accessToken, {
+      utils.createPerson(admin, {
         name: 'hidden_person',
         isHidden: true,
       }),
-      utils.createPerson(admin.accessToken, {
+      utils.createPerson(admin, {
         name: 'multiple_assets_person',
       }),
       // --- Setup for the specific sorting test ---
-      utils.createPerson(admin.accessToken, {
+      utils.createPerson(admin, {
         name: 'Charlie',
       }),
-      utils.createPerson(admin.accessToken, {
+      utils.createPerson(admin, {
         name: 'Bob',
       }),
-      utils.createPerson(admin.accessToken, {
+      utils.createPerson(admin, {
         name: 'Alice',
       }),
-      utils.createPerson(admin.accessToken, {
+      utils.createPerson(admin, {
         name: '',
       }),
-      utils.createPerson(admin.accessToken, {
+      utils.createPerson(admin, {
         name: '',
       }),
-      utils.createPerson(admin.accessToken, {
+      utils.createPerson(admin, {
         name: '',
       }),
-      utils.createPerson(admin.accessToken, {
+      utils.createPerson(admin, {
         name: 'Bill',
         isFavorite: true,
       }),
-      utils.createPerson(admin.accessToken, {
+      utils.createPerson(admin, {
         name: 'Freddy',
         isFavorite: true,
       }),
@@ -315,7 +315,7 @@ describe('/people', () => {
     });
 
     it('should mark a person as favorite', async () => {
-      const person = await utils.createPerson(admin.accessToken, {
+      const person = await utils.createPerson(admin, {
         name: 'visible_person',
       });
 

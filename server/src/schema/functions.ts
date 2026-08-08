@@ -198,8 +198,21 @@ export const person_delete_audit = registerFunction({
   language: 'PLPGSQL',
   body: `
     BEGIN
-      INSERT INTO person_audit ("personId", "ownerId")
-      SELECT "id", "ownerId"
+      INSERT INTO person_audit ("personId", "trustedGroupId")
+      SELECT "id", "trustedGroupId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+});
+
+export const person_user_delete_audit = registerFunction({
+  name: 'person_user_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO person_user_audit ("personId", "ownerId")
+      SELECT "personId", "ownerId"
       FROM OLD;
       RETURN NULL;
     END`,

@@ -135,7 +135,8 @@ from
           "email",
           "avatarColor",
           "profileImagePath",
-          "profileChangedAt"
+          "profileChangedAt",
+          "trustedGroupId"
         from
           "user"
         where
@@ -205,7 +206,8 @@ from
           "email",
           "avatarColor",
           "profileImagePath",
-          "profileChangedAt"
+          "profileChangedAt",
+          "trustedGroupId"
         from
           "user"
         where
@@ -255,7 +257,8 @@ select
           "user"."email",
           "user"."isAdmin",
           "user"."quotaUsageInBytes",
-          "user"."quotaSizeInBytes"
+          "user"."quotaSizeInBytes",
+          "user"."trustedGroupId"
         from
           "user"
         where
@@ -294,7 +297,8 @@ select
           "user"."email",
           "user"."isAdmin",
           "user"."quotaUsageInBytes",
-          "user"."quotaSizeInBytes"
+          "user"."quotaSizeInBytes",
+          "user"."trustedGroupId"
         from
           "user"
         where

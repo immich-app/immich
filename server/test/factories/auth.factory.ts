@@ -40,7 +40,7 @@ export class AuthFactory {
   }
 
   build(): AuthDto {
-    const { id, isAdmin, name, email, quotaUsageInBytes, quotaSizeInBytes } = this.#user.build();
+    const { id, isAdmin, name, email, quotaUsageInBytes, quotaSizeInBytes, trustedGroupId } = this.#user.build();
 
     return {
       user: {
@@ -50,6 +50,7 @@ export class AuthFactory {
         email,
         quotaUsageInBytes,
         quotaSizeInBytes,
+        trustedGroupId,
       },
       sharedLink: this.#sharedLink?.build(),
       apiKey: this.#apiKey?.build(),

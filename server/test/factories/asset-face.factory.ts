@@ -3,7 +3,7 @@ import { SourceType } from 'src/enum';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { build } from 'test/factories/builder.factory';
 import { PersonFactory } from 'test/factories/person.factory';
-import { AssetFaceLike, FactoryBuilder, PersonLike } from 'test/factories/types';
+import { AssetFaceLike, FactoryBuilder, PersonLike, PersonUserLike } from 'test/factories/types';
 import { newDate, newUuid, newUuidV7 } from 'test/small.factory';
 
 export class AssetFaceFactory {
@@ -35,8 +35,11 @@ export class AssetFaceFactory {
     });
   }
 
-  person(dto: PersonLike = {}, builder?: FactoryBuilder<PersonFactory>) {
+  person(dto: PersonLike & { personUser?: PersonUserLike } = {}, builder?: FactoryBuilder<PersonFactory>) {
     this.#person = build(PersonFactory.from(dto), builder);
+    if (dto.personUser && !builder) {
+      this.#person.personUser(dto.personUser);
+    }
     this.value.personId = this.#person.build().id;
     return this;
   }

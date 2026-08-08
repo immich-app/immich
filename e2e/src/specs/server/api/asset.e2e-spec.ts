@@ -125,7 +125,7 @@ describe('/asset', () => {
       }),
     ]);
 
-    const person1 = await utils.createPerson(user1.accessToken, {
+    const person1 = await utils.createPerson(user1, {
       name: 'Test Person',
     });
     await utils.createFace({

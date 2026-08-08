@@ -188,9 +188,16 @@ select
           "asset_face"
           left join lateral (
             select
-              "person".*
+              "person".*,
+              "person_user"."ownerId",
+              "person_user"."thumbnailFaceAssetId",
+              "person_user"."thumbnailPath",
+              "person_user"."isHidden",
+              "person_user"."isFavorite"
             from
               "person"
+              inner join "person_user" on "person_user"."personId" = "person"."id"
+              and "person_user"."ownerId" = "asset"."ownerId"
             where
               "asset_face"."personId" = "person"."id"
           ) as "person" on true

@@ -14,10 +14,10 @@ where
 
 -- PersonRepository.getFileSamples
 select
-  "id",
+  "personId",
   "thumbnailPath"
 from
-  "person"
+  "person_user"
 where
   "thumbnailPath" != ''
 limit
@@ -25,20 +25,26 @@ limit
 
 -- PersonRepository.getAllForUser
 select
-  "person".*
+  "person".*,
+  "person_user"."thumbnailPath",
+  "person_user"."isFavorite",
+  "person_user"."isHidden"
 from
   "person"
+  inner join "person_user" on "person_user"."personId" = "person"."id"
+  and "person_user"."ownerId" = $1
   inner join "asset_face" on "asset_face"."personId" = "person"."id"
   inner join "asset" on "asset_face"."assetId" = "asset"."id"
   and "asset"."visibility" = 'timeline'
   and "asset"."deletedAt" is null
 where
-  "person"."ownerId" = $1
-  and "asset_face"."deletedAt" is null
+  "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
-  and "person"."isHidden" = $2
+  and "person_user"."isHidden" = $2
 group by
-  "person"."id"
+  "person"."id",
+  "person_user"."personId",
+  "person_user"."ownerId"
 having
   (
     "person"."name" != $3
@@ -56,8 +62,8 @@ having
     )::int
   )
 order by
-  "person"."isHidden" asc,
-  "person"."isFavorite" desc,
+  "person_user"."isHidden" asc,
+  "person_user"."isFavorite" desc,
   NULLIF(person.name, '') is null asc,
   count("asset_face"."assetId") desc,
   NULLIF(person.name, '') asc nulls last,
@@ -66,20 +72,6 @@ limit
   $5
 offset
   $6
-
--- PersonRepository.getAllWithoutFaces
-select
-  "person".*
-from
-  "person"
-  left join "asset_face" on "asset_face"."personId" = "person"."id"
-where
-  "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" is true
-group by
-  "person"."id"
-having
-  count("asset_face"."assetId") = $1
 
 -- PersonRepository.getFaces
 select
@@ -90,19 +82,25 @@ select
     from
       (
         select
-          "person".*
+          "person".*,
+          "person_user"."ownerId",
+          "person_user"."thumbnailFaceAssetId",
+          "person_user"."thumbnailPath",
+          "person_user"."isHidden",
+          "person_user"."isFavorite"
         from
           "person"
+          inner join "person_user" on "person_user"."personId" = "person"."id"
         where
           "person"."id" = "asset_face"."personId"
+          and "person_user"."ownerId" = $1
       ) as obj
   ) as "person"
 from
   "asset_face"
 where
-  "asset_face"."assetId" = $1
+  "asset_face"."assetId" = $2
   and "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" = $2
 order by
   "asset_face"."boundingBoxX1" asc
 
@@ -115,17 +113,24 @@ select
     from
       (
         select
-          "person".*
+          "person".*,
+          "person_user"."ownerId",
+          "person_user"."thumbnailFaceAssetId",
+          "person_user"."thumbnailPath",
+          "person_user"."isHidden",
+          "person_user"."isFavorite"
         from
           "person"
+          inner join "person_user" on "person_user"."personId" = "person"."id"
         where
           "person"."id" = "asset_face"."personId"
+          and "person_user"."ownerId" = $1
       ) as obj
   ) as "person"
 from
   "asset_face"
 where
-  "asset_face"."id" = $1
+  "asset_face"."id" = $2
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.getFaceForFacialRecognitionJob
@@ -167,43 +172,34 @@ where
   "asset_face"."id" = $1
   and "asset_face"."deletedAt" is null
 
--- PersonRepository.getDataForThumbnailGenerationJob
-select
-  "person"."ownerId",
-  "asset_face"."boundingBoxX1" as "x1",
-  "asset_face"."boundingBoxY1" as "y1",
-  "asset_face"."boundingBoxX2" as "x2",
-  "asset_face"."boundingBoxY2" as "y2",
-  "asset_face"."imageWidth" as "oldWidth",
-  "asset_face"."imageHeight" as "oldHeight",
-  "asset"."type",
-  "asset"."originalPath",
-  "asset_exif"."orientation" as "exifOrientation",
-  (
-    select
-      "asset_file"."path"
-    from
-      "asset_file"
-    where
-      "asset_file"."assetId" = "asset"."id"
-      and "asset_file"."type" = 'preview'
-      and "asset_file"."isEdited" = false
-  ) as "previewPath"
-from
-  "person"
-  inner join "asset_face" on "asset_face"."id" = "person"."faceAssetId"
-  inner join "asset" on "asset_face"."assetId" = "asset"."id"
-  left join "asset_exif" on "asset_exif"."assetId" = "asset"."id"
-where
-  "person"."id" = $1
-  and "asset_face"."deletedAt" is null
-
 -- PersonRepository.reassignFace
 update "asset_face"
 set
   "personId" = $1
 where
   "asset_face"."id" = $2
+
+-- PersonRepository.getById
+select
+  "person".*
+from
+  "person"
+where
+  "person"."id" = $1
+
+-- PersonRepository.getForOwner
+select
+  "person_user".*,
+  "person"."id",
+  "person"."birthDate",
+  "person"."color",
+  "person"."name"
+from
+  "person_user"
+  inner join "person" on "person"."id" = "person_user"."personId"
+where
+  "person_user"."personId" = $1
+  and "person_user"."ownerId" = $2
 
 -- PersonRepository.getByName
 with
@@ -212,13 +208,17 @@ with
       set_config('pg_trgm.word_similarity_threshold', '0.5', true) as "thresh"
   )
 select
-  "person".*
+  "person".*,
+  "person_user"."thumbnailPath",
+  "person_user"."isFavorite",
+  "person_user"."isHidden"
 from
   "similarity_threshold",
   "person"
+  inner join "person_user" on "person_user"."personId" = "person"."id"
+  and "person_user"."ownerId" = $1
 where
-  "person"."ownerId" = $1
-  and f_unaccent ("person"."name") %> f_unaccent ($2)
+  f_unaccent ("person"."name") %> f_unaccent ($2)
 order by
   f_unaccent ("person"."name") <->>> f_unaccent ($3)
 limit
@@ -230,11 +230,10 @@ select distinct
   "person"."name"
 from
   "person"
+  inner join "person_user" on "person_user"."personId" = "person"."id"
+  and "person_user"."ownerId" = $1
 where
-  (
-    "person"."ownerId" = $1
-    and "person"."name" != $2
-  )
+  "person"."name" != $2
 
 -- PersonRepository.getStatistics
 select
@@ -248,39 +247,6 @@ where
   "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
   and "asset_face"."personId" = $1
-
--- PersonRepository.getNumberOfPeople
-select
-  coalesce(count(*), 0) as "total",
-  coalesce(
-    count(*) filter (
-      where
-        "isHidden" = $1
-    ),
-    0
-  ) as "hidden"
-from
-  "person"
-where
-  exists (
-    select
-    from
-      "asset_face"
-    where
-      "asset_face"."personId" = "person"."id"
-      and "asset_face"."deletedAt" is null
-      and "asset_face"."isVisible" = $2
-      and exists (
-        select
-        from
-          "asset"
-        where
-          "asset"."id" = "asset_face"."assetId"
-          and "asset"."visibility" = 'timeline'
-          and "asset"."deletedAt" is null
-      )
-  )
-  and "person"."ownerId" = $3
 
 -- PersonRepository.refreshFaces
 with
@@ -306,9 +272,15 @@ select
     from
       (
         select
-          "person".*
+          "person".*,
+          "person_user"."ownerId",
+          "person_user"."thumbnailFaceAssetId",
+          "person_user"."thumbnailPath",
+          "person_user"."isHidden",
+          "person_user"."isFavorite"
         from
           "person"
+          inner join "person_user" on "person_user"."personId" = "person"."id"
         where
           "person"."id" = "asset_face"."personId"
       ) as obj
@@ -347,15 +319,6 @@ set
   "deletedAt" = $1
 where
   "asset_face"."id" = $2
-
--- PersonRepository.getForPeopleDelete
-select
-  "id",
-  "thumbnailPath"
-from
-  "person"
-where
-  "id" in ($1)
 
 -- PersonRepository.getForFeatureFaceUpdate
 select

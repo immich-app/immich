@@ -68,7 +68,8 @@ describe(SearchService.name, () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
       const { asset } = await ctx.newAsset({ ownerId: user.id });
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
       await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
 
       const auth = factory.auth({ user: { id: user.id } });
@@ -81,7 +82,8 @@ describe(SearchService.name, () => {
     it('should return zero when no assets match the personIds filter', async () => {
       const { sut, ctx } = setup();
       const { user } = await ctx.newUser();
-      const { person } = await ctx.newPerson({ ownerId: user.id });
+      const { person } = await ctx.newPerson({ trustedGroupId: user.trustedGroupId });
+      await ctx.newPersonUser({ personId: person.id, ownerId: user.id });
 
       const auth = factory.auth({ user: { id: user.id } });
 

@@ -1,8 +1,8 @@
 import { Column, CreateDateColumn, Generated, Table, Timestamp } from '@immich/sql-tools';
 import { PrimaryGeneratedUuidV7Column } from 'src/decorators';
 
-@Table('person_audit')
-export class PersonAuditTable {
+@Table('person_user_audit')
+export class PersonUserAuditTable {
   @PrimaryGeneratedUuidV7Column()
   id!: Generated<string>;
 
@@ -10,7 +10,7 @@ export class PersonAuditTable {
   personId!: string;
 
   @Column({ type: 'uuid', index: true })
-  trustedGroupId!: string;
+  ownerId!: string;
 
   @CreateDateColumn({ default: () => 'clock_timestamp()', index: true })
   deletedAt!: Generated<Timestamp>;

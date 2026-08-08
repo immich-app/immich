@@ -7,6 +7,7 @@ import {
   CreateAlbumDto,
   CreateLibraryDto,
   JobCreateDto,
+  LoginResponseDto,
   MaintenanceAction,
   ManualJobName,
   MetadataSearchDto,
@@ -427,9 +428,9 @@ export const utils = {
   deleteAssets: (accessToken: string, ids: string[]) =>
     deleteAssets({ assetBulkDeleteDto: { ids } }, { headers: asBearerAuth(accessToken) }),
 
-  createPerson: async (accessToken: string, dto?: PersonCreateDto) => {
-    const person = await createPerson({ personCreateDto: dto || {} }, { headers: asBearerAuth(accessToken) });
-    await utils.setPersonThumbnail(person.id);
+  createPerson: async (login: LoginResponseDto, dto?: PersonCreateDto) => {
+    const person = await createPerson({ personCreateDto: dto || {} }, { headers: asBearerAuth(login.accessToken) });
+    await utils.setPersonThumbnail(person.id, login.userId);
 
     return person;
   },
@@ -442,12 +443,15 @@ export const utils = {
     await client.query('INSERT INTO asset_face ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
   },
 
-  setPersonThumbnail: async (personId: string) => {
+  setPersonThumbnail: async (personId: string, ownerId: string) => {
     if (!client) {
       return;
     }
 
-    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "id" = $1`, [personId]);
+    await client.query(
+      `UPDATE "person_user" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "personId" = $1 and "ownerId" = $2`,
+      [personId, ownerId],
+    );
   },
 
   createSharedLink: (accessToken: string, dto: SharedLinkCreateDto) =>

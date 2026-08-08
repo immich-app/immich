@@ -189,12 +189,12 @@ where
 
 -- AccessRepository.person.checkOwnerAccess
 select
-  "person"."id"
+  "person_user"."personId"
 from
-  "person"
+  "person_user"
 where
-  "person"."id" in ($1)
-  and "person"."ownerId" = $2
+  "person_user"."personId" in ($1)
+  and "person_user"."ownerId" = $2
 
 -- AccessRepository.person.checkFaceOwnerAccess
 select

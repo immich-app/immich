@@ -15,7 +15,8 @@ from
       "user2"."email",
       "user2"."avatarColor",
       "user2"."profileImagePath",
-      "user2"."profileChangedAt"
+      "user2"."profileChangedAt",
+      "user2"."trustedGroupId"
     from
       (
         select
@@ -47,7 +48,8 @@ returning
           "email",
           "avatarColor",
           "profileImagePath",
-          "profileChangedAt"
+          "profileChangedAt",
+          "trustedGroupId"
         from
           "user"
         where

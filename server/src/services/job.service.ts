@@ -124,10 +124,9 @@ export class JobService extends BaseService {
       }
 
       case JobName.PersonGenerateThumbnail: {
-        const { id } = item.data;
-        const person = await this.personRepository.getById(id);
-        if (person) {
-          this.websocketRepository.clientSend('on_person_thumbnail', person.ownerId, person.id);
+        const personUser = await this.personUserRepository.get(item.data);
+        if (personUser) {
+          this.websocketRepository.clientSend('on_person_thumbnail', personUser.ownerId, personUser.personId);
         }
         break;
       }
