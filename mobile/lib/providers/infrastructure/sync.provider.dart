@@ -37,7 +37,6 @@ final syncStreamRepositoryProvider = Provider((ref) => SyncStreamRepository(ref.
 final localSyncServiceProvider = Provider(
   (ref) => LocalSyncService(
     localAlbumRepository: ref.watch(localAlbumRepository),
-    localAssetRepository: ref.watch(localAssetRepository),
     trashedLocalAssetRepository: ref.watch(trashedLocalAssetRepository),
     assetMediaRepository: ref.watch(assetMediaRepositoryProvider),
     permissionRepository: ref.watch(permissionRepositoryProvider),

@@ -95,12 +95,24 @@ class HashResult {
   const HashResult({required this.assetId, this.error, this.hash});
 }
 
+enum CloudIdErrorKind {
+  // PHPhotosErrorIdentifierNotFound
+  notFound,
+  // PHPhotosErrorMultipleIdentifiersFound
+  ambiguous,
+  // PhotoKit returned a partially synced identifier ("GUID:ID:" with no trailing hash)
+  incomplete,
+  unsupported,
+  unknown,
+}
+
 class CloudIdResult {
   final String assetId;
   final String? error;
   final String? cloudId;
+  final CloudIdErrorKind? errorKind;
 
-  const CloudIdResult({required this.assetId, this.error, this.cloudId});
+  const CloudIdResult({required this.assetId, this.error, this.cloudId, this.errorKind});
 }
 
 @HostApi()
