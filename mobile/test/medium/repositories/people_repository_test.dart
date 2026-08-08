@@ -1,4 +1,7 @@
+// drift also exports isNotNull, which collides with the matcher of the same name
+import 'package:drift/drift.dart' show Value;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:immich_mobile/infrastructure/entities/person_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/people.repository.dart';
 
 import '../repository_context.dart';
@@ -72,6 +75,38 @@ void main() {
       final people = await sut.getAssetPeople(asset.id);
 
       expect(people, isEmpty);
+    });
+  });
+
+  group('updatedAt', () {
+    test('follows person_user when the thumbnail changed more recently', () async {
+      final user = await ctx.newUser();
+      final person = await ctx.newPerson(ownerId: user.id);
+      final thumbnailChangedAt = DateTime.now().add(const Duration(days: 1));
+
+      await (ctx.db.update(ctx.db.personUserEntity)..where((row) => row.personId.equals(person.id))).write(
+        PersonUserEntityCompanion(updatedAt: Value(thumbnailChangedAt)),
+      );
+
+      final result = await sut.get(person.id);
+
+      expect(result, isNotNull);
+      expect(result!.updatedAt, thumbnailChangedAt);
+    });
+  });
+
+  group('person user', () {
+    test('reads the user flags from person_user', () async {
+      final user = await ctx.newUser();
+      final asset = await ctx.newRemoteAsset(ownerId: user.id);
+      final person = await ctx.newPerson(ownerId: user.id, isFavorite: true);
+      await ctx.newFace(assetId: asset.id, personId: person.id);
+
+      final result = await sut.get(person.id);
+
+      expect(result, isNotNull);
+      expect(result!.isFavorite, isTrue);
+      expect(result.isHidden, isFalse);
     });
   });
 }
