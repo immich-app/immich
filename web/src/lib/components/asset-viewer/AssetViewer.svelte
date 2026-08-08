@@ -99,6 +99,8 @@
     slideshowNavigation,
     slideshowState,
     slideshowRepeat,
+    slideshowPaused,
+    slideshowAutoplay,
   } = slideshowStore;
   const stackThumbnailSize = 60;
   const stackSelectedThumbnailSize = 65;
@@ -210,7 +212,7 @@
   const tracker = new InvocationTracker();
   const navigateAsset = (order?: 'previous' | 'next') => {
     if (!order) {
-      if ($slideshowState === SlideshowState.PlaySlideshow) {
+      if ($slideshowState === SlideshowState.PlaySlideshow && !$slideshowPaused) {
         order = $slideshowNavigation === SlideshowNavigation.AscendingOrder ? 'previous' : 'next';
       } else {
         return;
@@ -296,6 +298,7 @@
 
   const handlePlaySlideshow = async () => {
     slideshowStartAssetId = asset.id;
+    $slideshowPaused = !$slideshowAutoplay;
     try {
       await assetViewerHtmlElement?.requestFullscreen?.();
     } catch (error) {
@@ -314,6 +317,7 @@
     } finally {
       $stopSlideshowProgress = true;
       $slideshowState = SlideshowState.None;
+      $slideshowPaused = false;
     }
   };
 

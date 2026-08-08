@@ -52,7 +52,10 @@ function createSlideshowStore() {
     SlideshowMetadataOverlayMode.Full,
   );
 
+  const slideshowPaused = writable<boolean>(false);
+
   return {
+    slideshowPaused,
     restartProgress: {
       subscribe: restartState.subscribe,
       set: (value: boolean) => {
