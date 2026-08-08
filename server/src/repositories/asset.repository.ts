@@ -904,7 +904,8 @@ export class AssetRepository {
               : sql`(asset."localDateTime" AT TIME ZONE 'UTC')::date`,
             order,
           )
-          .orderBy('asset.fileCreatedAt', order),
+          .orderBy('asset.fileCreatedAt', order)
+          .orderBy('asset.originalFileName', order),
       )
       .with('agg', (qb) =>
         qb
