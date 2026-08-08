@@ -20,7 +20,7 @@ import 'package:immich_mobile/infrastructure/repositories/settings.repository.da
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-const int targetVersion = 26;
+const int targetVersion = 28;
 
 Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   final int? storedVersion = Store.tryGet(StoreKey.version);
@@ -34,12 +34,29 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
     await _migrateTo26(drift);
   }
 
+  if (version < 28) {
+    await _migrateTo28(drift);
+  }
+
   if (storedVersion == null) {
     await FeatureMessageService(SettingsRepository.instance).markSeen();
   }
 
   await Store.put(StoreKey.version, targetVersion);
   return;
+}
+
+Future<void> _migrateTo28(Drift drift) => backfillAssetGroupDates(drift);
+
+// Store-level on purpose: runs after the date heals in this chain, so group_date is
+// computed from the corrected values. STRFTIME drops dates sqlite cannot read.
+Future<void> backfillAssetGroupDates(Drift drift) async {
+  await drift.customStatement(
+    "UPDATE remote_asset_entity SET group_date = COALESCE(STRFTIME('%Y-%m-%d', local_date_time), STRFTIME('%Y-%m-%d', created_at, 'localtime'))",
+  );
+  await drift.customStatement(
+    "UPDATE local_asset_entity SET group_date = STRFTIME('%Y-%m-%d', created_at, 'localtime')",
+  );
 }
 
 Future<void> _migrateTo25() async {

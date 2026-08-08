@@ -10,6 +10,7 @@ import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.d
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 
 enum SortLocalAlbumsBy { id, backupSelection, isIosSharedAlbum, name, assetCount, newestAsset }
 
@@ -307,6 +308,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           latitude: Value(asset.latitude),
           longitude: Value(asset.longitude),
           adjustmentTime: Value(asset.adjustmentTime),
+          groupDate: Value(timelineGroupDate(asset.createdAt.toLocal())),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,
@@ -337,6 +339,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           orientation: Value(asset.orientation),
           isFavorite: Value(asset.isFavorite),
           playbackStyle: Value(asset.playbackStyle),
+          groupDate: Value(timelineGroupDate(asset.createdAt.toLocal())),
         );
         batch.insert<$LocalAssetEntityTable, LocalAssetEntityData>(
           _db.localAssetEntity,
