@@ -336,8 +336,6 @@ describe(SyncEntityType.AssetOcrV1, () => {
     const ocrId = (response[0] as { data: { id: string } }).data.id;
     await ctx.syncAckAll(auth, response);
 
-    // Mirrors MediaService on edit/crop: an in-place UPDATE ... SET isVisible without deleting the row.
-    // This only reaches sync clients if the asset_ocr_updatedAt trigger bumps updateId.
     await ocrRepo.updateOcrVisibilities(
       asset.id,
       [],
