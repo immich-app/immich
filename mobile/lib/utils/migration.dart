@@ -8,19 +8,22 @@ import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/config/app_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
+import 'package:immich_mobile/domain/models/session.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/feature_message.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/session.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/session.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
-const int targetVersion = 26;
+const int targetVersion = 27;
 
 Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   final int? storedVersion = Store.tryGet(StoreKey.version);
@@ -37,19 +40,22 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
   if (storedVersion == null) {
     await FeatureMessageService(SettingsRepository.instance).markSeen();
   }
+  if (version < 27) {
+    await _migrateTo27(drift);
+  }
 
   await Store.put(StoreKey.version, targetVersion);
   return;
 }
 
 Future<void> _migrateTo25() async {
-  final accessToken = Store.tryGet(StoreKey.accessToken);
+  final accessToken = Store.tryGet(StoreKey.legacyAccessToken);
   if (accessToken == null || accessToken.isEmpty) {
     return;
   }
 
   final urls = <String>[];
-  final serverEndpoint = Store.tryGet(StoreKey.serverEndpoint);
+  final serverEndpoint = Store.tryGet(StoreKey.legacyServerEndpoint);
   if (serverEndpoint != null && serverEndpoint.isNotEmpty) {
     urls.add(serverEndpoint);
   }
@@ -80,7 +86,7 @@ Future<void> _migrateTo25() async {
 }
 
 Future<void> _migrateTo26(Drift drift) async {
-  final migrator = _StoreMigrator(drift);
+  final migrator = _StoreMigrator.settings(drift);
   await migrator.migrateEnumIndex(StoreKey.legacyLogLevel, SettingsKey.logLevel, LogLevel.values);
   // Theme
   await migrator.migrateEnumName(StoreKey.legacyThemeMode, SettingsKey.themeMode, ThemeMode.values);
@@ -145,7 +151,17 @@ Future<void> _migrateTo26(Drift drift) async {
   await migrator.complete();
 }
 
-Future<void> _migrateAlbumSortMode(_StoreMigrator migrator) async {
+Future<void> _migrateTo27(Drift drift) async {
+  final migrator = _StoreMigrator.session(drift);
+  await migrator.migrateString(StoreKey.legacyServerUrl, SessionKey.serverUrl);
+  await migrator.migrateString(StoreKey.legacyAccessToken, SessionKey.accessToken);
+  await migrator.migrateString(StoreKey.legacyServerEndpoint, SessionKey.serverEndpoint);
+  await migrator.complete();
+
+  await SessionRepository.instance.refresh();
+}
+
+Future<void> _migrateAlbumSortMode(_StoreMigrator<SettingsKey> migrator) async {
   final raw = await migrator.readLegacyStoreInt(StoreKey.legacySelectedAlbumSortOrder.id);
   final mode = AlbumSortMode.values.firstWhereOrNull((e) => raw != null && e.storeIndex == raw);
   if (mode == null) {
@@ -155,7 +171,7 @@ Future<void> _migrateAlbumSortMode(_StoreMigrator migrator) async {
   migrator.stage(StoreKey.legacySelectedAlbumSortOrder, SettingsKey.albumSortMode, mode);
 }
 
-Future<void> _migrateExternalEndpointList(_StoreMigrator migrator) async {
+Future<void> _migrateExternalEndpointList(_StoreMigrator<SettingsKey> migrator) async {
   final raw = await migrator.readLegacyStoreString(StoreKey.legacyExternalEndpointList.id);
   if (raw == null) {
     return;
@@ -179,7 +195,7 @@ Future<void> _migrateExternalEndpointList(_StoreMigrator migrator) async {
   migrator.stage(StoreKey.legacyExternalEndpointList, SettingsKey.networkExternalEndpointList, urls);
 }
 
-Future<void> _migrateCustomHeaders(_StoreMigrator migrator) async {
+Future<void> _migrateCustomHeaders(_StoreMigrator<SettingsKey> migrator) async {
   final raw = await migrator.readLegacyStoreString(StoreKey.legacyCustomHeaders.id);
   if (raw == null) {
     return;
@@ -202,14 +218,39 @@ Future<void> _migrateCustomHeaders(_StoreMigrator migrator) async {
   migrator.stage(StoreKey.legacyCustomHeaders, SettingsKey.networkCustomHeaders, headers);
 }
 
-class _StoreMigrator {
+class _StoreMigrator<K extends Enum> {
+  _StoreMigrator._(this._db, {required this.encode, required this.readDefault, required this.insertRow});
+
+  static _StoreMigrator<SettingsKey> settings(Drift db) => _StoreMigrator<SettingsKey>._(
+    db,
+    encode: (key, value) => key.encode(value),
+    readDefault: (key) => defaultConfig.read(key),
+    insertRow: (batch, name, value) => batch.insert(
+      db.settingsEntity,
+      SettingsEntityCompanion(key: Value(name), value: Value(value)),
+      mode: InsertMode.insertOrReplace,
+    ),
+  );
+
+  static _StoreMigrator<SessionKey> session(Drift db) => _StoreMigrator<SessionKey>._(
+    db,
+    encode: (key, value) => key.encode(value),
+    readDefault: (key) => defaultSession.read(key),
+    insertRow: (batch, name, value) => batch.insert(
+      db.sessionEntity,
+      SessionEntityCompanion(key: Value(name), value: Value(value)),
+      mode: InsertMode.insertOrReplace,
+    ),
+  );
+
   final Drift _db;
-  final Map<SettingsKey, Object?> _cache = {};
+  final String Function(K key, Object value) encode;
+  final Object? Function(K key) readDefault;
+  final void Function(Batch batch, String name, String? value) insertRow;
+  final Map<K, Object?> _cache = {};
   final List<int> _migratedStoreIds = [];
 
-  _StoreMigrator(this._db);
-
-  Future<void> migrateEnumIndex<T extends Enum>(StoreKey<int> legacyKey, SettingsKey<T> newKey, List<T> values) async {
+  Future<void> migrateEnumIndex<T extends Enum>(StoreKey<int> legacyKey, K newKey, List<T> values) async {
     final index = await readLegacyStoreInt(legacyKey.id);
     if (index == null) {
       return;
@@ -224,11 +265,7 @@ class _StoreMigrator {
     _migratedStoreIds.add(legacyKey.id);
   }
 
-  Future<void> migrateEnumName<T extends Enum>(
-    StoreKey<String> legacyKey,
-    SettingsKey<T> newKey,
-    List<T> values,
-  ) async {
+  Future<void> migrateEnumName<T extends Enum>(StoreKey<String> legacyKey, K newKey, List<T> values) async {
     final name = await readLegacyStoreString(legacyKey.id);
     if (name == null) {
       return;
@@ -243,18 +280,17 @@ class _StoreMigrator {
     _migratedStoreIds.add(legacyKey.id);
   }
 
-  Future<void> migrateBool(StoreKey<bool> legacyKey, SettingsKey<bool> newKey) async {
+  Future<void> migrateBool(StoreKey<bool> legacyKey, K newKey) async {
     final intValue = await readLegacyStoreInt(legacyKey.id);
     if (intValue == null) {
       return;
     }
 
-    final boolValue = intValue != 0;
-    _cache[newKey] = boolValue;
+    _cache[newKey] = intValue != 0;
     _migratedStoreIds.add(legacyKey.id);
   }
 
-  Future<void> migrateInt(StoreKey<int> legacyKey, SettingsKey<int> newKey) async {
+  Future<void> migrateInt(StoreKey<int> legacyKey, K newKey) async {
     final intValue = await readLegacyStoreInt(legacyKey.id);
     if (intValue == null) {
       return;
@@ -264,9 +300,9 @@ class _StoreMigrator {
     _migratedStoreIds.add(legacyKey.id);
   }
 
-  Future<void> migrateString(StoreKey<String> legacyKey, SettingsKey<String> newKey) async {
+  Future<void> migrateString(StoreKey<String> legacyKey, K newKey) async {
     final value = await readLegacyStoreString(legacyKey.id);
-    if (value == null) {
+    if (value == null || value.isEmpty) {
       return;
     }
 
@@ -274,7 +310,12 @@ class _StoreMigrator {
     _migratedStoreIds.add(legacyKey.id);
   }
 
-  void stage<T, U extends T>(StoreKey legacyKey, SettingsKey<T> newKey, U value) {
+  Future<void> migrateNullableString(StoreKey<String> legacyKey, K newKey) async {
+    _cache[newKey] = await readLegacyStoreString(legacyKey.id);
+    _migratedStoreIds.add(legacyKey.id);
+  }
+
+  void stage(StoreKey legacyKey, K newKey, Object? value) {
     _cache[newKey] = value;
     _migratedStoreIds.add(legacyKey.id);
   }
@@ -282,20 +323,12 @@ class _StoreMigrator {
   Future<void> complete() async {
     await _db.batch((batch) {
       for (final entry in _cache.entries) {
-        if (entry.value == defaultConfig.read(entry.key)) {
+        if (entry.value == readDefault(entry.key)) {
           continue;
         }
 
-        String? resolvedValue;
-        if (entry.value != null) {
-          resolvedValue = entry.key.encode(entry.value);
-        }
-
-        batch.insert(
-          _db.settingsEntity,
-          SettingsEntityCompanion(key: Value(entry.key.name), value: Value(resolvedValue)),
-          mode: InsertMode.insertOrReplace,
-        );
+        final value = entry.value;
+        insertRow(batch, entry.key.name, value == null ? null : encode(entry.key, value));
       }
     });
     await deleteLegacyStoreRows(_migratedStoreIds);
