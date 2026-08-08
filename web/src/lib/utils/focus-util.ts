@@ -52,3 +52,22 @@ export const moveFocus = (
     }
   } while (nextIndex !== currentIndex);
 };
+
+const INTERACTIVE_ELEMENT_SELECTOR = [
+  'a[href]',
+  'button',
+  'input',
+  'select',
+  'summary',
+  'textarea',
+  'video',
+  'audio',
+  '[contenteditable]',
+  '[data-overlay-interactive]',
+  '[role="button"]',
+].join(',');
+
+/** Whether the event target is (or is inside) an interactive control that owns its own keyboard behavior. */
+export const isInteractiveElement = (target: EventTarget | null): boolean => {
+  return target instanceof HTMLElement && target.closest(INTERACTIVE_ELEMENT_SELECTOR) !== null;
+};

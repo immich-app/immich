@@ -23,6 +23,7 @@
   import { getSharedLink, handlePromiseError } from '$lib/utils';
   import type { OnUndoDelete } from '$lib/utils/actions';
   import { navigateToAsset } from '$lib/utils/asset-utils';
+  import { focusOnPointerDown } from '$lib/actions/focus-on-pointer-down';
   import { handleError } from '$lib/utils/handle-error';
   import { navigate } from '$lib/utils/navigation';
   import { InvocationTracker } from '$lib/utils/invocationTracker';
@@ -541,7 +542,13 @@
   {/if}
 
   <!-- Asset Viewer -->
-  <div data-viewer-content class="relative z-[-1] col-span-4 col-start-1 row-span-full row-start-1">
+  <div
+    data-viewer-content
+    class="relative z-[-1] col-span-4 col-start-1 row-span-full row-start-1 outline-none"
+    role="presentation"
+    tabindex="-1"
+    use:focusOnPointerDown
+  >
     {#if viewerKind === 'StackVideoViewer'}
       <VideoViewer
         asset={previewStackedAsset!}
