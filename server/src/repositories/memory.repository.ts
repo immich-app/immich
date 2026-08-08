@@ -90,6 +90,7 @@ export class MemoryRepository implements IBulkAsset {
           : qb.orderBy('memoryAt', (dto.order?.toLowerCase() || 'desc') as OrderByDirection),
       )
       .$if(dto.size !== undefined, (qb) => qb.limit(dto.size!))
+      .$if(dto.page !== undefined && dto.size !== undefined, (qb) => qb.offset((dto.page! - 1) * dto.size!))
       .execute();
   }
 

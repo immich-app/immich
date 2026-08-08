@@ -44,11 +44,11 @@ void main() {
     when(() => userService.watchMyUser()).thenAnswer((_) => const Stream.empty());
   });
 
-  group('driftMemoryFutureProvider', () {
+  group('driftMemoryLaneProvider', () {
     test('re-queries after local midnight', () {
       fakeAsync((async) {
         final container = makeContainer();
-        container.listen(driftMemoryFutureProvider, (_, __) {});
+        container.listen(driftMemoryLaneProvider, (_, __) {});
         async.flushMicrotasks();
 
         verify(() => memoryService.getMemoryLane('user-1')).called(1);
@@ -66,7 +66,7 @@ void main() {
     test('cancels the midnight timer when disposed', () {
       fakeAsync((async) {
         final container = makeContainer();
-        final subscription = container.listen(driftMemoryFutureProvider, (_, __) {});
+        final subscription = container.listen(driftMemoryLaneProvider, (_, __) {});
         async.flushMicrotasks();
         verify(() => memoryService.getMemoryLane('user-1')).called(1);
 
@@ -83,7 +83,7 @@ void main() {
 
       fakeAsync((async) {
         final container = makeContainer();
-        container.listen(driftMemoryFutureProvider, (_, __) {});
+        container.listen(driftMemoryLaneProvider, (_, __) {});
         async.flushMicrotasks();
 
         async.elapse(const Duration(hours: 25));

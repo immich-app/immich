@@ -112,7 +112,7 @@ void _onNavigationSelected(TabsRouter router, int index, WidgetRef ref) {
   }
 
   if (index == kPhotoTabIndex) {
-    ref.invalidate(driftMemoryFutureProvider);
+    ref.invalidate(driftMemoryLaneProvider);
   }
 
   if (router.activeIndex != kSearchTabIndex && index == kSearchTabIndex) {

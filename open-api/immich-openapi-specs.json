@@ -7191,6 +7191,17 @@
             }
           },
           {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
+            }
+          },
+          {
             "name": "size",
             "required": false,
             "in": "query",
@@ -7357,6 +7368,17 @@
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/MemorySearchOrder"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "description": "Page number",
+            "schema": {
+              "minimum": 1,
+              "maximum": 9007199254740991,
+              "type": "integer"
             }
           },
           {

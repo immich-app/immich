@@ -6,10 +6,10 @@
   import SingleGridRow from '$lib/components/shared-components/SingleGridRow.svelte';
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { Route } from '$lib/route';
-  import { getAssetMediaUrl, getPeopleThumbnailUrl } from '$lib/utils';
+  import { getAssetMediaUrl, getPeopleThumbnailUrl, memoryLaneTitle } from '$lib/utils';
   import { getAssetInfo, AssetMediaSize, type SearchExploreResponseDto } from '@immich/sdk';
   import { authManager } from '$lib/managers/auth-manager.svelte';
-  import { Icon } from '@immich/ui';
+  import { Icon, ImageCarousel } from '@immich/ui';
   import { mdiHeart } from '@mdi/js';
   import { t } from 'svelte-i18n';
   import type { PageData } from './$types';
@@ -28,13 +28,22 @@
     return targetField?.items || [];
   };
 
-  let places = $derived(getFieldItems(data.items, 'exifInfo.city'));
+  let places = $derived(getFieldItems(data.explore, 'exifInfo.city'));
   let recents = $derived(
-    getFieldItems(data.items, 'createdAt').sort((a, b) => new Date(b.value).getTime() - new Date(a.value).getTime()),
+    getFieldItems(data.explore, 'createdAt').sort((a, b) => new Date(b.value).getTime() - new Date(a.value).getTime()),
   );
-  let people = $state(data.response.people);
+  let people = $state(data.people.people);
+  let memories = $derived(
+    data.memories.map((memory) => ({
+      id: memory.id,
+      title: $memoryLaneTitle(memory),
+      href: Route.memories({ id: memory.assets[0].id }),
+      alt: $t('memory_lane_title', { values: { title: $getAltText(toTimelineAsset(memory.assets[0])) } }),
+      src: getAssetMediaUrl({ id: memory.assets[0].id }),
+    })),
+  );
 
-  let hasPeople = $derived(data.response.total > 0);
+  let hasPeople = $derived(data.people.total > 0);
 
   const onPersonThumbnailReady = ({ id }: { id: string }) => {
     for (const person of people) {
@@ -121,6 +130,20 @@
           {/each}
         {/snippet}
       </SingleGridRow>
+    </div>
+  {/if}
+
+  {#if memories.length > 0}
+    <div class="mt-2 mb-6">
+      <div class="flex justify-between">
+        <p class="mb-4 font-medium dark:text-immich-dark-fg">{$t('memories')}</p>
+        <a
+          href={Route.memories()}
+          class="pe-4 text-sm font-medium hover:text-immich-primary dark:text-immich-dark-fg dark:hover:text-immich-dark-primary"
+          draggable="false">{$t('view_all')}</a
+        >
+      </div>
+      <ImageCarousel items={memories} />
     </div>
   {/if}
 
