@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/upload.action.dart';
+import 'package:immich_mobile/providers/asset_upload_coordinator.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
@@ -32,6 +34,7 @@ void main() {
   });
 
   List<Override> uploadOverrides() => [
+    assetUploadCoordinatorProvider.overrideWith(AssetUploadCoordinator.new),
     foregroundUploadServiceProvider.overrideWithValue(uploadService),
     toastServiceProvider.overrideWithValue(context.service.toast),
   ];
@@ -203,7 +206,7 @@ void main() {
         overrides: uploadOverrides(),
       );
 
-      await uploadAssets(tester.element(find.byType(SizedBox)), capturedRef, [asset]);
+      await uploadAssets(tester.element(find.byType(SizedBox)), capturedRef, [asset], source: ActionSource.timeline);
       await settleUpload(tester);
 
       expect(capturedRef.read(assetUploadProgressProvider), isEmpty);

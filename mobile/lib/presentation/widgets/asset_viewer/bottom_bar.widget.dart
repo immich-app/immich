@@ -40,7 +40,7 @@ class ViewerBottomBar extends ConsumerWidget {
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isInLockedView = ref.watch(inLockedViewProvider);
-    final isInTrash = ref.watch(timelineServiceProvider).origin == TimelineOrigin.trash;
+    final isInTrash = asset.isEffectivelyTrashed(ref.watch(timelineServiceProvider).origin);
 
     final originalTheme = context.themeData;
 

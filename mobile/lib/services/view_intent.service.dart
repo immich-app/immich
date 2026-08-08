@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
 final viewIntentServiceProvider = Provider((ref) => ViewIntentService(ViewIntentHostApi()));
+
+const viewIntentUnavailableErrorCode = 'VIEW_INTENT_UNAVAILABLE';
 
 class ViewIntentService {
   final ViewIntentHostApi _viewIntentHostApi;
@@ -19,6 +22,12 @@ class ViewIntentService {
   Future<ViewIntentPayload?> consumeViewIntent() async {
     try {
       return await _viewIntentHostApi.consumeViewIntent();
+    } on PlatformException catch (error) {
+      if (error.code == viewIntentUnavailableErrorCode) {
+        rethrow;
+      }
+      // Ignore errors - view intent might not be present
+      return null;
     } catch (_) {
       // Ignore errors - view intent might not be present
       return null;
@@ -26,11 +35,12 @@ class ViewIntentService {
   }
 
   Future<void> setManagedTempFilePath(String path) async {
+    final normalizedPath = p.normalize(path);
     final previous = _managedTempFilePath;
-    if (previous == path) {
+    if (previous == normalizedPath) {
       return;
     }
-    _managedTempFilePath = path;
+    _managedTempFilePath = normalizedPath;
     if (previous != null) {
       await cleanupTempFile(previous);
     }
@@ -45,22 +55,24 @@ class ViewIntentService {
   }
 
   Future<void> cleanupManagedTempFileIfCurrent(String path) async {
-    if (_managedTempFilePath == path) {
+    final normalizedPath = p.normalize(path);
+    if (_managedTempFilePath == normalizedPath) {
       _managedTempFilePath = null;
     }
-    await cleanupTempFile(path);
+    await cleanupTempFile(normalizedPath);
   }
 
   Future<void> cleanupTempFile(String path) async {
-    if (!_isManagedTempFile(path)) {
+    final normalizedPath = p.normalize(path);
+    if (!_isManagedTempFile(normalizedPath)) {
       return;
     }
-    if (_activeUploadPaths.contains(path)) {
+    if (_activeUploadPaths.contains(normalizedPath)) {
       return;
     }
 
     try {
-      final file = File(path);
+      final file = File(normalizedPath);
       // ignore: avoid_slow_async_io
       if (await file.exists()) {
         await file.delete();
@@ -78,7 +90,7 @@ class ViewIntentService {
           continue;
         }
 
-        final path = entity.path;
+        final path = p.normalize(entity.path);
         if (!_isManagedTempFile(path) || path == _managedTempFilePath || _activeUploadPaths.contains(path)) {
           continue;
         }
@@ -91,15 +103,16 @@ class ViewIntentService {
   }
 
   void markUploadActive(String path) {
-    _activeUploadPaths.add(path);
+    _activeUploadPaths.add(p.normalize(path));
   }
 
   Future<void> markUploadInactive(String path) async {
-    if (!_activeUploadPaths.remove(path)) {
+    final normalizedPath = p.normalize(path);
+    if (!_activeUploadPaths.remove(normalizedPath)) {
       return;
     }
-    if (_managedTempFilePath != path) {
-      await cleanupTempFile(path);
+    if (_managedTempFilePath != normalizedPath) {
+      await cleanupTempFile(normalizedPath);
     }
   }
 
