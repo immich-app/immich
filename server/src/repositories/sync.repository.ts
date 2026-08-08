@@ -751,6 +751,42 @@ class UserSync extends BaseSync {
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('user', options).select(columns.syncUser).stream();
   }
+
+  // used when public users are disabled: only self, partners, and album co-members are visible
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getRelatedUpserts(options: SyncQueryOptions) {
+    const userId = options.userId;
+    return this.upsertQuery('user', options)
+      .select(columns.syncUser)
+      .where((eb) =>
+        eb.or([
+          eb('id', '=', userId),
+          eb(
+            'id',
+            'in',
+            eb.selectFrom('partner').select('partner.sharedWithId as id').where('partner.sharedById', '=', userId),
+          ),
+          eb(
+            'id',
+            'in',
+            eb.selectFrom('partner').select('partner.sharedById as id').where('partner.sharedWithId', '=', userId),
+          ),
+          eb(
+            'id',
+            'in',
+            eb
+              .selectFrom('album_user')
+              .select('album_user.userId as id')
+              .where(
+                'album_user.albumId',
+                'in',
+                eb.selectFrom('album_user').select('album_user.albumId as id').where('album_user.userId', '=', userId),
+              ),
+          ),
+        ]),
+      )
+      .stream();
+  }
 }
 
 class UserMetadataSync extends BaseSync {

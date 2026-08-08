@@ -137,6 +137,15 @@ export class SessionRepository {
     await this.db.updateTable('session').set({ pinExpiresAt: null }).where('userId', '=', userId).execute();
   }
 
+  @GenerateSql({ params: [] })
+  async requireFullSyncForNonAdmins() {
+    await this.db
+      .updateTable('session')
+      .set({ isPendingSyncReset: true })
+      .where((eb) => eb('userId', 'in', eb.selectFrom('user').select('user.id').where('user.isAdmin', '=', false)))
+      .execute();
+  }
+
   @GenerateSql({ params: [DummyValue.UUID] })
   async resetSyncProgress(sessionId: string) {
     await this.db.transaction().execute((tx) => {

@@ -1,9 +1,11 @@
 import { schemaFromCode } from '@immich/sql-tools';
 import { Kysely } from 'kysely';
 import { DateTime } from 'luxon';
+import { SystemConfig } from 'src/config';
 import { AssetMetadataKey, UserMetadataKey } from 'src/enum';
 import { DatabaseRepository } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+import { SessionRepository } from 'src/repositories/session.repository';
 import { BaseSync, SyncRepository } from 'src/repositories/sync.repository';
 import { DB } from 'src/schema';
 import { SyncService } from 'src/services/sync.service';
@@ -16,7 +18,7 @@ let defaultDatabase: Kysely<DB>;
 const setup = (db?: Kysely<DB>) => {
   return newMediumService(SyncService, {
     database: db || defaultDatabase,
-    real: [DatabaseRepository, SyncRepository],
+    real: [DatabaseRepository, SyncRepository, SessionRepository],
     mock: [LoggingRepository],
   });
 };
@@ -31,6 +33,17 @@ const assertTableCount = async <T extends keyof DB>(db: Kysely<DB>, t: T, count:
   const { table } = db.dynamic;
   const results = await db.selectFrom(table(t).as(t)).selectAll().execute();
   expect(results).toHaveLength(count);
+};
+
+const withPublicUsers = (publicUsers: boolean) => ({ server: { publicUsers } }) as SystemConfig;
+
+const isPendingSyncReset = async (db: Kysely<DB>, sessionId: string) => {
+  const session = await db
+    .selectFrom('session')
+    .select('isPendingSyncReset')
+    .where('id', '=', sessionId)
+    .executeTakeFirstOrThrow();
+  return session.isPendingSyncReset;
 };
 
 describe(SyncService.name, () => {
@@ -238,6 +251,58 @@ describe(SyncService.name, () => {
       for (const table of auditTables) {
         expect(auditCleanupSpy, `Audit table ${table} was not cleaned up`).toHaveBeenCalledWith(table, 31);
       }
+    });
+  });
+
+  describe('onConfigUpdate', () => {
+    it('should require a full sync for non-admins when public users is disabled', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const { session } = await ctx.newSession({ userId: user.id });
+
+      await sut.onConfigUpdate({ oldConfig: withPublicUsers(true), newConfig: withPublicUsers(false) });
+
+      await expect(isPendingSyncReset(ctx.database, session.id)).resolves.toBe(true);
+    });
+
+    it('should not require a full sync for admins when public users is disabled', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser({ isAdmin: true });
+      const { session } = await ctx.newSession({ userId: user.id });
+
+      await sut.onConfigUpdate({ oldConfig: withPublicUsers(true), newConfig: withPublicUsers(false) });
+
+      await expect(isPendingSyncReset(ctx.database, session.id)).resolves.toBe(false);
+    });
+
+    it('should require a full sync for non-admins when public users is enabled', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const { session } = await ctx.newSession({ userId: user.id });
+
+      await sut.onConfigUpdate({ oldConfig: withPublicUsers(false), newConfig: withPublicUsers(true) });
+
+      await expect(isPendingSyncReset(ctx.database, session.id)).resolves.toBe(true);
+    });
+
+    it('should not require a full sync when public users was already disabled', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const { session } = await ctx.newSession({ userId: user.id });
+
+      await sut.onConfigUpdate({ oldConfig: withPublicUsers(false), newConfig: withPublicUsers(false) });
+
+      await expect(isPendingSyncReset(ctx.database, session.id)).resolves.toBe(false);
+    });
+
+    it('should not require a full sync when public users was already enabled', async () => {
+      const { sut, ctx } = setup(await getKyselyDB());
+      const { user } = await ctx.newUser();
+      const { session } = await ctx.newSession({ userId: user.id });
+
+      await sut.onConfigUpdate({ oldConfig: withPublicUsers(true), newConfig: withPublicUsers(true) });
+
+      await expect(isPendingSyncReset(ctx.database, session.id)).resolves.toBe(false);
     });
   });
 });
