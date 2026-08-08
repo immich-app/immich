@@ -120,6 +120,7 @@ const ServerConfigSchema = z
     isInitialized: z.boolean().describe('Whether the server has been initialized'),
     isOnboarded: z.boolean().describe('Whether the admin has completed onboarding'),
     externalDomain: z.string().describe('External domain URL'),
+    sharedLinkDomain: z.string().describe('Shared link domain URL'),
     publicUsers: z.boolean().describe('Whether public user registration is enabled'),
     mapDarkStyleUrl: z.string().describe('Map dark style URL'),
     mapLightStyleUrl: z.string().describe('Map light style URL'),

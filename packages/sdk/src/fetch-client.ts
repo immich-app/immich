@@ -2013,6 +2013,8 @@ export type ServerConfigDto = {
     oauthButtonText: string;
     /** Whether public user registration is enabled */
     publicUsers: boolean;
+    /** Shared link domain URL */
+    sharedLinkDomain: string;
     /** Number of days before trashed assets are permanently deleted */
     trashDays: number;
     /** Delay in days before deleted users are permanently removed */
@@ -2581,6 +2583,8 @@ export type SystemConfigServerDto = {
     loginPageMessage: string;
     /** Public users */
     publicUsers: boolean;
+    /** Shared link domain */
+    sharedLinkDomain: string;
 };
 export type SystemConfigStorageTemplateDto = {
     /** Enabled */

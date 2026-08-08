@@ -346,6 +346,8 @@
     "server_public_users_description": "Alle brugere (navn og e-mail) vises, når en bruger tilføjes til delte album. Når den er deaktiveret, vil brugerlisten kun være tilgængelig for administratorbrugere.",
     "server_settings": "Serverindstillinger",
     "server_settings_description": "Administrér serverindstillinger",
+    "server_shared_link_domain_settings": "Delt link domæne",
+    "server_shared_link_domain_settings_description": "Domæne brugt til delte links",
     "server_stats_page_description": "Admin server statistikside",
     "server_welcome_message": "Velkomstbesked",
     "server_welcome_message_description": "En besked som bliver vist på loginsiden.",
