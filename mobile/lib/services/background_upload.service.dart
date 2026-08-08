@@ -378,7 +378,7 @@ class BackgroundUploadService {
       'fileModifiedAt': modifiedAt.toUtc().toIso8601String(),
       'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
-      if (fields != null) ...fields,
+      ...?fields,
       if (CurrentPlatform.isIOS && cloudId != null)
         'metadata': jsonEncode([
           RemoteAssetMetadataItem(

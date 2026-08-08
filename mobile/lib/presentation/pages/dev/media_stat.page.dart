@@ -58,7 +58,7 @@ class LocalMediaSummaryPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(context.t.local_media_summary)),
       body: Consumer(
-        builder: (ctx, ref, __) {
+        builder: (ctx, ref, _) {
           final db = ref.watch(driftProvider);
           final albumsFuture = ref.watch(localAlbumRepository).getAll();
 
@@ -138,7 +138,7 @@ class RemoteMediaSummaryPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(context.t.remote_media_summary)),
       body: Consumer(
-        builder: (ctx, ref, __) {
+        builder: (ctx, ref, _) {
           final db = ref.watch(driftProvider);
           final albumsFuture = ref.watch(remoteAlbumRepository).getAll();
 
