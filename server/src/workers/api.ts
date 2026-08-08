@@ -11,7 +11,13 @@ async function bootstrap() {
 
   configureTelemetry();
 
-  const app = await NestFactory.create<NestExpressApplication>(ApiModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(ApiModule, {
+    bufferLogs: true,
+    // default module id algorithm can cause
+    // the ApiModule to be instatiated more than
+    // once when injected into YuccaModule
+    moduleIdGeneratorAlgorithm: 'deep-hash',
+  });
   app.get(AppRepository).setCloseFn(() => app.close());
 
   void configureExpress(app, {

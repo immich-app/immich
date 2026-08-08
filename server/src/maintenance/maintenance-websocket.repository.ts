@@ -15,6 +15,7 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 interface ServerEventMap {
   AppRestart: [AppRestartEvent];
   MaintenanceStatus: [MaintenanceStatusResponseDto];
+  YuccaEvent: [unknown];
 }
 
 interface ClientEventMap {

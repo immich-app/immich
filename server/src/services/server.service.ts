@@ -86,8 +86,18 @@ export class ServerService extends BaseService {
   }
 
   async getFeatures(): Promise<ServerFeaturesDto> {
-    const { reverseGeocoding, metadata, map, machineLearning, trash, oauth, passwordLogin, notifications, ffmpeg } =
-      await this.getConfig({ withCache: false });
+    const {
+      reverseGeocoding,
+      metadata,
+      map,
+      backup,
+      machineLearning,
+      trash,
+      oauth,
+      passwordLogin,
+      notifications,
+      ffmpeg,
+    } = await this.getConfig({ withCache: false });
     const { configFile } = this.configRepository.getEnv();
 
     return {
@@ -95,6 +105,7 @@ export class ServerService extends BaseService {
       facialRecognition: isFacialRecognitionEnabled(machineLearning),
       duplicateDetection: isDuplicateDetectionEnabled(machineLearning),
       map: map.enabled,
+      backups: backup.beta,
       reverseGeocoding: reverseGeocoding.enabled,
       importFaces: metadata.faces.import,
       sidecar: true,
