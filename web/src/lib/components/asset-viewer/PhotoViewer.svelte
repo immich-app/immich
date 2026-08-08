@@ -16,7 +16,7 @@
   import { getNaturalSize, scaleToFit, type Size } from '$lib/utils/container-utils';
   import { handleError } from '$lib/utils/handle-error';
   import { getOcrBoundingBoxes } from '$lib/utils/ocr-utils';
-  import { getBoundingBox, type BoundingBox } from '$lib/utils/people-utils';
+  import { getBoundingBox, getRelativeFaceLabelLeft, type BoundingBox } from '$lib/utils/people-utils';
   import { type SharedLinkResponseDto } from '@immich/sdk';
   import { toastManager } from '@immich/ui';
   import { onDestroy, untrack } from 'svelte';
@@ -61,6 +61,15 @@
 
   let containerWidth = $state(0);
   let containerHeight = $state(0);
+  // Only one face label is visible at a time (isActive guard), so a single shared width is sufficient.
+  let labelWidth = $state(0);
+
+  $effect(() => {
+    // Reset label width when highlighted faces change to prevent carry-over from previous face labels
+    if (assetViewerManager.highlightedFaces) {
+      labelWidth = 0;
+    }
+  });
 
   const container = $derived({
     width: containerWidth,
@@ -270,10 +279,17 @@
           onpointerleave={() => assetViewerManager.clearHighlightedFaces()}
         >
           {#if isActive && boundingbox.name}
+            {@const labelLeft = getRelativeFaceLabelLeft(
+              boundingbox.left,
+              boundingbox.width,
+              labelWidth,
+              overlaySize.width,
+            )}
             <div
               aria-hidden="true"
-              class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"
-              style="top: {boundingbox.height + 4}px; right: 0;"
+              bind:clientWidth={labelWidth}
+              class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg transition-opacity duration-75"
+              style="top: {boundingbox.height + 4}px; left: {labelLeft}px; opacity: {labelWidth > 0 ? 1 : 0};"
             >
               {boundingbox.name}
             </div>
