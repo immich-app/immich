@@ -1,36 +1,39 @@
 <script lang="ts">
+  import { searchMediaTitle } from './search-bar-utils';
   import { MediaType } from '$lib/constants';
-  import RadioButton from '$lib/elements/RadioButton.svelte';
   import { Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
+  import SearchButton from './SearchButton.svelte';
 
   interface Props {
-    filteredMedia: MediaType;
+    title: string | undefined;
   }
 
-  let { filteredMedia = $bindable() }: Props = $props();
+  // eslint-disable-next-line no-useless-assignment
+  let { title = $bindable() }: Props = $props();
+  let filteredMedia = $derived(searchManager.filter.mediaType);
+
+  const setMedia = (media: MediaType) => {
+    searchManager.filter.mediaType = media;
+    title = searchMediaTitle(media);
+  };
 </script>
 
 <div id="media-type-selection">
   <fieldset>
-    <Text class="mb-2" fontWeight="medium">{$t('media_type')}</Text>
+    <Text class="pb-5">{$t('media_type_description')}</Text>
 
-    <div class="mt-1 flex flex-wrap gap-x-5 gap-y-2">
-      <RadioButton name="media-type" id="type-all" bind:group={filteredMedia} label={$t('all')} value={MediaType.All} />
-      <RadioButton
-        name="media-type"
-        id="type-image"
-        bind:group={filteredMedia}
-        label={$t('image')}
-        value={MediaType.Image}
-      />
-      <RadioButton
-        name="media-type"
-        id="type-video"
-        bind:group={filteredMedia}
-        label={$t('video')}
-        value={MediaType.Video}
-      />
+    <div class="flex flex-wrap gap-2">
+      <SearchButton checked active={filteredMedia === MediaType.All} onclick={() => setMedia(MediaType.All)}>
+        {$t('all')}
+      </SearchButton>
+      <SearchButton checked active={filteredMedia === MediaType.Image} onclick={() => setMedia(MediaType.Image)}>
+        {$t('image')}
+      </SearchButton>
+      <SearchButton checked active={filteredMedia === MediaType.Video} onclick={() => setMedia(MediaType.Video)}>
+        {$t('video')}
+      </SearchButton>
     </div>
   </fieldset>
 </div>
