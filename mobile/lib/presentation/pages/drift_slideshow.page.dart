@@ -11,7 +11,7 @@ import 'package:immich_mobile/domain/models/config/slideshow_config.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
@@ -411,7 +411,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
               children: [
                 AppBar(
                   backgroundColor: context.scaffoldBackgroundColor,
-                  title: Text("slideshow".t(context: context)),
+                  title: Text(context.t.slideshow),
                   actions: [
                     IconButton(
                       onPressed: _paused ? _play : _pause,
