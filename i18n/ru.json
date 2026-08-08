@@ -30,6 +30,7 @@
   "add_to_album_bottom_sheet_added": "Добавлено в альбом {album}",
   "add_to_album_bottom_sheet_already_exists": "Уже в альбоме {album}",
   "add_to_album_bottom_sheet_some_local_assets": "Некоторые объекты не добавлены в альбом, поскольку еще не загружены на сервер",
+  "add_to_album_item_count": "Добавить {count, plural, one {# объект} many {# объектов} other {# объекта}} в альбом",
   "add_to_albums": "Добавить в альбомы",
   "add_to_albums_count": "Добавить в альбомы ({count})",
   "add_to_bottom_bar": "Добавить в",

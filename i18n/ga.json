@@ -30,6 +30,7 @@
   "add_to_album_bottom_sheet_added": "Curtha le {album}",
   "add_to_album_bottom_sheet_already_exists": "Cheana féin i {album}",
   "add_to_album_bottom_sheet_some_local_assets": "Níorbh fhéidir roinnt sócmhainní áitiúla a chur leis an albam",
+  "add_to_album_item_count": "Cuir {count, plural, one {# mír} other {# míreanna}} leis an albam",
   "add_to_albums": "Cuir le halbaim",
   "add_to_albums_count": "Cuir le halbaim ({count})",
   "add_to_bottom_bar": "Cuir le",

@@ -30,6 +30,7 @@
   "add_to_album_bottom_sheet_added": "{album} albümüne eklendi",
   "add_to_album_bottom_sheet_already_exists": "Zaten {album} albümüne ekli",
   "add_to_album_bottom_sheet_some_local_assets": "Bazı yerel öğeler albüme eklenemedi",
+  "add_to_album_item_count": "{count, plural, one {# ögeyi} other {# ögeyi}} albüme ekle",
   "add_to_albums": "Albümlere ekle",
   "add_to_albums_count": "{count} albümlerine ekle",
   "add_to_bottom_bar": "Şuraya ekle",

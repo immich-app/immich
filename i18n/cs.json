@@ -30,6 +30,7 @@
   "add_to_album_bottom_sheet_added": "Přidáno do {album}",
   "add_to_album_bottom_sheet_already_exists": "Je již v {album}",
   "add_to_album_bottom_sheet_some_local_assets": "Některé místní položky nebylo možné přidat do alba",
+  "add_to_album_item_count": "Přidat {count, plural, one {# položku} few {# položky} other {# položek}} do alba",
   "add_to_albums": "Přidat do alb",
   "add_to_albums_count": "Přidat do alb ({count})",
   "add_to_bottom_bar": "Přidat do",
