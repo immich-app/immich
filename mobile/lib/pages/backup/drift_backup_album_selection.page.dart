@@ -1,13 +1,12 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/services/sync_linked_album.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
@@ -154,13 +153,13 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
           ),
           title: _isSearchMode
               ? SearchField(
-                  hintText: 'search_albums'.t(context: context),
+                  hintText: context.t.search_albums,
                   autofocus: true,
                   controller: _searchController,
                   focusNode: _searchFocusNode,
                   onChanged: (value) => setState(() => _searchQuery = value.trim()),
                 )
-              : const Text("backup_album_selection_page_select_albums").t(context: context),
+              : Text(context.t.backup_album_selection_page_select_albums),
           actions: [
             if (!_isSearchMode)
               IconButton(
@@ -194,9 +193,9 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
                         child: Text(
-                          "backup_album_selection_page_selection_info",
+                          context.t.backup_album_selection_page_selection_info,
                           style: context.textTheme.titleSmall,
-                        ).t(context: context),
+                        ),
                       ),
 
                       // Selected Album Chips
@@ -211,15 +210,15 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                       ),
                       ListTile(
                         title: Text(
-                          "albums_on_device_count".t(context: context, args: {'count': albumCount.toString()}),
+                          context.t.albums_on_device_count(count: albumCount),
                           style: context.textTheme.titleSmall,
                         ),
                         subtitle: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 8.0),
                           child: Text(
-                            "backup_album_selection_page_albums_tap",
+                            context.t.backup_album_selection_page_albums_tap,
                             style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
-                          ).t(context: context),
+                          ),
                         ),
                         trailing: IconButton(
                           splashRadius: 16,
@@ -235,20 +234,20 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                                     ),
                                     elevation: 5,
                                     title: Text(
-                                      'backup_album_selection_page_selection_info',
+                                      context.t.backup_album_selection_page_selection_info,
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
                                         color: context.primaryColor,
                                       ),
-                                    ).t(context: context),
+                                    ),
                                     content: SingleChildScrollView(
                                       child: ListBody(
                                         children: [
-                                          const Text(
-                                            'backup_album_selection_page_assets_scatter',
-                                            style: TextStyle(fontSize: 14),
-                                          ).t(context: context),
+                                          Text(
+                                            context.t.backup_album_selection_page_assets_scatter,
+                                            style: const TextStyle(fontSize: 14),
+                                          ),
                                         ],
                                       ),
                                     ),
@@ -268,16 +267,10 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                   SliverToBoxAdapter(
                     child: Center(
                       child: _searchQuery.isNotEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Text('album_search_not_found'.t(context: context)),
-                            )
+                          ? Padding(padding: const EdgeInsets.all(24.0), child: Text(context.t.album_search_not_found))
                           : isLoading
                           ? const CircularProgressIndicator()
-                          : Padding(
-                              padding: const EdgeInsets.all(24.0),
-                              child: Text('no_albums_found'.t(context: context)),
-                            ),
+                          : Padding(padding: const EdgeInsets.all(24.0), child: Text(context.t.no_albums_found)),
                     ),
                   )
                 else
@@ -309,7 +302,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             const CircularProgressIndicator(strokeWidth: 4),
-                            Text('creating_linked_albums'.tr(), style: context.textTheme.labelLarge),
+                            Text(context.t.creating_linked_albums, style: context.textTheme.labelLarge),
                           ],
                         ),
                       ),
@@ -476,10 +469,7 @@ class _SelectAllButton extends ConsumerWidget {
                     }
                   : null,
               icon: const Icon(Icons.select_all),
-              label: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 200),
-                child: Text("select_all".t(context: context)),
-              ),
+              label: AnimatedSwitcher(duration: const Duration(milliseconds: 200), child: Text(context.t.select_all)),
               style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12.0)),
             ),
           ),
@@ -496,7 +486,7 @@ class _SelectAllButton extends ConsumerWidget {
                     }
                   : null,
               icon: const Icon(Icons.deselect),
-              label: Text('deselect_all'.t(context: context)),
+              label: Text(context.t.deselect_all),
               style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 12.0)),
             ),
           ),
