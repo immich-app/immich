@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/actions/upload.action.dart';
@@ -66,6 +67,7 @@ class _LocalAlbumBottomSheetState extends ConsumerState<LocalAlbumBottomSheet> {
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
       actions: const <ActionColumnButton>[
+        .new(action: AssetDebugAction(source: .timeline)),
         .new(action: ShareAction(source: .timeline)),
         .new(action: DeleteAction(source: .timeline)),
         .new(action: CleanupLocalAction(source: .timeline)),
