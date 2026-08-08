@@ -313,6 +313,7 @@ class MediumRepositoryContext {
     TrashOrigin? source,
     AssetType? type,
     DateTime? createdAt,
+    DateTime? updatedAt,
     bool? isFavorite,
   }) async {
     id ??= TestUtils.uuid();
@@ -328,6 +329,7 @@ class MediumRepositoryContext {
             source: .new(source ?? TrashOrigin.remoteSync),
             isFavorite: .new(isFavorite ?? false),
             createdAt: .new(TestUtils.date(createdAt)),
+            updatedAt: .new(TestUtils.date(updatedAt)),
           ),
         );
   }
