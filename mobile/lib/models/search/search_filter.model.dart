@@ -233,7 +233,7 @@ class SearchFilter {
   String? language;
   String? assetId;
   List<String>? tagIds;
-  Set<PersonDto> people;
+  Set<Person> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
   SearchDateFilter date;
@@ -289,7 +289,7 @@ class SearchFilter {
     String? language,
     String? ocr,
     String? assetId,
-    Set<PersonDto>? people,
+    Set<Person>? people,
     List<String>? tagIds,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
