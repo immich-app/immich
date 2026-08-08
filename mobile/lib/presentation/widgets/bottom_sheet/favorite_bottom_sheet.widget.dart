@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
@@ -43,28 +43,25 @@ class FavoriteBottomSheet extends ConsumerWidget {
       }
 
       if (selectedAssets.length != remoteAssets.length) {
-        ImmichToast.show(
-          context: context,
-          msg: 'add_to_album_bottom_sheet_some_local_assets'.t(context: context),
-        );
+        ImmichToast.show(context: context, msg: context.t.add_to_album_bottom_sheet_some_local_assets);
       }
 
       // Only report the failure when nothing was added; if some succeeded we show "added".
       if (result.added > 0) {
         ImmichToast.show(
           context: context,
-          msg: 'add_to_album_bottom_sheet_added'.t(args: {"album": album.name}),
+          msg: context.t.add_to_album_bottom_sheet_added(album: album.name),
         );
       } else if (result.failed > 0) {
         ImmichToast.show(
           context: context,
-          msg: 'assets_cannot_be_added_to_album_count'.t(context: context, args: {'count': result.failed}),
+          msg: context.t.assets_cannot_be_added_to_album_count(count: result.failed),
           toastType: ToastType.error,
         );
       } else {
         ImmichToast.show(
           context: context,
-          msg: 'add_to_album_bottom_sheet_already_exists'.t(args: {"album": album.name}),
+          msg: context.t.add_to_album_bottom_sheet_already_exists(album: album.name),
         );
       }
 

@@ -427,8 +427,8 @@ class SharedLinkEditPage extends HookConsumerWidget {
       return showDialog(
         context: context,
         builder: (BuildContext context) => ConfirmDialog(
-          title: "delete_shared_link_dialog_title",
-          content: "confirm_delete_shared_link",
+          title: context.t.delete_shared_link_dialog_title,
+          content: context.t.confirm_delete_shared_link,
           onOk: () async {
             await ref.read(sharedLinkServiceProvider).deleteSharedLink(existingLink!.id);
             ref.invalidate(sharedLinksStateProvider);

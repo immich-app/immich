@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
@@ -62,10 +62,10 @@ class _PlaceSliverAppBar extends HookWidget {
               onTapOutside: (_) => searchFocusNode.unfocus(),
               onChanged: (value) => search.value = value,
               filled: true,
-              hintText: 'filter_places'.t(context: context),
+              hintText: context.t.filter_places,
               autofocus: true,
             )
-          : Text('places'.t(context: context)),
+          : Text(context.t.places),
       actions: [
         IconButton(
           icon: Icon(search.value != null ? Icons.close : Icons.search),
