@@ -48,6 +48,8 @@ class MockSyncMigrationRepository extends Mock implements SyncMigrationRepositor
 
 class MockUserRepository extends Mock implements UserRepository {}
 
+class MockDriftAuthUserRepository extends Mock implements DriftAuthUserRepository {}
+
 class MockPartnerRepository extends Mock implements PartnerRepository {}
 
 // API Repos

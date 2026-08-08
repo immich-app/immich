@@ -49,7 +49,7 @@ void main() {
       expect(sut.tryGet(StoreKey.advancedTroubleshooting), _kAdvancedTroubleshooting);
       expect(sut.tryGet(StoreKey.version), _kVersion);
       // Other keys should be null
-      expect(sut.tryGet(StoreKey.currentUser), isNull);
+      expect(sut.tryGet(StoreKey.deviceId), isNull);
     });
 
     test('Listens to stream of store updates', () async {
@@ -69,11 +69,11 @@ void main() {
     });
 
     test('Throws StoreKeyNotFoundException for nonexistent keys', () {
-      expect(() => sut.get(StoreKey.currentUser), throwsA(isA<StoreKeyNotFoundException>()));
+      expect(() => sut.get(StoreKey.deviceId), throwsA(isA<StoreKeyNotFoundException>()));
     });
 
     test('Returns the stored value for the given key or the defaultValue', () {
-      expect(sut.get(StoreKey.currentUser, 5), 5);
+      expect(sut.get(StoreKey.legacyBackupTriggerDelay, 5), 5);
     });
   });
 
