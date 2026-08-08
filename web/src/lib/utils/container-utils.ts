@@ -49,15 +49,19 @@ export const scaleToFit = (dimensions: Size, container: Size): Size => {
   };
 };
 
+// `<hls-video>` forwards the video API but extends HTMLElement, so `instanceof HTMLVideoElement` is false for it
+const isVideoElement = (element: HTMLImageElement | HTMLVideoElement): element is HTMLVideoElement =>
+  'videoWidth' in element;
+
 const getElementSize = (element: HTMLImageElement | HTMLVideoElement): Size => {
-  if (element instanceof HTMLVideoElement) {
+  if (isVideoElement(element)) {
     return { width: element.clientWidth, height: element.clientHeight };
   }
   return { width: element.width, height: element.height };
 };
 
 export const getNaturalSize = (element: HTMLImageElement | HTMLVideoElement): Size => {
-  if (element instanceof HTMLVideoElement) {
+  if (isVideoElement(element)) {
     return { width: element.videoWidth, height: element.videoHeight };
   }
   return { width: element.naturalWidth, height: element.naturalHeight };

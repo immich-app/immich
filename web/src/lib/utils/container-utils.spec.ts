@@ -27,6 +27,20 @@ const mockVideo = (props: {
   return element;
 };
 
+// `<hls-video>` extends HTMLElement and proxies the video API, so it is not an HTMLVideoElement
+const mockCustomVideo = (props: {
+  videoWidth: number;
+  videoHeight: number;
+  clientWidth: number;
+  clientHeight: number;
+}): HTMLVideoElement => {
+  const element = Object.create(HTMLElement.prototype);
+  for (const [key, value] of Object.entries(props)) {
+    Object.defineProperty(element, key, { value, writable: true, configurable: true });
+  }
+  return element as HTMLVideoElement;
+};
+
 describe('scaleToFit', () => {
   it('should return full width when image is wider than container', () => {
     expect(scaleToFit({ width: 2000, height: 1000 }, { width: 800, height: 600 })).toEqual({ width: 800, height: 400 });
@@ -86,6 +100,15 @@ describe('getContentMetrics', () => {
     expect(metrics.offsetX).toBe(0);
     expect(metrics.offsetY).toBe(75);
   });
+
+  it('should use clientWidth/clientHeight for custom video elements', () => {
+    const video = mockCustomVideo({ videoWidth: 1920, videoHeight: 1080, clientWidth: 800, clientHeight: 600 });
+    const metrics = getContentMetrics(video);
+    expect(metrics.contentWidth).toBe(800);
+    expect(metrics.contentHeight).toBe(450);
+    expect(metrics.offsetX).toBe(0);
+    expect(metrics.offsetY).toBe(75);
+  });
 });
 
 describe('getNaturalSize', () => {
@@ -96,6 +119,11 @@ describe('getNaturalSize', () => {
 
   it('should return videoWidth/videoHeight for videos', () => {
     const video = mockVideo({ videoWidth: 1920, videoHeight: 1080, clientWidth: 800, clientHeight: 600 });
+    expect(getNaturalSize(video)).toEqual({ width: 1920, height: 1080 });
+  });
+
+  it('should return videoWidth/videoHeight for custom video elements', () => {
+    const video = mockCustomVideo({ videoWidth: 1920, videoHeight: 1080, clientWidth: 800, clientHeight: 600 });
     expect(getNaturalSize(video)).toEqual({ width: 1920, height: 1080 });
   });
 });
