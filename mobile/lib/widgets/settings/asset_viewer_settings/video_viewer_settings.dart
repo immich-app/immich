@@ -18,13 +18,13 @@ class VideoViewerSettings extends HookConsumerWidget {
     final useLoopVideo = useState(viewer.loopVideo);
     final useOriginalVideo = useState(viewer.loadOriginalVideo);
 
-    useValueChanged<bool, void>(useAutoPlayVideo.value, (_, __) {
+    useValueChanged<bool, void>(useAutoPlayVideo.value, (_, _) {
       unawaited(ref.read(settingsProvider).write(.viewerAutoPlayVideo, useAutoPlayVideo.value));
     });
-    useValueChanged<bool, void>(useLoopVideo.value, (_, __) {
+    useValueChanged<bool, void>(useLoopVideo.value, (_, _) {
       unawaited(ref.read(settingsProvider).write(.viewerLoopVideo, useLoopVideo.value));
     });
-    useValueChanged<bool, void>(useOriginalVideo.value, (_, __) {
+    useValueChanged<bool, void>(useOriginalVideo.value, (_, _) {
       unawaited(ref.read(settingsProvider).write(.viewerLoadOriginalVideo, useOriginalVideo.value));
     });
 

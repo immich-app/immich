@@ -140,7 +140,7 @@ class _BottomBar extends StatelessWidget {
                 const SizedBox(width: 15),
                 ValueListenableBuilder(
                   valueListenable: selectedLatLng,
-                  builder: (_, value, __) =>
+                  builder: (_, value, _) =>
                       Text("${value.latitude.toStringAsFixed(4)}, ${value.longitude.toStringAsFixed(4)}"),
                 ),
               ],

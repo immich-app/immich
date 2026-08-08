@@ -18,8 +18,8 @@ Future<void> showFeatureMessageDialog(BuildContext context) {
     barrierLabel: context.t.whats_new,
     barrierColor: Colors.black.withValues(alpha: 0.55),
     transitionDuration: const Duration(milliseconds: 280),
-    pageBuilder: (_, __, ___) => const _FeatureMessageDialog(),
-    transitionBuilder: (_, animation, __, child) {
+    pageBuilder: (_, _, _) => const _FeatureMessageDialog(),
+    transitionBuilder: (_, animation, _, child) {
       final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
       return FadeTransition(
         opacity: animation,
@@ -250,7 +250,7 @@ class _FeaturePage extends StatelessWidget {
                       : Image.asset(
                           highlight.image!,
                           fit: BoxFit.contain,
-                          errorBuilder: (context, _, __) => const FeatureMessagePlaceholder(),
+                          errorBuilder: (context, _, _) => const FeatureMessagePlaceholder(),
                         ),
                 ),
               ),

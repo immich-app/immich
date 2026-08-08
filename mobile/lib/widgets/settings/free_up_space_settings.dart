@@ -407,7 +407,7 @@ class _FreeUpSpaceSettingsState extends ConsumerState<FreeUpSpaceSettings> {
                   setState(() => _currentStep = CleanupStep.values[step]);
                 }
               },
-              controlsBuilder: (_, __) => const SizedBox.shrink(),
+              controlsBuilder: (_, _) => const SizedBox.shrink(),
               steps: [
                 // Step 1: Select Cutoff Date
                 Step(
