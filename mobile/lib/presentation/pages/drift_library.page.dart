@@ -21,11 +21,11 @@ import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 @RoutePage()
-class DriftLibraryPage extends ConsumerWidget {
+class DriftLibraryPage extends StatelessWidget {
   const DriftLibraryPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return const Scaffold(
       body: CustomScrollView(
         slivers: [

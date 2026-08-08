@@ -70,6 +70,10 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
       final croppedImage = await _cropController.croppedImage();
       final pngBytes = await imageToUint8List(croppedImage);
       final xFile = XFile.fromData(pngBytes, mimeType: 'image/png');
+      if (!context.mounted) {
+        return;
+      }
+
       final success = await ref
           .read(uploadProfileImageProvider.notifier)
           .upload(xFile, fileName: 'profile-picture.png');

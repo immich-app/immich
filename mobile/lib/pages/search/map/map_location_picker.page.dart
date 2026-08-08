@@ -5,7 +5,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/maplibrecontroller_extensions.dart';
@@ -14,13 +13,13 @@ import 'package:immich_mobile/widgets/map/map_theme_override.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 @RoutePage()
-class MapLocationPickerPage extends HookConsumerWidget {
+class MapLocationPickerPage extends HookWidget {
   final LatLng initialLatLng;
 
   const MapLocationPickerPage({super.key, this.initialLatLng = const LatLng(0, 0)});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final selectedLatLng = useValueNotifier<LatLng>(initialLatLng);
     final controller = useRef<MapLibreMapController?>(null);
     final marker = useRef<Symbol?>(null);

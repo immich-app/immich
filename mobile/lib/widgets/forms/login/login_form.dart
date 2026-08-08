@@ -101,9 +101,15 @@ class LoginForm extends HookConsumerWidget {
 
       try {
         final endpoint = await ref.read(authProvider.notifier).validateServerUrl(serverUrl);
+        if (!context.mounted) {
+          return;
+        }
 
         // Fetch and load server config and features
         await ref.read(serverInfoProvider.notifier).getServerInfo();
+        if (!context.mounted) {
+          return;
+        }
 
         final serverInfo = ref.read(serverInfoProvider);
         final features = serverInfo.serverFeatures;
@@ -264,6 +270,10 @@ class LoginForm extends HookConsumerWidget {
             await getManageMediaPermission();
           }
           unawaited(handleSyncFlow());
+          if (!context.mounted) {
+            return;
+          }
+
           ref.read(websocketProvider.notifier).connect();
           unawaited(ref.read(featureMessageServiceProvider).markSeen());
           if (!context.mounted) {
@@ -312,7 +322,7 @@ class LoginForm extends HookConsumerWidget {
     }
 
     Future<void> oAuthLogin() async {
-      final oAuthService = ref.watch(oAuthServiceProvider);
+      final oAuthService = ref.read(oAuthServiceProvider);
       String? oAuthServerUrl;
 
       final state = generateRandomString(32);
@@ -349,27 +359,27 @@ class LoginForm extends HookConsumerWidget {
         try {
           final loginResponseDto = await oAuthService.oAuthLogin(oAuthServerUrl, state, codeVerifier);
 
-          if (loginResponseDto == null) {
+          if (loginResponseDto == null || !context.mounted) {
             return;
           }
 
           log.info("Finished OAuth login with response: ${loginResponseDto.userEmail}");
 
           final isSuccess = await ref
-              .watch(authProvider.notifier)
+              .read(authProvider.notifier)
               .saveAuthInfo(accessToken: loginResponseDto.accessToken);
 
-          if (isSuccess) {
+          if (isSuccess && context.mounted) {
             await ref.read(galleryPermissionNotifier.notifier).requestGalleryPermission();
             if (isSyncRemoteDeletionsMode()) {
               await getManageMediaPermission();
             }
             unawaited(handleSyncFlow());
-            unawaited(ref.read(featureMessageServiceProvider).markSeen());
             if (!context.mounted) {
               return;
             }
 
+            unawaited(ref.read(featureMessageServiceProvider).markSeen());
             unawaited(context.router.replaceAll([const TabShellRoute()]));
             return;
           }

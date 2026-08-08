@@ -19,11 +19,11 @@ import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/setting_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
 
-class DriftBackupSettings extends ConsumerWidget {
+class DriftBackupSettings extends StatelessWidget {
   const DriftBackupSettings({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return SettingsSubPageScaffold(
       settings: [
         SettingGroupTitle(
@@ -68,8 +68,9 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
     });
 
     try {
-      await ref.read(backgroundSyncProvider).syncLinkedAlbum();
-      await ref.read(backgroundSyncProvider).syncRemote();
+      final backgroundSync = ref.read(backgroundSyncProvider);
+      await backgroundSync.syncLinkedAlbum();
+      await backgroundSync.syncRemote();
     } catch (_) {
     } finally {
       Future.delayed(const Duration(seconds: 1), () {
@@ -225,7 +226,7 @@ class _BackupOnlyWhenChargingButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final fgService = ref.read(backgroundWorkerFgServiceProvider);
+    final fgService = ref.watch(backgroundWorkerFgServiceProvider);
     return _BackupSwitchTile(
       metadataKey: SettingsKey.backupRequireCharging,
       selector: (c) => c.backup.requireCharging,

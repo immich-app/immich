@@ -72,7 +72,7 @@ class TechnicalDetails extends ConsumerWidget {
     final subtitleStyle = context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary);
 
     if (asset is LocalAsset) {
-      final assetMediaRepository = ref.watch(assetMediaRepositoryProvider);
+      final assetMediaRepository = ref.read(assetMediaRepositoryProvider);
       return FutureBuilder<String?>(
         future: assetMediaRepository.getOriginalFilename(asset.id),
         builder: (context, snapshot) {
