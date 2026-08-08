@@ -66,6 +66,8 @@ const methods = wrapper<Manifest>({
     return {};
   },
 
+  assetAlbumFilter: ({ config, data }) => ({ workflow: { continue: config.albumIds.includes(data.album.id) } }),
+
   assetArchive: ({ config, data }) => {
     if (!config.inverse && data.asset.visibility !== AssetVisibility.Archive) {
       return { changes: { asset: { visibility: AssetVisibility.Archive } } };
@@ -209,6 +211,7 @@ const methods = wrapper<Manifest>({
 
 const {
   assetAddToAlbums,
+  assetAlbumFilter,
   assetArchive,
   assetFavorite,
   assetFileFilter,
@@ -227,6 +230,7 @@ const {
 
 export {
   assetAddToAlbums,
+  assetAlbumFilter,
   assetArchive,
   assetFavorite,
   assetFileFilter,

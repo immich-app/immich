@@ -21,13 +21,15 @@ import {
   JobName,
   JobStatus,
   QueueName,
+  SystemMetadataKey,
   WorkflowType,
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { AlbumService } from 'src/services/album.service';
 import { AssetService } from 'src/services/asset.service';
 import { BaseService } from 'src/services/base.service';
-import { JobOf } from 'src/types';
+import { JobItem, JobOf } from 'src/types';
+import { withImpliedItems } from 'src/utils/workflow';
 
 const dummy = () => {
   throw new Error(
@@ -309,6 +311,11 @@ export class WorkflowExecutionService extends BaseService {
     return this.onAssetTrigger({ userId, assetId, trigger: WorkflowTrigger.AssetMetadataExtraction });
   }
 
+  @OnEvent({ name: 'AlbumAssetsAdded' })
+  onAlbumAssetsAdded() {
+    return this.onAlbumAssetTrigger(WorkflowTrigger.AlbumAssetAdded);
+  }
+
   private async onAssetTrigger({ userId, assetId, trigger }: AssetTrigger) {
     const items = await this.workflowRepository.search({ userId, trigger });
     await this.jobRepository.queueAll(
@@ -319,11 +326,87 @@ export class WorkflowExecutionService extends BaseService {
     );
   }
 
+  private async onAlbumAssetTrigger(trigger: WorkflowTrigger) {
+    let checkpoint = await this.systemMetadataRepository.get(SystemMetadataKey.AlbumAssetWorkflowCheckpoint);
+    const now = await this.syncCheckpointRepository.getNow();
+
+    if (!checkpoint) {
+      checkpoint = { lastUuid: now.nowId };
+      await this.systemMetadataRepository.set(SystemMetadataKey.AlbumAssetWorkflowCheckpoint, checkpoint);
+    }
+
+    const workflows = new Map();
+
+    while (checkpoint.lastUuid < now.nowId) {
+      const albumAssets = await this.workflowRepository.getForAlbumAssetV1(checkpoint.lastUuid);
+      if (albumAssets.length === 0) {
+        break;
+      }
+
+      const jobs: JobItem[] = [];
+      for (const albumAsset of albumAssets) {
+        const userId = albumAsset.asset?.ownerId;
+
+        if (!workflows.has(userId)) {
+          workflows.set(userId, await this.workflowRepository.search({ userId, trigger }));
+        }
+
+        for (const workflow of workflows.get(userId)) {
+          jobs.push({
+            name: JobName.WorkflowAlbumAssetTrigger,
+            data: {
+              workflowId: workflow.id,
+              albumAsset: { asset: albumAsset.asset as any, album: { id: albumAsset.albumId } },
+              userId: workflow.ownerId,
+            },
+          });
+        }
+      }
+
+      await this.jobRepository.queueAll(jobs);
+      checkpoint!.lastUuid = albumAssets[0].updateId;
+      await this.systemMetadataRepository.set(SystemMetadataKey.AlbumAssetWorkflowCheckpoint, checkpoint);
+    }
+  }
+
+  private writeAssetV1<T extends WorkflowType>(assetId: string) {
+    const assetService = BaseService.create(AssetService, this);
+
+    return async (auth: AuthDto, changes: WorkflowChanges<T>) => {
+      const asset = changes.asset;
+      if (!asset) {
+        return;
+      }
+
+      await assetService.update(auth, assetId, {
+        isFavorite: asset.isFavorite,
+        visibility: asset.visibility,
+        dateTimeOriginal: asset.exifInfo?.dateTimeOriginal ?? undefined,
+        // TODO allow setting to null
+        longitude: asset.exifInfo?.longitude ?? undefined,
+        // TODO allow setting to null
+        latitude: asset.exifInfo?.latitude ?? undefined,
+        // TODO allow setting to null
+        description: asset.exifInfo?.description ?? undefined,
+        rating: asset.exifInfo?.rating,
+
+        // TODO add to update dto
+        // make: asset.exifInfo?.make,
+        // model: asset.exifInfo?.model,
+        // city: asset.exifInfo?.city,
+        // state: asset.exifInfo?.state,
+        // country: asset.exifInfo?.country,
+        // lensModel: asset.exifInfo?.lensModel,
+        // fNumber: asset.exifInfo?.fNumber,
+        // fps: asset.exifInfo?.fps,
+        // iso: asset.exifInfo?.iso,
+      });
+    };
+  }
+
   @OnJob({ name: JobName.WorkflowAssetTrigger, queue: QueueName.Workflow })
   handleAssetTrigger({ workflowId, assetId }: JobOf<JobName.WorkflowAssetTrigger>) {
     return this.execute(workflowId, (type) => {
-      const assetService = BaseService.create(AssetService, this);
-
       switch (type) {
         case WorkflowType.AssetV1: {
           return {
@@ -334,37 +417,36 @@ export class WorkflowExecutionService extends BaseService {
                 authUserId: asset.ownerId,
               };
             },
+            write: this.writeAssetV1<typeof type>(assetId),
+          } satisfies ExecuteOptions<typeof type>;
+        }
+        default: {
+          return;
+        }
+      }
+    });
+  }
+
+  @OnJob({ name: JobName.WorkflowAlbumAssetTrigger, queue: QueueName.Workflow })
+  handleAlbumAssetTrigger({ workflowId, userId, albumAsset }: JobOf<JobName.WorkflowAlbumAssetTrigger>) {
+    return this.execute(workflowId, (type) => {
+      switch (type) {
+        case WorkflowType.AlbumAssetV1: {
+          return {
+            read: () =>
+              Promise.resolve({
+                data: albumAsset,
+                authUserId: userId,
+              }),
             write: async (auth, changes) => {
-              const asset = changes.asset;
-              if (!asset) {
-                return;
+              if (albumAsset.asset.ownerId === userId) {
+                await this.writeAssetV1<typeof type>(albumAsset.asset.id)(auth, changes);
               }
-
-              await assetService.update(auth, assetId, {
-                isFavorite: asset.isFavorite,
-                visibility: asset.visibility,
-                dateTimeOriginal: asset.exifInfo?.dateTimeOriginal ?? undefined,
-                // TODO allow setting to null
-                longitude: asset.exifInfo?.longitude ?? undefined,
-                // TODO allow setting to null
-                latitude: asset.exifInfo?.latitude ?? undefined,
-                // TODO allow setting to null
-                description: asset.exifInfo?.description ?? undefined,
-                rating: asset.exifInfo?.rating,
-
-                // TODO add to update dto
-                // make: asset.exifInfo?.make,
-                // model: asset.exifInfo?.model,
-                // city: asset.exifInfo?.city,
-                // state: asset.exifInfo?.state,
-                // country: asset.exifInfo?.country,
-                // lensModel: asset.exifInfo?.lensModel,
-                // fNumber: asset.exifInfo?.fNumber,
-                // fps: asset.exifInfo?.fps,
-                // iso: asset.exifInfo?.iso,
-              });
             },
           } satisfies ExecuteOptions<typeof type>;
+        }
+        default: {
+          return;
         }
       }
     });
@@ -382,7 +464,8 @@ export class WorkflowExecutionService extends BaseService {
     // TODO infer from steps
     let type: T | undefined;
     for (const targetType of Object.values(WorkflowType)) {
-      const isMissing = workflow.steps.some((step) => !step.types.includes(targetType));
+      const implied = withImpliedItems(targetType);
+      const isMissing = workflow.steps.some((step) => step.types.every((type) => !implied.includes(type)));
       if (!isMissing) {
         type = targetType as unknown as T;
         break;

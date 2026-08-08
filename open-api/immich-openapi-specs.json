@@ -19339,6 +19339,7 @@
           "OcrQueueAll",
           "Ocr",
           "WorkflowAssetTrigger",
+          "WorkflowAlbumAssetTrigger",
           "IntegrityUntrackedFilesQueueAll",
           "IntegrityUntrackedFiles",
           "IntegrityUntrackedRefresh",
@@ -28066,7 +28067,8 @@
         "description": "Plugin trigger type",
         "enum": [
           "AssetCreate",
-          "AssetMetadataExtraction"
+          "AssetMetadataExtraction",
+          "AlbumAssetAdded"
         ],
         "type": "string"
       },
@@ -28093,7 +28095,8 @@
       "WorkflowType": {
         "description": "Workflow type",
         "enum": [
-          "AssetV1"
+          "AssetV1",
+          "AlbumAssetV1"
         ],
         "type": "string"
       },
