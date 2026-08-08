@@ -11,7 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class MemoryReceiver : GlanceAppWidgetReceiver() {
+open class MemoryReceiver : GlanceAppWidgetReceiver() {
   override val glanceAppWidget = PhotoWidget()
 
   override fun onUpdate(
@@ -28,7 +28,7 @@ class MemoryReceiver : GlanceAppWidgetReceiver() {
 
   override fun onReceive(context: Context, intent: Intent) {
     val fromMainApp = intent.getBooleanExtra(HomeWidgetPlugin.TRIGGERED_FROM_HOME_WIDGET, false)
-    val provider = ComponentName(context, MemoryReceiver::class.java)
+    val provider = ComponentName(context, javaClass)
     val glanceIds = AppWidgetManager.getInstance(context).getAppWidgetIds(provider)
 
     // Launch coroutine to setup a single shot if the app requested the update

@@ -178,6 +178,52 @@
         android:resource="@xml/memory_widget" />
     </receiver>
 
+    <!-- Samsung Flex Window size variants. -->
+    <receiver
+      android:name=".widget.MemoryReceiverFlex2x2"
+      android:exported="true"
+      android:label="@string/memory_widget_flex_2x2_title">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/memory_widget_flex_2x2" />
+      <meta-data
+        android:name="com.samsung.android.appwidget.provider"
+        android:resource="@xml/samsung_appwidget_sub_screen" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.MemoryReceiverFlex4x2"
+      android:exported="true"
+      android:label="@string/memory_widget_flex_4x2_title">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/memory_widget_flex_4x2" />
+      <meta-data
+        android:name="com.samsung.android.appwidget.provider"
+        android:resource="@xml/samsung_appwidget_sub_screen" />
+    </receiver>
+
+    <receiver
+      android:name=".widget.RandomReceiverFlex2x2"
+      android:exported="true"
+      android:label="@string/random_widget_flex_2x2_title">
+      <intent-filter>
+        <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+      </intent-filter>
+      <meta-data
+        android:name="android.appwidget.provider"
+        android:resource="@xml/random_widget_flex_2x2" />
+      <meta-data
+        android:name="com.samsung.android.appwidget.provider"
+        android:resource="@xml/samsung_appwidget_sub_screen" />
+    </receiver>
+
     <activity android:name=".widget.configure.RandomConfigure"
       android:exported="true"
       android:theme="@style/Theme.Material3.DayNight.NoActionBar">

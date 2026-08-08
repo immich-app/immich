@@ -37,9 +37,13 @@ const String kWidgetCustomHeaders = "widget_custom_headers";
 // add widget identifiers here for new widgets
 // these are used to force a widget refresh
 // (iOSName, androidFQDN)
+// Android-only providers reuse the iOS name of their counterpart, updateWidget rejects a null one.
 const List<(String, String)> kWidgetNames = [
   ('com.immich.widget.random', 'app.alextran.immich.widget.RandomReceiver'),
   ('com.immich.widget.memory', 'app.alextran.immich.widget.MemoryReceiver'),
+  ('com.immich.widget.memory', 'app.alextran.immich.widget.MemoryReceiverFlex2x2'),
+  ('com.immich.widget.memory', 'app.alextran.immich.widget.MemoryReceiverFlex4x2'),
+  ('com.immich.widget.random', 'app.alextran.immich.widget.RandomReceiverFlex2x2'),
 ];
 
 const int kMinMonthsToEnableScrubberSnap = 12;

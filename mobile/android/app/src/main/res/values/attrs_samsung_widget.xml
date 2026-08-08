@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Samsung cover screen widget attributes. The names are imposed by the Samsung host.
+     targetHost = 4 (cover screen), widgetSize = columns * 4 (2 columns = 8, 4 columns = 16).
+     The host only offers 2x2 and 4x2 tiles, taller ones are clamped back to 2 rows.
+-->
+<resources>
+  <attr name="targetHost" format="integer" />
+  <attr name="widgetSize" format="integer" />
+</resources>

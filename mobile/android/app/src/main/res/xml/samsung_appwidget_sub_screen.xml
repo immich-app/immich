@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Allow Immich to be used as a sub-screen widget on Samsung devices -->
+<samsung-appwidget-provider display="sub_screen" />
