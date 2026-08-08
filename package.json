@@ -15,5 +15,10 @@
   "devDependencies": {
     "prettier": "^3.8.3",
     "prettier-plugin-sort-json": "^4.2.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "tar": "7.5.19"
+    }
   }
 }
