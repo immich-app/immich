@@ -29,6 +29,7 @@ class RepositoryMocks {
   final localAsset = LocalAssetRepositoryStub(MockDriftLocalAssetRepository());
   final remoteAsset = RemoteAssetRepositoryStub(MockRemoteAssetRepository());
   final remoteExif = RemoteExifRepositoryStub(MockRemoteExifRepository());
+  final metadata = MockAppMetadataRepository();
   final trashedAsset = MockTrashedLocalAssetRepository();
   final remoteAlbum = MockRemoteAlbumRepository();
   final albumApi = MockDriftAlbumApiRepository();
@@ -63,6 +64,7 @@ class RepositoryMocks {
     _stubAssetApiRepository();
     _stubAssetMediaRepository();
     _stubDownloadRepository();
+    _stubAppMetadataRepository();
   }
 
   void _stubRemoteAssetRepository() {
@@ -100,6 +102,10 @@ class RepositoryMocks {
 
   void _stubDownloadRepository() {
     when(download.downloadAllAssets).thenAnswer((_) async => const []);
+  }
+
+  void _stubAppMetadataRepository() {
+    when(() => metadata.get(.manageLocalMediaAndroid)).thenAnswer((_) async => false);
   }
 }
 

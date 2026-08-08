@@ -16,6 +16,7 @@ import 'package:immich_mobile/infrastructure/repositories/store.repository.dart'
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/app_metadata.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
@@ -60,6 +61,7 @@ class PresentationContext {
     inLockedViewProvider.overrideWithValue(false),
     remoteAssetRepositoryProvider.overrideWithValue(repository.remoteAsset.repo),
     assetMediaRepositoryProvider.overrideWithValue(repository.assetMedia.api),
+    appMetadataRepositoryProvider.overrideWithValue(repository.metadata),
   ];
 
   List<Override> selected(Set<BaseAsset> assets) => [

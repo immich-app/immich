@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
-import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
@@ -31,7 +29,6 @@ void main() {
 
   tearDown(() async {
     debugDefaultTargetPlatformOverride = null;
-    await StoreService.I.put(StoreKey.manageLocalMediaAndroid, false);
     await context.dispose();
   });
 
@@ -190,7 +187,7 @@ void main() {
 
       testWidgets('local only delete on Android with MANAGE_MEDIA shows the prompt', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        await StoreService.I.put(StoreKey.manageLocalMediaAndroid, true);
+        when(() => context.repository.metadata.get(.manageLocalMediaAndroid)).thenAnswer((_) async => true);
         final asset = LocalAssetFactory.create();
 
         await pumpDelete(tester, {asset});
@@ -207,7 +204,7 @@ void main() {
 
       testWidgets('local only delete on Android with MANAGE_MEDIA deletes nothing when cancelled', (tester) async {
         debugDefaultTargetPlatformOverride = TargetPlatform.android;
-        await StoreService.I.put(StoreKey.manageLocalMediaAndroid, true);
+        when(() => context.repository.metadata.get(.manageLocalMediaAndroid)).thenAnswer((_) async => true);
         final asset = LocalAssetFactory.create();
 
         await pumpDelete(tester, {asset});
