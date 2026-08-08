@@ -23,7 +23,7 @@ class PeoplePicker extends HookConsumerWidget {
     final formFocus = useFocusNode();
     const imageSize = 60.0;
     final searchQuery = useState('');
-    final people = ref.watch(driftGetAllPeopleProvider);
+    final people = ref.watch(getAllPeopleProvider);
     final selectedPeople = useState<Set<Person>>(filter ?? {});
 
     return Column(

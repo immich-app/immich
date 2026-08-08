@@ -33,7 +33,7 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
 
   @override
   Widget build(BuildContext context) {
-    final people = ref.watch(driftGetAllPeopleProvider);
+    final people = ref.watch(getAllPeopleProvider);
 
     return LayoutBuilder(
       builder: (context, constraints) {
