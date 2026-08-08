@@ -81,7 +81,7 @@ export class UserRepository {
     return this.db
       .selectFrom('user')
       .select(['id', 'profileImagePath'])
-      .where('profileImagePath', '!=', sql.lit(''))
+      .where('profileImagePath', 'is not', null)
       .limit(sql.lit(3))
       .execute();
   }
