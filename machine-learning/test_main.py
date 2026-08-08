@@ -32,7 +32,8 @@ from immich_ml.models.ocr.schemas import OcrOptions
 from immich_ml.schemas import ModelFormat, ModelPrecision, ModelTask, ModelType
 from immich_ml.sessions.ann import AnnSession
 from immich_ml.sessions.ort import OrtSession
-from immich_ml.sessions.rknn import RknnSession, run_inference
+from immich_ml.sessions.rknn import RKNNInferenceResult, RknnSession
+from immich_ml.sessions.rknn.immich_session import get_soc
 
 
 class FakeLock:
@@ -546,29 +547,71 @@ class TestAnnSession:
 
 class TestRknnSession:
     def test_creates_rknn_session(self, rknn_session: mock.Mock, info: mock.Mock, mocker: MockerFixture) -> None:
-        model_path = mock.MagicMock(spec=Path)
+        model_path = Path("ViT-B-32__openai")
         tpe = 1
-        mocker.patch("immich_ml.sessions.rknn.soc_name", "rk3566")
-        mocker.patch("immich_ml.sessions.rknn.is_available", True)
-        RknnSession(model_path)
+        mocker.patch("immich_ml.sessions.rknn.immich_session.soc_name", "rk3566")
+        mocker.patch("immich_ml.sessions.rknn.immich_session.is_available", True)
+        mocker.patch.object(settings, "rknn_threads", tpe)
 
-        rknn_session.assert_called_once_with(model_path=model_path.as_posix(), tpes=tpe, func=run_inference)
+        session = RknnSession(model_path)
 
-        info.assert_has_calls([mock.call(f"Loaded RKNN model from {model_path} with {tpe} threads.")])
+        rknn_session.assert_called_once_with(model_path, tpe)
+        assert session.get_inputs()[0].shape == ("batch", 3, 224, 224)
+        assert session.get_outputs()[0].shape == (1, 512)
+        info.assert_any_call("Loading RKNN model from %s with %s worker(s).", model_path, tpe)
+        info.assert_any_call("Loaded RKNN model from %s.", model_path)
 
     def test_run_rknn(self, rknn_session: mock.Mock, mocker: MockerFixture) -> None:
-        rknn_session.return_value.load.return_value = 123
-        np_spy = mocker.spy(np, "ascontiguousarray")
-        mocker.patch("immich_ml.sessions.rknn.soc_name", "rk3566")
+        output = np.random.rand(1, 512).astype(np.float32)
+        future: Any = mock.Mock()
+        future.result.return_value = RKNNInferenceResult(
+            tag=None, start_time=0.0, end_time=0.1, duration_s=0.1, outputs=[output]
+        )
+        rknn_session.return_value.put.return_value = future
+        mocker.patch("immich_ml.sessions.rknn.immich_session.soc_name", "rk3566")
+        mocker.patch("immich_ml.sessions.rknn.immich_session.is_available", True)
         session = RknnSession(Path("ViT-B-32__openai"))
         [input1, input2] = [np.random.rand(1, 3, 224, 224).astype(np.float32) for _ in range(2)]
         input_feed = {"input.1": input1, "input.2": input2}
 
-        session.run(None, input_feed)
+        outputs = session.run(None, input_feed)
 
         rknn_session.return_value.put.assert_called_once_with([input1, input2])
-        assert np_spy.call_count == 2
-        np_spy.assert_has_calls([mock.call(input1), mock.call(input2)])
+        assert outputs == [output]
+
+    def test_run_rknn_batches_across_pool(self, rknn_session: mock.Mock, mocker: MockerFixture) -> None:
+        futures = []
+        for i in range(2):
+            future: Any = mock.Mock()
+            future.result.return_value = RKNNInferenceResult(
+                tag=None,
+                start_time=float(i),
+                end_time=float(i) + 0.1,
+                duration_s=0.1,
+                outputs=[np.full((1, 4), i, dtype=np.float32)],
+            )
+            futures.append(future)
+        rknn_session.return_value.put.side_effect = futures
+        mocker.patch("immich_ml.sessions.rknn.immich_session.soc_name", "rk3588")
+        mocker.patch("immich_ml.sessions.rknn.immich_session.is_available", True)
+        session = RknnSession(Path("ViT-B-32__openai"))
+        batched = np.random.rand(2, 3, 224, 224).astype(np.float32)
+
+        outputs = session.run(None, {"input": batched})
+
+        assert rknn_session.return_value.put.call_count == 2
+        np.testing.assert_array_equal(outputs[0], np.array([[0, 0, 0, 0], [1, 1, 1, 1]], dtype=np.float32))
+
+    def test_unavailable_raises(self, mocker: MockerFixture) -> None:
+        mocker.patch("immich_ml.sessions.rknn.immich_session.is_available", False)
+        with pytest.raises(RuntimeError, match="RKNN is not available"):
+            RknnSession(Path("model.rknn"))
+
+    def test_get_soc(self, tmp_path: Path) -> None:
+        device_tree = tmp_path / "compatible"
+        device_tree.write_text("rockchip,rk3588\0rockchip,rk3588-box")
+        assert get_soc(device_tree) == "rk3588"
+        assert get_soc(tmp_path / "missing") is None
 
 
 class TestCLIP:
@@ -1045,10 +1088,10 @@ class TestOcr:
 
         rapid_recognizer.assert_called_once_with(
             OcrOptions(
-              session=ort_session.return_value,
-              rec_batch_num=6,
-              rec_img_shape=(3, 48, 320),
-              model_root_dir=text_recognizer.cache_dir,
+                session=ort_session.return_value,
+                rec_batch_num=6,
+                rec_img_shape=(3, 48, 320),
+                model_root_dir=text_recognizer.cache_dir,
             )
         )
 
@@ -1063,10 +1106,10 @@ class TestOcr:
 
         rapid_recognizer.assert_called_once_with(
             OcrOptions(
-              session=ort_session.return_value,
-              rec_batch_num=4,
-              rec_img_shape=(3, 48, 320),
-              model_root_dir=text_recognizer.cache_dir,
+                session=ort_session.return_value,
+                rec_batch_num=4,
+                rec_img_shape=(3, 48, 320),
+                model_root_dir=text_recognizer.cache_dir,
             )
         )
 
@@ -1083,10 +1126,10 @@ class TestOcr:
 
         rapid_recognizer.assert_called_once_with(
             OcrOptions(
-              session=ort_session.return_value,
-              rec_batch_num=6,
-              rec_img_shape=(3, 48, 320),
-              model_root_dir=text_recognizer.cache_dir,
+                session=ort_session.return_value,
+                rec_batch_num=6,
+                rec_img_shape=(3, 48, 320),
+                model_root_dir=text_recognizer.cache_dir,
             )
         )
 

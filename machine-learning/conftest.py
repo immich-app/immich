@@ -137,7 +137,13 @@ def ann_session() -> Iterator[mock.Mock]:
 
 @pytest.fixture(scope="function")
 def rknn_session() -> Iterator[mock.Mock]:
-    with mock.patch("immich_ml.sessions.rknn.RknnPoolExecutor") as mocked:
+    with mock.patch("immich_ml.sessions.rknn.immich_session.RknnPoolExecutor") as mocked:
+        pool = mocked.return_value
+        pool.executor.get_io_info.return_value = {
+            "is_dynamic": False,
+            "inputs": [{"name": "input", "fmt": 0, "dims": [1, 3, 224, 224]}],
+            "outputs": [{"name": "output", "fmt": 0, "dims": [1, 512]}],
+        }
         yield mocked
 
 
