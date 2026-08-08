@@ -8,7 +8,7 @@ import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
-import 'package:immich_mobile/providers/search/people.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
