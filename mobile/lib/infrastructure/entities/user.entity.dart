@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart' hide Index;
 import 'package:immich_mobile/domain/models/user.model.dart';
+import 'package:immich_mobile/infrastructure/utils/datetime_clamp.type.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 class UserEntity extends Table with DriftDefaultsMixin {
@@ -11,7 +12,7 @@ class UserEntity extends Table with DriftDefaultsMixin {
 
   // Profile image
   BoolColumn get hasProfileImage => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get profileChangedAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get profileChangedAt => customType(clampedDateTime).withDefault(currentDateAndTime)();
   IntColumn get avatarColor => intEnum<AvatarColor>().withDefault(const Constant(0))();
 
   @override

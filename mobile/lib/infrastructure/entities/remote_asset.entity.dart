@@ -3,6 +3,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/utils/asset.mixin.dart';
+import 'package:immich_mobile/infrastructure/utils/datetime_clamp.type.dart';
 import 'package:immich_mobile/infrastructure/utils/drift_default.mixin.dart';
 
 @TableIndex.sql('''
@@ -33,13 +34,13 @@ class RemoteAssetEntity extends Table with DriftDefaultsMixin, AssetEntityMixin 
 
   TextColumn get ownerId => text().references(UserEntity, #id, onDelete: KeyAction.cascade)();
 
-  DateTimeColumn get localDateTime => dateTime().nullable()();
+  DateTimeColumn get localDateTime => customType(clampedDateTime).nullable()();
 
   TextColumn get thumbHash => text().nullable()();
 
-  DateTimeColumn get deletedAt => dateTime().nullable()();
+  DateTimeColumn get deletedAt => customType(clampedDateTime).nullable()();
 
-  DateTimeColumn get uploadedAt => dateTime().nullable()();
+  DateTimeColumn get uploadedAt => customType(clampedDateTime).nullable()();
 
   TextColumn get livePhotoVideoId => text().nullable()();
 

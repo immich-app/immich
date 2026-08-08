@@ -1,5 +1,9 @@
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
@@ -144,6 +148,52 @@ void main() {
 
       expect(buckets, hasLength(1));
       expect(buckets.single.assetCount, 1);
+    });
+  });
+
+  group('dates sqlite cannot format', () {
+    // Regression check for #28524: out-of-range stored dates are healed by the
+    // migration, so bucket queries never read a NULL bucket date
+    test('archive returns a sane bucket once the poisoned date is healed', () async {
+      final user = await ctx.newUser();
+      final asset = await ctx.newRemoteAsset(ownerId: user.id, visibility: .archive);
+      await ctx.db.customStatement(
+        "UPDATE remote_asset_entity SET created_at = '+144769-11-18T12:38:32.000Z', local_date_time = '+144769-11-18T18:38:32.000 +06:00' WHERE id = ?",
+        [asset.id],
+      );
+
+      final query = sut.archived(user.id, .day);
+      await expectLater(query.bucketSource().first, throwsA(isA<TypeError>()));
+
+      await healOutOfRangeDateTimes(ctx.db);
+
+      expect(await query.bucketSource().first, [TimeBucket(date: DateTime(9999, 12, 31), assetCount: 1)]);
+
+      final assets = await query.assetSource(0, 10);
+      expect(assets, hasLength(1));
+      expect((assets.single as RemoteAsset).id, asset.id);
+    });
+
+    test('a late-9999 date is clamped on write, so the bucket query stays safe', () async {
+      // local_date_time null -> the bucket coalesce falls to created_at with
+      // 'localtime', which overflows sqlite on the unclamped value east of UTC.
+      // the converter writes the midnight ceiling instead (sqlite probe receipt)
+      final user = await ctx.newUser();
+      await ctx.db.remoteAssetEntity.insertOne(
+        RemoteAssetEntityCompanion.insert(
+          id: 'late1',
+          name: 'late1.jpg',
+          type: AssetType.image,
+          checksum: 'ck_late1',
+          ownerId: user.id,
+          visibility: AssetVisibility.archive,
+          createdAt: Value(DateTime.utc(9999, 12, 31, 23, 59, 59)),
+          localDateTime: const Value(null),
+        ),
+      );
+
+      final query = sut.archived(user.id, .day);
+      expect(await query.bucketSource().first, [TimeBucket(date: DateTime(9999, 12, 31), assetCount: 1)]);
     });
   });
 }
