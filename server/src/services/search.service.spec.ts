@@ -4,6 +4,7 @@ import { SearchSuggestionType } from 'src/dtos/search.dto';
 import { SearchService } from 'src/services/search.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
+import { PersonFactory } from 'test/factories/person.factory';
 import { authStub } from 'test/fixtures/auth.stub';
 import { getForAsset } from 'test/mappers';
 import { newTestService, ServiceMocks } from 'test/utils';
@@ -38,6 +39,18 @@ describe(SearchService.name, () => {
       await sut.searchPerson(auth, { name, withHidden: true });
 
       expect(mocks.person.getByName).toHaveBeenCalledWith(auth.user.id, name, { withHidden: true });
+    });
+
+    it('should exclude people without faces', async () => {
+      const auth = AuthFactory.create();
+      const withFace = PersonFactory.create({ ownerId: auth.user.id, faceAssetId: 'face-id', name: 'Alice' });
+      const withoutFace = PersonFactory.create({ ownerId: auth.user.id, faceAssetId: null, name: 'Alina' });
+
+      mocks.person.getByName.mockResolvedValue([withFace, withoutFace]);
+
+      const result = await sut.searchPerson(auth, { name: 'Ali', withHidden: false });
+
+      expect(result).toEqual([expect.objectContaining({ id: withFace.id, name: withFace.name })]);
     });
   });
 

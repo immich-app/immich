@@ -12,6 +12,25 @@ import { PersonTable } from 'src/schema/tables/person.table';
 import { dummy, removeUndefinedKeys, withFilePath } from 'src/utils/database';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
+function hasFace(eb: ExpressionBuilder<DB, 'person'>) {
+  return eb.exists((eb) =>
+    eb
+      .selectFrom('asset_face')
+      .whereRef('asset_face.personId', '=', 'person.id')
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', '=', true)
+      .where((eb) =>
+        eb.exists((eb) =>
+          eb
+            .selectFrom('asset')
+            .whereRef('asset.id', '=', 'asset_face.assetId')
+            .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
+            .where('asset.deletedAt', 'is', null),
+        ),
+      ),
+  );
+}
+
 export interface PersonSearchOptions {
   withHidden: boolean;
   closestFaceAssetId?: string;
@@ -325,6 +344,7 @@ export class PersonRepository {
       .selectFrom(['similarity_threshold', 'person'])
       .selectAll('person')
       .where('person.ownerId', '=', userId)
+      .where(hasFace)
       .where(() => sql`f_unaccent("person"."name") %> f_unaccent(${personName})`)
       .orderBy(sql`f_unaccent("person"."name") <->>> f_unaccent(${personName})`)
       .limit(100)
@@ -369,24 +389,7 @@ export class PersonRepository {
     const zero = sql.lit(0);
     return this.db
       .selectFrom('person')
-      .where((eb) =>
-        eb.exists((eb) =>
-          eb
-            .selectFrom('asset_face')
-            .whereRef('asset_face.personId', '=', 'person.id')
-            .where('asset_face.deletedAt', 'is', null)
-            .where('asset_face.isVisible', '=', true)
-            .where((eb) =>
-              eb.exists((eb) =>
-                eb
-                  .selectFrom('asset')
-                  .whereRef('asset.id', '=', 'asset_face.assetId')
-                  .where('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-                  .where('asset.deletedAt', 'is', null),
-              ),
-            ),
-        ),
-      )
+      .where(hasFace)
       .where('person.ownerId', '=', userId)
       .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>(), zero).as('total'))
       .select((eb) => eb.fn.coalesce(eb.fn.countAll<number>().filterWhere('isHidden', '=', true), zero).as('hidden'))
