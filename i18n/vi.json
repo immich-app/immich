@@ -30,6 +30,7 @@
   "add_to_album_bottom_sheet_added": "Đã thêm vào {album}",
   "add_to_album_bottom_sheet_already_exists": "Đã có sẵn trong {album}",
   "add_to_album_bottom_sheet_some_local_assets": "Một số tài nguyên trên thiết bị không thể được thêm vào album",
+  "add_to_album_item_count": "Thêm {count, plural, one {# mục} other {# mục}} vào album",
   "add_to_albums": "Thêm vào album",
   "add_to_albums_count": "Đã thêm vào ({count}) album",
   "add_to_bottom_bar": "Thêm vào",

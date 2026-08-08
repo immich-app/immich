@@ -1948,7 +1948,7 @@
   "shared_link_app_bar_title": "Links compartilhados",
   "shared_link_clipboard_copied_massage": "Copiado para a área de transferência",
   "shared_link_create_error": "Erro ao criar o link compartilhado",
-  "shared_link_custom_url_description": "Acessar este link com uma URL personalizada",
+  "shared_link_custom_url_description": "Acesse esse link compartilhado com uma URL personalizada",
   "shared_link_custom_url_title": "URL customizada",
   "shared_link_custom_url_warning": "Atenção: A URL customizada com uma barra pode não se comportar como você espera.",
   "shared_link_edit_description_hint": "Digite a descrição do compartilhamento",

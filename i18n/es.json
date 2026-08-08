@@ -30,6 +30,7 @@
   "add_to_album_bottom_sheet_added": "Añadido a {album}",
   "add_to_album_bottom_sheet_already_exists": "Ya se encuentra en {album}",
   "add_to_album_bottom_sheet_some_local_assets": "Algunos recursos locales no se pudieron añadir al álbum",
+  "add_to_album_item_count": "Añadir {count, plural, one {# elemento} other {# elementos}} al álbum",
   "add_to_albums": "Añadir a álbumes",
   "add_to_albums_count": "Añadir a {count} álbumes",
   "add_to_bottom_bar": "Añadir a",

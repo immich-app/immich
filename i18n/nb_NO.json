@@ -30,6 +30,7 @@
   "add_to_album_bottom_sheet_added": "Lagt til i {album}",
   "add_to_album_bottom_sheet_already_exists": "Allerede i {album}",
   "add_to_album_bottom_sheet_some_local_assets": "Noen lokale filer kunne ikke legges til i albumet",
+  "add_to_album_item_count": "Legg til {count, plural, one {# mediefil} other {# mediefiler}} i albumet",
   "add_to_albums": "Legg til i album",
   "add_to_albums_count": "Legg til i album ({count})",
   "add_to_bottom_bar": "Legg til i",
