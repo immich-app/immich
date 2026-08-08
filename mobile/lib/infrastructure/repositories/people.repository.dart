@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/mapper.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 
 class DriftPeopleRepository extends DriftDatabaseRepository {
@@ -9,13 +10,21 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
   const DriftPeopleRepository(this._db) : super(_db);
 
   Future<DriftPerson?> get(String personId) async {
-    final query = _db.select(_db.personEntity)..where((row) => row.id.equals(personId));
+    final query = _db.personEntity.select().join([
+      innerJoin(_db.personUserEntity, _db.personUserEntity.personId.equalsExp(_db.personEntity.id)),
+    ])..where(_db.personEntity.id.equals(personId));
 
     final result = await query.getSingleOrNull();
-    return result?.toDto();
+    final person = result?.readTable(_db.personEntity);
+    final personUser = result?.readTable(_db.personUserEntity);
+    if (person == null || personUser == null) {
+      return null;
+    }
+
+    return mapToPerson(person, personUser);
   }
 
-  Future<List<DriftPerson>> getAssetPeople(String assetId) async {
+  Future<List<DriftPerson>> getAssetPeople(String assetId) {
     // An asset can have multiple face records for the same person (e.g., metadata
     // imports alongside ML detections). Use a subquery instead of a join so each
     // person is returned once, regardless of how many of their faces are on the asset
@@ -27,24 +36,27 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
             _db.assetFaceEntity.deletedAt.isNull(),
       );
 
-    final query = _db.select(_db.personEntity)
-      ..where((row) => row.id.isInQuery(faceQuery) & row.isHidden.equals(false));
+    final query = _db.personEntity.select().join([
+      innerJoin(_db.personUserEntity, _db.personUserEntity.personId.equalsExp(_db.personEntity.id)),
+    ])..where(_db.personEntity.id.isInQuery(faceQuery) & _db.personUserEntity.isHidden.equals(false));
 
-    return query.map((row) => row.toDto()).get();
+    return query.map((row) => mapToPerson(row.readTable(_db.personEntity), row.readTable(_db.personUserEntity))).get();
   }
 
-  Future<List<DriftPerson>> getAllPeople({int minFaces = 3}) async {
+  Future<List<DriftPerson>> getAllPeople({int minFaces = 3}) {
     final people = _db.personEntity;
+    final personUsers = _db.personUserEntity;
     final faces = _db.assetFaceEntity;
     final assets = _db.remoteAssetEntity;
 
     final query =
         _db.select(people).join([
+            innerJoin(personUsers, personUsers.personId.equalsExp(people.id)),
             innerJoin(faces, faces.personId.equalsExp(people.id)),
             innerJoin(assets, assets.id.equalsExp(faces.assetId)),
           ])
           ..where(
-            people.isHidden.equals(false) &
+            personUsers.isHidden.equals(false) &
                 assets.deletedAt.isNull() &
                 assets.visibility.equalsValue(AssetVisibility.timeline) &
                 faces.isVisible.equals(true) &
@@ -56,10 +68,7 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
             OrderingTerm(expression: faces.id.count(), mode: OrderingMode.desc),
           ]);
 
-    return query.map((row) {
-      final person = row.readTable(people);
-      return person.toDto();
-    }).get();
+    return query.map((row) => mapToPerson(row.readTable(_db.personEntity), row.readTable(_db.personUserEntity))).get();
   }
 
   Future<int> updateName(String personId, String name) {
@@ -72,22 +81,5 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
     final query = _db.update(_db.personEntity)..where((row) => row.id.equals(personId));
 
     return query.write(PersonEntityCompanion(birthDate: Value(birthday), updatedAt: Value(DateTime.now())));
-  }
-}
-
-extension on PersonEntityData {
-  DriftPerson toDto() {
-    return DriftPerson(
-      id: id,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      ownerId: ownerId,
-      name: name,
-      faceAssetId: faceAssetId,
-      isFavorite: isFavorite,
-      isHidden: isHidden,
-      color: color,
-      birthDate: birthDate,
-    );
   }
 }

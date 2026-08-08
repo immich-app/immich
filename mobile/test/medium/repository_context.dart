@@ -14,6 +14,7 @@ import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/person_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
@@ -220,19 +221,29 @@ class MediumRepositoryContext {
         .insert(RemoteAlbumAssetEntityCompanion(albumId: .new(albumId), assetId: .new(assetId)));
   }
 
-  Future<PersonEntityData> newPerson({String? id, String? ownerId, String? name, bool? isFavorite, bool? isHidden}) {
+  Future<PersonEntityData> newPerson({
+    String? id,
+    String? ownerId,
+    String? name,
+    bool? isFavorite,
+    bool? isHidden,
+  }) async {
     id ??= TestUtils.uuid();
-    return db
+    final person = await db
         .into(db.personEntity)
-        .insertReturning(
-          PersonEntityCompanion(
-            id: .new(id),
+        .insertReturning(PersonEntityCompanion(id: .new(id), name: .new(name ?? 'person_$id')));
+    await db
+        .into(db.personUserEntity)
+        .insert(
+          PersonUserEntityCompanion(
+            personId: .new(person.id),
             ownerId: .new(TestUtils.uuid(ownerId)),
-            name: .new(name ?? 'person_$id'),
             isFavorite: .new(isFavorite ?? false),
             isHidden: .new(isHidden ?? false),
           ),
         );
+
+    return person;
   }
 
   Future<AssetFaceEntityData> newFace({String? assetId, String? personId, int? imageWidth, int? imageHeight}) {

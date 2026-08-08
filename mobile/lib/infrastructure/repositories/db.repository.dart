@@ -19,6 +19,7 @@ import 'package:immich_mobile/infrastructure/entities/memory.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/person_user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.dart';
@@ -61,6 +62,7 @@ import 'package:sqlite_async/sqlite_async.dart';
     MemoryAssetEntity,
     StackEntity,
     PersonEntity,
+    PersonUserEntity,
     AssetFaceEntity,
     StoreEntity,
     TrashedLocalAssetEntity,
@@ -120,7 +122,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 32;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -317,6 +319,17 @@ class Drift extends $Drift {
               },
               from30To31: (m, v31) async {
                 await m.createIndex(v31.idxRemoteAssetUploaded);
+              },
+              from31To32: (m, v32) async {
+                await m.createTable(v32.personUserEntity);
+                await customStatement('''
+                  INSERT INTO person_user_entity
+                    (person_id, owner_id, is_favorite, is_hidden, created_at, updated_at)
+                  SELECT id, owner_id, is_favorite, is_hidden, created_at, updated_at
+                  FROM person_entity
+                ''');
+                await customStatement('DROP INDEX IF EXISTS idx_person_owner_id');
+                await m.alterTable(TableMigration(v32.personEntity));
               },
             ),
           ),

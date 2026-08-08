@@ -316,8 +316,14 @@ class SyncStreamService {
         return _syncStreamRepository.deleteUserMetadatasV1(data.cast());
       case SyncEntityType.personV1:
         return _syncStreamRepository.updatePeopleV1(data.cast());
+      case SyncEntityType.personV2:
+        return _syncStreamRepository.updatePeopleV2(data.cast());
       case SyncEntityType.personDeleteV1:
         return _syncStreamRepository.deletePeopleV1(data.cast());
+      case SyncEntityType.personUserV1:
+        return _syncStreamRepository.updatePersonUsersV1(data.cast());
+      case SyncEntityType.personUserDeleteV1:
+        return _syncStreamRepository.deletePersonUsersV1(data.cast());
       case SyncEntityType.assetFaceV1:
         return _syncStreamRepository.updateAssetFacesV1(data.cast());
       case SyncEntityType.assetFaceV2:

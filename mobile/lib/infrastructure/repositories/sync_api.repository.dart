@@ -70,7 +70,10 @@ class SyncApiRepository {
           SyncRequestType.stacksV1,
           SyncRequestType.partnerStacksV1,
           SyncRequestType.userMetadataV1,
-          SyncRequestType.peopleV1,
+          serverVersion >= const SemVer(major: 3, minor: 2, patch: 0)
+              ? SyncRequestType.peopleV2
+              : SyncRequestType.peopleV1,
+          if (serverVersion >= const SemVer(major: 3, minor: 2, patch: 0)) SyncRequestType.personUsersV1,
           serverVersion >= const SemVer(major: 2, minor: 6, patch: 0)
               ? SyncRequestType.assetFacesV2
               : SyncRequestType.assetFacesV1,
@@ -201,7 +204,10 @@ const _kResponseMap = <SyncEntityType, Function(Object)>{
   SyncEntityType.userMetadataV1: SyncUserMetadataV1.fromJson,
   SyncEntityType.userMetadataDeleteV1: SyncUserMetadataDeleteV1.fromJson,
   SyncEntityType.personV1: SyncPersonV1.fromJson,
+  SyncEntityType.personV2: SyncPersonV2.fromJson,
   SyncEntityType.personDeleteV1: SyncPersonDeleteV1.fromJson,
+  SyncEntityType.personUserV1: SyncPersonUserV1.fromJson,
+  SyncEntityType.personUserDeleteV1: SyncPersonUserDeleteV1.fromJson,
   SyncEntityType.assetFaceV1: SyncAssetFaceV1.fromJson,
   SyncEntityType.assetFaceV2: SyncAssetFaceV2.fromJson,
   SyncEntityType.assetFaceDeleteV1: SyncAssetFaceDeleteV1.fromJson,

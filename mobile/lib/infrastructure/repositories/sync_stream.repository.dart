@@ -20,6 +20,7 @@ import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/person_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
@@ -59,6 +60,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             await _db.memoryEntity.deleteAll();
             await _db.partnerEntity.deleteAll();
             await _db.personEntity.deleteAll();
+            await _db.personUserEntity.deleteAll();
             await _db.remoteAlbumAssetEntity.deleteAll();
             await _db.remoteAlbumEntity.deleteAll();
             await _db.remoteAlbumUserEntity.deleteAll();
@@ -737,16 +739,54 @@ class SyncStreamRepository extends DriftDatabaseRepository {
 
   Future<void> updatePeopleV1(Iterable<SyncPersonV1> data) async {
     try {
+      await _db.transaction(() async {
+        await _db.batch((batch) {
+          for (final person in data) {
+            final companion = PersonEntityCompanion(
+              createdAt: Value(person.createdAt),
+              updatedAt: Value(person.updatedAt),
+              name: Value(person.name),
+              color: Value(person.color),
+              birthDate: Value(person.birthDate),
+            );
+
+            batch.insert(
+              _db.personEntity,
+              companion.copyWith(id: Value(person.id)),
+              onConflict: DoUpdate((_) => companion),
+            );
+          }
+        });
+
+        await _db.batch((batch) {
+          for (final person in data) {
+            final companion = PersonUserEntityCompanion(
+              personId: Value(person.id),
+              ownerId: Value(person.ownerId),
+              isFavorite: Value(person.isFavorite),
+              isHidden: Value(person.isHidden),
+              createdAt: Value(person.createdAt),
+              updatedAt: Value(person.updatedAt),
+            );
+
+            batch.insert(_db.personUserEntity, companion, onConflict: DoUpdate((_) => companion));
+          }
+        });
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updatePeopleV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updatePeopleV2(Iterable<SyncPersonV2> data) async {
+    try {
       await _db.batch((batch) {
         for (final person in data) {
           final companion = PersonEntityCompanion(
             createdAt: Value(person.createdAt),
             updatedAt: Value(person.updatedAt),
-            ownerId: Value(person.ownerId),
             name: Value(person.name),
-            faceAssetId: Value(person.faceAssetId),
-            isFavorite: Value(person.isFavorite),
-            isHidden: Value(person.isHidden),
             color: Value(person.color),
             birthDate: Value(person.birthDate),
           );
@@ -759,7 +799,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
         }
       });
     } catch (error, stack) {
-      _logger.severe('Error: updatePeopleV1', error, stack);
+      _logger.severe('Error: updatePeopleV2', error, stack);
       rethrow;
     }
   }
@@ -773,6 +813,44 @@ class SyncStreamRepository extends DriftDatabaseRepository {
       });
     } catch (error, stack) {
       _logger.severe('Error: deletePeopleV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> updatePersonUsersV1(Iterable<SyncPersonUserV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final personUser in data) {
+          final companion = PersonUserEntityCompanion(
+            personId: Value(personUser.personId),
+            ownerId: Value(personUser.ownerId),
+            isFavorite: Value(personUser.isFavorite),
+            isHidden: Value(personUser.isHidden),
+            createdAt: Value(personUser.createdAt),
+            updatedAt: Value(personUser.updatedAt),
+          );
+
+          batch.insert(_db.personUserEntity, companion, onConflict: DoUpdate((_) => companion));
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: updatePersonUsersV1', error, stack);
+      rethrow;
+    }
+  }
+
+  Future<void> deletePersonUsersV1(Iterable<SyncPersonUserDeleteV1> data) async {
+    try {
+      await _db.batch((batch) {
+        for (final personUser in data) {
+          batch.deleteWhere(
+            _db.personUserEntity,
+            (row) => row.personId.equals(personUser.personId) & row.ownerId.equals(personUser.ownerId),
+          );
+        }
+      });
+    } catch (error, stack) {
+      _logger.severe('Error: deletePersonUsersV1', error, stack);
       rethrow;
     }
   }

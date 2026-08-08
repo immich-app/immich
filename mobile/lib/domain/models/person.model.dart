@@ -104,12 +104,9 @@ abstract class DriftPerson with _$DriftPerson {
     required String id,
     required DateTime createdAt,
     required DateTime updatedAt,
-    required String ownerId,
     required String name,
-    String? faceAssetId,
     required bool isFavorite,
     required bool isHidden,
-    required String? color,
     DateTime? birthDate,
   }) = _DriftPerson;
 }
