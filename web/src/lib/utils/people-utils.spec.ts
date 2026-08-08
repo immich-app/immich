@@ -85,10 +85,12 @@ describe('getRelativeFaceLabelLeft', () => {
   });
 
   it('should clamp right edge when label overflows container right boundary', () => {
-    // box: left 950, width 40; label: width 200; overlay: 1000
-    // preferred absolute X = 950 + 40 - 200 = 790
-    // clamped absolute X = min(790, 800) = 790
-    expect(getRelativeFaceLabelLeft(950, 40, 200, 1000)).toBe(-160);
+    // box: left 950, width 100; label: width 80; overlay: 1000
+    // preferred absolute X = 950 + 100 - 80 = 970
+    // max allowed X = 1000 - 80 = 920
+    // clamped absolute X = 920
+    // localLeft = 920 - 950 = -30
+    expect(getRelativeFaceLabelLeft(950, 100, 80, 1000)).toBe(-30);
   });
 
   it('should handle boundary case when label exactly fits inside face box', () => {
