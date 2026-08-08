@@ -1,1 +1,0 @@
-* Removed thumbnail generation on mobile - the operation now will be on the server to reduce CPU load and battery usage.
