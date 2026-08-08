@@ -64,6 +64,13 @@
   // Only one face label is visible at a time (isActive guard), so a single shared width is sufficient.
   let labelWidth = $state(0);
 
+  $effect(() => {
+    // Reset label width when highlighted faces change to prevent carry-over from previous face labels
+    if (assetViewerManager.highlightedFaces) {
+      labelWidth = 0;
+    }
+  });
+
   const container = $derived({
     width: containerWidth,
     height: containerHeight,
@@ -280,8 +287,8 @@
             <div
               aria-hidden="true"
               bind:clientWidth={labelWidth}
-              class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg"
-              style="top: {boundingbox.height + 4}px; left: {labelLeft}px;"
+              class="absolute rounded-sm bg-white/90 px-2 py-1 text-sm font-medium whitespace-nowrap text-black shadow-lg transition-opacity duration-75"
+              style="top: {boundingbox.height + 4}px; left: {labelLeft}px; opacity: {labelWidth > 0 ? 1 : 0};"
             >
               {boundingbox.name}
             </div>
