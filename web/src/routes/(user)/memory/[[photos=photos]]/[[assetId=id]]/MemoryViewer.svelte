@@ -186,8 +186,18 @@
       return;
     }
 
+    // Capture where to land next *before* deleting, since the asset being
+    // removed will no longer resolve via getMemoryAsset() afterwards.
+    const nextTarget = current.next?.asset ?? current.previous?.asset;
+
     await memoryManager.deleteAssetFromMemory(current.asset.id);
-    init(page);
+
+    if (nextTarget) {
+      await handleNavigate(nextTarget);
+    } else {
+      // No assets left to navigate to (memory was fully emptied and removed).
+      init(page);
+    }
   };
 
   const handleDeleteMemory = async () => {
