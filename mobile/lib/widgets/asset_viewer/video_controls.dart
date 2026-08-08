@@ -4,6 +4,7 @@ import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -12,11 +13,11 @@ import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/widgets/asset_viewer/animated_play_pause.dart';
 
 class VideoControls extends ConsumerStatefulWidget {
-  final String videoPlayerName;
+  final BaseAsset asset;
 
   static const List<Shadow> _controlShadows = [Shadow(color: Colors.black87, blurRadius: 6, offset: Offset(0, 1))];
 
-  const VideoControls({super.key, required this.videoPlayerName});
+  const VideoControls({super.key, required this.asset});
 
   @override
   ConsumerState<VideoControls> createState() => _VideoControlsState();
@@ -26,7 +27,7 @@ class _VideoControlsState extends ConsumerState<VideoControls> {
   late final RestartableTimer _hideTimer;
 
   AutoDisposeStateNotifierProvider<VideoPlayerNotifier, VideoPlayerState> get _provider =>
-      videoPlayerProvider(widget.videoPlayerName);
+      videoPlayerProvider(widget.asset.playerKey);
 
   @override
   void initState() {
@@ -37,7 +38,7 @@ class _VideoControlsState extends ConsumerState<VideoControls> {
   @override
   void didUpdateWidget(covariant VideoControls oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.videoPlayerName != widget.videoPlayerName) {
+    if (oldWidget.asset.playerKey != widget.asset.playerKey) {
       _hideTimer.reset();
     }
   }
