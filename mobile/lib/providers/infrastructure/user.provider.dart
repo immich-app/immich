@@ -6,17 +6,18 @@ import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/user_api.repository.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/store.provider.dart';
 import 'package:immich_mobile/repositories/partner_api.repository.dart';
 
 final userRepositoryProvider = Provider((ref) => UserRepository(ref.watch(driftProvider)));
+
+final authUserRepositoryProvider = Provider((ref) => DriftAuthUserRepository(ref.watch(driftProvider)));
 
 final userApiRepositoryProvider = Provider((ref) => UserApiRepository(ref.watch(apiServiceProvider).usersApi));
 
 final userServiceProvider = Provider(
   (ref) => UserService(
     userApiRepository: ref.watch(userApiRepositoryProvider),
-    storeService: ref.watch(storeServiceProvider),
+    authUserRepository: ref.watch(authUserRepositoryProvider),
   ),
 );
 

@@ -40,7 +40,7 @@ void main() {
     userService = MockUserService();
 
     when(() => memoryService.getMemoryLane('user-1')).thenAnswer((_) async => []);
-    when(() => userService.tryGetMyUser()).thenReturn(user());
+    when(() => userService.tryGetMyUser()).thenAnswer((_) async => user());
     when(() => userService.watchMyUser()).thenAnswer((_) => const Stream.empty());
   });
 
@@ -49,7 +49,7 @@ void main() {
       fakeAsync((async) {
         final container = makeContainer();
         container.listen(driftMemoryFutureProvider, (_, __) {});
-        async.flushMicrotasks();
+        async.elapse(Duration.zero);
 
         verify(() => memoryService.getMemoryLane('user-1')).called(1);
 
@@ -67,7 +67,7 @@ void main() {
       fakeAsync((async) {
         final container = makeContainer();
         final subscription = container.listen(driftMemoryFutureProvider, (_, __) {});
-        async.flushMicrotasks();
+        async.elapse(Duration.zero);
         verify(() => memoryService.getMemoryLane('user-1')).called(1);
 
         subscription.close();
@@ -79,7 +79,7 @@ void main() {
     });
 
     test('does not query or arm the timer when memories are disabled', () {
-      when(() => userService.tryGetMyUser()).thenReturn(user(memoryEnabled: false));
+      when(() => userService.tryGetMyUser()).thenAnswer((_) async => user(memoryEnabled: false));
 
       fakeAsync((async) {
         final container = makeContainer();
