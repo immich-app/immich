@@ -1836,6 +1836,36 @@ describe(MetadataService.name, () => {
       );
     });
 
+    it('should still swap width/height using EXIF Orientation for a .heic-named file that is actually JPEG', async () => {
+      const asset = AssetFactory.create({ originalFileName: 'IMG_1.heic' });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      // no QuickTime `Rotation` tag and FileTypeExtension `jpg` - this is what ExifTool reports
+      // for a file that was converted to JPEG in place but kept its .heic extension/filename.
+      mockReadTags({ ImageWidth: 1000, ImageHeight: 2000, Orientation: 6, FileTypeExtension: 'jpg' });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          width: 2000,
+          height: 1000,
+        }),
+      );
+    });
+
+    it('should ignore EXIF Orientation and use QuickTime Rotation for a genuine HEIC file', async () => {
+      const asset = AssetFactory.create({ originalFileName: 'IMG_1.heic' });
+      mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
+      mockReadTags({ ImageWidth: 1000, ImageHeight: 2000, Orientation: 6, FileTypeExtension: 'heic', Rotation: 0 });
+
+      await sut.handleMetadataExtraction({ id: asset.id });
+      expect(mocks.asset.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          width: 1000,
+          height: 2000,
+        }),
+      );
+    });
+
     it('should overwrite existing width/height for unedited assets', async () => {
       const asset = AssetFactory.create({ width: 1920, height: 1080, isEdited: false });
       mocks.assetJob.getForMetadataExtraction.mockResolvedValue(getForMetadataExtraction(asset));
