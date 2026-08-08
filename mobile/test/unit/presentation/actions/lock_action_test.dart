@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -27,6 +29,13 @@ void main() {
 
   Future<void> pumpLock(WidgetTester tester, Set<BaseAsset> selection) =>
       tester.pumpTestAction(context, const LockAction(source: .timeline), overrides: context.selected(selection));
+
+  Future<void> respondToDialog(WidgetTester tester, {required bool confirm}) async {
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(find.byType(ConfirmDialog), findsOneWidget);
+    await tester.tap(find.byType(TextButton).at(confirm ? 1 : 0)); // [cancel, ok]
+    await tester.pumpAndSettle();
+  }
 
   group('LockAction', () {
     testWidgets('locks the eligible owned assets', (tester) async {
@@ -78,8 +87,28 @@ void main() {
       final remoteOnly = owned();
 
       await pumpLock(tester, {merged, remoteOnly});
+      await respondToDialog(tester, confirm: true);
 
-      verify(() => assetService.deleteLocal(['local-1'])).called(1);
+      verify(() => assetService.deleteLocal(['local-1'], trash: false)).called(1);
+    });
+
+    testWidgets('does nothing when the warning is cancelled', (tester) async {
+      final merged = RemoteAssetFactory.create(ownerId: context.currentUser.id, localId: 'local-1');
+
+      await pumpLock(tester, {merged});
+      await respondToDialog(tester, confirm: false);
+
+      verifyNever(() => assetService.update(any(), visibility: any(named: 'visibility')));
+      verifyNever(() => assetService.deleteLocal(any(), trash: any(named: 'trash')));
+    });
+
+    testWidgets('locks remote-only assets without a warning', (tester) async {
+      final remoteOnly = owned();
+
+      await pumpLock(tester, {remoteOnly});
+
+      expect(find.byType(ConfirmDialog), findsNothing);
+      verify(() => assetService.update([remoteOnly.id], visibility: const .some(.locked))).called(1);
     });
 
     testWidgets('leaves the local copies alone when unlocking', (tester) async {

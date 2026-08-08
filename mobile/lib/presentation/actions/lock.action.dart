@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
+import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
 typedef _State = ({bool shouldLock, List<String> assetIds, List<String> localIds});
 
@@ -49,19 +51,39 @@ class LockAction extends AssetActionBuilder {
     }
 
     final (:shouldLock, :assetIds, :localIds) = state;
-    final message = shouldLock
-        ? context.t.move_to_lock_folder_action_prompt(count: assetIds.length)
-        : context.t.remove_from_lock_folder_action_prompt(count: assetIds.length);
+    if (shouldLock && localIds.isNotEmpty) {
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (_) => ConfirmDialog(
+          title: "move_to_locked_folder",
+          content: CurrentPlatform.isAndroid ? "delete_dialog_alert_local" : "delete_dialog_alert_local_ios",
+          ok: "confirm",
+        ),
+      );
+      if (confirmed != true || !context.mounted) {
+        return;
+      }
+    }
+
     final assetService = ref.read(assetServiceProvider);
     final toastService = ref.read(toastServiceProvider);
     final clearSelection = ref.read(clearSelectionProvider(source));
 
     try {
       await assetService.update(assetIds, visibility: .some(shouldLock ? .locked : .timeline));
+      var keptCount = 0;
       if (localIds.isNotEmpty) {
         // A locked asset still sits in the device gallery, so offer to remove the local copy.
-        await assetService.deleteLocal(localIds);
+        keptCount = localIds.length - await assetService.deleteLocal(localIds, trash: false);
       }
+      if (!context.mounted) {
+        return;
+      }
+      final message = shouldLock
+          ? keptCount > 0
+                ? context.t.move_to_lock_folder_partial_prompt(count: assetIds.length, kept: keptCount)
+                : context.t.move_to_lock_folder_action_prompt(count: assetIds.length)
+          : context.t.remove_from_lock_folder_action_prompt(count: assetIds.length);
       toastService.success(message);
       clearSelection();
     } catch (error, stack) {
