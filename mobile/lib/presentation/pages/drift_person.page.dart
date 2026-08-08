@@ -14,7 +14,7 @@ import 'package:immich_mobile/widgets/common/person_sliver_app_bar.dart';
 
 @RoutePage()
 class DriftPersonPage extends ConsumerStatefulWidget {
-  final DriftPerson person;
+  final Person person;
 
   const DriftPersonPage({super.key, required this.person});
 
@@ -23,7 +23,7 @@ class DriftPersonPage extends ConsumerStatefulWidget {
 }
 
 class _DriftPersonPageState extends ConsumerState<DriftPersonPage> {
-  late DriftPerson _person;
+  late Person _person;
 
   @override
   void initState() {

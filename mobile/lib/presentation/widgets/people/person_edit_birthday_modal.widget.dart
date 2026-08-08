@@ -11,7 +11,7 @@ import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:scroll_date_picker/scroll_date_picker.dart';
 
 class DriftPersonBirthdayEditForm extends ConsumerStatefulWidget {
-  final DriftPerson person;
+  final Person person;
 
   const DriftPersonBirthdayEditForm({super.key, required this.person});
 

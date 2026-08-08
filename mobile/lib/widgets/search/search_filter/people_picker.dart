@@ -15,8 +15,8 @@ import 'package:immich_mobile/widgets/common/search_field.dart';
 class PeoplePicker extends HookConsumerWidget {
   const PeoplePicker({super.key, required this.onSelect, this.filter});
 
-  final Function(Set<PersonDto>) onSelect;
-  final Set<PersonDto>? filter;
+  final Function(Set<Person>) onSelect;
+  final Set<Person>? filter;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -24,7 +24,7 @@ class PeoplePicker extends HookConsumerWidget {
     const imageSize = 60.0;
     final searchQuery = useState('');
     final people = ref.watch(getAllPeopleProvider);
-    final selectedPeople = useState<Set<PersonDto>>(filter ?? {});
+    final selectedPeople = useState<Set<Person>>(filter ?? {});
 
     return Column(
       children: [
