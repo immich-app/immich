@@ -6,6 +6,7 @@
   <string name="memory_widget_flex_2x2_title">Memories (2x2)</string>
   <string name="memory_widget_flex_4x2_title">Memories (4x2)</string>
   <string name="random_widget_flex_2x2_title">Random (2x2)</string>
+  <string name="random_widget_flex_4x2_title">Random (4x2)</string>
 
   <string name="memory_widget_description">See memories from Immich.</string>
   <string name="random_widget_description">View a random image from your library or a specific album.</string>

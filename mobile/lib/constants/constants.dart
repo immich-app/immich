@@ -44,6 +44,7 @@ const List<(String, String)> kWidgetNames = [
   ('com.immich.widget.memory', 'app.alextran.immich.widget.MemoryReceiverFlex2x2'),
   ('com.immich.widget.memory', 'app.alextran.immich.widget.MemoryReceiverFlex4x2'),
   ('com.immich.widget.random', 'app.alextran.immich.widget.RandomReceiverFlex2x2'),
+  ('com.immich.widget.random', 'app.alextran.immich.widget.RandomReceiverFlex4x2'),
 ];
 
 const int kMinMonthsToEnableScrubberSnap = 12;
