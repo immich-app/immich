@@ -59,7 +59,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
   }
 
   Future<void> _checkServerVersionMismatch(ServerVersion serverVersion, {ServerVersion? latestVersion}) async {
-    state = state.copyWith(serverVersion: serverVersion, latestVersion: latestVersion);
+    state = state.copyWith(serverVersion: serverVersion, latestVersion: latestVersion ?? state.latestVersion);
 
     final packageInfo = await PackageInfo.fromPlatform();
     final SemVer clientVersion = SemVer.fromString(packageInfo.version);

@@ -32,6 +32,7 @@ import {
   UserMetadataKey,
   WorkflowType,
 } from 'src/enum';
+import { Mocked } from 'vitest';
 
 export type DeepPartial<T> = T extends Date
   ? T
@@ -647,7 +648,10 @@ export type JSONSchemaProperty = {
   required?: string[];
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export interface ClassConstructor<T = any> extends Function {
-  new (...args: any[]): T;
-}
+export type ClassConstructor<T> = T extends new (...args: infer R) => infer L
+  ? new (...args: R) => L
+  : new (...args: any[]) => unknown;
+
+export type ClassConstructorsToInstances<T extends readonly ClassConstructor<unknown>[]> = {
+  [K in keyof T]: InstanceType<T[K]> | Mocked<InstanceType<T[K]>>;
+};

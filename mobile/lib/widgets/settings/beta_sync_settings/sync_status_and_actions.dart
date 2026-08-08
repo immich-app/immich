@@ -163,7 +163,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
             leading: const Icon(Icons.cloud_circle_rounded),
             subtitle: "tap_to_run_job".t(context: context),
             trailing: _SyncStatusIcon(status: ref.watch(syncStatusProvider).cloudIdSyncStatus),
-            onTap: ref.read(backgroundSyncProvider).syncCloudIds,
+            onTap: ref.watch(backgroundSyncProvider).syncCloudIds,
           ),
         SettingListTile(
           title: "hash_asset".t(context: context),
