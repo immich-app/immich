@@ -24,7 +24,6 @@ import { init, register, t } from 'svelte-i18n';
 import { derived, get } from 'svelte/store';
 import { defaultLang, locales } from '$lib/constants';
 import { authManager } from '$lib/managers/auth-manager.svelte';
-import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
 import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
@@ -293,15 +292,41 @@ export const downloadUrl = (url: string, filename: string) => {
   URL.revokeObjectURL(url);
 };
 
+export const downloadUrlPost = (url: string, assetIds: string[], archiveName: string) => {
+  const form = document.createElement('form');
+  form.method = 'post';
+  form.action = url;
+  form.target = '_blank';
+
+  function mkInput(name: string, value: string) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    form.append(input);
+  }
+
+  for (const assetId of assetIds) {
+    mkInput('assetIds', assetId);
+  }
+
+  mkInput('archiveName', archiveName);
+  mkInput('edited', 'true');
+
+  document.body.append(form);
+  form.submit();
+  form.remove();
+};
+
 export const downloadBlob = (data: Blob, filename: string) => downloadUrl(URL.createObjectURL(data), filename);
 
 export const downloadJson = (data: unknown, filename: string) => {
   const blob = new Blob([JSON.stringify(data, jsonReplacer, 2)], { type: 'application/json' });
   const downloadKey = filename;
-  downloadManager.add(downloadKey, blob.size);
-  downloadManager.update(downloadKey, blob.size);
   downloadBlob(blob, downloadKey);
-  setTimeout(() => downloadManager.clear(downloadKey), 5000);
+
+  const $t = get(t);
+  toastManager.info($t('downloading_filename', { values: { filename } }));
 };
 
 export const oauth = {

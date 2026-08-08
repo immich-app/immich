@@ -59,7 +59,7 @@ const AssetBulkDeleteSchema = BulkIdsSchema.extend({
 
 export const AssetIdsSchema = z
   .object({
-    assetIds: z.array(z.uuidv4()).describe('Asset IDs'),
+    assetIds: z.preprocess((val) => (typeof val === 'string' ? [val] : val), z.array(z.uuidv4())).describe('Asset IDs'),
   })
   .meta({ id: 'AssetIdsDto' });
 
