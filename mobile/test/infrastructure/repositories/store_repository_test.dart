@@ -29,7 +29,7 @@ Future<void> _populateStore(Drift db) async {
     batch.insert(
       db.storeEntity,
       StoreEntityCompanion(
-        id: Value(StoreKey.accessToken.id),
+        id: Value(StoreKey.legacyAccessToken.id),
         intValue: const Value(null),
         stringValue: const Value(_kTestAccessToken),
       ),
@@ -68,10 +68,10 @@ void main() {
     });
 
     test('converts string', () async {
-      String? accessToken = await sut.tryGet(StoreKey.accessToken);
+      String? accessToken = await sut.tryGet(StoreKey.legacyAccessToken);
       expect(accessToken, isNull);
-      await sut.upsert(StoreKey.accessToken, _kTestAccessToken);
-      accessToken = await sut.tryGet(StoreKey.accessToken);
+      await sut.upsert(StoreKey.legacyAccessToken, _kTestAccessToken);
+      accessToken = await sut.tryGet(StoreKey.legacyAccessToken);
       expect(accessToken, _kTestAccessToken);
     });
 
@@ -147,12 +147,12 @@ void main() {
           emitsInOrder([
             [
               const StoreDto<Object>(StoreKey.version, _kTestVersion),
-              const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
+              const StoreDto<Object>(StoreKey.legacyAccessToken, _kTestAccessToken),
               const StoreDto<Object>(StoreKey.advancedTroubleshooting, _kTestAdvancedTroubleshooting),
             ],
             [
               const StoreDto<Object>(StoreKey.version, _kTestVersion + 10),
-              const StoreDto<Object>(StoreKey.accessToken, _kTestAccessToken),
+              const StoreDto<Object>(StoreKey.legacyAccessToken, _kTestAccessToken),
               const StoreDto<Object>(StoreKey.advancedTroubleshooting, _kTestAdvancedTroubleshooting),
             ],
           ]),

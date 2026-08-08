@@ -6,7 +6,7 @@ final settingsProvider = Provider.autoDispose<SettingsRepository>((_) => Setting
 
 final appConfigProvider = Provider.autoDispose<AppConfig>((ref) {
   final repo = ref.watch(settingsProvider);
-  final subscription = repo.watchConfig().listen((event) => ref.state = event);
+  final subscription = repo.watch().listen((event) => ref.state = event);
   ref.onDispose(subscription.cancel);
   return repo.appConfig;
 });

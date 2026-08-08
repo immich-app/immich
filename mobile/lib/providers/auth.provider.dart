@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_udid/flutter_udid.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
+import 'package:immich_mobile/domain/models/session.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
@@ -10,6 +11,7 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/models/auth/auth_state.model.dart';
 import 'package:immich_mobile/models/auth/login_response.model.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/session.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/services/api.service.dart';
@@ -125,10 +127,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<bool> saveAuthInfo({required String accessToken}) async {
-    await Store.put(StoreKey.accessToken, accessToken);
+    await _ref.read(sessionRepository).write(SessionKey.accessToken, accessToken);
     await _apiService.updateHeaders();
 
-    final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+    final serverEndpoint = _ref.read(sessionProvider).serverEndpoint!;
     final headerMap = _ref.read(appConfigProvider).network.customHeaders;
     final customHeaders = headerMap.isEmpty ? null : jsonEncode(headerMap);
     await _widgetService.writeCredentials(serverEndpoint, accessToken, customHeaders);
@@ -194,9 +196,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return _ref.read(appConfigProvider).network.localEndpoint;
   }
 
-  /// Returns the current server endpoint (with /api) URL from the store
+  /// Returns the current server endpoint (with /api) URL from the session
   String? getServerEndpoint() {
-    return Store.tryGet(StoreKey.serverEndpoint);
+    return _ref.read(sessionProvider).serverEndpoint;
   }
 
   Future<String?> setOpenApiServiceEndpoint() {
