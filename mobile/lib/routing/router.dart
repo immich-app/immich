@@ -71,7 +71,6 @@ import 'package:immich_mobile/presentation/pages/profile/profile_picture_crop.pa
 import 'package:immich_mobile/presentation/pages/search/drift_search.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
-import 'package:immich_mobile/providers/gallery_permission.provider.dart';
 import 'package:immich_mobile/routing/auth_guard.dart';
 import 'package:immich_mobile/routing/duplicate_guard.dart';
 import 'package:immich_mobile/routing/locked_guard.dart';
@@ -88,7 +87,6 @@ final appRouterProvider = Provider(
   (ref) => AppRouter(
     ref.watch(apiServiceProvider),
     ref.watch(authServiceProvider),
-    ref.watch(galleryPermissionNotifier.notifier),
     ref.watch(secureStorageServiceProvider),
     ref.watch(localAuthServiceProvider),
   ),
@@ -103,7 +101,6 @@ class AppRouter extends RootStackRouter {
   AppRouter(
     ApiService apiService,
     AuthService authService,
-    GalleryPermissionNotifier galleryPermissionNotifier,
     SecureStorageService secureStorageService,
     LocalAuthService localAuthService,
   ) {
