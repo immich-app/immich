@@ -72,7 +72,7 @@ void main() {
         expect((await assetInDb(asset.id)).checksum, checksum);
       });
 
-      test('when only the favourite flag changed', () async {
+      test('when only the favorite flag changed', () async {
         await sut.upsert(album, toUpsert: [asset.copyWith(isFavorite: true)]);
         expect((await assetInDb(asset.id)).checksum, checksum);
       });

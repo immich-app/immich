@@ -386,10 +386,15 @@ class LocalSyncService {
     final firstAdjustment = a.adjustmentTime?.millisecondsSinceEpoch ?? 0;
     final secondAdjustment = b.adjustmentTime?.millisecondsSinceEpoch ?? 0;
     return firstAdjustment == secondAdjustment &&
+        a.id == b.id &&
+        a.name == b.name &&
+        a.type == b.type &&
         a.createdAt.isAtSameMomentAs(b.createdAt) &&
         a.width == b.width &&
         a.height == b.height &&
         a.durationMs == b.durationMs &&
+        a.isFavorite == b.isFavorite &&
+        a.playbackStyle == b.playbackStyle &&
         a.latitude == b.latitude &&
         a.longitude == b.longitude;
   }
