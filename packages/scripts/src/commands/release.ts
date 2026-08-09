@@ -26,7 +26,6 @@ const Files = {
   Docs: {
     Env: join(root, 'docs/docs/install/environment-variables.md'),
     Upgrading: join(root, 'docs/docs/install/upgrading.md'),
-    ArchivedVersions: join(root, 'docs/static/archived-versions.json'),
   },
   Mobile: {
     Pubspec: join(root, 'mobile/pubspec.yaml'),
@@ -91,13 +90,6 @@ export const handleRelease = ({ type }: ReleaseOptions) => {
     pump(Files.Docs.Env, /(`IMMICH_VERSION`.*?)`v\d+`/, `$1\`${major}\``);
     pump(Files.Docs.Upgrading, /:v\d+/, `:${major}`);
   }
-
-  // update archived versions list
-  const archivedFile = new JsonFile<ArchivedVersion[]>(
-    Files.Docs.ArchivedVersions,
-  );
-  const versions = archivedFile.read();
-  archivedFile.write(resolveArchivedVersions(versions, newVersionRaw));
 
   if (process.env.GITHUB_ENV) {
     // make available for following steps
@@ -220,50 +212,6 @@ const pump = (path: string, pattern: RegExp, replacement: string) => {
   const file = new TextFile(path);
   const update = file.read().replace(pattern, replacement);
   file.write(update);
-};
-
-export interface ArchivedVersion {
-  label: string;
-  url: string;
-}
-
-export const resolveArchivedVersions = (
-  versions: ArchivedVersion[],
-  nextVersion: string,
-): ArchivedVersion[] => {
-  const newVersion: ArchivedVersion = {
-    label: `v${nextVersion}`,
-    url: `https://docs.v${nextVersion}.archive.immich.app`,
-  };
-
-  let result = versions;
-  let lastVersion = asVersion(newVersion);
-  for (const item of versions) {
-    const version = asVersion(item);
-    // only keep the latest patch version for each minor release
-    if (
-      lastVersion.major === version.major &&
-      lastVersion.minor === version.minor &&
-      lastVersion.patch >= version.patch
-    ) {
-      result = result.filter((item) => item.label !== version.label);
-      console.log(
-        `Removed ${version.label} (replaced with ${lastVersion.label})`,
-      );
-      continue;
-    }
-
-    lastVersion = version;
-  }
-
-  return [newVersion, ...result];
-};
-
-const asVersion = (item: ArchivedVersion) => {
-  const { label, url } = item;
-  const [version] = label.substring(1).split('-');
-  const [major, minor, patch] = version.split('.').map(Number);
-  return { major, minor, patch, label, url };
 };
 
 const isPrerelease = (version: SemVer) => version.prerelease.length > 0;
