@@ -126,7 +126,7 @@ class _DriftBackupAlbumSelectionPageState extends ConsumerState<DriftBackupAlbum
             // Waits for hashing to be cancelled before starting a new one
             unawaited(nativeSync.cancelHashing().whenComplete(() => backgroundSync.hashAssets()));
             if (isBackupEnabled) {
-              backupNotifier.stopForegroundBackup();
+              backupNotifier.stopForegroundBackup(reason: "backup albums updated");
               unawaited(
                 backgroundSync.syncRemote().then((success) {
                   if (success) {
