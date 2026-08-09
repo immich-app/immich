@@ -71,7 +71,7 @@ export const sendFile = async (
     }
 
     return await _sendFile(file.path, { dotfiles: 'allow' });
-  } catch (error: Error | any) {
+  } catch (error: unknown) {
     // ignore client-closed connection
     if (isConnectionAborted(error) || res.headersSent) {
       return;
@@ -79,7 +79,7 @@ export const sendFile = async (
 
     // log non-http errors
     if (!(error instanceof HttpException)) {
-      logger.error(`Unable to send file: ${error}`, error.stack);
+      logger.error(`Unable to send file: ${error}`, (error as Error).stack);
     }
 
     next(new NotFoundException());
