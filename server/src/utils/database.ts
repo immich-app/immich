@@ -109,8 +109,7 @@ export function withDefaultVisibility<O>(qb: SelectQueryBuilder<DB, 'asset', O>)
 }
 
 const selectExifInfo = (eb: AssetExpressionBuilder) =>
-  eb.fn
-    .toJson(eb.table('asset_exif'))
+  sql`CASE WHEN asset_exif."assetId" IS NOT NULL THEN to_jsonb(asset_exif) || COALESCE((SELECT jsonb_build_object('videoCodec', "codecName", 'container', "formatName") FROM asset_video WHERE "assetId" = asset_exif."assetId" LIMIT 1), '{}'::jsonb) ELSE NULL END`
     .$castTo<ShallowDehydrateObject<Selectable<AssetExifTable>> | null>()
     .as('exifInfo');
 
@@ -122,7 +121,9 @@ export function withExif<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
 export function withExifInner<O>(qb: SelectQueryBuilder<DB, 'asset', O>) {
   return qb
     .innerJoin('asset_exif', 'asset.id', 'asset_exif.assetId')
-    .select((eb) => eb.fn.toJson(eb.table('asset_exif')).as('exifInfo'))
+    .select((eb) =>
+      sql`CASE WHEN asset_exif."assetId" IS NOT NULL THEN to_jsonb(asset_exif) || COALESCE((SELECT jsonb_build_object('videoCodec', "codecName", 'container', "formatName") FROM asset_video WHERE "assetId" = asset_exif."assetId" LIMIT 1), '{}'::jsonb) ELSE NULL END`.as('exifInfo'),
+    )
     .$narrowType<{ exifInfo: NotNull }>();
 }
 
