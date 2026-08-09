@@ -77,11 +77,10 @@ sealed class BaseAsset {
 
   // Overridden in subclasses
   AssetState get storage;
+  String get id;
   String? get localId;
   String? get remoteId;
   String get heroTag;
-  // Key for the video player state. Unlike heroTag it survives the DB copy filling in the other side's id
-  String get playerKey;
   AssetPlaybackStyle get playbackStyle;
 
   @override

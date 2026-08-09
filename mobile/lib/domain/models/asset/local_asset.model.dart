@@ -1,6 +1,7 @@
 part of 'base_asset.model.dart';
 
 class LocalAsset extends BaseAsset {
+  @override
   final String id;
   final String? remoteAssetId;
   final String? cloudId;
@@ -44,9 +45,6 @@ class LocalAsset extends BaseAsset {
 
   @override
   String get heroTag => '${id}_${remoteId ?? checksum}';
-
-  @override
-  String get playerKey => id;
 
   bool get hasCoordinates => latitude != null && longitude != null && latitude != 0 && longitude != 0;
 

@@ -44,13 +44,13 @@ void main() {
     });
   });
 
-  group('BaseAsset.playerKey', () {
+  group('BaseAsset.id', () {
     test('survives the DB copy filling localId', () {
       final searchCopy = RemoteAssetFactory.create(id: 'asset-1');
       final mergedCopy = searchCopy.copyWith(localId: 'local-1');
 
       expect(searchCopy.heroTag, isNot(mergedCopy.heroTag));
-      expect(mergedCopy.playerKey, searchCopy.playerKey);
+      expect(mergedCopy.id, searchCopy.id);
     });
 
     test('survives a local asset gaining a remote id', () {
@@ -58,7 +58,7 @@ void main() {
       final uploaded = localOnly.copyWith(remoteId: 'asset-1');
 
       expect(localOnly.heroTag, isNot(uploaded.heroTag));
-      expect(uploaded.playerKey, localOnly.playerKey);
+      expect(uploaded.id, localOnly.id);
     });
 
     test('differs between assets', () {
@@ -66,8 +66,8 @@ void main() {
       final b = RemoteAssetFactory.create(id: 'asset-2');
       final local = LocalAssetFactory.create(id: 'local-1');
 
-      expect(a.playerKey, isNot(b.playerKey));
-      expect(local.playerKey, isNot(a.playerKey));
+      expect(a.id, isNot(b.id));
+      expect(local.id, isNot(a.id));
     });
   });
 }

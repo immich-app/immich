@@ -4,6 +4,7 @@ enum AssetVisibility { timeline, hidden, archive, locked }
 
 // Model for an asset stored in the server
 class RemoteAsset extends BaseAsset {
+  @override
   final String id;
   final String? localAssetId;
   final String? thumbHash;
@@ -64,9 +65,6 @@ class RemoteAsset extends BaseAsset {
 
   @override
   String get heroTag => '${localId ?? checksum}_$id';
-
-  @override
-  String get playerKey => id;
 
   @override
   bool get isEditable => isImage && !isMotionPhoto && !isAnimatedImage;

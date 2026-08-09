@@ -68,7 +68,7 @@ void main() {
     final viewer = ref.read(assetViewerProvider.notifier);
     viewer.setAsset(searchCopy);
     await tester.pump();
-    ref.read(videoPlayerProvider(searchCopy.playerKey).notifier).attachController(controller);
+    ref.read(videoPlayerProvider(searchCopy.id).notifier).attachController(controller);
     updates.add(mergedCopy);
     await tester.pump();
     await tester.tap(find.byType(IconButton));
