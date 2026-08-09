@@ -40,7 +40,7 @@ describe(PersonRepository.name, () => {
         boundingBoxY2: 90,
       });
 
-      // theres a circular dependency between assetFace and person, so we need to update the person after creating the assetFace
+      // there's a circular dependency between assetFace and person, so we need to update the person after creating the assetFace
       await ctx.database.updateTable('person').set({ faceAssetId: assetFace.id }).where('id', '=', person.id).execute();
 
       await ctx.newAssetFile({

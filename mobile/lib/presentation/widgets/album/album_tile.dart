@@ -17,7 +17,7 @@ class AlbumTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albumThumbnailAsset = ref.read(assetServiceProvider).getRemoteAsset(album.thumbnailAssetId ?? "");
+    final albumThumbnailAsset = ref.watch(assetServiceProvider).getRemoteAsset(album.thumbnailAssetId ?? "");
 
     return LargeLeadingTile(
       title: Text(
@@ -51,7 +51,7 @@ class AlbumTile extends ConsumerWidget {
               : SizedBox(
                   width: 80,
                   height: 80,
-                  child: Container(
+                  child: DecoratedBox(
                     decoration: BoxDecoration(
                       color: context.colorScheme.surfaceContainer,
                       borderRadius: const BorderRadius.all(Radius.circular(16)),

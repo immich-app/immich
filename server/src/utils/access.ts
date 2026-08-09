@@ -3,7 +3,7 @@ import { AuthSharedLink } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { AlbumUserRole, Permission } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
-import { setDifference, setIsEqual, setIsSuperset, setUnion } from 'src/utils/set';
+import { areSetsEqual, isSetSuperset, setDifference, setUnion } from 'src/utils/set';
 
 export type GrantedRequest = {
   requested: Permission[];
@@ -15,7 +15,7 @@ export const isGranted = ({ requested, current }: GrantedRequest) => {
     return true;
   }
 
-  return setIsSuperset(new Set(current), new Set(requested));
+  return isSetSuperset(new Set(current), new Set(requested));
 };
 
 export type AccessRequest = {
@@ -36,7 +36,7 @@ export const requireUploadAccess = (auth: AuthDto | null): AuthDto => {
 
 export const requireAccess = async (access: AccessRepository, request: AccessRequest) => {
   const allowedIds = await checkAccess(access, request);
-  if (!setIsEqual(new Set(request.ids), allowedIds)) {
+  if (!areSetsEqual(new Set(request.ids), allowedIds)) {
     throw new BadRequestException(`Not found or no ${request.permission} access`);
   }
 };

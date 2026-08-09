@@ -5,7 +5,8 @@ import 'package:collection/collection.dart';
 extension ListExtension<E> on List<E> {
   List<E> uniqueConsecutive({int Function(E a, E b)? compare, void Function(E a, E b)? onDuplicate}) {
     compare ??= (E a, E b) => a == b ? 0 : 1;
-    int i = 1, j = 1;
+    int i = 1;
+    int j = 1;
     for (; i < length; i++) {
       if (compare(this[i - 1], this[i]) != 0) {
         if (i != j) {

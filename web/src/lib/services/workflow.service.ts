@@ -3,8 +3,6 @@ import {
   deleteWorkflow,
   updateWorkflow,
   WorkflowTrigger,
-  type AlbumResponseDto,
-  type PersonResponseDto,
   type WorkflowCreateDto,
   type WorkflowResponseDto,
   type WorkflowUpdateDto,
@@ -31,9 +29,6 @@ import { Route } from '$lib/route';
 import { copyToClipboard, downloadJson } from '$lib/utils';
 import { handleError } from '$lib/utils/handle-error';
 import { getFormatter } from '$lib/utils/i18n';
-
-export type PickerSubType = 'album-picker' | 'people-picker';
-export type PickerMetadata = AlbumResponseDto | PersonResponseDto | AlbumResponseDto[] | PersonResponseDto[];
 
 export const getWorkflowsActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {

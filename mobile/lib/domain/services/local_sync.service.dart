@@ -27,7 +27,7 @@ class LocalSyncService {
   final NativeSyncApi _nativeSyncApi;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
-  final IPermissionRepository _permissionRepository;
+  final DevicePermissionRepository _permissionRepository;
   final Completer<void>? _cancellation;
   final Logger _log = Logger("DeviceSyncService");
 
@@ -40,7 +40,7 @@ class LocalSyncService {
     required this._permissionRepository,
     this._cancellation,
   }) {
-    _cancellation?.future.then((_) => _nativeSyncApi.cancelSync().onError(_log.warning));
+    unawaited(_cancellation?.future.then((_) => _nativeSyncApi.cancelSync().onError(_log.warning)));
   }
 
   bool get _isCancelled => _cancellation?.isCompleted ?? false;

@@ -1,18 +1,10 @@
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/constants/enums.dart';
 
-class ShareConfig {
-  final ShareAssetType fileType;
+part 'share_config.freezed.dart';
 
-  const ShareConfig({this.fileType = ShareAssetType.original});
-
-  ShareConfig copyWith({ShareAssetType? fileType}) => ShareConfig(fileType: fileType ?? this.fileType);
-
-  @override
-  bool operator ==(Object other) => identical(this, other) || (other is ShareConfig && other.fileType == fileType);
-
-  @override
-  int get hashCode => fileType.hashCode;
-
-  @override
-  String toString() => 'ShareConfig(fileType: $fileType)';
+@freezed
+abstract class ShareConfig with _$ShareConfig {
+  const factory ShareConfig({@Default(ShareAssetType.original) ShareAssetType fileType}) = _ShareConfig;
 }

@@ -9,16 +9,16 @@ void main() {
 
     test('returns message when app major is behind server major', () {
       final result = getVersionCompatibilityMessage(
-        const SemVer(major: 2, minor: 0, patch: 0),
-        const SemVer(major: 1, minor: 200, patch: 0),
+        serverVersion: const SemVer(major: 2, minor: 0, patch: 0),
+        appVersion: const SemVer(major: 1, minor: 200, patch: 0),
       );
       expect(result, message);
     });
 
     test('returns null when app major matches server major', () {
       final result = getVersionCompatibilityMessage(
-        const SemVer(major: 2, minor: 0, patch: 0),
-        const SemVer(major: 2, minor: 0, patch: 0),
+        serverVersion: const SemVer(major: 2, minor: 0, patch: 0),
+        appVersion: const SemVer(major: 2, minor: 0, patch: 0),
       );
       expect(result, null);
     });
@@ -30,16 +30,16 @@ void main() {
 
     test('returns message when app major is more than one ahead of server', () {
       final result = getVersionCompatibilityMessage(
-        const SemVer(major: 1, minor: 200, patch: 0),
-        const SemVer(major: 3, minor: 0, patch: 0),
+        serverVersion: const SemVer(major: 1, minor: 200, patch: 0),
+        appVersion: const SemVer(major: 3, minor: 0, patch: 0),
       );
       expect(result, message);
     });
 
     test('returns null when app major is exactly one ahead of server', () {
       final result = getVersionCompatibilityMessage(
-        const SemVer(major: 1, minor: 200, patch: 0),
-        const SemVer(major: 2, minor: 0, patch: 0),
+        serverVersion: const SemVer(major: 1, minor: 200, patch: 0),
+        appVersion: const SemVer(major: 2, minor: 0, patch: 0),
       );
       expect(result, null);
     });

@@ -5,6 +5,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  HlsVideoResolution,
   ImageFormat,
   LogLevel,
   OAuthTokenEndpointAuthMethod,
@@ -76,6 +77,8 @@ const updatedConfig = Object.freeze<SystemConfig>({
     tonemap: ToneMapping.Hable,
     realtime: {
       enabled: false,
+      videoCodecs: [VideoCodec.H264, VideoCodec.Hevc],
+      resolutions: [HlsVideoResolution.p480, HlsVideoResolution.p720, HlsVideoResolution.p1080],
     },
   },
   integrityChecks: {
@@ -359,7 +362,7 @@ describe(SystemConfigService.name, () => {
       expect(mocks.logger.error).toHaveBeenCalledTimes(2);
       expect(mocks.logger.error.mock.calls[0][0]).toEqual('Unable to load configuration file: immich-config.json');
       expect(mocks.logger.error.mock.calls[1][0].toString()).toEqual(
-        expect.stringContaining('YAMLException: duplicated mapping key (1:20)'),
+        expect.stringContaining('YAMLException: duplicated mapping key (1:21)'),
       );
     });
 
