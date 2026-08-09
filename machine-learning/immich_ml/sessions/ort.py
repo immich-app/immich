@@ -40,7 +40,7 @@ def _migraphx_mark_compiled_input(key: tuple[str, MigraphxInputSignature]) -> No
 
 
 def _migraphx_input_signature(
-    input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
+    input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]] | dict[str, NDArray[np.uint8]],
 ) -> MigraphxInputSignature:
     return tuple((name, str(value.dtype), tuple(value.shape)) for name, value in sorted(input_feed.items()))
 
@@ -74,10 +74,13 @@ class OrtSession:
         outputs: list[SessionNode] = self.session.get_outputs()
         return outputs
 
+    def get_metadata(self) -> dict[str, str]:
+        return self.session.get_modelmeta().custom_metadata_map
+
     def run(
         self,
         output_names: list[str] | None,
-        input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
+        input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]] | dict[str, NDArray[np.uint8]],
         run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
         if "MIGraphXExecutionProvider" in self.providers:

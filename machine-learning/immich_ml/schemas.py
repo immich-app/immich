@@ -70,13 +70,17 @@ class ModelSession(Protocol):
     def run(
         self,
         output_names: list[str] | None,
-        input_feed: dict[str, npt.NDArray[np.float32]] | dict[str, npt.NDArray[np.int32]],
+        input_feed: dict[str, npt.NDArray[np.float32]]
+        | dict[str, npt.NDArray[np.int32]]
+        | dict[str, npt.NDArray[np.uint8]],
         run_options: Any = None,
     ) -> list[npt.NDArray[np.float32]]: ...
 
     def get_inputs(self) -> list[SessionNode]: ...
 
     def get_outputs(self) -> list[SessionNode]: ...
+
+    def get_metadata(self) -> dict[str, str]: ...
 
 
 class HasProfiling(Protocol):
