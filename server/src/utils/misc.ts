@@ -12,7 +12,7 @@ import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
-import parse from 'picomatch/lib/parse';
+import type parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, endpointTags, serverVersion } from 'src/constants';
 import { extraModels } from 'src/decorators';
@@ -105,10 +105,10 @@ export const isDuplicateDetectionEnabled = (machineLearning: SystemConfig['machi
   isSmartSearchEnabled(machineLearning) && machineLearning.duplicateDetection.enabled;
 export const isFaceImportEnabled = (metadata: SystemConfig['metadata']) => metadata.faces.import;
 
-export const isConnectionAborted = (error: Error | any) => error.code === 'ECONNABORTED';
+export const isConnectionAborted = (error: unknown) => (error as { code?: string })?.code === 'ECONNABORTED';
 
 export const handlePromiseError = <T>(promise: Promise<T>, logger: LoggingRepository): void => {
-  promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
+  promise.catch((error: unknown) => logger.error(`Promise error: ${error}`, (error as Error)?.stack));
 };
 
 export interface OpenGraphTags {
