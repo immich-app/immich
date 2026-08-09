@@ -62,8 +62,10 @@
   let searchHistory = $state<SearchHistorySection>();
 
   let activeFilter: string = $state('type');
-  let people: Promise<PersonResponseDto[]> | undefined = $state(undefined);
-  let tags: Promise<TagResponseDto[]> | undefined = $state(undefined);
+  let peoplePromise: Promise<PersonResponseDto[]> | undefined = $state(undefined);
+  let people: PersonResponseDto[] | undefined = $state(undefined);
+  let tagsPromise: Promise<TagResponseDto[]> | undefined = $state(undefined);
+  let tags: TagResponseDto[] | undefined = $state(undefined);
 
   let typeTitle: string | undefined = $derived(searchTypeTitle(searchManager.filter.queryType));
   let peopleTitle: string | undefined = $state(undefined);
@@ -82,7 +84,7 @@
     ),
   );
   let tagsTitle: string | undefined = $state(undefined);
-  let mediaTitle: string | undefined = $state(searchMediaTitle(searchManager.filter.mediaType));
+  let mediaTitle: string | undefined = $derived(searchMediaTitle(searchManager.filter.mediaType));
 
   let filters = [
     {
@@ -136,28 +138,30 @@
 
   const clear = () => {
     searchManager.reset();
-    peopleTitle = tagsTitle = mediaTitle = undefined;
+    peopleTitle = tagsTitle = undefined;
   };
 
   onMount(() => {
-    if (searchManager.filter.personIds.size > 0) {
-      if (!people) {
-        people = getPeople(searchManager.filter.personIds);
-      }
-
-      void people.then((res) => {
-        peopleTitle = searchPeopleTitle(res, searchManager.filter.personIds);
-      });
+    if (searchManager.filter.personIds.size > 0 && !peoplePromise) {
+      peoplePromise = getPeople(searchManager.filter.personIds);
+      void peoplePromise.then((res) => (people = res));
     }
 
-    if (searchManager.filter.tagIds?.size) {
-      if (!tags) {
-        tags = getAllTags();
-      }
+    if (searchManager.filter.tagIds?.size && !tagsPromise) {
+      tagsPromise = getAllTags();
+      void tagsPromise.then((res) => (tags = res));
+    }
+  });
 
-      void tags.then((res) => {
-        tagsTitle = searchTagsTitle(res, searchManager.filter.tagIds!);
-      });
+  $effect(() => {
+    if (people) {
+      peopleTitle = searchPeopleTitle(people, searchManager.filter.personIds);
+    }
+  });
+
+  $effect(() => {
+    if (tags) {
+      tagsTitle = searchTagsTitle(tags, searchManager.filter.tagIds!);
     }
   });
 
@@ -222,15 +226,15 @@
           {#if activeFilter === 'type'}
             <SearchTextSection />
           {:else if activeFilter === 'people'}
-            <SearchPeopleSection bind:title={peopleTitle} parentPromise={people} />
+            <SearchPeopleSection bind:title={peopleTitle} parentPromise={peoplePromise} />
           {:else if activeFilter === 'date'}
             <SearchDateSection />
           {:else if activeFilter === 'places'}
             <SearchLocationSection />
           {:else if activeFilter === 'tags'}
-            <SearchTagsSection bind:title={tagsTitle} parentPromise={tags} />
+            <SearchTagsSection bind:title={tagsTitle} parentPromise={tagsPromise} />
           {:else if activeFilter === 'media'}
-            <SearchMediaSection bind:title={mediaTitle} />
+            <SearchMediaSection />
           {/if}
         </div>
       {/if}

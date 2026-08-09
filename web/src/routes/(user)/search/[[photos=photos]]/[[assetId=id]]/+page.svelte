@@ -245,6 +245,7 @@
     delete terms[key];
     assetMultiSelectManager.clear();
     void goto(Route.search(terms));
+    searchManager.setQuery(terms);
   }
 
   onMount(() => searchManager.setQuery(terms));
