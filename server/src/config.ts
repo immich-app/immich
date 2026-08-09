@@ -116,6 +116,7 @@ export type SystemConfig = {
   metadata: {
     faces: {
       import: boolean;
+      export: boolean;
     };
   };
   oauth: {
@@ -333,6 +334,7 @@ export const defaults = Object.freeze<SystemConfig>({
   metadata: {
     faces: {
       import: false,
+      export: false,
     },
   },
   oauth: {

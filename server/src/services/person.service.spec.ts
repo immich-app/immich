@@ -1318,6 +1318,134 @@ describe(PersonService.name, () => {
     });
   });
 
+  describe('sidecar events', () => {
+    it('should emit an event when a face is reassigned', async () => {
+      const face = AssetFaceFactory.create();
+      const person = PersonFactory.create();
+
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
+      mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
+      mocks.person.reassignFace.mockResolvedValue(1);
+      mocks.person.getById.mockResolvedValue(person);
+
+      await sut.reassignFacesById(AuthFactory.create(), person.id, { id: face.id });
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetFacesUpdate', { assetIds: [face.assetId] });
+    });
+
+    it('should emit an event when a face is created', async () => {
+      const auth = AuthFactory.create();
+      const asset = AssetFactory.create();
+      const person = PersonFactory.create();
+
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([asset.id]));
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+      mocks.asset.getById.mockResolvedValue(getForAsset(asset));
+      mocks.person.getById.mockResolvedValue(person);
+
+      await sut.createFace(auth, {
+        assetId: asset.id,
+        personId: person.id,
+        imageHeight: 500,
+        imageWidth: 400,
+        x: 10,
+        y: 20,
+        width: 100,
+        height: 110,
+      });
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetFacesUpdate', { assetIds: [asset.id] });
+    });
+
+    it('should emit an event when a face is deleted', async () => {
+      const face = AssetFaceFactory.create();
+
+      mocks.access.person.checkFaceOwnerAccess.mockResolvedValue(new Set([face.id]));
+      mocks.person.getFaceById.mockResolvedValue(getForAssetFace(face));
+
+      await sut.deleteFace(AuthFactory.create(), face.id, { force: false });
+
+      expect(mocks.person.softDeleteAssetFaces).toHaveBeenCalledWith(face.id);
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetFacesUpdate', { assetIds: [face.assetId] });
+    });
+
+    it('should emit an event when a person is renamed', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create({ name: 'Person 1' });
+
+      mocks.person.update.mockResolvedValue(person);
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+
+      await sut.update(auth, person.id, { name: 'Person 1' });
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('PersonFacesUpdate', { personIds: [person.id] });
+    });
+
+    it('should not emit an event when a person is updated without a name', async () => {
+      const auth = AuthFactory.create();
+      const person = PersonFactory.create();
+
+      mocks.person.update.mockResolvedValue(person);
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+
+      await sut.update(auth, person.id, { isFavorite: true });
+
+      expect(mocks.event.emit).not.toHaveBeenCalled();
+    });
+
+    it('should emit an event for the primary person when people are merged', async () => {
+      const auth = AuthFactory.create();
+      const [person, mergePerson] = [PersonFactory.create(), PersonFactory.create()];
+
+      mocks.person.getById.mockResolvedValueOnce(person);
+      mocks.person.getById.mockResolvedValueOnce(mergePerson);
+      mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set([person.id]));
+      mocks.access.person.checkOwnerAccess.mockResolvedValueOnce(new Set([mergePerson.id]));
+
+      await sut.mergePerson(auth, person.id, { ids: [mergePerson.id] });
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('PersonFacesUpdate', { personIds: [person.id] });
+    });
+
+    it('should emit an event before people are deleted', async () => {
+      const person = PersonFactory.create();
+
+      mocks.access.person.checkOwnerAccess.mockResolvedValue(new Set([person.id]));
+      mocks.person.getForPeopleDelete.mockResolvedValue([person]);
+
+      await sut.deleteAll(AuthFactory.create(), { ids: [person.id] });
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('PersonFacesUpdate', { personIds: [person.id] });
+      expect(mocks.event.emit.mock.invocationCallOrder[0]).toBeLessThan(
+        mocks.person.delete.mock.invocationCallOrder[0],
+      );
+    });
+
+    it('should emit an event when facial recognition assigns a face to a person', async () => {
+      const asset = AssetFactory.create();
+      const [noPerson, faceWithPerson] = [
+        AssetFaceFactory.create({ assetId: asset.id }),
+        AssetFaceFactory.from().person().build(),
+      ];
+
+      mocks.systemMetadata.get.mockResolvedValue({ machineLearning: { facialRecognition: { minFaces: 1 } } });
+      mocks.search.searchFaces.mockResolvedValue([
+        { ...noPerson, distance: 0 },
+        { ...faceWithPerson, distance: 0.2 },
+      ] as FaceSearchResult[]);
+      mocks.person.getFaceForFacialRecognitionJob.mockResolvedValue(getForFacialRecognitionJob(noPerson, asset));
+
+      await expect(sut.handleRecognizeFaces({ id: noPerson.id })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.person.reassignFaces).toHaveBeenCalledWith({
+        faceIds: [noPerson.id],
+        newPersonId: faceWithPerson.person!.id,
+      });
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetFacesUpdate', { assetIds: [asset.id] });
+    });
+  });
+
   describe('getStatistics', () => {
     it('should get correct number of person', async () => {
       const auth = AuthFactory.create();

@@ -288,7 +288,7 @@ const SystemConfigReverseGeocodingSchema = z
   .meta({ id: 'SystemConfigReverseGeocodingDto' });
 
 const SystemConfigFacesSchema = z
-  .object({ import: configBool.describe('Import') })
+  .object({ import: configBool.describe('Import'), export: configBool.describe('Export') })
   .meta({ id: 'SystemConfigFacesDto' });
 const SystemConfigMetadataSchema = z.object({ faces: SystemConfigFacesSchema }).meta({ id: 'SystemConfigMetadataDto' });
 

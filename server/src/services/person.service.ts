@@ -82,6 +82,7 @@ export class PersonService extends BaseService {
     const person = await this.findOrFail(personId);
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto: string[] = [];
+    const reassignedAssetIds: string[] = [];
     for (const data of dto.data) {
       const faces = await this.personRepository.getFacesByIds([{ personId: data.personId, assetId: data.assetId }]);
 
@@ -95,6 +96,7 @@ export class PersonService extends BaseService {
         }
 
         await this.personRepository.reassignFace(face.id, personId);
+        reassignedAssetIds.push(face.assetId);
       }
 
       result.push(mapPerson(person));
@@ -103,6 +105,9 @@ export class PersonService extends BaseService {
       // Remove duplicates
       await this.createNewFeaturePhoto([...new Set(changeFeaturePhoto)]);
     }
+
+    await this.onFacesUpdate(reassignedAssetIds);
+
     return result;
   }
 
@@ -119,6 +124,8 @@ export class PersonService extends BaseService {
     if (face.person && face.person.faceAssetId === face.id) {
       await this.createNewFeaturePhoto([face.person.id]);
     }
+
+    await this.onFacesUpdate([face.assetId]);
 
     return mapPerson(await this.findOrFail(personId));
   }
@@ -217,6 +224,10 @@ export class PersonService extends BaseService {
       await this.jobRepository.queue({ name: JobName.PersonGenerateThumbnail, data: { id } });
     }
 
+    if (name !== undefined) {
+      await this.onPeopleUpdate([id]);
+    }
+
     return mapPerson(person);
   }
 
@@ -247,6 +258,8 @@ export class PersonService extends BaseService {
   async deleteAll(auth: AuthDto, { ids }: BulkIdsDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.PersonDelete, ids });
     const people = await this.personRepository.getForPeopleDelete(ids);
+    // queue the sidecar writes while the faces of these people can still be resolved
+    await this.onPeopleUpdate(people.map(({ id }) => id));
     await this.removeAllPeople(people);
   }
 
@@ -535,6 +548,7 @@ export class PersonService extends BaseService {
     if (personId) {
       this.logger.debug(`Assigning face ${id} to person ${personId}`);
       await this.personRepository.reassignFaces({ faceIds: [id], newPersonId: personId });
+      await this.onFacesUpdate([face.assetId]);
     }
 
     return JobStatus.Success;
@@ -605,6 +619,8 @@ export class PersonService extends BaseService {
         await this.removeAllPeople([mergePerson]);
 
         this.logger.log(`Merged ${mergeName} into ${primaryName}`);
+        // the faces of the merged person now belong to the primary person, which may also have gained a name
+        await this.onPeopleUpdate([primaryPerson.id]);
         results.push({ id: mergeId, success: true });
       } catch (error: Error | any) {
         this.logger.error(`Unable to merge ${mergeId} into ${id}: ${error}`, error?.stack);
@@ -693,11 +709,35 @@ export class PersonService extends BaseService {
     if (!person.faceAssetId) {
       await this.createNewFeaturePhoto([person.id]);
     }
+
+    await this.onFacesUpdate([dto.assetId]);
   }
 
   async deleteFace(auth: AuthDto, id: string, dto: AssetFaceDeleteDto): Promise<void> {
     await this.requireAccess({ auth, permission: Permission.FaceDelete, ids: [id] });
 
-    return dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id);
+    const face = await this.personRepository.getFaceById(id);
+
+    await (dto.force ? this.personRepository.deleteAssetFace(id) : this.personRepository.softDeleteAssetFaces(id));
+
+    await this.onFacesUpdate([face.assetId]);
+  }
+
+  /** the faces of these assets changed, which may have to be reflected in their sidecar files */
+  private async onFacesUpdate(assetIds: string[]) {
+    if (assetIds.length === 0) {
+      return;
+    }
+
+    await this.eventRepository.emit('AssetFacesUpdate', { assetIds: [...new Set(assetIds)] });
+  }
+
+  /** these people changed, which may have to be reflected in the sidecar files of every asset they appear in */
+  private async onPeopleUpdate(personIds: string[]) {
+    if (personIds.length === 0) {
+      return;
+    }
+
+    await this.eventRepository.emit('PersonFacesUpdate', { personIds });
   }
 }

@@ -55,6 +55,12 @@ type EventMap = {
   AssetTrashAll: [{ assetIds: string[]; userId: string }];
   AssetDeleteAll: [{ assetIds: string[]; userId: string }];
   AssetRestoreAll: [{ assetIds: string[]; userId: string }];
+  /** the faces of these assets were added, removed or assigned to a different person */
+  AssetFacesUpdate: [{ assetIds: string[] }];
+
+  // person events
+  /** these people were renamed, merged or deleted, which affects every asset they appear in */
+  PersonFacesUpdate: [{ personIds: string[] }];
 
   /** a worker receives a job and emits this event to run it */
   JobRun: [QueueName, JobItem];

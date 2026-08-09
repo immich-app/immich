@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BinaryField, DefaultReadTaskOptions, ExifTool, ReadTaskOptions, Tags } from 'exiftool-vendored';
+import { BinaryField, DefaultReadTaskOptions, ExifTool, ReadTaskOptions, Tags, WriteTags } from 'exiftool-vendored';
 import geotz from 'geo-tz';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { mimeTypes } from 'src/utils/mime-types';
@@ -123,7 +123,7 @@ export class MetadataRepository {
     return this.exiftool.extractBinaryTagToBuffer(tagName, path);
   }
 
-  async writeTags(path: string, tags: Partial<Tags>): Promise<void> {
+  async writeTags(path: string, tags: WriteTags): Promise<void> {
     // If exiftool assigns a field with ^= instead of =, empty values will be written too.
     // Since exiftool-vendored doesn't support an option for this, we append the ^ to the name of the tag instead.
     // https://exiftool.org/exiftool_pod.html#:~:text=is%20used%20to%20write%20an%20empty%20string

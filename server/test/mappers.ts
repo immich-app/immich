@@ -178,6 +178,18 @@ export const getForSidecarWrite = (asset: ReturnType<AssetFactory['build']>) => 
   originalPath: asset.originalPath,
   files: asset.files.map((file) => getDehydrated(file)),
   exifInfo: getDehydrated(asset.exifInfo),
+  faces: asset.faces
+    .filter((face) => face.isVisible && !face.deletedAt && face.person?.name)
+    .sort((a, b) => a.boundingBoxX1 - b.boundingBoxX1 || a.boundingBoxY1 - b.boundingBoxY1)
+    .map((face) => ({
+      boundingBoxX1: face.boundingBoxX1,
+      boundingBoxY1: face.boundingBoxY1,
+      boundingBoxX2: face.boundingBoxX2,
+      boundingBoxY2: face.boundingBoxY2,
+      imageWidth: face.imageWidth,
+      imageHeight: face.imageHeight,
+      name: face.person!.name,
+    })),
 });
 
 export const getForAssetDeletion = (asset: ReturnType<AssetFactory['build']>) => ({

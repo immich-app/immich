@@ -112,6 +112,30 @@ export class PersonRepository {
     await this.db.deleteFrom('asset_face').where('asset_face.sourceType', '=', sourceType).execute();
   }
 
+  @GenerateSql({ params: [[DummyValue.UUID]], stream: true })
+  streamAssetIdsForPeople(personIds: string[]) {
+    return this.db
+      .selectFrom('asset_face')
+      .select('asset_face.assetId')
+      .distinct()
+      .where('asset_face.personId', 'in', personIds)
+      .where('asset_face.deletedAt', 'is', null)
+      .stream();
+  }
+
+  @GenerateSql({ params: [], stream: true })
+  streamAssetIdsWithNamedFaces() {
+    return this.db
+      .selectFrom('asset_face')
+      .innerJoin('person', 'person.id', 'asset_face.personId')
+      .select('asset_face.assetId')
+      .distinct()
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', '=', true)
+      .where('person.name', '!=', '')
+      .stream();
+  }
+
   getAllFaces(options: GetAllFacesOptions = {}) {
     return this.db
       .selectFrom('asset_face')
@@ -257,7 +281,7 @@ export class PersonRepository {
   getFaceForFacialRecognitionJob(id: string) {
     return this.db
       .selectFrom('asset_face')
-      .select(['asset_face.id', 'asset_face.personId', 'asset_face.sourceType'])
+      .select(['asset_face.id', 'asset_face.assetId', 'asset_face.personId', 'asset_face.sourceType'])
       .select((eb) =>
         jsonObjectFrom(
           eb

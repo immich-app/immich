@@ -62,6 +62,97 @@ const makeFaceTags = (
   },
 });
 
+/**
+ * The geometry of {@link makeFaceTags} as Immich stores it after importing it for a given exif orientation. Since
+ * exporting is the inverse of importing, writing these faces has to produce the geometry of `makeFaceTags` again.
+ */
+const orientationTests = [
+  {
+    description: 'undefined',
+    orientation: undefined,
+    expected: { imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 20, y2: 60 },
+  },
+  {
+    description: 'Horizontal = 1',
+    orientation: ExifOrientation.Horizontal,
+    expected: { imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 20, y2: 60 },
+  },
+  {
+    description: 'MirrorHorizontal = 2',
+    orientation: ExifOrientation.MirrorHorizontal,
+    expected: { imgW: 1000, imgH: 100, x1: 800, x2: 1000, y1: 20, y2: 60 },
+  },
+  {
+    description: 'Rotate180 = 3',
+    orientation: ExifOrientation.Rotate180,
+    expected: { imgW: 1000, imgH: 100, x1: 800, x2: 1000, y1: 40, y2: 80 },
+  },
+  {
+    description: 'MirrorVertical = 4',
+    orientation: ExifOrientation.MirrorVertical,
+    expected: { imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 40, y2: 80 },
+  },
+  {
+    description: 'MirrorHorizontalRotate270CW = 5',
+    orientation: ExifOrientation.MirrorHorizontalRotate270CW,
+    expected: { imgW: 100, imgH: 1000, x1: 20, x2: 60, y1: 0, y2: 200 },
+  },
+  {
+    description: 'Rotate90CW = 6',
+    orientation: ExifOrientation.Rotate90CW,
+    expected: { imgW: 100, imgH: 1000, x1: 40, x2: 80, y1: 0, y2: 200 },
+  },
+  {
+    description: 'MirrorHorizontalRotate90CW = 7',
+    orientation: ExifOrientation.MirrorHorizontalRotate90CW,
+    expected: { imgW: 100, imgH: 1000, x1: 40, x2: 80, y1: 800, y2: 1000 },
+  },
+  {
+    description: 'Rotate270CW = 8',
+    orientation: ExifOrientation.Rotate270CW,
+    expected: { imgW: 100, imgH: 1000, x1: 20, x2: 60, y1: 800, y2: 1000 },
+  },
+];
+
+const withExport = (value: boolean) => ({ ...defaults, metadata: { faces: { import: false, export: value } } });
+
+const makeFaceAsset = (
+  {
+    orientation,
+    imgW,
+    imgH,
+    x1,
+    x2,
+    y1,
+    y2,
+  }: {
+    orientation?: ExifOrientation | string;
+    imgW: number;
+    imgH: number;
+    x1: number;
+    x2: number;
+    y1: number;
+    y2: number;
+  },
+  name = 'Alice',
+) =>
+  AssetFactory.from()
+    .file({ type: AssetFileType.Sidecar })
+    .exif({ exifImageWidth: 1000, exifImageHeight: 100, orientation: orientation ? String(orientation) : null })
+    .face(
+      {
+        imageWidth: imgW,
+        imageHeight: imgH,
+        boundingBoxX1: x1,
+        boundingBoxX2: x2,
+        boundingBoxY1: y1,
+        boundingBoxY2: y2,
+        sourceType: SourceType.MachineLearning,
+      },
+      (face) => face.person({ name }),
+    )
+    .build();
+
 const emptyPackets = {
   totalDuration: 0,
   packetCount: 0,
@@ -123,14 +214,41 @@ describe(MetadataService.name, () => {
   });
 
   describe('onConfigUpdate', () => {
-    it('should update metadata processing concurrency', () => {
+    it('should update metadata processing concurrency', async () => {
       const newConfig = structuredClone(defaults);
       newConfig.job.metadataExtraction.concurrency = 10;
 
-      sut.onConfigUpdate({ oldConfig: defaults, newConfig });
+      await sut.onConfigUpdate({ oldConfig: defaults, newConfig });
 
       expect(mocks.metadata.setMaxConcurrency).toHaveBeenCalledWith(newConfig.job.metadataExtraction.concurrency);
       expect(mocks.metadata.setMaxConcurrency).toHaveBeenCalledTimes(1);
+    });
+
+    it('should write out the people already known when face export is turned on', async () => {
+      mocks.person.streamAssetIdsWithNamedFaces.mockReturnValue(
+        makeStream([{ assetId: 'asset-1' }, { assetId: 'asset-2' }]),
+      );
+
+      await sut.onConfigUpdate({ oldConfig: withExport(false), newConfig: withExport(true) });
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SidecarWrite, data: { id: 'asset-1', faces: true } },
+        { name: JobName.SidecarWrite, data: { id: 'asset-2', faces: true } },
+      ]);
+    });
+
+    it('should not write anything when face export was already on', async () => {
+      await sut.onConfigUpdate({ oldConfig: withExport(true), newConfig: withExport(true) });
+
+      expect(mocks.person.streamAssetIdsWithNamedFaces).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should not write anything when face export is turned off', async () => {
+      await sut.onConfigUpdate({ oldConfig: withExport(true), newConfig: withExport(false) });
+
+      expect(mocks.person.streamAssetIdsWithNamedFaces).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
   });
 
@@ -1481,54 +1599,6 @@ describe(MetadataService.name, () => {
     });
 
     describe('handleFaceTagOrientation', () => {
-      const orientationTests = [
-        {
-          description: 'undefined',
-          orientation: undefined,
-          expected: { imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 20, y2: 60 },
-        },
-        {
-          description: 'Horizontal = 1',
-          orientation: ExifOrientation.Horizontal,
-          expected: { imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 20, y2: 60 },
-        },
-        {
-          description: 'MirrorHorizontal = 2',
-          orientation: ExifOrientation.MirrorHorizontal,
-          expected: { imgW: 1000, imgH: 100, x1: 800, x2: 1000, y1: 20, y2: 60 },
-        },
-        {
-          description: 'Rotate180 = 3',
-          orientation: ExifOrientation.Rotate180,
-          expected: { imgW: 1000, imgH: 100, x1: 800, x2: 1000, y1: 40, y2: 80 },
-        },
-        {
-          description: 'MirrorVertical = 4',
-          orientation: ExifOrientation.MirrorVertical,
-          expected: { imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 40, y2: 80 },
-        },
-        {
-          description: 'MirrorHorizontalRotate270CW = 5',
-          orientation: ExifOrientation.MirrorHorizontalRotate270CW,
-          expected: { imgW: 100, imgH: 1000, x1: 20, x2: 60, y1: 0, y2: 200 },
-        },
-        {
-          description: 'Rotate90CW = 6',
-          orientation: ExifOrientation.Rotate90CW,
-          expected: { imgW: 100, imgH: 1000, x1: 40, x2: 80, y1: 0, y2: 200 },
-        },
-        {
-          description: 'MirrorHorizontalRotate90CW = 7',
-          orientation: ExifOrientation.MirrorHorizontalRotate90CW,
-          expected: { imgW: 100, imgH: 1000, x1: 40, x2: 80, y1: 800, y2: 1000 },
-        },
-        {
-          description: 'Rotate270CW = 8',
-          orientation: ExifOrientation.Rotate270CW,
-          expected: { imgW: 100, imgH: 1000, x1: 20, x2: 60, y1: 800, y2: 1000 },
-        },
-      ];
-
       it.each(orientationTests)(
         'should transform RegionInfo geometry according to exif orientation $description',
         async ({ orientation, expected }) => {
@@ -2039,6 +2109,261 @@ describe(MetadataService.name, () => {
       await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Success);
       expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, { Rating: 0 });
       expect(mocks.asset.unlockProperties).toHaveBeenCalledWith(asset.id, ['rating']);
+    });
+
+    describe('faces', () => {
+      it('should not write faces when face export is disabled', async () => {
+        const asset = makeFaceAsset({
+          orientation: ExifOrientation.Horizontal,
+          imgW: 1000,
+          imgH: 100,
+          x1: 0,
+          x2: 200,
+          y1: 20,
+          y2: 60,
+        });
+
+        mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+        mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+
+        await expect(sut.handleSidecarWrite({ id: asset.id, faces: true })).resolves.toBe(JobStatus.Skipped);
+        expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
+        // the faces are not even fetched, so an install that does not export them pays nothing
+        expect(mocks.assetJob.getForSidecarWriteJob).toHaveBeenCalledWith(asset.id, false);
+      });
+
+      it('should write named faces as mwg regions', async () => {
+        const asset = makeFaceAsset({
+          orientation: ExifOrientation.Horizontal,
+          imgW: 1000,
+          imgH: 100,
+          x1: 0,
+          x2: 200,
+          y1: 20,
+          y2: 60,
+        });
+
+        mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+        mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+        mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+
+        await expect(sut.handleSidecarWrite({ id: asset.id, faces: true })).resolves.toBe(JobStatus.Success);
+        expect(mocks.assetJob.getForSidecarWriteJob).toHaveBeenCalledWith(asset.id, true);
+        expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, {
+          RegionInfo: {
+            AppliedToDimensions: { W: 1000, H: 100, Unit: 'pixel' },
+            RegionList: [
+              {
+                Type: 'Face',
+                Name: 'Alice',
+                Area: { X: 0.1, Y: 0.4, W: 0.2, H: 0.4, Unit: 'normalized' },
+              },
+            ],
+          },
+        });
+      });
+
+      it('should write faces along with other metadata', async () => {
+        const description = 'this is a description';
+        const asset = makeFaceAsset({
+          orientation: ExifOrientation.Horizontal,
+          imgW: 1000,
+          imgH: 100,
+          x1: 0,
+          x2: 200,
+          y1: 20,
+          y2: 60,
+        });
+        asset.exifInfo.description = description;
+
+        mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+        mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue(['description']);
+        mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+
+        await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Success);
+        expect(mocks.metadata.writeTags).toHaveBeenCalledWith(
+          asset.files[0].path,
+          expect.objectContaining({ Description: description, RegionInfo: expect.any(Object) }),
+        );
+      });
+
+      it('should skip faces without a named person', async () => {
+        const asset = AssetFactory.from()
+          .file({ type: AssetFileType.Sidecar })
+          .exif({ exifImageWidth: 1000, exifImageHeight: 100 })
+          .face({ imageWidth: 1000, imageHeight: 100 })
+          .build();
+
+        mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+        mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+        mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+
+        await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
+        expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
+      });
+
+      it('should remove regions when the last named face was removed', async () => {
+        const asset = AssetFactory.from().file({ type: AssetFileType.Sidecar }).exif().build();
+
+        mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+        mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+        mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+        mockReadTags(makeFaceTags({ Name: 'Alice' }));
+
+        await expect(sut.handleSidecarWrite({ id: asset.id, faces: true })).resolves.toBe(JobStatus.Success);
+        expect(mocks.metadata.readTags).toHaveBeenCalledWith(asset.files[0].path);
+        expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, { RegionInfo: null });
+      });
+
+      it('should not touch sidecars that have no regions', async () => {
+        const asset = AssetFactory.from().file({ type: AssetFileType.Sidecar }).exif().build();
+
+        mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+        mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+        mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+        mockReadTags({});
+
+        await expect(sut.handleSidecarWrite({ id: asset.id, faces: true })).resolves.toBe(JobStatus.Skipped);
+        expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
+      });
+
+      it('should not create a sidecar just to remove regions', async () => {
+        const asset = AssetFactory.from().exif().build();
+
+        mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+        mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+        mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+
+        await expect(sut.handleSidecarWrite({ id: asset.id, faces: true })).resolves.toBe(JobStatus.Skipped);
+        expect(mocks.metadata.readTags).not.toHaveBeenCalled();
+        expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
+      });
+
+      it('should leave regions alone when the job was not triggered by a face change', async () => {
+        const asset = AssetFactory.from().file({ type: AssetFileType.Sidecar }).exif().build();
+
+        mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+        mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+        mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+
+        await expect(sut.handleSidecarWrite({ id: asset.id })).resolves.toBe(JobStatus.Skipped);
+        expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
+      });
+
+      it('should not write faces for assets without known dimensions', async () => {
+        const asset = AssetFactory.from()
+          .file({ type: AssetFileType.Sidecar })
+          .exif({ exifImageWidth: null, exifImageHeight: null })
+          .face({ imageWidth: 1000, imageHeight: 100 }, (face) => face.person({ name: 'Alice' }))
+          .build();
+
+        mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+        mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+        mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+
+        await expect(sut.handleSidecarWrite({ id: asset.id, faces: true })).resolves.toBe(JobStatus.Skipped);
+        expect(mocks.metadata.writeTags).not.toHaveBeenCalled();
+      });
+
+      it('should not transform geometry for a rotation that is not an exif orientation', async () => {
+        // the image of such an asset is never rotated, so its faces are already in the coordinate space of the file
+        const asset = makeFaceAsset({ orientation: '90', imgW: 1000, imgH: 100, x1: 0, x2: 200, y1: 20, y2: 60 });
+
+        mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+        mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+        mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+
+        await expect(sut.handleSidecarWrite({ id: asset.id, faces: true })).resolves.toBe(JobStatus.Success);
+        expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, {
+          RegionInfo: {
+            AppliedToDimensions: { W: 1000, H: 100, Unit: 'pixel' },
+            RegionList: [
+              {
+                Type: 'Face',
+                Name: 'Alice',
+                Area: { X: 0.1, Y: 0.4, W: 0.2, H: 0.4, Unit: 'normalized' },
+              },
+            ],
+          },
+        });
+      });
+
+      it.each(orientationTests)(
+        'should write RegionInfo geometry in the coordinate space of the file for exif orientation $description',
+        async ({ orientation, expected }) => {
+          const asset = makeFaceAsset({ orientation, ...expected });
+
+          mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+          mocks.assetJob.getLockedPropertiesForMetadataExtraction.mockResolvedValue([]);
+          mocks.assetJob.getForSidecarWriteJob.mockResolvedValue(getForSidecarWrite(asset));
+
+          await expect(sut.handleSidecarWrite({ id: asset.id, faces: true })).resolves.toBe(JobStatus.Success);
+
+          // the geometry of makeFaceTags, i.e. exporting is the exact inverse of importing
+          expect(mocks.metadata.writeTags).toHaveBeenCalledWith(asset.files[0].path, {
+            RegionInfo: {
+              AppliedToDimensions: { W: 1000, H: 100, Unit: 'pixel' },
+              RegionList: [
+                {
+                  Type: 'Face',
+                  Name: 'Alice',
+                  Area: { X: 0.1, Y: 0.4, W: 0.2, H: 0.4, Unit: 'normalized' },
+                },
+              ],
+            },
+          });
+        },
+      );
+    });
+  });
+
+  describe('handleAssetFacesUpdate', () => {
+    it('should do nothing when face export is disabled', async () => {
+      await sut.handleAssetFacesUpdate({ assetIds: ['asset-1'] });
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should queue a sidecar write for every asset', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+
+      await sut.handleAssetFacesUpdate({ assetIds: ['asset-1', 'asset-2'] });
+
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SidecarWrite, data: { id: 'asset-1', faces: true } },
+        { name: JobName.SidecarWrite, data: { id: 'asset-2', faces: true } },
+      ]);
+    });
+  });
+
+  describe('handlePersonFacesUpdate', () => {
+    it('should do nothing when face export is disabled', async () => {
+      await sut.handlePersonFacesUpdate({ personIds: ['person-1'] });
+      expect(mocks.person.streamAssetIdsForPeople).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
+    });
+
+    it('should queue a sidecar write for every asset of the people', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+      mocks.person.streamAssetIdsForPeople.mockReturnValue(
+        makeStream([{ assetId: 'asset-1' }, { assetId: 'asset-2' }]),
+      );
+
+      await sut.handlePersonFacesUpdate({ personIds: ['person-1'] });
+
+      expect(mocks.person.streamAssetIdsForPeople).toHaveBeenCalledWith(['person-1']);
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.SidecarWrite, data: { id: 'asset-1', faces: true } },
+        { name: JobName.SidecarWrite, data: { id: 'asset-2', faces: true } },
+      ]);
+    });
+
+    it('should not queue anything when the people have no assets', async () => {
+      mocks.systemMetadata.get.mockResolvedValue({ metadata: { faces: { export: true } } });
+      mocks.person.streamAssetIdsForPeople.mockReturnValue(makeStream([]));
+
+      await sut.handlePersonFacesUpdate({ personIds: ['person-1'] });
+
+      expect(mocks.job.queueAll).not.toHaveBeenCalled();
     });
   });
 

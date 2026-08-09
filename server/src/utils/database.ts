@@ -218,6 +218,30 @@ export function withFaces(eb: ExpressionBuilder<DB, 'asset'>, withHidden?: boole
   ).as('faces');
 }
 
+/** visible faces that resolve to a named person, ordered so that repeated writes produce the same output */
+export function withNamedFaces(eb: ExpressionBuilder<DB, 'asset'>) {
+  return jsonArrayFrom(
+    eb
+      .selectFrom('asset_face')
+      .innerJoin('person', 'person.id', 'asset_face.personId')
+      .select([
+        'asset_face.boundingBoxX1',
+        'asset_face.boundingBoxY1',
+        'asset_face.boundingBoxX2',
+        'asset_face.boundingBoxY2',
+        'asset_face.imageWidth',
+        'asset_face.imageHeight',
+        'person.name',
+      ])
+      .whereRef('asset_face.assetId', '=', 'asset.id')
+      .where('asset_face.deletedAt', 'is', null)
+      .where('asset_face.isVisible', '=', true)
+      .where('person.name', '!=', '')
+      .orderBy('asset_face.boundingBoxX1')
+      .orderBy('asset_face.boundingBoxY1'),
+  ).as('faces');
+}
+
 export function withFiles(eb: ExpressionBuilder<DB, 'asset'>, type?: AssetFileType) {
   return jsonArrayFrom(
     eb

@@ -17,6 +17,7 @@ import {
   withFaces,
   withFilePath,
   withFiles,
+  withNamedFaces,
   withVideoFormat,
   withVideoStream,
 } from 'src/utils/database';
@@ -37,13 +38,14 @@ export class AssetJobRepository {
       .executeTakeFirst();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getForSidecarWriteJob(id: string) {
+  @GenerateSql({ params: [DummyValue.UUID] }, { name: 'with faces', params: [DummyValue.UUID, true] })
+  getForSidecarWriteJob(id: string, withFaces = false) {
     return this.db
       .selectFrom('asset')
       .where('asset.id', '=', asUuid(id))
       .select(['id', 'originalPath'])
       .select((eb) => withFiles(eb, AssetFileType.Sidecar))
+      .$if(withFaces, (qb) => qb.select((eb) => withNamedFaces(eb)))
       .$call(withExifInner)
       .limit(1)
       .executeTakeFirst();

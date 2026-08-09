@@ -2495,6 +2495,8 @@ export type SystemConfigMapDto = {
     lightStyle: string;
 };
 export type SystemConfigFacesDto = {
+    /** Export */
+    "export": boolean;
     /** Import */
     "import": boolean;
 };

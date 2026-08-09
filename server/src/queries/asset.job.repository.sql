@@ -47,6 +47,62 @@ where
 limit
   $3
 
+-- AssetJobRepository.getForSidecarWriteJob (with faces)
+select
+  "id",
+  "originalPath",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_file"."id",
+          "asset_file"."path",
+          "asset_file"."type",
+          "asset_file"."isEdited"
+        from
+          "asset_file"
+        where
+          "asset_file"."assetId" = "asset"."id"
+          and "asset_file"."type" = $1
+      ) as agg
+  ) as "files",
+  (
+    select
+      coalesce(json_agg(agg), '[]')
+    from
+      (
+        select
+          "asset_face"."boundingBoxX1",
+          "asset_face"."boundingBoxY1",
+          "asset_face"."boundingBoxX2",
+          "asset_face"."boundingBoxY2",
+          "asset_face"."imageWidth",
+          "asset_face"."imageHeight",
+          "person"."name"
+        from
+          "asset_face"
+          inner join "person" on "person"."id" = "asset_face"."personId"
+        where
+          "asset_face"."assetId" = "asset"."id"
+          and "asset_face"."deletedAt" is null
+          and "asset_face"."isVisible" = $2
+          and "person"."name" != $3
+        order by
+          "asset_face"."boundingBoxX1",
+          "asset_face"."boundingBoxY1"
+      ) as agg
+  ) as "faces",
+  to_json("asset_exif") as "exifInfo"
+from
+  "asset"
+  inner join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
+where
+  "asset"."id" = $4::uuid
+limit
+  $5
+
 -- AssetJobRepository.getForSidecarCheckJob
 select
   "id",

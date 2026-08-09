@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ContainerDirectoryItem, ExifDateTime, Tags } from 'exiftool-vendored';
+import { ContainerDirectoryItem, ExifDateTime, Struct, WriteTags } from 'exiftool-vendored';
 import { Insertable } from 'kysely';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
@@ -8,7 +8,7 @@ import { constants } from 'node:fs/promises';
 import { join, parse } from 'node:path';
 import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { Asset, AssetFile } from 'src/database';
+import { Asset, AssetFile, Exif } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
 import {
   AssetFileType,
@@ -35,7 +35,7 @@ import { getAssetFiles } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
 import { mergeTimeZone } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFaceImportEnabled } from 'src/utils/misc';
+import { isFaceExportEnabled, isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 import { Tasks } from 'src/utils/tasks';
 
@@ -131,6 +131,33 @@ const getLensModel = (exifTags: ImmichTags): string | null => {
 
 type ImmichTagsWithFaces = ImmichTags & { RegionInfo: NonNullable<ImmichTags['RegionInfo']> };
 
+type SidecarFace = {
+  name: string;
+  boundingBoxX1: number;
+  boundingBoxY1: number;
+  boundingBoxX2: number;
+  boundingBoxY2: number;
+  imageWidth: number;
+  imageHeight: number;
+};
+
+/** normalized region coordinates are written with sub-pixel precision for images up to 1,000,000 pixels wide */
+const roundArea = (value: number | string) => Math.round(Number(value) * 1e6) / 1e6;
+
+/**
+ * Only exif orientations are recognized, since ORIENTATION_TO_SHARP_ROTATION is what rotated the image the faces were
+ * detected on. Anything else (some assets store a rotation in degrees) leaves the image as it is stored, so the faces
+ * of those assets need no conversion either.
+ */
+const parseOrientation = (value: string | null): ExifOrientation | undefined => {
+  const orientation = Number(value);
+  return Number.isSafeInteger(orientation) &&
+    orientation >= ExifOrientation.Horizontal &&
+    orientation <= ExifOrientation.Rotate270CW
+    ? (orientation as ExifOrientation)
+    : undefined;
+};
+
 type Dates = {
   dateTimeOriginal: Date;
   localDateTime: Date;
@@ -155,8 +182,27 @@ export class MetadataService extends BaseService {
   }
 
   @OnEvent({ name: 'ConfigUpdate', workers: [ImmichWorker.Microservices], server: true })
-  onConfigUpdate({ newConfig }: ArgOf<'ConfigUpdate'>) {
+  async onConfigUpdate({ oldConfig, newConfig }: ArgOf<'ConfigUpdate'>) {
     this.metadataRepository.setMaxConcurrency(newConfig.job.metadataExtraction.concurrency);
+
+    // Turning face export on would otherwise do nothing until an asset's faces
+    // happen to change, so write out the people that are already known.
+    if (!isFaceExportEnabled(oldConfig.metadata) && isFaceExportEnabled(newConfig.metadata)) {
+      await this.queueSidecarFaceWritesForKnownFaces();
+    }
+  }
+
+  private async queueSidecarFaceWritesForKnownFaces() {
+    let assetIds: string[] = [];
+    for await (const { assetId } of this.personRepository.streamAssetIdsWithNamedFaces()) {
+      assetIds.push(assetId);
+      if (assetIds.length === JOBS_ASSET_PAGINATION_SIZE) {
+        await this.queueSidecarFaceWrites(assetIds);
+        assetIds = [];
+      }
+    }
+
+    await this.queueSidecarFaceWrites(assetIds);
   }
 
   private async init() {
@@ -487,10 +533,52 @@ export class MetadataService extends BaseService {
     await this.jobRepository.queue({ name: JobName.SidecarWrite, data: { id: assetId } });
   }
 
+  @OnEvent({ name: 'AssetFacesUpdate' })
+  async handleAssetFacesUpdate({ assetIds }: ArgOf<'AssetFacesUpdate'>) {
+    const { metadata } = await this.getConfig({ withCache: true });
+    if (!isFaceExportEnabled(metadata)) {
+      return;
+    }
+
+    await this.queueSidecarFaceWrites(assetIds);
+  }
+
+  @OnEvent({ name: 'PersonFacesUpdate' })
+  async handlePersonFacesUpdate({ personIds }: ArgOf<'PersonFacesUpdate'>) {
+    const { metadata } = await this.getConfig({ withCache: true });
+    if (!isFaceExportEnabled(metadata)) {
+      return;
+    }
+
+    let assetIds: string[] = [];
+    for await (const { assetId } of this.personRepository.streamAssetIdsForPeople(personIds)) {
+      assetIds.push(assetId);
+      if (assetIds.length === JOBS_ASSET_PAGINATION_SIZE) {
+        await this.queueSidecarFaceWrites(assetIds);
+        assetIds = [];
+      }
+    }
+
+    await this.queueSidecarFaceWrites(assetIds);
+  }
+
+  private async queueSidecarFaceWrites(assetIds: string[]) {
+    if (assetIds.length === 0) {
+      return;
+    }
+
+    await this.jobRepository.queueAll(
+      assetIds.map((id) => ({ name: JobName.SidecarWrite, data: { id, faces: true } }) as const),
+    );
+  }
+
   @OnJob({ name: JobName.SidecarWrite, queue: QueueName.Sidecar })
   async handleSidecarWrite(job: JobOf<JobName.SidecarWrite>): Promise<JobStatus> {
     const { id } = job;
-    const asset = await this.assetJobRepository.getForSidecarWriteJob(id);
+    const { metadata } = await this.getConfig({ withCache: true });
+    const exportFaces = isFaceExportEnabled(metadata);
+
+    const asset = await this.assetJobRepository.getForSidecarWriteJob(id, exportFaces);
     if (!asset) {
       return JobStatus.Failed;
     }
@@ -513,8 +601,18 @@ export class MetadataService extends BaseService {
       lockedProperties,
     );
 
+    let regionInfo: Struct | null | undefined;
+    if (exportFaces) {
+      regionInfo = this.getRegionInfo(asset);
+
+      if (!regionInfo && job.faces) {
+        // the faces of the asset changed, so regions written earlier have to be removed
+        regionInfo = (await this.hasSidecarRegions(sidecarFile?.path)) ? null : undefined;
+      }
+    }
+
     const exif = _.omitBy(
-      <Tags>{
+      <WriteTags>{
         Description: description,
         ImageDescription: description,
         DateTimeOriginal: mergeTimeZone(dateTimeOriginal, timeZone)?.toISO(),
@@ -522,6 +620,7 @@ export class MetadataService extends BaseService {
         GPSLongitude: longitude,
         Rating: rating,
         TagsList: tags,
+        RegionInfo: regionInfo,
       },
       _.isUndefined,
     );
@@ -905,6 +1004,107 @@ export class MetadataService extends BaseService {
       AppliedToDimensions: adjustedAppliedToDimensions,
       RegionList: adjustedRegionList,
     };
+  }
+
+  /**
+   * Every EXIF orientation is its own inverse, except for the two 90° rotations, which invert each other.
+   */
+  private invertOrientation(orientation: ExifOrientation): ExifOrientation {
+    switch (orientation) {
+      case ExifOrientation.Rotate90CW: {
+        return ExifOrientation.Rotate270CW;
+      }
+      case ExifOrientation.Rotate270CW: {
+        return ExifOrientation.Rotate90CW;
+      }
+      default: {
+        return orientation;
+      }
+    }
+  }
+
+  /**
+   * Immich stores face geometry in the coordinate space of the displayed (orientation corrected) image, while MWG
+   * regions are relative to the image as it is stored in the file. This is the inverse of {@link orientRegionInfo}.
+   */
+  private unorientRegionInfo(
+    regionInfo: ImmichTagsWithFaces['RegionInfo'],
+    orientation: ExifOrientation | undefined,
+  ): ImmichTagsWithFaces['RegionInfo'] {
+    return orientation === undefined
+      ? regionInfo
+      : this.orientRegionInfo(regionInfo, this.invertOrientation(orientation));
+  }
+
+  /**
+   * Regions are only removed from sidecars that actually have them, so that a sidecar is never created just to hold an
+   * empty list of regions.
+   */
+  private async hasSidecarRegions(sidecarPath?: string) {
+    if (!sidecarPath) {
+      return false;
+    }
+
+    return this.hasTaggedFaces(await this.metadataRepository.readTags(sidecarPath));
+  }
+
+  /** Builds MWG regions for every face of the asset that resolves to a named person. */
+  private getRegionInfo(asset: {
+    id: string;
+    originalPath: string;
+    exifInfo: Pick<Exif, 'exifImageWidth' | 'exifImageHeight' | 'orientation'>;
+    // only selected when face export is enabled
+    faces?: SidecarFace[];
+  }): Struct | undefined {
+    const faces = asset.faces ?? [];
+    if (faces.length === 0) {
+      return;
+    }
+
+    // exif dimensions describe the image as it is stored in the file, which is what AppliedToDimensions refers to
+    const { exifImageWidth: width, exifImageHeight: height } = asset.exifInfo;
+    if (!width || !height) {
+      this.logger.warn(
+        `Cannot write faces for asset ${asset.id}: ${asset.originalPath}, asset has no known dimensions`,
+      );
+      return;
+    }
+
+    const AppliedToDimensions = { W: width, H: height, Unit: 'pixel' };
+    const regionInfo = {
+      AppliedToDimensions,
+      RegionList: faces.map((face) => ({
+        Type: 'Face',
+        Name: face.name,
+        Area: {
+          // (X,Y) is the center of the rectangle
+          X: (face.boundingBoxX1 + face.boundingBoxX2) / 2 / face.imageWidth,
+          Y: (face.boundingBoxY1 + face.boundingBoxY2) / 2 / face.imageHeight,
+          W: (face.boundingBoxX2 - face.boundingBoxX1) / face.imageWidth,
+          H: (face.boundingBoxY2 - face.boundingBoxY1) / face.imageHeight,
+          Unit: 'normalized',
+        },
+      })),
+    };
+
+    // only the areas have to be converted, AppliedToDimensions already refers to the stored image
+    const { RegionList } = this.unorientRegionInfo(regionInfo, parseOrientation(asset.exifInfo.orientation));
+
+    // the shape is checked against ImmichTags above, exiftool itself types structs loosely
+    return {
+      AppliedToDimensions,
+      // mirroring an area introduces floating point noise, so keep the written values readable
+      RegionList: RegionList.map((region) => ({
+        ...region,
+        Area: {
+          ...region.Area,
+          X: roundArea(region.Area.X),
+          Y: roundArea(region.Area.Y),
+          W: roundArea(region.Area.W),
+          H: roundArea(region.Area.H),
+        },
+      })),
+    } as Struct;
   }
 
   private async applyTaggedFaces(

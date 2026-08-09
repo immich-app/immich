@@ -25849,12 +25849,17 @@
       },
       "SystemConfigFacesDto": {
         "properties": {
+          "export": {
+            "description": "Export",
+            "type": "boolean"
+          },
           "import": {
             "description": "Import",
             "type": "boolean"
           }
         },
         "required": [
+          "export",
           "import"
         ],
         "type": "object"

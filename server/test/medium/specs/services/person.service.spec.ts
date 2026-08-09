@@ -5,6 +5,7 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { DatabaseRepository } from 'src/repositories/database.repository';
+import { EventRepository } from 'src/repositories/event.repository';
 import { JobRepository } from 'src/repositories/job.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PersonRepository } from 'src/repositories/person.repository';
@@ -18,11 +19,15 @@ import { getKyselyDB } from 'test/utils';
 let defaultDatabase: Kysely<DB>;
 
 const setup = (db?: Kysely<DB>) => {
-  return newMediumService(PersonService, {
+  const context = newMediumService(PersonService, {
     database: db || defaultDatabase,
     real: [AccessRepository, DatabaseRepository, PersonRepository, AssetRepository, AssetEditRepository],
-    mock: [JobRepository, LoggingRepository, StorageRepository],
+    mock: [EventRepository, JobRepository, LoggingRepository, StorageRepository],
   });
+
+  context.ctx.getMock(EventRepository).emit.mockResolvedValue();
+
+  return context;
 };
 
 beforeAll(async () => {

@@ -11,7 +11,7 @@ Tools like Lightroom, Darktable, digiKam and other applications can also be conf
 Immich does not support _all_ metadata fields. Below is a table showing what fields Immich can _read_ and _write_. It's important to note that writes do not replace the entire file contents, but are merged together with any existing fields.
 
 :::info
-Immich automatically queues a Sidecar Write job after editing the description, rating, or updating tags.
+Immich automatically queues a Sidecar Write job after editing the description, rating, or updating tags. With _Enable face export_ turned on, changing the faces of an asset — naming, merging, reassigning or deleting a person — queues one as well.
 :::
 
 | Metadata        | Immich writes to XMP                             | Immich reads from XMP                                                                                                                                                                                                                          |
@@ -21,6 +21,11 @@ Immich automatically queues a Sidecar Write job after editing the description, r
 | **DateTime**    | `exif:DateTimeOriginal`, `photoshop:DateCreated` | In prioritized order:<br/>`exif:SubSecDateTimeOriginal`<br/>`exif:DateTimeOriginal`<br/>`xmp:SubSecCreateDate`<br/>`xmp:CreateDate`<br/>`xmp:CreationDate`<br/>`xmp:MediaCreateDate`<br/>`xmp:SubSecMediaCreateDate`<br/>`xmp:DateTimeCreated` |
 | **Location**    | `exif:GPSLatitude`, `exif:GPSLongitude`          | `exif:GPSLatitude`, `exif:GPSLongitude`                                                                                                                                                                                                        |
 | **Tags**        | `digiKam:TagsList`                               | In prioritized order: <br/>`digiKam:TagsList`<br/>`lr:HierarchicalSubject`<br/>`IPTC:Keywords`                                                                                                                                                 |
+| **Faces**       | `mwg-rs:RegionInfo`                              | `mwg-rs:RegionInfo`                                                                                                                                                                                                                            |
+
+:::info
+Faces are only read when _Enable face import_ is turned on, and only written when _Enable face export_ is turned on. Both settings are found under Administration > Settings > Metadata Settings and are off by default. Only faces that belong to a named person are written, and the regions replace whichever regions the sidecar held before. Turning face export on writes out every asset that already has a named person, so you do not have to wait for their faces to change.
+:::
 
 :::note
 All other fields (e.g. `Creator`, `Source`, IPTC, Lightroom edits) remain in the `.xmp` file and are **not searchable** in Immich.

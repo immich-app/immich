@@ -12,6 +12,26 @@ delete from "person"
 where
   "person"."id" in ($1)
 
+-- PersonRepository.streamAssetIdsForPeople
+select distinct
+  "asset_face"."assetId"
+from
+  "asset_face"
+where
+  "asset_face"."personId" in ($1)
+  and "asset_face"."deletedAt" is null
+
+-- PersonRepository.streamAssetIdsWithNamedFaces
+select distinct
+  "asset_face"."assetId"
+from
+  "asset_face"
+  inner join "person" on "person"."id" = "asset_face"."personId"
+where
+  "asset_face"."deletedAt" is null
+  and "asset_face"."isVisible" = $1
+  and "person"."name" != $2
+
 -- PersonRepository.getFileSamples
 select
   "id",
@@ -131,6 +151,7 @@ where
 -- PersonRepository.getFaceForFacialRecognitionJob
 select
   "asset_face"."id",
+  "asset_face"."assetId",
   "asset_face"."personId",
   "asset_face"."sourceType",
   (

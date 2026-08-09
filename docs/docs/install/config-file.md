@@ -159,7 +159,8 @@ The default configuration looks like this:
   },
   "metadata": {
     "faces": {
-      "import": false
+      "import": false,
+      "export": false
     }
   },
   "newVersionCheck": {

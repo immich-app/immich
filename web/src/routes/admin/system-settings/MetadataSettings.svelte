@@ -20,6 +20,13 @@
           bind:checked={configToEdit.metadata.faces.import}
           {disabled}
         />
+
+        <SettingSwitch
+          title={$t('admin.metadata_faces_export_setting')}
+          subtitle={$t('admin.metadata_faces_export_setting_description')}
+          bind:checked={configToEdit.metadata.faces.export}
+          {disabled}
+        />
       </div>
 
       <SettingButtonsRow bind:configToEdit keys={['metadata']} {disabled} />

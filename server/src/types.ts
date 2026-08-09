@@ -269,7 +269,8 @@ export interface IDeleteFilesJob extends IBaseJob {
 }
 
 export interface ISidecarWriteJob extends IEntityJob {
-  tags?: true;
+  /** the job was queued because the faces of the asset changed, so stale regions have to be removed as well */
+  faces?: true;
 }
 
 export interface IDeferrableJob extends IEntityJob {
@@ -397,7 +398,7 @@ export type JobItem =
   // Sidecar Scanning
   | { name: JobName.SidecarQueueAll; data: IBaseJob }
   | { name: JobName.SidecarCheck; data: IEntityJob }
-  | { name: JobName.SidecarWrite; data: IEntityJob }
+  | { name: JobName.SidecarWrite; data: ISidecarWriteJob }
 
   // Facial Recognition
   | { name: JobName.AssetDetectFacesQueueAll; data: IBaseJob }
