@@ -1,37 +1,14 @@
-class ViewerConfig {
-  final bool loopVideo;
-  final bool loadOriginalVideo;
-  final bool autoPlayVideo;
-  final bool tapToNavigate;
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  const ViewerConfig({
-    this.loopVideo = true,
-    this.loadOriginalVideo = false,
-    this.autoPlayVideo = true,
-    this.tapToNavigate = false,
-  });
+part 'viewer_config.freezed.dart';
 
-  ViewerConfig copyWith({bool? loopVideo, bool? loadOriginalVideo, bool? autoPlayVideo, bool? tapToNavigate}) =>
-      ViewerConfig(
-        loopVideo: loopVideo ?? this.loopVideo,
-        loadOriginalVideo: loadOriginalVideo ?? this.loadOriginalVideo,
-        autoPlayVideo: autoPlayVideo ?? this.autoPlayVideo,
-        tapToNavigate: tapToNavigate ?? this.tapToNavigate,
-      );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is ViewerConfig &&
-          other.loopVideo == loopVideo &&
-          other.loadOriginalVideo == loadOriginalVideo &&
-          other.autoPlayVideo == autoPlayVideo &&
-          other.tapToNavigate == tapToNavigate);
-
-  @override
-  int get hashCode => Object.hash(loopVideo, loadOriginalVideo, autoPlayVideo, tapToNavigate);
-
-  @override
-  String toString() =>
-      'ViewerConfig(loopVideo: $loopVideo, loadOriginalVideo: $loadOriginalVideo, autoPlayVideo: $autoPlayVideo, tapToNavigate: $tapToNavigate)';
+@freezed
+abstract class ViewerConfig with _$ViewerConfig {
+  const factory ViewerConfig({
+    @Default(true) bool loopVideo,
+    @Default(false) bool loadOriginalVideo,
+    @Default(true) bool autoPlayVideo,
+    @Default(false) bool tapToNavigate,
+  }) = _ViewerConfig;
 }

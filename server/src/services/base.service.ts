@@ -117,7 +117,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   ViewRepository,
   WebsocketRepository,
   WorkflowRepository,
-];
+] as const;
 
 @Injectable()
 export class BaseService {
@@ -191,7 +191,7 @@ export class BaseService {
     );
   }
 
-  static create<T extends BaseService>(Service: ClassConstructor<T>, ctx: BaseService) {
+  static create<T extends ClassConstructor<typeof BaseService>>(Service: T, ctx: BaseService) {
     const service = new Service(
       LoggingRepository.create(),
       ctx.accessRepository,
@@ -242,6 +242,7 @@ export class BaseService {
       ctx.trashRepository,
       ctx.userRepository,
       ctx.versionRepository,
+      ctx.videoStreamRepository,
       ctx.viewRepository,
       ctx.websocketRepository,
       ctx.workflowRepository,
@@ -249,7 +250,7 @@ export class BaseService {
 
     service.logger.setContext(BaseService.name);
 
-    return service as T;
+    return service as InstanceType<T>;
   }
 
   get worker() {

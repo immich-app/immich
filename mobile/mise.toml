@@ -58,13 +58,7 @@ depends = ["//:open-api-dart"]
 [tasks."codegen:translation"]
 alias = "translation"
 description = "Generate translations from i18n JSONs"
-run = [
-  { task = "//:i18n:format-fix" },
-  { tasks = [
-    "i18n:loader",
-    "i18n:keys",
-  ] },
-]
+depends = ["//:i18n:format-fix", "i18n:loader", "i18n:keys"]
 
 [tasks."codegen:app-icon"]
 description = "Generate app icons"
@@ -127,6 +121,7 @@ run = [
   "dart format lib/generated/codegen_loader.g.dart",
 ]
 depends = ["//:open-api-dart"]
+wait_for = ["//:i18n:format-fix"]
 
 [tasks."i18n:keys"]
 description = "Generate i18n keys"
@@ -135,6 +130,7 @@ run = [
   "dart run bin/generate_keys.dart",
   "dart format lib/generated/translations.g.dart",
 ]
+wait_for = ["//:i18n:format-fix"]
 
 [tasks."analyze:dart"]
 description = "Run Dart analysis"

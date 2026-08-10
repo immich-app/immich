@@ -24,3 +24,14 @@ enum SlideshowLook { contain, cover, blurredBackground }
 enum SlideshowDirection { forward, backward, shuffle }
 
 enum PartnerDirection { sharedBy, sharedWith }
+
+enum DevicePermission { photos, videos, storage, mediaLocation }
+
+enum DevicePermissionStatus {
+  denied,
+  granted,
+  limited,
+  permanentlyDenied;
+
+  bool get hasAccess => this == granted || this == limited;
+}

@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
@@ -7,6 +9,8 @@ import 'package:immich_mobile/presentation/widgets/timeline/fixed/segment_builde
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+
+part 'timeline.state.freezed.dart';
 
 class TimelineArgs {
   final double maxWidth;
@@ -49,25 +53,13 @@ class TimelineArgs {
       groupBy.hashCode;
 }
 
-class TimelineState {
-  final bool isScrubbing;
-  final bool isScrolling;
+@freezed
+abstract class TimelineState with _$TimelineState {
+  const TimelineState._();
 
-  const TimelineState({this.isScrubbing = false, this.isScrolling = false});
+  const factory TimelineState({@Default(false) bool isScrubbing, @Default(false) bool isScrolling}) = _TimelineState;
 
   bool get isInteracting => isScrubbing || isScrolling;
-
-  @override
-  bool operator ==(covariant TimelineState other) {
-    return isScrubbing == other.isScrubbing && isScrolling == other.isScrolling;
-  }
-
-  @override
-  int get hashCode => isScrubbing.hashCode ^ isScrolling.hashCode;
-
-  TimelineState copyWith({bool? isScrubbing, bool? isScrolling}) {
-    return TimelineState(isScrubbing: isScrubbing ?? this.isScrubbing, isScrolling: isScrolling ?? this.isScrolling);
-  }
 }
 
 class TimelineStateNotifier extends Notifier<TimelineState> {
