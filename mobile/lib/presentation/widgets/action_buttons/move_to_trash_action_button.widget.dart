@@ -86,7 +86,7 @@ class MoveToTrashActionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const iconData = Icons.delete_forever_outlined;
+    const iconData = Icons.delete_outline_rounded;
     return source == ActionSource.viewer
         ? BaseActionButton(
             maxWidth: 100.0,
