@@ -39,10 +39,11 @@
 
   const setLogging = (logging: boolean) =>
     handleUpdateWorkflow(workflow.id, { logging }).then((success) => {
-      if (success) {
-        workflow = { ...workflow, logging };
-        reset();
+      if (!success) {
+        return;
       }
+      workflow = { ...workflow, logging };
+      reset();
     });
 
   const reset = () => {
@@ -82,10 +83,11 @@
   });
 
   $effect(() => {
-    if (placeholder) {
-      observer.disconnect();
-      observer.observe(placeholder);
+    if (!placeholder) {
+      return;
     }
+    observer.disconnect();
+    observer.observe(placeholder);
   });
 </script>
 
