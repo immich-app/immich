@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -34,7 +33,7 @@ class DriftTrashReviewPage extends ConsumerWidget {
     ],
     child: Timeline(
       appBar: SliverAppBar(
-        title: Text('asset_out_of_sync_title'.tr()),
+        title: Text(context.t.trash_review_title),
         floating: true,
         snap: true,
         pinned: true,
@@ -52,10 +51,8 @@ class DriftTrashReviewPage extends ConsumerWidget {
               builder: (context, ref, _) {
                 final outOfSyncCount = ref.watch(pendingTrashReviewCountProvider).value ?? 0;
                 return outOfSyncCount > 0
-                    ? const Text('asset_out_of_sync_trash_subtitle').tr()
-                    : Center(
-                        child: Text('asset_out_of_sync_trash_subtitle_result', style: context.textTheme.bodyLarge).tr(),
-                      );
+                    ? Text(context.t.trash_review_subtitle)
+                    : Center(child: Text(context.t.trash_review_empty_subtitle, style: context.textTheme.bodyLarge));
               },
             ),
           ),
@@ -82,8 +79,8 @@ class _TrashReviewKebabMenu extends ConsumerWidget {
     await showDialog<bool>(
       context: context,
       builder: (_) => ConfirmDialog(
-        title: context.t.asset_out_of_sync_trash_confirmation_title,
-        content: context.t.asset_out_of_sync_trash_confirmation_text(count: count),
+        title: context.t.trash_review_confirmation_title,
+        content: context.t.trash_review_confirmation_text(count: count),
         onOk: () async {
           final result = await ref.read(actionProvider.notifier).resolveAllRemoteTrash(keep: false);
           if (!context.mounted) {

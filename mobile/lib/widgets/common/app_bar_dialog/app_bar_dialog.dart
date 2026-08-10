@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
@@ -121,7 +121,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 contentPadding: const EdgeInsets.only(left: 18, right: 18),
                 minLeadingWidth: 40,
                 leading: Icon(Icons.warning_amber_rounded, color: textColor, size: 20),
-                title: Text('review_out_of_sync_changes'.t(), style: textStyle),
+                title: Text(context.t.trash_review_banner_title, style: textStyle),
                 onTap: () => context.pushRoute(const DriftTrashReviewRoute()),
                 trailing: Text('($outOfSyncCount)', style: textStyle),
               ),

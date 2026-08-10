@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
@@ -160,10 +161,9 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
     final manageMediaAndroidPermission = ref.watch(_manageMediaPermissionProvider);
     final manageMediaAndroidPermissionValue = manageMediaAndroidPermission.valueOrNull;
     final isTrashSyncEnabled = selectedTrashSyncMode != TrashSyncMode.off;
-    final reviewRemoteDeletionsSubtitle = [
-      "advanced_settings_review_remote_deletions_subtitle".tr(),
-      if (Platform.isAndroid) "advanced_settings_review_remote_deletions_subtitle_android".tr(),
-    ].join(' ');
+    final reviewRemoteDeletionsSubtitle = Platform.isAndroid
+        ? context.t.advanced_settings_review_remote_deletions_subtitle_android
+        : context.t.advanced_settings_review_remote_deletions_subtitle;
 
     void showManageMediaRequiredSnackBar() {
       if (!context.mounted) {
@@ -172,7 +172,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
       context.scaffoldMessenger.showSnackBar(
         SnackBar(
           content: Text(
-            "manage_media_access_review_rationale".tr(),
+            context.t.manage_media_access_review_rationale,
             style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
           ),
         ),
@@ -224,7 +224,7 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
         Padding(
           padding: const EdgeInsets.only(left: 20),
           child: Text(
-            "advanced_settings_sync_remote_deletions_selector_title".tr(),
+            context.t.advanced_settings_sync_remote_deletions_selector_title,
             style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, height: 1.5),
           ),
         ),
@@ -233,18 +233,18 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
           child: SettingsRadioListTile<TrashSyncMode>(
             groups: [
               SettingsRadioGroup(
-                title: 'off'.tr(),
-                subtitle: 'advanced_settings_sync_remote_deletions_off_subtitle'.tr(),
+                title: context.t.off,
+                subtitle: context.t.advanced_settings_sync_remote_deletions_off_subtitle,
                 value: TrashSyncMode.off,
               ),
               if (!Platform.isIOS)
                 SettingsRadioGroup(
-                  title: 'advanced_settings_sync_remote_deletions_title'.tr(),
-                  subtitle: 'advanced_settings_sync_remote_deletions_subtitle'.tr(),
+                  title: context.t.advanced_settings_sync_remote_deletions_title,
+                  subtitle: context.t.advanced_settings_sync_remote_deletions_subtitle,
                   value: TrashSyncMode.autoSync,
                 ),
               SettingsRadioGroup(
-                title: 'advanced_settings_review_remote_deletions_title'.tr(),
+                title: context.t.advanced_settings_review_remote_deletions_title,
                 subtitle: reviewRemoteDeletionsSubtitle,
                 value: TrashSyncMode.review,
               ),
@@ -255,13 +255,13 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
         ),
         if (Platform.isAndroid)
           SettingsActionTile(
-            title: "manage_media_access_title".tr(),
+            title: context.t.manage_media_access_title,
             statusText: manageMediaAndroidPermissionValue == null
                 ? null
                 : manageMediaAndroidPermissionValue == true
-                ? "allowed".tr()
-                : "not_allowed".tr(),
-            subtitle: "manage_media_access_rationale".tr(),
+                ? context.t.allowed
+                : context.t.not_allowed,
+            subtitle: context.t.manage_media_access_rationale,
             statusColor: manageMediaAndroidPermissionValue == false && isTrashSyncEnabled
                 ? const Color.fromARGB(255, 243, 188, 106)
                 : null,

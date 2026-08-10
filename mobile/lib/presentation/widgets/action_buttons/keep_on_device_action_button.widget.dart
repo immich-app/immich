@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -14,8 +14,8 @@ void showKeepResultToast(BuildContext context, ActionResult result) {
     return;
   }
   final message = result.success
-      ? 'assets_denied_to_moved_to_trash_count'.t(args: {'count': '${result.count}'})
-      : 'scaffold_body_error_occurred'.t();
+      ? context.t.assets_kept_on_device_count(count: result.count)
+      : context.t.scaffold_body_error_occurred;
   ImmichToast.show(
     context: context,
     msg: message,
@@ -49,12 +49,12 @@ class KeepOnDeviceActionButton extends ConsumerWidget {
         ? BaseActionButton(
             maxWidth: 110.0,
             iconData: iconData,
-            label: 'keep'.t(),
+            label: context.t.keep,
             onPressed: () => _onTap(context, ref),
           )
         : TextButton.icon(
             icon: const Icon(iconData),
-            label: Text('keep_on_device'.t(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            label: Text(context.t.keep_on_device, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
             onPressed: () => _onTap(context, ref),
           );
   }

@@ -1,10 +1,9 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -17,8 +16,8 @@ void showTrashResultToast(BuildContext context, ActionResult result) {
     return;
   }
   final message = result.success
-      ? 'assets_moved_to_trash_count'.t(args: {'count': '${result.count}'})
-      : 'errors.something_went_wrong'.t();
+      ? context.t.assets_moved_to_trash_count(count: result.count)
+      : context.t.errors.something_went_wrong;
   ImmichToast.show(
     context: context,
     msg: message,
@@ -56,14 +55,14 @@ class MoveToTrashActionButton extends ConsumerWidget {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('asset_out_of_sync_trash_confirmation_title'.tr()),
-            content: Text('asset_out_of_sync_trash_confirmation_text'.t(args: {'count': '$selectedCount'})),
+            title: Text(context.t.trash_review_confirmation_title),
+            content: Text(context.t.trash_review_confirmation_text(count: selectedCount)),
             actions: [
-              TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text('cancel'.tr())),
+              TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(context.t.cancel)),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
-                child: Text('control_bottom_app_bar_trash_from_immich'.tr()),
+                child: Text(context.t.control_bottom_app_bar_trash_from_immich),
               ),
             ],
           );
@@ -91,13 +90,13 @@ class MoveToTrashActionButton extends ConsumerWidget {
         ? BaseActionButton(
             maxWidth: 100.0,
             iconData: iconData,
-            label: 'delete'.tr(),
+            label: context.t.delete,
             onPressed: () => _onTap(context, ref),
           )
         : TextButton.icon(
             icon: Icon(iconData, color: Colors.red[400]),
             label: Text(
-              'control_bottom_app_bar_trash_from_immich'.tr(),
+              context.t.control_bottom_app_bar_trash_from_immich,
               style: TextStyle(fontSize: 14, color: Colors.red[400], fontWeight: FontWeight.bold),
             ),
             onPressed: () => _onTap(context, ref),
