@@ -23,8 +23,17 @@ class RemoteImageRequest extends ImageRequest {
     );
     // Android falls back to encoded data if native decoding fails, so check for both shapes of the response.
     final frame = switch (info) {
-      {'pointer': int pointer, 'length': int length} => await _fromEncodedPlatformImage(pointer, length, size: size),
-      {'pointer': int pointer, 'width': int width, 'height': int height, 'rowBytes': int rowBytes} =>
+      {'pointer': final int pointer, 'length': final int length} => await _fromEncodedPlatformImage(
+        pointer,
+        length,
+        size: size,
+      ),
+      {
+        'pointer': final int pointer,
+        'width': final int width,
+        'height': final int height,
+        'rowBytes': final int rowBytes,
+      } =>
         await _fromDecodedPlatformImage(pointer, width, height, rowBytes),
       _ => null,
     };

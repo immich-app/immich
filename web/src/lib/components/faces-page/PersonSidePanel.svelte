@@ -93,10 +93,10 @@
   };
 
   const handleReset = (id: string) => {
-    if (selectedPersonToReassign[id]) {
+    if (Object.hasOwn(selectedPersonToReassign, id)) {
       delete selectedPersonToReassign[id];
     }
-    if (selectedPersonToCreate[id]) {
+    if (Object.hasOwn(selectedPersonToCreate, id)) {
       delete selectedPersonToCreate[id];
     }
   };
@@ -115,7 +115,7 @@
               id: personId,
               faceDto: { id: personWithFace.id },
             });
-          } else if (selectedPersonToCreate[personWithFace.id]) {
+          } else if (Object.hasOwn(selectedPersonToCreate, personWithFace.id)) {
             const data = await createPerson({ personCreateDto: {} });
             peopleToCreate.push(data.id);
             await reassignFacesById({
@@ -314,7 +314,7 @@
                 {/if}
               </div>
 
-              {#if !selectedPersonToCreate[face.id]}
+              {#if !Object.hasOwn(selectedPersonToCreate, face.id)}
                 <p class="relative mt-1 truncate font-medium" title={personName}>
                   {#if selectedPersonToReassign[face.id]?.id}
                     {selectedPersonToReassign[face.id]?.name}
@@ -349,7 +349,7 @@
                 {/if}
               </div>
               <div class="absolute inset-e-8 top-[-3px] size-5 rounded-full">
-                {#if !selectedPersonToCreate[face.id] && !selectedPersonToReassign[face.id] && !face.person}
+                {#if !Object.hasOwn(selectedPersonToCreate, face.id) && !Object.hasOwn(selectedPersonToReassign, face.id) && !face.person}
                   <div
                     class="absolute inset-s-1/2 top-1/2 flex translate-[-50%] transform place-content-center place-items-center rounded-full bg-[#d3d3d3] p-1 transition-all"
                   >

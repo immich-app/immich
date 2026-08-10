@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
@@ -103,7 +104,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final maxPage = _totalAssets - 1;
     if (target >= 0 && target <= maxPage) {
       _pageController.jumpToPage(target);
-      _onAssetChanged(target);
+      unawaited(_onAssetChanged(target));
     }
   }
 
@@ -122,14 +123,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     WidgetsBinding.instance.addPostFrameCallback(_onAssetInit);
 
     final assetViewer = ref.read(assetViewerProvider);
-    _setSystemUIMode(assetViewer.showingControls, assetViewer.showingDetails);
+    unawaited(_setSystemUIMode(assetViewer.showingControls, assetViewer.showingDetails));
   }
 
   @override
   void dispose() {
     _pageController.dispose();
     _preloader.dispose();
-    _reloadSubscription?.cancel();
+    unawaited(_reloadSubscription?.cancel());
     _stackChildrenKeepAlive?.close();
 
     unawaited(restoreEdgeToEdge());
@@ -153,7 +154,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     final page = _pageController.page?.round();
     if (page != null && page != _currentPage) {
-      _onAssetChanged(page);
+      unawaited(_onAssetChanged(page));
     }
     return false;
   }
@@ -167,11 +168,17 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     _handleCasting();
   }
 
-  void _onAssetChanged(int index) async {
+  Future<void> _onAssetChanged(int index) async {
     _currentPage = index;
 
     final asset = await ref.read(timelineServiceProvider).getAssetAsync(index);
     if (asset == null) {
+      return;
+    }
+
+    // The viewer is closing; don't flip the current asset now. Flipping it swaps
+    // the grid tile hero keys mid pop and animates the close on two tiles (#23779).
+    if (!mounted || !(ModalRoute.of(context)?.isActive ?? true)) {
       return;
     }
 
@@ -216,6 +223,8 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
         _onTimelineReloadEvent();
       case ViewerReloadAssetEvent():
         _onViewerReloadEvent();
+      case final ViewerStackAssetDeletedEvent event:
+        unawaited(_onViewerStackAssetDeletedEvent(event));
       default:
     }
   }
@@ -227,8 +236,35 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     final index = _pageController.page?.round() ?? 0;
     final target = index >= _totalAssets - 1 ? index - 1 : index + 1;
-    _pageController.animateToPage(target, duration: Durations.medium1, curve: Curves.easeInOut);
-    _onAssetChanged(target);
+    unawaited(_pageController.animateToPage(target, duration: Durations.medium1, curve: Curves.easeInOut));
+    unawaited(_onAssetChanged(target));
+  }
+
+  Future<void> _onViewerStackAssetDeletedEvent(ViewerStackAssetDeletedEvent event) async {
+    final timelineAsset = ref.read(timelineServiceProvider).getAssetSafe(_currentPage);
+    if (timelineAsset == null) {
+      _onViewerReloadEvent();
+      return;
+    }
+
+    final stackProvider = stackChildrenNotifier(timelineAsset);
+
+    ref.invalidate(stackProvider);
+    final stack = await ref.read(stackProvider.future);
+
+    if (!mounted) {
+      return;
+    }
+
+    if (stack.isEmpty) {
+      _onViewerReloadEvent();
+      return;
+    }
+
+    final targetIndex = math.min(event.stackIndex, stack.length - 1);
+    ref.read(assetViewerProvider.notifier)
+      ..setAsset(stack[targetIndex])
+      ..setStackIndex(targetIndex);
   }
 
   void _onTimelineReloadEvent() {
@@ -236,7 +272,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     final totalAssets = timelineService.totalAssets;
 
     if (totalAssets == 0) {
-      context.maybePop();
+      unawaited(context.maybePop());
       return;
     }
 
@@ -246,9 +282,14 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     if (index != _currentPage) {
       _pageController.jumpToPage(index);
-      _onAssetChanged(index);
+      unawaited(_onAssetChanged(index));
+    } else if (currentAsset is RemoteAsset && currentAsset.stackId != null && assetIndex == null) {
+      final timelineAsset = timelineService.getAssetSafe(index);
+      if (timelineAsset is! RemoteAsset || currentAsset.stackId != timelineAsset.stackId) {
+        unawaited(_onAssetChanged(index));
+      }
     } else if (currentAsset != null && assetIndex == null) {
-      _onAssetChanged(index);
+      unawaited(_onAssetChanged(index));
     }
 
     if (_totalAssets != totalAssets) {
@@ -258,9 +299,9 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
     }
   }
 
-  void _setSystemUIMode(bool controls, bool details) {
+  Future<void> _setSystemUIMode(bool controls, bool details) {
     final immersive = !controls || (CurrentPlatform.isIOS && details);
-    unawaited(immersive ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky) : restoreEdgeToEdge());
+    return immersive ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky) : restoreEdgeToEdge();
   }
 
   @override
@@ -284,7 +325,7 @@ class _AssetViewerState extends ConsumerState<AssetViewer> {
 
     ref.listen(assetViewerProvider.select((value) => (value.showingControls, value.showingDetails)), (_, state) {
       final (controls, details) = state;
-      _setSystemUIMode(controls, details);
+      unawaited(_setSystemUIMode(controls, details));
     });
 
     return AnnotatedRegion(

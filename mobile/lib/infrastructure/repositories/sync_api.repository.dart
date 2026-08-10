@@ -80,7 +80,7 @@ class SyncApiRepository {
     );
 
     String previousChunk = '';
-    List<String> lines = [];
+    final List<String> lines = [];
 
     bool shouldAbort = false;
 
@@ -105,7 +105,7 @@ class SyncApiRepository {
         }
 
         previousChunk += chunk;
-        final parts = previousChunk.toString().split('\n');
+        final parts = previousChunk.split('\n');
         previousChunk = parts.removeLast();
         lines.addAll(parts);
 

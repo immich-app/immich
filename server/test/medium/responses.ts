@@ -35,7 +35,4 @@ export const errorDto = {
   incorrectLogin: {
     message: 'Incorrect email or password',
   },
-  alreadyHasAdmin: {
-    message: 'The server already has an admin',
-  },
 };

@@ -55,30 +55,37 @@ class ChangePasswordForm extends HookConsumerWidget {
                       passwordController: passwordController,
                       onPressed: () async {
                         if (formKey.currentState!.validate()) {
-                          var isSuccess = await ref
+                          final isSuccess = await ref
                               .read(authProvider.notifier)
                               .changePassword(passwordController.value.text);
 
-                          if (isSuccess) {
-                            await ref.read(authProvider.notifier).logout();
-                            ref.read(websocketProvider.notifier).disconnect();
-
-                            AutoRouter.of(context).back();
-
-                            ImmichToast.show(
-                              context: context,
-                              msg: "login_password_changed_success".tr(),
-                              toastType: ToastType.success,
-                              gravity: ToastGravity.TOP,
-                            );
-                          } else {
+                          if (!isSuccess && context.mounted) {
                             ImmichToast.show(
                               context: context,
                               msg: "login_password_changed_error".tr(),
                               toastType: ToastType.error,
                               gravity: ToastGravity.TOP,
                             );
+                            return;
                           }
+
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          await ref.read(authProvider.notifier).logout();
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          ref.read(websocketProvider.notifier).disconnect();
+                          AutoRouter.of(context).back();
+                          ImmichToast.show(
+                            context: context,
+                            msg: "login_password_changed_success".tr(),
+                            toastType: ToastType.success,
+                            gravity: ToastGravity.TOP,
+                          );
                         }
                       },
                     ),
@@ -146,13 +153,13 @@ class ConfirmPasswordInput extends StatelessWidget {
   }
 }
 
-class ChangePasswordButton extends ConsumerWidget {
+class ChangePasswordButton extends StatelessWidget {
   final TextEditingController passwordController;
   final VoidCallback onPressed;
   const ChangePasswordButton({super.key, required this.passwordController, required this.onPressed});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         visualDensity: VisualDensity.standard,

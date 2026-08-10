@@ -12,10 +12,7 @@ function isIPOrRange(value: string, options?: IsIPRangeOptions): boolean {
   if (isIPRange(value)) {
     return true;
   }
-  if (!requireCIDR && isIP(value)) {
-    return true;
-  }
-  return false;
+  return !requireCIDR && isIP(value);
 }
 
 /**
@@ -45,7 +42,7 @@ export function nonEmptyPartial<T extends z.ZodRawShape>(shape: T) {
     .object(shape)
     .partial()
     .refine((data) => Object.values(data as Record<string, unknown>).some((value) => value !== undefined), {
-      message: 'At least one field must be provided',
+      message: `At least one of the following fields is required: ${Object.keys(shape).join(', ')}`,
     });
 }
 
@@ -63,7 +60,7 @@ export function IsNotSiblingOf<
   TKey extends z.infer<ReturnType<TSchema['keyof']>> & keyof z.infer<TSchema>,
 >(_schema: TSchema, property: TKey, siblings: TKey[]) {
   type T = z.infer<TSchema>;
-  const message = `${String(property)} cannot exist alongside ${siblings.join(' or ')}`;
+  const message = `${property} cannot exist alongside ${siblings.join(' or ')}`;
   return z.custom<T>().refine(
     (data) => {
       if (data[property] === undefined) {

@@ -50,7 +50,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
   void dispose() {
     _bufferingTimer?.cancel();
     _seekTimer?.cancel();
-    WakelockPlus.disable();
+    unawaited(WakelockPlus.disable());
     _controller = null;
 
     super.dispose();
@@ -121,7 +121,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
     }
 
     _seekTimer = Timer(const Duration(milliseconds: 150), () {
-      _controller?.seekTo(state.position.inMilliseconds);
+      unawaited(_controller?.seekTo(state.position.inMilliseconds));
     });
   }
 
@@ -130,11 +130,11 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
 
     switch (state.status) {
       case VideoPlaybackStatus.paused:
-        play();
+        unawaited(play());
       case VideoPlaybackStatus.playing || VideoPlaybackStatus.buffering:
-        pause();
+        unawaited(pause());
       case VideoPlaybackStatus.completed:
-        restart();
+        unawaited(restart());
     }
   }
 
@@ -145,7 +145,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
     }
 
     _holdStatus = state.status;
-    pause();
+    unawaited(pause());
   }
 
   /// Restores playback to the status before [hold] was called.
@@ -155,7 +155,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
 
     switch (status) {
       case VideoPlaybackStatus.playing || VideoPlaybackStatus.buffering:
-        play();
+        unawaited(play());
       default:
     }
   }
@@ -238,7 +238,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
     final newStatus = _mapStatus(playbackInfo.status);
     switch (newStatus) {
       case VideoPlaybackStatus.playing:
-        WakelockPlus.enable();
+        unawaited(WakelockPlus.enable());
         _startBufferingTimer();
       default:
         onNativePlaybackEnded();
@@ -250,7 +250,7 @@ class VideoPlayerNotifier extends StateNotifier<VideoPlayerState> {
   }
 
   void onNativePlaybackEnded() {
-    WakelockPlus.disable();
+    unawaited(WakelockPlus.disable());
     _bufferingTimer?.cancel();
   }
 

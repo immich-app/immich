@@ -15,6 +15,7 @@ import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { vitest } from 'vitest';
 
 async function* mockWalk() {
+  // eslint-disable-next-line unicorn/no-useless-promise-resolve-reject
   yield await Promise.resolve(['/data/user1/photo.jpg']);
 }
 
