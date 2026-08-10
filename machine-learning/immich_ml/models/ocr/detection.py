@@ -63,7 +63,8 @@ class TextDetector(InferenceModel):
         return OrtSession(self.model_path)
 
     # partly adapted from RapidOCR
-    def _predict(self, inputs: Image.Image) -> TextDetectionOutput:
+    # TODO: take the options as parameters instead of applying them through `configure`
+    def _predict(self, inputs: Image.Image, **kwargs: Any) -> TextDetectionOutput:
         w, h = inputs.size
         if w < 32 or h < 32:
             return self._empty

@@ -77,6 +77,7 @@ sealed class BaseAsset {
 
   // Overridden in subclasses
   AssetState get storage;
+  String get id;
   String? get localId;
   String? get remoteId;
   String get heroTag;
