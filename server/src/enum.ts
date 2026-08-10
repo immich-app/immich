@@ -344,7 +344,7 @@ export enum SystemMetadataKey {
   VersionCheckState = 'version-check-state',
   License = 'license',
   IntegrityChecksumCheckpoint = 'integrity-checksum-checkpoint',
-  AlbumAssetWorkflowCheckpoint = 'album-asset-workflow-checkpoint',
+  WorkflowCheckpoint = 'workflow-checkpoint',
 }
 
 export enum UserMetadataKey {
@@ -903,8 +903,9 @@ export enum JobName {
   Ocr = 'Ocr',
 
   // Workflow
+  WorkflowScan = 'WorkflowScan',
+  WorkflowRun = 'WorkflowRun',
   WorkflowAssetTrigger = 'WorkflowAssetTrigger',
-  WorkflowAlbumAssetTrigger = 'WorkflowAlbumAssetTrigger',
 
   // Integrity
   IntegrityUntrackedFilesQueueAll = 'IntegrityUntrackedFilesQueueAll',
@@ -1232,6 +1233,15 @@ export enum WorkflowType {
 }
 
 export const WorkflowTypeSchema = z.enum(WorkflowType).describe('Workflow type').meta({ id: 'WorkflowType' });
+
+export enum WorkflowScanType {
+  AlbumAsset = 'AlbumAsset',
+}
+
+export const WorkflowScanTypeSchema = z
+  .enum(WorkflowScanType)
+  .describe('Workflow scan type')
+  .meta({ id: 'WorkflowScanType' });
 
 export enum CalendarHeatmapType {
   Upload = 'Upload',

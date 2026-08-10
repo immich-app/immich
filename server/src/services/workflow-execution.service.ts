@@ -1,5 +1,6 @@
 import { CurrentPlugin } from '@extism/extism';
 import {
+  AlbumAssetV1,
   WorkflowChanges,
   WorkflowEventData,
   WorkflowEventPayload,
@@ -22,13 +23,14 @@ import {
   JobStatus,
   QueueName,
   SystemMetadataKey,
+  WorkflowScanType,
   WorkflowType,
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { AlbumService } from 'src/services/album.service';
 import { AssetService } from 'src/services/asset.service';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import { JobOf } from 'src/types';
 import { withImpliedItems } from 'src/utils/workflow';
 
 const dummy = () => {
@@ -50,6 +52,7 @@ type HostContext = {
 
 export class WorkflowExecutionService extends BaseService {
   private jwtSecret!: string;
+  private scanning = false;
 
   @OnEvent({ name: 'AppBootstrap', priority: BootstrapEventPriority.PluginSync, workers: [ImmichWorker.Microservices] })
   async onPluginSync() {
@@ -313,7 +316,7 @@ export class WorkflowExecutionService extends BaseService {
 
   @OnEvent({ name: 'AlbumAssetsAdded' })
   onAlbumAssetsAdded() {
-    return this.onAlbumAssetTrigger(WorkflowTrigger.AlbumAssetAdded);
+    return this.jobRepository.queue({ name: JobName.WorkflowScan, data: { type: WorkflowScanType.AlbumAsset } });
   }
 
   private async onAssetTrigger({ userId, assetId, trigger }: AssetTrigger) {
@@ -326,47 +329,65 @@ export class WorkflowExecutionService extends BaseService {
     );
   }
 
-  private async onAlbumAssetTrigger(trigger: WorkflowTrigger) {
-    let checkpoint = await this.systemMetadataRepository.get(SystemMetadataKey.AlbumAssetWorkflowCheckpoint);
+  @OnJob({ name: JobName.WorkflowScan, queue: QueueName.Workflow })
+  private async scan({ type }: JobOf<JobName.WorkflowScan>) {
+    if (this.scanning) {
+      return JobStatus.Skipped;
+    }
+
+    this.scanning = true;
+
+    if (type !== WorkflowScanType.AlbumAsset) {
+      return;
+    }
+
+    let checkpoint = await this.systemMetadataRepository.get(SystemMetadataKey.WorkflowCheckpoint);
     const now = await this.syncCheckpointRepository.getNow();
 
     if (!checkpoint) {
-      checkpoint = { lastUuid: now.nowId };
-      await this.systemMetadataRepository.set(SystemMetadataKey.AlbumAssetWorkflowCheckpoint, checkpoint);
+      checkpoint = { albumAssetUuid: now.nowId };
+      await this.systemMetadataRepository.set(SystemMetadataKey.WorkflowCheckpoint, checkpoint);
     }
 
     const workflows = new Map();
 
-    while (checkpoint.lastUuid < now.nowId) {
-      const albumAssets = await this.workflowRepository.getForAlbumAssetV1(checkpoint.lastUuid);
+    while (checkpoint.albumAssetUuid < now.nowId) {
+      const albumAssets = await this.workflowRepository.getForAlbumAssetV1(checkpoint.albumAssetUuid);
       if (albumAssets.length === 0) {
         break;
       }
 
-      const jobs: JobItem[] = [];
+      const jobs = new Map<string, AlbumAssetV1[]>();
       for (const albumAsset of albumAssets) {
         const userId = albumAsset.asset?.ownerId;
 
         if (!workflows.has(userId)) {
-          workflows.set(userId, await this.workflowRepository.search({ userId, trigger }));
+          workflows.set(
+            userId,
+            await this.workflowRepository.search({ userId, trigger: WorkflowTrigger.AlbumAssetAdded }),
+          );
         }
 
         for (const workflow of workflows.get(userId)) {
-          jobs.push({
-            name: JobName.WorkflowAlbumAssetTrigger,
-            data: {
-              workflowId: workflow.id,
-              albumAsset: { asset: albumAsset.asset as any, album: { id: albumAsset.albumId } },
-              userId: workflow.ownerId,
-            },
-          });
+          if (!jobs.has(workflow.id)) {
+            jobs.set(workflow.id, []);
+          }
+
+          jobs.get(workflow.id)!.push({ asset: albumAsset.asset as any, album: { id: albumAsset.albumId } });
         }
       }
 
-      await this.jobRepository.queueAll(jobs);
-      checkpoint!.lastUuid = albumAssets[0].updateId;
-      await this.systemMetadataRepository.set(SystemMetadataKey.AlbumAssetWorkflowCheckpoint, checkpoint);
+      for (const workflowId of jobs.keys()) {
+        const { id } = await this.workflowRepository.addToQueue({ workflowId, data: jobs.get(workflowId)! });
+        await this.jobRepository.queue({ name: JobName.WorkflowRun, data: { queueId: id } });
+      }
+
+      checkpoint!.albumAssetUuid = albumAssets[0].updateId;
+      await this.systemMetadataRepository.set(SystemMetadataKey.WorkflowCheckpoint, checkpoint);
     }
+
+    this.scanning = false;
+    return JobStatus.Success;
   }
 
   private writeAssetV1<T extends WorkflowType>(assetId: string) {
@@ -427,29 +448,37 @@ export class WorkflowExecutionService extends BaseService {
     });
   }
 
-  @OnJob({ name: JobName.WorkflowAlbumAssetTrigger, queue: QueueName.Workflow })
-  handleAlbumAssetTrigger({ workflowId, userId, albumAsset }: JobOf<JobName.WorkflowAlbumAssetTrigger>) {
-    return this.execute(workflowId, (type) => {
-      switch (type) {
-        case WorkflowType.AlbumAssetV1: {
-          return {
-            read: () =>
-              Promise.resolve({
-                data: albumAsset,
-                authUserId: userId,
-              }),
-            write: async (auth, changes) => {
-              if (albumAsset.asset.ownerId === userId) {
-                await this.writeAssetV1<typeof type>(albumAsset.asset.id)(auth, changes);
-              }
-            },
-          } satisfies ExecuteOptions<typeof type>;
+  @OnJob({ name: JobName.WorkflowRun, queue: QueueName.Workflow })
+  async runQueue({ queueId }: JobOf<JobName.WorkflowRun>) {
+    const queue = await this.workflowRepository.getQueue(queueId);
+
+    for (const item of queue.data) {
+      await this.execute(queue.workflowId, (type) => {
+        switch (type) {
+          case WorkflowType.AssetV1:
+          case WorkflowType.AlbumAssetV1: {
+            return {
+              read: async () => {
+                const workflow = await this.workflowRepository.getForWorkflowRun(queue.workflowId);
+                return {
+                  data: item as any,
+                  authUserId: workflow!.ownerId,
+                };
+              },
+              write: async (auth, changes) => {
+                const workflow = await this.workflowRepository.getForWorkflowRun(queue.workflowId);
+                if ((item as AlbumAssetV1).asset.ownerId === workflow?.ownerId) {
+                  await this.writeAssetV1<typeof type>((item as AlbumAssetV1).asset.id)(auth, changes);
+                }
+              },
+            } satisfies ExecuteOptions<typeof type>;
+          }
+          default: {
+            return;
+          }
         }
-        default: {
-          return;
-        }
-      }
-    });
+      });
+    }
   }
 
   private async execute<T extends WorkflowType>(

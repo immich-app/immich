@@ -86,6 +86,7 @@ import {
   VideoStreamSessionTable,
   VideoStreamVariantTable,
 } from 'src/schema/tables/video-stream.table';
+import { WorkflowQueueTable } from 'src/schema/tables/workflow-queue';
 import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table';
 import { WorkflowTable } from 'src/schema/tables/workflow.table';
 
@@ -277,4 +278,5 @@ export interface DB {
 
   workflow: WorkflowTable;
   workflow_step: WorkflowStepTable;
+  workflow_queue: WorkflowQueueTable;
 }
