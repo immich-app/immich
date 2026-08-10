@@ -195,6 +195,21 @@ void main() {
       expect(rows.single.assetUpdatedAt, existingUpdatedAt);
     });
 
+    test('preserves remoteDeletedAt when a hard-delete pass matches an already pending review marker', () async {
+      final existingDeletedAt = DateTime(2026, 1, 1);
+      final asset = await backedUpAsset(ownerId: userId, remoteDeletedAt: existingDeletedAt);
+
+      await sut.recordSoftDeleteReviewAssets();
+      // Simulates the same checksum also being recorded as hard-deleted (e.g. reused content),
+      // without the remote row being removed first, so the pending marker stays matchable by both passes.
+      await sut.recordHardDeletedChecksums([asset.remoteId]);
+      await sut.recordHardDeletedReviewAssets();
+
+      final rows = await ctx.db.select(ctx.db.trashSyncEntity).get();
+      expect(rows.single.status, TrashSyncStatus.pending);
+      expect(rows.single.remoteDeletedAt, existingDeletedAt.toUtc());
+    });
+
     test('rejecting an asset without a pending marker does not create a review decision', () async {
       final asset = await backedUpAsset(ownerId: userId, remoteDeletedAt: DateTime(2026, 1, 1));
 

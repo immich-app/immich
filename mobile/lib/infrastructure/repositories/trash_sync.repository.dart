@@ -135,15 +135,6 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
   Future<void> _recordReviewAssets(Expression<bool> contentExists, {Expression<DateTime>? remoteDeletedAt}) async {
     final pending = Constant(TrashSyncStatus.pending.index);
     final selectedAssetsQuery = _selectedAssetsQuery();
-    final reviewDecisionsQuery = _db.selectOnly(_db.trashSyncEntity)
-      ..addColumns([_db.trashSyncEntity.assetId])
-      ..where(
-        _db.trashSyncEntity.assetId.equalsExp(_db.localAssetEntity.id) &
-            _db.trashSyncEntity.status.isIn([
-              TrashSyncStatus.reviewRejected.index,
-              TrashSyncStatus.reviewApproved.index,
-            ]),
-      );
     final nonPendingMarkerQuery = _db.selectOnly(_db.trashSyncEntity)
       ..addColumns([_db.trashSyncEntity.assetId])
       ..where(
@@ -156,7 +147,6 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
         _db.localAssetEntity.checksum.isNotNull() &
             contentExists &
             existsQuery(selectedAssetsQuery) &
-            notExistsQuery(reviewDecisionsQuery) &
             notExistsQuery(nonPendingMarkerQuery),
       );
     if (remoteDeletedAt != null) {
@@ -184,7 +174,15 @@ class DriftTrashSyncRepository extends DriftDatabaseRepository {
             _db.trashSyncEntity.assetUpdatedAt: _db.localAssetEntity.updatedAt,
             if (remoteDeletedAt != null) _db.trashSyncEntity.remoteDeletedAt: remoteDeletedAt,
           },
-          mode: .insertOrReplace,
+          onConflict: DoUpdate.withExcluded(
+            (old, excluded) => remoteDeletedAt != null
+                ? TrashSyncEntityCompanion.custom(
+                    status: excluded.status,
+                    assetUpdatedAt: excluded.assetUpdatedAt,
+                    remoteDeletedAt: excluded.remoteDeletedAt,
+                  )
+                : TrashSyncEntityCompanion.custom(status: excluded.status, assetUpdatedAt: excluded.assetUpdatedAt),
+          ),
         );
   }
 
