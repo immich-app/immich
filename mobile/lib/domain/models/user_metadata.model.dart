@@ -11,105 +11,32 @@ enum UserMetadataKey {
   license,
 }
 
-class Onboarding {
-  final bool isOnboarded;
+@freezed
+abstract class Onboarding with _$Onboarding {
+  const Onboarding._();
 
-  const Onboarding({required this.isOnboarded});
-
-  Onboarding copyWith({bool? isOnboarded}) {
-    return Onboarding(isOnboarded: isOnboarded ?? this.isOnboarded);
-  }
-
-  Map<String, Object?> toMap() {
-    final onboarding = <String, Object?>{};
-    onboarding["isOnboarded"] = isOnboarded;
-    return onboarding;
-  }
+  const factory Onboarding({required bool isOnboarded}) = _Onboarding;
 
   factory Onboarding.fromMap(Map<String, Object?> map) {
     return Onboarding(isOnboarded: map["isOnboarded"]! as bool);
   }
-
-  @override
-  String toString() {
-    return '''Onboarding {
-isOnboarded: $isOnboarded,
-}''';
-  }
-
-  @override
-  bool operator ==(covariant Onboarding other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return isOnboarded == other.isOnboarded;
-  }
-
-  @override
-  int get hashCode => isOnboarded.hashCode;
 }
 
-class Preferences {
-  final bool foldersEnabled;
-  final bool memoriesEnabled;
-  final bool peopleEnabled;
-  final bool ratingsEnabled;
-  final bool sharedLinksEnabled;
-  final bool tagsEnabled;
-  final AvatarColor userAvatarColor;
-  final bool showSupportBadge;
-  final int minimumFaces;
+@freezed
+abstract class Preferences with _$Preferences {
+  const Preferences._();
 
-  const Preferences({
-    this.foldersEnabled = false,
-    this.memoriesEnabled = true,
-    this.peopleEnabled = true,
-    this.ratingsEnabled = false,
-    this.sharedLinksEnabled = true,
-    this.tagsEnabled = false,
-    this.userAvatarColor = AvatarColor.primary,
-    this.showSupportBadge = true,
-    this.minimumFaces = 3,
-  });
-
-  Preferences copyWith({
-    bool? foldersEnabled,
-    bool? memoriesEnabled,
-    bool? peopleEnabled,
-    bool? ratingsEnabled,
-    bool? sharedLinksEnabled,
-    bool? tagsEnabled,
-    AvatarColor? userAvatarColor,
-    bool? showSupportBadge,
-    int? minimumFaces,
-  }) {
-    return Preferences(
-      foldersEnabled: foldersEnabled ?? this.foldersEnabled,
-      memoriesEnabled: memoriesEnabled ?? this.memoriesEnabled,
-      peopleEnabled: peopleEnabled ?? this.peopleEnabled,
-      ratingsEnabled: ratingsEnabled ?? this.ratingsEnabled,
-      sharedLinksEnabled: sharedLinksEnabled ?? this.sharedLinksEnabled,
-      tagsEnabled: tagsEnabled ?? this.tagsEnabled,
-      userAvatarColor: userAvatarColor ?? this.userAvatarColor,
-      showSupportBadge: showSupportBadge ?? this.showSupportBadge,
-      minimumFaces: minimumFaces ?? this.minimumFaces,
-    );
-  }
-
-  Map<String, Object?> toMap() {
-    final preferences = <String, Object?>{};
-    preferences["folders-Enabled"] = foldersEnabled;
-    preferences["memories-Enabled"] = memoriesEnabled;
-    preferences["people-Enabled"] = peopleEnabled;
-    preferences["ratings-Enabled"] = ratingsEnabled;
-    preferences["sharedLinks-Enabled"] = sharedLinksEnabled;
-    preferences["tags-Enabled"] = tagsEnabled;
-    preferences["avatar-Color"] = userAvatarColor.value;
-    preferences["purchase-ShowSupportBadge"] = showSupportBadge;
-    preferences["minimumFaces"] = minimumFaces;
-    return preferences;
-  }
+  const factory Preferences({
+    @Default(false) bool foldersEnabled,
+    @Default(true) bool memoriesEnabled,
+    @Default(true) bool peopleEnabled,
+    @Default(false) bool ratingsEnabled,
+    @Default(true) bool sharedLinksEnabled,
+    @Default(false) bool tagsEnabled,
+    @Default(AvatarColor.primary) AvatarColor userAvatarColor,
+    @Default(true) bool showSupportBadge,
+    @Default(3) int minimumFaces,
+  }) = _Preferences;
 
   factory Preferences.fromMap(Map<String, Object?> map) {
     return Preferences(
@@ -127,75 +54,14 @@ class Preferences {
       minimumFaces: (map["people"] as Map<String, Object?>?)?["minimumFaces"] as int? ?? 3,
     );
   }
-
-  @override
-  String toString() {
-    return '''Preferences: {
-foldersEnabled: $foldersEnabled,
-memoriesEnabled: $memoriesEnabled,
-peopleEnabled: $peopleEnabled,
-ratingsEnabled: $ratingsEnabled,
-sharedLinksEnabled: $sharedLinksEnabled,
-tagsEnabled: $tagsEnabled,
-userAvatarColor: $userAvatarColor,
-showSupportBadge: $showSupportBadge,
-minimumFaces: $minimumFaces,
-}''';
-  }
-
-  @override
-  bool operator ==(covariant Preferences other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.foldersEnabled == foldersEnabled &&
-        other.memoriesEnabled == memoriesEnabled &&
-        other.peopleEnabled == peopleEnabled &&
-        other.ratingsEnabled == ratingsEnabled &&
-        other.sharedLinksEnabled == sharedLinksEnabled &&
-        other.tagsEnabled == tagsEnabled &&
-        other.userAvatarColor == userAvatarColor &&
-        other.showSupportBadge == showSupportBadge &&
-        other.minimumFaces == minimumFaces;
-  }
-
-  @override
-  int get hashCode {
-    return foldersEnabled.hashCode ^
-        memoriesEnabled.hashCode ^
-        peopleEnabled.hashCode ^
-        ratingsEnabled.hashCode ^
-        sharedLinksEnabled.hashCode ^
-        tagsEnabled.hashCode ^
-        userAvatarColor.hashCode ^
-        showSupportBadge.hashCode ^
-        minimumFaces.hashCode;
-  }
 }
 
-class License {
-  final DateTime activatedAt;
-  final String activationKey;
-  final String licenseKey;
+@freezed
+abstract class License with _$License {
+  const License._();
 
-  const License({required this.activatedAt, required this.activationKey, required this.licenseKey});
-
-  License copyWith({DateTime? activatedAt, String? activationKey, String? licenseKey}) {
-    return License(
-      activatedAt: activatedAt ?? this.activatedAt,
-      activationKey: activationKey ?? this.activationKey,
-      licenseKey: licenseKey ?? this.licenseKey,
-    );
-  }
-
-  Map<String, Object?> toMap() {
-    final license = <String, Object?>{};
-    license["activatedAt"] = activatedAt;
-    license["activationKey"] = activationKey;
-    license["licenseKey"] = licenseKey;
-    return license;
-  }
+  const factory License({required DateTime activatedAt, required String activationKey, required String licenseKey}) =
+      _License;
 
   factory License.fromMap(Map<String, Object?> map) {
     return License(
@@ -204,27 +70,6 @@ class License {
       licenseKey: map["licenseKey"]! as String,
     );
   }
-
-  @override
-  String toString() {
-    return '''License {
-activatedAt: $activatedAt,
-activationKey: $activationKey,
-licenseKey: $licenseKey,
-}''';
-  }
-
-  @override
-  bool operator ==(covariant License other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return activatedAt == other.activatedAt && activationKey == other.activationKey && licenseKey == other.licenseKey;
-  }
-
-  @override
-  int get hashCode => activatedAt.hashCode ^ activationKey.hashCode ^ licenseKey.hashCode;
 }
 
 // Model for a user metadata stored in the server

@@ -1,60 +1,18 @@
-import 'dart:convert';
-
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/utils/debug_print.dart';
 
+part 'upload_profile_image.provider.freezed.dart';
+
 enum UploadProfileStatus { idle, loading, success, failure }
 
-class UploadProfileImageState {
-  // enum
-  final UploadProfileStatus status;
-  final String profileImagePath;
-  const UploadProfileImageState({required this.status, required this.profileImagePath});
-
-  UploadProfileImageState copyWith({UploadProfileStatus? status, String? profileImagePath}) {
-    return UploadProfileImageState(
-      status: status ?? this.status,
-      profileImagePath: profileImagePath ?? this.profileImagePath,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    final result = <String, dynamic>{};
-
-    result.addAll({'status': status.index});
-    result.addAll({'profileImagePath': profileImagePath});
-
-    return result;
-  }
-
-  factory UploadProfileImageState.fromMap(Map<String, dynamic> map) {
-    return UploadProfileImageState(
-      status: UploadProfileStatus.values[map['status'] ?? 0],
-      profileImagePath: map['profileImagePath'] ?? '',
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory UploadProfileImageState.fromJson(String source) => UploadProfileImageState.fromMap(json.decode(source));
-
-  @override
-  String toString() => 'UploadProfileImageState(status: $status, profileImagePath: $profileImagePath)';
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other is UploadProfileImageState && other.status == status && other.profileImagePath == profileImagePath;
-  }
-
-  @override
-  int get hashCode => status.hashCode ^ profileImagePath.hashCode;
+@freezed
+abstract class UploadProfileImageState with _$UploadProfileImageState {
+  const factory UploadProfileImageState({required UploadProfileStatus status, required String profileImagePath}) =
+      _UploadProfileImageState;
 }
 
 class UploadProfileImageNotifier extends StateNotifier<UploadProfileImageState> {
