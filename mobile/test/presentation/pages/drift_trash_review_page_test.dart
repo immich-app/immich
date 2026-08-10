@@ -145,7 +145,7 @@ void main() {
     verify(() => timelineFactory.syncTrash()).called(1);
   });
 
-  testWidgets('bottom bar uses the PR 28280 review action buttons', (tester) async {
+  testWidgets('bottom bar shows keep and move-to-trash review action buttons', (tester) async {
     await pumpActionBar(tester, [_reviewAsset]);
     await tester.pumpAndSettle();
 

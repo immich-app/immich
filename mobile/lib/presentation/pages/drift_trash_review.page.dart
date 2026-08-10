@@ -5,8 +5,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart' show showKeepResultToast;
-import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart' show showTrashResultToast;
+import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/trash_sync_bottom_bar.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -117,7 +117,7 @@ class _TrashReviewKebabMenu extends ConsumerWidget {
         ),
         BaseActionButton(
           label: context.t.trash_all,
-          iconData: Icons.delete_outline_rounded ,
+          iconData: Icons.delete_outline_rounded,
           onPressed: () => _moveAllToTrash(context, ref),
           menuItem: true,
         ),

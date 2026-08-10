@@ -171,7 +171,6 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
       }
       context.scaffoldMessenger.showSnackBar(
         SnackBar(
-          // duration: const Duration(seconds: 3),
           content: Text(
             "manage_media_access_review_rationale".tr(),
             style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
