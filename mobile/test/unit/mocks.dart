@@ -32,6 +32,7 @@ class RepositoryMocks {
   final trashedAsset = MockTrashedLocalAssetRepository();
   final remoteAlbum = MockRemoteAlbumRepository();
   final albumApi = MockDriftAlbumApiRepository();
+  final permission = PermissionRepositoryStub(MockPermissionRepository());
 
   final nativeApi = NativeSyncApiStub(MockNativeSyncApi());
   final assetApi = AssetApiRepositoryStub(MockAssetApiRepository());
@@ -55,6 +56,7 @@ class RepositoryMocks {
     assetApi.reset();
     assetMedia.reset();
     download.reset();
+    permission.reset();
     _stubLocalAlbumRepository();
     _stubLocalAssetRepository();
     _stubRemoteAssetRepository();
@@ -63,6 +65,7 @@ class RepositoryMocks {
     _stubAssetApiRepository();
     _stubAssetMediaRepository();
     _stubDownloadRepository();
+    _stubPermissionRepository();
   }
 
   void _stubRemoteAssetRepository() {
@@ -100,6 +103,12 @@ class RepositoryMocks {
 
   void _stubDownloadRepository() {
     when(download.downloadAllAssets).thenAnswer((_) async => const []);
+  }
+
+  void _stubPermissionRepository() {
+    when(permission.getStatus).thenAnswer((_) async => DevicePermissionStatus.denied);
+    when(permission.request).thenAnswer((_) async => DevicePermissionStatus.denied);
+    when(permission.getAndroidSdkVersion).thenAnswer((_) async => 34);
   }
 }
 
@@ -220,6 +229,8 @@ void _registerFallbacks() {
   registerFallbackValue(ShareAssetType.original);
   registerFallbackValue(const UploadCallbacks());
   registerFallbackValue(_FakeBuildContext());
+  registerFallbackValue(DevicePermissionStatus.granted);
+  registerFallbackValue(DevicePermission.photos);
 }
 
 class _FakeBuildContext extends Fake implements BuildContext {}
@@ -398,6 +409,17 @@ extension type const AssetMediaRepositoryStub(MockAssetMediaRepository api) impl
 extension type const DownloadRepositoryStub(MockDownloadRepository repo) implements Stub<MockDownloadRepository> {
   Future<List<bool>> Function() get downloadAllAssets =>
       () => repo.downloadAllAssets(any());
+}
+
+extension type const PermissionRepositoryStub(MockPermissionRepository repo) implements Stub<MockPermissionRepository> {
+  Future<DevicePermissionStatus> Function() get getStatus =>
+      () => repo.getStatus(any());
+
+  Future<DevicePermissionStatus> Function() get request =>
+      () => repo.request(any());
+
+  Future<int> Function() get getAndroidSdkVersion =>
+      () => repo.getAndroidSdkVersion();
 }
 
 extension type const TagServiceStub(MockTagService service) implements Stub<MockTagService> {
