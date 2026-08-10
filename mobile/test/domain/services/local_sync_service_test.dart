@@ -23,9 +23,9 @@ import '../../service.mocks.dart';
 
 void main() {
   late LocalSyncService sut;
-  late DriftLocalAlbumRepository mockLocalAlbumRepository;
-  late DriftLocalAssetRepository mockLocalAssetRepository;
-  late DriftTrashedLocalAssetRepository mockTrashedLocalAssetRepository;
+  late LocalAlbumRepository mockLocalAlbumRepository;
+  late LocalAssetRepository mockLocalAssetRepository;
+  late TrashedLocalAssetRepository mockTrashedLocalAssetRepository;
   late AssetMediaRepository mockAssetMediaRepository;
   late MockPermissionRepository mockPermissionRepository;
   late MockNativeSyncApi mockNativeSyncApi;
@@ -36,7 +36,7 @@ void main() {
     debugDefaultTargetPlatformOverride = TargetPlatform.android;
 
     db = Drift(drift.DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await StoreService.init(storeRepository: StoreRepository(db));
   });
 
   tearDownAll(() async {

@@ -5,7 +5,7 @@ import 'package:immich_mobile/infrastructure/repositories/people.repository.dart
 import 'package:immich_mobile/repositories/person_api.repository.dart';
 
 class DriftPeopleService {
-  final DriftPeopleRepository _repository;
+  final PeopleRepository _repository;
   final PersonApiRepository _personApiRepository;
 
   const DriftPeopleService(this._repository, this._personApiRepository);

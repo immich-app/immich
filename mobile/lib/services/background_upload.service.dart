@@ -15,7 +15,7 @@ import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
@@ -26,11 +26,12 @@ import 'package:openapi/api.dart' as api;
 import 'package:path/path.dart' as p;
 
 final backgroundUploadServiceProvider = Provider((ref) {
+  final db = ref.watch(driftProvider);
   final service = BackgroundUploadService(
     ref.watch(uploadRepositoryProvider),
     ref.watch(storageRepositoryProvider),
-    ref.watch(localAssetRepository),
-    ref.watch(backupRepositoryProvider),
+    db.localAssetRepository,
+    db.backupRepository,
     ref.watch(assetMediaRepositoryProvider),
   );
 
@@ -112,8 +113,8 @@ class BackgroundUploadService {
 
   final UploadRepository _uploadRepository;
   final StorageRepository _storageRepository;
-  final DriftLocalAssetRepository _localAssetRepository;
-  final DriftBackupRepository _backupRepository;
+  final LocalAssetRepository _localAssetRepository;
+  final BackupRepository _backupRepository;
   final AssetMediaRepository _assetMediaRepository;
   final Logger _logger = Logger('BackgroundUploadService');
 

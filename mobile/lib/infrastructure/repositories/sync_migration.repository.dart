@@ -1,9 +1,13 @@
+import 'package:drift/drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.drift.dart';
 
-class SyncMigrationRepository extends DriftDatabaseRepository {
-  final Drift _db;
+@DriftAccessor()
+class SyncMigrationRepository extends DatabaseAccessor<Drift> with $SyncMigrationRepositoryMixin {
 
-  const SyncMigrationRepository(super.db) : _db = db;
+  SyncMigrationRepository(super.attachedDatabase);
+
+  Drift get _db => attachedDatabase;
 
   Future<void> v20260128CopyExifWidthHeightToAsset() async {
     await _db.customStatement('''

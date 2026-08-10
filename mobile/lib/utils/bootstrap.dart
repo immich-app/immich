@@ -49,7 +49,7 @@ abstract final class Bootstrap {
     await configureSqliteCache();
     final (db, updatePool) = await openSqliteConnectionWithUpdatePool(name: 'immich');
     final drift = Drift.sqlite(db, updatePool);
-    final DriftStoreRepository storeRepo = DriftStoreRepository(drift);
+    final StoreRepository storeRepo = StoreRepository(drift);
 
     await StoreService.init(storeRepository: storeRepo, listenUpdates: listenStoreUpdates);
 
