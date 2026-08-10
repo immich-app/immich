@@ -1,13 +1,13 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/services/background_worker.service.dart';
 import 'package:immich_mobile/domain/utils/background_sync.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/main.dart' as app;
-import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
-import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
 import 'package:immich_mobile/wm_executor.dart';
@@ -22,6 +22,9 @@ import 'test_utils/fake_immich_server.dart';
 // Device/emulator tests: real worker isolates + a real drift db + a loopback fake server
 // (same pattern as background_sync_teardown_test). The mobile integration-test CI job is
 // disabled in test.yml, so like Mert's teardown test this is a local/on-device guard.
+//
+// The end-to-end resume test lives in failed_sync_resume_e2e_test.dart - one process
+// per file keeps it clear of the cross-test interaction described there.
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
   binding.framePolicy = LiveTestWidgetsFlutterBindingFramePolicy.fullyLive;
@@ -29,13 +32,30 @@ void main() {
   late Drift drift;
   late FakeImmichServer server;
 
+  // main()'s formula with a higher floor: a wedged frozen worker plus a full local
+  // sync must not starve the fresh resume sync out of its 25s window on 4 cores.
+  final poolSize = max(Platform.numberOfProcessors - 1, 8);
+
   setUpAll(() async {
     await app.initApp();
     (drift, _) = await Bootstrap.initDomain();
+    // A background-worker schedule persisted by real app use on this device can
+    // launch a second engine mid-file (own isolate pool + full sync) and starve
+    // these tests on a small device. Unregister it for the whole run.
+    await BackgroundWorkerFgService(BackgroundWorkerFgHostApi()).disable();
   });
 
   setUp(() async {
-    await workerManagerPatch.init(dynamicSpawning: true);
+    // A task completing while dispose tears the pool down re-warms it (_schedule
+    // on the cleared pool re-creates workers), and init on a warm pool is silently
+    // ignored - poolSize would never apply. Reset first, then verify it took.
+    await workerManagerPatch.dispose();
+    await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: poolSize);
+    expect(
+      workerManagerPatch.pool.length,
+      poolSize,
+      reason: 'init was ignored: a straggler from the previous test re-warmed the pool',
+    );
     server = await FakeImmichServer.start();
     await ApiService().resolveAndSetEndpoint(server.endpoint);
     await drift.delete(drift.userEntity).go();
@@ -49,7 +69,7 @@ void main() {
   });
 
   // Self-contained (bare manager, no fire-and-forget resume), so it runs first: its
-  // frozen syncs are fully drained by tearDown, leaving a clean pool for the next test.
+  // frozen syncs are fully drained by tearDown.
   testWidgets('a cancelled sync task does not clear the slot of the fresh task that superseded it', (tester) async {
     final manager = BackgroundSyncManager();
 
@@ -109,42 +129,5 @@ void main() {
       isEmpty,
       reason: 'a cancelled task is not a real error; its CanceledError must not fire onRemoteSyncError',
     );
-  });
-
-  // End-to-end resume path. Runs last: handleAppResume is fire-and-forget and its
-  // frozen syncs outlive the test, so running it before another test would leave the
-  // worker pool warm and starve the next test's isolates.
-  testWidgets('a resume after a sync froze mid-flight starts a fresh sync', (tester) async {
-    final manager = BackgroundSyncManager();
-    // Not disposed on purpose: driftOverride closes the drift on dispose, and this
-    // drift is shared across tests via setUpAll. The container only holds the shared
-    // drift and a fire-and-forget resume; the frozen isolates + server are drained by
-    // tearDown. Disposing here would close the shared DB and break other tests.
-    final container = ProviderContainer(
-      overrides: [driftProvider.overrideWith(driftOverride(drift)), backgroundSyncProvider.overrideWithValue(manager)],
-    );
-
-    // A first sync opens /sync/stream and never finishes - the frozen state a
-    // suspended sync isolate is left in. Holding the stream open keeps
-    // _syncTask non-null, exactly as it is across an iOS process suspension.
-    unawaited(manager.syncRemote());
-    await server
-        .streamOpenedNth(1)
-        .timeout(const Duration(seconds: 30), onTimeout: () => fail('first sync isolate never opened /sync/stream'));
-
-    // The lifecycle then goes background -> foreground. handleAppResume runs the
-    // resume sync exactly once. On the buggy build it hangs on the stale task's
-    // future, so it is not awaited here.
-    final notifier = container.read(appStateProvider.notifier);
-    await notifier.handleAppPause();
-    unawaited(notifier.handleAppResume());
-
-    await server
-        .streamOpenedNth(2)
-        .timeout(
-          const Duration(seconds: 25),
-          onTimeout: () => fail('resume did not start a fresh remote sync - the stale frozen sync blocked it (#28082)'),
-        );
-    expect(server.streamOpenCount, greaterThanOrEqualTo(2));
   });
 }
