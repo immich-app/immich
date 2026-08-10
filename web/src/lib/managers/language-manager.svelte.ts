@@ -13,10 +13,11 @@ class LanguageManager {
   rtl = $state(false);
 
   init() {
-    if (!this.initialized) {
-      this.initialized = true;
-      lang.subscribe((lang) => this.setLanguage(lang));
+    if (this.initialized) {
+      return;
     }
+    this.initialized = true;
+    lang.subscribe((lang) => this.setLanguage(lang));
   }
 
   setLanguage(code: string) {

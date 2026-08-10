@@ -25,7 +25,7 @@ class AssetEditEntity extends Table with DriftDefaultsMixin {
 }
 
 final JsonTypeConverter2<Map<String, Object?>, Uint8List, Object?> editParameterConverter = TypeConverter.jsonb(
-  fromJson: (json) => json as Map<String, Object?>,
+  fromJson: (json) => json! as Map<String, Object?>,
 );
 
 extension AssetEditEntityDataDomainEx on AssetEditEntityData {

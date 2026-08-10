@@ -11,17 +11,20 @@ import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/services/feature_message.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/settings.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 
 const int targetVersion = 26;
 
 Future<void> migrateDatabaseIfNeeded(Drift drift) async {
-  final int version = Store.get(StoreKey.version, targetVersion);
+  final int? storedVersion = Store.tryGet(StoreKey.version);
+  final version = storedVersion ?? targetVersion;
 
   if (version < 25) {
     await _migrateTo25();
@@ -29,6 +32,10 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
   if (version < 26) {
     await _migrateTo26(drift);
+  }
+
+  if (storedVersion == null) {
+    await FeatureMessageService(SettingsRepository.instance).markSeen();
   }
 
   await Store.put(StoreKey.version, targetVersion);

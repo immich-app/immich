@@ -32,6 +32,7 @@ import {
   UserMetadataKey,
   WorkflowType,
 } from 'src/enum';
+import { Mocked } from 'vitest';
 
 export type DeepPartial<T> = T extends Date
   ? T
@@ -336,8 +337,7 @@ export interface IIntegrityUntrackedFilesJob {
 
 export interface IIntegrityMissingFilesJob {
   items: ({ path: string; reportId: string | null } & (
-    | { assetId: string; fileAssetId: null }
-    | { assetId: null; fileAssetId: string }
+    { assetId: string; fileAssetId: null } | { assetId: null; fileAssetId: string }
   ))[];
 }
 
@@ -553,8 +553,7 @@ export interface MemoryData {
 export type VersionCheckMetadata = { checkedAt: string; releaseVersion: string };
 export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
 export type MaintenanceModeState =
-  | { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto }
-  | { isMaintenanceMode: false };
+  { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto } | { isMaintenanceMode: false };
 export type MemoriesState = {
   /** memories have already been created through this date */
   lastOnThisDayDate: string;
@@ -649,7 +648,10 @@ export type JSONSchemaProperty = {
   required?: string[];
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export interface ClassConstructor<T = any> extends Function {
-  new (...args: any[]): T;
-}
+export type ClassConstructor<T> = T extends new (...args: infer R) => infer L
+  ? new (...args: R) => L
+  : new (...args: any[]) => unknown;
+
+export type ClassConstructorsToInstances<T extends readonly ClassConstructor<unknown>[]> = {
+  [K in keyof T]: InstanceType<T[K]> | Mocked<InstanceType<T[K]>>;
+};

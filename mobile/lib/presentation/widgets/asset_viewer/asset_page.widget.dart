@@ -87,8 +87,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   @override
   void dispose() {
     _scrollController.dispose();
-    _scaleBoundarySub?.cancel();
-    _eventSubscription?.cancel();
+    unawaited(_scaleBoundarySub?.cancel());
+    unawaited(_eventSubscription?.cancel());
     super.dispose();
   }
 
@@ -99,6 +99,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       case TimelineReloadEvent():
         final asset = ref.read(timelineServiceProvider).getAssetSafe(widget.index);
         if (asset != _asset) {
+          _isZoomed = false;
+          _viewer.setZoomed(false);
           setState(() => _asset = asset);
         }
       default:
@@ -110,7 +112,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       return;
     }
     _viewer.setShowingDetails(true);
-    _scrollController.animateTo(_snapOffset, duration: Durations.medium2, curve: Curves.easeOutCubic);
+    unawaited(_scrollController.animateTo(_snapOffset, duration: Durations.medium2, curve: Curves.easeOutCubic));
   }
 
   bool _willClose(double scrollVelocity) =>
@@ -197,7 +199,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
       case _DragIntent.dismiss:
         const popThreshold = 75.0;
         if (details.localPosition.dy - start!.localPosition.dy > popThreshold) {
-          context.maybePop();
+          unawaited(context.maybePop());
           return;
         }
         _viewController?.animateMultiple(
@@ -290,14 +292,14 @@ class _AssetPageState extends ConsumerState<AssetPage> {
   }
 
   void _listenForScaleBoundaries(PhotoViewControllerBase? controller) {
-    _scaleBoundarySub?.cancel();
+    unawaited(_scaleBoundarySub?.cancel());
     _scaleBoundarySub = null;
     if (controller == null || controller.scaleBoundaries != null) {
       return;
     }
     _scaleBoundarySub = controller.outputStateStream.listen((_) {
       if (controller.scaleBoundaries != null) {
-        _scaleBoundarySub?.cancel();
+        unawaited(_scaleBoundarySub?.cancel());
         _scaleBoundarySub = null;
         if (mounted) {
           setState(() {});
@@ -399,7 +401,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
-    final timelineOrigin = ref.read(timelineServiceProvider).origin;
+    final timelineOrigin = ref.watch(timelineServiceProvider).origin;
     final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
     final asset = _asset;
@@ -411,7 +413,8 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     final showAssetStack = ref.watch(timelineServiceProvider.select((s) => s.origin != TimelineOrigin.trash));
     final stackChildren = showAssetStack ? ref.watch(stackChildrenNotifier(asset)).valueOrNull : null;
     if (stackChildren != null && stackChildren.isNotEmpty) {
-      displayAsset = stackChildren.elementAt(stackIndex);
+      final safeStackIndex = stackIndex.clamp(0, stackChildren.length - 1);
+      displayAsset = stackChildren.elementAt(safeStackIndex);
     }
 
     final isCurrent = currentAsset != null && currentAsset.refersToSameAsset(displayAsset);

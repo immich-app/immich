@@ -9,7 +9,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../fixtures/user.stub.dart';
 import '../../infrastructure/repository.mock.dart';
-import '../service.mock.dart';
+import '../../service.mocks.dart';
 
 void main() {
   late UserService sut;

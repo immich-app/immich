@@ -23,7 +23,7 @@ function createUploadStore() {
 
   const addItem = (newAsset: UploadAsset) => {
     uploadAssets.update(($assets) => {
-      const duplicate = $assets.find((asset) => asset.id === newAsset.id);
+      const duplicate = $assets.some((asset) => asset.id === newAsset.id);
       if (duplicate) {
         return $assets.map((asset) => (asset.id === newAsset.id ? newAsset : asset));
       }

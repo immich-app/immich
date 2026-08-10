@@ -102,7 +102,7 @@ export class UserAdminController {
   }
 
   @Get(':id/calendar-heatmap')
-  @Authenticated({ permission: Permission.UserRead })
+  @Authenticated({ permission: Permission.AdminUserRead, admin: true })
   @Endpoint({
     summary: 'Retrieve calendar heatmap activity',
     description: 'Retrieve activity counts for a specified period, in a calendar heatmap format.',

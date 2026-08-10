@@ -15,7 +15,7 @@ import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/editor.utils.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_ui/immich_ui.dart';
-import 'package:openapi/api.dart' show RotateParameters, MirrorParameters, MirrorAxis;
+import 'package:openapi/api.dart' show MirrorAxis, MirrorParameters, RotateParameters;
 
 @RoutePage()
 class DriftEditImagePage extends ConsumerStatefulWidget {
@@ -59,9 +59,17 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
 
     try {
       await widget.applyEdits(edits);
+      if (!mounted) {
+        return;
+      }
+
       ImmichToast.show(context: context, msg: 'success'.tr(), toastType: ToastType.success);
       Navigator.of(context).pop();
     } catch (e) {
+      if (!mounted) {
+        return;
+      }
+
       ImmichToast.show(context: context, msg: 'error_title'.tr(), toastType: ToastType.error);
     } finally {
       ref.read(editorStateProvider.notifier).setIsEditing(false);
@@ -99,7 +107,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
           return;
         }
         final shouldDiscard = await _showDiscardChangesDialog() ?? false;
-        if (shouldDiscard && mounted) {
+        if (shouldDiscard && context.mounted) {
           Navigator.of(context).pop();
         }
       },
@@ -212,7 +220,7 @@ class _AspectRatioSelector extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final editorState = ref.watch(editorStateProvider);
-    final editorNotifier = ref.read(editorStateProvider.notifier);
+    final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -237,7 +245,7 @@ class _TransformControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final editorNotifier = ref.read(editorStateProvider.notifier);
+    final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -325,7 +333,7 @@ class _ResetEditsButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final editorState = ref.watch(editorStateProvider);
-    final editorNotifier = ref.read(editorStateProvider.notifier);
+    final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     return ImmichTextButton(
       labelText: 'reset'.tr(),
@@ -376,7 +384,7 @@ class _EditorPreviewState extends ConsumerState<_EditorPreview> with TickerProvi
   @override
   Widget build(BuildContext context) {
     final editorState = ref.watch(editorStateProvider);
-    final editorNotifier = ref.read(editorStateProvider.notifier);
+    final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     ref.listen(editorStateProvider, (previous, current) {
       // Only re-apply the aspect ratio when it changes, otherwise the crop rect will shrink on every rotation

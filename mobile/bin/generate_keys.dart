@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_print
+// ignore_for_file: avoid_slow_async_io, avoid_print
 
 import 'dart:convert';
 import 'dart:io';
