@@ -69,7 +69,7 @@ class RknnSession:
 
 
 class RknnNode(NamedTuple):
-    name: str | None
+    name: str
     shape: tuple[int, ...]
 
 

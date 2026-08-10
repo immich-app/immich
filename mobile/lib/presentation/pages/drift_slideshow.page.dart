@@ -93,8 +93,8 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
 
     if (asset.isImage) {
       _createTimer();
-    } else if (ref.read(videoPlayerProvider(asset.heroTag)).status == VideoPlaybackStatus.paused) {
-      unawaited(ref.read(videoPlayerProvider(asset.heroTag).notifier).play());
+    } else if (ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.paused) {
+      unawaited(ref.read(videoPlayerProvider(asset.id).notifier).play());
     } else {
       unawaited(_nextPage());
     }
@@ -113,7 +113,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     final asset = widget.timeline.getAssetSafe(_index)!;
 
     if (!asset.isImage) {
-      unawaited(ref.read(videoPlayerProvider(asset.heroTag).notifier).pause());
+      unawaited(ref.read(videoPlayerProvider(asset.id).notifier).pause());
     }
 
     setState(() {
@@ -300,7 +300,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
         borderRadius: BorderRadius.zero,
         minHeight: 5,
         value:
-            ref.read(videoPlayerProvider(asset.heroTag).select((s) => s.position)).inMilliseconds /
+            ref.read(videoPlayerProvider(asset.id).select((s) => s.position)).inMilliseconds /
             asset.duration.inMilliseconds,
       );
     }
@@ -374,13 +374,13 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
         builder: (context, value, _) => buildPhotoView(scale * (1.0 + value * _kenBurnsZoom)),
       );
     } else {
-      final status = ref.read(videoPlayerProvider(asset.heroTag).select((s) => s.status));
-      final position = ref.read(videoPlayerProvider(asset.heroTag)).position;
+      final status = ref.read(videoPlayerProvider(asset.id).select((s) => s.status));
+      final position = ref.read(videoPlayerProvider(asset.id)).position;
 
       if (status == VideoPlaybackStatus.completed && isCurrent && position.inMicroseconds > 0) {
         unawaited(_nextPage());
       } else if (status == VideoPlaybackStatus.playing) {
-        unawaited(ref.read(videoPlayerProvider(asset.heroTag).notifier).setLoop(false));
+        unawaited(ref.read(videoPlayerProvider(asset.id).notifier).setLoop(false));
       }
 
       return PhotoView.customChild(
