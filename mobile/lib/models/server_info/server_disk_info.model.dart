@@ -1,53 +1,22 @@
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:openapi/api.dart';
 
-class ServerDiskInfo {
-  final String diskAvailable;
-  final String diskSize;
-  final String diskUse;
-  final double diskUsagePercentage;
+part 'server_disk_info.model.freezed.dart';
 
-  const ServerDiskInfo({
-    required this.diskAvailable,
-    required this.diskSize,
-    required this.diskUse,
-    required this.diskUsagePercentage,
-  });
+@freezed
+abstract class ServerDiskInfo with _$ServerDiskInfo {
+  const factory ServerDiskInfo({
+    required String diskAvailable,
+    required String diskSize,
+    required String diskUse,
+    required double diskUsagePercentage,
+  }) = _ServerDiskInfo;
 
-  ServerDiskInfo copyWith({String? diskAvailable, String? diskSize, String? diskUse, double? diskUsagePercentage}) {
-    return ServerDiskInfo(
-      diskAvailable: diskAvailable ?? this.diskAvailable,
-      diskSize: diskSize ?? this.diskSize,
-      diskUse: diskUse ?? this.diskUse,
-      diskUsagePercentage: diskUsagePercentage ?? this.diskUsagePercentage,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'ServerDiskInfo(diskAvailable: $diskAvailable, diskSize: $diskSize, diskUse: $diskUse, diskUsagePercentage: $diskUsagePercentage)';
-  }
-
-  ServerDiskInfo.fromDto(ServerStorageResponseDto dto)
-    : diskAvailable = dto.diskAvailable,
-      diskSize = dto.diskSize,
-      diskUse = dto.diskUse,
-      diskUsagePercentage = dto.diskUsagePercentage;
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other is ServerDiskInfo &&
-        other.diskAvailable == diskAvailable &&
-        other.diskSize == diskSize &&
-        other.diskUse == diskUse &&
-        other.diskUsagePercentage == diskUsagePercentage;
-  }
-
-  @override
-  int get hashCode {
-    return diskAvailable.hashCode ^ diskSize.hashCode ^ diskUse.hashCode ^ diskUsagePercentage.hashCode;
-  }
+  factory ServerDiskInfo.fromDto(ServerStorageResponseDto dto) => ServerDiskInfo(
+    diskAvailable: dto.diskAvailable,
+    diskSize: dto.diskSize,
+    diskUse: dto.diskUse,
+    diskUsagePercentage: dto.diskUsagePercentage,
+  );
 }

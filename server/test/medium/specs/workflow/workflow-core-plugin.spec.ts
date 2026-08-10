@@ -24,7 +24,7 @@ import { getKyselyDB } from 'test/utils';
 
 let isInitialized = false;
 
-class WorkflowTestContext extends MediumTestContext<WorkflowExecutionService> {
+class WorkflowTestContext extends MediumTestContext<typeof WorkflowExecutionService> {
   constructor(database: Kysely<DB>) {
     super(WorkflowExecutionService, {
       database,

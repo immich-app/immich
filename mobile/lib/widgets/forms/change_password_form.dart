@@ -69,12 +69,16 @@ class ChangePasswordForm extends HookConsumerWidget {
                             return;
                           }
 
-                          await ref.read(authProvider.notifier).logout();
-                          ref.read(websocketProvider.notifier).disconnect();
                           if (!context.mounted) {
                             return;
                           }
 
+                          await ref.read(authProvider.notifier).logout();
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          ref.read(websocketProvider.notifier).disconnect();
                           AutoRouter.of(context).back();
                           ImmichToast.show(
                             context: context,
@@ -149,13 +153,13 @@ class ConfirmPasswordInput extends StatelessWidget {
   }
 }
 
-class ChangePasswordButton extends ConsumerWidget {
+class ChangePasswordButton extends StatelessWidget {
   final TextEditingController passwordController;
   final VoidCallback onPressed;
   const ChangePasswordButton({super.key, required this.passwordController, required this.onPressed});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         visualDensity: VisualDensity.standard,

@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
@@ -11,6 +12,8 @@ import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:immich_mobile/utils/upload_speed_calculator.dart';
 import 'package:logging/logging.dart';
+
+part 'drift_backup.provider.freezed.dart';
 
 class EnqueueStatus {
   final int enqueueCount;
@@ -26,75 +29,17 @@ class EnqueueStatus {
   String toString() => 'EnqueueStatus(enqueueCount: $enqueueCount, totalCount: $totalCount)';
 }
 
-class DriftUploadStatus {
-  final String taskId;
-  final String filename;
-  final double progress;
-  final int fileSize;
-  final String networkSpeedAsString;
-  final bool? isFailed;
-  final String? error;
-
-  const DriftUploadStatus({
-    required this.taskId,
-    required this.filename,
-    required this.progress,
-    required this.fileSize,
-    required this.networkSpeedAsString,
-    this.isFailed,
-    this.error,
-  });
-
-  DriftUploadStatus copyWith({
-    String? taskId,
-    String? filename,
-    double? progress,
-    int? fileSize,
-    String? networkSpeedAsString,
+@freezed
+abstract class DriftUploadStatus with _$DriftUploadStatus {
+  const factory DriftUploadStatus({
+    required String taskId,
+    required String filename,
+    required double progress,
+    required int fileSize,
+    required String networkSpeedAsString,
     bool? isFailed,
     String? error,
-  }) {
-    return DriftUploadStatus(
-      taskId: taskId ?? this.taskId,
-      filename: filename ?? this.filename,
-      progress: progress ?? this.progress,
-      fileSize: fileSize ?? this.fileSize,
-      networkSpeedAsString: networkSpeedAsString ?? this.networkSpeedAsString,
-      isFailed: isFailed ?? this.isFailed,
-      error: error ?? this.error,
-    );
-  }
-
-  @override
-  String toString() {
-    return 'DriftUploadStatus(taskId: $taskId, filename: $filename, progress: $progress, fileSize: $fileSize, networkSpeedAsString: $networkSpeedAsString, isFailed: $isFailed, error: $error)';
-  }
-
-  @override
-  bool operator ==(covariant DriftUploadStatus other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.taskId == taskId &&
-        other.filename == filename &&
-        other.progress == progress &&
-        other.fileSize == fileSize &&
-        other.networkSpeedAsString == networkSpeedAsString &&
-        other.isFailed == isFailed &&
-        other.error == error;
-  }
-
-  @override
-  int get hashCode {
-    return taskId.hashCode ^
-        filename.hashCode ^
-        progress.hashCode ^
-        fileSize.hashCode ^
-        networkSpeedAsString.hashCode ^
-        isFailed.hashCode ^
-        error.hashCode;
-  }
+  }) = _DriftUploadStatus;
 }
 
 enum BackupError { none, syncFailed }
@@ -255,19 +200,25 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     state = state.copyWith(isSyncing: isSyncing);
   }
 
-  Future<void> startForegroundBackup(String userId) {
+  Future<void> startForegroundBackup(String userId) async {
     // Cancel any existing backup before starting a new one
     if (_cancelToken != null) {
-      stopForegroundBackup();
+      stopForegroundBackup(reason: "restarting the backup");
     }
 
     state = state.copyWith(error: BackupError.none);
 
-    _cancelToken = Completer<void>();
+    // A pause during the recount below nulls _cancelToken, so the run keeps its own reference.
+    final cancelToken = Completer<void>();
+    _cancelToken = cancelToken;
+
+    // Re-baseline the counters against the same DB read that feeds this run's candidate list,
+    // otherwise a resume counts duplicate successes against the old baseline (#26215).
+    await getBackupStatus(userId);
 
     return _foregroundUploadService.uploadCandidates(
       userId,
-      _cancelToken!,
+      cancelToken,
       callbacks: UploadCallbacks(
         onProgress: _handleForegroundBackupProgress,
         onSuccess: _handleForegroundBackupSuccess,
@@ -277,7 +228,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
     );
   }
 
-  void stopForegroundBackup() {
+  void stopForegroundBackup({required String reason}) {
+    if (_cancelToken != null) {
+      _logger.info("Foreground backup cancelled: $reason");
+    }
     _cancelToken?.complete();
     _cancelToken = null;
     _uploadSpeedManager.clear();
@@ -333,6 +287,10 @@ class DriftBackupNotifier extends StateNotifier<DriftBackupState> {
   }
 
   void _handleForegroundBackupSuccess(String localAssetId, String remoteAssetId) {
+    if (!mounted) {
+      _logger.warning("Skip _handleForegroundBackupSuccess: notifier disposed");
+      return;
+    }
     state = state.copyWith(backupCount: state.backupCount + 1, remainderCount: state.remainderCount - 1);
     _uploadSpeedManager.removeTask(localAssetId);
 

@@ -21,7 +21,7 @@ class NetworkingSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentEndpoint = getServerUrl();
-    final featureEnabled = useState(ref.read(appConfigProvider).network.autoEndpointSwitching);
+    final featureEnabled = useState(ref.watch(appConfigProvider).network.autoEndpointSwitching);
     useValueChanged<bool, void>(featureEnabled.value, (_, __) {
       unawaited(ref.read(settingsProvider).write(.networkAutoEndpointSwitching, featureEnabled.value));
     });

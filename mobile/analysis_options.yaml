@@ -110,3 +110,17 @@ dart_code_metrics:
     - prefer-const-border-radius
     - prefer-declaring-const-constructor
     - prefer-switch-expression
+
+    # Riverpod
+    - avoid-calling-notifier-members-inside-build
+    - avoid-notifier-constructors
+    - avoid-nullable-async-value-pattern
+    - avoid-public-notifier-properties
+    - avoid-ref-inside-state-dispose
+    - avoid-ref-read-inside-build
+    - avoid-ref-watch-outside-build
+    - avoid-unnecessary-consumer-widgets
+    - dispose-provided-instances
+    - prefer-immutable-provider-arguments
+    - use-ref-and-state-synchronously
+    - use-ref-read-synchronously

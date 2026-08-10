@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/download.action.dart';
 import 'package:immich_mobile/presentation/actions/share.action.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_selector.widget.dart';
@@ -65,6 +66,7 @@ class _PartnerDetailBottomSheetState extends ConsumerState<PartnerDetailBottomSh
       maxChildSize: 0.85,
       shouldCloseOnMinExtent: false,
       actions: const <ActionColumnButton>[
+        .new(action: AssetDebugAction(source: .timeline)),
         .new(action: ShareAction(source: .timeline)),
         .new(action: DownloadAction(source: .timeline)),
       ],

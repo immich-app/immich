@@ -17,7 +17,7 @@ class DownloadPanel extends ConsumerWidget {
     final tasks = ref.watch(downloadStateProvider.select((state) => state.taskProgress)).entries.toList();
 
     void onCancelDownload(String id) {
-      unawaited(ref.watch(downloadStateProvider.notifier).cancelDownload(id));
+      unawaited(ref.read(downloadStateProvider.notifier).cancelDownload(id));
     }
 
     return Positioned(

@@ -13,7 +13,7 @@ class ImageViewerTapToNavigateSetting extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tapToNavigate = useState(ref.read(appConfigProvider).viewer.tapToNavigate);
+    final tapToNavigate = useState(ref.watch(appConfigProvider).viewer.tapToNavigate);
     useValueChanged<bool, void>(tapToNavigate.value, (_, __) {
       unawaited(ref.read(settingsProvider).write(.viewerTapToNavigate, tapToNavigate.value));
     });

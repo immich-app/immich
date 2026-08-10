@@ -44,7 +44,7 @@ jobs:
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
+        uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
         with:
           github_token: ${{ steps.token.outputs.token }}
 
@@ -83,7 +83,7 @@ jobs:
         uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         if: ${{ !github.event.pull_request.head.repo.fork }}
         with:
           registry: ghcr.io

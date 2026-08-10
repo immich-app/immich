@@ -81,6 +81,10 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       await _ref.read(serverInfoProvider.notifier).getServerVersion();
     }
 
+    if (!_shouldContinueOperation()) {
+      _wasPaused = true;
+      return;
+    }
     _ref.read(websocketProvider.notifier).connect();
     await _handleBetaTimelineResume();
 
@@ -89,13 +93,13 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     await _ref.read(galleryPermissionNotifier.notifier).getGalleryPermissionStatus();
   }
 
-  Future<void> _safeRun(Future<void> action, String debugName) async {
+  Future<void> _safeRun(Future<void> Function() action, String debugName) async {
     if (!_shouldContinueOperation()) {
       return;
     }
 
     try {
-      await action;
+      await action();
     } catch (e, stackTrace) {
       _log.warning("Error during $debugName operation", e, stackTrace);
     }
@@ -113,13 +117,15 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     try {
       bool syncSuccess = false;
       await Future.wait([
-        _safeRun(backgroundManager.syncLocal(full: CurrentPlatform.isAndroid ? true : false), "syncLocal"),
-        _safeRun(backgroundManager.syncRemote().then((success) => syncSuccess = success), "syncRemote"),
+        _safeRun(() => backgroundManager.syncLocal(full: CurrentPlatform.isAndroid), "syncLocal"),
+        _safeRun(() async {
+          syncSuccess = await backgroundManager.syncRemote();
+        }, "syncRemote"),
       ]);
       _ref.invalidate(driftMemoryFutureProvider);
       if (syncSuccess) {
         await Future.wait([
-          _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
+          _safeRun(backgroundManager.hashAssets, "hashAssets").then((_) {
             unawaited(_resumeBackup());
           }),
           _resumeBackup(),
@@ -127,11 +133,11 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
           // _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds"),
         ]);
       } else {
-        await _safeRun(backgroundManager.hashAssets(), "hashAssets");
+        await _safeRun(backgroundManager.hashAssets, "hashAssets");
       }
 
       if (isAlbumLinkedSyncEnable) {
-        await _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
+        await _safeRun(backgroundManager.syncLinkedAlbum, "syncLinkedAlbum");
       }
     } catch (e, stackTrace) {
       _log.severe("Error during background sync", e, stackTrace);
@@ -145,7 +151,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
         await _safeRun(
-          _ref.read(driftBackupProvider.notifier).startForegroundBackup(currentUser.id),
+          () => _ref.read(driftBackupProvider.notifier).startForegroundBackup(currentUser.id),
           "handleBackupResume",
         );
       }
@@ -195,7 +201,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _performPause() {
     if (_ref.read(authProvider).isAuthenticated) {
-      _ref.read(driftBackupProvider.notifier).stopForegroundBackup();
+      _ref.read(driftBackupProvider.notifier).stopForegroundBackup(reason: "the app being sent to the background");
 
       _ref.read(websocketProvider.notifier).disconnect();
     }
