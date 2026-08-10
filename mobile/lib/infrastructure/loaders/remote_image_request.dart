@@ -4,9 +4,9 @@ class RemoteImageRequest extends ImageRequest {
   final String uri;
 
   /// Physical size to decode, or null for the source size.
-  final ui.Size? size;
+  final ui.Size? decodeSize;
 
-  RemoteImageRequest({required this.uri, this.size});
+  RemoteImageRequest({required this.uri, this.decodeSize});
 
   @override
   Future<ImageInfo?> load(ImageDecoderCallback decode, {double scale = 1.0}) async {
@@ -18,15 +18,15 @@ class RemoteImageRequest extends ImageRequest {
       uri,
       requestId: requestId,
       preferEncoded: false,
-      width: size?.width.ceil(),
-      height: size?.height.ceil(),
+      width: decodeSize?.width.ceil(),
+      height: decodeSize?.height.ceil(),
     );
     // Android falls back to encoded data if native decoding fails, so check for both shapes of the response.
     final frame = switch (info) {
       {'pointer': final int pointer, 'length': final int length} => await _fromEncodedPlatformImage(
         pointer,
         length,
-        size: size,
+        decodeSize: decodeSize,
       ),
       {
         'pointer': final int pointer,

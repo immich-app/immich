@@ -45,10 +45,11 @@ inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0), exactSize
         )
         val scale = min(1.0, fillScale)
         if (scale < 1) {
-          decoder.setTargetSize(
-            max(1, ceil(info.size.width * scale).toInt()),
-            max(1, ceil(info.size.height * scale).toInt())
-          )
+          val width = ceil(info.size.width * scale).toInt()
+          val height = ceil(info.size.height * scale).toInt()
+          if (width > 0 && height > 0) {
+            decoder.setTargetSize(width, height)
+          }
         }
       } else {
         val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))

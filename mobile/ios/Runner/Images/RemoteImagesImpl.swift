@@ -28,7 +28,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
     bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.premultipliedLast.rawValue),
     renderingIntent: .perceptual
   )!
-  private static let decodeOptions: [NSString: Any] = [
+  private static let decodeOptions: [NSString: Bool] = [
     kCGImageSourceShouldCache: false,
     kCGImageSourceShouldCacheImmediately: true,
     kCGImageSourceCreateThumbnailWithTransform: true,
@@ -93,7 +93,7 @@ class RemoteImageApiImpl: NSObject, RemoteImageApi {
         return request.completion(.failure(PigeonError(code: "", message: "Failed to decode image for request", details: nil)))
       }
 
-      var options = decodeOptions
+      var options: [NSString: Any] = decodeOptions
       if let maxPixelSize = targetThumbnailRenderSize(imageSource: imageSource, width: width, height: height) {
         options[kCGImageSourceThumbnailMaxPixelSize] = maxPixelSize
       }

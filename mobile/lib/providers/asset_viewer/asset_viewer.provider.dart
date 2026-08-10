@@ -45,7 +45,13 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     if (asset == state.currentAsset) {
       return;
     }
-    state = state.copyWith(currentAsset: asset, thumbnailSize: thumbnailSize, stackIndex: 0, showingOcr: false);
+    // Swiping to a neighbor passes no size; keep the tapped tile's so neighbors reuse it.
+    state = state.copyWith(
+      currentAsset: asset,
+      thumbnailSize: thumbnailSize ?? state.thumbnailSize,
+      stackIndex: 0,
+      showingOcr: false,
+    );
     _watchCurrentAsset(asset);
   }
 

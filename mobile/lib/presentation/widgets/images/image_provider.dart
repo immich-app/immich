@@ -200,6 +200,8 @@ ImageProvider getFullImageProvider(
 ImageProvider? getThumbnailImageProvider(
   BaseAsset asset, {
   Size size = kThumbnailResolution,
+
+  /// Physical size to decode for remote thumbnails, or null for the source size.
   Size? remoteSize,
   bool edited = true,
 }) {
@@ -211,7 +213,7 @@ ImageProvider? getThumbnailImageProvider(
   final assetId = asset is RemoteAsset ? asset.id : (asset as LocalAsset).remoteId;
   final thumbhash = asset is RemoteAsset ? asset.thumbHash ?? "" : "";
   return assetId != null
-      ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash, edited: edited, size: remoteSize)
+      ? RemoteImageProvider.thumbnail(assetId: assetId, thumbhash: thumbhash, edited: edited, decodeSize: remoteSize)
       : null;
 }
 

@@ -15,12 +15,16 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
   final bool edited;
 
   /// Physical size to decode, or null for the source size.
-  final Size? size;
+  final Size? decodeSize;
 
-  RemoteImageProvider({required this.url, this.edited = true, this.size});
+  RemoteImageProvider({required this.url, this.edited = true, this.decodeSize});
 
-  RemoteImageProvider.thumbnail({required String assetId, required String thumbhash, this.edited = true, this.size})
-    : url = getThumbnailUrlForRemoteId(assetId, thumbhash: thumbhash, edited: edited);
+  RemoteImageProvider.thumbnail({
+    required String assetId,
+    required String thumbhash,
+    this.edited = true,
+    this.decodeSize,
+  }) : url = getThumbnailUrlForRemoteId(assetId, thumbhash: thumbhash, edited: edited);
 
   @override
   Future<RemoteImageProvider> obtainKey(ImageConfiguration configuration) {
@@ -40,7 +44,7 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
   }
 
   Stream<ImageInfo> _codec(RemoteImageProvider key, ImageDecoderCallback decode) {
-    final request = this.request = RemoteImageRequest(uri: key.url, size: key.size);
+    final request = this.request = RemoteImageRequest(uri: key.url, decodeSize: key.decodeSize);
     return loadRequest(request, decode, isFinal: true);
   }
 
@@ -50,13 +54,13 @@ class RemoteImageProvider extends CancellableImageProvider<RemoteImageProvider>
       return true;
     }
     if (other is RemoteImageProvider) {
-      return url == other.url && edited == other.edited && size == other.size;
+      return url == other.url && edited == other.edited && decodeSize == other.decodeSize;
     }
     return false;
   }
 
   @override
-  int get hashCode => url.hashCode ^ edited.hashCode ^ size.hashCode;
+  int get hashCode => url.hashCode ^ edited.hashCode ^ decodeSize.hashCode;
 }
 
 class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImageProvider>
@@ -91,7 +95,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
         stream: _animatedCodec(key, decode),
         scale: 1.0,
         initialImage: getInitialImage(
-          RemoteImageProvider.thumbnail(assetId: key.assetId, thumbhash: key.thumbhash, size: key.thumbnailSize),
+          RemoteImageProvider.thumbnail(assetId: key.assetId, thumbhash: key.thumbhash, decodeSize: key.thumbnailSize),
         ),
         informationCollector: () => <DiagnosticsNode>[
           DiagnosticsProperty<ImageProvider>('Image provider', this),
@@ -109,7 +113,7 @@ class RemoteFullImageProvider extends CancellableImageProvider<RemoteFullImagePr
           assetId: key.assetId,
           thumbhash: key.thumbhash,
           edited: key.edited,
-          size: key.thumbnailSize,
+          decodeSize: key.thumbnailSize,
         ),
       ),
       informationCollector: () => <DiagnosticsNode>[

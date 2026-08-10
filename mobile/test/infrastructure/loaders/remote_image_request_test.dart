@@ -31,7 +31,7 @@ void main() {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockDecodedMessageHandler(channel, null);
   });
 
-  Future<ui.Image> loadEncoded(String path, ui.Size size) async {
+  Future<ui.Image> loadEncoded(String path, ui.Size decodeSize) async {
     final bytes = await File(path).readAsBytes();
     final pointer = malloc<Uint8>(bytes.length)..asTypedList(bytes.length).setAll(0, bytes);
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockDecodedMessageHandler(channel, (
@@ -41,13 +41,13 @@ void main() {
         <Object?, Object?>{'pointer': pointer.address, 'length': bytes.length},
       ];
     });
-    final request = RemoteImageRequest(uri: 'https://example.test/fallback', size: size);
+    final request = RemoteImageRequest(uri: 'https://example.test/fallback', decodeSize: decodeSize);
 
     return (await request.load((_, {getTargetSize}) => throw UnimplementedError()))!.image;
   }
 
   test('passes the requested decode size to the platform', () async {
-    final request = RemoteImageRequest(uri: 'https://example.test/thumbnail', size: const ui.Size(319.1, 179.1));
+    final request = RemoteImageRequest(uri: 'https://example.test/thumbnail', decodeSize: const ui.Size(319.1, 179.1));
 
     await request.load((_, {getTargetSize}) => throw UnimplementedError());
 
@@ -67,7 +67,7 @@ void main() {
   });
 
   test('leaves encoded animation requests unbounded', () async {
-    final request = RemoteImageRequest(uri: 'https://example.test/animation', size: const ui.Size(320, 180));
+    final request = RemoteImageRequest(uri: 'https://example.test/animation', decodeSize: const ui.Size(320, 180));
 
     await request.loadCodec();
 
@@ -101,8 +101,8 @@ void main() {
   });
 
   test('uses the decode size in the provider cache key', () {
-    final small = RemoteImageProvider(url: 'https://example.test/thumbnail', size: const ui.Size.square(160));
-    final large = RemoteImageProvider(url: 'https://example.test/thumbnail', size: const ui.Size.square(320));
+    final small = RemoteImageProvider(url: 'https://example.test/thumbnail', decodeSize: const ui.Size.square(160));
+    final large = RemoteImageProvider(url: 'https://example.test/thumbnail', decodeSize: const ui.Size.square(320));
 
     expect(small, isNot(large));
   });

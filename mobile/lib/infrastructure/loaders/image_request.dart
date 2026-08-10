@@ -40,7 +40,7 @@ abstract class ImageRequest {
   Future<(ui.Codec, ui.ImageDescriptor)?> _codecFromEncodedPlatformImage(
     int address,
     int length, {
-    ui.Size? size,
+    ui.Size? decodeSize,
   }) async {
     final pointer = Pointer<Uint8>.fromAddress(address);
     if (_isCancelled) {
@@ -67,7 +67,7 @@ abstract class ImageRequest {
       return null;
     }
 
-    final target = _targetSize(descriptor.width, descriptor.height, size);
+    final target = _targetSize(descriptor.width, descriptor.height, decodeSize);
     final codec = await descriptor.instantiateCodec(targetWidth: target?.$1, targetHeight: target?.$2);
     if (_isCancelled) {
       descriptor.dispose();
@@ -78,8 +78,8 @@ abstract class ImageRequest {
     return (codec, descriptor);
   }
 
-  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length, {ui.Size? size}) async {
-    final result = await _codecFromEncodedPlatformImage(address, length, size: size);
+  Future<ui.FrameInfo?> _fromEncodedPlatformImage(int address, int length, {ui.Size? decodeSize}) async {
+    final result = await _codecFromEncodedPlatformImage(address, length, decodeSize: decodeSize);
     if (result == null) {
       return null;
     }
@@ -102,13 +102,12 @@ abstract class ImageRequest {
     return frame;
   }
 
-  (int, int)? _targetSize(int width, int height, ui.Size? size) {
-    if (size == null || size.width <= 0 || size.height <= 0) {
+  (int, int)? _targetSize(int width, int height, ui.Size? decodeSize) {
+    if (width <= 0 || height <= 0 || decodeSize == null || decodeSize.width <= 0 || decodeSize.height <= 0) {
       return null;
     }
 
-    final fillScale = math.max(size.width / width, size.height / height);
-    final scale = math.min(1.0, fillScale);
+    final scale = math.max(decodeSize.width / width, decodeSize.height / height);
     if (scale >= 1) {
       return null;
     }
