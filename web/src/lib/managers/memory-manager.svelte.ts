@@ -46,12 +46,14 @@ class MemoryManager {
   #hasNextPage: boolean;
   #page: number;
   #total: number | undefined;
+  #queued: boolean;
 
   constructor() {
     this.#filters = undefined;
     this.#hasNextPage = true;
     this.#page = 1;
     this.#total = $state(undefined);
+    this.#queued = false;
 
     eventManager.on({
       AuthLogout: () => this.clearCache(),
@@ -161,7 +163,7 @@ class MemoryManager {
       if (this.#loading === undefined) {
         this.#loading = this.load(this.#page++);
       } else {
-        void this.#loading.then(() => (this.#loading = this.load(this.#page++)));
+        this.#queued = true;
       }
     }
   }
@@ -203,6 +205,11 @@ class MemoryManager {
     }
 
     this.#hasNextPage = this.memories.length < this.#total;
+
+    if (this.#queued) {
+      this.#queued = false;
+      this.load(this.#page++);
+    }
   }
 
   private scheduleHourlyRefresh() {
