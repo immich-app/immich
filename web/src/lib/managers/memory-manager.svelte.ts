@@ -208,7 +208,7 @@ class MemoryManager {
 
     if (this.#queued) {
       this.#queued = false;
-      this.load(this.#page++);
+      await this.load(this.#page++);
     }
   }
 
