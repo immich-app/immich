@@ -4,7 +4,6 @@
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
 
-#include <cstring>
 #include <cstdlib>
 #include <iostream>
 #include <mutex>
@@ -74,7 +73,10 @@ static py::list dims_to_list(const uint32_t* dims, uint32_t n_dims) {
 static py::dict make_tensor_info(uint32_t index, const rknn_tensor_attr& attr) {
 	return py::dict("index"_a=index, "name"_a=py::str(attr.name), "fmt"_a=static_cast<int>(attr.fmt),
 	                "type"_a=static_cast<int>(attr.type), "n_dims"_a=attr.n_dims,
-	                "dims"_a=dims_to_list(attr.dims, attr.n_dims));
+	                "dims"_a=dims_to_list(attr.dims, attr.n_dims),
+	                "n_elems"_a=attr.n_elems, "size"_a=attr.size,
+	                "qnt_type"_a=static_cast<int>(attr.qnt_type),
+	                "zp"_a=attr.zp, "scale"_a=attr.scale);
 }
 
 static py::dict make_dynamic_dict(const rknn_input_range& rng) {
@@ -113,17 +115,39 @@ static py::array align_layout(py::array arr, const rknn_tensor_attr& attr) {
 	return arr;
 }
 
-static PreparedInput prepare_input_tensor(py::handle handle, const rknn_tensor_attr& attr, bool capture_shape) {
+// Opt-in UINT8 feed for image tensors when ATTR reports FP16/FP32 but mean_values
+// are baked at compile (PP-OCR). Non-image inputs keep the ATTR dtype path.
+static bool is_uint8_image(const py::array& arr, const rknn_tensor_attr& attr) {
+	if (!arr.dtype().is(py::dtype::of<uint8_t>())) return false;
+	py::buffer_info bi = arr.request();
+	if (bi.ndim != 4) return false;
+	auto channels_ok = [](ssize_t c) { return c == 1 || c == 3 || c == 4; };
+	if (attr.fmt == RKNN_TENSOR_NCHW) return channels_ok(bi.shape[1]);
+	// NHWC (OCR) or unknown: channels on last dim
+	return channels_ok(bi.shape[3]);
+}
+
+static PreparedInput prepare_input_tensor(py::handle handle, const rknn_tensor_attr& attr, bool capture_shape,
+                                          bool uint8_input) {
 	py::array arr = handle.cast<py::array>();
 	py::array contiguous = py::array::ensure(arr, py::array::c_style);
 	contiguous = align_layout(contiguous, attr);
-	contiguous = ensure_dtype(contiguous, attr.type);
-	auto bi = contiguous.request();
-	
+
 	rknn_input tensor{};
 	tensor.index = attr.index;
-	tensor.type = attr.type;
-	tensor.fmt = attr.fmt;
+	tensor.pass_through = 0;
+
+	if (uint8_input && is_uint8_image(contiguous, attr)) {
+		// Keep host UINT8; driver applies baked mean_values (pass_through=0).
+		tensor.type = RKNN_TENSOR_UINT8;
+		tensor.fmt = (attr.fmt == RKNN_TENSOR_NCHW) ? RKNN_TENSOR_NCHW : RKNN_TENSOR_NHWC;
+	} else {
+		contiguous = ensure_dtype(contiguous, attr.type);
+		tensor.type = attr.type;
+		tensor.fmt = attr.fmt;
+	}
+
+	auto bi = contiguous.request();
 	tensor.size = static_cast<uint32_t>(contiguous.nbytes());
 	tensor.buf = const_cast<void*>(bi.ptr);
 
@@ -148,16 +172,34 @@ static int find_matching_shape(const rknn_input_range& rng, const std::vector<ui
 	return rng.shape_number - 1;
 }
 
-static py::array make_output_array(const rknn_tensor_attr& attr, const rknn_output& out) {
-	std::vector<ssize_t> shape(attr.n_dims == 0 ? 1 : attr.n_dims);
+static std::vector<ssize_t> output_shape(const rknn_tensor_attr& attr) {
 	if (attr.n_dims == 0) {
-		shape[0] = static_cast<ssize_t>(out.size / sizeof(float));
-	} else {
-		std::copy(attr.dims, attr.dims + attr.n_dims, shape.begin());
+		return {static_cast<ssize_t>(attr.n_elems ? attr.n_elems : 0)};
 	}
-	py::array arr(py::dtype::of<float>(), shape);
-	std::memcpy(arr.mutable_data(), out.buf, out.size);
-	return arr;
+	return {attr.dims, attr.dims + attr.n_dims};
+}
+
+static py::dtype dtype_for_tensor_type(rknn_tensor_type t) {
+	switch (t) {
+		case RKNN_TENSOR_FLOAT16: return py::dtype("float16");
+		case RKNN_TENSOR_FLOAT32: return py::dtype::of<float>();
+		case RKNN_TENSOR_UINT8: return py::dtype::of<uint8_t>();
+		case RKNN_TENSOR_INT8: return py::dtype::of<int8_t>();
+		case RKNN_TENSOR_UINT16: return py::dtype::of<uint16_t>();
+		case RKNN_TENSOR_INT16: return py::dtype::of<int16_t>();
+		case RKNN_TENSOR_UINT32: return py::dtype::of<uint32_t>();
+		case RKNN_TENSOR_INT32: return py::dtype::of<int32_t>();
+		case RKNN_TENSOR_INT64: return py::dtype::of<int64_t>();
+		default:
+			throw std::runtime_error("Unsupported RKNN tensor type for native output");
+	}
+}
+
+static py::array make_empty_output(const rknn_tensor_attr& attr, bool want_float) {
+	if (want_float) {
+		return py::array(py::dtype::of<float>(), output_shape(attr));
+	}
+	return py::array(dtype_for_tensor_type(attr.type), output_shape(attr));
 }
 
 
@@ -223,15 +265,21 @@ static const rknn_tensor_attr& resolve_output_attr(bool is_dynamic, RknnCtx& ctx
 
 class NativeRKNNExecutor {
 public:
-	explicit NativeRKNNExecutor(const std::string& model_path, int num_workers)
+	explicit NativeRKNNExecutor(const std::string& model_path, int num_workers, bool want_float = true,
+	                            bool uint8_input = false)
 		: rr_index_(0),
-		  is_dynamic_model_(false) {
+		  is_dynamic_model_(false),
+		  want_float_(want_float),
+		  uint8_input_(uint8_input) {
 		if (num_workers < 1) throw std::invalid_argument("num_workers must be >= 1");
 		if (num_workers > 3) throw std::invalid_argument("num_workers must be <= 3");
 		const bool debug_ctor = (std::getenv("RKNN_EXEC_DEBUG") != nullptr);
 
 		RknnCtx master;
-		if (rknn_init(&master.ctx, const_cast<char*>(model_path.c_str()), 0, 0, nullptr) != RKNN_SUCC)
+		// Prefer GPU over CPU when an op is not supported by the NPU. If GPU
+		// also cannot run it, the runtime still falls back to CPU.
+		constexpr uint32_t init_flags = RKNN_FLAG_EXECUTE_FALLBACK_PRIOR_DEVICE_GPU;
+		if (rknn_init(&master.ctx, const_cast<char*>(model_path.c_str()), 0, init_flags, nullptr) != RKNN_SUCC)
 			throw std::runtime_error("rknn_init failed");
 		master.query_io();
 		if (debug_ctor) debug_print_io_info(master);
@@ -268,6 +316,8 @@ public:
 		py::dict info;
 		const RknnCtx& master = contexts_.front();
 		info["is_dynamic"] = is_dynamic_model_;
+		info["want_float"] = want_float_;
+		info["uint8_input"] = uint8_input_;
 		py::list inputs(master.io_num.n_input);
 		for (uint32_t i = 0; i < master.io_num.n_input; ++i) {
 			py::dict desc = make_tensor_info(i, master.input_attrs[i]);
@@ -301,37 +351,46 @@ public:
 		if (is_dynamic_model_) input_shapes.reserve(c.io_num.n_input);
 		
 		for (uint32_t i = 0; i < c.io_num.n_input; ++i) {
-			PreparedInput prepared = prepare_input_tensor(inputs[i], c.input_attrs[i], is_dynamic_model_);
+			PreparedInput prepared =
+			    prepare_input_tensor(inputs[i], c.input_attrs[i], is_dynamic_model_, uint8_input_);
 			in[i] = prepared.tensor;
 			if (is_dynamic_model_) input_shapes.push_back(std::move(prepared.shape));
 			keep_alive.push_back(std::move(prepared.buffer));
 		}
 		if (is_dynamic_model_) set_dynamic_shapes(c, input_shapes);
 
-		std::vector<rknn_output> out(c.io_num.n_output);
 		{
 			py::gil_scoped_release nogil;
 			if (rknn_inputs_set(c.ctx, c.io_num.n_input, in.data()) != RKNN_SUCC)
 				throw std::runtime_error("rknn_inputs_set failed");
 			if (rknn_run(c.ctx, nullptr) != RKNN_SUCC)
 				throw std::runtime_error("rknn_run failed");
-			for (uint32_t i = 0; i < c.io_num.n_output; ++i) {
-				out[i] = {};
-				out[i].want_float = 1;
-				out[i].index = i;
-			}
-			if (rknn_outputs_get(c.ctx, c.io_num.n_output, out.data(), nullptr) != RKNN_SUCC)
-				throw std::runtime_error("rknn_outputs_get failed");
 		}
 
+		// want_float=true: runtime dequants into float32 (CLIP/faces). want_float=false:
+		// native INT8/FP16 buffers — needed for OCR CTC logits (~4× smaller than float32).
+		std::vector<rknn_output> out(c.io_num.n_output);
 		py::list result(c.io_num.n_output);
 		rknn_tensor_attr scratch{};
+		std::vector<py::array> keep_alive_out;
+		keep_alive_out.reserve(c.io_num.n_output);
 		for (uint32_t i = 0; i < c.io_num.n_output; ++i) {
 			const auto& attr = resolve_output_attr(is_dynamic_model_, c, i, scratch);
-			result[i] = make_output_array(attr, out[i]);
+			py::array arr = make_empty_output(attr, want_float_);
+			auto bi = arr.request();
+			out[i] = {};
+			out[i].want_float = want_float_ ? 1 : 0;
+			out[i].is_prealloc = 1;
+			out[i].index = i;
+			out[i].buf = bi.ptr;
+			out[i].size = static_cast<uint32_t>(bi.size * bi.itemsize);
+			result[i] = arr;
+			keep_alive_out.push_back(std::move(arr));
 		}
 		{
 			py::gil_scoped_release nogil;
+			if (rknn_outputs_get(c.ctx, c.io_num.n_output, out.data(), nullptr) != RKNN_SUCC)
+				throw std::runtime_error("rknn_outputs_get failed");
 			rknn_outputs_release(c.ctx, c.io_num.n_output, out.data());
 		}
 		return result;
@@ -383,6 +442,8 @@ private:
 	std::vector<RknnCtx> contexts_;
 	std::vector<bool> ctx_busy_;
 	bool is_dynamic_model_;
+	bool want_float_;
+	bool uint8_input_;
 	std::vector<rknn_input_range> input_ranges_;
 };
 
@@ -407,9 +468,11 @@ void NativeRKNNExecutor::set_dynamic_shapes(RknnCtx& ctx, const std::vector<std:
 
 PYBIND11_MODULE(rknn_pool, m) {
 	py::class_<NativeRKNNExecutor>(m, "NativeRKNNExecutor")
-		.def(py::init<const std::string&, int>(),
+		.def(py::init<const std::string&, int, bool, bool>(),
 		     py::arg("model_path"),
-		     py::arg("num_workers") = 1)
+		     py::arg("num_workers") = 1,
+		     py::arg("want_float") = true,
+		     py::arg("uint8_input") = false)
 		.def("infer", &NativeRKNNExecutor::infer, py::arg("inputs"),
 		     "Run inference with a list of numpy arrays, returns list of numpy arrays.")
 		.def("get_io_info", &NativeRKNNExecutor::get_io_info,

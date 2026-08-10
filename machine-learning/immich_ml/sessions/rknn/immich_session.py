@@ -24,9 +24,15 @@ _native: ModuleType | None = _native_mod
 if TYPE_CHECKING:
 
     class NativeRKNNExecutor:
-        def __init__(self, model_path: str, num_workers: int = 1) -> None: ...
+        def __init__(
+            self,
+            model_path: str,
+            num_workers: int = 1,
+            want_float: bool = True,
+            uint8_input: bool = False,
+        ) -> None: ...
 
-        def infer(self, inputs: list[NDArray[np.float32]]) -> list[NDArray[np.float32]]: ...
+        def infer(self, inputs: list[NDArray[np.float32]]) -> list[NDArray[Any]]: ...
 
         def get_io_info(self) -> dict[str, Any]: ...
 else:
@@ -74,7 +80,7 @@ class RKNNInferenceResult(NamedTuple):
     outputs: list[NDArray[np.float32]]
 
 
-Array32 = NDArray[np.float32] | NDArray[np.int32]
+Array32 = NDArray[np.float32] | NDArray[np.int32] | NDArray[np.uint8]
 
 
 class InferenceExecutor(Protocol):
@@ -86,19 +92,23 @@ def run_inference(executor: InferenceExecutor, inputs: list[NDArray[np.float32]]
 
 
 class RknnPoolExecutor:
-    def __init__(self, model_path: str | Path, tpes: int) -> None:
+    def __init__(
+        self, model_path: str | Path, tpes: int, *, want_float: bool = True, uint8_input: bool = False
+    ) -> None:
         if NativeRKNNExecutor is None:
             raise RuntimeError("RKNN native extension is not available")
         if tpes < 1:
             raise ValueError("tpes must be >= 1")
         model_path_str = Path(model_path).as_posix()
-        self._native = NativeRKNNExecutor(model_path_str, num_workers=tpes)
+        self._native = NativeRKNNExecutor(
+            model_path_str, num_workers=tpes, want_float=want_float, uint8_input=uint8_input
+        )
         self._executor = ThreadPoolExecutor(max_workers=tpes, thread_name_prefix="rknn-worker")
         self._closed = False
 
     def _run_inference(self, inputs: list[Array32], tag: Any) -> RKNNInferenceResult:
         start = time.perf_counter()
-        outputs = self._native.infer(cast(list[NDArray[np.float32]], inputs))
+        outputs = cast(list[NDArray[np.float32]], self._native.infer(cast(list[NDArray[np.float32]], inputs)))
         end = time.perf_counter()
         return RKNNInferenceResult(
             tag=tag,
@@ -144,6 +154,8 @@ class RknnSession:
         model_path: Path | str,
         *,
         num_workers: Optional[int] = None,
+        want_float: bool = True,
+        uint8_input: bool = False,
         logger: Any = None,
     ) -> None:
         if not is_available:
@@ -153,12 +165,18 @@ class RknnSession:
         self.tpe = num_workers or settings.rknn_threads
         if self.tpe < 1:
             raise ValueError("num_workers must be >= 1")
+        self.want_float = want_float
+        self.uint8_input = uint8_input
         self.log.info(
-            "Loading RKNN model from %s with %s worker(s).",
+            "Loading RKNN model from %s with %s worker(s) (want_float=%s, uint8_input=%s).",
             self.model_path,
             self.tpe,
+            want_float,
+            uint8_input,
         )
-        self.rknnpool = RknnPoolExecutor(self.model_path, self.tpe)
+        self.rknnpool = RknnPoolExecutor(
+            self.model_path, self.tpe, want_float=want_float, uint8_input=uint8_input
+        )
         self._io_info = self._normalize_io_info(self.rknnpool.executor.get_io_info())
         self._input_nodes: list[SessionNode] = self._build_nodes("inputs")
         self._output_nodes: list[SessionNode] = self._build_nodes("outputs")
@@ -177,7 +195,7 @@ class RknnSession:
     def run(
         self,
         _output_names: Sequence[str] | None,
-        input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
+        input_feed: dict[str, Array32],
         _run_options: Any = None,
     ) -> list[NDArray[np.float32]]:
         return self.run_async(_output_names, input_feed, _run_options).result().outputs
@@ -185,7 +203,7 @@ class RknnSession:
     def run_async(
         self,
         _output_names: Sequence[str] | None,
-        input_feed: dict[str, NDArray[np.float32]] | dict[str, NDArray[np.int32]],
+        input_feed: dict[str, Array32],
         _run_options: Any = None,
     ) -> Future[RKNNInferenceResult]:
         inputs_list: list[Array32] = list(input_feed.values())
