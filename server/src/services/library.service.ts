@@ -34,7 +34,7 @@ import { AssetTable } from 'src/schema/tables/asset.table';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
-import { handlePromiseError } from 'src/utils/misc';
+import { findOrFail, handlePromiseError } from 'src/utils/misc';
 
 @Injectable()
 export class LibraryService extends BaseService {
@@ -793,11 +793,7 @@ export class LibraryService extends BaseService {
     return JobStatus.Success;
   }
 
-  private async findOrFail(id: string) {
-    const library = await this.libraryRepository.get(id);
-    if (!library) {
-      throw new BadRequestException('Library not found');
-    }
-    return library;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.libraryRepository.get(id), 'Library');
   }
 }
