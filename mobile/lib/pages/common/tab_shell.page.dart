@@ -102,14 +102,7 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
         final tabsRouter = AutoTabsRouter.of(context);
         return PopScope(
           canPop: tabsRouter.activeIndex == 0 && !_isMultiSelectEnabled,
-          onPopInvokedWithResult: (didPop, _) {
-            // When a multi-select is active, step aside and let the timeline's own PopScope
-            // reset the selection instead of switching back to the photos tab.
-            if (didPop || _isMultiSelectEnabled) {
-              return;
-            }
-            tabsRouter.setActiveIndex(0);
-          },
+          onPopInvokedWithResult: (didPop, _) => (didPop || _isMultiSelectEnabled) ? null : tabsRouter.setActiveIndex(0),
           child: Scaffold(
             resizeToAvoidBottomInset: false,
             body: isScreenLandscape
