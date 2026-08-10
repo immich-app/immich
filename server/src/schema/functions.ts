@@ -133,6 +133,20 @@ export const album_asset_delete_audit = registerFunction({
     END`,
 });
 
+export const album_user_delete = registerFunction({
+  name: 'album_user_delete',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      DELETE FROM "album"
+      WHERE "album"."id" = OLD."albumId"
+      AND NOT EXISTS (SELECT "albumId" FROM "album_user" WHERE "album_user"."albumId" = "album"."id" AND "album_user"."role" = 'owner');
+
+      RETURN NULL;
+    END`,
+});
+
 export const album_user_delete_audit = registerFunction({
   name: 'album_user_delete_audit',
   returnType: 'TRIGGER',
