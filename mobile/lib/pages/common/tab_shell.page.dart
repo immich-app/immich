@@ -27,6 +27,23 @@ class TabShellPage extends ConsumerStatefulWidget {
 }
 
 class _TabShellPageState extends ConsumerState<TabShellPage> {
+  bool _isMultiSelectEnabled = false;
+  StreamSubscription? _eventSubscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _eventSubscription = EventStream.shared.listen<MultiSelectToggleEvent>(
+      (event) => setState(() => _isMultiSelectEnabled = event.isEnabled),
+    );
+  }
+
+  @override
+  void dispose() {
+    unawaited(_eventSubscription?.cancel());
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final isScreenLandscape = context.orientation == Orientation.landscape;
@@ -84,8 +101,15 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
         return PopScope(
-          canPop: tabsRouter.activeIndex == 0,
-          onPopInvokedWithResult: (didPop, _) => !didPop ? tabsRouter.setActiveIndex(0) : null,
+          canPop: tabsRouter.activeIndex == 0 && !_isMultiSelectEnabled,
+          onPopInvokedWithResult: (didPop, _) {
+            // When a multi-select is active, step aside and let the timeline's own PopScope
+            // reset the selection instead of switching back to the photos tab.
+            if (didPop || _isMultiSelectEnabled) {
+              return;
+            }
+            tabsRouter.setActiveIndex(0);
+          },
           child: Scaffold(
             resizeToAvoidBottomInset: false,
             body: isScreenLandscape
