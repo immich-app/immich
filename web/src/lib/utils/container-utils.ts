@@ -63,6 +63,18 @@ export const getNaturalSize = (element: HTMLImageElement | HTMLVideoElement): Si
   return { width: element.naturalWidth, height: element.naturalHeight };
 };
 
+const isValidSize = (size: Size | undefined): size is Size => size !== undefined && size.width > 0 && size.height > 0;
+
+export const resolveImageDimensions = (natural: Size | undefined, fallback: Size | undefined): Size => {
+  if (isValidSize(natural)) {
+    return natural;
+  }
+  if (isValidSize(fallback)) {
+    return fallback;
+  }
+  return { width: 1, height: 1 };
+};
+
 export const getContentMetrics = (element: HTMLImageElement | HTMLVideoElement): ContentMetrics => {
   const natural = getNaturalSize(element);
   const client = getElementSize(element);

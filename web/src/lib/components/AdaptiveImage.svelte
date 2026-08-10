@@ -58,7 +58,7 @@
   import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
   import { getAssetUrls } from '$lib/utils';
   import { AdaptiveImageLoader, type QualityList } from '$lib/utils/adaptive-image-loader.svelte';
-  import { scaleToCover, scaleToFit, type Size } from '$lib/utils/container-utils';
+  import { resolveImageDimensions, scaleToCover, scaleToFit, type Size } from '$lib/utils/container-utils';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
   import type { AssetResponseDto, SharedLinkResponseDto } from '@immich/sdk';
@@ -81,7 +81,6 @@
 
   let {
     ref = $bindable(),
-    // eslint-disable-next-line no-useless-assignment
     imgRef = $bindable(),
     asset,
     sharedLink,
@@ -136,19 +135,20 @@
     );
   });
 
+  let naturalSize = $state<Size>();
+
   $effect.pre(() => {
     const loader = adaptiveImageLoader;
-    untrack(() => assetViewerManager.resetZoomState());
+    untrack(() => {
+      assetViewerManager.resetZoomState();
+      naturalSize = undefined;
+    });
     return () => loader.destroy();
   });
 
-  const imageDimensions = $derived.by(() => {
-    const { width, height } = asset;
-    if (width && width > 0 && height && height > 0) {
-      return { width, height };
-    }
-    return { width: 1, height: 1 };
-  });
+  const imageDimensions = $derived(
+    resolveImageDimensions(naturalSize, { width: asset.width ?? 0, height: asset.height ?? 0 }),
+  );
 
   const { insetInlineStart, top, displayWidth, displayHeight, rasterWidth, rasterHeight, rasterScale } = $derived.by(
     () => {
@@ -216,6 +216,10 @@
       (quality.original === 'success' ? originalElement : undefined) ??
       (quality.preview === 'success' ? previewElement : undefined) ??
       (quality.thumbnail === 'success' ? thumbnailElement : undefined);
+
+    if (imgRef && imgRef.naturalWidth > 0 && imgRef.naturalHeight > 0) {
+      naturalSize = { width: imgRef.naturalWidth, height: imgRef.naturalHeight };
+    }
   });
 </script>
 

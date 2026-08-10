@@ -3,6 +3,7 @@ import {
   getNaturalSize,
   mapNormalizedRectToContent,
   mapNormalizedToContent,
+  resolveImageDimensions,
   scaleToCover,
   scaleToFit,
 } from '$lib/utils/container-utils';
@@ -175,5 +176,38 @@ describe('mapNormalizedRectToContent', () => {
     const size = { width: 800, height: 400 };
     const rect = mapNormalizedRectToContent({ x: 0.25, y: 0.25 }, { x: 0.75, y: 0.75 }, size);
     expect(rect).toEqual({ left: 200, top: 100, width: 400, height: 200 });
+  });
+});
+
+describe('resolveImageDimensions', () => {
+  it('should prefer the natural size when it is available', () => {
+    expect(resolveImageDimensions({ width: 2592, height: 3872 }, { width: 4000, height: 3000 })).toEqual({
+      width: 2592,
+      height: 3872,
+    });
+  });
+
+  it('should keep a portrait image portrait even when metadata claims landscape', () => {
+    const natural = { width: 2592, height: 3872 };
+    const metadata = { width: 3872, height: 2592 };
+    const resolved = resolveImageDimensions(natural, metadata);
+    expect(resolved.width).toBeLessThan(resolved.height);
+    expect(resolved).toEqual(natural);
+  });
+
+  it('should fall back to metadata dimensions before the image has loaded', () => {
+    expect(resolveImageDimensions(undefined, { width: 4000, height: 3000 })).toEqual({ width: 4000, height: 3000 });
+  });
+
+  it('should ignore a degenerate natural size and fall back to metadata', () => {
+    expect(resolveImageDimensions({ width: 0, height: 0 }, { width: 4000, height: 3000 })).toEqual({
+      width: 4000,
+      height: 3000,
+    });
+  });
+
+  it('should return a 1x1 square when neither size is valid', () => {
+    expect(resolveImageDimensions(undefined, { width: 0, height: 0 })).toEqual({ width: 1, height: 1 });
+    expect(resolveImageDimensions(undefined, undefined)).toEqual({ width: 1, height: 1 });
   });
 });
