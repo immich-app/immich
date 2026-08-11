@@ -222,7 +222,7 @@
 
   const onNameChangeSubmit = async (name: string, targetPerson: PersonResponseDto) => {
     try {
-      if (name == targetPerson.name) {
+      if (name === targetPerson.name) {
         return;
       }
 

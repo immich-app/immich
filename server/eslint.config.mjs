@@ -76,6 +76,7 @@ export default typescriptEslint.config([
       curly: 2,
       'prettier/prettier': 0,
       'object-shorthand': ['error', 'always'],
+      eqeqeq: 'error',
 
       'no-restricted-imports': [
         'error',
