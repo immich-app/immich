@@ -35,7 +35,7 @@ const Files = {
   },
 };
 
-export const handleRelease = ({ type, mobile }: ReleaseOptions) => {
+export const handleRelease = ({ type }: ReleaseOptions) => {
   const versionRaw = getVersion();
   const newVersionRaw = getNewVersion(versionRaw, type);
   const newVersion = semver.parse(normalize(newVersionRaw));
@@ -43,8 +43,7 @@ export const handleRelease = ({ type, mobile }: ReleaseOptions) => {
     throw new ReleaseInputError();
   }
   const newVersionNoRc = `${newVersion.major}.${newVersion.minor}.${newVersion.patch}`;
-  const mobileBuild = getMobileBuild();
-  const newMobileBuild = mobile ? mobileBuild + 1 : mobileBuild;
+  const newMobileBuild = getMobileBuild(newVersion);
 
   // pump versions everywhere
 
@@ -189,14 +188,32 @@ export const getNewVersion = (versionRaw: string, type: string) => {
   return newVersionRaw;
 };
 
-const getMobileBuild = () => {
-  const pubspec = new TextFile(Files.Mobile.Pubspec).read();
-  const match = pubspec.match(/^version: .*\+(\d+)$/m);
-  if (!match) {
-    throw new Error('Could not find mobile build number in pubspec.yaml');
+const RADIX = 100;
+const STABLE = RADIX - 1;
+
+export const getMobileBuild = (version: SemVer) => {
+  const { major, minor, patch, prerelease } = version;
+  const candidate = prerelease[1];
+  const digit = typeof candidate === 'number' ? candidate : STABLE;
+
+  const valid =
+    major < RADIX &&
+    minor < RADIX &&
+    patch < RADIX &&
+    (prerelease.length === 0 || digit < STABLE);
+
+  if (!valid) {
+    throw new Error(
+      `Cannot derive a mobile build number from ${version.format()}`,
+    );
   }
 
-  return Number(match[1]);
+  return (
+    major * Math.pow(RADIX, 3) +
+    minor * Math.pow(RADIX, 2) +
+    patch * RADIX +
+    digit
+  );
 };
 
 const pump = (path: string, pattern: RegExp, replacement: string) => {
