@@ -122,9 +122,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               context: context,
               builder: (BuildContext ctx) {
                 return ConfirmDialog(
-                  title: "app_bar_signout_dialog_title",
-                  content: "app_bar_signout_dialog_content",
-                  ok: "yes",
+                  title: context.t.app_bar_signout_dialog_title,
+                  content: context.t.app_bar_signout_dialog_content,
+                  ok: context.t.yes,
                   onOk: () async {
                     isLoggingOut.value = true;
                     await ref.read(authProvider.notifier).logout().whenComplete(() => isLoggingOut.value = false);
