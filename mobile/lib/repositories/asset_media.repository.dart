@@ -350,8 +350,8 @@ class AssetMediaRepository {
 
     updateProgress();
 
-    final displayNameCounts = countShareDisplayNames(assets, fileType);
-    final displayNameOccurrences = <String, int>{};
+    final displayNameTotals = countShareDisplayNames(assets, fileType);
+    final duplicatesSeen = <String, int>{};
 
     for (final asset in assets) {
       if (_isCancelled(cancelCompleter)) {
@@ -361,8 +361,8 @@ class AssetMediaRepository {
 
       final effectiveFileType = asset.isVideo ? ShareAssetType.original : fileType;
       final displayName = _shareDisplayName(asset, fileType);
-      final occurrence = displayNameCounts[displayName]! > 1
-          ? displayNameOccurrences.update(displayName, (count) => count + 1, ifAbsent: () => 1)
+      final occurrence = displayNameTotals[displayName]! > 1
+          ? duplicatesSeen.update(displayName, (count) => count + 1, ifAbsent: () => 1)
           : 0;
 
       final shareFile = switch (effectiveFileType) {
