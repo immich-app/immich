@@ -67,7 +67,7 @@ function createUploadStore() {
   const updateAssetMap = (id: string, mapper: (assets: UploadAsset) => UploadAsset) => {
     uploadAssets.update((uploadingAssets) => {
       return uploadingAssets.map((asset) => {
-        if (asset.id == id) {
+        if (asset.id === id) {
           return mapper(asset);
         }
         return asset;
@@ -111,7 +111,7 @@ function createUploadStore() {
         });
       }
 
-      return uploadingAsset.filter((a) => a.id != id);
+      return uploadingAsset.filter((a) => a.id !== id);
     });
   };
 
