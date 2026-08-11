@@ -67,7 +67,6 @@ class DownloadService {
     onVideoDownloadStatus?.call(update);
   }
 
-  // UI-only; saves stay on the DB record stream (#29900)
   void _onLivePhotoDownloadCallback(TaskStatusUpdate update) {
     onLivePhotoDownloadStatus?.call(update);
   }

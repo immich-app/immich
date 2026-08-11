@@ -20,26 +20,21 @@ class DownloadStateNotifier extends StateNotifier<DownloadState> {
     _downloadService.onTaskProgress = _taskProgressCallback;
   }
 
-  void _updateDownloadStatus(String taskId, TaskStatus status) {
-    if (status == TaskStatus.canceled) {
+  void _downloadStatusCallback(TaskStatusUpdate update) {
+    if (update.status == TaskStatus.canceled) {
+      return;
+    }
+
+    final existing = state.taskProgress[update.task.taskId];
+    if (existing == null) {
       return;
     }
 
     state = state.copyWith(
       taskProgress: <String, DownloadInfo>{}
         ..addAll(state.taskProgress)
-        ..addAll({
-          taskId: DownloadInfo(
-            progress: state.taskProgress[taskId]?.progress ?? 0,
-            fileName: state.taskProgress[taskId]?.fileName ?? '',
-            status: status,
-          ),
-        }),
+        ..addAll({update.task.taskId: existing.copyWith(status: update.status)}),
     );
-  }
-
-  void _downloadStatusCallback(TaskStatusUpdate update) {
-    _updateDownloadStatus(update.task.taskId, update.status);
   }
 
   void _taskProgressCallback(TaskProgressUpdate update) {

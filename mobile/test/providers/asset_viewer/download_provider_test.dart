@@ -101,4 +101,13 @@ void main() {
       expect(notifier.state.taskProgress.containsKey('ghost'), isFalse);
     });
   });
+
+  test('a status for an unknown task does not create an entry', () {
+    fakeAsync((async) {
+      onImage(TaskStatusUpdate(_task('ghost'), TaskStatus.complete));
+
+      expect(notifier.state.taskProgress, isEmpty);
+      expect(notifier.state.showProgress, isFalse);
+    });
+  });
 }

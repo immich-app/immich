@@ -65,7 +65,6 @@ class DownloadTaskTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isComplete = status == TaskStatus.complete;
-    final doneColor = context.isDarkTheme ? Colors.green[200] : Colors.green[400];
     final progressPercent = (progress * 100).round();
 
     String getStatusText() => switch (status) {
@@ -92,8 +91,7 @@ class DownloadTaskTile extends StatelessWidget {
           trailing: IconButton(
             icon: Icon(
               isComplete ? Icons.download_done : Icons.close,
-              color: isComplete ? doneColor : context.colorScheme.onError,
-              size: isComplete ? 28 : null,
+              color: isComplete ? context.colorScheme.primary : context.colorScheme.onError,
             ),
             onPressed: onCancelDownload,
             style: isComplete
