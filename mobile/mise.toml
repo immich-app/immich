@@ -29,7 +29,7 @@ sources = [
 ]
 outputs = { auto = true }
 run = [
-  "dart run build_runner build", 
+  "dart run build_runner build",
   "dart format lib/routing/router.gr.dart",
 ]
 depends = ["//:open-api-dart"]
@@ -99,7 +99,11 @@ run = "dart run drift_dev make-migrations"
 alias = "install"
 description = "Install flutter dependencies"
 depends = ["//:open-api-dart"]
-run = "flutter pub get"
+run = [
+  # This receives passed `--enforce-lockfile` args
+  "flutter pub get",
+  { task = "install:ios" },
+]
 
 [tasks."install:ci"]
 description = "Install flutter dependencies in CI"
@@ -131,6 +135,19 @@ run = [
   "dart format lib/generated/translations.g.dart",
 ]
 wait_for = ["//:i18n:format-fix"]
+
+[tasks."install:ios"]
+description = "Install CocoaPods dependencies"
+hide = true
+sources = ["ios/Podfile", "ios/Podfile.lock", ".flutter-plugin-dependencies"]
+outputs = ["ios/Pods/Manifest.lock"]
+run = '''
+echo "Running pod install"
+if [ "$(uname)" != "Darwin" ]; then
+  exit 0
+fi
+cd ios && pod install
+'''
 
 [tasks."analyze:dart"]
 description = "Run Dart analysis"
