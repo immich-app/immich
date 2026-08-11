@@ -30,6 +30,8 @@ export type Events = {
 
   LanguageChange: [{ name: string; code: string; rtl?: boolean }];
 
+  LicenseActivated: [];
+
   ApiKeyCreate: [ApiKeyResponseDto];
   ApiKeyUpdate: [ApiKeyResponseDto];
   ApiKeyDelete: [ApiKeyResponseDto];
