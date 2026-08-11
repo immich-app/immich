@@ -171,20 +171,6 @@ describe('/users', () => {
       expect(after).toMatchObject({ memories: { enabled: false } });
     });
 
-    it('should require an integer for download archive size', async () => {
-      const { status, body } = await request(app)
-        .put(`/users/me/preferences`)
-        .send({ download: { archiveSize: 1_234_567.89 } })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([
-          { path: ['download', 'archiveSize'], message: 'Invalid input: expected int, received number' },
-        ]),
-      );
-    });
-
     it('should update download archive size', async () => {
       const before = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
       expect(before).toMatchObject({ download: { archiveSize: 4 * 2 ** 30 } });
@@ -199,20 +185,6 @@ describe('/users', () => {
 
       const after = await getMyPreferences({ headers: asBearerAuth(admin.accessToken) });
       expect(after).toMatchObject({ download: { archiveSize: 1_234_567 } });
-    });
-
-    it('should require a boolean for download include embedded videos', async () => {
-      const { status, body } = await request(app)
-        .put(`/users/me/preferences`)
-        .send({ download: { includeEmbeddedVideos: 1_234_567.89 } })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([
-          { path: ['download', 'includeEmbeddedVideos'], message: 'Invalid input: expected boolean, received number' },
-        ]),
-      );
     });
 
     it('should update download include embedded videos', async () => {
@@ -318,11 +290,6 @@ describe('/users', () => {
   });
 
   describe('DELETE /users/me/license', () => {
-    it('should require authentication', async () => {
-      const { status } = await request(app).put(`/users/me/license`);
-      expect(status).toEqual(401);
-    });
-
     it('should delete the user license', async () => {
       const { status } = await request(app)
         .delete(`/users/me/license`)

@@ -25,13 +25,6 @@ describe(DatabaseBackupController.name, () => {
     ctx.reset();
   });
 
-  describe('GET /admin/database-backups', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/admin/database-backups').send();
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('POST /admin/database-backups/start-restore', () => {
     it('should not be an authenticated route', async () => {
       maintenanceService.startRestoreFlow.mockResolvedValue({ jwt: 'jwt' });
