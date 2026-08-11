@@ -130,7 +130,12 @@ export class PersonRepository {
       .selectFrom('person')
       .selectAll('person')
       .$if(!!options.ownerId, (qb) => qb.where('person.ownerId', '=', options.ownerId!))
-      .$if(options.thumbnailPath !== undefined, (qb) => qb.where('person.thumbnailPath', '=', options.thumbnailPath!))
+      .$if(options.thumbnailPath !== undefined, (qb) => {
+        if (options.thumbnailPath === null) {
+          return qb.where('person.thumbnailPath', 'is', null);
+        }
+        return qb.where('person.thumbnailPath', '=', options.thumbnailPath!);
+      })
       .$if(options.faceAssetId === null, (qb) => qb.where('person.faceAssetId', 'is', null))
       .$if(!!options.faceAssetId, (qb) => qb.where('person.faceAssetId', '=', options.faceAssetId!))
       .$if(options.isHidden !== undefined, (qb) => qb.where('person.isHidden', '=', options.isHidden!))
@@ -142,7 +147,7 @@ export class PersonRepository {
     return this.db
       .selectFrom('person')
       .select(['id', 'thumbnailPath'])
-      .where('thumbnailPath', '!=', sql.lit(''))
+      .where('thumbnailPath', 'is not', null)
       .limit(sql.lit(3))
       .execute();
   }
