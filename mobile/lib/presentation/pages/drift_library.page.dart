@@ -1,11 +1,10 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/local_album_thumbnail.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/people/partner_user_avatar.widget.dart';
@@ -56,13 +55,13 @@ class _ActionButtonGrid extends ConsumerWidget {
                 _ActionButton(
                   icon: Icons.favorite_outline_rounded,
                   onTap: () => context.pushRoute(const DriftFavoriteRoute()),
-                  label: 'favorites'.t(context: context),
+                  label: context.t.favorites,
                 ),
                 const SizedBox(width: 8),
                 _ActionButton(
                   icon: Icons.archive_outlined,
                   onTap: () => context.pushRoute(const DriftArchiveRoute()),
-                  label: 'archived'.t(context: context),
+                  label: context.t.archived,
                 ),
               ],
             ),
@@ -72,14 +71,14 @@ class _ActionButtonGrid extends ConsumerWidget {
                 _ActionButton(
                   icon: Icons.link_outlined,
                   onTap: () => context.pushRoute(const SharedLinkRoute()),
-                  label: 'shared_links'.t(context: context),
+                  label: context.t.shared_links,
                 ),
                 isTrashEnable ? const SizedBox(width: 8) : const SizedBox.shrink(),
                 isTrashEnable
                     ? _ActionButton(
                         icon: Icons.delete_outline_rounded,
                         onTap: () => context.pushRoute(const DriftTrashRoute()),
-                        label: 'trash'.t(context: context),
+                        label: context.t.trash,
                       )
                     : const SizedBox.shrink(),
               ],
@@ -193,7 +192,7 @@ class _PeopleCollectionCard extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  'people'.t(context: context),
+                  context.t.people,
                   style: context.textTheme.titleSmall?.copyWith(
                     color: context.colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
@@ -245,7 +244,7 @@ class _PlacesCollectionCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  'places'.t(),
+                  context.t.places,
                   style: context.textTheme.titleSmall?.copyWith(
                     color: context.colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
@@ -303,9 +302,7 @@ class _LocalAlbumsCollectionCard extends ConsumerWidget {
                         }).toList();
                       },
                       error: (error, _) {
-                        return [
-                          Center(child: Text('error_saving_image'.tr(args: [error.toString()]))),
-                        ];
+                        return [Center(child: Text(context.t.error_saving_image(error: error.toString())))];
                       },
                       loading: () {
                         return [const Center(child: CircularProgressIndicator())];
@@ -317,7 +314,7 @@ class _LocalAlbumsCollectionCard extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  'on_this_device'.t(context: context),
+                  context.t.on_this_device,
                   style: context.textTheme.titleSmall?.copyWith(
                     color: context.colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
@@ -384,7 +381,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
                 ),
                 leading: const Icon(Icons.folder_outlined, size: 26),
                 title: Text(
-                  'folders'.t(context: context),
+                  context.t.folders,
                   style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
                 ),
                 onTap: () => context.pushRoute(FolderRoute()),
@@ -392,7 +389,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.lock_outline_rounded, size: 26),
                 title: Text(
-                  'locked_folder'.t(context: context),
+                  context.t.locked_folder,
                   style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
                 ),
                 onTap: () => context.pushRoute(const DriftLockedFolderRoute()),
@@ -400,7 +397,7 @@ class _QuickAccessButtonList extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.group_outlined, size: 26),
                 title: Text(
-                  'partners'.t(context: context),
+                  context.t.partners,
                   style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w500),
                 ),
                 onTap: () => context.pushRoute(const PartnerRoute()),
@@ -438,10 +435,10 @@ class _PartnerList extends StatelessWidget {
           ),
           contentPadding: const EdgeInsets.only(left: 12.0, right: 18.0),
           leading: PartnerUserAvatar(userId: partner.id, name: partner.name),
-          title: const Text(
-            "partner_list_user_photos",
-            style: TextStyle(fontWeight: FontWeight.w500),
-          ).t(context: context, args: {'user': partner.name}),
+          title: Text(
+            context.t.partner_list_user_photos(user: partner.name),
+            style: const TextStyle(fontWeight: FontWeight.w500),
+          ),
           onTap: () => context.pushRoute(DriftPartnerDetailRoute(partner: partner)),
         );
       },
