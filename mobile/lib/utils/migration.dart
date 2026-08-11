@@ -155,7 +155,7 @@ Future<void> _migrateTo26(Drift drift) async {
 
 Future<void> _migrateTo27(Drift drift) async {
   final migrator = _StoreMigrator(drift);
-  await migrator.migrateTrashSyncMode(.legacyManageLocalMediaAndroid);
+  await migrator.migrateBool(.legacyManageLocalMediaAndroid, .trashSyncEnabled);
   await migrator.complete();
 }
 
@@ -272,18 +272,6 @@ class _StoreMigrator {
 
     final boolValue = intValue != 0;
     _cache[newKey] = boolValue;
-    _migratedStoreIds.add(legacyKey.id);
-  }
-
-  Future<void> migrateTrashSyncMode(StoreKey<bool> legacyKey) async {
-    final intValue = await readLegacyStoreInt(legacyKey.id);
-    if (intValue == null) {
-      return;
-    }
-
-    if (intValue != 0) {
-      _cache[SettingsKey.trashSyncMode] = TrashSyncMode.autoSync;
-    }
     _migratedStoreIds.add(legacyKey.id);
   }
 
