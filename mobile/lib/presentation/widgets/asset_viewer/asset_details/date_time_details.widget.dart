@@ -8,7 +8,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
@@ -100,7 +100,7 @@ class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> 
 
       ImmichToast.show(
         context: context,
-        msg: 'exif_bottom_sheet_description_error'.t(context: context),
+        msg: context.t.exif_bottom_sheet_description_error,
         toastType: ToastType.error,
       );
     }
@@ -111,9 +111,9 @@ class _SheetAssetDescriptionState extends ConsumerState<_SheetAssetDescription> 
   @override
   Widget build(BuildContext context) {
     final currentDescription = widget.exif.description ?? '';
-    final hintText = (widget.isEditable ? 'exif_bottom_sheet_description' : 'exif_bottom_sheet_no_description').t(
-      context: context,
-    );
+    final hintText = widget.isEditable
+        ? context.t.exif_bottom_sheet_description
+        : context.t.exif_bottom_sheet_no_description;
     if (_controller.text != currentDescription && !_descriptionFocus.hasFocus) {
       _controller.text = currentDescription;
     }

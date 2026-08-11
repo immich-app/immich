@@ -4,7 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/drift_memory.page.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
@@ -53,7 +53,7 @@ class DriftMemoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final yearsAgo = DateTime.now().year - memory.data.year;
-    final title = 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
+    final title = context.t.years_ago(years: yearsAgo);
     return Center(
       child: Stack(
         children: [

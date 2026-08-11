@@ -7,7 +7,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
@@ -52,7 +52,7 @@ class PeopleDetails extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(left: 16, top: 16, bottom: 16),
                 child: Text(
-                  "people".t(context: context),
+                  context.t.people,
                   style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                 ),
               ),
@@ -89,7 +89,7 @@ class PeopleDetails extends ConsumerWidget {
           duration: Durations.short4,
         );
       },
-      error: (error, stack) => Text("error_loading_people".t(context: context), style: context.textTheme.bodyMedium),
+      error: (error, stack) => Text(context.t.errors.failed_to_load_people, style: context.textTheme.bodyMedium),
       loading: () => const SizedBox.shrink(),
     );
   }
@@ -135,7 +135,7 @@ class _Avatar extends StatelessWidget {
               GestureDetector(
                 onTap: () => onNameTap?.call(),
                 child: Text(
-                  "add_a_name".t(context: context),
+                  context.t.add_a_name,
                   style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
