@@ -89,7 +89,7 @@ export class WorkflowService extends BaseService {
     const logs = await this.workflowRepository.getLogs(id, dto);
     return logs.map((entry) => ({
       id: entry.id,
-      at: entry.createdAt.toISOString(),
+      at: entry.createdAt,
       result: entry.error ? WorkflowResult.Error : entry.halted ? WorkflowResult.Halted : WorkflowResult.Completed,
       triggerDataId: entry.triggerDataId ?? undefined,
       lastStep: entry.step

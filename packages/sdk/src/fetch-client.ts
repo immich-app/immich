@@ -7088,7 +7088,7 @@ export function updateWorkflow({ id, workflowUpdateDto }: {
     })));
 }
 /**
- * Retrieve a workflow
+ * Retrieve workflow logs
  */
 export function getWorkflowLogs({ before, id, limit, result }: {
     before?: string;

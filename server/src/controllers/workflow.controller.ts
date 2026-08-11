@@ -119,8 +119,8 @@ export class WorkflowController {
   @Get(':id/logs')
   @Authenticated({ permission: Permission.WorkflowLogs })
   @Endpoint({
-    summary: 'Retrieve a workflow',
-    description: 'Retrieve a workflow details without ids, default values, etc.',
+    summary: 'Retrieve workflow logs',
+    description: 'Retrieve logs of a workflows runs by ID',
     history: HistoryBuilder.v3(),
   })
   getWorkflowLogs(

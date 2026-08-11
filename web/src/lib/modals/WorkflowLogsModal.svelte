@@ -31,20 +31,20 @@
   let { workflow, onClose }: Props = $props();
 
   let entries: WorkflowLogEntryDto[] = $state([]);
-  let placeholder: HTMLElement | undefined = $state();
-  let filter: WorkflowResult | undefined = $state();
-  let before: string | undefined = $state();
+  let placeholder = $state<HTMLElement>();
+  let filter = $state<WorkflowResult>();
+  let before = $state<string>();
   let hasNext = $state(true);
   let loading = $state(false);
 
-  const setLogging = (logging: boolean) =>
-    handleUpdateWorkflow(workflow.id, { logging }).then((success) => {
-      if (!success) {
-        return;
-      }
-      workflow = { ...workflow, logging };
-      reset();
-    });
+  const setLogging = async (logging: boolean) => {
+    const success = await handleUpdateWorkflow(workflow.id, { logging });
+    if (!success) {
+      return;
+    }
+    workflow = { ...workflow, logging };
+    reset();
+  };
 
   const reset = () => {
     entries = [];
