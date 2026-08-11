@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
@@ -56,7 +56,7 @@ class LocalMediaSummaryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('local_media_summary'.tr())),
+      appBar: AppBar(title: Text(context.t.local_media_summary)),
       body: Consumer(
         builder: (ctx, ref, __) {
           final db = ref.watch(driftProvider);
@@ -79,7 +79,7 @@ class LocalMediaSummaryPage extends StatelessWidget {
                     const Divider(),
                     Padding(
                       padding: const EdgeInsets.only(left: 15),
-                      child: Text("album_summary".tr(), style: ctx.textTheme.titleMedium),
+                      child: Text(ctx.t.album_summary, style: ctx.textTheme.titleMedium),
                     ),
                   ],
                 ),
@@ -136,7 +136,7 @@ class RemoteMediaSummaryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('remote_media_summary'.tr())),
+      appBar: AppBar(title: Text(context.t.remote_media_summary)),
       body: Consumer(
         builder: (ctx, ref, __) {
           final db = ref.watch(driftProvider);
@@ -159,7 +159,7 @@ class RemoteMediaSummaryPage extends StatelessWidget {
                     const Divider(),
                     Padding(
                       padding: const EdgeInsets.only(left: 15),
-                      child: Text("album_summary".tr(), style: ctx.textTheme.titleMedium),
+                      child: Text(ctx.t.album_summary, style: ctx.textTheme.titleMedium),
                     ),
                   ],
                 ),

@@ -120,7 +120,7 @@ export class PersonService extends BaseService {
       await this.createNewFeaturePhoto([face.person.id]);
     }
 
-    return await this.findOrFail(personId).then(mapPerson);
+    return mapPerson(await this.findOrFail(personId));
   }
 
   async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
@@ -152,7 +152,7 @@ export class PersonService extends BaseService {
 
   async getById(auth: AuthDto, id: string): Promise<PersonResponseDto> {
     await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [id] });
-    return this.findOrFail(id).then(mapPerson);
+    return mapPerson(await this.findOrFail(id));
   }
 
   async getStatistics(auth: AuthDto, id: string): Promise<PersonStatisticsResponseDto> {
@@ -192,7 +192,7 @@ export class PersonService extends BaseService {
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId, isFavorite, color } = dto;
     // TODO: set by faceId directly
-    let faceId: string | undefined = undefined;
+    let faceId: string | undefined;
     if (assetId) {
       await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [assetId] });
       const face = await this.personRepository.getForFeatureFaceUpdate({ personId: id, assetId });
@@ -655,14 +655,12 @@ export class PersonService extends BaseService {
       topLeft = { x: topLeft.x * scaleFactor, y: topLeft.y * scaleFactor };
       bottomRight = { x: bottomRight.x * scaleFactor, y: bottomRight.y * scaleFactor };
 
-      const {
-        points: [invertedTopLeft, invertedBottomRight],
-      } = transformPoints(
+      const [invertedTopLeft, invertedBottomRight] = transformPoints(
         [topLeft, bottomRight],
         edits,
         { width: asset.width, height: asset.height },
         { inverse: true },
-      );
+      ).points;
 
       // make sure topLeft is top-left and bottomRight is bottom-right
       topLeft = {

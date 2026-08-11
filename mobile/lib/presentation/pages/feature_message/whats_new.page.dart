@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/feature_message.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -60,10 +59,10 @@ class _HighlightCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Text(highlight.titleKey.tr(), style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          Text(highlight.title(context.t), style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 4),
           Text(
-            highlight.bodyKey.tr(),
+            highlight.body(context.t),
             style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceVariant),
           ),
         ],

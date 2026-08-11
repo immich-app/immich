@@ -28,9 +28,9 @@
   const label = $derived(schema.title ?? key);
   const description = $derived(schema.description);
 
-  const getValue = <T,>(defaultValue?: T) => (root === true ? config : (config?.[key] ?? defaultValue)) as T;
+  const getValue = <T,>(defaultValue?: T) => (root ? config : (config?.[key] ?? defaultValue)) as T;
   const setValue = <T,>(value: T) => {
-    if (root === true) {
+    if (root) {
       config = value;
     } else {
       if (config === undefined) {
@@ -100,7 +100,7 @@
   </Field>
 {:else if schema.type === 'number'}
   <Field {label} {description}>
-    <NumberInput bind:value={getNumber, setValue} />
+    <NumberInput bind:value={getNumber, setValue} step={schema.precision} min={schema.minimum} max={schema.maximum} />
   </Field>
 {:else if schema.type === 'string'}
   <Field {label} {description}>

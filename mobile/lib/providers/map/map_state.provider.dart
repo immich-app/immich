@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/map/map_state.model.dart';
@@ -26,12 +28,12 @@ class MapStateNotifier extends Notifier<MapState> {
   }
 
   void switchTheme(ThemeMode mode) {
-    ref.read(settingsProvider).write(.mapThemeMode, mode);
+    unawaited(ref.read(settingsProvider).write(.mapThemeMode, mode));
     state = state.copyWith(themeMode: mode);
   }
 
   void switchFavoriteOnly(bool isFavoriteOnly) {
-    ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly);
+    unawaited(ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly));
     state = state.copyWith(showFavoriteOnly: isFavoriteOnly, shouldRefetchMarkers: true);
   }
 
@@ -40,17 +42,17 @@ class MapStateNotifier extends Notifier<MapState> {
   }
 
   void switchIncludeArchived(bool isIncludeArchived) {
-    ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived);
+    unawaited(ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived));
     state = state.copyWith(includeArchived: isIncludeArchived, shouldRefetchMarkers: true);
   }
 
   void switchWithPartners(bool isWithPartners) {
-    ref.read(settingsProvider).write(.mapWithPartners, isWithPartners);
+    unawaited(ref.read(settingsProvider).write(.mapWithPartners, isWithPartners));
     state = state.copyWith(withPartners: isWithPartners, shouldRefetchMarkers: true);
   }
 
   void setRelativeTime(int relativeTime) {
-    ref.read(settingsProvider).write(.mapRelativeDate, relativeTime);
+    unawaited(ref.read(settingsProvider).write(.mapRelativeDate, relativeTime));
     state = state.copyWith(relativeTime: relativeTime, shouldRefetchMarkers: true);
   }
 }

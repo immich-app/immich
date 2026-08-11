@@ -191,7 +191,7 @@ const config = {
               },
               {
                 label: 'Privacy Policy',
-                to: '/privacy-policy',
+                href: 'https://immich.app/privacy-policy',
               },
             ],
           },

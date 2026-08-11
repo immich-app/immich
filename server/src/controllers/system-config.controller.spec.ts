@@ -14,10 +14,10 @@ function validConfig() {
     notifications: { smtp: { from: string; transport: { host: string } } };
     server: { externalDomain: string };
   };
-  config.oauth.mobileRedirectUri = config.oauth.mobileRedirectUri || 'https://example.com';
-  config.server.externalDomain = config.server.externalDomain || 'https://example.com';
-  config.notifications.smtp.from = config.notifications.smtp.from || 'noreply@example.com';
-  config.notifications.smtp.transport.host = config.notifications.smtp.transport.host || 'localhost';
+  config.oauth.mobileRedirectUri ||= 'https://example.com';
+  config.server.externalDomain ||= 'https://example.com';
+  config.notifications.smtp.from ||= 'noreply@example.com';
+  config.notifications.smtp.transport.host ||= 'localhost';
   return config;
 }
 

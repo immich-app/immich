@@ -53,18 +53,31 @@ sealed class BaseAsset {
     if (durationMs != null) {
       return Duration(milliseconds: durationMs);
     }
-    return const Duration();
+    return Duration.zero;
   }
 
   bool get hasRemote => storage == AssetState.remote || storage == AssetState.merged;
   bool get hasLocal => storage == AssetState.local || storage == AssetState.merged;
   bool get isLocalOnly => storage == AssetState.local;
   bool get isRemoteOnly => storage == AssetState.remote;
+  bool get isMerged => storage == .merged;
+
+  // Same asset even if localId is known on one side but not the other (heroTag isn't stable then)
+  bool refersToSameAsset(BaseAsset other) {
+    if (remoteId != null && other.remoteId != null) {
+      return remoteId == other.remoteId;
+    }
+    if (localId != null && other.localId != null) {
+      return localId == other.localId;
+    }
+    return checksum != null && checksum == other.checksum;
+  }
 
   bool get isEditable => false;
 
   // Overridden in subclasses
   AssetState get storage;
+  String get id;
   String? get localId;
   String? get remoteId;
   String get heroTag;

@@ -6,18 +6,23 @@ final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 class SnackbarManager {
   const SnackbarManager();
 
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? show(String message, SnackbarType type) {
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? show(
+    String message,
+    SnackbarType type, {
+    Duration? duration,
+  }) {
     final messenger = scaffoldMessengerKey.currentState;
     final context = scaffoldMessengerKey.currentContext;
     if (messenger == null || context == null) {
       return null;
     }
 
+    duration ??= const .new(seconds: 4);
     messenger.hideCurrentSnackBar();
-    return messenger.showSnackBar(_build(context, message, type));
+    return messenger.showSnackBar(_build(context, message, type, duration));
   }
 
-  SnackBar _build(BuildContext context, String message, SnackbarType type) {
+  SnackBar _build(BuildContext context, String message, SnackbarType type, Duration duration) {
     final theme = Theme.of(context);
     final colors = theme.extension<ImmichColors>() ?? ImmichColors.harmonized(theme.colorScheme);
     final (IconData icon, Color background, Color foreground) = switch (type) {
@@ -29,7 +34,7 @@ class SnackbarManager {
     return SnackBar(
       behavior: .floating,
       backgroundColor: background,
-      duration: const .new(seconds: 4),
+      duration: duration,
       shape: const RoundedRectangleBorder(borderRadius: .all(.circular(ImmichRadius.sm))),
       content: Row(
         children: [
@@ -48,11 +53,14 @@ class SnackbarManager {
     );
   }
 
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? info(String message) => show(message, .info);
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? info(String message, {Duration? duration}) =>
+      show(message, .info, duration: duration);
 
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? success(String message) => show(message, .success);
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? success(String message, {Duration? duration}) =>
+      show(message, .success, duration: duration);
 
-  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? error(String message) => show(message, .error);
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? error(String message, {Duration? duration}) =>
+      show(message, .error, duration: duration);
 }
 
 const snackbar = SnackbarManager();

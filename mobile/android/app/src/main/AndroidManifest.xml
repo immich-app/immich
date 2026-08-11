@@ -152,12 +152,6 @@
              This is used by the Flutter tool to
     generate GeneratedPluginRegistrant.java -->
     <meta-data android:name="flutterEmbedding" android:value="2" />
-    <!-- Disables default WorkManager initialization to use our custom initialization -->
-    <provider
-      android:name="androidx.startup.InitializationProvider"
-      android:authorities="${applicationId}.androidx-startup"
-      tools:node="remove" />
-
 
     <!-- Widgets -->
     <receiver

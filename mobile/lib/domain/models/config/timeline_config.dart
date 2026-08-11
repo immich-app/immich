@@ -1,30 +1,14 @@
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 
-class TimelineConfig {
-  final int tilesPerRow;
-  final GroupAssetsBy groupAssetsBy;
-  final bool storageIndicator;
+part 'timeline_config.freezed.dart';
 
-  const TimelineConfig({this.tilesPerRow = 4, this.groupAssetsBy = GroupAssetsBy.day, this.storageIndicator = true});
-
-  TimelineConfig copyWith({int? tilesPerRow, GroupAssetsBy? groupAssetsBy, bool? storageIndicator}) => TimelineConfig(
-    tilesPerRow: tilesPerRow ?? this.tilesPerRow,
-    groupAssetsBy: groupAssetsBy ?? this.groupAssetsBy,
-    storageIndicator: storageIndicator ?? this.storageIndicator,
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is TimelineConfig &&
-          other.tilesPerRow == tilesPerRow &&
-          other.groupAssetsBy == groupAssetsBy &&
-          other.storageIndicator == storageIndicator);
-
-  @override
-  int get hashCode => Object.hash(tilesPerRow, groupAssetsBy, storageIndicator);
-
-  @override
-  String toString() =>
-      'TimelineConfig(tilesPerRow: $tilesPerRow, groupAssetsBy: $groupAssetsBy, storageIndicator: $storageIndicator)';
+@freezed
+abstract class TimelineConfig with _$TimelineConfig {
+  const factory TimelineConfig({
+    @Default(4) int tilesPerRow,
+    @Default(GroupAssetsBy.day) GroupAssetsBy groupAssetsBy,
+    @Default(true) bool storageIndicator,
+  }) = _TimelineConfig;
 }

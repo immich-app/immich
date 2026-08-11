@@ -86,7 +86,7 @@ select
 from
   "asset_file"
 
--- IntegrityRepository.streamAssetPaths
+-- IntegrityRepository.streamAssetPathsForMissingFiles
 select
   "allPaths"."path" as "path",
   "allPaths"."assetId",

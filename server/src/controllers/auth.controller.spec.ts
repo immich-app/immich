@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { AuthController } from 'src/controllers/auth.controller';
 import { LoginResponseDto } from 'src/dtos/auth.dto';
 import { AuthService } from 'src/services/auth.service';
@@ -75,6 +76,18 @@ describe(AuthController.name, () => {
         .post('/auth/admin-sign-up')
         .send({ name: 'admin', password: 'password', email: 'admin@local' });
       expect(status).toEqual(201);
+    });
+
+    it('should not sign up an admin when setup is unavailable', async () => {
+      ctx.requireSetupAvailable.mockRejectedValue(new BadRequestException('Admin setup is not available'));
+
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/auth/admin-sign-up')
+        .send({ name, email, password });
+
+      expect(status).toEqual(400);
+      expect(body).toEqual(errorDto.badRequest('Admin setup is not available'));
+      expect(service.adminSignUp).not.toHaveBeenCalled();
     });
   });
 

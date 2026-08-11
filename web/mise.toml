@@ -11,8 +11,12 @@ run = "pnpm run build:stats"
 run = "pnpm run preview"
 
 [tasks.start]
-depends = [":install", "//:sdk:install", "//:sdk:build"]
-run = "pnpm run dev"
+run = [
+  { task = ":install" },
+  { task = "//:sdk:install" },
+  { task = "//:sdk:build" },
+  "pnpm run dev",
+]
 
 [tasks."start-demo"]
 env.IMMICH_SERVER_URL = "https://demo.immich.app"
@@ -43,8 +47,9 @@ run = "pnpm run check:svelte"
 run = { tasks = [":check-typescript", ":check-svelte"] }
 
 [tasks.ci-unit]
-depends = ["//:sdk:install", "//:sdk:build"]
 run = [
+  { task = "//:sdk:install" },
+  { task = "//:sdk:build" },
   { task = ":install" },
   { task = ":format" },
   { task = ":check" },

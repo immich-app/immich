@@ -43,12 +43,12 @@ export class SmartInfoService extends BaseService {
 
       const modelChange =
         oldConfig && oldConfig.machineLearning.clip.modelName !== newConfig.machineLearning.clip.modelName;
-      const dimSizeChange = dbDimSize !== dimSize;
-      if (!modelChange && !dimSizeChange) {
+      const isDimSizeChange = dbDimSize !== dimSize;
+      if (!modelChange && !isDimSizeChange) {
         return;
       }
 
-      if (dimSizeChange) {
+      if (isDimSizeChange) {
         this.logger.log(
           `Dimension size of model ${newConfig.machineLearning.clip.modelName} is ${dimSize}, but database expects ${dbDimSize}.`,
         );

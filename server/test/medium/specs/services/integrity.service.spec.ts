@@ -408,7 +408,7 @@ describe(IntegrityService.name, () => {
       } = await ctx.newAsset({ ownerId, originalPath: '/path/to/file2' });
 
       const { id: reportId } = await ctx.get(IntegrityRepository).create({
-        type: IntegrityReport.UntrackedFile,
+        type: IntegrityReport.MissingFile,
         path: '/path/to/file2',
         assetId: assetId2,
       });
