@@ -48,8 +48,6 @@ Future<void> migrateDatabaseIfNeeded(Drift drift) async {
 
 Future<void> _migrateTo28(Drift drift) => backfillAssetGroupDates(drift);
 
-// Store-level on purpose: runs after the date heals in this chain, so group_date is
-// computed from the corrected values. STRFTIME drops dates sqlite cannot read.
 Future<void> backfillAssetGroupDates(Drift drift) async {
   await drift.customStatement(
     "UPDATE remote_asset_entity SET group_date = COALESCE(STRFTIME('%Y-%m-%d', local_date_time), STRFTIME('%Y-%m-%d', created_at, 'localtime'))",

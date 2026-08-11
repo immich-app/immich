@@ -41,8 +41,6 @@ void main() {
   });
 
   group('v32 group_date backfill', () {
-    // 26479 class: platform handed us a date sqlite cannot read. the bucket stream
-    // must not die, and the broken row must vanish from buckets and assets alike.
     test(
       'garbage created_at survives migration and is filtered from the timeline',
       () async {
@@ -80,8 +78,6 @@ void main() {
       },
     );
 
-    // The drift migration only adds the column; the backfill is a store-level step so a
-    // created_at heal (29193) that runs before it actually lands in group_date.
     test('a created_at heal before the backfill lands in the header day', () async {
       await initializeDateFormatting();
       final schema = await verifier.schemaAt(31);
@@ -98,7 +94,6 @@ void main() {
       final db = Drift(schema.newConnection());
       await verifier.migrateAndValidate(db, 32);
 
-      // 29193's store-level heal
       await db.customStatement(
         "UPDATE local_asset_entity SET created_at = updated_at WHERE julianday(created_at) > julianday(updated_at)",
       );

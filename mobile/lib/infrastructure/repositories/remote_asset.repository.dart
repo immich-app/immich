@@ -12,6 +12,7 @@ import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/option.dart';
+import 'package:immich_mobile/utils/timezone.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class RemoteAssetRepository extends DriftDatabaseRepository {
@@ -293,9 +294,8 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<void> updateDateTime(List<String> ids, DateTime dateTime, {String? timeZone}) {
-    // the picker value arrives as UTC; its wall day lives in the offset
-    final offset = tryParseUtcOffset(timeZone);
-    final groupDate = timelineGroupDate(offset != null ? dateTime.toUtc().add(offset) : dateTime);
+    final (adjusted, _) = applyTimezoneOffset(dateTime: dateTime, timeZone: timeZone);
+    final groupDate = timelineGroupDate(adjusted);
     return _db.batch((batch) async {
       for (final id in ids) {
         batch.update(

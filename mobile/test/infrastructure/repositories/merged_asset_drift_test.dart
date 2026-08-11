@@ -49,7 +49,7 @@ void main() {
           updatedAt: Value(createdAt),
           uploadedAt: Value(createdAt),
           localDateTime: Value(localDateTime),
-          groupDate: Value(remoteGroupDate(localDateTime, createdAt)),
+          groupDate: Value(timelineGroupDate(localDateTime ?? createdAt.toLocal())),
         ),
       );
 
@@ -72,8 +72,7 @@ void main() {
         .insert(LocalAlbumAssetEntityCompanion.insert(assetId: id, albumId: _albumId));
   }
 
-  // Mirrors how the timeline pairs headers with tiles: buckets only carry a count, the assets
-  // come from one flat list that is addressed by the running offset of the previous buckets.
+  // the timeline pairs headers to assets by running offset into one flat list
   Future<List<(String, String)>> headerForEachAsset(GroupAssetsBy groupBy) async {
     final buckets = await db.mergedAssetDrift.mergedBucket(groupBy: groupBy.index, userIds: [_userId]).get();
     final assets = await db.mergedAssetDrift.mergedAsset(userIds: [_userId], limit: (_) => Limit(1000, 0)).get();
@@ -89,8 +88,7 @@ void main() {
     return pairs;
   }
 
-  // Regression for #29864: buckets group by localDateTime but assets were ordered by createdAt,
-  // so a header minted from one asset's localDateTime was rendered above a different asset.
+  // #29864: buckets grouped by localDateTime while assets sorted by createdAt
   group('mergedAsset ordering matches mergedBucket grouping', () {
     Future<void> seedGhost() async {
       await insertRemote('asset-a', createdAt: DateTime(2026, 4, 26, 10));
@@ -122,9 +120,6 @@ void main() {
       expect(await headerForEachAsset(GroupAssetsBy.day), [('asset-b', '2026-04-26'), ('asset-a', '2026-04-26')]);
     });
 
-    // Web-consistency: the server groups on the date only and sorts within a day by
-    // createdAt, so two assets whose wall clock and createdAt disagree within the same
-    // day must come out in createdAt order.
     test('same-day assets order by createdAt like the web timeline', () async {
       await insertRemote(
         'shot-late-upload-early',
@@ -163,8 +158,6 @@ void main() {
     expect(await headerForEachAsset(GroupAssetsBy.month), [('may', '2024-05'), ('april', '2024-04')]);
   });
 
-  // Store-migration order: the 29193 heal runs first, the group_date backfill after it,
-  // so the corrected date is what lands under the header.
   test('a created_at heal before the backfill lands in the header day', () async {
     await db
         .into(db.localAssetEntity)

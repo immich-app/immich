@@ -200,6 +200,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final asset in data) {
+          final groupDate = asset.localDateTime ?? asset.fileCreatedAt?.toLocal();
           final companion = RemoteAssetEntityCompanion(
             name: Value(asset.originalFileName),
             type: Value(asset.type.toAssetType()),
@@ -211,9 +212,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             isFavorite: Value(asset.isFavorite),
             ownerId: Value(asset.ownerId),
             localDateTime: Value(asset.localDateTime),
-            groupDate: asset.localDateTime == null && asset.fileCreatedAt == null
-                ? const Value.absent()
-                : Value(remoteGroupDate(asset.localDateTime, asset.fileCreatedAt!)),
+            groupDate: groupDate == null ? const Value.absent() : Value(timelineGroupDate(groupDate)),
             thumbHash: Value(asset.thumbhash),
             deletedAt: Value(asset.deletedAt),
             visibility: Value(asset.visibility.toAssetVisibility()),
@@ -242,6 +241,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
     try {
       await _db.batch((batch) {
         for (final asset in data) {
+          final groupDate = asset.localDateTime ?? asset.fileCreatedAt?.toLocal();
           final companion = RemoteAssetEntityCompanion(
             name: Value(asset.originalFileName),
             type: Value(asset.type.toAssetType()),
@@ -253,9 +253,7 @@ class SyncStreamRepository extends DriftDatabaseRepository {
             isFavorite: Value(asset.isFavorite),
             ownerId: Value(asset.ownerId),
             localDateTime: Value(asset.localDateTime),
-            groupDate: asset.localDateTime == null && asset.fileCreatedAt == null
-                ? const Value.absent()
-                : Value(remoteGroupDate(asset.localDateTime, asset.fileCreatedAt!)),
+            groupDate: groupDate == null ? const Value.absent() : Value(timelineGroupDate(groupDate)),
             thumbHash: Value(asset.thumbhash),
             deletedAt: Value(asset.deletedAt),
             visibility: Value(asset.visibility.toAssetVisibility()),

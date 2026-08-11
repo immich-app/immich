@@ -328,7 +328,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
             isFavorite: Value(source.isFavorite),
             visibility: const Value(AssetVisibility.timeline),
             isEdited: Value(source.isEdited),
-            groupDate: Value(remoteGroupDate(null, source.createdAt)),
+            groupDate: Value(timelineGroupDate(source.createdAt.toLocal())),
           ),
           mode: InsertMode.insertOrIgnore,
         );
