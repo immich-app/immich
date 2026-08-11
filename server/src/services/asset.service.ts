@@ -46,6 +46,7 @@ import {
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
+import { findOrFail } from 'src/utils/misc';
 import { transformOcrBoundingBox } from 'src/utils/transform';
 
 @Injectable()
@@ -496,12 +497,8 @@ export class AssetService extends BaseService {
     await this.jobRepository.queueAll(jobs);
   }
 
-  private async findOrFail(id: string) {
-    const asset = await this.assetRepository.getById(id);
-    if (!asset) {
-      throw new BadRequestException('Asset not found');
-    }
-    return asset;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.assetRepository.getById(id), 'Asset');
   }
 
   private async updateExif(dto: {

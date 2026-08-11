@@ -43,7 +43,7 @@ import { JobItem, JobOf } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFacialRecognitionEnabled } from 'src/utils/misc';
+import { findOrFail, isFacialRecognitionEnabled } from 'src/utils/misc';
 import { Point, transformPoints } from 'src/utils/transform';
 
 @Injectable()
@@ -614,12 +614,8 @@ export class PersonService extends BaseService {
     return results;
   }
 
-  private async findOrFail(id: string) {
-    const person = await this.personRepository.getById(id);
-    if (!person) {
-      throw new BadRequestException('Person not found');
-    }
-    return person;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.personRepository.getById(id), 'Person');
   }
 
   // TODO return a asset face response
