@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
@@ -120,7 +120,7 @@ class _ProfileIndicator extends ConsumerWidget {
         SnackBar(
           duration: const Duration(seconds: 2),
           content: Text(
-            (isReadonlyModeEnabled ? "readonly_mode_disabled" : "readonly_mode_enabled").tr(),
+            isReadonlyModeEnabled ? context.t.readonly_mode_disabled : context.t.readonly_mode_enabled,
             style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
           ),
         ),
@@ -143,7 +143,7 @@ class _ProfileIndicator extends ConsumerWidget {
                 ? context.colorScheme.error
                 : context.primaryColor,
             size: widgetSize / 2 - 3,
-            semanticLabel: 'new_version_available'.tr(),
+            semanticLabel: context.t.new_version_available,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -153,7 +153,7 @@ class _ProfileIndicator extends ConsumerWidget {
         child: user == null
             ? const Icon(Icons.face_outlined, size: widgetSize)
             : Semantics(
-                label: "logged_in_as".tr(namedArgs: {"user": user.name}),
+                label: context.t.logged_in_as(user: user.name),
                 child: AbsorbPointer(
                   child: Builder(
                     builder: (context) => UserCircleAvatar(
@@ -201,7 +201,12 @@ class _BackupIndicator extends ConsumerWidget {
 
     if (!backupEnabled) {
       return _BadgeLabel(
-        Icon(Icons.cloud_off_rounded, size: 9, color: iconColor, semanticLabel: 'backup_controller_page_backup'.tr()),
+        Icon(
+          Icons.cloud_off_rounded,
+          size: 9,
+          color: iconColor,
+          semanticLabel: context.t.backup_controller_page_backup,
+        ),
       );
     }
 
@@ -211,7 +216,7 @@ class _BackupIndicator extends ConsumerWidget {
           Icons.warning_rounded,
           size: 12,
           color: context.colorScheme.error,
-          semanticLabel: 'backup_controller_page_backup'.tr(),
+          semanticLabel: context.t.backup_controller_page_backup,
         ),
         backgroundColor: context.colorScheme.errorContainer,
       );
@@ -229,7 +234,7 @@ class _BackupIndicator extends ConsumerWidget {
               strokeWidth: 2,
               strokeCap: StrokeCap.round,
               valueColor: AlwaysStoppedAnimation<Color>(iconColor),
-              semanticsLabel: 'backup_controller_page_backup'.tr(),
+              semanticsLabel: context.t.backup_controller_page_backup,
             ),
           ),
         ),
@@ -237,7 +242,7 @@ class _BackupIndicator extends ConsumerWidget {
     }
 
     return _BadgeLabel(
-      Icon(Icons.check_outlined, size: 9, color: iconColor, semanticLabel: 'backup_controller_page_backup'.tr()),
+      Icon(Icons.check_outlined, size: 9, color: iconColor, semanticLabel: context.t.backup_controller_page_backup),
     );
   }
 }

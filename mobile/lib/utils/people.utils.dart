@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_birthday_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/people/person_edit_name_modal.widget.dart';
 
@@ -8,12 +8,13 @@ String formatAge(DateTime birthDate, DateTime referenceDate) {
   final int ageInYears = _calculateAge(birthDate, referenceDate);
   final int ageInMonths = _calculateAgeInMonths(birthDate, referenceDate);
 
+  final t = StaticTranslations.instance;
   if (ageInMonths <= 11) {
-    return "person_age_months".t(args: {'months': ageInMonths.toString()});
+    return t.person_age_months(months: ageInMonths);
   } else if (ageInMonths > 12 && ageInMonths <= 23) {
-    return "person_age_year_months".t(args: {'months': (ageInMonths - 12).toString()});
+    return t.person_age_year_months(months: ageInMonths - 12);
   } else {
-    return "person_age_years".t(args: {'years': ageInYears.toString()});
+    return t.person_age_years(years: ageInYears);
   }
 }
 
