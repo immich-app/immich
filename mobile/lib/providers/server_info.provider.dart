@@ -22,6 +22,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
             trashDays: 30,
             oauthButtonText: '',
             externalDomain: '',
+            sharedLinkDomain: '',
             mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',
             mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
           ),

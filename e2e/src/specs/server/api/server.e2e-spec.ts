@@ -138,6 +138,7 @@ describe('/server', () => {
         userDeleteDelay: 7,
         isInitialized: true,
         externalDomain: '',
+        sharedLinkDomain: '',
         publicUsers: true,
         isOnboarded: false,
         maintenanceMode: false,

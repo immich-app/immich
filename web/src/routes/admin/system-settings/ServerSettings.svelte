@@ -27,6 +27,14 @@
 
         <SettingInputField
           inputType={SettingInputFieldType.TEXT}
+          label={$t('admin.server_shared_link_domain_settings')}
+          description={$t('admin.server_shared_link_domain_settings_description')}
+          bind:value={configToEdit.server.sharedLinkDomain}
+          isEdited={configToEdit.server.sharedLinkDomain !== config.server.sharedLinkDomain}
+        />
+
+        <SettingInputField
+          inputType={SettingInputFieldType.TEXT}
           label={$t('admin.server_welcome_message')}
           description={$t('admin.server_welcome_message_description')}
           bind:value={configToEdit.server.loginPageMessage}

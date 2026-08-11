@@ -165,6 +165,7 @@ describe(ServerService.name, () => {
         isInitialized: false,
         isOnboarded: false,
         externalDomain: '',
+        sharedLinkDomain: '',
         publicUsers: true,
         mapDarkStyleUrl: 'https://tiles.immich.cloud/v1/style/dark.json',
         mapLightStyleUrl: 'https://tiles.immich.cloud/v1/style/light.json',

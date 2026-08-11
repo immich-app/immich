@@ -126,6 +126,17 @@ const buildConfig = async (repos: RepoDeps) => {
     config.server.externalDomain = externalDomain;
   }
 
+  if (config.server.sharedLinkDomain.length > 0) {
+    const domain = new URL(config.server.sharedLinkDomain);
+
+    const sharedLinkDomain =
+      domain.password && domain.username
+        ? `${domain.protocol}//${domain.username}:${domain.password}@${domain.host}`
+        : domain.origin;
+
+    config.server.sharedLinkDomain = sharedLinkDomain;
+  }
+
   if (!config.ffmpeg.acceptedVideoCodecs.includes(config.ffmpeg.targetVideoCodec)) {
     config.ffmpeg.acceptedVideoCodecs.push(config.ffmpeg.targetVideoCodec);
   }

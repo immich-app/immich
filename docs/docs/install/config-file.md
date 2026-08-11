@@ -217,6 +217,7 @@ The default configuration looks like this:
   },
   "server": {
     "externalDomain": "",
+    "sharedLinkDomain": "",
     "loginPageMessage": "",
     "publicUsers": true
   },

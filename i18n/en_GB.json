@@ -346,6 +346,8 @@
     "server_public_users_description": "All users (name and email) are listed when adding a user to shared albums. When disabled, the user list will only be available to admin users.",
     "server_settings": "Server Settings",
     "server_settings_description": "Manage server settings",
+    "server_shared_link_domain_settings": "Shared link domain",
+    "server_shared_link_domain_settings_description": "Domain used for shared links",
     "server_stats_page_description": "Admin server statistics page",
     "server_welcome_message": "Welcome message",
     "server_welcome_message_description": "A message that is displayed on the login page.",

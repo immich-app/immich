@@ -168,7 +168,11 @@ Override the default notifications text with notification templates. More inform
 
 ### External Domain
 
-Overrides the domain name in shared links and email notifications. The URL should not include a trailing slash.
+Overrides the domain name in email notifications. The URL should not include a trailing slash.
+
+### Shared Link Domain
+
+Overrides the domain name in shared links. The URL should not include a trailing slash.
 
 ### Welcome Message
 
