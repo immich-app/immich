@@ -94,6 +94,7 @@ class _TrashReviewKebabMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final hasPendingAssets = (ref.watch(pendingTrashReviewCountProvider).value ?? 0) > 0;
     return MenuAnchor(
       consumeOutsideTap: true,
       style: MenuStyle(
@@ -109,13 +110,13 @@ class _TrashReviewKebabMenu extends ConsumerWidget {
         BaseActionButton(
           label: context.t.keep_all,
           iconData: Icons.cloud_off_outlined,
-          onPressed: () => _keepAllOnDevice(context, ref),
+          onPressed: hasPendingAssets ? () => _keepAllOnDevice(context, ref) : null,
           menuItem: true,
         ),
         BaseActionButton(
           label: context.t.trash_all,
           iconData: Icons.delete_outline_rounded,
-          onPressed: () => _moveAllToTrash(context, ref),
+          onPressed: hasPendingAssets ? () => _moveAllToTrash(context, ref) : null,
           menuItem: true,
         ),
       ],
