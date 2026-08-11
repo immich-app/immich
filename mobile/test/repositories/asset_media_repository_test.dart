@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:path/path.dart' as p;
 
@@ -47,61 +46,38 @@ void main() {
       expect(task.filename, name);
     });
 
-    test('two same-named assets download to ordinal names in batch order', () async {
-      final assets = [
-        TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG-0001.jpg'),
-        TestUtils.createRemoteAsset(id: 'remote-2').copyWith(name: 'IMG-0001.jpg'),
-      ];
-      final counts = AssetMediaRepository.countShareDisplayNames(assets, ShareAssetType.original);
-      expect(counts['IMG-0001.jpg'], 2);
-
+    test('same-named assets get ordinal names after the first', () async {
       final first = buildTask(
         'share-original-remote-1-111',
-        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 1),
+        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 0),
       );
       final second = buildTask(
         'share-original-remote-2-222',
-        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 2),
+        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 1),
       );
 
-      expect(p.basename(await first.filePath()), 'IMG-0001 (1).jpg');
-      expect(p.basename(await second.filePath()), 'IMG-0001 (2).jpg');
+      expect(p.basename(await first.filePath()), 'IMG-0001.jpg');
+      expect(p.basename(await second.filePath()), 'IMG-0001 (1).jpg');
     });
 
     // receivers flatten attachments into one list, so identical names clobber each other
     test('sharing the same asset twice gives the second copy an ordinal name', () async {
-      final asset = TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG-0001.jpg');
-      final counts = AssetMediaRepository.countShareDisplayNames([asset, asset], ShareAssetType.original);
-      expect(counts['IMG-0001.jpg'], 2);
-
-      final first = buildTask(
-        'share-original-remote-1-111111',
-        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 1),
-      );
       final second = buildTask(
         'share-original-remote-1-222222',
-        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 2),
+        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 1),
       );
 
-      expect(p.basename(await first.filePath()), 'IMG-0001 (1).jpg');
-      expect(p.basename(await second.filePath()), 'IMG-0001 (2).jpg');
+      expect(p.basename(await second.filePath()), 'IMG-0001 (1).jpg');
     });
 
     // the ordinal follows batch order, not download success, so a failed first copy must not rename the survivor
     test('a failed first duplicate leaves the survivor with its batch ordinal name', () {
-      final assets = [
-        TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG-0001.jpg'),
-        TestUtils.createRemoteAsset(id: 'remote-2').copyWith(name: 'IMG-0001.jpg'),
-      ];
-      final counts = AssetMediaRepository.countShareDisplayNames(assets, ShareAssetType.original);
-      expect(counts['IMG-0001.jpg'], 2);
-
       final survivor = buildTask(
         'share-original-remote-2-222',
-        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 2),
+        AssetMediaRepository.getOrdinalShareDisplayName('IMG-0001.jpg', 1),
       );
 
-      expect(survivor.filename, 'IMG-0001 (2).jpg');
+      expect(survivor.filename, 'IMG-0001 (1).jpg');
     });
   });
 

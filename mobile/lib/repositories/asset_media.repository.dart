@@ -154,16 +154,6 @@ class AssetMediaRepository {
     return '${p.basenameWithoutExtension(displayName)} ($occurrence)${p.extension(displayName)}';
   }
 
-  @visibleForTesting
-  static Map<String, int> countShareDisplayNames(List<BaseAsset> assets, ShareAssetType fileType) {
-    final counts = <String, int>{};
-    for (final asset in assets) {
-      final name = _shareDisplayName(asset, fileType);
-      counts[name] = (counts[name] ?? 0) + 1;
-    }
-    return counts;
-  }
-
   bool _isCancelled(Completer<void>? cancelCompleter) => cancelCompleter?.isCompleted ?? false;
 
   Future<_ShareFile?> _getLocalOriginalShareFile(BaseAsset asset, String localId, int occurrence) async {
@@ -350,8 +340,7 @@ class AssetMediaRepository {
 
     updateProgress();
 
-    final displayNameTotals = countShareDisplayNames(assets, fileType);
-    final duplicatesSeen = <String, int>{};
+    final occurrences = <String, int>{};
 
     for (final asset in assets) {
       if (_isCancelled(cancelCompleter)) {
@@ -361,9 +350,7 @@ class AssetMediaRepository {
 
       final effectiveFileType = asset.isVideo ? ShareAssetType.original : fileType;
       final displayName = _shareDisplayName(asset, fileType);
-      final occurrence = displayNameTotals[displayName]! > 1
-          ? duplicatesSeen.update(displayName, (count) => count + 1, ifAbsent: () => 1)
-          : 0;
+      final occurrence = occurrences.update(displayName, (count) => count + 1, ifAbsent: () => 0);
 
       final shareFile = switch (effectiveFileType) {
         ShareAssetType.original => await _getOriginalShareFile(
