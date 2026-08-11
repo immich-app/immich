@@ -36,7 +36,6 @@ class _AbortCallbackWrapper {
 
 class _MockAbortCallbackWrapper extends Mock implements _AbortCallbackWrapper {}
 
-
 void main() {
   late SyncStreamService sut;
   late SyncStreamRepository mockSyncStreamRepo;
@@ -70,7 +69,7 @@ void main() {
     await db.close();
   });
 
-  successHandler(Invocation _) async => true;
+  Future<bool> successHandler(Invocation _) async => true;
 
   setUp(() async {
     mockSyncStreamRepo = MockSyncStreamRepository();

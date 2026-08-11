@@ -1,9 +1,12 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/utils/option.dart';
+
+part 'search_filter.model.freezed.dart';
 
 class SearchLocationFilter {
   String? country;
@@ -177,52 +180,10 @@ class SearchRatingFilter {
   int get hashCode => rating.hashCode;
 }
 
-class SearchDisplayFilters {
-  bool isNotInAlbum = false;
-  bool isArchive = false;
-  bool isFavorite = false;
-  SearchDisplayFilters({required this.isNotInAlbum, required this.isArchive, required this.isFavorite});
-
-  SearchDisplayFilters copyWith({bool? isNotInAlbum, bool? isArchive, bool? isFavorite}) {
-    return SearchDisplayFilters(
-      isNotInAlbum: isNotInAlbum ?? this.isNotInAlbum,
-      isArchive: isArchive ?? this.isArchive,
-      isFavorite: isFavorite ?? this.isFavorite,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{'isNotInAlbum': isNotInAlbum, 'isArchive': isArchive, 'isFavorite': isFavorite};
-  }
-
-  factory SearchDisplayFilters.fromMap(Map<String, dynamic> map) {
-    return SearchDisplayFilters(
-      isNotInAlbum: map['isNotInAlbum'] as bool,
-      isArchive: map['isArchive'] as bool,
-      isFavorite: map['isFavorite'] as bool,
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory SearchDisplayFilters.fromJson(String source) =>
-      SearchDisplayFilters.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  @override
-  String toString() =>
-      'SearchDisplayFilters(isNotInAlbum: $isNotInAlbum, isArchive: $isArchive, isFavorite: $isFavorite)';
-
-  @override
-  bool operator ==(covariant SearchDisplayFilters other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.isNotInAlbum == isNotInAlbum && other.isArchive == isArchive && other.isFavorite == isFavorite;
-  }
-
-  @override
-  int get hashCode => isNotInAlbum.hashCode ^ isArchive.hashCode ^ isFavorite.hashCode;
+@freezed
+abstract class SearchDisplayFilters with _$SearchDisplayFilters {
+  const factory SearchDisplayFilters({required bool isNotInAlbum, required bool isArchive, required bool isFavorite}) =
+      _SearchDisplayFilters;
 }
 
 class SearchFilter {

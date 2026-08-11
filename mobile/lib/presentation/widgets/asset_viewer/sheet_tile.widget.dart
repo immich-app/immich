@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -26,7 +28,7 @@ class SheetTile extends ConsumerWidget {
   });
 
   void copyTitle(BuildContext context, WidgetRef ref) {
-    Clipboard.setData(ClipboardData(text: title));
+    unawaited(Clipboard.setData(ClipboardData(text: title)));
     ImmichToast.show(
       context: context,
       msg: 'copied_to_clipboard'.t(context: context),

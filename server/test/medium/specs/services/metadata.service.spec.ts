@@ -152,4 +152,23 @@ describe(MetadataService.name, () => {
       ).resolves.toEqual({ dateTimeOriginal: new Date('4260-03-05T04:04:12.000Z') });
     });
   });
+
+  it('should handle float lens models (#30492)', async () => {
+    const { sut, ctx } = setup();
+    ctx.getMock(EventRepository).emit.mockResolvedValue();
+    const { filePath } = await createTestFile({ LensModel: 1.8 });
+    const { user } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({ originalPath: filePath, ownerId: user.id });
+    await ctx.newExif({ assetId: asset.id, description: '' });
+
+    await sut.handleMetadataExtraction({ id: asset.id });
+
+    await expect(
+      ctx.database
+        .selectFrom('asset_exif')
+        .where('assetId', '=', asset.id)
+        .select('lensModel')
+        .executeTakeFirstOrThrow(),
+    ).resolves.toEqual({ lensModel: '1.8' });
+  });
 });

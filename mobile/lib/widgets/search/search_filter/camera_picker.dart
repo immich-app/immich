@@ -21,7 +21,9 @@ class CameraPicker extends HookConsumerWidget {
     final selectedMake = useState<String?>(filter?.make);
     final selectedModel = useState<String?>(filter?.model);
 
-    final make = ref.watch(getSearchSuggestionsProvider(SearchSuggestionArgs(type: SearchSuggestionType.cameraMake)));
+    final make = ref.watch(
+      getSearchSuggestionsProvider(const SearchSuggestionArgs(type: SearchSuggestionType.cameraMake)),
+    );
 
     final models = ref.watch(
       getSearchSuggestionsProvider(

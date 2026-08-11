@@ -6,9 +6,9 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:scroll_date_picker/scroll_date_picker.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 
 class DriftPersonBirthdayEditForm extends ConsumerStatefulWidget {
   final DriftPerson person;
@@ -28,18 +28,22 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonBirthdayEdi
     _selectedDate = widget.person.birthDate ?? DateTime(DateTime.now().year - 30, 1, 1);
   }
 
-  void saveBirthday() async {
+  Future<void> saveBirthday() async {
     try {
       final result = await ref.read(driftPeopleServiceProvider).updateBrithday(widget.person.id, _selectedDate);
 
       if (result != 0) {
         ref.invalidate(driftGetAllPeopleProvider);
+        if (!mounted) {
+          return;
+        }
+
         context.pop<DateTime>(_selectedDate);
       }
     } catch (error) {
       dPrint(() => 'Error updating birthday: $error');
 
-      if (!context.mounted) {
+      if (!mounted) {
         return;
       }
 

@@ -50,10 +50,10 @@ typedef NormalizedTransform = ({double rotation, bool mirrorHorizontal, bool mir
 NormalizedTransform normalizeTransformEdits(List<AssetEdit> edits) {
   final matrix = buildAffineFromEdits(edits);
 
-  double a = matrix.a;
-  double b = matrix.b;
-  double c = matrix.c;
-  double d = matrix.d;
+  final double a = matrix.a;
+  final double b = matrix.b;
+  final double c = matrix.c;
+  final double d = matrix.d;
 
   final rotation = ((isCloseToZero(a) ? asin(c) : acos(a)) * 180) / pi;
 

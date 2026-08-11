@@ -36,7 +36,7 @@ class SyncStreamService {
   final DriftLocalAssetRepository _localAssetRepository;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
-  final IPermissionRepository _permissionRepository;
+  final DevicePermissionRepository _permissionRepository;
   final SyncMigrationRepository _syncMigrationRepository;
   final ApiService _api;
   final Completer<void>? _cancellation;
@@ -155,7 +155,7 @@ class SyncStreamService {
   }
 
   Future<void> _handleEvents(List<SyncEvent> events, Function() abort, Function() reset) async {
-    List<SyncEvent> items = [];
+    final List<SyncEvent> items = [];
     for (final event in events) {
       if (isCancelled) {
         _logger.warning("Sync stream cancelled");
