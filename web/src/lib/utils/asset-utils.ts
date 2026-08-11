@@ -485,12 +485,12 @@ export const delay = async (ms: number) => {
 };
 
 export const getNextAsset = (assets: AssetResponseDto[], currentAsset: AssetResponseDto | undefined) => {
-  const index = currentAsset ? assets.findIndex((a) => a.id === currentAsset.id) : -1;
+  const index = currentAsset ? assets.findIndex((a) => a?.id === currentAsset.id) : -1;
   return index >= 0 ? assets[index + 1] : undefined;
 };
 
 export const getPreviousAsset = (assets: AssetResponseDto[], currentAsset: AssetResponseDto | undefined) => {
-  const index = currentAsset ? assets.findIndex((a) => a.id === currentAsset.id) : -1;
+  const index = currentAsset ? assets.findIndex((a) => a?.id === currentAsset.id) : -1;
   return index >= 0 ? assets[index - 1] : undefined;
 };
 
