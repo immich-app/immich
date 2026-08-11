@@ -54,6 +54,7 @@ const storagePresets = [
   '{{y}}/{{y}}-{{WW}}/{{assetId}}',
   '{{album}}/{{filename}}',
   '{{make}}/{{model}}/{{lensModel}}/{{filename}}',
+  '{{#if isVideo}}videos{{/if}}/{{y}}/{{y}}-{{MM}}-{{dd}}/{{filename}}',
 ];
 
 export interface MoveAssetMetadata {
@@ -404,6 +405,8 @@ export class StorageTemplateService extends BaseService {
       ext: extension,
       filetype: asset.type == AssetType.Image ? 'IMG' : 'VID',
       filetypefull: asset.type == AssetType.Image ? 'IMAGE' : 'VIDEO',
+      isVideo: asset.type == AssetType.Video ? 'true' : '',
+      isImage: asset.type == AssetType.Image ? 'true' : '',
       assetId: asset.id,
       assetIdShort: asset.id.slice(-12),
       //just throw into the root if it doesn't belong to an album
