@@ -148,6 +148,10 @@ class AdvancedSettings extends HookConsumerWidget {
   }
 }
 
+TrashSyncMode trashSyncModeFromReviewRemoteDeletionsToggle(bool enabled) {
+  return enabled ? TrashSyncMode.review : TrashSyncMode.off;
+}
+
 final _manageMediaPermissionProvider = FutureProvider<bool>((ref) async {
   return ref.watch(permissionRepositoryProvider).hasManageMediaPermission();
 });
@@ -164,6 +168,12 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
     final reviewRemoteDeletionsSubtitle = Platform.isAndroid
         ? context.t.advanced_settings_review_remote_deletions_subtitle_android
         : context.t.advanced_settings_review_remote_deletions_subtitle;
+    final reviewRemoteDeletionsEnabled = useState(isTrashSyncEnabled);
+
+    useValueChanged<bool, bool>(isTrashSyncEnabled, (_, __) {
+      reviewRemoteDeletionsEnabled.value = isTrashSyncEnabled;
+      return isTrashSyncEnabled;
+    });
 
     void showManageMediaRequiredSnackBar() {
       if (!context.mounted) {
@@ -216,6 +226,17 @@ class _TrashSyncModeSelector extends HookConsumerWidget {
       }
 
       await attemptToEnableSetting(mode);
+    }
+
+    if (Platform.isIOS) {
+      return SettingsSwitchListTile(
+        valueNotifier: reviewRemoteDeletionsEnabled,
+        title: context.t.advanced_settings_review_remote_deletions_title,
+        subtitle: reviewRemoteDeletionsSubtitle,
+        onChanged: (enabled) async {
+          await setTrashSyncMode(trashSyncModeFromReviewRemoteDeletionsToggle(enabled));
+        },
+      );
     }
 
     return Column(
