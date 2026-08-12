@@ -33,7 +33,6 @@
     type OnLink,
     type OnUnlink,
   } from '$lib/utils/actions';
-  import { asLocalTimeISO } from '$lib/utils/date-time';
   import { openFileUploadDialog } from '$lib/utils/file-uploader';
   import { getAltText } from '$lib/utils/thumbnail-util';
   import { toTimelineAsset } from '$lib/utils/timeline-util';
@@ -93,8 +92,8 @@
     })),
   );
 
-  if (memoryManager.filters === undefined || memoryManager.filters.$for !== asLocalTimeISO(DateTime.now())) {
-    memoryManager.filters = { $for: asLocalTimeISO(DateTime.now()) };
+  if (memoryManager.filters === undefined || memoryManager.filters.$for !== DateTime.now().toISODate()) {
+    memoryManager.filters = { $for: DateTime.now().toISODate() };
   }
 </script>
 

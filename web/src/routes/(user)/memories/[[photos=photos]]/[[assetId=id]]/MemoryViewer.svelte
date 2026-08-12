@@ -287,7 +287,7 @@
     }
 
     memoryManager
-      .ready()
+      .refresh()
       .then(() => {
         let target;
         if (to?.params?.assetId) {

@@ -43,18 +43,12 @@ class MemoryManager {
         $type?: MemoryType;
       }
     | undefined;
-  #hasNextPage: boolean;
-  #page: number;
-  #total: number | undefined;
-  #queued: boolean;
+  #hasNextPage: boolean = true;
+  #page: number = 1;
+  #total: number | undefined = $state();
+  #queued: boolean = false;
 
   constructor() {
-    this.#filters = undefined;
-    this.#hasNextPage = true;
-    this.#page = 1;
-    this.#total = $state(undefined);
-    this.#queued = false;
-
     eventManager.on({
       AuthLogout: () => this.clearCache(),
       AuthUserLoaded: () => this.initialize(),
@@ -78,7 +72,7 @@ class MemoryManager {
     void this.loadNextPage();
   }
 
-  ready() {
+  refresh() {
     return this.initialize();
   }
 
@@ -174,6 +168,10 @@ class MemoryManager {
 
   get total() {
     return this.#total;
+  }
+
+  get loading() {
+    return this.#loading;
   }
 
   private clearCache() {

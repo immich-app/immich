@@ -11,7 +11,7 @@ export const load = (async ({ url }) => {
   const [explore, people] = await Promise.all([
     getExploreData(),
     getAllPeople({ withHidden: false }),
-    memoryManager.ready(),
+    memoryManager.refresh(),
   ]);
   const $t = await getFormatter();
 

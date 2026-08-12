@@ -15,7 +15,7 @@ export const load = (async ({ url }) => {
     !isEqual(memoryManager.filters, filters)
   ) {
     memoryManager.filters = filters;
-    await memoryManager.ready();
+    await memoryManager.refresh();
   }
 
   return {

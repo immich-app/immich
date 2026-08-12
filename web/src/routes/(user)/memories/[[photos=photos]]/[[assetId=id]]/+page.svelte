@@ -15,23 +15,23 @@
   import { memoryManager } from '$lib/managers/memory-manager.svelte';
   import { clearQueryParam, setQueryValue } from '$lib/utils/navigation';
 
-  interface Props {
+  type Props = {
     data: PageData;
-  }
+  };
 
-  let { data }: Props = $props();
+  const { data }: Props = $props();
   let onlyFavorites = $state(page.url.searchParams.get('favorites') === 'true');
-  let lastElement: HTMLElement | undefined = $state();
+  let lastElement: HTMLElement | null | undefined = $state();
 
   const toggleFavorites = async () => {
     onlyFavorites = !onlyFavorites;
     memoryManager.filters = onlyFavorites ? { isSaved: true } : {};
-    await memoryManager.ready();
+    await memoryManager.refresh();
 
     if (onlyFavorites) {
-      void setQueryValue('favorites', 'true');
+      await setQueryValue('favorites', 'true');
     } else {
-      void clearQueryParam('favorites', page.url);
+      await clearQueryParam('favorites', page.url);
     }
   };
 
@@ -43,30 +43,28 @@
   });
 
   $effect(() => {
-    if (lastElement === undefined) {
+    if (!lastElement) {
       return;
     }
     intersectionObserver.disconnect();
     intersectionObserver.observe(lastElement);
   });
 
-  const rotation = () => {
-    const classes = [
-      'rotate-[-2.5deg]',
-      '-rotate-2',
-      'rotate-[-1.5deg]',
-      '-rotate-1',
-      'rotate-[-0.5deg]',
-      'rotate-0',
-      'rotate-[0.5deg]',
-      'rotate-1',
-      'rotate-[1.5deg]',
-      'rotate-2',
-      'rotate-[2.5deg]',
-    ];
+  const rotationClasses = [
+    'rotate-[-2.5deg]',
+    '-rotate-2',
+    'rotate-[-1.5deg]',
+    '-rotate-1',
+    'rotate-[-0.5deg]',
+    'rotate-0',
+    'rotate-[0.5deg]',
+    'rotate-1',
+    'rotate-[1.5deg]',
+    'rotate-2',
+    'rotate-[2.5deg]',
+  ];
 
-    return classes[Math.round(Math.random() * classes.length)];
-  };
+  const getRotation = () => rotationClasses[Math.floor(Math.random() * rotationClasses.length)];
 </script>
 
 {#if page.url.searchParams.has(QueryParameter.ID)}
@@ -92,7 +90,7 @@
         {#each memoryManager.memories as memory, index (memory.id)}
           <a
             href={Route.memories({ id: memory.assets[0].id })}
-            class={`relative rounded-md bg-gray-50 p-2 pb-0 shadow-md transition-all hover:scale-102 hover:rotate-0 hover:shadow-lg sm:p-5 sm:pb-0 dark:bg-gray-800 ${rotation()}`}
+            class={`relative rounded-md bg-light-100 p-2 pb-0 shadow-md transition-all hover:scale-102 hover:rotate-0 hover:shadow-lg sm:p-5 sm:pb-0 ${getRotation()}`}
             bind:this={
               () => (index === memoryManager.memories.length - 1 ? lastElement : null),
               (e) => {
@@ -102,24 +100,24 @@
               }
             }
           >
-            {#if memory.isSaved}
-              <div class="absolute inset-s-2 top-2 z-2">
-                <Icon data-icon-favorite icon={mdiHeart} size="32" class="text-red-400" />
-              </div>
-            {/if}
             <img
               src={getAssetMediaUrl({ id: memory.assets[0].id })}
               alt={$getAltText(toTimelineAsset(memory.assets[0]))}
               class="aspect-square object-cover brightness-75"
               loading="lazy"
             />
+            {#if memory.isSaved}
+              <div class="absolute inset-s-2 top-2">
+                <Icon data-icon-favorite icon={mdiHeart} size="32" class="text-red-400" />
+              </div>
+            {/if}
             <p class="my-2 text-center text-sm font-medium text-ellipsis capitalize hover:cursor-pointer sm:my-5">
               {$memoryLaneTitle(memory)}
             </p>
           </a>
         {/each}
       </div>
-    {:else if memoryManager.total === undefined}
+    {:else if memoryManager.loading}
       <div class="flex items-center justify-center py-16">
         <LoadingSpinner size="giant" />
       </div>
