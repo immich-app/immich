@@ -74,7 +74,7 @@ Run all machine learning checks with `mise //machine-learning:checklist`
 
 ## OpenAPI
 
-The OpenAPI client libraries need to be regenerated whenever there are changes to the `immich-openapi-specs.json` file. Note that you should not modify this file directly as it is auto-generated. See [OpenAPI](/api.md) for more details.
+The OpenAPI client libraries need to be regenerated whenever there are changes to the `immich-openapi-specs.json` file. Note that you should not modify this file directly as it is auto-generated. See [OpenAPI](/developer/open-api) for more details.
 
 ## Database Migrations
 

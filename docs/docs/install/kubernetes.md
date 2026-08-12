@@ -2,7 +2,7 @@
 sidebar_position: 40
 ---
 
-# Kubernetes
+# Install on Kubernetes
 
 You can deploy Immich on Kubernetes using [the official Helm chart](https://github.com/immich-app/immich-charts/blob/main/README.md).
 

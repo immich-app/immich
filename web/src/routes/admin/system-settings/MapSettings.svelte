@@ -55,7 +55,7 @@
             <p class="text-sm dark:text-immich-dark-fg">
               <FormatMessage key="admin.map_manage_reverse_geocoding_settings">
                 {#snippet children({ message })}
-                  <Link href="https://docs.immich.app/features/reverse-geocoding">{message}</Link>
+                  <Link href="https://docs.immich.app/concepts/reverse-geocoding">{message}</Link>
                 {/snippet}
               </FormatMessage>
             </p>

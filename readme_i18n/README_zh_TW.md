@@ -52,13 +52,13 @@
 ## 連結
 
 - [說明文件](https://docs.immich.app/)
-- [關於](https://docs.immich.app/overview/introduction)
-- [安裝](https://docs.immich.app/install/requirements)
+- [關於](https://docs.immich.app/introduction/getting-started)
+- [安裝](https://docs.immich.app/reference/requirements)
 - [發展藍圖](https://immich.app/roadmap)
 - [線上體驗](#線上體驗)
 - [功能](#功能)
 - [翻譯](https://docs.immich.app/developer/translations)
-- [貢獻指南](https://docs.immich.app/overview/support-the-project)
+- [貢獻指南](https://docs.immich.app/support-the-project)
 
 ## 線上體驗
 

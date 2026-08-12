@@ -55,13 +55,13 @@
 ## ลิงก์
 
 - [คู่มือ](https://docs.immich.app)
-- [เกี่ยวกับ](https://docs.immich.app/overview/introduction)
-- [การติดตั้ง](https://docs.immich.app/install/requirements)
+- [เกี่ยวกับ](https://docs.immich.app/introduction/getting-started)
+- [การติดตั้ง](https://docs.immich.app/reference/requirements)
 - [โรดแมป](https://immich.app/roadmap)
 - [สาธิต](#สาธิต)
 - [คุณสมบัติ](#คุณสมบัติ)
 - [การแปลภาษา](https://docs.immich.app/developer/translations)
-- [สนับสนุนโพรเจกต์](https://docs.immich.app/overview/support-the-project)
+- [สนับสนุนโพรเจกต์](https://docs.immich.app/support-the-project)
 
 ## สาธิต
 
