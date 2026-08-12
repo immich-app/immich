@@ -68,7 +68,7 @@ const undoDeleteAssets = async (onUndoDelete: OnUndoDelete, assets: TimelineAsse
  * @param {StackResponse} stackResponse - The stack response containing the stack and assets to delete.
  */
 export function updateStackedAssetInTimeline(timelineManager: TimelineManager, { stack, toDeleteIds }: StackResponse) {
-  if (stack == undefined) {
+  if (stack === undefined) {
     return;
   }
 

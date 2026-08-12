@@ -10,15 +10,12 @@ import parser from 'svelte-eslint-parser';
 import typescriptEslint from 'typescript-eslint';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export default typescriptEslint.config(
   ...eslintPluginSvelte.configs.recommended,
   eslintPluginUnicorn.configs.recommended,
   js.configs.recommended,
+  prettier,
   {
     plugins: {
       tscompat: tslintPluginCompat,
@@ -28,7 +25,7 @@ export default typescriptEslint.config(
         'error',
         {
           browserslist: fs
-            .readFileSync(path.join(__dirname, '.browserslistrc'), 'utf8')
+            .readFileSync(path.join(import.meta.dirname, '.browserslistrc'), 'utf8')
             .split('\n')
             .map((line) => line.trim())
             .filter((line) => line && !line.startsWith('#')),
@@ -39,7 +36,7 @@ export default typescriptEslint.config(
       parser,
       parserOptions: {
         project: ['./tsconfig.json'],
-        tsconfigRootDir: __dirname,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     // ignores: ['**/service-worker/**'],
@@ -95,7 +92,7 @@ export default typescriptEslint.config(
 
       parserOptions: {
         extraFileExtensions: ['.svelte'],
-        tsconfigRootDir: __dirname,
+        tsconfigRootDir: import.meta.dirname,
         project: ['./tsconfig.json'],
       },
     },
@@ -158,6 +155,7 @@ export default typescriptEslint.config(
       'svelte/button-has-type': 'error',
       'object-shorthand': ['error', 'always'],
       'svelte/no-navigation-without-resolve': 'off',
+      eqeqeq: 'error',
     },
   },
   {

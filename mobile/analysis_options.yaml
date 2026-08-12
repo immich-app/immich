@@ -97,6 +97,18 @@ dart_code_metrics:
             exclude-paths:
               - 'lib/utils/debug_print.dart'
             severity: perf
+          - name: tr
+            description: 'Use context.t.<key> or StaticTranslations.instance.<key> instead of tr().'
+          - type: String
+            entries:
+              - name: tr
+                description: 'Use context.t.<key> or StaticTranslations.instance.<key> instead of String.tr().'
+              - name: plural
+                description: 'Use the generated plural accessor instead of String.plural().'
+          - type: Text
+            entries:
+              - name: tr
+                description: 'Use Text(context.t.<key>) instead of Text(<key>).tr().'
     # All rules from "recommended" preset
     # Show potential errors
   #  - avoid-cascade-after-if-null

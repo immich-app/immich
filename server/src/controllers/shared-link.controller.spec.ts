@@ -2,6 +2,7 @@ import { SharedLinkController } from 'src/controllers/shared-link.controller';
 import { Permission, SharedLinkType } from 'src/enum';
 import { SharedLinkService } from 'src/services/shared-link.service';
 import request from 'supertest';
+import { errorDto } from 'test/medium/responses';
 import { factory } from 'test/small.factory';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
 
@@ -19,10 +20,24 @@ describe(SharedLinkController.name, () => {
     ctx.reset();
   });
 
+  describe('GET /shared-links/me', () => {
+    it('should be a shared link route', async () => {
+      await request(ctx.getHttpServer()).get('/shared-links/me');
+      expect(ctx.authenticate).toHaveBeenCalledWith(
+        expect.objectContaining({ metadata: expect.objectContaining({ sharedLinkRoute: true }) }),
+      );
+    });
+  });
+
   describe('POST /shared-links', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/shared-links');
-      expect(ctx.authenticate).toHaveBeenCalled();
+    it('should require a type and the correspondent asset/album id', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/shared-links')
+        .set('Authorization', `Bearer token`);
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([{ path: [], message: 'Invalid input: expected object, received undefined' }]),
+      );
     });
 
     it('should allow an null expiresAt', async () => {

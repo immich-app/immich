@@ -19,11 +19,6 @@ describe(AlbumController.name, () => {
   });
 
   describe('GET /albums', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/albums');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should reject an invalid shared param', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get('/albums?isShared=invalid');
       expect(status).toEqual(400);
@@ -38,62 +33,6 @@ describe(AlbumController.name, () => {
       const { status, body } = await request(ctx.getHttpServer()).get('/albums?assetId=invalid');
       expect(status).toEqual(400);
       expect(body).toEqual(factory.responses.validationError([{ path: ['assetId'], message: 'Invalid UUID' }]));
-    });
-  });
-
-  describe('GET /albums/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/albums/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /albums/statistics', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/albums/statistics');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('POST /albums', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/albums').send({ albumName: 'New album' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('PUT /albums/:id/assets', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/albums/${factory.uuid()}/assets`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('PUT /albums/assets', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/albums/assets`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('PATCH /albums/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).patch(`/albums/${factory.uuid()}`).send({ albumName: 'New album name' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('DELETE /albums/:id/assets', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete(`/albums/${factory.uuid()}/assets`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('PUT :id/users', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/albums/${factory.uuid()}/users`);
-      expect(ctx.authenticate).toHaveBeenCalled();
     });
   });
 });

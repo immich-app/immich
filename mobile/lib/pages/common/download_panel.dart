@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:background_downloader/background_downloader.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 
 class DownloadPanel extends ConsumerWidget {
@@ -67,14 +67,14 @@ class DownloadTaskTile extends StatelessWidget {
     final progressPercent = (progress * 100).round();
 
     String getStatusText() => switch (status) {
-      TaskStatus.running => 'downloading'.tr(),
-      TaskStatus.complete => 'download_complete'.tr(),
-      TaskStatus.failed => 'download_failed'.tr(),
-      TaskStatus.canceled => 'download_canceled'.tr(),
-      TaskStatus.paused => 'download_paused'.tr(),
-      TaskStatus.enqueued => 'download_enqueue'.tr(),
-      TaskStatus.notFound => 'download_notfound'.tr(),
-      TaskStatus.waitingToRetry => 'download_waiting_to_retry'.tr(),
+      TaskStatus.running => context.t.downloading,
+      TaskStatus.complete => context.t.download_complete,
+      TaskStatus.failed => context.t.download_failed,
+      TaskStatus.canceled => context.t.download_canceled,
+      TaskStatus.paused => context.t.download_paused,
+      TaskStatus.enqueued => context.t.download_enqueue,
+      TaskStatus.notFound => context.t.download_notfound,
+      TaskStatus.waitingToRetry => context.t.download_waiting_to_retry,
     };
 
     return SizedBox(

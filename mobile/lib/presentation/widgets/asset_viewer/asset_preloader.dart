@@ -17,7 +17,8 @@ class AssetPreloader {
 
   AssetPreloader({required this.timelineService, required this.mounted});
 
-  void preload(int index, Size size) {
+  /// Preloads adjacent images with the current thumbnail size.
+  void preload(int index, Size size, {Size? thumbnailSize}) {
     unawaited(timelineService.preloadAssets(index));
     _timer?.cancel();
     _timer = Timer(Durations.medium4, () async {
@@ -33,13 +34,14 @@ class AssetPreloader {
       }
       _prevStream?.removeListener(_dummyListener);
       _nextStream?.removeListener(_dummyListener);
-      _prevStream = prev != null ? _resolveImage(prev, size) : null;
-      _nextStream = next != null ? _resolveImage(next, size) : null;
+      _prevStream = prev != null ? _resolveImage(prev, size, thumbnailSize) : null;
+      _nextStream = next != null ? _resolveImage(next, size, thumbnailSize) : null;
     });
   }
 
-  ImageStream _resolveImage(BaseAsset asset, Size size) {
-    return getFullImageProvider(asset, size: size).resolve(ImageConfiguration.empty)..addListener(_dummyListener);
+  ImageStream _resolveImage(BaseAsset asset, Size size, Size? thumbnailSize) {
+    return getFullImageProvider(asset, size: size, remoteThumbnailSize: thumbnailSize).resolve(ImageConfiguration.empty)
+      ..addListener(_dummyListener);
   }
 
   void dispose() {

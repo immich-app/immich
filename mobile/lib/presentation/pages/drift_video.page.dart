@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -26,7 +26,7 @@ class DriftVideoPage extends StatelessWidget {
           return timelineService;
         }),
       ],
-      child: Timeline(appBar: MesmerizingSliverAppBar(title: 'videos'.t())),
+      child: Timeline(appBar: MesmerizingSliverAppBar(title: context.t.videos)),
     );
   }
 }

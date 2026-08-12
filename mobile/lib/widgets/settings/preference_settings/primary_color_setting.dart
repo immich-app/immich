@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/theme/color_scheme.dart';
@@ -97,7 +97,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
         children: [
           Align(
             alignment: Alignment.center,
-            child: Text("theme_setting_primary_color_title".tr(), style: context.textTheme.titleLarge),
+            child: Text(context.t.theme_setting_primary_color_title, style: context.textTheme.titleLarge),
           ),
           if (DynamicTheme.isAvailable)
             Container(
@@ -110,7 +110,7 @@ class PrimaryColorSetting extends HookConsumerWidget {
                 tileColor: context.colorScheme.surfaceContainerHigh,
                 shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15))),
                 title: Text(
-                  'theme_setting_system_primary_color_title'.tr(),
+                  context.t.theme_setting_system_primary_color_title,
                   style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500, height: 1.5),
                 ),
                 value: themeConfig.dynamicTheme,
@@ -157,11 +157,11 @@ class PrimaryColorSetting extends HookConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "theme_setting_primary_color_title".tr(),
+                  context.t.theme_setting_primary_color_title,
                   style: context.textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
                 ),
                 Text(
-                  "theme_setting_primary_color_subtitle".tr(),
+                  context.t.theme_setting_primary_color_subtitle,
                   style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
                 ),
               ],

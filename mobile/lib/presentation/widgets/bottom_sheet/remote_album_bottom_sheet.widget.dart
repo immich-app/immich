@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/archive.action.dart';
 import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
@@ -58,19 +58,15 @@ class _RemoteAlbumBottomSheetState extends ConsumerState<RemoteAlbumBottomSheet>
       }
 
       if (!result.success) {
-        ImmichToast.show(
-          context: context,
-          msg: 'scaffold_body_error_occurred'.t(context: context),
-          toastType: ToastType.error,
-        );
+        ImmichToast.show(context: context, msg: context.t.scaffold_body_error_occurred, toastType: ToastType.error);
         return;
       }
 
       ImmichToast.show(
         context: context,
         msg: result.count == 0
-            ? 'add_to_album_bottom_sheet_already_exists'.t(context: context, args: {"album": album.name})
-            : 'add_to_album_bottom_sheet_added'.t(context: context, args: {"album": album.name}),
+            ? context.t.add_to_album_bottom_sheet_already_exists(album: album.name)
+            : context.t.add_to_album_bottom_sheet_added(album: album.name),
       );
     }
 

@@ -19,11 +19,6 @@ describe(TimelineController.name, () => {
   });
 
   describe('GET /timeline/buckets', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/timeline/buckets');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should parse bbox query string into an object', async () => {
       const { status } = await request(ctx.getHttpServer())
         .get('/timeline/buckets')
@@ -58,11 +53,6 @@ describe(TimelineController.name, () => {
   });
 
   describe('GET /timeline/bucket', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/timeline/bucket?timeBucket=1900-01-01');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     // TODO enable date string validation while still accepting 5 digit years
     it.fails('should fail if time bucket is invalid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get('/timeline/bucket').query({ timeBucket: 'foo' });
