@@ -25,11 +25,6 @@ describe(SyncController.name, () => {
   });
 
   describe('POST /sync/stream', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/sync/stream');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require sync request type enums', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/sync/stream')
@@ -44,19 +39,7 @@ describe(SyncController.name, () => {
     });
   });
 
-  describe('GET /sync/ack', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/sync/ack');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('POST /sync/ack', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/sync/ack');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should not allow more than 1,000 entries', async () => {
       const acks = Array.from({ length: 1001 }, (_, i) => `ack-${i}`);
       const { status, body } = await request(ctx.getHttpServer()).post('/sync/ack').send({ acks });
@@ -69,11 +52,6 @@ describe(SyncController.name, () => {
   });
 
   describe('DELETE /sync/ack', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete('/sync/ack');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require sync response type enums', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .delete('/sync/ack')

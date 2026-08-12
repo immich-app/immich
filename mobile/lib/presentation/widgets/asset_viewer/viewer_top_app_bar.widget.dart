@@ -1,13 +1,14 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/favorite_action_button.widget.dart';
+import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/favorite.action.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/motion_photo_action_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/action_buttons/unfavorite_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/viewer_kebab_menu.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
@@ -15,9 +16,9 @@ import 'package:immich_mobile/providers/infrastructure/asset_viewer/asset.provid
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/timezone.dart';
+import 'package:immich_ui/immich_ui.dart';
 
 class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const ViewerTopAppBar({super.key});
@@ -31,8 +32,6 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     final album = ref.watch(currentRemoteAlbumProvider);
 
-    final user = ref.watch(currentUserProvider);
-    final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final isInLockedView = ref.watch(inLockedViewProvider);
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
 
@@ -43,7 +42,8 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
     }
 
     final showingControls = ref.watch(assetViewerProvider.select((s) => s.showingControls));
-    double opacity = ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
+    final double opacity =
+        ref.watch(assetViewerProvider.select((s) => s.backgroundOpacity)) * (showingControls ? 1 : 0);
 
     final originalTheme = context.themeData;
 
@@ -53,22 +53,21 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.chat_outlined),
           onPressed: () {
-            context.router.push(
-              DriftActivitiesRoute(
-                album: album,
-                assetId: asset is RemoteAsset ? asset.id : null,
-                assetName: asset.name,
+            unawaited(
+              context.router.push(
+                DriftActivitiesRoute(
+                  album: album,
+                  assetId: asset is RemoteAsset ? asset.id : null,
+                  assetName: asset.name,
+                ),
               ),
             );
           },
         ),
 
-      if (asset.hasRemote && isOwner && !asset.isFavorite)
-        const FavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
-      if (asset.hasRemote && isOwner && asset.isFavorite)
-        const UnFavoriteActionButton(source: ActionSource.viewer, iconOnly: true),
+      const ActionIconButton(action: FavoriteAction(source: .viewer)),
 
-      ViewerKebabMenu(originalTheme: originalTheme),
+      ImmichColorOverride(color: null, child: ViewerKebabMenu(originalTheme: originalTheme)),
     ];
 
     final lockedViewActions = <Widget>[ViewerKebabMenu(originalTheme: originalTheme)];
@@ -107,7 +106,13 @@ class ViewerTopAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     leading: const _AppBarBackButton(),
                     middle: showingDetails ? null : _AssetInfoTitle(asset: asset),
                     trailing: !showingDetails && !isReadonlyModeEnabled
-                        ? Row(mainAxisSize: MainAxisSize.min, children: isInLockedView ? lockedViewActions : actions)
+                        ? ImmichColorOverride(
+                            color: Colors.white,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: isInLockedView ? lockedViewActions : actions,
+                            ),
+                          )
                         : null,
                   ),
                 ),

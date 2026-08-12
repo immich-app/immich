@@ -3,11 +3,15 @@ import 'package:drift/native.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/memory.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/memory_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/partner.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/person.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_album.entity.drift.dart';
@@ -15,6 +19,8 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
@@ -65,6 +71,22 @@ class MediumRepositoryContext {
             avatarColor: .new(avatarColor ?? TestUtils.randElement(AvatarColor.values)),
             profileChangedAt: .new(TestUtils.date(profileChangedAt)),
             hasProfileImage: .new(hasProfileImage ?? false),
+          ),
+        );
+  }
+
+  /// Seeds a user into `authUserEntity` as the currently authenticated user
+  Future<AuthUserEntityData> newAuthUser({String? id, String? email, bool? isAdmin, AvatarColor? avatarColor}) async {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.authUserEntity)
+        .insertReturning(
+          AuthUserEntityCompanion(
+            id: .new(id),
+            email: .new(email ?? '$id@test.com'),
+            name: .new('user_$id'),
+            isAdmin: .new(isAdmin ?? false),
+            avatarColor: .new(avatarColor ?? TestUtils.randElement(AvatarColor.values)),
           ),
         );
   }
@@ -214,8 +236,8 @@ class MediumRepositoryContext {
   }
 
   Future<AssetFaceEntityData> newFace({String? assetId, String? personId, int? imageWidth, int? imageHeight}) {
-    imageWidth ??= TestUtils.randInt(999) + 1;
-    imageHeight ??= TestUtils.randInt(999) + 1;
+    imageWidth ??= TestUtils.randInt(999) + 2;
+    imageHeight ??= TestUtils.randInt(999) + 2;
 
     final x1 = TestUtils.randInt(imageWidth - 1);
     final y1 = TestUtils.randInt(imageHeight - 1);
@@ -283,6 +305,33 @@ class MediumRepositoryContext {
         );
   }
 
+  /// Seeds a trashed local asset into `trashedLocalAssetEntity`
+  Future<TrashedLocalAssetEntityData> newTrashedLocalAsset({
+    String? id,
+    required String albumId,
+    String? checksum,
+    TrashOrigin? source,
+    AssetType? type,
+    DateTime? createdAt,
+    bool? isFavorite,
+  }) async {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.trashedLocalAssetEntity)
+        .insertReturning(
+          TrashedLocalAssetEntityCompanion(
+            id: .new(id),
+            albumId: .new(albumId),
+            name: .new('trashed_$id.jpg'),
+            type: .new(type ?? .image),
+            checksum: .new(checksum),
+            source: .new(source ?? TrashOrigin.remoteSync),
+            isFavorite: .new(isFavorite ?? false),
+            createdAt: .new(TestUtils.date(createdAt)),
+          ),
+        );
+  }
+
   Future<LocalAlbumEntityData> newLocalAlbum({
     String? id,
     String? name,
@@ -309,4 +358,37 @@ class MediumRepositoryContext {
   Future<void> newLocalAlbumAsset({required String albumId, required String assetId}) => db
       .into(db.localAlbumAssetEntity)
       .insert(LocalAlbumAssetEntityCompanion(albumId: .new(albumId), assetId: .new(assetId)));
+
+  Future<MemoryEntityData> newMemory({
+    String? id,
+    String? ownerId,
+    MemoryTypeEnum? type,
+    int? year,
+    DateTime? memoryAt,
+    DateTime? showAt,
+    DateTime? hideAt,
+    DateTime? deletedAt,
+    bool? isSaved,
+  }) async {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.memoryEntity)
+        .insertReturning(
+          MemoryEntityCompanion(
+            id: .new(id),
+            ownerId: .new(TestUtils.uuid(ownerId)),
+            type: .new(type ?? MemoryTypeEnum.onThisDay),
+            data: .new(MemoryData(year: year ?? 2020).toJson()),
+            isSaved: .new(isSaved ?? false),
+            memoryAt: .new(TestUtils.date(memoryAt)),
+            showAt: .new(showAt),
+            hideAt: .new(hideAt),
+            deletedAt: .new(deletedAt),
+          ),
+        );
+  }
+
+  Future<void> newMemoryAsset({required String memoryId, required String assetId}) => db
+      .into(db.memoryAssetEntity)
+      .insert(MemoryAssetEntityCompanion(memoryId: .new(memoryId), assetId: .new(assetId)));
 }

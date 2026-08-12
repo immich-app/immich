@@ -25,6 +25,7 @@ export enum ImmichHeader {
   Checksum = 'x-immich-checksum',
   CorrelationId = 'X-Correlation-ID',
   HlsInitSegment = 'x-immich-hls-msn',
+  HlsPosition = 'x-immich-hls-pos',
 }
 
 export enum ImmichQuery {
@@ -527,6 +528,19 @@ export enum CQMode {
 }
 
 export const CQModeSchema = z.enum(CQMode).describe('CQ mode').meta({ id: 'CQMode' });
+
+export enum HlsVideoResolution {
+  p480 = 480,
+  p720 = 720,
+  p1080 = 1080,
+  p1440 = 1440,
+  p2160 = 2160,
+}
+
+export const HlsVideoResolutionSchema = z
+  .enum(HlsVideoResolution)
+  .describe('HLS video resolution')
+  .meta({ id: 'HlsVideoResolution', type: 'integer' });
 
 export enum Colorspace {
   Srgb = 'srgb',
@@ -1220,3 +1234,12 @@ export enum CalendarHeatmapType {
   Upload = 'Upload',
   Taken = 'Taken',
 }
+
+export enum SearchOrderField {
+  FileCreatedAt = 'fileCreatedAt',
+  LocalDateTime = 'localDateTime',
+  FileSizeInBytes = 'fileSizeInBytes',
+  Rating = 'rating',
+}
+
+export const SearchOrderFieldSchema = z.enum(SearchOrderField).meta({ id: 'SearchOrderField' });

@@ -99,6 +99,7 @@ Options:
   -H, --include-hidden        Include hidden folders (default: false, env: IMMICH_INCLUDE_HIDDEN)
   -a, --album                 Automatically create albums based on folder name (default: false, env: IMMICH_AUTO_CREATE_ALBUM)
   -A, --album-name <name>     Add all assets to specified album (env: IMMICH_ALBUM_NAME)
+  --visibility <visibility>   Set the visibility of uploaded assets (choices: "archive", "timeline", "hidden", "locked", env: IMMICH_VISIBILITY)
   -n, --dry-run               Don't perform any actions, just show what will be done (default: false, env: IMMICH_DRY_RUN)
   -c, --concurrency <number>  Number of assets to upload at the same time (default: 4, env: IMMICH_UPLOAD_CONCURRENCY)
   -j, --json-output           Output detailed information in json format (default: false, env: IMMICH_JSON_OUTPUT)
@@ -174,6 +175,12 @@ By default, hidden files are skipped. If you want to include hidden files, use t
 
 ```bash
 immich upload --include-hidden --recursive directory/
+```
+
+You can set the visibility of uploaded assets to `archive`, `timeline`, `hidden`, or `locked` with the `--visibility` option:
+
+```bash
+immich upload --visibility archive --recursive directory/
 ```
 
 You can use the `--json-output` option to get a json printed which includes

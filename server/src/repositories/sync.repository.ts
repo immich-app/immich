@@ -106,7 +106,7 @@ export class BaseSync {
       .selectFrom(table(t).as(t))
       .where(updateIdRef, '<', nowId)
       .where(updateIdRef, '<=', beforeUpdateId)
-      .$if(!!afterUpdateId, (qb) => qb.where(updateIdRef, '>=', afterUpdateId!))
+      .$if(!!afterUpdateId, (qb) => qb.where(updateIdRef, '>', afterUpdateId!))
       .orderBy(updateIdRef, 'asc');
   }
 

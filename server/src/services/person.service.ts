@@ -1,6 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Insertable, Updateable } from 'kysely';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { Person } from 'src/database';
 import { Chunked, OnJob } from 'src/decorators';
 import { BulkIdErrorReason, BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
@@ -43,7 +42,7 @@ import { JobItem, JobOf } from 'src/types';
 import { getDimensions } from 'src/utils/asset.util';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFacialRecognitionEnabled } from 'src/utils/misc';
+import { batched, findOrFail, isFacialRecognitionEnabled } from 'src/utils/misc';
 import { Point, transformPoints } from 'src/utils/transform';
 
 @Injectable()
@@ -120,7 +119,7 @@ export class PersonService extends BaseService {
       await this.createNewFeaturePhoto([face.person.id]);
     }
 
-    return await this.findOrFail(personId).then(mapPerson);
+    return mapPerson(await this.findOrFail(personId));
   }
 
   async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
@@ -152,7 +151,7 @@ export class PersonService extends BaseService {
 
   async getById(auth: AuthDto, id: string): Promise<PersonResponseDto> {
     await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [id] });
-    return this.findOrFail(id).then(mapPerson);
+    return mapPerson(await this.findOrFail(id));
   }
 
   async getStatistics(auth: AuthDto, id: string): Promise<PersonStatisticsResponseDto> {
@@ -192,7 +191,7 @@ export class PersonService extends BaseService {
 
     const { name, birthDate, isHidden, featureFaceAssetId: assetId, isFavorite, color } = dto;
     // TODO: set by faceId directly
-    let faceId: string | undefined = undefined;
+    let faceId: string | undefined;
     if (assetId) {
       await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [assetId] });
       const face = await this.personRepository.getForFeatureFaceUpdate({ personId: id, assetId });
@@ -277,18 +276,11 @@ export class PersonService extends BaseService {
       await this.personRepository.vacuum({ reindexVectors: true });
     }
 
-    let jobs: JobItem[] = [];
-    const assets = this.assetJobRepository.streamForDetectFacesJob(force);
-    for await (const asset of assets) {
-      jobs.push({ name: JobName.AssetDetectFaces, data: { id: asset.id } });
-
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(jobs);
-        jobs = [];
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForDetectFacesJob(force))) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.AssetDetectFaces, data: { id: asset.id } })),
+      );
     }
-
-    await this.jobRepository.queueAll(jobs);
 
     if (force === undefined) {
       await this.jobRepository.queue({ name: JobName.PersonCleanup });
@@ -435,21 +427,15 @@ export class PersonService extends BaseService {
     await this.databaseRepository.prewarm(VectorIndex.Face);
 
     const lastRun = new Date().toISOString();
-    const facePagination = this.personRepository.getAllFaces(
+
+    const faces = this.personRepository.getAllFaces(
       force ? undefined : { personId: null, sourceType: SourceType.MachineLearning },
     );
-
-    let jobs: { name: JobName.FacialRecognition; data: { id: string; deferred: false } }[] = [];
-    for await (const face of facePagination) {
-      jobs.push({ name: JobName.FacialRecognition, data: { id: face.id, deferred: false } });
-
-      if (jobs.length === JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(jobs);
-        jobs = [];
-      }
+    for await (const batch of batched(faces)) {
+      await this.jobRepository.queueAll(
+        batch.map((face) => ({ name: JobName.FacialRecognition, data: { id: face.id, deferred: false } })),
+      );
     }
-
-    await this.jobRepository.queueAll(jobs);
 
     await this.systemMetadataRepository.set(SystemMetadataKey.FacialRecognitionState, { lastRun });
 
@@ -614,12 +600,8 @@ export class PersonService extends BaseService {
     return results;
   }
 
-  private async findOrFail(id: string) {
-    const person = await this.personRepository.getById(id);
-    if (!person) {
-      throw new BadRequestException('Person not found');
-    }
-    return person;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.personRepository.getById(id), 'Person');
   }
 
   // TODO return a asset face response
@@ -655,14 +637,12 @@ export class PersonService extends BaseService {
       topLeft = { x: topLeft.x * scaleFactor, y: topLeft.y * scaleFactor };
       bottomRight = { x: bottomRight.x * scaleFactor, y: bottomRight.y * scaleFactor };
 
-      const {
-        points: [invertedTopLeft, invertedBottomRight],
-      } = transformPoints(
+      const [invertedTopLeft, invertedBottomRight] = transformPoints(
         [topLeft, bottomRight],
         edits,
         { width: asset.width, height: asset.height },
         { inverse: true },
-      );
+      ).points;
 
       // make sure topLeft is top-left and bottomRight is bottom-right
       topLeft = {

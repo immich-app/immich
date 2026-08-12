@@ -2,6 +2,7 @@ import { AssetVisibility, LoginResponseDto } from '@immich/sdk';
 import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { Socket } from 'socket.io-client';
+import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
@@ -9,28 +10,48 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 describe('/map', () => {
   let websocket: Socket;
+  let partnerWebsocket: Socket;
   let admin: LoginResponseDto;
+  let partner: LoginResponseDto;
+  let partnerArchivedAssetId: string;
+  let adminArchivedAssetId: string;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup({ onboarding: false });
+    partner = await utils.userSetup(admin.accessToken, createUserDto.user1);
 
     websocket = await utils.connectWebsocket(admin.accessToken);
+    partnerWebsocket = await utils.connectWebsocket(partner.accessToken);
 
-    const files = ['formats/heic/IMG_2682.heic', 'metadata/gps-position/thompson-springs.jpg'];
+    const adminFiles = ['formats/heic/IMG_2682.heic', 'metadata/gps-position/thompson-springs.jpg'];
+    const adminArchivedFile = 'metadata/dates/datetimeoriginal-gps.jpg';
+    const partnerFile = 'metadata/gps-position/thompson-springs.jpg';
     utils.resetEvents();
-    const uploadFile = async (input: string) => {
+    const uploadFile = async (accessToken: string, input: string) => {
       const filepath = join(testAssetDir, input);
-      const { id } = await utils.createAsset(admin.accessToken, {
+      const { id } = await utils.createAsset(accessToken, {
         assetData: { bytes: await readFile(filepath), filename: basename(filepath) },
       });
       await utils.waitForWebsocketEvent({ event: 'assetUpload', id });
+      return id;
     };
-    await Promise.all(files.map((f) => uploadFile(f)));
+    await Promise.all(adminFiles.map((f) => uploadFile(admin.accessToken, f)));
+    [adminArchivedAssetId, partnerArchivedAssetId] = await Promise.all([
+      uploadFile(admin.accessToken, adminArchivedFile),
+      uploadFile(partner.accessToken, partnerFile),
+    ]);
+
+    await Promise.all([
+      utils.archiveAssets(admin.accessToken, [adminArchivedAssetId]),
+      utils.archiveAssets(partner.accessToken, [partnerArchivedAssetId]),
+      utils.createPartner(partner.accessToken, admin.userId),
+    ]);
   });
 
   afterAll(() => {
     utils.disconnectWebsocket(websocket);
+    utils.disconnectWebsocket(partnerWebsocket);
   });
 
   describe('GET /map/markers', () => {
@@ -40,7 +61,6 @@ describe('/map', () => {
       expect(body).toEqual(errorDto.unauthorized);
     });
 
-    // TODO archive one of these assets
     it('should get map markers for all non-archived assets', async () => {
       const { status, body } = await request(app)
         .get('/map/markers')
@@ -55,7 +75,7 @@ describe('/map', () => {
           country: 'United States of America',
           id: expect.any(String),
           lat: expect.closeTo(39.115),
-          lon: expect.closeTo(-108.400_968),
+          lon: expect.closeTo(-108.400968),
           state: 'Colorado',
         },
         {
@@ -63,13 +83,34 @@ describe('/map', () => {
           country: 'United States of America',
           id: expect.any(String),
           lat: expect.closeTo(41.2203),
-          lon: expect.closeTo(-96.071_625),
+          lon: expect.closeTo(-96.071625),
           state: 'Nebraska',
         },
       ]);
     });
 
-    // TODO archive one of these assets
+    it('should not expose partner archived asset locations', async () => {
+      const { status, body } = await request(app)
+        .get('/map/markers')
+        .query({ withPartners: true, isArchived: true })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      const ids = body.map((m: { id: string }) => m.id);
+      expect(ids).not.toContain(partnerArchivedAssetId);
+      expect(ids).toContain(adminArchivedAssetId);
+    });
+
+    it('should include own archived asset locations', async () => {
+      const { status, body } = await request(app)
+        .get('/map/markers')
+        .query({ isArchived: true })
+        .set('Authorization', `Bearer ${admin.accessToken}`);
+
+      expect(status).toBe(200);
+      expect(body.map((m: { id: string }) => m.id)).toContain(adminArchivedAssetId);
+    });
+
     it('should get all map markers', async () => {
       const { status, body } = await request(app)
         .get('/map/markers')
@@ -82,7 +123,7 @@ describe('/map', () => {
           country: 'United States of America',
           id: expect.any(String),
           lat: expect.closeTo(39.115),
-          lon: expect.closeTo(-108.400_968),
+          lon: expect.closeTo(-108.400968),
           state: 'Colorado',
         },
         {
@@ -90,7 +131,7 @@ describe('/map', () => {
           country: 'United States of America',
           id: expect.any(String),
           lat: expect.closeTo(41.2203),
-          lon: expect.closeTo(-96.071_625),
+          lon: expect.closeTo(-96.071625),
           state: 'Nebraska',
         },
       ]);
@@ -147,20 +188,20 @@ describe('/map', () => {
     const reverseGeocodeTestCases = [
       {
         name: 'Vaucluse',
-        lat: -33.858_977_058_663_13,
-        lon: 151.278_490_730_270_48,
+        lat: -33.85897705866313,
+        lon: 151.27849073027048,
         results: [{ city: 'Vaucluse', state: 'New South Wales', country: 'Australia' }],
       },
       {
         name: 'Ravenhall',
-        lat: -37.765_732_399_174_75,
-        lon: 144.752_453_164_883_3,
+        lat: -37.76573239917475,
+        lon: 144.7524531648833,
         results: [{ city: 'Ravenhall', state: 'Victoria', country: 'Australia' }],
       },
       {
         name: 'Scarborough',
-        lat: -31.894_346_156_789_997,
-        lon: 115.757_617_103_904_64,
+        lat: -31.894346156789997,
+        lon: 115.75761710390464,
         results: [{ city: 'Scarborough', state: 'Western Australia', country: 'Australia' }],
       },
     ];

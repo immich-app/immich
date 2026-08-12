@@ -73,7 +73,7 @@ const ServerVersionResponseSchema = z
 
 const ServerVersionHistoryResponseSchema = z
   .object({
-    id: z.string().describe('Version history entry ID'),
+    id: z.uuidv4().describe('Version history entry ID'),
     createdAt: isoDatetimeToDate.describe('When this version was first seen'),
     version: z.string().describe('Version string'),
   })
@@ -81,7 +81,7 @@ const ServerVersionHistoryResponseSchema = z
 
 const UsageByUserSchema = z
   .object({
-    userId: z.string().describe('User ID'),
+    userId: z.uuidv4().describe('User ID'),
     userName: z.string().describe('User name'),
     photos: z.int().describe('Number of photos'),
     videos: z.int().describe('Number of videos'),

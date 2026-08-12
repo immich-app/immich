@@ -19,7 +19,7 @@ If this does not work, try running `docker compose up -d --force-recreate`.
 
 | Variable           | Description                     | Default | Containers               |
 | :----------------- | :------------------------------ | :-----: | :----------------------- |
-| `IMMICH_VERSION`   | Image tags                      |  `v2`   | server, machine learning |
+| `IMMICH_VERSION`   | Image tags                      |  `v3`   | server, machine learning |
 | `UPLOAD_LOCATION`  | Host path for uploads           |         | server                   |
 | `DB_DATA_LOCATION` | Host path for Postgres database |         | database                 |
 
@@ -45,7 +45,7 @@ These environment variables are used by the `docker-compose.yml` file and do **N
 | `IMMICH_PROCESS_INVALID_IMAGES`     | When `true`, generate thumbnails for invalid images                                                                                                                  |                              | server                   | microservices      |
 | `IMMICH_TRUSTED_PROXIES`            | List of comma-separated IPs set as trusted proxies                                                                                                                   |                              | server                   | api                |
 | `IMMICH_IGNORE_MOUNT_CHECK_ERRORS`  | See [System Integrity](/administration/system-integrity)                                                                                                             |                              | server                   | api, microservices |
-| `IMMICH_ALLOW_SETUP`                | When `false` disables the `/auth/admin-sign-up` endpoint                                                                                                             |            `true`            | server                   | api                |
+| `IMMICH_ALLOW_SETUP`                | When `false` disables the `/auth/admin-sign-up` and `/admin/database-backups/start-restore` endpoints                                                                |            `true`            | server                   | api                |
 
 \*1: `TZ` should be set to a `TZ identifier` from [this list][tz-list]. For example, `TZ="Etc/UTC"`.
 `TZ` is used by `exiftool` as a fallback in case the timezone cannot be determined from the image metadata. It is also used for logfile timestamps and cron job execution.
@@ -89,7 +89,7 @@ Information on the current workers can be found [here](/administration/jobs-work
 
 \*1: The values of `DB_USERNAME`, `DB_PASSWORD`, and `DB_DATABASE_NAME` are passed to the Postgres container as the variables `POSTGRES_USER`, `POSTGRES_PASSWORD`, and `POSTGRES_DB` in `docker-compose.yml`.
 
-\*2: If not provided, the appropriate extension to use is auto-detected at startup by introspecting the database. When multiple extensions are installed, the order of preference is VectorChord, pgvecto.rs, pgvector.
+\*2: If not provided, the appropriate extension to use is auto-detected at startup by inspecting the database. When multiple extensions are installed, the order of preference is VectorChord, pgvector.
 
 \*3: Uses either [`postgresql.ssd.conf`](https://github.com/immich-app/base-images/blob/main/postgres/postgresql.ssd.conf) or [`postgresql.hdd.conf`](https://github.com/immich-app/base-images/blob/main/postgres/postgresql.hdd.conf) which mainly controls the Postgres `effective_io_concurrency` setting to allow for concurrenct IO on SSDs and sequential IO on HDDs.
 

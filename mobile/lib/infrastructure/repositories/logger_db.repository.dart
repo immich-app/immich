@@ -2,6 +2,7 @@ import 'package:drift/drift.dart';
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
 import 'package:immich_mobile/infrastructure/entities/log.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/logger_db.repository.drift.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:sqlite_async/sqlite_async.dart';
 
 @DriftDatabase(tables: [LogMessageEntity])
@@ -12,6 +13,14 @@ class DriftLogger extends $DriftLogger {
 
   @override
   int get schemaVersion => 1;
+
+  Future<void> optimize() async {
+    try {
+      await customStatement('PRAGMA optimize=0x10002');
+    } catch (error) {
+      dPrint(() => 'Failed to optimize logger database: $error');
+    }
+  }
 
   @override
   MigrationStrategy get migration => MigrationStrategy(

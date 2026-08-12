@@ -13,13 +13,14 @@ import {
 } from 'src/dtos/shared-link.dto';
 import { Permission, SharedLinkType } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
-import { getExternalDomain, OpenGraphTags } from 'src/utils/misc';
+import { findOrFail, getExternalDomain, OpenGraphTags } from 'src/utils/misc';
 
 @Injectable()
 export class SharedLinkService extends BaseService {
   async getAll(auth: AuthDto, { id, albumId }: SharedLinkSearchDto): Promise<SharedLinkResponseDto[]> {
     return this.sharedLinkRepository
       .getAll({ userId: auth.user.id, id, albumId })
+
       .then((links) => links.map((link) => mapSharedLink(link, { stripAssetMetadata: false })));
   }
 
@@ -142,12 +143,8 @@ export class SharedLinkService extends BaseService {
   }
 
   // TODO: replace `userId` with permissions and access control checks
-  private async findOrFail(userId: string, id: string) {
-    const sharedLink = await this.sharedLinkRepository.get(userId, id);
-    if (!sharedLink) {
-      throw new BadRequestException('Shared link not found');
-    }
-    return sharedLink;
+  private findOrFail(userId: string, id: string) {
+    return findOrFail(() => this.sharedLinkRepository.get(userId, id), 'Shared link');
   }
 
   async addAssets(auth: AuthDto, id: string, dto: AssetIdsDto): Promise<AssetIdsResponseDto[]> {
@@ -200,7 +197,7 @@ export class SharedLinkService extends BaseService {
 
     const results: AssetIdsResponseDto[] = [];
     for (const assetId of dto.assetIds) {
-      const wasRemoved = removedAssetIds.find((id) => id === assetId);
+      const wasRemoved = removedAssetIds.includes(assetId);
       if (!wasRemoved) {
         results.push({ assetId, success: false, error: AssetIdErrorReason.NOT_FOUND });
         continue;

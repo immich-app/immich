@@ -12,9 +12,17 @@ const JsonSchemaPropertySchema = z
     description: z.string().describe('Description'),
     default: z.any().optional().describe('Default value'),
     enum: z.array(z.string()).optional().describe('Valid choices for enum types'),
+    minimum: z.number().optional().describe('Minimum value for number types'),
+    maximum: z.number().optional().describe('Maximum value for number types'),
+    precision: z.number().default(1).optional().describe('Smallest interval (granularity) for number types'),
     array: z.boolean().optional().describe('Type is an array type'),
     required: z.array(z.string()).optional().describe('A list of required properties'),
-    uiHint: z.string().optional(),
+    uiHint: z
+      .object({
+        type: z.string().optional(),
+        order: z.int().optional(),
+      })
+      .optional(),
     get properties() {
       return z.record(z.string(), JsonSchemaPropertySchema).optional();
     },

@@ -88,7 +88,7 @@ from
 where
   "album_asset"."updateId" < $3
   and "album_asset"."updateId" <= $4
-  and "album_asset"."updateId" >= $5
+  and "album_asset"."updateId" > $5
   and "album_asset"."albumId" = $6
 order by
   "album_asset"."updateId" asc
@@ -202,7 +202,7 @@ from
 where
   "album_asset"."updateId" < $1
   and "album_asset"."updateId" <= $2
-  and "album_asset"."updateId" >= $3
+  and "album_asset"."updateId" > $3
   and "album_asset"."albumId" = $4
 order by
   "album_asset"."updateId" asc
@@ -297,7 +297,7 @@ from
 where
   "album_asset"."updateId" < $1
   and "album_asset"."updateId" <= $2
-  and "album_asset"."updateId" >= $3
+  and "album_asset"."updateId" > $3
   and "album_asset"."albumId" = $4
 order by
   "album_asset"."updateId" asc
@@ -349,7 +349,7 @@ from
 where
   "album_user"."updateId" < $1
   and "album_user"."updateId" <= $2
-  and "album_user"."updateId" >= $3
+  and "album_user"."updateId" > $3
   and "albumId" = $4
 order by
   "album_user"."updateId" asc
@@ -810,7 +810,7 @@ from
 where
   "asset"."updateId" < $2
   and "asset"."updateId" <= $3
-  and "asset"."updateId" >= $4
+  and "asset"."updateId" > $4
   and "ownerId" = $5
 order by
   "asset"."updateId" asc
@@ -908,7 +908,7 @@ from
 where
   "asset_exif"."updateId" < $1
   and "asset_exif"."updateId" <= $2
-  and "asset_exif"."updateId" >= $3
+  and "asset_exif"."updateId" > $3
   and "asset"."ownerId" = $4
 order by
   "asset_exif"."updateId" asc
@@ -997,7 +997,7 @@ from
 where
   "stack"."updateId" < $1
   and "stack"."updateId" <= $2
-  and "stack"."updateId" >= $3
+  and "stack"."updateId" > $3
   and "ownerId" = $4
 order by
   "stack"."updateId" asc

@@ -11,7 +11,7 @@
   import { MediaType, QueryType, validQueryTypes } from '$lib/constants';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import type { SearchFilter } from '$lib/types';
-  import { parseUtcDate } from '$lib/utils/date-time';
+  import { asLocalTimeISO, parseUtcDate } from '$lib/utils/date-time';
   import { generateId } from '$lib/utils/generate-id';
   import { AssetTypeEnum, AssetVisibility, type MetadataSearchDto, type SmartSearchDto } from '@immich/sdk';
   import { Button, HStack, Modal, ModalBody, ModalFooter } from '@immich/ui';
@@ -27,14 +27,13 @@
 
   let { searchQuery, onClose }: Props = $props();
 
-  const parseOptionalDate = (dateString?: DateTime) => (dateString ? parseUtcDate(dateString.toString()) : undefined);
   const toStartOfDayDate = (dateString: string) => parseUtcDate(dateString)?.startOf('day') || undefined;
   const formId = generateId();
 
   // combobox and all the search components have terrible support for value | null so we use empty string instead.
-  function withNullAsUndefined<T>(value: T | null) {
-    return value === null ? undefined : value;
-  }
+  const withNullAsEmptyString = <T,>(value: T | null) => (value === null ? '' : value);
+
+  const emptyStringToNull = (value: string | undefined) => (value === '' ? null : value);
 
   function storeQueryType(type: SearchFilter['queryType']) {
     localStorage.setItem('searchQueryType', type);
@@ -46,10 +45,8 @@
   }
 
   const asFilter = (searchQuery: SmartSearchDto | MetadataSearchDto): SearchFilter => {
-    let query = '';
-    if ('query' in searchQuery && searchQuery.query) {
-      query = searchQuery.query;
-    }
+    let query = 'query' in searchQuery && searchQuery.query ? searchQuery.query : '';
+
     if ('originalFileName' in searchQuery && searchQuery.originalFileName) {
       query = searchQuery.originalFileName;
     }
@@ -71,14 +68,14 @@
             : new SvelteSet(searchQuery.tagIds)
           : new SvelteSet(),
       location: {
-        country: withNullAsUndefined(searchQuery.country),
-        state: withNullAsUndefined(searchQuery.state),
-        city: withNullAsUndefined(searchQuery.city),
+        country: withNullAsEmptyString(searchQuery.country),
+        state: withNullAsEmptyString(searchQuery.state),
+        city: withNullAsEmptyString(searchQuery.city),
       },
       camera: {
-        make: withNullAsUndefined(searchQuery.make),
-        model: withNullAsUndefined(searchQuery.model),
-        lensModel: withNullAsUndefined(searchQuery.lensModel),
+        make: withNullAsEmptyString(searchQuery.make),
+        model: withNullAsEmptyString(searchQuery.model),
+        lensModel: withNullAsEmptyString(searchQuery.lensModel),
       },
       date: {
         takenAfter: searchQuery.takenAfter ? toStartOfDayDate(searchQuery.takenAfter) : undefined,
@@ -138,14 +135,18 @@
       originalFileName: filter.queryType === 'metadata' ? query : undefined,
       description: filter.queryType === 'description' ? query : undefined,
       originalPath: filter.queryType === 'fullPath' ? filter.query.trim() || undefined : undefined,
-      country: filter.location.country,
-      state: filter.location.state,
-      city: filter.location.city,
-      make: filter.camera.make,
-      model: filter.camera.model,
-      lensModel: filter.camera.lensModel,
-      takenAfter: parseOptionalDate(filter.date.takenAfter)?.startOf('day').toISO() || undefined,
-      takenBefore: parseOptionalDate(filter.date.takenBefore)?.endOf('day').toISO() || undefined,
+      country: emptyStringToNull(filter.location.country),
+      state: emptyStringToNull(filter.location.state),
+      city: emptyStringToNull(filter.location.city),
+      make: emptyStringToNull(filter.camera.make),
+      model: emptyStringToNull(filter.camera.model),
+      lensModel: emptyStringToNull(filter.camera.lensModel),
+      takenAfter: filter.date.takenAfter
+        ? asLocalTimeISO(filter.date.takenAfter.startOf('day') as DateTime<true>)
+        : undefined,
+      takenBefore: filter.date.takenBefore
+        ? asLocalTimeISO(filter.date.takenBefore.endOf('day') as DateTime<true>)
+        : undefined,
       visibility: filter.display.isArchive ? AssetVisibility.Archive : undefined,
       isFavorite: filter.display.isFavorite || undefined,
       isNotInAlbum: filter.display.isNotInAlbum || undefined,

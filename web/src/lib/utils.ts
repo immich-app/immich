@@ -28,7 +28,7 @@ import { downloadManager } from '$lib/managers/download-manager.svelte';
 import { alwaysLoadOriginalFile, lang } from '$lib/stores/preferences.store';
 import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
-import { langs } from '$lib/utils/i18n';
+import { convertBCP47, langs } from '$lib/utils/i18n';
 
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -47,7 +47,7 @@ interface DateFormatter {
 export const initLanguage = async () => {
   const preferenceLang = get(lang);
   for (const { code, loader } of langs) {
-    register(code, loader);
+    register(convertBCP47(code), loader);
   }
 
   await init({ fallbackLocale: preferenceLang === 'dev' ? 'dev' : defaultLang.code, initialLocale: preferenceLang });
@@ -109,11 +109,10 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
     });
 
     xhr.addEventListener('load', () => {
+      unsubscribe();
       if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
-        unsubscribe();
         resolve({ data: xhr.response as T, status: xhr.status });
       } else {
-        unsubscribe();
         reject(new ApiError(xhr.statusText, xhr.status, xhr.response));
       }
     });
@@ -326,9 +325,9 @@ export const oauth = {
   authorize: async (location: Location) => {
     const $t = get(t);
     try {
-      const redirectUri = location.href.split('?')[0];
+      const redirectUri = location.href.split('?', 1)[0];
       const { url } = await startOAuth({ oAuthConfigDto: { redirectUri } });
-      globalThis.location.href = url;
+      globalThis.location.assign(url);
       return true;
     } catch (error) {
       handleError(error, $t('errors.unable_to_login_with_oauth'));
@@ -430,7 +429,8 @@ export const isEnabled = ({ $if }: IfLike) => $if?.() ?? true;
 export const transformToTitleCase = (text: string) => {
   if (text.length === 0) {
     return text;
-  } else if (text.length === 1) {
+  }
+  if (text.length === 1) {
     return text.charAt(0).toUpperCase();
   }
 

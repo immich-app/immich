@@ -4,6 +4,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { StackCreateDto, StackResponseDto, StackSearchDto, StackUpdateDto, mapStack } from 'src/dtos/stack.dto';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { findOrFail } from 'src/utils/misc';
 import { UUIDAssetIDParamDto } from 'src/validation';
 
 @Injectable()
@@ -36,7 +37,7 @@ export class StackService extends BaseService {
   async update(auth: AuthDto, id: string, dto: StackUpdateDto): Promise<StackResponseDto> {
     await this.requireAccess({ auth, permission: Permission.StackUpdate, ids: [id] });
     const stack = await this.findOrFail(id);
-    if (dto.primaryAssetId && !stack.assets.some(({ id }) => id === dto.primaryAssetId)) {
+    if (dto.primaryAssetId && stack.assets.every(({ id }) => id !== dto.primaryAssetId)) {
       throw new BadRequestException('Primary asset must be in the stack');
     }
 
@@ -77,12 +78,7 @@ export class StackService extends BaseService {
     await this.eventRepository.emit('StackUpdate', { stackId, userId: auth.user.id });
   }
 
-  private async findOrFail(id: string) {
-    const stack = await this.stackRepository.getById(id);
-    if (!stack) {
-      throw new Error('Asset stack not found');
-    }
-
-    return stack;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.stackRepository.getById(id), 'Asset stack');
   }
 }

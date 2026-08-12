@@ -40,7 +40,8 @@ export const setupTimelineMockApiRoutes = async (
         contentType: 'application/json',
         json: getTimeBuckets(timelineRestData, isTrashed, isArchived, isFavorite, albumId, changes),
       });
-    } else if (pathname === '/api/timeline/bucket') {
+    }
+    if (pathname === '/api/timeline/bucket') {
       const timeBucket = url.searchParams.get('timeBucket');
       if (!timeBucket) {
         return route.continue();

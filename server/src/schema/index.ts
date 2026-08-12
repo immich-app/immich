@@ -7,6 +7,7 @@ import {
 } from 'src/schema/enums';
 import {
   album_user_after_insert,
+  album_user_delete,
   album_user_delete_audit,
   asset_delete_audit,
   asset_face_audit,
@@ -174,6 +175,7 @@ export class ImmichDatabase {
     asset_metadata_audit,
     asset_face_audit,
     asset_ocr_delete_audit,
+    album_user_delete,
   ];
 
   enum = [album_user_role_enum, assets_status_enum, asset_face_source_type, asset_visibility_enum];

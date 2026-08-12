@@ -64,7 +64,7 @@ export const handleSystemConfigSave = async (update: Partial<SystemConfigDto>) =
 };
 
 export const handleUploadConfig = () => {
-  const input = globalThis.document.createElement('input');
+  const input = document.createElement('input');
   input.setAttribute('type', 'file');
   input.setAttribute('accept', '.json');
   input.setAttribute('style', 'display: none');
@@ -83,6 +83,6 @@ export const handleUploadConfig = () => {
       .catch((error) => console.error('Error handling JSON config upload', error))
       .finally(() => input.remove());
   });
-  globalThis.document.body.append(input);
+  document.body.append(input);
   input.click();
 };

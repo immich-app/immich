@@ -35,7 +35,7 @@ const exec = promisify(execCallback);
 const maybeFirstLine = async (command: string): Promise<string> => {
   try {
     const { stdout } = await exec(command);
-    return stdout.trim().split('\n')[0] || '';
+    return stdout.trim().split('\n', 1)[0] || '';
   } catch {
     return '';
   }
@@ -69,7 +69,16 @@ export class ServerInfoRepository {
     try {
       const { versionCheck } = this.configRepository.getEnv();
       const url = new URL(versionCheck.url);
-      url.searchParams.append('channel', channel);
+      switch (channel) {
+        case ReleaseChannel.Stable: {
+          url.searchParams.append('channel', 'stable');
+          break;
+        }
+        case ReleaseChannel.ReleaseCandidate: {
+          url.searchParams.append('channel', 'rc');
+          break;
+        }
+      }
       const response = await fetch(url);
 
       if (!response.ok) {
@@ -102,6 +111,7 @@ export class ServerInfoRepository {
 
       const lockfile: BuildLockfile | undefined = await readFile(resourcePaths.lockFile)
         .then((buffer) => JSON.parse(buffer.toString()))
+
         .catch(() => this.logger.warn(`Failed to read ${resourcePaths.lockFile}`));
 
       const [nodejsVersion, ffmpegVersion, magickVersion, exiftoolVersion] = await Promise.all([

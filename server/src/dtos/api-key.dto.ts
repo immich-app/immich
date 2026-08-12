@@ -21,7 +21,7 @@ const ApiKeyUpdateSchema = z
 
 const ApiKeyResponseSchema = z
   .object({
-    id: z.string().describe('API key ID'),
+    id: z.uuidv4().describe('API key ID'),
     name: z.string().describe('API key name'),
     createdAt: isoDatetimeToDate.describe('Creation date'),
     updatedAt: isoDatetimeToDate.describe('Last update date'),

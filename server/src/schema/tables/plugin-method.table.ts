@@ -27,6 +27,9 @@ export class PluginMethodTable {
   @Column({ type: 'boolean', default: false })
   hostFunctions!: Generated<boolean>;
 
+  @Column({ type: 'character varying', default: [], array: true })
+  allowedHosts!: Generated<string[]>;
+
   @Column({ type: 'jsonb', nullable: true })
   schema!: JsonSchemaDto | null;
 

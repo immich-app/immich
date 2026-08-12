@@ -1,4 +1,4 @@
-import { AUDIO_ENCODER, SUPPORTED_HWA_CODECS } from 'src/constants';
+import { AUDIO_ENCODER, AV1_LEVELS, CodecLevel, H264_LEVELS, HEVC_LEVELS, SUPPORTED_HWA_CODECS } from 'src/constants';
 import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   ColorMatrix,
@@ -36,6 +36,29 @@ export const getOutputSize = (videoStream: VideoStreamInfo, targetRes: number) =
   return isVideoVertical(videoStream) ? { width: targetRes, height: larger } : { width: larger, height: targetRes };
 };
 
+const pickLevel = (levels: CodecLevel[], frame: number, rate: number) =>
+  levels.find((level) => frame <= level.maxFrame && rate <= level.maxRate) ?? levels.at(-1)!;
+
+export const getCodecString = (codec: VideoCodec, width: number, height: number, fps: number): string => {
+  switch (codec) {
+    case VideoCodec.H264: {
+      const macroblocks = Math.ceil(width / 16) * Math.ceil(height / 16);
+      return `avc1.6400${pickLevel(H264_LEVELS, macroblocks, macroblocks * fps).token}`;
+    }
+    case VideoCodec.Hevc: {
+      const samples = width * height;
+      return `hvc1.1.6.${pickLevel(HEVC_LEVELS, samples, samples * fps).token}.B0`;
+    }
+    case VideoCodec.Av1: {
+      const samples = width * height;
+      return `av01.0.${pickLevel(AV1_LEVELS, samples, samples * fps).token}.08`;
+    }
+    default: {
+      throw new Error(`Codec '${codec}' does not support HLS codec strings`);
+    }
+  }
+};
+
 export class BaseConfig implements VideoCodecSWConfig {
   readonly presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
   protected constructor(
@@ -45,9 +68,9 @@ export class BaseConfig implements VideoCodecSWConfig {
 
   static create(config: SystemConfigFFmpegDto, interfaces: VideoInterfaces, tune?: VideoTuning) {
     if (config.accel === TranscodeHardwareAcceleration.Disabled) {
-      return this.getSWCodecConfig(config, tune);
+      return BaseConfig.getSWCodecConfig(config, tune);
     }
-    return this.getHWCodecConfig(config, interfaces, tune);
+    return BaseConfig.getHWCodecConfig(config, interfaces, tune);
   }
 
   private static getSWCodecConfig(config: SystemConfigFFmpegDto, tune?: VideoTuning): VideoCodecSWConfig {
@@ -200,20 +223,26 @@ export class BaseConfig implements VideoCodecSWConfig {
     const options = ['-c:v', videoCodec, '-c:a', audioCodec, '-map', `0:${videoStream.index}`, '-map_metadata', '-1'];
     if (audioStream) {
       options.push('-map', `0:${audioStream.index}`);
-    }
-    if (this.getBFrames() > -1) {
-      options.push('-bf', `${this.getBFrames()}`);
-    }
-    if (this.getRefs() > 0) {
-      options.push('-refs', `${this.getRefs()}`);
-    }
-    if (this.getGopSize() > 0) {
-      options.push('-g', `${this.getGopSize()}`);
-      if (this.tune.strictGop) {
-        options.push('-keyint_min', `${this.getGopSize()}`);
+      // If there are more than 2 channels sometimes the channel config is broken when re-encoded
+      // TODO: Store the number of channels in the db and then set it during the transcoding: -channel_layout 5.1
+      if ([TranscodeTarget.All, TranscodeTarget.Audio].includes(target)) {
+        options.push('-ac', '2');
       }
     }
-    const isHvc = (videoCodec === 'copy' ? videoStream.codecName : videoCodec) === VideoCodec.Hevc;
+    if (this.getBFrames() > -1) {
+      options.push('-bf', String(this.getBFrames()));
+    }
+    if (this.getRefs() > 0) {
+      options.push('-refs', String(this.getRefs()));
+    }
+    if (this.getGopSize() > 0) {
+      options.push('-g', String(this.getGopSize()));
+      if (this.tune.strictGop) {
+        options.push('-keyint_min', String(this.getGopSize()));
+      }
+    }
+    const isHvc =
+      this.config.targetVideoCodec === VideoCodec.Hevc && (videoCodec !== 'copy' || videoStream.codecName === 'hevc');
     if (isHvc) {
       options.push('-tag:v', 'hvc1');
     }
@@ -256,19 +285,19 @@ export class BaseConfig implements VideoCodecSWConfig {
         '-maxrate',
         `${bitrates.max}${bitrates.unit}`,
       ];
-    } else if (bitrates.max > 0) {
+    }
+    if (bitrates.max > 0) {
       // -bufsize is the peak possible bitrate at any moment, while -maxrate is the max rolling average bitrate
       return [
         `-${this.useCQP() ? 'q:v' : 'crf'}`,
-        `${this.config.crf}`,
+        String(this.config.crf),
         '-maxrate',
         `${bitrates.max}${bitrates.unit}`,
         '-bufsize',
         `${bitrates.max * 2}${bitrates.unit}`,
       ];
-    } else {
-      return [`-${this.useCQP() ? 'q:v' : 'crf'}`, `${this.config.crf}`];
     }
+    return [`-${this.useCQP() ? 'q:v' : 'crf'}`, String(this.config.crf)];
   }
 
   getInputThreadOptions(): Array<string> {
@@ -279,7 +308,7 @@ export class BaseConfig implements VideoCodecSWConfig {
     if (this.config.threads <= 0) {
       return [];
     }
-    return ['-threads', `${this.config.threads}`];
+    return ['-threads', String(this.config.threads)];
   }
 
   eligibleForTwoPass() {
@@ -314,9 +343,9 @@ export class BaseConfig implements VideoCodecSWConfig {
   }
 
   shouldScale(videoStream: VideoStreamInfo) {
-    const oddDimensions = videoStream.height % 2 !== 0 || videoStream.width % 2 !== 0;
-    const largerThanTarget = Math.min(videoStream.height, videoStream.width) > this.getTargetResolution(videoStream);
-    return oddDimensions || largerThanTarget;
+    const isOddDimensions = videoStream.height % 2 !== 0 || videoStream.width % 2 !== 0;
+    const isLargerThanTarget = Math.min(videoStream.height, videoStream.width) > this.getTargetResolution(videoStream);
+    return isOddDimensions || isLargerThanTarget;
   }
 
   shouldToneMap(videoStream: VideoStreamInfo) {
@@ -540,7 +569,7 @@ export class VP9Config extends BaseConfig {
   getPresetOptions() {
     const speed = Math.min(this.getPresetIndex(), 5); // values over 5 require realtime mode, which is its own can of worms since it overrides -crf and -threads
     if (speed >= 0) {
-      return ['-cpu-used', `${speed}`];
+      return ['-cpu-used', String(speed)];
     }
     return [];
   }
@@ -558,7 +587,7 @@ export class VP9Config extends BaseConfig {
       ];
     }
 
-    return [`-${this.useCQP() ? 'q:v' : 'crf'}`, `${this.config.crf}`, '-b:v', `${bitrates.max}${bitrates.unit}`];
+    return [`-${this.useCQP() ? 'q:v' : 'crf'}`, String(this.config.crf), '-b:v', `${bitrates.max}${bitrates.unit}`];
   }
 
   getEncoderOptions(): string[] {
@@ -578,13 +607,13 @@ export class AV1Config extends BaseConfig {
   getPresetOptions() {
     const speed = this.getPresetIndex() + 4; // Use 4 as slowest, giving us an effective range of 4-12 which is far more useful than 0-8
     if (speed >= 0) {
-      return ['-preset', `${speed}`];
+      return ['-preset', String(speed)];
     }
     return [];
   }
 
   getBitrateOptions() {
-    return ['-crf', `${this.config.crf}`];
+    return ['-crf', String(this.config.crf)];
   }
 
   getEncoderOptions(): string[] {
@@ -670,18 +699,17 @@ export class NvencSwDecodeConfig extends BaseHWConfig {
         '-multipass',
         '2',
       ];
-    } else if (bitrates.max > 0) {
-      return [
-        '-cq:v',
-        `${this.config.crf}`,
-        '-maxrate',
-        `${bitrates.max}${bitrates.unit}`,
-        '-bufsize',
-        `${bitrates.target}${bitrates.unit}`,
-      ];
-    } else {
-      return ['-cq:v', `${this.config.crf}`];
     }
+    return bitrates.max > 0
+      ? [
+          '-cq:v',
+          String(this.config.crf),
+          '-maxrate',
+          `${bitrates.max}${bitrates.unit}`,
+          '-bufsize',
+          `${bitrates.target}${bitrates.unit}`,
+        ]
+      : ['-cq:v', String(this.config.crf)];
   }
 
   getThreadOptions() {
@@ -781,13 +809,19 @@ export class QsvSwDecodeConfig extends BaseHWConfig {
       return [];
     }
     presetIndex = Math.min(6, presetIndex) + 1; // 1 to 7
-    return ['-preset', `${presetIndex}`];
+    return ['-preset', String(presetIndex)];
   }
 
   getBitrateOptions() {
-    const options = [`-${this.useCQP() ? 'q:v' : 'global_quality:v'}`, `${this.config.crf}`];
+    const options = [`-${this.useCQP() ? 'q:v' : 'global_quality:v'}`, String(this.config.crf)];
     const bitrates = this.getBitrateDistribution();
     if (bitrates.max > 0) {
+      // Workaround for https://github.com/immich-app/immich/issues/29220, to be revisited
+      // QSV seems to ignore -maxrate without -b:v
+      // -b:v alongside global_quality uses QVBR
+      if (!this.useCQP()) {
+        options.push('-b:v', `${bitrates.target}${bitrates.unit}`);
+      }
       options.push('-maxrate', `${bitrates.max}${bitrates.unit}`, '-bufsize', `${bitrates.max * 2}${bitrates.unit}`);
     }
     return options;
@@ -904,7 +938,7 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
       return [];
     }
     presetIndex = Math.min(6, presetIndex) + 1; // 1 to 7
-    return ['-compression_level', `${presetIndex}`];
+    return ['-compression_level', String(presetIndex)];
   }
 
   getBitrateOptions() {
@@ -928,9 +962,9 @@ export class VaapiSwDecodeConfig extends BaseHWConfig {
         '3',
       ); // variable bitrate
     } else if (this.useCQP()) {
-      options.push('-qp:v', `${this.config.crf}`, '-global_quality:v', `${this.config.crf}`, '-rc_mode', '1');
+      options.push('-qp:v', String(this.config.crf), '-global_quality:v', String(this.config.crf), '-rc_mode', '1');
     } else {
-      options.push('-global_quality:v', `${this.config.crf}`, '-rc_mode', '4');
+      options.push('-global_quality:v', String(this.config.crf), '-rc_mode', '4');
     }
 
     return options;
@@ -1037,7 +1071,7 @@ export class RkmppSwDecodeConfig extends BaseHWConfig {
       return ['-rc_mode', 'AVBR', '-b:v', `${bitrate}${this.getBitrateUnit()}`];
     }
     // use CRF value as QP value
-    return ['-rc_mode', 'CQP', '-qp_init', `${this.config.crf}`];
+    return ['-rc_mode', 'CQP', '-qp_init', String(this.config.crf)];
   }
 
   getVideoCodec(): string {
@@ -1071,7 +1105,8 @@ export class RkmppHwDecodeConfig extends RkmppSwDecodeConfig {
         `tonemapx=tonemap=${this.config.tonemap}:desat=0:p=${primaries}:t=${transfer}:m=${matrix}:r=pc:peak=100:format=yuv420p`,
         'hwupload',
       ];
-    } else if (this.shouldScale(videoStream)) {
+    }
+    if (this.shouldScale(videoStream)) {
       return [`scale_rkrga=${this.getScaling(videoStream)}:format=nv12:afbc=1:async_depth=4`];
     }
     return [];

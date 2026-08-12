@@ -30,9 +30,6 @@ export const getTriggerDescription = ($t: MessageFormatter, type: WorkflowTrigge
     case WorkflowTrigger.AssetMetadataExtraction: {
       return $t('trigger_asset_metadata_extraction_description');
     }
-    default: {
-      return type;
-    }
   }
 };
 
@@ -78,10 +75,6 @@ export const getWorkflowDefaultConfig = (schema: JSONSchemaProperty) => {
       case 'object': {
         config[key] = property.properties ? getWorkflowDefaultConfig(property) : {};
         break;
-      }
-
-      default: {
-        console.log(`Unknown configuration type: ${property.type}`);
       }
     }
   }

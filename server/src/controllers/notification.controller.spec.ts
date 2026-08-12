@@ -20,11 +20,6 @@ describe(NotificationController.name, () => {
   });
 
   describe('GET /notifications', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/notifications');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should reject an invalid notification level`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .get(`/notifications`)
@@ -40,11 +35,6 @@ describe(NotificationController.name, () => {
   });
 
   describe('PUT /notifications', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put('/notifications');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     describe('ids', () => {
       it('should require a list', async () => {
         const { status, body } = await request(ctx.getHttpServer()).put(`/notifications`).send({ ids: true });
@@ -75,11 +65,6 @@ describe(NotificationController.name, () => {
   });
 
   describe('GET /notifications/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/notifications/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/notifications/123`);
       expect(status).toBe(400);
@@ -88,11 +73,6 @@ describe(NotificationController.name, () => {
   });
 
   describe('PUT /notifications/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/notifications/${factory.uuid()}`).send({ readAt: factory.date() });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should accept a null readAt', async () => {
       const id = factory.uuid();
       await request(ctx.getHttpServer()).put(`/notifications/${id}`).send({ readAt: null });

@@ -50,6 +50,9 @@ const getDefaultPreferences = (): UserPreferences => {
     cast: {
       gCastEnabled: false,
     },
+    recentlyAdded: {
+      sidebarWeb: false,
+    },
   };
 };
 
@@ -69,7 +72,7 @@ export const getPreferencesPartial = (newPreferences: UserPreferences) => {
   const partial: DeepPartial<UserPreferences> = {};
   for (const property of getKeysDeep(defaultPreferences)) {
     const newValue = _.get(newPreferences, property);
-    const isEmpty = newValue === undefined || newValue === null || newValue === '';
+    const isEmpty = [undefined, null, ''].includes(newValue);
     const defaultValue = _.get(defaultPreferences, property);
     const isEqual = newValue === defaultValue || _.isEqual(newValue, defaultValue);
 

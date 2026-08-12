@@ -10,7 +10,6 @@ import 'package:immich_mobile/services/auth.service.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:openapi/api.dart';
 
-import '../domain/service.mock.dart';
 import '../repository.mocks.dart';
 import '../service.mocks.dart';
 
@@ -29,13 +28,7 @@ void main() {
     apiService = MockApiService();
     networkService = MockNetworkService();
     backgroundSyncManager = MockBackgroundSyncManager();
-    sut = AuthService(
-      authApiRepository,
-      authRepository,
-      apiService,
-      networkService,
-      backgroundSyncManager,
-    );
+    sut = AuthService(authApiRepository, authRepository, apiService, networkService, backgroundSyncManager);
 
     registerFallbackValue(Uri());
   });
@@ -110,7 +103,7 @@ void main() {
     });
 
     test('Should return null if auto endpoint switching is disabled', () async {
-      when(() => authRepository.getEndpointSwitchingFeature()).thenReturn((false));
+      when(() => authRepository.getEndpointSwitchingFeature()).thenReturn(false);
 
       final result = await sut.setOpenApiServiceEndpoint();
 

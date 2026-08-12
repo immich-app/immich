@@ -1,4 +1,4 @@
-import { INestApplication } from '@nestjs/common';
+import { BadRequestException, INestApplication } from '@nestjs/common';
 import {
   ApiBodyOptions,
   DocumentBuilder,
@@ -14,7 +14,7 @@ import path from 'node:path';
 import picomatch from 'picomatch';
 import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
-import { CLIP_MODEL_INFO, endpointTags, serverVersion } from 'src/constants';
+import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants';
 import { extraModels } from 'src/decorators';
 import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
@@ -111,6 +111,32 @@ export const handlePromiseError = <T>(promise: Promise<T>, logger: LoggingReposi
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
 
+export const findOrFail = async <T>(find: () => Promise<T>, entity: string): Promise<NonNullable<T>> => {
+  const value = await find();
+  if (!value) {
+    throw new BadRequestException(`${entity} not found`);
+  }
+
+  return value;
+};
+
+export async function* batched<T>(items: AsyncIterable<T>, size = JOBS_ASSET_PAGINATION_SIZE): AsyncGenerator<T[]> {
+  let batch: T[] = [];
+
+  for await (const item of items) {
+    batch.push(item);
+
+    if (batch.length >= size) {
+      yield batch;
+      batch = [];
+    }
+  }
+
+  if (batch.length > 0) {
+    yield batch;
+  }
+}
+
 export interface OpenGraphTags {
   title: string;
   description: string;
@@ -152,11 +178,7 @@ export const routeToErrorMessage = (methodName: string) =>
   'Failed to ' + methodName.replaceAll(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
 
 const isSchema = (schema: string | ReferenceObject | SchemaObject): schema is SchemaObject => {
-  if (typeof schema === 'string' || '$ref' in schema) {
-    return false;
-  }
-
-  return true;
+  return !(typeof schema === 'string' || '$ref' in schema);
 };
 
 const patchOpenAPI = (document: OpenAPIObject) => {
@@ -195,20 +217,22 @@ const patchOpenAPI = (document: OpenAPIObject) => {
     document.components.schemas = sortKeys(schemas);
 
     for (const [schemaName, schema] of Object.entries(schemas)) {
-      if (schema.properties) {
-        schema.properties = sortKeys(schema.properties);
-
-        for (const [key, value] of Object.entries(schema.properties)) {
-          if (typeof value === 'string') {
-            continue;
-          }
-
-          if (isSchema(value) && value.type === 'number' && value.format === 'float') {
-            throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
-          }
-        }
-        schema.required?.sort();
+      if (!schema.properties) {
+        continue;
       }
+
+      schema.properties = sortKeys(schema.properties);
+
+      for (const [key, value] of Object.entries(schema.properties)) {
+        if (typeof value === 'string') {
+          continue;
+        }
+
+        if (isSchema(value) && value.type === 'number' && value.format === 'float') {
+          throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+        }
+      }
+      schema.required?.sort();
     }
   }
 

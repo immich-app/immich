@@ -1,11 +1,13 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
-import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
+import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 import 'package:immich_mobile/utils/people.utils.dart';
@@ -47,10 +49,10 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                     onTapOutside: (_) => _formFocus.unfocus(),
                     onChanged: (value) => setState(() => _search = value),
                     filled: true,
-                    hintText: 'filter_people'.tr(),
+                    hintText: context.t.filter_people,
                     autofocus: true,
                   )
-                : Text('people'.tr()),
+                : Text(context.t.people),
             actions: [
               IconButton(
                 icon: Icon(_search != null ? Icons.close : Icons.search),
@@ -86,7 +88,7 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                       children: [
                         GestureDetector(
                           onTap: () {
-                            context.pushRoute(DriftPersonRoute(person: person));
+                            unawaited(context.pushRoute(DriftPersonRoute(person: person)));
                           },
                           child: Material(
                             shape: const CircleBorder(side: BorderSide.none),
@@ -94,7 +96,9 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                             child: CircleAvatar(
                               key: ValueKey(person.id),
                               maxRadius: isTablet ? 100 / 2 : 96 / 2,
-                              backgroundImage: RemoteImageProvider(url: getFaceThumbnailUrl(person.id)),
+                              backgroundImage: RemoteImageProvider(
+                                url: getFaceThumbnailUrl(person.id, updatedAt: person.updatedAt),
+                              ),
                             ),
                           ),
                         ),
@@ -103,7 +107,7 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                           onTap: () => showNameEditModal(context, person),
                           child: person.name.isEmpty
                               ? Text(
-                                  'add_a_name'.tr(),
+                                  context.t.add_a_name,
                                   style: context.textTheme.titleSmall?.copyWith(
                                     fontWeight: FontWeight.w500,
                                     color: context.colorScheme.primary,
