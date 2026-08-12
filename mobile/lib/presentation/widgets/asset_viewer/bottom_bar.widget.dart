@@ -9,6 +9,8 @@ import 'package:immich_mobile/presentation/widgets/action_buttons/delete_action_
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_local_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/delete_permanent_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/edit_image_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/keep_on_device_action_button.widget.dart';
+import 'package:immich_mobile/presentation/widgets/action_buttons/move_to_trash_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/restore_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/share_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/upload_action_button.widget.dart';
@@ -37,35 +39,54 @@ class ViewerBottomBar extends ConsumerWidget {
     final isOwner = asset is RemoteAsset && asset.ownerId == user?.id;
     final showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final isInLockedView = ref.watch(inLockedViewProvider);
+    final timelineOrigin = ref.read(timelineServiceProvider).origin;
+    final isInTrash = timelineOrigin == TimelineOrigin.trash;
     final serverInfo = ref.watch(serverInfoProvider);
-    final isInTrash = ref.read(timelineServiceProvider).origin == TimelineOrigin.trash;
+    final isSyncTrash = timelineOrigin == TimelineOrigin.syncTrash;
 
     final originalTheme = context.themeData;
 
-    final actions = <Widget>[
-      if (isInTrash && isOwner && asset.hasRemote)
-        const RestoreActionButton(source: ActionSource.viewer)
-      else
-        const ShareActionButton(source: ActionSource.viewer),
+    final actions = isSyncTrash
+        ? <Widget>[
+            KeepOnDeviceActionButton(
+              source: ActionSource.viewer,
+              onResult: (result) {
+                showKeepResultToast(context, result);
+                _updateView(ref);
+              },
+            ),
+            MoveToTrashActionButton(
+              source: ActionSource.viewer,
+              onResult: (result) {
+                showTrashResultToast(context, result);
+                _updateView(ref);
+              },
+            ),
+          ]
+        : <Widget>[
+            if (isInTrash && isOwner && asset.hasRemote)
+              const RestoreActionButton(source: ActionSource.viewer)
+            else
+              const ShareActionButton(source: ActionSource.viewer),
 
-      if (!isInLockedView) ...[
-        if (!isInTrash) ...[
-          if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
-          // edit sync was added in 2.6.0
-          if (asset.isEditable && serverInfo.serverVersion >= const SemVer(major: 2, minor: 6, patch: 0))
-            const EditImageActionButton(),
-          if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
-        ],
-        if (isOwner) ...[
-          if (asset.isLocalOnly)
-            const DeleteLocalActionButton(source: ActionSource.viewer)
-          else if (asset.isTrashed)
-            const DeletePermanentActionButton(source: ActionSource.viewer, useShortLabel: true)
-          else
-            const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
-        ],
-      ],
-    ];
+            if (!isInLockedView) ...[
+              if (!isInTrash) ...[
+                if (asset.isLocalOnly) const UploadActionButton(source: ActionSource.viewer),
+                // edit sync was added in 2.6.0
+                if (asset.isEditable && serverInfo.serverVersion >= const SemVer(major: 2, minor: 6, patch: 0))
+                  const EditImageActionButton(),
+                if (asset.hasRemote) AddActionButton(originalTheme: originalTheme),
+              ],
+              if (isOwner) ...[
+                if (asset.isLocalOnly)
+                  const DeleteLocalActionButton(source: ActionSource.viewer)
+                else if (asset.isTrashed)
+                  const DeletePermanentActionButton(source: ActionSource.viewer, useShortLabel: true)
+                else
+                  const DeleteActionButton(source: ActionSource.viewer, showConfirmation: true),
+              ],
+            ],
+          ];
 
     return AnimatedSwitcher(
       duration: Durations.short4,
@@ -113,5 +134,13 @@ class ViewerBottomBar extends ConsumerWidget {
               ),
             ),
     );
+  }
+
+  void _updateView(WidgetRef ref) {
+    Future.delayed(Durations.extralong4, () {
+      if (ref.context.mounted) {
+        ref.read(assetViewerProvider.notifier).setControls(true);
+      }
+    });
   }
 }

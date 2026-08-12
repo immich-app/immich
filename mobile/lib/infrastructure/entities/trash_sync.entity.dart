@@ -14,6 +14,8 @@ class TrashSyncEntity extends Table with DriftDefaultsMixin {
 
   DateTimeColumn get assetUpdatedAt => dateTime().nullable()();
 
+  DateTimeColumn get remoteDeletedAt => dateTime().nullable()();
+
   @override
   Set<Column> get primaryKey => {assetId};
 

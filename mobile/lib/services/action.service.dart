@@ -10,8 +10,10 @@ import 'package:immich_mobile/domain/services/tag.service.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trash_sync.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/trash_sync.provider.dart';
 import 'package:immich_mobile/repositories/asset_api.repository.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/download.repository.dart';
@@ -31,6 +33,7 @@ final actionServiceProvider = Provider<ActionService>(
     ref.watch(driftAlbumApiRepositoryProvider),
     ref.watch(remoteAlbumRepository),
     ref.watch(assetMediaRepositoryProvider),
+    ref.watch(trashSyncRepositoryProvider),
     ref.watch(downloadRepositoryProvider),
     ref.watch(tagServiceProvider),
   ),
@@ -43,6 +46,7 @@ class ActionService {
   final DriftAlbumApiRepository _albumApiRepository;
   final DriftRemoteAlbumRepository _remoteAlbumRepository;
   final AssetMediaRepository _assetMediaRepository;
+  final DriftTrashSyncRepository _trashSyncRepository;
   final DownloadRepository _downloadRepository;
   final TagService _tagService;
 
@@ -53,6 +57,7 @@ class ActionService {
     this._albumApiRepository,
     this._remoteAlbumRepository,
     this._assetMediaRepository,
+    this._trashSyncRepository,
     this._downloadRepository,
     this._tagService,
   );
@@ -138,6 +143,27 @@ class ActionService {
 
   Future<int> deleteLocal(List<String> localIds) async {
     return await _deleteLocalAssets(localIds);
+  }
+
+  Future<({int displayCount, bool success})> resolveRemoteTrash(Iterable<String> assetIds, {required bool keep}) async {
+    if (keep) {
+      final rejectedCount = await _trashSyncRepository.rejectReviewAssets(assetIds);
+      return (displayCount: rejectedCount, success: rejectedCount > 0);
+    }
+
+    final reviewableAssetIds = await _trashSyncRepository.getReviewableAssetIds(assetIds);
+    if (reviewableAssetIds.isEmpty) {
+      return const (displayCount: 0, success: false);
+    }
+
+    final trashedAssetIds = await _assetMediaRepository.deleteAll(reviewableAssetIds);
+    if (trashedAssetIds.isEmpty) {
+      return const (displayCount: 0, success: false);
+    }
+
+    await _trashSyncRepository.markReviewAssetsApproved(trashedAssetIds);
+    await _localAssetRepository.delete(trashedAssetIds);
+    return (displayCount: trashedAssetIds.length, success: true);
   }
 
   Future<bool> editLocation(List<String> remoteIds, BuildContext context) async {

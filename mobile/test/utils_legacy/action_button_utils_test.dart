@@ -145,6 +145,69 @@ void main() {
       });
     });
 
+    group('sync trash review buttons', () {
+      test('kebab menu keeps non-decision actions available in sync trash timeline', () {
+        final context = ActionButtonContext(
+          asset: createRemoteAsset(),
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          timelineOrigin: TimelineOrigin.syncTrash,
+        );
+
+        expect(ActionButtonType.openInfo.shouldShow(context), isTrue);
+        expect(ActionButtonType.share.shouldShow(context), isTrue);
+        expect(ActionButtonType.slideshow.shouldShow(context), isTrue);
+      });
+
+      test('normal destructive actions are hidden while asset waits for trash review', () {
+        final context = ActionButtonContext(
+          asset: createRemoteAsset(),
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.timeline,
+          timelineOrigin: TimelineOrigin.syncTrash,
+        );
+
+        expect(ActionButtonType.delete.shouldShow(context), isFalse);
+        expect(ActionButtonType.trash.shouldShow(context), isFalse);
+        expect(ActionButtonType.archive.shouldShow(context), isFalse);
+        expect(ActionButtonType.share.shouldShow(context), isTrue);
+      });
+
+      test('normal move and delete actions are hidden while asset waits for trash review', () {
+        final context = ActionButtonContext(
+          asset: createLocalAsset(remoteId: 'remote-id'),
+          isOwner: true,
+          isArchived: false,
+          isTrashEnabled: true,
+          isInLockedView: false,
+          currentAlbum: null,
+          advancedTroubleshooting: false,
+          isStacked: false,
+          source: ActionSource.viewer,
+          timelineOrigin: TimelineOrigin.syncTrash,
+        );
+
+        expect(ActionButtonType.archive.shouldShow(context), isFalse);
+        expect(ActionButtonType.trash.shouldShow(context), isFalse);
+        expect(ActionButtonType.delete.shouldShow(context), isFalse);
+        expect(ActionButtonType.deleteLocal.shouldShow(context), isFalse);
+        expect(ActionButtonType.moveToLockFolder.shouldShow(context), isFalse);
+        expect(ActionButtonType.share.shouldShow(context), isTrue);
+      });
+    });
+
     group('shareLink button', () {
       test('should show when not in locked view and asset has remote', () {
         final remoteAsset = createRemoteAsset();

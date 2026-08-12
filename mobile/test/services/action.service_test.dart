@@ -21,6 +21,7 @@ void main() {
   late MockDriftAlbumApiRepository albumApiRepository;
   late MockRemoteAlbumRepository remoteAlbumRepository;
   late MockAssetMediaRepository assetMediaRepository;
+  late MockTrashSyncRepository trashSyncRepository;
   late MockDownloadRepository downloadRepository;
   late MockTagService tagService;
 
@@ -47,6 +48,7 @@ void main() {
     albumApiRepository = MockDriftAlbumApiRepository();
     remoteAlbumRepository = MockRemoteAlbumRepository();
     assetMediaRepository = MockAssetMediaRepository();
+    trashSyncRepository = MockTrashSyncRepository();
     downloadRepository = MockDownloadRepository();
     tagService = MockTagService();
 
@@ -57,6 +59,7 @@ void main() {
       albumApiRepository,
       remoteAlbumRepository,
       assetMediaRepository,
+      trashSyncRepository,
       downloadRepository,
       tagService,
     );
@@ -159,6 +162,53 @@ void main() {
       expect(result, 0);
       verify(() => assetMediaRepository.deleteAll(ids)).called(1);
       verifyNever(() => localAssetRepository.delete(any()));
+    });
+  });
+
+  group('ActionService.resolveRemoteTrash', () {
+    test('rejecting review marks local asset rejected and leaves local row', () async {
+      const assetIds = ['asset-1'];
+      when(() => trashSyncRepository.rejectReviewAssets(assetIds)).thenAnswer((_) async => 1);
+
+      final result = await sut.resolveRemoteTrash(assetIds, keep: true);
+
+      expect(result, (displayCount: 1, success: true));
+      verify(() => trashSyncRepository.rejectReviewAssets(assetIds)).called(1);
+      verifyNever(() => assetMediaRepository.deleteAll(any()));
+    });
+
+    test('approving review trashes only requested actionable local ids before approving', () async {
+      const assetIds = ['asset-1'];
+      when(() => trashSyncRepository.getReviewableAssetIds(assetIds)).thenAnswer((_) async => assetIds);
+      when(() => assetMediaRepository.deleteAll(assetIds)).thenAnswer((_) async => assetIds);
+      when(() => localAssetRepository.delete(assetIds)).thenAnswer((_) async {});
+      when(() => trashSyncRepository.markReviewAssetsApproved(assetIds)).thenAnswer((_) async {});
+
+      final result = await sut.resolveRemoteTrash(assetIds, keep: false);
+
+      expect(result, (displayCount: 1, success: true));
+      verifyInOrder([
+        () => assetMediaRepository.deleteAll(assetIds),
+        () => trashSyncRepository.markReviewAssetsApproved(assetIds),
+        () => localAssetRepository.delete(assetIds),
+      ]);
+    });
+
+    test('approving review records successfully trashed ids when another copy fails', () async {
+      const assetIds = ['asset-1', 'asset-2'];
+      const deletedIds = ['asset-1'];
+      when(() => trashSyncRepository.getReviewableAssetIds(assetIds)).thenAnswer((_) async => assetIds);
+      when(() => assetMediaRepository.deleteAll(assetIds)).thenAnswer((_) async => deletedIds);
+      when(() => localAssetRepository.delete(deletedIds)).thenAnswer((_) async {});
+      when(() => trashSyncRepository.markReviewAssetsApproved(deletedIds)).thenAnswer((_) async {});
+
+      final result = await sut.resolveRemoteTrash(assetIds, keep: false);
+
+      expect(result, (displayCount: 1, success: true));
+      verifyInOrder([
+        () => trashSyncRepository.markReviewAssetsApproved(deletedIds),
+        () => localAssetRepository.delete(deletedIds),
+      ]);
     });
   });
 }

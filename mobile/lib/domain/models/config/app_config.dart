@@ -12,6 +12,7 @@ import 'package:immich_mobile/domain/models/config/share_config.dart';
 import 'package:immich_mobile/domain/models/config/slideshow_config.dart';
 import 'package:immich_mobile/domain/models/config/theme_config.dart';
 import 'package:immich_mobile/domain/models/config/timeline_config.dart';
+import 'package:immich_mobile/domain/models/config/trash_sync_config.dart';
 import 'package:immich_mobile/domain/models/config/viewer_config.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/models/settings_key.dart';
@@ -23,7 +24,7 @@ const defaultConfig = AppConfig();
 
 class AppConfig {
   final LogLevel logLevel;
-  final bool trashSyncEnabled;
+  final TrashSyncConfig trashSync;
   final ThemeConfig theme;
   final CleanupConfig cleanup;
   final MapConfig map;
@@ -39,7 +40,7 @@ class AppConfig {
 
   const AppConfig({
     this.logLevel = .info,
-    this.trashSyncEnabled = false,
+    this.trashSync = const .new(),
     this.theme = const .new(),
     this.cleanup = const .new(),
     this.map = const .new(),
@@ -54,9 +55,11 @@ class AppConfig {
     this.featureMessage = const .new(),
   });
 
+  bool get trashSyncEnabled => trashSync.mode == TrashSyncMode.autoSync;
+
   AppConfig copyWith({
     LogLevel? logLevel,
-    bool? trashSyncEnabled,
+    TrashSyncConfig? trashSync,
     ThemeConfig? theme,
     CleanupConfig? cleanup,
     MapConfig? map,
@@ -71,7 +74,7 @@ class AppConfig {
     FeatureMessageConfig? featureMessage,
   }) => .new(
     logLevel: logLevel ?? this.logLevel,
-    trashSyncEnabled: trashSyncEnabled ?? this.trashSyncEnabled,
+    trashSync: trashSync ?? this.trashSync,
     theme: theme ?? this.theme,
     cleanup: cleanup ?? this.cleanup,
     map: map ?? this.map,
@@ -91,7 +94,7 @@ class AppConfig {
       identical(this, other) ||
       (other is AppConfig &&
           other.logLevel == logLevel &&
-          other.trashSyncEnabled == trashSyncEnabled &&
+          other.trashSync == trashSync &&
           other.theme == theme &&
           other.cleanup == cleanup &&
           other.map == map &&
@@ -108,7 +111,7 @@ class AppConfig {
   @override
   int get hashCode => Object.hash(
     logLevel,
-    trashSyncEnabled,
+    trashSync,
     theme,
     cleanup,
     map,
@@ -125,12 +128,13 @@ class AppConfig {
 
   @override
   String toString() =>
-      'AppConfig(logLevel: $logLevel, trashSyncEnabled: $trashSyncEnabled, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, featureMessage: $featureMessage)';
+      'AppConfig(logLevel: $logLevel, trashSync: $trashSync, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, featureMessage: $featureMessage)';
 
   T read<T>(SettingsKey<T> key) =>
       (switch (key) {
             .logLevel => logLevel,
-            .trashSyncEnabled => trashSyncEnabled,
+            .trashSyncEnabled => trashSync.mode == TrashSyncMode.autoSync,
+            .trashSyncMode => trashSync.mode,
             .themePrimaryColor => theme.primaryColor,
             .themeMode => theme.mode,
             .themeDynamic => theme.dynamicTheme,
@@ -185,7 +189,10 @@ class AppConfig {
   AppConfig write<T, U extends T>(SettingsKey<T> key, U value) {
     return switch (key) {
       .logLevel => copyWith(logLevel: value as LogLevel),
-      .trashSyncEnabled => copyWith(trashSyncEnabled: value as bool),
+      .trashSyncEnabled => copyWith(
+        trashSync: trashSync.copyWith(mode: (value as bool) ? TrashSyncMode.autoSync : TrashSyncMode.off),
+      ),
+      .trashSyncMode => copyWith(trashSync: trashSync.copyWith(mode: value as TrashSyncMode)),
       .themePrimaryColor => copyWith(theme: theme.copyWith(primaryColor: value as ImmichColorPreset)),
       .themeMode => copyWith(theme: theme.copyWith(mode: value as ThemeMode)),
       .themeDynamic => copyWith(theme: theme.copyWith(dynamicTheme: value as bool)),

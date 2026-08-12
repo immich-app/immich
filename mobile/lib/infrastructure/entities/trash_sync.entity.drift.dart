@@ -14,6 +14,7 @@ typedef $$TrashSyncEntityTableCreateCompanionBuilder =
       required String checksum,
       i0.Value<i2.TrashSyncStatus> status,
       i0.Value<DateTime?> assetUpdatedAt,
+      i0.Value<DateTime?> remoteDeletedAt,
     });
 typedef $$TrashSyncEntityTableUpdateCompanionBuilder =
     i1.TrashSyncEntityCompanion Function({
@@ -21,6 +22,7 @@ typedef $$TrashSyncEntityTableUpdateCompanionBuilder =
       i0.Value<String> checksum,
       i0.Value<i2.TrashSyncStatus> status,
       i0.Value<DateTime?> assetUpdatedAt,
+      i0.Value<DateTime?> remoteDeletedAt,
     });
 
 class $$TrashSyncEntityTableFilterComposer
@@ -50,6 +52,11 @@ class $$TrashSyncEntityTableFilterComposer
 
   i0.ColumnFilters<DateTime> get assetUpdatedAt => $composableBuilder(
     column: $table.assetUpdatedAt,
+    builder: (column) => i0.ColumnFilters(column),
+  );
+
+  i0.ColumnFilters<DateTime> get remoteDeletedAt => $composableBuilder(
+    column: $table.remoteDeletedAt,
     builder: (column) => i0.ColumnFilters(column),
   );
 }
@@ -82,6 +89,11 @@ class $$TrashSyncEntityTableOrderingComposer
     column: $table.assetUpdatedAt,
     builder: (column) => i0.ColumnOrderings(column),
   );
+
+  i0.ColumnOrderings<DateTime> get remoteDeletedAt => $composableBuilder(
+    column: $table.remoteDeletedAt,
+    builder: (column) => i0.ColumnOrderings(column),
+  );
 }
 
 class $$TrashSyncEntityTableAnnotationComposer
@@ -104,6 +116,11 @@ class $$TrashSyncEntityTableAnnotationComposer
 
   i0.GeneratedColumn<DateTime> get assetUpdatedAt => $composableBuilder(
     column: $table.assetUpdatedAt,
+    builder: (column) => column,
+  );
+
+  i0.GeneratedColumn<DateTime> get remoteDeletedAt => $composableBuilder(
+    column: $table.remoteDeletedAt,
     builder: (column) => column,
   );
 }
@@ -149,11 +166,13 @@ class $$TrashSyncEntityTableTableManager
                 i0.Value<String> checksum = const i0.Value.absent(),
                 i0.Value<i2.TrashSyncStatus> status = const i0.Value.absent(),
                 i0.Value<DateTime?> assetUpdatedAt = const i0.Value.absent(),
+                i0.Value<DateTime?> remoteDeletedAt = const i0.Value.absent(),
               }) => i1.TrashSyncEntityCompanion(
                 assetId: assetId,
                 checksum: checksum,
                 status: status,
                 assetUpdatedAt: assetUpdatedAt,
+                remoteDeletedAt: remoteDeletedAt,
               ),
           createCompanionCallback:
               ({
@@ -161,11 +180,13 @@ class $$TrashSyncEntityTableTableManager
                 required String checksum,
                 i0.Value<i2.TrashSyncStatus> status = const i0.Value.absent(),
                 i0.Value<DateTime?> assetUpdatedAt = const i0.Value.absent(),
+                i0.Value<DateTime?> remoteDeletedAt = const i0.Value.absent(),
               }) => i1.TrashSyncEntityCompanion.insert(
                 assetId: assetId,
                 checksum: checksum,
                 status: status,
                 assetUpdatedAt: assetUpdatedAt,
+                remoteDeletedAt: remoteDeletedAt,
               ),
           withReferenceMapper: (p0) => p0
               .map((e) => (e.readTable(table), i0.BaseReferences(db, table, e)))
@@ -253,12 +274,24 @@ class $TrashSyncEntityTable extends i3.TrashSyncEntity
         type: i0.DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const i0.VerificationMeta _remoteDeletedAtMeta =
+      const i0.VerificationMeta('remoteDeletedAt');
+  @override
+  late final i0.GeneratedColumn<DateTime> remoteDeletedAt =
+      i0.GeneratedColumn<DateTime>(
+        'remote_deleted_at',
+        aliasedName,
+        true,
+        type: i0.DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
   @override
   List<i0.GeneratedColumn> get $columns => [
     assetId,
     checksum,
     status,
     assetUpdatedAt,
+    remoteDeletedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -297,6 +330,15 @@ class $TrashSyncEntityTable extends i3.TrashSyncEntity
         ),
       );
     }
+    if (data.containsKey('remote_deleted_at')) {
+      context.handle(
+        _remoteDeletedAtMeta,
+        remoteDeletedAt.isAcceptableOrUnknown(
+          data['remote_deleted_at']!,
+          _remoteDeletedAtMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -324,6 +366,10 @@ class $TrashSyncEntityTable extends i3.TrashSyncEntity
         i0.DriftSqlType.dateTime,
         data['${effectivePrefix}asset_updated_at'],
       ),
+      remoteDeletedAt: attachedDatabase.typeMapping.read(
+        i0.DriftSqlType.dateTime,
+        data['${effectivePrefix}remote_deleted_at'],
+      ),
     );
   }
 
@@ -348,11 +394,13 @@ class TrashSyncEntityData extends i0.DataClass
   final String checksum;
   final i2.TrashSyncStatus status;
   final DateTime? assetUpdatedAt;
+  final DateTime? remoteDeletedAt;
   const TrashSyncEntityData({
     required this.assetId,
     required this.checksum,
     required this.status,
     this.assetUpdatedAt,
+    this.remoteDeletedAt,
   });
   @override
   Map<String, i0.Expression> toColumns(bool nullToAbsent) {
@@ -366,6 +414,9 @@ class TrashSyncEntityData extends i0.DataClass
     }
     if (!nullToAbsent || assetUpdatedAt != null) {
       map['asset_updated_at'] = i0.Variable<DateTime>(assetUpdatedAt);
+    }
+    if (!nullToAbsent || remoteDeletedAt != null) {
+      map['remote_deleted_at'] = i0.Variable<DateTime>(remoteDeletedAt);
     }
     return map;
   }
@@ -382,6 +433,7 @@ class TrashSyncEntityData extends i0.DataClass
         serializer.fromJson<int>(json['status']),
       ),
       assetUpdatedAt: serializer.fromJson<DateTime?>(json['assetUpdatedAt']),
+      remoteDeletedAt: serializer.fromJson<DateTime?>(json['remoteDeletedAt']),
     );
   }
   @override
@@ -394,6 +446,7 @@ class TrashSyncEntityData extends i0.DataClass
         i1.$TrashSyncEntityTable.$converterstatus.toJson(status),
       ),
       'assetUpdatedAt': serializer.toJson<DateTime?>(assetUpdatedAt),
+      'remoteDeletedAt': serializer.toJson<DateTime?>(remoteDeletedAt),
     };
   }
 
@@ -402,6 +455,7 @@ class TrashSyncEntityData extends i0.DataClass
     String? checksum,
     i2.TrashSyncStatus? status,
     i0.Value<DateTime?> assetUpdatedAt = const i0.Value.absent(),
+    i0.Value<DateTime?> remoteDeletedAt = const i0.Value.absent(),
   }) => i1.TrashSyncEntityData(
     assetId: assetId ?? this.assetId,
     checksum: checksum ?? this.checksum,
@@ -409,6 +463,9 @@ class TrashSyncEntityData extends i0.DataClass
     assetUpdatedAt: assetUpdatedAt.present
         ? assetUpdatedAt.value
         : this.assetUpdatedAt,
+    remoteDeletedAt: remoteDeletedAt.present
+        ? remoteDeletedAt.value
+        : this.remoteDeletedAt,
   );
   TrashSyncEntityData copyWithCompanion(i1.TrashSyncEntityCompanion data) {
     return TrashSyncEntityData(
@@ -418,6 +475,9 @@ class TrashSyncEntityData extends i0.DataClass
       assetUpdatedAt: data.assetUpdatedAt.present
           ? data.assetUpdatedAt.value
           : this.assetUpdatedAt,
+      remoteDeletedAt: data.remoteDeletedAt.present
+          ? data.remoteDeletedAt.value
+          : this.remoteDeletedAt,
     );
   }
 
@@ -427,13 +487,15 @@ class TrashSyncEntityData extends i0.DataClass
           ..write('assetId: $assetId, ')
           ..write('checksum: $checksum, ')
           ..write('status: $status, ')
-          ..write('assetUpdatedAt: $assetUpdatedAt')
+          ..write('assetUpdatedAt: $assetUpdatedAt, ')
+          ..write('remoteDeletedAt: $remoteDeletedAt')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(assetId, checksum, status, assetUpdatedAt);
+  int get hashCode =>
+      Object.hash(assetId, checksum, status, assetUpdatedAt, remoteDeletedAt);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -441,7 +503,8 @@ class TrashSyncEntityData extends i0.DataClass
           other.assetId == this.assetId &&
           other.checksum == this.checksum &&
           other.status == this.status &&
-          other.assetUpdatedAt == this.assetUpdatedAt);
+          other.assetUpdatedAt == this.assetUpdatedAt &&
+          other.remoteDeletedAt == this.remoteDeletedAt);
 }
 
 class TrashSyncEntityCompanion
@@ -450,17 +513,20 @@ class TrashSyncEntityCompanion
   final i0.Value<String> checksum;
   final i0.Value<i2.TrashSyncStatus> status;
   final i0.Value<DateTime?> assetUpdatedAt;
+  final i0.Value<DateTime?> remoteDeletedAt;
   const TrashSyncEntityCompanion({
     this.assetId = const i0.Value.absent(),
     this.checksum = const i0.Value.absent(),
     this.status = const i0.Value.absent(),
     this.assetUpdatedAt = const i0.Value.absent(),
+    this.remoteDeletedAt = const i0.Value.absent(),
   });
   TrashSyncEntityCompanion.insert({
     required String assetId,
     required String checksum,
     this.status = const i0.Value.absent(),
     this.assetUpdatedAt = const i0.Value.absent(),
+    this.remoteDeletedAt = const i0.Value.absent(),
   }) : assetId = i0.Value(assetId),
        checksum = i0.Value(checksum);
   static i0.Insertable<i1.TrashSyncEntityData> custom({
@@ -468,12 +534,14 @@ class TrashSyncEntityCompanion
     i0.Expression<String>? checksum,
     i0.Expression<int>? status,
     i0.Expression<DateTime>? assetUpdatedAt,
+    i0.Expression<DateTime>? remoteDeletedAt,
   }) {
     return i0.RawValuesInsertable({
       if (assetId != null) 'asset_id': assetId,
       if (checksum != null) 'checksum': checksum,
       if (status != null) 'status': status,
       if (assetUpdatedAt != null) 'asset_updated_at': assetUpdatedAt,
+      if (remoteDeletedAt != null) 'remote_deleted_at': remoteDeletedAt,
     });
   }
 
@@ -482,12 +550,14 @@ class TrashSyncEntityCompanion
     i0.Value<String>? checksum,
     i0.Value<i2.TrashSyncStatus>? status,
     i0.Value<DateTime?>? assetUpdatedAt,
+    i0.Value<DateTime?>? remoteDeletedAt,
   }) {
     return i1.TrashSyncEntityCompanion(
       assetId: assetId ?? this.assetId,
       checksum: checksum ?? this.checksum,
       status: status ?? this.status,
       assetUpdatedAt: assetUpdatedAt ?? this.assetUpdatedAt,
+      remoteDeletedAt: remoteDeletedAt ?? this.remoteDeletedAt,
     );
   }
 
@@ -508,6 +578,9 @@ class TrashSyncEntityCompanion
     if (assetUpdatedAt.present) {
       map['asset_updated_at'] = i0.Variable<DateTime>(assetUpdatedAt.value);
     }
+    if (remoteDeletedAt.present) {
+      map['remote_deleted_at'] = i0.Variable<DateTime>(remoteDeletedAt.value);
+    }
     return map;
   }
 
@@ -517,7 +590,8 @@ class TrashSyncEntityCompanion
           ..write('assetId: $assetId, ')
           ..write('checksum: $checksum, ')
           ..write('status: $status, ')
-          ..write('assetUpdatedAt: $assetUpdatedAt')
+          ..write('assetUpdatedAt: $assetUpdatedAt, ')
+          ..write('remoteDeletedAt: $remoteDeletedAt')
           ..write(')'))
         .toString();
   }
