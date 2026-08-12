@@ -25,6 +25,7 @@ import { AlbumRepository } from 'src/repositories/album.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
+import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
@@ -163,7 +164,8 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
   }
 
   async newUser(dto: Partial<Insertable<UserTable>> = {}) {
-    const user = mediumFactory.userInsert(dto);
+    const clusterGroup = dto.clusterGroupId ? undefined : await this.get(ClusterGroupRepository).create();
+    const user = mediumFactory.userInsert({ ...dto, clusterGroupId: dto.clusterGroupId ?? clusterGroup!.id });
     const result = await this.get(UserRepository).create(user);
     return { user, result };
   }
@@ -263,8 +265,14 @@ export class MediumTestContext<S extends ClassConstructor<typeof BaseService> = 
   }
 
   async newPerson(dto: Partial<Insertable<PersonTable>> & { ownerId: string }) {
-    const person = mediumFactory.personInsert(dto);
-    const result = await this.get(PersonRepository).create(person);
+    const repository = this.get(PersonRepository);
+    let personGroupId = dto.personGroupId;
+    if (!personGroupId) {
+      const group = await repository.createGroup(dto.ownerId);
+      personGroupId = group.id;
+    }
+    const person = mediumFactory.personInsert({ ...dto, personGroupId });
+    const result = await repository.create(person);
     return { person, result };
   }
 
@@ -445,6 +453,7 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case AssetRepository:
     case AssetEditRepository:
     case AssetJobRepository:
+    case ClusterGroupRepository:
     case IntegrityRepository:
     case MemoryRepository:
     case NotificationRepository:
@@ -648,7 +657,7 @@ const assetFaceInsert = (assetFace: Partial<AssetFace> & { assetId: string }) =>
     id: assetFace.id ?? newUuid(),
     imageHeight: assetFace.imageHeight ?? 10,
     imageWidth: assetFace.imageWidth ?? 10,
-    personId: assetFace.personId ?? null,
+    personGroupId: assetFace.personGroupId ?? null,
     sourceType: assetFace.sourceType ?? SourceType.MachineLearning,
     isVisible: assetFace.isVisible ?? true,
   };
@@ -675,13 +684,12 @@ const assetJobStatusInsert = (
   };
 };
 
-const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: string }) => {
+const personInsert = (person: Partial<Insertable<PersonTable>> & { ownerId: string; personGroupId: string }) => {
   const defaults = {
     birthDate: person.birthDate || null,
     color: person.color || null,
     createdAt: person.createdAt || newDate(),
     faceAssetId: person.faceAssetId || null,
-    id: person.id || newUuid(),
     isFavorite: person.isFavorite || false,
     isHidden: person.isHidden || false,
     name: person.name || 'Test Name',
@@ -715,7 +723,7 @@ const sessionInsert = ({
   };
 };
 
-const userInsert = (user: Partial<Insertable<UserTable>> = {}) => {
+const userInsert = (user: Partial<Insertable<UserTable>> & { clusterGroupId: string }) => {
   const id = user.id || newUuid();
 
   const defaults = {
@@ -804,7 +812,7 @@ const loginDetails = () => {
 };
 
 const loginResponse = (): LoginResponseDto => {
-  const user = userInsert({});
+  const user = userInsert({ clusterGroupId: newUuid() });
   return {
     accessToken: 'access-token',
     userId: user.id,

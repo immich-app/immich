@@ -202,6 +202,8 @@ export type UserLicense = {
 };
 export type UserAdminResponseDto = {
     avatarColor: UserAvatarColor;
+    /** Cluster group the user is a member of */
+    clusterGroupId: string;
     /** Creation date */
     createdAt: string;
     /** Deletion date */
@@ -1112,6 +1114,20 @@ export type AuthStatusResponseDto = {
 export type ValidateAccessTokenResponseDto = {
     /** Authentication status */
     authStatus: boolean;
+};
+export type ClusterGroupRequestResponseDto = {
+    /** Cluster group the user is invited to join */
+    clusterGroupId: string;
+    /** Creation date */
+    createdAt: string;
+    /** Request ID */
+    id: string;
+    /** User the request was created for */
+    userId: string;
+};
+export type ClusterGroupRequestCreateDto = {
+    /** User to invite into the cluster group */
+    userId: string;
 };
 export type DownloadArchiveDto = {
     /** Asset IDs */
@@ -4650,6 +4666,92 @@ export function validateAccessToken(opts?: Oazapfts.RequestOpts) {
     }));
 }
 /**
+ * Retrieve cluster group requests
+ */
+export function getClusterGroupRequests(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ClusterGroupRequestResponseDto[];
+    }>("/cluster-groups/requests", {
+        ...opts
+    }));
+}
+/**
+ * Decline a cluster group request
+ */
+export function deleteClusterGroupRequest({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/cluster-groups/requests/${encodeURIComponent(id)}`, {
+        ...opts,
+        method: "DELETE"
+    }));
+}
+/**
+ * Accept a cluster group request
+ */
+export function acceptClusterGroupRequest({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/cluster-groups/requests/${encodeURIComponent(id)}/accept`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Leave a cluster group
+ */
+export function leaveClusterGroup({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchText(`/cluster-groups/${encodeURIComponent(id)}/leave`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
+ * Retrieve the requests sent by a cluster group
+ */
+export function getClusterGroupRequestsForGroup({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ClusterGroupRequestResponseDto[];
+    }>(`/cluster-groups/${encodeURIComponent(id)}/requests`, {
+        ...opts
+    }));
+}
+/**
+ * Create a cluster group request
+ */
+export function createClusterGroupRequest({ id, clusterGroupRequestCreateDto }: {
+    id: string;
+    clusterGroupRequestCreateDto: ClusterGroupRequestCreateDto;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: ClusterGroupRequestResponseDto;
+    }>(`/cluster-groups/${encodeURIComponent(id)}/requests`, oazapfts.json({
+        ...opts,
+        method: "PUT",
+        body: clusterGroupRequestCreateDto
+    })));
+}
+/**
+ * Retrieve the users of a cluster group
+ */
+export function getClusterGroupUsers({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: UserResponseDto[];
+    }>(`/cluster-groups/${encodeURIComponent(id)}/users`, {
+        ...opts
+    }));
+}
+/**
  * Download asset archive
  */
 export function downloadArchive({ key, slug, downloadArchiveDto }: {
@@ -7127,6 +7229,7 @@ export enum NotificationType {
     SystemMessage = "SystemMessage",
     AlbumInvite = "AlbumInvite",
     AlbumUpdate = "AlbumUpdate",
+    ClusterGroupRequest = "ClusterGroupRequest",
     Custom = "Custom"
 }
 export enum UserStatus {
@@ -7203,6 +7306,11 @@ export enum Permission {
     BackupDownload = "backup.download",
     BackupUpload = "backup.upload",
     BackupDelete = "backup.delete",
+    ClusterGroupRead = "clusterGroup.read",
+    ClusterGroupLeave = "clusterGroup.leave",
+    ClusterGroupRequestCreate = "clusterGroupRequest.create",
+    ClusterGroupRequestRead = "clusterGroupRequest.read",
+    ClusterGroupRequestDelete = "clusterGroupRequest.delete",
     DuplicateRead = "duplicate.read",
     DuplicateDelete = "duplicate.delete",
     FaceCreate = "face.create",

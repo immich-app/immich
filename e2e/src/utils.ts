@@ -184,6 +184,8 @@ export const utils = {
       'library',
       'shared_link',
       'person',
+      'person_group',
+      'cluster_group',
       'album',
       'asset',
       'asset_face',
@@ -439,7 +441,10 @@ export const utils = {
       return;
     }
 
-    await client.query('INSERT INTO asset_face ("assetId", "personId") VALUES ($1, $2)', [assetId, personId]);
+    await client.query(
+      'INSERT INTO asset_face ("assetId", "personId") SELECT $1, "id" FROM "person" WHERE "personGroupId" = $2',
+      [assetId, personId],
+    );
   },
 
   setPersonThumbnail: async (personId: string) => {
@@ -447,7 +452,9 @@ export const utils = {
       return;
     }
 
-    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "id" = $1`, [personId]);
+    await client.query(`UPDATE "person" set "thumbnailPath" = '/my/awesome/thumbnail.jpg' where "personGroupId" = $1`, [
+      personId,
+    ]);
   },
 
   createSharedLink: (accessToken: string, dto: SharedLinkCreateDto) =>

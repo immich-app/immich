@@ -13,6 +13,7 @@ export const userFactory = Sync.makeFactory<UserResponseDto>({
 
 export const userAdminFactory = Sync.makeFactory<UserAdminResponseDto>({
   id: Sync.each(() => faker.string.uuid()),
+  clusterGroupId: Sync.each(() => faker.string.uuid()),
   email: Sync.each(() => faker.internet.email()),
   name: Sync.each(() => faker.person.fullName()),
   profileImagePath: '',

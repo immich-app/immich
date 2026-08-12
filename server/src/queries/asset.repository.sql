@@ -192,7 +192,8 @@ select
             from
               "person"
             where
-              "asset_face"."personId" = "person"."id"
+              "person"."personGroupId" = "asset_face"."personGroupId"
+              and "person"."ownerId" = $1
           ) as "person" on true
         where
           "asset_face"."assetId" = "asset"."id"
@@ -224,7 +225,7 @@ from
   "asset"
   left join "asset_exif" on "asset"."id" = "asset_exif"."assetId"
 where
-  "asset"."id" = any ($1::uuid[])
+  "asset"."id" = any ($2::uuid[])
 
 -- AssetRepository.deleteAll
 delete from "asset"

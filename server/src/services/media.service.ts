@@ -91,16 +91,17 @@ export class MediaService extends BaseService {
     for await (const people of batched(this.personRepository.getAll(force ? undefined : { thumbnailPath: '' }))) {
       const jobs: JobItem[] = [];
       for (const person of people) {
+        const { ownerId, personGroupId } = person;
         if (!person.faceAssetId) {
-          const face = await this.personRepository.getRandomFace(person.id);
+          const face = await this.personRepository.getRandomFace(personGroupId);
           if (!face) {
             continue;
           }
 
-          await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+          await this.personRepository.update({ ownerId, personGroupId, faceAssetId: face.id });
         }
 
-        jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: person.id } });
+        jobs.push({ name: JobName.PersonGenerateThumbnail, data: { ownerId, personGroupId } });
       }
 
       await this.jobRepository.queueAll(jobs);
@@ -125,7 +126,10 @@ export class MediaService extends BaseService {
 
     for await (const people of batched(this.personRepository.getAll())) {
       await this.jobRepository.queueAll(
-        people.map((person) => ({ name: JobName.PersonFileMigration, data: { id: person.id } })),
+        people.map(({ ownerId, personGroupId }) => ({
+          name: JobName.PersonFileMigration,
+          data: { ownerId, personGroupId },
+        })),
       );
     }
 
@@ -387,19 +391,22 @@ export class MediaService extends BaseService {
   }
 
   @OnJob({ name: JobName.PersonGenerateThumbnail, queue: QueueName.ThumbnailGeneration })
-  async handleGeneratePersonThumbnail({ id }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
+  async handleGeneratePersonThumbnail({
+    ownerId,
+    personGroupId,
+  }: JobOf<JobName.PersonGenerateThumbnail>): Promise<JobStatus> {
     const { image } = await this.getConfig({ withCache: true });
-    const data = await this.personRepository.getDataForThumbnailGenerationJob(id);
+    const data = await this.personRepository.getDataForThumbnailGenerationJob({ ownerId, personGroupId });
     if (!data) {
-      this.logger.error(`Could not generate person thumbnail for ${id}: missing data`);
+      this.logger.error(`Could not generate person thumbnail for ${personGroupId}: missing data`);
       return JobStatus.Failed;
     }
 
-    const { ownerId, x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
+    const { x1, y1, x2, y2, oldWidth, oldHeight, exifOrientation, previewPath, originalPath } = data;
     let inputImage: string | Buffer;
     if (data.type === AssetType.Video) {
       if (!previewPath) {
-        this.logger.error(`Could not generate person thumbnail for video ${id}: missing preview path`);
+        this.logger.error(`Could not generate person thumbnail for video ${personGroupId}: missing preview path`);
         return JobStatus.Failed;
       }
       inputImage = previewPath;
@@ -417,7 +424,7 @@ export class MediaService extends BaseService {
       orientation: Buffer.isBuffer(inputImage) && exifOrientation ? Number(exifOrientation) : undefined,
     });
 
-    const thumbnailPath = StorageCore.getPersonThumbnailPath({ id, ownerId });
+    const thumbnailPath = StorageCore.getPersonThumbnailPath({ ownerId, personGroupId });
     this.storageCore.ensureFolders(thumbnailPath);
 
     const thumbnailOptions: GenerateThumbnailOptions = {
@@ -440,7 +447,7 @@ export class MediaService extends BaseService {
     };
 
     await this.mediaRepository.generateThumbnail(decodedImage, thumbnailOptions, thumbnailPath);
-    await this.personRepository.update({ id, thumbnailPath });
+    await this.personRepository.update({ ownerId, personGroupId, thumbnailPath });
 
     return JobStatus.Success;
   }
