@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/config/slideshow_config.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -295,14 +296,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
         color: context.colorScheme.primary,
       );
     } else {
-      return LinearProgressIndicator(
-        color: context.colorScheme.primary,
-        borderRadius: BorderRadius.zero,
-        minHeight: 5,
-        value:
-            ref.read(videoPlayerProvider(asset.id).select((s) => s.position)).inMilliseconds /
-            asset.duration.inMilliseconds,
-      );
+      return _VideoProgressBar(asset: asset);
     }
   }
 
@@ -374,25 +368,13 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
         builder: (context, value, _) => buildPhotoView(scale * (1.0 + value * _kenBurnsZoom)),
       );
     } else {
-      final status = ref.read(videoPlayerProvider(asset.id).select((s) => s.status));
-      final position = ref.read(videoPlayerProvider(asset.id)).position;
-
-      if (status == VideoPlaybackStatus.completed && isCurrent && position.inMicroseconds > 0) {
-        unawaited(_nextPage());
-      } else if (status == VideoPlaybackStatus.playing) {
-        unawaited(ref.read(videoPlayerProvider(asset.id).notifier).setLoop(false));
-      }
-
-      return PhotoView.customChild(
-        onTapUp: (_, _, _) => _onTapUp(),
-        disableScaleGestures: true,
-        filterQuality: FilterQuality.high,
-        initialScale: scale,
-        child: NativeVideoViewer(
-          asset: asset,
-          isCurrent: isCurrent,
-          image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
-        ),
+      return _VideoChild(
+        asset: asset,
+        isCurrent: isCurrent,
+        scale: scale,
+        imageProvider: imageProvider,
+        onTapUp: _onTapUp,
+        onCompleted: _nextPage,
       );
     }
   }
@@ -473,6 +455,67 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
             ),
         ],
       ),
+    );
+  }
+}
+
+class _VideoChild extends ConsumerWidget {
+  final BaseAsset asset;
+  final bool isCurrent;
+  final PhotoViewComputedScale scale;
+  final ImageProvider imageProvider;
+  final VoidCallback onTapUp;
+  final VoidCallback onCompleted;
+
+  const _VideoChild({
+    required this.asset,
+    required this.isCurrent,
+    required this.scale,
+    required this.imageProvider,
+    required this.onTapUp,
+    required this.onCompleted,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(videoPlayerProvider(asset.id).select((s) => s.status), (_, status) {
+      if (status == VideoPlaybackStatus.completed) {
+        if (isCurrent && ref.read(videoPlayerProvider(asset.id)).position.inMicroseconds > 0) {
+          onCompleted();
+        }
+      } else if (status == VideoPlaybackStatus.playing) {
+        unawaited(ref.read(videoPlayerProvider(asset.id).notifier).setLoop(false));
+      }
+    });
+
+    return PhotoView.customChild(
+      onTapUp: (_, _, _) => onTapUp(),
+      disableScaleGestures: true,
+      filterQuality: FilterQuality.high,
+      initialScale: scale,
+      child: NativeVideoViewer(
+        asset: asset,
+        isCurrent: isCurrent,
+        image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
+      ),
+    );
+  }
+}
+
+class _VideoProgressBar extends ConsumerWidget {
+  final BaseAsset asset;
+
+  const _VideoProgressBar({required this.asset});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final position = ref.watch(videoPlayerProvider(asset.id).select((s) => s.position));
+
+    return LinearProgressIndicator(
+      color: context.colorScheme.primary,
+      borderRadius: BorderRadius.zero,
+      minHeight: 5,
+      value: position.inMilliseconds / asset.duration.inMilliseconds,
     );
   }
 }

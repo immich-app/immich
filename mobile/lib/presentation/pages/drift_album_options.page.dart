@@ -32,6 +32,8 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
     final userId = ref.watch(authProvider).userId;
     final activityEnabled = useState(album.isActivityEnabled);
     final isOwner = album.ownerId == userId;
+    final owner = isOwner ? ref.watch(currentUserProvider) : null;
+    final allUsers = isOwner ? null : ref.watch(driftUsersProvider);
 
     void showErrorMessage() {
       ContextHelper(context).pop();
@@ -141,7 +143,6 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
 
     Widget buildOwnerInfo() {
       if (isOwner) {
-        final owner = ref.read(currentUserProvider);
         return ListTile(
           leading: owner != null ? UserCircleAvatar(user: owner) : const SizedBox(),
           title: Text(album.ownerName, style: const TextStyle(fontWeight: FontWeight.w500)),
@@ -149,8 +150,11 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
           trailing: Text(context.t.owner, style: context.textTheme.labelLarge),
         );
       } else {
-        final usersProvider = ref.read(driftUsersProvider);
-        return usersProvider.maybeWhen(
+        if (allUsers == null) {
+          return const SizedBox();
+        }
+
+        return allUsers.maybeWhen(
           data: (users) {
             final user = users.firstWhereOrNull((u) => u.id == album.ownerId);
 
