@@ -15,7 +15,7 @@ export enum SearchDatePreset {
 
 export const getSearchDatePreset = (after: DateTime | undefined, before: DateTime | undefined) => {
   if (!after && !before) {
-    return undefined;
+    return;
   }
 
   const start = after?.toMillis();
@@ -46,7 +46,7 @@ export const getSearchDateRange = (after: DateTime | undefined, before: DateTime
   return start && end ? $t('search_filter_date_interval', { values: { start, end } }) : (start ?? end);
 };
 
-export const searchDateTitle = (
+export const getSearchDateTitle = (
   preset: SearchDatePreset | undefined,
   before: DateTime | undefined,
   after: DateTime | undefined,
@@ -66,12 +66,12 @@ export const searchDateTitle = (
       return getSearchDateRange(before, after);
     }
     default: {
-      return undefined;
+      return;
     }
   }
 };
 
-export const searchTypeTitle = (type: string) => {
+export const getSearchTypeTitle = (type: string) => {
   const $t = get(t);
   switch (type) {
     case 'metadata': {
@@ -87,23 +87,15 @@ export const searchTypeTitle = (type: string) => {
       return $t('ocr');
     }
     default: {
-      return undefined;
+      return;
     }
   }
 };
 
-export const searchPlacesTitle = (city?: string, state?: string, country?: string) => {
-  let title = city;
-  if (state) {
-    title = title ? `${title}, ${state}` : state;
-  }
-  if (country) {
-    title = title ? `${title}, ${country}` : country;
-  }
-  return title;
-};
+export const getSearchPlacesTitle = (city?: string, state?: string, country?: string) =>
+  [city, state, country].filter(Boolean).join(', ') || undefined;
 
-export const searchMediaTitle = (mediaType: MediaType) => {
+export const getSearchMediaTitle = (mediaType: MediaType) => {
   const $t = get(t);
   switch (mediaType) {
     case MediaType.Image: {
@@ -113,7 +105,7 @@ export const searchMediaTitle = (mediaType: MediaType) => {
       return $t('video');
     }
     default: {
-      return undefined;
+      return;
     }
   }
 };
@@ -122,21 +114,22 @@ export const getPeople = async (selected: SvelteSet<string>): Promise<PersonResp
   const $t = get(t);
   try {
     const res = await getAllPeople({ withHidden: false });
-    return [...res.people.filter((p) => selected.has(p.id)), ...res.people.filter((p) => !selected.has(p.id))];
+    res.people.sort((a, b) => (selected.has(a.id) ? -1 : selected.has(b.id) ? 1 : 0));
+    return res.people;
   } catch (error) {
     handleError(error, $t('errors.failed_to_get_people'));
   }
   return [];
 };
 
-export const searchPeopleTitle = (people: PersonResponseDto[], selected: SvelteSet<string>) => {
+export const getSearchPeopleTitle = (people: PersonResponseDto[], selected: SvelteSet<string>) => {
   if (selected.size === 0) {
-    return undefined;
+    return;
   }
 
   const $t = get(t);
 
-  const name = people.filter((p) => p.name).find((p) => selected.has(p.id))?.name;
+  const name = people.find(({ id, name }) => name && selected.has(id))?.name;
   if (name) {
     return selected.size === 1 ? name : $t('name_plus_more_people', { values: { name, count: selected.size - 1 } });
   }
@@ -144,7 +137,7 @@ export const searchPeopleTitle = (people: PersonResponseDto[], selected: SvelteS
   return $t('people_count', { values: { count: selected.size } });
 };
 
-export const searchTagsTitle = (tags: TagResponseDto[], selected: SvelteSet<string>) => {
+export const getSearchTagsTitle = (tags: TagResponseDto[], selected: SvelteSet<string>) => {
   const $t = get(t);
 
   const id = selected.values().next().value;

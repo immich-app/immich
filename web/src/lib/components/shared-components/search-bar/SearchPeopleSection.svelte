@@ -1,6 +1,6 @@
 <script lang="ts">
   import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
-  import { getPeople, searchPeopleTitle } from './search-bar-utils';
+  import { getPeople, getSearchPeopleTitle } from './search-bar-utils';
   import SingleGridRow from '$lib/components/shared-components/SingleGridRow.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
@@ -31,7 +31,7 @@
       selectedPeople.add(id);
     }
 
-    title = searchPeopleTitle(people, selectedPeople);
+    title = getSearchPeopleTitle(people, selectedPeople);
   }
 
   const filterPeople = (list: PersonResponseDto[], name: string) => {

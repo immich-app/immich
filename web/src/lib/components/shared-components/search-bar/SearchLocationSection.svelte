@@ -59,9 +59,7 @@
   $effect(() => handlePromiseError(updateStates(countryFilter)));
   $effect(() => handlePromiseError(updateCities(countryFilter, stateFilter)));
 
-  onMount(() => {
-    void updateCountries();
-  });
+  onMount(() => updateCountries());
 </script>
 
 <div id="location-selection">

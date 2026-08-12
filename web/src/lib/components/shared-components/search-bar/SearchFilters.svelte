@@ -28,12 +28,12 @@
   import {
     getPeople,
     getSearchDatePreset,
-    searchDateTitle,
-    searchMediaTitle,
-    searchPeopleTitle,
-    searchPlacesTitle,
-    searchTagsTitle,
-    searchTypeTitle,
+    getSearchDateTitle,
+    getSearchMediaTitle,
+    getSearchPeopleTitle,
+    getSearchPlacesTitle,
+    getSearchTagsTitle,
+    getSearchTypeTitle,
   } from './search-bar-utils';
   import { onMount } from 'svelte';
   import { searchManager } from '$lib/managers/search-manager.svelte';
@@ -61,30 +61,30 @@
 
   let searchHistory = $state<SearchHistorySection>();
 
-  let activeFilter: string = $state('type');
-  let peoplePromise: Promise<PersonResponseDto[]> | undefined = $state(undefined);
-  let people: PersonResponseDto[] | undefined = $state(undefined);
-  let tagsPromise: Promise<TagResponseDto[]> | undefined = $state(undefined);
-  let tags: TagResponseDto[] | undefined = $state(undefined);
+  let activeFilter = $state('type');
+  let peoplePromise = $state<Promise<PersonResponseDto[]>>();
+  let people = $state<PersonResponseDto[]>();
+  let tagsPromise = $state<Promise<TagResponseDto[]>>();
+  let tags = $state<TagResponseDto[]>();
 
-  let typeTitle: string | undefined = $derived(searchTypeTitle(searchManager.filter.queryType));
-  let peopleTitle: string | undefined = $state(undefined);
-  let dateTitle: string | undefined = $derived(
-    searchDateTitle(
+  let typeTitle = $derived(getSearchTypeTitle(searchManager.filter.queryType));
+  let peopleTitle = $state<string>();
+  let dateTitle = $derived(
+    getSearchDateTitle(
       getSearchDatePreset(searchManager.filter.date.takenAfter, searchManager.filter.date.takenBefore),
       searchManager.filter.date.takenAfter,
       searchManager.filter.date.takenBefore,
     ),
   );
-  let placesTitle: string | undefined = $derived(
-    searchPlacesTitle(
+  let placesTitle = $derived(
+    getSearchPlacesTitle(
       searchManager.filter.location.city,
       searchManager.filter.location.state,
       searchManager.filter.location.country,
     ),
   );
-  let tagsTitle: string | undefined = $state(undefined);
-  let mediaTitle: string | undefined = $derived(searchMediaTitle(searchManager.filter.mediaType));
+  let tagsTitle = $state<string>();
+  let mediaTitle = $derived(getSearchMediaTitle(searchManager.filter.mediaType));
 
   let filters = [
     {
@@ -155,13 +155,13 @@
 
   $effect(() => {
     if (people) {
-      peopleTitle = searchPeopleTitle(people, searchManager.filter.personIds);
+      peopleTitle = getSearchPeopleTitle(people, searchManager.filter.personIds);
     }
   });
 
   $effect(() => {
     if (tags) {
-      tagsTitle = searchTagsTitle(tags, searchManager.filter.tagIds!);
+      tagsTitle = getSearchTagsTitle(tags, searchManager.filter.tagIds!);
     }
   });
 

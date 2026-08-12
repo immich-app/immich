@@ -27,6 +27,8 @@
   let selectedIndex: number | undefined = $state(undefined);
   let element = $state<HTMLDivElement>();
 
+  const rootId = $props.id();
+
   export function moveSelection(increment: 1 | -1) {
     if (!isSearchSuggestions) {
       return;
@@ -73,7 +75,7 @@
     if (index === undefined) {
       return undefined;
     }
-    return `history-section-${index}`;
+    return `${rootId}-entry-${index}`;
   };
 </script>
 

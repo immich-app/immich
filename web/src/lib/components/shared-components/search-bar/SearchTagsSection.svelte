@@ -6,7 +6,7 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
   import { mdiClose } from '@mdi/js';
-  import { searchTagsTitle } from './search-bar-utils';
+  import { getSearchTagsTitle } from './search-bar-utils';
   import { searchManager } from '$lib/managers/search-manager.svelte';
 
   interface Props {
@@ -37,7 +37,7 @@
 
     selectedTags.add(option.value);
     selectedOption = undefined;
-    title = searchTagsTitle(allTags, selectedTags);
+    title = getSearchTagsTitle(allTags, selectedTags);
   };
 
   const handleRemove = (tag: string) => {
@@ -46,7 +46,7 @@
     }
 
     selectedTags.delete(tag);
-    title = searchTagsTitle(allTags, selectedTags);
+    title = getSearchTagsTitle(allTags, selectedTags);
   };
 </script>
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { searchTypeTitle } from './search-bar-utils';
+  import { getSearchTypeTitle } from './search-bar-utils';
   import SearchButton from './SearchButton.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { searchManager } from '$lib/managers/search-manager.svelte';
@@ -23,17 +23,17 @@
         </SearchButton>
       {/if}
       <SearchButton checked active={queryType === 'metadata'} onclick={() => setType('metadata')}>
-        {searchTypeTitle('metadata')}
+        {getSearchTypeTitle('metadata')}
       </SearchButton>
       <SearchButton checked active={queryType === 'description'} onclick={() => setType('description')}>
-        {searchTypeTitle('description')}
+        {getSearchTypeTitle('description')}
       </SearchButton>
       <SearchButton checked active={queryType === 'fullPath'} onclick={() => setType('fullPath')}>
-        {searchTypeTitle('fullPath')}
+        {getSearchTypeTitle('fullPath')}
       </SearchButton>
       {#if featureFlagsManager.value.ocr}
         <SearchButton checked active={queryType === 'ocr'} onclick={() => setType('ocr')}>
-          {searchTypeTitle('ocr')}
+          {getSearchTypeTitle('ocr')}
         </SearchButton>
       {/if}
     </div>
