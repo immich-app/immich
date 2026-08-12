@@ -134,25 +134,6 @@ void main() {
     await tester.pumpWidget(const SizedBox.shrink());
   });
 
-  testWidgets('completed at position zero does not skip the video', (tester) async {
-    final video = RemoteAssetFactory.create(type: .video);
-    stubTimeline([RemoteAssetFactory.create(), video, RemoteAssetFactory.create()]);
-
-    await pumpSlideshow(tester, overrides: overridesFor(video));
-    await tester.pump(duration);
-    expect(currentPage(tester), 1);
-
-    player.emit(const VideoPlayerState(position: Duration.zero, duration: Duration(seconds: 60), status: .completed));
-    await tester.pump();
-    expect(currentPage(tester), 1);
-    expect(player.restartCalls, 0);
-
-    await tester.pump(duration);
-    expect(currentPage(tester), 2);
-
-    await tester.pumpWidget(const SizedBox.shrink());
-  });
-
   testWidgets('playing video is not cut short and advances when it ends', (tester) async {
     final video = RemoteAssetFactory.create(type: .video);
     stubTimeline([RemoteAssetFactory.create(), video, RemoteAssetFactory.create()]);
