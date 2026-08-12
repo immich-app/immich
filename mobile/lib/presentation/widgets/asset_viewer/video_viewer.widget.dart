@@ -47,7 +47,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   bool _isVideoReady = false;
   bool _shouldPlayOnForeground = true;
 
-  VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.heroTag).notifier);
+  VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.id).notifier);
 
   @override
   void initState() {
@@ -304,7 +304,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   @override
   Widget build(BuildContext context) {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
-    final status = ref.watch(videoPlayerProvider(widget.asset.heroTag).select((v) => v.status));
+    final status = ref.watch(videoPlayerProvider(widget.asset.id).select((v) => v.status));
 
     return IgnorePointer(
       child: Stack(

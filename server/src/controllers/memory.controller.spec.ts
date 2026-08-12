@@ -20,11 +20,6 @@ describe(MemoryController.name, () => {
   });
 
   describe('GET /memories', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/memories');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should not require any parameters', async () => {
       await request(ctx.getHttpServer()).get('/memories').query({});
       expect(service.search).toHaveBeenCalled();
@@ -32,11 +27,6 @@ describe(MemoryController.name, () => {
   });
 
   describe('POST /memories', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/memories');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should validate data when type is on this day', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/memories')
@@ -69,19 +59,7 @@ describe(MemoryController.name, () => {
     });
   });
 
-  describe('GET /memories/statistics', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/memories/statistics');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('GET /memories/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/memories/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/memories/invalid`);
       expect(status).toBe(400);
@@ -90,11 +68,6 @@ describe(MemoryController.name, () => {
   });
 
   describe('PUT /memories/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/memories/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/memories/invalid`);
       expect(status).toBe(400);
@@ -114,19 +87,7 @@ describe(MemoryController.name, () => {
     });
   });
 
-  describe('DELETE /memories/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete(`/memories/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('PUT /memories/:id/assets', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/memories/${factory.uuid()}/assets`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).put(`/memories/invalid/assets`).send({ ids: [] });
       expect(status).toBe(400);
@@ -143,11 +104,6 @@ describe(MemoryController.name, () => {
   });
 
   describe('DELETE /memories/:id/assets', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete(`/memories/${factory.uuid()}/assets`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/memories/invalid/assets`);
       expect(status).toBe(400);

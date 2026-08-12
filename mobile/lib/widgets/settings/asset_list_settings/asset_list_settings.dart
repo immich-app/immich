@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/asset_list_settings/asset_list_group_settings.dart';
@@ -21,7 +21,7 @@ class AssetListSettings extends HookConsumerWidget {
     final assetListSetting = [
       SettingsSwitchListTile(
         valueNotifier: storageIndicator,
-        title: 'theme_setting_asset_list_storage_indicator_title'.tr(),
+        title: context.t.theme_setting_asset_list_storage_indicator_title,
         onChanged: (value) {
           unawaited(ref.read(settingsProvider).write(.timelineStorageIndicator, value));
           ref.invalidate(appSettingsServiceProvider);

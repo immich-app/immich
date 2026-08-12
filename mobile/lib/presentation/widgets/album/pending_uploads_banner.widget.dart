@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/album/pending_album_uploads.provider.dart';
 import 'package:immich_mobile/providers/backup/asset_upload_progress.provider.dart';
@@ -115,7 +115,7 @@ class _PendingUploadsBannerContent extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        '${'uploading'.t(context: context)} $count$percentLabel',
+                        '${context.t.uploading} $count$percentLabel',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
@@ -183,10 +183,7 @@ class _PendingUploadsSheet extends ConsumerWidget {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(
-                      '${'uploading'.t(context: context)} (${pending.length})',
-                      style: context.textTheme.titleMedium,
-                    ),
+                    child: Text('${context.t.uploading} (${pending.length})', style: context.textTheme.titleMedium),
                   ),
                   if (canAbort)
                     TextButton.icon(
@@ -199,14 +196,14 @@ class _PendingUploadsSheet extends ConsumerWidget {
                         ref.read(pendingAlbumUploadsProvider(albumId).notifier).clear();
                       },
                       icon: const Icon(Icons.stop_circle_outlined, size: 18),
-                      label: Text('cancel'.t(context: context)),
+                      label: Text(context.t.cancel),
                       style: TextButton.styleFrom(foregroundColor: context.colorScheme.error),
                     )
                   else if (failedCount > 0)
                     TextButton.icon(
                       onPressed: () => ref.read(pendingAlbumUploadsProvider(albumId).notifier).clearFailed(),
                       icon: const Icon(Icons.clear_rounded, size: 18),
-                      label: Text('clear_failed_count'.t(context: context, args: {'count': failedCount})),
+                      label: Text(context.t.clear_failed_count(count: failedCount)),
                       style: TextButton.styleFrom(foregroundColor: context.colorScheme.error),
                     ),
                 ],

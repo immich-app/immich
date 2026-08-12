@@ -17,6 +17,7 @@ import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
+import { findOrFail } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 
 @Injectable()
@@ -146,12 +147,8 @@ export class TagService extends BaseService {
     return JobStatus.Success;
   }
 
-  private async findOrFail(id: string) {
-    const tag = await this.tagRepository.get(id);
-    if (!tag) {
-      throw new BadRequestException('Tag not found');
-    }
-    return tag;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.tagRepository.get(id), 'Tag');
   }
 
   private async updateTags(assetId: string) {

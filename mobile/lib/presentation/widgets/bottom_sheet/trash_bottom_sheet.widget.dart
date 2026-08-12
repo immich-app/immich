@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
+import 'package:immich_mobile/presentation/actions/asset_debug.action.dart';
 import 'package:immich_mobile/presentation/actions/delete.action.dart';
 import 'package:immich_mobile/presentation/actions/restore.action.dart';
 
@@ -19,6 +20,7 @@ class TrashBottomBar extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <ActionColumnButton>[
+              .new(action: AssetDebugAction(source: .timeline)),
               .new(action: DeleteAction(source: .timeline)),
               .new(action: RestoreAction(source: .timeline)),
             ],

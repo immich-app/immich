@@ -8,7 +8,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_bottom_info.widget.dart';
 import 'package:immich_mobile/presentation/widgets/memory/memory_card.widget.dart';
@@ -248,7 +248,7 @@ class DriftMemoryPage extends HookConsumerWidget {
               }
 
               final yearsAgo = DateTime.now().year - memories[mIndex].data.year;
-              final title = 'years_ago'.t(context: context, args: {'years': yearsAgo.toString()});
+              final title = context.t.years_ago(years: yearsAgo);
               // Build horizontal page
               final assetController = memoryAssetPageControllers[mIndex];
               return Column(

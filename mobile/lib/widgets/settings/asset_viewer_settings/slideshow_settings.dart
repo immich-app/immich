@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_radio_list_tile.dart';
@@ -39,40 +39,28 @@ class SlideshowSettings extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SettingGroupTitle(
-          title: 'slideshow'.t(context: context),
-          icon: Icons.slideshow_outlined,
-        ),
+        SettingGroupTitle(title: context.t.slideshow, icon: Icons.slideshow_outlined),
         SettingsSwitchListTile(
           valueNotifier: useRepeat,
-          title: "slideshow_repeat".t(context: context),
-          subtitle: "slideshow_repeat_description".t(context: context),
+          title: context.t.slideshow_repeat,
+          subtitle: context.t.slideshow_repeat_description,
         ),
         SettingsSliderListTile(
           valueNotifier: useDuration,
-          text: "duration".t(context: context),
+          text: context.t.duration,
           minValue: 5,
           noDivisons: 5,
           maxValue: 30,
         ),
         Padding(
           padding: const EdgeInsets.only(top: 20),
-          child: SettingsSubTitle(title: 'look'.t(context: context)),
+          child: SettingsSubTitle(title: context.t.look),
         ),
         SettingsRadioListTile(
           groups: [
-            SettingsRadioGroup(
-              title: 'contain'.t(context: context),
-              value: SlideshowLook.contain,
-            ),
-            SettingsRadioGroup(
-              title: 'cover'.t(context: context),
-              value: SlideshowLook.cover,
-            ),
-            SettingsRadioGroup(
-              title: 'blurred_background'.t(context: context),
-              value: SlideshowLook.blurredBackground,
-            ),
+            SettingsRadioGroup(title: context.t.contain, value: SlideshowLook.contain),
+            SettingsRadioGroup(title: context.t.cover, value: SlideshowLook.cover),
+            SettingsRadioGroup(title: context.t.blurred_background, value: SlideshowLook.blurredBackground),
           ],
           groupBy: useLook.value,
           onRadioChanged: (value) {
@@ -83,24 +71,15 @@ class SlideshowSettings extends HookConsumerWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(top: 20),
-          child: SettingsSubTitle(title: 'direction'.t(context: context)),
+          child: SettingsSubTitle(title: context.t.direction),
         ),
         Padding(
           padding: const EdgeInsets.only(bottom: 32),
           child: SettingsRadioListTile(
             groups: [
-              SettingsRadioGroup(
-                title: 'forward'.t(context: context),
-                value: SlideshowDirection.forward,
-              ),
-              SettingsRadioGroup(
-                title: 'backward'.t(context: context),
-                value: SlideshowDirection.backward,
-              ),
-              SettingsRadioGroup(
-                title: 'shuffle'.t(context: context),
-                value: SlideshowDirection.shuffle,
-              ),
+              SettingsRadioGroup(title: context.t.forward, value: SlideshowDirection.forward),
+              SettingsRadioGroup(title: context.t.backward, value: SlideshowDirection.backward),
+              SettingsRadioGroup(title: context.t.shuffle, value: SlideshowDirection.shuffle),
             ],
             groupBy: useDirection.value,
             onRadioChanged: (value) {

@@ -2192,7 +2192,7 @@
   "upload_day_count": "{date}: {count, plural, one {# upload} other {# uploads}}",
   "upload_details": "Upload Details",
   "upload_error_with_count": "Upload error for {count, plural, one {# asset} other {# assets}}",
-  "upload_errors": "Upload completed with {count, plural, one {# error} other {# errors}}, refresh the page to see new upload assets.",
+  "upload_errors": "Upload completed with {count, plural, one {# error} other {# errors}}.",
   "upload_finished": "Upload finished",
   "upload_progress": "Remaining {remaining, number} - Processed {processed, number}/{total, number}",
   "upload_skipped_duplicates": "Skipped {count, plural, one {# duplicate asset} other {# duplicate assets}}",

@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
@@ -71,8 +71,8 @@ class AdvancedSettings extends HookConsumerWidget {
       SettingsSwitchListTile(
         enabled: true,
         valueNotifier: advancedTroubleshooting,
-        title: "advanced_settings_troubleshooting_title".tr(),
-        subtitle: "advanced_settings_troubleshooting_subtitle".tr(),
+        title: context.t.advanced_settings_troubleshooting_title,
+        subtitle: context.t.advanced_settings_troubleshooting_subtitle,
       ),
       if (isManageMediaSupported.value)
         Column(
@@ -80,8 +80,8 @@ class AdvancedSettings extends HookConsumerWidget {
             SettingsSwitchListTile(
               enabled: true,
               valueNotifier: manageLocalMediaAndroid,
-              title: "advanced_settings_sync_remote_deletions_title".tr(),
-              subtitle: "advanced_settings_sync_remote_deletions_subtitle".tr(),
+              title: context.t.advanced_settings_sync_remote_deletions_title,
+              subtitle: context.t.advanced_settings_sync_remote_deletions_subtitle,
               onChanged: (value) async {
                 if (value) {
                   final result = await ref.read(permissionRepositoryProvider).requestManageMediaPermission();
@@ -91,9 +91,9 @@ class AdvancedSettings extends HookConsumerWidget {
               },
             ),
             SettingsActionTile(
-              title: "manage_media_access_title".tr(),
-              statusText: manageMediaAndroidPermission.value ? "allowed".tr() : "not_allowed".tr(),
-              subtitle: "manage_media_access_rationale".tr(),
+              title: context.t.manage_media_access_title,
+              statusText: manageMediaAndroidPermission.value ? context.t.allowed : context.t.not_allowed,
+              subtitle: context.t.manage_media_access_rationale,
               statusColor: manageLocalMediaAndroid.value && !manageMediaAndroidPermission.value
                   ? const Color.fromARGB(255, 243, 188, 106)
                   : null,
@@ -105,7 +105,7 @@ class AdvancedSettings extends HookConsumerWidget {
           ],
         ),
       SettingsSliderListTile(
-        text: "advanced_settings_log_level_title".tr(namedArgs: {'level': logLevel}),
+        text: context.t.advanced_settings_log_level_title(level: logLevel),
         valueNotifier: levelId,
         maxValue: 8,
         minValue: 1,
@@ -114,15 +114,15 @@ class AdvancedSettings extends HookConsumerWidget {
       ),
       SettingsSwitchListTile(
         valueNotifier: preferRemote,
-        title: "advanced_settings_prefer_remote_title".tr(),
-        subtitle: "advanced_settings_prefer_remote_subtitle".tr(),
+        title: context.t.advanced_settings_prefer_remote_title,
+        subtitle: context.t.advanced_settings_prefer_remote_subtitle,
       ),
       const CustomProxyHeaderSettings(),
       const SslClientCertSettings(),
       SettingsSwitchListTile(
         valueNotifier: readonlyModeEnabled,
-        title: "advanced_settings_readonly_mode_title".tr(),
-        subtitle: "advanced_settings_readonly_mode_subtitle".tr(),
+        title: context.t.advanced_settings_readonly_mode_title,
+        subtitle: context.t.advanced_settings_readonly_mode_subtitle,
         onChanged: (value) {
           readonlyModeEnabled.value = value;
           ref.read(readonlyModeProvider.notifier).setReadonlyMode(value);
@@ -130,7 +130,7 @@ class AdvancedSettings extends HookConsumerWidget {
             SnackBar(
               duration: const Duration(seconds: 2),
               content: Text(
-                (value ? "readonly_mode_enabled" : "readonly_mode_disabled").tr(),
+                value ? context.t.readonly_mode_enabled : context.t.readonly_mode_disabled,
                 style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
               ),
             ),
@@ -138,7 +138,7 @@ class AdvancedSettings extends HookConsumerWidget {
         },
       ),
       ListTile(
-        title: Text("advanced_settings_clear_image_cache".tr(), style: const TextStyle(fontWeight: FontWeight.w500)),
+        title: Text(context.t.advanced_settings_clear_image_cache, style: const TextStyle(fontWeight: FontWeight.w500)),
         leading: const Icon(Icons.playlist_remove_rounded),
         onTap: () async {
           final int clearedBytes;
@@ -153,7 +153,7 @@ class AdvancedSettings extends HookConsumerWidget {
               SnackBar(
                 duration: const Duration(seconds: 2),
                 content: Text(
-                  "advanced_settings_clear_image_cache_error".tr(),
+                  context.t.advanced_settings_clear_image_cache_error,
                   style: context.textTheme.bodyLarge?.copyWith(color: context.themeData.colorScheme.error),
                 ),
               ),
@@ -171,7 +171,7 @@ class AdvancedSettings extends HookConsumerWidget {
             SnackBar(
               duration: const Duration(seconds: 2),
               content: Text(
-                "advanced_settings_clear_image_cache_success".tr(namedArgs: {'size': clearedMB}),
+                context.t.advanced_settings_clear_image_cache_success(size: clearedMB),
                 style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
               ),
             ),

@@ -95,7 +95,7 @@ function zoneOptionForDate(zone: string, date: string) {
 
 function sortTwoZones(zoneA: ZoneOption, zoneB: ZoneOption) {
   const offsetDifference = zoneA.offsetMinutes - zoneB.offsetMinutes;
-  if (offsetDifference != 0) {
+  if (offsetDifference !== 0) {
     return offsetDifference;
   }
   return zoneA.value.localeCompare(zoneB.value, undefined, { sensitivity: 'base' });

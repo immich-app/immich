@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/time_range.model.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
 import 'package:immich_mobile/widgets/map/map_settings/map_custom_time_range.dart';
@@ -50,18 +49,18 @@ class _DriftMapSettingsSheetState extends ConsumerState<DriftMapSettingsSheet> {
               ),
               const Divider(height: 30, thickness: 1),
               MapSettingsListTile(
-                title: "map_settings_only_show_favorites".t(context: context),
+                title: context.t.map_settings_only_show_favorites,
                 selected: mapState.onlyFavorites,
                 onChanged: (favoriteOnly) => ref.read(mapStateProvider.notifier).switchFavoriteOnly(favoriteOnly),
               ),
               MapSettingsListTile(
-                title: "map_settings_include_show_archived".t(context: context),
+                title: context.t.map_settings_include_show_archived,
                 selected: mapState.includeArchived,
                 onChanged: (includeArchive) =>
                     ref.read(mapStateProvider.notifier).switchIncludeArchived(includeArchive),
               ),
               MapSettingsListTile(
-                title: "map_settings_include_show_partners".t(context: context),
+                title: context.t.map_settings_include_show_partners,
                 selected: mapState.withPartners,
                 onChanged: (withPartners) => ref.read(mapStateProvider.notifier).switchWithPartners(withPartners),
               ),

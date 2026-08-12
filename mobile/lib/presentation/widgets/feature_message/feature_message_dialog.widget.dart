@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/feature_message.model.dart';
@@ -263,12 +262,12 @@ class _FeaturePage extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  highlight.titleKey.tr(),
+                  highlight.title(context.t),
                   style: context.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700, fontSize: 24),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  highlight.bodyKey.tr(),
+                  highlight.body(context.t),
                   style: context.textTheme.bodyLarge?.copyWith(color: scheme.onSurfaceVariant, height: 1.4),
                 ),
               ],
