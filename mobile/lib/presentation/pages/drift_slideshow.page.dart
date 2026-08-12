@@ -43,6 +43,8 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   late Timer _timer;
   late int _index;
   late int _nextIndex;
+  Duration _lastPosition = Duration.zero;
+  ProviderSubscription<VideoPlayerState>? _videoSubscription;
   bool _paused = false;
   bool _showAppBar = false;
 
@@ -64,6 +66,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _crossfadeOpacity = Tween<double>(begin: 1.0, end: 0.0).animate(_crossfadeController);
     _stopwatch = Stopwatch();
     _createTimer();
+    _watchVideo();
     _updateNextIndex();
     ref.listenManual(appConfigProvider.select((s) => s.slideshow), _onConfigChanged);
 
@@ -89,21 +92,21 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   }
 
   void _play() {
-    final asset = widget.timeline.getAssetSafe(_index)!;
-
-    if (asset.isImage) {
-      _createTimer();
-    } else if (ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.paused) {
-      unawaited(ref.read(videoPlayerProvider(asset.id).notifier).play());
-    } else {
-      unawaited(_nextPage());
-    }
-
-    _updateNextIndex();
-
     setState(() {
       _paused = false;
     });
+
+    final asset = widget.timeline.getAssetSafe(_index)!;
+
+    if (!asset.isImage) {
+      if (ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.completed) {
+        unawaited(_nextPage());
+        return;
+      }
+      unawaited(ref.read(videoPlayerProvider(asset.id).notifier).play());
+    }
+
+    _createTimer();
   }
 
   void _pause() {
@@ -130,8 +133,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _config = next;
     _updateNextIndex();
 
-    final asset = widget.timeline.getAssetSafe(_index);
-    if (durationChanged && !_paused && asset?.isImage == true) {
+    if (durationChanged && !_paused) {
       _timer.cancel();
       _createTimer();
     }
@@ -152,24 +154,42 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   }
 
   Future<void> _nextPage() async {
-    if (_nextIndex < 0 || _nextIndex >= widget.timeline.totalAssets) {
-      if (_config.repeat) {
-        final wrapped = _config.direction == SlideshowDirection.forward ? 0 : widget.timeline.totalAssets - 1;
-        await widget.timeline.preloadAssets(wrapped);
-        _pageController.jumpToPage(wrapped);
-      } else {
-        setState(() {
-          _paused = true;
-        });
-      }
+    _timer.cancel();
+
+    if (widget.timeline.totalAssets == 0) {
       return;
     }
 
-    if (!widget.timeline.hasRange(_nextIndex, 1)) {
-      await widget.timeline.preloadAssets(_nextIndex);
+    var target = _nextIndex;
+    if (target < 0 || target >= widget.timeline.totalAssets) {
+      if (!_config.repeat) {
+        setState(() {
+          _paused = true;
+        });
+        return;
+      }
+      target = _config.direction == SlideshowDirection.forward ? 0 : widget.timeline.totalAssets - 1;
     }
 
-    _crossFadeToPage(_nextIndex);
+    if (!widget.timeline.hasRange(target, 1)) {
+      final from = _index;
+      await widget.timeline.preloadAssets(target);
+      if (!mounted || from != _index) {
+        return;
+      }
+    }
+
+    if (target == _index) {
+      final asset = widget.timeline.getAssetSafe(target)!;
+      if (!asset.isImage && ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.completed) {
+        unawaited(ref.read(videoPlayerProvider(asset.id).notifier).restart());
+      }
+      // jumpToPage to the current page fires no onPageChanged
+      _pageChanged(target);
+      return;
+    }
+
+    _crossFadeToPage(target);
   }
 
   void _crossFadeToPage(int page) {
@@ -237,13 +257,58 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   }
 
   void _createTimer() {
-    _timer = Timer(Duration(milliseconds: _config.duration * 1000 - _stopwatch.elapsedMilliseconds), () {
-      _stopwatch.stop();
-      _stopwatch.reset();
-      unawaited(_nextPage());
-    });
-
+    _timer = Timer(Duration(milliseconds: _config.duration * 1000 - _stopwatch.elapsedMilliseconds), _onTimerElapsed);
     _stopwatch.start();
+  }
+
+  void _onTimerElapsed() {
+    _stopwatch.stop();
+    _stopwatch.reset();
+
+    final asset = widget.timeline.getAssetSafe(_index);
+    if (asset != null && !asset.isImage) {
+      final position = ref.read(videoPlayerProvider(asset.id)).position;
+      if (position != _lastPosition) {
+        _lastPosition = position;
+        _createTimer();
+        return;
+      }
+    }
+
+    unawaited(_nextPage());
+  }
+
+  void _watchVideo() {
+    _videoSubscription?.close();
+    _videoSubscription = null;
+
+    final asset = widget.timeline.getAssetSafe(_index);
+    if (asset == null || asset.isImage) {
+      return;
+    }
+
+    // a video already playing here (e.g. opened from the viewer) never gets a
+    // playing transition, so its loop has to be turned off up front
+    if (ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.playing) {
+      unawaited(ref.read(videoPlayerProvider(asset.id).notifier).setLoop(false));
+    }
+
+    _videoSubscription = ref.listenManual(
+      videoPlayerProvider(asset.id),
+      (previous, next) => _onVideoChanged(asset.id, previous, next),
+    );
+  }
+
+  void _onVideoChanged(String assetId, VideoPlayerState? previous, VideoPlayerState next) {
+    if (_paused || next.status == previous?.status) {
+      return;
+    }
+
+    if (next.status == VideoPlaybackStatus.completed && next.position > Duration.zero) {
+      unawaited(_nextPage());
+    } else if (next.status == VideoPlaybackStatus.playing) {
+      unawaited(ref.read(videoPlayerProvider(assetId).notifier).setLoop(false));
+    }
   }
 
   void _pageChanged(int page) {
@@ -261,8 +326,10 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _timer.cancel();
     _stopwatch.stop();
     _stopwatch.reset();
+    _lastPosition = Duration.zero;
+    _watchVideo();
 
-    if (!_paused && asset.isImage) {
+    if (!_paused) {
       _createTimer();
     }
 
@@ -374,15 +441,6 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
         builder: (context, value, _) => buildPhotoView(scale * (1.0 + value * _kenBurnsZoom)),
       );
     } else {
-      final status = ref.read(videoPlayerProvider(asset.id).select((s) => s.status));
-      final position = ref.read(videoPlayerProvider(asset.id)).position;
-
-      if (status == VideoPlaybackStatus.completed && isCurrent && position.inMicroseconds > 0) {
-        unawaited(_nextPage());
-      } else if (status == VideoPlaybackStatus.playing) {
-        unawaited(ref.read(videoPlayerProvider(asset.id).notifier).setLoop(false));
-      }
-
       return PhotoView.customChild(
         onTapUp: (_, _, _) => _onTapUp(),
         disableScaleGestures: true,
