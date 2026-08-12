@@ -26,6 +26,7 @@ import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.da
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
@@ -190,7 +191,14 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     // may be in a background tab. In either case, `handleStatusBarTap()` still fires
     // Make sure the timeline is the primary route before scrolling to the top
     final routeData = context.findAncestorWidgetOfExactType<RouteDataScope>()?.routeData;
-    if (ModalRoute.of(context)?.isCurrent == true && routeData?.isActive == true) {
+    // The tap is generated async, so it can arrive after a route pop has started (due to a back button or similar)
+    // Check if route is alive and not exiting before taking action
+    final observers = Navigator.maybeOf(context)?.widget.observers ?? const <NavigatorObserver>[];
+    final isRouteTransitioning = observers.whereType<TransitioningRouteObserver>().any(
+      (observer) => observer.hasTransitioningRoute,
+    );
+
+    if (ModalRoute.of(context)?.isCurrent == true && routeData?.isActive == true && !isRouteTransitioning) {
       _scrollToTop();
     }
   }
