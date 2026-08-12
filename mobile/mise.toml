@@ -151,7 +151,7 @@ wait_for = ["//:i18n:format-fix"]
 [tasks."install:ios"]
 description = "Install CocoaPods dependencies"
 hide = true
-sources = ["ios/Podfile", "ios/Podfile.lock", ".dart_tool/.flutter-plugins-dependencies"]
+sources = ["ios/Podfile", "ios/Podfile.lock", ".flutter-plugins-dependencies"]
 outputs = ["ios/Pods/Manifest.lock"]
 run = '''
 echo "Running pod install"
