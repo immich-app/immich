@@ -127,8 +127,11 @@ class DeleteAction extends AssetActionBuilder {
     final assetService = ref.read(assetServiceProvider);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) =>
-          const ConfirmDialog(title: 'delete_dialog_title', content: 'delete_dialog_alert', ok: 'delete_permanently'),
+      builder: (_) => ConfirmDialog(
+        title: context.t.delete_dialog_title,
+        content: context.t.delete_dialog_alert,
+        ok: context.t.delete_permanently,
+      ),
     );
     if (confirmed != true || !context.mounted) {
       return null;

@@ -17,10 +17,6 @@ on:
           - prepatch
           - prerelease
           - release
-      mobileBump:
-        description: 'Bump mobile build number'
-        required: false
-        type: boolean
       skipTranslations:
         description: 'Skip translations'
         required: false
@@ -79,8 +75,7 @@ jobs:
       - name: Bump version
         env:
           RELEASE_TYPE: ${{ inputs.releaseType }}
-          MOBILE_BUMP: ${{ inputs.mobileBump }}
-        run: mise //:release --type "${RELEASE_TYPE}" --mobile "${MOBILE_BUMP}"
+        run: mise //:release --type "${RELEASE_TYPE}"
 
       - id: output
         run: |
@@ -107,6 +102,8 @@ jobs:
       contents: read
       pull-requests: write
     secrets:
+      PUSH_O_MATIC_APP_CLIENT_ID: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+      PUSH_O_MATIC_APP_KEY: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
       KEY_JKS: ${{ secrets.KEY_JKS }}
       ALIAS: ${{ secrets.ALIAS }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
@@ -152,19 +149,23 @@ jobs:
           github-token: ${{ steps.generate-token.outputs.token }}
 
       - name: Create draft release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
-        with:
-          draft: true
-          prerelease: ${{ needs.bump_version.outputs.rc }}
-          tag_name: ${{ needs.bump_version.outputs.version }}
-          token: ${{ steps.generate-token.outputs.token }}
-          generate_release_notes: true
-          body_path: misc/release/notes.tmpl
-          files: |
-            docker/docker-compose.yml
-            docker/docker-compose.rootless.yml
-            docker/example.env
-            docker/hwaccel.ml.yml
-            docker/hwaccel.transcoding.yml
-            docker/prometheus.yml
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ needs.bump_version.outputs.version }}
+          PRERELEASE: ${{ needs.bump_version.outputs.rc }}
+        run: |
+          gh release create "${TAG}" \
+            --repo "${REPO}" \
+            --draft \
+            --verify-tag \
+            --prerelease="${PRERELEASE}" \
+            --notes-file misc/release/notes.tmpl \
+            --generate-notes \
+            docker/docker-compose.yml \
+            docker/docker-compose.rootless.yml \
+            docker/example.env \
+            docker/hwaccel.ml.yml \
+            docker/hwaccel.transcoding.yml \
+            docker/prometheus.yml \
             *.apk

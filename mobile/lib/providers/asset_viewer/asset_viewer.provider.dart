@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -18,6 +19,9 @@ abstract class AssetViewerState with _$AssetViewerState {
     @Default(false) bool isZoomed,
     @Default(false) bool showingOcr,
     BaseAsset? currentAsset,
+
+    /// Physical thumbnail size retained while paging through the viewer.
+    Size? thumbnailSize,
     @Default(0) int stackIndex,
   }) = _AssetViewerState;
 }
@@ -37,11 +41,17 @@ class AssetViewerStateNotifier extends Notifier<AssetViewerState> {
     state = const AssetViewerState();
   }
 
-  void setAsset(BaseAsset asset) {
+  void setAsset(BaseAsset asset, {Size? thumbnailSize}) {
     if (asset == state.currentAsset) {
       return;
     }
-    state = state.copyWith(currentAsset: asset, stackIndex: 0, showingOcr: false);
+    // Swiping to a neighbor passes no size; keep the tapped tile's so neighbors reuse it.
+    state = state.copyWith(
+      currentAsset: asset,
+      thumbnailSize: thumbnailSize ?? state.thumbnailSize,
+      stackIndex: 0,
+      showingOcr: false,
+    );
     _watchCurrentAsset(asset);
   }
 

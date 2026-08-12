@@ -12,6 +12,10 @@ on:
         default: 'development'
         type: string
     secrets:
+      PUSH_O_MATIC_APP_CLIENT_ID:
+        required: true
+      PUSH_O_MATIC_APP_KEY:
+        required: true
       KEY_JKS:
         required: true
       ALIAS:
@@ -59,7 +63,7 @@ jobs:
 
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@91f342bb4477c4bc10c576ae739da875d85aa164 # pre-job-action-v2.0.4
+        uses: immich-app/devtools/actions/pre-job@03514eceb4a27cd714976a866b350df5ce175720 # pre-job-action-v2.1.0
         with:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
@@ -106,7 +110,7 @@ jobs:
         working-directory: ./mobile
         run: printf "%s" $KEY_JKS | base64 -d > android/key.jks
 
-      - uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: 'zulu'
           java-version: '17'

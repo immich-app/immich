@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/widgets.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/locked_folder_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
@@ -70,7 +70,7 @@ class _DriftLockedFolderPageState extends ConsumerState<DriftLockedFolderPage> w
           : PopScope(
               onPopInvokedWithResult: (didPop, _) => didPop ? ref.read(authProvider.notifier).lockPinCode() : null,
               child: Timeline(
-                appBar: MesmerizingSliverAppBar(title: 'locked_folder'.t(context: context)),
+                appBar: MesmerizingSliverAppBar(title: context.t.locked_folder),
                 bottomSheet: const LockedFolderBottomSheet(),
               ),
             ),

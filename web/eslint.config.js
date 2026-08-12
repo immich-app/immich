@@ -19,6 +19,7 @@ export default typescriptEslint.config(
   ...eslintPluginSvelte.configs.recommended,
   eslintPluginUnicorn.configs.recommended,
   js.configs.recommended,
+  prettier,
   {
     plugins: {
       tscompat: tslintPluginCompat,
@@ -158,6 +159,7 @@ export default typescriptEslint.config(
       'svelte/button-has-type': 'error',
       'object-shorthand': ['error', 'always'],
       'svelte/no-navigation-without-resolve': 'off',
+      eqeqeq: 'error',
     },
   },
   {

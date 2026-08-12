@@ -1,13 +1,13 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -34,24 +34,24 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
 
     final navigationDestinations = [
       NavigationDestination(
-        label: 'photos'.tr(),
+        label: context.t.photos,
         icon: const Icon(Icons.photo_library_outlined),
         selectedIcon: Icon(Icons.photo_library, color: context.primaryColor),
       ),
       NavigationDestination(
-        label: 'search'.tr(),
+        label: context.t.search,
         icon: const Icon(Icons.search_rounded),
         selectedIcon: Icon(Icons.search, color: context.primaryColor),
         enabled: !isReadonlyModeEnabled,
       ),
       NavigationDestination(
-        label: 'albums'.tr(),
+        label: context.t.albums,
         icon: const Icon(Icons.photo_album_outlined),
         selectedIcon: Icon(Icons.photo_album_rounded, color: context.primaryColor),
         enabled: !isReadonlyModeEnabled,
       ),
       NavigationDestination(
-        label: 'library'.tr(),
+        label: context.t.library$,
         icon: const Icon(Icons.space_dashboard_outlined),
         selectedIcon: Icon(Icons.space_dashboard_rounded, color: context.primaryColor),
         enabled: !isReadonlyModeEnabled,

@@ -8,7 +8,6 @@ import 'package:immich_mobile/domain/models/settings_key.dart';
 import 'package:immich_mobile/domain/services/sync_linked_album.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/backup_album.provider.dart';
@@ -26,26 +25,17 @@ class DriftBackupSettings extends StatelessWidget {
   Widget build(BuildContext context) {
     return SettingsSubPageScaffold(
       settings: [
-        SettingGroupTitle(
-          title: "network_requirements".t(context: context),
-          icon: Icons.cell_tower,
-        ),
+        SettingGroupTitle(title: context.t.network_requirements, icon: Icons.cell_tower),
         const _UseCellularForVideosButton(),
         const _UseCellularForPhotosButton(),
         if (CurrentPlatform.isAndroid) ...[
           const Divider(),
-          SettingGroupTitle(
-            title: "background_options".t(context: context),
-            icon: Icons.charging_station_rounded,
-          ),
+          SettingGroupTitle(title: context.t.background_options, icon: Icons.charging_station_rounded),
           const _BackupOnlyWhenChargingButton(),
           const _BackupDelaySlider(),
         ],
         const Divider(),
-        SettingGroupTitle(
-          title: "backup_albums_sync".t(context: context),
-          icon: Icons.sync,
-        ),
+        SettingGroupTitle(title: context.t.backup_albums_sync, icon: Icons.sync),
         const _AlbumSyncActionButton(),
       ],
     );
@@ -108,8 +98,8 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
           Column(
             children: [
               SettingListTile(
-                title: "sync_albums".t(context: context),
-                subtitle: "sync_upload_album_setting_subtitle".t(context: context),
+                title: context.t.sync_albums,
+                subtitle: context.t.sync_upload_album_setting_subtitle,
                 trailing: Switch(
                   value: albumSyncEnable,
                   onChanged: (bool newValue) async {
@@ -131,8 +121,8 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
                       ? SettingListTile(
                           onTap: _manualSyncAlbums,
                           contentPadding: const EdgeInsets.only(left: 32, right: 16),
-                          title: "organize_into_albums".t(context: context),
-                          subtitle: "organize_into_albums_description".t(context: context),
+                          title: context.t.organize_into_albums,
+                          subtitle: context.t.organize_into_albums_description,
                           trailing: isAlbumSyncInProgress
                               ? const SizedBox(
                                   width: 32,
@@ -161,15 +151,15 @@ class _AlbumSyncActionButtonState extends ConsumerState<_AlbumSyncActionButton> 
 class _BackupSwitchTile extends ConsumerWidget {
   final SettingsKey<bool> metadataKey;
   final bool Function(AppConfig) selector;
-  final String titleKey;
-  final String subtitleKey;
+  final String title;
+  final String subtitle;
   final void Function(bool)? onChanged;
 
   const _BackupSwitchTile({
     required this.metadataKey,
     required this.selector,
-    required this.titleKey,
-    required this.subtitleKey,
+    required this.title,
+    required this.subtitle,
     this.onChanged,
   });
 
@@ -179,8 +169,8 @@ class _BackupSwitchTile extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 8.0),
       child: SettingListTile(
-        title: titleKey.t(context: context),
-        subtitle: subtitleKey.t(context: context),
+        title: title,
+        subtitle: subtitle,
         trailing: Switch(
           value: value,
           onChanged: (bool newValue) async {
@@ -201,8 +191,8 @@ class _UseCellularForVideosButton extends StatelessWidget {
     return _BackupSwitchTile(
       metadataKey: SettingsKey.backupUseCellularForVideos,
       selector: (c) => c.backup.useCellularForVideos,
-      titleKey: "videos",
-      subtitleKey: "network_requirement_videos_upload",
+      title: context.t.videos,
+      subtitle: context.t.network_requirement_videos_upload,
     );
   }
 }
@@ -215,8 +205,8 @@ class _UseCellularForPhotosButton extends StatelessWidget {
     return _BackupSwitchTile(
       metadataKey: SettingsKey.backupUseCellularForPhotos,
       selector: (c) => c.backup.useCellularForPhotos,
-      titleKey: "photos",
-      subtitleKey: "network_requirement_photos_upload",
+      title: context.t.photos,
+      subtitle: context.t.network_requirement_photos_upload,
     );
   }
 }
@@ -230,8 +220,8 @@ class _BackupOnlyWhenChargingButton extends ConsumerWidget {
     return _BackupSwitchTile(
       metadataKey: SettingsKey.backupRequireCharging,
       selector: (c) => c.backup.requireCharging,
-      titleKey: "charging",
-      subtitleKey: "charging_requirement_mobile_backup",
+      title: context.t.charging,
+      subtitle: context.t.charging_requirement_mobile_backup,
       onChanged: (value) {
         unawaited(fgService.configure(requireCharging: value));
       },

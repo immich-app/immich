@@ -3,7 +3,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
@@ -27,7 +27,7 @@ class AlbumTile extends ConsumerWidget {
         style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
       ),
       subtitle: Text(
-        '${'items_count'.t(context: context, args: {'count': album.assetCount})} • ${isOwner ? 'owned'.t(context: context) : 'shared_by_user'.t(context: context, args: {'user': album.ownerName})}',
+        '${context.t.items_count(count: album.assetCount)} • ${isOwner ? context.t.owned : context.t.shared_by_user(user: album.ownerName)}',
         overflow: TextOverflow.ellipsis,
         style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
       ),
