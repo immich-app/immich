@@ -158,8 +158,8 @@ export class WorkflowRepository {
       .execute();
   }
 
-  addToQueue(dto: Insertable<WorkflowQueueTable>) {
-    return this.db.insertInto('workflow_queue').values(dto).returning(['id']).executeTakeFirstOrThrow();
+  addToQueue(dto: Insertable<WorkflowQueueTable>[]) {
+    return this.db.insertInto('workflow_queue').values(dto).returning(['id']).execute();
   }
 
   getQueue(id: string) {

@@ -377,10 +377,13 @@ export class WorkflowExecutionService extends BaseService {
         }
       }
 
-      for (const workflowId of jobs.keys()) {
-        const { id } = await this.workflowRepository.addToQueue({ workflowId, data: jobs.get(workflowId)! });
-        await this.jobRepository.queue({ name: JobName.WorkflowRun, data: { queueId: id } });
-      }
+      const queues = await this.workflowRepository.addToQueue(
+        jobs
+          .entries()
+          .map(([workflowId, data]) => ({ workflowId, data }))
+          .toArray(),
+      );
+      await this.jobRepository.queueAll(queues.map(({ id }) => ({ name: JobName.WorkflowRun, data: { queueId: id } })));
 
       checkpoint!.albumAssetUuid = albumAssets[0].updateId;
       await this.systemMetadataRepository.set(SystemMetadataKey.WorkflowCheckpoint, checkpoint);
