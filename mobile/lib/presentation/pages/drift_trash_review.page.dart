@@ -45,16 +45,13 @@ class DriftTrashReviewPage extends ConsumerWidget {
       topSliverWidget: SliverPadding(
         padding: const EdgeInsets.all(16.0),
         sliver: SliverToBoxAdapter(
-          child: SizedBox(
-            height: 72.0,
-            child: Consumer(
-              builder: (context, ref, _) {
-                final outOfSyncCount = ref.watch(pendingTrashReviewCountProvider).value ?? 0;
-                return outOfSyncCount > 0
-                    ? Text(context.t.trash_review_subtitle)
-                    : Center(child: Text(context.t.trash_review_empty_subtitle, style: context.textTheme.bodyLarge));
-              },
-            ),
+          child: Consumer(
+            builder: (context, ref, _) {
+              final outOfSyncCount = ref.watch(pendingTrashReviewCountProvider).value ?? 0;
+              return outOfSyncCount > 0
+                  ? Text(context.t.trash_review_subtitle)
+                  : Center(child: Text(context.t.trash_review_empty_subtitle, style: context.textTheme.bodyLarge));
+            },
           ),
         ),
       ),
