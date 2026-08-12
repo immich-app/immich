@@ -242,6 +242,7 @@ export class StorageTemplateService extends BaseService {
           oldPath,
           newPath,
           assetInfo: { sizeInBytes: fileSizeInByte, checksum },
+          ownerId: asset.ownerId,
         });
 
         const sidecarPath = getAssetFile(asset.files, AssetFileType.Sidecar, { isEdited: false })?.path;
@@ -251,6 +252,7 @@ export class StorageTemplateService extends BaseService {
             pathType: AssetFileType.Sidecar,
             oldPath: sidecarPath,
             newPath: `${newPath}.xmp`,
+            ownerId: asset.ownerId,
           });
         }
       } catch (error: any) {

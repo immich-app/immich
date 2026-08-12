@@ -425,18 +425,18 @@ class PersonAccess {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })
   @ChunkedSet({ paramIndex: 1 })
-  async checkOwnerAccess(userId: string, personIds: Set<string>) {
+  checkOwnerAccess(userId: string, personIds: Set<string>) {
     if (personIds.size === 0) {
       return new Set<string>();
     }
 
     return this.db
-      .selectFrom('person')
-      .select('person.id')
-      .where('person.id', 'in', [...personIds])
-      .where('person.ownerId', '=', userId)
+      .selectFrom('person_user')
+      .select('person_user.personId')
+      .where('person_user.personId', 'in', [...personIds])
+      .where('person_user.ownerId', '=', userId)
       .execute()
-      .then((persons) => new Set(persons.map((person) => person.id)));
+      .then((people) => new Set(people.map((person) => person.personId)));
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID_SET] })

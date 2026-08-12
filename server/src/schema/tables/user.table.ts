@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
+  ForeignKeyColumn,
   Generated,
   Index,
   PrimaryGeneratedColumn,
@@ -14,6 +15,7 @@ import { ColumnType } from 'kysely';
 import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { UserAvatarColor, UserStatus } from 'src/enum';
 import { user_delete_audit } from 'src/schema/functions';
+import { TrustedGroupTable } from 'src/schema/tables/trusted-group.table';
 
 @Table('user')
 @UpdatedAtTrigger('user_updatedAt')
@@ -82,4 +84,7 @@ export class UserTable {
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
+
+  @ForeignKeyColumn(() => TrustedGroupTable)
+  trustedGroupId!: string;
 }

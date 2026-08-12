@@ -247,7 +247,21 @@ export function withFacesAndPeople(
       .selectFrom('asset_face')
       .leftJoinLateral(
         (eb) =>
-          eb.selectFrom('person').selectAll('person').whereRef('asset_face.personId', '=', 'person.id').as('person'),
+          eb
+            .selectFrom('person')
+            .selectAll('person')
+            .whereRef('asset_face.personId', '=', 'person.id')
+            .innerJoin('person_user', (join) =>
+              join.onRef('person_user.personId', '=', 'person.id').onRef('person_user.ownerId', '=', 'asset.ownerId'),
+            )
+            .select([
+              'person_user.ownerId',
+              'person_user.thumbnailFaceAssetId',
+              'person_user.thumbnailPath',
+              'person_user.isHidden',
+              'person_user.isFavorite',
+            ])
+            .as('person'),
         (join) => join.onTrue(),
       )
       .selectAll('asset_face')

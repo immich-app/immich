@@ -219,6 +219,19 @@ export const person_delete_audit = registerFunction({
     END`,
 });
 
+export const person_group_delete_audit = registerFunction({
+  name: 'person_group_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO person_group_audit ("personId", "trustedGroupId")
+      SELECT "personId", "trustedGroupId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+});
+
 export const user_metadata_audit = registerFunction({
   name: 'user_metadata_audit',
   returnType: 'TRIGGER',

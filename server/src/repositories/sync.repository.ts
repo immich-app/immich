@@ -65,6 +65,7 @@ export class SyncRepository {
   partnerAssetExif: PartnerAssetExifsSync;
   partnerStack: PartnerStackSync;
   person: PersonSync;
+  personUser: PersonUserSync;
   stack: StackSync;
   user: UserSync;
   userMetadata: UserMetadataSync;
@@ -89,6 +90,7 @@ export class SyncRepository {
     this.partnerAssetExif = new PartnerAssetExifsSync(this.db);
     this.partnerStack = new PartnerStackSync(this.db);
     this.person = new PersonSync(this.db);
+    this.personUser = new PersonUserSync(this.db);
     this.stack = new StackSync(this.db);
     this.user = new UserSync(this.db);
     this.userMetadata = new UserMetadataSync(this.db);
@@ -423,7 +425,9 @@ class PersonSync extends BaseSync {
   getDeletes(options: SyncQueryOptions) {
     return this.auditQuery('person_audit', options)
       .select(['id', 'personId'])
-      .where('ownerId', '=', options.userId)
+      .where('trustedGroupId', '=', (eb) =>
+        eb.selectFrom('user').select('trustedGroupId').where('user.id', '=', options.userId),
+      )
       .stream();
   }
 
@@ -434,21 +438,60 @@ class PersonSync extends BaseSync {
   @GenerateSql({ params: [dummyQueryOptions], stream: true })
   getUpserts(options: SyncQueryOptions) {
     return this.upsertQuery('person', options)
+      .select(['id', 'createdAt', 'updatedAt', 'name', 'birthDate', 'color', 'updateId', 'trustedGroupId'])
+      .where('trustedGroupId', '=', (eb) =>
+        eb.selectFrom('user').select('trustedGroupId').where('user.id', '=', options.userId),
+      )
+      .stream();
+  }
+
+  getPersonUser({ personId, ownerId }: { personId: string; ownerId: string }) {
+    return this.db
+      .selectFrom('person_user')
+      .select(['ownerId', 'isFavorite', 'isHidden', 'thumbnailFaceAssetId'])
+      .where('personId', '=', personId)
+      .where('ownerId', '=', ownerId)
+      .executeTakeFirst();
+  }
+}
+
+class PersonUserSync extends BaseSync {
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getDeletes(options: SyncQueryOptions) {
+    return this.auditQuery('person_user_audit', options)
+      .select(['id', 'personId', 'ownerId'])
+      .where('ownerId', '=', options.userId)
+      .stream();
+  }
+
+  cleanupAuditTable(daysAgo: number) {
+    return this.auditCleanup('person_user_audit', daysAgo);
+  }
+
+  @GenerateSql({ params: [dummyQueryOptions], stream: true })
+  getUpserts(options: SyncQueryOptions) {
+    return this.upsertQuery('person_user', options)
       .select([
-        'id',
+        'personId',
+        'ownerId',
         'createdAt',
         'updatedAt',
-        'ownerId',
-        'name',
-        'birthDate',
         'isHidden',
         'isFavorite',
-        'color',
+        'thumbnailFaceAssetId',
         'updateId',
-        'faceAssetId',
       ])
       .where('ownerId', '=', options.userId)
       .stream();
+  }
+
+  getPersonUser({ personId, ownerId }: { personId: string; ownerId: string }) {
+    return this.db
+      .selectFrom('person_user')
+      .select(['ownerId', 'isFavorite', 'isHidden', 'thumbnailFaceAssetId'])
+      .where('personId', '=', personId)
+      .where('ownerId', '=', ownerId)
+      .executeTakeFirst();
   }
 }
 

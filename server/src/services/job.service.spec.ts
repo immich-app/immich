@@ -50,7 +50,7 @@ describe(JobService.name, () => {
         jobs: [],
       },
       {
-        item: { name: JobName.PersonGenerateThumbnail, data: { id: 'asset-1' } },
+        item: { name: JobName.PersonGenerateThumbnail, data: { personId: 'person-1', ownerId: 'user-1' } },
         jobs: [],
       },
       {

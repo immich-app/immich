@@ -88,9 +88,9 @@ export class IntegrityRepository {
   @GenerateSql({ params: [DummyValue.STRING] })
   getPersonThumbnailPathsByPaths(paths: string[]) {
     return this.db
-      .selectFrom('person')
-      .select('person.thumbnailPath')
-      .where('person.thumbnailPath', 'in', paths)
+      .selectFrom('person_user')
+      .select('person_user.thumbnailPath')
+      .where('person_user.thumbnailPath', 'in', paths)
       .execute();
   }
 
