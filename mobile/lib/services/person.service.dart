@@ -12,7 +12,7 @@ class PersonService {
   final PersonApiRepository _personApiRepository;
   PersonService(this._personApiRepository);
 
-  Future<List<PersonDto>> getAllPeople() async {
+  Future<List<Person>> getAllPeople() async {
     try {
       return await _personApiRepository.getAll();
     } catch (error, stack) {
@@ -21,7 +21,7 @@ class PersonService {
     }
   }
 
-  Future<PersonDto?> updateName(String id, String name) async {
+  Future<Person?> updateName(String id, String name) async {
     try {
       return await _personApiRepository.update(id, name: name);
     } catch (error, stack) {
