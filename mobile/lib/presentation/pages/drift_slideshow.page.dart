@@ -99,7 +99,8 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     final asset = widget.timeline.getAssetSafe(_index)!;
 
     if (!asset.isImage) {
-      if (ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.completed) {
+      final player = ref.read(videoPlayerProvider(asset.id));
+      if (player.status == VideoPlaybackStatus.completed && player.position > Duration.zero) {
         unawaited(_nextPage());
         return;
       }
@@ -181,8 +182,11 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
 
     if (target == _index) {
       final asset = widget.timeline.getAssetSafe(target)!;
-      if (!asset.isImage && ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.completed) {
-        unawaited(ref.read(videoPlayerProvider(asset.id).notifier).restart());
+      if (!asset.isImage) {
+        final player = ref.read(videoPlayerProvider(asset.id));
+        if (player.status == VideoPlaybackStatus.completed && player.position > Duration.zero) {
+          unawaited(ref.read(videoPlayerProvider(asset.id).notifier).restart());
+        }
       }
       // jumpToPage to the current page fires no onPageChanged
       _pageChanged(target);
