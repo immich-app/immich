@@ -37,7 +37,8 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
 
   final trashEnabled = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
   // Assets already in the trash or in the locked folder are deleted outright, irrespective of the server setting.
-  final trash = trashEnabled && !ownedRemote.every((asset) => asset.isTrashed || asset.isLocked);
+  final trash =
+      ownedRemote.isEmpty || (trashEnabled && !ownedRemote.every((asset) => asset.isTrashed || asset.isLocked));
 
   return (localIds: localIds, remoteIds: ownedRemote.map((asset) => asset.id).toList(growable: false), trash: trash);
 }, dependencies: [assetsActionProvider]);
