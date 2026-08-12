@@ -225,6 +225,13 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
           working_directory: ./mobile
 
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
+        with:
+          ruby-version: '3.3'
+          bundler-cache: true
+          working-directory: ./mobile/ios
+
       - name: Install dependencies
         run: mise //mobile:install:ci
 
@@ -234,18 +241,6 @@ jobs:
       - name: Resolve iOS Swift Packages
         working-directory: ./mobile
         run: flutter build ios --config-only --no-codesign
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
-        with:
-          ruby-version: '3.3'
-          bundler-cache: true
-          working-directory: ./mobile/ios
-
-      - name: Install CocoaPods dependencies
-        working-directory: ./mobile/ios
-        run: |
-          pod install
 
       - name: Create API Key
         env:
