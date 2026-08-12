@@ -28,7 +28,7 @@ class _DriftMemoryListPageState extends ConsumerState<DriftMemoryListPage> {
       builder: (context, constraints) {
         return Scaffold(
           appBar: AppBar(
-            title: Text('memories'.tr()),
+            title: Text(context.t.memories),
             actions: [
               IconButton(
                 icon: Icon(_onlyFavorites ? Icons.favorite : Icons.favorite_outline),
