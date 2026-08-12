@@ -33,7 +33,7 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
     return query.map((row) => row.toDto()).get();
   }
 
-  Future<List<Person>> getAllPeople({int minFaces = 3}) async {
+  Stream<List<Person>> watch({int minFaces = 3}) {
     final people = _db.personEntity;
     final faces = _db.assetFaceEntity;
     final assets = _db.remoteAssetEntity;
@@ -59,7 +59,7 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
     return query.map((row) {
       final person = row.readTable(people);
       return person.toDto();
-    }).get();
+    }).watch();
   }
 
   Future<int> updateName(String personId, String name) {

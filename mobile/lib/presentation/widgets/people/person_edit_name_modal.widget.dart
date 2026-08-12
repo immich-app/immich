@@ -29,12 +29,7 @@ class _DriftPersonNameEditFormState extends ConsumerState<DriftPersonNameEditFor
   Future<void> onEdit(String personId, String newName) async {
     try {
       final result = await ref.read(driftPeopleServiceProvider).updateName(personId, newName);
-      if (result != 0) {
-        ref.invalidate(driftGetAllPeopleProvider);
-        if (!mounted) {
-          return;
-        }
-
+      if (result != 0 && mounted) {
         context.pop<String>(newName);
       }
     } catch (error) {
