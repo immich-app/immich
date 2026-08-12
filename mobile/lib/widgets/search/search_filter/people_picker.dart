@@ -65,7 +65,7 @@ class PeoplePicker extends HookConsumerWidget {
                     padding: const EdgeInsets.only(bottom: 2.0),
                     child: LargeLeadingTile(
                       title: Text(
-                        person.name,
+                        person.name.nullIfEmpty ?? context.t.no_name,
                         style: context.textTheme.bodyLarge?.copyWith(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
