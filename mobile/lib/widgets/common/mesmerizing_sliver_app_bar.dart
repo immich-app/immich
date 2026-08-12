@@ -8,7 +8,7 @@ import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -237,7 +237,7 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
     final assetCount = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
 
     return Text(
-      'items_count'.t(context: context, args: {"count": assetCount}),
+      context.t.items_count(count: assetCount),
       style: context.textTheme.labelLarge?.copyWith(
         // letterSpacing: 0.2,
         fontWeight: FontWeight.bold,

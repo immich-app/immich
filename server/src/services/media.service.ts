@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { SystemConfig } from 'src/config';
-import { FACE_THUMBNAIL_SIZE, JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+import { FACE_THUMBNAIL_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -43,7 +43,7 @@ import { getAssetFile, getDimensions } from 'src/utils/asset.util';
 import { checkFaceVisibility, checkOcrVisibility } from 'src/utils/editor';
 import { BaseConfig, ThumbnailConfig } from 'src/utils/media';
 import { mimeTypes } from 'src/utils/mime-types';
-import { clamp } from 'src/utils/misc';
+import { batched, clamp } from 'src/utils/misc';
 import { getOutputDimensions } from 'src/utils/transform';
 
 interface UpsertFileOptions {
@@ -69,52 +69,42 @@ export class MediaService extends BaseService {
   @OnJob({ name: JobName.AssetGenerateThumbnailsQueueAll, queue: QueueName.ThumbnailGeneration })
   async handleQueueGenerateThumbnails({ force }: JobOf<JobName.AssetGenerateThumbnailsQueueAll>): Promise<JobStatus> {
     const config = await this.getConfig({ withCache: true });
-    let jobs: JobItem[] = [];
-
-    const queueAll = async () => {
-      await this.jobRepository.queueAll(jobs);
-      jobs = [];
-    };
 
     const isFullsizeEnabled = config.image.fullsize.enabled;
-    for await (const asset of this.assetJobRepository.streamForThumbnailJob({
-      force,
-      fullsizeEnabled: isFullsizeEnabled,
-    })) {
-      if (force || !asset.isEdited) {
-        jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
-      }
-
-      if (asset.isEdited) {
-        jobs.push({ name: JobName.AssetEditThumbnailGeneration, data: { id: asset.id } });
-      }
-
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueAll();
-      }
-    }
-
-    await queueAll();
-
-    const people = this.personRepository.getAll(force ? undefined : { thumbnailPath: '' });
-
-    for await (const person of people) {
-      if (!person.faceAssetId) {
-        const face = await this.personRepository.getRandomFace(person.id);
-        if (!face) {
-          continue;
+    for await (const assets of batched(
+      this.assetJobRepository.streamForThumbnailJob({ force, fullsizeEnabled: isFullsizeEnabled }),
+    )) {
+      const jobs: JobItem[] = [];
+      for (const asset of assets) {
+        if (force || !asset.isEdited) {
+          jobs.push({ name: JobName.AssetGenerateThumbnails, data: { id: asset.id } });
         }
 
-        await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+        if (asset.isEdited) {
+          jobs.push({ name: JobName.AssetEditThumbnailGeneration, data: { id: asset.id } });
+        }
       }
 
-      jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: person.id } });
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueAll();
-      }
+      await this.jobRepository.queueAll(jobs);
     }
 
-    await queueAll();
+    for await (const people of batched(this.personRepository.getAll(force ? undefined : { thumbnailPath: '' }))) {
+      const jobs: JobItem[] = [];
+      for (const person of people) {
+        if (!person.faceAssetId) {
+          const face = await this.personRepository.getRandomFace(person.id);
+          if (!face) {
+            continue;
+          }
+
+          await this.personRepository.update({ id: person.id, faceAssetId: face.id });
+        }
+
+        jobs.push({ name: JobName.PersonGenerateThumbnail, data: { id: person.id } });
+      }
+
+      await this.jobRepository.queueAll(jobs);
+    }
 
     return JobStatus.Success;
   }
@@ -127,29 +117,17 @@ export class MediaService extends BaseService {
       await this.storageCore.removeEmptyDirs(StorageFolder.EncodedVideo);
     }
 
-    let jobs: JobItem[] = [];
-    const assets = this.assetJobRepository.streamForMigrationJob();
-    for await (const asset of assets) {
-      jobs.push({ name: JobName.AssetFileMigration, data: { id: asset.id } });
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(jobs);
-        jobs = [];
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForMigrationJob())) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.AssetFileMigration, data: { id: asset.id } })),
+      );
     }
 
-    await this.jobRepository.queueAll(jobs);
-    jobs = [];
-
-    for await (const person of this.personRepository.getAll()) {
-      jobs.push({ name: JobName.PersonFileMigration, data: { id: person.id } });
-
-      if (jobs.length === JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(jobs);
-        jobs = [];
-      }
+    for await (const people of batched(this.personRepository.getAll())) {
+      await this.jobRepository.queueAll(
+        people.map((person) => ({ name: JobName.PersonFileMigration, data: { id: person.id } })),
+      );
     }
-
-    await this.jobRepository.queueAll(jobs);
 
     return JobStatus.Success;
   }
@@ -551,17 +529,11 @@ export class MediaService extends BaseService {
   async handleQueueVideoConversion(job: JobOf<JobName.AssetEncodeVideoQueueAll>): Promise<JobStatus> {
     const { force } = job;
 
-    let queue: { name: JobName.AssetEncodeVideo; data: { id: string } }[] = [];
-    for await (const asset of this.assetJobRepository.streamForVideoConversion(force)) {
-      queue.push({ name: JobName.AssetEncodeVideo, data: { id: asset.id } });
-
-      if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(queue);
-        queue = [];
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForVideoConversion(force))) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.AssetEncodeVideo, data: { id: asset.id } })),
+      );
     }
-
-    await this.jobRepository.queueAll(queue);
 
     return JobStatus.Success;
   }

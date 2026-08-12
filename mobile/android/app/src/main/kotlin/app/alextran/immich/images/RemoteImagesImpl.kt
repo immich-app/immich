@@ -5,6 +5,7 @@ import android.graphics.ImageDecoder
 import android.os.Build
 import android.os.CancellationSignal
 import android.os.OperationCanceledException
+import android.util.Size
 import androidx.exifinterface.media.ExifInterface
 import app.alextran.immich.INITIAL_BUFFER_SIZE
 import app.alextran.immich.NativeBuffer
@@ -79,6 +80,8 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
     url: String,
     requestId: Long,
     preferEncoded: Boolean,
+    width: Long?,
+    height: Long?,
     callback: (Result<Map<String, Long>?>) -> Unit
   ) {
     val signal = CancellationSignal()
@@ -102,13 +105,21 @@ class RemoteImagesImpl(context: Context) : RemoteImageApi {
         if (!preferEncoded && Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
           decodeExecutor.execute {
             val res = if (signal.isCanceled) null else try {
-              val bitmap = ImageDecoder.createSource(NativeBuffer.wrap(buffer.pointer, buffer.offset)).decodeBitmap()
               // The embedded preview a raw decodes to has no orientation, so read the container's.
               val orientation = if (isRawMime(contentType)) {
                 readRawOrientation(NativeBuffer.wrap(buffer.pointer, buffer.offset), buffer.offset)
               } else {
                 ExifInterface.ORIENTATION_NORMAL
               }
+              val target = when (orientation) {
+                ExifInterface.ORIENTATION_TRANSPOSE,
+                ExifInterface.ORIENTATION_ROTATE_90,
+                ExifInterface.ORIENTATION_TRANSVERSE,
+                ExifInterface.ORIENTATION_ROTATE_270 -> Size(height?.toInt() ?: 0, width?.toInt() ?: 0)
+                else -> Size(width?.toInt() ?: 0, height?.toInt() ?: 0)
+              }
+              val source = ImageDecoder.createSource(NativeBuffer.wrap(buffer.pointer, buffer.offset))
+              val bitmap = source.decodeBitmap(target, exactSize = true)
               if (orientation == ExifInterface.ORIENTATION_NORMAL || orientation == ExifInterface.ORIENTATION_UNDEFINED) {
                 bitmap.toNativeBuffer()
               } else {

@@ -31,7 +31,7 @@ class SimilarPhotosAction extends ActionBuilder {
           location: .new(),
           camera: .new(),
           date: .new(),
-          display: .new(isNotInAlbum: false, isArchive: false, isFavorite: false),
+          display: const .new(isNotInAlbum: false, isArchive: false, isFavorite: false),
           rating: .new(),
           mediaType: .other,
         ),

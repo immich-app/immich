@@ -14,6 +14,7 @@ import {
 import { Permission } from 'src/enum';
 import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository';
 import { BaseService } from 'src/services/base.service';
+import { findOrFail } from 'src/utils/misc';
 import { getWorkflowTriggers, isMethodCompatible, resolveMethod } from 'src/utils/workflow';
 
 @Injectable()
@@ -104,11 +105,7 @@ export class WorkflowService extends BaseService {
     return results;
   }
 
-  private async findOrFail(id: string) {
-    const workflow = await this.workflowRepository.get(id);
-    if (!workflow) {
-      throw new BadRequestException('Workflow not found');
-    }
-    return workflow;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.workflowRepository.get(id), 'Workflow');
   }
 }
