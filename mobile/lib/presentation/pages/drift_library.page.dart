@@ -145,7 +145,7 @@ class _PeopleCollectionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final people = ref.watch(driftGetAllPeopleProvider);
+    final people = ref.watch(getAllPeopleProvider);
 
     return LayoutBuilder(
       builder: (context, constraints) {

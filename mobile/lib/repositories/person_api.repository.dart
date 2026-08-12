@@ -11,11 +11,6 @@ class PersonApiRepository extends ApiRepository {
 
   PersonApiRepository(this._api);
 
-  Future<List<Person>> getAll() async {
-    final dto = await checkNull(_api.getAllPeople());
-    return dto.people.map(_toPerson).toList();
-  }
-
   Future<Person> update(String id, {String? name, DateTime? birthday}) async {
     final birthdayUtc = birthday == null ? null : DateTime.utc(birthday.year, birthday.month, birthday.day);
     final dto = PersonUpdateDto(
@@ -27,5 +22,5 @@ class PersonApiRepository extends ApiRepository {
   }
 
   static Person _toPerson(PersonResponseDto dto) =>
-      .new(birthDate: dto.birthDate, id: dto.id, name: dto.name, updatedAt: dto.updatedAt.value);
+      .new(birthDate: dto.birthDate, id: dto.id, name: dto.name, updatedAt: dto.updatedAt.orElse(null));
 }
