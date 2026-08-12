@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/memory.service.dart';
 import 'package:immich_mobile/domain/services/people.service.dart';
@@ -32,16 +34,40 @@ class MockAssetViewerStateNotifier extends Mock implements AssetViewerStateNotif
 
 const _assetId = 'aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb';
 const _albumId = 'cccccccc-4444-5555-6666-dddddddddddd';
+const _memoryId = 'eeeeeeee-7777-8888-9999-ffffffffffff';
+const _userId = 'user-1';
+
+final _user = UserDto(
+  id: _userId,
+  name: 'Test User',
+  email: 'test@example.com',
+  isAdmin: false,
+  profileChangedAt: DateTime(2026, 6, 12),
+  avatarColor: AvatarColor.primary,
+  memoryEnabled: true,
+);
 
 final _asset = RemoteAsset(
   id: _assetId,
   name: 'photo.jpg',
-  ownerId: 'user-1',
+  ownerId: _userId,
   checksum: 'checksum-1',
   type: AssetType.image,
   createdAt: DateTime(2026, 6, 12),
   updatedAt: DateTime(2026, 6, 12),
   isEdited: false,
+);
+
+final _memory = DriftMemory(
+  id: _memoryId,
+  createdAt: DateTime(2026, 6, 12),
+  updatedAt: DateTime(2026, 6, 12),
+  ownerId: _userId,
+  type: MemoryTypeEnum.onThisDay,
+  data: const MemoryData(year: 2020),
+  isSaved: false,
+  memoryAt: DateTime(2020, 6, 12),
+  assets: [],
 );
 
 final _album = RemoteAlbum(
@@ -62,14 +88,17 @@ void main() {
   late MockTimelineFactory timelineFactory;
   late MockAssetService assetService;
   late MockRemoteAlbumService remoteAlbumService;
+  late MockDriftMemoryService memoryService;
   late MockWidgetRef ref;
   late List<TimelineService> createdTimelineServices;
   late DeepLinkService sut;
+  late DeepLinkService sutWithUser;
 
   setUp(() {
     timelineFactory = MockTimelineFactory();
     assetService = MockAssetService();
     remoteAlbumService = MockRemoteAlbumService();
+    memoryService = MockDriftMemoryService();
     ref = MockWidgetRef();
     createdTimelineServices = [];
 
@@ -90,9 +119,18 @@ void main() {
       timelineFactory,
       assetService,
       remoteAlbumService,
-      MockDriftMemoryService(),
+      memoryService,
       MockDriftPeopleService(),
       null,
+    );
+
+    sutWithUser = DeepLinkService(
+      timelineFactory,
+      assetService,
+      remoteAlbumService,
+      memoryService,
+      MockDriftPeopleService(),
+      _user,
     );
 
     addTearDown(() async {
@@ -102,9 +140,17 @@ void main() {
     });
   });
 
+  /// Creates a mock [PlatformDeepLink] for an https://my.immich.app path.
   PlatformDeepLink link(String path) {
     final deepLink = MockPlatformDeepLink();
     when(() => deepLink.uri).thenReturn(Uri.parse('https://my.immich.app$path'));
+    return deepLink;
+  }
+
+  /// Creates a mock [PlatformDeepLink] for an immich:// scheme URI.
+  PlatformDeepLink schemeLink(String path) {
+    final deepLink = MockPlatformDeepLink();
+    when(() => deepLink.uri).thenReturn(Uri.parse('immich:/$path'));
     return deepLink;
   }
 
@@ -136,5 +182,40 @@ void main() {
     expect(route, isA<AssetViewerRoute>());
     expect((route!.args! as AssetViewerRouteArgs).currentAlbum, isNull);
     verifyNever(() => remoteAlbumService.get(any()));
+  });
+
+  group('memory deep links', () {
+    test('immich://memory opens the full Memory Lane', () async {
+      when(() => memoryService.getMemoryLane(_userId)).thenAnswer((_) async => [_memory]);
+
+      final route = await sutWithUser.handleScheme(schemeLink('/memory'), ref);
+
+      expect(route, isA<DriftMemoryRoute>());
+      final args = route!.args! as DriftMemoryRouteArgs;
+      expect(args.memories, [_memory]);
+      expect(args.memoryIndex, 0);
+    });
+
+    test('immich://memory?id=<uuid> opens that specific memory', () async {
+      when(() => memoryService.get(_memoryId)).thenAnswer((_) async => _memory);
+
+      final route = await sut.handleScheme(schemeLink('/memory?id=$_memoryId'), ref);
+
+      expect(route, isA<DriftMemoryRoute>());
+      final args = route!.args! as DriftMemoryRouteArgs;
+      expect(args.memories, [_memory]);
+      expect(args.memoryIndex, 0);
+    });
+
+    test('https://my.immich.app/memory opens the full Memory Lane', () async {
+      when(() => memoryService.getMemoryLane(_userId)).thenAnswer((_) async => [_memory]);
+
+      final route = await sutWithUser.handleMyImmichApp(link('/memory'), ref);
+
+      expect(route, isA<DriftMemoryRoute>());
+      final args = route!.args! as DriftMemoryRouteArgs;
+      expect(args.memories, [_memory]);
+      expect(args.memoryIndex, 0);
+    });
   });
 }
