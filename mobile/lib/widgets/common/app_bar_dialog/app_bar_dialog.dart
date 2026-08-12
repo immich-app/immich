@@ -106,25 +106,32 @@ class ImmichAppBarDialog extends HookConsumerWidget {
             return const SizedBox.shrink();
           }
 
+          const warningColor = Color.fromARGB(255, 243, 188, 106);
+          final warningTextColor = Colors.brown.shade900;
           final textColor = theme.textTheme.labelLarge?.color?.withAlpha(250);
-          final textStyle = theme.textTheme.labelLarge?.copyWith(color: textColor);
 
-          return Padding(
-            padding: const EdgeInsets.only(left: 12, right: 12, bottom: 8),
-            child: Material(
-              color: Colors.orange.withValues(alpha: 0.1),
-              borderRadius: const BorderRadius.all(Radius.circular(10)),
-              clipBehavior: Clip.antiAlias,
-              child: ListTile(
-                dense: true,
-                visualDensity: VisualDensity.standard,
-                contentPadding: const EdgeInsets.only(left: 18, right: 18),
-                minLeadingWidth: 40,
-                leading: Icon(Icons.warning_amber_rounded, color: textColor, size: 20),
-                title: Text(context.t.trash_review_banner_title, style: textStyle),
-                onTap: () => context.pushRoute(const DriftTrashReviewRoute()),
-                trailing: Text('($outOfSyncCount)', style: textStyle),
+          return ListTile(
+            dense: true,
+            visualDensity: VisualDensity.standard,
+            contentPadding: const EdgeInsets.only(left: 30, right: 30),
+            minLeadingWidth: 40,
+            leading: Icon(Icons.warning_amber_rounded, color: textColor, size: 20),
+            title: Text(
+              context.t.trash_review_banner_title,
+              style: theme.textTheme.labelLarge?.copyWith(color: textColor),
+            ),
+            onTap: () => context.pushRoute(const DriftTrashReviewRoute()),
+            trailing: Chip(
+              label: Text(
+                '$outOfSyncCount',
+                style: theme.textTheme.labelMedium?.copyWith(color: warningTextColor, fontWeight: FontWeight.w800),
               ),
+              backgroundColor: warningColor,
+              side: BorderSide(color: warningTextColor.withAlpha(60)),
+              shape: const StadiumBorder(),
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              visualDensity: VisualDensity.compact,
+              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
             ),
           );
         },
