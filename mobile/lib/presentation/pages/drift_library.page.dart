@@ -391,7 +391,7 @@ class _MemoriesCollectionCard extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Text(
-                  'memories'.t(context: context),
+                  context.t.memories,
                   style: context.textTheme.titleSmall?.copyWith(
                     color: context.colorScheme.onSurface,
                     fontWeight: FontWeight.w500,
