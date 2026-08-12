@@ -742,9 +742,7 @@ class _SearchResultGrid extends ConsumerWidget {
     return false;
   }
 
-  Widget? _bottomWidget(BuildContext context, WidgetRef ref) {
-    final isLoading = ref.read(paginatedSearchProvider.select((s) => s.isLoading));
-
+  Widget? _bottomWidget(BuildContext context, {required bool isLoading, required bool hasMore}) {
     if (isLoading) {
       return const SliverFillRemaining(
         hasScrollBody: false,
@@ -754,8 +752,6 @@ class _SearchResultGrid extends ConsumerWidget {
         ),
       );
     }
-
-    final hasMore = ref.read(paginatedSearchProvider.select((s) => s.nextPage != null));
 
     if (hasMore) {
       return null;
@@ -778,6 +774,7 @@ class _SearchResultGrid extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final hasAssets = ref.watch(paginatedSearchProvider.select((s) => s.assets.isNotEmpty));
     final isLoading = ref.watch(paginatedSearchProvider.select((s) => s.isLoading));
+    final hasMore = ref.watch(paginatedSearchProvider.select((s) => s.nextPage != null));
 
     if (!hasAssets && !isLoading) {
       return const _SearchNoResults();
@@ -807,7 +804,7 @@ class _SearchResultGrid extends ConsumerWidget {
             bottomSheet: const GeneralBottomSheet(minChildSize: 0.20),
             snapToMonth: false,
             loadingWidget: const SizedBox.shrink(),
-            bottomSliverWidget: _bottomWidget(context, ref),
+            bottomSliverWidget: _bottomWidget(context, isLoading: isLoading, hasMore: hasMore),
           ),
         ),
       ),
