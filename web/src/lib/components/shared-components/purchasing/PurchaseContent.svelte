@@ -2,7 +2,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { activateProduct, getActivationKey } from '$lib/utils/license-utils';
-  import { Button, Heading, LoadingSpinner } from '@immich/ui';
+  import { Button, Heading, LoadingSpinner, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
   import UserPurchaseOptionCard from './IndividualPurchaseOptionCard.svelte';
   import ServerPurchaseOptionCard from './ServerPurchaseOptionCard.svelte';
@@ -41,6 +41,10 @@
       {$t('purchase_option_title')}
     </Heading>
   {/if}
+
+  <!-- TODO[YUCCA]: i18n keys & link -->
+  <Text>Product keys support Immich development and gives you a supporter badge.</Text>
+  <Text fontWeight="bold">Product keys do not include <a>FUTO Backups</a>.</Text>
 
   {#if showMessage}
     <div class="mt-2">
