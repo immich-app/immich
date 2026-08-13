@@ -14,7 +14,7 @@ import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
-import 'package:immich_mobile/services/gcast.service.dart';
+import 'package:immich_mobile/services/cast.service.dart';
 import 'package:immich_mobile/utils/asset_filter.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:native_video_player/native_video_player.dart';
@@ -57,7 +57,7 @@ void main() {
       overrides: [
         assetServiceProvider.overrideWithValue(assetService),
         assetsActionProvider(ActionSource.viewer).overrideWithValue(const AssetFilter<BaseAsset>({})),
-        gCastServiceProvider.overrideWithValue(MockGCastService()),
+        castServiceProvider.overrideWithValue(MockCastService()),
         inLockedViewProvider.overrideWithValue(true),
         ownedAssetsActionProvider(ActionSource.viewer).overrideWithValue(const AssetFilter<RemoteAsset>({})),
         readonlyModeProvider.overrideWith(TestReadOnlyModeNotifier.new),
