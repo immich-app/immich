@@ -454,19 +454,24 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
   }
   
 
-  private func cloudIdErrorKind(for error: Error) -> CloudIdErrorKind {
+  private func cloudIdError(for error: Error) -> (kind: CloudIdErrorKind, message: String) {
     let nsError = error as NSError
+    var message = "Error getting Cloud Id: \(error.localizedDescription)"
+
     guard nsError.domain == PHPhotosErrorDomain else {
-      return .unknown
+      return (.unknown, message)
     }
 
     switch nsError.code {
     case PHPhotosError.identifierNotFound.rawValue:
-      return .notFound
+      return (.notFound, message)
     case PHPhotosError.multipleIdentifiersFound.rawValue:
-      return .ambiguous
+      if let matches = nsError.userInfo[PHLocalIdentifiersErrorKey] as? [String] {
+        message += " (matched: \(matches.joined(separator: ", ")))"
+      }
+      return (.ambiguous, message)
     default:
-      return .unknown
+      return (.unknown, message)
     }
   }
 
@@ -491,12 +496,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
             CloudIdResult(assetId: key, error: "Incomplete Cloud Id: \(cloudId)", errorKind: .incomplete))
         }
       case .failure(let error):
-        let kind = cloudIdErrorKind(for: error)
-        var message = "Error getting Cloud Id: \(error.localizedDescription)"
-        if kind == .ambiguous,
-          let matches = (error as NSError).userInfo[PHLocalIdentifiersErrorKey] as? [String] {
-          message += " (matched: \(matches.joined(separator: ", ")))"
-        }
+        let (kind, message) = cloudIdError(for: error)
         mappings.append(CloudIdResult(assetId: key, error: message, errorKind: kind))
       }
     }

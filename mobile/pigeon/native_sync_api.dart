@@ -102,7 +102,6 @@ enum CloudIdErrorKind {
   ambiguous,
   // PhotoKit returned a partially synced identifier ("GUID:ID:" with no trailing hash)
   incomplete,
-  unsupported,
   unknown,
 }
 
