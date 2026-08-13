@@ -70,6 +70,8 @@ void main() {
     );
     messenger.setMockMessageHandler('dev.flutter.pigeon.immich_mobile.RemoteImageApi.requestImage', nullReply);
     messenger.setMockMessageHandler('dev.flutter.pigeon.immich_mobile.RemoteImageApi.cancelRequest', nullReply);
+    // SystemChrome calls never get a reply from the test shell, which would leave _onTapUp hanging.
+    messenger.setMockMethodCallHandler(SystemChannels.platform, (call) async => null);
     messenger.setMockMethodCallHandler(
       SystemChannels.platform_views,
       (call) async => switch (call.method) {
@@ -248,6 +250,68 @@ void main() {
     await tester.pump();
     expect(player.restartCalls, 2);
     expect(currentPage(tester), 0);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('play on a finished video replays it instead of advancing', (tester) async {
+    final video = RemoteAssetFactory.create(type: .video);
+    stubTimeline([RemoteAssetFactory.create(), video]);
+
+    await pumpSlideshow(tester, overrides: overridesFor(video));
+
+    await tester.pump(duration);
+    expect(currentPage(tester), 1);
+
+    const length = Duration(seconds: 60);
+    player.emit(const VideoPlayerState(position: Duration(seconds: 1), duration: length, status: .playing));
+    await tester.pump();
+
+    await tester.tap(find.byType(PageView));
+    await tester.pump();
+    await tester.pump();
+
+    await tester.tap(find.byIcon(Icons.pause));
+    await tester.pump();
+
+    player.emit(const VideoPlayerState(position: length, duration: length, status: .completed));
+    await tester.pump();
+    expect(currentPage(tester), 1);
+
+    await tester.tap(find.byIcon(Icons.play_arrow));
+    await tester.pump();
+    expect(player.restartCalls, 1);
+    expect(currentPage(tester), 1);
+
+    player.emit(const VideoPlayerState(position: Duration.zero, duration: length, status: .playing));
+    await tester.pump();
+    player.emit(const VideoPlayerState(position: length, duration: length, status: .completed));
+    await tester.pump();
+    expect(currentPage(tester), 0);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
+
+  testWidgets('landing on the last slide does not preload past the end', (tester) async {
+    stubTimeline([RemoteAssetFactory.create(), RemoteAssetFactory.create()]);
+    when(() => timeline.hasRange(any(), any())).thenAnswer((invocation) {
+      final index = invocation.positionalArguments[0] as int;
+      final count = invocation.positionalArguments[1] as int;
+      return index >= 0 && index + count <= 2;
+    });
+
+    await pumpSlideshow(
+      tester,
+      overrides: [
+        appConfigProvider.overrideWithValue(config),
+        assetServiceProvider.overrideWithValue(assetService),
+        gCastServiceProvider.overrideWithValue(MockGCastService()),
+      ],
+    );
+    await tester.pump(duration);
+    expect(currentPage(tester), 1);
+
+    verifyNever(() => timeline.preloadAssets(any()));
 
     await tester.pumpWidget(const SizedBox.shrink());
   });

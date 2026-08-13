@@ -66,7 +66,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _crossfadeOpacity = Tween<double>(begin: 1.0, end: 0.0).animate(_crossfadeController);
     _stopwatch = Stopwatch();
     _createTimer();
-    _watchVideo();
+    _listenToVideoPlayer();
     _updateNextIndex();
     ref.listenManual(appConfigProvider.select((s) => s.slideshow), _onConfigChanged);
 
@@ -96,14 +96,14 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
       _paused = false;
     });
 
-    final asset = widget.timeline.getAssetSafe(_index)!;
+    final asset = widget.timeline.getAssetSafe(_index);
 
-    if (!asset.isImage) {
+    if (asset != null && !asset.isImage) {
       if (ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.completed) {
-        unawaited(_nextPage());
-        return;
+        unawaited(ref.read(videoPlayerProvider(asset.id).notifier).restart());
+      } else {
+        unawaited(ref.read(videoPlayerProvider(asset.id).notifier).play());
       }
-      unawaited(ref.read(videoPlayerProvider(asset.id).notifier).play());
     }
 
     _createTimer();
@@ -113,9 +113,9 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _timer.cancel();
     _stopwatch.stop();
 
-    final asset = widget.timeline.getAssetSafe(_index)!;
+    final asset = widget.timeline.getAssetSafe(_index);
 
-    if (!asset.isImage) {
+    if (asset != null && !asset.isImage) {
       unawaited(ref.read(videoPlayerProvider(asset.id).notifier).pause());
     }
 
@@ -148,6 +148,11 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
       SlideshowDirection.shuffle => widget.timeline.getIndex(widget.timeline.getRandomAsset().heroTag)!,
     };
 
+    // a next index past the end is _nextPage's stop/wrap signal, so keep it and only skip the preload
+    if (_nextIndex < 0 || _nextIndex >= widget.timeline.totalAssets) {
+      return;
+    }
+
     if (!widget.timeline.hasRange(_nextIndex, 1)) {
       unawaited(widget.timeline.preloadAssets(_nextIndex));
     }
@@ -156,40 +161,35 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   Future<void> _nextPage() async {
     _timer.cancel();
 
-    if (widget.timeline.totalAssets == 0) {
+    var destinationIndex = _nextIndex;
+    // the index is wrapping around
+    if (_config.repeat && (destinationIndex < 0 || destinationIndex >= widget.timeline.totalAssets)) {
+      destinationIndex = _config.direction == SlideshowDirection.forward ? 0 : widget.timeline.totalAssets - 1;
+    }
+
+    // nowhere to go, so halt the slideshow
+    if (destinationIndex < 0 || destinationIndex >= widget.timeline.totalAssets) {
+      setState(() {
+        _paused = true;
+      });
       return;
     }
 
-    var target = _nextIndex;
-    if (target < 0 || target >= widget.timeline.totalAssets) {
-      if (!_config.repeat) {
-        setState(() {
-          _paused = true;
-        });
-        return;
-      }
-      target = _config.direction == SlideshowDirection.forward ? 0 : widget.timeline.totalAssets - 1;
-    }
-
-    if (!widget.timeline.hasRange(target, 1)) {
-      final from = _index;
-      await widget.timeline.preloadAssets(target);
-      if (!mounted || from != _index) {
+    if (!widget.timeline.hasRange(destinationIndex, 1)) {
+      final oldIndex = _index;
+      await widget.timeline.preloadAssets(destinationIndex);
+      if (!mounted || oldIndex != _index) {
         return;
       }
     }
 
-    if (target == _index) {
-      final asset = widget.timeline.getAssetSafe(target)!;
-      if (!asset.isImage && ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.completed) {
-        unawaited(ref.read(videoPlayerProvider(asset.id).notifier).restart());
-      }
+    if (destinationIndex == _index) {
       // jumpToPage to the current page fires no onPageChanged
-      _pageChanged(target);
+      _pageChanged(destinationIndex);
       return;
     }
 
-    _crossFadeToPage(target);
+    _crossFadeToPage(destinationIndex);
   }
 
   void _crossFadeToPage(int page) {
@@ -267,6 +267,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
 
     final asset = widget.timeline.getAssetSafe(_index);
     if (asset != null && !asset.isImage) {
+      // for videos the timer is a watchdog: a moving position means it is still playing, a frozen one ended or stalled
       final position = ref.read(videoPlayerProvider(asset.id)).position;
       if (position != _lastPosition) {
         _lastPosition = position;
@@ -278,7 +279,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     unawaited(_nextPage());
   }
 
-  void _watchVideo() {
+  void _listenToVideoPlayer() {
     _videoSubscription?.close();
     _videoSubscription = null;
 
@@ -287,8 +288,8 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
       return;
     }
 
-    // a video already playing here (e.g. opened from the viewer) never gets a
-    // playing transition, so its loop has to be turned off up front
+    // a video already playing (e.g. opened from the viewer) never fires another
+    // playing status change, so looping is turned off up front
     if (ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.playing) {
       unawaited(ref.read(videoPlayerProvider(asset.id).notifier).setLoop(false));
     }
@@ -312,13 +313,13 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   }
 
   void _pageChanged(int page) {
-    final asset = widget.timeline.getAssetSafe(page)!;
+    final asset = widget.timeline.getAssetSafe(page);
 
     setState(() {
       _index = page;
       _zoomCycle++;
 
-      if (!asset.isImage) {
+      if (asset != null && !asset.isImage) {
         _paused = false;
       }
     });
@@ -327,7 +328,14 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _stopwatch.stop();
     _stopwatch.reset();
     _lastPosition = Duration.zero;
-    _watchVideo();
+    _listenToVideoPlayer();
+
+    // landing on an already finished video (e.g. a one-slide wrap) starts it over so the slide actually plays
+    if (asset != null &&
+        !asset.isImage &&
+        ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.completed) {
+      unawaited(ref.read(videoPlayerProvider(asset.id).notifier).restart());
+    }
 
     if (!_paused) {
       _createTimer();
