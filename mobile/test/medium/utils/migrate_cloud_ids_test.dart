@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/utils/cloud_id_resolver.dart';
 import 'package:immich_mobile/domain/utils/migrate_cloud_ids.dart';
@@ -84,11 +85,9 @@ void main() {
 
     test('stops after the first chunk when cloud IDs are unsupported', () async {
       final ids = List.generate(kCloudIdChunkSize + 1, (i) => 'asset-$i');
-      when(() => mockNativeSyncApi.getCloudIdForAssetIds(any())).thenAnswer(
-        (invocation) async => (invocation.positionalArguments.first as List<String>)
-            .map((id) => CloudIdResult(assetId: id, error: 'needs iOS 16', errorKind: .unsupported))
-            .toList(),
-      );
+      when(
+        () => mockNativeSyncApi.getCloudIdForAssetIds(any()),
+      ).thenThrow(PlatformException(code: kUnSupportedOSError));
 
       await resolveCloudIds(mockNativeSyncApi, albumRepository, ids);
 

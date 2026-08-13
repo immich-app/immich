@@ -135,7 +135,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
             unawaited(_resumeBackup());
           }),
           _resumeBackup(),
-          _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds"),
+          _safeRun(backgroundManager.syncCloudIds, "syncCloudIds"),
         ]);
       } else {
         await _safeRun(backgroundManager.hashAssets, "hashAssets");

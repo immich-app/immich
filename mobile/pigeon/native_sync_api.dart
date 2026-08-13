@@ -11,6 +11,8 @@ import 'package:pigeon/pigeon.dart';
     dartPackageName: 'immich_mobile',
   ),
 )
+const String kUnSupportedOSError = 'UNSUPPORTED_OS';
+
 enum PlatformAssetPlaybackStyle { unknown, image, video, imageAnimated, livePhoto, videoLooping }
 
 class PlatformAsset {

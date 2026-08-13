@@ -144,7 +144,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
   
   private func getMediaChanges() throws -> SyncDelta {
     guard #available(iOS 16, *) else {
-      throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature requires iOS 16 or later.", details: nil)
+      throw PigeonError(code: kUnSupportedOSError, message: "This feature requires iOS 16 or later.", details: nil)
     }
     
     guard PHPhotoLibrary.authorizationStatus(for: .readWrite) == .authorized else {
@@ -437,7 +437,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
   }
   
   func getTrashedAssets() throws -> [String: [PlatformAsset]] {
-    throw PigeonError(code: "UNSUPPORTED_OS", message: "This feature not supported on iOS.", details: nil)
+    throw PigeonError(code: kUnSupportedOSError, message: "This feature not supported on iOS.", details: nil)
   }
 
   func restoreFromTrashById(mediaId: String, type: Int64, completion: @escaping (Result<Bool, Error>) -> Void) {
@@ -477,9 +477,7 @@ class NativeSyncApiImpl: ImmichPlugin, NativeSyncApi, FlutterPlugin {
 
   func getCloudIdForAssetIds(assetIds: [String]) throws -> [CloudIdResult] {
     guard #available(iOS 16, *) else {
-      return assetIds.map {
-        CloudIdResult(assetId: $0, error: "Cloud identifiers require iOS 16", errorKind: .unsupported)
-      }
+      throw PigeonError(code: kUnSupportedOSError, message: "This feature requires iOS 16 or later.", details: nil)
     }
 
     var mappings: [CloudIdResult] = []
