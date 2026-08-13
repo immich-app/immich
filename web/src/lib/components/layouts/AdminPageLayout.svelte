@@ -2,16 +2,25 @@
   import BreadcrumbActionPage from '$lib/components/BreadcrumbActionPage.svelte';
   import NavigationBar from '$lib/components/shared-components/navigation-bar/NavigationBar.svelte';
   import BottomInfo from '$lib/components/shared-components/side-bar/BottomInfo.svelte';
+  import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
   import { Route } from '$lib/route';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
   import { AppShell, AppShellHeader, AppShellSidebar, MenuItemType, NavbarItem, type BreadcrumbItem } from '@immich/ui';
-  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiTrayFull, mdiWrench } from '@mdi/js';
+  import {
+    mdiAccountMultipleOutline,
+    mdiBookshelf,
+    mdiCloudUploadOutline,
+    mdiCog,
+    mdiServer,
+    mdiTrayFull,
+    mdiWrench,
+  } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
   type Props = {
-    breadcrumbs: BreadcrumbItem[];
+    breadcrumbs?: BreadcrumbItem[];
     actions?: Array<HeaderButtonActionItem | MenuItemType>;
     children?: Snippet;
   };
@@ -28,6 +37,9 @@
     class="flex h-full flex-col justify-between gap-2 border-none shadow-none"
   >
     <div class="flex flex-col gap-1 pe-4 pt-8">
+      {#if featureFlagsManager.value.backups}
+        <NavbarItem title="Backups" href={Route.backups()} icon={mdiCloudUploadOutline} />
+      {/if}
       <NavbarItem title={$t('users')} href={Route.users()} icon={mdiAccountMultipleOutline} />
       <NavbarItem title={$t('external_libraries')} href={Route.libraries()} icon={mdiBookshelf} />
       <NavbarItem title={$t('admin.queues')} href={Route.queues()} icon={mdiTrayFull} />
@@ -41,7 +53,13 @@
     </div>
   </AppShellSidebar>
 
-  <BreadcrumbActionPage {breadcrumbs} {actions}>
-    {@render children?.()}
-  </BreadcrumbActionPage>
+  {#if breadcrumbs}
+    <BreadcrumbActionPage {breadcrumbs} {actions}>
+      {@render children?.()}
+    </BreadcrumbActionPage>
+  {:else}
+    <div class="flex h-full flex-col">
+      {@render children?.()}
+    </div>
+  {/if}
 </AppShell>
