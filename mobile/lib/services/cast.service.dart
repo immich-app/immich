@@ -1,4 +1,5 @@
 import 'package:fcast_sender_sdk/fcast_sender_sdk.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -161,8 +162,10 @@ class CastService {
 
   bool hasDisplayCapability(int capabilities) => (capabilities & 0x01) != 0;
 
-  Future<List<CastDestination>> getDevices() async {
-    final dests = await _castRepository.listDestinations();
+  Listenable get discoveryChanges => _castRepository.discoveryChanges;
+
+  List<CastDestination> get currentDevices {
+    final dests = _castRepository.destinations;
 
     final fCastDevices = dests.where((dest) => dest.$1.protocol == ProtocolType.fCast).map((dest) => dest.$1);
     final fCastNames = fCastDevices.map((device) => device.name).toSet();

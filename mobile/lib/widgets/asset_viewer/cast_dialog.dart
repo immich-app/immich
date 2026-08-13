@@ -27,20 +27,15 @@ class CastDialog extends ConsumerWidget {
       content: SizedBox(
         width: 250,
         height: 250,
-        child: FutureBuilder<List<CastDestination>>(
-          future: ref.watch(castProvider.notifier).getDevices(),
-          builder: (context, snapshot) {
-            if (snapshot.hasError) {
-              return Text('error_saving_image'.tr(args: [snapshot.error.toString()]));
-            } else if (!snapshot.hasData) {
-              return const SizedBox(height: 48, child: Center(child: CircularProgressIndicator()));
-            }
+        child: ListenableBuilder(
+          listenable: ref.watch(castProvider.notifier).discoveryChanges,
+          builder: (context, _) {
+            final devices = ref.read(castProvider.notifier).currentDevices;
 
-            if (snapshot.data!.isEmpty) {
+            if (devices.isEmpty) {
               return const Text('no_cast_devices_found').tr();
             }
 
-            final devices = snapshot.data!;
             final connected = devices.where((d) => isCurrentDevice(d.$1)).toList();
             final others = devices.where((d) => !isCurrentDevice(d.$1)).toList();
 

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
@@ -57,9 +58,9 @@ class CastNotifier extends StateNotifier<CastManagerState> {
     await _castService.connect(device);
   }
 
-  Future<List<CastDestination>> getDevices() {
-    return _castService.getDevices();
-  }
+  Listenable get discoveryChanges => _castService.discoveryChanges;
+
+  List<CastDestination> get currentDevices => _castService.currentDevices;
 
   void toggle() {
     switch (state.castState) {

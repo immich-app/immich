@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:fcast_sender_sdk/fcast_sender_sdk.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 final castRepositoryProvider = Provider((_) => CastRepository());
@@ -12,11 +13,15 @@ class CastRepository {
   void Function(DeviceEvent)? onDeviceEvent;
 
   final Map<(String, ProtocolType), (DeviceInfo, int?)> _discoveredDevices = {};
+  final ValueNotifier<int> _discoveryRevision = ValueNotifier(0);
   int _currentDeviceGeneration = 0;
-  late final Future<void> _initialized;
+
+  Listenable get discoveryChanges => _discoveryRevision;
+
+  List<(DeviceInfo, int?)> get destinations => _discoveredDevices.values.toList(growable: false);
 
   void init() {
-    _initialized = _initialize();
+    unawaited(_initialize());
   }
 
   Future<void> connect(DeviceInfo deviceInfo) async {
@@ -69,12 +74,6 @@ class CastRepository {
   void stop() => _activeDevice?.stopPlayback();
   void seekTo(Duration position) => _activeDevice?.seek(timeSeconds: position.inSeconds.toDouble());
 
-  Future<List<(DeviceInfo, int?)>> listDestinations() async {
-    await _initialized;
-
-    return _discoveredDevices.values.toList(growable: false);
-  }
-
   Future<void> _initialize() async {
     await FCastSenderSdkLib.init();
     _castContext = CastContext();
@@ -88,9 +87,10 @@ class CastRepository {
         case DiscoveryEventDeviceRemoved():
           _discoveredDevices.removeWhere((key, _) => key.$1 == event.name);
       }
+
+      _discoveryRevision.value++;
     });
 
     await discoverer.init();
-    await Future.delayed(const Duration(seconds: 3));
   }
 }
