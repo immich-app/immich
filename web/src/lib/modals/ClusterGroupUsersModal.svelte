@@ -4,10 +4,10 @@
   import { Button, HStack, LoadingSpinner, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     clusterGroupId: string;
     onClose: (result?: 'accept' | 'decline') => void;
-  }
+  };
 
   let { clusterGroupId, onClose }: Props = $props();
 
@@ -18,8 +18,7 @@
   };
 </script>
 
-<!-- closing the modal leaves the request alone, so only the buttons decide its fate -->
-<Modal title={$t('cluster_group')} onClose={() => onClose()} size="small">
+<Modal title={$t('cluster_group')} {onClose} size="small">
   <ModalBody>
     {#await loadUsers()}
       <div class="flex w-full place-content-center place-items-center">

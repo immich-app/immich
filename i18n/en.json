@@ -1035,7 +1035,6 @@
     "unable_to_delete_album": "Unable to delete album",
     "unable_to_delete_asset": "Unable to delete asset",
     "unable_to_delete_assets": "Error deleting assets",
-    "unable_to_delete_cluster_group_request": "Unable to delete request",
     "unable_to_delete_exclusion_pattern": "Unable to delete exclusion pattern",
     "unable_to_delete_shared_link": "Unable to delete shared link",
     "unable_to_delete_user": "Unable to delete user",

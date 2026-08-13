@@ -7,6 +7,7 @@
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
+    acceptClusterGroupRequest,
     createClusterGroupRequest,
     createPartner,
     deleteClusterGroupRequest,
@@ -82,10 +83,7 @@
 
     try {
       for (const user of selected) {
-        await createClusterGroupRequest({
-          id: clusterGroupId,
-          clusterGroupRequestCreateDto: { userId: user.id },
-        });
+        await createClusterGroupRequest({ id: clusterGroupId, clusterGroupRequestCreateDto: { userId: user.id } });
       }
 
       await refresh();
@@ -95,7 +93,21 @@
   };
 
   const handleViewGroup = async (request: ClusterGroupRequestResponseDto) => {
-    await modalManager.show(ClusterGroupUsersModal, { clusterGroupId: request.clusterGroupId });
+    const result = await modalManager.show(ClusterGroupUsersModal, { clusterGroupId: request.clusterGroupId });
+    if (result === 'accept') {
+      await handleAcceptRequest(request);
+    } else if (result === 'decline') {
+      handleDeleteRequest(request);
+    }
+  };
+
+  const handleAcceptRequest = async (request: ClusterGroupRequestResponseDto) => {
+    try {
+      await acceptClusterGroupRequest({ id: request.id });
+      await refresh();
+    } catch (error) {
+      handleError(error, $t('errors.something_went_wrong'));
+    }
   };
 
   const handleDeleteRequest = async (request: ClusterGroupRequestResponseDto) => {
@@ -103,7 +115,7 @@
       await deleteClusterGroupRequest({ id: request.id });
       await refresh();
     } catch (error) {
-      handleError(error, $t('errors.unable_to_delete_cluster_group_request'));
+      handleError(error, $t('errors.something_went_wrong'));
     }
   };
 
@@ -256,9 +268,6 @@
             <div class="flex gap-2">
               <Button shape="round" size="small" color="secondary" onclick={() => handleViewGroup(request)}>
                 {$t('view_group')}
-              </Button>
-              <Button shape="round" size="small" color="danger" onclick={() => handleDeleteRequest(request)}>
-                {$t('decline')}
               </Button>
             </div>
           </div>
