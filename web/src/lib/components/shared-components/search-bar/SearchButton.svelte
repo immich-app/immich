@@ -1,14 +1,23 @@
 <script lang="ts">
   import { Button } from '@immich/ui';
   import { mdiCheck } from '@mdi/js';
+  import type { Snippet } from 'svelte';
+  import type { ButtonProps } from '@immich/ui';
+
+  type Props = {
+    active: boolean;
+    children: Snippet;
+    checked?: boolean;
+  } & ButtonProps;
+
   let {
     active = $bindable(),
     children,
     class: className = '',
-    leadingIcon = undefined,
+    leadingIcon,
     checked = false,
     ...rest
-  } = $props();
+  }: Props = $props();
 </script>
 
 <Button

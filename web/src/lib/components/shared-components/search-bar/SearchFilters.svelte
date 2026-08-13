@@ -202,7 +202,7 @@
         <div class="flex flex-wrap gap-2">
           {#each filters as item (item.name)}
             <SearchButton
-              active={activeFilter === item.name || item.activeTitle()}
+              active={activeFilter === item.name || Boolean(item.activeTitle())}
               leadingIcon={item.icon}
               class={activeFilter === item.name ? 'border-2' : undefined}
               onclick={() => (activeFilter = item.name)}
