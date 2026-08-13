@@ -1,5 +1,6 @@
 {
   "about": "About",
+  "accept": "Accept",
   "account": "Account",
   "account_settings": "Account Settings",
   "acknowledge": "Acknowledge",
@@ -735,7 +736,8 @@
   "client_cert_title": "SSL client certificate [EXPERIMENTAL]",
   "close": "Close",
   "cluster_group": "Cluster group",
-  "cluster_group_description": "People are recognized across the photos of everyone in this group",
+  "cluster_group_description": "People are recognized across the photos of everyone in the group",
+  "cluster_group_invite_description": "You have been invited to join this cluster group.",
   "collapse": "Collapse",
   "collapse_all": "Collapse all",
   "color": "Color",
