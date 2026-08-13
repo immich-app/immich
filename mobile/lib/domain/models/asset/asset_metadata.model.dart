@@ -1,3 +1,7 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'asset_metadata.model.freezed.dart';
+
 enum RemoteAssetMetadataKey {
   mobileApp("mobile-app");
 
@@ -23,40 +27,24 @@ class RemoteAssetMetadataItem {
   }
 }
 
-class RemoteAssetMobileAppMetadata extends RemoteAssetMetadataValue {
-  final String? cloudId;
-  final String? createdAt;
-  final String? adjustmentTime;
-  final String? latitude;
-  final String? longitude;
+@freezed
+abstract class RemoteAssetMobileAppMetadata extends RemoteAssetMetadataValue with _$RemoteAssetMobileAppMetadata {
+  const factory RemoteAssetMobileAppMetadata({
+    String? cloudId,
+    String? createdAt,
+    String? adjustmentTime,
+    String? latitude,
+    String? longitude,
+  }) = _RemoteAssetMobileAppMetadata;
 
-  const RemoteAssetMobileAppMetadata({
-    this.cloudId,
-    this.createdAt,
-    this.adjustmentTime,
-    this.latitude,
-    this.longitude,
-  });
+  const RemoteAssetMobileAppMetadata._();
 
   @override
-  Map<String, dynamic> toJson() {
-    final map = <String, Object?>{};
-    if (cloudId != null) {
-      map["iCloudId"] = cloudId;
-    }
-    if (createdAt != null) {
-      map["createdAt"] = createdAt;
-    }
-    if (adjustmentTime != null) {
-      map["adjustmentTime"] = adjustmentTime;
-    }
-    if (latitude != null) {
-      map["latitude"] = latitude;
-    }
-    if (longitude != null) {
-      map["longitude"] = longitude;
-    }
-
-    return map;
-  }
+  Map<String, dynamic> toJson() => {
+    'iCloudId': ?cloudId,
+    'createdAt': ?createdAt,
+    'adjustmentTime': ?adjustmentTime,
+    'latitude': ?latitude,
+    'longitude': ?longitude,
+  };
 }

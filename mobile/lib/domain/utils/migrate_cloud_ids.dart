@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:math' as math;
 
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -115,12 +115,12 @@ Future<void> _processCloudIdMappingsInBatches(
 
     if (items.isNotEmpty) {
       if (canBulkUpdate) {
-        for (int i = 0; i < items.length; i += _kUploadBatchSize) {
+        for (final batch in items.slices(_kUploadBatchSize)) {
           if (cancellation.isCompleted) {
             break;
           }
-          final end = math.min(i + _kUploadBatchSize, items.length);
-          await _bulkUpdate(assetsApi, items.sublist(i, end), cancellation.future);
+
+          await _bulkUpdate(assetsApi, batch, cancellation.future);
         }
       } else {
         await _sequentialUpdate(assetsApi, items, cancellation);
