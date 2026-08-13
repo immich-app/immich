@@ -7425,6 +7425,7 @@ export enum WorkflowType {
 export enum WorkflowTrigger {
     AssetCreate = "AssetCreate",
     AssetMetadataExtraction = "AssetMetadataExtraction",
+    AssetTagged = "AssetTagged",
     AlbumAssetAdded = "AlbumAssetAdded"
 }
 export enum QueueJobStatus {

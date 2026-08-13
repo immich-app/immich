@@ -28069,6 +28069,7 @@
         "enum": [
           "AssetCreate",
           "AssetMetadataExtraction",
+          "AssetTagged",
           "AlbumAssetAdded"
         ],
         "type": "string"

@@ -14,6 +14,7 @@ import { AlbumsAddAssetsDto, CreateAlbumDto, GetAlbumsDto } from 'src/dtos/album
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { PluginManifestDto } from 'src/dtos/plugin-manifest.dto';
+import { TagBulkAssetsDto } from 'src/dtos/tag.dto';
 import {
   BootstrapEventPriority,
   DatabaseLock,
@@ -30,6 +31,7 @@ import { ArgOf } from 'src/repositories/event.repository';
 import { AlbumService } from 'src/services/album.service';
 import { AssetService } from 'src/services/asset.service';
 import { BaseService } from 'src/services/base.service';
+import { TagService } from 'src/services/tag.service';
 import { JobOf } from 'src/types';
 import { withImpliedItems } from 'src/utils/workflow';
 
@@ -74,6 +76,7 @@ export class WorkflowExecutionService extends BaseService {
     this.jwtSecret = this.cryptoRepository.randomBytesAsText(32);
 
     const albumService = BaseService.create(AlbumService, this);
+    const tagService = BaseService.create(TagService, this);
 
     const searchAlbums = this.wrap<[dto: GetAlbumsDto]>((authDto, ctx, args) => albumService.getAll(authDto, ...args));
     const createAlbum = this.wrap<[dto: CreateAlbumDto]>((authDto, ctx, args) => albumService.create(authDto, ...args));
@@ -111,6 +114,9 @@ export class WorkflowExecutionService extends BaseService {
 
       throw new Error('Hostname did not match any listed in methods[].allowedHosts in the plugin manifest');
     });
+    const bulkTagAssets = this.wrap<[dto: TagBulkAssetsDto]>((authDto, ctx, args) =>
+      tagService.bulkTagAssets(authDto, ...args),
+    );
 
     const functions = {
       searchAlbums,
@@ -118,6 +124,7 @@ export class WorkflowExecutionService extends BaseService {
       addAssetsToAlbum,
       addAssetsToAlbums,
       httpRequest,
+      bulkTagAssets,
     };
 
     const stubs: typeof functions = {
@@ -126,6 +133,7 @@ export class WorkflowExecutionService extends BaseService {
       addAssetsToAlbum: dummy,
       addAssetsToAlbums: dummy,
       httpRequest: dummy,
+      bulkTagAssets: dummy,
     };
 
     const plugins = await this.pluginRepository.getForLoad();
@@ -317,6 +325,11 @@ export class WorkflowExecutionService extends BaseService {
   @OnEvent({ name: 'AlbumAssetsAdded' })
   onAlbumAssetsAdded() {
     return this.jobRepository.queue({ name: JobName.WorkflowScan, data: { type: WorkflowScanType.AlbumAsset } });
+  }
+
+  @OnEvent({ name: 'AssetTag' })
+  onAssetTagged({ assetId, userId }: ArgOf<'AssetTag'>) {
+    return this.onAssetTrigger({ userId, assetId, trigger: WorkflowTrigger.AssetTagged });
   }
 
   private async onAssetTrigger({ userId, assetId, trigger }: AssetTrigger) {
