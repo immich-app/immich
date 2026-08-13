@@ -9,7 +9,6 @@ import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
@@ -76,37 +75,31 @@ Future<void> _processCloudIdMappingsInBatches(
   Logger logger,
   Completer<void> cancellation,
 ) async {
-  String? lastLocalId;
-  final seenRemoteAssetIds = <String>{};
+  String? lastRemoteId;
 
   while (true) {
     if (cancellation.isCompleted) {
       logger.warning('Cloud ID migration cancelled. Stopping batch processing.');
       break;
     }
-    final mappings = await _fetchMapping(drift, userId, _kDbPageSize, lastLocalId);
+    final mappings = await fetchMapping(drift, userId, _kDbPageSize, lastRemoteId);
     if (mappings.isEmpty) {
       break;
     }
 
     final items = <AssetMetadataBulkUpsertItemDto>[];
     for (final mapping in mappings) {
-      if (!seenRemoteAssetIds.add(mapping.remoteAssetId)) {
-        logger.fine('Duplicate remote asset ID found: ${mapping.remoteAssetId}. Skipping duplicate entry.');
-        continue;
-      }
-
       items.add(
         .new(
           assetId: mapping.remoteAssetId,
           key: kMobileMetadataKey,
           value: Map<String, Object>.from(
             RemoteAssetMobileAppMetadata(
-              cloudId: mapping.localAsset.cloudId,
-              createdAt: mapping.localAsset.createdAt.toIso8601String(),
-              adjustmentTime: mapping.localAsset.adjustmentTime?.toIso8601String(),
-              latitude: mapping.localAsset.latitude?.toString(),
-              longitude: mapping.localAsset.longitude?.toString(),
+              cloudId: mapping.cloudId,
+              createdAt: mapping.createdAt.toIso8601String(),
+              adjustmentTime: mapping.adjustmentTime?.toIso8601String(),
+              latitude: mapping.latitude?.toString(),
+              longitude: mapping.longitude?.toString(),
             ).toJson(),
           ),
         ),
@@ -127,7 +120,7 @@ Future<void> _processCloudIdMappingsInBatches(
       }
     }
 
-    lastLocalId = mappings.last.localAsset.id;
+    lastRemoteId = mappings.last.remoteAssetId;
     if (mappings.length < _kDbPageSize) {
       break;
     }
@@ -144,44 +137,70 @@ Future<void> populateMissingCloudIds(Drift drift, NativeSyncApi nativeSyncApi, C
   await resolveCloudIds(nativeSyncApi, DriftLocalAlbumRepository(drift), ids, cancellation: cancellation);
 }
 
-typedef _CloudIdMapping = ({String remoteAssetId, LocalAsset localAsset});
+@visibleForTesting
+typedef CloudIdMapping = ({
+  String remoteAssetId,
+  String cloudId,
+  DateTime createdAt,
+  DateTime? adjustmentTime,
+  double? latitude,
+  double? longitude,
+});
 
-Future<List<_CloudIdMapping>> _fetchMapping(Drift drift, String userId, int limit, String? lastLocalId) async {
-  final query =
-      drift.localAssetEntity.select().join([
-          innerJoin(
-            drift.remoteAssetEntity,
-            drift.localAssetEntity.checksum.equalsExp(drift.remoteAssetEntity.checksum),
-          ),
-          leftOuterJoin(
-            drift.remoteAssetCloudIdEntity,
-            drift.remoteAssetEntity.id.equalsExp(drift.remoteAssetCloudIdEntity.assetId),
-            useColumns: false,
-          ),
-        ])
-        ..where(
+@visibleForTesting
+Future<List<CloudIdMapping>> fetchMapping(Drift db, String userId, int limit, String? lastRemoteId) async {
+  final query = db.remoteAssetEntity.selectOnly()
+    ..addColumns([
+      db.remoteAssetEntity.id,
+      db.localAssetEntity.iCloudId,
+      db.localAssetEntity.createdAt,
+      db.localAssetEntity.adjustmentTime,
+      db.localAssetEntity.latitude,
+      db.localAssetEntity.longitude,
+    ])
+    ..join([
+      innerJoin(
+        db.localAssetEntity,
+        db.localAssetEntity.id.isInQuery(
+          db.localAssetEntity.selectOnly()
+            ..addColumns([db.localAssetEntity.id.min()])
+            ..where(db.localAssetEntity.checksum.equalsExp(db.remoteAssetEntity.checksum)),
+        ),
+        useColumns: false,
+      ),
+      leftOuterJoin(
+        db.remoteAssetCloudIdEntity,
+        db.remoteAssetEntity.id.equalsExp(db.remoteAssetCloudIdEntity.assetId),
+        useColumns: false,
+      ),
+    ])
+    ..where(
+      db.remoteAssetEntity.ownerId.equals(userId) &
+          // Skip locked assets as we cannot update them without unlocking first
+          db.remoteAssetEntity.visibility.isNotValue(AssetVisibility.locked.index) &
+          db.localAssetEntity.iCloudId.isNotNull() &
           // Only select assets that have a local cloud ID but either no remote cloud ID or a mismatched eTag
-          drift.localAssetEntity.iCloudId.isNotNull() &
-              drift.remoteAssetEntity.ownerId.equals(userId) &
-              // Skip locked assets as we cannot update them without unlocking first
-              drift.remoteAssetEntity.visibility.isNotValue(AssetVisibility.locked.index) &
-              (drift.remoteAssetCloudIdEntity.cloudId.isNull() |
-                  drift.remoteAssetCloudIdEntity.adjustmentTime.isNotExp(drift.localAssetEntity.adjustmentTime) |
-                  drift.remoteAssetCloudIdEntity.latitude.isNotExp(drift.localAssetEntity.latitude) |
-                  drift.remoteAssetCloudIdEntity.longitude.isNotExp(drift.localAssetEntity.longitude) |
-                  drift.remoteAssetCloudIdEntity.createdAt.isNotExp(drift.localAssetEntity.createdAt)),
-        )
-        ..orderBy([.asc(drift.localAssetEntity.id)])
-        ..limit(limit);
+          (db.remoteAssetCloudIdEntity.cloudId.isNull() |
+              db.remoteAssetCloudIdEntity.adjustmentTime.isNotExp(db.localAssetEntity.adjustmentTime) |
+              db.remoteAssetCloudIdEntity.latitude.isNotExp(db.localAssetEntity.latitude) |
+              db.remoteAssetCloudIdEntity.longitude.isNotExp(db.localAssetEntity.longitude) |
+              db.remoteAssetCloudIdEntity.createdAt.isNotExp(db.localAssetEntity.createdAt)),
+    )
+    ..orderBy([.asc(db.remoteAssetEntity.id)])
+    ..limit(limit);
 
-  if (lastLocalId != null) {
-    query.where(drift.localAssetEntity.id.isBiggerThanValue(lastLocalId));
+  if (lastRemoteId != null) {
+    query.where(db.remoteAssetEntity.id.isBiggerThanValue(lastRemoteId));
   }
 
   return query.map((row) {
     return (
-      remoteAssetId: row.read(drift.remoteAssetEntity.id)!,
-      localAsset: row.readTable(drift.localAssetEntity).toDto(),
+      remoteAssetId: row.read(db.remoteAssetEntity.id)!,
+      cloudId: row.read(db.localAssetEntity.iCloudId)!,
+      createdAt: row.read(db.localAssetEntity.createdAt)!,
+      adjustmentTime: row.read(db.localAssetEntity.adjustmentTime),
+      latitude: row.read(db.localAssetEntity.latitude),
+      longitude: row.read(db.localAssetEntity.longitude),
     );
   }).get();
 }
