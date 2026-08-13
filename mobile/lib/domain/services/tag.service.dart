@@ -21,6 +21,10 @@ class TagService {
     return dtos.map((dto) => Tag.fromDto(dto)).toSet();
   }
 
+  Future<void> untagAssets(String tagId, List<String> assetIds) async {
+    return _repository.untagAssets(tagId, assetIds);
+  }
+
   Future<List<Tag>> upsertTags(List<String> tags) async {
     final dtos = await _repository.upsertTags(tags);
     if (dtos == null) {

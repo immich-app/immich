@@ -20,6 +20,10 @@ class TagsApiRepository extends ApiRepository {
     return response?.count ?? 0;
   }
 
+  Future<void> untagAssets(String tagId, List<String> assetIds) async {
+    await _api.untagAssets(tagId, BulkIdsDto(ids: assetIds));
+  }
+
   Future<List<TagResponseDto>?> upsertTags(List<String> tags) async {
     return _api.upsertTags(TagUpsertDto(tags: tags));
   }

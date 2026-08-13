@@ -18,6 +18,7 @@ import 'package:immich_mobile/presentation/pages/search/paginated_search.provide
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/search/quick_date_picker.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user_metadata.provider.dart';
 import 'package:immich_mobile/providers/search/search_input_focus.provider.dart';
@@ -103,7 +104,7 @@ class DriftSearchPage extends HookConsumerWidget {
       }
 
       unawaited(
-        Future.microtask(() {
+        Future.microtask(() async {
           if (!context.mounted) {
             return;
           }
@@ -120,6 +121,15 @@ class DriftSearchPage extends HookConsumerWidget {
               ? Text(preFilter.location.city!, style: context.textTheme.labelLarge)
               : null;
           search(preFilter);
+
+          final tagIds = preFilter.tagIds ?? const <String>[];
+          if (tagIds.isNotEmpty) {
+            final tags = await ref.read(tagProvider.future).catchError((_) => const <Tag>{});
+            final label = tags.where((tag) => tagIds.contains(tag.id)).map((tag) => tag.value).join(', ');
+            if (context.mounted) {
+              tagCurrentFilterWidget.value = Text(label, style: context.textTheme.labelLarge);
+            }
+          }
         }),
       );
 
