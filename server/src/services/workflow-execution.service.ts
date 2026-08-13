@@ -403,6 +403,7 @@ export class WorkflowExecutionService extends BaseService {
     const { read, write } = handler;
     const readResult = await read(type);
     let data = readResult.data;
+    const runId = crypto.randomUUID();
 
     for (const step of workflow.steps) {
       try {
@@ -463,6 +464,7 @@ export class WorkflowExecutionService extends BaseService {
               halted: true,
               workflowStepId: step.id,
               triggerDataId: readResult.entityId,
+              runId,
             });
           }
 
@@ -479,6 +481,7 @@ export class WorkflowExecutionService extends BaseService {
             halted: false,
             workflowStepId: step.id,
             triggerDataId: readResult.entityId,
+            runId,
           });
         }
 
@@ -492,6 +495,7 @@ export class WorkflowExecutionService extends BaseService {
         error: false,
         halted: false,
         triggerDataId: readResult.entityId,
+        runId,
       });
     }
 

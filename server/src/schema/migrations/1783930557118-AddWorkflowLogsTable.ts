@@ -10,6 +10,7 @@ export async function up(db: Kysely<any>): Promise<void> {
   "halted" boolean NOT NULL,
   "workflowStepId" uuid,
   "triggerDataId" uuid,
+  "runId" uuid NOT NULL,
   CONSTRAINT "workflow_log_workflowId_fkey" FOREIGN KEY ("workflowId") REFERENCES "workflow" ("id") ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT "workflow_log_workflowStepId_fkey" FOREIGN KEY ("workflowStepId") REFERENCES "workflow_step" ("id") ON UPDATE CASCADE ON DELETE SET NULL,
   CONSTRAINT "workflow_log_pkey" PRIMARY KEY ("id")

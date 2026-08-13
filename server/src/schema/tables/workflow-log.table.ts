@@ -32,4 +32,7 @@ export class WorkflowLogTable {
 
   @Column({ type: 'uuid', nullable: true })
   triggerDataId!: string | null;
+
+  @Column({ type: 'uuid' })
+  runId!: string;
 }
