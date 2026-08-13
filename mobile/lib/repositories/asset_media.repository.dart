@@ -140,34 +140,29 @@ class AssetMediaRepository {
     return '${baseName.isEmpty ? _shareFallbackName(asset) : baseName}-preview.jpg';
   }
 
-  static String _shareDisplayName(BaseAsset asset, ShareAssetType fileType) =>
-      switch (asset.isVideo ? ShareAssetType.original : fileType) {
-        ShareAssetType.original => getOriginalShareFilename(asset),
-        ShareAssetType.preview => _getPreviewFilename(asset),
-      };
-
   @visibleForTesting
-  static String getOrdinalShareDisplayName(String displayName, int occurrence) {
-    if (occurrence <= 0) {
-      return displayName;
+  static String shareDisplayName(BaseAsset asset, ShareAssetType fileType, Map<String, int> occurrences) {
+    final name = switch (asset.isVideo ? ShareAssetType.original : fileType) {
+      ShareAssetType.original => getOriginalShareFilename(asset),
+      ShareAssetType.preview => _getPreviewFilename(asset),
+    };
+    final occurrence = occurrences.update(name, (count) => count + 1, ifAbsent: () => 0);
+    if (occurrence == 0) {
+      return name;
     }
-    return '${p.basenameWithoutExtension(displayName)} ($occurrence)${p.extension(displayName)}';
+    return '${p.basenameWithoutExtension(name)} ($occurrence)${p.extension(name)}';
   }
 
   bool _isCancelled(Completer<void>? cancelCompleter) => cancelCompleter?.isCompleted ?? false;
 
-  Future<_ShareFile?> _getLocalOriginalShareFile(BaseAsset asset, String localId, int occurrence) async {
+  Future<_ShareFile?> _getLocalOriginalShareFile(BaseAsset asset, String localId, String displayName) async {
     final file = await _storageRepository.getFileForAsset(localId);
     if (file == null) {
       _log.warning("Local original file not found for sharing: $asset");
       return null;
     }
 
-    return (
-      file: file,
-      tempEntity: CurrentPlatform.isIOS ? file : null,
-      displayName: getOrdinalShareDisplayName(getOriginalShareFilename(asset), occurrence),
-    );
+    return (file: file, tempEntity: CurrentPlatform.isIOS ? file : null, displayName: displayName);
   }
 
   @visibleForTesting
@@ -231,14 +226,14 @@ class AssetMediaRepository {
   Future<_ShareFile?> _getRemoteOriginalShareFile(
     BaseAsset asset,
     String remoteId, {
-    required int occurrence,
+    required String displayName,
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
   }) {
     return _downloadRemoteShareFile(
       taskId: 'share-original-$remoteId-${DateTime.now().microsecondsSinceEpoch}',
       url: getOriginalUrlForRemoteId(remoteId, edited: asset.isEdited),
-      displayName: getOrdinalShareDisplayName(getOriginalShareFilename(asset), occurrence),
+      displayName: displayName,
       cancelCompleter: cancelCompleter,
       onProgress: onProgress,
     );
@@ -247,14 +242,14 @@ class AssetMediaRepository {
   Future<_ShareFile?> _getRemotePreviewShareFile(
     BaseAsset asset,
     String remoteId, {
-    required int occurrence,
+    required String displayName,
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
   }) {
     return _downloadRemoteShareFile(
       taskId: 'share-preview-$remoteId-${DateTime.now().microsecondsSinceEpoch}',
       url: getThumbnailUrlForRemoteId(remoteId, type: AssetMediaSize.preview, edited: asset.isEdited),
-      displayName: getOrdinalShareDisplayName(_getPreviewFilename(asset), occurrence),
+      displayName: displayName,
       cancelCompleter: cancelCompleter,
       onProgress: onProgress,
     );
@@ -262,13 +257,13 @@ class AssetMediaRepository {
 
   Future<_ShareFile?> _getOriginalShareFile(
     BaseAsset asset, {
-    required int occurrence,
+    required String displayName,
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
   }) {
     final localId = asset.localId;
     if (localId != null && !asset.isEdited) {
-      return _getLocalOriginalShareFile(asset, localId, occurrence);
+      return _getLocalOriginalShareFile(asset, localId, displayName);
     }
 
     final remoteId = asset.remoteId;
@@ -280,7 +275,7 @@ class AssetMediaRepository {
     return _getRemoteOriginalShareFile(
       asset,
       remoteId,
-      occurrence: occurrence,
+      displayName: displayName,
       cancelCompleter: cancelCompleter,
       onProgress: onProgress,
     );
@@ -288,7 +283,8 @@ class AssetMediaRepository {
 
   Future<_ShareFile?> _getPreviewShareFile(
     BaseAsset asset, {
-    required int occurrence,
+    required String displayName,
+    required Map<String, int> occurrences,
     Completer<void>? cancelCompleter,
     required void Function(double progress) onProgress,
   }) async {
@@ -297,7 +293,7 @@ class AssetMediaRepository {
       final remotePreview = await _getRemotePreviewShareFile(
         asset,
         remoteId,
-        occurrence: occurrence,
+        displayName: displayName,
         cancelCompleter: cancelCompleter,
         onProgress: onProgress,
       );
@@ -308,7 +304,8 @@ class AssetMediaRepository {
 
     final localId = asset.localId;
     if (localId != null) {
-      return _getLocalOriginalShareFile(asset, localId, occurrence);
+      // the fallback shares the original file, so it gets an original-style name, not the preview one
+      return _getLocalOriginalShareFile(asset, localId, shareDisplayName(asset, ShareAssetType.original, occurrences));
     }
 
     _log.warning("Asset has no local or remote ID for preview sharing: $asset");
@@ -349,19 +346,19 @@ class AssetMediaRepository {
       }
 
       final effectiveFileType = asset.isVideo ? ShareAssetType.original : fileType;
-      final displayName = _shareDisplayName(asset, fileType);
-      final occurrence = occurrences.update(displayName, (count) => count + 1, ifAbsent: () => 0);
+      final displayName = shareDisplayName(asset, fileType, occurrences);
 
       final shareFile = switch (effectiveFileType) {
         ShareAssetType.original => await _getOriginalShareFile(
           asset,
-          occurrence: occurrence,
+          displayName: displayName,
           cancelCompleter: cancelCompleter,
           onProgress: updateProgress,
         ),
         ShareAssetType.preview => await _getPreviewShareFile(
           asset,
-          occurrence: occurrence,
+          displayName: displayName,
+          occurrences: occurrences,
           cancelCompleter: cancelCompleter,
           onProgress: updateProgress,
         ),
