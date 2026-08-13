@@ -31,7 +31,7 @@ export type MemoryAsset = MemoryIndex & {
 const PAGE_SIZE = 250;
 
 class MemoryManager {
-  #loading: Promise<void> | undefined;
+  #loading = $state<Promise<void>>();
   #filters:
     | {
         $for?: string;
@@ -203,10 +203,12 @@ class MemoryManager {
     }
 
     this.#hasNextPage = this.memories.length < this.#total;
+    this.#loading = undefined;
 
     if (this.#queued) {
       this.#queued = false;
-      await this.load(this.#page++);
+      this.#loading = this.load(this.#page++);
+      await this.#loading;
     }
   }
 
