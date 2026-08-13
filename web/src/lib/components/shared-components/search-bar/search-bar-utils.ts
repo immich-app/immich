@@ -21,18 +21,21 @@ export const getSearchDatePreset = (after: DateTime | undefined, before: DateTim
   const start = after?.toMillis();
   const end = before?.endOf('day').toMillis();
 
-  if (start === +DateTime.utc().startOf('year') && end === +DateTime.utc().endOf('year')) {
+  if (start === DateTime.utc().startOf('year').toMillis() && end === DateTime.utc().endOf('year').toMillis()) {
     return SearchDatePreset.ThisYear;
   }
 
   if (
-    start === +DateTime.utc().minus({ years: 1 }).startOf('year') &&
-    end === +DateTime.utc().minus({ years: 1 }).endOf('year')
+    start === DateTime.utc().minus({ years: 1 }).startOf('year').toMillis() &&
+    end === DateTime.utc().minus({ years: 1 }).endOf('year').toMillis()
   ) {
     return SearchDatePreset.LastYear;
   }
 
-  if (start === +DateTime.utc().minus({ days: 30 }).startOf('day') && end === +DateTime.utc().endOf('day')) {
+  if (
+    start === DateTime.utc().minus({ days: 30 }).startOf('day').toMillis() &&
+    end === DateTime.utc().endOf('day').toMillis()
+  ) {
     return SearchDatePreset.Last30Days;
   }
 
