@@ -21,6 +21,7 @@ import {
   JobName,
   JobStatus,
   QueueName,
+  WorkflowResult,
   WorkflowType,
 } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
@@ -460,25 +461,23 @@ export class WorkflowExecutionService extends BaseService {
           if (workflow.logging) {
             await this.workflowRepository.log({
               workflowId,
-              error: false,
-              halted: true,
+              result: WorkflowResult.Halted,
               workflowStepId: step.id,
               triggerDataId: readResult.entityId,
               runId,
             });
           }
 
-          this.logger.debug(`Workflow ${workflowId} stopped on step ${step.id}`);
+          this.logger.debug(`Workflow ${workflowId} run ${runId} stopped on step ${step.id}`);
           return;
         }
       } catch (error) {
-        this.logger.error(`Error executing workflow ${workflowId}:`, error);
+        this.logger.error(`Error executing workflow ${workflowId} run ${runId}:`, error);
 
         if (workflow.logging) {
           await this.workflowRepository.log({
             workflowId,
-            error: true,
-            halted: false,
+            result: WorkflowResult.Error,
             workflowStepId: step.id,
             triggerDataId: readResult.entityId,
             runId,
@@ -492,13 +491,12 @@ export class WorkflowExecutionService extends BaseService {
     if (workflow.logging) {
       await this.workflowRepository.log({
         workflowId,
-        error: false,
-        halted: false,
+        result: WorkflowResult.Completed,
         triggerDataId: readResult.entityId,
         runId,
       });
     }
 
-    this.logger.debug(`Workflow ${workflowId} executed successfully`);
+    this.logger.debug(`Workflow ${workflowId} run ${runId} executed successfully`);
   }
 }

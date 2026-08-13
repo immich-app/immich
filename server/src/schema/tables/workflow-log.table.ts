@@ -7,6 +7,7 @@ import {
   Table,
   Timestamp,
 } from '@immich/sql-tools';
+import { WorkflowResult } from 'src/enum';
 import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table';
 import { WorkflowTable } from 'src/schema/tables/workflow.table';
 
@@ -21,11 +22,8 @@ export class WorkflowLogTable {
   @ForeignKeyColumn(() => WorkflowTable, { onUpdate: 'CASCADE', onDelete: 'CASCADE', index: true })
   workflowId!: string;
 
-  @Column({ type: 'boolean' })
-  error!: boolean;
-
-  @Column({ type: 'boolean' })
-  halted!: boolean;
+  @Column()
+  result!: WorkflowResult;
 
   @ForeignKeyColumn(() => WorkflowStepTable, { onDelete: 'SET NULL', onUpdate: 'CASCADE', nullable: true })
   workflowStepId!: string | null;

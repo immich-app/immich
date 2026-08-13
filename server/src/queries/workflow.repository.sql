@@ -107,8 +107,7 @@ where
 select
   "workflow_log"."id",
   "workflow_log"."createdAt",
-  "workflow_log"."halted",
-  "workflow_log"."error",
+  "workflow_log"."result",
   "workflow_log"."workflowId",
   "workflow_log"."workflowStepId",
   "workflow_log"."triggerDataId",

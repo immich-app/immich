@@ -5,7 +5,6 @@ import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
 import { WorkflowGetLogsDto, WorkflowSearchDto } from 'src/dtos/workflow.dto';
-import { WorkflowResult } from 'src/enum';
 import { DB } from 'src/schema';
 import { WorkflowLogTable } from 'src/schema/tables/workflow-log.table';
 import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table';
@@ -118,8 +117,7 @@ export class WorkflowRepository {
       .select([
         'workflow_log.id',
         'workflow_log.createdAt',
-        'workflow_log.halted',
-        'workflow_log.error',
+        'workflow_log.result',
         'workflow_log.workflowId',
         'workflow_log.workflowStepId',
         'workflow_log.triggerDataId',
@@ -134,11 +132,7 @@ export class WorkflowRepository {
             .select(['plugin_method.pluginId', 'plugin_method.name as methodName', 'workflow_step.order']),
         ).as('step'),
       ])
-      .$if(dto.result === WorkflowResult.Error, (qb) => qb.where('workflow_log.error', '=', true))
-      .$if(dto.result === WorkflowResult.Halted, (qb) => qb.where('workflow_log.halted', '=', true))
-      .$if(dto.result === WorkflowResult.Completed, (qb) =>
-        qb.where('workflow_log.halted', '=', false).where('workflow_log.error', '=', false),
-      )
+      .$if(dto.result !== undefined, (qb) => qb.where('workflow_log.result', '=', dto.result!))
       .$if(dto.before !== undefined, (qb) => qb.where('workflow_log.createdAt', '<', dto.before!))
       .orderBy('workflow_log.createdAt', 'desc')
       .limit(dto.limit)

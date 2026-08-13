@@ -13,7 +13,7 @@ import {
   WorkflowTriggerResponseDto,
   WorkflowUpdateDto,
 } from 'src/dtos/workflow.dto';
-import { Permission, WorkflowResult } from 'src/enum';
+import { Permission } from 'src/enum';
 import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository';
 import { BaseService } from 'src/services/base.service';
 import { getWorkflowTriggers, isMethodCompatible, resolveMethod } from 'src/utils/workflow';
@@ -90,7 +90,7 @@ export class WorkflowService extends BaseService {
     return logs.map((entry) => ({
       id: entry.id,
       at: entry.createdAt,
-      result: entry.error ? WorkflowResult.Error : entry.halted ? WorkflowResult.Halted : WorkflowResult.Completed,
+      result: entry.result,
       triggerDataId: entry.triggerDataId ?? undefined,
       lastStep: entry.step
         ? {
