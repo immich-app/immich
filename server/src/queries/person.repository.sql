@@ -131,16 +131,15 @@ select
           "person"
         where
           "person"."personGroupId" = "asset_face"."personGroupId"
-          and "person"."ownerId" = "asset"."ownerId"
+          and "person"."ownerId" = $1
       ) as obj
   ) as "person"
 from
   "asset_face"
-  inner join "asset" on "asset"."id" = "asset_face"."assetId"
 where
-  "asset_face"."assetId" = $1
+  "asset_face"."assetId" = $2
   and "asset_face"."deletedAt" is null
-  and "asset_face"."isVisible" = $2
+  and "asset_face"."isVisible" = $3
 order by
   "asset_face"."boundingBoxX1" asc
 
@@ -158,14 +157,13 @@ select
           "person"
         where
           "person"."personGroupId" = "asset_face"."personGroupId"
-          and "person"."ownerId" = "asset"."ownerId"
+          and "person"."ownerId" = $1
       ) as obj
   ) as "person"
 from
   "asset_face"
-  inner join "asset" on "asset"."id" = "asset_face"."assetId"
 where
-  "asset_face"."id" = $1
+  "asset_face"."id" = $2
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.getFaceForFacialRecognitionJob
@@ -521,15 +519,14 @@ select
           "person"
         where
           "person"."personGroupId" = "asset_face"."personGroupId"
-          and "person"."ownerId" = "asset"."ownerId"
+          and "person"."ownerId" = $1
       ) as obj
   ) as "person"
 from
   "asset_face"
-  inner join "asset" on "asset"."id" = "asset_face"."assetId"
 where
-  "asset_face"."assetId" in ($1)
-  and "asset_face"."personGroupId" in ($2)
+  "asset_face"."assetId" in ($2)
+  and "asset_face"."personGroupId" in ($3)
   and "asset_face"."deletedAt" is null
 
 -- PersonRepository.getRandomFace

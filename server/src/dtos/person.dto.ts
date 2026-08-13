@@ -215,6 +215,6 @@ export function mapFaces(
 ): AssetFaceResponseDto {
   return {
     ...mapFacesWithoutPerson(face, edits, assetDimensions),
-    person: face.person?.ownerId === auth.user.id ? mapPerson(face.person) : null,
+    person: face.person ? mapPerson(face.person) : null,
   };
 }

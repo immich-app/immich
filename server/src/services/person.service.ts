@@ -87,9 +87,10 @@ export class PersonService extends BaseService {
     const result: PersonResponseDto[] = [];
     const changeFeaturePhoto = new Map<string, PersonId>();
     for (const data of dto.data) {
-      const faces = await this.personRepository.getFacesByIds([
-        { personGroupId: data.personId, assetId: data.assetId },
-      ]);
+      const faces = await this.personRepository.getFacesByIds(
+        [{ personGroupId: data.personId, assetId: data.assetId }],
+        { viewingUserId: auth.user.id },
+      );
 
       for (const face of faces) {
         await this.requireAccess({ auth, permission: Permission.PersonCreate, ids: [face.id] });
@@ -114,7 +115,7 @@ export class PersonService extends BaseService {
   async reassignFacesById(auth: AuthDto, personGroupId: string, dto: FaceDto): Promise<PersonResponseDto> {
     await this.requireAccess({ auth, permission: Permission.PersonUpdate, ids: [personGroupId] });
     await this.requireAccess({ auth, permission: Permission.PersonCreate, ids: [dto.id] });
-    const face = await this.personRepository.getFaceById(dto.id);
+    const face = await this.personRepository.getFaceById(dto.id, { viewingUserId: auth.user.id });
     const person = await this.findOrFail(auth, personGroupId);
 
     await this.personRepository.reassignFace(face.id, person.personGroupId);
@@ -130,7 +131,7 @@ export class PersonService extends BaseService {
 
   async getFacesById(auth: AuthDto, dto: FaceDto): Promise<AssetFaceResponseDto[]> {
     await this.requireAccess({ auth, permission: Permission.AssetRead, ids: [dto.id] });
-    const faces = await this.personRepository.getFaces(dto.id);
+    const faces = await this.personRepository.getFaces(dto.id, { viewingUserId: auth.user.id, isVisible: true });
     const asset = await this.assetRepository.getForFaces(dto.id);
     const assetDimensions = getDimensions(asset);
 

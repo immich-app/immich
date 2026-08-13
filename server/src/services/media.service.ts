@@ -835,7 +835,7 @@ export class MediaService extends BaseService {
       : undefined;
 
     const originalDimensions = getDimensions(asset.exifInfo!);
-    const assetFaces = await this.personRepository.getFaces(asset.id, {});
+    const assetFaces = await this.personRepository.getFaces(asset.id, { viewingUserId: asset.ownerId });
     const ocrData = await this.ocrRepository.getByAssetId(asset.id, {});
 
     const faceStatuses = checkFaceVisibility(assetFaces, originalDimensions, cropBox);

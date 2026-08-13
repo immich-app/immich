@@ -63,19 +63,27 @@ export type UnassignFacesOptions = DeleteFacesOptions;
 
 export type SelectFaceOptions = (keyof Selectable<AssetFaceTable>)[];
 
+export type GetFacesOptions = WithPersonOptions & { isVisible?: boolean };
+
 /** a person is identified by its owner and the group it belongs to */
 export type PersonId = { ownerId: string; personGroupId: string };
 
 export type ReassignCluster = { userId: string; newClusterId: string };
 
-const withPerson = (eb: ExpressionBuilder<DB, 'asset_face' | 'asset'>) => {
-  return jsonObjectFrom(
-    eb
-      .selectFrom('person')
-      .selectAll('person')
-      .whereRef('person.personGroupId', '=', 'asset_face.personGroupId')
-      .whereRef('person.ownerId', '=', 'asset.ownerId'),
-  ).as('person');
+export type WithPersonOptions = {
+  /** whose version of the person to select */
+  viewingUserId: string;
+};
+
+const withPerson = ({ viewingUserId }: WithPersonOptions) => {
+  return (eb: ExpressionBuilder<DB, 'asset_face'>) =>
+    jsonObjectFrom(
+      eb
+        .selectFrom('person')
+        .selectAll('person')
+        .whereRef('person.personGroupId', '=', 'asset_face.personGroupId')
+        .where('person.ownerId', '=', viewingUserId),
+    ).as('person');
 };
 
 const withFaceSearch = (eb: ExpressionBuilder<DB, 'asset_face'>) => {
@@ -286,15 +294,14 @@ export class PersonRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getFaces(assetId: string, options?: { isVisible?: boolean }) {
-    const isVisible = options === undefined ? true : options.isVisible;
+  @GenerateSql({ params: [DummyValue.UUID, { viewingUserId: DummyValue.UUID, isVisible: true }] })
+  getFaces(assetId: string, options: GetFacesOptions) {
+    const { viewingUserId, isVisible } = options;
 
     return this.db
       .selectFrom('asset_face')
-      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
       .selectAll('asset_face')
-      .select(withPerson)
+      .select(withPerson({ viewingUserId }))
       .where('asset_face.assetId', '=', assetId)
       .where('asset_face.deletedAt', 'is', null)
       .$if(isVisible !== undefined, (qb) => qb.where('asset_face.isVisible', '=', isVisible!))
@@ -302,14 +309,13 @@ export class PersonRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  getFaceById(id: string) {
+  @GenerateSql({ params: [DummyValue.UUID, { viewingUserId: DummyValue.UUID }] })
+  getFaceById(id: string, { viewingUserId }: WithPersonOptions) {
     // TODO return null instead of find or fail
     return this.db
       .selectFrom('asset_face')
-      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
       .selectAll('asset_face')
-      .select(withPerson)
+      .select(withPerson({ viewingUserId }))
       .where('asset_face.id', '=', id)
       .where('asset_face.deletedAt', 'is', null)
       .executeTakeFirstOrThrow();
@@ -644,9 +650,11 @@ export class PersonRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [[{ assetId: DummyValue.UUID, personGroupId: DummyValue.UUID }]] })
+  @GenerateSql({
+    params: [[{ assetId: DummyValue.UUID, personGroupId: DummyValue.UUID }], { viewingUserId: DummyValue.UUID }],
+  })
   @ChunkedArray()
-  getFacesByIds(ids: AssetFaceId[]) {
+  getFacesByIds(ids: AssetFaceId[], { viewingUserId }: WithPersonOptions) {
     if (ids.length === 0) {
       return Promise.resolve([]);
     }
@@ -660,9 +668,8 @@ export class PersonRepository {
 
     return this.db
       .selectFrom('asset_face')
-      .innerJoin('asset', 'asset.id', 'asset_face.assetId')
       .selectAll('asset_face')
-      .select(withPerson)
+      .select(withPerson({ viewingUserId }))
       .where('asset_face.assetId', 'in', assetIds)
       .where('asset_face.personGroupId', 'in', personGroupIds)
       .where('asset_face.deletedAt', 'is', null)

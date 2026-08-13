@@ -1446,11 +1446,5 @@ describe(PersonService.name, () => {
     it('should not map person if person is null', () => {
       expect(mapFaces(getForAssetFace(AssetFaceFactory.create()), AuthFactory.create()).person).toBeNull();
     });
-
-    it('should not map person if person does not match auth user id', () => {
-      expect(
-        mapFaces(getForAssetFace(AssetFaceFactory.from().person().build()), AuthFactory.create()).person,
-      ).toBeNull();
-    });
   });
 });
