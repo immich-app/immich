@@ -4,8 +4,6 @@ import {
   removeMemoryAssets,
   searchMemories,
   updateMemory,
-  MemorySearchOrder,
-  MemoryType,
   memoriesStatistics,
 } from '@immich/sdk';
 import { DateTime } from 'luxon';
