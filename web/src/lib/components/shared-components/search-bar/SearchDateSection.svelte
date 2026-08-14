@@ -13,7 +13,7 @@
 
   const setPreset = (preset: SearchDatePreset) => {
     if (currentPreset === preset) {
-      currentPreset = undefined;
+      currentPreset = filters.takenAfter = filters.takenBefore = undefined;
       return;
     }
 
