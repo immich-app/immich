@@ -22591,6 +22591,10 @@
             "description": "OAuth code verifier (PKCE)",
             "type": "string"
           },
+          "nonce": {
+            "description": "OAuth nonce parameter",
+            "type": "string"
+          },
           "state": {
             "description": "OAuth state parameter",
             "type": "string"
@@ -22610,6 +22614,10 @@
         "properties": {
           "codeChallenge": {
             "description": "OAuth code challenge (PKCE)",
+            "type": "string"
+          },
+          "nonce": {
+            "description": "OAuth nonce parameter",
             "type": "string"
           },
           "redirectUri": {

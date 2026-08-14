@@ -10,6 +10,7 @@ import {
   discovery,
   fetchUserInfo,
   None,
+  randomNonce,
   randomPKCECodeVerifier,
   randomState,
   skipSubjectCheck,
@@ -42,9 +43,10 @@ export class OAuthRepository {
     this.logger.setContext(OAuthRepository.name);
   }
 
-  async authorize(config: OAuthConfig, redirectUrl: string, state?: string, codeChallenge?: string) {
+  async authorize(config: OAuthConfig, redirectUrl: string, state?: string, codeChallenge?: string, nonce?: string) {
     const client = await this.getClient(config);
     state ??= randomState();
+    nonce ??= randomNonce();
 
     let codeVerifier: string | null;
     if (codeChallenge) {
@@ -58,6 +60,7 @@ export class OAuthRepository {
       redirect_uri: redirectUrl,
       scope: config.scope,
       state,
+      nonce,
     };
 
     if (config.prompt) {
@@ -71,7 +74,7 @@ export class OAuthRepository {
 
     const url = buildAuthorizationUrl(client, params).href;
 
-    return { url, state, codeVerifier };
+    return { url, state, nonce, codeVerifier };
   }
 
   async getLogoutEndpoint(config: OAuthConfig) {
@@ -84,12 +87,17 @@ export class OAuthRepository {
     url: string,
     expectedState: string,
     codeVerifier: string,
+    expectedNonce?: string,
   ): Promise<{ profile: OAuthProfile; sid?: string; idToken?: string }> {
     const client = await this.getClient(config);
     const pkceCodeVerifier = client.serverMetadata().supportsPKCE() ? codeVerifier : undefined;
 
     try {
-      const tokens = await authorizationCodeGrant(client, new URL(url), { expectedState, pkceCodeVerifier });
+      const tokens = await authorizationCodeGrant(client, new URL(url), {
+        expectedState,
+        pkceCodeVerifier,
+        expectedNonce,
+      });
 
       let profile: OAuthProfile;
       const tokenClaims = tokens.claims();

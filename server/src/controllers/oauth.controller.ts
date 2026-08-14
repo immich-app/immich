@@ -49,7 +49,7 @@ export class OAuthController {
     @Res({ passthrough: true }) res: Response,
     @GetLoginDetails() loginDetails: LoginDetails,
   ): Promise<OAuthAuthorizeResponseDto> {
-    const { url, state, codeVerifier } = await this.service.authorize(dto);
+    const { url, state, nonce, codeVerifier } = await this.service.authorize(dto);
     return respondWithCookie(
       res,
       { url },
@@ -57,6 +57,7 @@ export class OAuthController {
         isSecure: loginDetails.isSecure,
         values: [
           { key: ImmichCookie.OAuthState, value: state },
+          { key: ImmichCookie.OAuthNonce, value: nonce },
           { key: ImmichCookie.OAuthCodeVerifier, value: codeVerifier },
         ],
       },
@@ -78,6 +79,7 @@ export class OAuthController {
   ): Promise<LoginResponseDto> {
     const body = await this.service.callback(dto, request.headers, loginDetails);
     res.clearCookie(ImmichCookie.OAuthState);
+    res.clearCookie(ImmichCookie.OAuthNonce);
     res.clearCookie(ImmichCookie.OAuthCodeVerifier);
     return respondWithCookie(res, body, {
       isSecure: loginDetails.isSecure,
