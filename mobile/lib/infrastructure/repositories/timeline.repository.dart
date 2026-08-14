@@ -57,11 +57,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     return switch (filter) {
       AssetOriginFilter.remoteOnly => _cloudOnly(userIds, groupBy),
       AssetOriginFilter.localOnly => _localOnly(groupBy),
-      AssetOriginFilter.all => (
-        bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
-        assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
-        origin: TimelineOrigin.main,
-      ),
+      AssetOriginFilter.all => _all(userIds, groupBy),
     };
   }
 
@@ -123,6 +119,12 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
         )
         .get();
   }
+
+  TimelineQuery _all(List<String> userIds, GroupAssetsBy groupBy) => (
+    bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
+    assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
+    origin: TimelineOrigin.main,
+  );
 
   TimelineQuery _cloudOnly(List<String> userIds, GroupAssetsBy groupBy) => _remoteQueryBuilder(
     filter: (row) =>
