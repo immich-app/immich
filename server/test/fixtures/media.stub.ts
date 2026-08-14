@@ -451,28 +451,6 @@ export const videoInfoStub = {
       },
     ],
   }),
-  videoStreamWithProfileLevel: Object.freeze<VideoInfo>({
-    ...probeStubDefault,
-    videoStreams: [
-      {
-        ...probeStubDefaultVideoStream[0],
-        codecName: 'h264',
-        profile: 100,
-        level: 40,
-      },
-    ],
-  }),
-  audioStreamAAC: Object.freeze<VideoInfo>({
-    ...probeStubDefault,
-    audioStreams: [
-      {
-        index: 1,
-        codecName: 'aac',
-        profile: 2,
-        bitrate: 128_000,
-      },
-    ],
-  }),
 };
 
 interface SelectedStreams {

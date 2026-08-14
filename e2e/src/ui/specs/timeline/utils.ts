@@ -1,4 +1,4 @@
-import { BrowserContext, expect, Page } from '@playwright/test';
+import { expect, Page } from '@playwright/test';
 import { DateTime } from 'luxon';
 import { TimelineAssetConfig } from 'src/ui/generators/timeline';
 
@@ -10,18 +10,6 @@ export const padYearMonth = (yearMonth: string) => {
   const [year, month] = yearMonth.split('-', 2);
   return `${year}-${month.padStart(2, '0')}`;
 };
-
-export async function throttlePage(context: BrowserContext, page: Page) {
-  const session = await context.newCDPSession(page);
-  await session.send('Network.emulateNetworkConditions', {
-    offline: false,
-    downloadThroughput: (1.5 * 1024 * 1024) / 8,
-    uploadThroughput: (750 * 1024) / 8,
-    latency: 40,
-    connectionType: 'cellular3g',
-  });
-  await session.send('Emulation.setCPUThrottlingRate', { rate: 10 });
-}
 
 export const poll = async <T>(
   page: Page,
