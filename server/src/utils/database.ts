@@ -283,6 +283,21 @@ export function hasPeople<O>(qb: SelectQueryBuilder<DB, 'asset', O>, personGroup
   );
 }
 
+export function inSharedAlbum(eb: ExpressionBuilder<DB, 'asset'>, userId: string) {
+  return eb.exists(
+    eb
+      .selectFrom('album_asset')
+      .select(sql.lit(1).as('exists'))
+      .innerJoin('album', (join) =>
+        join.onRef('album.id', '=', 'album_asset.albumId').on('album.deletedAt', 'is', null),
+      )
+      .innerJoin('album_user', (join) =>
+        join.onRef('album_user.albumId', '=', 'album.id').on('album_user.userId', '=', asUuid(userId)),
+      )
+      .whereRef('album_asset.assetId', '=', 'asset.id'),
+  );
+}
+
 export function inAlbums<O>(qb: SelectQueryBuilder<DB, 'asset', O>, albumIds: string[]) {
   return qb.innerJoin(
     (eb) =>
