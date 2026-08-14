@@ -97,7 +97,7 @@
     if (result === 'accept') {
       await handleAcceptRequest(request);
     } else if (result === 'decline') {
-      handleDeleteRequest(request);
+      await handleDeleteRequest(request);
     }
   };
 

@@ -436,15 +436,12 @@ export const utils = {
     return person;
   },
 
-  createFace: async ({ assetId, personId }: { assetId: string; personId: string }) => {
+  createFace: async ({ assetId, personGroupId }: { assetId: string; personGroupId: string }) => {
     if (!client) {
       return;
     }
 
-    await client.query(
-      'INSERT INTO asset_face ("assetId", "personId") SELECT $1, "id" FROM "person" WHERE "personGroupId" = $2',
-      [assetId, personId],
-    );
+    await client.query('INSERT INTO asset_face ("assetId", "personGroupId") VALUES ($1, $2)', [assetId, personGroupId]);
   },
 
   setPersonThumbnail: async (personId: string) => {
