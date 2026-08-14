@@ -132,8 +132,8 @@ class HeaderKeyValueSettings extends StatelessWidget {
                     border: const OutlineInputBorder(),
                   ),
                   autocorrect: false,
-                  smartDashesType: SmartDashesType.disabled,
-                  smartQuotesType: SmartQuotesType.disabled,
+                  smartDashesType: .disabled,
+                  smartQuotesType: .disabled,
                   onChanged: (headerKey) {
                     header.key = headerKey;
                   },
@@ -162,8 +162,8 @@ class HeaderKeyValueSettings extends StatelessWidget {
               border: const OutlineInputBorder(),
             ),
             autocorrect: false,
-            smartDashesType: SmartDashesType.disabled,
-            smartQuotesType: SmartQuotesType.disabled,
+            smartDashesType: .disabled,
+            smartQuotesType: .disabled,
             onChanged: (headerValue) {
               header.value = headerValue;
             },
