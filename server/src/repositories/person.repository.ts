@@ -10,7 +10,7 @@ import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { FaceSearchTable } from 'src/schema/tables/face-search.table';
 import { PersonGroupTable } from 'src/schema/tables/person-group.table';
 import { PersonTable } from 'src/schema/tables/person.table';
-import { dummy, removeUndefinedKeys, withFilePath } from 'src/utils/database';
+import { asUuid, dummy, inSharedAlbum, removeUndefinedKeys, withFilePath } from 'src/utils/database';
 import { paginationHelper, PaginationOptions } from 'src/utils/pagination';
 
 export interface PersonSearchOptions {
@@ -40,6 +40,8 @@ export interface UpdateFacesData {
 
 export interface PersonStatistics {
   assets: number;
+  ownedAssets: number;
+  sharedAssets: number;
 }
 
 export interface DeleteFacesOptions {
@@ -415,24 +417,36 @@ export class PersonRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [DummyValue.UUID] })
-  async getStatistics(personGroupId: string): Promise<PersonStatistics> {
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID] })
+  async getStatistics(personGroupId: string, userId: string): Promise<PersonStatistics> {
     const result = await this.db
       .selectFrom('asset_face')
       .leftJoin('asset', (join) =>
         join
           .onRef('asset.id', '=', 'asset_face.assetId')
           .on('asset.visibility', '=', sql.lit(AssetVisibility.Timeline))
-          .on('asset.deletedAt', 'is', null),
+          .on('asset.deletedAt', 'is', null)
+          .on((eb) => eb.or([eb('asset.ownerId', '=', asUuid(userId)), inSharedAlbum(eb, userId)])),
       )
-      .select((eb) => eb.fn.count(eb.fn('distinct', ['asset.id'])).as('count'))
+      .select((eb) => [
+        eb.fn.count(eb.fn('distinct', ['asset.id'])).as('count'),
+        eb.fn
+          .count(eb.fn('distinct', ['asset.id']))
+          .filterWhere('asset.ownerId', '=', asUuid(userId))
+          .as('ownedCount'),
+      ])
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
       .where('asset_face.personGroupId', '=', personGroupId)
       .executeTakeFirst();
 
+    const assets = result ? Number(result.count) : 0;
+    const ownedAssets = result ? Number(result.ownedCount) : 0;
+
     return {
-      assets: result ? Number(result.count) : 0,
+      assets,
+      ownedAssets,
+      sharedAssets: assets - ownedAssets,
     };
   }
 

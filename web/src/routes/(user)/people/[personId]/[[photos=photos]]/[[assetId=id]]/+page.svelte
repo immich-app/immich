@@ -63,6 +63,7 @@
   let { data }: Props = $props();
 
   let numberOfAssets = $derived(data.statistics.assets);
+  let numberOfSharedAssets = $derived(data.statistics.sharedAssets);
   let person = $derived(data.person);
   let thumbnailData = $derived(getPeopleThumbnailUrl(person));
 
@@ -395,6 +396,9 @@
                     <p class="w-40 truncate font-medium sm:w-72">{person.name || $t('add_a_name')}</p>
                     <p class="text-sm text-gray-500 dark:text-gray-400">
                       {$t('assets_count', { values: { count: numberOfAssets } })}
+                      {#if numberOfSharedAssets > 0}
+                        · {$t('shared_assets_count', { values: { count: numberOfSharedAssets } })}
+                      {/if}
                     </p>
                     {#if person.birthDate}
                       <p class="text-sm text-gray-500 dark:text-gray-400">

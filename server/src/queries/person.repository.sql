@@ -288,16 +288,35 @@ where
 
 -- PersonRepository.getStatistics
 select
-  count(distinct ("asset"."id")) as "count"
+  count(distinct ("asset"."id")) as "count",
+  count(distinct ("asset"."id")) filter (
+    where
+      "asset"."ownerId" = $1::uuid
+  ) as "ownedCount"
 from
   "asset_face"
   left join "asset" on "asset"."id" = "asset_face"."assetId"
   and "asset"."visibility" = 'timeline'
   and "asset"."deletedAt" is null
+  and (
+    "asset"."ownerId" = $2::uuid
+    or exists (
+      select
+        1 as "exists"
+      from
+        "album_asset"
+        inner join "album" on "album"."id" = "album_asset"."albumId"
+        and "album"."deletedAt" is null
+        inner join "album_user" on "album_user"."albumId" = "album"."id"
+        and "album_user"."userId" = $3::uuid
+      where
+        "album_asset"."assetId" = "asset"."id"
+    )
+  )
 where
   "asset_face"."deletedAt" is null
   and "asset_face"."isVisible" is true
-  and "asset_face"."personGroupId" = $1
+  and "asset_face"."personGroupId" = $4
 
 -- PersonRepository.getNumberOfPeople
 select

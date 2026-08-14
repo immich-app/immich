@@ -1537,6 +1537,10 @@ export type AssetFaceUpdateDto = {
 export type PersonStatisticsResponseDto = {
     /** Number of assets */
     assets: number;
+    /** Number of assets owned by the current user */
+    ownedAssets: number;
+    /** Number of assets owned by other users, visible through shared albums */
+    sharedAssets: number;
 };
 export type PluginMethodResponseDto = {
     /** Description */

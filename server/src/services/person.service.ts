@@ -163,7 +163,7 @@ export class PersonService extends BaseService {
 
   async getStatistics(auth: AuthDto, personGroupId: string): Promise<PersonStatisticsResponseDto> {
     await this.requireAccess({ auth, permission: Permission.PersonRead, ids: [personGroupId] });
-    return this.personRepository.getStatistics(personGroupId);
+    return this.personRepository.getStatistics(personGroupId, auth.user.id);
   }
 
   async getThumbnail(auth: AuthDto, personGroupId: string): Promise<ImmichFileResponse> {
