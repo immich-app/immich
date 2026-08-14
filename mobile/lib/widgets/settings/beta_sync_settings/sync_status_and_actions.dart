@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -150,7 +151,7 @@ class SyncStatusAndActions extends HookConsumerWidget {
             unawaited(ref.read(backgroundSyncProvider).syncRemote());
           },
         ),
-        if (CurrentPlatform.isIOS && serverVersion.isAtLeast(major: 2, minor: 5))
+        if (CurrentPlatform.isIOS && serverVersion.supports(.cloudIdMetadata))
           SettingListTile(
             title: 'Sync Cloud Ids',
             leading: const Icon(Icons.cloud_circle_rounded),
