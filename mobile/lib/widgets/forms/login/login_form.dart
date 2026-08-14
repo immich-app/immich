@@ -506,6 +506,10 @@ class LoginForm extends HookConsumerWidget {
                         ImmichPasswordInput(
                           controller: passwordController,
                           focusNode: passwordFocusNode,
+                          smartDashesType: SmartDashesType.disabled,
+                          smartQuotesType: SmartQuotesType.disabled,
+                          autocorrect: false,
+                          enableSuggestions: false,
                           label: context.t.password,
                           hintText: context.t.login_form_password_hint,
                           keyboardAction: TextInputAction.go,
