@@ -1211,14 +1211,6 @@ export enum ApiTag {
   Workflows = 'Workflows',
 }
 
-export enum PluginContext {
-  Asset = 'asset',
-  Album = 'album',
-  Person = 'person',
-}
-
-export const PluginContextSchema = z.enum(PluginContext).describe('Plugin context').meta({ id: 'PluginContextType' });
-
 export const WorkflowTriggerSchema = z
   .enum(WorkflowTrigger)
   .describe('Plugin trigger type')
