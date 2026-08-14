@@ -7,6 +7,7 @@ export const triggerMap: Record<WorkflowTrigger, WorkflowType[]> = {
   // [WorkflowTrigger.PersonRecognized]: [WorkflowType.AssetPersonV1],
   [WorkflowTrigger.AssetMetadataExtraction]: [WorkflowType.AssetV1],
   [WorkflowTrigger.AssetTagged]: [WorkflowType.AssetV1],
+  [WorkflowTrigger.AlbumAssetAdded]: [WorkflowType.AlbumAssetV1],
 };
 
 export const getWorkflowTriggers = () =>
@@ -15,10 +16,11 @@ export const getWorkflowTriggers = () =>
 /** some types extend other types and have implied compatibility */
 const inferredMap: Record<WorkflowType, WorkflowType[]> = {
   [WorkflowType.AssetV1]: [],
+  [WorkflowType.AlbumAssetV1]: [WorkflowType.AssetV1],
   // [WorkflowType.AssetPersonV1]: [WorkflowType.AssetV1],
 };
 
-const withImpliedItems = (type: WorkflowType): WorkflowType[] => {
+export const withImpliedItems = (type: WorkflowType): WorkflowType[] => {
   const childTypes = inferredMap[type];
   const results = [type];
   for (const child of childTypes) {
@@ -30,8 +32,8 @@ const withImpliedItems = (type: WorkflowType): WorkflowType[] => {
 
 export const isMethodCompatible = (pluginMethod: { types: WorkflowType[] }, trigger: WorkflowTrigger) => {
   const validTypes = triggerMap[trigger];
-  const pluginCompatibility = pluginMethod.types.map((type) => withImpliedItems(type));
-  for (const requested of validTypes) {
+  const pluginCompatibility = validTypes.map((type) => withImpliedItems(type));
+  for (const requested of pluginMethod.types) {
     for (const pluginCompatibilityGroup of pluginCompatibility) {
       if (pluginCompatibilityGroup.includes(requested)) {
         return true;

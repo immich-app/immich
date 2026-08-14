@@ -19436,6 +19436,8 @@
           "VersionCheck",
           "OcrQueueAll",
           "Ocr",
+          "WorkflowScan",
+          "WorkflowRun",
           "WorkflowAssetTrigger",
           "IntegrityUntrackedFilesQueueAll",
           "IntegrityUntrackedFiles",
@@ -28237,7 +28239,8 @@
         "enum": [
           "AssetCreate",
           "AssetMetadataExtraction",
-          "AssetTagged"
+          "AssetTagged",
+          "AlbumAssetAdded"
         ],
         "type": "string"
       },
@@ -28264,7 +28267,8 @@
       "WorkflowType": {
         "description": "Workflow type",
         "enum": [
-          "AssetV1"
+          "AssetV1",
+          "AlbumAssetV1"
         ],
         "type": "string"
       },

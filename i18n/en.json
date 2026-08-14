@@ -2138,6 +2138,8 @@
   "trash_page_info": "Trashed items will be permanently deleted after {days} days",
   "trashed_items_will_be_permanently_deleted_after": "Trashed items will be permanently deleted after {days, plural, one {# day} other {# days}}.",
   "trigger": "Trigger",
+  "trigger_album_asset_added": "Asset Added to Album",
+  "trigger_album_asset_added_description": "Triggered when an asset is added to an album",
   "trigger_asset_metadata_extraction": "Asset Metadata Extraction",
   "trigger_asset_metadata_extraction_description": "Triggered when the EXIF metadata of an asset is extracted",
   "trigger_asset_tagged": "Asset Tagged",

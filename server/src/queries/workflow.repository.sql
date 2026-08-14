@@ -9,6 +9,7 @@ select
   "workflow"."enabled",
   "workflow"."createdAt",
   "workflow"."updatedAt",
+  "workflow"."ownerId",
   "workflow"."logging",
   (
     select
@@ -44,6 +45,7 @@ select
   "workflow"."enabled",
   "workflow"."createdAt",
   "workflow"."updatedAt",
+  "workflow"."ownerId",
   "workflow"."logging",
   (
     select
@@ -75,6 +77,7 @@ select
   "workflow"."id",
   "workflow"."name",
   "workflow"."trigger",
+  "workflow"."ownerId",
   "workflow"."logging",
   (
     select

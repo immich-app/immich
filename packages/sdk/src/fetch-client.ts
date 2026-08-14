@@ -7464,12 +7464,14 @@ export enum PartnerDirection {
     SharedWith = "shared-with"
 }
 export enum WorkflowType {
-    AssetV1 = "AssetV1"
+    AssetV1 = "AssetV1",
+    AlbumAssetV1 = "AlbumAssetV1"
 }
 export enum WorkflowTrigger {
     AssetCreate = "AssetCreate",
     AssetMetadataExtraction = "AssetMetadataExtraction",
-    AssetTagged = "AssetTagged"
+    AssetTagged = "AssetTagged",
+    AlbumAssetAdded = "AlbumAssetAdded"
 }
 export enum QueueJobStatus {
     Active = "active",
@@ -7535,6 +7537,8 @@ export enum JobName {
     VersionCheck = "VersionCheck",
     OcrQueueAll = "OcrQueueAll",
     Ocr = "Ocr",
+    WorkflowScan = "WorkflowScan",
+    WorkflowRun = "WorkflowRun",
     WorkflowAssetTrigger = "WorkflowAssetTrigger",
     IntegrityUntrackedFilesQueueAll = "IntegrityUntrackedFilesQueueAll",
     IntegrityUntrackedFiles = "IntegrityUntrackedFiles",

@@ -15,6 +15,7 @@ type DeepPartial<T> = T extends Date
 
 export type WorkflowEventMap = {
   [WorkflowType.AssetV1]: AssetV1;
+  [WorkflowType.AlbumAssetV1]: AlbumAssetV1;
   // [WorkflowType.AssetPersonV1]: AssetPersonV1;
 } & { [K in WorkflowType]: unknown };
 
@@ -24,6 +25,7 @@ export enum WorkflowTrigger {
   AssetCreate = 'AssetCreate',
   AssetMetadataExtraction = 'AssetMetadataExtraction',
   AssetTagged = 'AssetTagged',
+  AlbumAssetAdded = 'AlbumAssetAdded',
   // PersonRecognized = 'PersonRecognized',
 }
 
@@ -127,6 +129,12 @@ export type AssetV1 = {
       tags: string[] | null;
       updatedAt: string | null;
     } | null;
+  };
+};
+
+export type AlbumAssetV1 = AssetV1 & {
+  album: {
+    id: string;
   };
 };
 

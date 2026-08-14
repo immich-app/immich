@@ -16,6 +16,9 @@ export const getTriggerName = ($t: MessageFormatter, type: WorkflowTrigger) => {
     case WorkflowTrigger.AssetTagged: {
       return $t('trigger_asset_tagged');
     }
+    case WorkflowTrigger.AlbumAssetAdded: {
+      return $t('trigger_album_asset_added');
+    }
     default: {
       return type;
     }
@@ -35,6 +38,9 @@ export const getTriggerDescription = ($t: MessageFormatter, type: WorkflowTrigge
     }
     case WorkflowTrigger.AssetTagged: {
       return $t('trigger_asset_tagged_description');
+    }
+    case WorkflowTrigger.AlbumAssetAdded: {
+      return $t('trigger_album_asset_added_description');
     }
     default: {
       return type;

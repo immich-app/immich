@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Updateable } from 'kysely';
+import { Insertable, Kysely, SelectQueryBuilder, Updateable } from 'kysely';
 import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
@@ -7,6 +7,7 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { WorkflowGetLogsDto, WorkflowSearchDto } from 'src/dtos/workflow.dto';
 import { DB } from 'src/schema';
 import { WorkflowLogTable } from 'src/schema/tables/workflow-log.table';
+import { WorkflowQueueTable } from 'src/schema/tables/workflow-queue';
 import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table';
 import { WorkflowTable } from 'src/schema/tables/workflow.table';
 import { withTags } from 'src/utils/database';
@@ -28,6 +29,7 @@ export class WorkflowRepository {
         'workflow.enabled',
         'workflow.createdAt',
         'workflow.updatedAt',
+        'workflow.ownerId',
         'workflow.logging',
       ])
       .select((eb) => [
@@ -68,7 +70,7 @@ export class WorkflowRepository {
   getForWorkflowRun(id: string) {
     return this.db
       .selectFrom('workflow')
-      .select(['workflow.id', 'workflow.name', 'workflow.trigger', 'workflow.logging'])
+      .select(['workflow.id', 'workflow.name', 'workflow.trigger', 'workflow.ownerId', 'workflow.logging'])
       .select((eb) => [
         jsonArrayFrom(
           eb
@@ -177,8 +179,38 @@ export class WorkflowRepository {
   }
 
   getForAssetV1(assetId: string) {
+    return this.assetV1Query(this.db.selectFrom('asset').where('id', '=', assetId)).executeTakeFirstOrThrow();
+  }
+
+  getForAlbumAssetV1(after: string) {
     return this.db
-      .selectFrom('asset')
+      .selectFrom('album_asset')
+      .select(['albumId', 'assetId', 'album_asset.updateId'])
+      .orderBy('album_asset.updateId', 'asc')
+      .where('album_asset.updateId', '>', after)
+      .limit(2000)
+      .select((eb) =>
+        jsonObjectFrom(this.assetV1Query(eb.selectFrom('asset').whereRef('asset.id', '=', 'album_asset.assetId'))).as(
+          'asset',
+        ),
+      )
+      .execute();
+  }
+
+  addToQueue(dto: Insertable<WorkflowQueueTable>[]) {
+    return this.db.insertInto('workflow_queue').values(dto).returning(['id']).execute();
+  }
+
+  getQueue(id: string) {
+    return this.db.selectFrom('workflow_queue').selectAll().where('id', '=', id).executeTakeFirstOrThrow();
+  }
+
+  removeFromQueue(workflowId: string) {
+    return this.db.deleteFrom('workflow_queue').where('id', '=', workflowId).execute();
+  }
+
+  private assetV1Query<T>(qb: SelectQueryBuilder<DB, 'asset', T>) {
+    return qb
       .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
       .select((eb) => [
         ...columns.workflowAssetV1,
@@ -220,8 +252,6 @@ export class WorkflowRepository {
             ])
             .whereRef('asset_exif.assetId', '=', 'asset.id'),
         ).as('exifInfo'),
-      ])
-      .where('id', '=', assetId)
-      .executeTakeFirstOrThrow();
+      ]);
   }
 }

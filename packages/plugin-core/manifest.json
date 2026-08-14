@@ -520,6 +520,28 @@
       }
     },
     {
+      "name": "assetAlbumFilter",
+      "title": "Filter by album(s)",
+      "description": "Filter by which album(s) triggered the workflow",
+      "types": ["AlbumAssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "albumIds": {
+            "type": "string",
+            "title": "Album IDs",
+            "array": true,
+            "description": "Allowed album IDs",
+            "uiHint": {
+              "type": "AlbumId"
+            }
+          }
+        },
+        "required": ["albumIds"]
+      },
+      "uiHints": ["Filter"]
+    },
+    {
       "name": "webhook",
       "title": "Trigger Webhook",
       "description": "POST/PUT event data to any URL",
