@@ -76,6 +76,8 @@ class LoginForm extends HookConsumerWidget {
     final warningMessage = useState<String?>(null);
     final loginFormKey = GlobalKey<FormState>();
     final ValueNotifier<String?> serverEndpoint = useState<String?>(null);
+    final SmartDashesType smartDashesType;
+    final SmartQuotesType smartQuotesType;
 
     Future<void> checkVersionMismatch() async {
       try {
@@ -508,8 +510,6 @@ class LoginForm extends HookConsumerWidget {
                           focusNode: passwordFocusNode,
                           smartDashesType: SmartDashesType.disabled,
                           smartQuotesType: SmartQuotesType.disabled,
-                          autocorrect: false,
-                          enableSuggestions: false,
                           label: context.t.password,
                           hintText: context.t.login_form_password_hint,
                           keyboardAction: TextInputAction.go,
