@@ -26,23 +26,6 @@ class TabShellPage extends ConsumerStatefulWidget {
 }
 
 class _TabShellPageState extends ConsumerState<TabShellPage> {
-  bool _isMultiSelectEnabled = false;
-  StreamSubscription? _eventSubscription;
-
-  @override
-  void initState() {
-    super.initState();
-    _eventSubscription = EventStream.shared.listen<MultiSelectToggleEvent>(
-      (event) => setState(() => _isMultiSelectEnabled = event.isEnabled),
-    );
-  }
-
-  @override
-  void dispose() {
-    unawaited(_eventSubscription?.cancel());
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final isScreenLandscape = context.orientation == Orientation.landscape;
@@ -100,8 +83,8 @@ class _TabShellPageState extends ConsumerState<TabShellPage> {
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
         return PopScope(
-          canPop: tabsRouter.activeIndex == 0 && !_isMultiSelectEnabled,
-          onPopInvokedWithResult: (didPop, _) => (didPop || _isMultiSelectEnabled) ? null : tabsRouter.setActiveIndex(0),
+          canPop: tabsRouter.activeIndex == 0,
+          onPopInvokedWithResult: (didPop, _) => !didPop ? tabsRouter.setActiveIndex(0) : null,
           child: Scaffold(
             resizeToAvoidBottomInset: false,
             body: isScreenLandscape
