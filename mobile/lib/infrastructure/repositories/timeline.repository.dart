@@ -50,7 +50,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
   TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy, AssetOriginFilter filter) {
     return switch (filter) {
-      AssetOriginFilter.remote => cloudOnly(userIds, groupBy),
+      AssetOriginFilter.remoteOnly => cloudOnly(userIds, groupBy),
       AssetOriginFilter.localOnly => localOnly(groupBy),
       AssetOriginFilter.all => (
         bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),

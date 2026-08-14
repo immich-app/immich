@@ -4,7 +4,7 @@ enum HeaderType { none, month, day, monthAndDay }
 
 enum SortAssetsBy { taken, uploaded }
 
-enum AssetOriginFilter { all, remote, localOnly }
+enum AssetOriginFilter { all, remoteOnly, localOnly }
 
 class Bucket {
   final int assetCount;
