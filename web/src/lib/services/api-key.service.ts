@@ -1,8 +1,3 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
-import ApiKeyCreateModal from '$lib/modals/ApiKeyCreateModal.svelte';
-import ApiKeyUpdateModal from '$lib/modals/ApiKeyUpdateModal.svelte';
-import { handleError } from '$lib/utils/handle-error';
-import { getFormatter } from '$lib/utils/i18n';
 import {
   createApiKey,
   deleteApiKey,
@@ -14,6 +9,11 @@ import {
 import { modalManager, toastManager, type ActionItem } from '@immich/ui';
 import { mdiPencilOutline, mdiPlus, mdiTrashCanOutline } from '@mdi/js';
 import type { MessageFormatter } from 'svelte-i18n';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import ApiKeyCreateModal from '$lib/modals/ApiKeyCreateModal.svelte';
+import ApiKeyUpdateModal from '$lib/modals/ApiKeyUpdateModal.svelte';
+import { handleError } from '$lib/utils/handle-error';
+import { getFormatter } from '$lib/utils/i18n';
 
 export const getApiKeysActions = ($t: MessageFormatter) => {
   const Create: ActionItem = {

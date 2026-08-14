@@ -2,6 +2,7 @@ import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/com
 import { SALT_ROUNDS } from 'src/constants';
 import { AssetStatsDto, AssetStatsResponseDto, mapStats } from 'src/dtos/asset.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto';
 import { SessionResponseDto, mapSession } from 'src/dtos/session.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import {
@@ -15,6 +16,8 @@ import {
 import { JobName, UserMetadataKey, UserStatus } from 'src/enum';
 import { UserFindOptions } from 'src/repositories/user.repository';
 import { BaseService } from 'src/services/base.service';
+import { getCalendarHeatmap } from 'src/services/shared/user-methods';
+import { findOrFail } from 'src/utils/misc';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -64,7 +67,8 @@ export class UserAdminService extends BaseService {
     if (dto.email) {
       const duplicate = await this.userRepository.getByEmail(dto.email);
       if (duplicate && duplicate.id !== id) {
-        throw new BadRequestException('Email already in use by another account');
+        this.logger.debug('Email already in use by another account');
+        throw new BadRequestException('Email is not available');
       }
     }
 
@@ -121,6 +125,11 @@ export class UserAdminService extends BaseService {
     return mapUserAdmin(user);
   }
 
+  async getCalendarHeatmap(auth: AuthDto, id: string, dto: CalendarHeatmapDto): Promise<CalendarHeatmapResponseDto> {
+    await this.findOrFail(id, { withDeleted: false });
+    return getCalendarHeatmap(id, dto, { asset: this.assetRepository });
+  }
+
   async getSessions(auth: AuthDto, id: string): Promise<SessionResponseDto[]> {
     const sessions = await this.sessionRepository.getByUserId(id);
     return sessions.map((session) => mapSession(session));
@@ -150,11 +159,7 @@ export class UserAdminService extends BaseService {
     return mapPreferences(newPreferences);
   }
 
-  private async findOrFail(id: string, options: UserFindOptions) {
-    const user = await this.userRepository.get(id, options);
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-    return user;
+  private findOrFail(id: string, options: UserFindOptions) {
+    return findOrFail(() => this.userRepository.get(id, options), 'User');
   }
 }

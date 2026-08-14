@@ -1,11 +1,12 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Redirect, Req, Res } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { Request, Response } from 'express';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AuthDto,
   LoginResponseDto,
   OAuthAuthorizeResponseDto,
+  OAuthBackchannelLogoutDto,
   OAuthCallbackDto,
   OAuthConfigDto,
 } from 'src/dtos/auth.dto';
@@ -21,6 +22,7 @@ export class OAuthController {
   constructor(private service: AuthService) {}
 
   @Get('mobile-redirect')
+  @Authenticated({ public: true })
   @Redirect()
   @Endpoint({
     summary: 'Redirect OAuth to mobile',
@@ -36,6 +38,7 @@ export class OAuthController {
   }
 
   @Post('authorize')
+  @Authenticated({ public: true })
   @Endpoint({
     summary: 'Start OAuth',
     description: 'Initiate the OAuth authorization process.',
@@ -61,6 +64,7 @@ export class OAuthController {
   }
 
   @Post('callback')
+  @Authenticated({ public: true })
   @Endpoint({
     summary: 'Finish OAuth',
     description: 'Complete the OAuth authorization process by exchanging the authorization code for a session token.',
@@ -111,5 +115,19 @@ export class OAuthController {
   })
   unlinkOAuthAccount(@Auth() auth: AuthDto): Promise<UserAdminResponseDto> {
     return this.service.unlink(auth);
+  }
+
+  @Post('backchannel-logout')
+  @Authenticated({ public: true })
+  @HttpCode(HttpStatus.OK)
+  @ApiConsumes('application/x-www-form-urlencoded')
+  @Endpoint({
+    summary: 'Backchannel OAuth logout',
+    description:
+      'Logout the OAuth account and invalidate the session specified by the sid claim or all sessions if the sid claim is not present.',
+    history: new HistoryBuilder().added('v2'),
+  })
+  async logoutOAuth(@Body() dto: OAuthBackchannelLogoutDto): Promise<void> {
+    return this.service.backchannelLogout(dto);
   }
 }

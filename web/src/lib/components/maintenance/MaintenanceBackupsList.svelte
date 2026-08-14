@@ -71,7 +71,7 @@
     }
 
     // Sort by date descending (newest first), but put unknown date at the top
-    const sortedEntries = [...groups.entries()].sort((a, b) => {
+    const sortedEntries = [...groups].sort((a, b) => {
       if (a[0] === unknownDateKey) {
         return -1;
       }
@@ -91,8 +91,8 @@
   <Card color="info">
     <CardBody>
       {#if uploadProgress === -1}
-        <div class="flex justify-between items-center">
-          <div class="flex gap-2 items-end w-max">
+        <div class="flex items-center justify-between">
+          <div class="flex w-max items-end gap-2">
             <Icon icon={mdiTrayArrowUp} size="20" class="text-muted"></Icon>
             <Text class="grow">{$t('admin.maintenance_upload_backup')}</Text>
           </div>
@@ -115,10 +115,10 @@
 
   <hr />
 
-  {#each [...groupedBackups.entries()] as [dateGroup, groupBackups] (dateGroup)}
+  {#each [...groupedBackups] as [dateGroup, groupBackups] (dateGroup)}
     <Stack gap={2}>
       <div class="mt-5 mb-1">
-        <div class="bg-primary-50 flex gap-2 px-4 py-2 rounded-xl w-max place-items-center">
+        <div class="flex w-max place-items-center gap-2 rounded-xl bg-primary-50 px-4 py-2">
           <Icon icon={mdiCalendar} size="18" />
           <Text size="small" fontWeight="medium" color="muted">{dateGroup}</Text>
         </div>

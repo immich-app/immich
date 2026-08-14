@@ -95,7 +95,7 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     // Register plugins in the new engine
     GeneratedPluginRegistrant.register(with: engine)
     // Register custom plugins
-    AppDelegate.registerPlugins(with: engine, controller: nil)
+    AppDelegate.registerPlugins(with: engine, messenger: engine.binaryMessenger)
     flutterApi = BackgroundWorkerFlutterApi(binaryMessenger: engine.binaryMessenger)
     BackgroundWorkerBgHostApiSetup.setUp(binaryMessenger: engine.binaryMessenger, api: self)
     
@@ -121,8 +121,8 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
   
   /**
    * Cancels the currently running background task, either due to timeout or external request.
-   * Sends a cancel signal to the Flutter side and sets up a fallback timer to ensure
-   * the completion handler is eventually called even if Flutter doesn't respond.
+   * Only tears down the engine after Dart confirms it's drained. If Dart overruns iOS's grace window,
+   * the expiration handler still calls setTaskCompleted and iOS suspends us.
    */
   func close() {
     if isComplete {
@@ -130,12 +130,6 @@ class BackgroundWorker: BackgroundWorkerBgHostApi {
     }
 
     flutterApi?.cancel { result in
-      self.complete(success: false)
-    }
-
-    // Fallback safety mechanism: ensure completion is called within 2 seconds
-    // This prevents the background task from hanging indefinitely if Flutter doesn't respond
-    Timer.scheduledTimer(withTimeInterval: 2, repeats: false) { _ in
       self.complete(success: false)
     }
   }

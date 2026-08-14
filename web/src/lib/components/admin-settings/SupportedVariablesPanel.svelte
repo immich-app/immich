@@ -5,7 +5,7 @@
 
 <Text size="small">{$t('other_variables')}</Text>
 
-<Card class="mt-2 text-sm bg-light-50 shadow-none">
+<Card class="mt-2 bg-light-50 text-sm shadow-none">
   <CardBody>
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
       <div>

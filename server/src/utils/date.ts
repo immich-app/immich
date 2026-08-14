@@ -1,11 +1,18 @@
 import { DateTime } from 'luxon';
+import { isoDateToDate, isoDatetimeToDate } from 'src/validation';
 
-export const asDateString = <T extends Date | string | undefined | null>(x: T) => {
-  return x instanceof Date ? x.toISOString() : (x as Exclude<T, Date>);
+/**
+ * Convert a date to a ISO 8601 datetime string.
+ */
+export const asDateTimeString = <T extends Date | string | undefined | null>(x: T) => {
+  return x instanceof Date ? isoDatetimeToDate.encode(x) : (x as Exclude<T, Date>);
 };
 
-export const asBirthDateString = (x: Date | string | null): string | null => {
-  return x instanceof Date ? x.toISOString().split('T')[0] : x;
+/**
+ * Convert a date to a date string (yyyy-mm-dd).
+ */
+export const asDateString = (x: Date | string | null): string | null => {
+  return x instanceof Date ? isoDateToDate.encode(x) : x;
 };
 
 export const extractTimeZone = (dateTimeOriginal?: string | null) => {

@@ -23,7 +23,6 @@ import {
   SharedLinkCreateDto,
   SharedLinkEditDto,
   SharedLinkLoginDto,
-  SharedLinkPasswordDto,
   SharedLinkResponseDto,
   SharedLinkSearchDto,
 } from 'src/dtos/shared-link.dto';
@@ -96,21 +95,7 @@ export class SharedLinkController {
     description: 'Retrieve the current shared link associated with authentication method.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  async getMySharedLink(
-    @Auth() auth: AuthDto,
-    @Query() dto: SharedLinkPasswordDto,
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-    @GetLoginDetails() loginDetails: LoginDetails,
-  ): Promise<SharedLinkResponseDto> {
-    if (dto.password) {
-      this.logger.deprecate(
-        'Passing shared link password via query parameters is deprecated and will be removed in the next major release. Please use POST /shared-links/login instead.',
-      );
-
-      return this.sharedLinkLogin(auth, { password: dto.password }, req, res, loginDetails);
-    }
-
+  getMySharedLink(@Auth() auth: AuthDto, @Req() req: Request): Promise<SharedLinkResponseDto> {
     return this.service.getMine(auth, getAuthTokens(req.cookies));
   }
 
@@ -164,7 +149,7 @@ export class SharedLinkController {
   }
 
   @Put(':id/assets')
-  @Authenticated({ sharedLink: true })
+  @Authenticated({ permission: Permission.SharedLinkUpdate })
   @Endpoint({
     summary: 'Add assets to a shared link',
     description:

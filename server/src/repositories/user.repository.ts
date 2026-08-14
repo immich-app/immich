@@ -46,7 +46,7 @@ export class UserRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.BOOLEAN] })
   get(userId: string, options: UserFindOptions) {
-    options = options || {};
+    options ||= {};
 
     return this.db
       .selectFrom('user')
@@ -321,7 +321,7 @@ export class UserRepository {
         updatedAt: new Date(),
       })
       .where('user.deletedAt', 'is', null)
-      .$if(id != undefined, (eb) => eb.where('user.id', '=', asUuid(id!)));
+      .$if(id !== undefined, (eb) => eb.where('user.id', '=', asUuid(id!)));
 
     await query.execute();
   }

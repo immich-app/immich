@@ -1,6 +1,6 @@
 <script lang="ts">
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import UserSettingsList from '$lib/components/user-settings-page/user-settings-list.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import UserSettingsList from './UserSettingsList.svelte';
   import { getKeyboardActions } from '$lib/services/keyboard.service';
   import { Container } from '@immich/ui';
   import { t } from 'svelte-i18n';

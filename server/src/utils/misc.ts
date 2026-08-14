@@ -1,26 +1,28 @@
-import { INestApplication } from '@nestjs/common';
+import { BadRequestException, INestApplication } from '@nestjs/common';
 import {
+  ApiBodyOptions,
   DocumentBuilder,
   OpenAPIObject,
   SwaggerCustomOptions,
   SwaggerDocumentOptions,
   SwaggerModule,
 } from '@nestjs/swagger';
-import {
-  OperationObject,
-  ReferenceObject,
-  SchemaObject,
-} from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 import _ from 'lodash';
+import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
 import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
-import { CLIP_MODEL_INFO, endpointTags, serverVersion } from 'src/constants';
-import { extraSyncModels } from 'src/dtos/sync.dto';
+import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants';
+import { extraModels } from 'src/decorators';
 import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
+
+type OperationObject = NonNullable<OpenAPIObject['paths'][string]['get']>;
+type ReferenceOrSchemaObject = Extract<ApiBodyOptions, { schema: unknown }>['schema'];
+type ReferenceObject = Extract<ReferenceOrSchemaObject, { $ref: unknown }>;
+type SchemaObject = Exclude<ReferenceOrSchemaObject, ReferenceObject>;
 
 export class ImmichStartupError extends Error {}
 export const isStartUpError = (error: unknown): error is ImmichStartupError => error instanceof ImmichStartupError;
@@ -109,6 +111,32 @@ export const handlePromiseError = <T>(promise: Promise<T>, logger: LoggingReposi
   promise.catch((error: Error | any) => logger.error(`Promise error: ${error}`, error?.stack));
 };
 
+export const findOrFail = async <T>(find: () => Promise<T>, entity: string): Promise<NonNullable<T>> => {
+  const value = await find();
+  if (!value) {
+    throw new BadRequestException(`${entity} not found`);
+  }
+
+  return value;
+};
+
+export async function* batched<T>(items: AsyncIterable<T>, size = JOBS_ASSET_PAGINATION_SIZE): AsyncGenerator<T[]> {
+  let batch: T[] = [];
+
+  for await (const item of items) {
+    batch.push(item);
+
+    if (batch.length >= size) {
+      yield batch;
+      batch = [];
+    }
+  }
+
+  if (batch.length > 0) {
+    yield batch;
+  }
+}
+
 export interface OpenGraphTags {
   title: string;
   description: string;
@@ -150,36 +178,61 @@ export const routeToErrorMessage = (methodName: string) =>
   'Failed to ' + methodName.replaceAll(/[A-Z]+/g, (letter) => ` ${letter.toLowerCase()}`);
 
 const isSchema = (schema: string | ReferenceObject | SchemaObject): schema is SchemaObject => {
-  if (typeof schema === 'string' || '$ref' in schema) {
-    return false;
-  }
-
-  return true;
+  return !(typeof schema === 'string' || '$ref' in schema);
 };
 
 const patchOpenAPI = (document: OpenAPIObject) => {
+  const removeOpenApi30IncompatibleKeys = (target: unknown) => {
+    if (!target || typeof target !== 'object') {
+      return;
+    }
+
+    if (Array.isArray(target)) {
+      for (const item of target) {
+        removeOpenApi30IncompatibleKeys(item);
+      }
+      return;
+    }
+
+    const object = target as Record<string, unknown>;
+    delete object.propertyNames;
+    delete object.contentEncoding;
+
+    for (const value of Object.values(object)) {
+      removeOpenApi30IncompatibleKeys(value);
+    }
+  };
+
   document.paths = sortKeys(document.paths);
+  // Allowed in OpenAPI v3.1 (JSON Schema 2020-12), but not in OpenAPI v3.0 (current spec).
+  removeOpenApi30IncompatibleKeys(document);
 
   if (document.components?.schemas) {
     const schemas = document.components.schemas as Record<string, SchemaObject>;
 
+    for (const schema of Object.values(schemas)) {
+      delete (schema as Record<string, unknown>).id;
+    }
+
     document.components.schemas = sortKeys(schemas);
 
     for (const [schemaName, schema] of Object.entries(schemas)) {
-      if (schema.properties) {
-        schema.properties = sortKeys(schema.properties);
-
-        for (const [key, value] of Object.entries(schema.properties)) {
-          if (typeof value === 'string') {
-            continue;
-          }
-
-          if (isSchema(value) && value.type === 'number' && value.format === 'float') {
-            throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
-          }
-        }
-        schema.required?.sort();
+      if (!schema.properties) {
+        continue;
       }
+
+      schema.properties = sortKeys(schema.properties);
+
+      for (const [key, value] of Object.entries(schema.properties)) {
+        if (typeof value === 'string') {
+          continue;
+        }
+
+        if (isSchema(value) && value.type === 'number' && value.format === 'float') {
+          throw new Error(`Invalid number format: ${schemaName}.${key}=float (use double instead). `);
+        }
+      }
+      schema.required?.sort();
     }
   }
 
@@ -260,11 +313,12 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
 
   const options: SwaggerDocumentOptions = {
     operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
-    extraModels: extraSyncModels,
+    extraModels,
     ignoreGlobalPrefix: true,
   };
 
   const specification = SwaggerModule.createDocument(app, config, options);
+  const openApiDoc = cleanupOpenApiDoc(specification);
 
   const customOptions: SwaggerCustomOptions = {
     swaggerOptions: {
@@ -275,12 +329,12 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
     customSiteTitle: 'Immich API Documentation',
   };
 
-  SwaggerModule.setup('doc', app, specification, customOptions);
+  SwaggerModule.setup('doc', app, openApiDoc, customOptions);
 
   if (write) {
     // Generate API Documentation only in development mode
     const outputPath = path.resolve(process.cwd(), '../open-api/immich-openapi-specs.json');
-    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(specification), null, 2), { encoding: 'utf8' });
+    writeFileSync(outputPath, JSON.stringify(patchOpenAPI(openApiDoc), null, 2), { encoding: 'utf8' });
   }
 };
 

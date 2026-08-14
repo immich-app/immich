@@ -5,7 +5,7 @@ import _ from 'lodash';
 import { InjectKysely } from 'nestjs-kysely';
 import { Album, columns } from 'src/database';
 import { ChunkedArray, DummyValue, GenerateSql } from 'src/decorators';
-import { SharedLinkType } from 'src/enum';
+import { AlbumUserRole, SharedLinkType } from 'src/enum';
 import { DB } from 'src/schema';
 import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetTable } from 'src/schema/tables/asset.table';
@@ -39,7 +39,15 @@ const withAlbumOwner = (eb: ExpressionBuilder<DB, 'album'>) => {
   return eb
     .selectFrom('user')
     .select(columns.user)
-    .whereRef('user.id', '=', 'album.ownerId')
+    .where((eb) =>
+      eb.exists(
+        eb
+          .selectFrom('album_user')
+          .where('album_user.role', '=', sql.lit(AlbumUserRole.Owner))
+          .whereRef('album_user.albumId', '=', 'album.id')
+          .whereRef('album_user.userId', '=', 'user.id'),
+      ),
+    )
     .where('user.deletedAt', 'is', null)
     .as('owner');
 };

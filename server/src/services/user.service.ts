@@ -3,20 +3,26 @@ import { Updateable } from 'kysely';
 import { DateTime } from 'luxon';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
-import { OnJob } from 'src/decorators';
+import { OnEvent, OnJob } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { CalendarHeatmapDto, CalendarHeatmapResponseDto } from 'src/dtos/calendar-heatmap.dto';
 import { LicenseKeyDto, LicenseResponseDto } from 'src/dtos/license.dto';
 import { OnboardingDto, OnboardingResponseDto } from 'src/dtos/onboarding.dto';
 import { UserPreferencesResponseDto, UserPreferencesUpdateDto, mapPreferences } from 'src/dtos/user-preferences.dto';
 import { CreateProfileImageResponseDto } from 'src/dtos/user-profile.dto';
 import { UserAdminResponseDto, UserResponseDto, UserUpdateMeDto, mapUser, mapUserAdmin } from 'src/dtos/user.dto';
 import { CacheControl, JobName, JobStatus, QueueName, StorageFolder, UserMetadataKey } from 'src/enum';
+import { ArgOf } from 'src/repositories/event.repository';
 import { UserFindOptions } from 'src/repositories/user.repository';
 import { UserTable } from 'src/schema/tables/user.table';
 import { BaseService } from 'src/services/base.service';
+import { getCalendarHeatmap } from 'src/services/shared/user-methods';
 import { JobOf, UserMetadataItem } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
+import { mimeTypes } from 'src/utils/mime-types';
+import { findOrFail } from 'src/utils/misc';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
+import { generateProfileImage } from 'src/utils/profile-image';
 
 @Injectable()
 export class UserService extends BaseService {
@@ -43,11 +49,16 @@ export class UserService extends BaseService {
     return mapUserAdmin(user);
   }
 
+  getCalendarHeatmap(auth: AuthDto, dto: CalendarHeatmapDto): Promise<CalendarHeatmapResponseDto> {
+    return getCalendarHeatmap(auth.user.id, dto, { asset: this.assetRepository });
+  }
+
   async updateMe({ user }: AuthDto, dto: UserUpdateMeDto): Promise<UserAdminResponseDto> {
     if (dto.email) {
       const duplicate = await this.userRepository.getByEmail(dto.email);
       if (duplicate && duplicate.id !== user.id) {
-        throw new BadRequestException('Email already in use by another account');
+        this.logger.warn('Email already in use by another account');
+        throw new BadRequestException('Email is not available');
       }
     }
 
@@ -91,16 +102,29 @@ export class UserService extends BaseService {
   }
 
   async createProfileImage(auth: AuthDto, file: Express.Multer.File): Promise<CreateProfileImageResponseDto> {
-    const { profileImagePath: oldpath } = await this.findOrFail(auth.user.id, { withDeleted: false });
+    const { profileImagePath: oldPath } = await this.findOrFail(auth.user.id, { withDeleted: false });
+
+    let profileImagePath: string;
+    try {
+      const config = await this.getConfig({ withCache: true });
+      profileImagePath = await generateProfileImage(
+        { media: this.mediaRepository, crypto: this.cryptoRepository, storageCore: this.storageCore },
+        config,
+        auth.user.id,
+        file.path,
+      );
+    } catch (error) {
+      await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [file.path] } });
+      throw new BadRequestException('Unable to process profile image', { cause: error });
+    }
 
     const user = await this.userRepository.update(auth.user.id, {
-      profileImagePath: file.path,
+      profileImagePath,
       profileChangedAt: new Date(),
     });
 
-    if (oldpath !== '') {
-      await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: [oldpath] } });
-    }
+    const toDelete = [file.path, ...(oldPath ? [oldPath] : [])];
+    await this.jobRepository.queue({ name: JobName.FileDelete, data: { files: toDelete } });
 
     return {
       userId: user.id,
@@ -119,14 +143,15 @@ export class UserService extends BaseService {
   }
 
   async getProfileImage(id: string): Promise<ImmichFileResponse> {
-    const user = await this.findOrFail(id, {});
-    if (!user.profileImagePath) {
-      throw new NotFoundException('User does not have a profile image');
+    const user = await this.userRepository.get(id, {});
+    if (!user || !user.profileImagePath) {
+      this.logger.debug('User or profile image not found');
+      throw new NotFoundException();
     }
 
     return new ImmichFileResponse({
       path: user.profileImagePath,
-      contentType: 'image/jpeg',
+      contentType: mimeTypes.lookup(user.profileImagePath),
       cacheControl: CacheControl.None,
     });
   }
@@ -154,19 +179,19 @@ export class UserService extends BaseService {
 
     const { licensePublicKey } = this.configRepository.getEnv();
 
-    const clientLicenseValid = this.cryptoRepository.verifySha256(
+    const isClientLicenseValid = this.cryptoRepository.verifySha256(
       license.licenseKey,
       license.activationKey,
       licensePublicKey.client,
     );
 
-    const serverLicenseValid = this.cryptoRepository.verifySha256(
+    const isServerLicenseValid = this.cryptoRepository.verifySha256(
       license.licenseKey,
       license.activationKey,
       licensePublicKey.server,
     );
 
-    if (!clientLicenseValid && !serverLicenseValid) {
+    if (!isClientLicenseValid && !isServerLicenseValid) {
       throw new BadRequestException('Invalid license key');
     }
 
@@ -211,6 +236,13 @@ export class UserService extends BaseService {
     return {
       isOnboarded: onboarding.isOnboarded,
     };
+  }
+
+  @OnEvent({ name: 'AssetCreate' })
+  async onAssetCreate({ asset, file }: ArgOf<'AssetCreate'>) {
+    if (file) {
+      await this.userRepository.updateUsage(asset.ownerId, file.size);
+    }
   }
 
   @OnJob({ name: JobName.UserSyncUsage, queue: QueueName.BackgroundTask })
@@ -263,19 +295,15 @@ export class UserService extends BaseService {
     await this.eventRepository.emit('UserDelete', user);
   }
 
-  private isReadyForDeletion(user: { id: string; deletedAt?: Date | null }, deleteDelay: number): boolean {
+  private isReadyForDeletion(user: { id: string; deletedAt?: Date | null }, delayUntilDeletion: number): boolean {
     if (!user.deletedAt) {
       return false;
     }
 
-    return DateTime.now().minus({ days: deleteDelay }) > DateTime.fromJSDate(user.deletedAt);
+    return DateTime.now().minus({ days: delayUntilDeletion }) > DateTime.fromJSDate(user.deletedAt);
   }
 
-  private async findOrFail(id: string, options: UserFindOptions) {
-    const user = await this.userRepository.get(id, options);
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-    return user;
+  private findOrFail(id: string, options: UserFindOptions) {
+    return findOrFail(() => this.userRepository.get(id, options), 'User');
   }
 }

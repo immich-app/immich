@@ -18,6 +18,7 @@ You can search the following types of content:
 | People                              | Faces that are recognized in your photos/videos.      |
 | Contextual                          | Content of the photos and videos.                     |
 | File name or extension              | Full or partial file's name, or file's extension      |
+| Full path or folder                 | Full or partial folder names from the original path.  |
 | Description                         | Description added to assets.                          |
 | Optical Character Recognition (OCR) | Text in images                                        |
 | Locations                           | Cities, states, and countries from reverse geocoding. |
@@ -29,6 +30,12 @@ You can search the following types of content:
 | Star rating                         | User-assigned star rating                             |
 
 <img src={require('./img/advanced-search-filters.webp').default} width="70%" title='Advanced search filters' />
+
+### Full path or folder
+
+Use this mode when you know a folder name or part of the original asset path.
+
+Example: for /John/Projects/3D_Printing/2026-07-01/IMG_0001.jpg, searches like Projects, 3D, Printing, or 2026 match the asset.
 
 ## Configuration
 

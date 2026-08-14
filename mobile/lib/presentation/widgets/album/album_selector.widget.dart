@@ -2,28 +2,25 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/albums/album_search.model.dart';
 import 'package:immich_mobile/presentation/widgets/album/album_tile.dart';
 import 'package:immich_mobile/presentation/widgets/album/new_album_name_modal.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
+import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
-import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/utils/album_filter.utils.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -58,22 +55,14 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final appSettings = ref.read(appSettingsServiceProvider);
-      final savedSortMode = appSettings.getSetting(AppSettingsEnum.selectedAlbumSortOrder);
-      final savedIsReverse = appSettings.getSetting(AppSettingsEnum.selectedAlbumSortReverse);
-      final savedIsGrid = appSettings.getSetting(AppSettingsEnum.albumGridView);
-
-      final albumSortMode = AlbumSortMode.values.firstWhere(
-        (e) => e.storeIndex == savedSortMode,
-        orElse: () => AlbumSortMode.lastModified,
-      );
+      final albumConfig = ref.read(appConfigProvider).album;
 
       setState(() {
-        sort = AlbumSort(mode: albumSortMode, isReverse: savedIsReverse);
-        isGrid = savedIsGrid;
+        sort = AlbumSort(mode: albumConfig.sortMode, isReverse: albumConfig.isReverse);
+        isGrid = albumConfig.isGrid;
       });
 
-      ref.read(remoteAlbumProvider.notifier).refresh();
+      unawaited(ref.read(remoteAlbumProvider.notifier).refresh());
     });
 
     searchController.addListener(() {
@@ -91,7 +80,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     final userId = ref.read(currentUserProvider)?.id;
     filter = filter.copyWith(query: searchTerm, userId: userId, mode: filterMode);
 
-    filterAlbums();
+    unawaited(filterAlbums());
   }
 
   Future<void> onRefresh() async {
@@ -102,7 +91,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     setState(() {
       isGrid = !isGrid;
     });
-    ref.read(appSettingsServiceProvider).setSetting(AppSettingsEnum.albumGridView, isGrid);
+    unawaited(ref.read(settingsProvider).write(.albumIsGrid, isGrid));
   }
 
   void changeFilter(QuickFilterMode mode) {
@@ -110,7 +99,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       filter = filter.copyWith(mode: mode);
     });
 
-    filterAlbums();
+    unawaited(filterAlbums());
   }
 
   Future<void> changeSort(AlbumSort sort) async {
@@ -118,9 +107,9 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       this.sort = sort;
     });
 
-    final appSettings = ref.read(appSettingsServiceProvider);
-    await appSettings.setSetting(AppSettingsEnum.selectedAlbumSortOrder, sort.mode.storeIndex);
-    await appSettings.setSetting(AppSettingsEnum.selectedAlbumSortReverse, sort.isReverse);
+    final metadata = ref.read(settingsProvider);
+    await metadata.write(.albumSortMode, sort.mode);
+    await metadata.write(.albumIsReverse, sort.isReverse);
 
     await sortAlbums();
   }
@@ -131,7 +120,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       searchController.clear();
     });
 
-    filterAlbums();
+    unawaited(filterAlbums());
   }
 
   Future<void> sortAlbums() async {
@@ -336,7 +325,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                 ),
               ),
               child: Text(
-                sortMode.label.t(context: context),
+                sortMode.label(context.t),
                 style: context.textTheme.labelLarge?.copyWith(
                   color: albumSortOption == sortMode
                       ? context.colorScheme.onPrimary
@@ -364,7 +353,7 @@ class _SortButtonState extends ConsumerState<_SortButton> {
                     : Icon(Icons.keyboard_arrow_up_rounded, color: context.colorScheme.onSurface),
               ),
               Text(
-                albumSortOption.label.t(context: context),
+                albumSortOption.label(context.t),
                 style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurface.withAlpha(225)),
               ),
               isSorting
@@ -405,7 +394,7 @@ class _SearchBar extends StatelessWidget {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       sliver: SliverToBoxAdapter(
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: context.colorScheme.onSurface.withAlpha(0), width: 0),
             borderRadius: const BorderRadius.all(Radius.circular(24)),
@@ -423,7 +412,7 @@ class _SearchBar extends StatelessWidget {
           child: SearchField(
             autofocus: false,
             contentPadding: const EdgeInsets.all(16),
-            hintText: 'search_albums'.tr(),
+            hintText: context.t.search_albums,
             prefixIcon: const Icon(Icons.search_rounded),
             suffixIcon: searchController.text.isNotEmpty
                 ? IconButton(icon: const Icon(Icons.clear_rounded), onPressed: onClearSearch)
@@ -462,7 +451,7 @@ class _QuickFilterButtonRow extends StatelessWidget {
           runSpacing: 4,
           children: [
             _QuickFilterButton(
-              label: 'all'.tr(),
+              label: context.t.all,
               isSelected: filterMode == QuickFilterMode.all,
               onTap: () {
                 onChangeFilter(QuickFilterMode.all);
@@ -470,7 +459,7 @@ class _QuickFilterButtonRow extends StatelessWidget {
               },
             ),
             _QuickFilterButton(
-              label: 'shared_with_me'.tr(),
+              label: context.t.shared_with_me,
               isSelected: filterMode == QuickFilterMode.sharedWithMe,
               onTap: () {
                 onChangeFilter(QuickFilterMode.sharedWithMe);
@@ -478,7 +467,7 @@ class _QuickFilterButtonRow extends StatelessWidget {
               },
             ),
             _QuickFilterButton(
-              label: 'my_albums'.tr(),
+              label: context.t.my_albums,
               isSelected: filterMode == QuickFilterMode.myAlbums,
               onTap: () {
                 onChangeFilter(QuickFilterMode.myAlbums);
@@ -581,7 +570,7 @@ class _AlbumList extends ConsumerWidget {
     if (albums.isEmpty) {
       return SliverToBoxAdapter(
         child: Center(
-          child: Padding(padding: const EdgeInsets.all(20.0), child: Text('album_search_not_found'.tr())),
+          child: Padding(padding: const EdgeInsets.all(20.0), child: Text(context.t.album_search_not_found)),
         ),
       );
     }
@@ -610,9 +599,9 @@ class _AlbumList extends ConsumerWidget {
                     context: context,
                     builder: (context) => ConfirmDialog(
                       onOk: () => true,
-                      title: "delete_album".t(context: context),
-                      content: "album_delete_confirmation".t(context: context, args: {'album': album.name}),
-                      ok: "delete".t(context: context),
+                      title: context.t.delete_album,
+                      content: context.t.album_delete_confirmation(album: album.name),
+                      ok: context.t.delete,
                     ),
                   );
                 },
@@ -647,7 +636,7 @@ class _AlbumGrid extends StatelessWidget {
     if (albums.isEmpty) {
       return SliverToBoxAdapter(
         child: Center(
-          child: Padding(padding: const EdgeInsets.all(20.0), child: Text('album_search_not_found'.tr())),
+          child: Padding(padding: const EdgeInsets.all(20.0), child: Text(context.t.album_search_not_found)),
         ),
       );
     }
@@ -679,7 +668,7 @@ class _GridAlbumCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final albumThumbnailAsset = ref.read(assetServiceProvider).getRemoteAsset(album.thumbnailAssetId ?? "");
+    final albumThumbnailAsset = ref.watch(assetServiceProvider).getRemoteAsset(album.thumbnailAssetId ?? "");
 
     return GestureDetector(
       onTap: () => onAlbumSelected(album),
@@ -709,7 +698,7 @@ class _GridAlbumCard extends ConsumerWidget {
                         );
                       }
 
-                      return Container(
+                      return ColoredBox(
                         color: context.colorScheme.surfaceContainerHighest,
                         child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
                       );
@@ -733,7 +722,7 @@ class _GridAlbumCard extends ConsumerWidget {
                       style: context.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     Text(
-                      '${'items_count'.t(context: context, args: {'count': album.assetCount})} • ${album.ownerId != userId ? 'shared_by_user'.t(context: context, args: {'user': album.ownerName}) : 'owned'.t(context: context)}',
+                      '${context.t.items_count(count: album.assetCount)} • ${album.ownerId != userId ? context.t.shared_by_user(user: album.ownerName) : context.t.owned}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
@@ -755,15 +744,22 @@ class AddToAlbumHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Future<void> onCreateAlbum() async {
+      final albumName = await showDialog<String?>(context: context, builder: (context) => const NewAlbumNameModal());
+      if (albumName == null || !context.mounted) {
+        return;
+      }
+
+      final selectedAssets = ref.read(multiSelectProvider).selectedAssets;
       final newAlbum = await ref
           .read(remoteAlbumProvider.notifier)
-          .createAlbum(
-            title: "Untitled Album",
-            assetIds: ref.read(multiSelectProvider).selectedAssets.map((e) => (e as RemoteAsset).id).toList(),
-          );
+          .createAlbumWithAssets(title: albumName, assets: selectedAssets);
+
+      if (!context.mounted) {
+        return;
+      }
 
       if (newAlbum == null) {
-        ImmichToast.show(context: context, toastType: ToastType.error, msg: 'errors.failed_to_create_album'.tr());
+        ImmichToast.show(context: context, toastType: ToastType.error, msg: context.t.errors.failed_to_create_album);
         return;
       }
 
@@ -777,19 +773,19 @@ class AddToAlbumHeader extends ConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("add_to_album", style: context.textTheme.titleSmall).tr(),
+            Text(context.t.add_to_album, style: context.textTheme.titleSmall),
             TextButton.icon(
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // remove internal padding
-                minimumSize: const Size(0, 0), // allow shrinking
+                minimumSize: Size.zero, // allow shrinking
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap, // remove extra height
               ),
               onPressed: onCreateAlbum,
               icon: Icon(Icons.add, color: context.primaryColor),
               label: Text(
-                "common_create_new_album",
+                context.t.common_create_new_album,
                 style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 14),
-              ).tr(),
+              ),
             ),
           ],
         ),
@@ -804,8 +800,8 @@ class CreateAlbumButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Future<void> onCreateAlbum() async {
-      var albumName = await showDialog<String?>(context: context, builder: (context) => const NewAlbumNameModal());
-      if (albumName == null) {
+      final albumName = await showDialog<String?>(context: context, builder: (context) => const NewAlbumNameModal());
+      if (albumName == null || !context.mounted) {
         return;
       }
 
@@ -820,20 +816,24 @@ class CreateAlbumButton extends ConsumerWidget {
           .read(remoteAlbumProvider.notifier)
           .createAlbum(title: albumName, assetIds: [asset.remoteId!]);
 
+      if (!context.mounted) {
+        return;
+      }
+
       if (album == null) {
-        ImmichToast.show(context: context, toastType: ToastType.error, msg: 'errors.failed_to_create_album'.tr());
+        ImmichToast.show(context: context, toastType: ToastType.error, msg: context.t.errors.failed_to_create_album);
         return;
       }
 
       ImmichToast.show(
         context: context,
-        msg: 'add_to_album_bottom_sheet_added'.tr(namedArgs: {'album': album.name}),
+        msg: context.t.add_to_album_bottom_sheet_added(album: album.name),
       );
 
       // Invalidate using the asset's remote ID to refresh the "Appears in" list
       ref.invalidate(albumsContainingAssetProvider(asset.remoteId!));
 
-      context.pop();
+      ContextHelper(context).pop();
     }
 
     return SliverPadding(
@@ -842,19 +842,19 @@ class CreateAlbumButton extends ConsumerWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("add_to_album", style: context.textTheme.titleSmall).tr(),
+            Text(context.t.add_to_album, style: context.textTheme.titleSmall),
             TextButton.icon(
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                minimumSize: const Size(0, 0),
+                minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               onPressed: onCreateAlbum,
               icon: Icon(Icons.add, color: context.primaryColor),
               label: Text(
-                "common_create_new_album",
+                context.t.common_create_new_album,
                 style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.bold, fontSize: 14),
-              ).tr(),
+              ),
             ),
           ],
         ),

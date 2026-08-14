@@ -210,17 +210,19 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       await _deleteAssets(deletes);
 
       await _upsertAssets(updates);
+      // Drop every existing album link for each changed asset before re-adding the
+      // ones the native side reports. A moved asset only reports its new album here,
+      // so leaving the old link around makes the per-album delete sweep wipe the
+      // asset entirely (it is still linked to a bucket it no longer lives in).
+      await _db.batch((batch) async {
+        for (final assetId in assetAlbums.keys) {
+          batch.deleteWhere(_db.localAlbumAssetEntity, (f) => f.assetId.equals(assetId));
+        }
+      });
       // The ugly casting below is required for now because the generated code
       // casts the returned values from the platform during decoding them
       // and iterating over them causes the type to be List<Object?> instead of
       // List<String>
-      await _db.batch((batch) async {
-        assetAlbums.cast<String, List<Object?>>().forEach((assetId, albumIds) {
-          for (final albumId in albumIds.cast<String?>().nonNulls) {
-            batch.deleteWhere(_db.localAlbumAssetEntity, (f) => f.albumId.equals(albumId) & f.assetId.equals(assetId));
-          }
-        });
-      });
       await _db.batch((batch) async {
         assetAlbums.cast<String, List<Object?>>().forEach((assetId, albumIds) {
           batch.insertAll(
@@ -241,7 +243,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
             innerJoin(_db.localAssetEntity, _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id)),
           ])
           ..where(_db.localAlbumAssetEntity.albumId.equals(albumId) & _db.localAssetEntity.checksum.isNull())
-          ..orderBy([OrderingTerm.asc(_db.localAssetEntity.id)]);
+          ..orderBy([OrderingTerm.desc(_db.localAssetEntity.createdAt)]);
 
     return query.map((row) => row.readTable(_db.localAssetEntity).toDto()).get();
   }
@@ -297,7 +299,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           updatedAt: Value(asset.updatedAt),
           width: Value(asset.width),
           height: Value(asset.height),
-          durationInSeconds: Value(asset.durationInSeconds),
+          durationMs: Value(asset.durationMs),
           id: asset.id,
           orientation: Value(asset.orientation),
           isFavorite: Value(asset.isFavorite),
@@ -329,7 +331,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
           updatedAt: Value(asset.updatedAt),
           width: Value(asset.width),
           height: Value(asset.height),
-          durationInSeconds: Value(asset.durationInSeconds),
+          durationMs: Value(asset.durationMs),
           id: asset.id,
           checksum: const Value(null),
           orientation: Value(asset.orientation),
@@ -354,7 +356,7 @@ class DriftLocalAlbumRepository extends DriftDatabaseRepository {
       return _deleteAssets(assetIds);
     }
 
-    List<String> assetsToDelete = [];
+    final List<String> assetsToDelete = [];
     List<String> assetsToUnLink = [];
 
     final uniqueAssets = await _getUniqueAssetsInAlbum(albumId);

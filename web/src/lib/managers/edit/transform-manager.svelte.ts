@@ -1,24 +1,14 @@
+import { AssetEditAction, AssetMediaSize, MirrorAxis, type AssetResponseDto, type CropParameters } from '@immich/sdk';
+import { clamp } from 'lodash-es';
+import { tick } from 'svelte';
 import { type EditActions, type EditToolManager } from '$lib/managers/edit/edit-manager.svelte';
 import { getAssetMediaUrl } from '$lib/utils';
 import { getDimensions } from '$lib/utils/asset-utils';
 import { normalizeTransformEdits } from '$lib/utils/editor';
 import { handleError } from '$lib/utils/handle-error';
-import { AssetEditAction, AssetMediaSize, MirrorAxis, type AssetResponseDto, type CropParameters } from '@immich/sdk';
-import { clamp } from 'lodash-es';
-import { tick } from 'svelte';
 
 export type CropAspectRatio =
-  | '1:1'
-  | '16:9'
-  | '4:3'
-  | '3:2'
-  | '7:5'
-  | '9:16'
-  | '3:4'
-  | '2:3'
-  | '5:7'
-  | 'free'
-  | 'reset';
+  '1:1' | '16:9' | '4:3' | '3:2' | '7:5' | '9:16' | '3:4' | '2:3' | '5:7' | 'free' | 'reset';
 
 type Region = {
   x: number;
@@ -203,6 +193,7 @@ class TransformManager implements EditToolManager {
       passive: true,
     });
 
+    // eslint-disable-next-line unicorn/no-unnecessary-global-this
     globalThis.addEventListener('mousemove', (e: MouseEvent) => transformManager.handleMouseMove(e), { passive: true });
 
     const transformEdits = edits.filter((e) => e.action === 'rotate' || e.action === 'mirror');
@@ -220,6 +211,7 @@ class TransformManager implements EditToolManager {
   }
 
   onDeactivate() {
+    // eslint-disable-next-line unicorn/no-unnecessary-global-this
     globalThis.removeEventListener('mousemove', transformManager.handleMouseMove);
 
     this.reset();
@@ -563,6 +555,7 @@ class TransformManager implements EditToolManager {
     }
 
     document.body.style.userSelect = 'none';
+    // eslint-disable-next-line unicorn/no-unnecessary-global-this
     globalThis.addEventListener('mouseup', () => this.handleMouseUp(), { passive: true });
   }
 
@@ -581,6 +574,7 @@ class TransformManager implements EditToolManager {
   }
 
   handleMouseUp() {
+    // eslint-disable-next-line unicorn/no-unnecessary-global-this
     globalThis.removeEventListener('mouseup', this.handleMouseUp);
     document.body.style.userSelect = '';
 
@@ -667,6 +661,7 @@ class TransformManager implements EditToolManager {
         desiredWidth = Math.max(minSize, Math.max(mouseX, 0) - x);
         break;
       }
+      // no default
     }
 
     // Height
@@ -683,10 +678,14 @@ class TransformManager implements EditToolManager {
         desiredHeight = Math.max(minSize, Math.max(mouseY, 0) - y);
         break;
       }
+      // no default
     }
 
     // Old
     switch (this.resizeSide) {
+      case ResizeBoundary.None: {
+        break;
+      }
       case ResizeBoundary.Left: {
         const { newWidth: w, newHeight: h } = this.keepAspectRatio(desiredWidth, height);
         const finalWidth = clamp(w, minSize, canvas.clientWidth);
@@ -835,7 +834,7 @@ class TransformManager implements EditToolManager {
       return;
     }
 
-    const [widthRatio, heightRatio] = aspectRatio.split(':');
+    const [widthRatio, heightRatio] = aspectRatio.split(':', 2);
     this.setAspectRatio(`${heightRatio}:${widthRatio}`);
   }
 

@@ -19,52 +19,21 @@ describe(ApiKeyController.name, () => {
     ctx.reset();
   });
 
-  describe('POST /api-keys', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/api-keys').send({ name: 'API Key' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /api-keys', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/api-keys');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /api-keys/me', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/api-keys/me`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('GET /api-keys/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/api-keys/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/api-keys/123`);
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['id must be a UUID']));
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
   });
 
   describe('PUT /api-keys/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/api-keys/${factory.uuid()}`).send({ name: 'new name' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .put(`/api-keys/123`)
         .send({ name: 'new name', permissions: [Permission.All] });
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['id must be a UUID']));
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
 
     it('should allow updating just the name', async () => {
@@ -76,15 +45,10 @@ describe(ApiKeyController.name, () => {
   });
 
   describe('DELETE /api-keys/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete(`/api-keys/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/api-keys/123`);
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['id must be a UUID']));
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
   });
 });

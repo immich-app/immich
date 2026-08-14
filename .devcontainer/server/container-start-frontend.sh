@@ -8,6 +8,8 @@ log "Preparing Immich Web Frontend"
 log ""
 run_cmd pnpm --filter @immich/sdk install
 run_cmd pnpm --filter @immich/sdk build
+run_cmd pnpm --filter @immich/plugin-sdk install
+run_cmd pnpm --filter @immich/plugin-sdk build
 run_cmd pnpm --filter immich-web install
 
 log "Starting Immich Web Frontend"

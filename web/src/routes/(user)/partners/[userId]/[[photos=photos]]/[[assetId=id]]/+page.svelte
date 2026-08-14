@@ -1,6 +1,6 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import ControlAppBar from '$lib/components/shared-components/control-app-bar.svelte';
+  import ControlAppBar from '$lib/components/shared-components/ControlAppBar.svelte';
   import CreateSharedLink from '$lib/components/timeline/actions/CreateSharedLinkAction.svelte';
   import DownloadAction from '$lib/components/timeline/actions/DownloadAction.svelte';
   import AssetSelectControlBar from '$lib/components/timeline/AssetSelectControlBar.svelte';
@@ -27,14 +27,16 @@
   });
 
   const handleEscape = () => {
-    if (assetMultiSelectManager.selectionActive) {
-      assetMultiSelectManager.clear();
+    if (!assetMultiSelectManager.selectionActive) {
       return;
     }
+
+    assetMultiSelectManager.clear();
+    return;
   };
 </script>
 
-<main class="relative h-dvh overflow-hidden px-2 md:px-6 max-md:pt-(--navbar-height-md) pt-(--navbar-height)">
+<main class="relative h-dvh overflow-hidden px-2 pt-(--navbar-height) max-md:pt-(--navbar-height-md) md:px-6">
   <Timeline enableRouting={true} {options} assetInteraction={assetMultiSelectManager} onEscape={handleEscape} />
 </main>
 
@@ -47,7 +49,7 @@
     <DownloadAction />
   </AssetSelectControlBar>
 {:else}
-  <ControlAppBar showBackButton backIcon={mdiArrowLeft} onClose={() => goto(Route.sharing())}>
+  <ControlAppBar backIcon={mdiArrowLeft} onClose={() => goto(Route.sharing())}>
     {#snippet leading()}
       <p class="whitespace-nowrap text-immich-fg dark:text-immich-dark-fg">
         {$t('partner_list_user_photos', { values: { user: data.partner.name } })}

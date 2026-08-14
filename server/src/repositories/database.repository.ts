@@ -1,7 +1,7 @@
 import { schemaDiff, schemaFromCode, schemaFromDatabase } from '@immich/sql-tools';
 import { Injectable } from '@nestjs/common';
 import AsyncLock from 'async-lock';
-import { FileMigrationProvider, Kysely, Migrator, sql, Transaction } from 'kysely';
+import { FileMigrationProvider, Kysely, Migrator, sql } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -9,12 +9,12 @@ import semver from 'semver';
 import {
   EXTENSION_NAMES,
   POSTGRES_VERSION_RANGE,
+  serverVersion,
   VECTOR_EXTENSIONS,
   VECTOR_INDEX_TABLES,
   VECTOR_VERSION_RANGE,
   VECTORCHORD_LIST_SLACK_FACTOR,
   VECTORCHORD_VERSION_RANGE,
-  VECTORS_VERSION_RANGE,
 } from 'src/constants';
 import { GenerateSql } from 'src/decorators';
 import { DatabaseExtension, DatabaseLock, VectorIndex } from 'src/enum';
@@ -23,9 +23,9 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import 'src/schema'; // make sure all schema definitions are imported for schemaFromCode
 import { DB } from 'src/schema';
 import { immich_uuid_v7 } from 'src/schema/functions';
-import { ExtensionVersion, VectorExtension, VectorUpdateResult } from 'src/types';
+import { ExtensionVersion, VectorExtension } from 'src/types';
 import { vectorIndexQuery } from 'src/utils/database';
-import { isValidInteger } from 'src/validation';
+import z from 'zod';
 
 export let cachedVectorExtension: VectorExtension | undefined;
 export async function getVectorExtension(runner: Kysely<DB>): Promise<VectorExtension> {
@@ -73,7 +73,7 @@ export class DatabaseRepository {
     return getVectorExtension(this.db);
   }
 
-  @GenerateSql({ params: [[DatabaseExtension.Vectors]] })
+  @GenerateSql({ params: [[DatabaseExtension.Vector]] })
   async getExtensionVersions(extensions: readonly DatabaseExtension[]): Promise<ExtensionVersion[]> {
     const { rows } = await sql<ExtensionVersion>`
       SELECT name, default_version as "availableVersion", installed_version as "installedVersion"
@@ -87,9 +87,6 @@ export class DatabaseRepository {
     switch (extension) {
       case DatabaseExtension.VectorChord: {
         return VECTORCHORD_VERSION_RANGE;
-      }
-      case DatabaseExtension.Vectors: {
-        return VECTORS_VERSION_RANGE;
       }
       case DatabaseExtension.Vector: {
         return VECTOR_VERSION_RANGE;
@@ -125,7 +122,7 @@ export class DatabaseRepository {
     await sql`DROP EXTENSION IF EXISTS ${sql.raw(extension)}`.execute(this.db);
   }
 
-  async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<VectorUpdateResult> {
+  async updateVectorExtension(extension: VectorExtension, targetVersion?: string): Promise<void> {
     const [{ availableVersion, installedVersion }] = await this.getExtensionVersions([extension]);
     if (!installedVersion) {
       throw new Error(`${EXTENSION_NAMES[extension]} extension is not installed`);
@@ -136,10 +133,8 @@ export class DatabaseRepository {
     }
     targetVersion ??= availableVersion;
 
-    let restartRequired = false;
-    const diff = semver.diff(installedVersion, targetVersion);
-    if (!diff) {
-      return { restartRequired: false };
+    if (!semver.diff(installedVersion, targetVersion)) {
+      return;
     }
 
     await Promise.all([
@@ -147,22 +142,8 @@ export class DatabaseRepository {
       this.db.schema.dropIndex(VectorIndex.Face).ifExists().execute(),
     ]);
 
-    await this.db.transaction().execute(async (tx) => {
-      await this.setSearchPath(tx);
-
-      await sql`ALTER EXTENSION ${sql.raw(extension)} UPDATE TO ${sql.lit(targetVersion)}`.execute(tx);
-
-      if (extension === DatabaseExtension.Vectors && (diff === 'major' || diff === 'minor')) {
-        await sql`SELECT pgvectors_upgrade()`.execute(tx);
-        restartRequired = true;
-      }
-    });
-
-    if (!restartRequired) {
-      await Promise.all([this.reindexVectors(VectorIndex.Clip), this.reindexVectors(VectorIndex.Face)]);
-    }
-
-    return { restartRequired };
+    await sql`ALTER EXTENSION ${sql.raw(extension)} UPDATE TO ${sql.lit(targetVersion)}`.execute(this.db);
+    await Promise.all([this.reindexVectors(VectorIndex.Clip), this.reindexVectors(VectorIndex.Face)]);
   }
 
   async prewarm(index: VectorIndex): Promise<void> {
@@ -198,12 +179,6 @@ export class DatabaseRepository {
           }
           break;
         }
-        case DatabaseExtension.Vectors: {
-          if (!row.indexdef.toLowerCase().includes('using vectors')) {
-            promises.push(this.reindexVectors(indexName));
-          }
-          break;
-        }
         case DatabaseExtension.VectorChord: {
           const matches = row.indexdef.match(/(?<=lists = \[)\d+/g);
           const lists = matches && matches.length > 0 ? Number(matches[0]) : 1;
@@ -218,9 +193,8 @@ export class DatabaseRepository {
               ) {
                 probes[indexName] = this.targetProbeCount(targetLists);
                 return this.reindexVectors(indexName, { lists: targetLists });
-              } else {
-                probes[indexName] = this.targetProbeCount(lists);
               }
+              probes[indexName] = this.targetProbeCount(lists);
             }),
           );
           break;
@@ -254,17 +228,16 @@ export class DatabaseRepository {
       if (table === 'smart_search') {
         await sql`ALTER TABLE ${sql.raw(table)} DROP CONSTRAINT IF EXISTS dim_size_constraint`.execute(tx);
       }
-      if (!rows.some((row) => row.columnName === 'embedding')) {
+      if (rows.every((row) => row.columnName !== 'embedding')) {
         this.logger.warn(`Column 'embedding' does not exist in table '${table}', truncating and adding column.`);
         await sql`TRUNCATE TABLE ${sql.raw(table)}`.execute(tx);
         await sql`ALTER TABLE ${sql.raw(table)} ADD COLUMN embedding real[] NOT NULL`.execute(tx);
       }
       await sql`ALTER TABLE ${sql.raw(table)} ALTER COLUMN embedding SET DATA TYPE real[]`.execute(tx);
-      const schema = vectorExtension === DatabaseExtension.Vectors ? 'vectors.' : '';
       await sql`
         ALTER TABLE ${sql.raw(table)}
         ALTER COLUMN embedding
-        SET DATA TYPE ${sql.raw(schema)}vector(${sql.raw(String(dimSize))})`.execute(tx);
+        SET DATA TYPE vector(${sql.raw(String(dimSize))})`.execute(tx);
       await sql.raw(vectorIndexQuery({ vectorExtension, table, indexName, lists })).execute(tx);
     });
     try {
@@ -273,10 +246,6 @@ export class DatabaseRepository {
       this.logger.warn(`Failed to vacuum table '${table}'. The DB will temporarily use more disk space: ${error}`);
     }
     this.logger.log(`Reindexed ${indexName}`);
-  }
-
-  private async setSearchPath(tx: Transaction<DB>): Promise<void> {
-    await sql`SET search_path TO "$user", public, vectors`.execute(tx);
   }
 
   private async getDatabaseName(): Promise<string> {
@@ -305,6 +274,7 @@ export class DatabaseRepository {
       columns: { ignoreExtra: true },
       functions: { ignoreExtra: false },
       parameters: { ignoreExtra: true },
+      extensions: { ignoreExtra: true },
     });
 
     return drift;
@@ -322,7 +292,13 @@ export class DatabaseRepository {
     `.execute(this.db);
 
     const dimSize = rows[0]?.dimsize;
-    if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
+    if (
+      !z
+        .int()
+        .min(1)
+        .max(2 ** 16)
+        .safeParse(dimSize).success
+    ) {
       this.logger.warn(`Could not retrieve dimension size of column '${column}' in table '${table}', assuming 512`);
       return 512;
     }
@@ -330,7 +306,13 @@ export class DatabaseRepository {
   }
 
   async setDimensionSize(dimSize: number): Promise<void> {
-    if (!isValidInteger(dimSize, { min: 1, max: 2 ** 16 })) {
+    if (
+      !z
+        .int()
+        .min(1)
+        .max(2 ** 16)
+        .safeParse(dimSize).success
+    ) {
       throw new Error(`Invalid CLIP dimension size: ${dimSize}`);
     }
 
@@ -367,11 +349,9 @@ export class DatabaseRepository {
   private targetListCount(count: number) {
     if (count < 128_000) {
       return 1;
-    } else if (count < 2_048_000) {
-      return 1 << (32 - Math.clz32(count / 1000));
-    } else {
-      return 1 << (33 - Math.clz32(Math.sqrt(count)));
     }
+    // eslint-disable-next-line unicorn/prefer-minimal-ternary
+    return count < 2_048_000 ? 1 << (32 - Math.clz32(count / 1000)) : 1 << (33 - Math.clz32(Math.sqrt(count)));
   }
 
   private targetProbeCount(lists: number) {
@@ -396,15 +376,24 @@ export class DatabaseRepository {
     for (const result of results ?? []) {
       if (result.status === 'Success') {
         this.logger.log(`Migration "${result.migrationName}" succeeded`);
-      }
-
-      if (result.status === 'Error') {
+      } else if (result.status === 'Error') {
         this.logger.warn(`Migration "${result.migrationName}" failed`);
       }
     }
 
     if (error) {
       this.logger.error(`Migrations failed: ${error}`);
+
+      const missing =
+        error instanceof Error ? error.message.match(/previously executed migration (.+) is missing/u) : null;
+      if (missing) {
+        throw new Error(
+          `Migration "${missing[1]}" was already applied to this database but is not in this version of Immich (${serverVersion}). ` +
+            `This usually means the database was migrated by a newer version. Downgrades are not supported.`,
+          { cause: error },
+        );
+      }
+
       throw error;
     }
 
@@ -503,9 +492,7 @@ export class DatabaseRepository {
     for (const result of results ?? []) {
       if (result.status === 'Success') {
         this.logger.log(`Reverted migration "${result.migrationName}"`);
-      }
-
-      if (result.status === 'Error') {
+      } else if (result.status === 'Error') {
         this.logger.warn(`Failed to revert migration "${result.migrationName}"`);
       }
     }

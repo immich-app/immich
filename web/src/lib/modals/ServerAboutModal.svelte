@@ -17,7 +17,7 @@
 
 <Modal title={$t('about')} {onClose}>
   <ModalBody>
-    <div class="flex flex-col sm:grid sm:grid-cols-2 gap-4">
+    <div class="flex flex-col gap-4 sm:grid sm:grid-cols-2">
       {#if info.sourceRef === 'main' && info.repository === 'immich-app/immich'}
         <Alert color="warning" title={$t('main_branch_warning')} class="col-span-full" size="small" />
       {/if}
@@ -61,7 +61,7 @@
         <ServerAboutItem id="build" title={$t('build')} version={info.build} versionHref={info.buildUrl} />
       {/if}
 
-      {#if info.buildImage && info.buildImage}
+      {#if info.buildImage && info.buildImageUrl}
         <ServerAboutItem
           id="build-image"
           title={$t('build_image')}
@@ -77,7 +77,7 @@
             {@const createdAt = DateTime.fromISO(item.createdAt)}
             <li>
               <span
-                class="immich-form-label pb-2 text-xs"
+                class="pb-2 text-xs immich-form-label"
                 id="version-history"
                 title={createdAt.toLocaleString(DateTime.DATETIME_SHORT_WITH_SECONDS, { locale: $locale })}
               >

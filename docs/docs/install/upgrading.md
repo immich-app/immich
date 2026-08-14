@@ -28,11 +28,15 @@ docker image prune
 
 ## Versioning Policy
 
-Immich follows [semantic versioning][semver], which tags releases in the format `<major>.<minor>.<patch>`. We intend for breaking changes to be limited to major version releases.
-You can configure your Docker image to point to the current major version by using a metatag, such as `:v2`.
+Immich follows [semantic versioning][semver], which tags releases in the format `<major>.<minor>.<patch>`.
+We intend for breaking changes, including those to the API or deployment, to be limited to major version releases.
+You can configure your Docker image to point to the current major version by using a metatag, such as `:v3`. These metatags do not follow release candidates.
 
-Currently, we have no plans to backport patches to earlier versions. We encourage all users to run the most recent release of Immich.
-Switching back to an earlier version, even within the same minor release tag, is not supported.
+The mobile app is typically compatible with the current and prior major version. However, the server is only compatible with the matching major version.
+Thus, we recommend upgrading all mobile clients before upgrading the server to ensure compatibility.
+
+We do not backport patches to earlier versions. We encourage all users to run the most recent stable release of Immich.
+Downgrading to an earlier version, even within the same minor version, is not supported.
 
 [semver]: https://semver.org/
 
@@ -130,7 +134,3 @@ These storage mediums have different performance characteristics. As a result, t
 #### Can I use the new database image as a general PostgreSQL image outside of Immich?
 
 It’s a standard PostgreSQL container image that additionally contains the VectorChord, pgvector, and (optionally) pgvecto.rs extensions. If you were using the previous pgvecto.rs image for other purposes, you can similarly do so with this image.
-
-#### If pgvecto.rs and pgvector still work, why should I switch to VectorChord?
-
-VectorChord is faster, more stable, uses less RAM, and (with the settings Immich uses) offers higher-quality results than pgvector and pgvecto.rs. This translates to better search and facial recognition experiences. In addition, pgvecto.rs support will be dropped in the future, so changing it sooner will avoid disruption.

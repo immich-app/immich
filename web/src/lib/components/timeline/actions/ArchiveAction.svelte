@@ -1,5 +1,5 @@
 <script lang="ts">
-  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import type { OnArchive } from '$lib/utils/actions';
   import { archiveAssets } from '$lib/utils/asset-utils';

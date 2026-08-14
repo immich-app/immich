@@ -1,8 +1,8 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/providers/search/search_filter.provider.dart';
 import 'package:immich_mobile/widgets/search/search_filter/common/dropdown.dart';
@@ -21,9 +21,15 @@ class CameraPicker extends HookConsumerWidget {
     final selectedMake = useState<String?>(filter?.make);
     final selectedModel = useState<String?>(filter?.model);
 
-    final make = ref.watch(getSearchSuggestionsProvider(SearchSuggestionType.cameraMake));
+    final make = ref.watch(
+      getSearchSuggestionsProvider(const SearchSuggestionArgs(type: SearchSuggestionType.cameraMake)),
+    );
 
-    final models = ref.watch(getSearchSuggestionsProvider(SearchSuggestionType.cameraModel, make: selectedMake.value));
+    final models = ref.watch(
+      getSearchSuggestionsProvider(
+        SearchSuggestionArgs(type: SearchSuggestionType.cameraModel, make: selectedMake.value),
+      ),
+    );
 
     final makeWidget = SearchDropdown(
       dropdownMenuEntries: switch (make) {
@@ -31,7 +37,7 @@ class CameraPicker extends HookConsumerWidget {
         AsyncData(:final value) => value.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
         _ => [],
       },
-      label: const Text('make').tr(),
+      label: Text(context.t.make),
       controller: makeTextController,
       leadingIcon: const Icon(Icons.photo_camera_rounded),
       onSelected: (value) {
@@ -50,7 +56,7 @@ class CameraPicker extends HookConsumerWidget {
         AsyncData(:final value) => value.map((e) => DropdownMenuEntry(value: e, label: e)).toList(),
         _ => [],
       },
-      label: const Text('model').tr(),
+      label: Text(context.t.model),
       controller: modelTextController,
       leadingIcon: const Icon(Icons.camera),
       onSelected: (value) {

@@ -1,5 +1,5 @@
-import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 import { createZoomImageWheel } from '@zoom-image/core';
+import { assetViewerManager } from '$lib/managers/asset-viewer-manager.svelte';
 
 // Minimal touch shape — avoids importing DOM TouchEvent which isn't available in all TS targets.
 type TouchEventLike = {
@@ -124,9 +124,6 @@ export const zoomImageAction = (node: HTMLElement, options?: { zoomTarget?: HTML
     { capture: true, signal },
   );
 
-  if (options?.zoomTarget) {
-    options.zoomTarget.style.willChange = 'transform';
-  }
   node.style.overflow = 'visible';
   node.style.touchAction = 'none';
   return {
@@ -138,9 +135,6 @@ export const zoomImageAction = (node: HTMLElement, options?: { zoomTarget?: HTML
     },
     destroy() {
       controller.abort();
-      if (options?.zoomTarget) {
-        options.zoomTarget.style.willChange = '';
-      }
       for (const unsubscribe of unsubscribes) {
         unsubscribe();
       }

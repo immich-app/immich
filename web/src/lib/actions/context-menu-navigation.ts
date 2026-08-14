@@ -1,6 +1,6 @@
-import { shortcuts } from '$lib/actions/shortcut';
 import { tick } from 'svelte';
 import type { Action } from 'svelte/action';
+import { shortcuts } from '$lib/actions/shortcut';
 
 interface Options {
   /**

@@ -1,15 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:immich_mobile/widgets/photo_view/photo_view.dart'
     show
-        PhotoViewScaleState,
         PhotoViewHeroAttributes,
-        PhotoViewImageTapDownCallback,
-        PhotoViewImageTapUpCallback,
-        PhotoViewImageScaleEndCallback,
         PhotoViewImageDragEndCallback,
         PhotoViewImageDragStartCallback,
         PhotoViewImageDragUpdateCallback,
         PhotoViewImageLongPressStartCallback,
+        PhotoViewImageScaleEndCallback,
+        PhotoViewImageTapDownCallback,
+        PhotoViewImageTapUpCallback,
+        PhotoViewScaleState,
         ScaleStateCycle;
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller.dart';
 import 'package:immich_mobile/widgets/photo_view/src/controller/photo_view_controller_delegate.dart';
@@ -139,8 +141,6 @@ class PhotoViewCoreState extends State<PhotoViewCore>
 
   PhotoViewHeroAttributes? get heroAttributes => widget.heroAttributes;
 
-  late ScaleBoundaries cachedScaleBoundaries = widget.scaleBoundaries;
-
   void handleScaleAnimation() {
     scale = _scaleAnimation!.value;
   }
@@ -242,9 +242,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       return;
     }
     _scaleAnimation = Tween<double>(begin: from, end: to).animate(_scaleAnimationController);
-    _scaleAnimationController
-      ..value = 0.0
-      ..fling(velocity: 0.4);
+    _scaleAnimationController.value = 0.0;
+    unawaited(_scaleAnimationController.fling(velocity: 0.4));
   }
 
   void animatePosition(Offset from, Offset to) {
@@ -252,9 +251,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       return;
     }
     _positionAnimation = Tween<Offset>(begin: from, end: to).animate(_positionAnimationController);
-    _positionAnimationController
-      ..value = 0.0
-      ..fling(velocity: 0.4);
+    _positionAnimationController.value = 0.0;
+    unawaited(_positionAnimationController.fling(velocity: 0.4));
   }
 
   void animateRotation(double from, double to) {
@@ -262,9 +260,8 @@ class PhotoViewCoreState extends State<PhotoViewCore>
       return;
     }
     _rotationAnimation = Tween<double>(begin: from, end: to).animate(_rotationAnimationController);
-    _rotationAnimationController
-      ..value = 0.0
-      ..fling(velocity: 0.4);
+    _rotationAnimationController.value = 0.0;
+    unawaited(_rotationAnimationController.fling(velocity: 0.4));
   }
 
   void onAnimationStatus(AnimationStatus status) {
@@ -303,7 +300,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     controller.scaleAnimationBuilder(_animateControllerScale);
     controller.rotationAnimationBuilder(_animateControllerRotation);
 
-    cachedScaleBoundaries = widget.scaleBoundaries;
+    _updateScaleBoundaries();
 
     _scaleAnimationController = AnimationController(vsync: this)
       ..addListener(handleScaleAnimation)
@@ -334,14 +331,29 @@ class PhotoViewCoreState extends State<PhotoViewCore>
     widget.onTapDown?.call(context, details, controller.value);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    // Check if we need a recalc on the scale
-    if (widget.scaleBoundaries != cachedScaleBoundaries) {
-      markNeedsScaleRecalc = true;
-      cachedScaleBoundaries = widget.scaleBoundaries;
+  void _updateScaleBoundaries() {
+    final prev = controller.scaleBoundaries;
+    if (prev == widget.scaleBoundaries) {
+      return;
     }
 
+    if (prev != null && controller.scale != null && prev.initialScale > 0) {
+      final ratio = widget.scaleBoundaries.initialScale / prev.initialScale;
+      controller.setScaleInvisibly(controller.scale! * ratio);
+    } else {
+      markNeedsScaleRecalc = true;
+    }
+    controller.scaleBoundaries = widget.scaleBoundaries;
+  }
+
+  @override
+  void didUpdateWidget(PhotoViewCore oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _updateScaleBoundaries();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return StreamBuilder(
       stream: controller.outputStateStream,
       initialData: controller.prevValue,
@@ -423,7 +435,7 @@ class PhotoViewCoreState extends State<PhotoViewCore>
         ? SizedBox(
             width: scaleBoundaries.childSize.width * scale,
             height: scaleBoundaries.childSize.height * scale,
-            child: widget.customChild!,
+            child: widget.customChild,
           )
         : Image(
             key: widget.heroAttributes?.tag != null ? ObjectKey(widget.heroAttributes!.tag) : null,

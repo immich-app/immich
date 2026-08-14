@@ -16,6 +16,18 @@ export function getServerErrorMessage(error: unknown) {
     }
   }
 
+  if (Array.isArray(data?.errors) && data.errors.length > 0) {
+    const details = data.errors
+      .map(({ path, message }) => {
+        const field = path
+          .map((segment, i) => (typeof segment === 'number' ? `[${segment}]` : i === 0 ? segment : `.${segment}`))
+          .join('');
+        return field ? `${field}: ${message}` : message;
+      })
+      .join(', ');
+    return `${data.message}: ${details}`;
+  }
+
   return data?.message || error.message;
 }
 
@@ -35,7 +47,7 @@ export function handleError(error: unknown, localizedMessage: string, options?: 
   try {
     let serverMessage = getServerErrorMessage(error);
     if (serverMessage) {
-      serverMessage = `${String(serverMessage).slice(0, 75)}\n(Immich Server Error)`;
+      serverMessage = `${serverMessage.slice(0, 75)}\n(Immich Server Error)`;
     }
 
     const errorMessage = serverMessage || localizedMessage;

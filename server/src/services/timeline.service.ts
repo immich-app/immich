@@ -27,7 +27,7 @@ export class TimelineService extends BaseService {
 
   private async buildTimeBucketOptions(auth: AuthDto, dto: TimeBucketDto): Promise<TimeBucketOptions> {
     const { userId, ...options } = dto;
-    let userIds: string[] | undefined = undefined;
+    let userIds: string[] | undefined;
 
     if (userId) {
       userIds = [userId];
@@ -52,7 +52,7 @@ export class TimelineService extends BaseService {
     if (dto.albumId) {
       await this.requireAccess({ auth, permission: Permission.AlbumRead, ids: [dto.albumId] });
     } else {
-      dto.userId = dto.userId || auth.user.id;
+      dto.userId ||= auth.user.id;
     }
 
     if (dto.userId) {
@@ -60,20 +60,28 @@ export class TimelineService extends BaseService {
       if (dto.visibility === AssetVisibility.Archive) {
         await this.requireAccess({ auth, permission: Permission.ArchiveRead, ids: [dto.userId] });
       }
+      if (dto.visibility === AssetVisibility.Locked && dto.userId !== auth.user.id) {
+        throw new BadRequestException("You may not access another user's locked timeline");
+      }
     }
 
     if (dto.tagId) {
       await this.requireAccess({ auth, permission: Permission.TagRead, ids: [dto.tagId] });
     }
 
-    if (dto.withPartners) {
-      const requestedArchived = dto.visibility === AssetVisibility.Archive || dto.visibility === undefined;
-      const requestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
-      const requestedTrash = dto.isTrashed === true;
+    if (auth.sharedLink && !auth.sharedLink.showExif) {
+      dto.withCoordinates = false;
+    }
 
-      if (requestedArchived || requestedFavorite || requestedTrash) {
+    if (dto.withPartners) {
+      const isRequestedLocked = dto.visibility === AssetVisibility.Locked;
+      const isRequestedArchived = dto.visibility === AssetVisibility.Archive || dto.visibility === undefined;
+      const isRequestedFavorite = dto.isFavorite === true || dto.isFavorite === false;
+      const isRequestedTrash = dto.isTrashed === true;
+
+      if (isRequestedLocked || isRequestedArchived || isRequestedFavorite || isRequestedTrash) {
         throw new BadRequestException(
-          'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+          'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
         );
       }
     }

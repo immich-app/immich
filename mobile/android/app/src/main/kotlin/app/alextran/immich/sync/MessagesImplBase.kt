@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.ContentUris
 import android.content.Context
 import android.database.Cursor
-import androidx.exifinterface.media.ExifInterface
 import android.os.Build
 import android.os.Bundle
 import android.os.ext.SdkExtensions
@@ -17,6 +16,8 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.ImageHeaderParser
 import com.bumptech.glide.load.ImageHeaderParserUtils
 import com.bumptech.glide.load.resource.bitmap.DefaultImageHeaderParser
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,6 +29,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import java.io.File
+import java.io.IOException
+import java.io.InputStream
 import java.security.MessageDigest
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -39,15 +42,18 @@ sealed class AssetResult {
 private const val TAG = "NativeSyncApiImplBase"
 
 @SuppressLint("InlinedApi")
-open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
+open class NativeSyncApiImplBase(context: Context) : ImmichPlugin(), ActivityAware {
   private val ctx: Context = context.applicationContext
 
   private var hashTask: Job? = null
+  private var syncJob: Job? = null
+  private val mediaTrashDelegate = MediaTrashDelegate(ctx)
 
   companion object {
     private const val MAX_CONCURRENT_HASH_OPERATIONS = 16
     private val hashSemaphore = Semaphore(MAX_CONCURRENT_HASH_OPERATIONS)
     private const val HASHING_CANCELLED_CODE = "HASH_CANCELLED"
+    private const val SYNC_CANCELLED_CODE = "SYNC_CANCELLED"
 
     // MediaStore.Files.FileColumns.SPECIAL_FORMAT — S Extensions 21+
     // https://developer.android.com/reference/android/provider/MediaStore.Files.FileColumns#SPECIAL_FORMAT
@@ -94,11 +100,12 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
 
     const val HASH_BUFFER_SIZE = 2 * 1024 * 1024
 
-    // _special_format requires S Extensions 21+
+    // _special_format: added in API level 37, also in S Extensions 21+
     // https://developer.android.com/reference/android/provider/MediaStore.Files.FileColumns#SPECIAL_FORMAT
     private fun hasSpecialFormatColumn(): Boolean =
-      Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-        SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 21
+      Build.VERSION.SDK_INT >= 37 ||
+        (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+          SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 21)
   }
 
   protected fun getCursor(
@@ -177,7 +184,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
           val height = c.getInt(heightColumn).toLong()
           // Duration is milliseconds
           val duration = if (rawMediaType == MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE) 0L
-          else c.getLong(durationColumn) / 1000
+          else c.getLong(durationColumn)
           val orientation = c.getInt(orientationColumn)
           val isFavorite = if (favoriteColumn == -1) false else c.getInt(favoriteColumn) != 0
 
@@ -291,7 +298,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
     return PlatformAssetPlaybackStyle.IMAGE
   }
 
-  fun getAlbums(): List<PlatformAlbum> {
+  fun getAlbums(callback: (Result<List<PlatformAlbum>>) -> Unit) {
+    runSync(callback) { getAlbums() }
+  }
+
+  private suspend fun getAlbums(): List<PlatformAlbum> {
     val albums = mutableListOf<PlatformAlbum>()
     val albumsCount = mutableMapOf<String, Int>()
 
@@ -318,6 +329,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
         cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.DATE_MODIFIED)
 
       while (cursor.moveToNext()) {
+        currentCoroutineContext().ensureActive()
         val id = cursor.getString(bucketIdColumn)
 
         val count = albumsCount.getOrDefault(id, 0)
@@ -338,7 +350,11 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
       .sortedBy { it.id }
   }
 
-  fun getAssetIdsForAlbum(albumId: String): List<String> {
+  fun getAssetIdsForAlbum(albumId: String, callback: (Result<List<String>>) -> Unit) {
+    runSync(callback) { getAssetIdsForAlbum(albumId) }
+  }
+
+  private fun getAssetIdsForAlbum(albumId: String): List<String> {
     val projection = arrayOf(MediaStore.MediaColumns._ID)
 
     return getCursor(
@@ -362,7 +378,15 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
     )?.use { cursor -> cursor.count.toLong() } ?: 0L
 
 
-  fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset> {
+  fun getAssetsForAlbum(
+    albumId: String,
+    updatedTimeCond: Long?,
+    callback: (Result<List<PlatformAsset>>) -> Unit
+  ) {
+    runSync(callback) { getAssetsForAlbum(albumId, updatedTimeCond) }
+  }
+
+  private fun getAssetsForAlbum(albumId: String, updatedTimeCond: Long?): List<PlatformAsset> {
     var selection = "$BUCKET_SELECTION AND $MEDIA_SELECTION"
     val selectionArgs = mutableListOf(albumId, *MEDIA_SELECTION_ARGS)
 
@@ -400,7 +424,7 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
         }.awaitAll()
 
         completeWhenActive(callback, Result.success(results))
-      } catch (e: CancellationException) {
+      } catch (_: CancellationException) {
         completeWhenActive(
           callback, Result.failure(
             FlutterError(
@@ -418,23 +442,20 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
 
   private suspend fun hashAsset(assetId: String): HashResult {
     return try {
-      val assetUri = ContentUris.withAppendedId(
-        MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
-        assetId.toLong()
-      )
-
       val digest = MessageDigest.getInstance("SHA-1")
-      ctx.contentResolver.openInputStream(assetUri)?.use { inputStream ->
-        var bytesRead: Int
+      openOriginalStream(assetId).use { inputStream ->
         val buffer = ByteArray(HASH_BUFFER_SIZE)
-        while (inputStream.read(buffer).also { bytesRead = it } > 0) {
+        while (true) {
+          val bytesRead = inputStream.read(buffer)
+          if (bytesRead == -1) break
           currentCoroutineContext().ensureActive()
           digest.update(buffer, 0, bytesRead)
         }
-      } ?: return HashResult(assetId, "Cannot open input stream for asset", null)
+      }
 
-      val hashString = Base64.encodeToString(digest.digest(), Base64.NO_WRAP)
-      HashResult(assetId, null, hashString)
+      HashResult(assetId, null, Base64.encodeToString(digest.digest(), Base64.NO_WRAP))
+    } catch (e: CancellationException) {
+      throw e
     } catch (e: SecurityException) {
       HashResult(assetId, "Permission denied accessing asset: ${e.message}", null)
     } catch (e: Exception) {
@@ -442,9 +463,81 @@ open class NativeSyncApiImplBase(context: Context) : ImmichPlugin() {
     }
   }
 
+  private fun openOriginalStream(assetId: String): InputStream {
+    val id = assetId.toLong()
+    val collection = when (getMediaType(id)) {
+      MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO -> MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+      else -> MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+    }
+    val uri = ContentUris.withAppendedId(collection, id)
+    val original = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+      MediaStore.setRequireOriginal(uri)
+    } else {
+      uri
+    }
+
+    return ctx.contentResolver.openInputStream(original)
+      ?: throw IOException("Cannot open original stream for asset $assetId")
+  }
+
+  private fun getMediaType(id: Long): Int =
+    getCursor(
+      MediaStore.VOLUME_EXTERNAL,
+      "${MediaStore.MediaColumns._ID} = ?",
+      arrayOf(id.toString()),
+      arrayOf(MediaStore.Files.FileColumns.MEDIA_TYPE)
+    )?.use { cursor ->
+      if (cursor.moveToFirst()) {
+        cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Files.FileColumns.MEDIA_TYPE))
+      } else {
+        MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+      }
+    } ?: MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE
+
   fun cancelHashing() {
     hashTask?.cancel()
     hashTask = null
+  }
+
+  fun cancelSync() {
+    syncJob?.cancel()
+    syncJob = null
+  }
+
+  protected fun <T> runSync(callback: (Result<T>) -> Unit, work: suspend () -> T) {
+    syncJob?.cancel()
+    syncJob = CoroutineScope(Dispatchers.IO).launch {
+      try {
+        completeWhenActive(callback, Result.success(work()))
+      } catch (_: CancellationException) {
+        completeWhenActive(
+          callback,
+          Result.failure(FlutterError(SYNC_CANCELLED_CODE, "Sync cancelled", null))
+        )
+      } catch (e: Exception) {
+        completeWhenActive(callback, Result.failure(e))
+      }
+    }
+  }
+
+  fun restoreFromTrashById(mediaId: String, type: Long, callback: (Result<Boolean>) -> Unit) {
+    mediaTrashDelegate.restoreFromTrashById(mediaId, type) { completeWhenActive(callback, it) }
+  }
+
+  override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+    mediaTrashDelegate.onAttachedToActivity(binding)
+  }
+
+  override fun onDetachedFromActivityForConfigChanges() {
+    mediaTrashDelegate.onDetachedFromActivity()
+  }
+
+  override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+    mediaTrashDelegate.onAttachedToActivity(binding)
+  }
+
+  override fun onDetachedFromActivity() {
+    mediaTrashDelegate.onDetachedFromActivity()
   }
 
   // This method is only implemented on iOS; on Android, we do not have a concept of cloud IDs

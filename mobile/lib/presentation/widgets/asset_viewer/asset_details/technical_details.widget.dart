@@ -4,7 +4,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/sheet_tile.widget.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
@@ -22,11 +22,12 @@ class TechnicalDetails extends ConsumerWidget {
     final exifInfo = this.exifInfo;
     final cameraTitle = _getCameraInfoTitle(exifInfo);
     final lensTitle = exifInfo?.lens != null && exifInfo!.lens!.isNotEmpty ? exifInfo.lens : null;
+    final lensSubtitle = _getLensInfoSubtitle(exifInfo);
 
     return Column(
       children: [
         SheetTile(
-          title: 'details'.t(context: context),
+          title: context.t.details,
           titleStyle: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
         ),
         _buildFileInfoTile(context, ref, asset, exifInfo),
@@ -46,8 +47,15 @@ class TechnicalDetails extends ConsumerWidget {
             title: lensTitle,
             titleStyle: context.textTheme.labelLarge,
             leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
-            subtitle: _getLensInfoSubtitle(exifInfo),
+            subtitle: lensSubtitle,
             subtitleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+          ),
+        ] else if (lensSubtitle != null) ...[
+          const SizedBox(height: 16),
+          SheetTile(
+            title: lensSubtitle,
+            titleStyle: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
+            leading: Icon(Icons.camera_outlined, size: 24, color: context.textTheme.labelLarge?.color),
           ),
         ],
       ],
@@ -64,7 +72,7 @@ class TechnicalDetails extends ConsumerWidget {
     final subtitleStyle = context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary);
 
     if (asset is LocalAsset) {
-      final assetMediaRepository = ref.watch(assetMediaRepositoryProvider);
+      final assetMediaRepository = ref.read(assetMediaRepositoryProvider);
       return FutureBuilder<String?>(
         future: assetMediaRepository.getOriginalFilename(asset.id),
         builder: (context, snapshot) {
@@ -91,38 +99,47 @@ class TechnicalDetails extends ConsumerWidget {
   static String _getFileInfo(BaseAsset asset, ExifInfo? exifInfo) {
     final height = asset.height;
     final width = asset.width;
-    final resolution = (width != null && height != null) ? "${width.toInt()} x ${height.toInt()}" : null;
+    final resolution = (width != null && height != null) ? "$width x $height" : null;
     final fileSize = exifInfo?.fileSize != null ? formatBytes(exifInfo!.fileSize!) : null;
 
     return switch ((fileSize, resolution)) {
       (null, null) => '',
-      (String fileSize, null) => fileSize,
-      (null, String resolution) => resolution,
-      (String fileSize, String resolution) => '$fileSize$_kSeparator$resolution',
+      (final String fileSize, null) => fileSize,
+      (null, final String resolution) => resolution,
+      (final String fileSize, final String resolution) => '$fileSize$_kSeparator$resolution',
     };
   }
 
   static String? _getCameraInfoTitle(ExifInfo? exifInfo) {
-    if (exifInfo == null) return null;
+    if (exifInfo == null) {
+      return null;
+    }
     return switch ((exifInfo.make, exifInfo.model)) {
       (null, null) => null,
-      (String make, null) => make,
-      (null, String model) => model,
-      (String make, String model) => '$make $model',
+      (final String make, null) => make,
+      (null, final String model) => model,
+      (final String make, final String model) => '$make $model',
     };
   }
 
   static String? _getCameraInfoSubtitle(ExifInfo? exifInfo) {
-    if (exifInfo == null) return null;
+    if (exifInfo == null) {
+      return null;
+    }
     final exposureTime = exifInfo.exposureTime.isNotEmpty ? exifInfo.exposureTime : null;
     final iso = exifInfo.iso != null ? 'ISO ${exifInfo.iso}' : null;
     return [exposureTime, iso].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
   }
 
   static String? _getLensInfoSubtitle(ExifInfo? exifInfo) {
-    if (exifInfo == null) return null;
+    if (exifInfo == null) {
+      return null;
+    }
     final fNumber = exifInfo.fNumber.isNotEmpty ? 'ƒ/${exifInfo.fNumber}' : null;
     final focalLength = exifInfo.focalLength.isNotEmpty ? '${exifInfo.focalLength} mm' : null;
+    if (fNumber == null && focalLength == null) {
+      return null;
+    }
     return [fNumber, focalLength].where((spec) => spec != null && spec.isNotEmpty).join(_kSeparator);
   }
 }

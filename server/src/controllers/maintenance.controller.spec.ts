@@ -20,18 +20,15 @@ describe(MaintenanceController.name, () => {
   });
 
   describe('POST /admin/maintenance', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/admin/maintenance').send();
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a backup file when action is restore', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/admin/maintenance').send({
         action: MaintenanceAction.RestoreDatabase,
       });
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest(['restoreBackupFilename must be a string', 'restoreBackupFilename should not be empty']),
+        errorDto.validationError([
+          { path: ['restoreBackupFilename'], message: 'Backup filename is required when action is restore_database' },
+        ]),
       );
       expect(ctx.authenticate).toHaveBeenCalled();
     });

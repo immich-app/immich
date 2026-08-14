@@ -38,7 +38,9 @@ class ServerConfig {
 
   @override
   bool operator ==(covariant ServerConfig other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.trashDays == trashDays &&
         other.oauthButtonText == oauthButtonText &&

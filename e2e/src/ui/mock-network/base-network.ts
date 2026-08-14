@@ -82,6 +82,9 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
         cast: {
           gCastEnabled: false,
         },
+        recentlyAdded: {
+          sidebarWeb: false,
+        },
       },
     });
   });
@@ -223,6 +226,7 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
           '.jp2',
           '.jpe',
           '.jxl',
+          '.mpo',
           '.svg',
           '.tif',
           '.tiff',
@@ -239,7 +243,8 @@ export const setupBaseMockApiRoutes = async (context: BrowserContext, adminUserI
     });
   });
   await context.route('**/api/albums*', async (route, request) => {
-    if (request.url().endsWith('albums?shared=true') || request.url().endsWith('albums')) {
+    const url = request.url();
+    if (url.endsWith('albums?isShared=true') || url.endsWith('albums?isOwned=true') || url.endsWith('albums')) {
       return route.fulfill({
         status: 200,
         contentType: 'application/json',

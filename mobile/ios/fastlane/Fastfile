@@ -17,10 +17,12 @@ default_platform(:ios)
 
 platform :ios do
   # Constants
-  TEAM_ID = "2F67MQ8R79"
-  CODE_SIGN_IDENTITY = "Apple Distribution: Hau Tran (#{TEAM_ID})"
+  TEAM_ID = "2W7AC6T8T5"
+  CODE_SIGN_IDENTITY = "Apple Distribution: FUTO Holdings, Inc. (#{TEAM_ID})"
   BASE_BUNDLE_ID = "app.alextran.immich"
-  
+  DEV_BUNDLE_ID  = "tech.futo.immich.testflight"
+  DEV_GROUP_ID   = "group.app.immich.share.testflight"
+
   # Helper method to get App Store Connect API key
   def get_api_key
     app_store_connect_api_key(
@@ -32,6 +34,13 @@ platform :ios do
     )
   end
   
+  # Helper method to assemble xcargs with optional CUSTOM_GROUP_ID override
+  def build_xcargs(group_id: nil)
+    args = "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual"
+    args += " CUSTOM_GROUP_ID='#{group_id}'" if group_id
+    args
+  end
+
   # Helper method to get version from pubspec.yaml
 def get_version_from_pubspec
   require 'yaml'
@@ -40,66 +49,64 @@ def get_version_from_pubspec
   pubspec = YAML.load_file(pubspec_path)
   
   version_string = pubspec['version']
-  version_string ? version_string.split('+').first : nil
+  version_string ? version_string.split('+').first.split('-').first : nil
 end
   
   # Helper method to configure code signing for all targets
-  def configure_code_signing(bundle_id_suffix: "", profile_name_main:, profile_name_share:, profile_name_widget:)
-    bundle_suffix = bundle_id_suffix.empty? ? "" : ".#{bundle_id_suffix}"
-    
+  def configure_code_signing(base_bundle_id:, profile_name_main:, profile_name_share:, profile_name_widget:)
     # Runner (main app)
     update_code_signing_settings(
       use_automatic_signing: false,
       path: "./Runner.xcodeproj",
       team_id: ENV["FASTLANE_TEAM_ID"] || TEAM_ID,
       code_sign_identity: CODE_SIGN_IDENTITY,
-      bundle_identifier: "#{BASE_BUNDLE_ID}#{bundle_suffix}",
+      bundle_identifier: base_bundle_id,
       profile_name: profile_name_main,
       targets: ["Runner"]
     )
-    
+
     # ShareExtension
     update_code_signing_settings(
       use_automatic_signing: false,
       path: "./Runner.xcodeproj",
       team_id: ENV["FASTLANE_TEAM_ID"] || TEAM_ID,
       code_sign_identity: CODE_SIGN_IDENTITY,
-      bundle_identifier: "#{BASE_BUNDLE_ID}#{bundle_suffix}.ShareExtension",
+      bundle_identifier: "#{base_bundle_id}.ShareExtension",
       profile_name: profile_name_share,
       targets: ["ShareExtension"]
     )
-    
+
     # WidgetExtension
     update_code_signing_settings(
       use_automatic_signing: false,
       path: "./Runner.xcodeproj",
       team_id: ENV["FASTLANE_TEAM_ID"] || TEAM_ID,
       code_sign_identity: CODE_SIGN_IDENTITY,
-      bundle_identifier: "#{BASE_BUNDLE_ID}#{bundle_suffix}.Widget",
+      bundle_identifier: "#{base_bundle_id}.Widget",
       profile_name: profile_name_widget,
       targets: ["WidgetExtension"]
     )
   end
-  
+
   # Helper method to build and upload to TestFlight
   def build_and_upload(
     api_key:,
-    bundle_id_suffix: "",
+    base_bundle_id:,
     configuration: "Release",
     distribute_external: true,
     version_number: nil,
     profile_name_main:,
     profile_name_share:,
-    profile_name_widget:
+    profile_name_widget:,
+    group_id: nil
   )
-    bundle_suffix = bundle_id_suffix.empty? ? "" : ".#{bundle_id_suffix}"
-    app_identifier = "#{BASE_BUNDLE_ID}#{bundle_suffix}"
-    
+    app_identifier = base_bundle_id
+
     # Set version number if provided
     if version_number
       increment_version_number(version_number: version_number)
     end
-    
+
     # Increment build number
     increment_build_number(
       build_number: latest_testflight_build_number(
@@ -108,14 +115,14 @@ end
       ) + 1,
       xcodeproj: "./Runner.xcodeproj"
     )
-    
+
     # Build the app
     build_app(
       scheme: "Runner",
       workspace: "Runner.xcworkspace",
       configuration: configuration,
       export_method: "app-store",
-      xcargs: "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
+      xcargs: build_xcargs(group_id: group_id),
       export_options: {
         provisioningProfiles: {
           "#{app_identifier}" => profile_name_main,
@@ -138,36 +145,37 @@ end
   desc "iOS Development Build to TestFlight (requires separate bundle ID)"
   lane :gha_testflight_dev do
     api_key = get_api_key
-    
+
     # Download and install provisioning profiles from App Store Connect
     # Certificate is imported by GHA workflow into build.keychain
     # Capture profile names after each sigh call
-    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.development", force: true)
+    sigh(api_key: api_key, app_identifier: DEV_BUNDLE_ID, force: true)
     main_profile_name = lane_context[SharedValues::SIGH_NAME]
-    
-    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.development.ShareExtension", force: true)
+
+    sigh(api_key: api_key, app_identifier: "#{DEV_BUNDLE_ID}.ShareExtension", force: true)
     share_profile_name = lane_context[SharedValues::SIGH_NAME]
-    
-    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.development.Widget", force: true)
+
+    sigh(api_key: api_key, app_identifier: "#{DEV_BUNDLE_ID}.Widget", force: true)
     widget_profile_name = lane_context[SharedValues::SIGH_NAME]
-    
+
     # Configure code signing for dev bundle IDs using the downloaded profile names
     configure_code_signing(
-      bundle_id_suffix: "development",
+      base_bundle_id: DEV_BUNDLE_ID,
       profile_name_main: main_profile_name,
       profile_name_share: share_profile_name,
       profile_name_widget: widget_profile_name
     )
-    
+
     # Build and upload
     build_and_upload(
       api_key: api_key,
-      bundle_id_suffix: "development",
+      base_bundle_id: DEV_BUNDLE_ID,
       configuration: "Profile",
       distribute_external: false,
       profile_name_main: main_profile_name,
       profile_name_share: share_profile_name,
-      profile_name_widget: widget_profile_name
+      profile_name_widget: widget_profile_name,
+      group_id: DEV_GROUP_ID
     )
   end
 
@@ -189,6 +197,7 @@ end
     
     # Configure code signing for production bundle IDs
     configure_code_signing(
+      base_bundle_id: BASE_BUNDLE_ID,
       profile_name_main: main_profile_name,
       profile_name_share: share_profile_name,
       profile_name_widget: widget_profile_name
@@ -197,6 +206,7 @@ end
     # Build and upload with version number
     build_and_upload(
       api_key: api_key,
+      base_bundle_id: BASE_BUNDLE_ID,
       version_number: get_version_from_pubspec,
       distribute_external: false,
       profile_name_main: main_profile_name,
@@ -243,30 +253,30 @@ end
 
   desc "iOS Build Only (no TestFlight upload)"
   lane :gha_build_only do
-    # Use the same build process as production, just skip the upload
-    # This ensures PR builds validate the same way as production builds
-    
+    # Use the same build process as the dev TestFlight lane, just skip the upload
+    # This ensures PR builds validate the same way as dev TestFlight builds
+
     api_key = get_api_key
-    
+
     # Download and install provisioning profiles from App Store Connect
     # Certificate is imported by GHA workflow into build.keychain
-    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.development", force: true)
+    sigh(api_key: api_key, app_identifier: DEV_BUNDLE_ID, force: true)
     main_profile_name = lane_context[SharedValues::SIGH_NAME]
-    
-    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.development.ShareExtension", force: true)
+
+    sigh(api_key: api_key, app_identifier: "#{DEV_BUNDLE_ID}.ShareExtension", force: true)
     share_profile_name = lane_context[SharedValues::SIGH_NAME]
-    
-    sigh(api_key: api_key, app_identifier: "#{BASE_BUNDLE_ID}.development.Widget", force: true)
+
+    sigh(api_key: api_key, app_identifier: "#{DEV_BUNDLE_ID}.Widget", force: true)
     widget_profile_name = lane_context[SharedValues::SIGH_NAME]
-    
+
     # Configure code signing for dev bundle IDs
     configure_code_signing(
-      bundle_id_suffix: "development",
+      base_bundle_id: DEV_BUNDLE_ID,
       profile_name_main: main_profile_name,
       profile_name_share: share_profile_name,
       profile_name_widget: widget_profile_name
     )
-    
+
     # Build the app (same as gha_testflight_dev but without upload)
     build_app(
       scheme: "Runner",
@@ -274,12 +284,12 @@ end
       configuration: "Release",
       export_method: "app-store",
       skip_package_ipa: true,
-      xcargs: "-skipMacroValidation CODE_SIGN_IDENTITY='#{CODE_SIGN_IDENTITY}' CODE_SIGN_STYLE=Manual",
+      xcargs: build_xcargs(group_id: DEV_GROUP_ID),
       export_options: {
         provisioningProfiles: {
-          "#{BASE_BUNDLE_ID}.development" => main_profile_name,
-          "#{BASE_BUNDLE_ID}.development.ShareExtension" => share_profile_name,
-          "#{BASE_BUNDLE_ID}.development.Widget" => widget_profile_name
+          DEV_BUNDLE_ID => main_profile_name,
+          "#{DEV_BUNDLE_ID}.ShareExtension" => share_profile_name,
+          "#{DEV_BUNDLE_ID}.Widget" => widget_profile_name
         },
         signingStyle: "manual",
         signingCertificate: CODE_SIGN_IDENTITY

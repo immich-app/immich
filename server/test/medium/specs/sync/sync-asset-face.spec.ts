@@ -18,14 +18,14 @@ beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
 });
 
-describe(SyncEntityType.AssetFaceV1, () => {
+describe(SyncEntityType.AssetFaceV2, () => {
   it('should detect and sync the first asset face', async () => {
     const { auth, ctx } = await setup();
     const { asset } = await ctx.newAsset({ ownerId: auth.user.id });
     const { person } = await ctx.newPerson({ ownerId: auth.user.id });
     const { assetFace } = await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
 
-    const response = await ctx.syncStream(auth, [SyncRequestType.AssetFacesV1]);
+    const response = await ctx.syncStream(auth, [SyncRequestType.AssetFacesV2]);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -41,13 +41,13 @@ describe(SyncEntityType.AssetFaceV1, () => {
           boundingBoxY2: assetFace.boundingBoxY2,
           sourceType: assetFace.sourceType,
         }),
-        type: 'AssetFaceV1',
+        type: 'AssetFaceV2',
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetFacesV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetFacesV2]);
   });
 
   it('should detect and sync a deleted asset face', async () => {
@@ -57,7 +57,7 @@ describe(SyncEntityType.AssetFaceV1, () => {
     const { assetFace } = await ctx.newAssetFace({ assetId: asset.id });
     await personRepo.deleteAssetFace(assetFace.id);
 
-    const response = await ctx.syncStream(auth, [SyncRequestType.AssetFacesV1]);
+    const response = await ctx.syncStream(auth, [SyncRequestType.AssetFacesV2]);
     expect(response).toEqual([
       {
         ack: expect.any(String),
@@ -70,7 +70,7 @@ describe(SyncEntityType.AssetFaceV1, () => {
     ]);
 
     await ctx.syncAckAll(auth, response);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetFacesV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetFacesV2]);
   });
 
   it('should not sync an asset face or asset face delete for an unrelated user', async () => {
@@ -82,19 +82,19 @@ describe(SyncEntityType.AssetFaceV1, () => {
     const { assetFace } = await ctx.newAssetFace({ assetId: asset.id });
     const auth2 = factory.auth({ session, user: user2 });
 
-    expect(await ctx.syncStream(auth2, [SyncRequestType.AssetFacesV1])).toEqual([
-      expect.objectContaining({ type: SyncEntityType.AssetFaceV1 }),
+    expect(await ctx.syncStream(auth2, [SyncRequestType.AssetFacesV2])).toEqual([
+      expect.objectContaining({ type: SyncEntityType.AssetFaceV2 }),
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetFacesV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetFacesV2]);
 
     await personRepo.deleteAssetFace(assetFace.id);
 
-    expect(await ctx.syncStream(auth2, [SyncRequestType.AssetFacesV1])).toEqual([
+    expect(await ctx.syncStream(auth2, [SyncRequestType.AssetFacesV2])).toEqual([
       expect.objectContaining({ type: SyncEntityType.AssetFaceDeleteV1 }),
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
     ]);
-    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetFacesV1]);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetFacesV2]);
   });
 });
 

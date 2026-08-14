@@ -10,13 +10,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/constants/locales.dart';
 import 'package:immich_mobile/domain/services/background_worker.service.dart';
-import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/codegen_loader.g.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/network.repository.dart';
@@ -24,17 +23,16 @@ import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/app_life_cycle.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/share_intent_upload.provider.dart';
-import 'package:immich_mobile/providers/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/locale_provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
+import 'package:immich_mobile/providers/view_intent/view_intent_handler.provider.dart';
 import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/background.service.dart';
 import 'package:immich_mobile/services/deep_link.service.dart';
-import 'package:immich_mobile/services/local_notification.service.dart';
 import 'package:immich_mobile/theme/dynamic_theme.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
 import 'package:immich_mobile/utils/bootstrap.dart';
@@ -53,23 +51,13 @@ void main() async {
     ImmichWidgetsBinding();
     unawaited(BackgroundWorkerLockService(BackgroundWorkerLockApi()).lock());
     await EasyLocalization.ensureInitialized();
-    final (isar, drift, logDb) = await Bootstrap.initDB();
-    await Bootstrap.initDomain(isar, drift, logDb);
+    final (drift, _) = await Bootstrap.initDomain();
     await initApp();
     // Warm-up isolate pool for worker manager
     await workerManagerPatch.init(dynamicSpawning: true, isolatesCount: max(Platform.numberOfProcessors - 1, 5));
-    await migrateDatabaseIfNeeded(isar, drift);
+    await migrateDatabaseIfNeeded(drift);
 
-    runApp(
-      ProviderScope(
-        overrides: [
-          dbProvider.overrideWithValue(isar),
-          isarProvider.overrideWithValue(isar),
-          driftProvider.overrideWith(driftOverride(drift)),
-        ],
-        child: const MainWidget(),
-      ),
-    );
+    runApp(ProviderScope(overrides: [driftProvider.overrideWith(driftOverride(drift))], child: const MainWidget()));
   } catch (error, stack) {
     runApp(BootstrapErrorWidget(error: error.toString(), stack: stack.toString()));
   }
@@ -95,7 +83,7 @@ Future<void> initApp() async {
     FlutterError.presentError(details);
     log.severe(
       'FlutterError - Catch all',
-      "${details.toString()}\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}",
+      "$details\nException: ${details.exception}\nLibrary: ${details.library}\nContext: ${details.context}",
       details.stack,
     );
   };
@@ -139,44 +127,51 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
     switch (state) {
       case AppLifecycleState.resumed:
         dPrint(() => "[APP STATE] resumed");
-        ref.read(appStateProvider.notifier).handleAppResume();
-        break;
+        unawaited(ref.read(appStateProvider.notifier).handleAppResume());
+        unawaited(ref.read(viewIntentHandlerProvider).onAppResumed());
       case AppLifecycleState.inactive:
         dPrint(() => "[APP STATE] inactive");
         ref.read(appStateProvider.notifier).handleAppInactivity();
-        break;
       case AppLifecycleState.paused:
         dPrint(() => "[APP STATE] paused");
-        ref.read(appStateProvider.notifier).handleAppPause();
-        break;
+        unawaited(ref.read(appStateProvider.notifier).handleAppPause());
       case AppLifecycleState.detached:
         dPrint(() => "[APP STATE] detached");
-        ref.read(appStateProvider.notifier).handleAppDetached();
-        break;
+        unawaited(ref.read(appStateProvider.notifier).handleAppDetached());
       case AppLifecycleState.hidden:
         dPrint(() => "[APP STATE] hidden");
         ref.read(appStateProvider.notifier).handleAppHidden();
-        break;
     }
   }
 
   Future<void> initApp() async {
     WidgetsBinding.instance.addObserver(this);
-
     // Draw the app from edge to edge
     unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge));
+    await _setNavigationBarColor();
 
-    // Sets the navigation bar color
+    await FlutterLocalNotificationsPlugin().initialize(
+      const InitializationSettings(
+        android: AndroidInitializationSettings('@drawable/notification_icon'),
+        iOS: DarwinInitializationSettings(),
+      ),
+    );
+  }
+
+  Future<void> _setNavigationBarColor() async {
     SystemUiOverlayStyle overlayStyle = const SystemUiOverlayStyle(systemNavigationBarColor: Colors.transparent);
     if (Platform.isAndroid) {
       // Android 8 does not support transparent app bars
       final info = await DeviceInfoPlugin().androidInfo;
+      if (!mounted) {
+        return;
+      }
+
       if (info.version.sdkInt <= 26) {
         overlayStyle = context.isDarkTheme ? SystemUiOverlayStyle.dark : SystemUiOverlayStyle.light;
       }
     }
     SystemChrome.setSystemUIOverlayStyle(overlayStyle);
-    await ref.read(localNotificationService).setup();
   }
 
   Future<DeepLink> _deepLinkBuilder(PlatformDeepLink deepLink) async {
@@ -185,19 +180,32 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
 
     final isColdStart = currentRouteName == null || currentRouteName == SplashScreenRoute.name;
 
+    PageRouteInfo? route;
     if (deepLink.uri.scheme == "immich") {
-      final proposedRoute = await deepLinkHandler.handleScheme(deepLink, ref, isColdStart);
-
-      return proposedRoute;
+      route = await deepLinkHandler.handleScheme(deepLink, ref);
+    } else if (deepLink.uri.host == "my.immich.app") {
+      route = await deepLinkHandler.handleMyImmichApp(deepLink, ref);
+    } else {
+      return DeepLink.path(deepLink.path);
     }
 
-    if (deepLink.uri.host == "my.immich.app") {
-      final proposedRoute = await deepLinkHandler.handleMyImmichApp(deepLink, ref, isColdStart);
-
-      return proposedRoute;
+    if (route == null) {
+      return isColdStart ? DeepLink.defaultPath : DeepLink.none;
     }
 
-    return DeepLink.path(deepLink.path);
+    // We need to replace the route if the destination is the current route
+    if (!isColdStart) {
+      unawaited(
+        ref.read(appRouterProvider).pushAndPopUntil(route, predicate: (r) => r.settings.name != route!.routeName),
+      );
+      return DeepLink.none;
+    }
+
+    return DeepLink([
+      // we need something to segue back to if the app was cold started
+      if (isColdStart) const TabShellRoute(children: [MainTimelineRoute()]),
+      route,
+    ]);
   }
 
   @override
@@ -210,28 +218,25 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   }
 
   @override
-  initState() {
+  void initState() {
     super.initState();
-    initApp().then((_) => dPrint(() => "App Init Completed"));
+    unawaited(initApp().then((_) => dPrint(() => "App Init Completed")));
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // needs to be delayed so that EasyLocalization is working
-      if (Store.isBetaTimelineEnabled) {
-        ref.read(backgroundServiceProvider).disableService();
-        ref.read(backgroundWorkerFgServiceProvider).enable();
-        if (Platform.isAndroid) {
+      unawaited(ref.read(backgroundWorkerFgServiceProvider).enable());
+      if (Platform.isAndroid) {
+        unawaited(
           ref
               .read(backgroundWorkerFgServiceProvider)
               .saveNotificationMessage(
                 StaticTranslations.instance.uploading_media,
                 StaticTranslations.instance.backup_background_service_default_notification,
-              );
-        }
-      } else {
-        ref.read(backgroundWorkerFgServiceProvider).disable();
-        ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
+              ),
+        );
       }
     });
 
+    ref.read(viewIntentHandlerProvider).init();
     ref.read(shareIntentUploadProvider.notifier).init();
   }
 
@@ -244,7 +249,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
   @override
   void reassemble() {
     if (kDebugMode) {
-      NetworkRepository.init();
+      unawaited(NetworkRepository.init());
     }
     super.reassemble();
   }
@@ -259,22 +264,20 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
       child: MaterialApp.router(
         title: 'Immich',
         debugShowCheckedModeBanner: true,
+        scaffoldMessengerKey: scaffoldMessengerKey,
         localizationsDelegates: context.localizationDelegates,
         supportedLocales: context.supportedLocales,
         locale: context.locale,
-        themeMode: ref.watch(immichThemeModeProvider),
+        themeMode: ref.watch(appConfigProvider.select((config) => config.theme.mode)),
         darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
         builder: (context, child) => ImmichTranslationProvider(
-          translations: ImmichTranslations(
-            submit: "submit".t(context: context),
-            password: "password".t(context: context),
-          ),
+          translations: ImmichTranslations(submit: context.t.submit, password: context.t.password),
           child: ImmichThemeProvider(colorScheme: context.colorScheme, child: child!),
         ),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
-          navigatorObservers: () => [AppNavigationObserver(ref: ref)],
+          navigatorObservers: () => [AppNavigationObserver(ref: ref), TransitioningRouteObserver()],
         ),
       ),
     );

@@ -17,7 +17,7 @@
   <div>
     <a href={url} target="_blank" rel="noreferrer">
       <Icon {icon} size="1.5em" class="inline-block" />
-      <p class="font-medium text-primary text-sm underline inline-block">
+      <p class="inline-block text-sm font-medium text-primary underline">
         {text}
       </p>
     </a>
@@ -27,7 +27,7 @@
 <Modal title={$t('support_and_feedback')} {onClose} size="small">
   <ModalBody>
     <p>{$t('official_immich_resources')}</p>
-    <div class="flex flex-col gap-2 mt-5">
+    <div class="mt-5 flex flex-col gap-2">
       {@render link(
         `https://docs.${info.version}.archive.immich.app/overview/introduction`,
         mdiInformationOutline,
@@ -46,10 +46,10 @@
     </div>
     {#if info.thirdPartyBugFeatureUrl || info.thirdPartySourceUrl || info.thirdPartyDocumentationUrl || info.thirdPartySupportUrl}
       <p class="mt-5">{$t('third_party_resources')}</p>
-      <p class="text-sm mt-1">
+      <p class="mt-1 text-sm">
         {$t('support_third_party_description')}
       </p>
-      <div class="flex flex-col gap-2 mt-5">
+      <div class="mt-5 flex flex-col gap-2">
         {#if info.thirdPartyDocumentationUrl}
           {@render link(info.thirdPartyDocumentationUrl, mdiInformationOutline, $t('documentation'))}
         {/if}

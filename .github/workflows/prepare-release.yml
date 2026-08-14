@@ -3,20 +3,20 @@ name: Prepare new release
 on:
   workflow_dispatch:
     inputs:
-      serverBump:
-        description: 'Bump server version'
+      releaseType:
+        description: 'Release type'
         required: true
         default: 'false'
         type: choice
         options:
           - 'false'
-          - major
           - minor
           - patch
-      mobileBump:
-        description: 'Bump mobile build number'
-        required: false
-        type: boolean
+          - premajor
+          - preminor
+          - prepatch
+          - prerelease
+          - release
       skipTranslations:
         description: 'Skip translations'
         required: false
@@ -36,7 +36,7 @@ jobs:
     permissions:
       pull-requests: write
     secrets:
-      PUSH_O_MATIC_APP_ID: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+      PUSH_O_MATIC_APP_CLIENT_ID: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
       PUSH_O_MATIC_APP_KEY: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
       WEBLATE_TOKEN: ${{ secrets.WEBLATE_TOKEN }}
 
@@ -46,47 +46,49 @@ jobs:
     outputs:
       ref: ${{ steps.push-tag.outputs.commit_long_sha }}
       version: ${{ steps.output.outputs.version }}
+      rc: ${{ steps.output.outputs.rc }}
     permissions: {} # No job-level permissions are needed because it uses the app-token
     steps:
-      - name: Generate a token
-        id: generate-token
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+      - id: token
+        uses: immich-app/devtools/actions/create-workflow-token@1af396ae134e4bc3b63d947e672bc68bf4ff9dc5 # create-workflow-token-action-v3.0.0
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: write
 
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          token: ${{ steps.generate-token.outputs.token }}
+          token: ${{ steps.token.outputs.token }}
           persist-credentials: true
           ref: main
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5.0.0
-
-      - name: Setup Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+      - name: Setup Mise
+        uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
         with:
-          node-version-file: './server/.nvmrc'
-          cache: 'pnpm'
-          cache-dependency-path: '**/pnpm-lock.yaml'
+          github_token: ${{ steps.token.outputs.token }}
+
+      # TODO move to mise
+      - name: Install uv
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
 
       - name: Bump version
         env:
-          SERVER_BUMP: ${{ inputs.serverBump }}
-          MOBILE_BUMP: ${{ inputs.mobileBump }}
-        run: misc/release/pump-version.sh -s "${SERVER_BUMP}" -m "${MOBILE_BUMP}"
+          RELEASE_TYPE: ${{ inputs.releaseType }}
+        run: mise //:release --type "${RELEASE_TYPE}"
 
       - id: output
-        run: echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
+        run: |
+          echo "version=$IMMICH_VERSION" >> $GITHUB_OUTPUT
+          if [[ "$IMMICH_VERSION" =~ -rc\.[0-9]+$ ]]; then
+            echo "rc=true" >> $GITHUB_OUTPUT
+          else
+            echo "rc=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Commit and tag
         id: push-tag
-        uses: EndBug/add-and-commit@a94899bca583c204427a224a7af87c02f9b325d5 # v9.1.4
+        uses: EndBug/add-and-commit@290ea2c423ad77ca9c62ae0f5b224379612c0321 # v10.0.0
         with:
           default_author: github_actions
           message: 'chore: version ${{ steps.output.outputs.version }}'
@@ -98,7 +100,10 @@ jobs:
     needs: bump_version
     permissions:
       contents: read
+      pull-requests: write
     secrets:
+      PUSH_O_MATIC_APP_CLIENT_ID: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+      PUSH_O_MATIC_APP_KEY: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
       KEY_JKS: ${{ secrets.KEY_JKS }}
       ALIAS: ${{ secrets.ALIAS }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
@@ -124,13 +129,15 @@ jobs:
     steps:
       - name: Generate a token
         id: generate-token
-        uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3.0.0
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
         with:
-          app-id: ${{ secrets.PUSH_O_MATIC_APP_ID }}
+          client-id: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
           private-key: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
+          permission-contents: write
+          permission-actions: read
 
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ steps.generate-token.outputs.token }}
           persist-credentials: false
@@ -142,18 +149,23 @@ jobs:
           github-token: ${{ steps.generate-token.outputs.token }}
 
       - name: Create draft release
-        uses: softprops/action-gh-release@153bb8e04406b158c6c84fc1615b65b24149a1fe # v2.6.1
-        with:
-          draft: true
-          tag_name: ${{ needs.bump_version.outputs.version }}
-          token: ${{ steps.generate-token.outputs.token }}
-          generate_release_notes: true
-          body_path: misc/release/notes.tmpl
-          files: |
-            docker/docker-compose.yml
-            docker/docker-compose.rootless.yml
-            docker/example.env
-            docker/hwaccel.ml.yml
-            docker/hwaccel.transcoding.yml
-            docker/prometheus.yml
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ needs.bump_version.outputs.version }}
+          PRERELEASE: ${{ needs.bump_version.outputs.rc }}
+        run: |
+          gh release create "${TAG}" \
+            --repo "${REPO}" \
+            --draft \
+            --verify-tag \
+            --prerelease="${PRERELEASE}" \
+            --notes-file misc/release/notes.tmpl \
+            --generate-notes \
+            docker/docker-compose.yml \
+            docker/docker-compose.rootless.yml \
+            docker/example.env \
+            docker/hwaccel.ml.yml \
+            docker/hwaccel.transcoding.yml \
+            docker/prometheus.yml \
             *.apk

@@ -7,9 +7,8 @@ import { AssetStats } from 'src/repositories/asset.repository';
 import { AssetService } from 'src/services/asset.service';
 import { AssetFactory } from 'test/factories/asset.factory';
 import { AuthFactory } from 'test/factories/auth.factory';
-import { PartnerFactory } from 'test/factories/partner.factory';
 import { authStub } from 'test/fixtures/auth.stub';
-import { getForAsset, getForAssetDeletion, getForPartner } from 'test/mappers';
+import { getForAsset, getForAssetDeletion } from 'test/mappers';
 import { factory, newUuid } from 'test/small.factory';
 import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 
@@ -67,41 +66,6 @@ describe(AssetService.name, () => {
       mocks.asset.getStatistics.mockResolvedValue(stats);
       await expect(sut.getStatistics(auth, {})).resolves.toEqual(statResponse);
       expect(mocks.asset.getStatistics).toHaveBeenCalledWith(auth.user.id, {});
-    });
-  });
-
-  describe('getRandom', () => {
-    it('should get own random assets', async () => {
-      mocks.partner.getAll.mockResolvedValue([]);
-      mocks.asset.getRandom.mockResolvedValue([getForAsset(AssetFactory.create())]);
-
-      await sut.getRandom(authStub.admin, 1);
-
-      expect(mocks.asset.getRandom).toHaveBeenCalledWith([authStub.admin.user.id], 1);
-    });
-
-    it('should not include partner assets if not in timeline', async () => {
-      const partner = PartnerFactory.create({ inTimeline: false });
-      const auth = AuthFactory.create({ id: partner.sharedWithId });
-
-      mocks.asset.getRandom.mockResolvedValue([getForAsset(AssetFactory.create())]);
-      mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);
-
-      await sut.getRandom(auth, 1);
-
-      expect(mocks.asset.getRandom).toHaveBeenCalledWith([auth.user.id], 1);
-    });
-
-    it('should include partner assets if in timeline', async () => {
-      const partner = PartnerFactory.create({ inTimeline: true });
-      const auth = AuthFactory.create({ id: partner.sharedWithId });
-
-      mocks.asset.getRandom.mockResolvedValue([getForAsset(AssetFactory.create())]);
-      mocks.partner.getAll.mockResolvedValue([getForPartner(partner)]);
-
-      await sut.getRandom(auth, 1);
-
-      expect(mocks.asset.getRandom).toHaveBeenCalledWith([auth.user.id, partner.sharedById], 1);
     });
   });
 
@@ -223,8 +187,10 @@ describe(AssetService.name, () => {
       await sut.update(authStub.admin, asset.id, { description: 'Test description' });
 
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: asset.id, description: 'Test description', lockedProperties: ['description'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: asset.id, description: 'Test description', lockedProperties: ['description'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
     });
 
@@ -237,12 +203,14 @@ describe(AssetService.name, () => {
       await sut.update(authStub.admin, asset.id, { rating: 3 });
 
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        {
-          assetId: asset.id,
-          rating: 3,
-          lockedProperties: ['rating'],
-        },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: {
+            assetId: asset.id,
+            rating: 3,
+            lockedProperties: ['rating'],
+          },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
     });
 
@@ -600,6 +568,34 @@ describe(AssetService.name, () => {
       expect(mocks.stack.delete).toHaveBeenCalledWith(asset.stackId);
     });
 
+    it('should delete the stack when a non-primary asset is deleted and only the primary would remain', async () => {
+      const asset = AssetFactory.from().build();
+      const deletionAsset = {
+        ...getForAssetDeletion(asset),
+        stack: { id: newUuid(), primaryAssetId: newUuid(), assets: [{ id: asset.id }] },
+      };
+      mocks.stack.delete.mockResolvedValue();
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(deletionAsset);
+
+      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
+
+      expect(mocks.stack.delete).toHaveBeenCalledWith(deletionAsset.stack.id);
+    });
+
+    it('should keep the stack when a non-primary asset is deleted and the primary plus another asset remain', async () => {
+      const asset = AssetFactory.from().build();
+      const deletionAsset = {
+        ...getForAssetDeletion(asset),
+        stack: { id: newUuid(), primaryAssetId: newUuid(), assets: [{ id: asset.id }, { id: newUuid() }] },
+      };
+      mocks.assetJob.getForAssetDeletion.mockResolvedValue(deletionAsset);
+
+      await sut.handleAssetDeletion({ id: asset.id, deleteOnDisk: true });
+
+      expect(mocks.stack.delete).not.toHaveBeenCalled();
+      expect(mocks.stack.update).not.toHaveBeenCalled();
+    });
+
     it('should delete a live photo', async () => {
       const motionAsset = AssetFactory.from({ type: AssetType.Video, visibility: AssetVisibility.Hidden }).build();
       const asset = AssetFactory.create({ livePhotoVideoId: motionAsset.id });
@@ -718,20 +714,6 @@ describe(AssetService.name, () => {
       await sut.run(authStub.admin, { assetIds: ['asset-1'], name: AssetJobName.TRANSCODE_VIDEO });
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.AssetEncodeVideo, data: { id: 'asset-1' } }]);
-    });
-  });
-
-  describe('getUserAssetsByDeviceId', () => {
-    it('get assets by device id', async () => {
-      const assets = [AssetFactory.create(), AssetFactory.create()];
-
-      mocks.asset.getAllByDeviceId.mockResolvedValue(assets.map((asset) => asset.deviceAssetId));
-
-      const deviceId = 'device-id';
-      const result = await sut.getUserAssetsByDeviceId(authStub.user1, deviceId);
-
-      expect(result.length).toEqual(2);
-      expect(result).toEqual(assets.map((asset) => asset.deviceAssetId));
     });
   });
 

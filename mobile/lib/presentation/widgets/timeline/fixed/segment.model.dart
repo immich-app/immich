@@ -53,14 +53,18 @@ class FixedSegment extends Segment {
   @override
   int getMinChildIndexForScrollOffset(double scrollOffset) {
     final adjustedOffset = scrollOffset - gridOffset;
-    if (!adjustedOffset.isFinite || adjustedOffset < 0) return firstIndex;
+    if (!adjustedOffset.isFinite || adjustedOffset < 0) {
+      return firstIndex;
+    }
     return gridIndex + (adjustedOffset / mainAxisExtend).floor();
   }
 
   @override
   int getMaxChildIndexForScrollOffset(double scrollOffset) {
     final adjustedOffset = scrollOffset - gridOffset;
-    if (!adjustedOffset.isFinite || adjustedOffset < 0) return firstIndex;
+    if (!adjustedOffset.isFinite || adjustedOffset < 0) {
+      return firstIndex;
+    }
     return gridIndex + (adjustedOffset / mainAxisExtend).ceil() - 1;
   }
 
@@ -103,12 +107,9 @@ class _FixedSegmentRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isScrubbing = ref.watch(timelineStateProvider.select((s) => s.isScrubbing));
-    final timelineService = ref.read(timelineServiceProvider);
+    final timelineService = ref.watch(timelineServiceProvider);
     final isDynamicLayout = columnCount <= (context.isMobile ? 2 : 3);
 
-    if (isScrubbing) {
-      return _buildPlaceholder(context);
-    }
     if (timelineService.hasRange(assetIndex, assetCount)) {
       return _buildAssetRow(
         context,
@@ -116,6 +117,10 @@ class _FixedSegmentRow extends ConsumerWidget {
         timelineService,
         isDynamicLayout,
       );
+    }
+
+    if (isScrubbing) {
+      return _buildPlaceholder(context);
     }
 
     return FutureBuilder<List<BaseAsset>>(
@@ -139,19 +144,6 @@ class _FixedSegmentRow extends ConsumerWidget {
     TimelineService timelineService,
     bool isDynamicLayout,
   ) {
-    final children = [
-      for (int i = 0; i < assets.length; i++)
-        TimelineAssetIndexWrapper(
-          assetIndex: assetIndex + i,
-          segmentIndex: 0, // For simplicity, using 0 for now
-          child: _AssetTileWidget(
-            key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
-            asset: assets[i],
-            assetIndex: assetIndex + i,
-          ),
-        ),
-    ];
-
     final widths = List.filled(assets.length, tileHeight);
 
     if (isDynamicLayout) {
@@ -162,8 +154,12 @@ class _FixedSegmentRow extends ConsumerWidget {
       // 0.5: width < mean - threshold
       // 1.5: width > mean + threshold
       final arConfiguration = aspectRatios.map((e) {
-        if (e - meanAspectRatio > 0.3) return 1.5;
-        if (e - meanAspectRatio < -0.3) return 0.5;
+        if (e - meanAspectRatio > 0.3) {
+          return 1.5;
+        }
+        if (e - meanAspectRatio < -0.3) {
+          return 0.5;
+        }
         return 1.0;
       });
 
@@ -176,6 +172,20 @@ class _FixedSegmentRow extends ConsumerWidget {
         widths[index++] = ((ratio * assets.length) / sum) * tileHeight;
       }
     }
+
+    final children = [
+      for (int i = 0; i < assets.length; i++)
+        TimelineAssetIndexWrapper(
+          assetIndex: assetIndex + i,
+          segmentIndex: 0, // For simplicity, using 0 for now
+          child: _AssetTileWidget(
+            key: ValueKey(Object.hash(assets[i].heroTag, assetIndex + i, timelineService.hashCode)),
+            asset: assets[i],
+            assetIndex: assetIndex + i,
+            size: Size(widths[i], tileHeight),
+          ),
+        ),
+    ];
 
     return TimelineDragRegion(
       child: TimelineRow(
@@ -192,18 +202,30 @@ class _FixedSegmentRow extends ConsumerWidget {
 class _AssetTileWidget extends ConsumerWidget {
   final BaseAsset asset;
   final int assetIndex;
+  final Size size;
 
-  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex});
+  const _AssetTileWidget({super.key, required this.asset, required this.assetIndex, required this.size});
 
-  Future _handleOnTap(BuildContext ctx, WidgetRef ref, int assetIndex, BaseAsset asset, int? heroOffset) async {
+  Future _handleOnTap(
+    BuildContext ctx,
+    WidgetRef ref,
+    int assetIndex,
+    BaseAsset asset,
+    int? heroOffset,
+    Size remoteSize,
+  ) async {
     final multiSelectState = ref.read(multiSelectProvider);
 
     if (multiSelectState.forceEnable || multiSelectState.isEnabled) {
       ref.read(multiSelectProvider.notifier).toggleAssetSelection(asset);
     } else {
       await ref.read(timelineServiceProvider).loadAssets(assetIndex, 1);
+      if (!ctx.mounted) {
+        return;
+      }
+
       ref.read(isPlayingMotionVideoProvider.notifier).playing = false;
-      AssetViewer.setAsset(ref, asset);
+      AssetViewer.setAsset(ref, asset, thumbnailSize: remoteSize);
       unawaited(
         ctx.pushRoute(
           AssetViewerRoute(
@@ -234,25 +256,34 @@ class _AssetTileWidget extends ConsumerWidget {
       return false;
     }
 
-    return lockSelectionAssets.contains(asset);
+    // Iterate with `==` instead of `Set.contains` because `RemoteAsset.hashCode`
+    // includes `localId` while `==` does not — so the same server asset can
+    // hash to a different bucket when its `localId` differs (e.g., album-fetched
+    // copy has localId=null, merged-timeline copy has it populated).
+    return lockSelectionAssets.any((a) => a == asset);
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final remoteSize = size * MediaQuery.devicePixelRatioOf(context);
+
     final heroOffset = TabsRouterScope.of(context)?.controller.activeIndex ?? 0;
 
     final lockSelection = _getLockSelectionStatus(ref);
     final showStorageIndicator = ref.watch(timelineArgsProvider.select((args) => args.showStorageIndicator));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+    final showStackIndicator = ref.watch(timelineServiceProvider).origin != TimelineOrigin.trash;
 
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset),
+        onTap: () => lockSelection ? null : _handleOnTap(context, ref, assetIndex, asset, heroOffset, remoteSize),
         onLongPress: () => lockSelection || isReadonlyModeEnabled ? null : _handleOnLongPress(ref, asset),
         child: ThumbnailTile(
           asset,
+          remoteSize: remoteSize,
           lockSelection: lockSelection,
           showStorageIndicator: showStorageIndicator,
+          showStackIndicator: showStackIndicator,
           heroOffset: heroOffset,
         ),
       ),

@@ -8,31 +8,32 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
   final Drift _db;
   const DriftPeopleRepository(this._db) : super(_db);
 
-  Future<DriftPerson?> get(String personId) async {
+  Future<Person?> get(String personId) async {
     final query = _db.select(_db.personEntity)..where((row) => row.id.equals(personId));
 
     final result = await query.getSingleOrNull();
     return result?.toDto();
   }
 
-  Future<List<DriftPerson>> getAssetPeople(String assetId) async {
-    final query =
-        _db.select(_db.assetFaceEntity).join([
-          innerJoin(_db.personEntity, _db.personEntity.id.equalsExp(_db.assetFaceEntity.personId)),
-        ])..where(
-          _db.assetFaceEntity.assetId.equals(assetId) &
-              _db.assetFaceEntity.isVisible.equals(true) &
-              _db.assetFaceEntity.deletedAt.isNull() &
-              _db.personEntity.isHidden.equals(false),
-        );
+  Future<List<Person>> getAssetPeople(String assetId) async {
+    // An asset can have multiple face records for the same person (e.g., metadata
+    // imports alongside ML detections). Use a subquery instead of a join so each
+    // person is returned once, regardless of how many of their faces are on the asset
+    final faceQuery = _db.assetFaceEntity.selectOnly()
+      ..addColumns([_db.assetFaceEntity.personId])
+      ..where(
+        _db.assetFaceEntity.assetId.equals(assetId) &
+            _db.assetFaceEntity.isVisible.equals(true) &
+            _db.assetFaceEntity.deletedAt.isNull(),
+      );
 
-    return query.map((row) {
-      final person = row.readTable(_db.personEntity);
-      return person.toDto();
-    }).get();
+    final query = _db.select(_db.personEntity)
+      ..where((row) => row.id.isInQuery(faceQuery) & row.isHidden.equals(false));
+
+    return query.map((row) => row.toDto()).get();
   }
 
-  Future<List<DriftPerson>> getAllPeople() async {
+  Stream<List<Person>> watch({int minFaces = 3}) {
     final people = _db.personEntity;
     final faces = _db.assetFaceEntity;
     final assets = _db.remoteAssetEntity;
@@ -49,7 +50,7 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
                 faces.isVisible.equals(true) &
                 faces.deletedAt.isNull(),
           )
-          ..groupBy([people.id], having: faces.id.count().isBiggerOrEqualValue(3) | people.name.equals('').not())
+          ..groupBy([people.id], having: faces.id.count().isBiggerOrEqualValue(minFaces) | people.name.equals('').not())
           ..orderBy([
             OrderingTerm(expression: people.name.equals('').not(), mode: OrderingMode.desc),
             OrderingTerm(expression: faces.id.count(), mode: OrderingMode.desc),
@@ -58,7 +59,7 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
     return query.map((row) {
       final person = row.readTable(people);
       return person.toDto();
-    }).get();
+    }).watch();
   }
 
   Future<int> updateName(String personId, String name) {
@@ -75,18 +76,5 @@ class DriftPeopleRepository extends DriftDatabaseRepository {
 }
 
 extension on PersonEntityData {
-  DriftPerson toDto() {
-    return DriftPerson(
-      id: id,
-      createdAt: createdAt,
-      updatedAt: updatedAt,
-      ownerId: ownerId,
-      name: name,
-      faceAssetId: faceAssetId,
-      isFavorite: isFavorite,
-      isHidden: isHidden,
-      color: color,
-      birthDate: birthDate,
-    );
-  }
+  Person toDto() => Person(id: id, updatedAt: updatedAt, name: name, birthDate: birthDate);
 }

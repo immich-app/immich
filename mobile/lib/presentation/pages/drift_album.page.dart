@@ -37,6 +37,7 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
 
     final scrollView = CustomScrollView(
       controller: _scrollController,
+      physics: const AlwaysScrollableScrollPhysics(),
       slivers: [
         ImmichSliverAppBar(
           snap: false,
@@ -52,7 +53,7 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
         ),
         AlbumSelector(
           onAlbumSelected: (album) {
-            context.router.push(RemoteAlbumRoute(album: album));
+            unawaited(context.router.push(RemoteAlbumRoute(album: album)));
           },
         ),
       ],

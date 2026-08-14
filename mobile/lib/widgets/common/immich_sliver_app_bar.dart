@@ -1,18 +1,18 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/domain/models/setting.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/server_info/server_info.model.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/setting.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/sync_status.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -113,14 +113,14 @@ class _ProfileIndicator extends ConsumerWidget {
     final isIpad = defaultTargetPlatform == TargetPlatform.iOS && !context.isMobile;
 
     void toggleReadonlyMode() {
-      final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+      final isReadonlyModeEnabled = ref.read(readonlyModeProvider);
       ref.read(readonlyModeProvider.notifier).toggleReadonlyMode();
 
       context.scaffoldMessenger.showSnackBar(
         SnackBar(
           duration: const Duration(seconds: 2),
           content: Text(
-            (isReadonlyModeEnabled ? "readonly_mode_disabled" : "readonly_mode_enabled").tr(),
+            isReadonlyModeEnabled ? context.t.readonly_mode_disabled : context.t.readonly_mode_enabled,
             style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
           ),
         ),
@@ -142,8 +142,8 @@ class _ProfileIndicator extends ConsumerWidget {
             color: serverInfoState.versionStatus == VersionStatus.error
                 ? context.colorScheme.error
                 : context.primaryColor,
-            size: widgetSize / 2,
-            semanticLabel: 'new_version_available'.tr(),
+            size: widgetSize / 2 - 3,
+            semanticLabel: context.t.new_version_available,
           ),
         ),
         backgroundColor: Colors.transparent,
@@ -153,7 +153,7 @@ class _ProfileIndicator extends ConsumerWidget {
         child: user == null
             ? const Icon(Icons.face_outlined, size: widgetSize)
             : Semantics(
-                label: "logged_in_as".tr(namedArgs: {"user": user.name}),
+                label: context.t.logged_in_as(user: user.name),
                 child: AbsorbPointer(
                   child: Builder(
                     builder: (context) => UserCircleAvatar(
@@ -177,7 +177,15 @@ class _BackupIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final indicatorIcon = _getBackupBadgeIcon(context, ref);
+    final backupEnabled = ref.watch(appConfigProvider.select((c) => c.backup.enabled));
+    final hasError = ref.watch(driftBackupProvider.select((state) => state.error != BackupError.none));
+    final isUploading = ref.watch(driftBackupProvider.select((state) => state.uploadItems.isNotEmpty));
+    final indicatorIcon = _getBackupBadgeIcon(
+      context,
+      backupEnabled: backupEnabled,
+      hasError: hasError,
+      isUploading: isUploading,
+    );
 
     return IconButton(
       onPressed: () => context.pushRoute(const DriftBackupRoute()),
@@ -192,65 +200,59 @@ class _BackupIndicator extends ConsumerWidget {
     );
   }
 
-  Widget? _getBackupBadgeIcon(BuildContext context, WidgetRef ref) {
-    final backupStateStream = ref.watch(settingsProvider).watch(Setting.enableBackup);
-    final hasError = ref.watch(driftBackupProvider.select((state) => state.error != BackupError.none));
+  Widget? _getBackupBadgeIcon(
+    BuildContext context, {
+    required bool backupEnabled,
+    required bool hasError,
+    required bool isUploading,
+  }) {
     final isDarkTheme = context.isDarkTheme;
     final iconColor = isDarkTheme ? Colors.white : Colors.black;
-    final isUploading = ref.watch(driftBackupProvider.select((state) => state.uploadItems.isNotEmpty));
 
-    return StreamBuilder(
-      stream: backupStateStream,
-      initialData: false,
-      builder: (ctx, snapshot) {
-        final backupEnabled = snapshot.data ?? false;
+    if (!backupEnabled) {
+      return _BadgeLabel(
+        Icon(
+          Icons.cloud_off_rounded,
+          size: 9,
+          color: iconColor,
+          semanticLabel: context.t.backup_controller_page_backup,
+        ),
+      );
+    }
 
-        if (!backupEnabled) {
-          return _BadgeLabel(
-            Icon(
-              Icons.cloud_off_rounded,
-              size: 9,
-              color: iconColor,
-              semanticLabel: 'backup_controller_page_backup'.tr(),
+    if (hasError) {
+      return _BadgeLabel(
+        Icon(
+          Icons.warning_rounded,
+          size: 12,
+          color: context.colorScheme.error,
+          semanticLabel: context.t.backup_controller_page_backup,
+        ),
+        backgroundColor: context.colorScheme.errorContainer,
+      );
+    }
+
+    if (isUploading) {
+      return _BadgeLabel(
+        Container(
+          padding: const EdgeInsets.all(3.5),
+          child: Theme(
+            data: context.themeData.copyWith(
+              progressIndicatorTheme: context.themeData.progressIndicatorTheme.copyWith(year2023: true),
             ),
-          );
-        }
-
-        if (hasError) {
-          return _BadgeLabel(
-            Icon(
-              Icons.warning_rounded,
-              size: 12,
-              color: context.colorScheme.error,
-              semanticLabel: 'backup_controller_page_backup'.tr(),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              strokeCap: StrokeCap.round,
+              valueColor: AlwaysStoppedAnimation<Color>(iconColor),
+              semanticsLabel: context.t.backup_controller_page_backup,
             ),
-            backgroundColor: context.colorScheme.errorContainer,
-          );
-        }
+          ),
+        ),
+      );
+    }
 
-        if (isUploading) {
-          return _BadgeLabel(
-            Container(
-              padding: const EdgeInsets.all(3.5),
-              child: Theme(
-                data: context.themeData.copyWith(
-                  progressIndicatorTheme: context.themeData.progressIndicatorTheme.copyWith(year2023: true),
-                ),
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  strokeCap: StrokeCap.round,
-                  valueColor: AlwaysStoppedAnimation<Color>(iconColor),
-                  semanticsLabel: 'backup_controller_page_backup'.tr(),
-                ),
-              ),
-            ),
-          );
-        }
-
-        return _BadgeLabel(
-          Icon(Icons.check_outlined, size: 9, color: iconColor, semanticLabel: 'backup_controller_page_backup'.tr()),
-        );
-      },
+    return _BadgeLabel(
+      Icon(Icons.check_outlined, size: 9, color: iconColor, semanticLabel: context.t.backup_controller_page_backup),
     );
   }
 }
@@ -318,13 +320,13 @@ class _SyncStatusIndicatorState extends ConsumerState<_SyncStatusIndicator> with
     // Control animations based on sync status
     if (isSyncing) {
       if (!_rotationController.isAnimating) {
-        _rotationController.repeat();
+        unawaited(_rotationController.repeat());
       }
       _dismissalController.reset();
     } else {
       _rotationController.stop();
       if (_dismissalController.status == AnimationStatus.dismissed) {
-        _dismissalController.forward();
+        unawaited(_dismissalController.forward());
       }
     }
 

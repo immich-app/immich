@@ -77,7 +77,7 @@ export class ServerService extends BaseService {
     serverInfo.diskAvailableRaw = diskInfo.available;
     serverInfo.diskSizeRaw = diskInfo.total;
     serverInfo.diskUseRaw = diskInfo.total - diskInfo.free;
-    serverInfo.diskUsagePercentage = Number.parseFloat(usagePercentage);
+    serverInfo.diskUsagePercentage = Number(usagePercentage);
     return serverInfo;
   }
 
@@ -86,7 +86,7 @@ export class ServerService extends BaseService {
   }
 
   async getFeatures(): Promise<ServerFeaturesDto> {
-    const { reverseGeocoding, metadata, map, machineLearning, trash, oauth, passwordLogin, notifications } =
+    const { reverseGeocoding, metadata, map, machineLearning, trash, oauth, passwordLogin, notifications, ffmpeg } =
       await this.getConfig({ withCache: false });
     const { configFile } = this.configRepository.getEnv();
 
@@ -106,18 +106,13 @@ export class ServerService extends BaseService {
       passwordLogin: passwordLogin.enabled,
       configFile: !!configFile,
       email: notifications.smtp.enabled,
+      realtimeTranscoding: ffmpeg.realtime.enabled,
     };
   }
 
-  async getTheme() {
-    const { theme } = await this.getConfig({ withCache: false });
-    return theme;
-  }
-
   async getSystemConfig(): Promise<ServerConfigDto> {
-    const { setup } = this.configRepository.getEnv();
     const config = await this.getConfig({ withCache: false });
-    const isInitialized = !setup.allow || (await this.userRepository.hasAdmin());
+    const isInitialized = !(await this.isSetupAvailable());
     const onboarding = await this.systemMetadataRepository.get(SystemMetadataKey.AdminOnboarding);
 
     return {
@@ -132,12 +127,19 @@ export class ServerService extends BaseService {
       mapDarkStyleUrl: config.map.darkStyle,
       mapLightStyleUrl: config.map.lightStyle,
       maintenanceMode: false,
+      minFaces: config.machineLearning.facialRecognition.minFaces,
     };
   }
 
   async getStatistics(): Promise<ServerStatsResponseDto> {
     const userStats: UserStatsQueryResponse[] = await this.userRepository.getUserStats();
     const serverStats = new ServerStatsResponseDto();
+    serverStats.photos ??= 0;
+    serverStats.videos ??= 0;
+    serverStats.usage ??= 0;
+    serverStats.usagePhotos ??= 0;
+    serverStats.usageVideos ??= 0;
+    serverStats.usageByUser ??= [];
 
     for (const user of userStats) {
       const usage = new UsageByUserDto();
@@ -187,8 +189,12 @@ export class ServerService extends BaseService {
       throw new BadRequestException('Invalid license key');
     }
     const { licensePublicKey } = this.configRepository.getEnv();
-    const licenseValid = this.cryptoRepository.verifySha256(dto.licenseKey, dto.activationKey, licensePublicKey.server);
-    if (!licenseValid) {
+    const isLicenseValid = this.cryptoRepository.verifySha256(
+      dto.licenseKey,
+      dto.activationKey,
+      licensePublicKey.server,
+    );
+    if (!isLicenseValid) {
       throw new BadRequestException('Invalid license key');
     }
 

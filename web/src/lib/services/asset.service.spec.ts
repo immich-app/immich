@@ -1,13 +1,14 @@
-import { getAssetActions, handleDownloadAsset } from '$lib/services/asset.service';
-import { user as userStore } from '$lib/stores/user.store';
-import { setSharedLink } from '$lib/utils';
-import { getFormatter } from '$lib/utils/i18n';
 import { getAssetInfo } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
+import { vitest } from 'vitest';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { getAssetActions, handleDownloadAsset } from '$lib/services/asset.service';
+import { setSharedLink } from '$lib/utils';
+import { getFormatter } from '$lib/utils/i18n';
 import { assetFactory } from '@test-data/factories/asset-factory';
+import { preferencesFactory } from '@test-data/factories/preferences-factory';
 import { sharedLinkFactory } from '@test-data/factories/shared-link-factory';
 import { userAdminFactory } from '@test-data/factories/user-factory';
-import { vitest } from 'vitest';
 
 vitest.mock('@immich/ui', () => ({
   toastManager: {
@@ -30,13 +31,23 @@ vitest.mock('$lib/utils', async () => {
   };
 });
 
+vi.mock(import('$lib/managers/feature-flags-manager.svelte'), function () {
+  return {
+    featureFlagsManager: { init: vi.fn(), loadFeatureFlags: vi.fn(), value: {} } as never,
+  };
+});
+
 describe('AssetService', () => {
   describe('getAssetActions', () => {
+    beforeEach(() => {
+      authManager.setPreferences(preferencesFactory.build());
+    });
+
     it('should allow shared link downloads if the user owns the asset and shared link downloads are disabled', () => {
       const ownerId = 'owner';
       const user = userAdminFactory.build({ id: ownerId });
       const asset = assetFactory.build({ ownerId });
-      userStore.set(user);
+      authManager.setUser(user);
       setSharedLink(sharedLinkFactory.build({ allowDownload: false }));
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.SharedLinkDownload.$if?.()).toStrictEqual(true);
@@ -46,7 +57,7 @@ describe('AssetService', () => {
       const ownerId = 'owner';
       const user = userAdminFactory.build({ id: 'non-owner' });
       const asset = assetFactory.build({ ownerId });
-      userStore.set(user);
+      authManager.setUser(user);
       setSharedLink(sharedLinkFactory.build({ allowDownload: false }));
       const assetActions = getAssetActions(() => '', asset);
       expect(assetActions.SharedLinkDownload.$if?.()).toStrictEqual(false);

@@ -5,28 +5,17 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/models/backup/backup_state.model.dart';
-import 'package:immich_mobile/providers/album/album.provider.dart';
-import 'package:immich_mobile/providers/app_settings.provider.dart';
-import 'package:immich_mobile/providers/asset.provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
-import 'package:immich_mobile/providers/backup/backup.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/providers/backup/ios_background_settings.provider.dart';
-import 'package:immich_mobile/providers/backup/manual_upload.provider.dart';
 import 'package:immich_mobile/providers/gallery_permission.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:immich_mobile/providers/memory.provider.dart';
-import 'package:immich_mobile/providers/notification_permission.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
+import 'package:immich_mobile/providers/permission.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
-import 'package:immich_mobile/providers/tab.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
-import 'package:immich_mobile/services/background.service.dart';
-import 'package:isar/isar.dart';
 import 'package:logging/logging.dart';
-import 'package:permission_handler/permission_handler.dart';
 
 enum AppLifeCycleEnum { active, inactive, paused, resumed, detached, hidden }
 
@@ -46,7 +35,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     return state;
   }
 
-  void handleAppResume() async {
+  Future<void> handleAppResume() async {
     state = AppLifeCycleEnum.resumed;
 
     // Prevent overlapping resume operations
@@ -76,7 +65,9 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _performResume() async {
     // no need to resume because app was never really paused
-    if (!_wasPaused) return;
+    if (!_wasPaused) {
+      return;
+    }
     _wasPaused = false;
 
     final isAuthenticated = _ref.read(authProvider).isAuthenticated;
@@ -87,88 +78,72 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
       final endpoint = await _ref.read(authProvider.notifier).setOpenApiServiceEndpoint();
       _log.info("Using server URL: $endpoint");
 
-      if (!Store.isBetaTimelineEnabled) {
-        final permission = _ref.watch(galleryPermissionNotifier);
-        if (permission.isGranted || permission.isLimited) {
-          await _ref.read(backupProvider.notifier).resumeBackup();
-          await _ref.read(backgroundServiceProvider).resumeServiceIfEnabled();
-        }
-      }
-
       await _ref.read(serverInfoProvider.notifier).getServerVersion();
     }
 
-    if (!Store.isBetaTimelineEnabled) {
-      switch (_ref.read(tabProvider)) {
-        case TabEnum.home:
-          await _ref.read(assetProvider.notifier).getAllAsset();
-
-        case TabEnum.albums:
-          await _ref.read(albumProvider.notifier).refreshRemoteAlbums();
-
-        case TabEnum.library:
-        case TabEnum.search:
-          break;
-      }
-    } else {
-      _ref.read(websocketProvider.notifier).connect();
-      await _handleBetaTimelineResume();
+    if (!_shouldContinueOperation()) {
+      _wasPaused = true;
+      return;
     }
+    _ref.read(websocketProvider.notifier).connect();
+    await _handleBetaTimelineResume();
 
     await _ref.read(notificationPermissionProvider.notifier).getNotificationPermission();
 
     await _ref.read(galleryPermissionNotifier.notifier).getGalleryPermissionStatus();
-
-    if (!Store.isBetaTimelineEnabled) {
-      await _ref.read(iOSBackgroundSettingsProvider.notifier).refresh();
-
-      _ref.invalidate(memoryFutureProvider);
-    }
   }
 
-  Future<void> _safeRun(Future<void> action, String debugName) async {
+  Future<void> _safeRun(Future<void> Function() action, String debugName) async {
     if (!_shouldContinueOperation()) {
       return;
     }
 
     try {
-      await action;
+      await action();
     } catch (e, stackTrace) {
       _log.warning("Error during $debugName operation", e, stackTrace);
     }
   }
 
   Future<void> _handleBetaTimelineResume() async {
-    _ref.read(backupProvider.notifier).cancelBackup();
     unawaited(_ref.read(backgroundWorkerLockServiceProvider).lock());
 
     // Give isolates time to complete any ongoing database transactions
     await Future.delayed(const Duration(milliseconds: 500));
 
     final backgroundManager = _ref.read(backgroundSyncProvider);
-    final isAlbumLinkedSyncEnable = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.syncAlbums);
+
+    // Drop any sync that froze mid-flight while the app was suspended so resume
+    // starts fresh instead of awaiting the stale task (#28082). cancelResumeSyncs
+    // clears the task refs synchronously, so the syncs below see a clean slate.
+    unawaited(backgroundManager.cancelResumeSyncs());
+
+    final isAlbumLinkedSyncEnable = _ref.read(appConfigProvider).backup.syncAlbums;
 
     try {
       bool syncSuccess = false;
       await Future.wait([
-        _safeRun(backgroundManager.syncLocal(full: CurrentPlatform.isAndroid ? true : false), "syncLocal"),
-        _safeRun(backgroundManager.syncRemote().then((success) => syncSuccess = success), "syncRemote"),
+        _safeRun(() => backgroundManager.syncLocal(full: CurrentPlatform.isAndroid), "syncLocal"),
+        _safeRun(() async {
+          syncSuccess = await backgroundManager.syncRemote();
+        }, "syncRemote"),
       ]);
+      _ref.invalidate(driftMemoryFutureProvider);
       if (syncSuccess) {
         await Future.wait([
-          _safeRun(backgroundManager.hashAssets(), "hashAssets").then((_) {
-            _resumeBackup();
+          _safeRun(backgroundManager.hashAssets, "hashAssets").then((_) {
+            unawaited(_resumeBackup());
           }),
           _resumeBackup(),
           // TODO: Bring back when the soft freeze issue is addressed
           // _safeRun(backgroundManager.syncCloudIds(), "syncCloudIds"),
         ]);
       } else {
-        await _safeRun(backgroundManager.hashAssets(), "hashAssets");
+        await _safeRun(backgroundManager.hashAssets, "hashAssets");
       }
 
       if (isAlbumLinkedSyncEnable) {
-        await _safeRun(backgroundManager.syncLinkedAlbum(), "syncLinkedAlbum");
+        await _safeRun(backgroundManager.syncLinkedAlbum, "syncLinkedAlbum");
       }
     } catch (e, stackTrace) {
       _log.severe("Error during background sync", e, stackTrace);
@@ -176,13 +151,13 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   }
 
   Future<void> _resumeBackup() async {
-    final isEnableBackup = _ref.read(appSettingsServiceProvider).getSetting(AppSettingsEnum.enableBackup);
+    final isEnableBackup = _ref.read(appConfigProvider).backup.enabled;
 
     if (isEnableBackup) {
       final currentUser = Store.tryGet(StoreKey.currentUser);
       if (currentUser != null) {
         await _safeRun(
-          _ref.read(driftBackupProvider.notifier).startForegroundBackup(currentUser.id),
+          () => _ref.read(driftBackupProvider.notifier).startForegroundBackup(currentUser.id),
           "handleBackupResume",
         );
       }
@@ -218,9 +193,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
     _pauseOperation = Completer<void>();
 
     try {
-      if (Store.isBetaTimelineEnabled) {
-        unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
-      }
+      unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
       await _performPause();
     } catch (e, stackTrace) {
       _log.severe("Error during app pause", e, stackTrace);
@@ -234,14 +207,7 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
 
   Future<void> _performPause() {
     if (_ref.read(authProvider).isAuthenticated) {
-      if (!Store.isBetaTimelineEnabled) {
-        // Do not cancel backup if manual upload is in progress
-        if (_ref.read(backupProvider.notifier).backupProgress != BackUpProgressEnum.manualInProgress) {
-          _ref.read(backupProvider.notifier).cancelBackup();
-        }
-      } else {
-        _ref.read(driftBackupProvider.notifier).stopForegroundBackup();
-      }
+      _ref.read(driftBackupProvider.notifier).stopForegroundBackup(reason: "the app being sent to the background");
 
       _ref.read(websocketProvider.notifier).disconnect();
     }
@@ -252,30 +218,11 @@ class AppLifeCycleNotifier extends StateNotifier<AppLifeCycleEnum> {
   Future<void> handleAppDetached() async {
     state = AppLifeCycleEnum.detached;
 
-    if (Store.isBetaTimelineEnabled) {
-      unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
-    }
+    unawaited(_ref.read(backgroundWorkerLockServiceProvider).unlock());
 
     // Flush logs before closing database
     try {
       await LogService.I.flush();
-    } catch (_) {}
-
-    // Close Isar database safely
-    try {
-      final isar = Isar.getInstance();
-      if (isar != null && isar.isOpen) {
-        await isar.close();
-      }
-    } catch (_) {}
-
-    if (Store.isBetaTimelineEnabled) {
-      return;
-    }
-
-    // no guarantee this is called at all
-    try {
-      _ref.read(manualUploadProvider.notifier).cancelBackup();
     } catch (_) {}
   }
 

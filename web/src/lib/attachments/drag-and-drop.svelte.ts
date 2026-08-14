@@ -16,7 +16,7 @@ export function dragAndDrop(options: DragAndDropOptions): Attachment {
     const { index, onDragStart, onDragEnter, onDrop, onDragEnd, isDragging, isDragOver } = options;
 
     const isFormElement = (el: HTMLElement) => {
-      return el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT';
+      return ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName);
     };
 
     const handleDragStart = (e: DragEvent) => {

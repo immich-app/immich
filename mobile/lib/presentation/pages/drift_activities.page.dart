@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
@@ -5,11 +7,11 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/widgets/activities/comment_bubble.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/like_activity_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/album/drift_activity_text_field.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/current_album.provider.dart';
+import 'package:immich_mobile/widgets/activities/comment_bubble.dart';
 
 @RoutePage()
 class DriftActivitiesPage extends HookConsumerWidget {
@@ -21,17 +23,21 @@ class DriftActivitiesPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final activityNotifier = ref.read(albumActivityProvider(album.id, assetId).notifier);
-    final activities = ref.watch(albumActivityProvider(album.id, assetId));
+    final activityNotifier = ref.watch(albumActivityProvider((album.id, assetId)).notifier);
+    final activities = ref.watch(albumActivityProvider((album.id, assetId)));
     final listViewScrollController = useScrollController();
 
-    void scrollToBottom() {
-      listViewScrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.fastOutSlowIn);
+    Future<void> scrollToBottom() {
+      return listViewScrollController.animateTo(
+        0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.fastOutSlowIn,
+      );
     }
 
     Future<void> onAddComment(String comment) async {
       await activityNotifier.addComment(comment);
-      scrollToBottom();
+      unawaited(scrollToBottom());
     }
 
     return ProviderScope(
@@ -45,7 +51,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
               if (assetName != null) Text(assetName!, style: context.textTheme.bodySmall),
             ],
           ),
-          actions: [const LikeActivityActionButton(iconOnly: true)],
+          actions: const [LikeActivityActionButton(iconOnly: true)],
           actionsPadding: const EdgeInsets.only(right: 8),
         ),
         body: activities.widgetWhen(
@@ -71,7 +77,7 @@ class DriftActivitiesPage extends HookConsumerWidget {
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,
-                    child: Container(
+                    child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: context.scaffoldBackgroundColor,
                         border: Border(top: BorderSide(color: context.colorScheme.secondaryContainer, width: 1)),

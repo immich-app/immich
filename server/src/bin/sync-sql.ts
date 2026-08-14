@@ -3,7 +3,6 @@ import { INestApplication } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { Test } from '@nestjs/testing';
-import { ClassConstructor } from 'class-transformer';
 import { ClsModule } from 'nestjs-cls';
 import { KyselyModule } from 'nestjs-kysely';
 import { OpenTelemetryModule } from 'nestjs-otel';
@@ -24,6 +23,7 @@ const handleError = (label: string, error: Error | any) => {
   console.error(`${label} error: ${error}`);
 };
 
+// eslint-disable-next-line unicorn/no-exports-in-scripts
 export class SqlLogger {
   queries: string[] = [];
   errors: Array<{ error: string | Error; query: string }> = [];
@@ -44,7 +44,7 @@ export class SqlLogger {
 
 const reflector = new Reflector();
 
-type Repository = ClassConstructor<any>;
+type Repository = new (...args: any[]) => any;
 type SqlGeneratorOptions = { targetDir: string };
 
 class SqlGenerator {
@@ -110,10 +110,12 @@ class SqlGenerator {
     const instance = this.app.get<Repository>(Repository);
 
     // normal repositories
-    data.push(...(await this.runTargets(instance, `${Repository.name}`)));
+    data.push(...(await this.runTargets(instance, Repository.name)));
 
     // nested repositories
     if (Repository.name === AccessRepository.name || Repository.name === SyncRepository.name) {
+      // probably a bug that this fails linting?
+      // eslint-disable-next-line unicorn/prefer-object-iterable-methods
       for (const key of Object.keys(instance)) {
         const subInstance = (instance as any)[key];
         data.push(...(await this.runTargets(subInstance, `${Repository.name}.${key}`)));
@@ -128,7 +130,7 @@ class SqlGenerator {
 
     for (const key of this.getPropertyNames(instance)) {
       const target = instance[key];
-      if (!(typeof target === 'function')) {
+      if (typeof target !== 'function') {
         continue;
       }
 

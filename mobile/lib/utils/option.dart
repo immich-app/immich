@@ -1,3 +1,6 @@
+import 'package:drift/drift.dart';
+import 'package:openapi/api.dart' show Optional;
+
 sealed class Option<T> {
   const Option();
 
@@ -17,6 +20,11 @@ sealed class Option<T> {
   T? get unwrapOrNull => switch (this) {
     Some(:final value) => value,
     None() => null,
+  };
+
+  Option<U> map<U>(U Function(T value) f) => switch (this) {
+    Some(:final value) => Some(f(value)),
+    None() => None<U>(),
   };
 
   U fold<U>(U Function(T value) onSome, U Function() onNone) => switch (this) {
@@ -53,6 +61,20 @@ final class None<T> extends Option<T> {
   int get hashCode => 0;
 }
 
-extension ObjectOptionExtension<T> on T? {
-  Option<T> toOption() => Option.fromNullable(this);
+extension NullableOptionExtension<T> on Option<T>? {
+  T? patch(T? current) => this == null ? current : this!.unwrapOrNull;
+}
+
+extension OptionToOptional<T> on Option<T> {
+  Optional<T> toOptional() => switch (this) {
+    None() => const Optional.absent(),
+    Some(:final value) => Optional.present(value),
+  };
+}
+
+extension OptionToDriftValue<T> on Option<T> {
+  Value<T> toDriftValue() => switch (this) {
+    Some(:final value) => Value(value),
+    None() => const Value.absent(),
+  };
 }

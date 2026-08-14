@@ -1,9 +1,9 @@
 <script lang="ts">
   import { scrollMemory } from '$lib/actions/scroll-memory';
-  import AlbumsControls from '$lib/components/album-page/albums-controls.svelte';
-  import Albums from '$lib/components/album-page/albums-list.svelte';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import EmptyPlaceholder from '$lib/components/shared-components/empty-placeholder.svelte';
+  import AlbumsControls from './AlbumsControls.svelte';
+  import Albums from '$lib/components/album-page/AlbumsList.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import EmptyPlaceholder from '$lib/components/shared-components/EmptyPlaceholder.svelte';
   import GroupTab from '$lib/elements/GroupTab.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { Route } from '$lib/route';
@@ -30,7 +30,7 @@
   {/snippet}
 
   <div class="xl:hidden">
-    <div class="w-fit h-14 dark:text-immich-dark-fg py-2">
+    <div class="h-14 w-fit py-2 dark:text-immich-dark-fg">
       <GroupTab
         label={$t('show_albums')}
         filters={Object.keys(AlbumFilter)}
@@ -52,7 +52,7 @@
     bind:albumGroupIds={albumGroups}
   >
     {#snippet empty()}
-      <EmptyPlaceholder text={$t('no_albums_message')} onClick={() => createAlbumAndRedirect()} class="mt-10 mx-auto" />
+      <EmptyPlaceholder text={$t('no_albums_message')} onClick={() => createAlbumAndRedirect()} class="mx-auto mt-10" />
     {/snippet}
   </Albums>
 </UserPageLayout>

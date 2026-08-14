@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:drift/drift.dart' hide isNull, isNotNull;
+import 'package:drift/drift.dart' hide isNotNull, isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -11,12 +11,11 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:immich_mobile/services/app_settings.service.dart';
 import 'package:immich_mobile/services/background_upload.service.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../domain/service.mock.dart';
 import '../fixtures/asset.stub.dart';
 import '../infrastructure/repository.mock.dart';
 import '../mocks/asset_entity.mock.dart';
@@ -28,13 +27,10 @@ void main() {
   late MockStorageRepository mockStorageRepository;
   late MockDriftLocalAssetRepository mockLocalAssetRepository;
   late MockDriftBackupRepository mockBackupRepository;
-  late MockAppSettingsService mockAppSettingsService;
   late MockAssetMediaRepository mockAssetMediaRepository;
   late Drift db;
 
   setUpAll(() async {
-    registerFallbackValue(AppSettingsEnum.useCellularForUploadPhotos);
-
     TestWidgetsFlutterBinding.ensureInitialized();
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       const MethodChannel('plugins.flutter.io/path_provider'),
@@ -42,6 +38,7 @@ void main() {
     );
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await SettingsRepository.ensureInitialized(db);
 
     await Store.put(StoreKey.serverEndpoint, 'http://test-server.com');
     await Store.put(StoreKey.deviceId, 'test-device-id');
@@ -52,18 +49,13 @@ void main() {
     mockStorageRepository = MockStorageRepository();
     mockLocalAssetRepository = MockDriftLocalAssetRepository();
     mockBackupRepository = MockDriftBackupRepository();
-    mockAppSettingsService = MockAppSettingsService();
     mockAssetMediaRepository = MockAssetMediaRepository();
-
-    when(() => mockAppSettingsService.getSetting(AppSettingsEnum.useCellularForUploadVideos)).thenReturn(false);
-    when(() => mockAppSettingsService.getSetting(AppSettingsEnum.useCellularForUploadPhotos)).thenReturn(false);
 
     sut = BackgroundUploadService(
       mockUploadRepository,
       mockStorageRepository,
       mockLocalAssetRepository,
       mockBackupRepository,
-      mockAppSettingsService,
       mockAssetMediaRepository,
     );
 
@@ -126,7 +118,68 @@ void main() {
       expect(task, isNotNull);
       // For live photos, extension should be changed to match the video file
       expect(task!.fields['filename'], equals('OriginalLivePhoto.mov'));
+      expect(task.fields['visibility'], equals('hidden'));
       verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
+    });
+
+    test('should not set visibility for a regular photo', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/file.jpg');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'Regular.jpg');
+
+      final task = await sut.getUploadTask(asset);
+      expect(task, isNotNull);
+      expect(task!.fields.containsKey('visibility'), isFalse);
+    });
+
+    test('corrects the extension when iOS returns a rendered file for a .dng asset', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/IMG_6499.jpg');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG_6499.dng');
+
+      final task = await sut.getUploadTask(asset);
+      expect(task, isNotNull);
+      expect(task!.fields['filename'], equals('IMG_6499.jpg'));
+    });
+
+    test('keeps the .dng extension for a genuine RAW original', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/IMG_5210.dng');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'IMG_5210.dng');
+
+      final task = await sut.getUploadTask(asset);
+      expect(task, isNotNull);
+      expect(task!.fields['filename'], equals('IMG_5210.dng'));
+    });
+
+    test('borrows the extension from the asset name for an extensionless name (DJI/Fusion)', () async {
+      final asset = LocalAssetStub.image1;
+      final mockEntity = MockAssetEntity();
+      final mockFile = File('/path/to/DJI_0001');
+
+      when(() => mockEntity.isLivePhoto).thenReturn(false);
+      when(() => mockStorageRepository.getAssetEntityForAsset(asset)).thenAnswer((_) async => mockEntity);
+      when(() => mockStorageRepository.getFileForAsset(asset.id)).thenAnswer((_) async => mockFile);
+      when(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).thenAnswer((_) async => 'DJI_0001');
+
+      final task = await sut.getUploadTask(asset);
+      expect(task, isNotNull);
+      expect(task!.fields['filename'], equals('DJI_0001.jpg'));
     });
   });
 
@@ -148,6 +201,7 @@ void main() {
       expect(task, isNotNull);
       expect(task!.fields['filename'], equals('OriginalLivePhoto.HEIC'));
       expect(task.fields['livePhotoVideoId'], equals('video-id-123'));
+      expect(task.fields.containsKey('visibility'), isFalse);
       verify(() => mockAssetMediaRepository.getOriginalFilename(asset.id)).called(1);
     });
 
@@ -179,7 +233,6 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
-        mockAppSettingsService,
         mockAssetMediaRepository,
       );
       addTearDown(() => sutWithV24.dispose());
@@ -230,7 +283,6 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
-        mockAppSettingsService,
         mockAssetMediaRepository,
       );
       addTearDown(() => sutAndroid.dispose());
@@ -271,7 +323,6 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
-        mockAppSettingsService,
         mockAssetMediaRepository,
       );
       addTearDown(() => sutWithV24.dispose());
@@ -312,7 +363,6 @@ void main() {
         mockStorageRepository,
         mockLocalAssetRepository,
         mockBackupRepository,
-        mockAppSettingsService,
         mockAssetMediaRepository,
       );
       addTearDown(() => sutWithV24.dispose());
@@ -345,6 +395,7 @@ void main() {
       expect(task, isNotNull);
       expect(task!.fields.containsKey('metadata'), isTrue);
       expect(task.fields['livePhotoVideoId'], equals('video-123'));
+      expect(task.fields.containsKey('visibility'), isFalse);
 
       final metadata = jsonDecode(task.fields['metadata']!) as List;
       expect(metadata, hasLength(1));

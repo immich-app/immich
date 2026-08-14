@@ -47,7 +47,7 @@ abstract class BackgroundWorkerFlutterApi {
 
   // Android Only: Called when the Android background upload is triggered
   @async
-  void onAndroidUpload();
+  void onAndroidUpload(int? maxMinutes);
 
   @async
   void cancel();

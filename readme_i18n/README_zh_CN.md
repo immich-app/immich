@@ -35,20 +35,19 @@
   <a href="README_zh_TW.md">正體中文</a>
   <a href="README_uk_UA.md">Українська</a>
   <a href="README_ru_RU.md">Русский</a>
+  <a href="README_bg_BG.md">Български</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_sv_SE.md">Svenska</a>
   <a href="README_ar_JO.md">العربية</a>
   <a href="README_vi_VN.md">Tiếng Việt</a>
   <a href="README_th_TH.md">ภาษาไทย</a>
+  <a href="README_ml_IN.md">മലയാളം</a>
 
 </p>
 
-## 免责声明
-
-- ⚠️ 本项目正在 **非常活跃** 地开发中。
-- ⚠️ 可能存在 bug 或者随时有重大变更。
-- ⚠️ **不要把本软件作为您存储照片或视频的唯一方式。**
-- ⚠️ 为了您宝贵的照片与视频，请始终遵守 [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) 备份方案！
+> [!WARNING]
+> ⚠️ 为了您宝贵的照片与视频，请始终遵守 [3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) 备份方案！
+>
 
 > [!NOTE]
 > 完整的项目文档以及安装教程请参见：<https://immich.app/>。

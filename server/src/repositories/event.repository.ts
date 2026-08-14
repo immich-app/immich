@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
-import { ClassConstructor } from 'class-transformer';
 import _ from 'lodash';
 import { Socket } from 'socket.io';
 import { SystemConfig } from 'src/config';
@@ -10,7 +9,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { ImmichWorker, JobStatus, MetadataKey, QueueName, UserAvatarColor, UserStatus } from 'src/enum';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
-import { JobItem, JobSource } from 'src/types';
+import { JobItem, JobSource, UploadFile } from 'src/types';
 
 type EmitHandlers = Partial<{ [T in EmitEvent]: Array<EventItem<T>> }>;
 
@@ -39,12 +38,12 @@ type EventMap = {
   ConfigValidate: [{ newConfig: SystemConfig; oldConfig: SystemConfig }];
 
   // album events
-  AlbumUpdate: [{ id: string; recipientId: string }];
-  AlbumInvite: [{ id: string; userId: string }];
+  AlbumUpdate: [{ id: string; userIds: string[]; recipientIds: string[] }];
+  AlbumInvite: [{ id: string; userId: string; senderName: string }];
 
   // asset events
-  AssetCreate: [{ asset: Asset }];
-  AssetTag: [{ assetId: string }];
+  AssetCreate: [{ asset: Pick<Asset, 'id' | 'ownerId'>; file?: UploadFile }];
+  AssetTag: [{ assetId: string; userId: string }];
   AssetUntag: [{ assetId: string }];
   AssetHide: [{ assetId: string; userId: string }];
   AssetShow: [{ assetId: string; userId: string }];
@@ -92,6 +91,14 @@ type EventMap = {
   UserRestore: [UserEvent];
 
   AuthChangePassword: [{ userId: string; currentSessionId?: string; invalidateSessions?: boolean }];
+
+  // hls streaming events
+  HlsSegmentRequest: [{ sessionId: string; assetId: string; variantIndex: number; segmentIndex: number }];
+  HlsSegmentResult: [{ sessionId: string; variantIndex: number; segmentIndex: number; error?: string }];
+  HlsHeartbeat: [{ sessionId: string; variantIndex?: number; segmentIndex?: number }];
+  HlsSessionRequest: [{ sessionId: string; assetId: string; ownerId: string }];
+  HlsSessionResult: [{ sessionId: string; error?: string }];
+  HlsSessionEnd: [{ sessionId: string }];
 
   // websocket events
   WebsocketConnect: [{ userId: string }];
@@ -152,7 +159,7 @@ export class EventRepository {
     this.logger.setContext(EventRepository.name);
   }
 
-  setup({ services }: { services: ClassConstructor<unknown>[] }) {
+  setup({ services }: { services: (new (...args: any[]) => unknown)[] }) {
     const reflector = this.moduleRef.get(Reflector, { strict: false });
     const items: Item<EmitEvent>[] = [];
     const worker = this.configRepository.getWorker();
@@ -206,11 +213,11 @@ export class EventRepository {
   private addHandler<T extends EmitEvent>(item: Item<T>): void {
     const event = item.event;
 
-    if (!this.emitHandlers[event]) {
+    if (!Object.hasOwn(this.emitHandlers, event)) {
       this.emitHandlers[event] = [];
     }
 
-    this.emitHandlers[event].push(item);
+    this.emitHandlers[event]!.push(item);
   }
 
   emit<T extends EmitEvent>(event: T, ...args: ArgsOf<T>): Promise<void> {

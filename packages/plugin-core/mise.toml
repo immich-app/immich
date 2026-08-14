@@ -1,0 +1,6 @@
+[tasks.install]
+run = "pnpm install --frozen-lockfile"
+
+[tasks.build]
+depends = ["install"]
+run = "pnpm --filter @immich/plugin-sdk --filter @immich/plugin-core build"

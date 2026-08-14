@@ -21,7 +21,7 @@ class LockedGuard extends AutoRouteGuard {
   LockedGuard(this._apiService, this._secureStorageService, this._localAuth);
 
   @override
-  void onNavigation(NavigationResolver resolver, StackRouter router) async {
+  Future<void> onNavigation(NavigationResolver resolver, StackRouter router) async {
     final authStatus = await _apiService.authenticationApi.getAuthStatus();
 
     if (authStatus == null) {
@@ -55,20 +55,17 @@ class LockedGuard extends AutoRouteGuard {
         return;
       }
 
-      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: securePinCode));
+      await _apiService.authenticationApi.unlockAuthSession(SessionUnlockDto(pinCode: Optional.present(securePinCode)));
 
       resolver.next(true);
     } on PlatformException catch (error) {
       switch (error.code) {
         case auth_error.notAvailable:
           _log.severe("notAvailable: $error");
-          break;
         case auth_error.notEnrolled:
           _log.severe("not enrolled");
-          break;
         default:
           _log.severe("error");
-          break;
       }
 
       resolver.next(false);

@@ -1,36 +1,42 @@
-enum SemVerType { major, minor, patch }
+enum SemVerType { major, minor, patch, prerelease }
 
 class SemVer {
   final int major;
   final int minor;
   final int patch;
+  final int? prerelease;
 
-  const SemVer({required this.major, required this.minor, required this.patch});
+  const SemVer({required this.major, required this.minor, required this.patch, this.prerelease});
 
   @override
   String toString() {
-    return '$major.$minor.$patch';
+    return '$major.$minor.$patch${prerelease == null ? '' : '-rc.$prerelease'}';
   }
 
-  SemVer copyWith({int? major, int? minor, int? patch}) {
-    return SemVer(major: major ?? this.major, minor: minor ?? this.minor, patch: patch ?? this.patch);
+  SemVer copyWith({int? major, int? minor, int? patch, int? prerelease}) {
+    return SemVer(
+      major: major ?? this.major,
+      minor: minor ?? this.minor,
+      patch: patch ?? this.patch,
+      prerelease: prerelease ?? this.prerelease,
+    );
   }
+
+  static final _pattern = RegExp(r'^v?(\d+)\.(\d+)\.(\d+)(?:-rc\.(\d+))?(?:[-+].*)?$', caseSensitive: false);
 
   factory SemVer.fromString(String version) {
-    if (version.toLowerCase().startsWith("v")) {
-      version = version.substring(1);
-    }
-
-    final parts = version.split("-")[0].split('.');
-    if (parts.length != 3) {
+    final match = _pattern.firstMatch(version);
+    if (match == null) {
       throw FormatException('Invalid semantic version string: $version');
     }
 
-    try {
-      return SemVer(major: int.parse(parts[0]), minor: int.parse(parts[1]), patch: int.parse(parts[2]));
-    } catch (e) {
-      throw FormatException('Invalid semantic version string: $version');
-    }
+    final prerelease = match.group(4);
+    return SemVer(
+      major: int.parse(match.group(1)!),
+      minor: int.parse(match.group(2)!),
+      patch: int.parse(match.group(3)!),
+      prerelease: prerelease == null ? null : int.parse(prerelease),
+    );
   }
 
   bool operator >(SemVer other) {
@@ -40,7 +46,10 @@ class SemVer {
     if (minor != other.minor) {
       return minor > other.minor;
     }
-    return patch > other.patch;
+    if (patch != other.patch) {
+      return patch > other.patch;
+    }
+    return _comparePrerelease(other) > 0;
   }
 
   bool operator <(SemVer other) {
@@ -50,7 +59,23 @@ class SemVer {
     if (minor != other.minor) {
       return minor < other.minor;
     }
-    return patch < other.patch;
+    if (patch != other.patch) {
+      return patch < other.patch;
+    }
+    return _comparePrerelease(other) < 0;
+  }
+
+  int _comparePrerelease(SemVer other) {
+    if (prerelease == other.prerelease) {
+      return 0;
+    }
+    if (prerelease == null) {
+      return 1;
+    }
+    if (other.prerelease == null) {
+      return -1;
+    }
+    return prerelease!.compareTo(other.prerelease!);
   }
 
   bool operator >=(SemVer other) {
@@ -63,9 +88,15 @@ class SemVer {
 
   @override
   bool operator ==(Object other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
-    return other is SemVer && other.major == major && other.minor == minor && other.patch == patch;
+    return other is SemVer &&
+        other.major == major &&
+        other.minor == minor &&
+        other.patch == patch &&
+        other.prerelease == prerelease;
   }
 
   SemVerType? differenceType(SemVer other) {
@@ -78,10 +109,13 @@ class SemVer {
     if (patch != other.patch) {
       return SemVerType.patch;
     }
+    if (prerelease != other.prerelease) {
+      return SemVerType.prerelease;
+    }
 
     return null;
   }
 
   @override
-  int get hashCode => major.hashCode ^ minor.hashCode ^ patch.hashCode;
+  int get hashCode => major.hashCode ^ minor.hashCode ^ patch.hashCode ^ prerelease.hashCode;
 }

@@ -1,82 +1,76 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { createZodDto } from 'nestjs-zod';
 import { HistoryBuilder } from 'src/decorators';
-import { JobName, QueueCommand, QueueJobStatus, QueueName } from 'src/enum';
-import { ValidateBoolean, ValidateEnum } from 'src/validation';
+import { JobNameSchema, QueueCommandSchema, QueueJobStatusSchema, QueueNameSchema } from 'src/enum';
+import z from 'zod';
 
-export class QueueNameParamDto {
-  @ValidateEnum({ enum: QueueName, name: 'QueueName', description: 'Queue name' })
-  name!: QueueName;
-}
-
-export class QueueCommandDto {
-  @ValidateEnum({ enum: QueueCommand, name: 'QueueCommand', description: 'Queue command to execute' })
-  command!: QueueCommand;
-
-  @ValidateBoolean({ optional: true, description: 'Force the command execution (if applicable)' })
-  force?: boolean; // TODO: this uses undefined as a third state, which should be refactored to be more explicit
-}
-
-export class QueueUpdateDto {
-  @ValidateBoolean({ optional: true, description: 'Whether to pause the queue' })
-  isPaused?: boolean;
-}
-
-export class QueueDeleteDto {
-  @ValidateBoolean({
-    optional: true,
-    description: 'If true, will also remove failed jobs from the queue.',
-    history: new HistoryBuilder().added('v2.4.0').alpha('v2.4.0'),
+const QueueNameParamSchema = z
+  .object({
+    name: QueueNameSchema,
   })
-  failed?: boolean;
-}
+  .meta({ id: 'QueueNameParamDto' });
 
-export class QueueJobSearchDto {
-  @ValidateEnum({
-    enum: QueueJobStatus,
-    name: 'QueueJobStatus',
-    optional: true,
-    each: true,
-    description: 'Filter jobs by status',
+const QueueCommandSchemaDto = z
+  .object({
+    command: QueueCommandSchema,
+    force: z.boolean().optional().describe('Force the command execution (if applicable)'),
   })
-  status?: QueueJobStatus[];
-}
-export class QueueJobResponseDto {
-  @ApiPropertyOptional({ description: 'Job ID' })
-  id?: string;
+  .meta({ id: 'QueueCommandDto' });
 
-  @ValidateEnum({ enum: JobName, name: 'JobName', description: 'Job name' })
-  name!: JobName;
+const QueueUpdateSchema = z
+  .object({
+    isPaused: z.boolean().optional().describe('Whether to pause the queue'),
+  })
+  .meta({ id: 'QueueUpdateDto' });
 
-  @ApiProperty({ description: 'Job data payload', type: Object })
-  data!: object;
+const QueueDeleteSchema = z
+  .object({
+    failed: z
+      .boolean()
+      .optional()
+      .describe('If true, will also remove failed jobs from the queue.')
+      .meta(new HistoryBuilder().added('v2.4.0').alpha('v2.4.0').getExtensions()),
+  })
+  .meta({ id: 'QueueDeleteDto' });
 
-  @ApiProperty({ type: 'integer', description: 'Job creation timestamp' })
-  timestamp!: number;
-}
+const QueueJobSearchSchema = z
+  .object({
+    status: z.array(QueueJobStatusSchema).optional().describe('Filter jobs by status'),
+  })
+  .meta({ id: 'QueueJobSearchDto' });
 
-export class QueueStatisticsDto {
-  @ApiProperty({ type: 'integer', description: 'Number of active jobs' })
-  active!: number;
-  @ApiProperty({ type: 'integer', description: 'Number of completed jobs' })
-  completed!: number;
-  @ApiProperty({ type: 'integer', description: 'Number of failed jobs' })
-  failed!: number;
-  @ApiProperty({ type: 'integer', description: 'Number of delayed jobs' })
-  delayed!: number;
-  @ApiProperty({ type: 'integer', description: 'Number of waiting jobs' })
-  waiting!: number;
-  @ApiProperty({ type: 'integer', description: 'Number of paused jobs' })
-  paused!: number;
-}
+const QueueJobResponseSchema = z
+  .object({
+    id: z.string().optional().describe('Job ID'),
+    name: JobNameSchema,
+    data: z.record(z.string(), z.unknown()).describe('Job data payload'),
+    timestamp: z.int().describe('Job creation timestamp'),
+  })
+  .meta({ id: 'QueueJobResponseDto' });
 
-export class QueueResponseDto {
-  @ValidateEnum({ enum: QueueName, name: 'QueueName', description: 'Queue name' })
-  name!: QueueName;
+export const QueueStatisticsSchema = z
+  .object({
+    active: z.int().describe('Number of active jobs'),
+    completed: z.int().describe('Number of completed jobs'),
+    failed: z.int().describe('Number of failed jobs'),
+    delayed: z.int().describe('Number of delayed jobs'),
+    waiting: z.int().describe('Number of waiting jobs'),
+    paused: z.int().describe('Number of paused jobs'),
+  })
+  .meta({ id: 'QueueStatisticsDto' });
 
-  @ValidateBoolean({ description: 'Whether the queue is paused' })
-  isPaused!: boolean;
+const QueueResponseSchema = z
+  .object({
+    name: QueueNameSchema,
+    isPaused: z.boolean().describe('Whether the queue is paused'),
+    statistics: QueueStatisticsSchema,
+  })
+  .meta({ id: 'QueueResponseDto' });
 
-  // Description lives on schema to avoid duplication
-  @ApiProperty({ description: undefined })
-  statistics!: QueueStatisticsDto;
-}
+export class QueueNameParamDto extends createZodDto(QueueNameParamSchema) {}
+export class QueueCommandDto extends createZodDto(QueueCommandSchemaDto) {}
+export class QueueUpdateDto extends createZodDto(QueueUpdateSchema) {}
+export class QueueDeleteDto extends createZodDto(QueueDeleteSchema) {}
+export class QueueJobSearchDto extends createZodDto(QueueJobSearchSchema) {}
+export class QueueJobResponseDto extends createZodDto(QueueJobResponseSchema) {}
+export class QueueStatisticsDto extends createZodDto(QueueStatisticsSchema) {}
+export class QueueResponseDto extends createZodDto(QueueResponseSchema) {}

@@ -1,6 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
 import 'dart:ui';
+
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'user.model.freezed.dart';
 
 enum AvatarColor {
   // do not change this order or reuse indices for other purposes, adding is OK
@@ -125,7 +128,9 @@ profileChangedAt: $profileChangedAt
 
   @override
   bool operator ==(covariant UserDto other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.id == id &&
         ((updatedAt == null && other.updatedAt == null) ||
@@ -162,74 +167,135 @@ profileChangedAt: $profileChangedAt
       quotaUsageInBytes.hashCode;
 }
 
-class PartnerUserDto {
+@freezed
+abstract class PartnerUserDto with _$PartnerUserDto {
+  const factory PartnerUserDto({
+    required String id,
+    required String email,
+    required String name,
+    required bool inTimeline,
+    String? profileImagePath,
+  }) = _PartnerUserDto;
+}
+
+class User {
   final String id;
-  final String email;
   final String name;
-  final bool inTimeline;
+  final String email;
+  final DateTime profileChangedAt;
+  final bool hasProfileImage;
+  final AvatarColor? avatarColor;
 
-  final String? profileImagePath;
-
-  const PartnerUserDto({
+  const User({
     required this.id,
-    required this.email,
     required this.name,
-    required this.inTimeline,
-    this.profileImagePath,
+    required this.email,
+    required this.profileChangedAt,
+    required this.hasProfileImage,
+    this.avatarColor = AvatarColor.primary,
   });
-
-  PartnerUserDto copyWith({String? id, String? email, String? name, bool? inTimeline, String? profileImagePath}) {
-    return PartnerUserDto(
-      id: id ?? this.id,
-      email: email ?? this.email,
-      name: name ?? this.name,
-      inTimeline: inTimeline ?? this.inTimeline,
-      profileImagePath: profileImagePath ?? this.profileImagePath,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'id': id,
-      'email': email,
-      'name': name,
-      'inTimeline': inTimeline,
-      'profileImagePath': profileImagePath,
-    };
-  }
-
-  factory PartnerUserDto.fromMap(Map<String, dynamic> map) {
-    return PartnerUserDto(
-      id: map['id'] as String,
-      email: map['email'] as String,
-      name: map['name'] as String,
-      inTimeline: map['inTimeline'] as bool,
-      profileImagePath: map['profileImagePath'] != null ? map['profileImagePath'] as String : null,
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory PartnerUserDto.fromJson(String source) => PartnerUserDto.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
   String toString() {
-    return 'PartnerUserDto(id: $id, email: $email, name: $name, inTimeline: $inTimeline, profileImagePath: $profileImagePath)';
+    return 'User(id: $id, name: $name, email: $email, profileChangedAt: $profileChangedAt, hasProfileImage: $hasProfileImage, avatarColor: $avatarColor)';
   }
 
   @override
-  bool operator ==(covariant PartnerUserDto other) {
-    if (identical(this, other)) return true;
+  bool operator ==(covariant User other) {
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.id == id &&
-        other.email == email &&
         other.name == name &&
-        other.inTimeline == inTimeline &&
-        other.profileImagePath == profileImagePath;
+        other.email == email &&
+        other.profileChangedAt == profileChangedAt &&
+        other.hasProfileImage == hasProfileImage &&
+        other.avatarColor == avatarColor;
   }
 
   @override
-  int get hashCode {
-    return id.hashCode ^ email.hashCode ^ name.hashCode ^ inTimeline.hashCode ^ profileImagePath.hashCode;
+  int get hashCode => Object.hash(id, name, email, profileChangedAt, hasProfileImage, avatarColor);
+}
+
+class AuthUser extends User {
+  final bool isAdmin;
+  final String? pinCode;
+  final int? quotaSizeInBytes;
+  final int quotaUsageInBytes;
+
+  const AuthUser({
+    required super.id,
+    required super.name,
+    required super.email,
+    required super.profileChangedAt,
+    required super.hasProfileImage,
+    super.avatarColor,
+    this.isAdmin = false,
+    this.pinCode,
+    this.quotaSizeInBytes = 0,
+    this.quotaUsageInBytes = 0,
+  });
+
+  @override
+  String toString() {
+    return 'AuthUser(user: ${super.toString()}, isAdmin: $isAdmin, pinCode: $pinCode, quotaSizeInBytes: $quotaSizeInBytes, quotaUsageInBytes: $quotaUsageInBytes)';
   }
+
+  @override
+  bool operator ==(covariant AuthUser other) {
+    if (identical(this, other)) {
+      return true;
+    }
+
+    return super == other &&
+        other.isAdmin == isAdmin &&
+        other.pinCode == pinCode &&
+        other.quotaSizeInBytes == quotaSizeInBytes &&
+        other.quotaUsageInBytes == quotaUsageInBytes;
+  }
+
+  @override
+  int get hashCode => Object.hash(super.hashCode, isAdmin, pinCode, quotaSizeInBytes, quotaUsageInBytes);
+}
+
+class Partner extends User {
+  final bool inTimeline;
+
+  const Partner({
+    required super.id,
+    required super.name,
+    required super.email,
+    required super.profileChangedAt,
+    required super.hasProfileImage,
+    super.avatarColor,
+    this.inTimeline = false,
+  });
+
+  Partner.fromUser(User user, {this.inTimeline = false})
+    : super(
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        profileChangedAt: user.profileChangedAt,
+        hasProfileImage: user.hasProfileImage,
+        avatarColor: user.avatarColor,
+      );
+
+  @override
+  String toString() {
+    return 'Partner(user: ${super.toString()}, inTimeline: $inTimeline)';
+  }
+
+  @override
+  bool operator ==(covariant Partner other) {
+    if (identical(this, other)) {
+      return true;
+    }
+
+    return super == other && other.inTimeline == inTimeline;
+  }
+
+  @override
+  int get hashCode => Object.hash(super.hashCode, inTimeline);
 }

@@ -1,9 +1,9 @@
-import { getAnimateMock } from '$lib/__mocks__/animate.mock';
-import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
-import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
 import { fireEvent, render, screen, waitFor } from '@testing-library/svelte';
 import { DateTime } from 'luxon';
 import { afterAll, beforeEach, describe, expect, test, vi } from 'vitest';
+import { getAnimateMock } from '$lib/__mocks__/animate.mock';
+import { getIntersectionObserverMock } from '$lib/__mocks__/intersection-observer.mock';
+import { getVisualViewportMock } from '$lib/__mocks__/visual-viewport.mock';
 import AssetChangeDateModal from './AssetChangeDateModal.svelte';
 
 describe('AssetChangeDateModal component', () => {

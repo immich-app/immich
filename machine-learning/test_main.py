@@ -7,7 +7,6 @@ from types import SimpleNamespace
 from typing import Any, Callable
 from unittest import mock
 
-import cv2
 import numpy as np
 import onnxruntime as ort
 import orjson
@@ -35,7 +34,37 @@ from immich_ml.sessions.ort import OrtSession
 from immich_ml.sessions.rknn import RknnSession, run_inference
 
 
+class FakeLock:
+    def __init__(self) -> None:
+        self.enter = mock.Mock()
+        self.exit = mock.Mock()
+
+    def __enter__(self) -> None:
+        self.enter()
+
+    def __exit__(self, *args: object) -> None:
+        self.exit(*args)
+
+
 class TestBase:
+    def test_sets_default_worker_timeout(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.delenv("DEVICE", raising=False)
+        monkeypatch.delenv("MACHINE_LEARNING_WORKER_TIMEOUT", raising=False)
+
+        assert Settings().worker_timeout == 300
+
+    def test_sets_rocm_default_worker_timeout(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.setenv("DEVICE", "rocm")
+        monkeypatch.delenv("MACHINE_LEARNING_WORKER_TIMEOUT", raising=False)
+
+        assert Settings().worker_timeout == 900
+
+    def test_worker_timeout_env_override(self, monkeypatch: MonkeyPatch) -> None:
+        monkeypatch.setenv("DEVICE", "rocm")
+        monkeypatch.setenv("MACHINE_LEARNING_WORKER_TIMEOUT", "1200")
+
+        assert Settings().worker_timeout == 1200
+
     def test_sets_default_cache_dir(self) -> None:
         encoder = OpenClipTextualEncoder("ViT-B-32__openai")
 
@@ -413,6 +442,52 @@ class TestOrtSession:
 
         assert sess_options is session.sess_options
 
+    def test_serializes_rocm_first_run_for_new_input_signature(self, mocker: MockerFixture) -> None:
+        lock = FakeLock()
+        get_model_lock = mocker.patch("immich_ml.sessions.ort._migraphx_get_model_lock", return_value=lock)
+        mocker.patch("immich_ml.sessions.ort._migraphx_compiled_inputs", set())
+        mocker.patch("immich_ml.sessions.ort.Path.mkdir")
+        session = OrtSession("/cache/ViT-B-32__openai/model.onnx", providers=["MIGraphXExecutionProvider"])
+        input_feed = {"input": np.random.rand(1, 3, 224, 224).astype(np.float32)}
+
+        session.run(None, input_feed)
+        session.run(None, input_feed)
+
+        lock.enter.assert_called_once()
+        lock.exit.assert_called_once()
+        get_model_lock.assert_called_once()
+        session.session.run.assert_has_calls([mock.call(None, input_feed, None), mock.call(None, input_feed, None)])
+
+    def test_serializes_rocm_run_for_each_new_input_signature(self, mocker: MockerFixture) -> None:
+        lock = FakeLock()
+        mocker.patch("immich_ml.sessions.ort._migraphx_get_model_lock", return_value=lock)
+        mocker.patch("immich_ml.sessions.ort._migraphx_compiled_inputs", set())
+        mocker.patch("immich_ml.sessions.ort.Path.mkdir")
+        session = OrtSession("/cache/ViT-B-32__openai/model.onnx", providers=["MIGraphXExecutionProvider"])
+        input_feed = {"input": np.random.rand(1, 3, 224, 224).astype(np.float32)}
+        new_shape_input_feed = {"input": np.random.rand(2, 3, 224, 224).astype(np.float32)}
+
+        session.run(None, input_feed)
+        session.run(None, new_shape_input_feed)
+
+        assert lock.enter.call_count == 2
+        assert lock.exit.call_count == 2
+        session.session.run.assert_has_calls(
+            [mock.call(None, input_feed, None), mock.call(None, new_shape_input_feed, None)]
+        )
+
+    def test_does_not_serialize_non_rocm_run(self, mocker: MockerFixture) -> None:
+        lock = FakeLock()
+        get_model_lock = mocker.patch("immich_ml.sessions.ort._migraphx_get_model_lock", return_value=lock)
+        session = OrtSession("/cache/ViT-B-32__openai/model.onnx", providers=["CPUExecutionProvider"])
+        input_feed = {"input": np.random.rand(1, 3, 224, 224).astype(np.float32)}
+
+        session.run(None, input_feed)
+
+        get_model_lock.assert_not_called()
+        lock.enter.assert_not_called()
+        session.session.run.assert_called_once_with(None, input_feed, None)
+
 
 class TestAnnSession:
     def test_creates_ann_session(self, ann_session: mock.Mock, info: mock.Mock) -> None:
@@ -440,7 +515,7 @@ class TestAnnSession:
         inputs = session.get_inputs()
 
         assert len(inputs) == 1
-        assert inputs[0].name is None
+        assert inputs[0].name == "input.1"
         assert inputs[0].shape == (1, 3, 224, 224)
 
     def test_get_outputs(self, ann_session: mock.Mock) -> None:
@@ -451,7 +526,7 @@ class TestAnnSession:
         outputs = session.get_outputs()
 
         assert len(outputs) == 1
-        assert outputs[0].name is None
+        assert outputs[0].name == "output.1"
         assert outputs[0].shape == (1, 3, 224, 224)
 
     def test_run(self, ann_session: mock.Mock, mocker: MockerFixture) -> None:
@@ -705,85 +780,193 @@ class TestCLIP:
         assert np.allclose(tokens["attention_mask"], np.array([mock_attention_mask], dtype=np.int32), atol=0)
 
 
+def make_scrfd_heads(detections: list[tuple[int, int, float]]) -> list[np.ndarray]:
+    """Build the 9 head tensors a SCRFD keypoint model emits at 640x640.
+
+    `detections` is a list of (cell_x, cell_y, score) placed on the stride-8 level.
+    Distances and keypoint offsets are fixed so the decoded geometry is known by
+    hand rather than derived from the code under test:
+        box  = [cx - 1*8, cy - 2*8, cx + 3*8, cy + 4*8]
+        kps  = [cx, cy] + [0, 1, 2, ... 9] * 8, reshaped to 5 points
+    """
+    heads: list[np.ndarray] = []
+    counts = [(640 // stride) ** 2 * 2 for stride in (8, 16, 32)]
+    for channels in (1, 4, 10):
+        for n in counts:
+            heads.append(np.zeros((n, channels), dtype=np.float32))
+    for cell_x, cell_y, score in detections:
+        i = 2 * (cell_y * 80 + cell_x)  # anchor-major, 2 anchors per cell
+        heads[0][i] = score
+        heads[3][i] = [1, 2, 3, 4]
+        heads[6][i] = np.arange(10)
+    return heads
+
+
+def expected_box(cell_x: int, cell_y: int) -> list[float]:
+    cx, cy = cell_x * 8, cell_y * 8
+    return [cx - 8, cy - 16, cx + 24, cy + 32]
+
+
+def expected_landmarks(cell_x: int, cell_y: int) -> np.ndarray:
+    cx, cy = cell_x * 8, cell_y * 8
+    return (np.tile([cx, cy], 5) + np.arange(10) * 8).reshape(5, 2).astype(np.float32)
+
+
+@pytest.fixture
+def batch_axis(mocker: MockerFixture) -> SimpleNamespace:
+    """Patches for the `_add_batch_axis` path: the onnx module it rewrites the model
+    through, and the download it would otherwise trigger on load."""
+    mocker.patch("immich_ml.models.base.InferenceModel.download")
+    return SimpleNamespace(
+        onnx=mocker.patch("immich_ml.models.facial_recognition.recognition.onnx", autospec=True),
+        update_dims=mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+        ),
+    )
+
+
 class TestFaceRecognition:
-    def test_set_min_score(self, snapshot_download: mock.Mock, ort_session: mock.Mock, path: mock.Mock) -> None:
-        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
-
-        face_detector = FaceDetector("buffalo_s", min_score=0.5, cache_dir="test_cache")
-        face_detector.load()
-
-        assert face_detector.min_score == 0.5
-        assert face_detector.model.det_thresh == 0.5
-
-    def test_detection(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
+    def test_detection(self, stub_session: Callable[..., mock.Mock], mocker: MockerFixture) -> None:
         mocker.patch.object(FaceDetector, "load")
-        face_detector = FaceDetector("buffalo_s", min_score=0.0, cache_dir="test_cache")
+        face_detector = FaceDetector("buffalo_s", cache_dir="test_cache")
 
-        det_model = mock.Mock()
-        num_faces = 2
-        bbox = np.random.rand(num_faces, 4).astype(np.float32)
-        scores = np.array([[0.67]] * num_faces).astype(np.float32)
-        kpss = np.random.rand(num_faces, 5, 2).astype(np.float32)
-        det_model.detect.return_value = (np.concatenate([bbox, scores], axis=-1), kpss)
-        face_detector.model = det_model
+        session = stub_session((1, 3, 640, 640), outputs=make_scrfd_heads([(10, 10, 0.9), (50, 50, 0.8)]))
+        face_detector.session = session
 
-        faces = face_detector.predict(cv_image)
+        faces = face_detector.predict(Image.new("RGB", (640, 640)), minScore=0.7)
 
         assert isinstance(faces, dict)
-        assert isinstance(faces.get("boxes", None), np.ndarray)
-        assert isinstance(faces.get("landmarks", None), np.ndarray)
-        assert isinstance(faces.get("scores", None), np.ndarray)
-        assert np.equal(faces["boxes"], bbox.round()).all()
-        assert np.equal(faces["landmarks"], kpss).all()
-        assert np.equal(faces["scores"], scores).all()
-        det_model.detect.assert_called_once()
+        assert set(faces) == {"boxes", "scores", "landmarks"}
+        # NMS returns highest score first
+        assert faces["boxes"].tolist() == [expected_box(10, 10), expected_box(50, 50)]
+        assert np.allclose(faces["scores"], [0.9, 0.8])
+        assert faces["landmarks"].shape == (2, 5, 2)
+        assert np.allclose(faces["landmarks"][0], expected_landmarks(10, 10))
+        assert np.allclose(faces["landmarks"][1], expected_landmarks(50, 50))
 
-    def test_recognition(self, cv_image: cv2.Mat, mocker: MockerFixture) -> None:
+    def test_detection_applies_min_score_per_request(
+        self, stub_session: Callable[..., mock.Mock], mocker: MockerFixture
+    ) -> None:
+        mocker.patch.object(FaceDetector, "load")
+        face_detector = FaceDetector("buffalo_s", cache_dir="test_cache")
+
+        session = stub_session((1, 3, 640, 640), outputs=make_scrfd_heads([(10, 10, 0.9), (50, 50, 0.5)]))
+        face_detector.session = session
+
+        # the threshold is a request parameter, so the same loaded model must honour both
+        assert face_detector.predict(Image.new("RGB", (640, 640)), minScore=0.7)["boxes"].shape[0] == 1
+        assert face_detector.predict(Image.new("RGB", (640, 640)), minScore=0.4)["boxes"].shape[0] == 2
+
+    def test_detection_scales_boxes_back_to_the_original_image(
+        self, stub_session: Callable[..., mock.Mock], mocker: MockerFixture
+    ) -> None:
+        mocker.patch.object(FaceDetector, "load")
+        face_detector = FaceDetector("buffalo_s", cache_dir="test_cache")
+
+        session = stub_session((1, 3, 640, 640), outputs=make_scrfd_heads([(10, 10, 0.9)]))
+        face_detector.session = session
+
+        # a 320x320 image is letterboxed up to 640, so coordinates come back halved
+        faces = face_detector.predict(Image.new("RGB", (320, 320)), minScore=0.7)
+
+        assert faces["boxes"].tolist() == [[v / 2 for v in expected_box(10, 10)]]
+        assert np.allclose(faces["landmarks"][0], expected_landmarks(10, 10) / 2)
+
+    def test_recognition(self, stub_session: Callable[..., mock.Mock], mocker: MockerFixture) -> None:
         mocker.patch.object(FaceRecognizer, "load")
-        face_recognizer = FaceRecognizer("buffalo_s", min_score=0.0, cache_dir="test_cache")
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=["CPUExecutionProvider"],
+        )
+        face_recognizer = FaceRecognizer("buffalo_s", cache_dir="test_cache")
 
+        # a uniform grey image whose crops land wholly inside it, so every sampled
+        # pixel is 128 and the normalised value the session receives is exact
+        image = Image.new("RGB", (600, 800), (128, 128, 128))
         num_faces = 2
+        arcface_dst = np.array(
+            [[38.2946, 51.6963], [73.5318, 51.5014], [56.0252, 71.7366], [41.5493, 92.3655], [70.7299, 92.2041]],
+            dtype=np.float32,
+        )
+        kpss = np.stack([arcface_dst * 2 + [200, 300], arcface_dst * 2 + [220, 320]]).astype(np.float32)
         bbox = np.random.rand(num_faces, 4).astype(np.float32)
         scores = np.array([0.67] * num_faces).astype(np.float32)
-        kpss = np.random.rand(num_faces, 5, 2).astype(np.float32)
-        faces = {"boxes": bbox, "landmarks": kpss, "scores": scores}
+        embeddings = np.random.rand(num_faces, 512).astype(np.float32)
 
-        rec_model = mock.Mock()
-        embedding = np.random.rand(num_faces, 512).astype(np.float32)
-        rec_model.get_feat.return_value = embedding
-        face_recognizer.model = rec_model
+        session = stub_session(("batch", 3, 112, 112), outputs=[embeddings])
+        face_recognizer.session = session
 
-        faces = face_recognizer.predict(cv_image, faces)
+        faces = face_recognizer.predict(image, {"boxes": bbox, "landmarks": kpss, "scores": scores})
 
         assert isinstance(faces, list)
         assert len(faces) == num_faces
         for face in faces:
-            assert isinstance(face.get("boundingBox"), dict)
             assert set(face["boundingBox"]) == {"x1", "y1", "x2", "y2"}
             assert all(isinstance(val, np.float32) for val in face["boundingBox"].values())
-            embedding_str = face.get("embedding")
-            assert isinstance(embedding_str, str)
-            embedding = orjson.loads(embedding_str)
+            embedding = orjson.loads(face["embedding"])
             assert isinstance(embedding, list)
             assert len(embedding) == 512
             assert isinstance(face.get("score", None), np.float32)
 
-        rec_model.get_feat.assert_called_once()
-        call_args = rec_model.get_feat.call_args_list[0].args
-        assert len(call_args) == 1
-        assert isinstance(call_args[0], list)
-        assert isinstance(call_args[0][0], np.ndarray)
-        assert call_args[0][0].shape == (112, 112, 3)
+        session.run.assert_called_once()
+        crops = session.run.call_args.args[1]["input.1"]
+        assert crops.shape == (num_faces, 3, 112, 112)
+        assert crops.dtype == np.float32
+        # mean/std 127.5, not raw 0-255. atol is loose enough for the float32 cancellation
+        # in normalize's scale-then-subtract, but still rejects a wrong mean or std
+        assert np.allclose(crops, (128 - 127.5) / 127.5, atol=1e-6)
+
+    def test_recognition_returns_early_without_faces(self, pil_image: Image.Image, mocker: MockerFixture) -> None:
+        mocker.patch.object(FaceRecognizer, "load")
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=["CPUExecutionProvider"],
+        )
+        face_recognizer = FaceRecognizer("buffalo_s", cache_dir="test_cache")
+        session = mock.Mock()
+        face_recognizer.session = session
+
+        empty = {
+            "boxes": np.empty((0, 4), dtype=np.float32),
+            "landmarks": np.empty((0, 5, 2), dtype=np.float32),
+            "scores": np.empty(0, dtype=np.float32),
+        }
+
+        assert face_recognizer.predict(pil_image, empty) == []
+        session.run.assert_not_called()
+
+    def test_recognition_batches_when_batch_size_is_set(
+        self, pil_image: Image.Image, stub_session: Callable[..., mock.Mock], mocker: MockerFixture
+    ) -> None:
+        mocker.patch.object(FaceRecognizer, "load")
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=["CPUExecutionProvider"],
+        )
+        face_recognizer = FaceRecognizer("buffalo_s", cache_dir="test_cache")
+        face_recognizer.batch_size = 2
+
+        num_faces = 5
+        session = stub_session((1, 3, 112, 112))
+        session.run.side_effect = lambda _, feed: [np.zeros((feed["input.1"].shape[0], 512), dtype=np.float32)]
+        face_recognizer.session = session
+
+        faces = {
+            "boxes": np.random.rand(num_faces, 4).astype(np.float32),
+            "landmarks": (np.random.rand(num_faces, 5, 2) * 100).astype(np.float32),
+            "scores": np.array([0.67] * num_faces, dtype=np.float32),
+        }
+        assert len(face_recognizer.predict(pil_image, faces)) == num_faces
+        assert session.run.call_count == 3  # 2 + 2 + 1
+        assert [c.args[1]["input.1"].shape[0] for c in session.run.call_args_list] == [2, 2, 1]
 
     def test_recognition_adds_batch_axis_for_ort(
-        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
+        self, batch_axis: SimpleNamespace, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
     ) -> None:
-        onnx = mocker.patch("immich_ml.models.facial_recognition.recognition.onnx", autospec=True)
-        update_dims = mocker.patch(
-            "immich_ml.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=["CPUExecutionProvider"],
         )
-        mocker.patch("immich_ml.models.base.InferenceModel.download")
-        mocker.patch("immich_ml.models.facial_recognition.recognition.ArcFaceONNX")
         ort_session.return_value.get_inputs.return_value = [SimpleNamespace(name="input.1", shape=(1, 3, 224, 224))]
         ort_session.return_value.get_outputs.return_value = [SimpleNamespace(name="output.1", shape=(1, 800))]
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
@@ -800,24 +983,24 @@ class TestFaceRecognition:
         output_dims.type.tensor_type.shape.dim = [SimpleNamespace(dim_value=size) for size in [1, 800]]
         proto.graph.output = [output_dims]
 
-        onnx.load.return_value = proto
+        batch_axis.onnx.load.return_value = proto
 
         face_recognizer = FaceRecognizer("buffalo_s", cache_dir=path)
         face_recognizer.load()
 
         assert face_recognizer.batch_size is None
-        update_dims.assert_called_once_with(proto, {"input.1": ["batch", 3, 224, 224]}, {"output.1": ["batch", 800]})
-        onnx.save.assert_called_once_with(update_dims.return_value, face_recognizer.model_path)
+        batch_axis.update_dims.assert_called_once_with(
+            proto, {"input.1": ["batch", 3, 224, 224]}, {"output.1": ["batch", 800]}
+        )
+        batch_axis.onnx.save.assert_called_once_with(batch_axis.update_dims.return_value, face_recognizer.model_path)
 
     def test_recognition_does_not_add_batch_axis_if_exists(
-        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
+        self, batch_axis: SimpleNamespace, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
     ) -> None:
-        onnx = mocker.patch("immich_ml.models.facial_recognition.recognition.onnx", autospec=True)
-        update_dims = mocker.patch(
-            "immich_ml.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=["CPUExecutionProvider"],
         )
-        mocker.patch("immich_ml.models.base.InferenceModel.download")
-        mocker.patch("immich_ml.models.facial_recognition.recognition.ArcFaceONNX")
         path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
 
         inputs = [SimpleNamespace(name="input.1", shape=("batch", 3, 224, 224))]
@@ -828,60 +1011,53 @@ class TestFaceRecognition:
         face_recognizer = FaceRecognizer("buffalo_s", cache_dir=path)
         face_recognizer.load()
 
+        # batching is available here, so the axis is only skipped because it already exists
         assert face_recognizer.batch_size is None
-        update_dims.assert_not_called()
-        onnx.load.assert_not_called()
-        onnx.save.assert_not_called()
+        batch_axis.update_dims.assert_not_called()
+        batch_axis.onnx.load.assert_not_called()
+        batch_axis.onnx.save.assert_not_called()
 
-    def test_recognition_does_not_add_batch_axis_for_armnn(
-        self, ann_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
+    @pytest.mark.parametrize(
+        ("session_fixture", "suffix", "model_kwargs", "available_providers"),
+        [
+            pytest.param("ann_session", ".armnn", {"model_format": ModelFormat.ARMNN}, None, id="armnn"),
+            pytest.param(
+                "ort_session", ".onnx", {}, ["OpenVINOExecutionProvider", "CPUExecutionProvider"], id="openvino"
+            ),
+            pytest.param(
+                "ort_session", ".onnx", {}, ["MIGraphXExecutionProvider", "CPUExecutionProvider"], id="migraphx"
+            ),
+        ],
+    )
+    def test_recognition_does_not_add_batch_axis_when_batching_is_unsupported(
+        self,
+        request: pytest.FixtureRequest,
+        batch_axis: SimpleNamespace,
+        path: mock.Mock,
+        ort_pybind: mock.Mock,
+        mocker: MockerFixture,
+        session_fixture: str,
+        suffix: str,
+        model_kwargs: dict[str, Any],
+        available_providers: list[str] | None,
     ) -> None:
-        onnx = mocker.patch("immich_ml.models.facial_recognition.recognition.onnx", autospec=True)
-        update_dims = mocker.patch(
-            "immich_ml.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
+        session = request.getfixturevalue(session_fixture)
+        ort_pybind.get_available_openvino_device_ids.return_value = ["CPU"]
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=available_providers,
         )
-        mocker.patch("immich_ml.models.base.InferenceModel.download")
-        mocker.patch("immich_ml.models.facial_recognition.recognition.ArcFaceONNX")
-        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".armnn"
+        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = suffix
+        session.return_value.get_inputs.return_value = [SimpleNamespace(name="input.1", shape=(1, 3, 224, 224))]
+        session.return_value.get_outputs.return_value = [SimpleNamespace(name="output.1", shape=(1, 800))]
 
-        inputs = [SimpleNamespace(name="input.1", shape=("batch", 3, 224, 224))]
-        outputs = [SimpleNamespace(name="output.1", shape=("batch", 800))]
-        ann_session.return_value.get_inputs.return_value = inputs
-        ann_session.return_value.get_outputs.return_value = outputs
-
-        face_recognizer = FaceRecognizer("buffalo_s", model_format=ModelFormat.ARMNN, cache_dir=path)
+        face_recognizer = FaceRecognizer("buffalo_s", cache_dir=path, **model_kwargs)
         face_recognizer.load()
 
         assert face_recognizer.batch_size == 1
-        update_dims.assert_not_called()
-        onnx.load.assert_not_called()
-        onnx.save.assert_not_called()
-
-    def test_recognition_does_not_add_batch_axis_for_openvino(
-        self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture
-    ) -> None:
-        onnx = mocker.patch("immich_ml.models.facial_recognition.recognition.onnx", autospec=True)
-        update_dims = mocker.patch(
-            "immich_ml.models.facial_recognition.recognition.update_inputs_outputs_dims", autospec=True
-        )
-        mocker.patch("immich_ml.models.base.InferenceModel.download")
-        mocker.patch("immich_ml.models.facial_recognition.recognition.ArcFaceONNX")
-        path.return_value.__truediv__.return_value.__truediv__.return_value.suffix = ".onnx"
-
-        inputs = [SimpleNamespace(name="input.1", shape=("batch", 3, 224, 224))]
-        outputs = [SimpleNamespace(name="output.1", shape=("batch", 800))]
-        ort_session.return_value.get_inputs.return_value = inputs
-        ort_session.return_value.get_outputs.return_value = outputs
-
-        face_recognizer = FaceRecognizer(
-            "buffalo_s", model_format=ModelFormat.ARMNN, cache_dir=path, providers=["OpenVINOExecutionProvider"]
-        )
-        face_recognizer.load()
-
-        assert face_recognizer.batch_size == 1
-        update_dims.assert_not_called()
-        onnx.load.assert_not_called()
-        onnx.save.assert_not_called()
+        batch_axis.update_dims.assert_not_called()
+        batch_axis.onnx.load.assert_not_called()
+        batch_axis.onnx.save.assert_not_called()
 
     def test_set_custom_max_batch_size(self, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "max_batch_size", MaxBatchSize(facial_recognition=2))
@@ -892,6 +1068,10 @@ class TestFaceRecognition:
 
     def test_ignore_other_custom_max_batch_size(self, mocker: MockerFixture) -> None:
         mocker.patch.object(settings, "max_batch_size", MaxBatchSize(ocr=2))
+        mocker.patch(
+            "immich_ml.models.facial_recognition.recognition.ort.get_available_providers",
+            return_value=["CPUExecutionProvider"],
+        )
 
         recognizer = FaceRecognizer("buffalo_l", cache_dir="test_cache")
 
@@ -924,7 +1104,12 @@ class TestOcr:
         text_recognizer.load()
 
         rapid_recognizer.assert_called_once_with(
-            OcrOptions(session=ort_session.return_value, rec_batch_num=6, rec_img_shape=(3, 48, 320))
+            OcrOptions(
+                session=ort_session.return_value,
+                rec_batch_num=6,
+                rec_img_shape=(3, 48, 320),
+                model_root_dir=text_recognizer.cache_dir,
+            )
         )
 
     def test_set_custom_max_batch_size(self, ort_session: mock.Mock, path: mock.Mock, mocker: MockerFixture) -> None:
@@ -937,7 +1122,12 @@ class TestOcr:
         text_recognizer.load()
 
         rapid_recognizer.assert_called_once_with(
-            OcrOptions(session=ort_session.return_value, rec_batch_num=4, rec_img_shape=(3, 48, 320))
+            OcrOptions(
+                session=ort_session.return_value,
+                rec_batch_num=4,
+                rec_img_shape=(3, 48, 320),
+                model_root_dir=text_recognizer.cache_dir,
+            )
         )
 
     def test_ignore_other_custom_max_batch_size(
@@ -952,7 +1142,12 @@ class TestOcr:
         text_recognizer.load()
 
         rapid_recognizer.assert_called_once_with(
-            OcrOptions(session=ort_session.return_value, rec_batch_num=6, rec_img_shape=(3, 48, 320))
+            OcrOptions(
+                session=ort_session.return_value,
+                rec_batch_num=6,
+                rec_img_shape=(3, 48, 320),
+                model_root_dir=text_recognizer.cache_dir,
+            )
         )
 
 
@@ -1196,6 +1391,19 @@ class TestLoad:
             "ARMNN is available, but model 'test_model_name' does not support it.", exc_info=error
         )
         mock_model.model_format = ModelFormat.ONNX
+
+
+@pytest.mark.parametrize("size", [(0, 100), (100, 0), (0, 0)])
+def test_predict_rejects_empty_image(size: tuple[int, int], deployed_app: TestClient) -> None:
+    with mock.patch("immich_ml.main.decode_pil", return_value=Image.new("RGB", size)):
+        response = deployed_app.post(
+            "http://localhost:3003/predict",
+            data={"entries": json.dumps({"clip": {"visual": {"modelName": "ViT-B-32__openai"}}})},
+            files={"image": b"fake image bytes"},
+        )
+
+    assert response.status_code == 400
+    assert "zero" in response.json()["detail"].lower()
 
 
 def test_root_endpoint(deployed_app: TestClient) -> None:

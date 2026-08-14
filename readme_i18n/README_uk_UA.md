@@ -32,19 +32,18 @@
   <a href="README_zh_CN.md">简体中文</a>
   <a href="README_zh_TW.md">正體中文</a>
   <a href="README_ru_RU.md">Русский</a>
+  <a href="README_bg_BG.md">Български</a>
   <a href="README_pt_BR.md">Português Brasileiro</a>
   <a href="README_sv_SE.md">Svenska</a>
   <a href="README_ar_JO.md">العربية</a>
   <a href="README_vi_VN.md">Tiếng Việt</a>
   <a href="README_th_TH.md">ภาษาไทย</a>
+  <a href="README_ml_IN.md">മലയാളം</a>
 </p>
 
-## Застереження
-
-- ⚠️ Цей проєкт перебуває **в дуже активній** розробці.
-- ⚠️ Очікуйте безліч помилок і глобальних змін.
-- ⚠️ **Не використовуйте цей застосунок як єдине сховище своїх фото та відео.**
-- ⚠️ Завжди дотримуйтесь [плану резервного копіювання 3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) для ваших дорогоцінних фотографій та відео!
+> [!WARNING]
+> ⚠️ Завжди дотримуйтесь [плану резервного копіювання 3-2-1](https://www.backblaze.com/blog/the-3-2-1-backup-strategy/) для ваших дорогоцінних фотографій та відео!
+>
 
 > [!NOTE]
 > Основну документацію, зокрема посібники зі встановлення, можна знайти за адресою https://immich.app/.

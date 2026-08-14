@@ -9,12 +9,9 @@ import { automock, ControllerContext, controllerSetup, mockBaseService } from 't
 
 const makeUploadDto = (options?: { omit: string }): Record<string, any> => {
   const dto: Record<string, any> = {
-    deviceAssetId: 'example-image',
-    deviceId: 'TEST',
     fileCreatedAt: new Date().toISOString(),
     fileModifiedAt: new Date().toISOString(),
     isFavorite: 'false',
-    duration: '0:00:00.000000',
   };
 
   const omit = options?.omit;
@@ -47,11 +44,6 @@ describe(AssetMediaController.name, () => {
   });
 
   describe('POST /assets', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post(`/assets`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should accept metadata', async () => {
       const mobileMetadata = { key: AssetMetadataKey.MobileApp, value: { iCloudId: '123' } };
       const { status } = await request(ctx.getHttpServer())
@@ -82,27 +74,11 @@ describe(AssetMediaController.name, () => {
         });
 
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['metadata must be valid JSON']));
-    });
-
-    it('should require `deviceAssetId`', async () => {
-      const { status, body } = await request(ctx.getHttpServer())
-        .post('/assets')
-        .attach('assetData', assetData, filename)
-        .field({ ...makeUploadDto({ omit: 'deviceAssetId' }) });
-      expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(['deviceAssetId must be a string', 'deviceAssetId should not be empty']),
+        factory.responses.validationError([
+          { path: ['metadata'], message: 'Invalid input: expected JSON string, received string' },
+        ]),
       );
-    });
-
-    it('should require `deviceId`', async () => {
-      const { status, body } = await request(ctx.getHttpServer())
-        .post('/assets')
-        .attach('assetData', assetData, filename)
-        .field({ ...makeUploadDto({ omit: 'deviceId' }) });
-      expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['deviceId must be a string', 'deviceId should not be empty']));
     });
 
     it('should require `fileCreatedAt`', async () => {
@@ -112,7 +88,9 @@ describe(AssetMediaController.name, () => {
         .field({ ...makeUploadDto({ omit: 'fileCreatedAt' }) });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(['fileCreatedAt must be a Date instance', 'fileCreatedAt should not be empty']),
+        factory.responses.validationError([
+          { path: ['fileCreatedAt'], message: 'Invalid input: expected ISO 8601 datetime string, received undefined' },
+        ]),
       );
     });
 
@@ -123,7 +101,41 @@ describe(AssetMediaController.name, () => {
         .field(makeUploadDto({ omit: 'fileModifiedAt' }));
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest(['fileModifiedAt must be a Date instance', 'fileModifiedAt should not be empty']),
+        factory.responses.validationError([
+          { path: ['fileModifiedAt'], message: 'Invalid input: expected ISO 8601 datetime string, received undefined' },
+        ]),
+      );
+    });
+
+    it('should accept a non-UTC timezone offset', async () => {
+      const fileCreatedAt = '2026-05-28T19:51:20.555+02:00';
+      const { status } = await request(ctx.getHttpServer())
+        .post('/assets')
+        .attach('assetData', assetData, filename)
+        .field({ ...makeUploadDto(), fileCreatedAt });
+
+      expect(status).toBe(200);
+      expect(service.uploadAsset).toHaveBeenCalledWith(
+        undefined,
+        expect.objectContaining({
+          fileCreatedAt: new Date(fileCreatedAt),
+        }),
+        expect.objectContaining({ originalName: 'example.png' }),
+        undefined,
+      );
+    });
+
+    it('should reject a timezone-less datetime', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/assets')
+        .attach('assetData', assetData, filename)
+        .field({ ...makeUploadDto(), fileCreatedAt: '2026-05-28T19:51:20.555706' });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        factory.responses.validationError([
+          { path: ['fileCreatedAt'], message: 'Invalid input: expected ISO 8601 datetime string, received string' },
+        ]),
       );
     });
 
@@ -133,7 +145,11 @@ describe(AssetMediaController.name, () => {
         .attach('assetData', assetData, filename)
         .field({ ...makeUploadDto(), isFavorite: 'not-a-boolean' });
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['isFavorite must be a boolean value']));
+      expect(body).toEqual(
+        factory.responses.validationError([
+          { path: ['isFavorite'], message: 'Invalid option: expected one of "true"|"false"' },
+        ]),
+      );
     });
 
     it('should throw if `visibility` is not an enum', async () => {
@@ -143,23 +159,19 @@ describe(AssetMediaController.name, () => {
         .field({ ...makeUploadDto(), visibility: 'not-an-option' });
       expect(status).toBe(400);
       expect(body).toEqual(
-        factory.responses.badRequest([expect.stringContaining('visibility must be one of the following values:')]),
+        factory.responses.validationError([
+          { path: ['visibility'], message: expect.stringContaining('Invalid option: expected one of') },
+        ]),
       );
     });
 
     // TODO figure out how to deal with `sendFile`
-    describe.skip('GET /assets/:id/original', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/original`);
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
-    });
 
     // TODO figure out how to deal with `sendFile`
-    describe.skip('GET /assets/:id/thumbnail', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
-        expect(ctx.authenticate).toHaveBeenCalled();
+    describe('GET /assets/:id/thumbnail', () => {
+      it('should redirect if size=original is requested', async () => {
+        const { status } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail?size=original`);
+        expect(status).toBe(302);
       });
     });
   });

@@ -29,7 +29,7 @@ final getAllPlacesProvider = FutureProvider.autoDispose<List<SearchCuratedConten
   }
 
   final curatedContent = assetPlaces
-      .map((data) => SearchCuratedContent(label: data.exifInfo!.city!, id: data.id))
+      .map((data) => SearchCuratedContent(label: data.exifInfo.orElse(null)!.city.orElse(null)!, id: data.id))
       .toList();
 
   return curatedContent;

@@ -1,8 +1,12 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/person.model.dart';
-import 'package:immich_mobile/entities/asset.entity.dart';
+import 'package:immich_mobile/utils/option.dart';
+
+part 'search_filter.model.freezed.dart';
 
 class SearchLocationFilter {
   String? country;
@@ -36,7 +40,9 @@ class SearchLocationFilter {
 
   @override
   bool operator ==(covariant SearchLocationFilter other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.country == country && other.state == state && other.city == city;
   }
@@ -75,7 +81,9 @@ class SearchCameraFilter {
 
   @override
   bool operator ==(covariant SearchCameraFilter other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.make == make && other.model == model;
   }
@@ -117,7 +125,9 @@ class SearchDateFilter {
 
   @override
   bool operator ==(covariant SearchDateFilter other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.takenBefore == takenBefore && other.takenAfter == takenAfter;
   }
@@ -127,19 +137,26 @@ class SearchDateFilter {
 }
 
 class SearchRatingFilter {
-  int? rating;
-  SearchRatingFilter({this.rating});
+  /// none = no filter; some(null) = filter for unrated; some(1-5) = filter for that rating
+  Option<int?> rating;
+  SearchRatingFilter({this.rating = const Option.none()});
 
-  SearchRatingFilter copyWith({int? rating}) {
+  SearchRatingFilter copyWith({Option<int?>? rating}) {
     return SearchRatingFilter(rating: rating ?? this.rating);
   }
 
   Map<String, dynamic> toMap() {
-    return <String, dynamic>{'rating': rating};
+    if (rating.isNone) {
+      return <String, dynamic>{'active': false};
+    }
+    return <String, dynamic>{'active': true, 'value': rating.unwrapOrNull};
   }
 
   factory SearchRatingFilter.fromMap(Map<String, dynamic> map) {
-    return SearchRatingFilter(rating: map['rating'] != null ? map['rating'] as int : null);
+    if (!(map['active'] as bool? ?? false)) {
+      return SearchRatingFilter();
+    }
+    return SearchRatingFilter(rating: Option.some(map['value'] as int?));
   }
 
   String toJson() => json.encode(toMap());
@@ -152,7 +169,9 @@ class SearchRatingFilter {
 
   @override
   bool operator ==(covariant SearchRatingFilter other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.rating == rating;
   }
@@ -161,50 +180,10 @@ class SearchRatingFilter {
   int get hashCode => rating.hashCode;
 }
 
-class SearchDisplayFilters {
-  bool isNotInAlbum = false;
-  bool isArchive = false;
-  bool isFavorite = false;
-  SearchDisplayFilters({required this.isNotInAlbum, required this.isArchive, required this.isFavorite});
-
-  SearchDisplayFilters copyWith({bool? isNotInAlbum, bool? isArchive, bool? isFavorite}) {
-    return SearchDisplayFilters(
-      isNotInAlbum: isNotInAlbum ?? this.isNotInAlbum,
-      isArchive: isArchive ?? this.isArchive,
-      isFavorite: isFavorite ?? this.isFavorite,
-    );
-  }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{'isNotInAlbum': isNotInAlbum, 'isArchive': isArchive, 'isFavorite': isFavorite};
-  }
-
-  factory SearchDisplayFilters.fromMap(Map<String, dynamic> map) {
-    return SearchDisplayFilters(
-      isNotInAlbum: map['isNotInAlbum'] as bool,
-      isArchive: map['isArchive'] as bool,
-      isFavorite: map['isFavorite'] as bool,
-    );
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory SearchDisplayFilters.fromJson(String source) =>
-      SearchDisplayFilters.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  @override
-  String toString() =>
-      'SearchDisplayFilters(isNotInAlbum: $isNotInAlbum, isArchive: $isArchive, isFavorite: $isFavorite)';
-
-  @override
-  bool operator ==(covariant SearchDisplayFilters other) {
-    if (identical(this, other)) return true;
-
-    return other.isNotInAlbum == isNotInAlbum && other.isArchive == isArchive && other.isFavorite == isFavorite;
-  }
-
-  @override
-  int get hashCode => isNotInAlbum.hashCode ^ isArchive.hashCode ^ isFavorite.hashCode;
+@freezed
+abstract class SearchDisplayFilters with _$SearchDisplayFilters {
+  const factory SearchDisplayFilters({required bool isNotInAlbum, required bool isArchive, required bool isFavorite}) =
+      _SearchDisplayFilters;
 }
 
 class SearchFilter {
@@ -215,7 +194,7 @@ class SearchFilter {
   String? language;
   String? assetId;
   List<String>? tagIds;
-  Set<PersonDto> people;
+  Set<Person> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
   SearchDateFilter date;
@@ -260,7 +239,7 @@ class SearchFilter {
         display.isNotInAlbum == false &&
         display.isArchive == false &&
         display.isFavorite == false &&
-        rating.rating == null &&
+        rating.rating.isNone &&
         mediaType == AssetType.other;
   }
 
@@ -271,7 +250,7 @@ class SearchFilter {
     String? language,
     String? ocr,
     String? assetId,
-    Set<PersonDto>? people,
+    Set<Person>? people,
     List<String>? tagIds,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,
@@ -305,7 +284,9 @@ class SearchFilter {
 
   @override
   bool operator ==(covariant SearchFilter other) {
-    if (identical(this, other)) return true;
+    if (identical(this, other)) {
+      return true;
+    }
 
     return other.context == context &&
         other.filename == filename &&

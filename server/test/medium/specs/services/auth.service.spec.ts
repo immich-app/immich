@@ -57,16 +57,6 @@ describe(AuthService.name, () => {
         }),
       );
     });
-
-    it('should not allow a second admin to sign up', async () => {
-      const { sut, ctx } = setup();
-      await ctx.newUser({ isAdmin: true });
-      const dto = { name: 'Admin', email: 'admin@immich.cloud', password: 'password' };
-
-      const response = sut.adminSignUp(dto);
-      await expect(response).rejects.toThrow(BadRequestException);
-      await expect(response).rejects.toThrow('The server already has an admin');
-    });
   });
 
   describe('login', () => {

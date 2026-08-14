@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
-import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 
@@ -9,28 +8,6 @@ class MediumFactory {
   final Drift _db;
 
   const MediumFactory(Drift db) : _db = db;
-
-  LocalAsset localAsset({
-    String? id,
-    String? name,
-    AssetType? type,
-    DateTime? createdAt,
-    DateTime? updatedAt,
-    String? checksum,
-  }) {
-    final random = Random();
-
-    return LocalAsset(
-      id: id ?? '${random.nextInt(1000000)}',
-      name: name ?? 'Asset ${random.nextInt(1000000)}',
-      checksum: checksum ?? '${random.nextInt(1000000)}',
-      type: type ?? AssetType.image,
-      createdAt: createdAt ?? DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
-      updatedAt: updatedAt ?? DateTime.fromMillisecondsSinceEpoch(random.nextInt(1000000000)),
-      playbackStyle: AssetPlaybackStyle.image,
-      isEdited: false,
-    );
-  }
 
   LocalAlbum localAlbum({
     String? id,

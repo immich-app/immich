@@ -7,7 +7,7 @@ import { DummyValue, GenerateSql } from 'src/decorators';
 import { AssetVisibility } from 'src/enum';
 import { DB } from 'src/schema';
 import { ActivityTable } from 'src/schema/tables/activity.table';
-import { asUuid } from 'src/utils/database';
+import { asUuid, dummy } from 'src/utils/database';
 
 export interface ActivitySearch {
   albumId?: string;
@@ -31,11 +31,7 @@ export class ActivityRepository {
         join.onRef('user2.id', '=', 'activity.userId').on('user2.deletedAt', 'is', null),
       )
       .innerJoinLateral(
-        (eb) =>
-          eb
-            .selectFrom(sql`(select 1)`.as('dummy'))
-            .select(columns.userWithPrefix)
-            .as('user'),
+        (eb) => eb.selectFrom(dummy).select(columns.userWithPrefix).as('user'),
         (join) => join.onTrue(),
       )
       .select((eb) => eb.fn.toJson('user').as('user'))

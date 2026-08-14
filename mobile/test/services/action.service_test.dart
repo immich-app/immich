@@ -2,31 +2,21 @@ import 'package:drift/drift.dart' as drift;
 import 'package:drift/native.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/services/store.service.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
-import 'package:immich_mobile/repositories/download.repository.dart';
 import 'package:immich_mobile/services/action.service.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../infrastructure/repository.mock.dart';
 import '../repository.mocks.dart';
 
-class MockDownloadRepository extends Mock implements DownloadRepository {}
-
 void main() {
   late ActionService sut;
 
   late MockAssetApiRepository assetApiRepository;
   late MockRemoteAssetRepository remoteAssetRepository;
-  late MockDriftLocalAssetRepository localAssetRepository;
-  late MockDriftAlbumApiRepository albumApiRepository;
-  late MockRemoteAlbumRepository remoteAlbumRepository;
-  late MockTrashedLocalAssetRepository trashedLocalAssetRepository;
-  late MockAssetMediaRepository assetMediaRepository;
-  late MockDownloadRepository downloadRepository;
 
   late Drift db;
 
@@ -47,72 +37,37 @@ void main() {
   setUp(() {
     assetApiRepository = MockAssetApiRepository();
     remoteAssetRepository = MockRemoteAssetRepository();
-    localAssetRepository = MockDriftLocalAssetRepository();
-    albumApiRepository = MockDriftAlbumApiRepository();
-    remoteAlbumRepository = MockRemoteAlbumRepository();
-    trashedLocalAssetRepository = MockTrashedLocalAssetRepository();
-    assetMediaRepository = MockAssetMediaRepository();
-    downloadRepository = MockDownloadRepository();
 
-    sut = ActionService(
-      assetApiRepository,
-      remoteAssetRepository,
-      localAssetRepository,
-      albumApiRepository,
-      remoteAlbumRepository,
-      trashedLocalAssetRepository,
-      assetMediaRepository,
-      downloadRepository,
-    );
+    sut = ActionService(assetApiRepository, remoteAssetRepository);
   });
 
   tearDown(() async {
     await Store.clear();
   });
 
-  group('ActionService.deleteLocal', () {
-    test('routes deleted ids to trashed repository when Android trash handling is enabled', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
-      const ids = ['a', 'b'];
+  group('ActionService.updateRating', () {
+    const assetId = 'asset_id_1';
 
-      when(() => assetMediaRepository.deleteAll(ids)).thenAnswer((_) async => ids);
-      when(() => trashedLocalAssetRepository.applyTrashedAssets(ids)).thenAnswer((_) async {});
+    test('calls both repositories with the given rating', () async {
+      when(() => assetApiRepository.updateRating(assetId, 3)).thenAnswer((_) async {});
+      when(() => remoteAssetRepository.updateRating(assetId, 3)).thenAnswer((_) async {});
 
-      final result = await sut.deleteLocal(ids);
+      final result = await sut.updateRating(assetId, 3);
 
-      expect(result, ids.length);
-      verify(() => assetMediaRepository.deleteAll(ids)).called(1);
-      verify(() => trashedLocalAssetRepository.applyTrashedAssets(ids)).called(1);
-      verifyNever(() => localAssetRepository.delete(any()));
+      expect(result, isTrue);
+      verify(() => assetApiRepository.updateRating(assetId, 3)).called(1);
+      verify(() => remoteAssetRepository.updateRating(assetId, 3)).called(1);
     });
 
-    test('deletes locally when Android trash handling is disabled', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, false);
-      const ids = ['c'];
+    test('calls both repositories with null to clear rating', () async {
+      when(() => assetApiRepository.updateRating(assetId, null)).thenAnswer((_) async {});
+      when(() => remoteAssetRepository.updateRating(assetId, null)).thenAnswer((_) async {});
 
-      when(() => assetMediaRepository.deleteAll(ids)).thenAnswer((_) async => ids);
-      when(() => localAssetRepository.delete(ids)).thenAnswer((_) async {});
+      final result = await sut.updateRating(assetId, null);
 
-      final result = await sut.deleteLocal(ids);
-
-      expect(result, ids.length);
-      verify(() => assetMediaRepository.deleteAll(ids)).called(1);
-      verify(() => localAssetRepository.delete(ids)).called(1);
-      verifyNever(() => trashedLocalAssetRepository.applyTrashedAssets(any()));
-    });
-
-    test('short-circuits when nothing was deleted', () async {
-      await Store.put(StoreKey.manageLocalMediaAndroid, true);
-      const ids = ['x'];
-
-      when(() => assetMediaRepository.deleteAll(ids)).thenAnswer((_) async => <String>[]);
-
-      final result = await sut.deleteLocal(ids);
-
-      expect(result, 0);
-      verify(() => assetMediaRepository.deleteAll(ids)).called(1);
-      verifyNever(() => trashedLocalAssetRepository.applyTrashedAssets(any()));
-      verifyNever(() => localAssetRepository.delete(any()));
+      expect(result, isTrue);
+      verify(() => assetApiRepository.updateRating(assetId, null)).called(1);
+      verify(() => remoteAssetRepository.updateRating(assetId, null)).called(1);
     });
   });
 }

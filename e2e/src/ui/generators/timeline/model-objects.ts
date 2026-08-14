@@ -32,8 +32,12 @@ export function generateThumbhash(rng: SeededRandom): string {
   return Array.from({ length: 10 }, () => rng.nextInt(0, 256).toString(16).padStart(2, '0')).join('');
 }
 
-export function generateDuration(rng: SeededRandom): string {
-  return `${rng.nextInt(GENERATION_CONSTANTS.MIN_VIDEO_DURATION_SECONDS, GENERATION_CONSTANTS.MAX_VIDEO_DURATION_SECONDS)}.${rng.nextInt(0, 1000).toString().padStart(3, '0')}`;
+export function generateDuration(rng: SeededRandom): number {
+  return (
+    rng.nextInt(GENERATION_CONSTANTS.MIN_VIDEO_DURATION_SECONDS, GENERATION_CONSTANTS.MAX_VIDEO_DURATION_SECONDS) *
+      1000 +
+    rng.nextInt(0, 1000)
+  );
 }
 
 export function generateUUID(): string {
@@ -60,7 +64,7 @@ export function generateAsset(
   const asset: MockTimelineAsset = {
     id: assetId,
     ownerId,
-    ratio: Number.parseFloat(ratio.split(':')[0]) / Number.parseFloat(ratio.split(':')[1]),
+    ratio: Number(ratio.split(':', 1)[0]) / Number(ratio.split(':', 2)[1]),
     thumbhash: generateThumbhash(rng),
     localDateTime: date.toISOString(),
     fileCreatedAt: date.toISOString(),
@@ -210,7 +214,7 @@ export function generateTimelineData(config: TimelineConfig): MockTimelineData {
   }
 
   // Create a mock album from random assets
-  const allAssets = [...buckets.values()].flat();
+  const allAssets = buckets.values().toArray().flat();
 
   // Select 10-30 random assets for the album (or all assets if less than 10)
   const albumSize = Math.min(allAssets.length, globalRng.nextInt(10, 31));

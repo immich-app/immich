@@ -1,9 +1,9 @@
 <script lang="ts">
   import { goto } from '$app/navigation';
-  import UserPageLayout from '$lib/components/layouts/user-page-layout.svelte';
-  import LicenseActivationSuccess from '$lib/components/shared-components/purchasing/purchase-activation-success.svelte';
-  import LicenseContent from '$lib/components/shared-components/purchasing/purchase-content.svelte';
-  import SupporterBadge from '$lib/components/shared-components/side-bar/supporter-badge.svelte';
+  import UserPageLayout from '$lib/components/layouts/UserPageLayout.svelte';
+  import LicenseActivationSuccess from '$lib/components/shared-components/purchasing/PurchaseActivationSuccess.svelte';
+  import LicenseContent from '$lib/components/shared-components/purchasing/PurchaseContent.svelte';
+  import SupporterBadge from './SupporterBadge.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { Route } from '$lib/route';
   import { Alert, Container, Stack } from '@immich/ui';

@@ -1,3 +1,8 @@
+import type { AlbumResponseDto } from '@immich/sdk';
+import * as sdk from '@immich/sdk';
+import { orderBy } from 'lodash-es';
+import { t } from 'svelte-i18n';
+import { get } from 'svelte/store';
 import { goto } from '$app/navigation';
 import { eventManager } from '$lib/managers/event-manager.svelte';
 import { Route } from '$lib/route';
@@ -11,11 +16,6 @@ import {
   type AlbumViewSettings,
 } from '$lib/stores/preferences.store';
 import { handleError } from '$lib/utils/handle-error';
-import type { AlbumResponseDto } from '@immich/sdk';
-import * as sdk from '@immich/sdk';
-import { orderBy } from 'lodash-es';
-import { t } from 'svelte-i18n';
-import { get } from 'svelte/store';
 
 /**
  * -------------------------

@@ -206,16 +206,22 @@ describe(TagService.name, () => {
         count: 6,
       });
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-2', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: 'asset-2', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-3', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: 'asset-3', lockedProperties: ['tags'], tags: ['tag-1', 'tag-2'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
       expect(mocks.tag.upsertAssetIds).toHaveBeenCalledWith([
         { tagId: 'tag-1', assetId: 'asset-1' },
@@ -255,12 +261,16 @@ describe(TagService.name, () => {
       ]);
 
       expect(mocks.asset.upsertExif).not.toHaveBeenCalledWith(
-        { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag-1'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: 'asset-1', lockedProperties: ['tags'], tags: ['tag-1'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
       expect(mocks.asset.upsertExif).toHaveBeenCalledWith(
-        { assetId: 'asset-2', lockedProperties: ['tags'], tags: ['tag-1'] },
-        { lockedPropertiesBehavior: 'append' },
+        expect.objectContaining({
+          exif: { assetId: 'asset-2', lockedProperties: ['tags'], tags: ['tag-1'] },
+          lockedPropertiesBehavior: 'append',
+        }),
       );
       expect(mocks.tag.getAssetIds).toHaveBeenCalledWith('tag-1', ['asset-1', 'asset-2']);
       expect(mocks.tag.addAssetIds).toHaveBeenCalledWith('tag-1', ['asset-2']);

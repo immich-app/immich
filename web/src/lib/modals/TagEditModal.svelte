@@ -1,5 +1,5 @@
 <script lang="ts">
-  import SettingInputField from '$lib/components/shared-components/settings/setting-input-field.svelte';
+  import SettingInputField from '$lib/components/shared-components/settings/SettingInputField.svelte';
   import { SettingInputFieldType } from '$lib/constants';
   import { handleUpdateTag } from '$lib/services/tag.service';
   import type { TreeNode } from '$lib/utils/tree-utils';

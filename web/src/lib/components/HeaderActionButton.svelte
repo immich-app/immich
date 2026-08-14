@@ -1,18 +1,19 @@
 <script lang="ts">
   import type { HeaderButtonActionItem } from '$lib/types';
-  import { Button } from '@immich/ui';
+  import { Button, type Variants } from '@immich/ui';
 
   type Props = {
     action: HeaderButtonActionItem;
+    variant?: Variants;
   };
 
-  const { action }: Props = $props();
+  const { action, variant }: Props = $props();
   const { title, icon, color = 'secondary', onAction } = $derived(action);
 </script>
 
 {#if action.$if?.() ?? true}
   <Button
-    variant="ghost"
+    variant={variant ?? 'ghost'}
     size="small"
     {color}
     leadingIcon={icon}

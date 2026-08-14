@@ -1,6 +1,5 @@
 import { Kysely, sql } from 'kysely';
 import { ErrorMessages } from 'src/constants';
-import { DatabaseExtension } from 'src/enum';
 import { getVectorExtension } from 'src/repositories/database.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { vectorIndexQuery } from 'src/utils/database';
@@ -107,9 +106,6 @@ export async function up(db: Kysely<any>): Promise<void> {
       RETURN NULL;
     END;
   $$;`.execute(db);
-  if (vectorExtension === DatabaseExtension.Vectors) {
-    await sql`SET search_path TO "$user", public, vectors`.execute(db);
-  }
   await sql`CREATE TYPE "assets_status_enum" AS ENUM ('active','trashed','deleted');`.execute(db);
   await sql`CREATE TYPE "sourcetype" AS ENUM ('machine-learning','exif','manual');`.execute(db);
   await sql`CREATE TABLE "users" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "email" character varying NOT NULL, "password" character varying NOT NULL DEFAULT '', "createdAt" timestamp with time zone NOT NULL DEFAULT now(), "profileImagePath" character varying NOT NULL DEFAULT '', "isAdmin" boolean NOT NULL DEFAULT false, "shouldChangePassword" boolean NOT NULL DEFAULT true, "deletedAt" timestamp with time zone, "oauthId" character varying NOT NULL DEFAULT '', "updatedAt" timestamp with time zone NOT NULL DEFAULT now(), "storageLabel" character varying, "name" character varying NOT NULL DEFAULT '', "quotaSizeInBytes" bigint, "quotaUsageInBytes" bigint NOT NULL DEFAULT 0, "status" character varying NOT NULL DEFAULT 'active', "profileChangedAt" timestamp with time zone NOT NULL DEFAULT now(), "updateId" uuid NOT NULL DEFAULT immich_uuid_v7());`.execute(

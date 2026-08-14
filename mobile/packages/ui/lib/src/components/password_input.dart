@@ -8,7 +8,7 @@ class ImmichPasswordInput extends StatefulWidget {
   final TextEditingController? controller;
   final FocusNode? focusNode;
   final String? Function(String?)? validator;
-  final void Function(BuildContext, String)? onSubmit;
+  final void Function(String value)? onSubmit;
   final TextInputAction? keyboardAction;
 
   const ImmichPasswordInput({
@@ -51,8 +51,7 @@ class _ImmichPasswordInputState extends State<ImmichPasswordInput> {
         onPressed: _toggleVisibility,
         icon: Icon(_visible ? Icons.visibility_off_rounded : Icons.visibility_rounded),
       ),
-      autofillHints: [AutofillHints.password],
-      keyboardType: TextInputType.text,
+      autofillHints: const [AutofillHints.password],
     );
   }
 }

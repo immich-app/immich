@@ -1,6 +1,6 @@
-import type { EditActions } from '$lib/managers/edit/edit-manager.svelte';
 import type { MirrorParameters, RotateParameters } from '@immich/sdk';
 import { compose, flipX, flipY, identity, rotate } from 'transformation-matrix';
+import type { EditActions } from '$lib/managers/edit/edit-manager.svelte';
 
 const isCloseToZero = (x: number, epsilon: number = 1e-15) => Math.abs(x) < epsilon;
 

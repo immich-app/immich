@@ -10,7 +10,6 @@ const config = {
   url: 'https://docs.immich.app',
   baseUrl: '/',
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
   favicon: 'img/favicon.png',
 
   // GitHub pages deployment config.
@@ -29,6 +28,9 @@ const config = {
   // Mermaid diagrams
   markdown: {
     mermaid: true,
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
   },
   themes: ['@docusaurus/theme-mermaid'],
 
@@ -189,7 +191,7 @@ const config = {
               },
               {
                 label: 'Privacy Policy',
-                to: '/privacy-policy',
+                href: 'https://immich.app/privacy-policy',
               },
             ],
           },

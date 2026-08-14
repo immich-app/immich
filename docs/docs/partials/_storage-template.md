@@ -6,6 +6,8 @@ You can read more about the differences between storage template engine on and o
 
 The admin user can set the template by using the template builder in the `Administration -> Settings -> Storage Template`. Immich provides a set of variables that you can use in constructing the template, along with additional custom text. If the template produces [multiple files with the same filename, they won't be overwritten](https://github.com/immich-app/immich/discussions/3324) as a sequence number is appended to the filename.
 
+Date and time variables in storage templates are rendered in the server's local timezone.
+
 ```bash title="Default template"
 Year/Year-Month-Day/Filename.Extension
 ```

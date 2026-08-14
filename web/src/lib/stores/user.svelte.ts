@@ -1,10 +1,10 @@
-import { eventManager } from '$lib/managers/event-manager.svelte';
 import type {
   AlbumResponseDto,
   ServerAboutResponseDto,
   ServerStorageResponseDto,
   ServerVersionHistoryResponseDto,
 } from '@immich/sdk';
+import { eventManager } from '$lib/managers/event-manager.svelte';
 
 interface UserInteractions {
   recentAlbums?: AlbumResponseDto[];
@@ -30,6 +30,7 @@ const reset = () => {
   Object.assign(userInteraction, defaultUserInteraction);
 };
 
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 eventManager.on({
   AlbumCreate: () => resetRecentAlbums(),
   AlbumUpdate: () => resetRecentAlbums(),

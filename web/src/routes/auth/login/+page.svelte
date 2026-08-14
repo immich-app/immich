@@ -42,9 +42,9 @@
       return;
     }
 
-    if (oauth.isCallback(globalThis.location)) {
+    if (oauth.isCallback(location)) {
       try {
-        const user = await oauth.login(globalThis.location);
+        const user = await oauth.login(location);
 
         if (!user.isOnboarded) {
           await onOnboarding();
@@ -63,11 +63,11 @@
 
     try {
       if (
-        (featureFlagsManager.value.oauthAutoLaunch && !oauth.isAutoLaunchDisabled(globalThis.location)) ||
-        oauth.isAutoLaunchEnabled(globalThis.location)
+        (featureFlagsManager.value.oauthAutoLaunch && !oauth.isAutoLaunchDisabled(location)) ||
+        oauth.isAutoLaunchEnabled(location)
       ) {
         await goto(Route.login({ autoLaunch: 0 }), { replaceState: true });
-        await oauth.authorize(globalThis.location);
+        await oauth.authorize(location);
         return;
       }
     } catch (error) {
@@ -113,7 +113,7 @@
   const handleOAuthLogin = async () => {
     oauthLoading = true;
     oauthError = '';
-    const success = await oauth.authorize(globalThis.location);
+    const success = await oauth.authorize(location);
     if (!success) {
       oauthLoading = false;
       oauthError = $t('errors.unable_to_login_with_oauth');
@@ -141,11 +141,11 @@
           <Alert color="danger" title={errorMessage} closable />
         {/if}
 
-        <Field label={$t('email')}>
+        <Field label={$t('email')} required="indicator">
           <Input id="email" name="email" type="email" autocomplete="email" bind:value={email} />
         </Field>
 
-        <Field label={$t('password')}>
+        <Field label={$t('password')} required="indicator">
           <PasswordInput id="password" bind:value={password} autocomplete="current-password" />
         </Field>
 
@@ -155,10 +155,10 @@
 
     {#if featureFlagsManager.value.oauth}
       {#if featureFlagsManager.value.passwordLogin}
-        <div class="inline-flex w-full items-center justify-center my-4">
+        <div class="my-4 inline-flex w-full items-center justify-center">
           <hr class="my-4 h-px w-3/4 border-0 bg-gray-200 dark:bg-gray-600" />
           <span
-            class="absolute start-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 dark:bg-neutral-900 dark:text-white uppercase"
+            class="absolute inset-s-1/2 -translate-x-1/2 bg-gray-50 px-3 font-medium text-gray-900 uppercase dark:bg-neutral-900 dark:text-white"
           >
             {$t('or')}
           </span>

@@ -11,16 +11,13 @@ docker/library
 uploads
 coverage
 
+mobile/generated
 mobile/gradle.properties
-mobile/openapi/pubspec.lock
 mobile/*.jks
 mobile/libisar.dylib
-mobile/openapi/test
-mobile/openapi/doc
-mobile/openapi/.openapi-generator/FILES
 mobile/ios/build
 
-open-api/typescript-sdk/build
+packages/**/build
 mobile/android/fastlane/report.xml
 mobile/ios/fastlane/report.xml
 

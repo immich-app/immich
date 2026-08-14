@@ -48,22 +48,22 @@
       <Input bind:value={inputApiKey} />
     </Field>
 
-    <div class="flex justify-end mt-2">
+    <div class="mt-2 flex justify-end">
       <Button size="small" onclick={handleCreate}>{$t('create_api_key')}</Button>
     </div>
 
     {#if inputUrl && inputApiKey && archVariant}
       <div class="content-center">
         <hr />
-        <div class="flex place-items-center place-content-center">
+        <div class="flex place-content-center place-items-center">
           <a
             href={obtainiumLink}
-            class="underline text-sm immich-form-label"
+            class="text-sm immich-form-label underline"
             target="_blank"
             rel="noreferrer"
             id="obtainium-link"
           >
-            <img class="pt-2 h-20" alt="Get it on Obtainium" src={obtainiumBadge} />
+            <img class="h-20 pt-2" alt="Get it on Obtainium" src={obtainiumBadge} />
           </a>
         </div>
       </div>

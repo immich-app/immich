@@ -12,7 +12,9 @@ class UserApiRepository extends ApiRepository {
 
   Future<UserDto?> getMyUser() async {
     final (adminDto, preferenceDto) = await (_api.getMyUser(), _api.getMyPreferences()).wait;
-    if (adminDto == null) return null;
+    if (adminDto == null) {
+      return null;
+    }
 
     return UserConverter.fromAdminDto(adminDto, preferenceDto);
   }

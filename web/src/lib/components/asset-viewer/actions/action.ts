@@ -1,6 +1,6 @@
+import type { AssetResponseDto, PersonResponseDto, StackResponseDto } from '@immich/sdk';
 import type { AssetAction } from '$lib/constants';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import type { AssetResponseDto, PersonResponseDto, StackResponseDto } from '@immich/sdk';
 
 type ActionMap = {
   [AssetAction.ARCHIVE]: { asset: TimelineAsset };

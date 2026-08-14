@@ -8,13 +8,13 @@ import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
+import 'package:immich_mobile/utils/debug_print.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
-import 'package:immich_mobile/utils/debug_print.dart';
 
 @RoutePage()
 class DriftPartnerDetailPage extends StatelessWidget {
-  final PartnerUserDto partner;
+  final Partner partner;
 
   const DriftPartnerDetailPage({super.key, required this.partner});
 
@@ -39,7 +39,7 @@ class DriftPartnerDetailPage extends StatelessWidget {
 }
 
 class _InfoBox extends ConsumerStatefulWidget {
-  final PartnerUserDto partner;
+  final Partner partner;
 
   const _InfoBox({required this.partner});
 
@@ -56,27 +56,32 @@ class _InfoBoxState extends ConsumerState<_InfoBox> {
     _inTimeline = widget.partner.inTimeline;
   }
 
-  _toggleInTimeline() async {
+  Future<void> _toggleInTimeline() async {
     final user = ref.read(currentUserProvider);
     if (user == null) {
       return;
     }
 
     try {
-      await ref.read(partnerUsersProvider.notifier).toggleShowInTimeline(widget.partner.id, user.id);
+      await ref
+          .read(partnerServiceProvider)
+          .update(sharedById: widget.partner.id, sharedWithId: user.id, inTimeline: !_inTimeline);
 
       setState(() {
         _inTimeline = !_inTimeline;
       });
     } catch (error, stack) {
       dPrint(() => "Failed to toggle in timeline: $error $stack");
+      if (!mounted) {
+        return;
+      }
+
       ImmichToast.show(
         context: context,
         toastType: ToastType.error,
         durationInSecond: 1,
         msg: "Failed to toggle the timeline setting",
       );
-      return;
     }
   }
 
@@ -87,7 +92,7 @@ class _InfoBoxState extends ConsumerState<_InfoBox> {
         height: 110,
         child: Padding(
           padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0),
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               border: Border.all(color: context.colorScheme.onSurface.withAlpha(10), width: 1),
               borderRadius: const BorderRadius.all(Radius.circular(20)),

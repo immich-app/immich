@@ -89,7 +89,9 @@ class OpenClipTextualEncoder(BaseCLIPTextualEncoder):
 
         tokenizer: Tokenizer = Tokenizer.from_file(self.tokenizer_file_path.as_posix())
 
-        pad_id: int = tokenizer.token_to_id(pad_token)
+        pad_id = tokenizer.token_to_id(pad_token)
+        if pad_id is None:
+            raise ValueError(f"Pad token '{pad_token}' not found in tokenizer vocab")
         tokenizer.enable_padding(length=context_length, pad_token=pad_token, pad_id=pad_id)
         tokenizer.enable_truncation(max_length=context_length)
 

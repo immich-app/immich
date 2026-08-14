@@ -5,11 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/album/album_action_filled_button.dart';
+import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
 @RoutePage()
 class DriftCreateAlbumPage extends ConsumerStatefulWidget {
@@ -25,6 +26,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
   FocusNode albumTitleTextFieldFocusNode = FocusNode();
   FocusNode albumDescriptionTextFieldFocusNode = FocusNode();
   bool isAlbumTitleTextFieldFocus = false;
+  bool isCreatingAlbum = false;
   Set<BaseAsset> selectedAssets = {};
 
   @override
@@ -47,12 +49,10 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
     super.dispose();
   }
 
-  bool get _canCreateAlbum => albumTitleController.text.isNotEmpty;
+  bool get _canCreateAlbum => albumTitleController.text.trim().isNotEmpty && !isCreatingAlbum;
 
   String _getEffectiveTitle() {
-    return albumTitleController.text.isNotEmpty
-        ? albumTitleController.text
-        : 'create_album_page_untitled'.t(context: context);
+    return albumTitleController.text.isNotEmpty ? albumTitleController.text : context.t.create_album_page_untitled;
   }
 
   Widget _buildSliverAppBar() {
@@ -91,7 +91,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
   Widget _buildEmptyState() {
     return Padding(
       padding: const EdgeInsets.only(top: 0, left: 18),
-      child: Text('create_shared_album_page_share_add_assets', style: context.textTheme.labelLarge).t(),
+      child: Text(context.t.create_shared_album_page_share_add_assets, style: context.textTheme.labelLarge),
     );
   }
 
@@ -110,9 +110,9 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
         label: Padding(
           padding: const EdgeInsets.only(left: 8.0),
           child: Text(
-            'create_shared_album_page_share_select_photos',
+            context.t.create_shared_album_page_share_select_photos,
             style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
-          ).t(),
+          ),
         ),
       ),
     );
@@ -146,7 +146,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
     });
 
     if (albumTitleController.text.isEmpty) {
-      final untitledText = 'create_album_page_untitled'.t();
+      final untitledText = context.t.create_album_page_untitled;
       albumTitleController.text = untitledText;
     }
   }
@@ -166,31 +166,39 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
   }
 
   Future<void> createAlbum() async {
-    onBackgroundTapped();
-
-    final title = _getEffectiveTitle().trim();
-    if (title.isEmpty) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('create_album_title_required'.t()), backgroundColor: context.colorScheme.error),
-        );
-      }
+    if (isCreatingAlbum) {
       return;
     }
 
-    final album = await ref
-        .watch(remoteAlbumProvider.notifier)
-        .createAlbum(
-          title: title,
-          description: albumDescriptionController.text.trim(),
-          assetIds: selectedAssets.map((asset) {
-            final remoteAsset = asset as RemoteAsset;
-            return remoteAsset.id;
-          }).toList(),
-        );
+    onBackgroundTapped();
+    setState(() => isCreatingAlbum = true);
 
-    if (album != null) {
+    final title = _getEffectiveTitle().trim();
+
+    try {
+      final album = await ref
+          .read(remoteAlbumProvider.notifier)
+          .createAlbumWithAssets(
+            title: title,
+            description: albumDescriptionController.text.trim(),
+            assets: selectedAssets,
+          );
+
+      if (!mounted || album == null) {
+        return;
+      }
+
       unawaited(context.replaceRoute(RemoteAlbumRoute(album: album)));
+    } catch (_) {
+      if (!mounted) {
+        return;
+      }
+
+      ImmichToast.show(context: context, toastType: ToastType.error, msg: context.t.errors.failed_to_create_album);
+    } finally {
+      if (mounted) {
+        setState(() => isCreatingAlbum = false);
+      }
     }
   }
 
@@ -231,7 +239,7 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
             AlbumActionFilledButton(
               iconData: Icons.add_photo_alternate_outlined,
               onPressed: onSelectPhotos,
-              labelText: "add_photos".t(),
+              labelText: context.t.add_photos,
             ),
           ],
         ),
@@ -247,12 +255,12 @@ class _DriftCreateAlbumPageState extends ConsumerState<DriftCreateAlbumPage> {
         centerTitle: false,
         backgroundColor: context.scaffoldBackgroundColor,
         leading: IconButton(onPressed: () => context.maybePop(), icon: const Icon(Icons.close_rounded)),
-        title: const Text('create_album').t(),
+        title: Text(context.t.create_album),
         actions: [
           TextButton(
             onPressed: _canCreateAlbum ? createAlbum : null,
             child: Text(
-              'create'.t(),
+              context.t.create,
               style: TextStyle(
                 fontWeight: FontWeight.bold,
                 color: _canCreateAlbum ? context.primaryColor : context.themeData.disabledColor,
@@ -310,7 +318,7 @@ class _AlbumTitleTextFieldState extends State<_AlbumTitleTextField> {
       style: TextStyle(fontSize: 28.0, color: context.colorScheme.onSurface, fontWeight: FontWeight.bold),
       controller: widget.textController,
       onTap: () {
-        if (widget.textController.text == 'create_album_page_untitled'.t(context: context)) {
+        if (widget.textController.text == context.t.create_album_page_untitled) {
           widget.textController.clear();
         }
       },
@@ -333,7 +341,7 @@ class _AlbumTitleTextFieldState extends State<_AlbumTitleTextField> {
           borderSide: BorderSide(color: context.primaryColor.withValues(alpha: 0.3)),
           borderRadius: const BorderRadius.all(Radius.circular(16.0)),
         ),
-        hintText: 'add_a_title'.t(),
+        hintText: context.t.add_a_title,
         hintStyle: context.themeData.inputDecorationTheme.hintStyle?.copyWith(
           fontSize: 28.0,
           fontWeight: FontWeight.bold,
@@ -420,7 +428,7 @@ class _AlbumViewerEditableDescriptionState extends State<_AlbumViewerEditableDes
           focusColor: Colors.grey[300],
           fillColor: context.scaffoldBackgroundColor,
           filled: widget.focusNode.hasFocus,
-          hintText: 'add_a_description'.t(),
+          hintText: context.t.add_a_description,
         ),
       ),
     );

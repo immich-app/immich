@@ -80,6 +80,7 @@ const validImages = [
   '.jxl',
   '.k25',
   '.kdc',
+  '.mpo',
   '.mrw',
   '.nef',
   '.orf',
@@ -145,30 +146,25 @@ const uploadTests = [
 ];
 
 const createDto = Object.freeze({
-  deviceAssetId: 'deviceAssetId',
-  deviceId: 'deviceId',
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
   isFavorite: false,
-  duration: '0:00:00.000000',
 }) as AssetMediaCreateDto;
 
 const assetEntity = Object.freeze({
   id: 'id_1',
   ownerId: 'user_id_1',
-  deviceAssetId: 'device_asset_id_1',
-  deviceId: 'device_id_1',
   type: AssetType.Video,
   originalPath: 'fake_path/asset_1.jpeg',
   fileModifiedAt: new Date('2022-06-19T23:41:36.910Z'),
   fileCreatedAt: new Date('2022-06-19T23:41:36.910Z'),
   updatedAt: new Date('2022-06-19T23:41:36.910Z'),
   isFavorite: false,
-  duration: '0:00:00.000000',
+  duration: null,
   files: [] as AssetFile[],
   exifInfo: {
-    latitude: 49.533_547,
-    longitude: 10.703_075,
+    latitude: 49.533547,
+    longitude: 10.703075,
   },
   livePhotoVideoId: null,
 } as MapAsset);
@@ -273,6 +269,10 @@ describe(AssetMediaService.name, () => {
         'random-uuid.jpg',
       );
     });
+
+    it('should accept filenames with just an extension', () => {
+      expect(sut.getUploadFilename(uploadFile.filename(UploadFieldName.ASSET_DATA, '.jpg'))).toEqual('random-uuid.jpg');
+    });
   });
 
   describe('getUploadFolder', () => {
@@ -317,6 +317,12 @@ describe(AssetMediaService.name, () => {
       ).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.asset.create).not.toHaveBeenCalled();
+      expect(mocks.asset.remove).not.toHaveBeenCalled();
+      expect(mocks.job.queue).toHaveBeenCalledWith({
+        name: JobName.FileDelete,
+        data: { files: [file.originalPath, undefined] },
+      });
+      expect(mocks.event.emit).not.toHaveBeenCalled();
       expect(mocks.user.updateUsage).not.toHaveBeenCalledWith(authStub.user1.user.id, file.size);
       expect(mocks.storage.utimes).not.toHaveBeenCalledWith(
         file.originalPath,
@@ -343,7 +349,6 @@ describe(AssetMediaService.name, () => {
       });
 
       expect(mocks.asset.create).toHaveBeenCalled();
-      expect(mocks.user.updateUsage).toHaveBeenCalledWith(authStub.user1.user.id, file.size);
       expect(mocks.storage.utimes).toHaveBeenCalledWith(
         file.originalPath,
         expect.any(Date),
@@ -762,17 +767,6 @@ describe(AssetMediaService.name, () => {
           contentType: 'application/octet-stream',
         }),
       );
-    });
-  });
-
-  describe('checkExistingAssets', () => {
-    it('should get existing asset ids', async () => {
-      mocks.asset.getByDeviceIds.mockResolvedValue(['42']);
-      await expect(
-        sut.checkExistingAssets(authStub.admin, { deviceId: '420', deviceAssetIds: ['69'] }),
-      ).resolves.toEqual({ existingIds: ['42'] });
-
-      expect(mocks.asset.getByDeviceIds).toHaveBeenCalledWith(userStub.admin.id, '420', ['69']);
     });
   });
 

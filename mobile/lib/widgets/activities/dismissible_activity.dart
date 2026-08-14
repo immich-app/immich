@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/widgets/activities/activity_tile.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
-/// Wraps an [ActivityTile] and makes it dismissible
 class DismissibleActivity extends StatelessWidget {
   final String activityId;
   final Widget body;
@@ -25,9 +24,9 @@ class DismissibleActivity extends StatelessWidget {
               context: context,
               builder: (context) => ConfirmDialog(
                 onOk: () {},
-                title: "shared_album_activity_remove_title",
-                content: "shared_album_activity_remove_content",
-                ok: "delete",
+                title: context.t.shared_album_activity_remove_title,
+                content: context.t.shared_album_activity_remove_content,
+                ok: context.t.delete,
               ),
             )
           : Future.value(false),

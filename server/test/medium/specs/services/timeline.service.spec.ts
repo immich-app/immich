@@ -1,10 +1,11 @@
 import { BadRequestException } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { AssetVisibility } from 'src/enum';
+import { AssetVisibility, SharedLinkType } from 'src/enum';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PartnerRepository } from 'src/repositories/partner.repository';
+import { SharedLinkRepository } from 'src/repositories/shared-link.repository';
 import { DB } from 'src/schema';
 import { TimelineService } from 'src/services/timeline.service';
 import { newMediumService } from 'test/medium.factory';
@@ -50,13 +51,13 @@ describe(TimelineService.name, () => {
       const response1 = sut.getTimeBuckets(auth, { withPartners: true, visibility: AssetVisibility.Archive });
       await expect(response1).rejects.toBeInstanceOf(BadRequestException);
       await expect(response1).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
       );
 
       const response2 = sut.getTimeBuckets(auth, { withPartners: true });
       await expect(response2).rejects.toBeInstanceOf(BadRequestException);
       await expect(response2).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
       );
     });
 
@@ -66,13 +67,13 @@ describe(TimelineService.name, () => {
       const response1 = sut.getTimeBuckets(auth, { withPartners: true, isFavorite: false });
       await expect(response1).rejects.toBeInstanceOf(BadRequestException);
       await expect(response1).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
       );
 
       const response2 = sut.getTimeBuckets(auth, { withPartners: true, isFavorite: true });
       await expect(response2).rejects.toBeInstanceOf(BadRequestException);
       await expect(response2).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
       );
     });
 
@@ -82,8 +83,20 @@ describe(TimelineService.name, () => {
       const response = sut.getTimeBuckets(auth, { withPartners: true, isTrashed: true });
       await expect(response).rejects.toBeInstanceOf(BadRequestException);
       await expect(response).rejects.toThrow(
-        'withPartners is only supported for non-archived, non-trashed, non-favorited assets',
+        'withPartners is only supported for non-archived, non-trashed, non-favorited, non-locked assets',
       );
+    });
+
+    it('should return error if time bucket is requested with locked visibility for partner', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+
+      const auth = factory.auth({ user, session: { hasElevatedPermission: true } });
+
+      const response = sut.getTimeBuckets(auth, { userId: partner.id, visibility: AssetVisibility.Locked });
+      await expect(response).rejects.toThrow("You may not access another user's locked timeline");
     });
 
     it('should not allow access for unrelated shared links', async () => {
@@ -118,6 +131,7 @@ describe(TimelineService.name, () => {
       expect(response).toEqual({
         city: [],
         country: [],
+        createdAt: [],
         duration: [],
         id: [],
         visibility: [],
@@ -170,6 +184,7 @@ describe(TimelineService.name, () => {
           await ctx.newExif({ assetId: result.asset.id, make: 'Canon' });
           return result;
         }),
+
         ctx.newUser().then(async ({ user }) => {
           const result = await ctx.newAsset({
             ownerId: user.id,
@@ -205,5 +220,33 @@ describe(TimelineService.name, () => {
       const response2 = JSON.parse(rawResponse2);
       expect(response2).toEqual(expect.objectContaining({ id: [asset2.id, asset1.id], isFavorite: [true, false] }));
     });
+  });
+
+  it('should strip geodata metadata if shared link without exif', async () => {
+    const { sut, ctx } = setup();
+    const sharedLinkRepo = ctx.get(SharedLinkRepository);
+
+    const { user } = await ctx.newUser();
+    const { asset } = await ctx.newAsset({
+      ownerId: user.id,
+      localDateTime: new Date('1970-02-12'),
+      deletedAt: new Date(),
+    });
+    const { album } = await ctx.newAlbum({ ownerId: user.id });
+    await ctx.newAlbumAsset({ albumId: album.id, assetId: asset.id });
+
+    const { id: sharedLinkId } = await sharedLinkRepo.create({
+      allowUpload: false,
+      key: Buffer.from('123'),
+      type: SharedLinkType.Album,
+      userId: user.id,
+      albumId: album.id,
+    });
+
+    await ctx.newExif({ assetId: asset.id, city: 'Austin', country: 'USA' });
+    const auth = factory.auth({ sharedLink: { id: sharedLinkId, showExif: false } });
+    const rawResponse = await sut.getTimeBucket(auth, { albumId: album.id, timeBucket: '1970-02-01', isTrashed: true });
+    const response = JSON.parse(rawResponse);
+    expect(response).not.toEqual(expect.objectContaining({ city: expect.any(Array), country: expect.any(Array) }));
   });
 });

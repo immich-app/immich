@@ -3,11 +3,11 @@ import { ApiTags } from '@nestjs/swagger';
 import { Endpoint, HistoryBuilder } from 'src/decorators';
 import {
   AddUsersDto,
-  AlbumInfoDto,
   AlbumResponseDto,
   AlbumsAddAssetsDto,
   AlbumsAddAssetsResponseDto,
   AlbumStatisticsResponseDto,
+  AlbumUserParamDto,
   CreateAlbumDto,
   GetAlbumsDto,
   UpdateAlbumDto,
@@ -15,10 +15,11 @@ import {
 } from 'src/dtos/album.dto';
 import { BulkIdResponseDto, BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { MapMarkerResponseDto } from 'src/dtos/map.dto';
 import { ApiTag, Permission } from 'src/enum';
 import { Auth, Authenticated } from 'src/middleware/auth.guard';
 import { AlbumService } from 'src/services/album.service';
-import { ParseMeUUIDPipe, UUIDParamDto } from 'src/validation';
+import { UUIDParamDto } from 'src/validation';
 
 @ApiTags(ApiTag.Albums)
 @Controller('albums')
@@ -65,12 +66,8 @@ export class AlbumController {
     description: 'Retrieve information about a specific album by its ID.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  getAlbumInfo(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Query() dto: AlbumInfoDto,
-  ): Promise<AlbumResponseDto> {
-    return this.service.get(auth, id, dto);
+  getAlbumInfo(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<AlbumResponseDto> {
+    return this.service.get(auth, id);
   }
 
   @Patch(':id')
@@ -102,8 +99,19 @@ export class AlbumController {
     return this.service.delete(auth, id);
   }
 
+  @Authenticated({ permission: Permission.AlbumRead, sharedLink: true })
+  @Get(':id/map-markers')
+  @Endpoint({
+    summary: 'Retrieve album map markers',
+    description: 'Retrieve map marker information for a specific album by its ID.',
+    history: new HistoryBuilder().added('v3'),
+  })
+  getAlbumMapMarkers(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<MapMarkerResponseDto[]> {
+    return this.service.getMapMarkers(auth, id);
+  }
+
   @Put(':id/assets')
-  @Authenticated({ permission: Permission.AlbumAssetCreate, sharedLink: true })
+  @Authenticated({ permission: Permission.AlbumAssetCreate })
   @Endpoint({
     summary: 'Add assets to an album',
     description: 'Add multiple assets to a specific album by its ID.',
@@ -118,7 +126,7 @@ export class AlbumController {
   }
 
   @Put('assets')
-  @Authenticated({ permission: Permission.AlbumAssetCreate, sharedLink: true })
+  @Authenticated({ permission: Permission.AlbumAssetCreate })
   @Endpoint({
     summary: 'Add assets to albums',
     description: 'Send a list of asset IDs and album IDs to add each asset to each album.',
@@ -168,8 +176,7 @@ export class AlbumController {
   })
   updateAlbumUser(
     @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
+    @Param() { id, userId }: AlbumUserParamDto,
     @Body() dto: UpdateAlbumUserDto,
   ): Promise<void> {
     return this.service.updateUser(auth, id, userId, dto);
@@ -183,11 +190,7 @@ export class AlbumController {
     description: 'Remove a user from an album. Use an ID of "me" to leave a shared album.',
     history: new HistoryBuilder().added('v1').beta('v1').stable('v2'),
   })
-  removeUserFromAlbum(
-    @Auth() auth: AuthDto,
-    @Param() { id }: UUIDParamDto,
-    @Param('userId', new ParseMeUUIDPipe({ version: '4' })) userId: string,
-  ): Promise<void> {
+  removeUserFromAlbum(@Auth() auth: AuthDto, @Param() { id, userId }: AlbumUserParamDto): Promise<void> {
     return this.service.removeUser(auth, id, userId);
   }
 }

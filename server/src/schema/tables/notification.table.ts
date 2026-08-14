@@ -41,7 +41,7 @@ export class NotificationTable {
   type!: Generated<NotificationType>;
 
   @Column({ type: 'jsonb', nullable: true })
-  data!: any | null;
+  data!: unknown | null;
 
   @Column()
   title!: string;

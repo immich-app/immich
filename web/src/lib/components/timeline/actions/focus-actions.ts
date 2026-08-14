@@ -1,8 +1,8 @@
+import { tick } from 'svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { moveFocus } from '$lib/utils/focus-util';
 import { InvocationTracker } from '$lib/utils/invocationTracker';
-import { tick } from 'svelte';
 
 const tracker = new InvocationTracker();
 

@@ -15,7 +15,13 @@ class SessionsAPIRepository extends ApiRepository {
 
   Future<SessionCreateResponse> createSession(String deviceType, String deviceOS, {int? duration}) async {
     final dto = await checkNull(
-      _api.createSession(SessionCreateDto(deviceType: deviceType, deviceOS: deviceOS, duration: duration)),
+      _api.createSession(
+        SessionCreateDto(
+          deviceType: Optional.present(deviceType),
+          deviceOS: Optional.present(deviceOS),
+          duration: duration == null ? const Optional.absent() : Optional.present(duration),
+        ),
+      ),
     );
 
     return SessionCreateResponse(
@@ -23,7 +29,7 @@ class SessionsAPIRepository extends ApiRepository {
       current: dto.current,
       deviceType: deviceType,
       deviceOS: deviceOS,
-      expiresAt: dto.expiresAt,
+      expiresAt: dto.expiresAt.orElse(null),
       createdAt: dto.createdAt,
       updatedAt: dto.updatedAt,
       token: dto.token,

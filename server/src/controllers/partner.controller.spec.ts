@@ -3,7 +3,6 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PartnerService } from 'src/services/partner.service';
 import request from 'supertest';
 import { errorDto } from 'test/medium/responses';
-import { factory } from 'test/small.factory';
 import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
 
 describe(PartnerController.name, () => {
@@ -24,18 +23,12 @@ describe(PartnerController.name, () => {
   });
 
   describe('GET /partners', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/partners');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require a direction`, async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/partners`).set('Authorization', `Bearer token`);
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest([
-          'direction should not be empty',
-          expect.stringContaining('direction must be one of the following values:'),
+        errorDto.validationError([
+          { path: ['direction'], message: expect.stringContaining('Invalid option: expected one of') },
         ]),
       );
     });
@@ -47,55 +40,42 @@ describe(PartnerController.name, () => {
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest([expect.stringContaining('direction must be one of the following values:')]),
+        errorDto.validationError([
+          { path: ['direction'], message: expect.stringContaining('Invalid option: expected one of') },
+        ]),
       );
     });
   });
 
   describe('POST /partners', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/partners');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require sharedWithId to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post(`/partners`)
         .send({ sharedWithId: 'invalid' })
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest([expect.stringContaining('must be a UUID')]));
+      expect(body).toEqual(errorDto.validationError([{ path: ['sharedWithId'], message: 'Invalid UUID' }]));
     });
   });
 
   describe('PUT /partners/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/partners/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require id to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .put(`/partners/invalid`)
         .send({ inTimeline: true })
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest([expect.stringContaining('must be a UUID')]));
+      expect(body).toEqual(errorDto.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
   });
 
   describe('DELETE /partners/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete(`/partners/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require id to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .delete(`/partners/invalid`)
         .set('Authorization', `Bearer token`);
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest([expect.stringContaining('must be a UUID')]));
+      expect(body).toEqual(errorDto.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
   });
 });

@@ -3,14 +3,18 @@ from typing import Any, Literal, Protocol, TypeGuard, TypeVar
 
 import numpy as np
 import numpy.typing as npt
+import orjson
+from fastapi.responses import JSONResponse
 from typing_extensions import TypedDict
 
 
-class StrEnum(str, Enum):
-    value: str
+class ORJSONResponse(JSONResponse):
+    def render(self, content: Any) -> bytes:
+        return orjson.dumps(content, option=orjson.OPT_SERIALIZE_NUMPY)
 
-    def __str__(self) -> str:
-        return self.value
+
+class StrEnum(str, Enum):
+    __str__ = str.__str__
 
 
 class BoundingBox(TypedDict):
@@ -56,7 +60,7 @@ ModelIdentity = tuple[ModelType, ModelTask]
 
 class SessionNode(Protocol):
     @property
-    def name(self) -> str | None: ...
+    def name(self) -> str: ...
 
     @property
     def shape(self) -> tuple[int, ...]: ...

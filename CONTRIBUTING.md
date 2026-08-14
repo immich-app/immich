@@ -19,7 +19,13 @@ We usually do not assign issues to new contributors, since it happens often that
 
 ## Use of generative AI
 
-We ask you not to open PRs generated with an LLM. We find that code generated like this tends to need a large amount of back-and-forth, which is a very inefficient use of our time. If we want LLM-generated code, it's much faster for us to use an LLM ourselves than to go through an intermediary via a pull request.
+We ask you not to open PRs generated with an LLM. We find that code generated like this tends to need a large amount of back-and-forth, which is a very inefficient use of our time. Even a one line change can have significant impact. We cannot have any confidence in an LLM, so if it's non-trivial for us to verify it works and you don't show that you fully understand all implications of the change, reviewing the PR is not worth our time. If we want LLM-generated code, it's much faster for us to use an LLM ourselves than to go through an intermediary via a pull request.
+
+If you use an LLM to translate a PR description or title, that is fine. Please make sure however that you stick to the PR template and that the text is written concisely.
+
+LLMs must not be used to fix GitHub issues labelled good first issue. These issues are generally not urgent, and are intended to be learning opportunities for new contributors to get familiar with the codebase. Whether you are a newcomer or not, fully automating the process of fixing this issue squanders the learning opportunity and doesn’t add much value to the project. Using LLMs to fix issues labelled as “good first issue” is forbidden, and those PRs will be closed automatically.
+
+Misrepresenting LLM use, contribution farming (automated low-effort PRs), or repeatedly hitting auto-close rules may be grounds for a block at maintainer discretion.
 
 ## Feature freezes
 
@@ -38,7 +44,7 @@ All our translations are done through [Weblate](https://hosted.weblate.org/proje
 
 ### Datasets
 
-Help us improve our [Immich Datasets](https://datasets.immich.app) by submitting photos and videos taken from a variety of devices, including smartphones, DSLRs, and action cameras, as well as photos with unique features, such as panoramas, burst photos, and photo spheres. These datasets will be publically available for anyone to use, do not submit private/sensitive photos.
+Help us improve our [Immich Datasets](https://datasets.immich.app) by submitting photos and videos taken from a variety of devices, including smartphones, DSLRs, and action cameras, as well as photos with unique features, such as panoramas, burst photos, and photo spheres. These datasets will be publicly available for anyone to use, do not submit private/sensitive photos.
 
 ### Community support
 

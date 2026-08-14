@@ -1,8 +1,9 @@
 <script lang="ts">
-  import ImageThumbnail from '$lib/components/assets/thumbnail/image-thumbnail.svelte';
+  import ImageThumbnail from '$lib/components/assets/thumbnail/ImageThumbnail.svelte';
   import SearchBar from '$lib/elements/SearchBar.svelte';
   import { getPeopleThumbnailUrl } from '$lib/utils';
   import { handleError } from '$lib/utils/handle-error';
+  import { normalizeSearchString } from '$lib/utils/string-utils';
   import { getAllPeople, type PersonResponseDto } from '@immich/sdk';
   import { Button, HStack, LoadingSpinner, Modal, ModalBody, ModalFooter } from '@immich/ui';
   import { onMount } from 'svelte';
@@ -24,7 +25,9 @@
   const filteredPeople = $derived(
     people
       .filter((person) => !excludedIds.includes(person.id))
-      .filter((person) => !searchName || person.name.toLowerCase().includes(searchName.toLowerCase())),
+      .filter(
+        (person) => !searchName || normalizeSearchString(person.name).includes(normalizeSearchString(searchName)),
+      ),
   );
 
   onMount(async () => {
@@ -61,7 +64,7 @@
     <div class="flex flex-col gap-4">
       <SearchBar bind:name={searchName} placeholder={$t('search_people')} showLoadingSpinner={false} />
 
-      <div class="immich-scrollbar max-h-96 overflow-y-auto">
+      <div class="max-h-96 immich-scrollbar overflow-y-auto">
         {#if loading}
           <div class="flex justify-center p-8">
             <LoadingSpinner />

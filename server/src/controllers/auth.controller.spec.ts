@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { AuthController } from 'src/controllers/auth.controller';
 import { LoginResponseDto } from 'src/dtos/auth.dto';
 import { AuthService } from 'src/services/auth.service';
@@ -28,19 +29,27 @@ describe(AuthController.name, () => {
     it('should require an email address', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/auth/admin-sign-up').send({ name, password });
       expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['email'], message: 'Invalid input: expected email, received undefined' }]),
+      );
     });
 
     it('should require a password', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/auth/admin-sign-up').send({ name, email });
       expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['password'], message: 'Invalid input: expected string, received undefined' },
+        ]),
+      );
     });
 
     it('should require a name', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/auth/admin-sign-up').send({ email, password });
       expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['name'], message: 'Invalid input: expected string, received undefined' }]),
+      );
     });
 
     it('should require a valid email', async () => {
@@ -48,7 +57,9 @@ describe(AuthController.name, () => {
         .post('/auth/admin-sign-up')
         .send({ name, email: 'immich', password });
       expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest());
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['email'], message: 'Invalid input: expected email, received string' }]),
+      );
     });
 
     it('should transform email to lower case', async () => {
@@ -66,6 +77,18 @@ describe(AuthController.name, () => {
         .send({ name: 'admin', password: 'password', email: 'admin@local' });
       expect(status).toEqual(201);
     });
+
+    it('should not sign up an admin when setup is unavailable', async () => {
+      ctx.requireSetupAvailable.mockRejectedValue(new BadRequestException('Admin setup is not available'));
+
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/auth/admin-sign-up')
+        .send({ name, email, password });
+
+      expect(status).toEqual(400);
+      expect(body).toEqual(errorDto.badRequest('Admin setup is not available'));
+      expect(service.adminSignUp).not.toHaveBeenCalled();
+    });
   });
 
   describe('POST /auth/login', () => {
@@ -73,11 +96,9 @@ describe(AuthController.name, () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/auth/login').send({ name: 'admin' });
       expect(status).toBe(400);
       expect(body).toEqual(
-        errorDto.badRequest([
-          'email should not be empty',
-          'email must be an email',
-          'password should not be empty',
-          'password must be a string',
+        errorDto.validationError([
+          { path: ['email'], message: 'Invalid input: expected email, received undefined' },
+          { path: ['password'], message: 'Invalid input: expected string, received undefined' },
         ]),
       );
     });
@@ -87,7 +108,9 @@ describe(AuthController.name, () => {
         .post('/auth/login')
         .send({ name: 'admin', email: null, password: 'password' });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['email should not be empty', 'email must be an email']));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['email'], message: 'Invalid input: expected email, received object' }]),
+      );
     });
 
     it(`should not allow null password`, async () => {
@@ -95,7 +118,9 @@ describe(AuthController.name, () => {
         .post('/auth/login')
         .send({ name: 'admin', email: 'admin@immich.cloud', password: null });
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['password should not be empty', 'password must be a string']));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['password'], message: 'Invalid input: expected string, received null' }]),
+      );
     });
 
     it('should reject an invalid email', async () => {
@@ -106,7 +131,9 @@ describe(AuthController.name, () => {
         .send({ name: 'admin', email: [], password: 'password' });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest(['email must be an email']));
+      expect(body).toEqual(
+        errorDto.validationError([{ path: ['email'], message: 'Invalid input: expected email, received object' }]),
+      );
     });
 
     it('should transform the email to all lowercase', async () => {
@@ -172,65 +199,35 @@ describe(AuthController.name, () => {
     });
   });
 
-  describe('POST /auth/logout', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/auth/logout');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('POST /auth/change-password', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer())
-        .post('/auth/change-password')
-        .send({ password: 'password', newPassword: 'Password1234', invalidateSessions: false });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('POST /auth/pin-code', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: '123456' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should reject 5 digits', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: '12345' });
       expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest(['pinCode must be a 6-digit numeric string']));
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['pinCode'], message: String.raw`Invalid string: must match pattern /^\d{6}$/` },
+        ]),
+      );
     });
 
     it('should reject 7 digits', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: '1234567' });
       expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest(['pinCode must be a 6-digit numeric string']));
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['pinCode'], message: String.raw`Invalid string: must match pattern /^\d{6}$/` },
+        ]),
+      );
     });
 
     it('should reject non-numbers', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/auth/pin-code').send({ pinCode: 'A12345' });
       expect(status).toEqual(400);
-      expect(body).toEqual(errorDto.badRequest(['pinCode must be a 6-digit numeric string']));
-    });
-  });
-
-  describe('PUT /auth/pin-code', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put('/auth/pin-code').send({ pinCode: '123456', newPinCode: '654321' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('DELETE /auth/pin-code', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete('/auth/pin-code').send({ pinCode: '123456' });
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /auth/status', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/auth/status');
-      expect(ctx.authenticate).toHaveBeenCalled();
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['pinCode'], message: String.raw`Invalid string: must match pattern /^\d{6}$/` },
+        ]),
+      );
     });
   });
 });

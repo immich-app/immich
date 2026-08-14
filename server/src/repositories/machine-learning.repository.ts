@@ -130,19 +130,19 @@ export class MachineLearningRepository {
   }
 
   private async check(url: string) {
-    let healthy = false;
+    let isHealthy = false;
     try {
-      const response = await fetch(new URL('/ping', url), {
+      const response = await fetch(new URL('ping', url), {
         signal: AbortSignal.timeout(this.config.availabilityChecks.timeout),
       });
       if (response.ok) {
-        healthy = true;
+        isHealthy = true;
       }
     } catch {
       // nothing to do here
     }
 
-    this.setHealthy(url, healthy);
+    this.setHealthy(url, isHealthy);
   }
 
   private setHealthy(url: string, healthy: boolean) {
@@ -170,7 +170,7 @@ export class MachineLearningRepository {
       ...this.config.urls.filter((url) => !this.isHealthy(url)),
     ]) {
       try {
-        const response = await fetch(new URL('/predict', url), { method: 'POST', body: formData });
+        const response = await fetch(new URL('predict', url), { method: 'POST', body: formData });
         if (response.ok) {
           this.setHealthy(url, true);
           return response.json();

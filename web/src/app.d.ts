@@ -1,3 +1,6 @@
+import 'svelte-i18n';
+import type en from '$i18n/en.json';
+
 /// <reference types="@sveltejs/kit" />
 
 // See https://kit.svelte.dev/docs/types#app
@@ -28,15 +31,12 @@ interface Element {
   requestFullscreen?(options?: FullscreenOptions): Promise<void>;
 }
 
-import type en from '$i18n/en.json';
-import 'svelte-i18n';
-
 type NestedKeys<T, K = keyof T> = K extends keyof T & string
   ? `${K}` | (T[K] extends object ? `${K}.${NestedKeys<T[K]>}` : never)
   : never;
 
 declare module 'svelte-i18n' {
-  import type { InterpolationValues } from '$lib/elements/format-message.svelte';
+  import type { InterpolationValues } from '$lib/elements/format-message';
   import type { Readable } from 'svelte/store';
 
   type Translations = NestedKeys<typeof en>;

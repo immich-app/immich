@@ -18,30 +18,11 @@ describe(DuplicateController.name, () => {
     ctx.reset();
   });
 
-  describe('GET /duplicates', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/duplicates');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('DELETE /duplicates', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete('/duplicates');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('DELETE /duplicates/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete(`/duplicates/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/duplicates/123`);
       expect(status).toBe(400);
-      expect(body).toEqual(factory.responses.badRequest(['id must be a UUID']));
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
   });
 });

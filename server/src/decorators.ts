@@ -1,6 +1,6 @@
 import { BeforeUpdateTrigger, Column, ColumnOptions } from '@immich/sql-tools';
 import { SetMetadata, applyDecorators } from '@nestjs/common';
-import { ApiOperation, ApiOperationOptions, ApiProperty, ApiPropertyOptions, ApiTags } from '@nestjs/swagger';
+import { ApiOperation, ApiOperationOptions, ApiTags } from '@nestjs/swagger';
 import _ from 'lodash';
 import { ApiCustomExtension, ApiTag, ImmichWorker, JobName, MetadataKey, QueueName } from 'src/enum';
 import { EmitEvent } from 'src/repositories/event.repository';
@@ -54,9 +54,8 @@ function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>>
       result.push(chunk);
     }
     return result;
-  } else {
-    return _.chunk(collection, size);
   }
+  return _.chunk(collection, size);
 }
 
 /**
@@ -82,11 +81,13 @@ export function Chunked(
         (Array.isArray(argument) && argument.length <= chunkSize) ||
         (argument instanceof Set && argument.size <= chunkSize)
       ) {
+        // eslint-disable-next-line unicorn/no-this-outside-of-class
         return originalMethod.apply(this, arguments_);
       }
 
       return Promise.all(
         chunks(argument, chunkSize).map((chunk) => {
+          // eslint-disable-next-line unicorn/no-this-outside-of-class
           return Reflect.apply(originalMethod, this, [
             ...arguments_.slice(0, parameterIndex),
             chunk,
@@ -107,9 +108,11 @@ export function ChunkedSet(options?: { paramIndex?: number; chunkSize?: number }
 }
 
 const UUID = '00000000-0000-4000-a000-000000000000';
+const UUID_1 = '00000000-0000-4000-a000-000000000001';
 
 export const DummyValue = {
   UUID,
+  UUID_1,
   UUID_SET: new Set([UUID]),
   PAGINATION: { take: 10, skip: 0 },
   EMAIL: 'user@immich.app',
@@ -172,17 +175,6 @@ export const Endpoint = ({ history, ...options }: EndpointOptions) => {
   return applyDecorators(...decorators);
 };
 
-export type PropertyOptions = ApiPropertyOptions & { history?: HistoryBuilder };
-export const Property = ({ history, ...options }: PropertyOptions) => {
-  const extensions = history?.getExtensions() ?? {};
-
-  if (history?.isDeprecated()) {
-    options.deprecated = true;
-  }
-
-  return ApiProperty({ ...options, ...extensions });
-};
-
 type HistoryEntry = {
   version: string;
   state: ApiState | 'Added' | 'Updated';
@@ -201,15 +193,19 @@ type CustomExtensions = {
 };
 
 enum ApiState {
-  'Stable' = 'Stable',
-  'Alpha' = 'Alpha',
-  'Beta' = 'Beta',
-  'Internal' = 'Internal',
-  'Deprecated' = 'Deprecated',
+  Stable = 'Stable',
+  Alpha = 'Alpha',
+  Beta = 'Beta',
+  Internal = 'Internal',
+  Deprecated = 'Deprecated',
 }
 export class HistoryBuilder {
   private hasDeprecated = false;
   private items: HistoryEntry[] = [];
+
+  static v3() {
+    return new HistoryBuilder().added('v3.0.0');
+  }
 
   added(version: string, description?: string) {
     return this.push({ version, state: 'Added', description });
@@ -272,3 +268,13 @@ export class HistoryBuilder {
     return this;
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
+export const extraModels: Function[] = [];
+
+export const ExtraModel = (): ClassDecorator => {
+  // eslint-disable-next-line unicorn/consistent-function-scoping, @typescript-eslint/no-unsafe-function-type
+  return (object: Function) => {
+    extraModels.push(object);
+  };
+};

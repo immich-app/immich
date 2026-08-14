@@ -6,7 +6,7 @@ import { DateTime, Duration } from 'luxon';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { join, parse } from 'node:path';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+
 import { StorageCore } from 'src/cores/storage.core';
 import { Asset, AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -30,12 +30,12 @@ import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import { JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
 import { mergeTimeZone } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFaceImportEnabled } from 'src/utils/misc';
+import { batched, isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 import { Tasks } from 'src/utils/tasks';
 
@@ -109,7 +109,7 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
   const val = validate(value);
 
   // check if the value is within the range
-  if (val == null || val < min || val > max) {
+  if (val === null || val < min || val > max) {
     return null;
   }
 
@@ -218,17 +218,12 @@ export class MetadataService extends BaseService {
   async handleQueueMetadataExtraction(job: JobOf<JobName.AssetExtractMetadataQueueAll>): Promise<JobStatus> {
     const { force } = job;
 
-    let queue: { name: JobName.AssetExtractMetadata; data: { id: string } }[] = [];
-    for await (const asset of this.assetJobRepository.streamForMetadataExtraction(force)) {
-      queue.push({ name: JobName.AssetExtractMetadata, data: { id: asset.id } });
-
-      if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(queue);
-        queue = [];
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForMetadataExtraction(force))) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.AssetExtractMetadata, data: { id: asset.id } })),
+      );
     }
 
-    await this.jobRepository.queueAll(queue);
     return JobStatus.Success;
   }
 
@@ -243,10 +238,11 @@ export class MetadataService extends BaseService {
       return;
     }
 
-    const [exifTags, stats] = await Promise.all([
+    const [exifResult, stats] = await Promise.all([
       this.getExifTags(asset),
       this.storageRepository.stat(asset.originalPath),
     ]);
+    const { tags: exifTags, audio, video, packets, format } = exifResult;
     this.logger.verbose('Exif Tags', exifTags);
 
     const dates = this.getDates(asset, exifTags, stats);
@@ -285,7 +281,7 @@ export class MetadataService extends BaseService {
       exifImageHeight: validate(height),
       exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
-      projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
+      projectionType: exifTags.ProjectionType ? exifTags.ProjectionType.toUpperCase() : null,
       bitsPerSample: this.getBitsPerSample(exifTags),
       colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
@@ -294,7 +290,7 @@ export class MetadataService extends BaseService {
         exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null),
       model:
         exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? (exifTags.DeviceModelName || null),
-      fps: validate(Number.parseFloat(exifTags.VideoFrameRate!)),
+      fps: video?.frameRate ?? validate(Number(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
       lensModel: getLensModel(exifTags),
@@ -304,7 +300,7 @@ export class MetadataService extends BaseService {
       // comments
       description: String(exifTags.ImageDescription || exifTags.Description || '').trim(),
       profileDescription: exifTags.ProfileDescription || null,
-      rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, -1, 5),
+      rating: exifTags.Rating === 0 ? null : validateRange(exifTags.Rating, 1, 5),
 
       // grouping
       livePhotoCID: (exifTags.ContentIdentifier || exifTags.MediaGroupUUID) ?? null,
@@ -313,9 +309,56 @@ export class MetadataService extends BaseService {
       tags: tags.length > 0 ? tags : null,
     };
 
+    const audioData =
+      format && audio?.codecName
+        ? {
+            assetId: asset.id,
+            bitrate: audio.bitrate,
+            index: audio.index,
+            profile: audio.profile,
+            codecName: audio.codecName,
+          }
+        : undefined;
+
+    const videoData =
+      format?.formatName && format.formatLongName && video?.codecName && video?.timeBase
+        ? {
+            assetId: asset.id,
+            bitrate: video.bitrate,
+            frameCount: video.frameCount,
+            timeBase: video.timeBase,
+            index: video.index,
+            profile: video.profile,
+            level: video.level,
+            colorPrimaries: video.colorPrimaries,
+            colorTransfer: video.colorTransfer,
+            colorMatrix: video.colorMatrix,
+            dvProfile: video.dvProfile,
+            dvLevel: video.dvLevel,
+            dvBlSignalCompatibilityId: video.dvBlSignalCompatibilityId,
+            codecName: video.codecName,
+            formatName: format.formatName,
+            formatLongName: format.formatLongName,
+            pixelFormat: video.pixelFormat,
+          }
+        : undefined;
+
+    const keyframeData =
+      packets && packets.keyframePts.length > 0
+        ? {
+            assetId: asset.id,
+            totalDuration: packets.totalDuration,
+            packetCount: packets.packetCount,
+            outputFrames: packets.outputFrames,
+            pts: packets.keyframePts,
+            accDuration: packets.keyframeAccDuration,
+            ownDuration: packets.keyframeOwnDuration,
+          }
+        : undefined;
+
     const isSidewards = exifTags.Orientation && this.isOrientationSidewards(exifTags.Orientation);
-    const assetWidth = isSidewards ? validate(height) : validate(width);
-    const assetHeight = isSidewards ? validate(width) : validate(height);
+    const assetWidth = validate(isSidewards ? height : width);
+    const assetHeight = validate(isSidewards ? width : height);
 
     const tasks = new Tasks();
 
@@ -329,11 +372,17 @@ export class MetadataService extends BaseService {
           fileModifiedAt: stats.mtime,
 
           // Keep unedited assets in sync with the file on disk, but don't overwrite edited dimensions.
-          width: !asset.isEdited || asset.width == null ? assetWidth : undefined,
-          height: !asset.isEdited || asset.height == null ? assetHeight : undefined,
+          width: !asset.isEdited || asset.width === null ? assetWidth : undefined,
+          height: !asset.isEdited || asset.height === null ? assetHeight : undefined,
         }),
       async () => {
-        await this.assetRepository.upsertExif(exifData, { lockedPropertiesBehavior: 'skip' });
+        await this.assetRepository.upsertExif({
+          exif: exifData,
+          audio: audioData,
+          video: videoData,
+          keyframes: keyframeData,
+          lockedPropertiesBehavior: 'skip',
+        });
         await this.applyTagList(asset);
       },
     );
@@ -363,21 +412,11 @@ export class MetadataService extends BaseService {
 
   @OnJob({ name: JobName.SidecarQueueAll, queue: QueueName.Sidecar })
   async handleQueueSidecar({ force }: JobOf<JobName.SidecarQueueAll>): Promise<JobStatus> {
-    let jobs: JobItem[] = [];
-    const queueAll = async () => {
-      await this.jobRepository.queueAll(jobs);
-      jobs = [];
-    };
-
-    const assets = this.assetJobRepository.streamForSidecar(force);
-    for await (const asset of assets) {
-      jobs.push({ name: JobName.SidecarCheck, data: { id: asset.id } });
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueAll();
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForSidecar(force))) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.SidecarCheck, data: { id: asset.id } })),
+      );
     }
-
-    await queueAll();
 
     return JobStatus.Success;
   }
@@ -391,8 +430,8 @@ export class MetadataService extends BaseService {
 
     let sidecarPath = null;
     for (const candidate of this.getSidecarCandidates(asset)) {
-      const exists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
-      if (!exists) {
+      const isExists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
+      if (!isExists) {
         continue;
       }
 
@@ -523,13 +562,14 @@ export class MetadataService extends BaseService {
     return { width, height };
   }
 
-  private async getExifTags(asset: { originalPath: string; files: AssetFile[]; type: AssetType }): Promise<ImmichTags> {
+  private async getExifTags(asset: { originalPath: string; files: AssetFile[]; type: AssetType }) {
     const { sidecarFile } = getAssetFiles(asset.files);
+    const shouldProbe = asset.type === AssetType.Video || asset.originalPath.toLowerCase().endsWith('.gif');
 
-    const [mediaTags, sidecarTags, videoTags] = await Promise.all([
+    const [mediaTags, sidecarTags, videoResult] = await Promise.all([
       this.metadataRepository.readTags(asset.originalPath),
       sidecarFile ? this.metadataRepository.readTags(sidecarFile.path) : null,
-      asset.type === AssetType.Video ? this.getVideoTags(asset.originalPath) : null,
+      shouldProbe ? this.getVideoTags(asset.originalPath) : null,
     ]);
 
     // prefer dates from sidecar tags
@@ -554,14 +594,31 @@ export class MetadataService extends BaseService {
 
     // prefer duration from video tags
     // don't save duration if asset is definitely not an animated image (see e.g. CR3 with Duration: 1s)
-    if (videoTags || !mimeTypes.isPossiblyAnimatedImage(asset.originalPath)) {
+    if (videoResult || !mimeTypes.isPossiblyAnimatedImage(asset.originalPath)) {
       delete mediaTags.Duration;
     }
 
     // never use duration from sidecar
     delete sidecarTags?.Duration;
 
-    return { ...mediaTags, ...videoTags, ...sidecarTags };
+    // don't use Exif Orientation for HEIF based images, it's usually missing or invalid.
+    // prefer irot (ExifTool QuickTime:Rotation) mapped to ExifOrientation.
+    if (mimeTypes.isHeifImage(asset.originalPath)) {
+      const orientation = this.getHeifOrientation(mediaTags);
+      if (orientation === null) {
+        delete mediaTags.Orientation;
+      } else {
+        mediaTags.Orientation = orientation;
+      }
+    }
+
+    return {
+      tags: { ...mediaTags, ...videoResult?.tags, ...sidecarTags },
+      audio: videoResult?.audio,
+      video: videoResult?.video,
+      packets: videoResult?.packets,
+      format: videoResult?.format ?? null,
+    };
   }
 
   private getTagList(exifTags: ImmichTags): string[] {
@@ -681,8 +738,6 @@ export class MetadataService extends BaseService {
             originalPath: StorageCore.getAndroidMotionPath(asset, motionAssetId),
             originalFileName: `${parse(asset.originalFileName).name}.mp4`,
             visibility: AssetVisibility.Hidden,
-            deviceAssetId: 'NONE',
-            deviceId: 'NONE',
           });
 
           isNewMotionAsset = true;
@@ -736,8 +791,8 @@ export class MetadataService extends BaseService {
       }
 
       // write extracted motion video to disk, especially if the encoded-video folder has been deleted
-      const existsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
-      if (!existsOnDisk) {
+      const isExistsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
+      if (!isExistsOnDisk) {
         this.storageCore.ensureFolders(motionAsset.originalPath);
         await this.storageRepository.createFile(motionAsset.originalPath, video);
         this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
@@ -784,6 +839,13 @@ export class MetadataService extends BaseService {
     // update area coordinates and dimensions in RegionList assuming "normalized" unit as per MWG guidelines
     const adjustedRegionList = regionInfo.RegionList.map((region) => {
       let { X, Y, W, H } = region.Area;
+
+      // EXIF floats with >16 decimals are serialized as strings. Ensure they are numbers.
+      X = Number(X);
+      Y = Number(Y);
+      W = Number(W);
+      H = Number(H);
+
       switch (orientation) {
         case ExifOrientation.MirrorHorizontal: {
           X = 1 - X;
@@ -856,16 +918,21 @@ export class MetadataService extends BaseService {
       const loweredName = region.Name.toLowerCase();
       const personId = existingNameMap.get(loweredName) || this.cryptoRepository.randomUUID();
 
+      const X = Number(region.Area.X);
+      const Y = Number(region.Area.Y);
+      const W = Number(region.Area.W);
+      const H = Number(region.Area.H);
+
       const face = {
         id: this.cryptoRepository.randomUUID(),
         personId,
         assetId: asset.id,
         imageWidth,
         imageHeight,
-        boundingBoxX1: Math.floor((region.Area.X - region.Area.W / 2) * imageWidth),
-        boundingBoxY1: Math.floor((region.Area.Y - region.Area.H / 2) * imageHeight),
-        boundingBoxX2: Math.floor((region.Area.X + region.Area.W / 2) * imageWidth),
-        boundingBoxY2: Math.floor((region.Area.Y + region.Area.H / 2) * imageHeight),
+        boundingBoxX1: Math.floor((X - W / 2) * imageWidth),
+        boundingBoxY1: Math.floor((Y - H / 2) * imageHeight),
+        boundingBoxX2: Math.floor((X + W / 2) * imageWidth),
+        boundingBoxY2: Math.floor((Y + H / 2) * imageHeight),
         sourceType: SourceType.Exif,
       };
 
@@ -921,7 +988,7 @@ export class MetadataService extends BaseService {
 
     // timezone
     let timeZone = exifTags.zone ?? null;
-    if (timeZone == null && (dateTime?.rawValue?.endsWith('Z') || dateTime?.rawValue?.endsWith('+00:00'))) {
+    if (timeZone === null && (dateTime?.rawValue?.endsWith('Z') || dateTime?.rawValue?.endsWith('+00:00'))) {
       // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
       // https://github.com/photostructure/exiftool-vendored.js/issues/203
       timeZone = 'UTC+0';
@@ -1003,35 +1070,30 @@ export class MetadataService extends BaseService {
     return bitsPerSample;
   }
 
-  private getDuration(tags: ImmichTags): string | null {
+  private getDuration(tags: ImmichTags): number | null {
     const duration = tags.Duration;
-
-    if (typeof duration === 'string') {
-      return duration;
-    }
-
-    if (typeof duration === 'number') {
-      return Duration.fromObject({ seconds: duration }).toFormat('hh:mm:ss.SSS');
-    }
-
-    return null;
+    // eslint-disable-next-line unicorn/prefer-number-coercion
+    const seconds = typeof duration === 'number' ? duration : Number.parseFloat(duration as string);
+    return Number.isFinite(seconds) ? Math.round(Duration.fromObject({ seconds }).toMillis()) : null;
   }
 
   private async getVideoTags(originalPath: string) {
-    const { videoStreams, format } = await this.mediaRepository.probe(originalPath);
+    const { videoStreams, audioStreams, format } = await this.mediaRepository.probe(originalPath);
+    const video = videoStreams[0];
+    const audio = audioStreams[0];
+    const packets = video?.timeBase ? await this.mediaRepository.probePackets(originalPath, video.index) : null;
 
     const tags: Pick<ImmichTags, 'Duration' | 'Orientation' | 'ImageWidth' | 'ImageHeight'> = {};
 
-    if (videoStreams[0]) {
-      // Set video dimensions
-      if (videoStreams[0].width) {
-        tags.ImageWidth = videoStreams[0].width;
+    if (video) {
+      if (video.width) {
+        tags.ImageWidth = video.width;
       }
-      if (videoStreams[0].height) {
-        tags.ImageHeight = videoStreams[0].height;
+      if (video.height) {
+        tags.ImageHeight = video.height;
       }
 
-      switch (videoStreams[0].rotation) {
+      switch (video.rotation) {
         case -90: {
           tags.Orientation = ExifOrientation.Rotate90CW;
           break;
@@ -1055,6 +1117,28 @@ export class MetadataService extends BaseService {
       tags.Duration = format.duration;
     }
 
-    return tags;
+    return { tags, audio, video, packets, format };
+  }
+
+  private getHeifOrientation(exifTags: ImmichTags): ExifOrientation | null {
+    // https://exiftool.org/TagNames/QuickTime.html#ItemPropCont
+    const rotation = typeof exifTags.Rotation === 'number' ? exifTags.Rotation : undefined;
+    switch (rotation) {
+      case 0: {
+        return ExifOrientation.Horizontal;
+      }
+      case 1: {
+        return ExifOrientation.Rotate270CW;
+      }
+      case 2: {
+        return ExifOrientation.Rotate180;
+      }
+      case 3: {
+        return ExifOrientation.Rotate90CW;
+      }
+      default: {
+        return null;
+      }
+    }
   }
 }

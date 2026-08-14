@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { BulkIdErrorReason } from 'src/dtos/asset-ids.response.dto';
 import { MapAsset } from 'src/dtos/asset-response.dto';
 import { AssetType, AssetVisibility, JobName, JobStatus } from 'src/enum';
@@ -146,6 +147,36 @@ describe(DuplicateService.name, () => {
           data: { id: asset.id },
         },
       ]);
+    });
+  });
+
+  describe('delete', () => {
+    it('should throw for an unknown or unauthorized group id', async () => {
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set());
+      await expect(sut.delete(authStub.admin, 'group-1')).rejects.toThrow(BadRequestException);
+      expect(mocks.duplicateRepository.delete).not.toHaveBeenCalled();
+    });
+
+    it('should dismiss the duplicate group', async () => {
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.delete.mockResolvedValue();
+      await expect(sut.delete(authStub.admin, 'group-1')).resolves.toBeUndefined();
+      expect(mocks.duplicateRepository.delete).toHaveBeenCalledWith(authStub.admin.user.id, 'group-1');
+    });
+  });
+
+  describe('deleteAll', () => {
+    it('should throw if any group id is unknown or unauthorized', async () => {
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      await expect(sut.deleteAll(authStub.admin, { ids: ['group-1', 'group-2'] })).rejects.toThrow(BadRequestException);
+      expect(mocks.duplicateRepository.deleteAll).not.toHaveBeenCalled();
+    });
+
+    it('should dismiss all duplicate groups', async () => {
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1', 'group-2']));
+      mocks.duplicateRepository.deleteAll.mockResolvedValue();
+      await expect(sut.deleteAll(authStub.admin, { ids: ['group-1', 'group-2'] })).resolves.toBeUndefined();
+      expect(mocks.duplicateRepository.deleteAll).toHaveBeenCalledWith(authStub.admin.user.id, ['group-1', 'group-2']);
     });
   });
 
@@ -336,6 +367,26 @@ describe(DuplicateService.name, () => {
 
       // Verify SidecarWrite was queued (to write tags to sidecar)
       expect(mocks.job.queueAll).toHaveBeenCalledWith([{ name: JobName.SidecarWrite, data: { id: asset1.id } }]);
+    });
+
+    it('should not merge metadata when multiple assets are kept', async () => {
+      const asset1 = AssetFactory.create({ isFavorite: true });
+      const asset2 = AssetFactory.create();
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.get.mockResolvedValue({
+        duplicateId: 'group-1',
+        assets: [asset1 as unknown as MapAsset, asset2 as unknown as MapAsset],
+      });
+
+      const result = await sut.resolve(authStub.admin, {
+        groups: [{ duplicateId: 'group-1', keepAssetIds: [asset1.id, asset2.id], trashAssetIds: [] }],
+      });
+
+      expect(result[0].success).toBe(true);
+      expect(mocks.album.addAssetIdsToAlbums).not.toHaveBeenCalled();
+      expect(mocks.tag.replaceAssetTags).not.toHaveBeenCalled();
+      expect(mocks.asset.updateAllExif).not.toHaveBeenCalled();
+      expect(mocks.asset.updateAll).toHaveBeenCalledWith([asset1.id, asset2.id], { duplicateId: null });
     });
 
     // NOTE: The following integration-style tests are covered by E2E tests instead

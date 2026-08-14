@@ -15,6 +15,7 @@ import { makeStream, newTestService, ServiceMocks } from 'test/utils';
 import { vitest } from 'vitest';
 
 async function* mockWalk() {
+  // eslint-disable-next-line unicorn/no-useless-promise-resolve-reject
   yield await Promise.resolve(['/data/user1/photo.jpg']);
 }
 
@@ -570,12 +571,15 @@ describe(LibraryService.name, () => {
           ownerId: library.ownerId,
           libraryId: library.id,
           originalPath: '/data/user1/photo.jpg',
-          deviceId: 'Library Import',
           type: AssetType.Image,
           originalFileName: 'photo.jpg',
           isExternal: true,
         }),
       ]);
+
+      expect(mocks.event.emit).toHaveBeenCalledWith('AssetCreate', {
+        asset: { id: asset.id, ownerId: library.ownerId },
+      });
 
       expect(mocks.job.queueAll).toHaveBeenCalledWith([
         {

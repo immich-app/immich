@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.provider.MediaStore
 import androidx.annotation.RequiresApi
 import androidx.annotation.RequiresExtension
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.serialization.json.Json
 
 @RequiresApi(Build.VERSION_CODES.Q)
@@ -35,7 +37,11 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     }
   }
 
-  override fun shouldFullSync(): Boolean =
+  override fun shouldFullSync(callback: (Result<Boolean>) -> Unit) {
+    runSync(callback) { shouldFullSync() }
+  }
+
+  private fun shouldFullSync(): Boolean =
     MediaStore.getVersion(ctx) != prefs.getString(SHARED_PREF_MEDIA_STORE_VERSION_KEY, null)
 
   override fun checkpointSync() {
@@ -49,7 +55,11 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     }
   }
 
-  override fun getMediaChanges(): SyncDelta {
+  override fun getMediaChanges(callback: (Result<SyncDelta>) -> Unit) {
+    runSync(callback) { getMediaChanges() }
+  }
+
+  private suspend fun getMediaChanges(): SyncDelta {
     val genMap = getSavedGenerationMap()
     val currentVolumes = MediaStore.getExternalVolumeNames(ctx)
     val changed = mutableListOf<PlatformAsset>()
@@ -58,6 +68,7 @@ class NativeSyncApiImpl30(context: Context) : NativeSyncApiImplBase(context), Na
     var hasChanges = genMap.keys != currentVolumes
 
     for (volume in currentVolumes) {
+      currentCoroutineContext().ensureActive()
       val currentGen = MediaStore.getGeneration(ctx, volume)
       val storedGen = genMap[volume] ?: 0
       if (currentGen <= storedGen) {

@@ -6,7 +6,7 @@
   import { mdiArrowLeft, mdiCallMerge, mdiSwapHorizontal } from '@mdi/js';
   import { onMount, tick } from 'svelte';
   import { t } from 'svelte-i18n';
-  import ImageThumbnail from '../components/assets/thumbnail/image-thumbnail.svelte';
+  import ImageThumbnail from '../components/assets/thumbnail/ImageThumbnail.svelte';
 
   type Props = {
     personToMerge: PersonResponseDto;
@@ -28,6 +28,7 @@
 
   const changePersonToMerge = (newPerson: PersonResponseDto) => {
     const index = potentialMergePeople.indexOf(newPerson);
+    // eslint-disable-next-line unicorn/no-unreadable-array-destructuring
     [potentialMergePeople[index], personToBeMergedInto] = [personToBeMergedInto, potentialMergePeople[index]];
     choosePersonToMerge = false;
   };
@@ -61,19 +62,22 @@
 >
   <div class="flex items-center justify-center gap-2 py-4 md:h-36">
     {#if !choosePersonToMerge}
-      <div class="flex h-20 w-20 items-center px-1 md:h-24 md:w-24 md:px-2">
-        <ImageThumbnail
-          circle
-          shadow
-          url={getPeopleThumbnailUrl(personToMerge)}
-          altText={personToMerge.name}
-          widthStyle="100%"
-        />
+      <div class="flex size-20 items-center px-1 md:size-24 md:px-2">
+        <!-- Trigger a re-render on person change as <Image> captures only the first src -->
+        {#key personToMerge.id}
+          <ImageThumbnail
+            circle
+            shadow
+            url={getPeopleThumbnailUrl(personToMerge)}
+            altText={personToMerge.name}
+            widthStyle="100%"
+          />
+        {/key}
       </div>
 
       <div class="grid grid-rows-3">
         <div></div>
-        <div class="flex flex-col h-full items-center justify-center">
+        <div class="flex h-full flex-col items-center justify-center">
           <div class="flex h-full items-center justify-center">
             <Icon icon={mdiCallMerge} size="48" class="rotate-90 dark:text-white" />
           </div>
@@ -93,21 +97,23 @@
       <button
         type="button"
         disabled={potentialMergePeople.length === 0}
-        class="flex h-28 w-28 items-center rounded-full border-2 border-immich-primary px-1 dark:border-immich-dark-primary md:h-32 md:w-32 md:px-2"
+        class="flex size-28 items-center rounded-full border-2 border-immich-primary px-1 md:size-32 md:px-2 dark:border-immich-dark-primary"
         onclick={() => {
           if (potentialMergePeople.length > 0) {
             choosePersonToMerge = !choosePersonToMerge;
           }
         }}
       >
-        <ImageThumbnail
-          border={potentialMergePeople.length > 0}
-          circle
-          shadow
-          url={getPeopleThumbnailUrl(personToBeMergedInto)}
-          altText={personToBeMergedInto.name}
-          widthStyle="100%"
-        />
+        {#key personToBeMergedInto.id}
+          <ImageThumbnail
+            border={potentialMergePeople.length > 0}
+            circle
+            shadow
+            url={getPeopleThumbnailUrl(personToBeMergedInto)}
+            altText={personToBeMergedInto.name}
+            widthStyle="100%"
+          />
+        {/key}
       </button>
     {:else}
       <div class="grid w-full grid-cols-1 gap-2">
@@ -115,10 +121,11 @@
           <button type="button" onclick={() => (choosePersonToMerge = false)}> <Icon icon={mdiArrowLeft} /></button>
         </div>
         <div class="flex items-center justify-center">
+          <!-- eslint-disable-next-line better-tailwindcss/no-concatenated-classes -->
           <div class="flex flex-wrap justify-center md:grid md:grid-cols-{potentialMergePeople.length}">
             {#each potentialMergePeople as person (person.id)}
-              <div class="h-24 w-24 md:h-28 md:w-28">
-                <button type="button" class="p-2 w-full" onclick={() => changePersonToMerge(person)}>
+              <div class="size-24 md:size-28">
+                <button type="button" class="w-full p-2" onclick={() => changePersonToMerge(person)}>
                   <ImageThumbnail
                     border={true}
                     circle

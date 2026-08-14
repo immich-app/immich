@@ -1,11 +1,9 @@
 import 'dart:async';
 
-import 'package:collection/collection.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/user.service.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
-import 'package:immich_mobile/services/timeline.service.dart';
 
 class CurrentUserProvider extends StateNotifier<UserDto?> {
   CurrentUserProvider(this._userService) : super(null) {
@@ -16,7 +14,7 @@ class CurrentUserProvider extends StateNotifier<UserDto?> {
   final UserService _userService;
   late final StreamSubscription<UserDto?> streamSub;
 
-  refresh() async {
+  Future<void> refresh() async {
     try {
       await _userService.refreshMyUser();
     } catch (_) {}
@@ -24,7 +22,7 @@ class CurrentUserProvider extends StateNotifier<UserDto?> {
 
   @override
   void dispose() {
-    streamSub.cancel();
+    unawaited(streamSub.cancel());
     super.dispose();
   }
 }
@@ -33,27 +31,10 @@ final currentUserProvider = StateNotifierProvider<CurrentUserProvider, UserDto?>
   return CurrentUserProvider(ref.watch(userServiceProvider));
 });
 
-class TimelineUserIdsProvider extends StateNotifier<List<String>> {
-  TimelineUserIdsProvider(this._timelineService) : super([]) {
-    final listEquality = const ListEquality();
-    _timelineService.getTimelineUserIds().then((users) => state = users);
-    streamSub = _timelineService.watchTimelineUserIds().listen((users) {
-      if (!listEquality.equals(state, users)) {
-        state = users;
-      }
-    });
+final authUserProvider = Provider<UserDto>((ref) {
+  final user = ref.watch(currentUserProvider);
+  if (user == null) {
+    throw Exception('User must be logged in to access this provider');
   }
-
-  late final StreamSubscription<List<String>> streamSub;
-  final TimelineService _timelineService;
-
-  @override
-  void dispose() {
-    streamSub.cancel();
-    super.dispose();
-  }
-}
-
-final timelineUsersIdsProvider = StateNotifierProvider<TimelineUserIdsProvider, List<String>>((ref) {
-  return TimelineUserIdsProvider(ref.watch(timelineServiceProvider));
+  return user;
 });

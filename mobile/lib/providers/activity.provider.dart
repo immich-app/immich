@@ -1,17 +1,22 @@
 import 'package:collection/collection.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/providers/activity_service.provider.dart';
-import 'package:immich_mobile/providers/activity_statistics.provider.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-
-part 'activity.provider.g.dart';
 
 // ignore: unintended_html_in_doc_comment
 /// Maintains the current list of all activities for <share-album-id, asset>
-@riverpod
-class AlbumActivity extends _$AlbumActivity {
+
+final albumActivityProvider = AsyncNotifierProvider.autoDispose
+    .family<AlbumActivity, List<Activity>, (String albumId, String? assetId)>(AlbumActivity.new);
+
+class AlbumActivity extends AutoDisposeFamilyAsyncNotifier<List<Activity>, (String albumId, String? assetId)> {
+  late String albumId;
+  late String? assetId;
+
   @override
-  Future<List<Activity>> build(String albumId, [String? assetId]) async {
+  Future<List<Activity>> build((String albumId, String? assetId) args) async {
+    albumId = args.$1;
+    assetId = args.$2;
     return ref.watch(activityServiceProvider).getAllActivities(albumId, assetId: assetId);
   }
 
@@ -23,14 +28,7 @@ class AlbumActivity extends _$AlbumActivity {
       }
 
       if (assetId != null) {
-        ref.read(albumActivityProvider(albumId).notifier)._removeFromState(id);
-      }
-
-      if (removedActivity.type == ActivityType.comment) {
-        ref.watch(activityStatisticsProvider(albumId, assetId).notifier).removeActivity();
-        if (assetId != null) {
-          ref.watch(activityStatisticsProvider(albumId).notifier).removeActivity();
-        }
+        ref.read(albumActivityProvider((albumId, assetId)).notifier)._removeFromState(id);
       }
     }
   }
@@ -40,7 +38,7 @@ class AlbumActivity extends _$AlbumActivity {
     if (activity.hasValue) {
       _addToState(activity.requireValue);
       if (assetId != null) {
-        ref.read(albumActivityProvider(albumId).notifier)._addToState(activity.requireValue);
+        ref.read(albumActivityProvider((albumId, assetId)).notifier)._addToState(activity.requireValue);
       }
     }
   }
@@ -53,13 +51,7 @@ class AlbumActivity extends _$AlbumActivity {
     if (activity.hasValue) {
       _addToState(activity.requireValue);
       if (assetId != null) {
-        ref.read(albumActivityProvider(albumId).notifier)._addToState(activity.requireValue);
-      }
-      ref.watch(activityStatisticsProvider(albumId, assetId).notifier).addActivity();
-      // The previous addActivity call would increase the count of an asset if assetId != null
-      // To also increase the activity count of the album, calling it once again with assetId set to null
-      if (assetId != null) {
-        ref.watch(activityStatisticsProvider(albumId).notifier).addActivity();
+        ref.read(albumActivityProvider((albumId, assetId)).notifier)._addToState(activity.requireValue);
       }
     }
   }
@@ -87,6 +79,3 @@ class AlbumActivity extends _$AlbumActivity {
     return activity;
   }
 }
-
-/// Mock class for testing
-abstract class AlbumActivityInternal extends _$AlbumActivity {}

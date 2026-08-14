@@ -4,11 +4,11 @@ import 'package:async/async.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/colors.dart';
+import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/models/cast/cast_manager_state.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/asset_viewer/video_player_provider.dart';
 import 'package:immich_mobile/providers/cast.provider.dart';
-import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/widgets/asset_viewer/animated_play_pause.dart';
 
 class VideoControls extends ConsumerStatefulWidget {
@@ -49,7 +49,9 @@ class _VideoControlsState extends ConsumerState<VideoControls> {
   }
 
   void _onHideTimer() {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     if (ref.read(_provider).status == VideoPlaybackStatus.playing) {
       ref.read(assetViewerProvider.notifier).setControls(false);
     }
@@ -91,11 +93,13 @@ class _VideoControlsState extends ConsumerState<VideoControls> {
     final isFinished = !isCasting && videoStatus == VideoPlaybackStatus.completed;
 
     ref.listen(assetViewerProvider.select((v) => v.showingControls), (prev, showing) {
-      if (showing && prev != showing) _hideTimer.reset();
+      if (showing && prev != showing) {
+        _hideTimer.reset();
+      }
     });
     ref.listen(_provider.select((v) => v.status), (_, __) => _hideTimer.reset());
 
-    final notifier = ref.read(_provider.notifier);
+    final notifier = ref.watch(_provider.notifier);
     final isLoaded = duration != Duration.zero;
 
     return Padding(
@@ -119,13 +123,15 @@ class _VideoControlsState extends ConsumerState<VideoControls> {
                 onPressed: () => _toggle(isCasting),
               ),
               const Spacer(),
-              Text(
-                "${position.format()} / ${duration.format()}",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w500,
-                  fontFeatures: [FontFeature.tabularFigures()],
-                  shadows: VideoControls._controlShadows,
+              IgnorePointer(
+                child: Text(
+                  "${position.format()} / ${duration.format()}",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                    shadows: VideoControls._controlShadows,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),

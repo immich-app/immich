@@ -9,7 +9,7 @@ final AppSetting = SettingsService(storeService: StoreService.I);
 class SettingsService {
   final StoreService _storeService;
 
-  const SettingsService({required StoreService storeService}) : _storeService = storeService;
+  const SettingsService({required this._storeService});
 
   T get<T>(Setting<T> setting) => _storeService.get(setting.storeKey, setting.defaultValue);
 

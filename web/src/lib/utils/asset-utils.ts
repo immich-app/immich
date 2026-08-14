@@ -1,14 +1,3 @@
-import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
-import { authManager } from '$lib/managers/auth-manager.svelte';
-import { downloadManager } from '$lib/managers/download-manager.svelte';
-import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
-import { preferences } from '$lib/stores/user.store';
-import { downloadRequest, withError } from '$lib/utils';
-import { getByteUnitString } from '$lib/utils/byte-units';
-import { getFormatter } from '$lib/utils/i18n';
-import { navigate } from '$lib/utils/navigation';
-import { asQueryString } from '$lib/utils/shared-links';
 import {
   AssetVisibility,
   bulkTagAssets,
@@ -26,13 +15,24 @@ import {
   type DownloadInfoDto,
   type ExifResponseDto,
   type StackResponseDto,
-  type UserPreferencesResponseDto,
   type UserResponseDto,
 } from '@immich/sdk';
 import { toastManager } from '@immich/ui';
 import { DateTime } from 'luxon';
 import { t } from 'svelte-i18n';
 import { get } from 'svelte/store';
+import type { AssetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
+import { authManager } from '$lib/managers/auth-manager.svelte';
+import { downloadManager } from '$lib/managers/download-manager.svelte';
+import { eventManager } from '$lib/managers/event-manager.svelte';
+import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
+import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
+import { downloadBlob, downloadRequest, withError } from '$lib/utils';
+import { getByteUnitString } from '$lib/utils/byte-units';
+import { getFormatter } from '$lib/utils/i18n';
+import { navigate } from '$lib/utils/navigation';
+import { asQueryString } from '$lib/utils/shared-links';
+import { toTimelineAsset } from '$lib/utils/timeline-util';
 import { handleError } from './handle-error';
 
 export const tagAssets = async ({
@@ -75,36 +75,9 @@ export const removeTag = async ({
   return assetIds;
 };
 
-export const downloadBlob = (data: Blob, filename: string) => {
-  const url = URL.createObjectURL(data);
-
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-
-  URL.revokeObjectURL(url);
-};
-
-export const downloadUrl = (url: string, filename: string) => {
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-
-  document.body.append(anchor);
-  anchor.click();
-  anchor.remove();
-
-  URL.revokeObjectURL(url);
-};
-
 export const downloadArchive = async (fileName: string, options: Omit<DownloadInfoDto, 'archiveSize'>) => {
-  const $preferences = get<UserPreferencesResponseDto | undefined>(preferences);
-  const dto = { ...options, archiveSize: $preferences?.download.archiveSize };
-
+  const archiveSize = authManager.authenticated ? authManager.preferences.download.archiveSize : undefined;
+  const dto = { ...options, archiveSize };
   const [error, downloadInfo] = await withError(() => getDownloadInfo({ ...authManager.params, downloadInfoDto: dto }));
   if (error) {
     const $t = get(t);
@@ -119,13 +92,13 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
   for (let index = 0; index < downloadInfo.archives.length; index++) {
     const archive = downloadInfo.archives[index];
     const suffix = downloadInfo.archives.length > 1 ? `+${index + 1}` : '';
-    const archiveName = fileName.replace('.zip', `${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}.zip`);
+    const archiveName = fileName.replace('.zip', () => `${suffix}-${DateTime.now().toFormat('yyyyLLdd_HHmmss')}.zip`);
     const queryParams = asQueryString(authManager.params);
 
-    let downloadKey = `${archiveName} `;
-    if (downloadInfo.archives.length > 1) {
-      downloadKey = `${archiveName} (${index + 1}/${downloadInfo.archives.length})`;
-    }
+    const downloadKey =
+      downloadInfo.archives.length > 1
+        ? `${archiveName} (${index + 1}/${downloadInfo.archives.length})`
+        : `${archiveName} `;
 
     const abort = new AbortController();
     downloadManager.add(downloadKey, archive.size, abort);
@@ -158,7 +131,7 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
  */
 export function getFilenameExtension(filename: string): string {
   const lastIndex = Math.max(0, filename.lastIndexOf('.'));
-  const startIndex = (lastIndex || Number.POSITIVE_INFINITY) + 1;
+  const startIndex = (lastIndex || Infinity) + 1;
   return filename.slice(startIndex).toLowerCase();
 }
 
@@ -171,11 +144,11 @@ export function getAssetFilename(asset: AssetResponseDto): string {
 }
 
 function isRotated90CW(orientation: number) {
-  return orientation === 5 || orientation === 6 || orientation === 90;
+  return [5, 6, 90].includes(orientation);
 }
 
 function isRotated270CW(orientation: number) {
-  return orientation === 7 || orientation === 8 || orientation === -90;
+  return [7, 8, -90].includes(orientation);
 }
 
 export function isFlipped(orientation?: string | null) {
@@ -272,6 +245,7 @@ async function addSupportedMimeTypes(): Promise<void> {
   heicImg.src =
     'data:image/heic;base64,AAAAGGZ0eXBoZWljAAAAAG1pZjFoZWljAAABrW1ldGEAAAAAAAAAIWhkbHIAAAAAAAAAAHBpY3QAAAAAAAAAAAAAAAAAAAAADnBpdG0AAAAAAAIAAAAQaWRhdAAAAAAAAQABAAAAOGlsb2MBAAAAREAAAgABAAAAAAAAAc0AAQAAAAAAAAAsAAIAAQAAAAAAAAABAAAAAAAAAAgAAAA4aWluZgAAAAAAAgAAABVpbmZlAgAAAQABAABodmMxAAAAABVpbmZlAgAAAAACAABncmlkAAAAANhpcHJwAAAAtmlwY28AAAB2aHZjQwEDcAAAAAAAAAAAAB7wAPz9+PgAAA8DIAABABhAAQwB//8DcAAAAwCQAAADAAADAB66AkAhAAEAKkIBAQNwAAADAJAAAAMAAAMAHqAggQWW6q6a5uBAQMCAAAADAIAAAAMAhCIAAQAGRAHBc8GJAAAAFGlzcGUAAAAAAAAAAQAAAAEAAAAUaXNwZQAAAAAAAABAAAAAQAAAABBwaXhpAAAAAAMICAgAAAAaaXBtYQAAAAAAAAACAAECgQMAAgIChAAAABppcmVmAAAAAAAAAA5kaW1nAAIAAQABAAAANG1kYXQAAAAoKAGvCchMZYA50NoPIfzz81Qfsm577GJt3lf8kLAr+NbNIoeRR7JeYA=='; // Small valid HEIC/HEIF image
 }
+// eslint-disable-next-line unicorn/no-top-level-side-effects
 void addSupportedMimeTypes();
 
 /**
@@ -429,7 +403,12 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
     });
 
     asset.isArchived = data.isArchived;
-    toastManager.primary(asset.isArchived ? $t(`added_to_archive`) : $t(`removed_from_archive`));
+    if (asset.isArchived) {
+      const timelineAsset = toTimelineAsset(asset);
+      showUndoArchiveToast($t('added_to_archive'), [timelineAsset]);
+    } else {
+      toastManager.primary($t('removed_from_archive'));
+    }
   } catch (error) {
     handleError(error, $t('errors.unable_to_add_remove_archive', { values: { archived: asset.isArchived } }));
   }
@@ -437,7 +416,45 @@ export const toggleArchive = async (asset: AssetResponseDto) => {
   return asset;
 };
 
-export const archiveAssets = async (assets: { id: string }[], visibility: AssetVisibility) => {
+const showUndoArchiveToast = (description: string, assets: TimelineAsset[]) => {
+  const $t = get(t);
+  toastManager.primary({
+    description,
+    button: (close) => ({
+      label: $t('undo'),
+      onclick: () => {
+        close();
+        void undoArchiveAssets(assets);
+      },
+    }),
+  });
+};
+
+const undoArchiveAssets = async (assets: TimelineAsset[]) => {
+  const $t = get(t);
+  try {
+    const ids = assets.map((a) => a.id);
+    if (ids.length > 0) {
+      await updateAssets({
+        assetBulkUpdateDto: {
+          ids,
+          visibility: AssetVisibility.Timeline,
+        },
+      });
+    }
+
+    for (const asset of assets) {
+      asset.visibility = AssetVisibility.Timeline;
+    }
+    eventManager.emit('AssetsUnarchive', assets);
+    eventManager.emit('AssetsUndoArchive', assets);
+    toastManager.success($t('unarchived_count', { values: { count: assets.length } }));
+  } catch (error) {
+    handleError(error, $t('errors.unable_to_archive_unarchive', { values: { archived: false } }));
+  }
+};
+
+export const archiveAssets = async (assets: TimelineAsset[], visibility: AssetVisibility) => {
   const ids = assets.map(({ id }) => id);
   const $t = get(t);
 
@@ -448,11 +465,11 @@ export const archiveAssets = async (assets: { id: string }[], visibility: AssetV
       });
     }
 
-    toastManager.primary(
-      visibility === AssetVisibility.Archive
-        ? $t('archived_count', { values: { count: ids.length } })
-        : $t('unarchived_count', { values: { count: ids.length } }),
-    );
+    if (visibility === AssetVisibility.Archive) {
+      showUndoArchiveToast($t('archived_count', { values: { count: ids.length } }), assets);
+    } else {
+      toastManager.primary($t('unarchived_count', { values: { count: ids.length } }));
+    }
   } catch (error) {
     handleError(
       error,

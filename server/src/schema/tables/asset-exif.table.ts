@@ -111,7 +111,7 @@ export class AssetExifTable {
   tags!: string[] | null;
 
   @UpdateDateColumn({ default: () => 'clock_timestamp()' })
-  updatedAt!: Generated<Date>;
+  updatedAt!: Generated<Timestamp>;
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;

@@ -10,7 +10,9 @@ List<InlineSpan> _getContentSpans(WidgetTester tester) {
   final richText = tester.widget<RichText>(find.byType(RichText));
   final root = richText.text as TextSpan;
   final wrapper = root.children?.firstOrNull;
-  if (wrapper is TextSpan) return wrapper.children ?? [];
+  if (wrapper is TextSpan) {
+    return wrapper.children ?? [];
+  }
   return [];
 }
 
@@ -57,7 +59,7 @@ void main() {
       );
 
       final text = tester.widget<Text>(find.byType(Text));
-      final richText = text.textSpan as TextSpan;
+      final richText = text.textSpan! as TextSpan;
 
       expect(richText.style?.fontSize, 16);
       expect(richText.style?.color, Colors.purple);

@@ -29,7 +29,8 @@ export const album_user_after_insert = registerFunction({
   body: `
     BEGIN
       UPDATE album SET "updatedAt" = clock_timestamp(), "updateId" = immich_uuid_v7(clock_timestamp())
-      WHERE "id" IN (SELECT DISTINCT "albumId" FROM inserted_rows);
+      WHERE "id" IN (SELECT "albumId" FROM inserted_rows)
+        AND NOT EXISTS (SELECT FROM inserted_rows WHERE role = 'owner');
       RETURN NULL;
     END`,
 });
@@ -119,19 +120,6 @@ export const asset_delete_audit = registerFunction({
     END`,
 });
 
-export const album_delete_audit = registerFunction({
-  name: 'album_delete_audit',
-  returnType: 'TRIGGER',
-  language: 'PLPGSQL',
-  body: `
-    BEGIN
-      INSERT INTO album_audit ("albumId", "userId")
-      SELECT "id", "ownerId"
-      FROM OLD;
-      RETURN NULL;
-    END`,
-});
-
 export const album_asset_delete_audit = registerFunction({
   name: 'album_asset_delete_audit',
   returnType: 'TRIGGER',
@@ -141,6 +129,20 @@ export const album_asset_delete_audit = registerFunction({
       INSERT INTO album_asset_audit ("albumId", "assetId")
       SELECT "albumId", "assetId" FROM OLD
       WHERE "albumId" IN (SELECT "id" FROM album WHERE "id" IN (SELECT "albumId" FROM OLD));
+      RETURN NULL;
+    END`,
+});
+
+export const album_user_delete = registerFunction({
+  name: 'album_user_delete',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      DELETE FROM "album"
+      WHERE "album"."id" = OLD."albumId"
+      AND NOT EXISTS (SELECT "albumId" FROM "album_user" WHERE "album_user"."albumId" = "album"."id" AND "album_user"."role" = 'owner');
+
       RETURN NULL;
     END`,
 });
@@ -295,6 +297,19 @@ export const asset_edit_audit = registerFunction({
     BEGIN
       INSERT INTO asset_edit_audit ("editId", "assetId")
       SELECT "id", "assetId"
+      FROM OLD;
+      RETURN NULL;
+    END`,
+});
+
+export const asset_ocr_delete_audit = registerFunction({
+  name: 'asset_ocr_delete_audit',
+  returnType: 'TRIGGER',
+  language: 'PLPGSQL',
+  body: `
+    BEGIN
+      INSERT INTO asset_ocr_audit ("assetId")
+      SELECT "assetId"
       FROM OLD;
       RETURN NULL;
     END`,

@@ -87,7 +87,7 @@
     </Field>
 
     <Field label={$t('admin.require_password_change_on_login')}>
-      <Switch id="require-password-change" bind:checked={shouldChangePassword} class="text-sm text-start" />
+      <Switch id="require-password-change" bind:checked={shouldChangePassword} class="text-start text-sm" />
     </Field>
 
     <Field label={$t('name')} required>

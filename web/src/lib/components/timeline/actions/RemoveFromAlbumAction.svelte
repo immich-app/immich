@@ -1,5 +1,5 @@
 <script lang="ts">
-  import MenuOption from '$lib/components/shared-components/context-menu/menu-option.svelte';
+  import MenuOption from '$lib/components/shared-components/context-menu/MenuOption.svelte';
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import { getAlbumInfo, removeAssetFromAlbum, type AlbumResponseDto } from '@immich/sdk';

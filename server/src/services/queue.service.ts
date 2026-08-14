@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { ClassConstructor } from 'class-transformer';
 import { SystemConfig } from 'src/config';
 import { OnEvent } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
@@ -39,7 +38,7 @@ const asNightlyTasksCron = (config: SystemConfig) => {
 
 @Injectable()
 export class QueueService extends BaseService {
-  private services: ClassConstructor<unknown>[] = [];
+  private services: (new (...args: any[]) => unknown)[] = [];
   private nightlyJobsLock = false;
 
   @OnEvent({ name: 'ConfigInit' })
@@ -81,22 +80,26 @@ export class QueueService extends BaseService {
     this.jobRepository.setup(this.services);
     if (this.worker === ImmichWorker.Microservices) {
       this.jobRepository.startWorkers();
+    } else if (this.worker === ImmichWorker.Api) {
+      this.jobRepository.watchWorkers();
     }
+  }
+
+  @OnEvent({ name: 'AppShutdown' })
+  onShutdown() {
+    this.jobRepository.teardown();
   }
 
   private updateConcurrency(config: SystemConfig) {
     this.logger.debug(`Updating queue concurrency settings`);
     for (const queueName of Object.values(QueueName)) {
-      let concurrency = 1;
-      if (this.isConcurrentQueue(queueName)) {
-        concurrency = config.job[queueName].concurrency;
-      }
+      const concurrency = this.isConcurrentQueue(queueName) ? config.job[queueName].concurrency : 1;
       this.logger.debug(`Setting ${queueName} concurrency to ${concurrency}`);
       this.jobRepository.setConcurrency(queueName, concurrency);
     }
   }
 
-  setServices(services: ClassConstructor<unknown>[]) {
+  setServices(services: (new (...args: any[]) => unknown)[]) {
     this.services = services;
   }
 
@@ -155,9 +158,7 @@ export class QueueService extends BaseService {
         throw new BadRequestException(`The BackgroundTask queue cannot be paused`);
       }
       await this.jobRepository.pause(name);
-    }
-
-    if (dto.isPaused === false) {
+    } else if (dto.isPaused === false) {
       await this.jobRepository.resume(name);
     }
 
@@ -270,8 +271,8 @@ export class QueueService extends BaseService {
         { name: JobName.PersonCleanup },
         { name: JobName.MemoryCleanup },
         { name: JobName.SessionCleanup },
+        { name: JobName.HlsSessionCleanup },
         { name: JobName.AuditTableCleanup },
-        { name: JobName.AuditLogCleanup },
       );
     }
 

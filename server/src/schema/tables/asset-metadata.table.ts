@@ -35,7 +35,7 @@ export class AssetMetadataTable {
   key!: AssetMetadataKey | string;
 
   @Column({ type: 'jsonb' })
-  value!: object;
+  value!: Record<string, unknown>;
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;

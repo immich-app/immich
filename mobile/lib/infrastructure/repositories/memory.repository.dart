@@ -25,8 +25,8 @@ class DriftMemoryRepository extends DriftDatabaseRepository {
           ])
           ..where(_db.memoryEntity.ownerId.equals(ownerId))
           ..where(_db.memoryEntity.deletedAt.isNull())
-          ..where(_db.memoryEntity.showAt.isSmallerOrEqualValue(localUtc))
-          ..where(_db.memoryEntity.hideAt.isBiggerOrEqualValue(localUtc))
+          ..where(_db.memoryEntity.showAt.isNull() | _db.memoryEntity.showAt.isSmallerOrEqualValue(localUtc))
+          ..where(_db.memoryEntity.hideAt.isNull() | _db.memoryEntity.hideAt.isBiggerOrEqualValue(localUtc))
           ..orderBy([OrderingTerm.desc(_db.memoryEntity.memoryAt), OrderingTerm.asc(_db.remoteAssetEntity.createdAt)]);
 
     final rows = await query.get();

@@ -1,42 +1,22 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { createZodDto } from 'nestjs-zod';
+import z from 'zod';
 
-export class AssetOcrResponseDto {
-  @ApiProperty({ type: 'string', format: 'uuid' })
-  id!: string;
+const AssetOcrResponseSchema = z
+  .object({
+    assetId: z.uuidv4(),
+    boxScore: z.number().meta({ format: 'double' }).describe('Confidence score for text detection box'),
+    id: z.uuidv4(),
+    text: z.string().describe('Recognized text'),
+    textScore: z.number().meta({ format: 'double' }).describe('Confidence score for text recognition'),
+    x1: z.number().meta({ format: 'double' }).describe('Normalized x coordinate of box corner 1 (0-1)'),
+    x2: z.number().meta({ format: 'double' }).describe('Normalized x coordinate of box corner 2 (0-1)'),
+    x3: z.number().meta({ format: 'double' }).describe('Normalized x coordinate of box corner 3 (0-1)'),
+    x4: z.number().meta({ format: 'double' }).describe('Normalized x coordinate of box corner 4 (0-1)'),
+    y1: z.number().meta({ format: 'double' }).describe('Normalized y coordinate of box corner 1 (0-1)'),
+    y2: z.number().meta({ format: 'double' }).describe('Normalized y coordinate of box corner 2 (0-1)'),
+    y3: z.number().meta({ format: 'double' }).describe('Normalized y coordinate of box corner 3 (0-1)'),
+    y4: z.number().meta({ format: 'double' }).describe('Normalized y coordinate of box corner 4 (0-1)'),
+  })
+  .meta({ id: 'AssetOcrResponseDto' });
 
-  @ApiProperty({ type: 'string', format: 'uuid' })
-  assetId!: string;
-
-  @ApiProperty({ type: 'number', format: 'double', description: 'Normalized x coordinate of box corner 1 (0-1)' })
-  x1!: number;
-
-  @ApiProperty({ type: 'number', format: 'double', description: 'Normalized y coordinate of box corner 1 (0-1)' })
-  y1!: number;
-
-  @ApiProperty({ type: 'number', format: 'double', description: 'Normalized x coordinate of box corner 2 (0-1)' })
-  x2!: number;
-
-  @ApiProperty({ type: 'number', format: 'double', description: 'Normalized y coordinate of box corner 2 (0-1)' })
-  y2!: number;
-
-  @ApiProperty({ type: 'number', format: 'double', description: 'Normalized x coordinate of box corner 3 (0-1)' })
-  x3!: number;
-
-  @ApiProperty({ type: 'number', format: 'double', description: 'Normalized y coordinate of box corner 3 (0-1)' })
-  y3!: number;
-
-  @ApiProperty({ type: 'number', format: 'double', description: 'Normalized x coordinate of box corner 4 (0-1)' })
-  x4!: number;
-
-  @ApiProperty({ type: 'number', format: 'double', description: 'Normalized y coordinate of box corner 4 (0-1)' })
-  y4!: number;
-
-  @ApiProperty({ type: 'number', format: 'double', description: 'Confidence score for text detection box' })
-  boxScore!: number;
-
-  @ApiProperty({ type: 'number', format: 'double', description: 'Confidence score for text recognition' })
-  textScore!: number;
-
-  @ApiProperty({ type: 'string', description: 'Recognized text' })
-  text!: string;
-}
+export class AssetOcrResponseDto extends createZodDto(AssetOcrResponseSchema) {}
