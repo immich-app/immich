@@ -50,8 +50,8 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 
   TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy, AssetOriginFilter filter) {
     return switch (filter) {
-      AssetOriginFilter.remoteOnly => cloudOnly(userIds, groupBy),
-      AssetOriginFilter.localOnly => localOnly(groupBy),
+      AssetOriginFilter.remoteOnly => _cloudOnly(userIds, groupBy),
+      AssetOriginFilter.localOnly => _localOnly(groupBy),
       AssetOriginFilter.all => (
         bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
         assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
@@ -119,7 +119,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
         .get();
   }
 
-  TimelineQuery cloudOnly(List<String> userIds, GroupAssetsBy groupBy) => _remoteQueryBuilder(
+  TimelineQuery _cloudOnly(List<String> userIds, GroupAssetsBy groupBy) => _remoteQueryBuilder(
     filter: (row) =>
         row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.isIn(userIds),
     groupBy: groupBy,
@@ -127,7 +127,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     joinLocal: true,
   );
 
-  TimelineQuery localOnly(GroupAssetsBy groupBy) => (
+  TimelineQuery _localOnly(GroupAssetsBy groupBy) => (
     bucketSource: () => _watchLocalOnlyBucket(groupBy: groupBy),
     assetSource: (offset, count) => _getLocalOnlyAssets(offset: offset, count: count),
     origin: TimelineOrigin.main,
