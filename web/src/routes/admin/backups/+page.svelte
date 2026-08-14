@@ -6,6 +6,7 @@
     setProvider,
     YuccaContext,
   } from '@futo-org/backups-orchestrator-ui';
+  import HideBackupsReminder from '$lib/components/backups/HideBackupsReminder.svelte';
   import AdminPageLayout from '$lib/components/layouts/AdminPageLayout.svelte';
 
   sdk.defaults.baseUrl = location.origin;
@@ -13,30 +14,42 @@
 
   const questions = [
     {
-      title: 'What gets backed up?',
+      title: 'Is FUTO Backups the same as an Immich product key?',
       answer: 'TODO',
     },
     {
-      title: 'Where is my data stored?',
+      title: 'Does my Immich product key include FUTO Backups?',
       answer: 'TODO',
     },
     {
-      title: 'Can I restore to a new server?',
+      title: 'Do I need FUTO Backups to use Immich?',
       answer: 'TODO',
     },
     {
-      title: 'What happens if I need more storage?',
+      title: 'How is FUTO Backups priced?',
       answer: 'TODO',
     },
     {
-      title: 'Can I cancel at any time?',
+      title: 'What does FUTO Backups protect?',
+      answer: 'TODO',
+    },
+    {
+      title: 'Can I use local storage instead?',
       answer: 'TODO',
     },
   ];
 </script>
 
+{#snippet hideReminder()}
+  <HideBackupsReminder />
+{/snippet}
+
 <YuccaContext baseUrl={location.origin}>
   <AdminPageLayout>
-    <ImmichBackupsPage price="$1" includedStorage="0gb" {questions} />
+    <ImmichBackupsPage
+      price="$1"
+      includedStorage="0gb"
+      questions={[{ title: 'Already back up your library elsewhere?', answer: hideReminder }, ...questions]}
+    />
   </AdminPageLayout>
 </YuccaContext>

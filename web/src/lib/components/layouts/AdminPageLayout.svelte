@@ -6,16 +6,9 @@
   import { Route } from '$lib/route';
   import { sidebarStore } from '$lib/stores/sidebar.svelte';
   import type { HeaderButtonActionItem } from '$lib/types';
+  import { ImmichBackupsNavButton } from '@futo-org/backups-orchestrator-ui';
   import { AppShell, AppShellHeader, AppShellSidebar, MenuItemType, NavbarItem, type BreadcrumbItem } from '@immich/ui';
-  import {
-    mdiAccountMultipleOutline,
-    mdiBookshelf,
-    mdiCloudUploadOutline,
-    mdiCog,
-    mdiServer,
-    mdiTrayFull,
-    mdiWrench,
-  } from '@mdi/js';
+  import { mdiAccountMultipleOutline, mdiBookshelf, mdiCog, mdiServer, mdiTrayFull, mdiWrench } from '@mdi/js';
   import type { Snippet } from 'svelte';
   import { t } from 'svelte-i18n';
 
@@ -38,8 +31,9 @@
   >
     <div class="flex flex-col gap-1 pe-4 pt-8">
       {#if featureFlagsManager.value.backups}
-        <NavbarItem title="Backups" href={Route.backups()} icon={mdiCloudUploadOutline} />
+        <ImmichBackupsNavButton href={Route.backups()} active={false} />
       {/if}
+
       <NavbarItem title={$t('users')} href={Route.users()} icon={mdiAccountMultipleOutline} />
       <NavbarItem title={$t('external_libraries')} href={Route.libraries()} icon={mdiBookshelf} />
       <NavbarItem title={$t('admin.queues')} href={Route.queues()} icon={mdiTrayFull} />
