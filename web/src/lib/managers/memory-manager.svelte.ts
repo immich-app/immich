@@ -32,17 +32,7 @@ const PAGE_SIZE = 250;
 
 class MemoryManager {
   #loading = $state<Promise<void>>();
-  #filters:
-    | {
-        $for?: string;
-        isSaved?: boolean;
-        isTrashed?: boolean;
-        order?: MemorySearchOrder;
-        page?: number;
-        size?: number;
-        $type?: MemoryType;
-      }
-    | undefined;
+  #filters: Parameters<typeof searchMemories>[0] | undefined;
   #hasNextPage: boolean = true;
   #page: number = 1;
   #total: number | undefined = $state();
