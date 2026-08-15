@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto, invalidate, onNavigate } from '$app/navigation';
+  import { navigating } from '$app/state';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
@@ -312,6 +313,13 @@
 
   const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
     album = newAlbum;
+
+    // Invalidating in the middle of a navigation aborts it and leaves the loading bar
+    // running forever, which happens when an album update is triggered by the blur of
+    // the title/description while navigating away. Wait for the navigation to settle
+    // first. `complete` rejects on an aborted navigation and never resolves when the
+    // page is unloading, in which case there is nothing left to invalidate anyway.
+    await navigating.complete?.catch(() => {});
 
     await invalidate('album:data');
   };
