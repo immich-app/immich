@@ -55,7 +55,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
 
   TimelineQuery main(List<String> userIds, GroupAssetsBy groupBy, AssetOriginFilter filter) {
     return switch (filter) {
-      AssetOriginFilter.remoteOnly => _cloudOnly(userIds, groupBy),
+      AssetOriginFilter.remoteOnly => remote(userIds, groupBy, origin: TimelineOrigin.main, joinLocal: true),
       AssetOriginFilter.localOnly => _localOnly(groupBy),
       AssetOriginFilter.all => _all(userIds, groupBy),
     };
@@ -124,14 +124,6 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     bucketSource: () => _watchMainBucket(userIds, groupBy: groupBy),
     assetSource: (offset, count) => _getMainBucketAssets(userIds, offset: offset, count: count),
     origin: TimelineOrigin.main,
-  );
-
-  TimelineQuery _cloudOnly(List<String> userIds, GroupAssetsBy groupBy) => _remoteQueryBuilder(
-    filter: (row) =>
-        row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.isIn(userIds),
-    groupBy: groupBy,
-    origin: TimelineOrigin.main,
-    joinLocal: true,
   );
 
   TimelineQuery _localOnly(GroupAssetsBy groupBy) => (
@@ -414,11 +406,17 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     );
   }
 
-  TimelineQuery remote(String ownerId, GroupAssetsBy groupBy) => _remoteQueryBuilder(
+  TimelineQuery remote(
+    List<String> ownerIds,
+    GroupAssetsBy groupBy, {
+    TimelineOrigin origin = TimelineOrigin.remoteAssets,
+    bool joinLocal = false,
+  }) => _remoteQueryBuilder(
     filter: (row) =>
-        row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.equals(ownerId),
+        row.deletedAt.isNull() & row.visibility.equalsValue(AssetVisibility.timeline) & row.ownerId.isIn(ownerIds),
     groupBy: groupBy,
-    origin: TimelineOrigin.remoteAssets,
+    origin: origin,
+    joinLocal: joinLocal,
   );
 
   TimelineQuery recentlyAdded(String userId, GroupAssetsBy groupBy) => _remoteQueryBuilder(

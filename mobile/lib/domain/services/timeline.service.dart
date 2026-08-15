@@ -58,7 +58,7 @@ class TimelineFactory {
   TimelineService remoteAlbum({required String albumId}) =>
       TimelineService(_timelineRepository.remoteAlbum(albumId, groupBy));
 
-  TimelineService remoteAssets(String userId) => TimelineService(_timelineRepository.remote(userId, groupBy));
+  TimelineService remoteAssets(String userId) => TimelineService(_timelineRepository.remote([userId], groupBy));
 
   TimelineService recentlyAdded(String userId) => TimelineService(_timelineRepository.recentlyAdded(userId, groupBy));
 
