@@ -134,16 +134,19 @@ class _PlaceList extends ConsumerWidget {
         ),
       ),
       data: (places) {
+        final List<(String, String)> filtered;
         if (search.value != null) {
-          places = places.where((place) {
+          filtered = places.where((place) {
             return place.$1.toLowerCase().contains(search.value!.toLowerCase());
           }).toList();
+        } else {
+          filtered = places;
         }
 
         return SliverList.builder(
-          itemCount: places.length,
+          itemCount: filtered.length,
           itemBuilder: (context, index) {
-            final place = places[index];
+            final place = filtered[index];
             return _PlaceTile(place: place);
           },
         );

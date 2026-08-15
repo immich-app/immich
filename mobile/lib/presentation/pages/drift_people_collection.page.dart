@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/string_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
@@ -65,12 +66,15 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
           body: SafeArea(
             child: people.when(
               data: (people) {
+                final List<Person> filtered;
                 if (_search != null) {
-                  people = people.where((person) {
+                  filtered = people.where((person) {
                     return person.name.toLowerCase().removeDiacritics().contains(
                       _search!.toLowerCase().removeDiacritics(),
                     );
                   }).toList();
+                } else {
+                  filtered = people;
                 }
                 return GridView.builder(
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -79,9 +83,9 @@ class _DriftPeopleCollectionPageState extends ConsumerState<DriftPeopleCollectio
                     mainAxisSpacing: isPortrait && isTablet ? 36 : 0,
                   ),
                   padding: const EdgeInsets.symmetric(vertical: 32),
-                  itemCount: people.length,
+                  itemCount: filtered.length,
                   itemBuilder: (context, index) {
-                    final person = people[index];
+                    final person = filtered[index];
 
                     return Column(
                       key: ValueKey(person.id),
