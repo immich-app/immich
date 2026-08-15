@@ -402,6 +402,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
+    final isPinchToZoomEnabled = ref.watch(appConfigProvider.select((config) => config.timeline.pinchToZoom));
     final isMultiSelectStatusVisible = !isSelectionMode && isMultiSelectEnabled;
     final isBottomWidgetVisible =
         widget.bottomSheet != null && (isMultiSelectStatusVisible || widget.persistentBottomBar);
@@ -481,30 +482,31 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 
               return RawGestureDetector(
                 gestures: {
-                  CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
-                    () => CustomScaleGestureRecognizer(),
-                    (CustomScaleGestureRecognizer scale) {
-                      scale.onStart = (details) {
-                        _baseScaleFactor = _scaleFactor;
-                      };
+                  if (isPinchToZoomEnabled)
+                    CustomScaleGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomScaleGestureRecognizer>(
+                      () => CustomScaleGestureRecognizer(),
+                      (CustomScaleGestureRecognizer scale) {
+                        scale.onStart = (details) {
+                          _baseScaleFactor = _scaleFactor;
+                        };
 
-                      scale.onUpdate = (details) {
-                        final newScaleFactor = math.max(math.min(5.0, _baseScaleFactor * details.scale), 1.0);
-                        final newPerRow = 7 - newScaleFactor.toInt();
+                        scale.onUpdate = (details) {
+                          final newScaleFactor = math.max(math.min(5.0, _baseScaleFactor * details.scale), 1.0);
+                          final newPerRow = 7 - newScaleFactor.toInt();
 
-                        if (newPerRow != _perRow) {
-                          final targetAssetIndex = _getCurrentAssetIndex(segments);
-                          setState(() {
-                            _scaleFactor = newScaleFactor;
-                            _perRow = newPerRow;
-                            _restoreAssetIndex = targetAssetIndex;
-                          });
+                          if (newPerRow != _perRow) {
+                            final targetAssetIndex = _getCurrentAssetIndex(segments);
+                            setState(() {
+                              _scaleFactor = newScaleFactor;
+                              _perRow = newPerRow;
+                              _restoreAssetIndex = targetAssetIndex;
+                            });
 
-                          unawaited(ref.read(settingsProvider).write(.timelineTilesPerRow, _perRow));
-                        }
-                      };
-                    },
-                  ),
+                            unawaited(ref.read(settingsProvider).write(.timelineTilesPerRow, _perRow));
+                          }
+                        };
+                      },
+                    ),
                 },
                 child: TimelineDragRegion(
                   onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,

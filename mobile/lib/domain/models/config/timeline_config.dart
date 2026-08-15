@@ -10,5 +10,6 @@ abstract class TimelineConfig with _$TimelineConfig {
     @Default(4) int tilesPerRow,
     @Default(GroupAssetsBy.day) GroupAssetsBy groupAssetsBy,
     @Default(true) bool storageIndicator,
+    @Default(true) bool pinchToZoom,
   }) = _TimelineConfig;
 }

@@ -8,6 +8,7 @@ import 'package:immich_mobile/providers/app_settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/widgets/settings/setting_group_title.dart';
 import 'package:immich_mobile/widgets/settings/settings_slider_list_tile.dart';
+import 'package:immich_mobile/widgets/settings/settings_switch_list_tile.dart';
 
 class LayoutSettings extends HookConsumerWidget {
   const LayoutSettings({super.key});
@@ -18,6 +19,8 @@ class LayoutSettings extends HookConsumerWidget {
     useValueChanged<int, void>(tilesPerRow.value, (_, _) {
       unawaited(ref.read(settingsProvider).write(.timelineTilesPerRow, tilesPerRow.value));
     });
+
+    final pinchToZoom = useValueNotifier(ref.watch(appConfigProvider.select((s) => s.timeline.pinchToZoom)));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -31,6 +34,15 @@ class LayoutSettings extends HookConsumerWidget {
           minValue: 2,
           noDivisons: 4,
           onChangeEnd: (value) {
+            ref.invalidate(appSettingsServiceProvider);
+          },
+        ),
+        SettingsSwitchListTile(
+          valueNotifier: pinchToZoom,
+          title: context.t.theme_setting_asset_list_pinch_to_zoom_title,
+          subtitle: context.t.theme_setting_asset_list_pinch_to_zoom_subtitle,
+          onChanged: (value) {
+            unawaited(ref.read(settingsProvider).write(.timelinePinchToZoom, value));
             ref.invalidate(appSettingsServiceProvider);
           },
         ),
