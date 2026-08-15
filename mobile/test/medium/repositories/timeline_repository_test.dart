@@ -131,5 +131,17 @@ void main() {
       expect(assets, hasLength(1));
       expect((assets.single as LocalAsset).id, local.id);
     });
-});
+
+    test('local asset in selected and excluded album is excluded from localOnly filter', () async {
+      final asset = await ctx.newLocalAsset();
+      final selected = await ctx.newLocalAlbum(backupSelection: .selected);
+      final excluded = await ctx.newLocalAlbum(backupSelection: .excluded);
+      await ctx.newLocalAlbumAsset(albumId: selected.id, assetId: asset.id);
+      await ctx.newLocalAlbumAsset(albumId: excluded.id, assetId: asset.id);
+
+      final assets = await sut.main([], .day, .localOnly).assetSource(0, 10);
+
+      expect(assets, isEmpty);
+    });
+  });
 }
