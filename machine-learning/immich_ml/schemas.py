@@ -14,10 +14,7 @@ class ORJSONResponse(JSONResponse):
 
 
 class StrEnum(str, Enum):
-    value: str
-
-    def __str__(self) -> str:
-        return self.value
+    __str__ = str.__str__
 
 
 class BoundingBox(TypedDict):
@@ -63,7 +60,7 @@ ModelIdentity = tuple[ModelType, ModelTask]
 
 class SessionNode(Protocol):
     @property
-    def name(self) -> str | None: ...
+    def name(self) -> str: ...
 
     @property
     def shape(self) -> tuple[int, ...]: ...

@@ -7,11 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/config/slideshow_config.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/scroll_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/video_viewer.widget.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
@@ -54,7 +55,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   bool _disableAnimations = false;
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     _config = ref.read(appConfigProvider.select((s) => s.slideshow));
     final asset = ref.read(assetViewerProvider).currentAsset;
@@ -67,7 +68,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _updateNextIndex();
     ref.listenManual(appConfigProvider.select((s) => s.slideshow), _onConfigChanged);
 
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+    unawaited(SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive));
     unawaited(WakelockPlus.enable());
   }
 
@@ -78,7 +79,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   }
 
   @override
-  dispose() {
+  void dispose() {
     _timer.cancel();
     _stopwatch.stop();
     _pageController.dispose();
@@ -93,10 +94,10 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
 
     if (asset.isImage) {
       _createTimer();
-    } else if (ref.read(videoPlayerProvider(asset.heroTag)).status == VideoPlaybackStatus.paused) {
-      ref.read(videoPlayerProvider(asset.heroTag).notifier).play();
+    } else if (ref.read(videoPlayerProvider(asset.id)).status == VideoPlaybackStatus.paused) {
+      unawaited(ref.read(videoPlayerProvider(asset.id).notifier).play());
     } else {
-      _nextPage();
+      unawaited(_nextPage());
     }
 
     _updateNextIndex();
@@ -113,7 +114,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     final asset = widget.timeline.getAssetSafe(_index)!;
 
     if (!asset.isImage) {
-      ref.read(videoPlayerProvider(asset.heroTag).notifier).pause();
+      unawaited(ref.read(videoPlayerProvider(asset.id).notifier).pause());
     }
 
     setState(() {
@@ -147,11 +148,11 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     };
 
     if (!widget.timeline.hasRange(_nextIndex, 1)) {
-      widget.timeline.preloadAssets(_nextIndex);
+      unawaited(widget.timeline.preloadAssets(_nextIndex));
     }
   }
 
-  void _nextPage() async {
+  Future<void> _nextPage() async {
     if (_nextIndex < 0 || _nextIndex >= widget.timeline.totalAssets) {
       if (_config.repeat) {
         final wrapped = _config.direction == SlideshowDirection.forward ? 0 : widget.timeline.totalAssets - 1;
@@ -184,14 +185,16 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
       _crossfadeFromIndex = previousIndex;
       _crossfadeToIndex = page;
     });
-    _crossfadeController.forward(from: 0.0).whenComplete(() {
-      if (mounted) {
-        setState(() {
-          _crossfadeFromIndex = null;
-          _crossfadeToIndex = null;
-        });
-      }
-    });
+    unawaited(
+      _crossfadeController.forward(from: 0.0).whenComplete(() {
+        if (mounted) {
+          setState(() {
+            _crossfadeFromIndex = null;
+            _crossfadeToIndex = null;
+          });
+        }
+      }),
+    );
   }
 
   Widget _getCrossfadeLayer(BuildContext context, int index, {required bool isIncoming}) {
@@ -238,7 +241,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _timer = Timer(Duration(milliseconds: _config.duration * 1000 - _stopwatch.elapsedMilliseconds), () {
       _stopwatch.stop();
       _stopwatch.reset();
-      _nextPage();
+      unawaited(_nextPage());
     });
 
     _stopwatch.start();
@@ -267,7 +270,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
     _updateNextIndex();
   }
 
-  void _onTapUp() async {
+  Future<void> _onTapUp() async {
     await (_showAppBar ? SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive) : restoreEdgeToEdge());
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -293,14 +296,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
         color: context.colorScheme.primary,
       );
     } else {
-      return LinearProgressIndicator(
-        color: context.colorScheme.primary,
-        borderRadius: const BorderRadius.all(Radius.zero),
-        minHeight: 5,
-        value:
-            ref.watch(videoPlayerProvider(asset.heroTag).select((s) => s.position)).inMilliseconds /
-            asset.duration.inMilliseconds,
-      );
+      return _VideoProgressBar(asset: asset);
     }
   }
 
@@ -313,7 +309,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
 
     return ImageFiltered(
       imageFilter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-      child: Container(
+      child: DecoratedBox(
         decoration: BoxDecoration(
           image: DecorationImage(
             image: getFullImageProvider(asset, size: Size(context.width, context.height)),
@@ -372,25 +368,13 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
         builder: (context, value, _) => buildPhotoView(scale * (1.0 + value * _kenBurnsZoom)),
       );
     } else {
-      final status = ref.watch(videoPlayerProvider(asset.heroTag).select((s) => s.status));
-      final position = ref.read(videoPlayerProvider(asset.heroTag)).position;
-
-      if (status == VideoPlaybackStatus.completed && isCurrent && position.inMicroseconds > 0) {
-        _nextPage();
-      } else if (status == VideoPlaybackStatus.playing) {
-        ref.read(videoPlayerProvider(asset.heroTag).notifier).setLoop(false);
-      }
-
-      return PhotoView.customChild(
-        onTapUp: (_, _, _) => _onTapUp(),
-        disableScaleGestures: true,
-        filterQuality: FilterQuality.high,
-        initialScale: scale,
-        child: NativeVideoViewer(
-          asset: asset,
-          isCurrent: isCurrent,
-          image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
-        ),
+      return _VideoChild(
+        asset: asset,
+        isCurrent: isCurrent,
+        scale: scale,
+        imageProvider: imageProvider,
+        onTapUp: _onTapUp,
+        onCompleted: _nextPage,
       );
     }
   }
@@ -409,7 +393,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
               children: [
                 AppBar(
                   backgroundColor: context.scaffoldBackgroundColor,
-                  title: Text("slideshow".t(context: context)),
+                  title: Text(context.t.slideshow),
                   actions: [
                     IconButton(
                       onPressed: _paused ? _play : _pause,
@@ -418,7 +402,7 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
                     IconButton(
                       onPressed: () {
                         _pause();
-                        context.pushRoute(SettingsSubRoute(section: SettingSection.assetViewer));
+                        unawaited(context.pushRoute(SettingsSubRoute(section: SettingSection.assetViewer)));
                       },
                       icon: const Icon(Icons.settings),
                     ),
@@ -475,6 +459,67 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage> with Si
   }
 }
 
+class _VideoChild extends ConsumerWidget {
+  final BaseAsset asset;
+  final bool isCurrent;
+  final PhotoViewComputedScale scale;
+  final ImageProvider imageProvider;
+  final VoidCallback onTapUp;
+  final VoidCallback onCompleted;
+
+  const _VideoChild({
+    required this.asset,
+    required this.isCurrent,
+    required this.scale,
+    required this.imageProvider,
+    required this.onTapUp,
+    required this.onCompleted,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(videoPlayerProvider(asset.id).select((s) => s.status), (_, status) {
+      if (status == VideoPlaybackStatus.completed) {
+        if (isCurrent && ref.read(videoPlayerProvider(asset.id)).position.inMicroseconds > 0) {
+          onCompleted();
+        }
+      } else if (status == VideoPlaybackStatus.playing) {
+        unawaited(ref.read(videoPlayerProvider(asset.id).notifier).setLoop(false));
+      }
+    });
+
+    return PhotoView.customChild(
+      onTapUp: (_, _, _) => onTapUp(),
+      disableScaleGestures: true,
+      filterQuality: FilterQuality.high,
+      initialScale: scale,
+      child: NativeVideoViewer(
+        asset: asset,
+        isCurrent: isCurrent,
+        image: Image(image: imageProvider, fit: BoxFit.contain, alignment: Alignment.center),
+      ),
+    );
+  }
+}
+
+class _VideoProgressBar extends ConsumerWidget {
+  final BaseAsset asset;
+
+  const _VideoProgressBar({required this.asset});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final position = ref.watch(videoPlayerProvider(asset.id).select((s) => s.position));
+
+    return LinearProgressIndicator(
+      color: context.colorScheme.primary,
+      borderRadius: BorderRadius.zero,
+      minHeight: 5,
+      value: position.inMilliseconds / asset.duration.inMilliseconds,
+    );
+  }
+}
+
 /// Progress bar for image slides, driven by an explicit [AnimationController].
 ///
 /// [TweenAnimationBuilder] creates its controller internally with the default
@@ -512,7 +557,7 @@ class _SlideshowProgressBarState extends State<_SlideshowProgressBar> with Singl
       animationBehavior: AnimationBehavior.preserve,
     )..value = (widget.elapsedMs / widget.durationMs).clamp(0.0, 1.0);
     if (!widget.paused) {
-      _controller.forward();
+      unawaited(_controller.forward());
     }
   }
 
@@ -539,7 +584,7 @@ class _SlideshowProgressBarState extends State<_SlideshowProgressBar> with Singl
       animation: _controller,
       builder: (context, _) => LinearProgressIndicator(
         color: widget.color,
-        borderRadius: const BorderRadius.all(Radius.zero),
+        borderRadius: BorderRadius.zero,
         minHeight: 5,
         value: _controller.value,
       ),

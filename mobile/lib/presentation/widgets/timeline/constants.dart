@@ -10,5 +10,5 @@ const double kSelectionBottomSheetClearance = 12.0;
 const Duration kTimelineScrubberFadeInDuration = Duration(milliseconds: 300);
 const Duration kTimelineScrubberFadeOutDuration = Duration(milliseconds: 800);
 
-const Size kThumbnailResolution = Size.square(320); // TODO: make the resolution vary based on actual tile size
+const Size kThumbnailResolution = Size.square(320);
 const kThumbnailDiskCacheSize = 1024 << 20; // 1GiB

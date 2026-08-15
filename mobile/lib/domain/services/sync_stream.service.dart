@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/server_capability.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/domain/models/sync_event.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -36,7 +37,7 @@ class SyncStreamService {
   final DriftLocalAssetRepository _localAssetRepository;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
-  final IPermissionRepository _permissionRepository;
+  final DevicePermissionRepository _permissionRepository;
   final SyncMigrationRepository _syncMigrationRepository;
   final ApiService _api;
   final Completer<void>? _cancellation;
@@ -122,7 +123,7 @@ class SyncStreamService {
     }
 
     if (!migrations.contains(SyncMigrationTask.v20260128_ResetAssetV1.name) &&
-        semVer >= const SemVer(major: 2, minor: 5, patch: 0)) {
+        semVer.supports(.assetPayloadChange20260128)) {
       _logger.info("Running pre-sync task: v20260128_ResetAssetV1");
       await _syncApiRepository.deleteSyncAck([
         SyncEntityType.assetV1,
@@ -139,7 +140,7 @@ class SyncStreamService {
     }
 
     if (!migrations.contains(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name) &&
-        semVer > const SemVer(major: 2, minor: 7, patch: 5)) {
+        semVer.supports(.assetPayloadChange20260597)) {
       _logger.info("Running pre-sync task: v20260597_ResetAssetV1AssetV2");
       await _syncApiRepository.deleteSyncAck([SyncEntityType.assetV1, SyncEntityType.assetV2]);
       migrations.add(SyncMigrationTask.v20260597_ResetAssetV1AssetV2.name);
@@ -155,7 +156,7 @@ class SyncStreamService {
   }
 
   Future<void> _handleEvents(List<SyncEvent> events, Function() abort, Function() reset) async {
-    List<SyncEvent> items = [];
+    final List<SyncEvent> items = [];
     for (final event in events) {
       if (isCancelled) {
         _logger.warning("Sync stream cancelled");

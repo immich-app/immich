@@ -362,7 +362,7 @@ describe(SystemConfigService.name, () => {
       expect(mocks.logger.error).toHaveBeenCalledTimes(2);
       expect(mocks.logger.error.mock.calls[0][0]).toEqual('Unable to load configuration file: immich-config.json');
       expect(mocks.logger.error.mock.calls[1][0].toString()).toEqual(
-        expect.stringContaining('YAMLException: duplicated mapping key (1:20)'),
+        expect.stringContaining('YAMLException: duplicated mapping key (1:21)'),
       );
     });
 

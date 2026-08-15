@@ -37,11 +37,11 @@ class AnnSession:
 
     def get_inputs(self) -> list[SessionNode]:
         shapes = self.ann.input_shapes[self.model]
-        return [AnnNode(None, s) for s in shapes]
+        return [AnnNode(f"input.{i + 1}", s) for i, s in enumerate(shapes)]
 
     def get_outputs(self) -> list[SessionNode]:
         shapes = self.ann.output_shapes[self.model]
-        return [AnnNode(None, s) for s in shapes]
+        return [AnnNode(f"output.{i + 1}", s) for i, s in enumerate(shapes)]
 
     def run(
         self,
@@ -54,5 +54,5 @@ class AnnSession:
 
 
 class AnnNode(NamedTuple):
-    name: str | None
+    name: str
     shape: tuple[int, ...]

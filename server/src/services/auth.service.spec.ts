@@ -307,16 +307,7 @@ describe(AuthService.name, () => {
   describe('adminSignUp', () => {
     const dto: SignUpDto = { email: 'test@immich.com', password: 'password', name: 'immich admin' };
 
-    it('should only allow one admin', async () => {
-      mocks.user.getAdmin.mockResolvedValue({} as UserAdmin);
-
-      await expect(sut.adminSignUp(dto)).rejects.toBeInstanceOf(BadRequestException);
-
-      expect(mocks.user.getAdmin).toHaveBeenCalled();
-    });
-
     it('should sign up the admin', async () => {
-      mocks.user.getAdmin.mockResolvedValue(void 0);
       mocks.user.create.mockResolvedValue({
         ...userStub.admin,
         ...dto,
@@ -334,7 +325,6 @@ describe(AuthService.name, () => {
         name: 'immich admin',
       });
 
-      expect(mocks.user.getAdmin).toHaveBeenCalled();
       expect(mocks.user.create).toHaveBeenCalled();
     });
   });

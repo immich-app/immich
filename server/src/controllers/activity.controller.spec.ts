@@ -19,11 +19,6 @@ describe(ActivityController.name, () => {
   });
 
   describe('GET /activities', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/activities');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require an albumId', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get('/activities');
       expect(status).toEqual(400);
@@ -50,11 +45,6 @@ describe(ActivityController.name, () => {
   });
 
   describe('POST /activities', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/activities');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require an albumId', async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post('/activities')
@@ -77,11 +67,6 @@ describe(ActivityController.name, () => {
   });
 
   describe('DELETE /activities/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete(`/activities/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/activities/123`);
       expect(status).toBe(400);

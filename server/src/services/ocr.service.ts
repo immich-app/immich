@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+
 import { OnJob } from 'src/decorators';
 import { AssetVisibility, JobName, JobStatus, QueueName } from 'src/enum';
 import { OCR } from 'src/repositories/machine-learning.repository';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import { JobOf } from 'src/types';
 import { tokenizeForSearch } from 'src/utils/database';
-import { isOcrEnabled } from 'src/utils/misc';
+import { batched, isOcrEnabled } from 'src/utils/misc';
 
 @Injectable()
 export class OcrService extends BaseService {
@@ -21,19 +21,10 @@ export class OcrService extends BaseService {
       await this.ocrRepository.deleteAll();
     }
 
-    let jobs: JobItem[] = [];
-    const assets = this.assetJobRepository.streamForOcrJob(force);
-
-    for await (const asset of assets) {
-      jobs.push({ name: JobName.Ocr, data: { id: asset.id } });
-
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(jobs);
-        jobs = [];
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForOcrJob(force))) {
+      await this.jobRepository.queueAll(assets.map((asset) => ({ name: JobName.Ocr, data: { id: asset.id } })));
     }
 
-    await this.jobRepository.queueAll(jobs);
     return JobStatus.Success;
   }
 

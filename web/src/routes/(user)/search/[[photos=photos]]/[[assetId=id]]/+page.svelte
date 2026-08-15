@@ -201,7 +201,7 @@
       personIds.map(async (personId) => {
         const person = await getPerson({ id: personId });
 
-        if (person.name == '') {
+        if (person.name === '') {
           return $t('no_name');
         }
 

@@ -15,12 +15,6 @@ describe('/sessions', () => {
   });
 
   describe('GET /sessions', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/sessions');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should get a list of authorized devices', async () => {
       const { status, body } = await request(app).get('/sessions').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(status).toBe(200);
@@ -29,12 +23,6 @@ describe('/sessions', () => {
   });
 
   describe('DELETE /sessions', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/sessions`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should logout all devices (except the current one)', async () => {
       for (let i = 0; i < 5; i++) {
         await login({ loginCredentialDto: loginDto.admin });

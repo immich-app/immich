@@ -22,10 +22,10 @@ class MapBottomSheet extends StatelessWidget {
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
       sizeToContent: false,
-      actions: [],
+      actions: const [],
       backgroundColor: context.themeData.colorScheme.surface,
-      slivers: [
-        const SliverFillRemaining(hasScrollBody: false, child: SizedBox(height: 0, child: _ScopedMapTimeline())),
+      slivers: const [
+        SliverFillRemaining(hasScrollBody: false, child: SizedBox(height: 0, child: _ScopedMapTimeline())),
       ],
     );
   }

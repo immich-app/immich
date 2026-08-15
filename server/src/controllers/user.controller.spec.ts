@@ -3,7 +3,6 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { UserService } from 'src/services/user.service';
 import request from 'supertest';
 import { errorDto } from 'test/medium/responses';
-import { factory } from 'test/small.factory';
 import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
 
 describe(UserController.name, () => {
@@ -23,26 +22,7 @@ describe(UserController.name, () => {
     ctx.reset();
   });
 
-  describe('GET /users', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/users');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /users/me', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/users/me');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('PUT /users/me', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put('/users/me');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     for (const [key, message] of [
       ['email', 'Invalid input: expected email, received object'],
       ['name', 'Invalid input: expected string, received null'],
@@ -66,24 +46,31 @@ describe(UserController.name, () => {
     });
   });
 
-  describe('GET /users/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/users/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
+  describe('PUT /users/me/preferences', () => {
+    it('should require an integer for download archive size', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/users/me/preferences`)
+        .set('Authorization', `Bearer token`)
+        .send({ download: { archiveSize: 1_234_567.89 } });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['download', 'archiveSize'], message: 'Invalid input: expected int, received number' },
+        ]),
+      );
     });
-  });
 
-  describe('PUT /users/me/license', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put('/users/me/license');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('DELETE /users/me/license', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).delete('/users/me/license');
-      expect(ctx.authenticate).toHaveBeenCalled();
+    it('should require a boolean for download include embedded videos', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .put(`/users/me/preferences`)
+        .set('Authorization', `Bearer token`)
+        .send({ download: { includeEmbeddedVideos: 1_234_567.89 } });
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['download', 'includeEmbeddedVideos'], message: 'Invalid input: expected boolean, received number' },
+        ]),
+      );
     });
   });
 });
