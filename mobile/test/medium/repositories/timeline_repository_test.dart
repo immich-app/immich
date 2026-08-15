@@ -102,4 +102,34 @@ void main() {
       expect(remote.localId, local.id);
     });
   });
+
+  group('asset origin filter', () {
+    test('remoteOnly filter includes exactly one asset', () async {
+      final user = await ctx.newUser();
+      const checksum = 'remote-checksum';
+      final remote = await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
+      final local = await ctx.newLocalAsset(checksum: checksum);
+      final album = await ctx.newLocalAlbum(backupSelection: .selected);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final assets = await sut.main([user.id], .day, .remoteOnly).assetSource(0, 10);
+
+      expect(assets, hasLength(1));
+      expect((assets.single as RemoteAsset).id, remote.id);
+    });
+
+    test('localOnly filter includes exactly one asset', () async {
+      final user = await ctx.newUser();
+      const checksum = 'local-checksum';
+      await ctx.newRemoteAsset(ownerId: user.id, checksum: checksum);
+      final local = await ctx.newLocalAsset(checksum: checksum);
+      final album = await ctx.newLocalAlbum(backupSelection: .selected);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+
+      final assets = await sut.main([user.id], .day, .localOnly).assetSource(0, 10);
+
+      expect(assets, hasLength(1));
+      expect((assets.single as LocalAsset).id, local.id);
+    });
+});
 }
