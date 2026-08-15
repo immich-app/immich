@@ -10,6 +10,7 @@ import parser from 'svelte-eslint-parser';
 import typescriptEslint from 'typescript-eslint';
 import fs from 'node:fs';
 import path from 'node:path';
+import './lint-env.js';
 
 export default typescriptEslint.config(
   ...eslintPluginSvelte.configs.recommended,
@@ -68,6 +69,7 @@ export default typescriptEslint.config(
       '**/yarn.lock',
       '**/svelte.config.js',
       'eslint.config.js',
+      'lint-env.js',
       'tailwind.config.js',
       'coverage',
       'vite.config.ts',
