@@ -127,38 +127,27 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
     origin: TimelineOrigin.main,
   );
 
-  Expression<bool> _localOnlyFilter() {
+  Expression<bool> _inAlbumWithBackupSelection(BackupSelection selection) {
     return existsQuery(
-          _db.localAlbumAssetEntity.selectOnly()
-            ..addColumns([_db.localAlbumAssetEntity.assetId])
-            ..join([
-              innerJoin(
-                _db.localAlbumEntity,
-                _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
-                useColumns: false,
-              ),
-            ])
-            ..where(
-              _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
-                  _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.selected),
-            ),
-        ) &
-        existsQuery(
-          _db.localAlbumAssetEntity.selectOnly()
-            ..addColumns([_db.localAlbumAssetEntity.assetId])
-            ..join([
-              innerJoin(
-                _db.localAlbumEntity,
-                _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
-                useColumns: false,
-              ),
-            ])
-            ..where(
-              _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
-                  _db.localAlbumEntity.backupSelection.equalsValue(BackupSelection.excluded),
-            ),
-        ).not();
+      _db.localAlbumAssetEntity.selectOnly()
+        ..addColumns([_db.localAlbumAssetEntity.assetId])
+        ..join([
+          innerJoin(
+            _db.localAlbumEntity,
+            _db.localAlbumEntity.id.equalsExp(_db.localAlbumAssetEntity.albumId),
+            useColumns: false,
+          ),
+        ])
+        ..where(
+          _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id) &
+              _db.localAlbumEntity.backupSelection.equalsValue(selection),
+        ),
+    );
   }
+
+  Expression<bool> _localOnlyFilter() =>
+      _inAlbumWithBackupSelection(BackupSelection.selected) &
+      _inAlbumWithBackupSelection(BackupSelection.excluded).not();
 
   Stream<List<Bucket>> _watchLocalOnlyBucket({GroupAssetsBy groupBy = GroupAssetsBy.day}) {
     if (groupBy == GroupAssetsBy.none) {
