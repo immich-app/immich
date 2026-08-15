@@ -15,7 +15,6 @@ import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/download_status_floating_button.widget.dart';
-import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
@@ -39,7 +38,7 @@ class Timeline extends ConsumerWidget {
     this.showStorageIndicator = false,
     this.withStack = false,
     this.appBar = const ImmichSliverAppBar(floating: true, pinned: false, snap: false),
-    this.bottomSheet = const GeneralBottomSheet(minChildSize: kSelectionBottomSheetMinHeightRatio),
+    this.bottomSheet = const GeneralBottomSheet(),
     this.groupBy,
     this.withScrubber = true,
     this.snapToMonth = true,
@@ -53,7 +52,7 @@ class Timeline extends ConsumerWidget {
   final Widget? bottomSliverWidget;
   final bool showStorageIndicator;
   final Widget? appBar;
-  final TimelineBottomSheet? bottomSheet;
+  final Widget? bottomSheet;
   final bool withStack;
   final GroupAssetsBy? groupBy;
   final bool withScrubber;
@@ -130,7 +129,7 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   final double? topSliverWidgetHeight;
   final Widget? bottomSliverWidget;
   final Widget? appBar;
-  final TimelineBottomSheet? bottomSheet;
+  final Widget? bottomSheet;
   final bool withScrubber;
   final bool persistentBottomBar;
   final bool snapToMonth;
@@ -381,6 +380,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     final maxHeight = ref.watch(timelineArgsProvider.select((args) => args.maxHeight));
     final isSelectionMode = ref.watch(multiSelectProvider.select((s) => s.forceEnable));
     final isMultiSelectEnabled = ref.watch(multiSelectProvider.select((s) => s.isEnabled));
+    final bottomSheetHeight = ref.watch(timelineStateProvider.select((s) => s.bottomSheetHeight));
     final isReadonlyModeEnabled = ref.watch(readonlyModeProvider);
     final isMultiSelectStatusVisible = !isSelectionMode && isMultiSelectEnabled;
     final isBottomWidgetVisible =
@@ -410,10 +410,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                   : 0;
               final topPadding = context.padding.top + (widget.appBar == null ? 0 : kToolbarHeight) + 10;
 
-              // The sheet rests at minChildSize of the timeline's constraints, so pad with the
-              // same basis plus a small clearance to keep the last row above the sheet's edge
-              final bottomSheetOpenModifier =
-                  maxHeight * (widget.bottomSheet?.minChildSize ?? 0) + kSelectionBottomSheetClearance;
+              // Pad with the bottom sheet's measured resting height plus a small clearance
+              // to keep the last row above the sheet's edge
+              final bottomSheetOpenModifier = bottomSheetHeight > 0
+                  ? bottomSheetHeight + kSelectionBottomSheetClearance
+                  : 0.0;
               final contentBottomPadding =
                   context.padding.bottom + (isMultiSelectEnabled ? bottomSheetOpenModifier : 0);
               final scrubberBottomPadding = contentBottomPadding + kScrubberThumbHeight;

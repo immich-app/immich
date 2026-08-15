@@ -130,6 +130,7 @@ class _AddActionButtonState extends ConsumerState<AddActionButton> {
           minChildSize: 0.3,
           maxChildSize: 0.95,
           expand: false,
+          sizeToContent: false,
           backgroundColor: context.isDarkTheme ? Colors.black : Colors.white,
         );
       },

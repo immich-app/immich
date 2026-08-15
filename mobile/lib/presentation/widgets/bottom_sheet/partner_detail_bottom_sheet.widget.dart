@@ -10,11 +10,8 @@ import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_shee
 import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
 
-class PartnerDetailBottomSheet extends ConsumerStatefulWidget implements TimelineBottomSheet {
+class PartnerDetailBottomSheet extends ConsumerStatefulWidget {
   const PartnerDetailBottomSheet({super.key});
-
-  @override
-  double get minChildSize => 0.15;
 
   @override
   ConsumerState<PartnerDetailBottomSheet> createState() => _PartnerDetailBottomSheetState();

@@ -53,20 +53,30 @@ class TimelineState {
   final bool isScrubbing;
   final bool isScrolling;
 
-  const TimelineState({this.isScrubbing = false, this.isScrolling = false});
+  /// Measured resting height of the currently visible bottom
+  /// sheet, or 0 when no bottom sheet is showing (dynamic sizing)
+  final double bottomSheetHeight;
+
+  const TimelineState({this.isScrubbing = false, this.isScrolling = false, this.bottomSheetHeight = 0});
 
   bool get isInteracting => isScrubbing || isScrolling;
 
   @override
   bool operator ==(covariant TimelineState other) {
-    return isScrubbing == other.isScrubbing && isScrolling == other.isScrolling;
+    return isScrubbing == other.isScrubbing &&
+        isScrolling == other.isScrolling &&
+        bottomSheetHeight == other.bottomSheetHeight;
   }
 
   @override
-  int get hashCode => isScrubbing.hashCode ^ isScrolling.hashCode;
+  int get hashCode => isScrubbing.hashCode ^ isScrolling.hashCode ^ bottomSheetHeight.hashCode;
 
-  TimelineState copyWith({bool? isScrubbing, bool? isScrolling}) {
-    return TimelineState(isScrubbing: isScrubbing ?? this.isScrubbing, isScrolling: isScrolling ?? this.isScrolling);
+  TimelineState copyWith({bool? isScrubbing, bool? isScrolling, double? bottomSheetHeight}) {
+    return TimelineState(
+      isScrubbing: isScrubbing ?? this.isScrubbing,
+      isScrolling: isScrolling ?? this.isScrolling,
+      bottomSheetHeight: bottomSheetHeight ?? this.bottomSheetHeight,
+    );
   }
 }
 
@@ -77,6 +87,10 @@ class TimelineStateNotifier extends Notifier<TimelineState> {
 
   void setScrolling(bool isScrolling) {
     state = state.copyWith(isScrolling: isScrolling);
+  }
+
+  void setBottomSheetHeight(double height) {
+    state = state.copyWith(bottomSheetHeight: height);
   }
 
   @override

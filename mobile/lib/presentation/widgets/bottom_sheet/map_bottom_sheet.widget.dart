@@ -4,7 +4,6 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/map/map.state.dart';
-import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -22,6 +21,7 @@ class MapBottomSheet extends StatelessWidget {
       maxChildSize: 0.75,
       shouldCloseOnMinExtent: false,
       resizeOnScroll: false,
+      sizeToContent: false,
       actions: [],
       backgroundColor: context.themeData.colorScheme.surface,
       slivers: [
@@ -56,11 +56,7 @@ class _ScopedMapTimeline extends StatelessWidget {
           return timelineService;
         }),
       ],
-      child: const Timeline(
-        appBar: null,
-        bottomSheet: GeneralBottomSheet(minChildSize: kSelectionBottomSheetMinHeightRatio),
-        withScrubber: false,
-      ),
+      child: const Timeline(appBar: null, bottomSheet: GeneralBottomSheet(), withScrubber: false),
     );
   }
 }
