@@ -79,7 +79,7 @@ class _BorderedMapThumbnail extends StatelessWidget {
           child: MapThumbnail(
             zoom: 2,
             centre: const LatLng(47, 5),
-            onTap: (_, __) => onThemeChange(mode),
+            onTap: (_, _) => onThemeChange(mode),
             themeMode: mode,
             showAttribution: false,
           ),

@@ -157,7 +157,7 @@ class AppRouter extends RootStackRouter {
         customRouteBuilder: <T>(context, child, page) => PageRouteBuilder<T>(
           fullscreenDialog: page.fullscreenDialog,
           settings: page,
-          pageBuilder: (_, __, ___) => child,
+          pageBuilder: (_, _, _) => child,
           opaque: false,
           transitionsBuilder: TransitionsBuilders.fadeIn,
         ),

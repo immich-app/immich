@@ -51,7 +51,7 @@ void main() {
           page: PageInfo('Overlay', builder: (_) => const Scaffold(body: SizedBox.shrink())),
           type: RouteType.custom(
             customRouteBuilder: <T>(_, child, page) =>
-                PageRouteBuilder<T>(settings: page, opaque: false, pageBuilder: (_, __, ___) => child),
+                PageRouteBuilder<T>(settings: page, opaque: false, pageBuilder: (_, _, _) => child),
           ),
         ),
       ],
