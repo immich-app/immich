@@ -48,6 +48,7 @@ linter:
     combinators_ordering: true
     avoid_multiple_declarations_per_line: true
     unnecessary_breaks: true
+    deprecated_member_use_from_same_package: true
 
     # Correctness
     no_adjacent_strings_in_list: true
@@ -87,6 +88,7 @@ analyzer:
   errors:
     unawaited_futures: warning
     always_put_control_body_on_new_line: warning
+    deprecated_member_use_from_same_package: error
 
 dart_code_metrics:
   rules:

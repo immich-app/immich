@@ -120,7 +120,7 @@ class Drift extends $Drift {
   }
 
   @override
-  int get schemaVersion => 31;
+  int get schemaVersion => 32;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -318,6 +318,9 @@ class Drift extends $Drift {
               from30To31: (m, v31) async {
                 await m.createIndex(v31.idxRemoteAssetUploaded);
               },
+              from31To32: (m, v32) async {
+                await healOutOfRangeDateTimes(this);
+              },
             ),
           ),
         );
@@ -342,6 +345,45 @@ class Drift extends $Drift {
       await customStatement('PRAGMA temp_store = MEMORY');
     },
   );
+}
+
+// every datetime column of the v31 schema, hardcoded: the heal runs once at v31->v32,
+// so the set must not follow later schema changes
+@visibleForTesting
+const healDateTimeColumns = <String, List<String>>{
+  'auth_user_entity': ['profile_changed_at'],
+  'user_entity': ['profile_changed_at'],
+  'local_album_entity': ['updated_at'],
+  'local_asset_entity': ['created_at', 'updated_at', 'adjustment_time'],
+  'remote_asset_entity': ['created_at', 'updated_at', 'local_date_time', 'deleted_at', 'uploaded_at'],
+  'trashed_local_asset_entity': ['created_at', 'updated_at'],
+  'remote_exif_entity': ['date_time_original'],
+  'remote_album_entity': ['created_at', 'updated_at'],
+  'remote_asset_cloud_id_entity': ['created_at', 'adjustment_time'],
+  'memory_entity': ['created_at', 'updated_at', 'deleted_at', 'memory_at', 'seen_at', 'show_at', 'hide_at'],
+  'stack_entity': ['created_at', 'updated_at'],
+  'person_entity': ['created_at', 'updated_at', 'birth_date'],
+  'asset_face_entity': ['deleted_at'],
+  'settings': ['updated_at'],
+};
+
+// Rewrites datetime text sqlite date functions cannot handle: signed extended
+// years and year 0000 (pre-clamp syncs), plus anything later than the safe
+// midnight ceiling, which re-overflows sqlite under 'localtime' east of UTC.
+// One statement per table: each column heals only when its own value is out of range
+@visibleForTesting
+Future<void> healOutOfRangeDateTimes(GeneratedDatabase db) async {
+  const floor = '0001-01-01T00:00:00.000Z';
+  const ceiling = '9999-12-31T00:00:00.000Z';
+  for (final MapEntry(key: table, value: columns) in healDateTimeColumns.entries) {
+    String low(String c) => "substr($c, 1, 1) = '-' OR substr($c, 1, 4) = '0000'";
+    String high(String c) => "substr($c, 1, 1) = '+' OR $c > '$ceiling'";
+    final assignments = columns.map(
+      (c) => "$c = CASE WHEN ${low(c)} THEN '$floor' WHEN ${high(c)} THEN '$ceiling' ELSE $c END",
+    );
+    final outOfRange = columns.map((c) => '${low(c)} OR ${high(c)}');
+    await db.customStatement('UPDATE $table SET ${assignments.join(', ')} WHERE ${outOfRange.join(' OR ')}');
+  }
 }
 
 class DriftDatabaseRepository {
