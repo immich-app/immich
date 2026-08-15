@@ -1,7 +1,7 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/widgets/common/user_circle_avatar.dart';
 
@@ -98,7 +98,7 @@ class _DriftActivityTextFieldState extends ConsumerState<DriftActivityTextField>
             color: context.primaryColor,
             disabledColor: context.colorScheme.secondaryContainer,
           ),
-          hintText: !widget.isEnabled ? 'shared_album_activities_input_disable'.tr() : 'say_something'.tr(),
+          hintText: !widget.isEnabled ? context.t.shared_album_activities_input_disable : context.t.say_something,
           hintStyle: TextStyle(fontWeight: FontWeight.normal, fontSize: 14, color: Colors.grey[600]),
         ),
         onEditingComplete: onEditingComplete,

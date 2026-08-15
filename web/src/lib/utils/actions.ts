@@ -12,7 +12,6 @@ export type OnUndoDelete = (assets: TimelineAsset[]) => void;
 export type OnRestore = (ids: string[]) => void;
 export type OnLink = (assets: { still: TimelineAsset; motion: TimelineAsset }) => void;
 export type OnUnlink = (assets: { still: TimelineAsset; motion: TimelineAsset }) => void;
-export type OnAddToAlbum = (ids: string[], albumId: string) => void;
 export type OnArchive = (ids: string[], visibility: AssetVisibility) => void;
 export type OnFavorite = (ids: string[], favorite: boolean) => void;
 export type OnStack = (result: StackResponse) => void;
@@ -68,7 +67,7 @@ const undoDeleteAssets = async (onUndoDelete: OnUndoDelete, assets: TimelineAsse
  * @param {StackResponse} stackResponse - The stack response containing the stack and assets to delete.
  */
 export function updateStackedAssetInTimeline(timelineManager: TimelineManager, { stack, toDeleteIds }: StackResponse) {
-  if (stack == undefined) {
+  if (stack === undefined) {
     return;
   }
 

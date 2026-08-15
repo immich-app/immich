@@ -30,3 +30,22 @@ class AppNavigationObserver extends AutoRouterObserver {
     ref.invalidate(isAssetViewerOpenProvider);
   }
 }
+
+/// Tracks routes that are undergoing a pop transition
+class TransitioningRouteObserver extends NavigatorObserver {
+  int _transitioningRoutes = 0;
+
+  /// Whether a "popping" route is still on screen
+  bool get hasTransitioningRoute => _transitioningRoutes > 0;
+
+  @override
+  void didPop(Route route, Route? previousRoute) {
+    if (route is! TransitionRoute) {
+      return;
+    }
+
+    _transitioningRoutes += 1;
+    // Transition completed and route disposed
+    unawaited(route.completed.whenComplete(() => _transitioningRoutes -= 1));
+  }
+}

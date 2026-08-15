@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/widgets/map/map_thumbnail.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
@@ -18,7 +18,7 @@ class MapThemePicker extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 20),
           child: Center(
             child: Text(
-              "map_settings_theme_settings".t(context: context),
+              context.t.map_settings_theme_settings,
               style: context.textTheme.bodyLarge!.copyWith(fontWeight: FontWeight.w500, height: 1.5),
             ),
           ),
@@ -79,7 +79,7 @@ class _BorderedMapThumbnail extends StatelessWidget {
           child: MapThumbnail(
             zoom: 2,
             centre: const LatLng(47, 5),
-            onTap: (_, __) => onThemeChange(mode),
+            onTap: (_, _) => onThemeChange(mode),
             themeMode: mode,
             showAttribution: false,
           ),

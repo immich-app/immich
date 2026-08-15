@@ -73,7 +73,6 @@ export interface Face {
 }
 
 export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Face[] } & VisualResponse;
-export type DetectedFaces = { faces: Face[] } & VisualResponse;
 export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest | OcrRequest;
 export type TextEncodingOptions = ModelOptions & { language?: string };
 

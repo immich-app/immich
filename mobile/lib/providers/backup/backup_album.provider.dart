@@ -22,40 +22,25 @@ class BackupAlbumNotifier extends StateNotifier<List<LocalAlbum>> {
   }
 
   Future<void> selectAlbum(LocalAlbum album) async {
-    album = album.copyWith(backupSelection: BackupSelection.selected);
-    await _localAlbumService.update(album);
+    final selectedAlbum = album.copyWith(backupSelection: BackupSelection.selected);
+    await _localAlbumService.update(selectedAlbum);
 
-    state = state
-        .map(
-          (currentAlbum) => currentAlbum.id == album.id
-              ? currentAlbum.copyWith(backupSelection: BackupSelection.selected)
-              : currentAlbum,
-        )
-        .toList();
+    state = state.map((currentAlbum) => currentAlbum.id == selectedAlbum.id ? selectedAlbum : currentAlbum).toList();
   }
 
   Future<void> deselectAlbum(LocalAlbum album) async {
-    album = album.copyWith(backupSelection: BackupSelection.none);
-    await _localAlbumService.update(album);
+    final deselectedAlbum = album.copyWith(backupSelection: BackupSelection.none);
+    await _localAlbumService.update(deselectedAlbum);
 
     state = state
-        .map(
-          (currentAlbum) =>
-              currentAlbum.id == album.id ? currentAlbum.copyWith(backupSelection: BackupSelection.none) : currentAlbum,
-        )
+        .map((currentAlbum) => currentAlbum.id == deselectedAlbum.id ? deselectedAlbum : currentAlbum)
         .toList();
   }
 
   Future<void> excludeAlbum(LocalAlbum album) async {
-    album = album.copyWith(backupSelection: BackupSelection.excluded);
-    await _localAlbumService.update(album);
+    final excludedAlbum = album.copyWith(backupSelection: BackupSelection.excluded);
+    await _localAlbumService.update(excludedAlbum);
 
-    state = state
-        .map(
-          (currentAlbum) => currentAlbum.id == album.id
-              ? currentAlbum.copyWith(backupSelection: BackupSelection.excluded)
-              : currentAlbum,
-        )
-        .toList();
+    state = state.map((currentAlbum) => currentAlbum.id == excludedAlbum.id ? excludedAlbum : currentAlbum).toList();
   }
 }
