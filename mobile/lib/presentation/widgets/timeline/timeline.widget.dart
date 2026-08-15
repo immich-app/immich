@@ -413,7 +413,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
           ref.read(multiSelectProvider.notifier).reset();
         }
       },
-      child: BackButtonListener(
+      child: _MaybeBackButtonListener(
         onBackButtonPressed: () async {
           if (!isMultiSelectEnabled) {
             return false;
@@ -547,6 +547,26 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
         ),
       ),
     );
+  }
+}
+
+/// Wraps [child] in a [BackButtonListener] only when a [Router] ancestor exists.
+///
+/// [BackButtonListener] resolves its dispatcher via `Router.of(context)`, which throws when
+/// there is no Router above it. The running app always has one (`MaterialApp.router`), but
+/// widget tests that mount the timeline under a plain [MaterialApp] do not, so guard against it.
+class _MaybeBackButtonListener extends StatelessWidget {
+  const _MaybeBackButtonListener({required this.onBackButtonPressed, required this.child});
+
+  final Future<bool> Function() onBackButtonPressed;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (Router.maybeOf(context) == null) {
+      return child;
+    }
+    return BackButtonListener(onBackButtonPressed: onBackButtonPressed, child: child);
   }
 }
 
