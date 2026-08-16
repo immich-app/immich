@@ -1,0 +1,56 @@
+name: Custom Server Image
+
+on:
+  push:
+    branches: [custom-features]
+    paths:
+      - "server/**"
+      - "openapi/**"
+      - "web/**"
+      - "i18n/**"
+      - ".github/workflows/custom-image.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository_owner }}/immich-server
+
+jobs:
+  build:
+    name: Build and Push Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: server/Dockerfile
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            DEVICE=cpu
+          tags: |
+            ${{ env.IMAGE }}:custom-features
+            ${{ env.IMAGE }}:custom-features-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
