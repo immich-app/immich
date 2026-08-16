@@ -67,4 +67,3 @@ shamefullyHoist: false
 verifyDepsBeforeRun: install
 minimumReleaseAgeExclude:
   - '@immich/ui@0.83.0'
-  - svelte-eslint-parser@1.8.1
