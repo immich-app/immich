@@ -225,7 +225,9 @@ describe(ApiKeyService.name, () => {
 
       mocks.apiKey.getById.mockResolvedValue(apiKey);
 
-      await expect(sut.rotate(auth, apiKey.id)).rejects.toThrow('Cannot grant permissions you do not have');
+      await expect(sut.rotate(auth, apiKey.id)).rejects.toThrow(
+        'Cannot rotate an API Key with permissions you do not have',
+      );
 
       expect(mocks.apiKey.update).not.toHaveBeenCalled();
     });
