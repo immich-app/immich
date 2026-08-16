@@ -159,6 +159,7 @@ class _AssetInfoTitle extends ConsumerWidget {
     DateTime dateTime = asset.createdAt.toLocal();
     final currentYear = DateTime.now().year;
     final exifInfo = ref.watch(assetExifProvider(asset)).valueOrNull;
+    final use24h = MediaQuery.alwaysUse24HourFormatOf(context);
 
     if (exifInfo?.dateTimeOriginal != null) {
       (dateTime, _) = applyTimezoneOffset(dateTime: exifInfo!.dateTimeOriginal!, timeZone: exifInfo.timeZone);
@@ -166,7 +167,7 @@ class _AssetInfoTitle extends ConsumerWidget {
 
     final isCurrentYear = dateTime.year == currentYear;
     final dateFormatted = isCurrentYear ? DateFormat.MMMd().format(dateTime) : DateFormat.yMMMd().format(dateTime);
-    final timeFormatted = DateFormat.jm().format(dateTime);
+    final timeFormatted = use24h ? DateFormat('HH:mm').format(dateTime) : DateFormat.jm().format(dateTime);
 
     return Column(
       mainAxisSize: MainAxisSize.min,

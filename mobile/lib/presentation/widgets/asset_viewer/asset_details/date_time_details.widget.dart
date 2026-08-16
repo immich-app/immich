@@ -47,6 +47,7 @@ class DateTimeDetails extends ConsumerWidget {
   static String _getDateTime(BuildContext ctx, BaseAsset asset, ExifInfo? exifInfo) {
     DateTime dateTime = asset.createdAt.toLocal();
     Duration timeZoneOffset = dateTime.timeZoneOffset;
+    final use24h = MediaQuery.alwaysUse24HourFormatOf(ctx);
 
     if (exifInfo?.dateTimeOriginal != null) {
       (dateTime, timeZoneOffset) = applyTimezoneOffset(
@@ -56,7 +57,9 @@ class DateTimeDetails extends ConsumerWidget {
     }
 
     final date = DateFormat.yMMMEd(ctx.locale.toLanguageTag()).format(dateTime);
-    final time = DateFormat.jm(ctx.locale.toLanguageTag()).format(dateTime);
+    final time = use24h
+        ? DateFormat('HH:mm').format(dateTime)
+        : DateFormat.jm(ctx.locale.toLanguageTag()).format(dateTime);
     final timezone = 'GMT${timeZoneOffset.formatAsOffset()}';
     return '$date$_kSeparator$time $timezone';
   }
