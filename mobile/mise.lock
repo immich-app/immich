@@ -11,6 +11,7 @@ url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linu
 url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.9-stable.tar.xz"
 
 [tools."aqua:flutter/flutter"."platforms.linux-x64"]
+checksum = "blake3:8324d3d8895938da754553542c4bb09aea8363edcfe8cc4e6ead91864c8b690e"
 url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.44.9-stable.tar.xz"
 
 [tools."aqua:flutter/flutter"."platforms.linux-x64-musl"]
@@ -25,23 +26,6 @@ url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/maco
 
 [tools."aqua:flutter/flutter"."platforms.windows-x64"]
 url = "https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.44.9-stable.zip"
-
-[[tools."github:CQLabs/homebrew-dcm"]]
-version = "1.37.0"
-backend = "github:CQLabs/homebrew-dcm"
-
-[tools."github:CQLabs/homebrew-dcm".options]
-asset_pattern = "dcm-linux-arm-release.zip"
-
-[tools."github:CQLabs/homebrew-dcm"."platforms.linux-arm64"]
-checksum = "sha256:253da2512b149913dfe345bf9a62a79acb2d730f66e71162ba4a92dfc4224b82"
-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-linux-arm-release.zip"
-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543838"
-
-[tools."github:CQLabs/homebrew-dcm"."platforms.linux-arm64-musl"]
-checksum = "sha256:253da2512b149913dfe345bf9a62a79acb2d730f66e71162ba4a92dfc4224b82"
-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-linux-arm-release.zip"
-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543838"
 
 [[tools."github:CQLabs/homebrew-dcm"]]
 version = "1.37.0"
@@ -65,6 +49,23 @@ version = "1.37.0"
 backend = "github:CQLabs/homebrew-dcm"
 
 [tools."github:CQLabs/homebrew-dcm".options]
+asset_pattern = "dcm-linux-arm-release.zip"
+
+[tools."github:CQLabs/homebrew-dcm"."platforms.linux-arm64"]
+checksum = "sha256:253da2512b149913dfe345bf9a62a79acb2d730f66e71162ba4a92dfc4224b82"
+url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-linux-arm-release.zip"
+url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543838"
+
+[tools."github:CQLabs/homebrew-dcm"."platforms.linux-arm64-musl"]
+checksum = "sha256:253da2512b149913dfe345bf9a62a79acb2d730f66e71162ba4a92dfc4224b82"
+url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-linux-arm-release.zip"
+url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543838"
+
+[[tools."github:CQLabs/homebrew-dcm"]]
+version = "1.37.0"
+backend = "github:CQLabs/homebrew-dcm"
+
+[tools."github:CQLabs/homebrew-dcm".options]
 asset_pattern = "dcm-macos-arm-release.zip"
 
 [tools."github:CQLabs/homebrew-dcm"."platforms.macos-arm64"]
@@ -77,24 +78,24 @@ version = "1.37.0"
 backend = "github:CQLabs/homebrew-dcm"
 
 [tools."github:CQLabs/homebrew-dcm".options]
-asset_pattern = "dcm-macos-x64-release.zip"
-
-[tools."github:CQLabs/homebrew-dcm"."platforms.macos-x64"]
-checksum = "sha256:e56cb99872be7445a4de1d37e5438ca70e3bcd83be7a2b9b385e3538881f8068"
-url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-macos-x64-release.zip"
-url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543727"
-
-[[tools."github:CQLabs/homebrew-dcm"]]
-version = "1.37.0"
-backend = "github:CQLabs/homebrew-dcm"
-
-[tools."github:CQLabs/homebrew-dcm".options]
 asset_pattern = "dcm-windows-release.zip"
 
 [tools."github:CQLabs/homebrew-dcm"."platforms.windows-x64"]
 checksum = "sha256:f133470daa3fb0427f039b424392af7e917d7e7db6b556aa2a968ab0e31587da"
 url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-windows-release.zip"
 url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543660"
+
+[[tools."github:CQLabs/homebrew-dcm"]]
+version = "1.37.0"
+backend = "github:CQLabs/homebrew-dcm"
+
+[tools."github:CQLabs/homebrew-dcm".options]
+asset_pattern = "dcm-macos-x64-release.zip"
+
+[tools."github:CQLabs/homebrew-dcm"."platforms.macos-x64"]
+checksum = "sha256:e56cb99872be7445a4de1d37e5438ca70e3bcd83be7a2b9b385e3538881f8068"
+url = "https://github.com/CQLabs/homebrew-dcm/releases/download/1.37.0/dcm-macos-x64-release.zip"
+url_api = "https://api.github.com/repos/CQLabs/homebrew-dcm/releases/assets/404543727"
 
 [[tools.java]]
 version = "21.0.2"

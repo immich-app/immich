@@ -111,6 +111,9 @@ export interface YearMonthDay {
   year: number;
 }
 
+const asMakeDateFn = (eb: ExpressionBuilder<DB, 'asset'>, { year, month, day }: YearMonthDay) =>
+  eb.fn('make_date', [sql`${year}::int`, sql`${month}::int`, sql`${day}::int`]);
+
 interface AssetExploreFieldOptions {
   maxFields: number;
   minAssetsPerField: number;
@@ -529,11 +532,20 @@ export class AssetRepository {
       );
   }
 
-  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { year: 2000, month: 1, day: 1 }] })
-  async getPersonBirthdayYears(ownerId: string, personId: string, { month, day }: YearMonthDay): Promise<number[]> {
+  @GenerateSql({
+    params: [DummyValue.UUID, DummyValue.UUID, { year: 2000, month: 1, day: 1 }, { year: 2025, month: 1, day: 1 }],
+  })
+  async getPersonBirthdayYears(
+    ownerId: string,
+    personId: string,
+    birthDate: YearMonthDay,
+    until: YearMonthDay,
+  ): Promise<number[]> {
     const rows = await this.personAssets(ownerId, personId)
-      .where(sql`date_part('month', (asset."localDateTime" at time zone 'UTC')::date)::int`, '=', month)
-      .where(sql`date_part('day', (asset."localDateTime" at time zone 'UTC')::date)::int`, '=', day)
+      .where(sql`date_part('month', (asset."localDateTime" at time zone 'UTC')::date)::int`, '=', birthDate.month)
+      .where(sql`date_part('day', (asset."localDateTime" at time zone 'UTC')::date)::int`, '=', birthDate.day)
+      .where((eb) => eb(sql`(asset."localDateTime" at time zone 'UTC')::date`, '>=', asMakeDateFn(eb, birthDate)))
+      .where((eb) => eb(sql`(asset."localDateTime" at time zone 'UTC')::date`, '<', asMakeDateFn(eb, until)))
       .select(sql<number>`date_part('year', (asset."localDateTime" at time zone 'UTC')::date)::int`.as('year'))
       .distinct()
       .orderBy(sql`year`, 'desc')
@@ -543,16 +555,10 @@ export class AssetRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { year: 2000, month: 1, day: 1 }, 5] })
-  getPersonAssetsByDate(ownerId: string, personId: string, { year, month, day }: YearMonthDay, limit: number) {
+  getPersonAssetsByDate(ownerId: string, personId: string, date: YearMonthDay, limit: number) {
     return this.personAssets(ownerId, personId)
       .select(['asset.id'])
-      .where((eb) =>
-        eb(
-          sql`(asset."localDateTime" at time zone 'UTC')::date`,
-          '=',
-          eb.fn('make_date', [sql`${year}::int`, sql`${month}::int`, sql`${day}::int`]),
-        ),
-      )
+      .where((eb) => eb(sql`(asset."localDateTime" at time zone 'UTC')::date`, '=', asMakeDateFn(eb, date)))
       .orderBy('asset.localDateTime', 'desc')
       .limit(limit)
       .execute();

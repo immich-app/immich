@@ -225,6 +225,7 @@ describe(AssetRepository.name, () => {
 
   describe('birthday assets', () => {
     const birthDate = { year: 1990, month: 6, day: 13 };
+    const until = { year: 2025, month: 6, day: 13 };
 
     describe('getPersonBirthdayYears', () => {
       it('should return the distinct years with assets on the birthday, newest first', async () => {
@@ -236,7 +237,7 @@ describe(AssetRepository.name, () => {
         await newPersonAsset(ctx, { ...args, localDateTime: '2022-06-13T09:00:00.000Z' });
         await newPersonAsset(ctx, { ...args, localDateTime: '2024-06-13T12:00:00.000Z' });
 
-        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate);
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate, until);
 
         expect(years).toEqual([2024, 2022, 2020]);
       });
@@ -246,7 +247,7 @@ describe(AssetRepository.name, () => {
         const { user, person } = await newBirthdayPerson(ctx);
         await newPersonAsset(ctx, { ownerId: user.id, personId: person.id, localDateTime: '2024-06-14T12:00:00.000Z' });
 
-        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate);
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate, until);
 
         expect(years).toEqual([]);
       });
@@ -261,7 +262,7 @@ describe(AssetRepository.name, () => {
           localDateTime: '2024-06-13T12:00:00.000Z',
         });
 
-        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate);
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate, until);
 
         expect(years).toEqual([]);
       });
@@ -272,9 +273,41 @@ describe(AssetRepository.name, () => {
         const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime: '2024-06-13T12:00:00.000Z' });
         await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
 
-        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate);
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate, until);
 
         expect(years).toEqual([]);
+      });
+
+      it('should ignore assets taken before the person was born', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        await newPersonAsset(ctx, { ownerId: user.id, personId: person.id, localDateTime: '1985-06-13T12:00:00.000Z' });
+
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate, until);
+
+        expect(years).toEqual([]);
+      });
+
+      it('should include assets taken on the day of birth', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        await newPersonAsset(ctx, { ownerId: user.id, personId: person.id, localDateTime: '1990-06-13T12:00:00.000Z' });
+
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate, until);
+
+        expect(years).toEqual([1990]);
+      });
+
+      it('should ignore assets taken on or after the until date', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        const args = { ownerId: user.id, personId: person.id };
+        await newPersonAsset(ctx, { ...args, localDateTime: '2024-06-13T12:00:00.000Z' });
+        await newPersonAsset(ctx, { ...args, localDateTime: '2025-06-13T12:00:00.000Z' });
+
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate, until);
+
+        expect(years).toEqual([2024]);
       });
     });
 

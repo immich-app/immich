@@ -203,6 +203,8 @@ where
     'day',
     (asset."localDateTime" at time zone 'UTC')::date
   )::int = $6
+  and (asset."localDateTime" at time zone 'UTC')::date >= make_date($7::int, $8::int, $9::int)
+  and (asset."localDateTime" at time zone 'UTC')::date < make_date($10::int, $11::int, $12::int)
 order by
   year desc
 

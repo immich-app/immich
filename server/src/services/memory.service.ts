@@ -89,7 +89,7 @@ export class MemoryService extends BaseService {
     await Promise.all(
       people.map(async ({ id: personId, name: personName, birthYear, birthMonth, birthDay }) => {
         const birthDate = { year: birthYear, month: birthMonth, day: birthDay };
-        const assets = await this.getBirthdayAssets(ownerId, personId, birthDate);
+        const assets = await this.getBirthdayAssets(ownerId, personId, birthDate, target);
         if (assets.length === 0) {
           return;
         }
@@ -109,21 +109,21 @@ export class MemoryService extends BaseService {
     );
   }
 
-  private async getBirthdayAssets(ownerId: string, personId: string, birthDate: YearMonthDay) {
-    const birthdayYearWithAssets = await this.assetRepository.getPersonBirthdayYears(ownerId, personId, birthDate);
-    if (birthdayYearWithAssets.length === 0) {
+  private async getBirthdayAssets(ownerId: string, personId: string, birthDate: YearMonthDay, until: YearMonthDay) {
+    const years = await this.assetRepository.getPersonBirthdayYears(ownerId, personId, birthDate, until);
+    if (years.length === 0) {
       return [];
     }
 
-    let birthdayYears = birthdayYearWithAssets;
+    let birthdayYears = years;
     let assetsPerYear = Math.min(
       BIRTHDAY_MEMORY_ASSETS_PER_YEAR,
-      Math.floor(MEMORY_ASSET_LIMIT / birthdayYearWithAssets.length),
+      Math.floor(MEMORY_ASSET_LIMIT / years.length),
     );
 
     // Select random birthdays if there are more than 25 birthdays with assets
-    if (birthdayYearWithAssets.length > MEMORY_ASSET_LIMIT) {
-      birthdayYears = shuffle(birthdayYearWithAssets)
+    if (years.length > MEMORY_ASSET_LIMIT) {
+      birthdayYears = shuffle(years)
         .slice(0, MEMORY_ASSET_LIMIT)
         .sort((a, b) => b - a);
       assetsPerYear = 1;
