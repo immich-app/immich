@@ -7,6 +7,7 @@ import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/exif.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/extensions/datetime_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/edit_datetime.action.dart';
@@ -45,21 +46,12 @@ class DateTimeDetails extends ConsumerWidget {
   }
 
   static String _getDateTime(BuildContext ctx, BaseAsset asset, ExifInfo? exifInfo) {
-    DateTime dateTime = asset.createdAt.toLocal();
-    Duration timeZoneOffset = dateTime.timeZoneOffset;
     final use24h = MediaQuery.alwaysUse24HourFormatOf(ctx);
 
-    if (exifInfo?.dateTimeOriginal != null) {
-      (dateTime, timeZoneOffset) = applyTimezoneOffset(
-        dateTime: exifInfo!.dateTimeOriginal!,
-        timeZone: exifInfo.timeZone,
-      );
-    }
+    final (dateTime, timeZoneOffset) = resolveAssetDateTime(asset, exifInfo);
 
     final date = DateFormat.yMMMEd(ctx.locale.toLanguageTag()).format(dateTime);
-    final time = use24h
-        ? DateFormat('HH:mm').format(dateTime)
-        : DateFormat.jm(ctx.locale.toLanguageTag()).format(dateTime);
+    final time = dateTime.formatTime(use24h: use24h, locale: ctx.locale.toLanguageTag());
     final timezone = 'GMT${timeZoneOffset.formatAsOffset()}';
     return '$date$_kSeparator$time $timezone';
   }

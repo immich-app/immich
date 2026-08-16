@@ -39,6 +39,25 @@ extension TimeAgoExtension on DateTime {
   }
 }
 
+extension TimeFormatting on DateTime {
+  /// Formats the time portion, respecting the system's 24-hour format setting.
+  ///
+  /// When [use24h] is true, uses a 24-hour `HH:mm` format; otherwise uses the
+  /// locale-aware 12-hour format (e.g. "1:30 PM").
+  String formatTime({required bool use24h, String? locale}) =>
+      use24h ? DateFormat('HH:mm').format(this) : DateFormat.jm(locale).format(this);
+}
+
+extension DateFormatting on DateTime {
+  /// Formats a single date, omitting the year when it is the current year.
+  /// - This year: "Aug 28"
+  /// - Other year: "Aug 28, 2023"
+  String formatDate({String? locale}) {
+    final isCurrentYear = year == DateTime.now().year;
+    return isCurrentYear ? DateFormat.MMMd(locale).format(this) : DateFormat.yMMMd(locale).format(this);
+  }
+}
+
 /// Extension to format date ranges according to UI requirements
 extension DateRangeFormatting on DateTime {
   /// Formats a date range according to specific rules:
@@ -54,13 +73,7 @@ extension DateRangeFormatting on DateTime {
 
     // Check if it's a single date (same day)
     if (startDate.year == endDate.year && startDate.month == endDate.month && startDate.day == endDate.day) {
-      if (startDate.year == currentYear) {
-        // Single date of this year: "Aug 28"
-        return DateFormat.MMMd(localeString).format(startDate);
-      } else {
-        // Single date of other year: "Aug 28, 2023"
-        return DateFormat.yMMMd(localeString).format(startDate);
-      }
+      return startDate.formatDate(locale: localeString);
     }
 
     // It's a date range
