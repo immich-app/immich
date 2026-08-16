@@ -719,7 +719,7 @@
   "clear": "Effacer",
   "clear_all": "Effacer tout",
   "clear_all_recent_searches": "Supprimer les recherches récentes",
-  "clear_failed_count": "Échec de la suppression ({count})",
+  "clear_failed_count": "Ignorer les échecs ({count})",
   "clear_file_cache": "Vider le fichier de cache",
   "clear_message": "Effacer le message",
   "clear_value": "Effacer la valeur",
