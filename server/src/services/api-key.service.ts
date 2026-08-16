@@ -45,6 +45,27 @@ export class ApiKeyService extends BaseService {
     return this.map(key);
   }
 
+  async rotate(auth: AuthDto, id: string): Promise<ApiKeyCreateResponseDto> {
+    const exists = await this.apiKeyRepository.getById(auth.user.id, id);
+    if (!exists) {
+      throw new BadRequestException('API Key not found');
+    }
+
+    if (
+      auth.apiKey &&
+      !isGranted({ requested: exists.permissions as Permission[], current: auth.apiKey.permissions })
+    ) {
+      throw new BadRequestException('Cannot rotate an API Key with permissions you do not have');
+    }
+
+    const token = this.cryptoRepository.randomBytesAsText(32);
+    const hashed = this.cryptoRepository.hashSha256(token);
+
+    const key = await this.apiKeyRepository.update(auth.user.id, id, { key: hashed });
+
+    return { secret: token, apiKey: this.map(key) };
+  }
+
   async delete(auth: AuthDto, id: string): Promise<void> {
     const exists = await this.apiKeyRepository.getById(auth.user.id, id);
     if (!exists) {

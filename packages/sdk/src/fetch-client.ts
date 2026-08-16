@@ -4113,6 +4113,20 @@ export function updateApiKey({ id, apiKeyUpdateDto }: {
     })));
 }
 /**
+ * Rotate an API key
+ */
+export function rotateApiKey({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: ApiKeyCreateResponseDto;
+    }>(`/api-keys/${encodeURIComponent(id)}/rotate`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
  * Delete assets
  */
 export function deleteAssets({ assetBulkDeleteDto }: {
