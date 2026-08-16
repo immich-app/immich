@@ -24,7 +24,18 @@ const OnThisDaySchema = z
   })
   .meta({ id: 'OnThisDayDto' });
 
-type MemoryData = z.infer<typeof OnThisDaySchema>;
+const BirthdaySchema = z
+  .object({
+    personId: z.uuidv4().describe('Person ID for the birthday memory'),
+    personName: z.string().describe('Name of the person when the memory was created'),
+    year: z.int().min(1000).max(9999).describe('Birth year of the person'),
+  })
+  .meta({ id: 'BirthdayDto' });
+
+// BirthdaySchema must come first, otherwise its extra fields are stripped by a successful OnThisDaySchema parse
+const MemoryDataSchema = z.union([BirthdaySchema, OnThisDaySchema]);
+
+type MemoryData = z.infer<typeof MemoryDataSchema>;
 
 const MemoryUpdateSchema = nonEmptyPartial({
   isSaved: z.boolean().describe('Is memory saved'),
@@ -35,7 +46,7 @@ const MemoryUpdateSchema = nonEmptyPartial({
 const MemoryCreateSchema = z
   .object({
     type: MemoryTypeSchema,
-    data: OnThisDaySchema,
+    data: MemoryDataSchema,
     memoryAt: isoDatetimeToDate.describe('Memory date'),
     assetIds: z.array(z.uuidv4()).optional().describe('Asset IDs to associate with memory'),
     isSaved: z.boolean().optional().describe('Is memory saved'),
@@ -69,7 +80,7 @@ const MemoryResponseSchema = z
     hideAt: isoDatetimeToDate.optional().describe('Date when memory should be hidden'),
     ownerId: z.uuidv4().describe('Owner user ID'),
     type: MemoryTypeSchema,
-    data: OnThisDaySchema,
+    data: MemoryDataSchema,
     isSaved: z.boolean().describe('Is memory saved'),
     assets: z.array(AssetResponseSchema),
   })

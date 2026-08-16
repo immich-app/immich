@@ -658,6 +658,7 @@
   "biometric_no_options": "No biometric options available",
   "biometric_not_available": "Biometric authentication is not available on this device",
   "birthdate_set_description": "Date of birth is used to calculate the age of this person at the time of a photo.",
+  "birthday_memory_title": "{name}'s birthday",
   "blurred_background": "Blurred background",
   "browse_templates": "Browse templates",
   "bugs_and_feature_requests": "Bugs & Feature Requests",

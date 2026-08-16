@@ -370,6 +370,10 @@ export const memoryLaneTitle = derived(t, ($t) => {
       return $t('years_ago', { values: { years: now.getFullYear() - memory.data.year } });
     }
 
+    if (memory.type === MemoryType.Birthday && 'personName' in memory.data) {
+      return $t('birthday_memory_title', { values: { name: memory.data.personName } });
+    }
+
     return $t('unknown');
   };
 });

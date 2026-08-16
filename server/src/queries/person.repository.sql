@@ -12,6 +12,52 @@ delete from "person"
 where
   "person"."id" in ($1)
 
+-- PersonRepository.getPeopleWithBirthday
+select
+  "person"."id",
+  "person"."name",
+  date_part('year', person."birthDate")::int as "birthYear",
+  date_part('month', person."birthDate")::int as "birthMonth",
+  date_part('day', person."birthDate")::int as "birthDay"
+from
+  "person"
+where
+  "person"."ownerId" = $1
+  and "person"."isHidden" = $2
+  and "person"."name" != $3
+  and "person"."birthDate" is not null
+  and (
+    date_part('month', person."birthDate")::int = $4
+    and date_part('day', person."birthDate")::int = $5
+  )
+  and date_part('year', person."birthDate")::int < $6
+
+-- PersonRepository.getPeopleWithBirthday (leap day fallback)
+select
+  "person"."id",
+  "person"."name",
+  date_part('year', person."birthDate")::int as "birthYear",
+  date_part('month', person."birthDate")::int as "birthMonth",
+  date_part('day', person."birthDate")::int as "birthDay"
+from
+  "person"
+where
+  "person"."ownerId" = $1
+  and "person"."isHidden" = $2
+  and "person"."name" != $3
+  and "person"."birthDate" is not null
+  and (
+    (
+      date_part('month', person."birthDate")::int = $4
+      and date_part('day', person."birthDate")::int = $5
+    )
+    or (
+      date_part('month', person."birthDate")::int = $6
+      and date_part('day', person."birthDate")::int = $7
+    )
+  )
+  and date_part('year', person."birthDate")::int < $8
+
 -- PersonRepository.getFileSamples
 select
   "id",

@@ -1,5 +1,5 @@
 import { Kysely } from 'kysely';
-import { AssetOrder, AssetVisibility } from 'src/enum';
+import { AssetFileType, AssetOrder, AssetVisibility } from 'src/enum';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
@@ -22,6 +22,24 @@ const setup = (db?: Kysely<DB>) => {
 beforeAll(async () => {
   defaultDatabase = await getKyselyDB();
 });
+
+const newPersonAsset = async (
+  ctx: ReturnType<typeof setup>['ctx'],
+  { ownerId, personId, localDateTime }: { ownerId: string; personId: string; localDateTime: string },
+) => {
+  const { asset } = await ctx.newAsset({ ownerId, localDateTime });
+  await Promise.all([
+    ctx.newAssetFace({ assetId: asset.id, personId }),
+    ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: `/preview/${asset.id}.jpg` }),
+  ]);
+  return asset;
+};
+
+const newBirthdayPerson = async (ctx: ReturnType<typeof setup>['ctx']) => {
+  const { user } = await ctx.newUser();
+  const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1990-06-13' });
+  return { user, person };
+};
 
 describe(AssetRepository.name, () => {
   describe('getTimeBucket', () => {
@@ -202,6 +220,90 @@ describe(AssetRepository.name, () => {
           .where('assetId', '=', asset.id)
           .executeTakeFirstOrThrow(),
       ).resolves.toEqual({ lockedProperties: null });
+    });
+  });
+
+  describe('birthday assets', () => {
+    const birthDate = { year: 1990, month: 6, day: 13 };
+
+    describe('getPersonBirthdayYears', () => {
+      it('should return the distinct years with assets on the birthday, newest first', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        const args = { ownerId: user.id, personId: person.id };
+        await newPersonAsset(ctx, { ...args, localDateTime: '2020-06-13T10:00:00.000Z' });
+        await newPersonAsset(ctx, { ...args, localDateTime: '2022-06-13T08:00:00.000Z' });
+        await newPersonAsset(ctx, { ...args, localDateTime: '2022-06-13T09:00:00.000Z' });
+        await newPersonAsset(ctx, { ...args, localDateTime: '2024-06-13T12:00:00.000Z' });
+
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate);
+
+        expect(years).toEqual([2024, 2022, 2020]);
+      });
+
+      it('should ignore assets taken on other days', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        await newPersonAsset(ctx, { ownerId: user.id, personId: person.id, localDateTime: '2024-06-14T12:00:00.000Z' });
+
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate);
+
+        expect(years).toEqual([]);
+      });
+
+      it('should ignore assets of other people', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        const { person: otherPerson } = await ctx.newPerson({ ownerId: user.id, name: 'Bob' });
+        await newPersonAsset(ctx, {
+          ownerId: user.id,
+          personId: otherPerson.id,
+          localDateTime: '2024-06-13T12:00:00.000Z',
+        });
+
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate);
+
+        expect(years).toEqual([]);
+      });
+
+      it('should ignore assets without a preview file', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime: '2024-06-13T12:00:00.000Z' });
+        await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate);
+
+        expect(years).toEqual([]);
+      });
+    });
+
+    describe('getPersonAssetsByDate', () => {
+      it('should return the newest assets of the given date, newest first, up to the limit', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        const args = { ownerId: user.id, personId: person.id };
+        await newPersonAsset(ctx, { ...args, localDateTime: '2024-06-13T01:00:00.000Z' });
+        const nextNewest2024 = await newPersonAsset(ctx, { ...args, localDateTime: '2024-06-13T02:00:00.000Z' });
+        const newest2024 = await newPersonAsset(ctx, { ...args, localDateTime: '2024-06-13T03:00:00.000Z' });
+        await newPersonAsset(ctx, { ...args, localDateTime: '2023-06-13T01:00:00.000Z' });
+
+        const assets = await sut.getPersonAssetsByDate(user.id, person.id, { year: 2024, month: 6, day: 13 }, 2);
+
+        expect(assets.map(({ id }) => id)).toEqual([newest2024.id, nextNewest2024.id]);
+      });
+
+      it('should return the single newest asset when the limit is 1', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        const args = { ownerId: user.id, personId: person.id };
+        await newPersonAsset(ctx, { ...args, localDateTime: '2024-06-13T01:00:00.000Z' });
+        const newest2024 = await newPersonAsset(ctx, { ...args, localDateTime: '2024-06-13T02:00:00.000Z' });
+
+        const assets = await sut.getPersonAssetsByDate(user.id, person.id, { year: 2024, month: 6, day: 13 }, 1);
+
+        expect(assets.map(({ id }) => id)).toEqual([newest2024.id]);
+      });
     });
   });
 });

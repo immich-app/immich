@@ -65,4 +65,82 @@ describe(PersonRepository.name, () => {
       );
     });
   });
+
+  describe('getPeopleWithBirthday', () => {
+    const target = { year: 2025, month: 6, day: 13 };
+
+    it('should return people with a birthday on the given day', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1990-06-13' });
+      await ctx.newPerson({ ownerId: user.id, name: 'Bob', birthDate: '1990-06-14' });
+
+      const people = await sut.getPeopleWithBirthday(user.id, target);
+
+      expect(people).toEqual([{ id: person.id, name: 'Alice', birthYear: 1990, birthMonth: 6, birthDay: 13 }]);
+    });
+
+    it('should not return hidden people, unnamed people, or people without a birth date', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1990-06-13', isHidden: true });
+      await ctx.newPerson({ ownerId: user.id, name: '', birthDate: '1990-06-13' });
+      await ctx.newPerson({ ownerId: user.id, name: 'Carol', birthDate: null });
+
+      const people = await sut.getPeopleWithBirthday(user.id, target);
+
+      expect(people).toEqual([]);
+    });
+
+    it('should not return people belonging to another user', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { user: otherUser } = await ctx.newUser();
+      await ctx.newPerson({ ownerId: otherUser.id, name: 'Alice', birthDate: '1990-06-13' });
+
+      const people = await sut.getPeopleWithBirthday(user.id, target);
+
+      expect(people).toEqual([]);
+    });
+
+    it('should not return people born in the target year', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '2025-06-13' });
+
+      const people = await sut.getPeopleWithBirthday(user.id, target);
+
+      expect(people).toEqual([]);
+    });
+
+    it('should include leap-day birthdays on february 28th of non-leap years', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1992-02-29' });
+
+      const people = await sut.getPeopleWithBirthday(user.id, { year: 2025, month: 2, day: 28 });
+
+      expect(people.map(({ id }) => id)).toEqual([person.id]);
+    });
+
+    it('should not include leap-day birthdays on february 28th of leap years', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1992-02-29' });
+
+      const people = await sut.getPeopleWithBirthday(user.id, { year: 2024, month: 2, day: 28 });
+
+      expect(people).toEqual([]);
+    });
+
+    it('should include leap-day birthdays on february 29th of leap years', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1992-02-29' });
+
+      const people = await sut.getPeopleWithBirthday(user.id, { year: 2024, month: 2, day: 29 });
+
+      expect(people.map(({ id }) => id)).toEqual([person.id]);
+    });
+  });
 });

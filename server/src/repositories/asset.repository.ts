@@ -503,6 +503,61 @@ export class AssetRepository {
       .execute();
   }
 
+  private personAssets(ownerId: string, personId: string) {
+    return this.db
+      .selectFrom('asset')
+      .where('asset.ownerId', '=', ownerId)
+      .where('asset.visibility', '=', AssetVisibility.Timeline)
+      .where('asset.deletedAt', 'is', null)
+      .where((eb) =>
+        eb.exists((qb) =>
+          qb
+            .selectFrom('asset_face')
+            .whereRef('asset_face.assetId', '=', 'asset.id')
+            .where('asset_face.personId', '=', personId)
+            .where('asset_face.deletedAt', 'is', null)
+            .where('asset_face.isVisible', 'is', true),
+        ),
+      )
+      .where((eb) =>
+        eb.exists((qb) =>
+          qb
+            .selectFrom('asset_file')
+            .whereRef('asset_file.assetId', '=', 'asset.id')
+            .where('asset_file.type', '=', AssetFileType.Preview),
+        ),
+      );
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { year: 2000, month: 1, day: 1 }] })
+  async getPersonBirthdayYears(ownerId: string, personId: string, { month, day }: YearMonthDay): Promise<number[]> {
+    const rows = await this.personAssets(ownerId, personId)
+      .where(sql`date_part('month', (asset."localDateTime" at time zone 'UTC')::date)::int`, '=', month)
+      .where(sql`date_part('day', (asset."localDateTime" at time zone 'UTC')::date)::int`, '=', day)
+      .select(sql<number>`date_part('year', (asset."localDateTime" at time zone 'UTC')::date)::int`.as('year'))
+      .distinct()
+      .orderBy(sql`year`, 'desc')
+      .execute();
+
+    return rows.map(({ year }) => year);
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, { year: 2000, month: 1, day: 1 }, 5] })
+  getPersonAssetsByDate(ownerId: string, personId: string, { year, month, day }: YearMonthDay, limit: number) {
+    return this.personAssets(ownerId, personId)
+      .select(['asset.id'])
+      .where((eb) =>
+        eb(
+          sql`(asset."localDateTime" at time zone 'UTC')::date`,
+          '=',
+          eb.fn('make_date', [sql`${year}::int`, sql`${month}::int`, sql`${day}::int`]),
+        ),
+      )
+      .orderBy('asset.localDateTime', 'desc')
+      .limit(limit)
+      .execute();
+  }
+
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray()
   getByIds(ids: string[]) {
