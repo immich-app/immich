@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 const int _maxMillisecondsSinceEpoch = 8640000000000000; // 275760-09-13
 const int _minMillisecondsSinceEpoch = -62135596800000; // 0001-01-01
 
@@ -17,3 +19,5 @@ DateTime? tryFromSecondsSinceEpoch(int? secondsSinceEpoch, {bool isUtc = false})
     return null;
   }
 }
+
+String timelineGroupDate(DateTime value) => DateFormat('yyyy-MM-dd', 'en_US').format(value);

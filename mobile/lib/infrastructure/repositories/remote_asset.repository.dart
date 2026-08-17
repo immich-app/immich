@@ -10,7 +10,9 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/stack.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/utils/datetime_helpers.dart';
 import 'package:immich_mobile/utils/option.dart';
+import 'package:immich_mobile/utils/timezone.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 class RemoteAssetRepository extends DriftDatabaseRepository {
@@ -280,6 +282,8 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
   }
 
   Future<void> updateDateTime(List<String> ids, DateTime dateTime, {String? timeZone}) {
+    final (adjusted, _) = applyTimezoneOffset(dateTime: dateTime, timeZone: timeZone);
+    final groupDate = timelineGroupDate(adjusted);
     return _db.batch((batch) async {
       for (final id in ids) {
         batch.update(
@@ -292,7 +296,7 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
         );
         batch.update(
           _db.remoteAssetEntity,
-          RemoteAssetEntityCompanion(createdAt: Value(dateTime)),
+          RemoteAssetEntityCompanion(createdAt: Value(dateTime), groupDate: Value(groupDate)),
           where: (e) => e.id.equals(id),
         );
       }
