@@ -21,13 +21,13 @@ import 'package:logging/logging.dart';
 const String _kSyncCancelledCode = "SYNC_CANCELLED";
 
 class LocalSyncService {
-  final DriftLocalAlbumRepository _localAlbumRepository;
+  final LocalAlbumRepository _localAlbumRepository;
   // ignore: unused_field
-  final DriftLocalAssetRepository _localAssetRepository;
+  final LocalAssetRepository _localAssetRepository;
   final NativeSyncApi _nativeSyncApi;
-  final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
+  final TrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
-  final IPermissionRepository _permissionRepository;
+  final DevicePermissionRepository _permissionRepository;
   final Completer<void>? _cancellation;
   final Logger _log = Logger("DeviceSyncService");
 
@@ -186,7 +186,7 @@ class LocalSyncService {
     _log.fine("Removing device album ${a.name}");
     try {
       // Asset deletion is handled in the repository
-      await _localAlbumRepository.delete(a.id);
+      await _localAlbumRepository.deleteAlbum(a.id);
     } catch (e, s) {
       _log.warning("Error while removing device album", e, s);
     }

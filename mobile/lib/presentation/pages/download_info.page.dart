@@ -4,7 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/pages/common/download_panel.dart';
 import 'package:immich_mobile/providers/asset_viewer/download.provider.dart';
 
@@ -17,14 +17,11 @@ class DownloadInfoPage extends ConsumerWidget {
     final tasks = ref.watch(downloadStateProvider.select((state) => state.taskProgress)).entries.toList();
 
     void onCancelDownload(String id) {
-      unawaited(ref.watch(downloadStateProvider.notifier).cancelDownload(id));
+      unawaited(ref.read(downloadStateProvider.notifier).cancelDownload(id));
     }
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text("download".t(context: context)),
-        actions: const [],
-      ),
+      appBar: AppBar(title: Text(context.t.download), actions: const []),
       body: ListView.builder(
         physics: const ClampingScrollPhysics(),
         shrinkWrap: true,
@@ -49,7 +46,7 @@ class DownloadInfoPage extends ConsumerWidget {
           },
           style: OutlinedButton.styleFrom(side: BorderSide(color: context.colorScheme.primary)),
           child: Text(
-            'clear_all'.t(context: context),
+            context.t.clear_all,
             style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.primary),
           ),
         ),

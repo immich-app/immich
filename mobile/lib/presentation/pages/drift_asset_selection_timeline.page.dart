@@ -7,12 +7,12 @@ import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
 
 @RoutePage()
-class DriftAssetSelectionTimelinePage extends ConsumerWidget {
+class DriftAssetSelectionTimelinePage extends StatelessWidget {
   final Set<BaseAsset> lockedSelectionAssets;
   const DriftAssetSelectionTimelinePage({super.key, this.lockedSelectionAssets = const {}});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ProviderScope(
       overrides: [
         multiSelectProvider.overrideWith(

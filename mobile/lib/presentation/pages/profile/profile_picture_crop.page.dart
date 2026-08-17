@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:crop_image/crop_image.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/backup/backup.provider.dart';
@@ -70,6 +70,10 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
       final croppedImage = await _cropController.croppedImage();
       final pngBytes = await imageToUint8List(croppedImage);
       final xFile = XFile.fromData(pngBytes, mimeType: 'image/png');
+      if (!context.mounted) {
+        return;
+      }
+
       final success = await ref
           .read(uploadProfileImageProvider.notifier)
           .upload(xFile, fileName: 'profile-picture.png');
@@ -89,7 +93,7 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
 
         ImmichToast.show(
           context: context,
-          msg: 'profile_picture_set'.tr(),
+          msg: context.t.profile_picture_set,
           gravity: ToastGravity.BOTTOM,
           toastType: ToastType.success,
         );
@@ -98,7 +102,7 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
       } else {
         ImmichToast.show(
           context: context,
-          msg: 'errors.unable_to_set_profile_picture'.tr(),
+          msg: context.t.errors.unable_to_set_profile_picture,
           toastType: ToastType.error,
           gravity: ToastGravity.BOTTOM,
         );
@@ -110,7 +114,7 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
 
       ImmichToast.show(
         context: context,
-        msg: 'errors.unable_to_set_profile_picture'.tr(),
+        msg: context.t.errors.unable_to_set_profile_picture,
         toastType: ToastType.error,
         gravity: ToastGravity.BOTTOM,
       );
@@ -131,7 +135,7 @@ class _ProfilePictureCropPageState extends ConsumerState<ProfilePictureCropPage>
     return Scaffold(
       appBar: AppBar(
         backgroundColor: context.scaffoldBackgroundColor,
-        title: Text("set_profile_picture".tr()),
+        title: Text(context.t.set_profile_picture),
         leading: _isLoading ? null : const ImmichCloseButton(),
         actions: [
           if (_isLoading)

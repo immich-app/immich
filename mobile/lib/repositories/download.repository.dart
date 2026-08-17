@@ -10,6 +10,7 @@ import 'package:immich_mobile/models/download/livephotos_medatada.model.dart';
 import 'package:immich_mobile/services/api.service.dart';
 import 'package:immich_mobile/utils/image_url_builder.dart';
 
+// ignore: dispose-provided-instances
 final downloadRepositoryProvider = Provider((ref) => DownloadRepository());
 
 class DownloadRepository {
@@ -26,6 +27,8 @@ class DownloadRepository {
   void Function(TaskStatusUpdate)? onImageDownloadStatus;
 
   void Function(TaskStatusUpdate)? onVideoDownloadStatus;
+
+  void Function(TaskStatusUpdate)? onLivePhotoDownloadStatus;
 
   void Function(TaskProgressUpdate)? onTaskProgress;
 
@@ -48,6 +51,7 @@ class DownloadRepository {
 
     _downloader.registerCallbacks(
       group: kDownloadGroupLivePhoto,
+      taskStatusCallback: (update) => onLivePhotoDownloadStatus?.call(update),
       taskProgressCallback: (update) => onTaskProgress?.call(update),
     );
 

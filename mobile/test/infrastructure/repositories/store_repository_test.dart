@@ -47,11 +47,11 @@ Future<void> _populateStore(Drift db) async {
 
 void main() {
   late Drift db;
-  late DriftStoreRepository sut;
+  late StoreRepository sut;
 
   setUp(() async {
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    sut = DriftStoreRepository(db);
+    sut = StoreRepository(db);
   });
 
   tearDown(() async {
@@ -100,7 +100,7 @@ void main() {
     test('delete()', () async {
       bool? advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
       expect(advancedTroubleshooting, isFalse);
-      await sut.delete(StoreKey.advancedTroubleshooting);
+      await sut.deleteValue(StoreKey.advancedTroubleshooting);
       advancedTroubleshooting = await sut.tryGet(StoreKey.advancedTroubleshooting);
       expect(advancedTroubleshooting, isNull);
     });

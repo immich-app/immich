@@ -37,7 +37,8 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
 
   final trashEnabled = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
   // Assets already in the trash or in the locked folder are deleted outright, irrespective of the server setting.
-  final trash = trashEnabled && !ownedRemote.every((asset) => asset.isTrashed || asset.isLocked);
+  final trash =
+      ownedRemote.isEmpty || (trashEnabled && !ownedRemote.every((asset) => asset.isTrashed || asset.isLocked));
 
   return (localIds: localIds, remoteIds: ownedRemote.map((asset) => asset.id).toList(growable: false), trash: trash);
 }, dependencies: [assetsActionProvider]);
@@ -127,8 +128,11 @@ class DeleteAction extends AssetActionBuilder {
     final assetService = ref.read(assetServiceProvider);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) =>
-          const ConfirmDialog(title: 'delete_dialog_title', content: 'delete_dialog_alert', ok: 'delete_permanently'),
+      builder: (_) => ConfirmDialog(
+        title: context.t.delete_dialog_title,
+        content: context.t.delete_dialog_alert,
+        ok: context.t.delete_permanently,
+      ),
     );
     if (confirmed != true || !context.mounted) {
       return null;

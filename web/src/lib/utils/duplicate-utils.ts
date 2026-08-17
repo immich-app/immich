@@ -147,6 +147,7 @@ const metadataFields = [
     titleKey: 'gps',
     keys: ['latitude', 'longitude'],
     render: (asset, $t) =>
+      // eslint-disable-next-line eqeqeq
       asset.exifInfo?.latitude != null && asset.exifInfo?.longitude != null
         ? `${asset.exifInfo.latitude.toFixed(4)}, ${asset.exifInfo.longitude.toFixed(4)}`
         : $t('unknown'),
@@ -173,18 +174,21 @@ const metadataFields = [
     icon: mdiCameraIris,
     titleKey: 'f_number',
     keys: ['fNumber'],
+    // eslint-disable-next-line eqeqeq
     render: (asset, $t) => (asset.exifInfo?.fNumber == null ? $t('unknown') : `f/${asset.exifInfo.fNumber.toFixed(1)}`),
   },
   {
     icon: mdiRayStartArrow,
     titleKey: 'focal_length',
     keys: ['focalLength'],
+    // eslint-disable-next-line eqeqeq
     render: (asset, $t) => (asset.exifInfo?.focalLength == null ? $t('unknown') : `${asset.exifInfo.focalLength} mm`),
   },
   {
     icon: mdiBrightness6,
     titleKey: 'iso',
     keys: ['iso'],
+    // eslint-disable-next-line eqeqeq
     render: (asset, $t) => (asset.exifInfo?.iso == null ? $t('unknown') : `ISO ${asset.exifInfo.iso}`),
   },
   {
@@ -203,6 +207,7 @@ const metadataFields = [
     icon: mdiStarOutline,
     titleKey: 'rating',
     keys: ['rating'],
+    // eslint-disable-next-line eqeqeq
     render: (asset, $t) => (asset.exifInfo?.rating == null ? $t('unknown') : `${asset.exifInfo.rating} stars`),
   },
   {

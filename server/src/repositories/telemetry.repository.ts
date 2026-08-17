@@ -149,7 +149,7 @@ export class TelemetryRepository {
     const unit = 'ms';
 
     for (const [propName, descriptor] of Object.entries(descriptors)) {
-      const isMethod = typeof descriptor.value == 'function' && propName !== 'constructor';
+      const isMethod = typeof descriptor.value === 'function' && propName !== 'constructor';
       if (!isMethod) {
         continue;
       }

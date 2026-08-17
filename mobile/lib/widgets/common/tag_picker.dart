@@ -1,10 +1,10 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/extensions/asyncvalue_extensions.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/infrastructure/tag.provider.dart';
 import 'package:immich_mobile/widgets/common/search_field.dart';
 
@@ -17,13 +17,13 @@ Future<(Set<String>, Set<String>)?> showTagPickerModal({required BuildContext co
   );
 }
 
-class _TagPickerModal extends HookConsumerWidget {
+class _TagPickerModal extends HookWidget {
   final Set<String>? initialSelection;
 
   const _TagPickerModal({this.initialSelection});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final selectedTagIds = useState<Set<String>>(initialSelection ?? {});
     final newTagValues = useState<Set<String>>({});
 
@@ -41,19 +41,19 @@ class _TagPickerModal extends HookConsumerWidget {
         TextButton(
           onPressed: () => context.pop(),
           child: Text(
-            "cancel",
+            context.t.cancel,
             style: context.textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: context.colorScheme.error,
             ),
-          ).tr(),
+          ),
         ),
         TextButton(
           onPressed: () => context.pop((selectedTagIds.value, newTagValues.value)),
           child: Text(
-            "action_common_update",
+            context.t.action_common_update,
             style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
-          ).tr(),
+          ),
         ),
       ],
       content: SizedBox(
@@ -98,7 +98,7 @@ class TagPicker extends HookConsumerWidget {
             onChanged: (value) => searchQuery.value = value,
             onTapOutside: (_) => formFocus.unfocus(),
             filled: true,
-            hintText: 'filter_tags'.tr(),
+            hintText: context.t.filter_tags,
           ),
         ),
         Padding(

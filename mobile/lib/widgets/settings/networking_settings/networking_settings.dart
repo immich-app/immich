@@ -1,11 +1,10 @@
 import 'dart:async';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/auth/auxilary_endpoint.model.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/network.provider.dart';
@@ -21,8 +20,8 @@ class NetworkingSettings extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentEndpoint = getServerUrl();
-    final featureEnabled = useState(ref.read(appConfigProvider).network.autoEndpointSwitching);
-    useValueChanged<bool, void>(featureEnabled.value, (_, __) {
+    final featureEnabled = useState(ref.watch(appConfigProvider).network.autoEndpointSwitching);
+    useValueChanged<bool, void>(featureEnabled.value, (_, _) {
       unawaited(ref.read(settingsProvider).write(.networkAutoEndpointSwitching, featureEnabled.value));
     });
 
@@ -39,8 +38,8 @@ class NetworkingSettings extends HookConsumerWidget {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text("location_permission".tr()),
-              content: Text("location_permission_content".tr()),
+              title: Text(context.t.location_permission),
+              content: Text(context.t.location_permission_content),
               actions: [
                 TextButton(
                   onPressed: () async {
@@ -52,7 +51,7 @@ class NetworkingSettings extends HookConsumerWidget {
 
                     Navigator.pop(context, isGrant);
                   },
-                  child: Text("grant_permission".tr()),
+                  child: Text(context.t.grant_permission),
                 ),
               ],
             );
@@ -69,8 +68,8 @@ class NetworkingSettings extends HookConsumerWidget {
           context: context,
           builder: (context) {
             return AlertDialog(
-              title: Text("background_location_permission".tr()),
-              content: Text("background_location_permission_content".tr()),
+              title: Text(context.t.background_location_permission),
+              content: Text(context.t.background_location_permission_content),
               actions: [
                 TextButton(
                   onPressed: () async {
@@ -82,7 +81,7 @@ class NetworkingSettings extends HookConsumerWidget {
 
                     Navigator.pop(context, isGrant);
                   },
-                  child: Text("grant_permission".tr()),
+                  child: Text(context.t.grant_permission),
                 ),
               ],
             );
@@ -107,7 +106,7 @@ class NetworkingSettings extends HookConsumerWidget {
       children: <Widget>[
         const SizedBox(height: 8),
         SettingGroupTitle(
-          title: "current_server_address".t(context: context),
+          title: context.t.current_server_address,
           icon: (currentEndpoint?.startsWith('https') ?? false) ? Icons.https_outlined : Icons.http_outlined,
         ),
         Padding(
@@ -136,20 +135,14 @@ class NetworkingSettings extends HookConsumerWidget {
         SettingsSwitchListTile(
           enabled: true,
           valueNotifier: featureEnabled,
-          title: "automatic_endpoint_switching_title".tr(),
-          subtitle: "automatic_endpoint_switching_subtitle".tr(),
+          title: context.t.automatic_endpoint_switching_title,
+          subtitle: context.t.automatic_endpoint_switching_subtitle,
         ),
         const SizedBox(height: 8),
-        SettingGroupTitle(
-          title: "local_network".t(context: context),
-          icon: Icons.home_outlined,
-        ),
+        SettingGroupTitle(title: context.t.local_network, icon: Icons.home_outlined),
         LocalNetworkPreference(enabled: featureEnabled.value),
         const SizedBox(height: 16),
-        SettingGroupTitle(
-          title: "external_network".t(context: context),
-          icon: Icons.dns_outlined,
-        ),
+        SettingGroupTitle(title: context.t.external_network, icon: Icons.dns_outlined),
         ExternalNetworkPreference(enabled: featureEnabled.value),
       ],
     );
