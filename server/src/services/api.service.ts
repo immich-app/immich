@@ -22,7 +22,7 @@ export const render = (index: string, meta: OpenGraphTags) => {
     <meta property="og:description" content="${description}" />
     ${imageUrl ? `<meta property="og:image" content="${imageUrl}" />` : ''}`;
 
-  return index.replace('<!-- metadata:tags -->', tags);
+  return index.replace('<!-- metadata:tags -->', () => tags);
 };
 
 @Injectable()

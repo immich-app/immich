@@ -54,9 +54,8 @@ function chunks<T>(collection: Array<T> | Set<T>, size: number): Array<Array<T>>
       result.push(chunk);
     }
     return result;
-  } else {
-    return _.chunk(collection, size);
   }
+  return _.chunk(collection, size);
 }
 
 /**
@@ -82,11 +81,13 @@ export function Chunked(
         (Array.isArray(argument) && argument.length <= chunkSize) ||
         (argument instanceof Set && argument.size <= chunkSize)
       ) {
+        // eslint-disable-next-line unicorn/no-this-outside-of-class
         return originalMethod.apply(this, arguments_);
       }
 
       return Promise.all(
         chunks(argument, chunkSize).map((chunk) => {
+          // eslint-disable-next-line unicorn/no-this-outside-of-class
           return Reflect.apply(originalMethod, this, [
             ...arguments_.slice(0, parameterIndex),
             chunk,
@@ -107,9 +108,11 @@ export function ChunkedSet(options?: { paramIndex?: number; chunkSize?: number }
 }
 
 const UUID = '00000000-0000-4000-a000-000000000000';
+const UUID_1 = '00000000-0000-4000-a000-000000000001';
 
 export const DummyValue = {
   UUID,
+  UUID_1,
   UUID_SET: new Set([UUID]),
   PAGINATION: { take: 10, skip: 0 },
   EMAIL: 'user@immich.app',

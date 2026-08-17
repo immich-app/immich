@@ -309,6 +309,76 @@
       "uiHints": ["Filter"]
     },
     {
+      "name": "assetExifFilter",
+      "title": "Filter by EXIF metadata",
+      "description": "Filter assets by their EXIF properties",
+      "types": ["AssetV1"],
+      "schema": {
+        "type": "object",
+        "properties": {
+          "property": {
+            "title": "Property",
+            "description": "EXIF property to match",
+            "type": "string",
+            "enum": [
+              "make",
+              "model",
+              "exifImageWidth",
+              "exifImageHeight",
+              "fileSizeInByte",
+              "orientation",
+              "lensModel",
+              "fNumber",
+              "focalLength",
+              "iso",
+              "description",
+              "fps",
+              "exposureTime",
+              "livePhotoCID",
+              "timeZone",
+              "projectionType",
+              "profileDescription",
+              "colorspace",
+              "bitsPerSample",
+              "rating"
+            ],
+            "uiHint": {
+              "order": 1
+            }
+          },
+          "pattern": {
+            "type": "string",
+            "title": "Pattern",
+            "description": "Text or regex pattern to match against property value",
+            "uiHint": {
+              "order": 2
+            }
+          },
+          "matchType": {
+            "type": "string",
+            "title": "Match type",
+            "enum": ["contains", "startsWith", "exact", "regex"],
+            "default": "contains",
+            "description": "Type of pattern matching to perform",
+            "uiHint": {
+              "order": 3
+            }
+          },
+          "caseSensitive": {
+            "type": "boolean",
+            "default": false,
+            "title": "Case sensitive",
+            "description": "Whether matching should be case-sensitive",
+            "uiHint": {
+              "order": 4
+            }
+          }
+        },
+        "required": ["property", "pattern"]
+      },
+      "uiHints": ["Filter"]
+    },
+    {
       "name": "assetArchive",
       "title": "Archive asset",
       "description": "Change asset visibility to archive",

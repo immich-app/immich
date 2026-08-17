@@ -44,7 +44,8 @@
   export function moveSelection(increment: 1 | -1) {
     if (!isSearchSuggestions) {
       return;
-    } else if (selectedIndex === undefined) {
+    }
+    if (selectedIndex === undefined) {
       selectedIndex = increment === 1 ? 0 : suggestionCount - 1;
     } else if (selectedIndex + increment < 0 || selectedIndex + increment >= suggestionCount) {
       clearSelection();

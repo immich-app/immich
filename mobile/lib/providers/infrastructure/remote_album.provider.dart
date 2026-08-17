@@ -200,12 +200,12 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     return _remoteAlbumService.getAssets(albumId);
   }
 
-  Future<int> addAssets(String albumId, List<String> assetIds) async {
-    final added = await _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
-    if (added > 0) {
+  Future<({int added, int failed})> addAssets(String albumId, List<String> assetIds) async {
+    final result = await _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
+    if (result.added > 0) {
       await _refreshAlbumInState(albumId);
     }
-    return added;
+    return result;
   }
 
   /// Links a freshly-uploaded local asset to an album using its new remote ID,
@@ -313,9 +313,9 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   }
 }
 
-final remoteAlbumDateRangeProvider = FutureProvider.family<(DateTime, DateTime), String>((ref, albumId) async {
+final remoteAlbumDateRangeProvider = StreamProvider.autoDispose.family<(DateTime, DateTime), String>((ref, albumId) {
   final service = ref.watch(remoteAlbumServiceProvider);
-  return service.getDateRange(albumId);
+  return service.watchDateRange(albumId);
 });
 
 final remoteAlbumSharedUsersProvider = FutureProvider.autoDispose.family<List<UserDto>, String>((ref, albumId) async {

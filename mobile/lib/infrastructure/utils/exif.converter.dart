@@ -21,7 +21,7 @@ abstract final class ExifDtoConverter {
       lens: dto.lensModel.orElse(null),
       f: dto.fNumber.orElse(null)?.toDouble(),
       mm: dto.focalLength.orElse(null)?.toDouble(),
-      iso: dto.iso.orElse(null)?.toInt(),
+      iso: dto.iso.orElse(null),
       exposureSeconds: exposureTimeToSeconds(dto.exposureTime.orElse(null)),
     );
   }
@@ -40,7 +40,7 @@ abstract final class ExifDtoConverter {
     if (second == null) {
       return null;
     }
-    double? value = double.tryParse(second);
+    final double? value = double.tryParse(second);
     if (value != null) {
       return value;
     }

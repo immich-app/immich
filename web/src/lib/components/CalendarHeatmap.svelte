@@ -55,34 +55,36 @@
       {/each}
     </div> -->
 
-    <div class="grid grid-flow-col grid-rows-7 gap-0.5">
-      <div class="row-span-7 grid grid-rows-subgrid">
-        {#if Info.getStartOfWeek({ locale: $locale }) === 7}
-          <div></div>
-        {/if}
-        <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[0]}</Text></div>
-        <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[1]}</Text></div>
-        <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[2]}</Text></div>
-        {#if Info.getStartOfWeek({ locale: $locale }) === 1}
-          <div class="-my-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[3]}</Text></div>
-        {/if}
-      </div>
+    <div class="overflow-x-auto pb-1">
+      <div class="grid grid-flow-col grid-rows-7 gap-0.5">
+        <div class="row-span-7 grid grid-rows-subgrid">
+          {#if Info.getStartOfWeek({ locale: $locale }) === 7}
+            <div></div>
+          {/if}
+          <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[0]}</Text></div>
+          <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[1]}</Text></div>
+          <div class="row-span-2 -mt-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[2]}</Text></div>
+          {#if Info.getStartOfWeek({ locale: $locale }) === 1}
+            <div class="-my-1"><Text size="tiny" class="mr-0.5 font-mono">{weekdays[3]}</Text></div>
+          {/if}
+        </div>
 
-      {#each data.series as day, idx (day.date)}
-        {@const date = DateTime.fromISO(day.date, { zone: 'utc' }).toLocaleString(
-          { month: 'short', day: 'numeric' },
-          { locale: $locale },
-        )}
-        <div
-          class="aspect-square size-full rounded-sm {itemColors(day.count)} row-start-(--heatmap-row-start)"
-          style:--heatmap-row-start={idx === 0 ? padding + 1 : undefined}
-          title={itemLabel({ date, count: day.count })}
-          aria-label={itemLabel({ date, count: day.count })}
-        ></div>
-      {/each}
+        {#each data.series as day, idx (day.date)}
+          {@const date = DateTime.fromISO(day.date, { zone: 'utc' }).toLocaleString(
+            { month: 'short', day: 'numeric' },
+            { locale: $locale },
+          )}
+          <div
+            class="aspect-square size-full rounded-sm {itemColors(day.count)} row-start-(--heatmap-row-start)"
+            style:--heatmap-row-start={idx === 0 ? padding + 1 : undefined}
+            title={itemLabel({ date, count: day.count })}
+            aria-label={itemLabel({ date, count: day.count })}
+          ></div>
+        {/each}
+      </div>
     </div>
 
-    <div class="mt-2 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+    <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
       <span>{$t('less')}</span>
       <span class="size-3 rounded-sm bg-gray-200 dark:bg-gray-700"></span>
       <span class="size-3 rounded-sm bg-immich-primary/30"></span>

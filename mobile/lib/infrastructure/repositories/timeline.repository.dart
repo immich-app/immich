@@ -4,6 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
@@ -20,6 +21,7 @@ class TimelineMapOptions {
   final bool includeArchived;
   final bool withPartners;
   final int relativeDays;
+  final TimeRange timeRange;
 
   const TimelineMapOptions({
     required this.bounds,
@@ -27,6 +29,7 @@ class TimelineMapOptions {
     this.includeArchived = false,
     this.withPartners = false,
     this.relativeDays = 0,
+    this.timeRange = const TimeRange(),
   });
 }
 
@@ -136,11 +139,6 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
               _db.localAlbumAssetEntity.assetId.equalsExp(_db.localAssetEntity.id),
               useColumns: false,
             ),
-            leftOuterJoin(
-              _db.remoteAssetEntity,
-              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
-              useColumns: false,
-            ),
           ])
           ..addColumns([assetCountExp, dateExp])
           ..where(_db.localAlbumAssetEntity.albumId.equals(albumId))
@@ -164,7 +162,12 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
             ),
             leftOuterJoin(
               _db.remoteAssetEntity,
-              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum),
+              _db.localAssetEntity.checksum.equalsExp(_db.remoteAssetEntity.checksum) &
+                  _db.remoteAssetEntity.ownerId.isInQuery(
+                    _db.selectOnly(_db.authUserEntity)
+                      ..addColumns([_db.authUserEntity.id])
+                      ..limit(1),
+                  ),
               useColumns: false,
             ),
           ])
@@ -564,8 +567,21 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       query.where(_db.remoteAssetEntity.isFavorite.equals(true));
     }
 
-    if (options.relativeDays != 0) {
+    final timeRange = options.timeRange;
+
+    final hasCustomRange = timeRange.from != null || timeRange.to != null;
+
+    if (hasCustomRange) {
+      if (timeRange.from != null) {
+        query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(timeRange.from!));
+      }
+
+      if (timeRange.to != null) {
+        query.where(_db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(timeRange.to!));
+      }
+    } else if (options.relativeDays > 0) {
       final cutoffDate = DateTime.now().toUtc().subtract(Duration(days: options.relativeDays));
+
       query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(cutoffDate));
     }
 
@@ -606,8 +622,21 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       query.where(_db.remoteAssetEntity.isFavorite.equals(true));
     }
 
-    if (options.relativeDays != 0) {
+    final timeRange = options.timeRange;
+
+    final hasCustomRange = timeRange.from != null || timeRange.to != null;
+
+    if (hasCustomRange) {
+      if (timeRange.from != null) {
+        query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(timeRange.from!));
+      }
+
+      if (timeRange.to != null) {
+        query.where(_db.remoteAssetEntity.createdAt.isSmallerOrEqualValue(timeRange.to!));
+      }
+    } else if (options.relativeDays > 0) {
       final cutoffDate = DateTime.now().toUtc().subtract(Duration(days: options.relativeDays));
+
       query.where(_db.remoteAssetEntity.createdAt.isBiggerOrEqualValue(cutoffDate));
     }
 

@@ -31,11 +31,7 @@ const asQueryString = (
         return false;
       }
 
-      if (skipEmptyStrings && value === '') {
-        return false;
-      }
-
-      return true;
+      return !(skipEmptyStrings && value === '');
     })
     .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`);
 

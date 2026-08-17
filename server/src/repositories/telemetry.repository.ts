@@ -95,10 +95,12 @@ export const bootstrapTelemetry = (port: number) => {
 };
 
 export const teardownTelemetry = async () => {
-  if (instance) {
-    await instance.shutdown();
-    instance = undefined;
+  if (!instance) {
+    return;
   }
+
+  await instance.shutdown();
+  instance = undefined;
 };
 
 @Injectable()
@@ -153,7 +155,7 @@ export class TelemetryRepository {
       }
 
       const method = descriptor.value;
-      const propertyName = snakeCase(String(propName));
+      const propertyName = snakeCase(propName);
       const metricName = `${snakeCase(className).replaceAll(/_(?=(repository)|(controller)|(provider)|(service)|(module))/g, '.')}.${propertyName}.duration`;
 
       const histogram = this.metricService.getHistogram(metricName, {
@@ -165,6 +167,7 @@ export class TelemetryRepository {
 
       descriptor.value = function (...args: any[]) {
         const start = performance.now();
+        // eslint-disable-next-line unicorn/no-this-outside-of-class
         const result = method.apply(this, args);
 
         void Promise.resolve(result)

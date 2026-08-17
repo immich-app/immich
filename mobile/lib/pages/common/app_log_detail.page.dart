@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +16,7 @@ class AppLogDetailPage extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    buildTextWithCopyButton(String header, String text) {
+    Padding buildTextWithCopyButton(String header, String text) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -33,22 +35,28 @@ class AppLogDetailPage extends HookConsumerWidget {
                 ),
                 IconButton(
                   onPressed: () {
-                    Clipboard.setData(ClipboardData(text: text)).then((_) {
-                      context.scaffoldMessenger.showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            "copied_to_clipboard".tr(),
-                            style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+                    unawaited(
+                      Clipboard.setData(ClipboardData(text: text)).then((_) {
+                        if (!context.mounted) {
+                          return;
+                        }
+
+                        context.scaffoldMessenger.showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "copied_to_clipboard".tr(),
+                              style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
+                            ),
                           ),
-                        ),
-                      );
-                    });
+                        );
+                      }),
+                    );
                   },
                   icon: Icon(Icons.copy, size: 16.0, color: context.primaryColor),
                 ),
               ],
             ),
-            Container(
+            DecoratedBox(
               decoration: BoxDecoration(
                 color: context.colorScheme.surfaceContainerHigh,
                 borderRadius: const BorderRadius.all(Radius.circular(15.0)),
@@ -66,7 +74,7 @@ class AppLogDetailPage extends HookConsumerWidget {
       );
     }
 
-    buildLogContext(String logger) {
+    Padding buildLogContext(String logger) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
@@ -79,7 +87,7 @@ class AppLogDetailPage extends HookConsumerWidget {
                 style: TextStyle(fontSize: 12.0, color: context.primaryColor, fontWeight: FontWeight.bold),
               ),
             ),
-            Container(
+            DecoratedBox(
               decoration: BoxDecoration(
                 color: context.colorScheme.surfaceContainerHigh,
                 borderRadius: const BorderRadius.all(Radius.circular(15.0)),
@@ -87,7 +95,7 @@ class AppLogDetailPage extends HookConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: SelectableText(
-                  logger.toString(),
+                  logger,
                   style: const TextStyle(fontSize: 12.0, fontWeight: FontWeight.bold, fontFamily: "GoogleSansCode"),
                 ),
               ),

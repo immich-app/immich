@@ -63,7 +63,7 @@
   let duplicatesIndex = $derived(
     (() => {
       const indexParam = page.url.searchParams.get('index') ?? '0';
-      const parsedIndex = Number.parseInt(indexParam, 10);
+      const parsedIndex = Math.trunc(Number(indexParam));
       return correctDuplicatesIndex(Number.isNaN(parsedIndex) ? 0 : parsedIndex);
     })(),
   );

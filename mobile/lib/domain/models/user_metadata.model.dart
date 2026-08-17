@@ -23,7 +23,7 @@ class Onboarding {
   }
 
   factory Onboarding.fromMap(Map<String, Object?> map) {
-    return Onboarding(isOnboarded: map["isOnboarded"] as bool);
+    return Onboarding(isOnboarded: map["isOnboarded"]! as bool);
   }
 
   @override
@@ -195,9 +195,9 @@ class License {
 
   factory License.fromMap(Map<String, Object?> map) {
     return License(
-      activatedAt: DateTime.parse(map["activatedAt"] as String),
-      activationKey: map["activationKey"] as String,
-      licenseKey: map["licenseKey"] as String,
+      activatedAt: DateTime.parse(map["activatedAt"]! as String),
+      activationKey: map["activationKey"]! as String,
+      licenseKey: map["licenseKey"]! as String,
     );
   }
 

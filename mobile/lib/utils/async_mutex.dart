@@ -12,10 +12,12 @@ class AsyncMutex {
   Future<T> run<T>(Future<T> Function() operation) {
     final completer = Completer<T>();
     _enqueued++;
-    _running.whenComplete(() {
-      _enqueued--;
-      completer.complete(Future<T>.sync(operation));
-    });
+    unawaited(
+      _running.whenComplete(() {
+        _enqueued--;
+        completer.complete(Future<T>.sync(operation));
+      }),
+    );
     return _running = completer.future;
   }
 }

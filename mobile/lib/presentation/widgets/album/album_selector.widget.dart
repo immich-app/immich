@@ -63,7 +63,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
         isGrid = albumConfig.isGrid;
       });
 
-      ref.read(remoteAlbumProvider.notifier).refresh();
+      unawaited(ref.read(remoteAlbumProvider.notifier).refresh());
     });
 
     searchController.addListener(() {
@@ -81,7 +81,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     final userId = ref.read(currentUserProvider)?.id;
     filter = filter.copyWith(query: searchTerm, userId: userId, mode: filterMode);
 
-    filterAlbums();
+    unawaited(filterAlbums());
   }
 
   Future<void> onRefresh() async {
@@ -92,7 +92,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
     setState(() {
       isGrid = !isGrid;
     });
-    ref.read(settingsProvider).write(.albumIsGrid, isGrid);
+    unawaited(ref.read(settingsProvider).write(.albumIsGrid, isGrid));
   }
 
   void changeFilter(QuickFilterMode mode) {
@@ -100,7 +100,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       filter = filter.copyWith(mode: mode);
     });
 
-    filterAlbums();
+    unawaited(filterAlbums());
   }
 
   Future<void> changeSort(AlbumSort sort) async {
@@ -121,7 +121,7 @@ class _AlbumSelectorState extends ConsumerState<AlbumSelector> {
       searchController.clear();
     });
 
-    filterAlbums();
+    unawaited(filterAlbums());
   }
 
   Future<void> sortAlbums() async {
@@ -395,7 +395,7 @@ class _SearchBar extends StatelessWidget {
     return SliverPadding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       sliver: SliverToBoxAdapter(
-        child: Container(
+        child: DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: context.colorScheme.onSurface.withAlpha(0), width: 0),
             borderRadius: const BorderRadius.all(Radius.circular(24)),
@@ -699,7 +699,7 @@ class _GridAlbumCard extends ConsumerWidget {
                         );
                       }
 
-                      return Container(
+                      return ColoredBox(
                         color: context.colorScheme.surfaceContainerHighest,
                         child: const Icon(Icons.photo_album_rounded, size: 40, color: Colors.grey),
                       );
@@ -755,6 +755,10 @@ class AddToAlbumHeader extends ConsumerWidget {
           .read(remoteAlbumProvider.notifier)
           .createAlbumWithAssets(title: albumName, assets: selectedAssets);
 
+      if (!context.mounted) {
+        return;
+      }
+
       if (newAlbum == null) {
         ImmichToast.show(context: context, toastType: ToastType.error, msg: 'errors.failed_to_create_album'.tr());
         return;
@@ -774,7 +778,7 @@ class AddToAlbumHeader extends ConsumerWidget {
             TextButton.icon(
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // remove internal padding
-                minimumSize: const Size(0, 0), // allow shrinking
+                minimumSize: Size.zero, // allow shrinking
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap, // remove extra height
               ),
               onPressed: onCreateAlbum,
@@ -797,8 +801,8 @@ class CreateAlbumButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     Future<void> onCreateAlbum() async {
-      var albumName = await showDialog<String?>(context: context, builder: (context) => const NewAlbumNameModal());
-      if (albumName == null) {
+      final albumName = await showDialog<String?>(context: context, builder: (context) => const NewAlbumNameModal());
+      if (albumName == null || !context.mounted) {
         return;
       }
 
@@ -812,6 +816,10 @@ class CreateAlbumButton extends ConsumerWidget {
       final album = await ref
           .read(remoteAlbumProvider.notifier)
           .createAlbum(title: albumName, assetIds: [asset.remoteId!]);
+
+      if (!context.mounted) {
+        return;
+      }
 
       if (album == null) {
         ImmichToast.show(context: context, toastType: ToastType.error, msg: 'errors.failed_to_create_album'.tr());
@@ -839,7 +847,7 @@ class CreateAlbumButton extends ConsumerWidget {
             TextButton.icon(
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                minimumSize: const Size(0, 0),
+                minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
               onPressed: onCreateAlbum,

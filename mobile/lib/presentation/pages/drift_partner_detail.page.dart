@@ -56,7 +56,7 @@ class _InfoBoxState extends ConsumerState<_InfoBox> {
     _inTimeline = widget.partner.inTimeline;
   }
 
-  _toggleInTimeline() async {
+  Future<void> _toggleInTimeline() async {
     final user = ref.read(currentUserProvider);
     if (user == null) {
       return;
@@ -72,13 +72,16 @@ class _InfoBoxState extends ConsumerState<_InfoBox> {
       });
     } catch (error, stack) {
       dPrint(() => "Failed to toggle in timeline: $error $stack");
+      if (!mounted) {
+        return;
+      }
+
       ImmichToast.show(
         context: context,
         toastType: ToastType.error,
         durationInSecond: 1,
         msg: "Failed to toggle the timeline setting",
       );
-      return;
     }
   }
 
@@ -89,7 +92,7 @@ class _InfoBoxState extends ConsumerState<_InfoBox> {
         height: 110,
         child: Padding(
           padding: const EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0),
-          child: Container(
+          child: DecoratedBox(
             decoration: BoxDecoration(
               border: Border.all(color: context.colorScheme.onSurface.withAlpha(10), width: 1),
               borderRadius: const BorderRadius.all(Radius.circular(20)),
