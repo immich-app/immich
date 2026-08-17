@@ -14,6 +14,7 @@ import 'package:immich_mobile/presentation/widgets/memory/memory_bottom_info.wid
 import 'package:immich_mobile/presentation/widgets/memory/memory_card.widget.dart';
 import 'package:immich_mobile/providers/asset_viewer/asset_viewer.provider.dart';
 import 'package:immich_mobile/providers/haptic_feedback.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/utils/system_ui.utils.dart';
 import 'package:immich_mobile/widgets/memories/memory_epilogue.dart';
 import 'package:immich_mobile/widgets/memories/memory_progress_indicator.dart';
@@ -47,6 +48,7 @@ class DriftMemoryPage extends HookConsumerWidget {
     final autoAdvanceController = useAnimationController(duration: _kMemoryAssetDuration);
     final isPaused = useState(false);
     final onEpilogue = useState(false);
+    final autoplayMemories = ref.watch(appConfigProvider.select((config) => config.viewer.autoplayMemories));
 
     /// The list of all of the asset page controllers
     final memoryAssetPageControllers = List.generate(memories.length, (i) => usePageController());
@@ -217,18 +219,18 @@ class DriftMemoryPage extends HookConsumerWidget {
         ..reset()
         ..addStatusListener(onStatus);
 
-      if (!isPaused.value && !onEpilogue.value) {
+      if (autoplayMemories && !isPaused.value && !onEpilogue.value) {
         unawaited(autoAdvanceController.forward());
       }
 
       return () => autoAdvanceController.removeStatusListener(onStatus);
-    }, [currentMemoryIndex.value, currentAssetPage.value, onEpilogue.value]);
+    }, [currentMemoryIndex.value, currentAssetPage.value, onEpilogue.value, autoplayMemories]);
 
     // Pauses/resumes the timer without resetting the current segment's progress.
     useEffect(() {
       if (isPaused.value) {
         autoAdvanceController.stop();
-      } else if (!autoAdvanceController.isCompleted && !onEpilogue.value) {
+      } else if (autoplayMemories && !autoAdvanceController.isCompleted && !onEpilogue.value) {
         final memory = memories[currentMemoryIndex.value];
         if (currentAssetPage.value < memory.assets.length) {
           unawaited(autoAdvanceController.forward());
@@ -249,7 +251,8 @@ class DriftMemoryPage extends HookConsumerWidget {
           autoAdvanceController.stop();
         } else if (notification is ScrollEndNotification) {
           final memory = memories[currentMemoryIndex.value];
-          if (!isPaused.value &&
+          if (autoplayMemories &&
+              !isPaused.value &&
               !onEpilogue.value &&
               !autoAdvanceController.isCompleted &&
               currentAssetPage.value < memory.assets.length) {
@@ -322,18 +325,26 @@ class DriftMemoryPage extends HookConsumerWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 24.0, right: 24.0, top: 8.0, bottom: 2.0),
                     child: AnimatedBuilder(
-                      animation: autoAdvanceController,
+                      // With autoplay, the fill is driven by the auto-advance timer;
+                      // otherwise it tracks the manually scrolled page position.
+                      animation: autoplayMemories ? autoAdvanceController : assetController,
                       builder: (context, child) {
                         final assetCount = memories[mIndex].assets.length;
                         double value;
-                        if (mIndex == currentMemoryIndex.value) {
-                          // Current memory: completed segments plus the live fill
-                          // of the current asset's segment driven by the timer.
-                          value = (currentAssetPage.value + autoAdvanceController.value) / assetCount;
-                        } else if (mIndex < currentMemoryIndex.value) {
-                          value = 1.0;
+                        if (autoplayMemories) {
+                          if (mIndex == currentMemoryIndex.value) {
+                            // Current memory: completed segments plus the live fill
+                            // of the current asset's segment driven by the timer.
+                            value = (currentAssetPage.value + autoAdvanceController.value) / assetCount;
+                          } else if (mIndex < currentMemoryIndex.value) {
+                            value = 1.0;
+                          } else {
+                            value = 0.0;
+                          }
                         } else {
-                          value = 0.0;
+                          // Manual mode: fill up to (and including) the current page.
+                          final page = assetController.hasClients ? (assetController.page ?? 0) : 0.0;
+                          value = (page + 1) / assetCount;
                         }
                         return MemoryProgressIndicator(ticks: assetCount, value: value.clamp(0.0, 1.0));
                       },
@@ -372,9 +383,9 @@ class DriftMemoryPage extends HookConsumerWidget {
                                             toPreviousAsset(index);
                                           },
                                           // Press-and-hold to pause auto-advance
-                                          onLongPressStart: (_) => isPaused.value = true,
-                                          onLongPressEnd: (_) => isPaused.value = false,
-                                          onLongPressCancel: () => isPaused.value = false,
+                                          onLongPressStart: autoplayMemories ? (_) => isPaused.value = true : null,
+                                          onLongPressEnd: autoplayMemories ? (_) => isPaused.value = false : null,
+                                          onLongPressCancel: autoplayMemories ? () => isPaused.value = false : null,
                                         ),
                                       ),
 
@@ -386,9 +397,9 @@ class DriftMemoryPage extends HookConsumerWidget {
                                             toNextAsset(index);
                                           },
                                           // Press-and-hold to pause auto-advance
-                                          onLongPressStart: (_) => isPaused.value = true,
-                                          onLongPressEnd: (_) => isPaused.value = false,
-                                          onLongPressCancel: () => isPaused.value = false,
+                                          onLongPressStart: autoplayMemories ? (_) => isPaused.value = true : null,
+                                          onLongPressEnd: autoplayMemories ? (_) => isPaused.value = false : null,
+                                          onLongPressCancel: autoplayMemories ? () => isPaused.value = false : null,
                                         ),
                                       ),
                                     ],
@@ -416,21 +427,22 @@ class DriftMemoryPage extends HookConsumerWidget {
                             child: const Icon(Icons.close_rounded, color: Colors.white),
                           ),
                         ),
-                        Positioned(
-                          top: 8,
-                          right: 8,
-                          child: MaterialButton(
-                            minWidth: 0,
-                            onPressed: () => isPaused.value = !isPaused.value,
-                            shape: const CircleBorder(),
-                            color: Colors.white.withValues(alpha: 0.2),
-                            elevation: 0,
-                            child: Icon(
-                              isPaused.value ? Icons.play_arrow_rounded : Icons.pause_rounded,
-                              color: Colors.white,
+                        if (autoplayMemories)
+                          Positioned(
+                            top: 8,
+                            right: 8,
+                            child: MaterialButton(
+                              minWidth: 0,
+                              onPressed: () => isPaused.value = !isPaused.value,
+                              shape: const CircleBorder(),
+                              color: Colors.white.withValues(alpha: 0.2),
+                              elevation: 0,
+                              child: Icon(
+                                isPaused.value ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
-                        ),
                         if (currentAsset.value != null && currentAsset.value!.isVideo)
                           Positioned(
                             bottom: 24,
