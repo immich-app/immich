@@ -1,7 +1,7 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
+import 'package:intl/intl.dart';
 
 sealed class DateFilterInputModel {
   DateTimeRange<DateTime> asDateTimeRange();
@@ -13,12 +13,9 @@ sealed class DateFilterInputModel {
     if (date.end.difference(date.start).inHours < 24) {
       return DateFormat.yMMMd().format(date.start.toLocal());
     } else {
-      return 'search_filter_date_interval'.t(
-        context: context,
-        args: {
-          "start": DateFormat.yMMMd().format(date.start.toLocal()),
-          "end": DateFormat.yMMMd().format(date.end.toLocal()),
-        },
+      return context.t.search_filter_date_interval(
+        start: DateFormat.yMMMd().format(date.start.toLocal()),
+        end: DateFormat.yMMMd().format(date.end.toLocal()),
       );
     }
   }
@@ -38,7 +35,7 @@ class RecentMonthRangeFilter extends DateFilterInputModel {
 
   @override
   String asHumanReadable(BuildContext context) {
-    return 'last_months'.t(context: context, args: {"count": monthDelta.toString()});
+    return context.t.last_months(count: monthDelta);
   }
 }
 
@@ -62,7 +59,7 @@ class YearFilter extends DateFilterInputModel {
 
   @override
   String asHumanReadable(BuildContext context) {
-    return 'in_year'.tr(namedArgs: {"year": year.toString()});
+    return context.t.in_year(year: year);
   }
 }
 
@@ -121,14 +118,13 @@ class QuickDatePicker extends HookWidget {
     return null;
   }
 
-  Text _monthLabel(BuildContext context, int monthsFromNow) =>
-      const Text('last_months').t(context: context, args: {"count": monthsFromNow.toString()});
+  Text _monthLabel(BuildContext context, int monthsFromNow) => Text(context.t.last_months(count: monthsFromNow));
 
   Widget _yearPicker(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Row(
       children: [
-        const Text("in_year_selector").tr(),
+        Text(context.t.in_year_selector),
         const SizedBox(width: 15),
         Expanded(
           child: DropdownMenu(
@@ -158,7 +154,7 @@ class QuickDatePicker extends HookWidget {
       child: IgnorePointer(
         ignoring: true,
         child: RadioListTile(
-          title: const Text('pick_custom_range').tr(),
+          title: Text(context.t.pick_custom_range),
           subtitle: hasPreviousInput ? Text(currentInput!.asHumanReadable(context)) : null,
           secondary: hasPreviousInput ? const Icon(Icons.edit) : null,
           value: _QuickPickerType.custom,

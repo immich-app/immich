@@ -24,13 +24,6 @@ export const ASPECT_RATIO_WEIGHTS = {
   '3:1': 0.01, // 1% 3:1 panorama
 } as const;
 
-export type AspectRatio = {
-  width: number;
-  height: number;
-  ratio: number;
-  name: string;
-};
-
 // Mock configuration for asset generation - will be transformed to API response formats
 export type MockTimelineAsset = {
   id: string;

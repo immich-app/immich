@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
@@ -15,30 +17,11 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart';
 import 'package:socket_io_client/socket_io_client.dart';
 
-class WebsocketState {
-  final Socket? socket;
-  final bool isConnected;
+part 'websocket.provider.freezed.dart';
 
-  const WebsocketState({this.socket, required this.isConnected});
-
-  WebsocketState copyWith({Socket? socket, bool? isConnected}) {
-    return WebsocketState(socket: socket ?? this.socket, isConnected: isConnected ?? this.isConnected);
-  }
-
-  @override
-  String toString() => 'WebsocketState(socket: $socket, isConnected: $isConnected)';
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other is WebsocketState && other.socket == socket && other.isConnected == isConnected;
-  }
-
-  @override
-  int get hashCode => socket.hashCode ^ isConnected.hashCode;
+@freezed
+abstract class WebsocketState with _$WebsocketState {
+  const factory WebsocketState({Socket? socket, required bool isConnected}) = _WebsocketState;
 }
 
 class WebsocketNotifier extends StateNotifier<WebsocketState> {
@@ -109,6 +92,11 @@ class WebsocketNotifier extends StateNotifier<WebsocketState> {
         socket.on('AssetEditReadyV2', _handleSyncAssetEditReadyV2);
         socket.on('on_album_update', _handleRemoteChange);
         socket.on('on_asset_stack_update', _handleRemoteChange);
+        socket.on('on_asset_delete', _handleRemoteChange);
+        socket.on('on_asset_trash', _handleRemoteChange);
+        socket.on('on_asset_restore', _handleRemoteChange);
+        socket.on('on_asset_hidden', _handleRemoteChange);
+        socket.on('on_asset_update', _handleRemoteChange);
         socket.on('on_config_update', _handleOnConfigUpdate);
         socket.on('on_new_release', _handleReleaseUpdates);
       } catch (e) {

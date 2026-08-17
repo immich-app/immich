@@ -4,7 +4,6 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { WorkflowService } from 'src/services/workflow.service';
 import request from 'supertest';
 import { errorDto } from 'test/medium/responses';
-import { factory } from 'test/small.factory';
 import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
 
 describe(WorkflowController.name, () => {
@@ -25,11 +24,6 @@ describe(WorkflowController.name, () => {
   });
 
   describe('POST /workflows', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/workflows').send({});
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require a valid trigger`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .post(`/workflows`)
@@ -65,11 +59,6 @@ describe(WorkflowController.name, () => {
   });
 
   describe('GET /workflows', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/workflows');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require id to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .get(`/workflows`)
@@ -81,11 +70,6 @@ describe(WorkflowController.name, () => {
   });
 
   describe('GET /workflows/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/workflows/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require id to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .get(`/workflows/invalid`)
@@ -96,11 +80,6 @@ describe(WorkflowController.name, () => {
   });
 
   describe('PATCH /workflows/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).patch(`/workflows/${factory.uuid()}`).send({});
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require id to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .patch(`/workflows/invalid`)

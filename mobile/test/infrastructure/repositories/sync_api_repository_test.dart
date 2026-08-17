@@ -189,7 +189,7 @@ void main() {
     final Completer<void> firstBatchReceived = Completer<void>();
     final Completer<void> secondBatchReceived = Completer<void>();
 
-    Future<void> onDataCallback(List<SyncEvent> events, Function() _, Function() __) async {
+    Future<void> onDataCallback(List<SyncEvent> events, Function() _, Function() _) async {
       onDataCallCount++;
       if (onDataCallCount == 1) {
         receivedEventsBatch1 = events;
@@ -244,7 +244,7 @@ void main() {
     final streamError = Exception("Network Error");
     int onDataCallCount = 0;
 
-    Future<void> onDataCallback(List<SyncEvent> _, Function() _, Function() __) async {
+    Future<void> onDataCallback(List<SyncEvent> _, Function() _, Function() _) async {
       onDataCallCount++;
     }
 
@@ -270,7 +270,7 @@ void main() {
     when(() => mockStreamedResponse.stream).thenAnswer((_) => http.ByteStream(errorBodyController.stream));
 
     int onDataCallCount = 0;
-    Future<void> onDataCallback(List<SyncEvent> _, Function() _, Function() __) async {
+    Future<void> onDataCallback(List<SyncEvent> _, Function() _, Function() _) async {
       onDataCallCount++;
     }
 

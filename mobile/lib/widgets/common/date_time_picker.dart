@@ -1,10 +1,11 @@
 import 'package:collection/collection.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/duration_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/widgets/common/dropdown_search_menu.dart';
+import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/timezone.dart';
 
@@ -116,26 +117,26 @@ class _DateTimePicker extends HookWidget {
         TextButton(
           onPressed: () => context.pop(),
           child: Text(
-            "cancel",
+            context.t.cancel,
             style: context.textTheme.bodyMedium?.copyWith(
               fontWeight: FontWeight.w600,
               color: context.colorScheme.error,
             ),
-          ).tr(),
+          ),
         ),
         TextButton(
           onPressed: popWithDateTime,
           child: Text(
-            "action_common_update",
+            context.t.action_common_update,
             style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
-          ).tr(),
+          ),
         ),
       ],
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text("date_and_time", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)).tr(),
+          Text(context.t.date_and_time, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
           const SizedBox(height: 32),
           ListTile(
             tileColor: context.colorScheme.surfaceContainerHighest,
@@ -151,8 +152,8 @@ class _DateTimePicker extends HookWidget {
           const SizedBox(height: 24),
           DropdownSearchMenu(
             trailingIcon: Icon(Icons.arrow_drop_down, color: context.primaryColor),
-            hintText: "timezone".tr(),
-            label: const Text('timezone').tr(),
+            hintText: context.t.timezone,
+            label: Text(context.t.timezone),
             textStyle: context.textTheme.bodyMedium,
             onSelected: (value) => tzOffset.value = value,
             initialSelection: tzOffset.value,
