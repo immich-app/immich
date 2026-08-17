@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' hide Store;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/server_info/server_disk_info.model.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
@@ -78,20 +78,24 @@ class ImmichAppBarDialog extends HookConsumerWidget {
         title: Text(
           text,
           style: theme.textTheme.labelLarge?.copyWith(color: theme.textTheme.labelLarge?.color?.withAlpha(250)),
-        ).tr(),
+        ),
         onTap: onTap,
         trailing: trailing,
       );
     }
 
     ListTile buildSettingButton() {
-      return buildActionButton(Icons.settings_outlined, "settings", () => context.pushRoute(const SettingsRoute()));
+      return buildActionButton(
+        Icons.settings_outlined,
+        context.t.settings,
+        () => context.pushRoute(const SettingsRoute()),
+      );
     }
 
     ListTile buildFreeUpSpaceButton() {
       return buildActionButton(
         Icons.cleaning_services_outlined,
-        "free_up_space",
+        context.t.free_up_space,
         () => context.pushRoute(SettingsSubRoute(section: SettingSection.freeUpSpace)),
       );
     }
@@ -99,7 +103,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     ListTile buildAppLogButton() {
       return buildActionButton(
         Icons.assignment_outlined,
-        "profile_drawer_app_logs",
+        context.t.profile_drawer_app_logs,
         () => context.pushRoute(const AppLogRoute()),
       );
     }
@@ -107,7 +111,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     ListTile buildSignOutButton() {
       return buildActionButton(
         Icons.logout_rounded,
-        "sign_out",
+        context.t.sign_out,
         () async {
           if (isLoggingOut.value) {
             return;
@@ -118,9 +122,9 @@ class ImmichAppBarDialog extends HookConsumerWidget {
               context: context,
               builder: (BuildContext ctx) {
                 return ConfirmDialog(
-                  title: "app_bar_signout_dialog_title",
-                  content: "app_bar_signout_dialog_content",
-                  ok: "yes",
+                  title: context.t.app_bar_signout_dialog_title,
+                  content: context.t.app_bar_signout_dialog_content,
+                  ok: context.t.yes,
                   onOk: () async {
                     isLoggingOut.value = true;
                     await ref.read(authProvider.notifier).logout().whenComplete(() => isLoggingOut.value = false);
@@ -163,16 +167,16 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: 12,
           children: [
-            Text("backup_controller_page_server_storage".tr(), style: context.textTheme.labelLarge),
+            Text(context.t.backup_controller_page_server_storage, style: context.textTheme.labelLarge),
             LinearProgressIndicator(
               minHeight: 10.0,
               value: percentage,
               borderRadius: const BorderRadius.all(Radius.circular(10.0)),
             ),
             Text(
-              'backup_controller_page_storage_format',
+              context.t.backup_controller_page_storage_format(used: usedDiskSpace, total: totalDiskSpace),
               style: context.textTheme.bodySmall,
-            ).tr(namedArgs: {'used': usedDiskSpace, 'total': totalDiskSpace}),
+            ),
           ],
         ),
       );
@@ -189,7 +193,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                 ContextHelper(context).pop();
                 unawaited(launchUrl(Uri.parse('https://docs.immich.app'), mode: LaunchMode.externalApplication));
               },
-              child: Text("documentation", style: context.textTheme.bodySmall).tr(),
+              child: Text(context.t.documentation, style: context.textTheme.bodySmall),
             ),
             const SizedBox(width: 20, child: Text("•", textAlign: TextAlign.center)),
             InkWell(
@@ -199,7 +203,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                   launchUrl(Uri.parse('https://github.com/immich-app/immich'), mode: LaunchMode.externalApplication),
                 );
               },
-              child: Text("profile_drawer_github", style: context.textTheme.bodySmall).tr(),
+              child: Text(context.t.profile_drawer_github, style: context.textTheme.bodySmall),
             ),
             const SizedBox(width: 20, child: Text("•", textAlign: TextAlign.center)),
             InkWell(
@@ -219,7 +223,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
                   applicationVersion: packageInfo.version,
                 );
               },
-              child: Text("licenses", style: context.textTheme.bodySmall).tr(),
+              child: Text(context.t.licenses, style: context.textTheme.bodySmall),
             ),
           ],
         ),
@@ -237,10 +241,10 @@ class ImmichAppBarDialog extends HookConsumerWidget {
           minLeadingWidth: 20,
           tileColor: theme.primaryColor.withAlpha(80),
           title: Text(
-            "profile_drawer_readonly_mode",
+            context.t.profile_drawer_readonly_mode,
             style: theme.textTheme.labelLarge?.copyWith(color: theme.textTheme.labelLarge?.color?.withAlpha(250)),
             textAlign: TextAlign.center,
-          ).tr(),
+          ),
         ),
       );
     }

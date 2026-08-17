@@ -55,9 +55,11 @@ class LockAction extends AssetActionBuilder {
       final confirmed = await showDialog<bool>(
         context: context,
         builder: (_) => ConfirmDialog(
-          title: "move_to_locked_folder",
-          content: CurrentPlatform.isAndroid ? "delete_dialog_alert_local" : "delete_dialog_alert_local_ios",
-          ok: "confirm",
+          title: context.t.move_to_locked_folder,
+          content: CurrentPlatform.isAndroid
+              ? context.t.delete_dialog_alert_local
+              : context.t.delete_dialog_alert_local_ios,
+          ok: context.t.confirm,
         ),
       );
       if (confirmed != true || !context.mounted) {

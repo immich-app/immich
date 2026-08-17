@@ -7,7 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/album/pending_uploads_banner.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/remote_album_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/remote_album/drift_album_option.widget.dart';
@@ -62,7 +62,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
     if (added > 0) {
       ImmichToast.show(
         context: context,
-        msg: "assets_added_to_album_count".t(context: context, args: {'count': added.toString()}),
+        msg: context.t.assets_added_to_album_count(count: added),
         toastType: ToastType.success,
       );
     }
@@ -88,7 +88,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
       ImmichToast.show(
         context: context,
-        msg: "users_added_to_album_count".t(context: context, args: {'count': newUsers.length}),
+        msg: context.t.users_added_to_album_count(count: newUsers.length),
         toastType: ToastType.success,
       );
     } catch (e) {
@@ -111,24 +111,21 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('delete_album'.t(context: context)),
+          title: Text(context.t.delete_album),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('album_delete_confirmation'.t(context: context, args: {'album': _album.name})),
+              Text(context.t.album_delete_confirmation(album: _album.name)),
               const SizedBox(height: 8),
-              Text('album_delete_confirmation_description'.t(context: context)),
+              Text(context.t.album_delete_confirmation_description),
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text('cancel'.t(context: context)),
-            ),
+            TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(context.t.cancel)),
             TextButton(
               onPressed: () => Navigator.of(context).pop(true),
               style: TextButton.styleFrom(foregroundColor: Theme.of(context).colorScheme.error),
-              child: Text('delete_album'.t(context: context)),
+              child: Text(context.t.delete_album),
             ),
           ],
         );
@@ -146,11 +143,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
           return;
         }
 
-        ImmichToast.show(
-          context: context,
-          msg: 'album_deleted'.t(context: context),
-          toastType: ToastType.success,
-        );
+        ImmichToast.show(context: context, msg: context.t.album_deleted, toastType: ToastType.success);
 
         unawaited(context.pushRoute(const DriftAlbumsRoute()));
       } catch (e) {
@@ -160,7 +153,7 @@ class _RemoteAlbumPageState extends ConsumerState<RemoteAlbumPage> {
 
         ImmichToast.show(
           context: context,
-          msg: 'album_viewer_appbar_share_err_delete'.t(context: context),
+          msg: context.t.album_viewer_appbar_share_err_delete,
           toastType: ToastType.error,
         );
       }
@@ -288,11 +281,7 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
         return;
       }
 
-      ImmichToast.show(
-        context: context,
-        msg: 'album_update_error'.t(context: context),
-        toastType: ToastType.error,
-      );
+      ImmichToast.show(context: context, msg: context.t.errors.unable_to_update_album_info, toastType: ToastType.error);
     }
   }
 
@@ -315,14 +304,14 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
                   children: [
                     Icon(Icons.edit_outlined, color: context.colorScheme.primary, size: 24),
                     const SizedBox(width: 12),
-                    Text('edit_album'.t(context: context), style: context.textTheme.titleMedium),
+                    Text(context.t.edit_album, style: context.textTheme.titleMedium),
                   ],
                 ),
                 const SizedBox(height: 24),
 
                 // Album Name
                 Text(
-                  'album_name'.t(context: context).toUpperCase(),
+                  context.t.album_name.toUpperCase(),
                   style: context.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
@@ -337,7 +326,7 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
                   ),
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
-                      return 'album_name_required'.t(context: context);
+                      return context.t.name_required;
                     }
 
                     return null;
@@ -347,7 +336,7 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
 
                 // Description
                 Text(
-                  'description'.t(context: context).toUpperCase(),
+                  context.t.description.toUpperCase(),
                   style: context.textTheme.labelSmall?.copyWith(fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 4),
@@ -367,15 +356,9 @@ class _EditAlbumDialogState extends ConsumerState<_EditAlbumDialog> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(null),
-                      child: Text('cancel'.t(context: context)),
-                    ),
+                    TextButton(onPressed: () => Navigator.of(context).pop(null), child: Text(context.t.cancel)),
                     const SizedBox(width: 12),
-                    FilledButton(
-                      onPressed: _handleSave,
-                      child: Text('save'.t(context: context)),
-                    ),
+                    FilledButton(onPressed: _handleSave, child: Text(context.t.save)),
                   ],
                 ),
               ],

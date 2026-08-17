@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 class PersonOptionSheet extends StatelessWidget {
   const PersonOptionSheet({super.key, this.onEditName, this.onEditBirthday, this.birthdayExists = false});
@@ -20,12 +20,12 @@ class PersonOptionSheet extends StatelessWidget {
           children: [
             ListTile(
               leading: const Icon(Icons.edit),
-              title: Text('edit_name'.t(context: context), style: textStyle),
+              title: Text(context.t.edit_name, style: textStyle),
               onTap: onEditName,
             ),
             ListTile(
               leading: const Icon(Icons.cake),
-              title: Text((birthdayExists ? 'edit_birthday' : "add_birthday").t(context: context), style: textStyle),
+              title: Text(birthdayExists ? context.t.edit_birthday : context.t.add_birthday, style: textStyle),
               onTap: onEditBirthday,
             ),
           ],

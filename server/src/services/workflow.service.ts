@@ -5,6 +5,8 @@ import {
   mapWorkflow,
   mapWorkflowShare,
   WorkflowCreateDto,
+  WorkflowGetLogsDto,
+  WorkflowLogEntryDto,
   WorkflowResponseDto,
   WorkflowSearchDto,
   WorkflowShareResponseDto,
@@ -14,6 +16,7 @@ import {
 import { Permission } from 'src/enum';
 import { PluginMethodSearchResponse } from 'src/repositories/plugin.repository';
 import { BaseService } from 'src/services/base.service';
+import { findOrFail } from 'src/utils/misc';
 import { getWorkflowTriggers, isMethodCompatible, resolveMethod } from 'src/utils/workflow';
 
 @Injectable()
@@ -82,6 +85,23 @@ export class WorkflowService extends BaseService {
     await this.workflowRepository.delete(id);
   }
 
+  async getLogs(auth: AuthDto, id: string, dto: WorkflowGetLogsDto): Promise<WorkflowLogEntryDto[]> {
+    await this.requireAccess({ auth, permission: Permission.WorkflowLogs, ids: [id] });
+    const logs = await this.workflowRepository.getLogs(id, dto);
+    return logs.map((entry) => ({
+      id: entry.id,
+      at: entry.createdAt,
+      result: entry.result,
+      triggerDataId: entry.triggerDataId ?? undefined,
+      lastStep: entry.step
+        ? {
+            index: entry.step.order,
+            method: `${entry.step.pluginId}#${entry.step.methodName}`,
+          }
+        : undefined,
+    }));
+  }
+
   private async resolveAndValidateSteps<T extends { method: string }>(steps: T[], trigger: WorkflowTrigger) {
     const methods = await this.pluginRepository.getForValidation();
     const results: Array<T & { pluginMethod: PluginMethodSearchResponse }> = [];
@@ -104,11 +124,7 @@ export class WorkflowService extends BaseService {
     return results;
   }
 
-  private async findOrFail(id: string) {
-    const workflow = await this.workflowRepository.get(id);
-    if (!workflow) {
-      throw new BadRequestException('Workflow not found');
-    }
-    return workflow;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.workflowRepository.get(id), 'Workflow');
   }
 }

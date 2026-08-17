@@ -1,6 +1,6 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 
 enum DisplayOption { notInAlbum, favorite, archive }
@@ -23,7 +23,7 @@ class DisplayOptionPicker extends HookWidget {
       shrinkWrap: true,
       children: [
         CheckboxListTile(
-          title: const Text('search_filter_display_option_not_in_album').tr(),
+          title: Text(context.t.search_filter_display_option_not_in_album),
           value: options.value[DisplayOption.notInAlbum],
           onChanged: (bool? value) {
             options.value = {...options.value, DisplayOption.notInAlbum: value!};
@@ -31,7 +31,7 @@ class DisplayOptionPicker extends HookWidget {
           },
         ),
         CheckboxListTile(
-          title: const Text('favorite').tr(),
+          title: Text(context.t.favorite),
           value: options.value[DisplayOption.favorite],
           onChanged: (value) {
             options.value = {...options.value, DisplayOption.favorite: value!};
@@ -39,7 +39,7 @@ class DisplayOptionPicker extends HookWidget {
           },
         ),
         CheckboxListTile(
-          title: const Text('archive').tr(),
+          title: Text(context.t.archive),
           value: options.value[DisplayOption.archive],
           onChanged: (value) {
             options.value = {...options.value, DisplayOption.archive: value!};

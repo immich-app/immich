@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/presentation/actions/lock.action.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
@@ -33,6 +34,8 @@ void main() {
   Future<void> respondToDialog(WidgetTester tester, {required bool confirm}) async {
     await tester.pump(const Duration(milliseconds: 300));
     expect(find.byType(ConfirmDialog), findsOneWidget);
+    expect(find.text(StaticTranslations.instance.move_to_locked_folder), findsOneWidget);
+    expect(find.text(StaticTranslations.instance.confirm), findsOneWidget);
     await tester.tap(find.byType(TextButton).at(confirm ? 1 : 0)); // [cancel, ok]
     await tester.pumpAndSettle();
   }

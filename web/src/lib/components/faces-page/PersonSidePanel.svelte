@@ -357,7 +357,7 @@
                   </div>
                 {/if}
               </div>
-              {#if face.person != null}
+              {#if face.person !== null}
                 <div class="absolute inset-e-[-3px] top-8 size-5 rounded-full">
                   <IconButton
                     shape="round"

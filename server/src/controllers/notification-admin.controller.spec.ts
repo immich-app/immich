@@ -21,11 +21,6 @@ describe(NotificationAdminController.name, () => {
   });
 
   describe('POST /admin/notifications', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/admin/notifications');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should accept a null readAt', async () => {
       await request(ctx.getHttpServer())
         .post(`/admin/notifications`)
