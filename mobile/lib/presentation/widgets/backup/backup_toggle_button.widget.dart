@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 
@@ -135,7 +135,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                           children: [
                             Flexible(
                               child: Text(
-                                "enable_backup".t(context: context),
+                                context.t.enable_backup,
                                 style: context.textTheme.titleMedium?.copyWith(
                                   fontWeight: FontWeight.w600,
                                   color: context.primaryColor,
@@ -148,7 +148,7 @@ class BackupToggleButtonState extends ConsumerState<BackupToggleButton> with Sin
                           Padding(
                             padding: const EdgeInsets.only(top: 2),
                             child: Text(
-                              "upload_error_with_count".t(context: context, args: {'count': '$errorCount'}),
+                              context.t.upload_error_with_count(count: errorCount),
                               style: context.textTheme.labelMedium?.copyWith(color: context.colorScheme.error),
                             ),
                           ),

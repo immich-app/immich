@@ -61,10 +61,10 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
     return _assetSelectable(id).getSingleOrNull();
   }
 
-  Future<RemoteAsset?> getByChecksum(String checksum) {
+  Future<List<RemoteAsset>> getAllDebugForChecksum(String checksum) {
     final query = _db.remoteAssetEntity.select()..where((row) => row.checksum.equals(checksum));
 
-    return query.map((row) => row.toDto()).getSingleOrNull();
+    return query.map((row) => row.toDto()).get();
   }
 
   Future<List<RemoteAsset>> getStackChildren(RemoteAsset asset) {
@@ -117,18 +117,6 @@ class RemoteAssetRepository extends DriftDatabaseRepository {
       final city = row.read(_db.remoteExifEntity.city);
       return (city!, assetId!);
     }).get();
-  }
-
-  Future<void> updateFavorite(List<String> ids, bool isFavorite) {
-    return _db.batch((batch) async {
-      for (final id in ids) {
-        batch.update(
-          _db.remoteAssetEntity,
-          RemoteAssetEntityCompanion(isFavorite: Value(isFavorite)),
-          where: (e) => e.id.equals(id),
-        );
-      }
-    });
   }
 
   Future<void> updateVisibility(List<String> ids, AssetVisibility visibility) {

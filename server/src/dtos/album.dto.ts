@@ -34,7 +34,22 @@ const AlbumUserCreateSchema = z
 const CreateAlbumSchema = z
   .object({
     albumName: z.string().describe('Album name'),
-    description: z.string().optional().describe('Album description'),
+    // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
+    description: z
+      .string()
+      .nullable()
+      .transform((value) => (value === '' ? null : value))
+      .optional()
+      .describe('Album description')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+          )
+          .getExtensions(),
+      }),
     albumUsers: z.array(AlbumUserCreateSchema).optional().describe('Album users'),
     assetIds: z.array(z.uuidv4()).optional().describe('Initial asset IDs'),
   })
@@ -57,7 +72,22 @@ const AlbumsAddAssetsResponseSchema = z
 const UpdateAlbumSchema = z
   .object({
     albumName: z.string().optional().describe('Album name'),
-    description: z.string().optional().describe('Album description'),
+    // TODO: drop the empty-string-to-null transform in v4 (clients should send null)
+    description: z
+      .string()
+      .nullable()
+      .transform((value) => (value === '' ? null : value))
+      .optional()
+      .describe('Album description')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'Sending an empty string is deprecated; send null instead. Empty strings will no longer be coerced to null in v4.',
+          )
+          .getExtensions(),
+      }),
     albumThumbnailAssetId: z.uuidv4().optional().describe('Album thumbnail asset ID'),
     isActivityEnabled: z.boolean().optional().describe('Enable activity feed'),
     order: AssetOrderSchema.optional(),
@@ -110,7 +140,18 @@ export const AlbumResponseSchema = z
   .object({
     id: z.uuidv4().describe('Album ID'),
     albumName: z.string().describe('Album name'),
-    description: z.string().describe('Album description'),
+    description: z
+      .string()
+      .describe('Album description')
+      .meta({
+        ...new HistoryBuilder()
+          .added('v1')
+          .updated(
+            'v3',
+            'An empty string is returned instead of null for backwards compatibility; null will be returned in v4.',
+          )
+          .getExtensions(),
+      }),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
     createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
     // TODO: use `isoDatetimeToDate` when using `ZodSerializerDto` on the controllers.
@@ -171,7 +212,7 @@ export type MapAlbumDto = {
   assets?: ShallowDehydrateObject<MapAsset>[];
   sharedLinks?: ShallowDehydrateObject<AuthSharedLink>[];
   albumName: string;
-  description: string;
+  description: string | null;
   albumThumbnailAssetId: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -207,7 +248,8 @@ export const mapAlbum = (entity: MaybeDehydrated<MapAlbumDto>): AlbumResponseDto
 
   return {
     albumName: entity.albumName,
-    description: entity.description,
+    // TODO: return null instead of '' in v4
+    description: entity.description ?? '',
     albumThumbnailAssetId: entity.albumThumbnailAssetId,
     createdAt: asDateTimeString(entity.createdAt),
     updatedAt: asDateTimeString(entity.updatedAt),

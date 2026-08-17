@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -21,7 +20,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
     final headers = useState<List<SettingsHeader>>([]);
     final setInitialHeaders = useState(false);
 
-    final storedHeaders = ref.read(appConfigProvider).network.customHeaders;
+    final storedHeaders = ref.watch(appConfigProvider.select((s) => s.network.customHeaders));
     if (!setInitialHeaders.value) {
       storedHeaders.forEach((k, v) {
         final header = SettingsHeader();
@@ -64,7 +63,7 @@ class HeaderSettingsPage extends HookConsumerWidget {
               headers.value = headers.value.toList();
             },
             icon: const Icon(Icons.add_outlined),
-            tooltip: 'header_settings_add_header_tip'.tr(),
+            tooltip: context.t.header_settings_add_header_tip,
           ),
         ],
       ),
@@ -93,8 +92,9 @@ class HeaderSettingsPage extends HookConsumerWidget {
       headersMap[key] = value;
     }
 
+    final apiService = ref.read(apiServiceProvider);
     await ref.read(settingsProvider).write(.networkCustomHeaders, headersMap);
-    await ref.read(apiServiceProvider).updateHeaders();
+    await apiService.updateHeaders();
   }
 }
 
@@ -110,7 +110,7 @@ class HeaderKeyValueSettings extends StatelessWidget {
 
   String? emptyFieldValidator(String? value) {
     if (value == null || value.isEmpty) {
-      return 'header_settings_field_validator_msg'.tr();
+      return StaticTranslations.instance.header_settings_field_validator_msg;
     }
 
     return null;
@@ -128,10 +128,12 @@ class HeaderKeyValueSettings extends StatelessWidget {
                 child: TextFormField(
                   controller: keyController,
                   decoration: InputDecoration(
-                    labelText: 'header_settings_header_name_input'.tr(),
+                    labelText: context.t.header_settings_header_name_input,
                     border: const OutlineInputBorder(),
                   ),
                   autocorrect: false,
+                  smartDashesType: .disabled,
+                  smartQuotesType: .disabled,
                   onChanged: (headerKey) {
                     header.key = headerKey;
                   },
@@ -156,10 +158,12 @@ class HeaderKeyValueSettings extends StatelessWidget {
           child: TextFormField(
             controller: valueController,
             decoration: InputDecoration(
-              labelText: 'header_settings_header_value_input'.tr(),
+              labelText: context.t.header_settings_header_value_input,
               border: const OutlineInputBorder(),
             ),
             autocorrect: false,
+            smartDashesType: .disabled,
+            smartQuotesType: .disabled,
             onChanged: (headerValue) {
               header.value = headerValue;
             },

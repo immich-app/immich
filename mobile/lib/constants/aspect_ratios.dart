@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class CropAspectRatio {
-  final int? numerator;
-  final int? denominator;
+part 'aspect_ratios.freezed.dart';
 
-  final String? customLabel;
-  final IconData? icon;
+@freezed
+abstract class CropAspectRatio with _$CropAspectRatio {
+  const CropAspectRatio._();
 
-  const CropAspectRatio({this.numerator, this.denominator, this.customLabel, this.icon});
+  const factory CropAspectRatio({int? numerator, int? denominator, String? customLabel, IconData? icon}) =
+      _CropAspectRatio;
 
   static const free = CropAspectRatio(customLabel: "Free", icon: Icons.crop_free);
   static const original = CropAspectRatio(customLabel: "Original", icon: Icons.crop_original);
@@ -21,24 +22,6 @@ class CropAspectRatio {
 
   CropAspectRatio get flipped {
     return CropAspectRatio(numerator: denominator, denominator: numerator, customLabel: customLabel, icon: icon);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other is CropAspectRatio &&
-        other.numerator == numerator &&
-        other.denominator == denominator &&
-        other.customLabel == customLabel &&
-        other.icon == icon;
-  }
-
-  @override
-  int get hashCode {
-    return numerator.hashCode ^ denominator.hashCode ^ customLabel.hashCode ^ icon.hashCode;
   }
 }
 

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/models/server_info/server_config.model.dart';
@@ -57,7 +59,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
   }
 
   Future<void> _checkServerVersionMismatch(ServerVersion serverVersion, {ServerVersion? latestVersion}) async {
-    state = state.copyWith(serverVersion: serverVersion, latestVersion: latestVersion);
+    state = state.copyWith(serverVersion: serverVersion, latestVersion: latestVersion ?? state.latestVersion);
 
     final packageInfo = await PackageInfo.fromPlatform();
     final SemVer clientVersion = SemVer.fromString(packageInfo.version);
@@ -77,7 +79,7 @@ class ServerInfoNotifier extends StateNotifier<ServerInfo> {
 
   void handleReleaseInfo(ServerVersion serverVersion, ServerVersion? latestVersion) {
     // Update local server version
-    _checkServerVersionMismatch(serverVersion, latestVersion: latestVersion);
+    unawaited(_checkServerVersionMismatch(serverVersion, latestVersion: latestVersion));
   }
 
   Future<void> getServerFeatures() async {

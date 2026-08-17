@@ -38,7 +38,6 @@ class Scrubber extends ConsumerStatefulWidget {
 
   Scrubber({
     super.key,
-    Key? scrollThumbKey,
     required this.layoutSegments,
     required this.timelineHeight,
     this.topPadding = 0,
@@ -152,7 +151,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   void _resetThumbTimer() {
     _fadeOutTimer?.cancel();
     _fadeOutTimer = Timer(kTimelineScrubberFadeOutDuration, () {
-      _thumbAnimationController.reverse();
+      unawaited(_thumbAnimationController.reverse());
       _fadeOutTimer = null;
     });
   }
@@ -177,10 +176,10 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
       if (notification is ScrollUpdateNotification) {
         _thumbTopOffset = _currentOffset;
         if (_labelAnimation.status != AnimationStatus.reverse) {
-          _labelAnimationController.reverse();
+          unawaited(_labelAnimationController.reverse());
         }
         if (_thumbAnimationController.status != AnimationStatus.forward) {
-          _thumbAnimationController.forward();
+          unawaited(_thumbAnimationController.forward());
         }
       }
       _resetThumbTimer();
@@ -210,7 +209,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   void _onDragStart(DragStartDetails _) {
     setState(() {
       _isDragging = true;
-      _labelAnimationController.forward();
+      unawaited(_labelAnimationController.forward());
       _fadeOutTimer?.cancel();
       _lastLabel = null;
     });
@@ -226,7 +225,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
     }
 
     if (_thumbAnimationController.status != AnimationStatus.forward) {
-      _thumbAnimationController.forward();
+      unawaited(_thumbAnimationController.forward());
     }
 
     final dragPosition = _calculateDragPosition(details);
@@ -344,7 +343,7 @@ class ScrubberState extends ConsumerState<Scrubber> with TickerProviderStateMixi
   }
 
   void _onDragEnd(DragEndDetails _) {
-    _labelAnimationController.reverse();
+    unawaited(_labelAnimationController.reverse());
     setState(() {
       _isDragging = false;
     });

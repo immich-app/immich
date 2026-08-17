@@ -82,7 +82,6 @@ class _ImageWrapperState extends State<ImageWrapper> {
   ImageStreamListener? _imageStreamListener;
   ImageStream? _imageStream;
   ImageChunkEvent? _loadingProgress;
-  ImageInfo? _imageInfo;
   bool _loading = true;
   Size? _imageSize;
   Object? _lastException;
@@ -138,7 +137,6 @@ class _ImageWrapperState extends State<ImageWrapper> {
       void setupCB() {
         _imageSize = Size(info.image.width.toDouble(), info.image.height.toDouble());
         _loading = false;
-        _imageInfo = _imageInfo;
 
         _loadingProgress = null;
         _lastException = null;

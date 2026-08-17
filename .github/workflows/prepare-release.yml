@@ -17,10 +17,6 @@ on:
           - prepatch
           - prerelease
           - release
-      mobileBump:
-        description: 'Bump mobile build number'
-        required: false
-        type: boolean
       skipTranslations:
         description: 'Skip translations'
         required: false
@@ -68,19 +64,18 @@ jobs:
           ref: main
 
       - name: Setup Mise
-        uses: immich-app/devtools/actions/use-mise@4d97fb30d9edd3ff0d735f411f607a35204eea79 # use-mise-action-v3.2.0
+        uses: immich-app/devtools/actions/use-mise@06a9ef925332c91be647d6256642b86b398592c8 # use-mise-action-v3.2.1
         with:
           github_token: ${{ steps.token.outputs.token }}
 
       # TODO move to mise
       - name: Install uv
-        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
 
       - name: Bump version
         env:
           RELEASE_TYPE: ${{ inputs.releaseType }}
-          MOBILE_BUMP: ${{ inputs.mobileBump }}
-        run: mise //:release --type "${RELEASE_TYPE}" --mobile "${MOBILE_BUMP}"
+        run: mise //:release --type "${RELEASE_TYPE}"
 
       - id: output
         run: |
@@ -107,6 +102,8 @@ jobs:
       contents: read
       pull-requests: write
     secrets:
+      PUSH_O_MATIC_APP_CLIENT_ID: ${{ secrets.PUSH_O_MATIC_APP_CLIENT_ID }}
+      PUSH_O_MATIC_APP_KEY: ${{ secrets.PUSH_O_MATIC_APP_KEY }}
       KEY_JKS: ${{ secrets.KEY_JKS }}
       ALIAS: ${{ secrets.ALIAS }}
       ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
@@ -152,19 +149,23 @@ jobs:
           github-token: ${{ steps.generate-token.outputs.token }}
 
       - name: Create draft release
-        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
-        with:
-          draft: true
-          prerelease: ${{ needs.bump_version.outputs.rc }}
-          tag_name: ${{ needs.bump_version.outputs.version }}
-          token: ${{ steps.generate-token.outputs.token }}
-          generate_release_notes: true
-          body_path: misc/release/notes.tmpl
-          files: |
-            docker/docker-compose.yml
-            docker/docker-compose.rootless.yml
-            docker/example.env
-            docker/hwaccel.ml.yml
-            docker/hwaccel.transcoding.yml
-            docker/prometheus.yml
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+          REPO: ${{ github.repository }}
+          TAG: ${{ needs.bump_version.outputs.version }}
+          PRERELEASE: ${{ needs.bump_version.outputs.rc }}
+        run: |
+          gh release create "${TAG}" \
+            --repo "${REPO}" \
+            --draft \
+            --verify-tag \
+            --prerelease="${PRERELEASE}" \
+            --notes-file misc/release/notes.tmpl \
+            --generate-notes \
+            docker/docker-compose.yml \
+            docker/docker-compose.rootless.yml \
+            docker/example.env \
+            docker/hwaccel.ml.yml \
+            docker/hwaccel.transcoding.yml \
+            docker/prometheus.yml \
             *.apk

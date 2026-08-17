@@ -56,16 +56,17 @@ FROM builder AS plugins
 
 ARG TARGETPLATFORM
 
-COPY --from=ghcr.io/jdx/mise:2026.7.15@sha256:e62097049bfc980de5d9a25fbe16431e24c1e7713b3f77b18c04f81c25239953 /usr/local/bin/mise /usr/local/bin/mise
+COPY --from=ghcr.io/jdx/mise:2026.8.3@sha256:92dbc3f2573926d8974e4641ad8449f16c323130b9f41c39aff19b7b2f500ef6 /usr/local/bin/mise /usr/local/bin/mise
 
 WORKDIR /app
 COPY ./mise.toml ./mise.toml
+COPY ./mise.lock ./mise.lock
 COPY ./packages/plugin-core/mise.toml ./packages/plugin-core/
 ENV MISE_TRUSTED_CONFIG_PATHS=/app/mise.toml
 ENV MISE_DATA_DIR=/buildcache/mise
 ENV MISE_DISABLE_TOOLS=flutter
 RUN --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
-  mise install
+  mise install --locked
 
 COPY ./packages/sdk ./packages/sdk/
 COPY ./packages/plugin-core ./packages/plugin-core/

@@ -53,7 +53,7 @@ class _DriftAlbumsPageState extends ConsumerState<DriftAlbumsPage> {
         ),
         AlbumSelector(
           onAlbumSelected: (album) {
-            context.router.push(RemoteAlbumRoute(album: album));
+            unawaited(context.router.push(RemoteAlbumRoute(album: album)));
           },
         ),
       ],

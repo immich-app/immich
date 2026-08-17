@@ -102,4 +102,48 @@ void main() {
       expect(remote.localId, local.id);
     });
   });
+
+  group('localAlbum assets', () {
+    late String userId;
+    late String otherUserId;
+
+    setUp(() async {
+      final user = await ctx.newUser();
+      userId = user.id;
+      await ctx.newAuthUser(id: userId);
+      final other = await ctx.newUser();
+      otherUserId = other.id;
+    });
+
+    test('does not duplicate assets when a partner shares the checksum', () async {
+      const checksum = 'shared-partner-checksum';
+      final album = await ctx.newLocalAlbum();
+      final local = await ctx.newLocalAsset(checksum: checksum);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+      final myRemote = await ctx.newRemoteAsset(ownerId: userId, checksum: checksum);
+      await ctx.newRemoteAsset(ownerId: otherUserId, checksum: checksum);
+
+      final assets = await sut.localAlbum(album.id, .day).assetSource(0, 10);
+
+      expect(assets, hasLength(1));
+      final asset = assets.single as LocalAsset;
+      expect(asset.id, local.id);
+      // Must resolve the current user's remote id
+      expect(asset.remoteId, myRemote.id);
+    });
+
+    test('bucket count ignores a partner sharing the checksum', () async {
+      const checksum = 'shared-partner-checksum';
+      final album = await ctx.newLocalAlbum();
+      final local = await ctx.newLocalAsset(checksum: checksum);
+      await ctx.newLocalAlbumAsset(albumId: album.id, assetId: local.id);
+      await ctx.newRemoteAsset(ownerId: userId, checksum: checksum);
+      await ctx.newRemoteAsset(ownerId: otherUserId, checksum: checksum);
+
+      final buckets = await sut.localAlbum(album.id, .day).bucketSource().first;
+
+      expect(buckets, hasLength(1));
+      expect(buckets.single.assetCount, 1);
+    });
+  });
 }

@@ -26,6 +26,7 @@ import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.da
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
@@ -190,7 +191,14 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     // may be in a background tab. In either case, `handleStatusBarTap()` still fires
     // Make sure the timeline is the primary route before scrolling to the top
     final routeData = context.findAncestorWidgetOfExactType<RouteDataScope>()?.routeData;
-    if (ModalRoute.of(context)?.isCurrent == true && routeData?.isActive == true) {
+    // The tap is generated async, so it can arrive after a route pop has started (due to a back button or similar)
+    // Check if route is alive and not exiting before taking action
+    final observers = Navigator.maybeOf(context)?.widget.observers ?? const <NavigatorObserver>[];
+    final isRouteTransitioning = observers.whereType<TransitioningRouteObserver>().any(
+      (observer) => observer.hasTransitioningRoute,
+    );
+
+    if (ModalRoute.of(context)?.isCurrent == true && routeData?.isActive == true && !isRouteTransitioning) {
       _scrollToTop();
     }
   }
@@ -258,7 +266,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
-    _eventSubscription?.cancel();
+    unawaited(_eventSubscription?.cancel());
     super.dispose();
   }
 
@@ -269,9 +277,11 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 
     final timelineState = ref.read(timelineStateProvider.notifier);
     timelineState.setScrubbing(true);
-    _scrollController
-        .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
-        .whenComplete(() => timelineState.setScrubbing(false));
+    unawaited(
+      _scrollController
+          .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
+          .whenComplete(() => timelineState.setScrubbing(false)),
+    );
   }
 
   void _scrollToDate(DateTime date) {
@@ -303,13 +313,15 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
         // Scroll to the segment with a small offset to show the header
         final targetOffset = fallbackSegment.startOffset - 50;
         timelineState.setScrubbing(true);
-        _scrollController
-            .animateTo(
-              targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-            )
-            .whenComplete(() => timelineState.setScrubbing(false));
+        unawaited(
+          _scrollController
+              .animateTo(
+                targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+              )
+              .whenComplete(() => timelineState.setScrubbing(false)),
+        );
       } else {
         timelineState.setScrubbing(false);
       }
@@ -344,8 +356,8 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
     });
   }
 
-  void _dragScroll(ScrollDirection direction) {
-    _scrollController.animateTo(
+  Future<void> _dragScroll(ScrollDirection direction) {
+    return _scrollController.animateTo(
       _scrollController.offset + (direction == ScrollDirection.forward ? 175 : -175),
       duration: const Duration(milliseconds: 125),
       curve: Curves.easeOut,
@@ -396,7 +408,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 
     return PopScope(
       canPop: !isMultiSelectEnabled,
-      onPopInvokedWithResult: (_, __) {
+      onPopInvokedWithResult: (_, _) {
         if (isMultiSelectEnabled) {
           ref.read(multiSelectProvider.notifier).reset();
         }
@@ -488,7 +500,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                             _restoreAssetIndex = targetAssetIndex;
                           });
 
-                          ref.read(settingsProvider).write(.timelineTilesPerRow, _perRow);
+                          unawaited(ref.read(settingsProvider).write(.timelineTilesPerRow, _perRow));
                         }
                       };
                     },
@@ -498,7 +510,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
                   onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
                   onAssetEnter: _handleDragAssetEnter,
                   onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
-                  onScroll: _dragScroll,
+                  onScroll: (direction) => unawaited(_dragScroll(direction)),
                   onScrollStart: () {
                     // Minimize the bottom sheet when drag selection starts
                     ref.read(timelineStateProvider.notifier).setScrolling(true);

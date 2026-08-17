@@ -47,7 +47,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
   bool _isVideoReady = false;
   bool _shouldPlayOnForeground = true;
 
-  VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.heroTag).notifier);
+  VideoPlayerNotifier get _notifier => ref.read(videoPlayerProvider(widget.asset.id).notifier);
 
   @override
   void initState() {
@@ -66,7 +66,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
 
     if (!widget.isCurrent) {
       _loadTimer?.cancel();
-      _notifier.pause();
+      unawaited(_notifier.pause());
       return;
     }
 
@@ -112,6 +112,7 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final localFilePath = widget.localFilePath;
       if (localFilePath != null) {
         final file = File(localFilePath);
+        // ignore: avoid_slow_async_io
         if (!await file.exists()) {
           throw Exception('No file found for the video');
         }
@@ -149,6 +150,10 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
       final remoteAsset = videoAsset as RemoteAsset;
 
       final serverEndpoint = Store.get(StoreKey.serverEndpoint);
+      if (!context.mounted) {
+        return null;
+      }
+
       final isOriginalVideo = ref.read(appConfigProvider).viewer.loadOriginalVideo;
       final String postfixUrl = isOriginalVideo ? 'original' : 'video/playback';
       final String assetId = remoteAsset.livePhotoVideoId ?? remoteAsset.id;
@@ -292,14 +297,14 @@ class _NativeVideoViewerState extends ConsumerState<NativeVideoViewer> with Widg
     _controller = nc;
 
     if (widget.isCurrent) {
-      _loadVideo();
+      unawaited(_loadVideo());
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final isCasting = ref.watch(castProvider.select((c) => c.isCasting));
-    final status = ref.watch(videoPlayerProvider(widget.asset.heroTag).select((v) => v.status));
+    final status = ref.watch(videoPlayerProvider(widget.asset.id).select((v) => v.status));
 
     return IgnorePointer(
       child: Stack(
