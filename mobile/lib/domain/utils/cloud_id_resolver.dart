@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:logging/logging.dart';
@@ -13,11 +14,14 @@ const kCloudIdChunkSize = 5000;
 Future<void> resolveCloudIds(
   NativeSyncApi nativeSyncApi,
   DriftLocalAlbumRepository albumRepository,
-  List<String> assetIds, {
+  Iterable<String> assetIds, {
   Completer<void>? cancellation,
 }) async {
-  final logger = Logger('resolveCloudIds');
+  if (!CurrentPlatform.isIOS) {
+    return;
+  }
 
+  final logger = Logger('resolveCloudIds');
   for (final batch in assetIds.slices(kCloudIdChunkSize)) {
     if (cancellation?.isCompleted ?? false) {
       logger.warning('Cloud ID resolution cancelled');

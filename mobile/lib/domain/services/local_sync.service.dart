@@ -108,7 +108,7 @@ class LocalSyncService {
           await updateAlbum(dbAlbum, album);
         }
 
-        await _mapCloudIds(newAssets);
+        await _resolveCloudIds(newAssets);
       }
       await _nativeSyncApi.checkpointSync();
     } on PlatformException catch (e, s) {
@@ -167,7 +167,7 @@ class LocalSyncService {
           : <LocalAsset>[];
 
       await _localAlbumRepository.upsert(album, toUpsert: assets);
-      await _mapCloudIds(assets);
+      await _resolveCloudIds(assets);
       _log.fine("Successfully added device album ${album.name}");
     } catch (e, s) {
       _log.warning("Error while adding device album", e, s);
@@ -249,7 +249,7 @@ class LocalSyncService {
         toUpsert: newAssets,
       );
 
-      await _mapCloudIds(newAssets);
+      await _resolveCloudIds(newAssets);
       return true;
     } catch (e, s) {
       _log.warning("Error on fast syncing local album: ${dbAlbum.name}", e, s);
@@ -281,7 +281,7 @@ class LocalSyncService {
       if (dbAlbum.assetCount == 0) {
         _log.fine("Device album ${deviceAlbum.name} is empty. Adding assets to DB.");
         await _localAlbumRepository.upsert(updatedDeviceAlbum, toUpsert: assetsInDevice);
-        await _mapCloudIds(assetsInDevice);
+        await _resolveCloudIds(assetsInDevice);
         return true;
       }
 
@@ -319,7 +319,7 @@ class LocalSyncService {
       }
 
       await _localAlbumRepository.upsert(updatedDeviceAlbum, toUpsert: assetsToUpsert, toDelete: assetsToDelete);
-      await _mapCloudIds(assetsToUpsert);
+      await _resolveCloudIds(assetsToUpsert);
 
       return true;
     } catch (e, s) {
@@ -328,18 +328,8 @@ class LocalSyncService {
     return true;
   }
 
-  Future<void> _mapCloudIds(List<LocalAsset> assets) async {
-    if (!CurrentPlatform.isIOS || assets.isEmpty) {
-      return;
-    }
-
-    await resolveCloudIds(
-      _nativeSyncApi,
-      _localAlbumRepository,
-      assets.map((a) => a.id).toList(),
-      cancellation: _cancellation,
-    );
-  }
+  Future<void> _resolveCloudIds(Iterable<LocalAsset> assets) =>
+      resolveCloudIds(_nativeSyncApi, _localAlbumRepository, assets.map((a) => a.id), cancellation: _cancellation);
 
   bool _assetsEqual(LocalAsset a, LocalAsset b) {
     if (CurrentPlatform.isAndroid) {
