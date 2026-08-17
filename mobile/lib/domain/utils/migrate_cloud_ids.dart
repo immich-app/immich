@@ -8,6 +8,7 @@ import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/server_capability.model.dart';
+import 'package:immich_mobile/domain/utils/cloud_id_resolver.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
@@ -31,6 +32,7 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   if (!CurrentPlatform.isIOS) {
     return;
   }
+
   final logger = Logger('migrateCloudIds');
 
   final db = ref.read(driftProvider);

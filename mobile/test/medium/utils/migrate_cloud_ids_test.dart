@@ -87,7 +87,7 @@ void main() {
       final ids = List.generate(kCloudIdChunkSize + 1, (i) => 'asset-$i');
       when(
         () => mockNativeSyncApi.getCloudIdForAssetIds(any()),
-      ).thenThrow(PlatformException(code: kUnSupportedOSError));
+      ).thenThrow(PlatformException(code: kUnsupportedOSError));
 
       await resolveCloudIds(mockNativeSyncApi, albumRepository, ids);
 

@@ -28,7 +28,7 @@ Future<void> resolveCloudIds(
     try {
       results = await nativeSyncApi.getCloudIdForAssetIds(batch);
     } on PlatformException catch (error, stack) {
-      if (error.code == kUnSupportedOSError) {
+      if (error.code == kUnsupportedOSError) {
         logger.warning('Cloud IDs are unavailable on this device. Skipping resolution.', error, stack);
         return;
       }
