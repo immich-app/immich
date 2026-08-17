@@ -1,7 +1,7 @@
-import { AuthApiKey, AuthSharedLink, AuthUser, Exif, Library, UserAdmin } from 'src/database';
+import { AuthApiKey, AuthSharedLink, AuthUser, Library, UserAdmin } from 'src/database';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { QueueStatisticsDto } from 'src/dtos/queue.dto';
-import { AssetFileType, Permission, UserStatus } from 'src/enum';
+import { Permission, UserStatus } from 'src/enum';
 import { v4, v7 } from 'uuid';
 import { expect } from 'vitest';
 
@@ -168,31 +168,6 @@ const versionHistoryFactory = () => ({
   version: '1.123.45',
 });
 
-const assetSidecarWriteFactory = () => {
-  const id = newUuid();
-  return {
-    id,
-    originalPath: '/path/to/original-path.jpg.xmp',
-    tags: [],
-    files: [
-      {
-        id: newUuid(),
-        path: '/path/to/original-path.jpg.xmp',
-        type: AssetFileType.Sidecar,
-        isEdited: false,
-      },
-    ],
-    exifInfo: {
-      assetId: id,
-      description: 'this is a description',
-      latitude: 12,
-      longitude: 12,
-      dateTimeOriginal: '2023-11-22T04:56:12.196Z',
-      timeZone: 'UTC-6',
-    } as unknown as Exif,
-  };
-};
-
 const assetOcrFactory = (
   ocr: {
     id?: string;
@@ -236,9 +211,6 @@ export const factory = {
   library: libraryFactory,
   queueStatistics: queueStatisticsFactory,
   versionHistory: versionHistoryFactory,
-  jobAssets: {
-    sidecarWrite: assetSidecarWriteFactory,
-  },
   uuid: newUuid,
   buffer: () => Buffer.from('this is a fake buffer'),
   date: newDate,

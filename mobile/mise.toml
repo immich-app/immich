@@ -1,5 +1,5 @@
 [tools]
-"aqua:flutter/flutter" = "3.44.8"
+"aqua:flutter/flutter" = "3.44.9"
 java = "21.0.2"
 
 [tools."github:CQLabs/homebrew-dcm"]
@@ -29,7 +29,7 @@ sources = [
 ]
 outputs = { auto = true }
 run = [
-  "dart run build_runner build", 
+  "dart run build_runner build",
   "dart format lib/routing/router.gr.dart",
 ]
 depends = ["//:open-api-dart"]
@@ -99,13 +99,29 @@ run = "dart run drift_dev make-migrations"
 alias = "install"
 description = "Install flutter dependencies"
 depends = ["//:open-api-dart"]
-run = "flutter pub get"
+run = [
+  # This receives passed `--enforce-lockfile` args
+  "flutter pub get",
+  { task = "install:ios" },
+]
 
 [tasks."install:ci"]
 description = "Install flutter dependencies in CI"
 run = [
   { task = "install", args = ["--enforce-lockfile"] },
 ]
+
+[tasks.checkout]
+description = "Bring a checkout up to date after switching branches"
+run = [
+  { task = "install" },
+  { task = "checkout:ios" },
+  { task = "codegen" },
+]
+
+[tasks."checkout:ios"]
+description = "Bring the iOS project up to date after switching branches"
+run = "bash ./scripts/checkout_ios.sh"
 
 [tasks.start]
 alias = "start"
@@ -131,6 +147,19 @@ run = [
   "dart format lib/generated/translations.g.dart",
 ]
 wait_for = ["//:i18n:format-fix"]
+
+[tasks."install:ios"]
+description = "Install CocoaPods dependencies"
+hide = true
+sources = ["ios/Podfile", "ios/Podfile.lock", ".flutter-plugins-dependencies"]
+outputs = ["ios/Pods/Manifest.lock"]
+run = '''
+echo "Running pod install"
+if [ "$(uname)" != "Darwin" ]; then
+  exit 0
+fi
+cd ios && pod install
+'''
 
 [tasks."analyze:dart"]
 description = "Run Dart analysis"

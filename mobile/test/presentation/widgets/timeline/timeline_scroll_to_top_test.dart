@@ -13,6 +13,7 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+import 'package:immich_mobile/routing/app_navigation_observer.dart';
 
 import '../../../fixtures/asset.stub.dart';
 
@@ -50,7 +51,7 @@ void main() {
           page: PageInfo('Overlay', builder: (_) => const Scaffold(body: SizedBox.shrink())),
           type: RouteType.custom(
             customRouteBuilder: <T>(_, child, page) =>
-                PageRouteBuilder<T>(settings: page, opaque: false, pageBuilder: (_, __, ___) => child),
+                PageRouteBuilder<T>(settings: page, opaque: false, pageBuilder: (_, _, _) => child),
           ),
         ),
       ],
@@ -62,7 +63,9 @@ void main() {
           timelineServiceProvider.overrideWithValue(service),
           appConfigProvider.overrideWithValue(const AppConfig()),
         ],
-        child: MaterialApp.router(routerConfig: router.config()),
+        child: MaterialApp.router(
+          routerConfig: router.config(navigatorObservers: () => [TransitioningRouteObserver()]),
+        ),
       ),
     );
     // Segment stream resolves
@@ -96,9 +99,14 @@ void main() {
     await tester.pumpAndSettle();
     expect(position.pixels, initialScrolledPosition, reason: 'ignored while behind a pushed route');
 
-    // Once the timeline is visible, taps on the status bar should scroll to the top
-    await router.maybePop();
+    // The tap is async, so it can arrive while a pushed route is transitioning to popped
+    unawaited(router.maybePop());
+    await tester.pump();
+    await tapStatusBar();
     await tester.pumpAndSettle();
+    expect(position.pixels, initialScrolledPosition, reason: 'ignored while the pushed route pops');
+
+    // Once the timeline is visible, taps on the status bar should scroll to the top
     await tapStatusBar();
     await tester.pumpAndSettle();
     expect(position.pixels, 0, reason: 'scrolls the foreground timeline');

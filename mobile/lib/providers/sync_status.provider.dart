@@ -1,7 +1,7 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 part 'sync_status.provider.freezed.dart';
 
@@ -12,11 +12,12 @@ enum SyncStatus {
   error;
 
   String localized() {
+    final t = StaticTranslations.instance;
     return switch (this) {
-      SyncStatus.idle => "idle".tr(),
-      SyncStatus.syncing => "running".tr(),
-      SyncStatus.success => "success".tr(),
-      SyncStatus.error => "error".tr(),
+      SyncStatus.idle => t.idle,
+      SyncStatus.syncing => t.running,
+      SyncStatus.success => t.success,
+      SyncStatus.error => t.error,
     };
   }
 }

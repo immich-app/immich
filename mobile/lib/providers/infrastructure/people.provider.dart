@@ -9,13 +9,13 @@ final driftPeopleServiceProvider = Provider<DriftPeopleService>(
   (ref) => DriftPeopleService(ref.watch(driftProvider).peopleRepository, ref.watch(personApiRepositoryProvider)),
 );
 
-final driftPeopleAssetProvider = FutureProvider.family<List<DriftPerson>, String>((ref, assetId) async {
+final driftPeopleAssetProvider = FutureProvider.family<List<Person>, String>((ref, assetId) async {
   final service = ref.watch(driftPeopleServiceProvider);
   return service.getAssetPeople(assetId);
 });
 
-final driftGetAllPeopleProvider = FutureProvider<List<DriftPerson>>((ref) async {
+final getAllPeopleProvider = StreamProvider<List<Person>>((ref) async* {
   final service = ref.watch(driftPeopleServiceProvider);
   final prefs = await ref.watch(userMetadataPreferencesProvider.future);
-  return service.getAllPeople(minFaces: prefs?.minimumFaces ?? 3);
+  yield* service.watch(minFaces: prefs?.minimumFaces ?? 3);
 });

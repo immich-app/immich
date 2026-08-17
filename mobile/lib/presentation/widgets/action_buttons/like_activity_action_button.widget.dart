@@ -1,9 +1,8 @@
 import 'package:collection/collection.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/activities/activity.model.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/providers/activity.provider.dart';
@@ -48,7 +47,7 @@ class LikeActivityActionButton extends ConsumerWidget {
         return BaseActionButton(
           maxWidth: 60,
           iconData: liked != null ? Icons.thumb_up : Icons.thumb_up_off_alt,
-          label: "like".t(context: context),
+          label: context.t.like,
           onPressed: () => onTap(liked),
           iconOnly: iconOnly,
           menuItem: menuItem,
@@ -58,11 +57,11 @@ class LikeActivityActionButton extends ConsumerWidget {
       // default to empty heart during loading
       loading: () => BaseActionButton(
         iconData: Icons.thumb_up_off_alt,
-        label: "like".t(context: context),
+        label: context.t.like,
         iconOnly: iconOnly,
         menuItem: menuItem,
       ),
-      error: (error, stack) => Text('error_saving_image'.tr(args: [error.toString()])),
+      error: (error, stack) => Text(context.t.error_saving_image(error: error.toString())),
     );
   }
 }

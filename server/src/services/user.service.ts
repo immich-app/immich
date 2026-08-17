@@ -20,6 +20,7 @@ import { getCalendarHeatmap } from 'src/services/shared/user-methods';
 import { JobOf, UserMetadataItem } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
 import { mimeTypes } from 'src/utils/mime-types';
+import { findOrFail } from 'src/utils/misc';
 import { getPreferences, getPreferencesPartial, mergePreferences } from 'src/utils/preferences';
 import { generateProfileImage } from 'src/utils/profile-image';
 
@@ -302,11 +303,7 @@ export class UserService extends BaseService {
     return DateTime.now().minus({ days: delayUntilDeletion }) > DateTime.fromJSDate(user.deletedAt);
   }
 
-  private async findOrFail(id: string, options: UserFindOptions) {
-    const user = await this.userRepository.get(id, options);
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-    return user;
+  private findOrFail(id: string, options: UserFindOptions) {
+    return findOrFail(() => this.userRepository.get(id, options), 'User');
   }
 }

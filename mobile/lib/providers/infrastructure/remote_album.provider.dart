@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:collection/collection.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -17,30 +17,17 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:logging/logging.dart';
 
-class RemoteAlbumState {
-  final List<RemoteAlbum> albums;
+part 'remote_album.provider.freezed.dart';
 
-  const RemoteAlbumState({required this.albums});
+@Freezed(toStringOverride: false)
+abstract class RemoteAlbumState with _$RemoteAlbumState {
+  const RemoteAlbumState._();
 
-  RemoteAlbumState copyWith({List<RemoteAlbum>? albums}) {
-    return RemoteAlbumState(albums: albums ?? this.albums);
-  }
+  const factory RemoteAlbumState({required List<RemoteAlbum> albums}) = _RemoteAlbumState;
 
+  // Explicitly don't log albums
   @override
   String toString() => 'RemoteAlbumState(albums: ${albums.length})';
-
-  @override
-  bool operator ==(covariant RemoteAlbumState other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    final listEquals = const DeepCollectionEquality().equals;
-
-    return listEquals(other.albums, albums);
-  }
-
-  @override
-  int get hashCode => albums.hashCode;
 }
 
 class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {

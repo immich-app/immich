@@ -9,6 +9,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/aspect_ratios.dart';
 import 'package:immich_mobile/domain/models/asset_edit.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/edit/editor.provider.dart';
 import 'package:immich_mobile/providers/theme.provider.dart';
 import 'package:immich_mobile/theme/theme_data.dart';
@@ -63,14 +64,14 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
         return;
       }
 
-      ImmichToast.show(context: context, msg: 'success'.tr(), toastType: ToastType.success);
+      ImmichToast.show(context: context, msg: context.t.success, toastType: ToastType.success);
       Navigator.of(context).pop();
     } catch (e) {
       if (!mounted) {
         return;
       }
 
-      ImmichToast.show(context: context, msg: 'error_title'.tr(), toastType: ToastType.error);
+      ImmichToast.show(context: context, msg: context.t.error_title, toastType: ToastType.error);
     } finally {
       ref.read(editorStateProvider.notifier).setIsEditing(false);
     }
@@ -80,17 +81,17 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('editor_discard_edits_title'.tr()),
-        content: Text('editor_discard_edits_prompt'.tr()),
+        title: Text(context.t.editor_discard_edits_title),
+        content: Text(context.t.editor_discard_edits_prompt),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
             style: ButtonStyle(
               foregroundColor: WidgetStateProperty.all(context.themeData.colorScheme.onSurfaceVariant),
             ),
-            child: Text('cancel'.tr()),
+            child: Text(context.t.cancel),
           ),
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text('confirm'.tr())),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(context.t.confirm)),
         ],
       ),
     );
@@ -116,7 +117,7 @@ class _DriftEditImagePageState extends ConsumerState<DriftEditImagePage> with Ti
         child: Scaffold(
           appBar: AppBar(
             backgroundColor: Colors.black,
-            title: Text("edit".tr()),
+            title: Text(context.t.edit),
             leading: ImmichCloseButton(onPressed: () => Navigator.of(context).maybePop()),
             actions: [_SaveEditsButton(onSave: _saveEditedImage)],
           ),
@@ -336,7 +337,7 @@ class _ResetEditsButton extends ConsumerWidget {
     final editorNotifier = ref.watch(editorStateProvider.notifier);
 
     return ImmichTextButton(
-      labelText: 'reset'.tr(),
+      labelText: context.t.reset,
       onPressed: editorNotifier.resetEdits,
       variant: ImmichVariant.ghost,
       expanded: false,

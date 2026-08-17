@@ -44,87 +44,22 @@ abstract class DriftUploadStatus with _$DriftUploadStatus {
 
 enum BackupError { none, syncFailed }
 
-class DriftBackupState {
-  final int totalCount;
-  final int backupCount;
-  final int remainderCount;
-  final int processingCount;
+@freezed
+abstract class DriftBackupState with _$DriftBackupState {
+  const DriftBackupState._();
 
-  final bool isSyncing;
-  final BackupError error;
-
-  final Map<String, DriftUploadStatus> uploadItems;
-
-  final Map<String, double> iCloudDownloadProgress;
-
-  const DriftBackupState({
-    required this.totalCount,
-    required this.backupCount,
-    required this.remainderCount,
-    required this.processingCount,
-    required this.isSyncing,
-    this.error = BackupError.none,
-    required this.uploadItems,
-    this.iCloudDownloadProgress = const {},
-  });
-
-  DriftBackupState copyWith({
-    int? totalCount,
-    int? backupCount,
-    int? remainderCount,
-    int? processingCount,
-    bool? isSyncing,
-    BackupError? error,
-    Map<String, DriftUploadStatus>? uploadItems,
-    Map<String, double>? iCloudDownloadProgress,
-  }) {
-    return DriftBackupState(
-      totalCount: totalCount ?? this.totalCount,
-      backupCount: backupCount ?? this.backupCount,
-      remainderCount: remainderCount ?? this.remainderCount,
-      processingCount: processingCount ?? this.processingCount,
-      isSyncing: isSyncing ?? this.isSyncing,
-      error: error ?? this.error,
-      uploadItems: uploadItems ?? this.uploadItems,
-      iCloudDownloadProgress: iCloudDownloadProgress ?? this.iCloudDownloadProgress,
-    );
-  }
+  const factory DriftBackupState({
+    required int totalCount,
+    required int backupCount,
+    required int remainderCount,
+    required int processingCount,
+    required bool isSyncing,
+    @Default(BackupError.none) BackupError error,
+    required Map<String, DriftUploadStatus> uploadItems,
+    @Default({}) Map<String, double> iCloudDownloadProgress,
+  }) = _DriftBackupState;
 
   int get errorCount => uploadItems.values.where((item) => item.isFailed == true).length;
-
-  @override
-  String toString() {
-    return 'DriftBackupState(totalCount: $totalCount, backupCount: $backupCount, remainderCount: $remainderCount, processingCount: $processingCount, isSyncing: $isSyncing, error: $error, uploadItems: $uploadItems, iCloudDownloadProgress: $iCloudDownloadProgress)';
-  }
-
-  @override
-  bool operator ==(covariant DriftBackupState other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    final mapEquals = const DeepCollectionEquality().equals;
-
-    return other.totalCount == totalCount &&
-        other.backupCount == backupCount &&
-        other.remainderCount == remainderCount &&
-        other.processingCount == processingCount &&
-        other.isSyncing == isSyncing &&
-        other.error == error &&
-        mapEquals(other.iCloudDownloadProgress, iCloudDownloadProgress) &&
-        mapEquals(other.uploadItems, uploadItems);
-  }
-
-  @override
-  int get hashCode {
-    return totalCount.hashCode ^
-        backupCount.hashCode ^
-        remainderCount.hashCode ^
-        processingCount.hashCode ^
-        isSyncing.hashCode ^
-        error.hashCode ^
-        uploadItems.hashCode ^
-        iCloudDownloadProgress.hashCode;
-  }
 }
 
 final driftBackupProvider = StateNotifierProvider<DriftBackupNotifier, DriftBackupState>((ref) {
