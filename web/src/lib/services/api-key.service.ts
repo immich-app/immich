@@ -108,7 +108,7 @@ export const handleRotateApiKey = async (apiKey: ApiKeyResponseDto) => {
     eventManager.emit('ApiKeyUpdate', response.apiKey);
     await modalManager.show(ApiKeySecretModal, { secret: response.secret });
   } catch (error) {
-    handleError(error, $t('errors.unable_to_rotate_api_key'));
+    handleError(error, $t('errors.something_went_wrong'));
   }
 };
 

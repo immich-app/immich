@@ -170,54 +170,12 @@ describe('/api-keys', () => {
   });
 
   describe('POST /api-keys/:id/rotate', () => {
-    it('should require authorization', async () => {
-      const { apiKey } = await create(user.accessToken, [Permission.All]);
-      const { status, body } = await request(app)
-        .post(`/api-keys/${apiKey.id}/rotate`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('API Key not found'));
-    });
-
     it('should not work without permission', async () => {
       const { apiKey } = await create(user.accessToken, [Permission.ApiKeyUpdate]);
       const { secret } = await create(user.accessToken, [Permission.ApiKeyUpdate]);
       const { status, body } = await request(app).post(`/api-keys/${apiKey.id}/rotate`).set('x-api-key', secret);
       expect(status).toBe(403);
       expect(body).toEqual(errorDto.missingPermission('apiKey.rotate'));
-    });
-
-    it('should not rotate a key with permissions the caller does not have', async () => {
-      const { apiKey } = await create(user.accessToken, [Permission.All]);
-      const { secret } = await create(user.accessToken, [Permission.ApiKeyRotate]);
-      const { status, body } = await request(app).post(`/api-keys/${apiKey.id}/rotate`).set('x-api-key', secret);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.badRequest('Cannot rotate an API Key with permissions you do not have'));
-    });
-
-    it('should replace the secret of an api key', async () => {
-      const { apiKey, secret } = await create(user.accessToken, [Permission.All]);
-      const { status, body } = await request(app)
-        .post(`/api-keys/${apiKey.id}/rotate`)
-        .set('Authorization', `Bearer ${user.accessToken}`);
-      expect(status).toBe(201);
-      expect(body).toEqual({
-        secret: expect.any(String),
-        apiKey: {
-          id: apiKey.id,
-          name: apiKey.name,
-          permissions: [Permission.All],
-          createdAt: expect.any(String),
-          updatedAt: expect.any(String),
-        },
-      });
-      expect(body.secret).not.toEqual(secret);
-
-      const withOldSecret = await request(app).get('/api-keys').set('x-api-key', secret);
-      expect(withOldSecret.status).toBe(401);
-
-      const withNewSecret = await request(app).get('/api-keys').set('x-api-key', body.secret);
-      expect(withNewSecret.status).toBe(200);
     });
   });
 

@@ -5,6 +5,7 @@ import { AuthDto } from 'src/dtos/auth.dto';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { isGranted } from 'src/utils/access';
+import { findOrFail } from 'src/utils/misc';
 
 @Injectable()
 export class ApiKeyService extends BaseService {
@@ -46,14 +47,11 @@ export class ApiKeyService extends BaseService {
   }
 
   async rotate(auth: AuthDto, id: string): Promise<ApiKeyCreateResponseDto> {
-    const exists = await this.apiKeyRepository.getById(auth.user.id, id);
-    if (!exists) {
-      throw new BadRequestException('API Key not found');
-    }
+    const existing = await findOrFail(() => this.apiKeyRepository.getById(auth.user.id, id), 'API Key not found');
 
     if (
       auth.apiKey &&
-      !isGranted({ requested: exists.permissions as Permission[], current: auth.apiKey.permissions })
+      !isGranted({ requested: existing.permissions as Permission[], current: auth.apiKey.permissions })
     ) {
       throw new BadRequestException('Cannot rotate an API Key with permissions you do not have');
     }
@@ -61,9 +59,9 @@ export class ApiKeyService extends BaseService {
     const token = this.cryptoRepository.randomBytesAsText(32);
     const hashed = this.cryptoRepository.hashSha256(token);
 
-    const key = await this.apiKeyRepository.update(auth.user.id, id, { key: hashed });
+    const newKey = await this.apiKeyRepository.update(auth.user.id, id, { key: hashed });
 
-    return { secret: token, apiKey: this.map(key) };
+    return { secret: token, apiKey: this.map(newKey) };
   }
 
   async delete(auth: AuthDto, id: string): Promise<void> {
