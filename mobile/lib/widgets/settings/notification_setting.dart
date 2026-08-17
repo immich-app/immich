@@ -1,7 +1,9 @@
-import 'package:easy_localization/easy_localization.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/permission.provider.dart';
 import 'package:immich_mobile/widgets/settings/settings_button_list_tile.dart';
 import 'package:immich_mobile/widgets/settings/settings_sub_page_scaffold.dart';
@@ -15,22 +17,24 @@ class NotificationSetting extends HookConsumerWidget {
     final permissionService = ref.watch(notificationPermissionProvider);
     final hasPermission = permissionService == PermissionStatus.granted;
 
-    openAppNotificationSettings(BuildContext ctx) {
+    void openAppNotificationSettings(BuildContext ctx) {
       ctx.pop();
-      openAppSettings();
+      unawaited(openAppSettings());
     }
 
     // When permissions are permanently denied, you need to go to settings to
     // allow them
-    showPermissionsDialog() {
-      showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          content: const Text('notification_permission_dialog_content').tr(),
-          actions: [
-            TextButton(child: const Text('cancel').tr(), onPressed: () => ctx.pop()),
-            TextButton(onPressed: () => openAppNotificationSettings(ctx), child: const Text('settings').tr()),
-          ],
+    void showPermissionsDialog() {
+      unawaited(
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            content: Text(ctx.t.notification_permission_dialog_content),
+            actions: [
+              TextButton(child: Text(ctx.t.cancel), onPressed: () => ctx.pop()),
+              TextButton(onPressed: () => openAppNotificationSettings(ctx), child: Text(ctx.t.settings)),
+            ],
+          ),
         ),
       );
     }
@@ -39,11 +43,11 @@ class NotificationSetting extends HookConsumerWidget {
       if (!hasPermission)
         SettingsButtonListTile(
           icon: Icons.notifications_outlined,
-          title: 'notification_permission_list_tile_title'.tr(),
-          subtileText: 'notification_permission_list_tile_content'.tr(),
-          buttonText: 'notification_permission_list_tile_enable_button'.tr(),
+          title: context.t.notification_permission_list_tile_title,
+          subtileText: context.t.notification_permission_list_tile_content,
+          buttonText: context.t.notification_permission_list_tile_enable_button,
           onButtonTap: () =>
-              ref.watch(notificationPermissionProvider.notifier).requestNotificationPermission().then((permission) {
+              ref.read(notificationPermissionProvider.notifier).requestNotificationPermission().then((permission) {
                 if (permission == PermissionStatus.permanentlyDenied) {
                   showPermissionsDialog();
                 }
@@ -52,9 +56,9 @@ class NotificationSetting extends HookConsumerWidget {
       else
         SettingsButtonListTile(
           icon: Icons.notifications_active_outlined,
-          title: 'notification_enabled_list_tile_title'.tr(),
-          subtileText: 'notification_enabled_list_tile_content'.tr(),
-          buttonText: 'notification_enabled_list_tile_open_button'.tr(),
+          title: context.t.notification_enabled_list_tile_title,
+          subtileText: context.t.notification_enabled_list_tile_content,
+          buttonText: context.t.notification_enabled_list_tile_open_button,
           onButtonTap: () => openAppSettings(),
         ),
     ];

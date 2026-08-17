@@ -46,10 +46,14 @@ export class AlbumModalRowConverter {
     const recentAlbumsToShow = search.length === 0 ? recentAlbums : [];
     const rows: AlbumModalRow[] = [{ type: AlbumModalRowType.NEW_ALBUM, selected: selectedRowIndex === 0 }];
 
+    const normalizedSearch = normalizeSearchString(search);
     const filteredAlbums = sortAlbums(
       search.length > 0 && albums.length > 0
         ? albums.filter((album) => {
-            return normalizeSearchString(album.albumName).includes(normalizeSearchString(search));
+            return (
+              normalizeSearchString(album.albumName).includes(normalizedSearch) ||
+              normalizeSearchString(album.description).includes(normalizedSearch)
+            );
           })
         : albums,
       { sortBy: this.sortBy, orderBy: this.orderBy },

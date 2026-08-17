@@ -16,11 +16,13 @@ export const getOutputDimensions = (
   }
 
   for (const edit of edits) {
-    if (edit.action === AssetEditAction.Rotate) {
-      const angleDegrees = edit.parameters.angle;
-      if (angleDegrees === 90 || angleDegrees === 270) {
-        [width, height] = [height, width];
-      }
+    if (edit.action !== AssetEditAction.Rotate) {
+      continue;
+    }
+
+    const angleDegrees = edit.parameters.angle;
+    if (angleDegrees === 90 || angleDegrees === 270) {
+      [width, height] = [height, width];
     }
   }
 
@@ -225,7 +227,7 @@ export const transformOcrBoundingBox = (
   const { points: transformedPoints, currentWidth, currentHeight } = transformPoints(points, edits, imageDimensions);
 
   // Reorder points to maintain semantic ordering (topLeft, topRight, bottomRight, bottomLeft)
-  const netRotation = edits.find((e) => e.action == AssetEditAction.Rotate)?.parameters.angle ?? 0 % 360;
+  const netRotation = edits.find((e) => e.action === AssetEditAction.Rotate)?.parameters.angle ?? 0 % 360;
   const reorderedPoints = reorderQuadPointsForRotation(transformedPoints, netRotation);
 
   const [p1, p2, p3, p4] = reorderedPoints;

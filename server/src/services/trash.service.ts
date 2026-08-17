@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { OnEvent, OnJob } from 'src/decorators';
 import { BulkIdsDto } from 'src/dtos/asset-ids.response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
 import { TrashResponseDto } from 'src/dtos/trash.dto';
 import { JobName, JobStatus, Permission, QueueName } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { batched } from 'src/utils/misc';
 
 @Injectable()
 export class TrashService extends BaseService {
@@ -47,39 +47,16 @@ export class TrashService extends BaseService {
 
   @OnJob({ name: JobName.AssetEmptyTrash, queue: QueueName.BackgroundTask })
   async handleEmptyTrash() {
-    const assets = this.trashRepository.getDeletedIds();
-
     let count = 0;
-    const batch: string[] = [];
-    for await (const { id } of assets) {
-      batch.push(id);
-
-      if (batch.length === JOBS_ASSET_PAGINATION_SIZE) {
-        await this.handleBatch(batch);
-        count += batch.length;
-        batch.length = 0;
-      }
+    for await (const assets of batched(this.trashRepository.getDeletedIds())) {
+      await this.jobRepository.queueAll(
+        assets.map(({ id }) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: true } })),
+      );
+      count += assets.length;
     }
-
-    await this.handleBatch(batch);
-    count += batch.length;
-    batch.length = 0;
 
     this.logger.log(`Queued ${count} asset(s) for deletion from the trash`);
 
     return JobStatus.Success;
-  }
-
-  private async handleBatch(ids: string[]) {
-    this.logger.debug(`Queueing ${ids.length} asset(s) for deletion from the trash`);
-    await this.jobRepository.queueAll(
-      ids.map((assetId) => ({
-        name: JobName.AssetDelete,
-        data: {
-          id: assetId,
-          deleteOnDisk: true,
-        },
-      })),
-    );
   }
 }

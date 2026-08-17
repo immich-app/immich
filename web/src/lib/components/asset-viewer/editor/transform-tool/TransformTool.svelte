@@ -35,11 +35,10 @@
     }
 
     if (isRotated) {
-      let [width, height] = ratio.value.split(':');
+      let [width, height] = ratio.value.split(':', 2);
       return `${height}:${width}`;
-    } else {
-      return ratio.value;
     }
+    return ratio.value;
   }
 
   function ratioSelected(ratio: AspectRatioOption): boolean {

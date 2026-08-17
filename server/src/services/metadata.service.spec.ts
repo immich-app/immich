@@ -1396,7 +1396,7 @@ describe(MetadataService.name, () => {
       expect(mocks.person.refreshFaces).toHaveBeenCalledWith(
         [
           expect.objectContaining({
-            boundingBoxX1: Math.floor((0.485_648_148_148_148_2 - 0.2 / 2) * 1000),
+            boundingBoxX1: Math.floor((0.4856481481481482 - 0.2 / 2) * 1000),
           }),
         ],
         [],

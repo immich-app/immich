@@ -201,7 +201,7 @@
   export const scrollAfterNavigate = async () => {
     if (timelineManager.viewportHeight === 0 || timelineManager.viewportWidth === 0) {
       // this can happen if you do the following navigation order
-      // /photos?at=<id>, /photos/<id>, http://example.com, browser back, browser back
+      // /photos?at=<id>, /photos/<id>, https://example.com, browser back, browser back
       const rect = scrollableElement?.getBoundingClientRect();
       if (rect) {
         timelineManager.viewportHeight = rect.height;
@@ -209,10 +209,7 @@
       }
     }
     const scrollTarget = assetViewerManager.gridScrollTarget?.at;
-    let scrolled = false;
-    if (scrollTarget) {
-      scrolled = await scrollAndLoadAsset(scrollTarget);
-    }
+    const scrolled = scrollTarget ? await scrollAndLoadAsset(scrollTarget) : false;
     if (!scrolled) {
       // if the asset is not found, scroll to the top
       timelineManager.scrollTo(0);
@@ -503,10 +500,12 @@
   });
 
   $effect(() => {
-    if (assetViewerManager.asset && assetViewerManager.isViewing) {
-      const { localDateTime } = getTimes(assetViewerManager.asset.fileCreatedAt, DateTime.local().offset / 60);
-      void timelineManager.loadTimelineMonth({ year: localDateTime.year, month: localDateTime.month });
+    if (!(assetViewerManager.asset && assetViewerManager.isViewing)) {
+      return;
     }
+
+    const { localDateTime } = getTimes(assetViewerManager.asset.fileCreatedAt, DateTime.local().offset / 60);
+    void timelineManager.loadTimelineMonth({ year: localDateTime.year, month: localDateTime.month });
   });
 
   const assetSelectHandler = (
@@ -582,10 +581,7 @@
     bind:scrubberWidth
     onScrubKeyDown={(evt) => {
       evt.preventDefault();
-      let amount = 50;
-      if (keyboardManager.shift) {
-        amount = 500;
-      }
+      let amount = keyboardManager.shift ? 500 : 50;
       if (evt.key === 'ArrowUp') {
         amount = -amount;
         if (keyboardManager.shift) {

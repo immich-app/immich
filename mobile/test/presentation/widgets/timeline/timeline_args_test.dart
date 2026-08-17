@@ -1,3 +1,5 @@
+// ignore_for_file: close_sinks
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -25,6 +27,8 @@ class _FrozenBucketService implements TimelineService {
 }
 
 class _EmptyBucketService implements TimelineService {
+  const _EmptyBucketService();
+
   @override
   Stream<List<Bucket>> Function() get watchBuckets =>
       () => Stream.value(const []);
@@ -60,7 +64,7 @@ void main() {
 
     TimelineArgs? probed;
     final probe = Consumer(
-      builder: (_, ref, __) {
+      builder: (_, ref, _) {
         probed = ref.watch(timelineArgsProvider);
         return const SizedBox.shrink();
       },
@@ -99,7 +103,7 @@ void main() {
     TimelineArgs? probed;
     final probe = SliverToBoxAdapter(
       child: Consumer(
-        builder: (_, ref, __) {
+        builder: (_, ref, _) {
           probed = ref.watch(timelineArgsProvider);
           return const SizedBox.shrink();
         },
@@ -109,7 +113,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          timelineServiceProvider.overrideWithValue(_EmptyBucketService()),
+          timelineServiceProvider.overrideWithValue(const _EmptyBucketService()),
           appConfigProvider.overrideWithValue(const AppConfig()),
         ],
         child: MaterialApp(
@@ -144,7 +148,7 @@ void main() {
 
     TimelineArgs? probed;
     final probe = Consumer(
-      builder: (_, ref, __) {
+      builder: (_, ref, _) {
         probed = ref.watch(timelineArgsProvider);
         return const SizedBox.shrink();
       },

@@ -24,7 +24,7 @@ final timelineServiceProvider = Provider<TimelineService>(
   },
   // Empty dependencies to inform the framework that this provider
   // might be used in a ProviderScope
-  dependencies: [],
+  dependencies: const [],
 );
 
 final timelineFactoryProvider = Provider<TimelineFactory>(

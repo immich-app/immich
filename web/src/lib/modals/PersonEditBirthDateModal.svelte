@@ -15,7 +15,7 @@
   let birthDate = $derived(person.birthDate ? DateTime.fromISO(person.birthDate) : undefined);
 
   const onSubmit = async () => {
-    const success = await handleUpdatePersonBirthDate(person, birthDate?.toISODate() ?? '');
+    const success = await handleUpdatePersonBirthDate(person, birthDate?.toISODate() ?? null);
     if (success) {
       onClose();
     }

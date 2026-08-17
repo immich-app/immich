@@ -298,6 +298,7 @@ export enum Permission {
   WorkflowRead = 'workflow.read',
   WorkflowUpdate = 'workflow.update',
   WorkflowDelete = 'workflow.delete',
+  WorkflowLogs = 'workflow.logs',
 
   AdminUserCreate = 'adminUser.create',
   AdminUserRead = 'adminUser.read',
@@ -1210,14 +1211,6 @@ export enum ApiTag {
   Workflows = 'Workflows',
 }
 
-export enum PluginContext {
-  Asset = 'asset',
-  Album = 'album',
-  Person = 'person',
-}
-
-export const PluginContextSchema = z.enum(PluginContext).describe('Plugin context').meta({ id: 'PluginContextType' });
-
 export const WorkflowTriggerSchema = z
   .enum(WorkflowTrigger)
   .describe('Plugin trigger type')
@@ -1234,3 +1227,23 @@ export enum CalendarHeatmapType {
   Upload = 'Upload',
   Taken = 'Taken',
 }
+
+export enum WorkflowResult {
+  Completed = 'completed',
+  Halted = 'halted',
+  Error = 'error',
+}
+
+export const WorkflowResultSchema = z
+  .enum(WorkflowResult)
+  .describe('Workflow run result')
+  .meta({ id: 'WorkflowResult' });
+
+export enum SearchOrderField {
+  FileCreatedAt = 'fileCreatedAt',
+  LocalDateTime = 'localDateTime',
+  FileSizeInBytes = 'fileSizeInBytes',
+  Rating = 'rating',
+}
+
+export const SearchOrderFieldSchema = z.enum(SearchOrderField).meta({ id: 'SearchOrderField' });

@@ -172,11 +172,7 @@ function shouldIncludeAsset(
   if (isArchived !== undefined && actuallyArchived !== isArchived) {
     return false;
   }
-  if (isFavorite !== undefined && actuallyFavorited !== isFavorite) {
-    return false;
-  }
-
-  return true;
+  return isFavorite === undefined || actuallyFavorited === isFavorite;
 }
 /**
  * Get summary for all buckets (mimics getTimeBuckets API)
@@ -361,7 +357,7 @@ export function getAsset(
   owner?: UserResponseDto,
 ): AssetResponseDto | undefined {
   // Search through all buckets for the asset
-  const buckets = [...timelineData.buckets.values()];
+  const buckets = timelineData.buckets.values().toArray();
   for (const assets of buckets) {
     const asset = assets.find((a) => a.id === assetId);
     if (asset) {
@@ -395,7 +391,7 @@ export function getAlbum(
 
   // Get the actual asset objects from the timeline data
   const albumAssets: AssetResponseDto[] = [];
-  const allAssets = [...timelineData.buckets.values()].flat();
+  const allAssets = timelineData.buckets.values().toArray().flat();
 
   for (const assetId of album.assetIds) {
     const assetConfig = allAssets.find((a) => a.id === assetId);

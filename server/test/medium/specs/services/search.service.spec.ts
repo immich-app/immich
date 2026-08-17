@@ -89,6 +89,22 @@ describe(SearchService.name, () => {
 
       expect(result).toEqual({ total: 0 });
     });
+
+    it('should not return locked assets of partner in elevated session', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { user: partner } = await ctx.newUser();
+
+      await ctx.newPartner({ sharedById: partner.id, sharedWithId: user.id });
+
+      await ctx.newAsset({ ownerId: partner.id, visibility: AssetVisibility.Locked });
+
+      const auth = factory.auth({ user: { id: user.id }, session: { hasElevatedPermission: true } });
+
+      const result = await sut.searchStatistics(auth, { visibility: AssetVisibility.Locked });
+
+      expect(result).toEqual({ total: 0 });
+    });
   });
 
   describe('withStacked option', () => {
@@ -194,6 +210,21 @@ describe(SearchService.name, () => {
       });
 
       expect(suggestions).toEqual(['Canon', null]);
+    });
+  });
+
+  describe('searchRandom', () => {
+    it('should filter out locked assets in a default session', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+
+      await ctx.newAsset({ ownerId: user.id, visibility: AssetVisibility.Locked });
+
+      const auth = factory.auth({ user: { id: user.id } });
+
+      const response = await sut.searchRandom(auth, {});
+
+      expect(response.length).toBe(0);
     });
   });
 });
