@@ -6,10 +6,10 @@ import 'package:flutter/services.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/utils/cloud_id_resolver.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
-import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
@@ -22,8 +22,6 @@ const String _kSyncCancelledCode = "SYNC_CANCELLED";
 
 class LocalSyncService {
   final DriftLocalAlbumRepository _localAlbumRepository;
-  // ignore: unused_field
-  final DriftLocalAssetRepository _localAssetRepository;
   final NativeSyncApi _nativeSyncApi;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
@@ -33,7 +31,6 @@ class LocalSyncService {
 
   LocalSyncService({
     required this._localAlbumRepository,
-    required this._localAssetRepository,
     required this._nativeSyncApi,
     required this._trashedLocalAssetRepository,
     required this._assetMediaRepository,
@@ -55,11 +52,6 @@ class LocalSyncService {
         } else {
           _log.warning("syncTrashedAssets cannot proceed because MANAGE_MEDIA permission is missing");
         }
-      }
-
-      if (CurrentPlatform.isIOS) {
-        // final assets = await _localAssetRepository.getEmptyCloudIdAssets();
-        // await _mapIosCloudIds(assets);
       }
 
       if (full || await _nativeSyncApi.shouldFullSync()) {
@@ -116,7 +108,7 @@ class LocalSyncService {
           await updateAlbum(dbAlbum, album);
         }
 
-        await _mapIosCloudIds(newAssets);
+        await _resolveCloudIds(newAssets);
       }
       await _nativeSyncApi.checkpointSync();
     } on PlatformException catch (e, s) {
@@ -175,7 +167,7 @@ class LocalSyncService {
           : <LocalAsset>[];
 
       await _localAlbumRepository.upsert(album, toUpsert: assets);
-      await _mapIosCloudIds(assets);
+      await _resolveCloudIds(assets);
       _log.fine("Successfully added device album ${album.name}");
     } catch (e, s) {
       _log.warning("Error while adding device album", e, s);
@@ -257,7 +249,7 @@ class LocalSyncService {
         toUpsert: newAssets,
       );
 
-      await _mapIosCloudIds(newAssets);
+      await _resolveCloudIds(newAssets);
       return true;
     } catch (e, s) {
       _log.warning("Error on fast syncing local album: ${dbAlbum.name}", e, s);
@@ -289,7 +281,7 @@ class LocalSyncService {
       if (dbAlbum.assetCount == 0) {
         _log.fine("Device album ${deviceAlbum.name} is empty. Adding assets to DB.");
         await _localAlbumRepository.upsert(updatedDeviceAlbum, toUpsert: assetsInDevice);
-        await _mapIosCloudIds(assetsInDevice);
+        await _resolveCloudIds(assetsInDevice);
         return true;
       }
 
@@ -327,7 +319,7 @@ class LocalSyncService {
       }
 
       await _localAlbumRepository.upsert(updatedDeviceAlbum, toUpsert: assetsToUpsert, toDelete: assetsToDelete);
-      await _mapIosCloudIds(assetsToUpsert);
+      await _resolveCloudIds(assetsToUpsert);
 
       return true;
     } catch (e, s) {
@@ -336,29 +328,8 @@ class LocalSyncService {
     return true;
   }
 
-  // ignore: avoid-unused-parameters
-  Future<void> _mapIosCloudIds(List<LocalAsset> assets) async {
-    // if (!CurrentPlatform.isIOS || assets.isEmpty) {
-    return;
-    // }
-
-    // final assetIds = assets.map((a) => a.id).toList();
-    // final cloudMapping = <String, String>{};
-    // final cloudIds = await _nativeSyncApi.getCloudIdForAssetIds(assetIds);
-    // for (int i = 0; i < cloudIds.length; i++) {
-    //   final cloudIdResult = cloudIds[i];
-    //   if (cloudIdResult.cloudId != null) {
-    //     cloudMapping[cloudIdResult.assetId] = cloudIdResult.cloudId!;
-    //   } else {
-    //     final asset = assets.firstWhereOrNull((a) => a.id == cloudIdResult.assetId);
-    //     _log.fine(
-    //       "Cannot fetch cloudId for asset with id: ${cloudIdResult.assetId}, name: ${asset?.name}, createdAt: ${asset?.createdAt}. Error: ${cloudIdResult.error ?? "unknown"}",
-    //     );
-    //   }
-    // }
-
-    // await _localAlbumRepository.updateCloudMapping(cloudMapping);
-  }
+  Future<void> _resolveCloudIds(Iterable<LocalAsset> assets) =>
+      resolveCloudIds(_nativeSyncApi, _localAlbumRepository, assets.map((a) => a.id), cancellation: _cancellation);
 
   bool _assetsEqual(LocalAsset a, LocalAsset b) {
     if (CurrentPlatform.isAndroid) {

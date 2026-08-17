@@ -1,19 +1,22 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/server_capability.model.dart';
+import 'package:immich_mobile/domain/utils/cloud_id_resolver.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/cancel.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -21,15 +24,21 @@ import 'package:logging/logging.dart';
 // ignore: import_rule_openapi
 import 'package:openapi/api.dart' hide AssetVisibility;
 
+const _kDbPageSize = 20000;
+
+const _kUploadBatchSize = 5000;
+
 Future<void> syncCloudIds(ProviderContainer ref) async {
   if (!CurrentPlatform.isIOS) {
     return;
   }
-  final logger = Logger('migrateCloudIds');
+
+  final logger = Logger('syncCloudIds');
 
   final db = ref.read(driftProvider);
-  // Populate cloud IDs for local assets that don't have one yet
-  await _populateCloudIds(db);
+  final cancellation = ref.read(cancellationProvider);
+
+  await populateMissingCloudIds(db, ref.read(nativeSyncApiProvider), cancellation);
 
   final serverInfo = await ref.read(serverInfoProvider.notifier).getServerInfo();
   final canUpdateMetadata = serverInfo.serverVersion.supports(.cloudIdMetadata);
@@ -55,7 +64,6 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
   }
 
   final assetApi = ref.read(apiServiceProvider).assetsApi;
-  final cancellation = ref.read(cancellationProvider);
 
   // Process cloud IDs in paginated batches
   await _processCloudIdMappingsInBatches(db, currentUser.id, assetApi, canBulkUpdateMetadata, logger, cancellation);
@@ -69,59 +77,140 @@ Future<void> _processCloudIdMappingsInBatches(
   Logger logger,
   Completer<void> cancellation,
 ) async {
-  const pageSize = 20000;
-  String? lastLocalId;
-  final seenRemoteAssetIds = <String>{};
+  String? lastRemoteId;
 
   while (true) {
     if (cancellation.isCompleted) {
       logger.warning('Cloud ID migration cancelled. Stopping batch processing.');
       break;
     }
-    final mappings = await _fetchCloudIdMappings(drift, userId, pageSize, lastLocalId);
+    final mappings = await fetchMapping(drift, userId, _kDbPageSize, lastRemoteId);
     if (mappings.isEmpty) {
       break;
     }
 
     final items = <AssetMetadataBulkUpsertItemDto>[];
     for (final mapping in mappings) {
-      if (seenRemoteAssetIds.add(mapping.remoteAssetId)) {
-        items.add(
-          AssetMetadataBulkUpsertItemDto(
-            assetId: mapping.remoteAssetId,
-            key: kMobileMetadataKey,
-            value: Map<String, Object>.from(
-              RemoteAssetMobileAppMetadata(
-                cloudId: mapping.localAsset.cloudId,
-                createdAt: mapping.localAsset.createdAt.toIso8601String(),
-                adjustmentTime: mapping.localAsset.adjustmentTime?.toIso8601String(),
-                latitude: mapping.localAsset.latitude?.toString(),
-                longitude: mapping.localAsset.longitude?.toString(),
-              ).toJson(),
-            ),
+      items.add(
+        .new(
+          assetId: mapping.remoteAssetId,
+          key: kMobileMetadataKey,
+          value: Map<String, Object>.from(
+            RemoteAssetMobileAppMetadata(
+              cloudId: mapping.cloudId,
+              createdAt: mapping.createdAt.toIso8601String(),
+              adjustmentTime: mapping.adjustmentTime?.toIso8601String(),
+              latitude: mapping.latitude?.toString(),
+              longitude: mapping.longitude?.toString(),
+            ).toJson(),
           ),
-        );
-      } else {
-        logger.fine('Duplicate remote asset ID found: ${mapping.remoteAssetId}. Skipping duplicate entry.');
-      }
+        ),
+      );
     }
 
     if (items.isNotEmpty) {
       if (canBulkUpdate) {
-        await _bulkUpdateCloudIds(assetsApi, items, cancellation.future);
+        for (final batch in items.slices(_kUploadBatchSize)) {
+          if (cancellation.isCompleted) {
+            break;
+          }
+
+          await _bulkUpdate(assetsApi, batch, cancellation.future);
+        }
       } else {
-        await _sequentialUpdateCloudIds(assetsApi, items, cancellation);
+        await _sequentialUpdate(assetsApi, items, cancellation);
       }
     }
 
-    lastLocalId = mappings.last.localAsset.id;
-    if (mappings.length < pageSize) {
+    lastRemoteId = mappings.last.remoteAssetId;
+    if (mappings.length < _kDbPageSize) {
       break;
     }
   }
 }
 
-Future<void> _sequentialUpdateCloudIds(
+@visibleForTesting
+Future<void> populateMissingCloudIds(Drift drift, NativeSyncApi nativeSyncApi, Completer<void> cancellation) async {
+  final query = drift.localAssetEntity.selectOnly()
+    ..addColumns([drift.localAssetEntity.id])
+    ..where(drift.localAssetEntity.iCloudId.isNull());
+  final ids = await query.map((row) => row.read(drift.localAssetEntity.id)!).get();
+
+  await resolveCloudIds(nativeSyncApi, DriftLocalAlbumRepository(drift), ids, cancellation: cancellation);
+}
+
+@visibleForTesting
+typedef CloudIdMapping = ({
+  String remoteAssetId,
+  String cloudId,
+  DateTime createdAt,
+  DateTime? adjustmentTime,
+  double? latitude,
+  double? longitude,
+});
+
+@visibleForTesting
+/// Fetches a list of remote asset IDs and their corresponding local cloud IDs for assets that have a local cloud ID
+/// but either no remote cloud ID or a mismatched eTag
+/// The query uses cursor-based pagination to fetch the results in batches, ordered by remote asset ID with [lastRemoteId] being the cursor.
+Future<List<CloudIdMapping>> fetchMapping(Drift db, String userId, int limit, String? lastRemoteId) async {
+  final query = db.remoteAssetEntity.selectOnly()
+    ..addColumns([
+      db.remoteAssetEntity.id,
+      db.localAssetEntity.iCloudId,
+      db.localAssetEntity.createdAt,
+      db.localAssetEntity.adjustmentTime,
+      db.localAssetEntity.latitude,
+      db.localAssetEntity.longitude,
+    ])
+    ..join([
+      innerJoin(
+        db.localAssetEntity,
+        db.localAssetEntity.id.isInQuery(
+          db.localAssetEntity.selectOnly()
+            ..addColumns([db.localAssetEntity.id.min()])
+            ..where(db.localAssetEntity.checksum.equalsExp(db.remoteAssetEntity.checksum)),
+        ),
+        useColumns: false,
+      ),
+      leftOuterJoin(
+        db.remoteAssetCloudIdEntity,
+        db.remoteAssetEntity.id.equalsExp(db.remoteAssetCloudIdEntity.assetId),
+        useColumns: false,
+      ),
+    ])
+    ..where(
+      db.remoteAssetEntity.ownerId.equals(userId) &
+          // Skip locked assets as we cannot update them without an elevated session
+          db.remoteAssetEntity.visibility.isNotValue(AssetVisibility.locked.index) &
+          db.localAssetEntity.iCloudId.isNotNull() &
+          // Only select assets that have a local cloud ID but either no remote cloud ID or a mismatched eTag
+          (db.remoteAssetCloudIdEntity.cloudId.isNull() |
+              db.remoteAssetCloudIdEntity.adjustmentTime.isNotExp(db.localAssetEntity.adjustmentTime) |
+              db.remoteAssetCloudIdEntity.latitude.isNotExp(db.localAssetEntity.latitude) |
+              db.remoteAssetCloudIdEntity.longitude.isNotExp(db.localAssetEntity.longitude) |
+              db.remoteAssetCloudIdEntity.createdAt.isNotExp(db.localAssetEntity.createdAt)),
+    )
+    ..orderBy([.asc(db.remoteAssetEntity.id)])
+    ..limit(limit);
+
+  if (lastRemoteId != null) {
+    query.where(db.remoteAssetEntity.id.isBiggerThanValue(lastRemoteId));
+  }
+
+  return query.map((row) {
+    return (
+      remoteAssetId: row.read(db.remoteAssetEntity.id)!,
+      cloudId: row.read(db.localAssetEntity.iCloudId)!,
+      createdAt: row.read(db.localAssetEntity.createdAt)!,
+      adjustmentTime: row.read(db.localAssetEntity.adjustmentTime),
+      latitude: row.read(db.localAssetEntity.latitude),
+      longitude: row.read(db.localAssetEntity.longitude),
+    );
+  }).get();
+}
+
+Future<void> _sequentialUpdate(
   AssetsApi assetsApi,
   List<AssetMetadataBulkUpsertItemDto> items,
   Completer<void> cancellation,
@@ -130,89 +219,28 @@ Future<void> _sequentialUpdateCloudIds(
     if (cancellation.isCompleted) {
       break;
     }
-    final upsertItem = AssetMetadataUpsertItemDto(key: item.key, value: item.value);
     try {
       await assetsApi.updateAssetMetadata(
         item.assetId,
-        AssetMetadataUpsertDto(items: [upsertItem]),
+        .new(
+          items: [.new(key: item.key, value: item.value)],
+        ),
         abortTrigger: cancellation.future,
       );
     } catch (error, stack) {
-      Logger('migrateCloudIds').warning('Failed to update metadata for asset ${item.assetId}', error, stack);
+      Logger('syncCloudIds: sequential').warning('Failed to update metadata for asset ${item.assetId}', error, stack);
     }
   }
 }
 
-Future<void> _bulkUpdateCloudIds(
+Future<void> _bulkUpdate(
   AssetsApi assetsApi,
   List<AssetMetadataBulkUpsertItemDto> items,
   Future<void> abortTrigger,
 ) async {
   try {
-    await assetsApi.updateBulkAssetMetadata(AssetMetadataBulkUpsertDto(items: items), abortTrigger: abortTrigger);
+    await assetsApi.updateBulkAssetMetadata(.new(items: items), abortTrigger: abortTrigger);
   } catch (error, stack) {
-    Logger('migrateCloudIds').warning('Failed to bulk update metadata', error, stack);
+    Logger('syncCloudIds: bulk').warning('Failed to update metadata', error, stack);
   }
-}
-
-Future<void> _populateCloudIds(Drift drift) async {
-  final query = drift.localAssetEntity.selectOnly()
-    ..addColumns([drift.localAssetEntity.id])
-    ..where(drift.localAssetEntity.iCloudId.isNull());
-  final ids = await query.map((row) => row.read(drift.localAssetEntity.id)!).get();
-  final cloudMapping = <String, String>{};
-  final cloudIds = await NativeSyncApi().getCloudIdForAssetIds(ids);
-  for (int i = 0; i < cloudIds.length; i++) {
-    final cloudIdResult = cloudIds[i];
-    if (cloudIdResult.cloudId != null) {
-      cloudMapping[cloudIdResult.assetId] = cloudIdResult.cloudId!;
-    } else {
-      Logger('migrateCloudIds').fine(
-        "Cannot fetch cloudId for asset with id: ${cloudIdResult.assetId}. Error: ${cloudIdResult.error ?? "unknown"}",
-      );
-    }
-  }
-  await DriftLocalAlbumRepository(drift).updateCloudMapping(cloudMapping);
-}
-
-typedef _CloudIdMapping = ({String remoteAssetId, LocalAsset localAsset});
-
-Future<List<_CloudIdMapping>> _fetchCloudIdMappings(Drift drift, String userId, int limit, String? lastLocalId) async {
-  final query =
-      drift.localAssetEntity.select().join([
-          innerJoin(
-            drift.remoteAssetEntity,
-            drift.localAssetEntity.checksum.equalsExp(drift.remoteAssetEntity.checksum),
-          ),
-          leftOuterJoin(
-            drift.remoteAssetCloudIdEntity,
-            drift.remoteAssetEntity.id.equalsExp(drift.remoteAssetCloudIdEntity.assetId),
-            useColumns: false,
-          ),
-        ])
-        ..where(
-          // Only select assets that have a local cloud ID but either no remote cloud ID or a mismatched eTag
-          drift.localAssetEntity.iCloudId.isNotNull() &
-              drift.remoteAssetEntity.ownerId.equals(userId) &
-              // Skip locked assets as we cannot update them without unlocking first
-              drift.remoteAssetEntity.visibility.isNotValue(AssetVisibility.locked.index) &
-              (drift.remoteAssetCloudIdEntity.cloudId.isNull() |
-                  drift.remoteAssetCloudIdEntity.adjustmentTime.isNotExp(drift.localAssetEntity.adjustmentTime) |
-                  drift.remoteAssetCloudIdEntity.latitude.isNotExp(drift.localAssetEntity.latitude) |
-                  drift.remoteAssetCloudIdEntity.longitude.isNotExp(drift.localAssetEntity.longitude) |
-                  drift.remoteAssetCloudIdEntity.createdAt.isNotExp(drift.localAssetEntity.createdAt)),
-        )
-        ..orderBy([OrderingTerm.asc(drift.localAssetEntity.id)])
-        ..limit(limit);
-
-  if (lastLocalId != null) {
-    query.where(drift.localAssetEntity.id.isBiggerThanValue(lastLocalId));
-  }
-
-  return query.map((row) {
-    return (
-      remoteAssetId: row.read(drift.remoteAssetEntity.id)!,
-      localAsset: row.readTable(drift.localAssetEntity).toDto(),
-    );
-  }).get();
 }
