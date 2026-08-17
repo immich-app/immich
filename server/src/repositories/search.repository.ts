@@ -162,8 +162,6 @@ export type SmartSearchOptions = SearchDateOptions &
   SearchTagOptions &
   SearchOcrOptions & { visibility?: AssetVisibility | 'not-locked'; viewingUserId?: string };
 
-export type OcrSearchOptions = SearchDateOptions & SearchOcrOptions;
-
 export type LargeAssetSearchOptions = AssetSearchOptions & { minFileSize?: number };
 
 export interface FaceEmbeddingSearch extends Omit<SearchEmbeddingOptions, 'userIds'> {

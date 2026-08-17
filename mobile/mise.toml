@@ -111,6 +111,18 @@ run = [
   { task = "install", args = ["--enforce-lockfile"] },
 ]
 
+[tasks.checkout]
+description = "Bring a checkout up to date after switching branches"
+run = [
+  { task = "install" },
+  { task = "checkout:ios" },
+  { task = "codegen" },
+]
+
+[tasks."checkout:ios"]
+description = "Bring the iOS project up to date after switching branches"
+run = "bash ./scripts/checkout_ios.sh"
+
 [tasks.start]
 alias = "start"
 description = "Start flutter app"
@@ -139,7 +151,7 @@ wait_for = ["//:i18n:format-fix"]
 [tasks."install:ios"]
 description = "Install CocoaPods dependencies"
 hide = true
-sources = ["ios/Podfile", "ios/Podfile.lock", ".flutter-plugin-dependencies"]
+sources = ["ios/Podfile", "ios/Podfile.lock", ".flutter-plugins-dependencies"]
 outputs = ["ios/Pods/Manifest.lock"]
 run = '''
 echo "Running pod install"

@@ -313,17 +313,17 @@ describe('/shared-links', () => {
         .send({ type: SharedLinkType.Album });
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Invalid albumId' }));
+      expect(body).toEqual(errorDto.validationError([{ path: [], message: 'albumId is required for type ALBUM' }]));
     });
 
     it('should require a valid asset id', async () => {
       const { status, body } = await request(app)
         .post('/shared-links')
         .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ type: SharedLinkType.Individual, assetId: uuidDto.notFound });
+        .send({ type: SharedLinkType.Individual, assetIds: [uuidDto.notFound] });
 
       expect(status).toBe(400);
-      expect(body).toEqual(expect.objectContaining({ message: 'Invalid assetIds' }));
+      expect(body).toEqual(expect.objectContaining({ message: 'Not found or no asset.share access' }));
     });
 
     it('should create a shared link', async () => {

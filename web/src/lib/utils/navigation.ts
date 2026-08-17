@@ -15,7 +15,6 @@ export const isPhotosRoute = (route?: string | null) => !!route?.startsWith('/(u
 const isSharedLinkSlugRoute = (route?: string | null) => !!route?.startsWith('/(user)/s/[slug]');
 export const isSharedLinkRoute = (route?: string | null) =>
   !!route?.startsWith('/(user)/share/[key]') || isSharedLinkSlugRoute(route);
-export const isSearchRoute = (route?: string | null) => !!route?.startsWith('/(user)/search');
 export const isAlbumsRoute = (route?: string | null) => !!route?.startsWith('/(user)/albums/[albumId=id]');
 export const isPeopleRoute = (route?: string | null) => !!route?.startsWith('/(user)/people/[personId]');
 export const isLockedFolderRoute = (route?: string | null) => !!route?.startsWith('/(user)/locked');
@@ -147,12 +146,6 @@ export const clearQueryParam = async (queryParam: string, url: URL) => {
 
   url.searchParams.delete(queryParam);
   await goto(url, { keepFocus: true });
-};
-
-export const getQueryValue = (queryKey: string) => {
-  const url = location.href;
-  const urlObject = new URL(url);
-  return urlObject.searchParams.get(queryKey);
 };
 
 export const setQueryValue = async (queryKey: string, queryValue: string) => {

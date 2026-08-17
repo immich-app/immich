@@ -129,7 +129,7 @@ class DriftSearchPage extends HookConsumerWidget {
     void showPeoplePicker() {
       var people = filter.value.people;
 
-      void handleOnSelect(Set<PersonDto> value) {
+      void handleOnSelect(Set<Person> value) {
         people = value;
       }
 
