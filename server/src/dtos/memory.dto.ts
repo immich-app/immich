@@ -18,21 +18,13 @@ const MemorySearchSchema = z
   })
   .meta({ id: 'MemorySearchDto' });
 
-const OnThisDaySchema = z
+const MemoryDataSchema = z
   .object({
-    year: z.int().min(1000).max(9999).describe('Year for on this day memory'),
+    year: z.int().min(1000).max(9999).describe('Year of the memory'),
+    personId: z.uuidv4().optional().describe('Person ID (birthday memories)'),
+    personName: z.string().optional().describe('Name of the person when the memory was created (birthday memories)'),
   })
-  .meta({ id: 'OnThisDayDto' });
-
-const BirthdaySchema = z
-  .object({
-    personId: z.uuidv4().describe('Person ID for the birthday memory'),
-    personName: z.string().describe('Name of the person when the memory was created'),
-    year: z.int().min(1000).max(9999).describe('Birth year of the person'),
-  })
-  .meta({ id: 'BirthdayDto' });
-
-const MemoryDataSchema = z.union([BirthdaySchema, OnThisDaySchema]);
+  .meta({ id: 'MemoryDataDto' });
 
 type MemoryData = z.infer<typeof MemoryDataSchema>;
 
@@ -43,6 +35,8 @@ const MemoryUpdateSchema = nonEmptyPartial({
 }).meta({ id: 'MemoryUpdateDto' });
 
 const MemoryCreateBaseSchema = z.object({
+  type: MemoryTypeSchema,
+  data: MemoryDataSchema,
   memoryAt: isoDatetimeToDate.describe('Memory date'),
   assetIds: z.array(z.uuidv4()).optional().describe('Asset IDs to associate with memory'),
   isSaved: z.boolean().optional().describe('Is memory saved'),
@@ -57,18 +51,19 @@ const MemoryCreateBaseSchema = z.object({
     .meta(new HistoryBuilder().added('v2.6.0').stable('v2.6.0').getExtensions()),
 });
 
-const MemoryCreateSchema = z
-  .discriminatedUnion('type', [
-    MemoryCreateBaseSchema.extend({
-      type: z.literal(MemoryType.OnThisDay),
-      data: OnThisDaySchema,
-    }),
-    MemoryCreateBaseSchema.extend({
-      type: z.literal(MemoryType.Birthday),
-      data: BirthdaySchema,
-    }),
-  ])
-  .meta({ id: 'MemoryCreateDto' });
+const MemoryCreateSchema = MemoryCreateBaseSchema.superRefine((dto, ctx) => {
+  if (dto.type === MemoryType.Birthday) {
+    for (const key of ['personId', 'personName'] as const) {
+      if (dto.data[key] === undefined) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['data', key],
+          message: `Required for ${MemoryType.Birthday} memories`,
+        });
+      }
+    }
+  }
+}).meta({ id: 'MemoryCreateDto' });
 
 const MemoryStatisticsResponseSchema = z
   .object({
@@ -96,8 +91,7 @@ const MemoryResponseSchema = z
 
 export class MemorySearchDto extends createZodDto(MemorySearchSchema) {}
 export class MemoryUpdateDto extends createZodDto(MemoryUpdateSchema) {}
-export const MemoryCreateDto = createZodDto(MemoryCreateSchema);
-export type MemoryCreateDto = z.infer<typeof MemoryCreateSchema>;
+export class MemoryCreateDto extends createZodDto(MemoryCreateSchema) {}
 export class MemoryStatisticsResponseDto extends createZodDto(MemoryStatisticsResponseSchema) {}
 export class MemoryResponseDto extends createZodDto(MemoryResponseSchema) {}
 

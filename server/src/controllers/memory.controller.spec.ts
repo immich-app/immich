@@ -56,8 +56,8 @@ describe(MemoryController.name, () => {
       expect(status).toBe(400);
       expect(body).toEqual(
         errorDto.validationError([
-          { path: ['data', 'personId'], message: 'Invalid input: expected string, received undefined' },
-          { path: ['data', 'personName'], message: 'Invalid input: expected string, received undefined' },
+          { path: ['data', 'personId'], message: 'Required for birthday memories' },
+          { path: ['data', 'personName'], message: 'Required for birthday memories' },
         ]),
       );
     });

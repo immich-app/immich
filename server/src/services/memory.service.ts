@@ -163,11 +163,15 @@ export class MemoryService extends BaseService {
       permission: Permission.AssetShare,
       ids: assetIds,
     });
+    const data =
+      dto.type === MemoryType.Birthday
+        ? { year: dto.data.year, personId: dto.data.personId, personName: dto.data.personName }
+        : { year: dto.data.year };
     const memory = await this.memoryRepository.create(
       {
         ownerId: auth.user.id,
         type: dto.type,
-        data: dto.data,
+        data,
         isSaved: dto.isSaved,
         memoryAt: dto.memoryAt,
         showAt: dto.showAt,

@@ -1331,23 +1331,19 @@ export type MapReverseGeocodeResponseDto = {
     /** State/Province name */
     state: string | null;
 };
-export type BirthdayDto = {
-    /** Person ID for the birthday memory */
-    personId: string;
-    /** Name of the person when the memory was created */
-    personName: string;
-    /** Birth year of the person */
-    year: number;
-};
-export type OnThisDayDto = {
-    /** Year for on this day memory */
+export type MemoryDataDto = {
+    /** Person ID (birthday memories) */
+    personId?: string;
+    /** Name of the person when the memory was created (birthday memories) */
+    personName?: string;
+    /** Year of the memory */
     year: number;
 };
 export type MemoryResponseDto = {
     assets: AssetResponseDto[];
     /** Creation date */
     createdAt: string;
-    data: BirthdayDto | OnThisDayDto;
+    data: MemoryDataDto;
     /** Deletion date */
     deletedAt?: string;
     /** Date when memory should be hidden */
@@ -1369,35 +1365,20 @@ export type MemoryResponseDto = {
     updatedAt: string;
 };
 export type MemoryCreateDto = {
-    /** Memory date */
-    memoryAt: string;
     /** Asset IDs to associate with memory */
     assetIds?: string[];
+    data: MemoryDataDto;
+    /** Date when memory should be hidden */
+    hideAt?: string;
     /** Is memory saved */
     isSaved?: boolean;
+    /** Memory date */
+    memoryAt: string;
     /** Date when memory was seen */
     seenAt?: string;
     /** Date when memory should be shown */
     showAt?: string;
-    /** Date when memory should be hidden */
-    hideAt?: string;
-    "type": Type;
-    data: OnThisDayDto;
-} | {
-    /** Memory date */
-    memoryAt: string;
-    /** Asset IDs to associate with memory */
-    assetIds?: string[];
-    /** Is memory saved */
-    isSaved?: boolean;
-    /** Date when memory was seen */
-    seenAt?: string;
-    /** Date when memory should be shown */
-    showAt?: string;
-    /** Date when memory should be hidden */
-    hideAt?: string;
-    "type": Type2;
-    data: BirthdayDto;
+    "type": MemoryType;
 };
 export type MemoryStatisticsResponseDto = {
     /** Total number of memories */
@@ -7481,12 +7462,6 @@ export enum MemorySearchOrder {
 }
 export enum MemoryType {
     OnThisDay = "on_this_day",
-    Birthday = "birthday"
-}
-export enum Type {
-    OnThisDay = "on_this_day"
-}
-export enum Type2 {
     Birthday = "birthday"
 }
 export enum PartnerDirection {
