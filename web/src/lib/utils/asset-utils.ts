@@ -28,6 +28,11 @@ import { eventManager } from '$lib/managers/event-manager.svelte';
 import { TimelineManager } from '$lib/managers/timeline-manager/timeline-manager.svelte';
 import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 import { downloadBlob, downloadRequest, withError } from '$lib/utils';
+import {
+  downloadPostStream,
+  shouldPreferStreamingDownload,
+  supportsFileSystemAccessDownload,
+} from '$lib/utils/download-stream';
 import { getByteUnitString } from '$lib/utils/byte-units';
 import { getFormatter } from '$lib/utils/i18n';
 import { navigate } from '$lib/utils/navigation';
@@ -104,13 +109,31 @@ export const downloadArchive = async (fileName: string, options: Omit<DownloadIn
     downloadManager.add(downloadKey, archive.size, abort);
 
     try {
+      const archiveUrl = getBaseUrl() + '/download/archive' + (queryParams ? `?${queryParams}` : '');
+      const archiveBody = { assetIds: archive.assetIds, edited: true };
+      const onProgress = (loaded: number) => downloadManager.update(downloadKey, loaded);
+
+      const useStreaming =
+        supportsFileSystemAccessDownload() && shouldPreferStreamingDownload(archive.size);
+
+      if (useStreaming) {
+        const result = await downloadPostStream(archiveUrl, archiveBody, archiveName, {
+          signal: abort.signal,
+          onProgress,
+        });
+
+        if (result === 'streamed') {
+          continue;
+        }
+      }
+
       // TODO use sdk once it supports progress events
       const { data } = await downloadRequest({
         method: 'POST',
-        url: getBaseUrl() + '/download/archive' + (queryParams ? `?${queryParams}` : ''),
-        data: { assetIds: archive.assetIds, edited: true },
+        url: archiveUrl,
+        data: archiveBody,
         signal: abort.signal,
-        onDownloadProgress: (event) => downloadManager.update(downloadKey, event.loaded),
+        onDownloadProgress: (event) => onProgress(event.loaded),
       });
 
       downloadBlob(data, archiveName);
