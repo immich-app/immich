@@ -179,7 +179,6 @@ export class TimelineMonth {
         bucketAssets.fileCreatedAt[i],
         bucketAssets.localOffsetHours[i],
       );
-      const isImage = bucketAssets.isImage[i];
 
       const timelineAsset: TimelineAsset = {
         city: bucketAssets.city?.[i] ?? null,
@@ -188,9 +187,9 @@ export class TimelineMonth {
         id: bucketAssets.id[i],
         visibility: bucketAssets.visibility[i],
         isFavorite: bucketAssets.isFavorite[i],
-        isImage,
+        isImage: bucketAssets.isImage[i],
         isTrashed: bucketAssets.isTrashed[i],
-        isVideo: !isImage,
+        isVideo: !bucketAssets.isImage[i],
         livePhotoVideoId: bucketAssets.livePhotoVideoId[i],
         localDateTime,
         createdAt: fromISODateTimeUTC(bucketAssets.createdAt[i]).toLocal().toObject(),
