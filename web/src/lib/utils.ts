@@ -30,12 +30,17 @@ import { isWebCompatibleImage } from '$lib/utils/asset-utils';
 import { handleError } from '$lib/utils/handle-error';
 import { convertBCP47, langs } from '$lib/utils/i18n';
 
+interface DownloadProgressEvent {
+  loaded: number;
+  total: number;
+}
+
 interface DownloadRequestOptions<T = unknown> {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   url: string;
   data?: T;
   signal?: AbortSignal;
-  onDownloadProgress?: (event: ProgressEvent<XMLHttpRequestEventTarget>) => void;
+  onDownloadProgress?: (event: DownloadProgressEvent) => void;
 }
 
 interface DateFormatter {
@@ -127,44 +132,67 @@ export const uploadRequest = async <T>(options: UploadRequestOptions): Promise<{
   });
 };
 
-export const downloadRequest = <TBody = unknown>(options: DownloadRequestOptions<TBody> | string) => {
+export const downloadRequest = async <TBody = unknown>(
+  options: DownloadRequestOptions<TBody> | string,
+): Promise<{ data: Blob; status: number }> => {
   if (typeof options === 'string') {
     options = { url: options };
   }
 
   const { signal, method, url, data: body, onDownloadProgress: onProgress } = options;
 
-  return new Promise<{ data: Blob; status: number }>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-
-    xhr.addEventListener('error', (error) => reject(error));
-    xhr.addEventListener('abort', () => reject(new AbortError()));
-    xhr.addEventListener('load', () => {
-      if (xhr.readyState === 4 && xhr.status >= 200 && xhr.status < 300) {
-        resolve({ data: xhr.response as Blob, status: xhr.status });
-      } else {
-        reject(new ApiError(xhr.statusText, xhr.status, xhr.responseText));
-      }
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: method || 'GET',
+      signal,
+      headers: body ? { 'Content-Type': 'application/json' } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
     });
-
-    if (onProgress) {
-      xhr.addEventListener('progress', (event) => onProgress(event));
+  } catch (error) {
+    // fetch rejects with a DOMException named 'AbortError' when the signal fires.
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      throw new AbortError();
     }
+    throw error;
+  }
 
-    if (signal) {
-      signal.addEventListener('abort', () => xhr.abort());
+  if (!response.ok) {
+    throw new ApiError(response.statusText, response.status, await response.text());
+  }
+
+  // Read the response as a stream and assemble the Blob from the chunks manually.
+  // Letting fetch/XHR accumulate a large response directly into a Blob is extremely
+  // slow in Safari/WebKit (~1 MB/s for a multi-GB archive, see #21009), while reading
+  // the same stream chunk-by-chunk runs at full network speed.
+  if (!response.body) {
+    return { data: await response.blob(), status: response.status };
+  }
+
+  const type = response.headers.get('content-type') ?? undefined;
+  const total = Number(response.headers.get('content-length')) || 0;
+  const reader = response.body.getReader();
+  const chunks: BlobPart[] = [];
+  let loaded = 0;
+
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) {
+        break;
+      }
+      chunks.push(value);
+      loaded += value.length;
+      onProgress?.({ loaded, total });
     }
-
-    xhr.open(method || 'GET', url);
-    xhr.responseType = 'blob';
-
-    if (body) {
-      xhr.setRequestHeader('Content-Type', 'application/json');
-      xhr.send(JSON.stringify(body));
-    } else {
-      xhr.send();
+  } catch (error) {
+    if (signal?.aborted || (error instanceof DOMException && error.name === 'AbortError')) {
+      throw new AbortError();
     }
-  });
+    throw error;
+  }
+
+  return { data: new Blob(chunks, type ? { type } : undefined), status: response.status };
 };
 
 let _sharedLink: SharedLinkResponseDto | undefined;
