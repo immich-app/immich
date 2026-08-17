@@ -12,7 +12,7 @@ void main() {
 
   setUpAll(() async {
     final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db), listenUpdates: false);
+    await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
     await StoreService.I.put(StoreKey.serverEndpoint, endpoint);
   });
 
