@@ -87,8 +87,7 @@ export class MemoryService extends BaseService {
     const hideAt = target.endOf('day').toISO();
 
     await Promise.all(
-      people.map(async ({ id: personId, name: personName, birthYear, birthMonth, birthDay }) => {
-        const birthDate = { year: birthYear, month: birthMonth, day: birthDay };
+      people.map(async ({ id: personId, name: personName, birthDate }) => {
         const assets = await this.getBirthdayAssets(ownerId, personId, birthDate, target);
         if (assets.length === 0) {
           return;
@@ -98,7 +97,7 @@ export class MemoryService extends BaseService {
           {
             ownerId,
             type: MemoryType.Birthday,
-            data: { personId, personName, year: birthYear },
+            data: { personId, personName, year: birthDate.year },
             memoryAt: target.startOf('day').toISO()!,
             showAt,
             hideAt,

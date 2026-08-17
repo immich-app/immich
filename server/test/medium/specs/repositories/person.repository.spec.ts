@@ -77,7 +77,7 @@ describe(PersonRepository.name, () => {
 
       const people = await sut.getPeopleWithBirthday(user.id, target);
 
-      expect(people).toEqual([{ id: person.id, name: 'Alice', birthYear: 1990, birthMonth: 6, birthDay: 13 }]);
+      expect(people).toEqual([{ id: person.id, name: 'Alice', birthDate: { year: 1990, month: 6, day: 13 } }]);
     });
 
     it('should not return hidden people, unnamed people, or people without a birth date', async () => {

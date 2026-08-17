@@ -143,10 +143,10 @@ export class PersonRepository {
     { params: [DummyValue.UUID, { year: 2025, month: 1, day: 1 }] },
     { name: 'leap day fallback', params: [DummyValue.UUID, { year: 2025, month: 2, day: 28 }] },
   )
-  getPeopleWithBirthday(ownerId: string, { year, month, day }: YearMonthDay) {
+  async getPeopleWithBirthday(ownerId: string, { year, month, day }: YearMonthDay) {
     const isLeapDayBirthday = isLeapDayObserved({ year, month, day });
 
-    return this.db
+    const people = await this.db
       .selectFrom('person')
       .select(['person.id', 'person.name'])
       .select(sql<number>`date_part('year', person."birthDate")::int`.as('birthYear'))
@@ -167,6 +167,12 @@ export class PersonRepository {
       })
       .where(sql`date_part('year', person."birthDate")::int`, '<', year)
       .execute();
+
+    return people.map(({ id, name, birthYear, birthMonth, birthDay }) => ({
+      id,
+      name,
+      birthDate: { year: birthYear, month: birthMonth, day: birthDay },
+    }));
   }
 
   @GenerateSql()
