@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/tag.model.dart';
@@ -19,12 +18,27 @@ import 'package:immich_mobile/routing/router.dart';
 
 const _collapsedTagsMaxHeight = 140.0;
 
-class TagDetails extends HookConsumerWidget {
+class TagDetails extends ConsumerStatefulWidget {
   final BaseAsset asset;
 
   const TagDetails({super.key, required this.asset});
 
-  void _openTag(BuildContext context, WidgetRef ref, Tag tag) {
+  @override
+  ConsumerState createState() => _TagDetailsState();
+}
+
+class _TagDetailsState extends ConsumerState<TagDetails> {
+  final ScrollController _tagsController = ScrollController();
+  bool _isExpanded = false;
+  bool _hasOverflow = false;
+
+  @override
+  void dispose() {
+    _tagsController.dispose();
+    super.dispose();
+  }
+
+  void _openTag(Tag tag) {
     ref.invalidate(assetViewerProvider);
     ref.invalidate(paginatedSearchProvider);
     ref.read(searchPreFilterProvider.notifier)
@@ -46,11 +60,8 @@ class TagDetails extends HookConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isExpanded = useState(false);
-    final hasOverflow = useState(false);
-    final tagsController = useScrollController();
-    final asset = this.asset;
+  Widget build(BuildContext context) {
+    final asset = widget.asset;
     final isTagsEnabled = ref.watch(userMetadataPreferencesProvider).valueOrNull?.tagsEnabled ?? false;
     final user = ref.watch(currentUserProvider);
     if (asset is! RemoteAsset || !isTagsEnabled || asset.ownerId != user?.id) {
@@ -67,15 +78,15 @@ class TagDetails extends HookConsumerWidget {
       highlightColor: Colors.transparent,
       hoverColor: brandColor.withValues(alpha: 0.15),
     );
-    final isCollapsed = !isExpanded.value;
+    final isCollapsed = !_isExpanded;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!tagsController.hasClients || isExpanded.value) {
+      if (!mounted || !_tagsController.hasClients || _isExpanded) {
         return;
       }
-      final overflowing = tagsController.position.maxScrollExtent > 0;
-      if (overflowing != hasOverflow.value) {
-        hasOverflow.value = overflowing;
+      final overflowing = _tagsController.position.maxScrollExtent > 0;
+      if (overflowing != _hasOverflow) {
+        setState(() => _hasOverflow = overflowing);
       }
     });
 
@@ -87,7 +98,7 @@ class TagDetails extends HookConsumerWidget {
         children: [
           for (final tag in tags)
             InputChip(
-              onPressed: () => _openTag(context, ref, tag),
+              onPressed: () => _openTag(tag),
               tooltip: context.t.view_all,
               label: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: context.width * 0.6),
@@ -109,14 +120,14 @@ class TagDetails extends HookConsumerWidget {
         ? ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: _collapsedTagsMaxHeight),
             child: SingleChildScrollView(
-              controller: tagsController,
+              controller: _tagsController,
               physics: const NeverScrollableScrollPhysics(),
               child: tagWrap,
             ),
           )
         : tagWrap;
 
-    if (isCollapsed && hasOverflow.value) {
+    if (isCollapsed && _hasOverflow) {
       tagArea = ShaderMask(
         shaderCallback: (bounds) => const LinearGradient(
           begin: Alignment.topCenter,
@@ -145,16 +156,16 @@ class TagDetails extends HookConsumerWidget {
             spacing: 8,
             runSpacing: 8,
             children: [
-              if (hasOverflow.value)
+              if (_hasOverflow)
                 ActionChip(
                   label: Text(
-                    isExpanded.value ? context.t.show_less : context.t.view_more,
+                    _isExpanded ? context.t.show_less : context.t.view_more,
                     style: TextStyle(color: context.primaryColor, fontWeight: FontWeight.w500),
                   ),
                   side: BorderSide.none,
                   shape: const StadiumBorder(),
                   backgroundColor: Colors.transparent,
-                  onPressed: () => isExpanded.value = !isExpanded.value,
+                  onPressed: () => setState(() => _isExpanded = !_isExpanded),
                 ),
               ActionChip(
                 avatar: Icon(Icons.new_label_outlined, size: 18, color: context.primaryColor),

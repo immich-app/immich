@@ -96,6 +96,34 @@ class DriftSearchPage extends HookConsumerWidget {
       unawaited(ref.read(paginatedSearchProvider.notifier).search(filter.value));
     }
 
+    Future<void> applyPreFilter(SearchFilter preFilter) async {
+      if (!context.mounted) {
+        return;
+      }
+
+      textSearchController.clear();
+      peopleCurrentFilterWidget.value = null;
+      dateRangeCurrentFilterWidget.value = null;
+      cameraCurrentFilterWidget.value = null;
+      tagCurrentFilterWidget.value = null;
+      mediaTypeCurrentFilterWidget.value = null;
+      ratingCurrentFilterWidget.value = null;
+      displayOptionCurrentFilterWidget.value = null;
+      locationCurrentFilterWidget.value = preFilter.location.city != null
+          ? Text(preFilter.location.city!, style: context.textTheme.labelLarge)
+          : null;
+      search(preFilter);
+
+      final tagIds = preFilter.tagIds ?? const <String>[];
+      if (tagIds.isNotEmpty) {
+        final tags = await ref.read(tagProvider.future).catchError((_) => const <Tag>{});
+        final label = tags.where((tag) => tagIds.contains(tag.id)).map((tag) => tag.value).join(', ');
+        if (context.mounted) {
+          tagCurrentFilterWidget.value = Text(label, style: context.textTheme.labelLarge);
+        }
+      }
+    }
+
     // TODO: Use ref.listen with `fireImmediately` in the new riverpod version.
     final preFilter = ref.watch(searchPreFilterProvider);
     useEffect(() {
@@ -103,35 +131,7 @@ class DriftSearchPage extends HookConsumerWidget {
         return null;
       }
 
-      unawaited(
-        Future.microtask(() async {
-          if (!context.mounted) {
-            return;
-          }
-
-          textSearchController.clear();
-          peopleCurrentFilterWidget.value = null;
-          dateRangeCurrentFilterWidget.value = null;
-          cameraCurrentFilterWidget.value = null;
-          tagCurrentFilterWidget.value = null;
-          mediaTypeCurrentFilterWidget.value = null;
-          ratingCurrentFilterWidget.value = null;
-          displayOptionCurrentFilterWidget.value = null;
-          locationCurrentFilterWidget.value = preFilter.location.city != null
-              ? Text(preFilter.location.city!, style: context.textTheme.labelLarge)
-              : null;
-          search(preFilter);
-
-          final tagIds = preFilter.tagIds ?? const <String>[];
-          if (tagIds.isNotEmpty) {
-            final tags = await ref.read(tagProvider.future).catchError((_) => const <Tag>{});
-            final label = tags.where((tag) => tagIds.contains(tag.id)).map((tag) => tag.value).join(', ');
-            if (context.mounted) {
-              tagCurrentFilterWidget.value = Text(label, style: context.textTheme.labelLarge);
-            }
-          }
-        }),
-      );
+      unawaited(Future.microtask(() => applyPreFilter(preFilter)));
 
       return null;
     }, [preFilter]);
