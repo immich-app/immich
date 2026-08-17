@@ -1,4 +1,4 @@
-import { getKeysDeep, globToSqlPattern, unsetDeep } from 'src/utils/misc';
+import { getKeysDeep, globToSqlPattern, shuffle, unsetDeep } from 'src/utils/misc';
 import { describe, expect, it } from 'vitest';
 
 describe('getKeysDeep', () => {
@@ -65,5 +65,23 @@ describe('globToSqlPattern', () => {
 
   it.each(testCases)('should convert %s to %s', (input, expected) => {
     expect(globToSqlPattern(input)).toEqual(expected);
+  });
+});
+
+describe('shuffle', () => {
+  it('should return the same elements', () => {
+    const items = [1, 2, 3, 4, 5];
+    expect(shuffle(items).toSorted((a, b) => a - b)).toEqual(items);
+  });
+
+  it('should not mutate the input', () => {
+    const items = [1, 2, 3, 4, 5];
+    shuffle(items);
+    expect(items).toEqual([1, 2, 3, 4, 5]);
+  });
+
+  it('should handle empty and single-element arrays', () => {
+    expect(shuffle([])).toEqual([]);
+    expect(shuffle([1])).toEqual([1]);
   });
 });

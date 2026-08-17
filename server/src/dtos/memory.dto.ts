@@ -32,7 +32,6 @@ const BirthdaySchema = z
   })
   .meta({ id: 'BirthdayDto' });
 
-// BirthdaySchema must come first, otherwise its extra fields are stripped by a successful OnThisDaySchema parse
 const MemoryDataSchema = z.union([BirthdaySchema, OnThisDaySchema]);
 
 type MemoryData = z.infer<typeof MemoryDataSchema>;

@@ -44,6 +44,36 @@ describe(MemoryController.name, () => {
       );
     });
 
+    it('should validate data when type is birthday', async () => {
+      const { status, body } = await request(ctx.getHttpServer())
+        .post('/memories')
+        .send({
+          type: 'birthday',
+          data: { year: 1990 },
+          memoryAt: new Date(2021).toISOString(),
+        });
+
+      expect(status).toBe(400);
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['data', 'personId'], message: 'Invalid input: expected string, received undefined' },
+          { path: ['data', 'personName'], message: 'Invalid input: expected string, received undefined' },
+        ]),
+      );
+    });
+
+    it('should accept a birthday memory', async () => {
+      const { status } = await request(ctx.getHttpServer())
+        .post('/memories')
+        .send({
+          type: 'birthday',
+          data: { personId: factory.uuid(), personName: 'Alice', year: 1990 },
+          memoryAt: new Date(2021).toISOString(),
+        });
+
+      expect(status).toBe(201);
+    });
+
     it('should accept showAt and hideAt', async () => {
       const { status } = await request(ctx.getHttpServer())
         .post('/memories')

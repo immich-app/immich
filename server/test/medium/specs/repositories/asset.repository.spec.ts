@@ -278,6 +278,61 @@ describe(AssetRepository.name, () => {
         expect(years).toEqual([]);
       });
 
+      it('should ignore trashed assets', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        const asset = await newPersonAsset(ctx, {
+          ownerId: user.id,
+          personId: person.id,
+          localDateTime: '2024-06-13T12:00:00.000Z',
+        });
+        await ctx.softDeleteAsset(asset.id);
+
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate, until);
+
+        expect(years).toEqual([]);
+      });
+
+      it('should ignore assets that are not timeline-visible', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        const { asset } = await ctx.newAsset({
+          ownerId: user.id,
+          localDateTime: '2024-06-13T12:00:00.000Z',
+          visibility: AssetVisibility.Archive,
+        });
+        await ctx.newAssetFace({ assetId: asset.id, personId: person.id });
+        await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: `/preview/${asset.id}.jpg` });
+
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate, until);
+
+        expect(years).toEqual([]);
+      });
+
+      it('should ignore assets with a soft-deleted face', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime: '2024-06-13T12:00:00.000Z' });
+        await ctx.newAssetFace({ assetId: asset.id, personId: person.id, deletedAt: new Date() });
+        await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: `/preview/${asset.id}.jpg` });
+
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate, until);
+
+        expect(years).toEqual([]);
+      });
+
+      it('should ignore assets with an invisible face', async () => {
+        const { ctx, sut } = setup();
+        const { user, person } = await newBirthdayPerson(ctx);
+        const { asset } = await ctx.newAsset({ ownerId: user.id, localDateTime: '2024-06-13T12:00:00.000Z' });
+        await ctx.newAssetFace({ assetId: asset.id, personId: person.id, isVisible: false });
+        await ctx.newAssetFile({ assetId: asset.id, type: AssetFileType.Preview, path: `/preview/${asset.id}.jpg` });
+
+        const years = await sut.getPersonBirthdayYears(user.id, person.id, birthDate, until);
+
+        expect(years).toEqual([]);
+      });
+
       it('should ignore assets taken before the person was born', async () => {
         const { ctx, sut } = setup();
         const { user, person } = await newBirthdayPerson(ctx);

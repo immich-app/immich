@@ -123,6 +123,16 @@ describe(PersonRepository.name, () => {
       expect(people.map(({ id }) => id)).toEqual([person.id]);
     });
 
+    it('should include people born on february 28th on february 28th of non-leap years', async () => {
+      const { ctx, sut } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice', birthDate: '1991-02-28' });
+
+      const people = await sut.getPeopleWithBirthday(user.id, { year: 2025, month: 2, day: 28 });
+
+      expect(people.map(({ id }) => id)).toEqual([person.id]);
+    });
+
     it('should not include leap-day birthdays on february 28th of leap years', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();

@@ -108,6 +108,26 @@ describe(MemoryService.name, () => {
       );
     });
 
+    it('should create a new birthday memory', async () => {
+      const { sut, ctx } = setup();
+      const { user } = await ctx.newUser();
+      const { person } = await ctx.newPerson({ ownerId: user.id, name: 'Alice' });
+      const auth = factory.auth({ user });
+      const dto = {
+        type: MemoryType.Birthday as const,
+        data: { personId: person.id, personName: 'Alice', year: 1990 },
+        memoryAt: new Date(2025, 5, 13),
+      };
+
+      await expect(sut.create(auth, dto)).resolves.toEqual(
+        expect.objectContaining({
+          id: expect.any(String),
+          type: MemoryType.Birthday,
+          data: dto.data,
+        }),
+      );
+    });
+
     it('should create a new memory and ignore assets the user does not have access to', async () => {
       const { sut, ctx } = setup();
       const { user: user1 } = await ctx.newUser();
