@@ -1,4 +1,3 @@
-import { randomUUID } from 'node:crypto';
 import { dirname, join, resolve } from 'node:path';
 import { StorageAsset } from 'src/database';
 import {
@@ -350,10 +349,6 @@ export class StorageCore {
 
   static getNestedPath(folder: StorageFolder, ownerId: string, filename: string): string {
     return join(StorageCore.getNestedFolder(folder, ownerId, filename), filename);
-  }
-
-  static getTempPathInDir(dir: string): string {
-    return join(dir, `${randomUUID()}.tmp`);
   }
 
   private async getDevices() {

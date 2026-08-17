@@ -1,20 +1,27 @@
-import 'package:collection/collection.dart';
+// ignore_for_file: use-ref-and-state-synchronously
+
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
+
+part 'multiselect.provider.freezed.dart';
 
 final multiSelectProvider = NotifierProvider<MultiSelectNotifier, MultiSelectState>(
   MultiSelectNotifier.new,
   dependencies: [timelineServiceProvider],
 );
 
-class MultiSelectState {
-  final Set<BaseAsset> selectedAssets;
-  final Set<BaseAsset> lockedSelectionAssets;
-  final bool forceEnable;
+@freezed
+abstract class MultiSelectState with _$MultiSelectState {
+  const MultiSelectState._();
 
-  const MultiSelectState({required this.selectedAssets, required this.lockedSelectionAssets, this.forceEnable = false});
+  const factory MultiSelectState({
+    required Set<BaseAsset> selectedAssets,
+    required Set<BaseAsset> lockedSelectionAssets,
+    @Default(false) bool forceEnable,
+  }) = _MultiSelectState;
 
   bool get isEnabled => selectedAssets.isNotEmpty;
 
@@ -27,37 +34,6 @@ class MultiSelectState {
   bool get onlyLocal => selectedAssets.any((asset) => asset.storage == AssetState.local);
 
   bool get onlyRemote => selectedAssets.any((asset) => asset.storage == AssetState.remote);
-
-  MultiSelectState copyWith({
-    Set<BaseAsset>? selectedAssets,
-    Set<BaseAsset>? lockedSelectionAssets,
-    bool? forceEnable,
-  }) {
-    return MultiSelectState(
-      selectedAssets: selectedAssets ?? this.selectedAssets,
-      lockedSelectionAssets: lockedSelectionAssets ?? this.lockedSelectionAssets,
-      forceEnable: forceEnable ?? this.forceEnable,
-    );
-  }
-
-  @override
-  String toString() =>
-      'MultiSelectState(selectedAssets: $selectedAssets, lockedSelectionAssets: $lockedSelectionAssets, forceEnable: $forceEnable)';
-
-  @override
-  bool operator ==(covariant MultiSelectState other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    final setEquals = const DeepCollectionEquality().equals;
-
-    return setEquals(other.selectedAssets, selectedAssets) &&
-        setEquals(other.lockedSelectionAssets, lockedSelectionAssets) &&
-        other.forceEnable == forceEnable;
-  }
-
-  @override
-  int get hashCode => selectedAssets.hashCode ^ lockedSelectionAssets.hashCode ^ forceEnable.hashCode;
 }
 
 class MultiSelectNotifier extends Notifier<MultiSelectState> {

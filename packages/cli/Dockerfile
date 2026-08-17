@@ -1,4 +1,4 @@
-FROM node:24.18.0-trixie-slim@sha256:ae91dcc111a68c9d2d81ff2a17bda61be126426176fde6fe7d08ab13b7f50573 AS core
+FROM node:24.19.0-trixie-slim@sha256:0711b541c1c33a8a530ac4f0d391baa9a15b3d804695b1b24a47daa5fb60e74d AS core
 
 WORKDIR /usr/src/app
 COPY package* pnpm* .pnpmfile.cjs ./

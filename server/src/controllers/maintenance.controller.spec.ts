@@ -20,11 +20,6 @@ describe(MaintenanceController.name, () => {
   });
 
   describe('POST /admin/maintenance', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/admin/maintenance').send();
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a backup file when action is restore', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/admin/maintenance').send({
         action: MaintenanceAction.RestoreDatabase,

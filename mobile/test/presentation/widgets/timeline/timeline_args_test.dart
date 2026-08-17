@@ -64,7 +64,7 @@ void main() {
 
     TimelineArgs? probed;
     final probe = Consumer(
-      builder: (_, ref, __) {
+      builder: (_, ref, _) {
         probed = ref.watch(timelineArgsProvider);
         return const SizedBox.shrink();
       },
@@ -103,7 +103,7 @@ void main() {
     TimelineArgs? probed;
     final probe = SliverToBoxAdapter(
       child: Consumer(
-        builder: (_, ref, __) {
+        builder: (_, ref, _) {
           probed = ref.watch(timelineArgsProvider);
           return const SizedBox.shrink();
         },
@@ -148,7 +148,7 @@ void main() {
 
     TimelineArgs? probed;
     final probe = Consumer(
-      builder: (_, ref, __) {
+      builder: (_, ref, _) {
         probed = ref.watch(timelineArgsProvider);
         return const SizedBox.shrink();
       },

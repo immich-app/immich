@@ -40,41 +40,6 @@ export const errorDto = {
   },
 };
 
-export const signupResponseDto = {
-  admin: {
-    avatarColor: expect.any(String),
-    id: expect.any(String),
-    name: 'Immich Admin',
-    email: 'admin@immich.cloud',
-    storageLabel: 'admin',
-    profileImagePath: '',
-    // why? lol
-    shouldChangePassword: true,
-    isAdmin: true,
-    createdAt: expect.any(String),
-    updatedAt: expect.any(String),
-    deletedAt: null,
-    oauthId: '',
-    quotaUsageInBytes: 0,
-    quotaSizeInBytes: null,
-    status: 'active',
-    license: null,
-    profileChangedAt: expect.any(String),
-  },
-};
-
-export const loginResponseDto = {
-  admin: {
-    accessToken: expect.any(String),
-    name: 'Immich Admin',
-    isAdmin: true,
-    isOnboarded: false,
-    profileImagePath: '',
-    shouldChangePassword: true,
-    userEmail: 'admin@immich.cloud',
-    userId: expect.any(String),
-  },
-};
 export const deviceDto = {
   current: {
     id: expect.any(String),

@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' show useState;
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/local_auth.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
 import 'package:immich_mobile/widgets/forms/pin_registration_form.dart';
@@ -31,7 +31,7 @@ class PinAuthPage extends HookConsumerWidget {
 
       context.showSnackBar(
         SnackBar(
-          content: Text('biometric_auth_enabled'.tr(), style: context.textTheme.labelLarge),
+          content: Text(context.t.biometric_auth_enabled, style: context.textTheme.labelLarge),
           duration: const Duration(seconds: 3),
           backgroundColor: context.colorScheme.primaryContainer,
         ),
@@ -52,7 +52,7 @@ class PinAuthPage extends HookConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     PinVerificationForm(
-                      description: 'enable_biometric_auth_description'.tr(),
+                      description: context.t.enable_biometric_auth_description,
                       onSuccess: (pinCode) {
                         Navigator.pop(buildContext);
                         unawaited(registerBiometric(pinCode));
@@ -71,7 +71,7 @@ class PinAuthPage extends HookConsumerWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text('locked_folder'.tr())),
+      appBar: AppBar(title: Text(context.t.locked_folder)),
       body: ListView(
         shrinkWrap: true,
         children: [
@@ -97,7 +97,7 @@ class PinAuthPage extends HookConsumerWidget {
                             icon: const Icon(Icons.fingerprint, size: 28),
                             onPressed: () => unawaited(enableBiometricAuth()),
                             label: Text(
-                              'use_biometric'.tr(),
+                              context.t.use_biometric,
                               style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor, fontSize: 18),
                             ),
                           ),

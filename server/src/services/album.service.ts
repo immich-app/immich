@@ -19,6 +19,7 @@ import { AlbumAssetCount, AlbumInfoOptions } from 'src/repositories/album.reposi
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
 import { asDateTimeString } from 'src/utils/date';
+import { findOrFail } from 'src/utils/misc';
 import { getPreferences } from 'src/utils/preferences';
 
 @Injectable()
@@ -351,11 +352,7 @@ export class AlbumService extends BaseService {
     await this.albumUserRepository.update({ albumId: id, userId }, { role: dto.role });
   }
 
-  private async findOrFail(id: string, authUserId: string, options: AlbumInfoOptions) {
-    const album = await this.albumRepository.getById(id, options, authUserId);
-    if (!album) {
-      throw new BadRequestException('Album not found');
-    }
-    return album;
+  private findOrFail(id: string, authUserId: string, options: AlbumInfoOptions) {
+    return findOrFail(() => this.albumRepository.getById(id, options, authUserId), 'Album');
   }
 }
