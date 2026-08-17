@@ -43,23 +43,32 @@ const MemoryUpdateSchema = nonEmptyPartial({
   memoryAt: isoDatetimeToDate.describe('Memory date'),
 }).meta({ id: 'MemoryUpdateDto' });
 
+const MemoryCreateBaseSchema = z.object({
+  memoryAt: isoDatetimeToDate.describe('Memory date'),
+  assetIds: z.array(z.uuidv4()).optional().describe('Asset IDs to associate with memory'),
+  isSaved: z.boolean().optional().describe('Is memory saved'),
+  seenAt: isoDatetimeToDate.optional().describe('Date when memory was seen'),
+  showAt: isoDatetimeToDate
+    .optional()
+    .describe('Date when memory should be shown')
+    .meta(new HistoryBuilder().added('v2.6.0').stable('v2.6.0').getExtensions()),
+  hideAt: isoDatetimeToDate
+    .optional()
+    .describe('Date when memory should be hidden')
+    .meta(new HistoryBuilder().added('v2.6.0').stable('v2.6.0').getExtensions()),
+});
+
 const MemoryCreateSchema = z
-  .object({
-    type: MemoryTypeSchema,
-    data: MemoryDataSchema,
-    memoryAt: isoDatetimeToDate.describe('Memory date'),
-    assetIds: z.array(z.uuidv4()).optional().describe('Asset IDs to associate with memory'),
-    isSaved: z.boolean().optional().describe('Is memory saved'),
-    seenAt: isoDatetimeToDate.optional().describe('Date when memory was seen'),
-    showAt: isoDatetimeToDate
-      .optional()
-      .describe('Date when memory should be shown')
-      .meta(new HistoryBuilder().added('v2.6.0').stable('v2.6.0').getExtensions()),
-    hideAt: isoDatetimeToDate
-      .optional()
-      .describe('Date when memory should be hidden')
-      .meta(new HistoryBuilder().added('v2.6.0').stable('v2.6.0').getExtensions()),
-  })
+  .discriminatedUnion('type', [
+    MemoryCreateBaseSchema.extend({
+      type: z.literal(MemoryType.OnThisDay),
+      data: OnThisDaySchema,
+    }),
+    MemoryCreateBaseSchema.extend({
+      type: z.literal(MemoryType.Birthday),
+      data: BirthdaySchema,
+    }),
+  ])
   .meta({ id: 'MemoryCreateDto' });
 
 const MemoryStatisticsResponseSchema = z
@@ -88,7 +97,8 @@ const MemoryResponseSchema = z
 
 export class MemorySearchDto extends createZodDto(MemorySearchSchema) {}
 export class MemoryUpdateDto extends createZodDto(MemoryUpdateSchema) {}
-export class MemoryCreateDto extends createZodDto(MemoryCreateSchema) {}
+export const MemoryCreateDto = createZodDto(MemoryCreateSchema);
+export type MemoryCreateDto = z.infer<typeof MemoryCreateSchema>;
 export class MemoryStatisticsResponseDto extends createZodDto(MemoryStatisticsResponseSchema) {}
 export class MemoryResponseDto extends createZodDto(MemoryResponseSchema) {}
 

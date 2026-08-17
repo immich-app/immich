@@ -1369,20 +1369,35 @@ export type MemoryResponseDto = {
     updatedAt: string;
 };
 export type MemoryCreateDto = {
-    /** Asset IDs to associate with memory */
-    assetIds?: string[];
-    data: BirthdayDto | OnThisDayDto;
-    /** Date when memory should be hidden */
-    hideAt?: string;
-    /** Is memory saved */
-    isSaved?: boolean;
     /** Memory date */
     memoryAt: string;
+    /** Asset IDs to associate with memory */
+    assetIds?: string[];
+    /** Is memory saved */
+    isSaved?: boolean;
     /** Date when memory was seen */
     seenAt?: string;
     /** Date when memory should be shown */
     showAt?: string;
-    "type": MemoryType;
+    /** Date when memory should be hidden */
+    hideAt?: string;
+    "type": Type;
+    data: OnThisDayDto;
+} | {
+    /** Memory date */
+    memoryAt: string;
+    /** Asset IDs to associate with memory */
+    assetIds?: string[];
+    /** Is memory saved */
+    isSaved?: boolean;
+    /** Date when memory was seen */
+    seenAt?: string;
+    /** Date when memory should be shown */
+    showAt?: string;
+    /** Date when memory should be hidden */
+    hideAt?: string;
+    "type": Type2;
+    data: BirthdayDto;
 };
 export type MemoryStatisticsResponseDto = {
     /** Total number of memories */
@@ -7466,6 +7481,12 @@ export enum MemorySearchOrder {
 }
 export enum MemoryType {
     OnThisDay = "on_this_day",
+    Birthday = "birthday"
+}
+export enum Type {
+    OnThisDay = "on_this_day"
+}
+export enum Type2 {
     Birthday = "birthday"
 }
 export enum PartnerDirection {

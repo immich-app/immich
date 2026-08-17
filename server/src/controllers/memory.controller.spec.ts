@@ -37,7 +37,11 @@ describe(MemoryController.name, () => {
         });
 
       expect(status).toBe(400);
-      expect(body).toEqual(errorDto.validationError([{ path: ['data'], message: 'Invalid input' }]));
+      expect(body).toEqual(
+        errorDto.validationError([
+          { path: ['data', 'year'], message: 'Invalid input: expected number, received undefined' },
+        ]),
+      );
     });
 
     it('should accept showAt and hideAt', async () => {

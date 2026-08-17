@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { Memory } from 'src/database';
 import { OnJob } from 'src/decorators';
@@ -116,10 +116,7 @@ export class MemoryService extends BaseService {
     }
 
     let birthdayYears = years;
-    let assetsPerYear = Math.min(
-      BIRTHDAY_MEMORY_ASSETS_PER_YEAR,
-      Math.floor(MEMORY_ASSET_LIMIT / years.length),
-    );
+    let assetsPerYear = Math.min(BIRTHDAY_MEMORY_ASSETS_PER_YEAR, Math.floor(MEMORY_ASSET_LIMIT / years.length));
 
     // Select random birthdays if there are more than 25 birthdays with assets
     if (years.length > MEMORY_ASSET_LIMIT) {
@@ -161,11 +158,6 @@ export class MemoryService extends BaseService {
   }
 
   async create(auth: AuthDto, dto: MemoryCreateDto) {
-    const isBirthdayData = 'personId' in dto.data;
-    if ((dto.type === MemoryType.Birthday) !== isBirthdayData) {
-      throw new BadRequestException(`Invalid data for memory type ${dto.type}`);
-    }
-
     const assetIds = dto.assetIds || [];
     const allowedAssetIds = await this.checkAccess({
       auth,

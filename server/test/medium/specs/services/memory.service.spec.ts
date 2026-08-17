@@ -69,7 +69,7 @@ describe(MemoryService.name, () => {
       const { user } = await ctx.newUser();
       const auth = factory.auth({ user });
       const dto = {
-        type: MemoryType.OnThisDay,
+        type: MemoryType.OnThisDay as const,
         data: { year: 2021 },
         memoryAt: new Date(2021),
       };
@@ -94,7 +94,7 @@ describe(MemoryService.name, () => {
       const { asset: asset2 } = await ctx.newAsset({ ownerId: user.id });
       const auth = factory.auth({ user });
       const dto = {
-        type: MemoryType.OnThisDay,
+        type: MemoryType.OnThisDay as const,
         data: { year: 2021 },
         memoryAt: new Date(2021),
         assetIds: [asset1.id, asset2.id],
@@ -116,7 +116,7 @@ describe(MemoryService.name, () => {
       const { asset: asset2 } = await ctx.newAsset({ ownerId: user2.id });
       const auth = factory.auth({ user: user1 });
       const dto = {
-        type: MemoryType.OnThisDay,
+        type: MemoryType.OnThisDay as const,
         data: { year: 2021 },
         memoryAt: new Date(2021),
         assetIds: [asset1.id, asset2.id],

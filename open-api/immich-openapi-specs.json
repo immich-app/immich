@@ -19969,90 +19969,172 @@
         "type": "object"
       },
       "MemoryCreateDto": {
-        "properties": {
-          "assetIds": {
-            "description": "Asset IDs to associate with memory",
-            "items": {
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "data": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/BirthdayDto"
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "memoryAt": {
+                "example": "2024-01-01T00:00:00.000Z",
+                "description": "Memory date",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
               },
-              {
+              "assetIds": {
+                "description": "Asset IDs to associate with memory",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+                }
+              },
+              "isSaved": {
+                "description": "Is memory saved",
+                "type": "boolean"
+              },
+              "seenAt": {
+                "description": "Date when memory was seen",
+                "example": "2024-01-01T00:00:00.000Z",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "showAt": {
+                "description": "Date when memory should be shown",
+                "x-immich-history": [
+                  {
+                    "version": "v2.6.0",
+                    "state": "Added"
+                  },
+                  {
+                    "version": "v2.6.0",
+                    "state": "Stable"
+                  }
+                ],
+                "x-immich-state": "Stable",
+                "example": "2024-01-01T00:00:00.000Z",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "hideAt": {
+                "description": "Date when memory should be hidden",
+                "x-immich-history": [
+                  {
+                    "version": "v2.6.0",
+                    "state": "Added"
+                  },
+                  {
+                    "version": "v2.6.0",
+                    "state": "Stable"
+                  }
+                ],
+                "x-immich-state": "Stable",
+                "example": "2024-01-01T00:00:00.000Z",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "on_this_day"
+                ]
+              },
+              "data": {
                 "$ref": "#/components/schemas/OnThisDayDto"
               }
+            },
+            "required": [
+              "memoryAt",
+              "type",
+              "data"
             ]
           },
-          "hideAt": {
-            "description": "Date when memory should be hidden",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v2.6.0",
-                "state": "Added"
+          {
+            "type": "object",
+            "properties": {
+              "memoryAt": {
+                "example": "2024-01-01T00:00:00.000Z",
+                "description": "Memory date",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
               },
-              {
-                "version": "v2.6.0",
-                "state": "Stable"
-              }
-            ],
-            "x-immich-state": "Stable"
-          },
-          "isSaved": {
-            "description": "Is memory saved",
-            "type": "boolean"
-          },
-          "memoryAt": {
-            "description": "Memory date",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
-          },
-          "seenAt": {
-            "description": "Date when memory was seen",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string"
-          },
-          "showAt": {
-            "description": "Date when memory should be shown",
-            "example": "2024-01-01T00:00:00.000Z",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
-            "type": "string",
-            "x-immich-history": [
-              {
-                "version": "v2.6.0",
-                "state": "Added"
+              "assetIds": {
+                "description": "Asset IDs to associate with memory",
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+                }
               },
-              {
-                "version": "v2.6.0",
-                "state": "Stable"
+              "isSaved": {
+                "description": "Is memory saved",
+                "type": "boolean"
+              },
+              "seenAt": {
+                "description": "Date when memory was seen",
+                "example": "2024-01-01T00:00:00.000Z",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "showAt": {
+                "description": "Date when memory should be shown",
+                "x-immich-history": [
+                  {
+                    "version": "v2.6.0",
+                    "state": "Added"
+                  },
+                  {
+                    "version": "v2.6.0",
+                    "state": "Stable"
+                  }
+                ],
+                "x-immich-state": "Stable",
+                "example": "2024-01-01T00:00:00.000Z",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "hideAt": {
+                "description": "Date when memory should be hidden",
+                "x-immich-history": [
+                  {
+                    "version": "v2.6.0",
+                    "state": "Added"
+                  },
+                  {
+                    "version": "v2.6.0",
+                    "state": "Stable"
+                  }
+                ],
+                "x-immich-state": "Stable",
+                "example": "2024-01-01T00:00:00.000Z",
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "birthday"
+                ]
+              },
+              "data": {
+                "$ref": "#/components/schemas/BirthdayDto"
               }
-            ],
-            "x-immich-state": "Stable"
-          },
-          "type": {
-            "$ref": "#/components/schemas/MemoryType"
+            },
+            "required": [
+              "memoryAt",
+              "type",
+              "data"
+            ]
           }
-        },
-        "required": [
-          "data",
-          "memoryAt",
-          "type"
-        ],
-        "type": "object"
+        ]
       },
       "MemoryResponseDto": {
         "properties": {
