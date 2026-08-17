@@ -314,12 +314,8 @@
   const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
     album = newAlbum;
 
-    // Invalidating in the middle of a navigation aborts it and leaves the loading bar
-    // running forever, which happens when an album update is triggered by the blur of
-    // the title/description while navigating away. Wait for the navigation to settle
-    // first. `complete` rejects on an aborted navigation and never resolves when the
-    // page is unloading, in which case there is nothing left to invalidate anyway.
-    await navigating.complete?.catch(() => {});
+    // invalidating during navigation causes an infinite page load
+    await navigating.complete;
 
     await invalidate('album:data');
   };
