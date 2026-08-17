@@ -45,9 +45,10 @@ import 'package:timezone/timezone.dart';
 ///
 /// Returns a tuple of (resolved DateTime, timezone offset Duration).
 (DateTime, Duration) resolveAssetDateTime(BaseAsset asset, ExifInfo? exifInfo) {
-  final dateTime = asset.createdAt.toLocal();
-  if (exifInfo?.dateTimeOriginal != null) {
-    return applyTimezoneOffset(dateTime: exifInfo!.dateTimeOriginal!, timeZone: exifInfo.timeZone);
+  if (exifInfo?.dateTimeOriginal == null) {
+    final dateTime = asset.createdAt.toLocal();
+    return (dateTime, dateTime.timeZoneOffset);
   }
-  return (dateTime, dateTime.timeZoneOffset);
+
+  return applyTimezoneOffset(dateTime: exifInfo!.dateTimeOriginal!, timeZone: exifInfo.timeZone);
 }
