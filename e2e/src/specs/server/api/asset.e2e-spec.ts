@@ -130,7 +130,7 @@ describe('/asset', () => {
     });
     await utils.createFace({
       assetId: user1Assets[0].id,
-      personId: person1.id,
+      personGroupId: person1.id,
     });
   };
   beforeAll(setupTests, 30_000);
