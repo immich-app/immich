@@ -7,6 +7,7 @@ import 'package:immich_ui/src/internal.dart';
 final scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
 class SnackbarAction {
+  // Optional label for the action button. Falls back to the localized "Undo" label when null
   final String? label;
   final FutureOr<void> Function() onPressed;
 
