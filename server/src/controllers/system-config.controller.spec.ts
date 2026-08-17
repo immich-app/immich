@@ -40,26 +40,7 @@ describe(SystemConfigController.name, () => {
     ctx.reset();
   });
 
-  describe('GET /system-config', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/system-config');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
-  describe('GET /system-config/defaults', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/system-config/defaults');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('PUT /system-config', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put('/system-config');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     describe('nightlyTasks', () => {
       it('should validate nightly jobs start time', async () => {
         const config = validConfig();

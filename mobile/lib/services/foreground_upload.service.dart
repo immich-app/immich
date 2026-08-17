@@ -10,7 +10,7 @@ import 'package:immich_mobile/domain/models/store.model.dart';
 import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/network_capability_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
@@ -241,16 +241,17 @@ class ForegroundUploadService {
     Completer<void>? cancelToken, {
     required UploadCallbacks callbacks,
   }) async {
+    final t = StaticTranslations.instance;
+    final assetNotFoundOnDevice = CurrentPlatform.isAndroid
+        ? t.asset_not_found_on_device_android
+        : t.asset_not_found_on_device_ios;
     File? file;
     File? livePhotoFile;
 
     try {
       final entity = await _storageRepository.getAssetEntityForAsset(asset);
       if (entity == null) {
-        callbacks.onError?.call(
-          asset.localId!,
-          CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
-        );
+        callbacks.onError?.call(asset.localId!, assetNotFoundOnDevice);
         return;
       }
 
@@ -284,10 +285,7 @@ class ForegroundUploadService {
         file = await _storageRepository.getFileForAsset(asset.id);
         if (file == null) {
           _logger.warning("Failed to get file ${asset.id} - ${asset.name}");
-          callbacks.onError?.call(
-            asset.localId!,
-            CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
-          );
+          callbacks.onError?.call(asset.localId!, assetNotFoundOnDevice);
           return;
         }
 
@@ -296,17 +294,14 @@ class ForegroundUploadService {
           livePhotoFile = await _storageRepository.getMotionFileForAsset(asset);
           if (livePhotoFile == null) {
             _logger.warning("Failed to obtain motion part of the livePhoto - ${asset.name}");
-            callbacks.onError?.call(
-              asset.localId!,
-              CurrentPlatform.isAndroid ? "asset_not_found_on_device_android".t() : "asset_not_found_on_device_ios".t(),
-            );
+            callbacks.onError?.call(asset.localId!, assetNotFoundOnDevice);
           }
         }
       }
 
       if (file == null) {
         _logger.warning("Failed to obtain file from iCloud for asset ${asset.id} - ${asset.name}");
-        callbacks.onError?.call(asset.localId!, "asset_not_found_on_icloud".t());
+        callbacks.onError?.call(asset.localId!, t.asset_not_found_on_icloud);
         return;
       }
 

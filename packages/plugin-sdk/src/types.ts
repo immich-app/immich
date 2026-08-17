@@ -1,4 +1,9 @@
-import type { AssetTypeEnum, AssetVisibility, WorkflowType } from '@immich/sdk';
+import type {
+  AssetTypeEnum,
+  AssetVisibility,
+  TagResponseDto,
+  WorkflowType,
+} from '@immich/sdk';
 
 type DeepPartial<T> = T extends Date
   ? T
@@ -18,6 +23,7 @@ export type WorkflowEventData<T extends WorkflowType> = WorkflowEventMap[T];
 export enum WorkflowTrigger {
   AssetCreate = 'AssetCreate',
   AssetMetadataExtraction = 'AssetMetadataExtraction',
+  AssetTagged = 'AssetTagged',
   // PersonRecognized = 'PersonRecognized',
 }
 
@@ -88,6 +94,7 @@ export type AssetV1 = {
     duplicateId: string | null;
     visibility: AssetVisibility;
     isEdited: boolean;
+    tags: TagResponseDto[];
     exifInfo: {
       make: string | null;
       model: string | null;

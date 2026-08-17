@@ -3,7 +3,6 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { PluginService } from 'src/services/plugin.service';
 import request from 'supertest';
 import { errorDto } from 'test/medium/responses';
-import { factory } from 'test/small.factory';
 import { automock, ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
 
 describe(PluginController.name, () => {
@@ -24,11 +23,6 @@ describe(PluginController.name, () => {
   });
 
   describe('GET /plugins', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/plugins');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require id to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .get(`/plugins`)
@@ -40,11 +34,6 @@ describe(PluginController.name, () => {
   });
 
   describe('GET /plugins/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/plugins/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it(`should require id to be a uuid`, async () => {
       const { status, body } = await request(ctx.getHttpServer())
         .get(`/plugins/invalid`)

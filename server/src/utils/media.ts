@@ -712,10 +712,6 @@ export class NvencSwDecodeConfig extends BaseHWConfig {
       : ['-cq:v', String(this.config.crf)];
   }
 
-  getThreadOptions() {
-    return [];
-  }
-
   getEncoderOptions(): string[] {
     const out = this.getOutputThreadOptions();
     if (this.tune.strictGop) {

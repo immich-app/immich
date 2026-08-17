@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -194,7 +193,7 @@ class SearchFilter {
   String? language;
   String? assetId;
   List<String>? tagIds;
-  Set<PersonDto> people;
+  Set<Person> people;
   SearchLocationFilter location;
   SearchCameraFilter camera;
   SearchDateFilter date;
@@ -250,7 +249,7 @@ class SearchFilter {
     String? language,
     String? ocr,
     String? assetId,
-    Set<PersonDto>? people,
+    Set<Person>? people,
     List<String>? tagIds,
     SearchLocationFilter? location,
     SearchCameraFilter? camera,

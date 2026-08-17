@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { Memory } from 'src/database';
 import { OnJob } from 'src/decorators';
@@ -8,6 +8,7 @@ import { MemoryCreateDto, MemoryResponseDto, MemorySearchDto, MemoryUpdateDto, m
 import { DatabaseLock, JobName, MemoryType, Permission, QueueName, SystemMetadataKey } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
 import { addAssets, removeAssets } from 'src/utils/asset.util';
+import { findOrFail } from 'src/utils/misc';
 
 const DAYS = 3;
 
@@ -162,11 +163,7 @@ export class MemoryService extends BaseService {
     return results;
   }
 
-  private async findOrFail(id: string) {
-    const memory = await this.memoryRepository.get(id);
-    if (!memory) {
-      throw new BadRequestException('Memory not found');
-    }
-    return memory;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.memoryRepository.get(id), 'Memory');
   }
 }

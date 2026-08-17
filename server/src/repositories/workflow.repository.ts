@@ -4,10 +4,12 @@ import { jsonArrayFrom, jsonObjectFrom } from 'kysely/helpers/postgres';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { DummyValue, GenerateSql } from 'src/decorators';
-import { WorkflowSearchDto } from 'src/dtos/workflow.dto';
+import { WorkflowGetLogsDto, WorkflowSearchDto } from 'src/dtos/workflow.dto';
 import { DB } from 'src/schema';
+import { WorkflowLogTable } from 'src/schema/tables/workflow-log.table';
 import { WorkflowStepTable } from 'src/schema/tables/workflow-step.table';
 import { WorkflowTable } from 'src/schema/tables/workflow.table';
+import { withTags } from 'src/utils/database';
 
 export type WorkflowStepUpsert = Omit<Insertable<WorkflowStepTable>, 'workflowId' | 'order'>;
 
@@ -26,6 +28,7 @@ export class WorkflowRepository {
         'workflow.enabled',
         'workflow.createdAt',
         'workflow.updatedAt',
+        'workflow.logging',
       ])
       .select((eb) => [
         jsonArrayFrom(
@@ -65,7 +68,7 @@ export class WorkflowRepository {
   getForWorkflowRun(id: string) {
     return this.db
       .selectFrom('workflow')
-      .select(['workflow.id', 'workflow.name', 'workflow.trigger'])
+      .select(['workflow.id', 'workflow.name', 'workflow.trigger', 'workflow.logging'])
       .select((eb) => [
         jsonArrayFrom(
           eb
@@ -98,11 +101,47 @@ export class WorkflowRepository {
 
   update(id: string, dto: Updateable<WorkflowTable>, steps?: WorkflowStepUpsert[]) {
     return this.db.transaction().execute(async (tx) => {
+      if (dto.logging === false) {
+        await tx.deleteFrom('workflow_log').where('workflowId', '=', id).execute();
+      }
       if (Object.values(dto).some((prop) => prop !== undefined)) {
         await tx.updateTable('workflow').set(dto).where('id', '=', id).executeTakeFirstOrThrow();
       }
       return this.replaceAndReturn(tx, id, steps);
     });
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, { result: undefined }] })
+  getLogs(id: string, dto: WorkflowGetLogsDto) {
+    return this.db
+      .selectFrom('workflow_log')
+      .select([
+        'workflow_log.id',
+        'workflow_log.createdAt',
+        'workflow_log.result',
+        'workflow_log.workflowId',
+        'workflow_log.workflowStepId',
+        'workflow_log.triggerDataId',
+      ])
+      .where('workflow_log.workflowId', '=', id)
+      .select((eb) => [
+        jsonObjectFrom(
+          eb
+            .selectFrom('workflow_step')
+            .whereRef('workflow_step.id', '=', 'workflow_log.workflowStepId')
+            .innerJoin('plugin_method', 'plugin_method.id', 'workflow_step.pluginMethodId')
+            .select(['plugin_method.pluginId', 'plugin_method.name as methodName', 'workflow_step.order']),
+        ).as('step'),
+      ])
+      .$if(dto.result !== undefined, (qb) => qb.where('workflow_log.result', '=', dto.result!))
+      .$if(dto.before !== undefined, (qb) => qb.where('workflow_log.createdAt', '<', dto.before!))
+      .orderBy('workflow_log.createdAt', 'desc')
+      .limit(dto.limit)
+      .execute();
+  }
+
+  log(dto: Insertable<WorkflowLogTable>) {
+    return this.db.insertInto('workflow_log').values(dto).execute();
   }
 
   async updateStep(id: string, dto: Updateable<WorkflowStepTable>) {
@@ -143,6 +182,7 @@ export class WorkflowRepository {
       .leftJoin('asset_exif', 'asset_exif.assetId', 'asset.id')
       .select((eb) => [
         ...columns.workflowAssetV1,
+        withTags,
         jsonObjectFrom(
           eb
             .selectFrom('asset_exif')

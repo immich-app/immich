@@ -170,6 +170,17 @@ void main() {
         verifyNever(() => assetService.trash(any()));
         verifyNever(() => assetService.delete(any()));
       });
+
+      testWidgets('is labelled trash', (tester) async {
+        await tester.pumpTestWidget(
+          context,
+          const ActionButton(action: DeleteAction(source: .timeline)),
+          overrides: context.selected({LocalAssetFactory.create()}),
+        );
+
+        expect(find.text(StaticTranslations.instance.trash), findsOneWidget);
+        expect(find.text(StaticTranslations.instance.delete), findsNothing);
+      });
     });
 
     group('prompt handling', () {

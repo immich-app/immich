@@ -287,7 +287,7 @@
         if (previousStyle) {
           // Preserves the custom map markers from the previous style when the theme is switched
           // Required until https://github.com/dimfeld/svelte-maplibre/issues/146 is fixed
-          const customLayers = previousStyle.layers.filter((l) => l.type == 'fill' && l.source == 'geojson');
+          const customLayers = previousStyle.layers.filter((l) => l.type === 'fill' && l.source === 'geojson');
           const layers = nextStyle.layers.concat(customLayers);
           const sources = nextStyle.sources;
 

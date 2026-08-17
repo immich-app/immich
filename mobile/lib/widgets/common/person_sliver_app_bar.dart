@@ -11,7 +11,7 @@ import 'package:immich_mobile/domain/models/person.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
@@ -28,7 +28,7 @@ class PersonSliverAppBar extends ConsumerStatefulWidget {
     required this.onBirthdayTap,
   });
 
-  final DriftPerson person;
+  final Person person;
   final VoidCallback onNameTap;
   final VoidCallback onBirthdayTap;
   final VoidCallback onShowOptions;
@@ -137,7 +137,7 @@ class _MesmerizingSliverAppBarState extends ConsumerState<PersonSliverAppBar> {
 
 class _ExpandedBackground extends ConsumerStatefulWidget {
   final double scrollProgress;
-  final DriftPerson person;
+  final Person person;
   final VoidCallback onNameTap;
   final VoidCallback onBirthdayTap;
 
@@ -261,7 +261,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                                     ),
                                   )
                                 : Text(
-                                    'add_a_name'.tr(),
+                                    context.t.add_a_name,
                                     style: context.textTheme.titleLarge?.copyWith(
                                       color: Colors.grey[400],
                                       fontSize: 36,
@@ -293,7 +293,7 @@ class _ExpandedBackgroundState extends ConsumerState<_ExpandedBackground> with S
                               )
                             else
                               Text(
-                                'add_birthday'.tr(),
+                                context.t.add_birthday,
                                 style: context.textTheme.labelLarge?.copyWith(
                                   color: Colors.grey[400],
                                   height: 1.2,
@@ -344,7 +344,7 @@ class _ItemCountTextState extends ConsumerState<_ItemCountText> {
     final assetCount = ref.watch(timelineServiceProvider.select((s) => s.totalAssets));
 
     return Text(
-      'items_count'.t(context: context, args: {"count": assetCount}),
+      context.t.items_count(count: assetCount),
       style: context.textTheme.labelLarge?.copyWith(
         fontWeight: FontWeight.bold,
         color: Colors.white,
