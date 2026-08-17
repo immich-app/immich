@@ -1,5 +1,17 @@
-import 'dart:ui';
 import 'package:easy_localization/easy_localization.dart';
+
+/// Builds a [DateFormat] for the active [Intl.defaultLocale] (set on app start),
+/// falling back to `en_US` for the handful of supported locales that intl has no
+/// date-formatting data for and would otherwise throw a `LocaleDataException` on.
+///
+/// [create] is a [DateFormat] constructor tear-off, e.g. `DateFormat.jm`.
+DateFormat localizedDateFormat(DateFormat Function([String? locale]) create) {
+  try {
+    return create(Intl.defaultLocale);
+  } on Exception {
+    return create('en_US');
+  }
+}
 
 extension TimeAgoExtension on DateTime {
   /// Displays the time difference of this [DateTime] object to the current time as a [String]
@@ -42,17 +54,17 @@ extension TimeAgoExtension on DateTime {
 extension TimeFormatting on DateTime {
   /// When [alwaysUse24HourFormat] is true, uses a 24-hour `HH:mm` format; otherwise uses the
   /// locale-aware 12-hour format (e.g. "1:30 PM").
-  String formatTime({required bool alwaysUse24HourFormat, String? locale}) =>
-      alwaysUse24HourFormat ? DateFormat('HH:mm').format(this) : DateFormat.jm(locale).format(this);
+  String formatTime({required bool alwaysUse24HourFormat}) =>
+      localizedDateFormat(alwaysUse24HourFormat ? DateFormat.Hm : DateFormat.jm).format(this);
 }
 
 extension DateFormatting on DateTime {
   /// Formats a single date, omitting the year when it is the current year.
   /// - This year: "Aug 28"
   /// - Other year: "Aug 28, 2023"
-  String formatDate({String? locale}) {
+  String formatDate() {
     final isCurrentYear = year == DateTime.now().year;
-    return isCurrentYear ? DateFormat.MMMd(locale).format(this) : DateFormat.yMMMd(locale).format(this);
+    return localizedDateFormat(isCurrentYear ? DateFormat.MMMd : DateFormat.yMMMd).format(this);
   }
 }
 
@@ -64,35 +76,29 @@ extension DateRangeFormatting on DateTime {
   /// - Date range of this year: "Mar 23-May 31"
   /// - Date range of other year: "Aug 28 - Sep 30, 2023"
   /// - Date range over multiple years: "Apr 17, 2021 - Apr 9, 2022"
-  static String formatDateRange(DateTime startDate, DateTime endDate, Locale? locale) {
-    final now = DateTime.now();
-    final currentYear = now.year;
-    final localeString = locale?.toString() ?? 'en_US';
+  static String formatDateRange(DateTime startDate, DateTime endDate) {
+    final currentYear = DateTime.now().year;
 
     // Check if it's a single date (same day)
     if (startDate.year == endDate.year && startDate.month == endDate.month && startDate.day == endDate.day) {
-      return startDate.formatDate(locale: localeString);
+      return startDate.formatDate();
     }
 
     // It's a date range
     if (startDate.year == endDate.year) {
+      final format = localizedDateFormat(DateFormat.MMMd);
       // Same year
       if (startDate.year == currentYear) {
         // Date range of this year: "Mar 23-May 31"
-        final startFormatted = DateFormat.MMMd(localeString).format(startDate);
-        final endFormatted = DateFormat.MMMd(localeString).format(endDate);
-        return '$startFormatted - $endFormatted';
+        return '${format.format(startDate)} - ${format.format(endDate)}';
       } else {
         // Date range of other year: "Aug 28 - Sep 30, 2023"
-        final startFormatted = DateFormat.MMMd(localeString).format(startDate);
-        final endFormatted = DateFormat.MMMd(localeString).format(endDate);
-        return '$startFormatted - $endFormatted, ${startDate.year}';
+        return '${format.format(startDate)} - ${format.format(endDate)}, ${startDate.year}';
       }
     } else {
       // Date range over multiple years: "Apr 17, 2021 - Apr 9, 2022"
-      final startFormatted = DateFormat.yMMMd(localeString).format(startDate);
-      final endFormatted = DateFormat.yMMMd(localeString).format(endDate);
-      return '$startFormatted - $endFormatted';
+      final format = localizedDateFormat(DateFormat.yMMMd);
+      return '${format.format(startDate)} - ${format.format(endDate)}';
     }
   }
 }
