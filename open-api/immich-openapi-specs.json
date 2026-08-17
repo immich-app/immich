@@ -3313,7 +3313,7 @@
             "state": "Added"
           }
         ],
-        "x-immich-permission": "apiKey.update"
+        "x-immich-permission": "apiKey.rotate"
       }
     },
     "/assets": {
@@ -21068,6 +21068,7 @@
           "apiKey.read",
           "apiKey.update",
           "apiKey.delete",
+          "apiKey.rotate",
           "asset.read",
           "asset.update",
           "asset.delete",

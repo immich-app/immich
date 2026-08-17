@@ -219,7 +219,7 @@ describe(ApiKeyService.name, () => {
 
     it('should not rotate a key with permissions the caller does not have', async () => {
       const auth = AuthFactory.from()
-        .apiKey({ permissions: [Permission.ApiKeyUpdate] })
+        .apiKey({ permissions: [Permission.ApiKeyRotate] })
         .build();
       const apiKey = ApiKeyFactory.create({ userId: auth.user.id, permissions: [Permission.All] });
 

@@ -179,9 +179,17 @@ describe('/api-keys', () => {
       expect(body).toEqual(errorDto.badRequest('API Key not found'));
     });
 
+    it('should not work without permission', async () => {
+      const { apiKey } = await create(user.accessToken, [Permission.ApiKeyUpdate]);
+      const { secret } = await create(user.accessToken, [Permission.ApiKeyUpdate]);
+      const { status, body } = await request(app).post(`/api-keys/${apiKey.id}/rotate`).set('x-api-key', secret);
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.missingPermission('apiKey.rotate'));
+    });
+
     it('should not rotate a key with permissions the caller does not have', async () => {
       const { apiKey } = await create(user.accessToken, [Permission.All]);
-      const { secret } = await create(user.accessToken, [Permission.ApiKeyUpdate]);
+      const { secret } = await create(user.accessToken, [Permission.ApiKeyRotate]);
       const { status, body } = await request(app).post(`/api-keys/${apiKey.id}/rotate`).set('x-api-key', secret);
       expect(status).toBe(400);
       expect(body).toEqual(errorDto.badRequest('Cannot rotate an API Key with permissions you do not have'));

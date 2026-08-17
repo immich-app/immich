@@ -88,7 +88,7 @@ export class ApiKeyController {
   }
 
   @Post(':id/rotate')
-  @Authenticated({ permission: Permission.ApiKeyUpdate })
+  @Authenticated({ permission: Permission.ApiKeyRotate })
   @Endpoint({
     summary: 'Rotate an API key',
     description:
