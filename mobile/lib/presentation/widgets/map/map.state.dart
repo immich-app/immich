@@ -74,6 +74,7 @@ class MapStateNotifier extends Notifier<MapState> {
 
   final StreamController<TimelineMapOptions> _optionsController = StreamController.broadcast();
 
+  // ignore: avoid-public-notifier-properties
   Stream<TimelineMapOptions> get optionsStream => _optionsController.stream;
 
   bool setBounds(LatLngBounds bounds) {
@@ -124,6 +125,7 @@ class MapStateNotifier extends Notifier<MapState> {
     unawaited(ref.read(settingsProvider).write(.mapCustomFrom, range.from));
     unawaited(ref.read(settingsProvider).write(.mapCustomTo, range.to));
     state = state.copyWith(timeRange: range);
+    _optionsController.add(state.toOptions());
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
