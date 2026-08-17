@@ -1,4 +1,3 @@
-import type { WorkflowType } from '@immich/sdk';
 import { hostFunctions } from 'src/host-functions.js';
 import type {
   WorkflowEventPayload,
@@ -53,53 +52,56 @@ type ConfigValue<
       'required' extends keyof T ? T['required'] : undefined
     >['properties'];
 
-export const getWrapper =
-  <T extends Record<string, any>>() =>
-  <
-    K extends T['methods'][number]['name'],
-    L extends WorkflowType = (T['methods'][number] & {
-      name: K;
-    })['types'][number],
-    TConfig = ConfigValue<(T['methods'][number] & { name: K })['schema']>,
-  >(
-    fn: (
-      payload: WorkflowEventPayload<L, TConfig> & {
-        functions: ReturnType<typeof hostFunctions>;
-      },
-    ) => WorkflowResponse<L> | undefined,
-  ) =>
-  () => {
-    const input = Host.inputString();
+export const wrapper = <T extends Record<string, any>>(methods: {
+  [K in T['methods'][number] as K['name']]: (
+    payload: WorkflowEventPayload<
+      K['types'][number],
+      ConfigValue<K['schema']>
+    > & {
+      functions: ReturnType<typeof hostFunctions>;
+    },
+  ) => WorkflowResponse<K['types'][number]> | undefined;
+}) => {
+  const result: { [K in keyof typeof methods]: () => void } = {} as never;
+  for (const name of Object.keys(methods) as (keyof typeof methods)[]) {
+    result[name] = () => {
+      const input = Host.inputString();
 
-    try {
-      const payload = JSON.parse(input) as WorkflowEventPayload<K, TConfig>;
-      const event = {
-        ...payload,
-        functions: hostFunctions(payload.workflow.authToken),
-      };
+      try {
+        const payload = JSON.parse(input) as WorkflowEventPayload<
+          typeof name,
+          (T['methods'][number]['name'] & { name: typeof name })['schema']
+        >;
+        const event = {
+          ...payload,
+          functions: hostFunctions(payload.workflow.authToken),
+        };
 
-      const eventConfigBefore = JSON.stringify(event.config);
+        const eventConfigBefore = JSON.stringify(event.config);
 
-      console.debug(
-        `Inputs: trigger=${event.trigger}, event=${event.type}, config=${eventConfigBefore}`,
-      );
+        console.debug(
+          `Inputs: trigger=${event.trigger}, event=${String(event.type)}, config=${eventConfigBefore}`,
+        );
 
-      const response = fn(event) ?? {};
+        const response = methods[name](event) ?? {};
 
-      // if config changed, notify host
-      const eventConfigAfter = JSON.stringify(event.config);
-      if (!response.config && eventConfigBefore !== eventConfigAfter) {
-        response.config = event.config as WorkflowStepConfig;
+        // if config changed, notify host
+        const eventConfigAfter = JSON.stringify(event.config);
+        if (!response.config && eventConfigBefore !== eventConfigAfter) {
+          response.config = event.config as WorkflowStepConfig;
+        }
+
+        console.debug(
+          `Outputs: workflow=${JSON.stringify(response.workflow)}, changes=${JSON.stringify(response.changes)}, data=${JSON.stringify(response.data)}, config=${JSON.stringify(response.config)}`,
+        );
+
+        const output = JSON.stringify(response);
+        Host.outputString(output);
+      } catch (error: Error | any) {
+        console.error(`Unhandled plugin exception: ${error.message || error}`);
+        throw error;
       }
-
-      console.debug(
-        `Outputs: workflow=${JSON.stringify(response.workflow)}, changes=${JSON.stringify(response.changes)}, data=${JSON.stringify(response.data)}, config=${JSON.stringify(response.config)}`,
-      );
-
-      const output = JSON.stringify(response);
-      Host.outputString(output);
-    } catch (error: Error | any) {
-      console.error(`Unhandled plugin exception: ${error.message || error}`);
-      throw error;
-    }
-  };
+    };
+  }
+  return result;
+};

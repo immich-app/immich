@@ -1,6 +1,6 @@
 /**
  * Immich
- * 3.0.0-rc.2
+ * 3.1.0
  * DO NOT MODIFY - This file has been generated using oazapfts.
  * See https://www.npmjs.com/package/oazapfts
  */
@@ -342,6 +342,10 @@ export type RatingsResponse = {
     /** Whether ratings are enabled */
     enabled: boolean;
 };
+export type RecentlyAddedResponse = {
+    /** Whether the recently added page appears in the web sidebar */
+    sidebarWeb: boolean;
+};
 export type SharedLinksResponse = {
     /** Whether shared links are enabled */
     enabled: boolean;
@@ -364,6 +368,7 @@ export type UserPreferencesResponseDto = {
     people: PeopleResponse;
     purchase: PurchaseResponse;
     ratings: RatingsResponse;
+    recentlyAdded: RecentlyAddedResponse;
     sharedLinks: SharedLinksResponse;
     tags: TagsResponse;
 };
@@ -421,6 +426,10 @@ export type RatingsUpdate = {
     /** Whether ratings are enabled */
     enabled?: boolean;
 };
+export type RecentlyAddedUpdate = {
+    /** Whether the recently added page appears in the web sidebar */
+    sidebarWeb?: boolean;
+};
 export type SharedLinksUpdate = {
     /** Whether shared links are enabled */
     enabled?: boolean;
@@ -444,6 +453,7 @@ export type UserPreferencesUpdateDto = {
     people?: PeopleUpdate;
     purchase?: PurchaseUpdate;
     ratings?: RatingsUpdate;
+    recentlyAdded?: RecentlyAddedUpdate;
     sharedLinks?: SharedLinksUpdate;
     tags?: TagsUpdate;
 };
@@ -530,7 +540,7 @@ export type CreateAlbumDto = {
     /** Initial asset IDs */
     assetIds?: string[];
     /** Album description */
-    description?: string;
+    description?: string | null;
 };
 export type AlbumsAddAssetsDto = {
     /** Album IDs */
@@ -557,7 +567,7 @@ export type UpdateAlbumDto = {
     /** Album thumbnail asset ID */
     albumThumbnailAssetId?: string;
     /** Album description */
-    description?: string;
+    description?: string | null;
     /** Enable activity feed */
     isActivityEnabled?: boolean;
     order?: AssetOrder;
@@ -2292,6 +2302,10 @@ export type SystemConfigBackupsDto = {
 export type SystemConfigFFmpegRealtimeDto = {
     /** Enable real-time HLS transcoding (alpha) */
     enabled: boolean;
+    /** Resolutions to use for real-time HLS transcoding */
+    resolutions: HlsVideoResolution[];
+    /** Video codecs to use for real-time HLS transcoding */
+    videoCodecs: VideoCodec[];
 };
 export type SystemConfigFFmpegDto = {
     accel: TranscodeHWAccel;
@@ -2777,6 +2791,8 @@ export type WorkflowResponseDto = {
     enabled: boolean;
     /** Workflow ID */
     id: string;
+    /** Workflow logs run results */
+    logging: boolean;
     /** Workflow name */
     name: string | null;
     /** Workflow steps */
@@ -2791,6 +2807,8 @@ export type WorkflowCreateDto = {
     description?: string | null;
     /** Workflow enabled */
     enabled?: boolean;
+    /** Workflow logs run results */
+    logging?: boolean;
     /** Workflow name */
     name?: string | null;
     steps?: WorkflowStepDto[];
@@ -2808,11 +2826,29 @@ export type WorkflowUpdateDto = {
     description?: string | null;
     /** Workflow enabled */
     enabled?: boolean;
+    /** Workflow logs run results */
+    logging?: boolean;
     /** Workflow name */
     name?: string | null;
     steps?: WorkflowStepDto[];
     /** Workflow trigger type */
     trigger?: WorkflowTrigger;
+};
+export type WorkflowLogEntryDto = {
+    /** Workflow run date/time */
+    at: string;
+    /** Workflow log entry ID */
+    id: string;
+    /** Last step ran, if the workflow ended early */
+    lastStep?: {
+        /** Index of the step in the workflow */
+        index: number;
+        /** Method of the step */
+        method: string;
+    };
+    result: WorkflowResult;
+    /** Workflow trigger data ID */
+    triggerDataId?: string;
 };
 export type WorkflowShareStepDto = {
     /** Step configuration */
@@ -5750,13 +5786,18 @@ export function searchLargeAssets({ albumIds, city, country, createdAfter, creat
 /**
  * Search assets by metadata
  */
-export function searchAssets({ metadataSearchDto }: {
+export function searchAssets({ key, slug, metadataSearchDto }: {
+    key?: string;
+    slug?: string;
     metadataSearchDto: MetadataSearchDto;
 }, opts?: Oazapfts.RequestOpts) {
     return oazapfts.ok(oazapfts.fetchJson<{
         status: 200;
         data: SearchResponseDto;
-    }>("/search/metadata", oazapfts.json({
+    }>(`/search/metadata${QS.query(QS.explode({
+        key,
+        slug
+    }))}`, oazapfts.json({
         ...opts,
         method: "POST",
         body: metadataSearchDto
@@ -6958,10 +6999,11 @@ export function getUniqueOriginalPaths(opts?: Oazapfts.RequestOpts) {
 /**
  * List all workflows
  */
-export function searchWorkflows({ description, enabled, id, name, trigger }: {
+export function searchWorkflows({ description, enabled, id, logging, name, trigger }: {
     description?: string;
     enabled?: boolean;
     id?: string;
+    logging?: boolean;
     name?: string;
     trigger?: WorkflowTrigger;
 }, opts?: Oazapfts.RequestOpts) {
@@ -6972,6 +7014,7 @@ export function searchWorkflows({ description, enabled, id, name, trigger }: {
         description,
         enabled,
         id,
+        logging,
         name,
         trigger
     }))}`, {
@@ -7043,6 +7086,26 @@ export function updateWorkflow({ id, workflowUpdateDto }: {
         method: "PUT",
         body: workflowUpdateDto
     })));
+}
+/**
+ * Retrieve workflow logs
+ */
+export function getWorkflowLogs({ before, id, limit, result }: {
+    before?: string;
+    id: string;
+    limit?: number;
+    result?: WorkflowResult;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: WorkflowLogEntryDto[];
+    }>(`/workflows/${encodeURIComponent(id)}/logs${QS.query(QS.explode({
+        before,
+        limit,
+        result
+    }))}`, {
+        ...opts
+    }));
 }
 /**
  * Retrieve a workflow
@@ -7291,6 +7354,7 @@ export enum Permission {
     WorkflowRead = "workflow.read",
     WorkflowUpdate = "workflow.update",
     WorkflowDelete = "workflow.delete",
+    WorkflowLogs = "workflow.logs",
     AdminUserCreate = "adminUser.create",
     AdminUserRead = "adminUser.read",
     AdminUserUpdate = "adminUser.update",
@@ -7404,7 +7468,8 @@ export enum WorkflowType {
 }
 export enum WorkflowTrigger {
     AssetCreate = "AssetCreate",
-    AssetMetadataExtraction = "AssetMetadataExtraction"
+    AssetMetadataExtraction = "AssetMetadataExtraction",
+    AssetTagged = "AssetTagged"
 }
 export enum QueueJobStatus {
     Active = "active",
@@ -7619,6 +7684,13 @@ export enum CQMode {
     Cqp = "cqp",
     Icq = "icq"
 }
+export enum HlsVideoResolution {
+    $480 = 480,
+    $720 = 720,
+    $1080 = 1080,
+    $1440 = 1440,
+    $2160 = 2160
+}
 export enum ToneMapping {
     Hable = "hable",
     Mobius = "mobius",
@@ -7659,6 +7731,11 @@ export enum OAuthTokenEndpointAuthMethod {
 export enum AssetOrderBy {
     TakenAt = "takenAt",
     CreatedAt = "createdAt"
+}
+export enum WorkflowResult {
+    Completed = "completed",
+    Halted = "halted",
+    Error = "error"
 }
 export enum ReleaseType {
     Major = "major",

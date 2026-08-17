@@ -41,4 +41,7 @@ export class WorkflowTable {
 
   @Column({ type: 'boolean', default: true })
   enabled!: Generated<boolean>;
+
+  @Column({ type: 'boolean', default: false })
+  logging!: Generated<boolean>;
 }

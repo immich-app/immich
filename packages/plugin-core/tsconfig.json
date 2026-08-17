@@ -4,7 +4,7 @@
     "declaration": true,
     "emitDeclarationOnly": true,
     "esModuleInterop": true, // Enables compatibility with Babel-style module imports
-    "lib": ["es2020"], // Specify a list of library files to be included in the compilation
+    "lib": ["es2020", "DOM"], // Specify a list of library files to be included in the compilation
     "module": "nodenext", // Specify module code generation
     "moduleResolution": "nodenext",
     "noEmit": true, // Do not emit outputs (no .js or .d.ts files)

@@ -54,11 +54,11 @@ export class JobRepository {
         const label = `${Service.name}.${handler.name}`;
 
         // one handler per job
-        if (this.handlers[jobName]) {
+        if (Object.hasOwn(this.handlers, jobName)) {
           const jobKey = getKeyByValue(JobName, jobName);
           const errorMessage = `Failed to add job handler for ${label}`;
           this.logger.error(
-            `${errorMessage}. JobName.${jobKey} is already handled by ${this.handlers[jobName].label}.`,
+            `${errorMessage}. JobName.${jobKey} is already handled by ${this.handlers[jobName]!.label}.`,
           );
           throw new ImmichStartupError(errorMessage);
         }
@@ -104,24 +104,26 @@ export class JobRepository {
   }
 
   teardown() {
-    if (this.workerWatcher) {
-      clearInterval(this.workerWatcher);
-      this.workerWatcher = undefined;
+    if (!this.workerWatcher) {
+      return;
     }
+
+    clearInterval(this.workerWatcher);
+    this.workerWatcher = undefined;
   }
 
   private async checkWorkers() {
-    let present: boolean;
+    let isPresent: boolean;
     try {
       const suffix = `:w:${ImmichWorker.Microservices}`;
       const workers = await this.getQueue(QueueName.BackgroundTask).getWorkers();
-      present = workers.some((worker) => worker.rawname?.endsWith(suffix));
+      isPresent = workers.some((worker) => worker.rawname?.endsWith(suffix));
     } catch {
       return;
     }
 
-    if (this.microservicesPresent !== present) {
-      if (present) {
+    if (this.microservicesPresent !== isPresent) {
+      if (isPresent) {
         this.logger.log('Microservices worker connected.');
       } else {
         this.logger.warn(
@@ -129,7 +131,7 @@ export class JobRepository {
         );
       }
     }
-    this.microservicesPresent = present;
+    this.microservicesPresent = isPresent;
   }
 
   async run({ name, data }: JobItem) {
@@ -212,7 +214,7 @@ export class JobRepository {
         // need to use add() instead of addBulk() for jobId/deduplication to take effect
         promises.push(this.getQueue(queueName).add(item.name, item.data, job.options));
       } else {
-        itemsByQueue[queueName] = itemsByQueue[queueName] || [];
+        itemsByQueue[queueName] ||= [];
         itemsByQueue[queueName].push(job);
       }
     }

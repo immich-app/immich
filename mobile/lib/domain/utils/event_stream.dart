@@ -32,7 +32,7 @@ class EventStream {
   }
 
   /// Closes the stream controller
-  void dispose() {
-    _controller.close();
+  Future<void> dispose() {
+    return _controller.close();
   }
 }

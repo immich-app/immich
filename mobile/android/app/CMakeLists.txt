@@ -7,6 +7,7 @@ project(native_buffer LANGUAGES C)
 
 add_library(native_buffer SHARED
     src/main/cpp/native_buffer.c
+    src/main/cpp/native_image.c
 )
 
 target_link_libraries(native_buffer jnigraphics)

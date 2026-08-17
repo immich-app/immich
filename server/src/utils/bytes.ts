@@ -20,7 +20,7 @@ export function asHumanReadable(bytes: number, precision = 1): string {
     }
   }
 
-  return `${remainder.toFixed(magnitude == 0 ? 0 : precision)} ${units[magnitude]}`;
+  return `${remainder.toFixed(magnitude === 0 ? 0 : precision)} ${units[magnitude]}`;
 }
 
 // if an asset is jsonified in the DB before being returned, its buffer fields will be hex-encoded strings

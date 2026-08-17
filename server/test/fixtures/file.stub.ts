@@ -6,13 +6,6 @@ export const fileStub = {
     originalName: 'asset_1.jpeg',
     size: 42,
   }),
-  livePhotoMotion: Object.freeze({
-    uuid: 'live-photo-motion-asset',
-    originalPath: 'fake_path/asset_1.mp4',
-    checksum: Buffer.from('live photo file hash', 'utf8'),
-    originalName: 'asset_1.mp4',
-    size: 69,
-  }),
   photo: Object.freeze({
     uuid: 'photo',
     originalPath: 'fake_path/photo1.jpeg',

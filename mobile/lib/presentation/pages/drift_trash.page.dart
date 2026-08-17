@@ -2,12 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/action_buttons/base_action_button.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/trash_bottom_sheet.widget.dart';
-import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.widget.dart';
+import 'package:immich_mobile/providers/infrastructure/action.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -35,13 +34,13 @@ class DriftTrashPage extends StatelessWidget {
       ],
       child: Timeline(
         appBar: SliverAppBar(
-          title: Text('trash'.t(context: context)),
+          title: Text(context.t.trash),
           floating: true,
           snap: true,
           pinned: true,
           centerTitle: true,
           elevation: 0,
-          actions: [const _TrashKebabMenu()],
+          actions: const [_TrashKebabMenu()],
         ),
         topSliverWidgetHeight: 24,
         topSliverWidget: Consumer(

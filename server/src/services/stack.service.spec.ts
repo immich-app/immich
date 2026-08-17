@@ -85,8 +85,9 @@ describe(StackService.name, () => {
 
     it('should fail if stack could not be found', async () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.stack.getById.mockResolvedValue(void 0);
 
-      await expect(sut.get(authStub.admin, 'stack-id')).rejects.toBeInstanceOf(Error);
+      await expect(sut.get(authStub.admin, 'stack-id')).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.access.stack.checkOwnerAccess).toHaveBeenCalled();
       expect(mocks.stack.getById).toHaveBeenCalledWith('stack-id');
@@ -124,8 +125,9 @@ describe(StackService.name, () => {
 
     it('should fail if stack could not be found', async () => {
       mocks.access.stack.checkOwnerAccess.mockResolvedValue(new Set(['stack-id']));
+      mocks.stack.getById.mockResolvedValue(void 0);
 
-      await expect(sut.update(AuthFactory.create(), 'stack-id', {})).rejects.toBeInstanceOf(Error);
+      await expect(sut.update(AuthFactory.create(), 'stack-id', {})).rejects.toBeInstanceOf(BadRequestException);
 
       expect(mocks.stack.getById).toHaveBeenCalledWith('stack-id');
       expect(mocks.stack.update).not.toHaveBeenCalled();

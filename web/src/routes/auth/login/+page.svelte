@@ -42,9 +42,9 @@
       return;
     }
 
-    if (oauth.isCallback(globalThis.location)) {
+    if (oauth.isCallback(location)) {
       try {
-        const user = await oauth.login(globalThis.location);
+        const user = await oauth.login(location);
 
         if (!user.isOnboarded) {
           await onOnboarding();
@@ -63,11 +63,11 @@
 
     try {
       if (
-        (featureFlagsManager.value.oauthAutoLaunch && !oauth.isAutoLaunchDisabled(globalThis.location)) ||
-        oauth.isAutoLaunchEnabled(globalThis.location)
+        (featureFlagsManager.value.oauthAutoLaunch && !oauth.isAutoLaunchDisabled(location)) ||
+        oauth.isAutoLaunchEnabled(location)
       ) {
         await goto(Route.login({ autoLaunch: 0 }), { replaceState: true });
-        await oauth.authorize(globalThis.location);
+        await oauth.authorize(location);
         return;
       }
     } catch (error) {
@@ -113,7 +113,7 @@
   const handleOAuthLogin = async () => {
     oauthLoading = true;
     oauthError = '';
-    const success = await oauth.authorize(globalThis.location);
+    const success = await oauth.authorize(location);
     if (!success) {
       oauthLoading = false;
       oauthError = $t('errors.unable_to_login_with_oauth');

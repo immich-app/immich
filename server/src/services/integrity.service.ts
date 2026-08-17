@@ -35,7 +35,7 @@ import {
   IIntegrityUntrackedFilesJob,
 } from 'src/types';
 import { ImmichFileResponse } from 'src/utils/file';
-import { handlePromiseError } from 'src/utils/misc';
+import { batched, handlePromiseError } from 'src/utils/misc';
 
 /**
  * Untracked Files:
@@ -201,7 +201,7 @@ export class IntegrityService extends BaseService {
     const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReport.UntrackedFile);
 
     let total = 0;
-    for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+    for await (const batchReports of batched(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
       await this.jobRepository.queue({
         name: JobName.IntegrityUntrackedFilesRefresh,
         data: {
@@ -312,12 +312,14 @@ export class IntegrityService extends BaseService {
     this.logger.log(`Processing batch of ${items.length} reports to check if they are out of date.`);
 
     const results = await Promise.all(
-      items.map(({ reportId, path }) =>
-        this.storageRepository
-          .stat(path)
-          .then(() => void 0)
-          .catch(() => reportId),
-      ),
+      items.map(async ({ reportId, path }) => {
+        try {
+          await this.storageRepository.stat(path);
+          return;
+        } catch {
+          return reportId;
+        }
+      }),
     );
 
     const reportIds = results.filter(Boolean) as string[];
@@ -336,7 +338,7 @@ export class IntegrityService extends BaseService {
     const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReport.MissingFile);
 
     let total = 0;
-    for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+    for await (const batchReports of batched(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
       await this.jobRepository.queue({
         name: JobName.IntegrityMissingFilesRefresh,
         data: {
@@ -360,10 +362,10 @@ export class IntegrityService extends BaseService {
 
     this.logger.log(`Scanning for missing files...`);
 
-    const assetPaths = this.integrityRepository.streamAssetPaths();
+    const assetPaths = this.integrityRepository.streamAssetPathsForMissingFiles();
 
     let total = 0;
-    for await (const batchPaths of chunk(assetPaths, JOBS_LIBRARY_PAGINATION_SIZE)) {
+    for await (const batchPaths of batched(assetPaths, JOBS_LIBRARY_PAGINATION_SIZE)) {
       await this.jobRepository.queue({
         name: JobName.IntegrityMissingFiles,
         data: {
@@ -383,12 +385,14 @@ export class IntegrityService extends BaseService {
     this.logger.log(`Processing batch of ${items.length} files to check if they are missing.`);
 
     const results = await Promise.all(
-      items.map((item) =>
-        this.storageRepository
-          .stat(item.path)
-          .then(() => ({ ...item, exists: true }))
-          .catch(() => ({ ...item, exists: false })),
-      ),
+      items.map(async (item) => {
+        try {
+          await this.storageRepository.stat(item.path);
+          return { ...item, exists: true };
+        } catch {
+          return { ...item, exists: false };
+        }
+      }),
     );
 
     const outdatedReports = results
@@ -420,12 +424,14 @@ export class IntegrityService extends BaseService {
     this.logger.log(`Processing batch of ${paths.length} reports to check if they are out of date.`);
 
     const results = await Promise.all(
-      paths.map(({ reportId, path }) =>
-        this.storageRepository
-          .stat(path)
-          .then(() => reportId)
-          .catch(() => void 0),
-      ),
+      paths.map(async ({ reportId, path }) => {
+        try {
+          await this.storageRepository.stat(path);
+          return reportId;
+        } catch {
+          return;
+        }
+      }),
     );
 
     const reportIds = results.filter(Boolean) as string[];
@@ -444,7 +450,7 @@ export class IntegrityService extends BaseService {
     const reports = this.integrityRepository.streamIntegrityReportsWithAssetChecksum(IntegrityReport.ChecksumFail);
 
     let total = 0;
-    for await (const batchReports of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+    for await (const batchReports of batched(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
       await this.jobRepository.queue({
         name: JobName.IntegrityChecksumFilesRefresh,
         data: {
@@ -532,8 +538,7 @@ export class IntegrityService extends BaseService {
     const { count } = await this.integrityRepository.getAssetCount();
     const checkpoint = await this.systemMetadataRepository.get(SystemMetadataKey.IntegrityChecksumCheckpoint);
 
-    let startMarker: Date | undefined = checkpoint?.date ? new Date(checkpoint.date) : undefined;
-    let endMarker: Date | undefined;
+    const startMarker = checkpoint?.date ? new Date(checkpoint.date) : undefined;
 
     const printStats = () => {
       const averageTime = ((Date.now() - startedAt) / processed).toFixed(2);
@@ -546,31 +551,25 @@ export class IntegrityService extends BaseService {
 
     let lastCreatedAt: Date | undefined;
 
-    finishEarly: do {
-      this.logger.log(
-        `Processing assets in range [${startMarker?.toISOString() ?? 'beginning'}, ${endMarker?.toISOString() ?? 'end'}]`,
-      );
+    this.logger.log(`Processing assets from ${startMarker?.toISOString() ?? 'beginning'}`);
 
-      const assets = this.integrityRepository.streamAssetChecksums(startMarker, endMarker);
-      endMarker = startMarker;
-      startMarker = undefined;
+    const assets = this.integrityRepository.streamAssetChecksums(startMarker);
 
-      for await (const { originalPath, checksum, createdAt, assetId, reportId } of assets) {
-        await this.checkAssetChecksum(originalPath, checksum, assetId, reportId);
+    for await (const { originalPath, checksum, createdAt, assetId, reportId } of assets) {
+      await this.checkAssetChecksum(originalPath, checksum, assetId, reportId);
 
-        processed++;
+      processed++;
 
-        if (processed % 100 === 0) {
-          printStats();
-        }
-
-        if (Date.now() > startedAt + timeLimit || processed > count * percentageLimit) {
-          this.logger.log('Reached stop criteria.');
-          lastCreatedAt = createdAt;
-          break finishEarly;
-        }
+      if (processed % 100 === 0) {
+        printStats();
       }
-    } while (endMarker);
+
+      if (Date.now() > startedAt + timeLimit || processed > count * percentageLimit) {
+        this.logger.log('Reached stop criteria.');
+        lastCreatedAt = createdAt;
+        break;
+      }
+    }
 
     await this.systemMetadataRepository.set(SystemMetadataKey.IntegrityChecksumCheckpoint, {
       date: lastCreatedAt?.toISOString(),
@@ -657,7 +656,7 @@ export class IntegrityService extends BaseService {
 
     for (const property of properties) {
       const reports = this.integrityRepository.streamIntegrityReportsByProperty(property, type);
-      for await (const batch of chunk(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
+      for await (const batch of batched(reports, JOBS_LIBRARY_PAGINATION_SIZE)) {
         await this.jobRepository.queue({
           name: JobName.IntegrityDeleteReports,
           data: {
@@ -704,21 +703,5 @@ export class IntegrityService extends BaseService {
 
     this.logger.log(`Deleted ${reports.length} reports.`);
     return JobStatus.Success;
-  }
-}
-
-async function* chunk<T>(generator: AsyncIterableIterator<T>, n: number) {
-  let chunk: T[] = [];
-  for await (const item of generator) {
-    chunk.push(item);
-
-    if (chunk.length === n) {
-      yield chunk;
-      chunk = [];
-    }
-  }
-
-  if (chunk.length > 0) {
-    yield chunk;
   }
 }
