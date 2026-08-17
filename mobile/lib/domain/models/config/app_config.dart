@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/constants/colors.dart';
 import 'package:immich_mobile/constants/enums.dart';
 import 'package:immich_mobile/domain/models/config/album_config.dart';
@@ -19,107 +21,29 @@ import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/providers/album/album_sort_by_options.provider.dart';
 import 'package:immich_mobile/utils/semver.dart';
 
+part 'app_config.freezed.dart';
+
 const defaultConfig = AppConfig();
 
-class AppConfig {
-  final LogLevel logLevel;
-  final ThemeConfig theme;
-  final CleanupConfig cleanup;
-  final MapConfig map;
-  final TimelineConfig timeline;
-  final ImageConfig image;
-  final ViewerConfig viewer;
-  final SlideshowConfig slideshow;
-  final AlbumConfig album;
-  final BackupConfig backup;
-  final NetworkConfig network;
-  final ShareConfig share;
-  final FeatureMessageConfig featureMessage;
+@freezed
+abstract class AppConfig with _$AppConfig {
+  const AppConfig._();
 
-  const AppConfig({
-    this.logLevel = .info,
-    this.theme = const .new(),
-    this.cleanup = const .new(),
-    this.map = const .new(),
-    this.timeline = const .new(),
-    this.image = const .new(),
-    this.viewer = const .new(),
-    this.slideshow = const .new(),
-    this.album = const .new(),
-    this.backup = const .new(),
-    this.network = const .new(),
-    this.share = const .new(),
-    this.featureMessage = const .new(),
-  });
-
-  AppConfig copyWith({
-    LogLevel? logLevel,
-    ThemeConfig? theme,
-    CleanupConfig? cleanup,
-    MapConfig? map,
-    TimelineConfig? timeline,
-    ImageConfig? image,
-    ViewerConfig? viewer,
-    SlideshowConfig? slideshow,
-    AlbumConfig? album,
-    BackupConfig? backup,
-    NetworkConfig? network,
-    ShareConfig? share,
-    FeatureMessageConfig? featureMessage,
-  }) => .new(
-    logLevel: logLevel ?? this.logLevel,
-    theme: theme ?? this.theme,
-    cleanup: cleanup ?? this.cleanup,
-    map: map ?? this.map,
-    timeline: timeline ?? this.timeline,
-    image: image ?? this.image,
-    viewer: viewer ?? this.viewer,
-    slideshow: slideshow ?? this.slideshow,
-    album: album ?? this.album,
-    backup: backup ?? this.backup,
-    network: network ?? this.network,
-    share: share ?? this.share,
-    featureMessage: featureMessage ?? this.featureMessage,
-  );
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is AppConfig &&
-          other.logLevel == logLevel &&
-          other.theme == theme &&
-          other.cleanup == cleanup &&
-          other.map == map &&
-          other.timeline == timeline &&
-          other.image == image &&
-          other.viewer == viewer &&
-          other.slideshow == slideshow &&
-          other.album == album &&
-          other.backup == backup &&
-          other.network == network &&
-          other.share == share &&
-          other.featureMessage == featureMessage);
-
-  @override
-  int get hashCode => Object.hash(
-    logLevel,
-    theme,
-    cleanup,
-    map,
-    timeline,
-    image,
-    viewer,
-    slideshow,
-    album,
-    backup,
-    network,
-    share,
-    featureMessage,
-  );
-
-  @override
-  String toString() =>
-      'AppConfig(logLevel: $logLevel, theme: $theme, cleanup: $cleanup, map: $map, timeline: $timeline, image: $image, viewer: $viewer, slideshow: $slideshow, album: $album, backup: $backup, network: $network, share: $share, featureMessage: $featureMessage)';
+  const factory AppConfig({
+    @Default(LogLevel.info) LogLevel logLevel,
+    @Default(ThemeConfig()) ThemeConfig theme,
+    @Default(CleanupConfig()) CleanupConfig cleanup,
+    @Default(MapConfig()) MapConfig map,
+    @Default(TimelineConfig()) TimelineConfig timeline,
+    @Default(ImageConfig()) ImageConfig image,
+    @Default(ViewerConfig()) ViewerConfig viewer,
+    @Default(SlideshowConfig()) SlideshowConfig slideshow,
+    @Default(AlbumConfig()) AlbumConfig album,
+    @Default(BackupConfig()) BackupConfig backup,
+    @Default(NetworkConfig()) NetworkConfig network,
+    @Default(ShareConfig()) ShareConfig share,
+    @Default(FeatureMessageConfig()) FeatureMessageConfig featureMessage,
+  }) = _AppConfig;
 
   T read<T>(SettingsKey<T> key) =>
       (switch (key) {

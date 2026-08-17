@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/auth/biometric_status.model.dart';
 import 'package:immich_mobile/services/local_auth.service.dart';
 import 'package:immich_mobile/services/secure_storage.service.dart';
@@ -43,6 +43,7 @@ class LocalAuthNotifier extends StateNotifier<BiometricStatus> {
   }
 
   Future<bool> authenticate(BuildContext context, String? message) async {
+    final t = StaticTranslations.instance;
     String errorMessage = "";
 
     try {
@@ -51,20 +52,20 @@ class LocalAuthNotifier extends StateNotifier<BiometricStatus> {
       switch (error.code) {
         case "NotEnrolled":
           _log.warning("User is not enrolled in biometrics");
-          errorMessage = "biometric_no_options".tr();
+          errorMessage = t.biometric_no_options;
         case "NotAvailable":
           _log.warning("Biometric authentication is not available");
-          errorMessage = "biometric_not_available".tr();
+          errorMessage = t.biometric_not_available;
         case "LockedOut":
           _log.warning("User is locked out of biometric authentication");
-          errorMessage = "biometric_locked_out".tr();
+          errorMessage = t.biometric_locked_out;
         default:
           _log.warning("Failed to authenticate with unknown reason");
-          errorMessage = 'failed_to_authenticate'.tr();
+          errorMessage = t.failed_to_authenticate;
       }
     } catch (error) {
       _log.warning("Error during authentication: $error");
-      errorMessage = 'failed_to_authenticate'.tr();
+      errorMessage = t.failed_to_authenticate;
     } finally {
       if (errorMessage.isNotEmpty) {
         context.showSnackBar(

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
@@ -51,15 +51,12 @@ class DriftBackupOptionsPage extends ConsumerWidget {
           }
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("network_requirements_updated".t(context: context)),
-              duration: const Duration(seconds: 4),
-            ),
+            SnackBar(content: Text(context.t.network_requirements_updated), duration: const Duration(seconds: 4)),
           );
 
           final backupNotifier = ref.read(driftBackupProvider.notifier);
           final backgroundSync = ref.read(backgroundSyncProvider);
-          backupNotifier.stopForegroundBackup();
+          backupNotifier.stopForegroundBackup(reason: "backup settings updated");
           unawaited(
             backgroundSync.syncRemote().then((success) {
               if (success) {
@@ -72,7 +69,7 @@ class DriftBackupOptionsPage extends ConsumerWidget {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text("backup_options".t(context: context))),
+        appBar: AppBar(title: Text(context.t.backup_options)),
         body: const DriftBackupSettings(),
       ),
     );

@@ -34,7 +34,7 @@ import { AssetTable } from 'src/schema/tables/asset.table';
 import { BaseService } from 'src/services/base.service';
 import { JobOf } from 'src/types';
 import { mimeTypes } from 'src/utils/mime-types';
-import { handlePromiseError } from 'src/utils/misc';
+import { batched, findOrFail, handlePromiseError } from 'src/utils/misc';
 
 @Injectable()
 export class LibraryService extends BaseService {
@@ -110,7 +110,7 @@ export class LibraryService extends BaseService {
 
     const handler = async (event: string, path: string) => {
       if (matcher(path)) {
-        this.logger.debug(`File ${event} event received for ${path} in library ${library.id}}`);
+        this.logger.debug(`File ${event} event received for ${path} in library ${library.id}`);
         await this.jobRepository.queue({
           name: JobName.LibrarySyncFiles,
           data: { libraryId: library.id, paths: [path] },
@@ -121,7 +121,7 @@ export class LibraryService extends BaseService {
     };
 
     const deletionHandler = async (path: string) => {
-      this.logger.debug(`File unlink event received for ${path} in library ${library.id}}`);
+      this.logger.debug(`File unlink event received for ${path} in library ${library.id}`);
       await this.jobRepository.queue({
         name: JobName.LibraryRemoveAsset,
         data: { libraryId: library.id, paths: [path] },
@@ -375,35 +375,20 @@ export class LibraryService extends BaseService {
 
     await this.assetRepository.updateByLibraryId(libraryId, { deletedAt: new Date() });
 
-    let isAssetsFound = false;
-    let chunk: string[] = [];
-
-    const queueChunk = async () => {
-      if (chunk.length === 0) {
-        return;
-      }
-
-      isAssetsFound = true;
-      this.logger.debug(`Queueing deletion of ${chunk.length} asset(s) in library ${libraryId}`);
-      await this.jobRepository.queueAll(
-        chunk.map((id) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: false } })),
-      );
-      chunk = [];
-    };
-
     this.logger.debug(`Will delete all assets in library ${libraryId}`);
-    const assets = this.libraryRepository.streamAssetIds(libraryId);
-    for await (const asset of assets) {
-      chunk.push(asset.id);
-
-      if (chunk.length >= JOBS_LIBRARY_PAGINATION_SIZE) {
-        await queueChunk();
-      }
+    let hasAssets = false;
+    for await (const assets of batched(
+      this.libraryRepository.streamAssetIds(libraryId),
+      JOBS_LIBRARY_PAGINATION_SIZE,
+    )) {
+      this.logger.debug(`Queueing deletion of ${assets.length} asset(s) in library ${libraryId}`);
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.AssetDelete, data: { id: asset.id, deleteOnDisk: false } })),
+      );
+      hasAssets = true;
     }
 
-    await queueChunk();
-
-    if (!isAssetsFound) {
+    if (!hasAssets) {
       this.logger.log(`Deleting library ${libraryId}`);
       await this.libraryRepository.delete(libraryId);
     }
@@ -457,10 +442,6 @@ export class LibraryService extends BaseService {
     });
 
     await this.jobRepository.queue({ name: JobName.LibrarySyncAssetsQueueAll, data: { id } });
-  }
-
-  async queueScanAll() {
-    await this.jobRepository.queue({ name: JobName.LibraryScanQueueAll, data: {} });
   }
 
   @OnJob({ name: JobName.LibraryScanQueueAll, queue: QueueName.Library })
@@ -746,15 +727,12 @@ export class LibraryService extends BaseService {
       return JobStatus.Success;
     }
 
-    let chunk: string[] = [];
+    this.logger.log(`Scanning library ${library.id} for assets missing from disk...`);
+
     let count = 0;
-
-    const queueChunk = async () => {
-      if (chunk.length === 0) {
-        return;
-      }
-
-      count += chunk.length;
+    const existingAssets = this.libraryRepository.streamAssetIds(library.id);
+    for await (const assets of batched(existingAssets, JOBS_LIBRARY_PAGINATION_SIZE)) {
+      count += assets.length;
 
       await this.jobRepository.queue({
         name: JobName.LibrarySyncAssets,
@@ -762,42 +740,25 @@ export class LibraryService extends BaseService {
           libraryId: library.id,
           importPaths: library.importPaths,
           exclusionPatterns: library.exclusionPatterns,
-          assetIds: chunk.map((id) => id),
+          assetIds: assets.map(({ id }) => id),
           progressCounter: count,
           totalAssets: assetCount,
         },
       });
-      chunk = [];
 
       const completePercentage = ((100 * count) / assetCount).toFixed(1);
 
       this.logger.log(
         `Queued check of ${count} of ${assetCount} (${completePercentage} %) existing asset(s) so far in library ${library.id}`,
       );
-    };
-
-    this.logger.log(`Scanning library ${library.id} for assets missing from disk...`);
-    const existingAssets = this.libraryRepository.streamAssetIds(library.id);
-
-    for await (const asset of existingAssets) {
-      chunk.push(asset.id);
-      if (chunk.length === JOBS_LIBRARY_PAGINATION_SIZE) {
-        await queueChunk();
-      }
     }
-
-    await queueChunk();
 
     this.logger.log(`Finished queuing ${count} asset check(s) for library ${library.id}`);
 
     return JobStatus.Success;
   }
 
-  private async findOrFail(id: string) {
-    const library = await this.libraryRepository.get(id);
-    if (!library) {
-      throw new BadRequestException('Library not found');
-    }
-    return library;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.libraryRepository.get(id), 'Library');
   }
 }

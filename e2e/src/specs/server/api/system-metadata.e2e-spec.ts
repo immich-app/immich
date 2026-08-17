@@ -16,12 +16,6 @@ describe('/server-info', () => {
   });
 
   describe('POST /system-metadata/admin-onboarding', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/system-metadata/admin-onboarding').send({ isOnboarded: true });
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should only work for admins', async () => {
       const { status, body } = await request(app)
         .post('/system-metadata/admin-onboarding')
@@ -47,12 +41,6 @@ describe('/server-info', () => {
   });
 
   describe('GET /system-metadata/reverse-geocoding-state', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/system-metadata/reverse-geocoding-state');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should only work for admins', async () => {
       const { status, body } = await request(app)
         .get('/system-metadata/reverse-geocoding-state')

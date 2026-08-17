@@ -24,12 +24,6 @@ export enum SlideshowMetadataOverlayMode {
   Full = 'full',
 }
 
-export const slideshowLookCssMapping: Record<SlideshowLook, string> = {
-  [SlideshowLook.Contain]: 'object-contain',
-  [SlideshowLook.Cover]: 'object-cover',
-  [SlideshowLook.BlurredBackground]: 'object-contain',
-};
-
 function createSlideshowStore() {
   const restartState = writable<boolean>(false);
   const stopState = writable<boolean>(false);

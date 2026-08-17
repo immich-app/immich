@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
@@ -80,7 +80,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("upload_details".t(context: context)),
+        title: Text(context.t.upload_details),
         backgroundColor: context.colorScheme.surface,
         elevation: 0,
         scrolledUnderElevation: 1,
@@ -125,7 +125,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
         SliverToBoxAdapter(
           child: _buildSectionHeader(
             context,
-            title: "uploading".t(context: context),
+            title: context.t.uploading,
             count: uploadingItems.length,
             color: context.colorScheme.primary,
           ),
@@ -151,7 +151,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
           SliverToBoxAdapter(
             child: _buildSectionHeader(
               context,
-              title: "errors_text".t(context: context),
+              title: context.t.errors_text,
               count: failedItems.length,
               color: context.colorScheme.error,
             ),
@@ -231,7 +231,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "downloading_from_icloud".t(context: context),
+                    context.t.downloading_from_icloud,
                     style: context.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -318,7 +318,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
                       const SizedBox(height: 2),
                       Text(
                         isFailed
-                            ? item.error ?? "unable_to_upload_file".t(context: context)
+                            ? item.error ?? context.t.errors.unable_to_upload_file
                             : "${formatHumanReadableBytes(item.fileSize, 1)} • ${item.networkSpeedAsString}",
                         style: context.textTheme.labelLarge?.copyWith(
                           color: isFailed
@@ -395,7 +395,7 @@ class _DriftUploadDetailPageState extends ConsumerState<DriftUploadDetailPage> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      item.error ?? "unable_to_upload_file".t(context: context),
+                      item.error ?? context.t.errors.unable_to_upload_file,
                       style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.error),
                       maxLines: 4,
                       overflow: TextOverflow.ellipsis,
@@ -556,7 +556,7 @@ class FileDetailDialog extends ConsumerWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              "details".t(context: context),
+              context.t.details,
               style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600, color: context.primaryColor),
             ),
           ),
@@ -595,20 +595,14 @@ class FileDetailDialog extends ConsumerWidget {
                   const SizedBox(height: 24),
                   if (asset != null)
                     _buildInfoSection(context, [
-                      _buildInfoRow(context, "filename".t(context: context), path.basename(uploadStatus.filename)),
-                      _buildInfoRow(context, "local_id".t(context: context), asset.id),
-                      _buildInfoRow(
-                        context,
-                        "file_size".t(context: context),
-                        formatHumanReadableBytes(uploadStatus.fileSize, 2),
-                      ),
-                      if (asset.width != null) _buildInfoRow(context, "width".t(context: context), "${asset.width}px"),
-                      if (asset.height != null)
-                        _buildInfoRow(context, "height".t(context: context), "${asset.height}px"),
-                      _buildInfoRow(context, "created_at".t(context: context), asset.createdAt.toString()),
-                      _buildInfoRow(context, "updated_at".t(context: context), asset.updatedAt.toString()),
-                      if (asset.checksum != null)
-                        _buildInfoRow(context, "checksum".t(context: context), asset.checksum!),
+                      _buildInfoRow(context, context.t.filename, path.basename(uploadStatus.filename)),
+                      _buildInfoRow(context, context.t.local_id, asset.id),
+                      _buildInfoRow(context, context.t.file_size, formatHumanReadableBytes(uploadStatus.fileSize, 2)),
+                      if (asset.width != null) _buildInfoRow(context, context.t.width, "${asset.width}px"),
+                      if (asset.height != null) _buildInfoRow(context, context.t.height, "${asset.height}px"),
+                      _buildInfoRow(context, context.t.created_at, asset.createdAt.toString()),
+                      _buildInfoRow(context, context.t.updated_at, asset.updatedAt.toString()),
+                      if (asset.checksum != null) _buildInfoRow(context, context.t.checksum, asset.checksum!),
                     ]),
                 ],
               ),
@@ -620,7 +614,7 @@ class FileDetailDialog extends ConsumerWidget {
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(
-            "close".t(),
+            context.t.close,
             style: TextStyle(fontWeight: FontWeight.w600, color: context.primaryColor),
           ),
         ),

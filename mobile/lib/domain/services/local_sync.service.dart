@@ -27,7 +27,7 @@ class LocalSyncService {
   final NativeSyncApi _nativeSyncApi;
   final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
   final AssetMediaRepository _assetMediaRepository;
-  final IPermissionRepository _permissionRepository;
+  final DevicePermissionRepository _permissionRepository;
   final Completer<void>? _cancellation;
   final Logger _log = Logger("DeviceSyncService");
 

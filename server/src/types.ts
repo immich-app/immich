@@ -1,4 +1,3 @@
-import { WorkflowTrigger } from '@immich/plugin-sdk';
 import { ShallowDehydrateObject } from 'kysely';
 import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
@@ -30,8 +29,8 @@ import {
   SystemMetadataKey,
   TranscodeTarget,
   UserMetadataKey,
-  WorkflowType,
 } from 'src/enum';
+import { Mocked } from 'vitest';
 
 export type DeepPartial<T> = T extends Date
   ? T
@@ -77,14 +76,6 @@ export interface DecodeToBufferOptions extends DecodeImageOptions {
 
 export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> & DecodeToBufferOptions;
 export type GenerateThumbhashOptions = DecodeImageOptions;
-
-export interface GenerateThumbnailsOptions {
-  colorspace: string;
-  preview?: ImageOptions;
-  processInvalidImages: boolean;
-  thumbhash?: boolean;
-  thumbnail?: ImageOptions;
-}
 
 export interface VideoStreamInfo {
   index: number;
@@ -142,10 +133,6 @@ export interface ImageDimensions {
   height: number;
 }
 
-export interface InputDimensions extends ImageDimensions {
-  inputPath: string;
-}
-
 export interface VideoInfo {
   format: VideoFormat;
   videoStreams: VideoStreamInfo[];
@@ -186,11 +173,6 @@ export interface BitrateDistribution {
   target: number;
   min: number;
   unit: string;
-}
-
-export interface ImageBuffer {
-  data: Buffer;
-  info: RawImageInfo;
 }
 
 export interface VideoCodecSWConfig {
@@ -259,16 +241,8 @@ export interface ILibraryBulkIdsJob {
   totalAssets: number;
 }
 
-export interface IBulkEntityJob {
-  ids: string[];
-}
-
 export interface IDeleteFilesJob extends IBaseJob {
   files: Array<string | null | undefined>;
-}
-
-export interface ISidecarWriteJob extends IEntityJob {
-  tags?: true;
 }
 
 export interface IDeferrableJob extends IEntityJob {
@@ -305,12 +279,6 @@ export interface INotifyAlbumInviteJob extends IEntityJob {
 export interface INotifyAlbumUpdateJob extends IEntityJob, IDelayedJob {
   recipientId: string;
 }
-
-export type IWorkflowJob<T extends WorkflowType = WorkflowType> = {
-  id: string;
-  trigger: WorkflowTrigger;
-  type: T;
-};
 
 export interface IIntegrityJob {
   refreshOnly?: boolean;
@@ -647,7 +615,10 @@ export type JSONSchemaProperty = {
   required?: string[];
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
-export interface ClassConstructor<T = any> extends Function {
-  new (...args: any[]): T;
-}
+export type ClassConstructor<T> = T extends new (...args: infer R) => infer L
+  ? new (...args: R) => L
+  : new (...args: any[]) => unknown;
+
+export type ClassConstructorsToInstances<T extends readonly ClassConstructor<unknown>[]> = {
+  [K in keyof T]: InstanceType<T[K]> | Mocked<InstanceType<T[K]>>;
+};

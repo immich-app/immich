@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 
 @RoutePage()
 class AppLogDetailPage extends HookWidget {
@@ -44,7 +44,7 @@ class AppLogDetailPage extends HookWidget {
                         context.scaffoldMessenger.showSnackBar(
                           SnackBar(
                             content: Text(
-                              "copied_to_clipboard".tr(),
+                              context.t.copied_to_clipboard,
                               style: context.textTheme.bodyLarge?.copyWith(color: context.primaryColor),
                             ),
                           ),
@@ -106,7 +106,7 @@ class AppLogDetailPage extends HookWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text("log_detail_title".tr())),
+      appBar: AppBar(title: Text(context.t.log_detail_title)),
       body: SafeArea(
         child: ListView(
           children: [
