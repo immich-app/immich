@@ -40,10 +40,10 @@ extension TimeAgoExtension on DateTime {
 }
 
 extension TimeFormatting on DateTime {
-  /// When [use24h] is true, uses a 24-hour `HH:mm` format; otherwise uses the
+  /// When [alwaysUse24HourFormat] is true, uses a 24-hour `HH:mm` format; otherwise uses the
   /// locale-aware 12-hour format (e.g. "1:30 PM").
-  String formatTime({required bool use24h, String? locale}) =>
-      use24h ? DateFormat('HH:mm').format(this) : DateFormat.jm(locale).format(this);
+  String formatTime({required bool alwaysUse24HourFormat, String? locale}) =>
+      alwaysUse24HourFormat ? DateFormat('HH:mm').format(this) : DateFormat.jm(locale).format(this);
 }
 
 extension DateFormatting on DateTime {

@@ -157,12 +157,12 @@ class _AssetInfoTitle extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final exifInfo = ref.watch(assetExifProvider(asset)).valueOrNull;
-    final use24h = MediaQuery.alwaysUse24HourFormatOf(context);
+    final alwaysUse24HourFormat = MediaQuery.alwaysUse24HourFormatOf(context);
 
     final (dateTime, _) = resolveAssetDateTime(asset, exifInfo);
 
     final dateFormatted = dateTime.formatDate();
-    final timeFormatted = dateTime.formatTime(use24h: use24h);
+    final timeFormatted = dateTime.formatTime(alwaysUse24HourFormat: alwaysUse24HourFormat);
 
     return Column(
       mainAxisSize: MainAxisSize.min,

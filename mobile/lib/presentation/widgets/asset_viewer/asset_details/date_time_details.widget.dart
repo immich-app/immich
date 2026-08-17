@@ -46,12 +46,12 @@ class DateTimeDetails extends ConsumerWidget {
   }
 
   static String _getDateTime(BuildContext ctx, BaseAsset asset, ExifInfo? exifInfo) {
-    final use24h = MediaQuery.alwaysUse24HourFormatOf(ctx);
+    final alwaysUse24HourFormat = MediaQuery.alwaysUse24HourFormatOf(ctx);
 
     final (dateTime, timeZoneOffset) = resolveAssetDateTime(asset, exifInfo);
 
     final date = DateFormat.yMMMEd(ctx.locale.toLanguageTag()).format(dateTime);
-    final time = dateTime.formatTime(use24h: use24h, locale: ctx.locale.toLanguageTag());
+    final time = dateTime.formatTime(alwaysUse24HourFormat: alwaysUse24HourFormat, locale: ctx.locale.toLanguageTag());
     final timezone = 'GMT${timeZoneOffset.formatAsOffset()}';
     return '$date$_kSeparator$time $timezone';
   }
