@@ -14,7 +14,6 @@ typedef TrashedAsset = ({String albumId, LocalAsset asset});
 
 @DriftAccessor()
 class TrashedLocalAssetRepository extends DatabaseAccessor<Drift> with $TrashedLocalAssetRepositoryMixin {
-
   TrashedLocalAssetRepository(super.attachedDatabase);
 
   Drift get _db => attachedDatabase;

@@ -36,7 +36,6 @@ class TimelineMapOptions {
 
 @DriftAccessor()
 class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositoryMixin {
-
   TimelineRepository(super.attachedDatabase);
 
   Drift get _db => attachedDatabase;

@@ -11,7 +11,6 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 
 @DriftAccessor()
 class MapRepository extends DatabaseAccessor<Drift> with $MapRepositoryMixin {
-
   MapRepository(super.attachedDatabase);
 
   Drift get _db => attachedDatabase;

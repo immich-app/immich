@@ -16,7 +16,6 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 
 @DriftAccessor()
 class RemoteAssetRepository extends DatabaseAccessor<Drift> with $RemoteAssetRepositoryMixin {
-
   RemoteAssetRepository(super.attachedDatabase);
 
   Drift get _db => attachedDatabase;

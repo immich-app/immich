@@ -21,7 +21,6 @@ class RemovalCandidatesResult {
 
 @DriftAccessor()
 class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepositoryMixin {
-
   LocalAssetRepository(super.attachedDatabase);
 
   Drift get _db => attachedDatabase;

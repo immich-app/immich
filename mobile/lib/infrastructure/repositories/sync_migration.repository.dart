@@ -4,7 +4,6 @@ import 'package:immich_mobile/infrastructure/repositories/sync_migration.reposit
 
 @DriftAccessor()
 class SyncMigrationRepository extends DatabaseAccessor<Drift> with $SyncMigrationRepositoryMixin {
-
   SyncMigrationRepository(super.attachedDatabase);
 
   Drift get _db => attachedDatabase;

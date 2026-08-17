@@ -38,7 +38,8 @@ final timelineUsersProvider = StreamProvider<List<String>>((ref) {
   // Drift re-emits a fresh but content-identical list on unrelated table updates,
   // which would dispose and rebuild the timeline service mid-load
   return ref
-      .watch(driftProvider).timelineRepository
+      .watch(driftProvider)
+      .timelineRepository
       .watchTimelineUserIds(currentUserId)
       .distinct(const ListEquality<String>().equals);
 });
