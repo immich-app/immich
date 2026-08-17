@@ -33,7 +33,7 @@ Future<void> syncCloudIds(ProviderContainer ref) async {
     return;
   }
 
-  final logger = Logger('migrateCloudIds');
+  final logger = Logger('syncCloudIds');
 
   final db = ref.read(driftProvider);
   final cancellation = ref.read(cancellationProvider);
@@ -150,6 +150,9 @@ typedef CloudIdMapping = ({
 });
 
 @visibleForTesting
+/// Fetches a list of remote asset IDs and their corresponding local cloud IDs for assets that have a local cloud ID
+/// but either no remote cloud ID or a mismatched eTag
+/// The query uses cursor-based pagination to fetch the results in batches, ordered by remote asset ID with [lastRemoteId] being the cursor.
 Future<List<CloudIdMapping>> fetchMapping(Drift db, String userId, int limit, String? lastRemoteId) async {
   final query = db.remoteAssetEntity.selectOnly()
     ..addColumns([
@@ -178,7 +181,7 @@ Future<List<CloudIdMapping>> fetchMapping(Drift db, String userId, int limit, St
     ])
     ..where(
       db.remoteAssetEntity.ownerId.equals(userId) &
-          // Skip locked assets as we cannot update them without unlocking first
+          // Skip locked assets as we cannot update them without an elevated session
           db.remoteAssetEntity.visibility.isNotValue(AssetVisibility.locked.index) &
           db.localAssetEntity.iCloudId.isNotNull() &
           // Only select assets that have a local cloud ID but either no remote cloud ID or a mismatched eTag
@@ -225,7 +228,7 @@ Future<void> _sequentialUpdate(
         abortTrigger: cancellation.future,
       );
     } catch (error, stack) {
-      Logger('migrateCloudIds').warning('Failed to update metadata for asset ${item.assetId}', error, stack);
+      Logger('syncCloudIds: sequential').warning('Failed to update metadata for asset ${item.assetId}', error, stack);
     }
   }
 }
@@ -238,6 +241,6 @@ Future<void> _bulkUpdate(
   try {
     await assetsApi.updateBulkAssetMetadata(.new(items: items), abortTrigger: abortTrigger);
   } catch (error, stack) {
-    Logger('migrateCloudIds').warning('Failed to bulk update metadata', error, stack);
+    Logger('syncCloudIds: bulk').warning('Failed to update metadata', error, stack);
   }
 }
