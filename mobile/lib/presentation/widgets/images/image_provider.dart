@@ -97,10 +97,7 @@ class ImageLoader {
       isFinished = isFinal;
       return codec;
     } catch (e) {
-      if (isCancelled) {
-        return null;
-      }
-      if (isFinal) {
+      if (!isCancelled && isFinal) {
         isFinished = true;
         PaintingBinding.instance.imageCache.evict(key);
         rethrow;

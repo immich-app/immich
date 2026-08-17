@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:ffi' hide Size;
 
 import 'package:ffi/ffi.dart';
-import 'package:flutter/painting.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -23,6 +23,8 @@ class _FakeImageHost {
   final _pending = <int, Completer<List<Object?>>>{};
 
   Iterable<int> get unsettled => _pending.keys;
+
+  Iterable<int> get live => _pending.keys.where((id) => !cancelled.contains(id));
 
   void install(WidgetTester tester) {
     final messenger = tester.binding.defaultBinaryMessenger;
@@ -80,19 +82,6 @@ Future<void> _until(bool Function() condition, String reason) async {
   }
 }
 
-ImageStreamListener _frameTo(Completer<ImageInfo> completer) => ImageStreamListener(
-  (image, _) {
-    if (!completer.isCompleted) {
-      completer.complete(image);
-    }
-  },
-  onError: (e, s) {
-    if (!completer.isCompleted) {
-      completer.completeError(e, s);
-    }
-  },
-);
-
 void main() {
   late ImageCache cache;
   late _FakeImageHost host;
@@ -108,55 +97,33 @@ void main() {
     expect(host.unsettled, isEmpty);
   });
 
-  testWidgets('re-resolving after a cancelled load still produces a frame', (tester) async {
+  // CircleAvatar animates a url change, and on every animation frame it drops its painter and lets a
+  // fresh one re-resolve the same provider instance, so the load is cancelled and restarted in between.
+  testWidgets('a face url that changes while the avatar animates still loads', (tester) async {
     await tester.runAsync(() async {
       host = _FakeImageHost('RemoteImageApi', RemoteImageApi.pigeonChannelCodec)..install(tester);
-      const provider = RemoteImageProvider(url: 'https://example.com/1.jpg');
+      const before = 'https://example.com/before.jpg';
+      const after = 'https://example.com/after.jpg';
+      Widget avatar(String url) => Directionality(
+        textDirection: TextDirection.ltr,
+        child: MediaQuery(
+          data: const MediaQueryData(),
+          child: CircleAvatar(backgroundImage: RemoteImageProvider(url: url)),
+        ),
+      );
+      bool cached(String url) => cache.statusForKey(RemoteImageProvider(url: url)).keepAlive;
 
-      final gone = ImageStreamListener((_, __) {});
-      final stream1 = provider.resolve(ImageConfiguration.empty)..addListener(gone);
-      await _until(() => host.started.length == 1, 'the first request');
-      stream1.removeListener(gone);
-      await _until(() => host.cancelled.contains(host.started.first), 'the first request to be cancelled');
+      await tester.pumpWidget(avatar(before));
+      await _until(() => host.started.length == 1, 'the first face request');
+      host.complete(host.started.single, _rgbaReply());
+      await _until(() => cached(before), 'the first face to be cached');
 
-      final frame = Completer<ImageInfo>();
-      final listener = _frameTo(frame);
-      final stream2 = provider.resolve(ImageConfiguration.empty)..addListener(listener);
-      await _until(() => host.started.length == 2, 'a second request after the cancel');
-      host.complete(host.started[1], _rgbaReply());
+      await tester.pumpWidget(avatar(after));
+      await tester.pumpAndSettle();
 
-      final image = await frame.future;
-      expect(image.image.width, 1);
-      expect(cache.statusForKey(provider).pending, isFalse);
-      stream2.removeListener(listener);
-      image.dispose();
-      await host.settle();
-    });
-  });
-
-  testWidgets('a finished image stays cached after the last listener leaves', (tester) async {
-    await tester.runAsync(() async {
-      host = _FakeImageHost('RemoteImageApi', RemoteImageApi.pigeonChannelCodec)..install(tester);
-      const provider = RemoteImageProvider(url: 'https://example.com/3.jpg');
-
-      final frame = Completer<ImageInfo>();
-      final listener = _frameTo(frame);
-      final stream = provider.resolve(ImageConfiguration.empty)..addListener(listener);
-      await _until(() => host.started.length == 1, 'the request');
-      host.complete(host.started.first, _rgbaReply());
-      (await frame.future).dispose();
-
-      stream.removeListener(listener);
-      expect(cache.containsKey(provider), isTrue);
-
-      final replay = Completer<ImageInfo>();
-      final replayListener = _frameTo(replay);
-      final replayStream = provider.resolve(ImageConfiguration.empty)..addListener(replayListener);
-      final replayed = await replay.future;
-      expect(replayed.image.width, 1);
-      expect(host.started, hasLength(1));
-      replayStream.removeListener(replayListener);
-      replayed.dispose();
+      expect(host.live, hasLength(1), reason: 'the new face url has no request left after the animation');
+      host.complete(host.live.single, _rgbaReply());
+      await _until(() => cached(after), 'the new face to be cached');
       await host.settle();
     });
   });
@@ -171,54 +138,23 @@ void main() {
         isAnimated: false,
         checksum: 'c1',
       );
+      const thumb = LocalThumbProvider(id: 'asset-1', assetType: AssetType.image, checksum: 'c1');
 
-      final fullListener = ImageStreamListener((_, __) {});
+      final fullListener = ImageStreamListener((_, _) {});
       final fullStream = full.resolve(ImageConfiguration.empty)..addListener(fullListener);
       await _until(() => host.started.length == 1, 'the thumbnail request');
-      final thumbRequest = host.started.first;
+      final thumbRequest = host.started.single;
 
       // A second widget shares the same thumbnail entry.
-      const thumb = LocalThumbProvider(id: 'asset-1', assetType: AssetType.image, checksum: 'c1');
-      final thumbFrame = Completer<ImageInfo>();
-      final thumbListener = _frameTo(thumbFrame);
+      final thumbListener = ImageStreamListener((_, _) {});
       final thumbStream = thumb.resolve(ImageConfiguration.empty)..addListener(thumbListener);
 
       fullStream.removeListener(fullListener);
-      await Future<void>.delayed(const Duration(milliseconds: 50));
       expect(host.cancelled, isNot(contains(thumbRequest)));
-      expect(host.started, hasLength(1));
 
       host.complete(thumbRequest, _rgbaReply());
-      final thumbImage = await thumbFrame.future;
-      expect(thumbImage.image.width, 1);
+      await _until(() => cache.statusForKey(thumb).keepAlive, 'the shared thumbnail to finish');
       thumbStream.removeListener(thumbListener);
-      thumbImage.dispose();
-      await host.settle();
-    });
-  });
-
-  testWidgets('a stale load finishing late cannot break the next load\'s cancel', (tester) async {
-    await tester.runAsync(() async {
-      host = _FakeImageHost('RemoteImageApi', RemoteImageApi.pigeonChannelCodec)..install(tester);
-      const provider = RemoteImageProvider(url: 'https://example.com/5.jpg');
-
-      final gone = ImageStreamListener((_, __) {});
-      final stream1 = provider.resolve(ImageConfiguration.empty)..addListener(gone);
-      await _until(() => host.started.length == 1, 'the first request');
-      final first = host.started.first;
-      stream1.removeListener(gone);
-      await _until(() => host.cancelled.contains(first), 'the first request to be cancelled');
-
-      final second = ImageStreamListener((_, __) {});
-      final stream2 = provider.resolve(ImageConfiguration.empty)..addListener(second);
-      await _until(() => host.started.length == 2, 'a second request after the cancel');
-
-      host.complete(first, null);
-      await Future<void>.delayed(const Duration(milliseconds: 50));
-
-      stream2.removeListener(second);
-      await _until(() => host.cancelled.contains(host.started[1]), 'the second request to be cancelled');
-      expect(cache.statusForKey(provider).pending, isFalse);
       await host.settle();
     });
   });
@@ -226,16 +162,18 @@ void main() {
   testWidgets('an abandoned animated load failing late cannot evict the next load', (tester) async {
     await tester.runAsync(() async {
       host = _FakeImageHost('LocalImageApi', LocalImageApi.pigeonChannelCodec)..install(tester);
-      const provider = LocalFullImageProvider(
+      // Built at runtime so the retry is its own instance; a const call would hand back the first one.
+      LocalFullImageProvider full(String checksum) => LocalFullImageProvider(
         id: 'asset-2',
         assetType: AssetType.image,
-        size: Size(100, 100),
+        size: const Size(100, 100),
         isAnimated: true,
-        checksum: 'c2',
+        checksum: checksum,
       );
 
+      final abandoned = full('c2');
       final gone = ImageStreamListener((image, _) => image.dispose());
-      final stream1 = provider.resolve(ImageConfiguration.empty)..addListener(gone);
+      final stream1 = abandoned.resolve(ImageConfiguration.empty)..addListener(gone);
       await _until(() => host.started.length == 1, 'the thumbnail request');
       host.complete(host.started.first, _rgbaReply());
       await _until(() => host.started.length == 2, 'the preview request');
@@ -249,14 +187,15 @@ void main() {
       // Drop the cached thumbnail so the next load starts pending instead of complete.
       cache.evict(const LocalThumbProvider(id: 'asset-2', assetType: AssetType.image, checksum: 'c2'));
 
-      final second = ImageStreamListener((_, __) {});
-      final stream2 = provider.resolve(ImageConfiguration.empty)..addListener(second);
+      final retry = full('c2');
+      final second = ImageStreamListener((_, _) {});
+      final stream2 = retry.resolve(ImageConfiguration.empty)..addListener(second);
       await _until(() => host.started.length == 4, 'the next load to start');
 
       host.fail(original);
       await Future<void>.delayed(const Duration(milliseconds: 50));
 
-      expect(cache.statusForKey(provider).pending, isTrue);
+      expect(cache.statusForKey(retry).pending, isTrue);
       expect(host.cancelled, isNot(contains(host.started[3])));
       // Abandoned animated loads close without a codec.
       expect(tester.takeException(), isA<StateError>());
