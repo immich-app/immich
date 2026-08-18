@@ -1,4 +1,5 @@
 import { Kysely } from 'kysely';
+import { DateTime } from 'luxon';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto';
 import { AssetFaceCreateDto } from 'src/dtos/person.dto';
 import { AccessRepository } from 'src/repositories/access.repository';
@@ -84,6 +85,100 @@ describe(PersonService.name, () => {
       expect(storageMock.unlink).toHaveBeenCalledTimes(2);
       expect(storageMock.unlink).toHaveBeenCalledWith(person1.thumbnailPath);
       expect(storageMock.unlink).toHaveBeenCalledWith(person2.thumbnailPath);
+    });
+  });
+
+  describe('mergePerson', () => {
+    it('should merge people of multiple users', async () => {
+      const { sut, ctx } = setup();
+      const storageMock = ctx.getMock(StorageRepository);
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser({ clusterGroupId: user1.clusterGroupId });
+      const { person: person1 } = await ctx.newPerson({ ownerId: user1.id });
+      const { person: person2 } = await ctx.newPerson({ ownerId: user1.id });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person1.personGroupId,
+      });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person2.personGroupId,
+      });
+      storageMock.unlink.mockResolvedValue();
+
+      const auth = factory.auth({ user: user1 });
+
+      await sut.mergePerson(auth, person1.personGroupId, { ids: [person2.personGroupId] });
+      const user1People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user1.id }));
+      const user2People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user2.id }));
+      expect(user1People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
+      expect(user2People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
+    });
+
+    it('should skip people with a different name', async () => {
+      const { sut, ctx } = setup();
+      const storageMock = ctx.getMock(StorageRepository);
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser({ clusterGroupId: user1.clusterGroupId });
+      const { person: person1 } = await ctx.newPerson({ ownerId: user1.id });
+      const { person: person2 } = await ctx.newPerson({ ownerId: user1.id });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person1.personGroupId,
+        name: 'Person 1',
+      });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person2.personGroupId,
+        name: 'Person 2',
+      });
+      storageMock.unlink.mockResolvedValue();
+
+      const auth = factory.auth({ user: user1 });
+
+      await sut.mergePerson(auth, person1.personGroupId, { ids: [person2.personGroupId] });
+      const user1People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user1.id }));
+      const user2People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user2.id }));
+      expect(user1People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
+      expect(user2People).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ personGroupId: person1.personGroupId }),
+          expect.objectContaining({ personGroupId: person2.personGroupId }),
+        ]),
+      );
+    });
+
+    it('should skip people with a different birthdate', async () => {
+      const { sut, ctx } = setup();
+      const storageMock = ctx.getMock(StorageRepository);
+      const { user: user1 } = await ctx.newUser();
+      const { user: user2 } = await ctx.newUser({ clusterGroupId: user1.clusterGroupId });
+      const { person: person1 } = await ctx.newPerson({ ownerId: user1.id });
+      const { person: person2 } = await ctx.newPerson({ ownerId: user1.id });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person1.personGroupId,
+        birthDate: DateTime.now().minus({ years: 1 }).toJSDate(),
+      });
+      await ctx.newPerson({
+        ownerId: user2.id,
+        personGroupId: person2.personGroupId,
+        birthDate: DateTime.now().minus({ years: 2 }).toJSDate(),
+      });
+      storageMock.unlink.mockResolvedValue();
+
+      const auth = factory.auth({ user: user1 });
+
+      await sut.mergePerson(auth, person1.personGroupId, { ids: [person2.personGroupId] });
+      const user1People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user1.id }));
+      const user2People = await Array.fromAsync(ctx.get(PersonRepository).getAll({ ownerId: user2.id }));
+      expect(user1People).toEqual([expect.objectContaining({ personGroupId: person1.personGroupId })]);
+      expect(user2People).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ personGroupId: person1.personGroupId }),
+          expect.objectContaining({ personGroupId: person2.personGroupId }),
+        ]),
+      );
     });
   });
 

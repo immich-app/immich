@@ -35,6 +35,7 @@ export interface AssetFaceId {
 export interface UpdateFacesData {
   oldPersonGroupId?: string;
   faceIds?: string[];
+  ownerId?: string;
   newPersonGroupId: string;
 }
 
@@ -97,12 +98,17 @@ export class PersonRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}
 
   @GenerateSql({ params: [{ oldPersonGroupId: DummyValue.UUID, newPersonGroupId: DummyValue.UUID }] })
-  async reassignFaces({ oldPersonGroupId, faceIds, newPersonGroupId }: UpdateFacesData): Promise<number> {
+  async reassignFaces({ oldPersonGroupId, faceIds, ownerId, newPersonGroupId }: UpdateFacesData): Promise<number> {
     const result = await this.db
       .updateTable('asset_face')
       .set({ personGroupId: newPersonGroupId })
       .$if(!!oldPersonGroupId, (qb) => qb.where('asset_face.personGroupId', '=', oldPersonGroupId!))
       .$if(!!faceIds, (qb) => qb.where('asset_face.id', 'in', faceIds!))
+      .$if(!!ownerId, (qb) =>
+        qb.where('asset_face.personGroupId', 'in', (eb) =>
+          eb.selectFrom('person').select('person.personGroupId').where('person.ownerId', '=', ownerId!),
+        ),
+      )
       .executeTakeFirst();
 
     return Number(result.numChangedRows ?? 0);
@@ -116,22 +122,18 @@ export class PersonRepository {
       .execute();
   }
 
-  @GenerateSql({ params: [[{ ownerId: DummyValue.UUID, personGroupId: DummyValue.UUID }]] })
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.UUID] })
   @Chunked()
-  async delete(people: PersonId[]): Promise<void> {
-    if (people.length === 0) {
-      return;
+  async delete(personGroupIds: string[], ownerId?: string) {
+    if (personGroupIds.length === 0) {
+      return [];
     }
 
-    await this.db
+    return this.db
       .deleteFrom('person')
-      .where((eb) =>
-        eb.or(
-          people.map(({ ownerId, personGroupId }) =>
-            eb.and([eb('person.ownerId', '=', ownerId), eb('person.personGroupId', '=', personGroupId)]),
-          ),
-        ),
-      )
+      .$if(!!ownerId, (qb) => qb.where('ownerId', '=', ownerId!))
+      .where('person.personGroupId', 'in', personGroupIds)
+      .returning(['personGroupId', 'ownerId', 'thumbnailPath'])
       .execute();
   }
 
@@ -732,9 +734,9 @@ export class PersonRepository {
     }
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID]] })
+  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.UUID] })
   @Chunked()
-  getForPeopleDelete(groupIds: string[]) {
+  getForPeopleDelete(groupIds: string[], ownerId?: string) {
     if (groupIds.length === 0) {
       return Promise.resolve([]);
     }
@@ -742,6 +744,7 @@ export class PersonRepository {
       .selectFrom('person')
       .select(['person.ownerId', 'person.personGroupId', 'person.thumbnailPath'])
       .where('person.personGroupId', 'in', groupIds)
+      .$if(!!ownerId, (qb) => qb.where('person.ownerId', '=', ownerId!))
       .execute();
   }
 
@@ -787,5 +790,15 @@ export class PersonRepository {
       .where('asset_face.personGroupId', '=', personGroupId)
       .innerJoin('asset', (join) => join.onRef('asset.id', '=', 'asset_face.assetId').on('asset.isOffline', '=', false))
       .executeTakeFirst();
+  }
+
+  @GenerateSql({ params: [[DummyValue.UUID]] })
+  getForMergePerson(personGroupIds: string[]) {
+    return this.db
+      .selectFrom('person')
+      .selectAll('person')
+      .where('person.personGroupId', 'in', personGroupIds)
+      .orderBy('person.ownerId')
+      .execute();
   }
 }

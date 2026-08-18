@@ -10,10 +10,12 @@ where
 -- PersonRepository.delete
 delete from "person"
 where
-  (
-    "person"."ownerId" = $1
-    and "person"."personGroupId" = $2
-  )
+  "ownerId" = $1
+  and "person"."personGroupId" in ($2)
+returning
+  "personGroupId",
+  "ownerId",
+  "thumbnailPath"
 
 -- PersonRepository.deleteGroups
 delete from "person_group"
@@ -386,46 +388,7 @@ where
       "person"."personGroupId" = "person_group"."id"
       and "person"."ownerId" != $3
   )
-with
-  "shared" as (
-    select distinct
-      "person"."personGroupId" as "oldId"
-    from
-      "person"
-    where
-      "person"."ownerId" = $1
-      and exists (
-        select
-          "other"."personGroupId"
-        from
-          "person" as "other"
-        where
-          "other"."personGroupId" = "person"."personGroupId"
-          and "other"."ownerId" != $2
-      )
-  ),
-  "mapping" as materialized (
-    select
-      "shared"."oldId",
-      uuid_generate_v4 () as "newId"
-    from
-      "shared"
-  ),
-  "created" as (
-    insert into
-      "person_group" ("id", "clusterGroupId")
-    select
-      "mapping"."newId",
-      $3 as "clusterGroupId"
-    from
-      "mapping"
-  )
-select
-  "mapping"."oldId",
-  "mapping"."newId"
-from
-  "mapping"
-commit
+rollback
 
 -- PersonRepository.createGroups
 insert into
@@ -585,6 +548,7 @@ from
   "person"
 where
   "person"."personGroupId" in ($1)
+  and "person"."ownerId" = $2
 
 -- PersonRepository.getForFeatureFaceUpdate
 select
@@ -596,3 +560,13 @@ from
 where
   "asset_face"."assetId" = $2
   and "asset_face"."personGroupId" = $3
+
+-- PersonRepository.getForMergePerson
+select
+  "person".*
+from
+  "person"
+where
+  "person"."personGroupId" in ($1)
+order by
+  "person"."ownerId"

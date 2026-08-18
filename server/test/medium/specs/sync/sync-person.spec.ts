@@ -50,7 +50,7 @@ describe(SyncEntityType.PersonV1, () => {
     const { auth, ctx } = await setup();
     const personRepo = ctx.get(PersonRepository);
     const { person } = await ctx.newPerson({ ownerId: auth.user.id });
-    await personRepo.delete([{ ownerId: person.ownerId, personGroupId: person.personGroupId }]);
+    await personRepo.delete([person.personGroupId], person.ownerId);
 
     const response = await ctx.syncStream(auth, [SyncRequestType.PeopleV1]);
     expect(response).toEqual([
@@ -82,7 +82,7 @@ describe(SyncEntityType.PersonV1, () => {
     ]);
     await ctx.assertSyncIsComplete(auth, [SyncRequestType.PeopleV1]);
 
-    await personRepo.delete([{ ownerId: person.ownerId, personGroupId: person.personGroupId }]);
+    await personRepo.delete([person.personGroupId], person.ownerId);
 
     expect(await ctx.syncStream(auth2, [SyncRequestType.PeopleV1])).toEqual([
       expect.objectContaining({ type: SyncEntityType.PersonDeleteV1 }),
