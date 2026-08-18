@@ -129,6 +129,7 @@ export class DatabaseBackupService {
 
     const args: string[] = [];
     let databaseUsername;
+    let databasePassword;
 
     if (isUrlConnection) {
       if (bin !== 'pg_dump') {
@@ -142,16 +143,24 @@ export class DatabaseBackupService {
         parsedUrl.searchParams.delete('uselibpqcompat');
 
         databaseUsername = parsedUrl.username || parsedUrl.searchParams.get('user');
+        databasePassword = decodeUrlComponent(parsedUrl.password) || parsedUrl.searchParams.get('password');
+
+        // the password is handed over via `PGPASSWORD`, so that it is not visible
+        // in the arguments of the spawned process
+        parsedUrl.password = '';
+        parsedUrl.searchParams.delete('password');
 
         url = parsedUrl.href;
       }
 
       // assume typical values if we can't parse URL or not present
       databaseUsername ??= 'postgres';
+      databasePassword ??= '';
 
       args.push(url);
     } else {
       databaseUsername = databaseConfig.username;
+      databasePassword = databaseConfig.password;
 
       args.push(
         '--username',
@@ -214,7 +223,7 @@ export class DatabaseBackupService {
       bin: `/usr/lib/postgresql/${databaseMajorVersion}/bin/${bin}`,
       args,
       databaseUsername,
-      databasePassword: isUrlConnection ? new URL(databaseConfig.url).password : databaseConfig.password,
+      databasePassword,
       databaseVersion,
       databaseMajorVersion,
     };
@@ -458,6 +467,15 @@ export class DatabaseBackupService {
     }
 
     this.logger.log(`Database Restore Success`);
+  }
+}
+
+// `URL` exposes the userinfo section percent-encoded, while `PGPASSWORD` expects the raw value
+function decodeUrlComponent(value: string) {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
   }
 }
 

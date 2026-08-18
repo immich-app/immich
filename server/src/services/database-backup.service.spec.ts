@@ -209,11 +209,44 @@ describe(DatabaseBackupService.name, () => {
       const args = call[1] as string[];
       expect(args).toMatchInlineSnapshot(`
         [
-          "postgresql://postgres:pwd@host:5432/immich?sslmode=require",
+          "postgresql://postgres@host:5432/immich?sslmode=require",
           "--clean",
           "--if-exists",
         ]
       `);
+    });
+
+    it('should pass the DB_URL password via PGPASSWORD instead of the process arguments', async () => {
+      // the password would otherwise be readable by anyone able to list processes
+      const dbUrl = 'postgresql://postgres:p%40ssword@host:5432/immich';
+      const configMock = {
+        getEnv: () => ({ database: { config: { connectionType: 'url', url: dbUrl }, skipMigrations: false } }),
+        getWorker: () => ImmichWorker.Api,
+        isDev: () => false,
+      } as unknown as any;
+
+      sut = new DatabaseBackupService(
+        mocks.logger as never,
+        mocks.storage as never,
+        configMock as never,
+        mocks.systemMetadata as never,
+        mocks.process,
+        mocks.database as never,
+        mocks.user as never,
+        mocks.cron as never,
+        mocks.job as never,
+        void 0 as never,
+      );
+
+      mocks.database.getPostgresVersion.mockResolvedValue('14.10');
+
+      await sut.handleBackupDatabase();
+
+      expect(mocks.process.spawnDuplexStream).toHaveBeenCalledWith(
+        '/usr/lib/postgresql/14/bin/pg_dump',
+        ['postgresql://postgres@host:5432/immich', '--clean', '--if-exists'],
+        { env: { PATH: process.env.PATH, PGPASSWORD: 'p@ssword' } },
+      );
     });
 
     it('should run a database backup successfully', async () => {
@@ -488,7 +521,7 @@ describe(DatabaseBackupService.name, () => {
         await expect(sut.buildPostgresLaunchArguments('pg_dump')).resolves.toMatchInlineSnapshot(`
           {
             "args": [
-              "postgresql://mypg:mypwd@myhost:1234/myimmich?sslmode=require",
+              "postgresql://mypg@myhost:1234/myimmich?sslmode=require",
               "--clean",
               "--if-exists",
             ],
@@ -507,7 +540,7 @@ describe(DatabaseBackupService.name, () => {
           {
             "args": [
               "--dbname",
-              "postgresql://mypg:mypwd@myhost:1234/myimmich?sslmode=require",
+              "postgresql://mypg@myhost:1234/myimmich?sslmode=require",
               "--single-transaction",
               "--set",
               "ON_ERROR_STOP=on",
@@ -517,6 +550,47 @@ describe(DatabaseBackupService.name, () => {
             "bin": "/usr/lib/postgresql/14/bin/psql",
             "databaseMajorVersion": 14,
             "databasePassword": "mypwd",
+            "databaseUsername": "mypg",
+            "databaseVersion": "14.10 (Debian 14.10-1.pgdg120+1)",
+          }
+        `);
+      });
+    });
+
+    describe('using URL with credentials as parameters', () => {
+      beforeEach(() => {
+        const dbUrl = 'postgresql://myhost:1234/myimmich?user=mypg&password=my%2Fpwd';
+        const configMock = {
+          getEnv: () => ({ database: { config: { connectionType: 'url', url: dbUrl }, skipMigrations: false } }),
+          getWorker: () => ImmichWorker.Api,
+          isDev: () => false,
+        } as unknown as any;
+
+        sut = new DatabaseBackupService(
+          mocks.logger as never,
+          mocks.storage as never,
+          configMock as never,
+          mocks.systemMetadata as never,
+          mocks.process,
+          mocks.database as never,
+          mocks.user as never,
+          mocks.cron as never,
+          mocks.job as never,
+          void 0 as never,
+        );
+      });
+
+      it('should remove the password parameter', async () => {
+        await expect(sut.buildPostgresLaunchArguments('pg_dump')).resolves.toMatchInlineSnapshot(`
+          {
+            "args": [
+              "postgresql://myhost:1234/myimmich?user=mypg",
+              "--clean",
+              "--if-exists",
+            ],
+            "bin": "/usr/lib/postgresql/14/bin/pg_dump",
+            "databaseMajorVersion": 14,
+            "databasePassword": "my/pwd",
             "databaseUsername": "mypg",
             "databaseVersion": "14.10 (Debian 14.10-1.pgdg120+1)",
           }
