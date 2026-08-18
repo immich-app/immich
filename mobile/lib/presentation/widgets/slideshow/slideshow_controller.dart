@@ -13,11 +13,8 @@ abstract interface class SlideshowDelegate {
   /// Provides the completion state of the video slide at [index], or false if the slide is not a video
   bool isVideoCompleted(int index);
 
-  /// Called when a slide resumes from a non-visible or non-playing state
-  void onResumeSlide(int index);
-
-  /// Called when the slideshow is explicitly stopped
-  void onPauseSlide(int index);
+  /// Called when the slideshow starts or stops playing
+  void onPlaybackChanged(int index, bool playing);
 
   /// Called to indicate the slide corresponding to [index] should be displayed, transitioning from [prevIndex]
   ///
@@ -103,7 +100,7 @@ class SlideshowController extends ChangeNotifier {
     _paused = true;
     _animationController.stop();
 
-    delegate.onPauseSlide(_currentIndex);
+    delegate.onPlaybackChanged(_currentIndex, false);
 
     notifyListeners();
   }
@@ -125,7 +122,7 @@ class SlideshowController extends ChangeNotifier {
 
     unawaited(_animationController.forward());
 
-    delegate.onResumeSlide(_currentIndex);
+    delegate.onPlaybackChanged(_currentIndex, true);
   }
 
   /// Immediately transitions to the previously determined next slide

@@ -167,13 +167,10 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
   }
 
   @override
-  void onResumeSlide(int index) {
-    unawaited(_videoNotifier(index)?.play());
-  }
+  void onPlaybackChanged(int index, bool playing) {
+    final video = _videoNotifier(index);
 
-  @override
-  void onPauseSlide(int index) {
-    unawaited(_videoNotifier(index)?.pause());
+    unawaited(playing ? video?.play() : video?.pause());
   }
 
   @override
