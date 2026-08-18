@@ -19647,6 +19647,7 @@
           },
           "profileImagePath": {
             "description": "Profile image path",
+            "nullable": true,
             "type": "string"
           },
           "shouldChangePassword": {
@@ -20829,10 +20830,12 @@
           "profileChangedAt": {
             "description": "Profile change date",
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "profileImagePath": {
             "description": "Profile image path",
+            "nullable": true,
             "type": "string"
           }
         },
@@ -25054,6 +25057,7 @@
           },
           "oauthId": {
             "description": "User OAuth ID",
+            "nullable": true,
             "type": "string"
           },
           "pinCode": {
@@ -25065,6 +25069,7 @@
             "description": "User profile changed at",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
+            "nullable": true,
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "type": "string"
           },
@@ -25079,6 +25084,7 @@
             "description": "Quota usage in bytes",
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
+            "nullable": true,
             "type": "integer"
           },
           "storageLabel": {
@@ -25668,6 +25674,7 @@
             "description": "User profile changed at",
             "example": "2024-01-01T00:00:00.000Z",
             "format": "date-time",
+            "nullable": true,
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "type": "string"
           }
@@ -27232,6 +27239,7 @@
           "albumThumbnailAssetId": {
             "description": "Album thumbnail asset ID",
             "format": "uuid",
+            "nullable": true,
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
           },
@@ -27544,15 +27552,18 @@
           },
           "oauthId": {
             "description": "OAuth ID",
+            "nullable": true,
             "type": "string"
           },
           "profileChangedAt": {
             "description": "Profile change date",
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "profileImagePath": {
             "description": "Profile image path",
+            "nullable": true,
             "type": "string"
           },
           "quotaSizeInBytes": {
@@ -27838,10 +27849,12 @@
           "profileChangedAt": {
             "description": "Profile change date",
             "format": "date-time",
+            "nullable": true,
             "type": "string"
           },
           "profileImagePath": {
             "description": "Profile image path",
+            "nullable": true,
             "type": "string"
           }
         },

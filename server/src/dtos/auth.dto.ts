@@ -32,7 +32,7 @@ const LoginResponseSchema = z
     userId: z.uuidv4().describe('User ID'),
     userEmail: toEmail.describe('User email'),
     name: z.string().describe('User name'),
-    profileImagePath: z.string().describe('Profile image path'),
+    profileImagePath: z.string().nullable().describe('Profile image path'),
     isAdmin: z.boolean().describe('Is admin user'),
     shouldChangePassword: z.boolean().describe('Should change password'),
     isOnboarded: z.boolean().describe('Is onboarded'),

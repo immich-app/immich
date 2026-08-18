@@ -25,7 +25,7 @@ const SyncUserV1Schema = z
     avatarColor: UserAvatarColorSchema.nullish(),
     deletedAt: isoDatetimeToDate.nullable().describe('User deleted at'),
     hasProfileImage: z.boolean().describe('User has profile image'),
-    profileChangedAt: isoDatetimeToDate.describe('User profile changed at'),
+    profileChangedAt: isoDatetimeToDate.nullable().describe('User profile changed at'),
   })
   .meta({ id: 'SyncUserV1' });
 
@@ -33,10 +33,10 @@ const SyncAuthUserV1Schema = SyncUserV1Schema.merge(
   z.object({
     isAdmin: z.boolean().describe('User is admin'),
     pinCode: z.string().nullable().describe('User pin code'),
-    oauthId: z.string().describe('User OAuth ID'),
+    oauthId: z.string().nullable().describe('User OAuth ID'),
     storageLabel: z.string().nullable().describe('User storage label'),
     quotaSizeInBytes: z.int().nullable().describe('Quota size in bytes'),
-    quotaUsageInBytes: z.int().describe('Quota usage in bytes'),
+    quotaUsageInBytes: z.int().nullable().describe('Quota usage in bytes'),
   }),
 ).meta({ id: 'SyncAuthUserV1' });
 

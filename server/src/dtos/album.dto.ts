@@ -88,7 +88,7 @@ const UpdateAlbumSchema = z
           )
           .getExtensions(),
       }),
-    albumThumbnailAssetId: z.uuidv4().optional().describe('Album thumbnail asset ID'),
+    albumThumbnailAssetId: z.uuidv4().nullable().optional().describe('Album thumbnail asset ID'),
     isActivityEnabled: z.boolean().optional().describe('Enable activity feed'),
     order: AssetOrderSchema.optional(),
   })
