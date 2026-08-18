@@ -109,6 +109,7 @@ class MediumRepositoryContext {
     String? checksum,
     String? ownerId,
     DateTime? createdAt,
+    Option<DateTime>? localDateTimeOption,
     DateTime? updatedAt,
     DateTime? deletedAt,
     AssetType? type,
@@ -125,6 +126,7 @@ class MediumRepositoryContext {
   }) async {
     id ??= TestUtils.uuid();
     createdAt ??= TestUtils.date();
+    final date = localDateTimeOption?.unwrapOrNull ?? createdAt.toLocal();
     return db
         .into(db.remoteAssetEntity)
         .insertReturning(
@@ -145,8 +147,8 @@ class MediumRepositoryContext {
             isEdited: .new(isEdited ?? false),
             livePhotoVideoId: .new(livePhotoVideoId),
             stackId: .new(stackId),
-            localDateTime: .new(createdAt.toLocal()),
-            groupDate: .new(timelineGroupDate(createdAt.toLocal())),
+            localDateTime: _resolveOption(localDateTimeOption, date),
+            groupDate: .new(timelineGroupDate(date)),
             thumbHash: .new(TestUtils.uuid(thumbHash)),
             libraryId: .new(TestUtils.uuid(libraryId)),
           ),
