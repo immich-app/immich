@@ -50,7 +50,7 @@ class DateTimeDetails extends ConsumerWidget {
 
     final (dateTime, timeZoneOffset) = resolveAssetDateTime(asset, exifInfo);
 
-    final date = localizedDateFormat(DateFormat.yMMMEd).format(dateTime);
+    final date = DateFormat.yMMMEd(resolvedDateTimeLocale()).format(dateTime);
     final time = dateTime.formatTime(alwaysUse24HourFormat: alwaysUse24HourFormat);
     final timezone = 'GMT${timeZoneOffset.formatAsOffset()}';
     return '$date$_kSeparator$time $timezone';

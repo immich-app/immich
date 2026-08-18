@@ -1,17 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 
-/// Builds a [DateFormat] for the active [Intl.defaultLocale] (set on app start),
-/// falling back to `en_US` for the handful of supported locales that intl has no
-/// date-formatting data for and would otherwise throw a `LocaleDataException` on.
-///
-/// [create] is a [DateFormat] constructor tear-off, e.g. `DateFormat.jm`.
-DateFormat localizedDateFormat(DateFormat Function([String? locale]) create) {
-  try {
-    return create(Intl.defaultLocale);
-  } on Exception {
-    return create('en_US');
-  }
-}
+/// The active locale for date/time formatting, falling back to `en_US` for
+/// supported locales that intl has no date-formatting data for.
+String resolvedDateTimeLocale() =>
+    Intl.verifiedLocale(Intl.defaultLocale, DateFormat.localeExists, onFailure: (_) => 'en_US')!;
 
 extension TimeAgoExtension on DateTime {
   /// Displays the time difference of this [DateTime] object to the current time as a [String]
@@ -52,23 +44,21 @@ extension TimeAgoExtension on DateTime {
 }
 
 extension TimeFormatting on DateTime {
-  /// When [alwaysUse24HourFormat] is true, uses a 24-hour `HH:mm` format; otherwise uses the
-  /// locale-aware 12-hour format (e.g. "1:30 PM").
-  String formatTime({required bool alwaysUse24HourFormat}) =>
-      localizedDateFormat(alwaysUse24HourFormat ? DateFormat.Hm : DateFormat.jm).format(this);
+  /// 24-hour `HH:mm` when [alwaysUse24HourFormat], otherwise the locale's 12-hour format.
+  String formatTime({required bool alwaysUse24HourFormat}) {
+    final locale = resolvedDateTimeLocale();
+    return alwaysUse24HourFormat ? DateFormat.Hm(locale).format(this) : DateFormat.jm(locale).format(this);
+  }
 }
 
 extension DateFormatting on DateTime {
   /// Formats a single date, omitting the year when it is the current year.
-  /// - This year: "Aug 28"
-  /// - Other year: "Aug 28, 2023"
   String formatDate() {
-    final isCurrentYear = year == DateTime.now().year;
-    return localizedDateFormat(isCurrentYear ? DateFormat.MMMd : DateFormat.yMMMd).format(this);
+    final locale = resolvedDateTimeLocale();
+    return year == DateTime.now().year ? DateFormat.MMMd(locale).format(this) : DateFormat.yMMMd(locale).format(this);
   }
 }
 
-/// Extension to format date ranges according to UI requirements
 extension DateRangeFormatting on DateTime {
   /// Formats a date range according to specific rules:
   /// - Single date of this year: "Aug 28"
@@ -77,28 +67,19 @@ extension DateRangeFormatting on DateTime {
   /// - Date range of other year: "Aug 28 - Sep 30, 2023"
   /// - Date range over multiple years: "Apr 17, 2021 - Apr 9, 2022"
   static String formatDateRange(DateTime startDate, DateTime endDate) {
-    final currentYear = DateTime.now().year;
-
-    // Check if it's a single date (same day)
     if (startDate.year == endDate.year && startDate.month == endDate.month && startDate.day == endDate.day) {
       return startDate.formatDate();
     }
 
-    // It's a date range
+    final locale = resolvedDateTimeLocale();
+
     if (startDate.year == endDate.year) {
-      final format = localizedDateFormat(DateFormat.MMMd);
-      // Same year
-      if (startDate.year == currentYear) {
-        // Date range of this year: "Mar 23-May 31"
-        return '${format.format(startDate)} - ${format.format(endDate)}';
-      } else {
-        // Date range of other year: "Aug 28 - Sep 30, 2023"
-        return '${format.format(startDate)} - ${format.format(endDate)}, ${startDate.year}';
-      }
-    } else {
-      // Date range over multiple years: "Apr 17, 2021 - Apr 9, 2022"
-      final format = localizedDateFormat(DateFormat.yMMMd);
-      return '${format.format(startDate)} - ${format.format(endDate)}';
+      final format = DateFormat.MMMd(locale);
+      final range = '${format.format(startDate)} - ${format.format(endDate)}';
+      return startDate.year == DateTime.now().year ? range : '$range, ${startDate.year}';
     }
+
+    final format = DateFormat.yMMMd(locale);
+    return '${format.format(startDate)} - ${format.format(endDate)}';
   }
 }
