@@ -32,8 +32,27 @@ import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity
 import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/user_metadata.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.steps.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_album.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/memory.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/ocr.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/partner.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/people.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/remote_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/remote_exif.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/stack.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_migration.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/sync_stream.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/trashed_local_asset.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/user_metadata.repository.dart';
 import 'package:logging/logging.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -69,6 +88,28 @@ import 'package:sqlite_async/sqlite_async.dart';
     AssetOcrEntity,
   ],
   include: {'package:immich_mobile/infrastructure/entities/merged_asset.drift'},
+  daos: [
+    AuthUserRepository,
+    BackupRepository,
+    LocalAlbumRepository,
+    LocalAssetRepository,
+    MapRepository,
+    MemoryRepository,
+    OcrRepository,
+    PartnerRepository,
+    PeopleRepository,
+    RemoteAlbumRepository,
+    RemoteAssetRepository,
+    RemoteExifRepository,
+    StackRepository,
+    StoreRepository,
+    SyncMigrationRepository,
+    SyncStreamRepository,
+    TimelineRepository,
+    TrashedLocalAssetRepository,
+    UserMetadataRepository,
+    UserRepository,
+  ],
 )
 class Drift extends $Drift {
   final SqliteConnectionPool? _updatePool;
@@ -342,13 +383,6 @@ class Drift extends $Drift {
       await customStatement('PRAGMA temp_store = MEMORY');
     },
   );
-}
-
-class DriftDatabaseRepository {
-  final Drift _db;
-  const DriftDatabaseRepository(this._db);
-
-  Future<T> transaction<T>(Future<T> Function() callback) => _db.transaction(callback);
 }
 
 // ignore: invalid_use_of_internal_member

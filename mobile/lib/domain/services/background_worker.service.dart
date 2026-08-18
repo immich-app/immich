@@ -19,8 +19,6 @@ import 'package:immich_mobile/platform/background_worker_api.g.dart';
 import 'package:immich_mobile/platform/background_worker_lock_api.g.dart';
 import 'package:immich_mobile/providers/api.provider.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/sync.provider.dart';
@@ -76,31 +74,32 @@ class BackgroundWorkerBgService extends BackgroundWorkerFlutterApi {
     : _backgroundHostApi = BackgroundWorkerBgHostApi() {
     final ref = ProviderContainer(overrides: [driftProvider.overrideWith(driftOverride(_drift))]);
     _ref = ref;
+    final db = ref.read(driftProvider);
     _localSyncService = LocalSyncService(
-      localAlbumRepository: ref.read(localAlbumRepository),
-      localAssetRepository: ref.read(localAssetRepository),
+      localAlbumRepository: db.localAlbumRepository,
+      localAssetRepository: db.localAssetRepository,
       nativeSyncApi: ref.read(nativeSyncApiProvider),
-      trashedLocalAssetRepository: ref.read(trashedLocalAssetRepository),
+      trashedLocalAssetRepository: db.trashedLocalAssetRepository,
       assetMediaRepository: ref.read(assetMediaRepositoryProvider),
       permissionRepository: ref.read(permissionRepositoryProvider),
       cancellation: _cancellationToken,
     );
     _remoteSyncService = SyncStreamService(
       syncApiRepository: ref.read(syncApiRepositoryProvider),
-      syncStreamRepository: ref.read(syncStreamRepositoryProvider),
-      localAssetRepository: ref.read(localAssetRepository),
-      trashedLocalAssetRepository: ref.read(trashedLocalAssetRepository),
+      syncStreamRepository: db.syncStreamRepository,
+      localAssetRepository: db.localAssetRepository,
+      trashedLocalAssetRepository: db.trashedLocalAssetRepository,
       assetMediaRepository: ref.read(assetMediaRepositoryProvider),
       permissionRepository: ref.read(permissionRepositoryProvider),
-      syncMigrationRepository: ref.read(syncMigrationRepositoryProvider),
+      syncMigrationRepository: db.syncMigrationRepository,
       api: ref.read(apiServiceProvider),
       cancellation: _cancellationToken,
     );
     _hashService = HashService(
-      localAlbumRepository: ref.read(localAlbumRepository),
-      localAssetRepository: ref.read(localAssetRepository),
+      localAlbumRepository: db.localAlbumRepository,
+      localAssetRepository: db.localAssetRepository,
       nativeSyncApi: ref.read(nativeSyncApiProvider),
-      trashedLocalAssetRepository: ref.read(trashedLocalAssetRepository),
+      trashedLocalAssetRepository: db.trashedLocalAssetRepository,
       cancellation: _cancellationToken,
     );
     BackgroundWorkerFlutterApi.setUp(this);

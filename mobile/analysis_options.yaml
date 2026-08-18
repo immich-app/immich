@@ -26,51 +26,58 @@ linter:
   # producing the lint.
 
   rules:
-    # Formatting
-    avoid_print: true
-    require_trailing_commas: true
-    unrelated_type_equality_checks: true
-    prefer_const_constructors: true
-    always_use_package_imports: true
-    always_put_control_body_on_new_line: true
+    # Correctness
+    always_declare_return_types: true
+    avoid_type_to_string: true
+    avoid_unused_constructor_parameters: true
+    avoid_void_async: true
+    cancel_subscriptions: true
+    cast_nullable_to_non_nullable: true
+    close_sinks: true
+    collection_methods_unrelated_type: true
+    deprecated_consistency: true
+    discarded_futures: true
+    no_adjacent_strings_in_list: true
+    no_self_assignments: true
+    noop_primitive_operations: true
+    only_throw_errors: true
+    parameter_assignments: true
+    throw_in_finally: true
+    tighten_type_of_initializing_formals: true
+    unawaited_futures: true
+    unnecessary_ignore: true
     unnecessary_null_checks: true
-    unnecessary_parenthesis: true
-    prefer_final_locals: true
+    unnecessary_statements: true
+    unrelated_type_equality_checks: true
+
+    # Performance
+    avoid_slow_async_io: true
+    prefer_const_constructors: true
     prefer_const_declarations: true
     prefer_const_literals_to_create_immutables: true
-    use_super_parameters: true
-    directives_ordering: true
-    no_leading_underscores_for_local_identifiers: true
-    always_declare_return_types: true
-    avoid_void_async: true
-    noop_primitive_operations: true
-    use_named_constants: true
-    combinators_ordering: true
-    avoid_multiple_declarations_per_line: true
-    unnecessary_breaks: true
-
-    # Correctness
-    no_adjacent_strings_in_list: true
-    cancel_subscriptions: true
-    close_sinks: true
-    unawaited_futures: true
-    discarded_futures: true
-    no_self_assignments: true
-    throw_in_finally: true
-    collection_methods_unrelated_type: true
-    cast_nullable_to_non_nullable: true
-
-    # Known issues
-    avoid_slow_async_io: true
-    avoid_type_to_string: true
 
     # Flutter specific
-    use_build_context_synchronously: true
+    avoid_unnecessary_containers: true
     sized_box_for_whitespace: true
+    use_build_context_synchronously: true
     use_colored_box: true
     use_decorated_box: true
-    avoid_unnecessary_containers: true
     use_full_hex_values_for_flutter_colors: true
+
+    # Style
+    always_put_control_body_on_new_line: true
+    always_use_package_imports: true
+    avoid_multiple_declarations_per_line: true
+    avoid_print: true
+    combinators_ordering: true
+    directives_ordering: true
+    no_leading_underscores_for_local_identifiers: true
+    prefer_final_locals: true
+    require_trailing_commas: true
+    unnecessary_breaks: true
+    unnecessary_parenthesis: true
+    use_named_constants: true
+    use_super_parameters: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
