@@ -40,9 +40,7 @@ const AssetMediaBaseSchema = z.object({
   fileModifiedAt: isoDatetimeToDate.describe('File modification date'),
   duration: z.coerce.number().int().min(0).optional().describe('Duration in milliseconds (for videos)'),
   filename: z.string().optional().describe('Filename'),
-  /**
-  The properties below are added to correctly generate the API docs and client SDKs. Validation should be handled in the controller.
-  */
+  /** The properties below are added to correctly generate the API docs and client SDKs. Validation should be handled in the controller. */
   [UploadFieldName.ASSET_DATA]: z.any().describe('Asset file data').meta({ type: 'string', format: 'binary' }),
 });
 

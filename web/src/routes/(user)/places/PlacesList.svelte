@@ -33,9 +33,7 @@
   }
 
   const groupOptions: PlacesGroupOption = {
-    /**
-    No grouping
-    */
+    /** No grouping */
     [PlacesGroupBy.None]: (places): PlacesGroup[] => {
       return [
         {
@@ -46,9 +44,7 @@
       ];
     },
 
-    /**
-    Group by year
-    */
+    /** Group by year */
     [PlacesGroupBy.Country]: (places): PlacesGroup[] => {
       const unknownCountry = $t('unknown_country');
 

@@ -45,21 +45,15 @@ export class MemoryTable {
   @Column({ type: 'jsonb' })
   data!: Record<string, unknown>;
 
-  /**
-  unless set to true, will be automatically deleted in the future
-  */
+  /** unless set to true, will be automatically deleted in the future */
   @Column({ type: 'boolean', default: false })
   isSaved!: Generated<boolean>;
 
-  /**
-  memories are sorted in ascending order by this value
-  */
+  /** memories are sorted in ascending order by this value */
   @Column({ type: 'timestamp with time zone' })
   memoryAt!: Timestamp;
 
-  /**
-  when the user last viewed the memory
-  */
+  /** when the user last viewed the memory */
   @Column({ type: 'timestamp with time zone', nullable: true })
   seenAt!: Timestamp | null;
 

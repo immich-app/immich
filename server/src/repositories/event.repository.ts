@@ -56,25 +56,15 @@ type EventMap = {
   AssetDeleteAll: [{ assetIds: string[]; userId: string }];
   AssetRestoreAll: [{ assetIds: string[]; userId: string }];
 
-  /**
-  a worker receives a job and emits this event to run it
-  */
+  /** a worker receives a job and emits this event to run it */
   JobRun: [QueueName, JobItem];
-  /**
-  job pre-hook
-  */
+  /** job pre-hook */
   JobStart: [QueueName, JobItem];
-  /**
-  job post-hook
-  */
+  /** job post-hook */
   JobComplete: [QueueName, JobItem];
-  /**
-  job finishes without error
-  */
+  /** job finishes without error */
   JobSuccess: [JobSuccessEvent];
-  /**
-  job finishes with error
-  */
+  /** job finishes with error */
   JobError: [JobErrorEvent];
 
   // queue events
@@ -94,13 +84,9 @@ type EventMap = {
   // user events
   UserSignup: [{ notify: boolean; id: string; password?: string }];
   UserCreate: [UserEvent];
-  /**
-  user is soft deleted
-  */
+  /** user is soft deleted */
   UserTrash: [UserEvent];
-  /**
-  user is permanently deleted
-  */
+  /** user is permanently deleted */
   UserDelete: [UserEvent];
   UserRestore: [UserEvent];
 

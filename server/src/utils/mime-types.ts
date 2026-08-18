@@ -164,9 +164,7 @@ export const mimeTypes = {
     transparentCapableExtensions.has(getFilenameExtension(filename).toLowerCase()),
   isRaw: (filename: string) => isType(filename, raw),
   lookup,
-  /**
-  return an extension (including a leading `.`) for a mime-type
-  */
+  /** return an extension (including a leading `.`) for a mime-type */
   toExtension,
   assetType: (filename: string) => {
     const contentType = lookup(filename);
