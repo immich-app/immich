@@ -73,7 +73,6 @@ export interface Face {
 }
 
 export type FacialRecognitionResponse = { [ModelTask.FACIAL_RECOGNITION]: Face[] } & VisualResponse;
-export type DetectedFaces = { faces: Face[] } & VisualResponse;
 export type MachineLearningRequest = ClipVisualRequest | ClipTextualRequest | FacialRecognitionRequest | OcrRequest;
 export type TextEncodingOptions = ModelOptions & { language?: string };
 
@@ -130,19 +129,19 @@ export class MachineLearningRepository {
   }
 
   private async check(url: string) {
-    let healthy = false;
+    let isHealthy = false;
     try {
       const response = await fetch(new URL('ping', url), {
         signal: AbortSignal.timeout(this.config.availabilityChecks.timeout),
       });
       if (response.ok) {
-        healthy = true;
+        isHealthy = true;
       }
     } catch {
       // nothing to do here
     }
 
-    this.setHealthy(url, healthy);
+    this.setHealthy(url, isHealthy);
   }
 
   private setHealthy(url: string, healthy: boolean) {

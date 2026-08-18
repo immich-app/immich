@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/local_album.model.dart';
@@ -10,7 +9,6 @@ import 'package:immich_mobile/entities/store.entity.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/backup/backup_toggle_button.widget.dart';
 import 'package:immich_mobile/providers/background_sync.provider.dart';
@@ -43,7 +41,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
   void initState() {
     super.initState();
 
-    WakelockPlus.enable();
+    unawaited(WakelockPlus.enable());
 
     final currentUser = ref.read(currentUserProvider);
     if (currentUser == null) {
@@ -67,9 +65,9 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
   }
 
   @override
-  dispose() {
+  void dispose() {
     super.dispose();
-    WakelockPlus.disable();
+    unawaited(WakelockPlus.disable());
   }
 
   @override
@@ -81,8 +79,8 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
 
     final error = ref.watch(driftBackupProvider.select((p) => p.error));
 
-    final backupNotifier = ref.read(driftBackupProvider.notifier);
-    final backupSyncManager = ref.read(backgroundSyncProvider);
+    final backupNotifier = ref.watch(driftBackupProvider.notifier);
+    final backupSyncManager = ref.watch(backgroundSyncProvider);
 
     Future<void> startBackup() async {
       final currentUser = Store.tryGet(StoreKey.currentUser);
@@ -108,10 +106,10 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
     return Scaffold(
       appBar: AppBar(
         elevation: 0,
-        title: Text("backup_controller_page_backup".t()),
+        title: Text(context.t.backup_controller_page_backup),
         leading: IconButton(
           onPressed: () {
-            context.maybePop(true);
+            unawaited(context.maybePop(true));
           },
           splashRadius: 24,
           icon: const Icon(Icons.arrow_back_ios_rounded),
@@ -119,10 +117,10 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
         actions: [
           IconButton(
             onPressed: () {
-              context.pushRoute(const DriftBackupOptionsRoute());
+              unawaited(context.pushRoute(const DriftBackupOptionsRoute()));
             },
             icon: const Icon(Icons.settings_outlined),
-            tooltip: "backup_options".t(context: context),
+            tooltip: context.t.backup_options,
           ),
         ],
       ),
@@ -143,7 +141,7 @@ class _DriftBackupPageState extends ConsumerState<DriftBackupPage> {
                     onStart: () async => await startBackup(),
                     onStop: () {
                       syncSuccess = null;
-                      backupNotifier.stopForegroundBackup();
+                      backupNotifier.stopForegroundBackup(reason: "backup button toggled off");
                     },
                   ),
                   switch (error) {
@@ -207,8 +205,8 @@ class _BackupFooterState extends ConsumerState<_BackupFooter> with WidgetsBindin
     }
   }
 
-  void showPermissionsDialog() {
-    showDialog(
+  Future<void> showPermissionsDialog() {
+    return showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         content: Text(context.t.notification_permission_dialog_content),
@@ -225,7 +223,7 @@ class _BackupFooterState extends ConsumerState<_BackupFooter> with WidgetsBindin
             expanded: false,
             onPressed: () {
               ContextHelper(context).pop();
-              openAppSettings();
+              unawaited(openAppSettings());
             },
           ),
         ],
@@ -233,8 +231,8 @@ class _BackupFooterState extends ConsumerState<_BackupFooter> with WidgetsBindin
     );
   }
 
-  void showBatteryOptimizationInfo() {
-    showDialog<void>(
+  Future<void> showBatteryOptimizationInfo() {
+    return showDialog<void>(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext ctx) {
@@ -246,7 +244,8 @@ class _BackupFooterState extends ConsumerState<_BackupFooter> with WidgetsBindin
               labelText: context.t.backup_controller_page_background_battery_info_link,
               variant: .ghost,
               expanded: false,
-              onPressed: () => launchUrl(Uri.parse('https://dontkillmyapp.com'), mode: LaunchMode.externalApplication),
+              onPressed: () =>
+                  unawaited(launchUrl(Uri.parse('https://dontkillmyapp.com'), mode: LaunchMode.externalApplication)),
             ),
             ImmichTextButton(
               labelText: context.t.backup_controller_page_background_battery_info_ok,
@@ -279,11 +278,13 @@ class _BackupFooterState extends ConsumerState<_BackupFooter> with WidgetsBindin
                 style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.onSurfaceSecondary),
               ),
               onPressed: () {
-                ref.read(notificationPermissionProvider.notifier).requestNotificationPermission().then((p) {
-                  if (p == PermissionStatus.permanentlyDenied) {
-                    showPermissionsDialog();
-                  }
-                });
+                unawaited(
+                  ref.read(notificationPermissionProvider.notifier).requestNotificationPermission().then((p) {
+                    if (p == PermissionStatus.permanentlyDenied) {
+                      unawaited(showPermissionsDialog());
+                    }
+                  }),
+                );
               },
             ),
           if (notificationStatus != PermissionStatus.granted && batteryOptimizationStatus != PermissionStatus.granted)
@@ -297,7 +298,7 @@ class _BackupFooterState extends ConsumerState<_BackupFooter> with WidgetsBindin
                 textAlign: TextAlign.left,
                 style: context.textTheme.bodySmall?.copyWith(color: context.colorScheme.onSurfaceSecondary),
               ),
-              onPressed: showBatteryOptimizationInfo,
+              onPressed: () => unawaited(showBatteryOptimizationInfo()),
             ),
         ],
         TextButton.icon(
@@ -315,17 +316,16 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final backupAlbums = ref.watch(backupAlbumProvider);
+
     Widget buildSelectedAlbumName() {
-      String text = "backup_controller_page_backup_selected".tr();
-      final albums = ref
-          .watch(backupAlbumProvider)
-          .where((album) => album.backupSelection == BackupSelection.selected)
-          .toList();
+      String text = context.t.backup_controller_page_backup_selected;
+      final albums = backupAlbums.where((album) => album.backupSelection == BackupSelection.selected).toList();
 
       if (albums.isNotEmpty) {
         for (var album in albums) {
           if (album.name == "Recent" || album.name == "Recents") {
-            text += "${album.name} (${'all'.tr()}), ";
+            text += "${album.name} (${context.t.all}), ";
           } else {
             text += "${album.name}, ";
           }
@@ -342,7 +342,7 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
         return Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(
-            "backup_controller_page_none_selected".tr(),
+            context.t.backup_controller_page_none_selected,
             style: context.textTheme.labelLarge?.copyWith(color: context.primaryColor),
           ),
         );
@@ -350,11 +350,8 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
     }
 
     Widget buildExcludedAlbumName() {
-      String text = "backup_controller_page_excluded".tr();
-      final albums = ref
-          .watch(backupAlbumProvider)
-          .where((album) => album.backupSelection == BackupSelection.excluded)
-          .toList();
+      String text = context.t.backup_controller_page_excluded;
+      final albums = backupAlbums.where((album) => album.backupSelection == BackupSelection.excluded).toList();
 
       if (albums.isNotEmpty) {
         for (var album in albums) {
@@ -382,16 +379,16 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
       borderOnForeground: false,
       child: ListTile(
         minVerticalPadding: 18,
-        title: Text("backup_controller_page_albums", style: context.textTheme.titleMedium).tr(),
+        title: Text(context.t.backup_controller_page_albums, style: context.textTheme.titleMedium),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "backup_controller_page_to_backup",
+                context.t.backup_controller_page_to_backup,
                 style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-              ).tr(),
+              ),
               buildSelectedAlbumName(),
               buildExcludedAlbumName(),
             ],
@@ -400,13 +397,17 @@ class _BackupAlbumSelectionCard extends ConsumerWidget {
         trailing: ElevatedButton(
           onPressed: () async {
             await context.pushRoute(const DriftBackupAlbumSelectionRoute());
+            if (!context.mounted) {
+              return;
+            }
+
             final currentUser = ref.read(currentUserProvider);
             if (currentUser == null) {
               return;
             }
             unawaited(ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id));
           },
-          child: const Text("select", style: TextStyle(fontWeight: FontWeight.bold)).tr(),
+          child: Text(context.t.select, style: const TextStyle(fontWeight: FontWeight.bold)),
         ),
       ),
     );
@@ -421,8 +422,8 @@ class _TotalCard extends ConsumerWidget {
     final totalCount = ref.watch(driftBackupProvider.select((p) => p.totalCount));
 
     return BackupInfoCard(
-      title: "total".tr(),
-      subtitle: "backup_controller_page_total_sub".tr(),
+      title: context.t.total,
+      subtitle: context.t.backup_controller_page_total_sub,
       info: totalCount.toString(),
     );
   }
@@ -437,8 +438,8 @@ class _BackupCard extends ConsumerWidget {
     final syncStatus = ref.watch(syncStatusProvider);
 
     return BackupInfoCard(
-      title: "backup_controller_page_backup".tr(),
-      subtitle: "backup_controller_page_backup_sub".tr(),
+      title: context.t.backup_controller_page_backup,
+      subtitle: context.t.backup_controller_page_backup_sub,
       info: backupCount.toString(),
       isLoading: syncStatus.isRemoteSyncing,
     );
@@ -465,11 +466,11 @@ class _RemainderCard extends ConsumerWidget {
           ListTile(
             minVerticalPadding: 18,
             isThreeLine: true,
-            title: Text("backup_controller_page_remainder".t(context: context), style: context.textTheme.titleMedium),
+            title: Text(context.t.backup_controller_page_remainder, style: context.textTheme.titleMedium),
             subtitle: Padding(
               padding: const EdgeInsets.only(top: 4.0, right: 18.0),
               child: Text(
-                "backup_controller_page_remainder_sub".t(context: context),
+                context.t.backup_controller_page_remainder_sub,
                 style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceSecondary),
               ),
             ),
@@ -502,11 +503,11 @@ class _RemainderCard extends ConsumerWidget {
                   ],
                 ),
                 Text(
-                  "backup_info_card_assets",
+                  context.t.backup_info_card_assets,
                   style: context.textTheme.labelLarge?.copyWith(
                     color: context.colorScheme.onSurface.withAlpha(syncStatus.isRemoteSyncing ? 50 : 255),
                   ),
-                ).tr(),
+                ),
               ],
             ),
           ),
@@ -523,7 +524,7 @@ class _RemainderCard extends ConsumerWidget {
             ),
             onTap: () => context.pushRoute(const DriftBackupAssetDetailRoute()),
             title: Text(
-              "view_details".t(context: context),
+              context.t.view_details,
               style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurface.withAlpha(200)),
             ),
             trailing: Icon(Icons.arrow_forward_ios, size: 16, color: context.colorScheme.onSurfaceVariant),
@@ -559,6 +560,11 @@ class _PreparingStatusState extends ConsumerState {
       final currentUser = ref.read(currentUserProvider);
       if (currentUser != null && mounted) {
         await ref.read(driftBackupProvider.notifier).getBackupStatus(currentUser.id);
+        if (!context.mounted) {
+          timer.cancel();
+          _pollingTimer = null;
+          return;
+        }
 
         // Stop polling if processing count reaches 0
         final updatedProcessingCount = ref.read(driftBackupProvider.select((p) => p.processingCount));
@@ -610,7 +616,7 @@ class _PreparingStatusState extends ConsumerState {
                   Row(
                     children: [
                       Text(
-                        "preparing".t(context: context),
+                        context.t.preparing,
                         style: context.textTheme.labelLarge?.copyWith(
                           color: context.colorScheme.onSurface.withAlpha(200),
                         ),
@@ -640,7 +646,7 @@ class _PreparingStatusState extends ConsumerState {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  "ready_for_upload".t(context: context),
+                  context.t.ready_for_upload,
                   style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurface.withAlpha(200)),
                 ),
                 const SizedBox(height: 2),

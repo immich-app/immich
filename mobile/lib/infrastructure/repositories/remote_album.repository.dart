@@ -12,12 +12,15 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.d
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/remote_album.repository.drift.dart';
 
 enum SortRemoteAlbumsBy { id, updatedAt }
 
-class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
-  final Drift _db;
-  const DriftRemoteAlbumRepository(this._db) : super(_db);
+@DriftAccessor()
+class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRepositoryMixin {
+  RemoteAlbumRepository(super.attachedDatabase);
+
+  Drift get _db => attachedDatabase;
 
   Future<List<RemoteAlbum>> getAll({Set<SortRemoteAlbumsBy> sortBy = const {SortRemoteAlbumsBy.updatedAt}}) {
     // Count non-trashed assets via the joined asset table. Filtering trashed assets in the
@@ -191,7 +194,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> update(RemoteAlbum album) async {
+  Future<void> updateAlbum(RemoteAlbum album) async {
     await _db.remoteAlbumEntity.update().replace(
       RemoteAlbumEntityCompanion(
         id: Value(album.id),
@@ -217,7 +220,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
     });
   }
 
-  FutureOr<(DateTime, DateTime)> getDateRange(String albumId) {
+  Stream<(DateTime, DateTime)> watchDateRange(String albumId) {
     final query = _db.remoteAlbumAssetEntity.selectOnly()
       ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
       ..addColumns([_db.remoteAssetEntity.createdAt.min(), _db.remoteAssetEntity.createdAt.max()])
@@ -229,7 +232,7 @@ class DriftRemoteAlbumRepository extends DriftDatabaseRepository {
       final minDate = row.read(_db.remoteAssetEntity.createdAt.min());
       final maxDate = row.read(_db.remoteAssetEntity.createdAt.max());
       return (minDate ?? DateTime.now(), maxDate ?? DateTime.now());
-    }).getSingle();
+    }).watchSingle();
   }
 
   Future<List<UserDto>> getSharedUsers(String albumId) async {

@@ -33,12 +33,28 @@ data class Request(
   val callback: (Result<Map<String, Long>?>) -> Unit
 )
 
+/** Set [exactSize] to decode at the smallest size that covers [target] without upscaling. */
 @RequiresApi(Build.VERSION_CODES.Q)
-inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0)): Bitmap {
+inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0), exactSize: Boolean = false): Bitmap {
   return ImageDecoder.decodeBitmap(this) { decoder, info, _ ->
     if (target.width > 0 && target.height > 0) {
-      val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))
-      decoder.setTargetSampleSize(sample)
+      if (exactSize) {
+        val fillScale = max(
+          target.width.toDouble() / info.size.width,
+          target.height.toDouble() / info.size.height
+        )
+        val scale = min(1.0, fillScale)
+        if (scale < 1) {
+          val width = ceil(info.size.width * scale).toInt()
+          val height = ceil(info.size.height * scale).toInt()
+          if (width > 0 && height > 0) {
+            decoder.setTargetSize(width, height)
+          }
+        }
+      } else {
+        val sample = max(1, min(info.size.width / target.width, info.size.height / target.height))
+        decoder.setTargetSampleSize(sample)
+      }
     }
     decoder.allocator = ImageDecoder.ALLOCATOR_SOFTWARE
     decoder.setTargetColorSpace(ColorSpace.get(ColorSpace.Named.SRGB))
@@ -46,22 +62,41 @@ inline fun ImageDecoder.Source.decodeBitmap(target: Size = Size(0, 0)): Bitmap {
 }
 
 fun Bitmap.toNativeBuffer(): Map<String, Long>  {
-  val size = width * height * 4
+  // Dart reads the buffer as rgba8888, but 10-bit sources decode to RGBA_1010102, which garbles
+  // colors when copied verbatim. Convert those straight into the output buffer in native code -
+  // one pass, no intermediate ARGB_8888 bitmap.
+  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && config == Bitmap.Config.RGBA_1010102) {
+    val info = IntArray(3)
+    val pointer = NativeImage.convert1010102(this, info)
+    if (pointer != 0L) {
+      recycle()
+      return mapOf(
+        "pointer" to pointer,
+        "width" to info[0].toLong(),
+        "height" to info[1].toLong(),
+        "rowBytes" to info[2].toLong()
+      )
+    }
+    // native convert declined (OOM/lock) -> fall through to the Skia copy path below.
+  }
+  // Other non-8888 configs (e.g. HDR F16) still need Skia's convert; 8-bit is copied as-is.
+  val bitmap = toArgb8888()
+  val size = bitmap.width * bitmap.height * 4
   val pointer = NativeBuffer.allocate(size)
   try {
     val buffer = NativeBuffer.wrap(pointer, size)
-    copyPixelsToBuffer(buffer)
+    bitmap.copyPixelsToBuffer(buffer)
     return mapOf(
       "pointer" to pointer,
-      "width" to width.toLong(),
-      "height" to height.toLong(),
-      "rowBytes" to (width * 4).toLong()
+      "width" to bitmap.width.toLong(),
+      "height" to bitmap.height.toLong(),
+      "rowBytes" to (bitmap.width * 4).toLong()
     )
-  } catch (e: Exception) {
+  } catch (e: Throwable) {
     NativeBuffer.free(pointer)
     throw e
   } finally {
-    recycle()
+    bitmap.recycle()
   }
 }
 
@@ -192,7 +227,7 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
         if (orientation == ExifInterface.ORIENTATION_NORMAL || orientation == ExifInterface.ORIENTATION_UNDEFINED) {
           bitmap.toNativeBuffer()
         } else {
-          rotateToNativeBuffer(bitmap, orientation, signal)
+          rotateToNativeBuffer(bitmap, orientation)
         }
       }
       // Don't re-check cancellation here: res owns a malloc'd buffer, and bailing to CANCELLED would
@@ -232,39 +267,7 @@ class LocalImagesImpl(context: Context) : LocalImageApi {
   }
 
   private fun rawOrientation(uri: Uri): Int {
-    return resolver.openInputStream(uri)?.use {
-      ExifInterface(it).getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
-    } ?: ExifInterface.ORIENTATION_NORMAL
-  }
-
-  // ImageDecoder / loadThumbnail skip EXIF orientation for raw (e.g. DNG) on Q+, so the decoded
-  // bitmap comes back unrotated. Rotate it into the output buffer in native code (one pass, no
-  // intermediate rotated bitmap).
-  private fun rotateToNativeBuffer(bitmap: Bitmap, orientation: Int, signal: CancellationSignal): Map<String, Long> {
-    signal.throwIfCanceled()
-    // Force ARGB_8888: the native rotate needs a lockable 8888 buffer, and toNativeBuffer() below
-    // allocates width*height*4 (an F16/HDR decode would otherwise under-allocate). No-op for the
-    // common already-8888 case.
-    val src = if (bitmap.config != Bitmap.Config.ARGB_8888) {
-      val converted = bitmap.copy(Bitmap.Config.ARGB_8888, false)
-      bitmap.recycle()
-      converted ?: throw IOException("could not convert bitmap to ARGB_8888")
-    } else {
-      bitmap
-    }
-    try {
-      val info = IntArray(3)
-      val pointer = NativeImage.rotate(src, orientation, info)
-      if (pointer == 0L) throw IOException("native rotate failed for orientation $orientation")
-      return mapOf(
-        "pointer" to pointer,
-        "width" to info[0].toLong(),
-        "height" to info[1].toLong(),
-        "rowBytes" to info[2].toLong()
-      )
-    } finally {
-      if (!src.isRecycled) src.recycle()
-    }
+    return resolver.openInputStream(uri)?.use { readOrientation(it) } ?: ExifInterface.ORIENTATION_NORMAL
   }
 
   private fun decodeVideoThumbnail(id: Long, target: Size, signal: CancellationSignal): Bitmap {

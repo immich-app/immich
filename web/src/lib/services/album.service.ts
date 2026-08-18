@@ -134,10 +134,13 @@ const notifyAddToAlbum = ($t: MessageFormatter, albumId: string, assetIds: strin
   const successCount = results.filter(({ success }) => success).length;
   const duplicateCount = results.filter(({ error }) => error === 'duplicate').length;
   let description = $t('assets_cannot_be_added_to_album_count', { values: { count: assetIds.length } });
-  if (successCount > 0) {
-    description = $t('assets_added_to_album_count', { values: { count: successCount } });
-  } else if (duplicateCount > 0) {
+
+  if (duplicateCount === assetIds.length) {
     description = $t('assets_were_part_of_album_count', { values: { count: duplicateCount } });
+  } else if (successCount === assetIds.length) {
+    description = $t('assets_added_to_album_count', { values: { count: successCount } });
+  } else if (successCount > 0) {
+    description = $t('assets_added_to_album_partial_count', { values: { successCount, totalCount: assetIds.length } });
   }
 
   toastManager.primary(
@@ -282,17 +285,4 @@ export const handleDeleteAlbum = async (album: AlbumResponseDto, options?: { pro
 
 export const handleDownloadAlbum = async (album: AlbumResponseDto) => {
   await downloadArchive(`${album.albumName}.zip`, { albumId: album.id });
-};
-
-export const handleConfirmAlbumDelete = async (album: AlbumResponseDto) => {
-  const $t = await getFormatter();
-  const confirmation =
-    album.albumName.length > 0
-      ? $t('album_delete_confirmation', { values: { album: album.albumName } })
-      : $t('unnamed_album_delete_confirmation');
-
-  const description = $t('album_delete_confirmation_description');
-  const prompt = `${confirmation} ${description}`;
-
-  return modalManager.showDialog({ prompt });
 };

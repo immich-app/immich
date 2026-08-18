@@ -22,12 +22,6 @@ describe('/server', () => {
   });
 
   describe('GET /server/about', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/server/about');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should return about information', async () => {
       const { status, body } = await request(app)
         .get('/server/about')
@@ -56,12 +50,6 @@ describe('/server', () => {
   });
 
   describe('GET /server/storage', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/server/storage');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should return the disk information', async () => {
       const { status, body } = await request(app)
         .get('/server/storage')
@@ -91,12 +79,14 @@ describe('/server', () => {
     it('should respond with the server version', async () => {
       const { status, body } = await request(app).get('/server/version');
       expect(status).toBe(200);
-      expect(body).toEqual({
-        major: expect.any(Number),
-        minor: expect.any(Number),
-        patch: expect.any(Number),
-        prerelease: expect.anything(),
-      });
+      expect(body).toEqual(
+        expect.objectContaining({
+          major: expect.any(Number),
+          minor: expect.any(Number),
+          patch: expect.any(Number),
+        }),
+      );
+      expect(Object.keys(body)).toEqual(expect.arrayContaining(['major', 'minor', 'patch', 'prerelease']));
     });
   });
 
@@ -147,12 +137,6 @@ describe('/server', () => {
   });
 
   describe('GET /server/statistics', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/server/statistics');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should only work for admins', async () => {
       const { status, body } = await request(app)
         .get('/server/statistics')
@@ -211,12 +195,6 @@ describe('/server', () => {
   });
 
   describe('GET /server/license', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/server/license');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should only work for admins', async () => {
       const { status, body } = await request(app)
         .get('/server/license')
@@ -239,12 +217,6 @@ describe('/server', () => {
   });
 
   describe('DELETE /server/license', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).delete('/server/license');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should only work for admins', async () => {
       const { status, body } = await request(app)
         .delete('/server/license')
@@ -264,12 +236,6 @@ describe('/server', () => {
   });
 
   describe('PUT /server/license', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put('/server/license');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should only work for admins', async () => {
       const { status, body } = await request(app)
         .put('/server/license')

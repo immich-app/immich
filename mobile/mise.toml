@@ -1,5 +1,5 @@
 [tools]
-"aqua:flutter/flutter" = "3.44.1"
+"aqua:flutter/flutter" = "3.44.9"
 java = "21.0.2"
 
 [tools."github:CQLabs/homebrew-dcm"]
@@ -14,8 +14,12 @@ macos-x64 = { asset_pattern = "dcm-macos-x64-release.zip" }
 macos-arm64 = { asset_pattern = "dcm-macos-arm-release.zip" }
 windows-x64 = { asset_pattern = "dcm-windows-release.zip" }
 
-[tasks."codegen:dart"]
+[tasks.codegen]
 alias = "codegen"
+description = "Generate all codegen artifacts"
+depends = ["//:open-api-dart", "codegen:dart", "codegen:drift:schema", "codegen:pigeon", "codegen:translation"]
+
+[tasks."codegen:dart"]
 description = "Execute build_runner to auto-generate dart code"
 sources = [
   "pubspec.yaml",
@@ -25,14 +29,22 @@ sources = [
 ]
 outputs = { auto = true }
 run = [
-  "dart run build_runner build --delete-conflicting-outputs",
+  "dart run build_runner build",
   "dart format lib/routing/router.gr.dart",
 ]
+depends = ["//:open-api-dart"]
+
+[tasks."codegen:drift:schema"]
+description = "Generate Drift migration schema test code"
+sources = ["drift_schemas/main/*.json"]
+outputs = { auto = true }
+run = "dart run drift_dev schema generate --data-classes --companions drift_schemas/main/ test/drift/main/generated/"
+depends = ["//:open-api-dart"]
 
 [tasks."codegen:watch"]
 alias = "watch"
 description = "Watch and auto-generate dart code"
-run = "dart run build_runner watch --delete-conflicting-outputs"
+run = "dart run build_runner watch"
 
 [tasks."codegen:pigeon"]
 alias = "pigeon"
@@ -41,17 +53,12 @@ run = [
   "ls pigeon/*.dart | xargs -n1 -P4 -I{} dart run pigeon --input {}",
   "dart format lib/platform/",
 ]
+depends = ["//:open-api-dart"]
 
 [tasks."codegen:translation"]
 alias = "translation"
 description = "Generate translations from i18n JSONs"
-run = [
-  { task = "//:i18n:format-fix" },
-  { tasks = [
-    "i18n:loader",
-    "i18n:keys",
-  ] },
-]
+depends = ["//:i18n:format-fix", "i18n:loader", "i18n:keys"]
 
 [tasks."codegen:app-icon"]
 description = "Generate app icons"
@@ -91,7 +98,30 @@ run = "dart run drift_dev make-migrations"
 [tasks.install]
 alias = "install"
 description = "Install flutter dependencies"
-run = "flutter pub get"
+depends = ["//:open-api-dart"]
+run = [
+  # This receives passed `--enforce-lockfile` args
+  "flutter pub get",
+  { task = "install:ios" },
+]
+
+[tasks."install:ci"]
+description = "Install flutter dependencies in CI"
+run = [
+  { task = "install", args = ["--enforce-lockfile"] },
+]
+
+[tasks.checkout]
+description = "Bring a checkout up to date after switching branches"
+run = [
+  { task = "install" },
+  { task = "checkout:ios" },
+  { task = "codegen" },
+]
+
+[tasks."checkout:ios"]
+description = "Bring the iOS project up to date after switching branches"
+run = "bash ./scripts/checkout_ios.sh"
 
 [tasks.start]
 alias = "start"
@@ -106,6 +136,8 @@ run = [
   "dart run easy_localization:generate -S ../i18n",
   "dart format lib/generated/codegen_loader.g.dart",
 ]
+depends = ["//:open-api-dart"]
+wait_for = ["//:i18n:format-fix"]
 
 [tasks."i18n:keys"]
 description = "Generate i18n keys"
@@ -114,6 +146,20 @@ run = [
   "dart run bin/generate_keys.dart",
   "dart format lib/generated/translations.g.dart",
 ]
+wait_for = ["//:i18n:format-fix"]
+
+[tasks."install:ios"]
+description = "Install CocoaPods dependencies"
+hide = true
+sources = ["ios/Podfile", "ios/Podfile.lock", ".flutter-plugins-dependencies"]
+outputs = ["ios/Pods/Manifest.lock"]
+run = '''
+echo "Running pod install"
+if [ "$(uname)" != "Darwin" ]; then
+  exit 0
+fi
+cd ios && pod install
+'''
 
 [tasks."analyze:dart"]
 description = "Run Dart analysis"

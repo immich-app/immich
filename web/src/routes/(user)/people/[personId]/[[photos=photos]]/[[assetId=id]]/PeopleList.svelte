@@ -20,8 +20,8 @@
   let name = $state('');
 
   const showPeople = $derived(
-    (name ? searchedPeopleLocal : people).filter(
-      (person) => !peopleToNotShow.some((unselectedPerson) => unselectedPerson.id === person.id),
+    (name ? searchedPeopleLocal : people).filter((person) =>
+      peopleToNotShow.every((unselectedPerson) => unselectedPerson.id !== person.id),
     ),
   );
 </script>

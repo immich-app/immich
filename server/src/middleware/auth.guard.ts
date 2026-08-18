@@ -17,15 +17,26 @@ import { getUserAgentDetails } from 'src/utils/request';
 
 type AdminRoute = { admin?: true };
 type SharedLinkRoute = { sharedLink?: true };
-type AuthenticatedOptions = { permission?: Permission | false } & (AdminRoute | SharedLinkRoute);
+type AuthorizedRoute = { permission?: Permission | false; public?: never; setup?: never } & (
+  AdminRoute | SharedLinkRoute
+);
+type PublicRoute = { public: true; setup?: true; permission?: never; admin?: never; sharedLink?: never };
+export type AuthenticatedOptions = AuthorizedRoute | PublicRoute;
+
+type ReflectorTarget = Parameters<Reflector['get']>[1];
+
+/** Resolves the `@Authenticated()` options of a route handler, with the defaults applied. */
+export const getAuthenticatedOptions = (reflector: Reflector, target: ReflectorTarget) => {
+  const options = reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, [target]);
+  return options && { sharedLink: false, admin: false, public: false, setup: false, ...options };
+};
 
 export const Authenticated = (options: AuthenticatedOptions = {}): MethodDecorator => {
-  const decorators: MethodDecorator[] = [
-    ApiBearerAuth(),
-    ApiCookieAuth(),
-    ApiSecurity(MetadataKey.ApiKeySecurity),
-    SetMetadata(MetadataKey.AuthRoute, options),
-  ];
+  const decorators: MethodDecorator[] = [SetMetadata(MetadataKey.AuthRoute, options)];
+
+  if (!options.public) {
+    decorators.push(ApiBearerAuth(), ApiCookieAuth(), ApiSecurity(MetadataKey.ApiKeySecurity));
+  }
 
   if ((options as AdminRoute).admin) {
     decorators.push(ApiExtension(ApiCustomExtension.AdminOnly, true));
@@ -86,17 +97,20 @@ export class AuthGuard implements CanActivate {
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const targets = [context.getHandler()];
-    const options = this.reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, targets);
+    const options = getAuthenticatedOptions(this.reflector, context.getHandler());
     if (!options) {
+      throw new Error(`Route ${context.getHandler().name} does not declare @Authenticated()`);
+    }
+
+    if (options.setup) {
+      await this.authService.requireSetupAvailable();
+    }
+
+    if (options.public) {
       return true;
     }
 
-    const {
-      admin: adminRoute,
-      sharedLink: sharedLinkRoute,
-      permission,
-    } = { sharedLink: false, admin: false, ...options };
+    const { admin: adminRoute, sharedLink: sharedLinkRoute, permission } = options;
     const request = context.switchToHttp().getRequest<AuthRequest>();
 
     request.user = await this.authService.authenticate({

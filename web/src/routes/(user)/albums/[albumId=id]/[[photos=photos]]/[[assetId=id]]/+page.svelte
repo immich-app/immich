@@ -178,11 +178,13 @@
   };
 
   const updateThumbnailUsingCurrentSelection = async () => {
-    if (assetMultiSelectManager.assets.length === 1) {
-      const [firstAsset] = assetMultiSelectManager.assets;
-      assetMultiSelectManager.clear();
-      await updateThumbnail(firstAsset.id);
+    if (assetMultiSelectManager.assets.length !== 1) {
+      return;
     }
+
+    const [firstAsset] = assetMultiSelectManager.assets;
+    assetMultiSelectManager.clear();
+    await updateThumbnail(firstAsset.id);
   };
 
   const updateThumbnail = async (assetId: string) => {
@@ -274,10 +276,12 @@
   };
 
   const onAlbumDelete = async ({ id }: AlbumResponseDto) => {
-    if (id === album.id) {
-      await goto(Route.albums());
-      viewMode = AlbumPageViewMode.VIEW;
+    if (id !== album.id) {
+      return;
     }
+
+    await goto(Route.albums());
+    viewMode = AlbumPageViewMode.VIEW;
   };
 
   const onAlbumAddAssets = async ({ albumIds }: { albumIds: string[] }) => {

@@ -53,7 +53,7 @@
   const asciiSummary = $derived.by(() => {
     const lines: string[] = [];
     const title = workflow.name ?? $t('no_name');
-    lines.push(`${title}`);
+    lines.push(title);
     if (workflow.description) {
       lines.push(workflow.description);
     }

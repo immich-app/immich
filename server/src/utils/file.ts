@@ -9,15 +9,19 @@ import { ImmichReadStream } from 'src/repositories/storage.repository';
 import { isConnectionAborted } from 'src/utils/misc';
 
 export function getFileNameWithoutExtension(path: string): string {
-  return basename(path, extname(path));
+  return basename(path, getFilenameExtension(path));
 }
 
-export function getFilenameExtension(path: string): string {
-  return extname(path);
+export function getFilenameExtension(path: string) {
+  const extension = extname(path);
+  if (!extension && path.startsWith('.') && !path.includes('.', 1)) {
+    return path;
+  }
+  return extension;
 }
 
 export function getLivePhotoMotionFilename(stillName: string, motionName: string) {
-  return getFileNameWithoutExtension(stillName) + extname(motionName);
+  return getFileNameWithoutExtension(stillName) + getFilenameExtension(motionName);
 }
 
 export class ImmichFileResponse {
@@ -74,7 +78,7 @@ export const sendFile = async (
     }
 
     // log non-http errors
-    if (error instanceof HttpException === false) {
+    if (!(error instanceof HttpException)) {
       logger.error(`Unable to send file: ${error}`, error.stack);
     }
 

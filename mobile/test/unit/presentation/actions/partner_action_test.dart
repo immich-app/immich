@@ -6,7 +6,7 @@ import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/presentation/actions/partner.action.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../../domain/service.mock.dart';
+import '../../../service.mocks.dart';
 import '../../factories/user_factory.dart';
 import '../presentation_context.dart';
 
@@ -19,8 +19,8 @@ void main() {
     partnerService = context.service.partner.service;
   });
 
-  tearDown(() {
-    context.dispose();
+  tearDown(() async {
+    await context.dispose();
   });
 
   List<Override> overrides({List<User> candidates = const []}) => [

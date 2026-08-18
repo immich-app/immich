@@ -6,7 +6,7 @@ import { DateTime, Duration } from 'luxon';
 import { Stats } from 'node:fs';
 import { constants } from 'node:fs/promises';
 import { join, parse } from 'node:path';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
+
 import { StorageCore } from 'src/cores/storage.core';
 import { Asset, AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
@@ -30,12 +30,12 @@ import { AssetExifTable } from 'src/schema/tables/asset-exif.table';
 import { AssetFaceTable } from 'src/schema/tables/asset-face.table';
 import { PersonTable } from 'src/schema/tables/person.table';
 import { BaseService } from 'src/services/base.service';
-import { JobItem, JobOf } from 'src/types';
+import { JobOf } from 'src/types';
 import { getAssetFiles } from 'src/utils/asset.util';
 import { isAssetChecksumConstraint } from 'src/utils/database';
 import { mergeTimeZone } from 'src/utils/date';
 import { mimeTypes } from 'src/utils/mime-types';
-import { isFaceImportEnabled } from 'src/utils/misc';
+import { batched, isFaceImportEnabled } from 'src/utils/misc';
 import { upsertTags } from 'src/utils/tag';
 import { Tasks } from 'src/utils/tasks';
 
@@ -109,7 +109,7 @@ const validateRange = (value: number | undefined, min: number, max: number): Non
   const val = validate(value);
 
   // check if the value is within the range
-  if (val == null || val < min || val > max) {
+  if (val === null || val < min || val > max) {
     return null;
   }
 
@@ -218,17 +218,12 @@ export class MetadataService extends BaseService {
   async handleQueueMetadataExtraction(job: JobOf<JobName.AssetExtractMetadataQueueAll>): Promise<JobStatus> {
     const { force } = job;
 
-    let queue: { name: JobName.AssetExtractMetadata; data: { id: string } }[] = [];
-    for await (const asset of this.assetJobRepository.streamForMetadataExtraction(force)) {
-      queue.push({ name: JobName.AssetExtractMetadata, data: { id: asset.id } });
-
-      if (queue.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await this.jobRepository.queueAll(queue);
-        queue = [];
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForMetadataExtraction(force))) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.AssetExtractMetadata, data: { id: asset.id } })),
+      );
     }
 
-    await this.jobRepository.queueAll(queue);
     return JobStatus.Success;
   }
 
@@ -286,7 +281,7 @@ export class MetadataService extends BaseService {
       exifImageHeight: validate(height),
       exifImageWidth: validate(width),
       orientation: validate(exifTags.Orientation)?.toString() ?? null,
-      projectionType: exifTags.ProjectionType ? String(exifTags.ProjectionType).toUpperCase() : null,
+      projectionType: exifTags.ProjectionType ? exifTags.ProjectionType.toUpperCase() : null,
       bitsPerSample: this.getBitsPerSample(exifTags),
       colorspace: exifTags.ColorSpace === undefined ? null : String(exifTags.ColorSpace),
 
@@ -295,7 +290,7 @@ export class MetadataService extends BaseService {
         exifTags.Make ?? exifTags.Device?.Manufacturer ?? exifTags.AndroidMake ?? (exifTags.DeviceManufacturer || null),
       model:
         exifTags.Model ?? exifTags.Device?.ModelName ?? exifTags.AndroidModel ?? (exifTags.DeviceModelName || null),
-      fps: video?.frameRate ?? validate(Number.parseFloat(exifTags.VideoFrameRate!)),
+      fps: video?.frameRate ?? validate(Number(exifTags.VideoFrameRate!)),
       iso: validate(exifTags.ISO) as number,
       exposureTime: exifTags.ExposureTime ?? null,
       lensModel: getLensModel(exifTags),
@@ -326,7 +321,7 @@ export class MetadataService extends BaseService {
         : undefined;
 
     const videoData =
-      format?.formatName && format?.formatLongName && video?.codecName && video?.timeBase
+      format?.formatName && format.formatLongName && video?.codecName && video?.timeBase
         ? {
             assetId: asset.id,
             bitrate: video.bitrate,
@@ -362,8 +357,8 @@ export class MetadataService extends BaseService {
         : undefined;
 
     const isSidewards = exifTags.Orientation && this.isOrientationSidewards(exifTags.Orientation);
-    const assetWidth = isSidewards ? validate(height) : validate(width);
-    const assetHeight = isSidewards ? validate(width) : validate(height);
+    const assetWidth = validate(isSidewards ? height : width);
+    const assetHeight = validate(isSidewards ? width : height);
 
     const tasks = new Tasks();
 
@@ -377,8 +372,8 @@ export class MetadataService extends BaseService {
           fileModifiedAt: stats.mtime,
 
           // Keep unedited assets in sync with the file on disk, but don't overwrite edited dimensions.
-          width: !asset.isEdited || asset.width == null ? assetWidth : undefined,
-          height: !asset.isEdited || asset.height == null ? assetHeight : undefined,
+          width: !asset.isEdited || asset.width === null ? assetWidth : undefined,
+          height: !asset.isEdited || asset.height === null ? assetHeight : undefined,
         }),
       async () => {
         await this.assetRepository.upsertExif({
@@ -417,21 +412,11 @@ export class MetadataService extends BaseService {
 
   @OnJob({ name: JobName.SidecarQueueAll, queue: QueueName.Sidecar })
   async handleQueueSidecar({ force }: JobOf<JobName.SidecarQueueAll>): Promise<JobStatus> {
-    let jobs: JobItem[] = [];
-    const queueAll = async () => {
-      await this.jobRepository.queueAll(jobs);
-      jobs = [];
-    };
-
-    const assets = this.assetJobRepository.streamForSidecar(force);
-    for await (const asset of assets) {
-      jobs.push({ name: JobName.SidecarCheck, data: { id: asset.id } });
-      if (jobs.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueAll();
-      }
+    for await (const assets of batched(this.assetJobRepository.streamForSidecar(force))) {
+      await this.jobRepository.queueAll(
+        assets.map((asset) => ({ name: JobName.SidecarCheck, data: { id: asset.id } })),
+      );
     }
-
-    await queueAll();
 
     return JobStatus.Success;
   }
@@ -445,8 +430,8 @@ export class MetadataService extends BaseService {
 
     let sidecarPath = null;
     for (const candidate of this.getSidecarCandidates(asset)) {
-      const exists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
-      if (!exists) {
+      const isExists = await this.storageRepository.checkFileExists(candidate, constants.R_OK);
+      if (!isExists) {
         continue;
       }
 
@@ -806,8 +791,8 @@ export class MetadataService extends BaseService {
       }
 
       // write extracted motion video to disk, especially if the encoded-video folder has been deleted
-      const existsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
-      if (!existsOnDisk) {
+      const isExistsOnDisk = await this.storageRepository.checkFileExists(motionAsset.originalPath);
+      if (!isExistsOnDisk) {
         this.storageCore.ensureFolders(motionAsset.originalPath);
         await this.storageRepository.createFile(motionAsset.originalPath, video);
         this.logger.log(`Wrote motion photo video to ${motionAsset.originalPath}`);
@@ -1003,7 +988,7 @@ export class MetadataService extends BaseService {
 
     // timezone
     let timeZone = exifTags.zone ?? null;
-    if (timeZone == null && (dateTime?.rawValue?.endsWith('Z') || dateTime?.rawValue?.endsWith('+00:00'))) {
+    if (timeZone === null && (dateTime?.rawValue?.endsWith('Z') || dateTime?.rawValue?.endsWith('+00:00'))) {
       // exiftool-vendored returns "no timezone" information even though "+00:00" might be set explicitly
       // https://github.com/photostructure/exiftool-vendored.js/issues/203
       timeZone = 'UTC+0';
@@ -1087,6 +1072,7 @@ export class MetadataService extends BaseService {
 
   private getDuration(tags: ImmichTags): number | null {
     const duration = tags.Duration;
+    // eslint-disable-next-line unicorn/prefer-number-coercion
     const seconds = typeof duration === 'number' ? duration : Number.parseFloat(duration as string);
     return Number.isFinite(seconds) ? Math.round(Duration.fromObject({ seconds }).toMillis()) : null;
   }

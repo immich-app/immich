@@ -10,7 +10,7 @@ import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/presentation/widgets/asset_viewer/asset_viewer.page.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart' as beta_asset_provider;
-import 'package:immich_mobile/providers/infrastructure/memory.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/people.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
@@ -21,7 +21,7 @@ final deepLinkServiceProvider = Provider(
     ref.watch(timelineFactoryProvider),
     ref.watch(beta_asset_provider.assetServiceProvider),
     ref.watch(remoteAlbumServiceProvider),
-    ref.watch(driftMemoryServiceProvider),
+    DriftMemoryService(ref.watch(driftProvider).memoryRepository),
     ref.watch(driftPeopleServiceProvider),
     ref.watch(currentUserProvider),
   ),
