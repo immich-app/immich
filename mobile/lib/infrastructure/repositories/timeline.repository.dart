@@ -12,6 +12,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/timeline.repository.drift.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:stream_transform/stream_transform.dart';
 
@@ -33,10 +34,11 @@ class TimelineMapOptions {
   });
 }
 
-class DriftTimelineRepository extends DriftDatabaseRepository {
-  final Drift _db;
+@DriftAccessor()
+class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositoryMixin {
+  TimelineRepository(super.attachedDatabase);
 
-  const DriftTimelineRepository(super._db) : _db = _db;
+  Drift get _db => attachedDatabase;
 
   Stream<List<String>> watchTimelineUserIds(String userId) {
     final query = _db.partnerEntity.selectOnly()

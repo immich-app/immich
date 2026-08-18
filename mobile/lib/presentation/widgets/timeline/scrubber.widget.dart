@@ -38,7 +38,6 @@ class Scrubber extends ConsumerStatefulWidget {
 
   Scrubber({
     super.key,
-    Key? scrollThumbKey,
     required this.layoutSegments,
     required this.timelineHeight,
     this.topPadding = 0,

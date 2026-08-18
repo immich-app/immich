@@ -1,5 +1,3 @@
-// ignore_for_file: require_trailing_commas
-
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';

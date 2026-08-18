@@ -408,7 +408,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBi
 
     return PopScope(
       canPop: !isMultiSelectEnabled,
-      onPopInvokedWithResult: (_, __) {
+      onPopInvokedWithResult: (_, _) {
         if (isMultiSelectEnabled) {
           ref.read(multiSelectProvider.notifier).reset();
         }

@@ -17,6 +17,7 @@ import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/actions/action.widget.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/user.provider.dart';
 import 'package:immich_mobile/providers/routes.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
@@ -28,6 +29,7 @@ import 'package:immich_mobile/services/server_info.service.dart';
 import 'package:immich_ui/immich_ui.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../infrastructure/repository.mock.dart';
 import '../../test_utils.dart';
 import '../factories/user_factory.dart';
 import '../mocks.dart';
@@ -49,6 +51,7 @@ class PresentationContext {
   final RepositoryMocks repository;
 
   List<Override> get overrides => [
+    driftProvider.overrideWithValue(_mockDrift()),
     currentUserProvider.overrideWith((ref) => CurrentUserProvider(service.user.service)),
     assetServiceProvider.overrideWithValue(service.asset.service),
     cleanupServiceProvider.overrideWithValue(service.cleanup.service),
@@ -57,9 +60,14 @@ class PresentationContext {
     gCastServiceProvider.overrideWithValue(service.cast),
     serverInfoServiceProvider.overrideWithValue(service.serverInfo),
     inLockedViewProvider.overrideWithValue(false),
-    remoteAssetRepositoryProvider.overrideWithValue(repository.remoteAsset.repo),
     assetMediaRepositoryProvider.overrideWithValue(repository.assetMedia.api),
   ];
+
+  Drift _mockDrift() {
+    final drift = MockDrift();
+    when(() => drift.remoteAssetRepository).thenReturn(repository.remoteAsset.repo);
+    return drift;
+  }
 
   List<Override> selected(Set<BaseAsset> assets) => [
     multiSelectProvider.overrideWith(
@@ -71,7 +79,7 @@ class PresentationContext {
     TestUtils.init();
     if (_db == null) {
       final db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-      await StoreService.init(storeRepository: DriftStoreRepository(db), listenUpdates: false);
+      await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
       await StoreService.I.put(StoreKey.serverEndpoint, serverEndpoint);
       _db = db;
     }
