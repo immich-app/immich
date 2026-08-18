@@ -848,4 +848,33 @@ describe('TimelineManager', () => {
       expect(ids).not.toContain(assetC.id);
     });
   });
+
+  describe('geometry when the viewport has no width', () => {
+    let timelineManager: TimelineManager;
+
+    beforeEach(async () => {
+      timelineManager = new TimelineManager();
+      sdkMock.getTimeBuckets.mockResolvedValue([
+        { count: 1, timeBucket: '2024-03-01T00:00:00.000Z' },
+        { count: 3, timeBucket: '2024-01-01T00:00:00.000Z' },
+      ]);
+      // A zero height keeps every month out of the viewport, so none is loaded
+      // and their heights are estimated instead of laid out.
+      await timelineManager.updateViewport({ width: 1588, height: 0 });
+    });
+
+    it('keeps the geometry of unloaded months finite', () => {
+      expect(timelineManager.months.every((month) => !month.isLoaded)).toBe(true);
+
+      // The asset viewer covers the timeline, so its width collapses to zero
+      // while its height does not. Estimating heights now divides by zero.
+      timelineManager.viewportWidth = 0;
+      timelineManager.refreshLayout();
+
+      for (const month of timelineManager.months) {
+        expect(Number.isFinite(month.height), `height of ${month.title}`).toBe(true);
+        expect(Number.isFinite(month.top), `top of ${month.title}`).toBe(true);
+      }
+    });
+  });
 });
