@@ -3,7 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
+import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/memory.service.dart';
 import 'package:immich_mobile/domain/services/people.service.dart';
@@ -136,5 +138,47 @@ void main() {
     expect(route, isA<AssetViewerRoute>());
     expect((route!.args! as AssetViewerRouteArgs).currentAlbum, isNull);
     verifyNever(() => remoteAlbumService.get(any()));
+  });
+
+  test('memory deep link without an id opens the memory lane', () async {
+    final memory = DriftMemory(
+      id: 'memory-1',
+      createdAt: DateTime(2026, 6, 12),
+      updatedAt: DateTime(2026, 6, 12),
+      ownerId: 'user-1',
+      type: MemoryTypeEnum.onThisDay,
+      data: const MemoryData(year: 2025),
+      isSaved: true,
+      memoryAt: DateTime(2026, 6, 12),
+      assets: [_asset],
+    );
+
+    final user = UserDto(
+      id: 'user-1',
+      email: 'user@example.com',
+      name: 'User',
+      profileChangedAt: DateTime(2026, 6, 12),
+    );
+
+    final memoryService = MockDriftMemoryService();
+    when(() => memoryService.getMemoryLane('user-1')).thenAnswer((_) async => [memory]);
+
+    final sutWithUser = DeepLinkService(
+      timelineFactory,
+      assetService,
+      remoteAlbumService,
+      memoryService,
+      MockDriftPeopleService(),
+      user,
+    );
+
+    final deepLink = MockPlatformDeepLink();
+    when(() => deepLink.uri).thenReturn(Uri.parse('immich://memory'));
+
+    final route = await sutWithUser.handleScheme(deepLink, ref);
+
+    expect(route, isA<DriftMemoryRoute>());
+    verify(() => memoryService.getMemoryLane('user-1')).called(1);
+    verifyNever(() => memoryService.get(any()));
   });
 }
