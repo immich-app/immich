@@ -47,12 +47,7 @@ export const send = async <T extends keyof SyncItem, D extends SyncItem[T]>(
   response: Writable,
   item: SerializeOptions<T, D>,
 ) => {
-  // response.write() returns false once the stream's internal buffer exceeds
-  // its highWaterMark. Every sync handler below produces items faster than a
-  // slow/mobile client can consume them (see #29925), so without waiting for
-  // 'drain' here the buffer grows unbounded regardless of read speed.
-  const canWriteMore = response.write(serialize(item));
-  if (!canWriteMore) {
+  if (!response.write(serialize(item))) {
     await once(response, 'drain');
   }
 };
@@ -253,7 +248,11 @@ export class SyncService extends BaseService {
     const upsertType = SyncEntityType.AuthUserV1;
     const upserts = this.syncRepository.authUser.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, profileImagePath, ...data } of upserts) {
-      await send(response, { type: upsertType, ids: [updateId], data: { ...data, hasProfileImage: !!profileImagePath } });
+      await send(response, {
+        type: upsertType,
+        ids: [updateId],
+        data: { ...data, hasProfileImage: !!profileImagePath },
+      });
     }
   }
 
@@ -267,7 +266,11 @@ export class SyncService extends BaseService {
     const upsertType = SyncEntityType.UserV1;
     const upserts = this.syncRepository.user.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, profileImagePath, ...data } of upserts) {
-      await send(response, { type: upsertType, ids: [updateId], data: { ...data, hasProfileImage: !!profileImagePath } });
+      await send(response, {
+        type: upsertType,
+        ids: [updateId],
+        data: { ...data, hasProfileImage: !!profileImagePath },
+      });
     }
   }
 
@@ -472,7 +475,11 @@ export class SyncService extends BaseService {
     const upserts = this.syncRepository.album.getUpserts({ ...options, ack: checkpointMap[upsertType] });
     for await (const { updateId, ...data } of upserts) {
       // TODO: return null instead of '' in v4
-      await send(response, { type: upsertType, ids: [updateId], data: { ...data, description: data.description ?? '' } });
+      await send(response, {
+        type: upsertType,
+        ids: [updateId],
+        data: { ...data, description: data.description ?? '' },
+      });
     }
   }
 
