@@ -23,9 +23,9 @@ export type UserResponseDto = {
     /** User name */
     name: string;
     /** Profile change date */
-    profileChangedAt: string;
+    profileChangedAt: string | null;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
 };
 export type ActivityResponseDto = {
     /** Asset ID (if activity is for an asset) */
@@ -216,11 +216,11 @@ export type UserAdminResponseDto = {
     /** User name */
     name: string;
     /** OAuth ID */
-    oauthId: string;
+    oauthId: string | null;
     /** Profile change date */
-    profileChangedAt: string;
+    profileChangedAt: string | null;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
     /** Storage quota in bytes */
     quotaSizeInBytes: number | null;
     /** Storage usage in bytes */
@@ -565,7 +565,7 @@ export type UpdateAlbumDto = {
     /** Album name */
     albumName?: string;
     /** Album thumbnail asset ID */
-    albumThumbnailAssetId?: string;
+    albumThumbnailAssetId?: string | null;
     /** Album description */
     description?: string | null;
     /** Enable activity feed */
@@ -1059,7 +1059,7 @@ export type LoginResponseDto = {
     /** User name */
     name: string;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
     /** Should change password */
     shouldChangePassword: boolean;
     /** User email */
@@ -1437,9 +1437,9 @@ export type PartnerResponseDto = {
     /** User name */
     name: string;
     /** Profile change date */
-    profileChangedAt: string;
+    profileChangedAt: string | null;
     /** Profile image path */
-    profileImagePath: string;
+    profileImagePath: string | null;
 };
 export type PartnerCreateDto = {
     /** User ID to share with */
@@ -3221,15 +3221,15 @@ export type SyncAuthUserV1 = {
     /** User name */
     name: string;
     /** User OAuth ID */
-    oauthId: string;
+    oauthId: string | null;
     /** User pin code */
     pinCode: string | null;
     /** User profile changed at */
-    profileChangedAt: string;
+    profileChangedAt: string | null;
     /** Quota size in bytes */
     quotaSizeInBytes: number | null;
     /** Quota usage in bytes */
-    quotaUsageInBytes: number;
+    quotaUsageInBytes: number | null;
     /** User storage label */
     storageLabel: string | null;
 };
@@ -3365,7 +3365,7 @@ export type SyncUserV1 = {
     /** User name */
     name: string;
     /** User profile changed at */
-    profileChangedAt: string;
+    profileChangedAt: string | null;
 };
 /**
  * List all activities
