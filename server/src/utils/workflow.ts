@@ -12,7 +12,9 @@ export const triggerMap: Record<WorkflowTrigger, WorkflowType[]> = {
 export const getWorkflowTriggers = () =>
   Object.entries(triggerMap).map(([trigger, types]) => ({ trigger: trigger as WorkflowTrigger, types }));
 
-/** some types extend other types and have implied compatibility */
+/**
+some types extend other types and have implied compatibility
+*/
 const inferredMap: Record<WorkflowType, WorkflowType[]> = {
   [WorkflowType.AssetV1]: [],
   // [WorkflowType.AssetPersonV1]: [WorkflowType.AssetV1],

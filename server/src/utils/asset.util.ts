@@ -113,7 +113,9 @@ export const removeAssets = async (
 export type PartnerIdOptions = {
   userId: string;
   repository: PartnerRepository;
-  /** only include partners with `inTimeline: true` */
+  /**
+  only include partners with `inTimeline: true`
+  */
   timelineEnabled?: boolean;
 };
 export const getMyPartnerIds = async ({ userId, repository, timelineEnabled }: PartnerIdOptions) => {

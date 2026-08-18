@@ -6,9 +6,13 @@ import { handleError } from '$lib/utils/handle-error';
  * and allowing operations to check if they're still valid.
  */
 export class InvocationTracker {
-  /** Counter for the number of invocations that have been started */
+  /**
+  Counter for the number of invocations that have been started
+  */
   invocationsStarted = 0;
-  /** Counter for the number of invocations that have been completed */
+  /**
+  Counter for the number of invocations that have been completed
+  */
   invocationsEnded = 0;
 
   constructor() {}
