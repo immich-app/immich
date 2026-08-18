@@ -75,4 +75,4 @@ set
   "text" = $1
 where
   "assetId" = $2
-rollback
+commit

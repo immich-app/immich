@@ -200,7 +200,7 @@ limit
   $6
 offset
   $7
-rollback
+commit
 
 -- SearchRepository.getEmbedding
 select

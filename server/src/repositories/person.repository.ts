@@ -734,20 +734,6 @@ export class PersonRepository {
     }
   }
 
-  @GenerateSql({ params: [[DummyValue.UUID], DummyValue.UUID] })
-  @Chunked()
-  getForPeopleDelete(groupIds: string[], ownerId?: string) {
-    if (groupIds.length === 0) {
-      return Promise.resolve([]);
-    }
-    return this.db
-      .selectFrom('person')
-      .select(['person.ownerId', 'person.personGroupId', 'person.thumbnailPath'])
-      .where('person.personGroupId', 'in', groupIds)
-      .$if(!!ownerId, (qb) => qb.where('person.ownerId', '=', ownerId!))
-      .execute();
-  }
-
   @GenerateSql({ params: [[], []] })
   async updateVisibility(visible: AssetFace[], hidden: AssetFace[]): Promise<void> {
     if (visible.length === 0 && hidden.length === 0) {

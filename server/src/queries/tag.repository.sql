@@ -108,4 +108,11 @@ begin
 delete from "tag_asset"
 where
   "assetId" = $1
+insert into
+  "tag_asset" ("tagId", "assetId")
+values
+  ($1, $2)
+on conflict do nothing
+returning
+  *
 rollback

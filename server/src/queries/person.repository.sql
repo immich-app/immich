@@ -388,7 +388,46 @@ where
       "person"."personGroupId" = "person_group"."id"
       and "person"."ownerId" != $3
   )
-rollback
+with
+  "shared" as (
+    select distinct
+      "person"."personGroupId" as "oldId"
+    from
+      "person"
+    where
+      "person"."ownerId" = $1
+      and exists (
+        select
+          "other"."personGroupId"
+        from
+          "person" as "other"
+        where
+          "other"."personGroupId" = "person"."personGroupId"
+          and "other"."ownerId" != $2
+      )
+  ),
+  "mapping" as materialized (
+    select
+      "shared"."oldId",
+      uuid_generate_v4 () as "newId"
+    from
+      "shared"
+  ),
+  "created" as (
+    insert into
+      "person_group" ("id", "clusterGroupId")
+    select
+      "mapping"."newId",
+      $3 as "clusterGroupId"
+    from
+      "mapping"
+  )
+select
+  "mapping"."oldId",
+  "mapping"."newId"
+from
+  "mapping"
+commit
 
 -- PersonRepository.createGroups
 insert into
@@ -538,17 +577,6 @@ set
   "deletedAt" = $1
 where
   "asset_face"."id" = $2
-
--- PersonRepository.getForPeopleDelete
-select
-  "person"."ownerId",
-  "person"."personGroupId",
-  "person"."thumbnailPath"
-from
-  "person"
-where
-  "person"."personGroupId" in ($1)
-  and "person"."ownerId" = $2
 
 -- PersonRepository.getForFeatureFaceUpdate
 select

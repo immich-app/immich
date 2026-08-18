@@ -99,7 +99,7 @@ delete from "asset_metadata"
 where
   "assetId" = $1
   and "key" = $2
-rollback
+commit
 
 -- AssetRepository.getByDayOfYear
 with

@@ -174,7 +174,7 @@ from
   "cte"
 where
   "cte"."distance" <= $6
-rollback
+commit
 
 -- DuplicateRepository.merge
 update "asset"
