@@ -8,16 +8,6 @@ import { ReleaseChannel } from 'src/dtos/system-config.dto';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
-export interface GitHubRelease {
-  id: number;
-  url: string;
-  tag_name: string;
-  name: string;
-  created_at: string;
-  published_at: string;
-  body: string;
-}
-
 export interface VersionResponse {
   version: string;
   published_at: string;

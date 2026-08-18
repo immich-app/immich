@@ -277,7 +277,7 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         ),
         routerConfig: router.config(
           deepLinkBuilder: _deepLinkBuilder,
-          navigatorObservers: () => [AppNavigationObserver(ref: ref)],
+          navigatorObservers: () => [AppNavigationObserver(ref: ref), TransitioningRouteObserver()],
         ),
       ),
     );

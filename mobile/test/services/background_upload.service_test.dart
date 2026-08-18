@@ -25,8 +25,8 @@ void main() {
   late BackgroundUploadService sut;
   late MockUploadRepository mockUploadRepository;
   late MockStorageRepository mockStorageRepository;
-  late MockDriftLocalAssetRepository mockLocalAssetRepository;
-  late MockDriftBackupRepository mockBackupRepository;
+  late MockLocalAssetRepository mockLocalAssetRepository;
+  late MockBackupRepository mockBackupRepository;
   late MockAssetMediaRepository mockAssetMediaRepository;
   late Drift db;
 
@@ -37,7 +37,7 @@ void main() {
       (MethodCall methodCall) async => 'test',
     );
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await StoreService.init(storeRepository: StoreRepository(db));
     await SettingsRepository.ensureInitialized(db);
 
     await Store.put(StoreKey.serverEndpoint, 'http://test-server.com');
@@ -47,8 +47,8 @@ void main() {
   setUp(() {
     mockUploadRepository = MockUploadRepository();
     mockStorageRepository = MockStorageRepository();
-    mockLocalAssetRepository = MockDriftLocalAssetRepository();
-    mockBackupRepository = MockDriftBackupRepository();
+    mockLocalAssetRepository = MockLocalAssetRepository();
+    mockBackupRepository = MockBackupRepository();
     mockAssetMediaRepository = MockAssetMediaRepository();
 
     sut = BackgroundUploadService(

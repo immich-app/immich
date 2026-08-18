@@ -5,12 +5,15 @@ import {
   Generated,
   PrimaryGeneratedColumn,
   Table,
+  Timestamp,
+  UpdateDateColumn,
 } from '@immich/sql-tools';
-import { UpdateIdColumn } from 'src/decorators';
+import { UpdatedAtTrigger, UpdateIdColumn } from 'src/decorators';
 import { asset_ocr_delete_audit } from 'src/schema/functions';
 import { AssetTable } from 'src/schema/tables/asset.table';
 
 @Table('asset_ocr')
+@UpdatedAtTrigger('asset_ocr_updatedAt')
 @AfterDeleteTrigger({
   scope: 'statement',
   function: asset_ocr_delete_audit,
@@ -60,6 +63,9 @@ export class AssetOcrTable {
 
   @Column({ type: 'boolean', default: true })
   isVisible!: Generated<boolean>;
+
+  @UpdateDateColumn()
+  updatedAt!: Generated<Timestamp>;
 
   @UpdateIdColumn({ index: true })
   updateId!: Generated<string>;
