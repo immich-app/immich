@@ -1796,6 +1796,8 @@
   "role": "Role",
   "role_editor": "Editor",
   "role_viewer": "Viewer",
+  "rotate_api_key_prompt": "Are you sure you want to rotate this API key? The current key will stop working immediately.",
+  "rotate_key": "Rotate key",
   "running": "Running",
   "save": "Save",
   "saved": "Saved",

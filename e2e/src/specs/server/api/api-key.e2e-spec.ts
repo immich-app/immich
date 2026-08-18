@@ -169,6 +169,16 @@ describe('/api-keys', () => {
     });
   });
 
+  describe('POST /api-keys/:id/rotate', () => {
+    it('should not work without permission', async () => {
+      const { apiKey } = await create(user.accessToken, [Permission.ApiKeyUpdate]);
+      const { secret } = await create(user.accessToken, [Permission.ApiKeyUpdate]);
+      const { status, body } = await request(app).post(`/api-keys/${apiKey.id}/rotate`).set('x-api-key', secret);
+      expect(status).toBe(403);
+      expect(body).toEqual(errorDto.missingPermission('apiKey.rotate'));
+    });
+  });
+
   describe('DELETE /api-keys/:id', () => {
     it('should require authorization', async () => {
       const { apiKey } = await create(user.accessToken, [Permission.All]);
