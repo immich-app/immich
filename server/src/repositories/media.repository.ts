@@ -464,7 +464,9 @@ export class MediaRepository {
     return value ? ((enumObj[pascalCase(value)] as Extract<E[keyof E], number> | undefined) ?? null) : null;
   }
 
-  /** Parse a rational like "60000/1001" or "1/600" into `{ num, den }`. */
+  /**
+  Parse a rational like "60000/1001" or "1/600" into `{ num, den }`.
+  */
   private parseRational(value: string | undefined): { num: number; den: number } | null {
     if (value) {
       const [num, den = 1] = value.split('/').map(Number);

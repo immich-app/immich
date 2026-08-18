@@ -45,9 +45,13 @@ export enum AssetType {
 export const AssetTypeSchema = z.enum(AssetType).describe('Asset type').meta({ id: 'AssetTypeEnum' });
 
 export enum ChecksumAlgorithm {
-  /** sha1 checksum of the whole file contents */
+  /**
+  sha1 checksum of the whole file contents
+  */
   sha1File = 'sha1',
-  /** sha1 checksum of "path:" plus the file path, currently used in external libraries, deprecated */
+  /**
+  sha1 checksum of "path:" plus the file path, currently used in external libraries, deprecated
+  */
   sha1Path = 'sha1-path',
 }
 
@@ -85,7 +89,9 @@ export enum AssetOrderBy {
 export const AssetOrderBySchema = z.enum(AssetOrderBy).describe('Asset sorting property').meta({ id: 'AssetOrderBy' });
 
 export enum MemoryType {
-  /** pictures taken on this day X years ago */
+  /**
+  pictures taken on this day X years ago
+  */
   OnThisDay = 'on_this_day',
 }
 
@@ -95,7 +101,9 @@ export enum AssetOrderWithRandom {
   // Include existing values
   Asc = AssetOrder.Asc,
   Desc = AssetOrder.Desc,
-  /** Randomly Ordered */
+  /**
+  Randomly Ordered
+  */
   Random = 'random',
 }
 
@@ -642,7 +650,9 @@ export enum ExifOrientation {
   Rotate270CW = 8,
 }
 
-/** ITU-T H.273 colour primaries codes. */
+/**
+ITU-T H.273 colour primaries codes.
+*/
 export enum ColorPrimaries {
   Reserved = 0,
   Bt709 = 1,
@@ -659,7 +669,9 @@ export enum ColorPrimaries {
   Ebu3213 = 22,
 }
 
-/** ITU-T H.273 transfer characteristics codes. */
+/**
+ITU-T H.273 transfer characteristics codes.
+*/
 export enum ColorTransfer {
   Reserved = 0,
   Bt709 = 1,
@@ -681,7 +693,9 @@ export enum ColorTransfer {
   AribStdB67 = 18,
 }
 
-/** ITU-T H.273 matrix coefficients codes. */
+/**
+ITU-T H.273 matrix coefficients codes.
+*/
 export enum ColorMatrix {
   Gbr = 0,
   Bt709 = 1,
@@ -700,7 +714,9 @@ export enum ColorMatrix {
   Ictcp = 14,
 }
 
-/** H.264 `profile_idc` values. */
+/**
+H.264 `profile_idc` values.
+*/
 // H.264 has a few profiles that have the same value but different names, included so lookup by name works
 export enum H264Profile {
   ConstrainedBaseline = 66,
@@ -718,7 +734,9 @@ export enum H264Profile {
   High444Predictive = 244,
 }
 
-/** HEVC `profile_idc` values. */
+/**
+HEVC `profile_idc` values.
+*/
 export enum HevcProfile {
   Main = 1,
   Main10 = 2,
@@ -726,14 +744,18 @@ export enum HevcProfile {
   Rext = 4,
 }
 
-/** AV1 `seq_profile` values. */
+/**
+AV1 `seq_profile` values.
+*/
 export enum Av1Profile {
   Main = 0,
   High = 1,
   Professional = 2,
 }
 
-/** MPEG-4 Audio Object Type values for AAC. */
+/**
+MPEG-4 Audio Object Type values for AAC.
+*/
 export enum AacProfile {
   Main = 1,
   Lc = 2,
@@ -746,7 +768,9 @@ export enum AacProfile {
   XheAac = 42,
 }
 
-/** Dolby Vision bitstream profile numbers from the DOVI configuration record. */
+/**
+Dolby Vision bitstream profile numbers from the DOVI configuration record.
+*/
 export enum DvProfile {
   Dvhe03 = 3,
   Dvhe04 = 4,
@@ -922,13 +946,21 @@ export const JobNameSchema = z.enum(JobName).describe('Job name').meta({ id: 'Jo
 
 export enum QueueCommand {
   Start = 'start',
-  /** @deprecated Use `updateQueue` instead */
+  /**
+  @deprecated Use `updateQueue` instead
+  */
   Pause = 'pause',
-  /** @deprecated Use `updateQueue` instead */
+  /**
+  @deprecated Use `updateQueue` instead
+  */
   Resume = 'resume',
-  /** @deprecated Use `emptyQueue` instead */
+  /**
+  @deprecated Use `emptyQueue` instead
+  */
   Empty = 'empty',
-  /** @deprecated Use `emptyQueue` instead */
+  /**
+  @deprecated Use `emptyQueue` instead
+  */
   ClearFailed = 'clear-failed',
 }
 
@@ -993,11 +1025,15 @@ export enum SyncRequestType {
   AlbumsV2 = 'AlbumsV2',
   AlbumUsersV1 = 'AlbumUsersV1',
   AlbumToAssetsV1 = 'AlbumToAssetsV1',
-  /** @deprecated */
+  /**
+  @deprecated
+  */
   AlbumAssetsV1 = 'AlbumAssetsV1',
   AlbumAssetsV2 = 'AlbumAssetsV2',
   AlbumAssetExifsV1 = 'AlbumAssetExifsV1',
-  /** @deprecated */
+  /**
+  @deprecated
+  */
   AssetsV1 = 'AssetsV1',
   AssetsV2 = 'AssetsV2',
   AssetExifsV1 = 'AssetExifsV1',
@@ -1008,7 +1044,9 @@ export enum SyncRequestType {
   MemoriesV1 = 'MemoriesV1',
   MemoryToAssetsV1 = 'MemoryToAssetsV1',
   PartnersV1 = 'PartnersV1',
-  /** @deprecated */
+  /**
+  @deprecated
+  */
   PartnerAssetsV1 = 'PartnerAssetsV1',
   PartnerAssetsV2 = 'PartnerAssetsV2',
   PartnerAssetExifsV1 = 'PartnerAssetExifsV1',
@@ -1016,7 +1054,9 @@ export enum SyncRequestType {
   StacksV1 = 'StacksV1',
   UsersV1 = 'UsersV1',
   PeopleV1 = 'PeopleV1',
-  /** @deprecated */
+  /**
+  @deprecated
+  */
   AssetFacesV1 = 'AssetFacesV1',
   AssetFacesV2 = 'AssetFacesV2',
   UserMetadataV1 = 'UserMetadataV1',
@@ -1033,7 +1073,9 @@ export enum SyncEntityType {
   UserV1 = 'UserV1',
   UserDeleteV1 = 'UserDeleteV1',
 
-  /** @deprecated */
+  /**
+  @deprecated
+  */
   AssetV1 = 'AssetV1',
   AssetV2 = 'AssetV2',
   AssetDeleteV1 = 'AssetDeleteV1',
@@ -1048,10 +1090,14 @@ export enum SyncEntityType {
   PartnerV1 = 'PartnerV1',
   PartnerDeleteV1 = 'PartnerDeleteV1',
 
-  /** @deprecated */
+  /**
+  @deprecated
+  */
   PartnerAssetV1 = 'PartnerAssetV1',
   PartnerAssetV2 = 'PartnerAssetV2',
-  /** @deprecated */
+  /**
+  @deprecated
+  */
   PartnerAssetBackfillV1 = 'PartnerAssetBackfillV1',
   PartnerAssetBackfillV2 = 'PartnerAssetBackfillV2',
   PartnerAssetDeleteV1 = 'PartnerAssetDeleteV1',
@@ -1069,13 +1115,19 @@ export enum SyncEntityType {
   AlbumUserBackfillV1 = 'AlbumUserBackfillV1',
   AlbumUserDeleteV1 = 'AlbumUserDeleteV1',
 
-  /** @deprecated */
+  /**
+  @deprecated
+  */
   AlbumAssetCreateV1 = 'AlbumAssetCreateV1',
   AlbumAssetCreateV2 = 'AlbumAssetCreateV2',
-  /** @deprecated */
+  /**
+  @deprecated
+  */
   AlbumAssetUpdateV1 = 'AlbumAssetUpdateV1',
   AlbumAssetUpdateV2 = 'AlbumAssetUpdateV2',
-  /** @deprecated */
+  /**
+  @deprecated
+  */
   AlbumAssetBackfillV1 = 'AlbumAssetBackfillV1',
   AlbumAssetBackfillV2 = 'AlbumAssetBackfillV2',
   AlbumAssetExifCreateV1 = 'AlbumAssetExifCreateV1',

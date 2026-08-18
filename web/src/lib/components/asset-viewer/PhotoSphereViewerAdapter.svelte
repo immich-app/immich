@@ -108,7 +108,9 @@
     updateOcrBoxes(ocrManager.showOverlay, ocrManager.data);
   });
 
-  /** Use updateOnly=true on zoom, pan, or resize. */
+  /**
+  Use updateOnly=true on zoom, pan, or resize.
+  */
   const updateOcrBoxes = (showOverlay: boolean, ocrData: OcrBoundingBox[], updateOnly = false) => {
     if (!viewer || !viewer.state.textureData || !viewer.getPlugin(MarkersPlugin)) {
       return;

@@ -92,7 +92,9 @@ interface AssetGridRoute extends Route {
 type ImmichRoute = AssetRoute | AssetGridRoute;
 
 type NavOptions = {
-  /* navigate even if url is the same */
+  /*
+  navigate even if url is the same
+  */
   forceNavigate?: boolean | undefined;
   replaceState?: boolean | undefined;
   noScroll?: boolean | undefined;
