@@ -6,6 +6,7 @@ import {
   NotNull,
   Selectable,
   SelectQueryBuilder,
+  ShallowDehydrateObject,
   sql,
   Updateable,
   UpdateResult,
@@ -594,7 +595,9 @@ export class AssetRepository {
                     .selectFrom('asset as stacked')
                     .selectAll('stack')
                     .select(
-                      sql<unknown[]>`array_agg(to_json(stacked) ORDER BY stacked."fileCreatedAt" ASC)`.as('assets'),
+                      sql<
+                        ShallowDehydrateObject<Selectable<AssetTable>>[]
+                      >`array_agg(to_json(stacked) ORDER BY stacked."fileCreatedAt" ASC)`.as('assets'),
                     )
                     .whereRef('stacked.stackId', '=', 'stack.id')
                     .whereRef('stacked.id', '!=', 'stack.primaryAssetId')
