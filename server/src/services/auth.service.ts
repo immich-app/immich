@@ -48,9 +48,7 @@ export type ValidateRequest = {
   metadata: {
     sharedLinkRoute: boolean;
     adminRoute: boolean;
-    /**
-    `false` explicitly means no permission is required, which otherwise defaults to `all`
-    */
+    /** `false` explicitly means no permission is required, which otherwise defaults to `all` */
     permission?: Permission | false;
     uri: string;
   };

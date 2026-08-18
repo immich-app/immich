@@ -25,9 +25,7 @@ export type AuthenticatedOptions = AuthorizedRoute | PublicRoute;
 
 type ReflectorTarget = Parameters<Reflector['get']>[1];
 
-/**
-Resolves the `@Authenticated()` options of a route handler, with the defaults applied.
-*/
+/** Resolves the `@Authenticated()` options of a route handler, with the defaults applied. */
 export const getAuthenticatedOptions = (reflector: Reflector, target: ReflectorTarget) => {
   const options = reflector.getAllAndOverride<AuthenticatedOptions | undefined>(MetadataKey.AuthRoute, [target]);
   return options && { sharedLink: false, admin: false, public: false, setup: false, ...options };

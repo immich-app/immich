@@ -146,6 +146,7 @@ export default typescriptEslint.config(
       'unicorn/prefer-minimal-ternary': 'off',
       'unicorn/no-empty-file': 'off',
       'unicorn/prefer-simple-condition-first': 'off',
+      'unicorn/single-line-block-comment-style': ['error', 'single-line'],
       // prefer the typescript-eslint type-aware version
       'unicorn/require-array-sort-compare': 'off',
       '@typescript-eslint/require-array-sort-compare': 'error',
