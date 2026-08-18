@@ -11,8 +11,6 @@ overrides:
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
-pnpmfileChecksum: sha256-un98do36L0wZyqsjcLozQ3YUadCAn2yz5bXcBbOuyDA=
-
 importers:
 
   .:
@@ -157,8 +155,8 @@ importers:
         specifier: ^5.1.3
         version: 5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1)))(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))(prettier@3.9.6)
       eslint-plugin-unicorn:
-        specifier: ^72.0.0
-        version: 72.0.0(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))
+        specifier: ^73.0.0
+        version: 73.0.0(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))
       exiftool-vendored:
         specifier: ^35.0.0
         version: 35.21.0
@@ -269,8 +267,8 @@ importers:
         specifier: ^5.1.3
         version: 5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1)))(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))(prettier@3.9.6)
       eslint-plugin-unicorn:
-        specifier: ^72.0.0
-        version: 72.0.0(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))
+        specifier: ^73.0.0
+        version: 73.0.0(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))
       globals:
         specifier: ^17.0.0
         version: 17.9.0
@@ -741,8 +739,8 @@ importers:
         specifier: ^5.1.3
         version: 5.5.6(@types/eslint@9.6.1)(eslint-config-prettier@10.1.8(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1)))(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))(prettier@3.9.6)
       eslint-plugin-unicorn:
-        specifier: ^72.0.0
-        version: 72.0.0(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))
+        specifier: ^73.0.0
+        version: 73.0.0(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))
       globals:
         specifier: ^17.0.0
         version: 17.9.0
@@ -1006,8 +1004,8 @@ importers:
         specifier: ^3.12.4
         version: 3.22.0(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))(svelte@5.56.8(@typescript-eslint/types@8.66.0))
       eslint-plugin-unicorn:
-        specifier: ^72.0.0
-        version: 72.0.0(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))
+        specifier: ^73.0.0
+        version: 73.0.0(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))
       factory.ts:
         specifier: ^1.4.1
         version: 1.4.2
@@ -7582,8 +7580,8 @@ packages:
       svelte:
         optional: true
 
-  eslint-plugin-unicorn@72.0.0:
-    resolution: {integrity: sha512-hqO6ksoOHO+ZhdseTuKRVQbx9U7PRO/cv8qAR1mctwzdVO2hYud8uS9luAhp43RJgziYgHAph8eHyipT8GL0ng==}
+  eslint-plugin-unicorn@73.0.0:
+    resolution: {integrity: sha512-V0YatLe9nkGhXEXKe2Qljb1EY0sJHwDV0HUF1NKFwtsHh/fU7qGHDgv+6fchzZcgU2/7noHo2gdjnmo0P2uDPw==}
     engines: {node: '>=22'}
     peerDependencies:
       eslint: '>=10.4'
@@ -20606,7 +20604,7 @@ snapshots:
     transitivePeerDependencies:
       - ts-node
 
-  eslint-plugin-unicorn@72.0.0(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1)):
+  eslint-plugin-unicorn@73.0.0(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1)):
     dependencies:
       '@eslint-community/eslint-utils': 4.10.1(eslint@10.8.0(jiti@2.7.0)(supports-color@8.1.1))
       '@eslint/css-tree': 4.0.5
@@ -20815,18 +20813,19 @@ snapshots:
   exiftool-vendored.exe@13.59.0:
     optional: true
 
-  exiftool-vendored.pl@13.59.0: {}
+  exiftool-vendored.pl@13.59.0:
+    optional: true
 
   exiftool-vendored@35.21.0:
     dependencies:
       '@photostructure/tz-lookup': 11.5.0
       '@types/luxon': 3.7.3
       batch-cluster: 17.3.1
-      exiftool-vendored.pl: 13.59.0
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
       exiftool-vendored.exe: 13.59.0
+      exiftool-vendored.pl: 13.59.0
 
   expand-template@2.0.3:
     optional: true
