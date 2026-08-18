@@ -185,10 +185,12 @@ const assetOcrFactory = (
     textScore?: number;
     text?: string;
     isVisible?: boolean;
+    updatedAt?: Date;
   } = {},
 ) => ({
   id: newUuid(),
   updateId: newUuidV7(),
+  updatedAt: newDate(),
   assetId: newUuid(),
   x1: 0.1,
   y1: 0.2,
