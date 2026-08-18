@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { PassThrough, Readable } from 'node:stream';
+import { Duplex, PassThrough, Readable } from 'node:stream';
 import { StorageCore } from 'src/cores/storage.core';
 import { defaults, SystemConfig } from 'src/dtos/config.dto';
 import { ImmichWorker, JobStatus, StorageFolder } from 'src/enum';
@@ -250,6 +250,28 @@ describe(DatabaseBackupService.name, () => {
         throw new Error('error');
       });
       await expect(sut.handleBackupDatabase()).rejects.toThrow('error');
+    });
+
+    it('should destroy the spawned processes if the write stream fails', async () => {
+      // createWriteStream throws after pg_dump is already running (ENOENT when the
+      // backup volume is unmounted). Without tearing the children down, pg_dump sits
+      // idle in transaction holding AccessShareLock on every table.
+      const spawned: Duplex[] = [];
+      mocks.process.spawnDuplexStream.mockImplementation(() => {
+        const duplex = mockDuplex()('command', 0, 'data', '');
+        spawned.push(duplex);
+        return duplex;
+      });
+      mocks.storage.createWriteStream.mockImplementation(() => {
+        throw new Error('ENOENT: no such file or directory');
+      });
+
+      await expect(sut.handleBackupDatabase()).rejects.toThrow('ENOENT');
+
+      expect(spawned).toHaveLength(2);
+      for (const stream of spawned) {
+        expect(stream.destroyed).toBe(true);
+      }
     });
 
     it('should fail if rename fails', async () => {

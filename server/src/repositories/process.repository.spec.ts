@@ -81,5 +81,40 @@ describe(ProcessRepository.name, () => {
 
       await pipeline(Readable.from(data()), process);
     });
+
+    it('should kill the child process when the stream is destroyed', async () => {
+      // A child left running holds whatever it had open. pg_dump keeps its
+      // transaction alive, which holds AccessShareLock on every table until it exits.
+      const process = sut.spawnDuplexStream('bash', ['-c', 'sleep 60']);
+      const realProcess = (process as never as { _process: ChildProcessWithoutNullStreams })._process;
+
+      expect(realProcess.exitCode).toBeNull();
+
+      const exited = new Promise<void>((resolve) => realProcess.once('exit', () => resolve()));
+      process.destroy();
+      await exited;
+
+      expect(realProcess.killed).toBe(true);
+    });
+
+    it('should kill the child when pipeline tears the stream down after a failure', async () => {
+      // pipeline() destroys every stream when one of them fails, so the child has
+      // to go with them rather than outliving the job that spawned it.
+      // `yes` keeps producing output, so the sink is guaranteed to be written to
+      // and can fail the pipeline while the child is still running.
+      const process = sut.spawnDuplexStream('yes');
+      const realProcess = (process as never as { _process: ChildProcessWithoutNullStreams })._process;
+      const failingSink = new Writable({
+        write(_chunk, _encoding, callback) {
+          callback(new Error('sink exploded'));
+        },
+      });
+
+      const exited = new Promise<void>((resolve) => realProcess.once('exit', () => resolve()));
+      await expect(pipeline(process, failingSink)).rejects.toThrow('sink exploded');
+      await exited;
+
+      expect(realProcess.killed).toBe(true);
+    });
   });
 });
