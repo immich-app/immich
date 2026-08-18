@@ -117,6 +117,7 @@ export enum Permission {
   ApiKeyRead = 'apiKey.read',
   ApiKeyUpdate = 'apiKey.update',
   ApiKeyDelete = 'apiKey.delete',
+  ApiKeyRotate = 'apiKey.rotate',
 
   // ASSET_CREATE = 'asset.create',
   AssetRead = 'asset.read',

@@ -51,7 +51,7 @@ class DeepLinkService {
     final queryParams = link.uri.queryParameters;
 
     return switch (intent) {
-      "memory" => await _buildMemoryDeepLink(queryParams['id'] ?? ''),
+      "memory" => await _buildMemoryDeepLink(queryParams['id']),
       "asset" => await _buildAssetDeepLink(queryParams['id'] ?? '', ref),
       "album" => await _buildAlbumDeepLink(queryParams['id'] ?? ''),
       "people" => await _buildPeopleDeepLink(queryParams['id'] ?? ''),
