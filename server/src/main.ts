@@ -26,6 +26,11 @@ class Workers {
   restarting = false;
 
   /**
+   * Set to true when a graceful shutdown signal (SIGTERM/SIGINT) is received
+   */
+  shuttingDown = false;
+
+  /**
    * Boot all enabled workers
    */
   async bootstrap() {
@@ -146,6 +151,20 @@ class Workers {
       return;
     }
 
+    // graceful shutdown via signal — treat as clean exit
+    if (this.shuttingDown) {
+      console.info(`${name} worker exited during graceful shutdown`);
+      delete this.workers[name];
+
+      // once all workers have exited, exit cleanly
+      if (Object.keys(this.workers).length === 0) {
+        // eslint-disable-next-line unicorn/no-process-exit
+        process.exit(0);
+      }
+
+      return;
+    }
+
     // shutdown the entire process
     delete this.workers[name];
 
@@ -159,6 +178,39 @@ class Workers {
     }
 
     process.exit(exitCode);
+  }
+
+  /**
+   * Gracefully shut down all workers and exit with code 0.
+   * Called when the process receives SIGTERM or SIGINT.
+   */
+  shutdown(signal: NodeJS.Signals) {
+    if (this.shuttingDown) {
+      return;
+    }
+
+    this.shuttingDown = true;
+    console.info(`Received ${signal}, shutting down gracefully...`);
+
+    const workerEntries = Object.entries(this.workers) as [ImmichWorker, { kill: (signal: NodeJS.Signals) => Promise<void> | void }][];
+
+    if (workerEntries.length === 0) {
+      // eslint-disable-next-line unicorn/no-process-exit
+      process.exit(0);
+      return;
+    }
+
+    for (const [name, worker] of workerEntries) {
+      console.info(`Sending SIGTERM to ${name} worker`);
+      void worker.kill('SIGTERM');
+    }
+
+    // safety timeout in case workers hang during shutdown
+    setTimeout(() => {
+      console.error('Graceful shutdown timed out after 5 seconds, forcing exit');
+      // eslint-disable-next-line unicorn/no-process-exit
+      process.exit(0);
+    }, 5000).unref();
   }
 }
 
@@ -188,7 +240,12 @@ function main() {
   }
 
   process.title = 'immich';
-  void new Workers().bootstrap();
+  const workers = new Workers();
+
+  process.on('SIGTERM', () => workers.shutdown('SIGTERM'));
+  process.on('SIGINT', () => workers.shutdown('SIGINT'));
+
+  void workers.bootstrap();
 }
 
 void main();
