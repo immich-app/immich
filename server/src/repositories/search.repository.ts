@@ -135,7 +135,9 @@ export type AssetSearchBuilderOptions = Omit<AssetSearchOptions, 'orderDirection
 
 export interface AssetSearchBuilderV3Options {
   filter?: SearchFilter;
-  /** Server-derived ownership scope. Never client-controlled. */
+  /**
+  Server-derived ownership scope. Never client-controlled.
+  */
   userIds?: string[];
   withExif?: boolean;
   withFaces?: boolean;

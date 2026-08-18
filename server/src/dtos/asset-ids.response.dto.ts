@@ -1,7 +1,9 @@
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 
-/** @deprecated Use `BulkIdResponseDto` instead */
+/**
+@deprecated Use `BulkIdResponseDto` instead
+*/
 export enum AssetIdErrorReason {
   DUPLICATE = 'duplicate',
   NO_PERMISSION = 'no_permission',
@@ -13,7 +15,9 @@ const AssetIdErrorReasonSchema = z
   .describe('Error reason if failed')
   .meta({ id: 'AssetIdErrorReason' });
 
-/** @deprecated Use `BulkIdResponseDto` instead */
+/**
+@deprecated Use `BulkIdResponseDto` instead
+*/
 const AssetIdsResponseSchema = z
   .object({
     assetId: z.uuidv4().describe('Asset ID'),
@@ -50,7 +54,9 @@ const BulkIdResponseSchema = z
   })
   .meta({ id: 'BulkIdResponseDto' });
 
-/** @deprecated Use `BulkIdResponseDto` instead */
+/**
+@deprecated Use `BulkIdResponseDto` instead
+*/
 export class AssetIdsResponseDto extends createZodDto(AssetIdsResponseSchema) {}
 export class BulkIdsDto extends createZodDto(BulkIdsSchema) {}
 export class BulkIdResponseDto extends createZodDto(BulkIdResponseSchema) {}

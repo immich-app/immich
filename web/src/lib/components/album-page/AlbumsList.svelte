@@ -55,7 +55,9 @@
   }
 
   const groupOptions: AlbumGroupOption = {
-    /** No grouping */
+    /**
+    No grouping
+    */
     [AlbumGroupBy.None]: (order, albums): AlbumGroup[] => {
       return [
         {
@@ -66,7 +68,9 @@
       ];
     },
 
-    /** Group by year */
+    /**
+    Group by year
+    */
     [AlbumGroupBy.Year]: (order, albums): AlbumGroup[] => {
       const unknownYear = $t('unknown_year');
       const useStartDate = userSettings.sortBy === AlbumSortBy.OldestPhoto;
@@ -92,7 +96,9 @@
       }));
     },
 
-    /** Group by owner */
+    /**
+    Group by owner
+    */
     [AlbumGroupBy.Owner]: (order, albums): AlbumGroup[] => {
       const currentUserId = authManager.user.id;
       const groupedByOwnerIds = groupBy(albums, (album) => album.albumUsers[0].user.id);
