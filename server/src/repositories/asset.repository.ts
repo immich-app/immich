@@ -449,6 +449,9 @@ export class AssetRepository {
 
   @ChunkedArray({ chunkSize: 4000 })
   async createAll(assets: Insertable<AssetTable>[]) {
+    if (assets.length === 0) {
+      return [];
+    }
     const ids = await this.db.insertInto('asset').values(assets).returning('id').execute();
     return ids.map(({ id }) => id);
   }

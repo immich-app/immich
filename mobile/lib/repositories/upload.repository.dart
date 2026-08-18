@@ -95,23 +95,34 @@ class UploadRepository {
     required Completer<void>? cancelToken,
     void Function(int bytes, int totalBytes)? onProgress,
     required String logContext,
+    Client? httpClient,
   }) async {
     final String savedEndpoint = Store.get(StoreKey.serverEndpoint);
-    final baseRequest = ProgressMultipartRequest(
-      'POST',
-      Uri.parse('$savedEndpoint/assets'),
-      abortTrigger: cancelToken?.future,
-      onProgress: onProgress,
-    );
+
+    ProgressMultipartRequest buildRequest() {
+      final request = ProgressMultipartRequest(
+        'POST',
+        Uri.parse('$savedEndpoint/assets'),
+        abortTrigger: cancelToken?.future,
+        onProgress: onProgress,
+      );
+      request.fields.addAll(fields);
+      request.files.add(MultipartFile("assetData", file.openRead(), file.lengthSync(), filename: originalFileName));
+      return request;
+    }
 
     try {
-      final fileStream = file.openRead();
-      final assetRawUploadData = MultipartFile("assetData", fileStream, file.lengthSync(), filename: originalFileName);
+      final client = httpClient ?? NetworkRepository.client;
+      StreamedResponse response;
+      try {
+        response = await client.send(buildRequest());
+      } on RequestAbortedException {
+        rethrow;
+      } on ClientException catch (error) {
+        logger.warning("Upload $logContext failed before a response, resending once: $error");
+        response = await client.send(buildRequest());
+      }
 
-      baseRequest.fields.addAll(fields);
-      baseRequest.files.add(assetRawUploadData);
-
-      final response = await NetworkRepository.client.send(baseRequest);
       final responseBodyString = await response.stream.bytesToString();
 
       if (![200, 201].contains(response.statusCode)) {
