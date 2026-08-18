@@ -12,7 +12,6 @@ import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
-import parse from 'picomatch/lib/parse';
 import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants';
 import { extraModels } from 'src/decorators';
@@ -338,37 +337,10 @@ export const useSwagger = (app: INestApplication, { write }: { write: boolean })
   }
 };
 
-const convertTokenToSqlPattern = (token: parse.Token): string => {
-  switch (token.type) {
-    case 'slash': {
-      return '/';
-    }
-    case 'text': {
-      return token.value;
-    }
-    case 'globstar':
-    case 'star': {
-      return '%';
-    }
-    case 'underscore': {
-      return String.raw`\_`;
-    }
-    case 'qmark': {
-      return '_';
-    }
-    case 'dot': {
-      return '.';
-    }
-    default: {
-      return '';
-    }
-  }
-};
-
-export const globToSqlPattern = (glob: string) => {
-  const tokens = picomatch.parse(glob).tokens;
-  return tokens.map((token) => convertTokenToSqlPattern(token)).join('');
-};
+// Compiles a glob to the equivalent Postgres regex (Postgres's Advanced Regular Expression
+// dialect is a superset of what picomatch emits, so the two stay in sync with `picomatch.isMatch`,
+// including which paths a lone `*` may cross vs `/`).
+export const globToPostgresRegex = (glob: string) => picomatch.makeRe(glob).source;
 
 export function clamp(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));

@@ -53,7 +53,7 @@ import {
   withTagId,
   withTags,
 } from 'src/utils/database';
-import { globToSqlPattern } from 'src/utils/misc';
+import { globToPostgresRegex } from 'src/utils/misc';
 
 export type AssetStats = Record<AssetType, number>;
 
@@ -1070,7 +1070,7 @@ export class AssetRepository {
     exclusionPatterns: string[],
   ): Promise<UpdateResult> {
     const paths = importPaths.map((importPath) => `${importPath}%`);
-    const exclusions = exclusionPatterns.map((pattern) => globToSqlPattern(pattern));
+    const exclusions = exclusionPatterns.map((pattern) => globToPostgresRegex(pattern));
 
     return this.db
       .updateTable('asset')
@@ -1084,7 +1084,7 @@ export class AssetRepository {
       .where((eb) =>
         eb.or([
           eb.not(eb.or(paths.map((path) => eb('originalPath', 'like', path)))),
-          eb.or(exclusions.map((path) => eb('originalPath', 'like', path))),
+          eb.or(exclusions.map((pattern) => eb('originalPath', '~', pattern))),
         ]),
       )
       .executeTakeFirstOrThrow();
