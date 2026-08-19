@@ -44,6 +44,14 @@ describe(ApiKeyController.name, () => {
     });
   });
 
+  describe('POST /api-keys/:id/rotate', () => {
+    it('should require a valid uuid', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).post(`/api-keys/123/rotate`);
+      expect(status).toBe(400);
+      expect(body).toEqual(factory.responses.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
+    });
+  });
+
   describe('DELETE /api-keys/:id', () => {
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).delete(`/api-keys/123`);

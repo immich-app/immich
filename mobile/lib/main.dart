@@ -272,7 +272,11 @@ class ImmichAppState extends ConsumerState<ImmichApp> with WidgetsBindingObserve
         darkTheme: getThemeData(colorScheme: immichTheme.dark, locale: context.locale),
         theme: getThemeData(colorScheme: immichTheme.light, locale: context.locale),
         builder: (context, child) => ImmichTranslationProvider(
-          translations: ImmichTranslations(submit: context.t.submit, password: context.t.password),
+          translations: ImmichTranslations(
+            submit: context.t.submit,
+            password: context.t.password,
+            undo: context.t.undo,
+          ),
           child: ImmichThemeProvider(colorScheme: context.colorScheme, child: child!),
         ),
         routerConfig: router.config(

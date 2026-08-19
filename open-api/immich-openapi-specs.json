@@ -3264,6 +3264,58 @@
         "x-immich-state": "Deprecated"
       }
     },
+    "/api-keys/{id}/rotate": {
+      "post": {
+        "description": "Generates a new secret for an API key, immediately invalidating the previous one. The current user must own this API key.",
+        "operationId": "rotateApiKey",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Rotate an API key",
+        "tags": [
+          "API keys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "apiKey.rotate"
+      }
+    },
     "/assets": {
       "delete": {
         "description": "Deletes multiple assets at the same time.",
@@ -21418,6 +21470,7 @@
           "apiKey.read",
           "apiKey.update",
           "apiKey.delete",
+          "apiKey.rotate",
           "asset.read",
           "asset.update",
           "asset.delete",

@@ -4133,6 +4133,20 @@ export function updateApiKey({ id, apiKeyUpdateDto }: {
     })));
 }
 /**
+ * Rotate an API key
+ */
+export function rotateApiKey({ id }: {
+    id: string;
+}, opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 201;
+        data: ApiKeyCreateResponseDto;
+    }>(`/api-keys/${encodeURIComponent(id)}/rotate`, {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
  * Delete assets
  */
 export function deleteAssets({ assetBulkDeleteDto }: {
@@ -7322,6 +7336,7 @@ export enum Permission {
     ApiKeyRead = "apiKey.read",
     ApiKeyUpdate = "apiKey.update",
     ApiKeyDelete = "apiKey.delete",
+    ApiKeyRotate = "apiKey.rotate",
     AssetRead = "asset.read",
     AssetUpdate = "asset.update",
     AssetDelete = "asset.delete",
