@@ -68,7 +68,7 @@ services:
     volumes:
       - ./redis:/data
     healthcheck:
-      test: redis-cli ping || exit 1
+      test: redis-cli ping | grep -q PONG || exit 1
     restart: always
 
   database:

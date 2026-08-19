@@ -6,7 +6,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/utils/bytes_units.dart';
 import 'package:path/path.dart' as path;
 
@@ -530,7 +530,7 @@ class _CurrentUploadThumbnail extends ConsumerWidget {
 
   Future<LocalAsset?> _getAsset(WidgetRef ref) async {
     try {
-      return await ref.read(localAssetRepository).getById(taskId);
+      return await ref.read(driftProvider).localAssetRepository.getById(taskId);
     } catch (e) {
       return null;
     }
@@ -661,7 +661,7 @@ class FileDetailDialog extends ConsumerWidget {
 
   Future<LocalAsset?> _getAssetDetails(WidgetRef ref, String localAssetId) async {
     try {
-      return await ref.read(localAssetRepository).getById(localAssetId);
+      return await ref.read(driftProvider).localAssetRepository.getById(localAssetId);
     } catch (e) {
       return null;
     }

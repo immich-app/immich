@@ -13,6 +13,7 @@ import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/presentation/pages/edit/editor.provider.dart';
 import 'package:immich_mobile/presentation/widgets/images/image_provider.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/routing/router.dart';
@@ -48,7 +49,7 @@ class EditAssetAction extends AssetActionBuilder {
 
     try {
       // TODO(shenlong): Move all EXIF and Apply Edits logic onto the Route
-      final repository = ref.read(remoteAssetRepositoryProvider);
+      final repository = ref.read(driftProvider).remoteAssetRepository;
       final (edits, exif) = await (repository.getAssetEdits(asset.id), repository.getExif(asset.id)).wait;
       if (exif == null || !context.mounted) {
         return;

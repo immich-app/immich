@@ -5,13 +5,15 @@ import 'package:immich_mobile/domain/services/map.service.dart';
 import 'package:immich_mobile/infrastructure/entities/exif.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/map.repository.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-class DriftMapRepository extends DriftDatabaseRepository {
-  final Drift _db;
+@DriftAccessor()
+class MapRepository extends DatabaseAccessor<Drift> with $MapRepositoryMixin {
+  MapRepository(super.attachedDatabase);
 
-  const DriftMapRepository(super._db) : _db = _db;
+  Drift get _db => attachedDatabase;
 
   MapQuery remote(List<String> ownerIds, TimelineMapOptions options) => _mapQueryBuilder(
     assetFilter: (row) {
