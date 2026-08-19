@@ -44,7 +44,7 @@ void main() {
 
   setUpAll(() async {
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    store = await StoreService.init(storeRepository: DriftStoreRepository(db), listenUpdates: false);
+    store = await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
     await SettingsRepository.ensureInitialized(db);
     await Store.put(StoreKey.serverEndpoint, 'https://example.com/api');
     final persistentStorage = _MockPersistentStorage();
