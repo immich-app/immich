@@ -223,46 +223,34 @@ export const stringToSortOrder = (order: string) => {
 };
 
 const sortOptions: AlbumSortOption = {
-  /**
-  Sort by album title
-  */
+  /** Sort by album title */
   [AlbumSortBy.Title]: (order, albums) => {
     const sortSign = order === SortOrder.Desc ? -1 : 1;
     return albums.slice().sort((a, b) => a.albumName.localeCompare(b.albumName, get(locale)) * sortSign);
   },
 
-  /**
-  Sort by asset count
-  */
+  /** Sort by asset count */
   [AlbumSortBy.ItemCount]: (order, albums) => {
     return orderBy(albums, 'assetCount', [order]);
   },
 
-  /**
-  Sort by last modified
-  */
+  /** Sort by last modified */
   [AlbumSortBy.DateModified]: (order, albums) => {
     return orderBy(albums, [({ updatedAt }) => new Date(updatedAt)], [order]);
   },
 
-  /**
-  Sort by creation date
-  */
+  /** Sort by creation date */
   [AlbumSortBy.DateCreated]: (order, albums) => {
     return orderBy(albums, [({ createdAt }) => new Date(createdAt)], [order]);
   },
 
-  /**
-  Sort by the most recent photo date
-  */
+  /** Sort by the most recent photo date */
   [AlbumSortBy.MostRecentPhoto]: (order, albums) => {
     albums = orderBy(albums, [({ endDate }) => (endDate ? new Date(endDate) : '')], [order]);
     return albums.sort(sortUnknownYearAlbums);
   },
 
-  /**
-  Sort by the oldest photo date
-  */
+  /** Sort by the oldest photo date */
   [AlbumSortBy.OldestPhoto]: (order, albums) => {
     albums = orderBy(albums, [({ startDate }) => (startDate ? new Date(startDate) : '')], [order]);
     return albums.sort(sortUnknownYearAlbums);

@@ -7,9 +7,7 @@ import request from 'supertest';
 import { errorDto } from 'test/medium/responses';
 import { ControllerContext, controllerSetup, mockBaseService } from 'test/utils';
 
-/**
-Returns a full config that passes Zod validation (required URLs and min lengths).
-*/
+/** Returns a full config that passes Zod validation (required URLs and min lengths). */
 function validConfig() {
   const config = _.cloneDeep(defaults) as typeof defaults & {
     oauth: { mobileRedirectUri: string };

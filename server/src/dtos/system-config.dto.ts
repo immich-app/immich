@@ -23,9 +23,7 @@ import {
 } from 'src/enum';
 import z from 'zod';
 
-/**
-Coerces 'true'/'false' strings to boolean, but also allows booleans.
-*/
+/** Coerces 'true'/'false' strings to boolean, but also allows booleans. */
 const configBool = z
   .preprocess((val) => {
     if (val === 'true') {
