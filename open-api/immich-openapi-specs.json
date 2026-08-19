@@ -21743,24 +21743,10 @@
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
             "type": "integer"
-          },
-          "ownedAssets": {
-            "description": "Number of assets owned by the current user",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "sharedAssets": {
-            "description": "Number of assets owned by other users, visible through shared albums",
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
           }
         },
         "required": [
-          "assets",
-          "ownedAssets",
-          "sharedAssets"
+          "assets"
         ],
         "type": "object"
       },

@@ -41,8 +41,6 @@ export interface UpdateFacesData {
 
 export interface PersonStatistics {
   assets: number;
-  ownedAssets: number;
-  sharedAssets: number;
 }
 
 export interface DeleteFacesOptions {
@@ -428,25 +426,14 @@ export class PersonRepository {
           .on('asset.deletedAt', 'is', null)
           .on((eb) => eb.or([eb('asset.ownerId', '=', asUuid(userId)), inSharedAlbum(eb, userId)])),
       )
-      .select((eb) => [
-        eb.fn.count(eb.fn('distinct', ['asset.id'])).as('count'),
-        eb.fn
-          .count(eb.fn('distinct', ['asset.id']))
-          .filterWhere('asset.ownerId', '=', asUuid(userId))
-          .as('ownedCount'),
-      ])
+      .select((eb) => eb.fn.count(eb.fn('distinct', ['asset.id'])).as('count'))
       .where('asset_face.deletedAt', 'is', null)
       .where('asset_face.isVisible', 'is', true)
       .where('asset_face.personGroupId', '=', personGroupId)
       .executeTakeFirst();
 
-    const assets = result ? Number(result.count) : 0;
-    const ownedAssets = result ? Number(result.ownedCount) : 0;
-
     return {
-      assets,
-      ownedAssets,
-      sharedAssets: assets - ownedAssets,
+      assets: result ? Number(result.count) : 0,
     };
   }
 

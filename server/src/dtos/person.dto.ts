@@ -147,8 +147,6 @@ const AssetFaceDeleteSchema = z
 const PersonStatisticsResponseSchema = z
   .object({
     assets: z.int().describe('Number of assets'),
-    ownedAssets: z.int().describe('Number of assets owned by the current user'),
-    sharedAssets: z.int().describe('Number of assets owned by other users, visible through shared albums'),
   })
   .meta({ id: 'PersonStatisticsResponseDto' });
 
