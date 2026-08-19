@@ -71,6 +71,7 @@ export class DatabaseBackupController {
     description: 'Put Immich into maintenance mode to restore a backup (Immich must not be configured)',
     history: new HistoryBuilder().added('v2.5.0').alpha('v2.5.0'),
   })
+  @Authenticated({ public: true, setup: true })
   async startDatabaseRestoreFlow(
     @GetLoginDetails() loginDetails: LoginDetails,
     @Res({ passthrough: true }) res: Response,

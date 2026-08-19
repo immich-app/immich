@@ -117,7 +117,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   ViewRepository,
   WebsocketRepository,
   WorkflowRepository,
-];
+] as const;
 
 @Injectable()
 export class BaseService {
@@ -191,7 +191,7 @@ export class BaseService {
     );
   }
 
-  static create<T extends BaseService>(Service: ClassConstructor<T>, ctx: BaseService) {
+  static create<T extends ClassConstructor<typeof BaseService>>(Service: T, ctx: BaseService) {
     const service = new Service(
       LoggingRepository.create(),
       ctx.accessRepository,
@@ -242,14 +242,15 @@ export class BaseService {
       ctx.trashRepository,
       ctx.userRepository,
       ctx.versionRepository,
+      ctx.videoStreamRepository,
       ctx.viewRepository,
       ctx.websocketRepository,
       ctx.workflowRepository,
     );
 
-    service.logger.setContext(this.name);
+    service.logger.setContext(BaseService.name);
 
-    return service as T;
+    return service as InstanceType<T>;
   }
 
   get worker() {
@@ -278,6 +279,17 @@ export class BaseService {
 
   checkAccess(request: AccessRequest) {
     return checkAccess(this.accessRepository, request);
+  }
+
+  async isSetupAvailable(): Promise<boolean> {
+    const { setup } = this.configRepository.getEnv();
+    return setup.allow && !(await this.userRepository.hasAdmin());
+  }
+
+  async requireSetupAvailable(): Promise<void> {
+    if (!(await this.isSetupAvailable())) {
+      throw new BadRequestException('Admin setup is not available');
+    }
   }
 
   async createUser(dto: Insertable<UserTable> & { email: string }): Promise<UserAdmin> {

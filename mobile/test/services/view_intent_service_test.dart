@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_slow_async_io
+
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -13,11 +15,7 @@ void main() {
   late Directory tempRoot;
   late Directory cacheDir;
 
-  final attachment = ViewIntentPayload(
-    path: '/tmp/file.jpg',
-    mimeType: 'image/jpeg',
-    localAssetId: '42',
-  );
+  final attachment = ViewIntentPayload(path: '/tmp/file.jpg', mimeType: 'image/jpeg', localAssetId: '42');
 
   setUp(() {
     hostApi = MockViewIntentHostApi();

@@ -1,5 +1,4 @@
 @Skip('Flaky test, needs investigation')
-@Tags(['widget'])
 library;
 
 import 'package:drift/drift.dart';
@@ -33,7 +32,7 @@ void main() {
   setUp(() async {
     mapState = const MapState(themeMode: ThemeMode.dark);
     mapStateNotifier = MockMapStateNotifier(mapState);
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await StoreService.init(storeRepository: StoreRepository(db));
     overrides = [
       mapStateNotifierProvider.overrideWith(() => mapStateNotifier),
       localeProvider.overrideWithValue(const Locale("en")),

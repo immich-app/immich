@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-this-outside-of-class */
 import { createPostgres, DatabaseConnectionParams } from '@immich/sql-tools';
 import { CallHandler, ExecutionContext, Provider } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
@@ -88,6 +89,7 @@ import { assert, Mock, Mocked, vitest } from 'vitest';
 
 export type ControllerContext = {
   authenticate: Mock;
+  requireSetupAvailable: Mock;
   getHttpServer: () => any;
   reset: () => void;
   close: () => Promise<void>;
@@ -107,6 +109,7 @@ export const controllerSetup = async (controller: new (...args: any[]) => unknow
       await new Promise<void>((resolve, reject) => {
         const next: NextFunction = (error) => (error ? reject(transformException(error)) : resolve());
         const maybePromise = handler(context.getRequest(), context.getResponse(), next);
+
         Promise.resolve(maybePromise).catch((error) => reject(error));
       });
 
@@ -122,7 +125,7 @@ export const controllerSetup = async (controller: new (...args: any[]) => unknow
       { provide: APP_GUARD, useClass: AuthGuard },
       { provide: LoggingRepository, useValue: LoggingRepository.create() },
       { provide: ClsService, useValue: { getId: vi.fn() } },
-      { provide: AuthService, useValue: { authenticate: vi.fn() } },
+      { provide: AuthService, useValue: { authenticate: vi.fn(), requireSetupAvailable: vi.fn() } },
       ...providers,
     ],
   })
@@ -135,13 +138,17 @@ export const controllerSetup = async (controller: new (...args: any[]) => unknow
   await app.init();
 
   // allow the AuthController to override the AuthService itself
-  const authenticate = app.get<Mocked<AuthService>>(AuthService).authenticate as Mock;
+  const resolvedAuthService = app.get<Mocked<AuthService>>(AuthService);
+  const authenticate = resolvedAuthService.authenticate as Mock;
+  const requireSetupAvailable = resolvedAuthService.requireSetupAvailable as Mock;
 
   return {
     authenticate,
+    requireSetupAvailable,
     getHttpServer: () => app.getHttpServer(),
     reset: () => {
       authenticate.mockReset();
+      requireSetupAvailable.mockReset();
     },
     close: async () => {
       await app.close();
@@ -176,16 +183,18 @@ export const automock = <T>(
   },
 ): AutoMocked<T> => {
   const mock: Record<string, unknown> = {};
-  const strict = options?.strict ?? true;
+  const isStrict = options?.strict ?? true;
   const args = options?.args ?? [];
 
   const mocks: Mock[] = [];
 
   const instance = new Dependency(...args);
-  const propertyNames = new Set([
-    ...Object.getOwnPropertyNames(Dependency.prototype),
-    ...Object.getOwnPropertyNames(instance),
-  ]);
+  const propertyNames = new Set(Object.getOwnPropertyNames(instance));
+  for (let proto = Dependency.prototype; proto && proto !== Object.prototype; proto = Object.getPrototypeOf(proto)) {
+    for (const property of Object.getOwnPropertyNames(proto)) {
+      propertyNames.add(property);
+    }
+  }
   for (const property of propertyNames) {
     if (property === 'constructor') {
       continue;
@@ -197,7 +206,7 @@ export const automock = <T>(
 
       const target = instance[property as keyof T];
       if (typeof target === 'function') {
-        const mockImplementation = mockFn(label, { strict });
+        const mockImplementation = mockFn(label, { strict: isStrict });
         mock[property] = mockImplementation;
         mocks.push(mockImplementation);
         continue;
@@ -454,7 +463,7 @@ const pngFactory = newPngFactory();
 
 const templateName = 'mich';
 
-const withDatabase = (url: string, name: string) => url.replace(`/${templateName}`, `/${name}`);
+const withDatabase = (url: string, name: string) => url.replace(`/${templateName}`, () => `/${name}`);
 
 export const getKyselyDB = async (suffix?: string): Promise<Kysely<DB>> => {
   const testUrl = process.env.IMMICH_TEST_POSTGRES_URL!;
@@ -532,10 +541,8 @@ export const mockDuplex =
       if (error) {
         duplex.destroy(error as Error);
       } else if (exitCode === 0) {
-        /* eslint-disable unicorn/prefer-single-call */
         duplex.push(stdout);
         duplex.push(null);
-        /* eslint-enable unicorn/prefer-single-call */
       } else {
         duplex.destroy(new Error(`${command} non-zero exit code (${exitCode})\n${stderr}`));
       }
@@ -543,43 +550,6 @@ export const mockDuplex =
 
     return duplex;
   };
-
-export const mockFork = vitest.fn((exitCode: number, stdout: string, stderr: string, error?: unknown) => {
-  const stdoutStream = new Readable({
-    read() {
-      this.push(stdout); // write mock data to stdout
-      this.push(null); // end stream
-    },
-  });
-
-  return {
-    stdout: stdoutStream,
-    stderr: new Readable({
-      read() {
-        this.push(stderr); // write mock data to stderr
-        this.push(null); // end stream
-      },
-    }),
-    stdin: new Writable({
-      write(chunk, encoding, callback) {
-        callback();
-      },
-    }),
-    exitCode,
-    on: vitest.fn((event, callback: any) => {
-      if (event === 'close') {
-        stdoutStream.once('end', () => callback(0));
-      }
-      if (event === 'error' && error) {
-        stdoutStream.once('end', () => callback(error));
-      }
-      if (event === 'exit') {
-        stdoutStream.once('end', () => callback(exitCode));
-      }
-    }),
-    kill: vitest.fn(),
-  } as unknown as ChildProcessWithoutNullStreams;
-});
 
 export async function* makeStream<T>(items: T[] = []): AsyncGenerator<T> {
   for (const item of items) {

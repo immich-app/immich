@@ -1,6 +1,8 @@
+// ignore_for_file: use-ref-and-state-synchronously
+
 import 'dart:async';
 
-import 'package:collection/collection.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -15,30 +17,17 @@ import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/services/foreground_upload.service.dart';
 import 'package:logging/logging.dart';
 
-class RemoteAlbumState {
-  final List<RemoteAlbum> albums;
+part 'remote_album.provider.freezed.dart';
 
-  const RemoteAlbumState({required this.albums});
+@Freezed(toStringOverride: false)
+abstract class RemoteAlbumState with _$RemoteAlbumState {
+  const RemoteAlbumState._();
 
-  RemoteAlbumState copyWith({List<RemoteAlbum>? albums}) {
-    return RemoteAlbumState(albums: albums ?? this.albums);
-  }
+  const factory RemoteAlbumState({required List<RemoteAlbum> albums}) = _RemoteAlbumState;
 
+  // Explicitly don't log albums
   @override
   String toString() => 'RemoteAlbumState(albums: ${albums.length})';
-
-  @override
-  bool operator ==(covariant RemoteAlbumState other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    final listEquals = const DeepCollectionEquality().equals;
-
-    return listEquals(other.albums, albums);
-  }
-
-  @override
-  int get hashCode => albums.hashCode;
 }
 
 class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
@@ -200,12 +189,12 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     return _remoteAlbumService.getAssets(albumId);
   }
 
-  Future<int> addAssets(String albumId, List<String> assetIds) async {
-    final added = await _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
-    if (added > 0) {
+  Future<({int added, int failed})> addAssets(String albumId, List<String> assetIds) async {
+    final result = await _remoteAlbumService.addAssets(albumId: albumId, assetIds: assetIds);
+    if (result.added > 0) {
       await _refreshAlbumInState(albumId);
     }
-    return added;
+    return result;
   }
 
   /// Links a freshly-uploaded local asset to an album using its new remote ID,
@@ -313,9 +302,9 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
   }
 }
 
-final remoteAlbumDateRangeProvider = FutureProvider.family<(DateTime, DateTime), String>((ref, albumId) async {
+final remoteAlbumDateRangeProvider = StreamProvider.autoDispose.family<(DateTime, DateTime), String>((ref, albumId) {
   final service = ref.watch(remoteAlbumServiceProvider);
-  return service.getDateRange(albumId);
+  return service.watchDateRange(albumId);
 });
 
 final remoteAlbumSharedUsersProvider = FutureProvider.autoDispose.family<List<UserDto>, String>((ref, albumId) async {

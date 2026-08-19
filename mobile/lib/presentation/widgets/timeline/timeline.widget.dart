@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:math' as math;
 
+import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
@@ -18,38 +21,17 @@ import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/scrubber.widget.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/segment.model.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline.state.dart';
-import 'package:immich_mobile/presentation/widgets/timeline/drag_selection_controller.dart';
 import 'package:immich_mobile/presentation/widgets/timeline/timeline_drag_region.dart';
 import 'package:immich_mobile/providers/infrastructure/readonly_mode.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/providers/timeline/multiselect.provider.dart';
+import 'package:immich_mobile/routing/app_navigation_observer.dart';
 import 'package:immich_mobile/widgets/common/immich_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/mesmerizing_sliver_app_bar.dart';
 import 'package:immich_mobile/widgets/common/selection_sliver_app_bar.dart';
 
-// First asset index of the row shown at [offset]. Pure for testing.
-@visibleForTesting
-int? assetIndexAtOffset(
-  List<Segment> segments,
-  double offset, {
-  required int columnCount,
-  required double maxScrollExtent,
-}) {
-  final clamped = offset.clamp(0.0, maxScrollExtent);
-  final segment = segments.findByOffset(clamped) ?? segments.lastOrNull;
-  if (segment == null) {
-    return null;
-  }
-  final rowIndex = segment.getMinChildIndexForScrollOffset(clamped);
-  if (rowIndex > segment.firstIndex) {
-    final rowIndexInSegment = rowIndex - (segment.firstIndex + 1);
-    return segment.firstAssetIndex + rowIndexInSegment * columnCount;
-  }
-  return segment.firstAssetIndex;
-}
-
-class Timeline extends StatelessWidget {
+class Timeline extends ConsumerWidget {
   const Timeline({
     super.key,
     this.topSliverWidget,
@@ -82,35 +64,40 @@ class Timeline extends StatelessWidget {
   final Widget? loadingWidget;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final columnCount = ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow));
     return LayoutBuilder(
-      builder: (_, constraints) => ProviderScope(
-        overrides: [
-          timelineArgsProvider.overrideWith(
-            (ref) => TimelineArgs(
-              maxWidth: constraints.maxWidth,
-              maxHeight: constraints.maxHeight,
-              columnCount: ref.watch(appConfigProvider.select((config) => config.timeline.tilesPerRow)),
-              showStorageIndicator: showStorageIndicator,
-              withStack: withStack,
-              groupBy: groupBy,
+      builder: (_, constraints) {
+        return ProviderScope(
+          overrides: [
+            // overrideWithValue keeps the scoped args in sync with the latest constraints on rebuilds,
+            // a function override would stay locked to the first frame's constraints for the whole session
+            timelineArgsProvider.overrideWithValue(
+              TimelineArgs(
+                maxWidth: constraints.maxWidth,
+                maxHeight: constraints.maxHeight,
+                columnCount: columnCount,
+                showStorageIndicator: showStorageIndicator,
+                withStack: withStack,
+                groupBy: groupBy,
+              ),
             ),
+            if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
+          ],
+          child: _SliverTimeline(
+            topSliverWidget: topSliverWidget,
+            topSliverWidgetHeight: topSliverWidgetHeight,
+            bottomSliverWidget: bottomSliverWidget,
+            appBar: appBar,
+            bottomSheet: bottomSheet,
+            withScrubber: withScrubber,
+            persistentBottomBar: persistentBottomBar,
+            snapToMonth: snapToMonth,
+            maxWidth: constraints.maxWidth,
+            loadingWidget: loadingWidget,
           ),
-          if (readOnly) readonlyModeProvider.overrideWith(() => _AlwaysReadOnlyNotifier()),
-        ],
-        child: _SliverTimeline(
-          topSliverWidget: topSliverWidget,
-          topSliverWidgetHeight: topSliverWidgetHeight,
-          bottomSliverWidget: bottomSliverWidget,
-          appBar: appBar,
-          bottomSheet: bottomSheet,
-          withScrubber: withScrubber,
-          persistentBottomBar: persistentBottomBar,
-          snapToMonth: snapToMonth,
-          maxWidth: constraints.maxWidth,
-          loadingWidget: loadingWidget,
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -155,15 +142,14 @@ class _SliverTimeline extends ConsumerStatefulWidget {
   ConsumerState createState() => _SliverTimelineState();
 }
 
-class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
+class _SliverTimelineState extends ConsumerState<_SliverTimeline> with WidgetsBindingObserver {
   late final ScrollController _scrollController;
   StreamSubscription? _eventSubscription;
 
   // Drag selection state
-  static const _autoScrollStep = 175.0;
-  static const _autoScrollDuration = Duration(milliseconds: 125);
   bool _dragging = false;
-  DragSelectionController? _dragController;
+  TimelineAssetIndex? _dragAnchorIndex;
+  final Set<BaseAsset> _draggedAssets = HashSet();
   ScrollPhysics? _scrollPhysics;
 
   int _perRow = 4;
@@ -174,6 +160,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _scrollController = ScrollController(onAttach: _restoreAssetPosition);
     _eventSubscription = EventStream.shared.listen(_onEvent);
 
@@ -189,28 +176,38 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
   void didUpdateWidget(covariant _SliverTimeline oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.maxWidth != oldWidget.maxWidth) {
-      final asyncSegments = ref.read(timelineSegmentProvider);
-      asyncSegments.whenData((segments) {
-        final index = _getCurrentAssetIndex(segments);
-        // Refresh to wait for new segments to be generated with the updated width before restoring the scroll position
-        final _ = ref.refresh(timelineArgsProvider);
-        _restoreAssetIndex = index;
-      });
+      // The updated args already regenerate the segments, only remember the scroll position to restore it afterwards
+      final segments = ref.read(timelineSegmentProvider).valueOrNull;
+      if (segments != null && _scrollController.hasClients) {
+        _restoreAssetIndex = _getCurrentAssetIndex(segments);
+      }
+    }
+  }
+
+  // Capture iOS status bar tap
+  @override
+  void handleStatusBarTap() {
+    // Routes may be pushed non-opaquely on top of the timeline (such as the asset viewer), or the timeline
+    // may be in a background tab. In either case, `handleStatusBarTap()` still fires
+    // Make sure the timeline is the primary route before scrolling to the top
+    final routeData = context.findAncestorWidgetOfExactType<RouteDataScope>()?.routeData;
+    // The tap is generated async, so it can arrive after a route pop has started (due to a back button or similar)
+    // Check if route is alive and not exiting before taking action
+    final observers = Navigator.maybeOf(context)?.widget.observers ?? const <NavigatorObserver>[];
+    final isRouteTransitioning = observers.whereType<TransitioningRouteObserver>().any(
+      (observer) => observer.hasTransitioningRoute,
+    );
+
+    if (ModalRoute.of(context)?.isCurrent == true && routeData?.isActive == true && !isRouteTransitioning) {
+      _scrollToTop();
     }
   }
 
   void _onEvent(Event event) {
     switch (event) {
       case ScrollToTopEvent():
-        {
-          final timelineState = ref.read(timelineStateProvider.notifier);
-          timelineState.setScrubbing(true);
-          _scrollController
-              .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
-              .whenComplete(() => timelineState.setScrubbing(false));
-        }
-
-      case ScrollToDateEvent scrollToDateEvent:
+        _scrollToTop();
+      case final ScrollToDateEvent scrollToDateEvent:
         _scrollToDate(scrollToDateEvent.date);
       case TimelineReloadEvent():
         setState(() {});
@@ -247,21 +244,44 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     EventStream.shared.emit(MultiSelectToggleEvent(isEnabled));
   }
 
-  int? _getCurrentAssetIndex(List<Segment> segments) => _assetIndexAtOffset(segments, _scrollController.offset);
-
-  int? _assetIndexAtOffset(List<Segment> segments, double offset) => assetIndexAtOffset(
-    segments,
-    offset,
-    columnCount: ref.read(timelineArgsProvider).columnCount,
-    maxScrollExtent: _scrollController.position.maxScrollExtent,
-  );
+  int? _getCurrentAssetIndex(List<Segment> segments) {
+    final currentOffset = _scrollController.offset.clamp(0.0, _scrollController.position.maxScrollExtent);
+    final segment = segments.findByOffset(currentOffset) ?? segments.lastOrNull;
+    int? targetAssetIndex;
+    if (segment != null) {
+      final rowIndex = segment.getMinChildIndexForScrollOffset(currentOffset);
+      if (rowIndex > segment.firstIndex) {
+        final rowIndexInSegment = rowIndex - (segment.firstIndex + 1);
+        final assetsPerRow = ref.read(timelineArgsProvider).columnCount;
+        final assetIndexInSegment = rowIndexInSegment * assetsPerRow;
+        targetAssetIndex = segment.firstAssetIndex + assetIndexInSegment;
+      } else {
+        targetAssetIndex = segment.firstAssetIndex;
+      }
+    }
+    return targetAssetIndex;
+  }
 
   @override
   void dispose() {
-    _dragController?.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     _scrollController.dispose();
-    _eventSubscription?.cancel();
+    unawaited(_eventSubscription?.cancel());
     super.dispose();
+  }
+
+  void _scrollToTop() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+
+    final timelineState = ref.read(timelineStateProvider.notifier);
+    timelineState.setScrubbing(true);
+    unawaited(
+      _scrollController
+          .animateTo(0, duration: const Duration(milliseconds: 250), curve: Curves.easeInOut)
+          .whenComplete(() => timelineState.setScrubbing(false)),
+    );
   }
 
   void _scrollToDate(DateTime date) {
@@ -293,13 +313,15 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
         // Scroll to the segment with a small offset to show the header
         final targetOffset = fallbackSegment.startOffset - 50;
         timelineState.setScrubbing(true);
-        _scrollController
-            .animateTo(
-              targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-              duration: const Duration(milliseconds: 500),
-              curve: Curves.easeInOut,
-            )
-            .whenComplete(() => timelineState.setScrubbing(false));
+        unawaited(
+          _scrollController
+              .animateTo(
+                targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+                duration: const Duration(milliseconds: 500),
+                curve: Curves.easeInOut,
+              )
+              .whenComplete(() => timelineState.setScrubbing(false)),
+        );
       } else {
         timelineState.setScrubbing(false);
       }
@@ -308,21 +330,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
   // Drag selection methods
   void _setDragStartIndex(TimelineAssetIndex index) {
-    // Stop the old drag's controller so its in-flight read can't leak into this one.
-    _dragController?.dispose();
-    final timelineService = ref.read(timelineServiceProvider);
-    _dragController = DragSelectionController(
-      getAssetSafe: timelineService.getAssetSafe,
-      getAssetsRange: timelineService.getAssetsRange,
-      onChange: (select, deselect) {
-        if (!mounted) {
-          return;
-        }
-        ref.read(multiSelectProvider.notifier).selectRange(select, deselect);
-      },
-    )..start(index.assetIndex);
     setState(() {
       _scrollPhysics = const ClampingScrollPhysics();
+      _dragAnchorIndex = index;
       _dragging = true;
     });
   }
@@ -338,46 +348,51 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
     });
     setState(() {
       _dragging = false;
+      _draggedAssets.clear();
     });
-    // Apply the full final range even if a read is still in flight on lift.
-    final finishing = _dragController?.end();
-    if (finishing != null) {
-      unawaited(finishing);
-    }
     final timelineState = ref.read(timelineStateProvider.notifier);
     Future.delayed(const Duration(milliseconds: 300), () {
       timelineState.setScrolling(false);
     });
   }
 
-  void _dragScroll(ScrollDirection direction) {
-    final position = _scrollController.position;
-    final step = direction == ScrollDirection.forward ? _autoScrollStep : -_autoScrollStep;
-    final target = (_scrollController.offset + step).clamp(0.0, position.maxScrollExtent);
-    _scrollController.animateTo(target, duration: _autoScrollDuration, curve: Curves.easeOut);
-
-    // A held finger emits no move events, so extend the selection to the asset
-    // at the leading edge of the scroll instead.
-    final controller = _dragController;
-    if (controller == null) {
-      return;
-    }
-    final segments = ref.read(timelineSegmentProvider).valueOrNull;
-    if (segments == null) {
-      return;
-    }
-    final edgeOffset = direction == ScrollDirection.forward ? target + position.viewportDimension : target;
-    final edgeIndex = _assetIndexAtOffset(segments, edgeOffset);
-    if (edgeIndex != null) {
-      controller.enter(edgeIndex);
-    }
+  Future<void> _dragScroll(ScrollDirection direction) {
+    return _scrollController.animateTo(
+      _scrollController.offset + (direction == ScrollDirection.forward ? 175 : -175),
+      duration: const Duration(milliseconds: 125),
+      curve: Curves.easeOut,
+    );
   }
 
   void _handleDragAssetEnter(TimelineAssetIndex index) {
-    if (!_dragging) {
+    if (_dragAnchorIndex == null || !_dragging) {
       return;
     }
-    _dragController?.enter(index.assetIndex);
+
+    final timelineService = ref.read(timelineServiceProvider);
+    final dragAnchorIndex = _dragAnchorIndex!;
+
+    // Calculate the range of assets to select
+    final startIndex = math.min(dragAnchorIndex.assetIndex, index.assetIndex);
+    final endIndex = math.max(dragAnchorIndex.assetIndex, index.assetIndex);
+    final count = endIndex - startIndex + 1;
+
+    // Load the assets in the range
+    if (timelineService.hasRange(startIndex, count)) {
+      final selectedAssets = timelineService.getAssets(startIndex, count);
+
+      // Clear previous drag selection and add new range
+      final multiSelectNotifier = ref.read(multiSelectProvider.notifier);
+      for (final asset in _draggedAssets) {
+        multiSelectNotifier.deselectAsset(asset);
+      }
+      _draggedAssets.clear();
+
+      for (final asset in selectedAssets) {
+        multiSelectNotifier.selectAsset(asset);
+        _draggedAssets.add(asset);
+      }
+    }
   }
 
   @override
@@ -393,7 +408,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
 
     return PopScope(
       canPop: !isMultiSelectEnabled,
-      onPopInvokedWithResult: (_, __) {
+      onPopInvokedWithResult: (_, _) {
         if (isMultiSelectEnabled) {
           ref.read(multiSelectProvider.notifier).reset();
         }
@@ -401,6 +416,9 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
       child: PrimaryScrollController(
         controller: _scrollController,
         child: Scaffold(
+          // This removes the built in Scaffold `handleStatusBarTap` implementation, preventing duplicate
+          // events when we provide our own
+          primary: false,
           resizeToAvoidBottomInset: false,
           floatingActionButton: const DownloadStatusFloatingButton(),
           body: asyncSegments.widgetWhen(
@@ -482,7 +500,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                             _restoreAssetIndex = targetAssetIndex;
                           });
 
-                          ref.read(settingsProvider).write(.timelineTilesPerRow, _perRow);
+                          unawaited(ref.read(settingsProvider).write(.timelineTilesPerRow, _perRow));
                         }
                       };
                     },
@@ -492,7 +510,7 @@ class _SliverTimelineState extends ConsumerState<_SliverTimeline> {
                   onStart: !isReadonlyModeEnabled ? _setDragStartIndex : null,
                   onAssetEnter: _handleDragAssetEnter,
                   onEnd: !isReadonlyModeEnabled ? _stopDrag : null,
-                  onScroll: _dragScroll,
+                  onScroll: (direction) => unawaited(_dragScroll(direction)),
                   onScrollStart: () {
                     // Minimize the bottom sheet when drag selection starts
                     ref.read(timelineStateProvider.notifier).setScrolling(true);

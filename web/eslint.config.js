@@ -10,15 +10,13 @@ import parser from 'svelte-eslint-parser';
 import typescriptEslint from 'typescript-eslint';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import './lint-env.js';
 
 export default typescriptEslint.config(
   ...eslintPluginSvelte.configs.recommended,
   eslintPluginUnicorn.configs.recommended,
   js.configs.recommended,
+  prettier,
   {
     plugins: {
       tscompat: tslintPluginCompat,
@@ -28,7 +26,7 @@ export default typescriptEslint.config(
         'error',
         {
           browserslist: fs
-            .readFileSync(path.join(__dirname, '.browserslistrc'), 'utf8')
+            .readFileSync(path.join(import.meta.dirname, '.browserslistrc'), 'utf8')
             .split('\n')
             .map((line) => line.trim())
             .filter((line) => line && !line.startsWith('#')),
@@ -39,10 +37,10 @@ export default typescriptEslint.config(
       parser,
       parserOptions: {
         project: ['./tsconfig.json'],
-        tsconfigRootDir: __dirname,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
-    ignores: ['**/service-worker/**'],
+    // ignores: ['**/service-worker/**'],
   },
   {
     plugins: {
@@ -71,6 +69,7 @@ export default typescriptEslint.config(
       '**/yarn.lock',
       '**/svelte.config.js',
       'eslint.config.js',
+      'lint-env.js',
       'tailwind.config.js',
       'coverage',
       'vite.config.ts',
@@ -95,7 +94,7 @@ export default typescriptEslint.config(
 
       parserOptions: {
         extraFileExtensions: ['.svelte'],
-        tsconfigRootDir: __dirname,
+        tsconfigRootDir: import.meta.dirname,
         project: ['./tsconfig.json'],
       },
     },
@@ -116,7 +115,7 @@ export default typescriptEslint.config(
       'unicorn/no-useless-undefined': 'off',
       'unicorn/prefer-spread': 'off',
       'unicorn/no-null': 'off',
-      'unicorn/prevent-abbreviations': 'off',
+      'unicorn/name-replacements': 'off',
       'unicorn/no-nested-ternary': 'off',
       'unicorn/consistent-function-scoping': 'off',
       'unicorn/filename-case': 'off',
@@ -124,14 +123,42 @@ export default typescriptEslint.config(
       'unicorn/import-style': 'off',
       'unicorn/no-array-sort': 'off',
       'unicorn/no-for-loop': 'off',
-      'svelte/button-has-type': 'error',
+      'unicorn/no-unreadable-for-of-expression': 'off',
+      'unicorn/no-break-in-nested-loop': 'off',
+      'unicorn/no-top-level-assignment-in-function': 'off',
+      'unicorn/prefer-uint8array-base64': 'off',
+      'unicorn/max-nested-calls': 'off',
+      'unicorn/no-declarations-before-early-exit': 'off',
+      'unicorn/no-unreadable-object-destructuring': 'off',
+      // not yet compatible with all our supported browsers
+      'unicorn/prefer-promise-with-resolvers': 'off',
+      // not yet compatible with all our supported browsers
+      'unicorn/prefer-iterator-to-array': 'off',
+      // not yet compatible with all our supported browsers
+      'unicorn/prefer-array-from-async': 'off',
+      // maybe we do want to enable this later. TBD
+      'unicorn/prefer-await': 'off',
+      'unicorn/consistent-class-member-order': 'off',
+      'unicorn/class-reference-in-static-methods': ['error', { preferThis: false, preferSuper: false }],
+      'unicorn/no-unsafe-property-key': 'off',
+      'unicorn/consistent-boolean-name': 'off',
+      'unicorn/no-non-function-verb-prefix': 'off',
+      'unicorn/prefer-minimal-ternary': 'off',
+      'unicorn/no-empty-file': 'off',
+      'unicorn/prefer-simple-condition-first': 'off',
+      'unicorn/single-line-block-comment-style': ['error', 'single-line'],
+      // prefer the typescript-eslint type-aware version
+      'unicorn/require-array-sort-compare': 'off',
+      '@typescript-eslint/require-array-sort-compare': 'error',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/require-await': 'error',
       '@typescript-eslint/switch-exhaustiveness-check': ['error', { considerDefaultExhaustiveForUnions: true }],
+      'svelte/button-has-type': 'error',
       'object-shorthand': ['error', 'always'],
       'svelte/no-navigation-without-resolve': 'off',
+      eqeqeq: 'error',
     },
   },
   {

@@ -20,7 +20,8 @@ type TagsWithWrongTypes =
   | 'TagsList'
   | 'Keywords'
   | 'HierarchicalSubject'
-  | 'ISO';
+  | 'ISO'
+  | 'LensModel';
 
 export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   ContentIdentifier?: string;
@@ -43,6 +44,9 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
   Description?: StringOrNumber;
   ImageDescription?: StringOrNumber;
 
+  // Apparently LensModel can also be a float: https://github.com/immich-app/immich/issues/30492
+  LensModel?: StringOrNumber;
+
   // Extended properties for image regions, such as faces
   RegionInfo?: {
     AppliedToDimensions: {
@@ -53,10 +57,10 @@ export interface ImmichTags extends Omit<Tags, TagsWithWrongTypes> {
     RegionList: {
       Area: {
         // (X,Y) // center of the rectangle
-        X: number;
-        Y: number;
-        W: number;
-        H: number;
+        X: number | string;
+        Y: number | string;
+        W: number | string;
+        H: number | string;
         Unit: string;
       };
       Rotation?: number;
@@ -108,6 +112,7 @@ export class MetadataRepository {
 
   readTags(path: string): Promise<ImmichTags> {
     const options: ReadTaskOptions | undefined = mimeTypes.isVideo(path) ? { readArgs: ['-ee'] } : undefined;
+
     return this.exiftool.read(path, options).catch((error) => {
       this.logger.warn(`Error reading exif data (${path}): ${error}\n${error?.stack}`);
       return {};

@@ -85,7 +85,7 @@ describe('/admin/maintenance', () => {
 
       expect(status).toBe(201);
 
-      cookie = headers['set-cookie'][0].split(';')[0];
+      cookie = headers['set-cookie'][0].split(';', 1)[0];
       expect(cookie).toEqual(
         expect.stringMatching(/^immich_maintenance_token=[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*\.[A-Za-z0-9-_]*$/),
       );
@@ -149,7 +149,7 @@ describe('/admin/maintenance', () => {
         const { status, body } = await request(app)
           .post('/admin/maintenance/login')
           .send({
-            token: cookie!.split('=')[1].trim(),
+            token: cookie!.split('=', 2)[1].trim(),
           });
         expect(status).toBe(201);
         expect(body).toEqual(

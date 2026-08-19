@@ -1,67 +1,83 @@
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/platform/permission_api.g.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart' as ph;
 
 final permissionRepositoryProvider = Provider((ref) {
-  return PermissionRepository(ref.watch(permissionApiProvider));
+  return DevicePermissionRepository(ref.watch(permissionApiProvider));
 });
 
-class PermissionRepository implements IPermissionRepository {
+class DevicePermissionRepository {
   final PermissionApi _permissionApi;
 
-  const PermissionRepository(this._permissionApi);
+  const DevicePermissionRepository(this._permissionApi);
 
-  @override
-  Future<bool> hasLocationWhenInUsePermission() {
-    return Permission.locationWhenInUse.isGranted;
+  Future<DevicePermissionStatus> getStatus(DevicePermission permission) async =>
+      (await permission.handler.status).toDevicePermissionStatus();
+
+  Future<DevicePermissionStatus> request(DevicePermission permission) async =>
+      (await permission.handler.request()).toDevicePermissionStatus();
+
+  // TODO(shenlong): Move this to it's own device info repo
+  Future<int> getAndroidSdkVersion() async {
+    if (CurrentPlatform.isIOS) {
+      throw UnsupportedError("This method is available only on Android");
+    }
+
+    final androidInfo = await DeviceInfoPlugin().androidInfo;
+    return androidInfo.version.sdkInt;
   }
 
-  @override
+  Future<bool> hasLocationWhenInUsePermission() => ph.Permission.locationWhenInUse.isGranted;
+
   Future<bool> requestLocationWhenInUsePermission() async {
-    final result = await Permission.locationWhenInUse.request();
+    final result = await ph.Permission.locationWhenInUse.request();
     return result.isGranted;
   }
 
-  @override
   Future<bool> hasLocationAlwaysPermission() {
-    return Permission.locationAlways.isGranted;
+    return ph.Permission.locationAlways.isGranted;
   }
 
-  @override
   Future<bool> requestLocationAlwaysPermission() async {
-    final result = await Permission.locationAlways.request();
+    final result = await ph.Permission.locationAlways.request();
     return result.isGranted;
   }
 
-  @override
   Future<bool> openSettings() {
-    return openAppSettings();
+    return ph.openAppSettings();
   }
 
-  @override
   Future<bool> hasManageMediaPermission() {
     return _permissionApi.hasManageMediaPermission();
   }
 
-  @override
   Future<bool> requestManageMediaPermission() {
     return _permissionApi.requestManageMediaPermission();
   }
 
-  @override
   Future<bool> manageMediaPermission() {
     return _permissionApi.manageMediaPermission();
   }
 }
 
-abstract interface class IPermissionRepository {
-  Future<bool> hasLocationWhenInUsePermission();
-  Future<bool> requestLocationWhenInUsePermission();
-  Future<bool> hasLocationAlwaysPermission();
-  Future<bool> requestLocationAlwaysPermission();
-  Future<bool> openSettings();
-  Future<bool> hasManageMediaPermission();
-  Future<bool> requestManageMediaPermission();
-  Future<bool> manageMediaPermission();
+extension on DevicePermission {
+  ph.Permission get handler => switch (this) {
+    .photos => ph.Permission.photos,
+    .videos => ph.Permission.videos,
+    .storage => ph.Permission.storage,
+    .mediaLocation => ph.Permission.accessMediaLocation,
+  };
+}
+
+extension on ph.PermissionStatus {
+  DevicePermissionStatus toDevicePermissionStatus() => switch (this) {
+    .granted => .granted,
+    .limited => .limited,
+    .permanentlyDenied => .permanentlyDenied,
+    _ => .denied,
+  };
 }

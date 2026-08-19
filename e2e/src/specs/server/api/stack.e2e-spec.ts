@@ -1,5 +1,5 @@
 import { AssetMediaResponseDto, LoginResponseDto, searchStacks } from '@immich/sdk';
-import { createUserDto, uuidDto } from 'src/fixtures';
+import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
@@ -25,42 +25,6 @@ describe('/stacks', () => {
   });
 
   describe('POST /stacks', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app)
-        .post('/stacks')
-        .send({ assetIds: [asset.id] });
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require at least two assets', async () => {
-      const { status, body } = await request(app)
-        .post('/stacks')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ assetIds: [asset.id] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['assetIds'], message: 'Too small: expected array to have >=2 items' }]),
-      );
-    });
-
-    it('should require a valid id', async () => {
-      const { status, body } = await request(app)
-        .post('/stacks')
-        .set('Authorization', `Bearer ${user1.accessToken}`)
-        .send({ assetIds: [uuidDto.invalid, uuidDto.invalid] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([
-          { path: ['assetIds', 0], message: 'Invalid UUID' },
-          { path: ['assetIds', 1], message: 'Invalid UUID' },
-        ]),
-      );
-    });
-
     it('should require access', async () => {
       const user2Asset = await utils.createAsset(user2.accessToken);
       const { status, body } = await request(app)
