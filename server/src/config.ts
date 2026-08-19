@@ -4,6 +4,7 @@ import {
   AudioCodec,
   Colorspace,
   CQMode,
+  HdrFormat,
   HlsVideoResolution,
   ImageFormat,
   LogLevel,
@@ -31,6 +32,7 @@ export type SystemConfig = {
     preset: string;
     targetVideoCodec: VideoCodec;
     acceptedVideoCodecs: VideoCodec[];
+    acceptedHdrFormats: HdrFormat[];
     targetAudioCodec: AudioCodec;
     acceptedAudioCodecs: AudioCodec[];
     acceptedContainers: VideoContainer[];
@@ -232,6 +234,7 @@ export const defaults = Object.freeze<SystemConfig>({
     preset: 'ultrafast',
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
+    acceptedHdrFormats: [],
     targetAudioCodec: AudioCodec.Aac,
     acceptedAudioCodecs: [AudioCodec.Aac, AudioCodec.Mp3, AudioCodec.Opus],
     acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],

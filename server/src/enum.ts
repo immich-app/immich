@@ -462,6 +462,14 @@ export const TranscodePolicySchema = z
   .describe('Transcode policy')
   .meta({ id: 'TranscodePolicy' });
 
+export enum HdrFormat {
+  Hdr10 = 'hdr10',
+  Hlg = 'hlg',
+  DolbyVision = 'dolby-vision',
+}
+
+export const HdrFormatSchema = z.enum(HdrFormat).describe('HDR format').meta({ id: 'HdrFormat' });
+
 export enum TranscodeTarget {
   None = 'NONE',
   Audio = 'AUDIO',

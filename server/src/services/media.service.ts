@@ -12,6 +12,8 @@ import {
   AssetVisibility,
   AudioCodec,
   Colorspace,
+  ColorTransfer,
+  HdrFormat,
   ImageFormat,
   ImmichWorker,
   JobName,
@@ -679,7 +681,11 @@ export class MediaService extends BaseService {
     const isLargerThanTargetBitrate = maxBitrate > 0 && stream.bitrate > maxBitrate;
 
     const isTargetVideoCodec = ffmpegConfig.acceptedVideoCodecs.includes(stream.codecName as VideoCodec);
-    const isRequired = !isTargetVideoCodec || !stream.pixelFormat.endsWith('420p');
+    const hdrFormat = this.getHdrFormat(stream);
+    const isAcceptedPixelFormat = hdrFormat
+      ? (ffmpegConfig.acceptedHdrFormats?.includes(hdrFormat) ?? false)
+      : stream.pixelFormat.endsWith('420p');
+    const isRequired = !isTargetVideoCodec || !isAcceptedPixelFormat;
 
     switch (ffmpegConfig.transcode) {
       case TranscodePolicy.Disabled: {
@@ -699,6 +705,24 @@ export class MediaService extends BaseService {
       }
       default: {
         throw new Error(`Unsupported transcode policy: ${ffmpegConfig.transcode}`);
+      }
+    }
+  }
+
+  private getHdrFormat(stream: VideoStreamInfo): HdrFormat | null {
+    if (stream.dvProfile !== null) {
+      return HdrFormat.DolbyVision;
+    }
+
+    switch (stream.colorTransfer) {
+      case ColorTransfer.Smpte2084: {
+        return HdrFormat.Hdr10;
+      }
+      case ColorTransfer.AribStdB67: {
+        return HdrFormat.Hlg;
+      }
+      default: {
+        return null;
       }
     }
   }

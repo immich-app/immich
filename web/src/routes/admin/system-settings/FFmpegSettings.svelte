@@ -12,6 +12,7 @@
   import {
     AudioCodec,
     CQMode,
+    HdrFormat,
     HlsVideoResolution,
     ToneMapping,
     TranscodeHWAccel,
@@ -135,6 +136,23 @@
               isEdited={!isEqual(
                 sortBy(configToEdit.ffmpeg.acceptedContainers),
                 sortBy(config.ffmpeg.acceptedContainers),
+              )}
+            />
+
+            <SettingCheckboxes
+              label={$t('admin.transcoding_accepted_hdr_formats')}
+              {disabled}
+              desc={$t('admin.transcoding_accepted_hdr_formats_description')}
+              bind:value={configToEdit.ffmpeg.acceptedHdrFormats}
+              name="hdrFormats"
+              options={[
+                { value: HdrFormat.Hdr10, text: 'HDR10 / HDR10+' },
+                { value: HdrFormat.Hlg, text: 'HLG' },
+                { value: HdrFormat.DolbyVision, text: 'Dolby Vision' },
+              ]}
+              isEdited={!isEqual(
+                sortBy(configToEdit.ffmpeg.acceptedHdrFormats),
+                sortBy(config.ffmpeg.acceptedHdrFormats),
               )}
             />
           </div>

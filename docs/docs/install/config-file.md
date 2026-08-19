@@ -33,6 +33,7 @@ The default configuration looks like this:
     "accelDecode": true,
     "acceptedAudioCodecs": ["aac", "mp3", "opus"],
     "acceptedContainers": ["mov", "ogg", "webm"],
+    "acceptedHdrFormats": [],
     "acceptedVideoCodecs": ["h264"],
     "bframes": -1,
     "cqMode": "auto",

@@ -2315,6 +2315,8 @@ export type SystemConfigFFmpegDto = {
     acceptedAudioCodecs: AudioCodec[];
     /** Accepted containers */
     acceptedContainers: VideoContainer[];
+    /** Accepted HDR formats */
+    acceptedHdrFormats: HdrFormat[];
     /** Accepted video codecs */
     acceptedVideoCodecs: VideoCodec[];
     /** B-frames */
@@ -7687,6 +7689,11 @@ export enum VideoContainer {
     Mp4 = "mp4",
     Ogg = "ogg",
     Webm = "webm"
+}
+export enum HdrFormat {
+    Hdr10 = "hdr10",
+    Hlg = "hlg",
+    DolbyVision = "dolby-vision"
 }
 export enum VideoCodec {
     H264 = "h264",

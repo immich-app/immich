@@ -264,11 +264,16 @@ Videos are never transcoded. This saves space and resources on the server, but m
 
 Video streams are transcoded when any of the following conditions are met:
 
-- The video is HDR.
-- The video is not in the yuv420p pixel format.
+- The video is HDR and its format is not in `acceptedHdrFormats`.
+- The video is SDR and is not in the yuv420p pixel format.
 - The video codec is not in `acceptedVideoCodecs`.
 
 Audio is transcoded if the audio codec is not in `acceptedAudioCodecs`.
+
+`acceptedHdrFormats` is empty by default for broad playback compatibility. HDR10 (including HDR10+), HLG, and Dolby
+Vision can be accepted independently. Dolby Vision is classified separately even when its base layer is compatible
+with HDR10 or HLG. Only accept formats supported by every playback client. Other policy conditions, such as target
+resolution or maximum bitrate, can still require transcoding.
 
 #### Videos higher than max bitrate or not in an accepted format (`bitrate`) {#ffmpeg.transcode-bitrate}
 

@@ -12,6 +12,7 @@ import {
   AudioCodec,
   Colorspace,
   ExifOrientation,
+  HdrFormat,
   ImageFormat,
   JobName,
   JobStatus,
@@ -19,6 +20,7 @@ import {
   TranscodeHardwareAcceleration,
   TranscodePolicy,
   VideoCodec,
+  VideoContainer,
 } from 'src/enum';
 import { MediaService } from 'src/services/media.service';
 import { AudioStreamInfo, JobCounts, RawImageInfo, VideoFormat, VideoStreamInfo } from 'src/types';
@@ -3719,9 +3721,11 @@ describe(MediaService.name, () => {
       );
     });
 
-    it('should tonemap when policy is required and video is hdr', async () => {
+    it('should tonemap when policy is required and no HDR formats are accepted', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStreamHDR });
-      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Required } });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: { transcode: TranscodePolicy.Required, acceptedHdrFormats: [] },
+      });
       await sut.handleVideoConversion({ id: 'video-id' });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',
@@ -3739,6 +3743,87 @@ describe(MediaService.name, () => {
           twoPass: false,
         }),
       );
+    });
+
+    it.each([
+      { format: HdrFormat.Hdr10, name: 'HDR10', video: probeStub.videoStreamHDR },
+      { format: HdrFormat.Hlg, name: 'HLG', video: probeStub.videoStreamHlg },
+      { format: HdrFormat.DolbyVision, name: 'Dolby Vision', video: probeStub.videoStreamDolbyVision },
+    ])('should skip accepted $name video', async ({ format, video }) => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...video, audioStream: null });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          transcode: TranscodePolicy.Required,
+          acceptedHdrFormats: [format],
+          acceptedVideoCodecs: [VideoCodec.H264, VideoCodec.Hevc],
+          acceptedContainers: [VideoContainer.Mov],
+        },
+      });
+
+      await expect(sut.handleVideoConversion({ id: 'video-id' })).resolves.toBe(JobStatus.Skipped);
+
+      expect(mocks.media.transcode).not.toHaveBeenCalled();
+    });
+
+    it('should transcode accepted HDR video when its codec is not accepted', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({
+        ...asset,
+        ...probeStub.videoStreamHlg,
+        audioStream: null,
+      });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          transcode: TranscodePolicy.Required,
+          acceptedHdrFormats: [HdrFormat.Hlg],
+          acceptedVideoCodecs: [VideoCodec.H264],
+          acceptedContainers: [VideoContainer.Mov],
+        },
+      });
+
+      await expect(sut.handleVideoConversion({ id: 'video-id' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.media.transcode).toHaveBeenCalled();
+    });
+
+    it('should transcode accepted HDR video above the optimal target resolution', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({
+        ...asset,
+        ...probeStub.videoStreamHDR10,
+        audioStream: null,
+      });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          transcode: TranscodePolicy.Optimal,
+          targetResolution: '1080',
+          acceptedHdrFormats: [HdrFormat.Hdr10],
+          acceptedVideoCodecs: [VideoCodec.Hevc],
+          acceptedContainers: [VideoContainer.Mov],
+        },
+      });
+
+      await expect(sut.handleVideoConversion({ id: 'video-id' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.media.transcode).toHaveBeenCalled();
+    });
+
+    it('should transcode Dolby Vision when only HLG is accepted', async () => {
+      mocks.assetJob.getForVideoConversion.mockResolvedValue({
+        ...asset,
+        ...probeStub.videoStreamDolbyVision,
+        audioStream: null,
+      });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          transcode: TranscodePolicy.Required,
+          acceptedHdrFormats: [HdrFormat.Hlg],
+          acceptedVideoCodecs: [VideoCodec.Hevc],
+          acceptedContainers: [VideoContainer.Mov],
+        },
+      });
+
+      await expect(sut.handleVideoConversion({ id: 'video-id' })).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.media.transcode).toHaveBeenCalled();
     });
 
     it('should tonemap when policy is optimal and video is hdr', async () => {
@@ -3765,7 +3850,12 @@ describe(MediaService.name, () => {
 
     it('should transcode when policy is required and video is not yuv420p', async () => {
       mocks.assetJob.getForVideoConversion.mockResolvedValue({ ...asset, ...probeStub.videoStream10Bit });
-      mocks.systemMetadata.get.mockResolvedValue({ ffmpeg: { transcode: TranscodePolicy.Required } });
+      mocks.systemMetadata.get.mockResolvedValue({
+        ffmpeg: {
+          transcode: TranscodePolicy.Required,
+          acceptedHdrFormats: [HdrFormat.Hdr10, HdrFormat.Hlg, HdrFormat.DolbyVision],
+        },
+      });
       await sut.handleVideoConversion({ id: 'video-id' });
       expect(mocks.media.transcode).toHaveBeenCalledWith(
         '/original/path.ext',

@@ -62,6 +62,7 @@ const updatedConfig = Object.freeze<SystemConfig>({
     targetResolution: '720',
     targetVideoCodec: VideoCodec.H264,
     acceptedVideoCodecs: [VideoCodec.H264],
+    acceptedHdrFormats: [],
     acceptedContainers: [VideoContainer.Mov, VideoContainer.Ogg, VideoContainer.Webm],
     maxBitrate: '0',
     bframes: -1,

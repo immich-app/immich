@@ -19329,6 +19329,15 @@
         },
         "type": "object"
       },
+      "HdrFormat": {
+        "description": "HDR format",
+        "enum": [
+          "hdr10",
+          "hlg",
+          "dolby-vision"
+        ],
+        "type": "string"
+      },
       "HlsVideoResolution": {
         "description": "HLS video resolution",
         "enum": [
@@ -25865,6 +25874,13 @@
             },
             "type": "array"
           },
+          "acceptedHdrFormats": {
+            "description": "Accepted HDR formats",
+            "items": {
+              "$ref": "#/components/schemas/HdrFormat"
+            },
+            "type": "array"
+          },
           "acceptedVideoCodecs": {
             "description": "Accepted video codecs",
             "items": {
@@ -25950,6 +25966,7 @@
           "accelDecode",
           "acceptedAudioCodecs",
           "acceptedContainers",
+          "acceptedHdrFormats",
           "acceptedVideoCodecs",
           "bframes",
           "cqMode",

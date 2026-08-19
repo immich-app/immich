@@ -213,6 +213,20 @@ export const videoInfoStub = {
       },
     ],
   }),
+  videoStreamHlg: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [
+      {
+        ...probeStubDefaultVideoStream[0],
+        codecName: 'hevc',
+        profile: HevcProfile.Main10,
+        pixelFormat: 'yuv420p10le',
+        colorPrimaries: ColorPrimaries.Bt2020,
+        colorMatrix: ColorMatrix.Bt2020Nc,
+        colorTransfer: ColorTransfer.AribStdB67,
+      },
+    ],
+  }),
   videoStream10Bit: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     videoStreams: [
