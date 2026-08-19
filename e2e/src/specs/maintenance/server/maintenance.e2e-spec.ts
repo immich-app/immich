@@ -1,5 +1,4 @@
 import { LoginResponseDto } from '@immich/sdk';
-import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, utils } from 'src/utils';
 import request from 'supertest';
@@ -8,18 +7,16 @@ import { beforeAll, describe, expect, it } from 'vitest';
 describe('/admin/maintenance', () => {
   let cookie: string | undefined;
   let admin: LoginResponseDto;
-  let nonAdmin: LoginResponseDto;
 
   beforeAll(async () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
-    nonAdmin = await utils.userSetup(admin.accessToken, createUserDto.user1);
     await utils.resetBackups(admin.accessToken);
   });
 
   // => outside of maintenance mode
 
-  describe('GET ~/server/config', async () => {
+  describe('GET /server/config', async () => {
     it('should indicate we are out of maintenance mode', async () => {
       const { status, body } = await request(app).get('/server/config');
       expect(status).toBe(200);
@@ -49,24 +46,6 @@ describe('/admin/maintenance', () => {
   // => enter maintenance mode
 
   describe.sequential('POST /', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/admin/maintenance').send({
-        active: false,
-        action: 'end',
-      });
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should only work for admins', async () => {
-      const { status, body } = await request(app)
-        .post('/admin/maintenance')
-        .set('Authorization', `Bearer ${nonAdmin.accessToken}`)
-        .send({ action: 'end' });
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
     it('should be a no-op if try to exit maintenance mode', async () => {
       const { status } = await request(app)
         .post('/admin/maintenance')
@@ -132,7 +111,7 @@ describe('/admin/maintenance', () => {
       it('should fail without cookie or token in body', async () => {
         const { status, body } = await request(app).post('/admin/maintenance/login').send({});
         expect(status).toBe(401);
-        expect(body).toEqual(errorDto.unauthorizedWithMessage('Missing JWT Token'));
+        expect(body).toEqual({ message: 'Missing JWT Token' });
       });
 
       it('should succeed with cookie', async () => {

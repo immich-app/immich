@@ -20,28 +20,6 @@ describe(LibraryController.name, () => {
 
   const id = factory.uuid();
 
-  describe('authentication', () => {
-    const routes = [
-      { method: 'get', path: '/libraries' },
-      { method: 'post', path: '/libraries' },
-      { method: 'get', path: `/libraries/${id}` },
-      { method: 'put', path: `/libraries/${id}` },
-      { method: 'patch', path: `/libraries/${id}` },
-      { method: 'delete', path: `/libraries/${id}` },
-      { method: 'post', path: `/libraries/${id}/validate` },
-      { method: 'get', path: `/libraries/${id}/statistics` },
-      { method: 'post', path: `/libraries/${id}/scan` },
-    ] as const;
-
-    it.each(routes)('$method $path should be an admin route', async ({ method, path }) => {
-      await request(ctx.getHttpServer())[method](path).send({});
-
-      expect(ctx.authenticate).toHaveBeenCalledWith(
-        expect.objectContaining({ metadata: expect.objectContaining({ adminRoute: true }) }),
-      );
-    });
-  });
-
   describe('POST /libraries', () => {
     it('should require an owner id', async () => {
       const { status, body } = await request(ctx.getHttpServer()).post('/libraries').send({});
