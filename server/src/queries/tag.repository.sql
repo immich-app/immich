@@ -61,12 +61,14 @@ order by
   "value"
 
 -- TagRepository.create
+begin
 insert into
   "tag" ("userId", "color", "value")
 values
   ($1, $2, $3)
 returning
   *
+rollback
 
 -- TagRepository.update
 update "tag"

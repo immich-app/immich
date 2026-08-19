@@ -70,13 +70,8 @@ export class TagRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
-  delete(id: string) {
-    // If a tag is deleted and has nested/child tags, delete those as well
-    return this.db
-      .with('descendants', (db) => db.selectFrom('tag_closure').select('id_descendant').where('id_ancestor', '=', id))
-      .deleteFrom('tag')
-      .where('id', 'in', (db) => db.selectFrom('descendants').select('id_descendant'))
-      .execute();
+  async delete(id: string) {
+    await this.db.deleteFrom('tag').where('id', '=', id).execute();
   }
 
   @ChunkedSet({ paramIndex: 1 })
