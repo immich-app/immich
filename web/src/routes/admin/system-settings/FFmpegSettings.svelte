@@ -143,7 +143,10 @@
               label={$t('admin.transcoding_accepted_hdr_formats')}
               {disabled}
               desc={$t('admin.transcoding_accepted_hdr_formats_description')}
-              bind:value={configToEdit.ffmpeg.acceptedHdrFormats}
+              bind:value={
+                () => configToEdit.ffmpeg.acceptedHdrFormats ?? [],
+                (value) => (configToEdit.ffmpeg.acceptedHdrFormats = value)
+              }
               name="hdrFormats"
               options={[
                 { value: HdrFormat.Hdr10, text: 'HDR10 / HDR10+' },
@@ -151,8 +154,8 @@
                 { value: HdrFormat.DolbyVision, text: 'Dolby Vision' },
               ]}
               isEdited={!isEqual(
-                sortBy(configToEdit.ffmpeg.acceptedHdrFormats),
-                sortBy(config.ffmpeg.acceptedHdrFormats),
+                sortBy(configToEdit.ffmpeg.acceptedHdrFormats ?? []),
+                sortBy(config.ffmpeg.acceptedHdrFormats ?? []),
               )}
             />
           </div>

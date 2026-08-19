@@ -103,7 +103,7 @@ const SystemConfigFFmpegSchema = z
     preset: z.string().describe('Preset'),
     targetVideoCodec: VideoCodecSchema,
     acceptedVideoCodecs: z.array(VideoCodecSchema).describe('Accepted video codecs'),
-    acceptedHdrFormats: z.array(HdrFormatSchema).describe('Accepted HDR formats'),
+    acceptedHdrFormats: z.array(HdrFormatSchema).default([]).describe('Accepted HDR formats'),
     targetAudioCodec: AudioCodecSchema,
     acceptedAudioCodecs: z.array(AudioCodecSchema).describe('Accepted audio codecs'),
     acceptedContainers: z.array(VideoContainerSchema).describe('Accepted containers'),

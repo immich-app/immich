@@ -2316,7 +2316,7 @@ export type SystemConfigFFmpegDto = {
     /** Accepted containers */
     acceptedContainers: VideoContainer[];
     /** Accepted HDR formats */
-    acceptedHdrFormats: HdrFormat[];
+    acceptedHdrFormats?: HdrFormat[];
     /** Accepted video codecs */
     acceptedVideoCodecs: VideoCodec[];
     /** B-frames */

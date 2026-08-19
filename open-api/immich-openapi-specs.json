@@ -25875,6 +25875,7 @@
             "type": "array"
           },
           "acceptedHdrFormats": {
+            "default": [],
             "description": "Accepted HDR formats",
             "items": {
               "$ref": "#/components/schemas/HdrFormat"
@@ -25966,7 +25967,6 @@
           "accelDecode",
           "acceptedAudioCodecs",
           "acceptedContainers",
-          "acceptedHdrFormats",
           "acceptedVideoCodecs",
           "bframes",
           "cqMode",
