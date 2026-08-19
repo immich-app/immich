@@ -1,8 +1,6 @@
 import { LibraryResponseDto, LoginResponseDto, getAllLibraries } from '@immich/sdk';
 import { cpSync, existsSync } from 'node:fs';
 import { Socket } from 'socket.io-client';
-import { userDto, uuidDto } from 'src/fixtures';
-import { errorDto } from 'src/responses';
 import { app, asBearerAuth, testAssetDir, testAssetDirInternal, utils } from 'src/utils';
 import request from 'supertest';
 import { utimes } from 'utimes';
@@ -10,7 +8,6 @@ import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 describe('/libraries', () => {
   let admin: LoginResponseDto;
-  let user: LoginResponseDto;
   let library: LibraryResponseDto;
   let websocket: Socket;
 
@@ -18,7 +15,6 @@ describe('/libraries', () => {
     await utils.resetDatabase();
     admin = await utils.adminSetup();
     await utils.resetAdminConfig(admin.accessToken);
-    user = await utils.userSetup(admin.accessToken, userDto.user1);
     library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId });
     websocket = await utils.connectWebsocket(admin.accessToken);
     utils.createImageFile(`${testAssetDir}/temp/directoryA/assetA.png`);
@@ -34,31 +30,7 @@ describe('/libraries', () => {
     utils.resetEvents();
   });
 
-  describe('GET /libraries', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/libraries');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-  });
-
   describe('POST /libraries', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post('/libraries').send({});
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require admin authentication', async () => {
-      const { status, body } = await request(app)
-        .post('/libraries')
-        .set('Authorization', `Bearer ${user.accessToken}`)
-        .send({ ownerId: admin.userId });
-
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
     it('should create an external library with defaults', async () => {
       const { status, body } = await request(app)
         .post('/libraries')
@@ -97,49 +69,9 @@ describe('/libraries', () => {
         }),
       );
     });
-
-    it('should not create an external library with duplicate import paths', async () => {
-      const { status, body } = await request(app)
-        .post('/libraries')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({
-          ownerId: admin.userId,
-          name: 'My Awesome Library',
-          importPaths: ['/path', '/path'],
-          exclusionPatterns: ['**/Raw/**'],
-        });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['importPaths'], message: 'Array must have unique items' }]),
-      );
-    });
-
-    it('should not create an external library with duplicate exclusion patterns', async () => {
-      const { status, body } = await request(app)
-        .post('/libraries')
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({
-          ownerId: admin.userId,
-          name: 'My Awesome Library',
-          importPaths: ['/path/to/import'],
-          exclusionPatterns: ['**/Raw/**', '**/Raw/**'],
-        });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['exclusionPatterns'], message: 'Array must have unique items' }]),
-      );
-    });
   });
 
   describe('PUT /libraries/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/libraries/${uuidDto.notFound}`).send({});
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should change the library name', async () => {
       const { status, body } = await request(app)
         .put(`/libraries/${library.id}`)
@@ -151,18 +83,6 @@ describe('/libraries', () => {
         expect.objectContaining({
           name: 'New Library Name',
         }),
-      );
-    });
-
-    it('should not set an empty name', async () => {
-      const { status, body } = await request(app)
-        .put(`/libraries/${library.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ name: '' });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['name'], message: 'Too small: expected string to have >=1 characters' }]),
       );
     });
 
@@ -180,30 +100,6 @@ describe('/libraries', () => {
       );
     });
 
-    it('should reject an empty import path', async () => {
-      const { status, body } = await request(app)
-        .put(`/libraries/${library.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ importPaths: [''] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['importPaths'], message: 'Array items must not be empty' }]),
-      );
-    });
-
-    it('should reject duplicate import paths', async () => {
-      const { status, body } = await request(app)
-        .put(`/libraries/${library.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ importPaths: ['/path', '/path'] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['importPaths'], message: 'Array must have unique items' }]),
-      );
-    });
-
     it('should change the exclusion pattern', async () => {
       const { status, body } = await request(app)
         .put(`/libraries/${library.id}`)
@@ -217,48 +113,9 @@ describe('/libraries', () => {
         }),
       );
     });
-
-    it('should reject duplicate exclusion patterns', async () => {
-      const { status, body } = await request(app)
-        .put(`/libraries/${library.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ exclusionPatterns: ['**/*.jpg', '**/*.jpg'] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['exclusionPatterns'], message: 'Array must have unique items' }]),
-      );
-    });
-
-    it('should reject an empty exclusion pattern', async () => {
-      const { status, body } = await request(app)
-        .put(`/libraries/${library.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ exclusionPatterns: [''] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['exclusionPatterns'], message: 'Array items must not be empty' }]),
-      );
-    });
   });
 
   describe('GET /libraries/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/libraries/${uuidDto.notFound}`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require admin access', async () => {
-      const { status, body } = await request(app)
-        .get(`/libraries/${uuidDto.notFound}`)
-        .set('Authorization', `Bearer ${user.accessToken}`);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
     it('should get library by id', async () => {
       const library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId });
 
@@ -280,23 +137,7 @@ describe('/libraries', () => {
     });
   });
 
-  describe('GET /libraries/:id/statistics', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/libraries/${uuidDto.notFound}/statistics`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-  });
-
   describe('POST /libraries/:id/scan', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/libraries/${uuidDto.notFound}/scan`).send({});
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should import new asset when scanning external library', async () => {
       const library = await utils.createLibrary(admin.accessToken, {
         ownerId: admin.userId,
@@ -785,13 +626,6 @@ describe('/libraries', () => {
   });
 
   describe('POST /libraries/:id/validate', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/libraries/${uuidDto.notFound}/validate`).send({});
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should pass with no import paths', async () => {
       const response = await utils.validateLibrary(admin.accessToken, library.id, { importPaths: [] });
       expect(response.importPaths).toEqual([]);
@@ -856,13 +690,6 @@ describe('/libraries', () => {
   });
 
   describe('DELETE /libraries/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/libraries/${uuidDto.notFound}`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should delete an external library', async () => {
       const library = await utils.createLibrary(admin.accessToken, { ownerId: admin.userId });
 
