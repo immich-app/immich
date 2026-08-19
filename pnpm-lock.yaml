@@ -11,8 +11,6 @@ overrides:
 
 packageExtensionsChecksum: sha256-W6pFzyf+6QXnV91iA6oob0OGVkergPXDN1afLgoF53k=
 
-pnpmfileChecksum: sha256-un98do36L0wZyqsjcLozQ3YUadCAn2yz5bXcBbOuyDA=
-
 importers:
 
   .:
@@ -407,8 +405,8 @@ importers:
         specifier: workspace:*
         version: link:../packages/plugin-sdk
       '@immich/sql-tools':
-        specifier: ^0.5.1
-        version: 0.5.2
+        specifier: ^0.6.0
+        version: 0.6.0
       '@nestjs/bullmq':
         specifier: ^11.0.1
         version: 11.0.5(@nestjs/common@11.1.29(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.1.29)(bullmq@5.81.3(supports-color@8.1.1))
@@ -545,11 +543,11 @@ importers:
         specifier: ^9.0.2
         version: 9.0.3
       kysely:
-        specifier: 0.28.17
-        version: 0.28.17
+        specifier: 0.29.5
+        version: 0.29.5
       kysely-postgres-js:
         specifier: ^3.0.0
-        version: 3.0.0(kysely@0.28.17)(postgres@3.4.9)
+        version: 3.0.0(kysely@0.29.5)(postgres@3.4.9)
       lodash:
         specifier: ^4.17.21
         version: 4.18.1
@@ -570,7 +568,7 @@ importers:
         version: 6.2.1(@nestjs/common@11.1.29(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.1.29)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       nestjs-kysely:
         specifier: 3.1.2
-        version: 3.1.2(@nestjs/common@11.1.29(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.1.29)(kysely@0.28.17)(reflect-metadata@0.2.2)
+        version: 3.1.2(@nestjs/common@11.1.29(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.1.29)(kysely@0.29.5)(reflect-metadata@0.2.2)
       nestjs-otel:
         specifier: ^8.0.0
         version: 8.1.0(@nestjs/common@11.1.29(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.1.29)(rxjs@7.8.2)
@@ -3112,8 +3110,8 @@ packages:
   '@immich/justified-layout-wasm@0.4.3':
     resolution: {integrity: sha512-fpcQ7zPhP3Cp1bEXhONVYSUeIANa2uzaQFGKufUZQo5FO7aFT77szTVChhlCy4XaVy5R4ZvgSkA/1TJmeORz7Q==}
 
-  '@immich/sql-tools@0.5.2':
-    resolution: {integrity: sha512-O1SJ+BbeFVsUTF4af1MfagJZM+lPgLjI8lQ3SZNjpo8SGJReSbUl2ii03OKuGni/G0yp2GnRLpOTNSHYGtVrcg==}
+  '@immich/sql-tools@0.6.0':
+    resolution: {integrity: sha512-PTXGB7iD1iWgBF3YvJWIdLT7/X13wC6gV6A4V7Cy1eko2eE+VX7JlSWaSm11/t9BVkazNag58NO87wQwCsPN3g==}
     hasBin: true
 
   '@immich/ui@0.85.0':
@@ -6594,10 +6592,6 @@ packages:
     resolution: {integrity: sha512-/rFeCpNJQbhSZjGVwO9RFV3xPqbnERS8MmIQzCtD/zl6gpJuV/bMLuN92oG3F7d8oDEHHRrujSXNUr8fpjntKw==}
     engines: {node: '>=18'}
 
-  commander@14.0.3:
-    resolution: {integrity: sha512-H+y0Jo/T1RZ9qPP4Eh1pkcQcLRglraJaSLoyOtHxu6AapkjWVCy2Sit1QQ4x3Dng8qDlSsZEet7g5Pq06MvTgw==}
-    engines: {node: '>=20'}
-
   commander@15.0.0:
     resolution: {integrity: sha512-z67u4ZhzCL/Tydu1lJARtEZYWbWaN7oYLHbsuzocr6y4N6WZAagG3RQ4FW61V1/0+jImpj293XfrcYnd1qxtPg==}
     engines: {node: '>=22.12.0'}
@@ -8920,9 +8914,9 @@ packages:
       postgres:
         optional: true
 
-  kysely@0.28.17:
-    resolution: {integrity: sha512-nbD8lB9EB3wNdMhOCdx5Li8DxnLbvKByylRLcJ1h+4SkrowVeECAyZlyiKMThF7xFdRz0jSQ2MoJr+wXux2y0Q==}
-    engines: {node: '>=20.0.0'}
+  kysely@0.29.5:
+    resolution: {integrity: sha512-ooa+eSbBNPTo3MycPEuW5jdrxQdQwdtB3LC3h43FiXQbIry5tR0C5lDG7eealK0E4D7XjrnOP5DIUg/LyjRMYQ==}
+    engines: {node: '>=22.0.0'}
 
   latest-version@7.0.0:
     resolution: {integrity: sha512-KvNT4XqAMzdcL6ka6Tl3i2lYeFDgXNCuIX+xNx6ZMVR1dFq+idXd9FLKNMOIx0t9mJ9/HudyX4oZWXZQ0UJHeg==}
@@ -15901,12 +15895,12 @@ snapshots:
 
   '@immich/justified-layout-wasm@0.4.3': {}
 
-  '@immich/sql-tools@0.5.2':
+  '@immich/sql-tools@0.6.0':
     dependencies:
-      commander: 14.0.3
+      commander: 15.0.0
       graph-data-structure: 4.5.0
-      kysely: 0.28.17
-      kysely-postgres-js: 3.0.0(kysely@0.28.17)(postgres@3.4.9)
+      kysely: 0.29.5
+      kysely-postgres-js: 3.0.0(kysely@0.29.5)(postgres@3.4.9)
       pg-connection-string: 2.14.0
       postgres: 3.4.9
 
@@ -19513,8 +19507,6 @@ snapshots:
 
   commander@13.1.0: {}
 
-  commander@14.0.3: {}
-
   commander@15.0.0: {}
 
   commander@2.20.3: {}
@@ -20844,18 +20836,19 @@ snapshots:
   exiftool-vendored.exe@13.59.0:
     optional: true
 
-  exiftool-vendored.pl@13.59.0: {}
+  exiftool-vendored.pl@13.59.0:
+    optional: true
 
   exiftool-vendored@35.21.0:
     dependencies:
       '@photostructure/tz-lookup': 11.5.0
       '@types/luxon': 3.7.4
       batch-cluster: 17.3.1
-      exiftool-vendored.pl: 13.59.0
       he: 1.2.0
       luxon: 3.7.2
     optionalDependencies:
       exiftool-vendored.exe: 13.59.0
+      exiftool-vendored.pl: 13.59.0
 
   expand-template@2.0.3:
     optional: true
@@ -22256,13 +22249,13 @@ snapshots:
       type-is: 2.1.0
       vary: 1.1.2
 
-  kysely-postgres-js@3.0.0(kysely@0.28.17)(postgres@3.4.9):
+  kysely-postgres-js@3.0.0(kysely@0.29.5)(postgres@3.4.9):
     dependencies:
-      kysely: 0.28.17
+      kysely: 0.29.5
     optionalDependencies:
       postgres: 3.4.9
 
-  kysely@0.28.17: {}
+  kysely@0.29.5: {}
 
   latest-version@7.0.0:
     dependencies:
@@ -23346,11 +23339,11 @@ snapshots:
       reflect-metadata: 0.2.2
       rxjs: 7.8.2
 
-  nestjs-kysely@3.1.2(@nestjs/common@11.1.29(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.1.29)(kysely@0.28.17)(reflect-metadata@0.2.2):
+  nestjs-kysely@3.1.2(@nestjs/common@11.1.29(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.1.29)(kysely@0.29.5)(reflect-metadata@0.2.2):
     dependencies:
       '@nestjs/common': 11.1.29(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1)
       '@nestjs/core': 11.1.29(@nestjs/common@11.1.29(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/platform-express@11.1.29)(@nestjs/websockets@11.1.29)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      kysely: 0.28.17
+      kysely: 0.29.5
       reflect-metadata: 0.2.2
       tslib: 2.8.1
 
