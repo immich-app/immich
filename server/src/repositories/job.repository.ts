@@ -287,9 +287,7 @@ export class JobRepository {
     return this.moduleRef.get<Queue>(getQueueToken(queue), { strict: false });
   }
 
-  /**
-  @deprecated
-  */
+  /** @deprecated */
   // todo: remove this when asset notifications no longer need it.
   public async removeJob(name: JobName, jobID: string): Promise<void> {
     const existingJob = await this.getQueue(this.getQueueName(name)).getJob(jobID);

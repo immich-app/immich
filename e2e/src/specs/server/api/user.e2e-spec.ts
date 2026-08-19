@@ -29,9 +29,7 @@ describe('/users', () => {
   });
 
   describe('PUT /users/me', () => {
-    /**
-    @deprecated
-    */
+    /** @deprecated */
     it('should allow a user to change their password (deprecated)', async () => {
       const user = await getMyUser({ headers: asBearerAuth(nonAdmin.accessToken) });
 

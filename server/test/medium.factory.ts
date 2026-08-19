@@ -22,6 +22,7 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -443,6 +444,7 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case AlbumRepository:
     case AlbumUserRepository:
     case ActivityRepository:
+    case ApiKeyRepository:
     case AssetRepository:
     case AssetEditRepository:
     case AssetJobRepository:

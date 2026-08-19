@@ -105,33 +105,19 @@ export interface AudioStreamInfo {
   bitrate: number;
 }
 
-/**
-Packet-derived video data needed for accurate HLS playlists.
-*/
+/** Packet-derived video data needed for accurate HLS playlists. */
 export interface VideoPacketInfo {
-  /**
-  Sum of source packet duration across all packets (includes discard).
-  */
+  /** Sum of source packet duration across all packets (includes discard). */
   totalDuration: number;
-  /**
-  Post-discard packet count.
-  */
+  /** Post-discard packet count. */
   packetCount: number;
-  /**
-  Output CFR frame count at `packetCount / format.duration`.
-  */
+  /** Output CFR frame count at `packetCount / format.duration`. */
   outputFrames: number;
-  /**
-  All keyframe PTS in source ticks, including pre-roll discard keyframes.
-  */
+  /** All keyframe PTS in source ticks, including pre-roll discard keyframes. */
   keyframePts: number[];
-  /**
-  Cumulative packet duration through each keyframe, inclusive.
-  */
+  /** Cumulative packet duration through each keyframe, inclusive. */
   keyframeAccDuration: number[];
-  /**
-  Each keyframe's own packet duration (needed for VFR).
-  */
+  /** Each keyframe's own packet duration (needed for VFR). */
   keyframeOwnDuration: number[];
 }
 
@@ -224,9 +210,7 @@ export interface IBaseJob {
 }
 
 export interface IDelayedJob extends IBaseJob {
-  /**
-  The minimum time to wait to execute this job, in milliseconds.
-  */
+  /** The minimum time to wait to execute this job, in milliseconds. */
   delay?: number;
 }
 
@@ -468,9 +452,7 @@ export interface ExtensionVersion {
 
 export interface ImmichFile extends Express.Multer.File {
   uuid: string;
-  /**
-  sha1 hash of file
-  */
+  /** sha1 hash of file */
   checksum: Buffer;
 }
 
@@ -540,9 +522,7 @@ export type SystemFlags = { mountChecks: Record<StorageFolder, boolean> };
 export type MaintenanceModeState =
   { isMaintenanceMode: true; secret: string; action?: SetMaintenanceModeDto } | { isMaintenanceMode: false };
 export type MemoriesState = {
-  /**
-  memories have already been created through this date
-  */
+  /** memories have already been created through this date */
   lastOnThisDayDate: string;
 };
 export type MediaLocation = { location: string };
