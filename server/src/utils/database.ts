@@ -468,7 +468,15 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
         .where('asset_file.path', '=', options.encodedVideoPath!),
     )
     .$if(!!options.originalPath, (qb) =>
-      qb.where(sql`f_unaccent(asset."originalPath")`, 'ilike', sql`'%' || f_unaccent(${options.originalPath}) || '%'`),
+  tokenizeForSearch(options.originalPath!).reduce(
+    (query, token) =>
+      query.where(
+        sql`f_unaccent(asset."originalPath")`,
+        'ilike',
+          sql`'%' || f_unaccent(${token}) || '%'`,
+          ),
+        qb,
+      ),
     )
     .$if(!!options.originalFileName, (qb) =>
       qb.where(
