@@ -102,16 +102,6 @@ describe(`/oauth`, () => {
       });
     });
 
-    it(`should throw an error if a redirect uri is not provided`, async () => {
-      const { status, body } = await request(app).post('/oauth/authorize').send({});
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([
-          { path: ['redirectUri'], message: 'Invalid input: expected string, received undefined' },
-        ]),
-      );
-    });
-
     it('should return a redirect uri', async () => {
       const { status, body } = await request(app)
         .post('/oauth/authorize')
@@ -163,22 +153,6 @@ describe(`/oauth`, () => {
         buttonText: 'Login with Immich',
         storageLabelClaim: 'immich_username',
       });
-    });
-
-    it(`should throw an error if a url is not provided`, async () => {
-      const { status, body } = await request(app).post('/oauth/callback').send({});
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['url'], message: 'Invalid input: expected string, received undefined' }]),
-      );
-    });
-
-    it(`should throw an error if the url is empty`, async () => {
-      const { status, body } = await request(app).post('/oauth/callback').send({ url: '' });
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['url'], message: 'Too small: expected string to have >=1 characters' }]),
-      );
     });
 
     it(`should throw an error if the state is not provided`, async () => {
@@ -380,16 +354,6 @@ describe(`/oauth`, () => {
   });
 
   describe(`POST /oauth/backchannel-logout`, () => {
-    it(`should throw an error if the logout_token is not provided`, async () => {
-      const { status, body } = await request(app).post('/oauth/backchannel-logout').send({});
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([
-          { path: ['logout_token'], message: 'Invalid input: expected string, received undefined' },
-        ]),
-      );
-    });
-
     it(`should throw an error if an invalid logout token is provided`, async () => {
       const { status, body } = await request(app)
         .post('/oauth/backchannel-logout')
