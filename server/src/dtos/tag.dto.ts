@@ -5,7 +5,7 @@ import { asDateTimeString } from 'src/utils/date';
 import { hexColor } from 'src/validation';
 import z from 'zod';
 
-const TagCreateSchema = z
+export const TagCreateSchema = z
   .object({
     name: z
       .string()

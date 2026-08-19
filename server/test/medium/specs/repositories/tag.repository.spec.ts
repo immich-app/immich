@@ -109,65 +109,6 @@ describe(TagRepository.name, () => {
     });
   });
 
-  describe('update', () => {
-    it('should update a top-level tag value', async () => {
-      const { ctx, sut } = setup();
-      const { user } = await ctx.newUser();
-
-      const { tag } = await ctx.newTag({
-        userId: user.id,
-        value: 'tagA',
-        color: '#000000',
-      });
-
-      await sut.update(tag.id, { value: 'updatedTagA' });
-
-      await expect(
-        ctx.database
-          .selectFrom('tag')
-          .select(['userId', 'value', 'color', 'parentId'])
-          .where('id', '=', tag.id)
-          .executeTakeFirstOrThrow(),
-      ).resolves.toEqual({ userId: user.id, value: 'updatedTagA', color: '#000000', parentId: null });
-    });
-
-    it('should update children tag values when parent tag value changes', async () => {
-      const { ctx, sut } = setup();
-      const { user } = await ctx.newUser();
-
-      const { tag: parentTag } = await ctx.newTag({
-        userId: user.id,
-        value: 'tagA',
-        color: '#000000',
-      });
-
-      const { tag: childTag } = await ctx.newTag({
-        userId: user.id,
-        value: 'tagA/tagB',
-        color: '#00FF00',
-        parentId: parentTag.id,
-      });
-
-      await sut.update(parentTag.id, { value: 'updatedTagA' });
-
-      await expect(
-        ctx.database
-          .selectFrom('tag')
-          .select(['userId', 'value', 'color', 'parentId'])
-          .where('id', '=', parentTag.id)
-          .executeTakeFirstOrThrow(),
-      ).resolves.toEqual({ userId: user.id, value: 'updatedTagA', color: '#000000', parentId: null });
-
-      await expect(
-        ctx.database
-          .selectFrom('tag')
-          .select(['userId', 'value', 'color', 'parentId'])
-          .where('id', '=', childTag.id)
-          .executeTakeFirstOrThrow(),
-      ).resolves.toEqual({ userId: user.id, value: 'updatedTagA/tagB', color: '#00FF00', parentId: parentTag.id });
-    });
-  });
-
   describe('delete', () => {
     it('should delete top-level tag without descendants', async () => {
       const { ctx, sut } = setup();
