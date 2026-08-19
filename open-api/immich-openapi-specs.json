@@ -26883,7 +26883,6 @@
           },
           "name": {
             "description": "Tag name",
-            "pattern": "^[^/]*$",
             "type": "string"
           },
           "parentId": {
@@ -26953,11 +26952,14 @@
           },
           "name": {
             "description": "Tag name",
-            "nullable": true,
+            "minLength": 1,
             "pattern": "^[^/]*$",
             "type": "string"
           }
         },
+        "required": [
+          "name"
+        ],
         "type": "object"
       },
       "TagUpsertDto": {

@@ -13,19 +13,6 @@ from
 where
   "id" = $1
 
--- TagRepository.getMany
-select
-  "tag"."id",
-  "tag"."value",
-  "tag"."createdAt",
-  "tag"."updatedAt",
-  "tag"."color",
-  "tag"."parentId"
-from
-  "tag"
-where
-  "id" in ($1)
-
 -- TagRepository.getByValue
 select
   "tag"."id",
@@ -74,14 +61,12 @@ order by
   "value"
 
 -- TagRepository.create
-begin
 insert into
   "tag" ("userId", "color", "value")
 values
   ($1, $2, $3)
 returning
   *
-rollback
 
 -- TagRepository.update
 begin
@@ -96,15 +81,9 @@ returning
 rollback
 
 -- TagRepository.delete
-select
-  "id_descendant"
-from
-  "tag_closure"
-where
-  "id_ancestor" = $1
 delete from "tag"
 where
-  "id" in ()
+  "id" = $1
 
 -- TagRepository.addAssetIds
 insert into
