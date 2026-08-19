@@ -576,8 +576,6 @@
   "aspect_ratio": "Aspect ratio",
   "aspect_ratio_height": "Aspect ratio height",
   "aspect_ratio_width": "Aspect ratio width",
-  "asset_action_delete_err_read_only": "Cannot delete read only asset(s), skipping",
-  "asset_action_share_err_offline": "Cannot fetch offline asset(s), skipping",
   "asset_added_to_album": "Added to album",
   "asset_adding_to_album": "Adding to album…",
   "asset_created": "Asset created",
