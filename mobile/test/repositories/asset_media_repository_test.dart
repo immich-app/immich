@@ -1,128 +1,271 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
+import 'package:drift/drift.dart' hide isNotNull, isNull;
+import 'package:drift/native.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:immich_mobile/constants/enums.dart';
+import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
+import 'package:immich_mobile/domain/models/store.model.dart';
+import 'package:immich_mobile/domain/services/store.service.dart';
+import 'package:immich_mobile/entities/store.entity.dart';
+import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/store.repository.dart';
+import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:path/path.dart' as p;
 
 import '../test_utils.dart';
 
+class _MockNativeSyncApi extends Mock implements NativeSyncApi {}
+
+class _MockPersistentStorage extends Mock implements PersistentStorage {}
+
+class _MockStorageRepository extends Mock implements StorageRepository {}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  setUpAll(() {
+  late Drift db;
+  late StoreService store;
+  late Directory tempRoot;
+  late _MockStorageRepository storage;
+  late AssetMediaRepository repository;
+  late List<Directory> taskDirs;
+  late Set<String> failedRemoteIds;
+  late Completer<List<String>> shareCall;
+
+  setUpAll(() async {
+    db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
+    store = await StoreService.init(storeRepository: DriftStoreRepository(db), listenUpdates: false);
+    await SettingsRepository.ensureInitialized(db);
+    await Store.put(StoreKey.serverEndpoint, 'https://example.com/api');
+    final persistentStorage = _MockPersistentStorage();
+    when(persistentStorage.initialize).thenAnswer((_) async {});
+    when(() => persistentStorage.removeResumeData(any())).thenAnswer((_) async {});
+    when(() => persistentStorage.removePausedTask(any())).thenAnswer((_) async {});
+    debugDefaultTargetPlatformOverride = TargetPlatform.android;
+    try {
+      await FileDownloader(persistentStorage: persistentStorage).ready;
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  });
+
+  tearDownAll(() async {
+    await SettingsRepository.reset();
+    await store.dispose();
+    await db.close();
+  });
+
+  setUp(() {
+    tempRoot = Directory.systemTemp.createTempSync('immich-share-test');
+    storage = _MockStorageRepository();
+    repository = AssetMediaRepository(_MockNativeSyncApi(), storage);
+    taskDirs = [];
+    failedRemoteIds = {};
+    shareCall = Completer<List<String>>();
+
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       const MethodChannel('plugins.flutter.io/path_provider'),
-      (methodCall) async => '/tmp/immich-share-test',
+      (_) async => tempRoot.path,
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('dev.fluttercommunity.plus/share'),
+      (call) async {
+        final arguments = Map<Object?, Object?>.from(call.arguments as Map);
+        shareCall.complete((arguments['paths']! as List).cast<String>());
+        return 'success';
+      },
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('com.bbflight.background_downloader'),
+      (call) async {
+        if (call.method != 'enqueue') {
+          return true;
+        }
+        final args = call.arguments! as List;
+        final task = Task.createFromJsonString(args.first as String) as DownloadTask;
+        final file = File(await task.filePath());
+        taskDirs.add(file.parent);
+        await file.parent.create(recursive: true);
+        await file.writeAsString(task.taskId);
+        final status = failedRemoteIds.any((id) => task.taskId.contains('-$id-'))
+            ? TaskStatus.failed
+            : TaskStatus.complete;
+        FileDownloader().downloaderForTesting.processStatusUpdate(TaskStatusUpdate(task, status));
+        return true;
+      },
     );
   });
 
-  DownloadTask buildTask(String taskId, String displayName) => AssetMediaRepository.buildShareDownloadTask(
-    taskId: taskId,
-    url: 'https://example.com/api/assets/some-id/original',
-    headers: const {},
-    displayName: displayName,
-  );
-
-  group('buildShareDownloadTask', () {
-    test('saves a unique original under the asset name, without the task id prefix (#29468)', () async {
-      final task = buildTask('share-original-some-remote-id-123456', 'IMG-0001.jpg');
-
-      expect(task.filename, 'IMG-0001.jpg');
-      expect(p.basename(await task.filePath()), 'IMG-0001.jpg');
-    });
-
-    test('preview shares keep their -preview name', () async {
-      final task = buildTask('share-preview-some-remote-id-123456', 'IMG-0001-preview.jpg');
-
-      expect(p.basename(await task.filePath()), 'IMG-0001-preview.jpg');
-    });
-
-    test('names with spaces and unusual characters pass through untouched', () {
-      const name = 'photo 1 (final) 名字.jpg';
-      final task = buildTask('share-original-some-remote-id-123456', name);
-
-      expect(task.filename, name);
-    });
+  tearDown(() async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('plugins.flutter.io/path_provider'),
+      null,
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('dev.fluttercommunity.plus/share'),
+      null,
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      const MethodChannel('com.bbflight.background_downloader'),
+      null,
+    );
+    if (tempRoot.existsSync()) {
+      await tempRoot.delete(recursive: true);
+    }
   });
 
-  group('shareDisplayName', () {
-    // receivers flatten attachments into one list, so identical names clobber each other
-    test('same-named assets get ordinal names after the first', () {
-      final first = TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG-0001.jpg');
-      final second = TestUtils.createRemoteAsset(id: 'remote-2').copyWith(name: 'IMG-0001.jpg');
-      final occurrences = <String, int>{};
+  Future<({int count, List<String> names})> share(
+    WidgetTester tester,
+    List<BaseAsset> assets, {
+    ShareAssetType fileType = ShareAssetType.original,
+    Completer<void>? cancelCompleter,
+    TargetPlatform platform = TargetPlatform.android,
+  }) async {
+    debugDefaultTargetPlatformOverride = platform;
+    try {
+      late BuildContext context;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (ctx) {
+              context = ctx;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
 
-      expect(AssetMediaRepository.shareDisplayName(first, ShareAssetType.original, occurrences), 'IMG-0001.jpg');
-      expect(AssetMediaRepository.shareDisplayName(second, ShareAssetType.original, occurrences), 'IMG-0001 (1).jpg');
-    });
+      final result = await tester.runAsync(() async {
+        final count = await repository.shareAssets(
+          assets,
+          context,
+          fileType: fileType,
+          cancelCompleter: cancelCompleter,
+        );
+        if (cancelCompleter?.isCompleted ?? false) {
+          return (count: count, names: <String>[]);
+        }
+        final paths = await shareCall.future.timeout(const Duration(seconds: 5));
+        return (count: count, names: paths.map(p.basename).toList());
+      });
+      await tester.pump();
 
-    test('sharing the same asset twice gives the second copy an ordinal name', () {
-      final asset = TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG-0001.jpg');
-      final occurrences = <String, int>{};
+      return result!;
+    } finally {
+      debugDefaultTargetPlatformOverride = null;
+    }
+  }
 
-      AssetMediaRepository.shareDisplayName(asset, ShareAssetType.original, occurrences);
+  Future<void> waitForCleanup() => Future.doWhile(() async {
+    await Future<void>.delayed(const Duration(milliseconds: 1));
+    return taskDirs.any((directory) => directory.existsSync());
+  }).timeout(const Duration(seconds: 1));
 
-      expect(AssetMediaRepository.shareDisplayName(asset, ShareAssetType.original, occurrences), 'IMG-0001 (1).jpg');
-    });
+  testWidgets('shares sanitized and fallback names then removes task directories', (tester) async {
+    final assets = [
+      TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'holiday/Photo 1 名字.jpg'),
+      TestUtils.createRemoteAsset(id: 'remote-2').copyWith(name: ''),
+      TestUtils.createRemoteAsset(id: 'remote-3').copyWith(name: r'\/'),
+    ];
 
-    // the preview fallback shares the original file under an original-style name, which must not
-    // inherit an ordinal from the preview name counted for the same asset
-    test('preview and original names are counted separately', () {
-      final asset = TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG-0001.jpg');
-      final occurrences = <String, int>{};
+    final result = await share(tester, assets);
 
-      expect(AssetMediaRepository.shareDisplayName(asset, ShareAssetType.preview, occurrences), 'IMG-0001-preview.jpg');
-      expect(AssetMediaRepository.shareDisplayName(asset, ShareAssetType.original, occurrences), 'IMG-0001.jpg');
-    });
+    expect(result.count, 3);
+    expect(result.names, ['holiday_Photo 1 名字.jpg', 'remote-2', 'remote-3']);
+    await tester.runAsync(waitForCleanup);
+    expect(taskDirs.every((directory) => !directory.existsSync()), isTrue);
   });
 
-  group('getOriginalShareFilename', () {
-    test('falls back to the remote id when the name is empty', () {
-      final asset = TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: '');
+  testWidgets('keeps the first copy and uses the first free ordinal for the next', (tester) async {
+    final assets = [
+      TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG.jpg'),
+      TestUtils.createRemoteAsset(id: 'remote-2').copyWith(name: 'IMG (1).jpg'),
+      TestUtils.createRemoteAsset(id: 'remote-3').copyWith(name: 'IMG.jpg'),
+    ];
 
-      expect(AssetMediaRepository.getOriginalShareFilename(asset), 'remote-1');
-    });
+    final result = await share(tester, assets);
 
-    test('falls back when the name is only path separators', () {
-      final asset = TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: r'\/');
-
-      expect(AssetMediaRepository.getOriginalShareFilename(asset), 'remote-1');
-    });
-
-    test('falls back to the local id when there is no remote id', () {
-      final asset = TestUtils.createLocalAsset(id: 'local-1').copyWith(name: '');
-
-      expect(AssetMediaRepository.getOriginalShareFilename(asset), 'local-1');
-    });
-
-    test('sanitizes separators in a real name instead of falling back', () {
-      final asset = TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'holiday/IMG-0001.jpg');
-
-      expect(AssetMediaRepository.getOriginalShareFilename(asset), 'holiday_IMG-0001.jpg');
-    });
+    expect(result.count, 3);
+    expect(result.names, ['IMG.jpg', 'IMG (1).jpg', 'IMG (2).jpg']);
+    await tester.runAsync(waitForCleanup);
   });
 
-  group('cleanupShareTempFiles', () {
-    test('removes only the owned task directories and temp files', () async {
-      final tempRoot = Directory.systemTemp.createTempSync('immich-share-cleanup');
-      addTearDown(() => tempRoot.deleteSync(recursive: true));
-      final taskDir = Directory(p.join(tempRoot.path, 'share-original-remote-1-111'))..createSync();
-      final downloaded = File(p.join(taskDir.path, 'IMG-0001.jpg'))..createSync();
-      final iosLocalTemp = File(p.join(tempRoot.path, 'local-original.jpg'))..createSync();
-      final foreignDir = Directory(p.join(tempRoot.path, 'unrelated'))..createSync();
-      final foreignFile = File(p.join(foreignDir.path, 'keep.jpg'))..createSync();
+  testWidgets('keeps mixed local and remote paths distinct', (tester) async {
+    final localFile = File(p.join(tempRoot.path, 'local', 'IMG.jpg'));
+    localFile.parent.createSync();
+    localFile.writeAsStringSync('local');
+    when(() => storage.getFileForAsset('local-1')).thenAnswer((_) async => localFile);
+    final assets = [
+      TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG.jpg'),
+      TestUtils.createLocalAsset(id: 'local-1').copyWith(name: 'IMG.jpg'),
+    ];
 
-      await AssetMediaRepository.cleanupShareTempFiles([taskDir, iosLocalTemp]);
+    final result = await share(tester, assets);
 
-      expect(taskDir.existsSync(), isFalse);
-      expect(downloaded.existsSync(), isFalse);
-      expect(iosLocalTemp.existsSync(), isFalse);
-      expect(foreignDir.existsSync(), isTrue);
-      expect(foreignFile.existsSync(), isTrue);
-      expect(tempRoot.existsSync(), isTrue);
+    expect(result.count, 2);
+    expect(result.names, ['IMG (1).jpg', 'IMG.jpg']);
+    await tester.runAsync(waitForCleanup);
+    expect(localFile.existsSync(), isTrue);
+  });
+
+  testWidgets('does not count failed downloads when adding ordinals', (tester) async {
+    failedRemoteIds.add('remote-1');
+    final assets = [
+      TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG.jpg'),
+      TestUtils.createRemoteAsset(id: 'remote-2').copyWith(name: 'IMG.jpg'),
+    ];
+
+    final result = await share(tester, assets);
+
+    expect(result.count, 1);
+    expect(result.names, ['IMG.jpg']);
+    expect(
+      tempRoot.listSync().whereType<Directory>().where((directory) => p.basename(directory.path).contains('remote-1')),
+      isEmpty,
+    );
+    await tester.runAsync(waitForCleanup);
+    expect(taskDirs.every((directory) => !directory.existsSync()), isTrue);
+  });
+
+  testWidgets('cleans the current iOS temp file when cancelled during retrieval', (tester) async {
+    final cancellation = Completer<void>();
+    final localFile = File(p.join(tempRoot.path, 'local', 'IMG.jpg'));
+    localFile.parent.createSync();
+    localFile.writeAsStringSync('local');
+    when(() => storage.getFileForAsset('local-1')).thenAnswer((_) async {
+      cancellation.complete();
+      return localFile;
     });
+    final asset = TestUtils.createLocalAsset(id: 'local-1').copyWith(name: 'IMG.jpg');
+
+    final result = await share(tester, [asset], cancelCompleter: cancellation, platform: TargetPlatform.iOS);
+
+    expect(result.count, 0);
+    expect(result.names, isEmpty);
+    expect(shareCall.isCompleted, isFalse);
+    expect(localFile.existsSync(), isFalse);
+  });
+
+  testWidgets('adds an ordinal when preview and video names match', (tester) async {
+    final assets = [
+      TestUtils.createRemoteAsset(id: 'remote-1').copyWith(name: 'IMG.jpg'),
+      TestUtils.createRemoteAsset(id: 'remote-2').copyWith(name: 'IMG-preview.jpg', type: AssetType.video),
+    ];
+
+    final result = await share(tester, assets, fileType: ShareAssetType.preview);
+
+    expect(result.count, 2);
+    expect(result.names, ['IMG-preview.jpg', 'IMG-preview (1).jpg']);
+    await tester.runAsync(waitForCleanup);
   });
 }
