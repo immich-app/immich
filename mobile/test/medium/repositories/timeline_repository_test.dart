@@ -47,38 +47,58 @@ void main() {
       expect([localAsset1.id, localAsset2.id], contains((assets.first as RemoteAsset).localId));
     });
 
-    test('orders assets by effective date so they land under the correct date bucket (#28852)', () async {
-      // Buckets group by the effective date = coalesce(localDateTime, createdAt). The asset
-      // list must use the same ordering, otherwise offset paging puts an asset whose
-      // localDateTime differs from createdAt under the wrong date header.
+    test('orders shifted album assets in both directions and keeps normal asset order (#28852)', () async {
       final user = await ctx.newUser();
-      final album = await ctx.newRemoteAlbum(ownerId: user.id, order: .desc);
-      // A: shown on Sep 3 (localDateTime) but only has the earlier Sep 2 createdAt.
-      final assetA = await ctx.newRemoteAsset(
+      final descendingAlbum = await ctx.newRemoteAlbum(ownerId: user.id, order: .desc);
+      final ascendingAlbum = await ctx.newRemoteAlbum(ownerId: user.id, order: .asc);
+      final shiftedLater = await ctx.newRemoteAsset(
         ownerId: user.id,
         createdAt: DateTime.utc(2024, 9, 2, 12),
         localDateTime: DateTime.utc(2024, 9, 3, 12),
       );
-      // B: the inverse — shown on Sep 2 but has the later Sep 3 createdAt.
-      final assetB = await ctx.newRemoteAsset(
+      final shiftedEarlier = await ctx.newRemoteAsset(
         ownerId: user.id,
         createdAt: DateTime.utc(2024, 9, 3, 12),
         localDateTime: DateTime.utc(2024, 9, 2, 12),
       );
-      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: assetA.id);
-      await ctx.newRemoteAlbumAsset(albumId: album.id, assetId: assetB.id);
+      final normalLater = await ctx.newRemoteAsset(
+        ownerId: user.id,
+        createdAt: DateTime.utc(2024, 9, 4, 14),
+        localDateTime: DateTime.utc(2024, 9, 4, 14),
+      );
+      final normalEarlier = await ctx.newRemoteAsset(
+        ownerId: user.id,
+        createdAt: DateTime.utc(2024, 9, 4, 12),
+        localDateTime: DateTime.utc(2024, 9, 4, 12),
+      );
+      final seeded = [shiftedLater, shiftedEarlier, normalLater, normalEarlier];
+      for (final asset in seeded) {
+        await ctx.newRemoteAlbumAsset(albumId: descendingAlbum.id, assetId: asset.id);
+        await ctx.newRemoteAlbumAsset(albumId: ascendingAlbum.id, assetId: asset.id);
+      }
 
-      final query = sut.remoteAlbum(album.id, .day);
+      final descending = sut.remoteAlbum(descendingAlbum.id, .day);
+      final ascending = sut.remoteAlbum(ascendingAlbum.id, .day);
 
-      final buckets = await query.bucketSource().first;
-      expect(buckets, hasLength(2));
-      expect(buckets.every((b) => b.assetCount == 1), isTrue);
+      final buckets = await descending.bucketSource().first;
+      expect(buckets, hasLength(3));
+      expect(buckets.map((bucket) => bucket.assetCount), [2, 1, 1]);
 
-      // Buckets are ordered by effective date desc (Sep 3 then Sep 2), so the asset list
-      // must be A then B. The pre-fix raw-createdAt ordering returned B first (Sep 3 createdAt),
-      // which slotted B under the Sep 3 header and A under Sep 2.
-      final assets = await query.assetSource(0, 10);
-      expect(assets.map((a) => (a as RemoteAsset).id).toList(), [assetA.id, assetB.id]);
+      final descendingAssets = await descending.assetSource(0, 10);
+      expect(descendingAssets.map((asset) => (asset as RemoteAsset).id), [
+        normalLater.id,
+        normalEarlier.id,
+        shiftedLater.id,
+        shiftedEarlier.id,
+      ]);
+
+      final ascendingAssets = await ascending.assetSource(0, 10);
+      expect(ascendingAssets.map((asset) => (asset as RemoteAsset).id), [
+        shiftedEarlier.id,
+        shiftedLater.id,
+        normalEarlier.id,
+        normalLater.id,
+      ]);
     });
   });
 
@@ -104,32 +124,37 @@ void main() {
       expect((assets.first as RemoteAsset).id, asset.id);
     });
 
-    test('orders assets by effective date so they land under the correct date bucket (#28852)', () async {
+    test('orders shifted person assets by effective date (#28852)', () async {
       final user = await ctx.newUser();
       final person = await ctx.newPerson(ownerId: user.id);
-      // A shown on Sep 3 (localDateTime) with the earlier Sep 2 createdAt; B is the inverse.
-      final assetA = await ctx.newRemoteAsset(
+      final shiftedLater = await ctx.newRemoteAsset(
         ownerId: user.id,
         createdAt: DateTime.utc(2024, 9, 2, 12),
         localDateTime: DateTime.utc(2024, 9, 3, 12),
       );
-      final assetB = await ctx.newRemoteAsset(
+      final shiftedEarlier = await ctx.newRemoteAsset(
         ownerId: user.id,
         createdAt: DateTime.utc(2024, 9, 3, 12),
         localDateTime: DateTime.utc(2024, 9, 2, 12),
       );
-      await ctx.newFace(assetId: assetA.id, personId: person.id);
-      await ctx.newFace(assetId: assetB.id, personId: person.id);
+      await ctx.newFace(assetId: shiftedLater.id, personId: person.id);
+      await ctx.newFace(assetId: shiftedEarlier.id, personId: person.id);
 
       final query = sut.person(user.id, person.id, .day);
 
       final buckets = await query.bucketSource().first;
       expect(buckets, hasLength(2));
 
-      // Buckets are date-desc (Sep 3 then Sep 2); the asset list must match (A then B).
-      // The pre-fix raw-createdAt order returned B first.
       final assets = await query.assetSource(0, 10);
-      expect(assets.map((a) => (a as RemoteAsset).id).toList(), [assetA.id, assetB.id]);
+      expect(assets.map((asset) => (asset as RemoteAsset).id), [shiftedLater.id, shiftedEarlier.id]);
+    });
+  });
+
+  group('place assets', () {
+    test('rejects ungrouped asset query', () {
+      final query = sut.place('city', .none);
+
+      expect(() => query.assetSource(0, 10), throwsArgumentError);
     });
   });
 

@@ -270,14 +270,9 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
       ),
     ])..where(_db.remoteAssetEntity.deletedAt.isNull() & _db.remoteAlbumAssetEntity.albumId.equals(albumId));
 
-    // Order assets by the same effective date the buckets group by, otherwise offset
-    // paging puts an asset whose localDateTime differs from createdAt under the wrong
-    // date header (#28852). createdAt is the within-day tiebreak.
-    OrderingTerm ord(Expression<Object> exp) => isAscending ? OrderingTerm.asc(exp) : OrderingTerm.desc(exp);
-    query.orderBy([
-      if (groupBy != GroupAssetsBy.none) ord(_db.remoteAssetEntity.effectiveCreatedAt(groupBy)),
-      ord(_db.remoteAssetEntity.createdAt),
-    ]);
+    query.orderBy(
+      _assetDateOrder(groupBy, ascending: isAscending).map((order) => order(_db.remoteAssetEntity)).toList(),
+    );
 
     query.limit(count, offset: offset);
 
@@ -447,11 +442,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
                 _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
                 _db.remoteExifEntity.city.equals(place),
           )
-          // Match the bucket grouping (#28852); place buckets are always date-grouped.
-          ..orderBy([
-            OrderingTerm.desc(_db.remoteAssetEntity.effectiveCreatedAt(groupBy)),
-            OrderingTerm.desc(_db.remoteAssetEntity.createdAt),
-          ])
+          ..orderBy(_assetDateOrder(groupBy, supportsNone: false).map((order) => order(_db.remoteAssetEntity)).toList())
           ..limit(count, offset: offset);
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
@@ -525,11 +516,7 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
             row.ownerId.equals(userId) &
             row.visibility.equalsValue(AssetVisibility.timeline),
       )
-      // Match the bucket grouping (#28852); createdAt is the within-day tiebreak.
-      ..orderBy([
-        if (groupBy != GroupAssetsBy.none) (row) => OrderingTerm.desc(row.effectiveCreatedAt(groupBy)),
-        (row) => OrderingTerm.desc(row.createdAt),
-      ])
+      ..orderBy(_assetDateOrder(groupBy))
       ..limit(count, offset: offset);
 
     return query.map((row) => row.toDto()).get();
@@ -738,6 +725,18 @@ class DriftTimelineRepository extends DriftDatabaseRepository {
 }
 
 List<Bucket> _generateBuckets(int count) => count == 0 ? const [] : [Bucket(assetCount: count)];
+
+List<OrderingTerm Function($RemoteAssetEntityTable)> _assetDateOrder(
+  GroupAssetsBy groupBy, {
+  bool ascending = false,
+  bool supportsNone = true,
+}) {
+  OrderingTerm order(Expression<Object> exp) => ascending ? OrderingTerm.asc(exp) : OrderingTerm.desc(exp);
+  return [
+    if (!supportsNone || groupBy != GroupAssetsBy.none) (row) => order(row.effectiveCreatedAt(groupBy)),
+    (row) => order(row.createdAt),
+  ];
+}
 
 extension on Expression<DateTime> {
   Expression<String> dateFmt(GroupAssetsBy groupBy, {bool toLocal = false}) {
