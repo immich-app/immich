@@ -18,6 +18,10 @@ const asJobItem = (dto: JobCreateDto): JobItem => {
       return { name: JobName.PersonCleanup };
     }
 
+    case ManualJobName.PersonThumbnailRegenerate: {
+      return { name: JobName.PersonGenerateThumbnailsQueueAll };
+    }
+
     case ManualJobName.UserCleanup: {
       return { name: JobName.UserDeleteCheck };
     }

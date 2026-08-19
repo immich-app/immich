@@ -423,6 +423,7 @@ export const IntegrityReportSchema = z
 
 export enum ManualJobName {
   PersonCleanup = 'person-cleanup',
+  PersonThumbnailRegenerate = 'person-thumbnail-regenerate',
   TagCleanup = 'tag-cleanup',
   UserCleanup = 'user-cleanup',
   MemoryCleanup = 'memory-cleanup',
@@ -903,6 +904,7 @@ export enum JobName {
   PersonCleanup = 'PersonCleanup',
   PersonFileMigration = 'PersonFileMigration',
   PersonGenerateThumbnail = 'PersonGenerateThumbnail',
+  PersonGenerateThumbnailsQueueAll = 'PersonGenerateThumbnailsQueueAll',
 
   SessionCleanup = 'SessionCleanup',
 

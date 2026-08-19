@@ -284,6 +284,58 @@ describe(MediaService.name, () => {
     });
   });
 
+  describe('handleQueueGeneratePersonThumbnails', () => {
+    it('should queue a person thumbnail job for every person', async () => {
+      const [person1, person2] = [
+        PersonFactory.create({ faceAssetId: newUuid() }),
+        PersonFactory.create({ faceAssetId: newUuid() }),
+      ];
+      mocks.person.getAll.mockReturnValue(makeStream([person1, person2]));
+
+      await expect(sut.handleQueueGeneratePersonThumbnails()).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.person.getAll).toHaveBeenCalledWith(undefined);
+      expect(mocks.person.getRandomFace).not.toHaveBeenCalled();
+      expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.PersonGenerateThumbnail, data: { id: person1.id } },
+        { name: JobName.PersonGenerateThumbnail, data: { id: person2.id } },
+      ]);
+    });
+
+    it('should assign a random face to people without a face asset before queueing them', async () => {
+      const person = PersonFactory.create({ faceAssetId: null });
+      const face = AssetFaceFactory.create();
+      mocks.person.getAll.mockReturnValue(makeStream([person]));
+      mocks.person.getRandomFace.mockResolvedValueOnce(face);
+
+      await expect(sut.handleQueueGeneratePersonThumbnails()).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.person.getRandomFace).toHaveBeenCalledWith(person.id);
+      expect(mocks.person.update).toHaveBeenCalledWith({ id: person.id, faceAssetId: face.id });
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.PersonGenerateThumbnail, data: { id: person.id } },
+      ]);
+    });
+
+    it('should skip people without any face', async () => {
+      const [person1, person2] = [
+        PersonFactory.create({ faceAssetId: null }),
+        PersonFactory.create({ faceAssetId: newUuid() }),
+      ];
+      mocks.person.getAll.mockReturnValue(makeStream([person1, person2]));
+      mocks.person.getRandomFace.mockResolvedValueOnce(undefined);
+
+      await expect(sut.handleQueueGeneratePersonThumbnails()).resolves.toBe(JobStatus.Success);
+
+      expect(mocks.person.getRandomFace).toHaveBeenCalledWith(person1.id);
+      expect(mocks.person.update).not.toHaveBeenCalled();
+      expect(mocks.job.queueAll).toHaveBeenCalledWith([
+        { name: JobName.PersonGenerateThumbnail, data: { id: person2.id } },
+      ]);
+    });
+  });
+
   describe('handleQueueMigration', () => {
     it('should remove empty directories and queue jobs', async () => {
       const asset = AssetFactory.create();
