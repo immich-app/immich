@@ -145,6 +145,11 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
       next = _config.direction == SlideshowDirection.forward ? 0 : widget.timeline.totalAssets - 1;
     }
 
+    if (!widget.timeline.hasRange(next, 1)) {
+      // Async preload this index. We don't want to wait on it, just get it started so the asset is more likely to be ready in time
+      unawaited(widget.timeline.preloadAssets(next));
+    }
+
     return next;
   }
 
@@ -188,10 +193,12 @@ class _DriftSlideshowPageState extends ConsumerState<DriftSlideshowPage>
       }
 
       if (!widget.timeline.hasRange(index, 1)) {
+        // If it wasn't already loaded by [nextIndexAfter], make sure we have the new asset synchronously
         await widget.timeline.preloadAssets(index);
       }
 
-      if (!mounted) {
+      if (!mounted || _slideshow.currentIndex != prevIndex) {
+        // User triggered another slide while we waited on preload
         return;
       }
 
