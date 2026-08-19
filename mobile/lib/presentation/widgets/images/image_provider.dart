@@ -12,6 +12,8 @@ import 'package:immich_mobile/presentation/widgets/images/remote_image_provider.
 import 'package:immich_mobile/presentation/widgets/timeline/constants.dart';
 import 'package:logging/logging.dart';
 
+// The provider is also the cache key and can be resolved more than once.
+// Keep mutable state per load so cancelling one cannot affect the next load.
 class ImageLoader {
   static final _log = Logger('ImageLoader');
 
