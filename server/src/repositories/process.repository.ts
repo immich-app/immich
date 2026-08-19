@@ -44,10 +44,6 @@ export class ProcessRepository {
       },
 
       destroy(error, callback) {
-        // Destroying the stream has to take the child with it. pipeline() destroys
-        // every stream when one of them fails, and a child left running holds on to
-        // whatever it had open - a pg_dump keeps its transaction alive, which holds
-        // AccessShareLock on every table until the process finally exits.
         if (process.exitCode === null && process.signalCode === null) {
           process.kill();
         }

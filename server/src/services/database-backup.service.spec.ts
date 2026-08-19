@@ -253,9 +253,6 @@ describe(DatabaseBackupService.name, () => {
     });
 
     it('should destroy the spawned processes if the write stream fails', async () => {
-      // createWriteStream throws after pg_dump is already running (ENOENT when the
-      // backup volume is unmounted). Without tearing the children down, pg_dump sits
-      // idle in transaction holding AccessShareLock on every table.
       const spawned: Duplex[] = [];
       mocks.process.spawnDuplexStream.mockImplementation(() => {
         const duplex = mockDuplex()('command', 0, 'data', '');

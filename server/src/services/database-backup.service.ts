@@ -236,10 +236,6 @@ export class DatabaseBackupService {
     const backupFilePath = path.join(StorageCore.getBaseFolder(StorageFolder.Backups), filename);
     const temporaryFilePath = `${backupFilePath}.tmp`;
 
-    // Declared outside the try so the catch can still reach them. Anything that
-    // throws between spawning and pipeline() taking ownership - createWriteStream
-    // hitting ENOENT on an unmounted backup volume, for instance - would otherwise
-    // leave the children running with nothing holding a reference to them.
     let pgdump: Duplex | undefined;
     let gzip: Duplex | undefined;
 
