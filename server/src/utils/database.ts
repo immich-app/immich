@@ -454,18 +454,10 @@ export function searchAssetBuilderLegacy(kysely: Kysely<DB>, options: AssetSearc
         .where('asset_exif.rating', options.rating === null ? 'is' : '=', options.rating!),
     )
     .$if(options.minAspectRatioWidth !== undefined && options.minAspectRatioHeight !== undefined, (qb) =>
-      qb.where(
-        sql`asset.width::double precision / nullif(asset.height, 0)`,
-        '>=',
-        options.minAspectRatioWidth! / options.minAspectRatioHeight!,
-      ),
+      qb.where('asset.aspectRatio', '>=', options.minAspectRatioWidth! / options.minAspectRatioHeight!),
     )
     .$if(options.maxAspectRatioWidth !== undefined && options.maxAspectRatioHeight !== undefined, (qb) =>
-      qb.where(
-        sql`asset.width::double precision / nullif(asset.height, 0)`,
-        '<=',
-        options.maxAspectRatioWidth! / options.maxAspectRatioHeight!,
-      ),
+      qb.where('asset.aspectRatio', '<=', options.maxAspectRatioWidth! / options.maxAspectRatioHeight!),
     )
     .$if(options.minWidth !== undefined, (qb) => qb.where('asset.width', '>=', options.minWidth!))
     .$if(options.maxWidth !== undefined, (qb) => qb.where('asset.width', '<=', options.maxWidth!))
