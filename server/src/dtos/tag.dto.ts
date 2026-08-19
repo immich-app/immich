@@ -5,8 +5,6 @@ import { asDateTimeString } from 'src/utils/date';
 import { hexColor } from 'src/validation';
 import z from 'zod';
 
-const tagNameError = `Tag name cannot contain slash characters ("/")`;
-
 const TagCreateSchema = z
   .object({
     name: z.string().describe('Tag name'),
@@ -19,8 +17,8 @@ export const TagUpdateSchema = z
   .object({
     name: z
       .string()
-      .regex(/^[^/]*$/, tagNameError)
-      .nullish()
+      .regex(/^[^/]*$/, `Tag name cannot contain slash characters ("/")`)
+      .nonempty()
       .describe('Tag name'),
     color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })
