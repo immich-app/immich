@@ -565,6 +565,48 @@ describe(DatabaseBackupService.name, () => {
         `);
       });
     });
+
+    describe('using an unparsable URL', () => {
+      beforeEach(() => {
+        // unix domain socket URLs cannot be parsed by `new URL`
+        const dbUrl = 'socket://mypg:mypwd@/var/run/postgresql?db=myimmich';
+        const configMock = {
+          getEnv: () => ({ database: { config: { connectionType: 'url', url: dbUrl }, skipMigrations: false } }),
+          getWorker: () => ImmichWorker.Api,
+          isDev: () => false,
+        } as unknown as any;
+
+        sut = new DatabaseBackupService(
+          mocks.logger as never,
+          mocks.storage as never,
+          configMock as never,
+          mocks.systemMetadata as never,
+          mocks.process,
+          mocks.database as never,
+          mocks.user as never,
+          mocks.cron as never,
+          mocks.job as never,
+          void 0 as never,
+        );
+      });
+
+      it('should fallback to reasonable defaults', async () => {
+        await expect(sut.buildPostgresLaunchArguments('pg_dump')).resolves.toMatchInlineSnapshot(`
+          {
+            "args": [
+              "socket://mypg:mypwd@/var/run/postgresql?db=myimmich",
+              "--clean",
+              "--if-exists",
+            ],
+            "bin": "/usr/lib/postgresql/14/bin/pg_dump",
+            "databaseMajorVersion": 14,
+            "databasePassword": "",
+            "databaseUsername": "postgres",
+            "databaseVersion": "14.10 (Debian 14.10-1.pgdg120+1)",
+          }
+        `);
+      });
+    });
   });
 
   describe('uploadBackup', () => {

@@ -448,6 +448,9 @@ export class AssetRepository {
 
   @ChunkedArray({ chunkSize: 4000 })
   async createAll(assets: Insertable<AssetTable>[]) {
+    if (assets.length === 0) {
+      return [];
+    }
     const ids = await this.db.insertInto('asset').values(assets).returning('id').execute();
     return ids.map(({ id }) => id);
   }
@@ -591,10 +594,10 @@ export class AssetRepository {
                   eb
                     .selectFrom('asset as stacked')
                     .selectAll('stack')
-                    .select((eb) =>
-                      eb
-                        .fn<ShallowDehydrateObject<Selectable<AssetTable>>>('array_agg', [eb.table('stacked')])
-                        .as('assets'),
+                    .select(
+                      sql<
+                        ShallowDehydrateObject<Selectable<AssetTable>>[]
+                      >`array_agg(to_json(stacked) ORDER BY stacked."fileCreatedAt" ASC)`.as('assets'),
                     )
                     .whereRef('stacked.stackId', '=', 'stack.id')
                     .whereRef('stacked.id', '!=', 'stack.primaryAssetId')

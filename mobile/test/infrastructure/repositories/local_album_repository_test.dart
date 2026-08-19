@@ -23,7 +23,7 @@ void main() {
 
   group('getAll', () {
     test('sorts albums by backupSelection & isIosSharedAlbum', () async {
-      final localAlbumRepo = mediumFactory.getRepository<DriftLocalAlbumRepository>();
+      final localAlbumRepo = mediumFactory.getRepository<LocalAlbumRepository>();
       await localAlbumRepo.upsert(mediumFactory.localAlbum(id: '1', backupSelection: BackupSelection.none));
       await localAlbumRepo.upsert(mediumFactory.localAlbum(id: '2', backupSelection: BackupSelection.excluded));
       await localAlbumRepo.upsert(
@@ -46,7 +46,7 @@ void main() {
     // Android was dropped. The delta reports only the asset's new album, and the
     // stale link to its old album made the per-album delete sweep wipe the asset.
     test('keeps an asset moved to another album that still holds other assets', () async {
-      final localAlbumRepo = mediumFactory.getRepository<DriftLocalAlbumRepository>();
+      final localAlbumRepo = mediumFactory.getRepository<LocalAlbumRepository>();
 
       final moved = _localAsset('moved');
       final other = _localAsset('other');
@@ -83,7 +83,7 @@ void main() {
     });
 
     test('replaces album membership with exactly what the delta reports', () async {
-      final localAlbumRepo = mediumFactory.getRepository<DriftLocalAlbumRepository>();
+      final localAlbumRepo = mediumFactory.getRepository<LocalAlbumRepository>();
 
       final moved = _localAsset('moved');
       await localAlbumRepo.upsert(mediumFactory.localAlbum(id: 'src'), toUpsert: [moved]);

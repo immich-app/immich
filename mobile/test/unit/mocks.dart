@@ -26,7 +26,7 @@ import 'factories/user_factory.dart';
 
 class RepositoryMocks {
   final localAlbum = LocalAlbumRepositoryStub(MockLocalAlbumRepository());
-  final localAsset = LocalAssetRepositoryStub(MockDriftLocalAssetRepository());
+  final localAsset = LocalAssetRepositoryStub(MockLocalAssetRepository());
   final remoteAsset = RemoteAssetRepositoryStub(MockRemoteAssetRepository());
   final remoteExif = RemoteExifRepositoryStub(MockRemoteExifRepository());
   final trashedAsset = MockTrashedLocalAssetRepository();
@@ -247,8 +247,8 @@ extension type const LocalAlbumRepositoryStub(MockLocalAlbumRepository repo) imp
       () => repo.getAssetsToHash(any());
 }
 
-extension type const LocalAssetRepositoryStub(MockDriftLocalAssetRepository repo)
-    implements Stub<MockDriftLocalAssetRepository> {
+extension type const LocalAssetRepositoryStub(MockLocalAssetRepository repo)
+    implements Stub<MockLocalAssetRepository> {
   Future<void> Function() get reconcileHashesFromCloudId =>
       () => repo.reconcileHashesFromCloudId();
 
@@ -265,7 +265,7 @@ extension type const RemoteAssetRepositoryStub(MockRemoteAssetRepository repo)
       () => repo.getAssetEdits(any());
 
   Future<void> Function() get update =>
-      () => repo.update(
+      () => repo.updateAssets(
         any(),
         isFavorite: any(named: 'isFavorite'),
         visibility: any(named: 'visibility'),
@@ -275,7 +275,7 @@ extension type const RemoteAssetRepositoryStub(MockRemoteAssetRepository repo)
 
 extension type const RemoteExifRepositoryStub(MockRemoteExifRepository repo) implements Stub<MockRemoteExifRepository> {
   Future<void> Function() get update =>
-      () => repo.update(
+      () => repo.updateExif(
         any(),
         dateTimeOriginal: any(named: 'dateTimeOriginal'),
         timeZone: any(named: 'timeZone'),
