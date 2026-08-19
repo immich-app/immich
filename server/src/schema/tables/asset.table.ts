@@ -143,7 +143,7 @@ export class AssetTable {
   @Column({ type: 'integer', nullable: true, index: true })
   height!: number | null;
 
-  @Column({ type: 'real', nullable: true, synchronize: false })
+  @Column({ type: 'real', nullable: true, index: true })
   aspectRatio!: number | null;
 
   @Column({ type: 'boolean', default: false })
