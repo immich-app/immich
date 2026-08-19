@@ -38,12 +38,6 @@ const asQueryString = (
   return items.length === 0 ? '' : `?${items.join('&')}`;
 };
 
-const DOCS_BASE = 'https://docs.immich.app';
-
-export const Docs = {
-  duplicates: () => `${DOCS_BASE}/features/duplicates-utility`,
-};
-
 export const Route = {
   // auth
   login: (params?: { continue?: string; autoLaunch?: 0 | 1 }) => '/auth/login' + asQueryString(params),

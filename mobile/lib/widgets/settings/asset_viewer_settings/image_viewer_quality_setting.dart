@@ -15,7 +15,7 @@ class ImageViewerQualitySetting extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isOriginal = useState(ref.watch(appConfigProvider).image.loadOriginal);
-    useValueChanged<bool, void>(isOriginal.value, (_, __) {
+    useValueChanged<bool, void>(isOriginal.value, (_, _) {
       unawaited(ref.read(settingsProvider).write(.imageLoadOriginal, isOriginal.value));
     });
 

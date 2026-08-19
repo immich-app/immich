@@ -10,6 +10,7 @@ import 'package:immich_mobile/infrastructure/entities/local_album.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
+import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.drift.dart';
 
 class RemovalCandidatesResult {
   final List<LocalAsset> assets;
@@ -18,10 +19,11 @@ class RemovalCandidatesResult {
   const RemovalCandidatesResult({required this.assets, required this.totalBytes});
 }
 
-class DriftLocalAssetRepository extends DriftDatabaseRepository {
-  final Drift _db;
+@DriftAccessor()
+class LocalAssetRepository extends DatabaseAccessor<Drift> with $LocalAssetRepositoryMixin {
+  LocalAssetRepository(super.attachedDatabase);
 
-  const DriftLocalAssetRepository(this._db) : super(_db);
+  Drift get _db => attachedDatabase;
 
   SingleOrNullSelectable<LocalAsset?> _assetSelectable(String id) {
     final query =
@@ -72,7 +74,7 @@ class DriftLocalAssetRepository extends DriftDatabaseRepository {
     });
   }
 
-  Future<void> delete(List<String> ids) {
+  Future<void> deleteAssets(List<String> ids) {
     if (ids.isEmpty) {
       return Future.value();
     }

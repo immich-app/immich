@@ -3,7 +3,6 @@ import type { ActionItem } from '@immich/ui';
 import type { DateTime } from 'luxon';
 import type { SvelteSet } from 'svelte/reactivity';
 import { MediaType } from '$lib/constants';
-import type { TimelineAsset } from '$lib/managers/timeline-manager/types';
 
 export type LatLng = { lng: number; lat: number };
 
@@ -38,13 +37,6 @@ export enum OnboardingRole {
   SERVER = 'server',
   USER = 'user',
 }
-
-export type AssetControlContext = {
-  // Wrap assets in a function, because context isn't reactive.
-  getAssets: () => TimelineAsset[]; // All assets includes partners' assets
-  getOwnedAssets: () => TimelineAsset[]; // Only assets owned by the user
-  clearSelect: () => void;
-};
 
 export type SearchCameraFilter = {
   make?: string;
