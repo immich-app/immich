@@ -7,12 +7,9 @@ import z from 'zod';
 
 const tagNameError = `Tag name cannot contain slash characters ("/")`;
 
-export const TagCreateSchema = z
+const TagCreateSchema = z
   .object({
-    name: z
-      .string()
-      .regex(/^[^/]*$/, tagNameError)
-      .describe('Tag name'),
+    name: z.string().describe('Tag name'),
     parentId: z.uuidv4().nullish().describe('Parent tag ID'),
     color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })
