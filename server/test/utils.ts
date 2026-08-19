@@ -541,10 +541,8 @@ export const mockDuplex =
       if (error) {
         duplex.destroy(error as Error);
       } else if (exitCode === 0) {
-        /* eslint-disable unicorn/prefer-single-call */
         duplex.push(stdout);
         duplex.push(null);
-        /* eslint-enable unicorn/prefer-single-call */
       } else {
         duplex.destroy(new Error(`${command} non-zero exit code (${exitCode})\n${stderr}`));
       }

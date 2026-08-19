@@ -22,6 +22,7 @@ import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
+import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
@@ -34,6 +35,7 @@ import { EmailRepository } from 'src/repositories/email.repository';
 import { EventRepository } from 'src/repositories/event.repository';
 import { IntegrityRepository } from 'src/repositories/integrity.repository';
 import { JobRepository } from 'src/repositories/job.repository';
+import { LibraryRepository } from 'src/repositories/library.repository';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 import { MachineLearningRepository } from 'src/repositories/machine-learning.repository';
 import { MapRepository } from 'src/repositories/map.repository';
@@ -449,12 +451,14 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case AlbumRepository:
     case AlbumUserRepository:
     case ActivityRepository:
+    case ApiKeyRepository:
     case AssetRepository:
     case AssetEditRepository:
     case AssetJobRepository:
     case DuplicateRepository:
     case IntegrityRepository:
     case MemoryRepository:
+    case LibraryRepository:
     case NotificationRepository:
     case OcrRepository:
     case PartnerRepository:
@@ -521,6 +525,7 @@ const newMockRepository = <T>(key: ClassConstructor<T>) => {
     case AssetJobRepository:
     case ConfigRepository:
     case CryptoRepository:
+    case LibraryRepository:
     case MemoryRepository:
     case IntegrityRepository:
     case NotificationRepository:

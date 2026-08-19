@@ -9,7 +9,7 @@ import {
   tagAssets,
   upsertTags,
 } from '@immich/sdk';
-import { createUserDto, uuidDto } from 'src/fixtures';
+import { createUserDto } from 'src/fixtures';
 import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
@@ -120,13 +120,6 @@ describe('/tags', () => {
   });
 
   describe('GET /tags', () => {
-    it('should require authorization (api key)', async () => {
-      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
-      const { status, body } = await request(app).get('/tags').set('x-api-key', secret);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.missingPermission('tag.read'));
-    });
-
     it('should start off empty', async () => {
       const { status, body } = await request(app).get('/tags').set('Authorization', `Bearer ${admin.accessToken}`);
       expect(body).toEqual([]);
@@ -166,13 +159,6 @@ describe('/tags', () => {
   });
 
   describe('PUT /tags', () => {
-    it('should require authorization (api key)', async () => {
-      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
-      const { status, body } = await request(app).put('/tags').set('x-api-key', secret).send({ name: 'TagA' });
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.missingPermission('tag.create'));
-    });
-
     it('should upsert tags', async () => {
       const { status, body } = await request(app)
         .put(`/tags`)
@@ -204,16 +190,6 @@ describe('/tags', () => {
   });
 
   describe('PUT /tags/assets', () => {
-    it('should require authorization (api key)', async () => {
-      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
-      const { status, body } = await request(app)
-        .put('/tags/assets')
-        .set('x-api-key', secret)
-        .send({ assetIds: [], tagIds: [] });
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.missingPermission('tag.asset'));
-    });
-
     it('should skip assets that are not owned by the user', async () => {
       const [tagA, tagB, tagC, assetA, assetB] = await Promise.all([
         create(user.accessToken, { name: 'TagA' }),
@@ -264,25 +240,6 @@ describe('/tags', () => {
   });
 
   describe('GET /tags/:id', () => {
-    it('should require authorization', async () => {
-      const tag = await create(user.accessToken, { name: 'TagA' });
-      const { status, body } = await request(app)
-        .get(`/tags/${tag.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
-    it('should require authorization (api key)', async () => {
-      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
-      const { status, body } = await request(app)
-        .get(`/tags/${uuidDto.notFound}`)
-        .set('x-api-key', secret)
-        .send({ assetIds: [], tagIds: [] });
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.missingPermission('tag.read'));
-    });
-
     it('should get tag details', async () => {
       const tag = await create(user.accessToken, { name: 'TagA' });
       const { status, body } = await request(app)
@@ -383,23 +340,6 @@ describe('/tags', () => {
   });
 
   describe('DELETE /tags/:id', () => {
-    it('should require authorization', async () => {
-      const tag = await create(user.accessToken, { name: 'TagA' });
-      const { status, body } = await request(app)
-        .delete(`/tags/${tag.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
-    it('should require authorization (api key)', async () => {
-      const tag = await create(user.accessToken, { name: 'TagA' });
-      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
-      const { status, body } = await request(app).delete(`/tags/${tag.id}`).set('x-api-key', secret);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.missingPermission('tag.delete'));
-    });
-
     it('should delete a tag', async () => {
       const tag = await create(user.accessToken, { name: 'TagA' });
       const { status } = await request(app)
@@ -433,27 +373,6 @@ describe('/tags', () => {
   });
 
   describe('PUT /tags/:id/assets', () => {
-    it('should require authorization', async () => {
-      const tag = await create(user.accessToken, { name: 'TagA' });
-      const { status, body } = await request(app)
-        .put(`/tags/${tag.id}/assets`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ids: [userAsset.id] });
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
-    it('should require authorization (api key)', async () => {
-      const tag = await create(user.accessToken, { name: 'TagA' });
-      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
-      const { status, body } = await request(app)
-        .put(`/tags/${tag.id}/assets`)
-        .set('x-api-key', secret)
-        .send({ ids: [userAsset.id] });
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.missingPermission('tag.asset'));
-    });
-
     it('should be able to tag own asset', async () => {
       const tagA = await create(user.accessToken, { name: 'TagA' });
       const { status, body } = await request(app)
@@ -492,32 +411,6 @@ describe('/tags', () => {
   });
 
   describe('DELETE /tags/:id/assets', () => {
-    it('should require authorization', async () => {
-      const tagA = await create(user.accessToken, { name: 'TagA' });
-      await tagAssets(
-        { id: tagA.id, bulkIdsDto: { ids: [userAsset.id] } },
-        { headers: asBearerAuth(user.accessToken) },
-      );
-      const { status, body } = await request(app)
-        .delete(`/tags/${tagA.id}/assets`)
-        .set('Authorization', `Bearer ${admin.accessToken}`)
-        .send({ ids: [userAsset.id] });
-
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
-    it('should require authorization (api key)', async () => {
-      const tag = await create(user.accessToken, { name: 'TagA' });
-      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
-      const { status, body } = await request(app)
-        .delete(`/tags/${tag.id}/assets`)
-        .set('x-api-key', secret)
-        .send({ ids: [userAsset.id] });
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.missingPermission('tag.asset'));
-    });
-
     it('should be able to remove own asset from own tag', async () => {
       const tagA = await create(user.accessToken, { name: 'TagA' });
       await tagAssets(

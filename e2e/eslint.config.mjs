@@ -45,6 +45,7 @@ export default typescriptEslint.config([
       'unicorn/prefer-promise-with-resolvers': 'off',
       'unicorn/no-declarations-before-early-exit': 'off',
       'unicorn/prefer-simple-condition-first': 'off',
+      'unicorn/single-line-block-comment-style': ['error', 'single-line'],
       curly: 2,
       'prettier/prettier': 0,
       'unicorn/name-replacements': 'off',
