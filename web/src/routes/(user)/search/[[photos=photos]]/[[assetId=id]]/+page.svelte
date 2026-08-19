@@ -22,6 +22,7 @@
   import { assetMultiSelectManager } from '$lib/managers/asset-multi-select-manager.svelte';
   import { authManager } from '$lib/managers/auth-manager.svelte';
   import { featureFlagsManager } from '$lib/managers/feature-flags-manager.svelte';
+  import { searchManager } from '$lib/managers/search-manager.svelte';
   import type { Viewport } from '$lib/managers/timeline-manager/types';
   import { Route } from '$lib/route';
   import { getAssetBulkActions } from '$lib/services/asset.service';
@@ -44,7 +45,7 @@
   } from '@immich/sdk';
   import { ActionButton, CommandPaletteDefaultProvider, Icon, IconButton, LoadingSpinner } from '@immich/ui';
   import { mdiArrowLeft, mdiClose, mdiDotsVertical, mdiImageOffOutline, mdiSelectAll } from '@mdi/js';
-  import { tick, untrack } from 'svelte';
+  import { onMount, tick, untrack } from 'svelte';
   import { t } from 'svelte-i18n';
 
   const viewport: Viewport = $state({ width: 0, height: 0 });
@@ -244,7 +245,10 @@
     delete terms[key];
     assetMultiSelectManager.clear();
     void goto(Route.search(terms));
+    searchManager.setQuery(terms);
   }
+
+  onMount(() => searchManager.setQuery(terms));
 </script>
 
 <svelte:window bind:scrollY />
@@ -392,7 +396,7 @@
       <div class="fixed inset-s-0 top-0 z-2 w-full">
         <ControlAppBar onClose={() => goto(previousRoute)} backIcon={mdiArrowLeft}>
           <div class="mx-auto w-full max-w-2xl pe-2">
-            <SearchBar grayTheme={false} value={terms?.query ?? ''} searchQuery={terms} />
+            <SearchBar grayTheme={false} />
           </div>
         </ControlAppBar>
       </div>
