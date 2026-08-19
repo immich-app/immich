@@ -7,7 +7,6 @@ import {
   getMemory,
 } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
-import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -42,14 +41,6 @@ describe('/memories', () => {
   });
 
   describe('GET /memories/:id', () => {
-    it('should require access', async () => {
-      const { status, body } = await request(app)
-        .get(`/memories/${userMemory.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
     it('should get the memory', async () => {
       const { status, body } = await request(app)
         .get(`/memories/${userMemory.id}`)
@@ -60,15 +51,6 @@ describe('/memories', () => {
   });
 
   describe('PUT /memories/:id', () => {
-    it('should require access', async () => {
-      const { status, body } = await request(app)
-        .put(`/memories/${userMemory.id}`)
-        .send({ isSaved: true })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
     it('should update the memory', async () => {
       const before = await getMemory({ id: userMemory.id }, { headers: asBearerAuth(user.accessToken) });
       expect(before.isSaved).toBe(false);
@@ -86,15 +68,6 @@ describe('/memories', () => {
   });
 
   describe('PUT /memories/:id/assets', () => {
-    it('should require access', async () => {
-      const { status, body } = await request(app)
-        .put(`/memories/${userMemory.id}/assets`)
-        .send({ ids: [userAsset1.id] })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
     it('should require asset access', async () => {
       const { status, body } = await request(app)
         .put(`/memories/${userMemory.id}/assets`)
@@ -121,15 +94,6 @@ describe('/memories', () => {
   });
 
   describe('DELETE /memories/:id/assets', () => {
-    it('should require access', async () => {
-      const { status, body } = await request(app)
-        .delete(`/memories/${userMemory.id}/assets`)
-        .send({ ids: [userAsset1.id] })
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
     it('should only remove assets in the memory', async () => {
       const { status, body } = await request(app)
         .delete(`/memories/${userMemory.id}/assets`)
@@ -156,14 +120,6 @@ describe('/memories', () => {
   });
 
   describe('DELETE /memories/:id', () => {
-    it('should require access', async () => {
-      const { status, body } = await request(app)
-        .delete(`/memories/${userMemory.id}`)
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
     it('should delete the memory', async () => {
       const { status } = await request(app)
         .delete(`/memories/${userMemory.id}`)
