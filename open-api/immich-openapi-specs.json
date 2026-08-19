@@ -18232,6 +18232,11 @@
       },
       "AdminConfigOAuthDto": {
         "properties": {
+          "accountManagementUrl": {
+            "default": "",
+            "description": "Account management URL",
+            "type": "string"
+          },
           "allowInsecureRequests": {
             "description": "Allow insecure requests",
             "type": "boolean"
@@ -24592,6 +24597,11 @@
             "maximum": 9007199254740991,
             "minimum": -9007199254740991,
             "type": "integer"
+          },
+          "oauthAccountManagementUrl": {
+            "default": "",
+            "description": "OAuth account management URL",
+            "type": "string"
           },
           "oauthButtonText": {
             "description": "OAuth button text",
