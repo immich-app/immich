@@ -4,10 +4,10 @@
   import { Button, ListButton, LoadingSpinner, Modal, ModalBody, ModalFooter, Text } from '@immich/ui';
   import { t } from 'svelte-i18n';
 
-  interface Props {
+  type Props = {
     excludedUserIds: string[];
     onClose: (users?: UserResponseDto[]) => void;
-  }
+  };
 
   let { excludedUserIds, onClose }: Props = $props();
 

@@ -205,6 +205,31 @@ where
   "user"."clusterGroupId" in ($1)
   and "user"."id" = $2
 
+-- AccessRepository.clusterGroupRequest.checkOwnerAccess
+select
+  "cluster_group_request"."id"
+from
+  "cluster_group_request"
+where
+  "cluster_group_request"."id" in ($1)
+  and "cluster_group_request"."userId" = $2
+
+-- AccessRepository.clusterGroupRequest.checkGroupAccess
+select
+  "cluster_group_request"."id"
+from
+  "cluster_group_request"
+where
+  "cluster_group_request"."id" in ($1)
+  and "cluster_group_request"."clusterGroupId" = (
+    select
+      "user"."clusterGroupId"
+    from
+      "user"
+    where
+      "user"."id" = $2
+  )
+
 -- AccessRepository.person.checkOwnerAccess
 select
   "person"."personGroupId"

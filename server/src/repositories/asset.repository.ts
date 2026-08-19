@@ -515,7 +515,7 @@ export class AssetRepository {
 
   @GenerateSql({ params: [[DummyValue.UUID]] })
   @ChunkedArray({ paramIndex: 0 })
-  getByIdsWithAllRelationsButStacks(ids: string[], viewingUserId: string) {
+  getByIdsWithAllRelationsButStacks(ids: string[], viewingUserId?: string) {
     return this.db
       .selectFrom('asset')
       .selectAll('asset')
@@ -788,6 +788,7 @@ export class AssetRepository {
           )
           .$if(!!options.userIds, (qb) =>
             qb.where((eb) => {
+              // TODO this should become a shared `hasAccess` style helper once implement sharing in more places
               const isOwner = eb('asset.ownerId', '=', anyUuid(options.userIds!));
               return options.personId ? eb.or([isOwner, inSharedAlbum(eb, auth.user.id)]) : isOwner;
             }),

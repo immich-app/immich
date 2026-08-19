@@ -237,7 +237,7 @@ export function withFilePath(eb: ExpressionBuilder<DB, 'asset'>, type: AssetFile
 
 export type WithFacesAndPeopleOptions = {
   /** whose version of the person to select */
-  viewingUserId: string;
+  viewingUserId?: string;
   withHidden?: boolean;
   withDeletedFace?: boolean;
 };
@@ -253,7 +253,8 @@ export function withFacesAndPeople({ viewingUserId, withHidden, withDeletedFace 
               .selectFrom('person')
               .selectAll('person')
               .whereRef('person.personGroupId', '=', 'asset_face.personGroupId')
-              .where('person.ownerId', '=', viewingUserId)
+              .$if(!viewingUserId, (qb) => qb.whereRef('person.ownerId', '=', 'asset.ownerId'))
+              .$if(!!viewingUserId, (qb) => qb.where('person.ownerId', '=', viewingUserId!))
               .as('person'),
           (join) => join.onTrue(),
         )

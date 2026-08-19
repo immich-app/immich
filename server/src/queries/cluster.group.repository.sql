@@ -7,14 +7,6 @@ default values
 returning
   *
 
--- ClusterGroupRepository.getForUser
-select
-  "user"."clusterGroupId"
-from
-  "user"
-where
-  "user"."id" = $1
-
 -- ClusterGroupRepository.hasOtherMembers
 select
   "user"."id"
@@ -30,9 +22,12 @@ insert into
   "cluster_group_request" ("clusterGroupId", "userId")
 values
   ($1, $2)
-on conflict ("clusterGroupId", "userId") do nothing
+on conflict ("clusterGroupId", "userId") do update
+set
+  "clusterGroupId" = $3
 returning
-  *
+  *,
+  (xmax = 0) as "isInserted"
 
 -- ClusterGroupRepository.getRequest
 select
@@ -42,32 +37,14 @@ from
 where
   "cluster_group_request"."id" = $1
 
--- ClusterGroupRepository.getRequestFor
-select
-  "cluster_group_request".*
-from
-  "cluster_group_request"
-where
-  "cluster_group_request"."clusterGroupId" = $1
-  and "cluster_group_request"."userId" = $2
-
--- ClusterGroupRepository.getRequests
+-- ClusterGroupRepository.searchRequests
 select
   "cluster_group_request".*
 from
   "cluster_group_request"
 where
   "cluster_group_request"."userId" = $1
-order by
-  "cluster_group_request"."createdAt" asc
-
--- ClusterGroupRepository.getRequestsForGroup
-select
-  "cluster_group_request".*
-from
-  "cluster_group_request"
-where
-  "cluster_group_request"."clusterGroupId" = $1
+  and "cluster_group_request"."clusterGroupId" = $2
 order by
   "cluster_group_request"."createdAt" asc
 

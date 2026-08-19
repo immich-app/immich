@@ -9,18 +9,19 @@ import {
 import { mapUser, UserResponseDto } from 'src/dtos/user.dto';
 import { Permission } from 'src/enum';
 import { BaseService } from 'src/services/base.service';
+import { findOrFail } from 'src/utils/misc';
 
 @Injectable()
 export class ClusterGroupService extends BaseService {
   async getRequests(auth: AuthDto): Promise<ClusterGroupRequestResponseDto[]> {
-    const requests = await this.clusterGroupRepository.getRequests(auth.user.id);
+    const requests = await this.clusterGroupRepository.searchRequests({ userId: auth.user.id });
     return requests.map((request) => mapClusterGroupRequest(request));
   }
 
   async getRequestsForGroup(auth: AuthDto, clusterGroupId: string): Promise<ClusterGroupRequestResponseDto[]> {
-    await this.requireAccess({ auth, permission: Permission.ClusterGroupRequestRead, ids: [clusterGroupId] });
+    await this.requireAccess({ auth, permission: Permission.ClusterGroupRead, ids: [clusterGroupId] });
 
-    const requests = await this.clusterGroupRepository.getRequestsForGroup(clusterGroupId);
+    const requests = await this.clusterGroupRepository.searchRequests({ clusterGroupId });
     return requests.map((request) => mapClusterGroupRequest(request));
   }
 
@@ -42,60 +43,33 @@ export class ClusterGroupService extends BaseService {
       throw new BadRequestException('Cannot request to join your own cluster group');
     }
 
-    const user = await this.userRepository.get(userId, {});
-    if (!user) {
-      throw new BadRequestException('Invalid user');
-    }
+    await findOrFail(() => this.userRepository.get(userId, {}), 'User');
 
-    const created = await this.clusterGroupRepository.createRequest({ clusterGroupId, userId });
-    const request = created ?? (await this.clusterGroupRepository.getRequestFor({ clusterGroupId, userId }));
-    if (!request) {
-      throw new BadRequestException('Request not found');
-    }
+    const request = await findOrFail(
+      () => this.clusterGroupRepository.createRequest({ clusterGroupId, userId }),
+      'Request',
+    );
 
-    if (created) {
+    if (request.isInserted) {
       await this.eventRepository.emit('ClusterGroupRequest', { clusterGroupId, userId, senderName: auth.user.name });
     }
 
-    return { duplicate: !created, value: mapClusterGroupRequest(request) };
+    return { duplicate: !request.isInserted, value: mapClusterGroupRequest(request) };
   }
 
   async acceptRequest(auth: AuthDto, id: string): Promise<void> {
-    const request = await this.clusterGroupRepository.getRequest(id);
-    if (!request || request.userId !== auth.user.id) {
-      throw new BadRequestException('Request not found');
-    }
+    await this.requireAccess({ auth, permission: Permission.ClusterGroupRequestRead, ids: [id] });
 
-    const clusterGroupId = await this.clusterGroupRepository.getForUser(auth.user.id);
-    const hasOtherMembers = await this.clusterGroupRepository.hasOtherMembers({
-      clusterGroupId,
-      userId: auth.user.id,
-    });
-    if (hasOtherMembers) {
-      throw new BadRequestException('Leave the current cluster group before joining another one');
-    }
+    const request = await findOrFail(() => this.clusterGroupRepository.getRequest(id), 'Request');
 
-    await this.clusterGroupRepository.deleteRequest(request.id);
     await this.personRepository.reassignCluster({ userId: auth.user.id, newClusterId: request.clusterGroupId });
     await this.userRepository.update(auth.user.id, { clusterGroupId: request.clusterGroupId });
+    await this.clusterGroupRepository.deleteRequest(request.id);
   }
 
   async deleteRequest(auth: AuthDto, id: string): Promise<void> {
-    const request = await this.clusterGroupRepository.getRequest(id);
-    if (!request) {
-      throw new BadRequestException('Request not found');
-    }
-
-    // the user it was created for declines it, anyone in the cluster group revokes it
-    if (request.userId !== auth.user.id) {
-      await this.requireAccess({
-        auth,
-        permission: Permission.ClusterGroupRequestDelete,
-        ids: [request.clusterGroupId],
-      });
-    }
-
-    await this.clusterGroupRepository.deleteRequest(request.id);
+    await this.requireAccess({ auth, permission: Permission.ClusterGroupRequestDelete, ids: [id] });
+    await this.clusterGroupRepository.deleteRequest(id);
   }
 
   async leave(auth: AuthDto, clusterGroupId: string): Promise<void> {

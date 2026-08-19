@@ -43,7 +43,7 @@ export class ClusterGroupController {
   @HttpCode(HttpStatus.NO_CONTENT)
   @Endpoint({
     summary: 'Decline a cluster group request',
-    description: 'Delete a pending request for the current user to join a cluster group.',
+    description: 'Delete a pending request to join a cluster group.',
     history: new HistoryBuilder().added('v3.2.0'),
   })
   deleteClusterGroupRequest(@Auth() auth: AuthDto, @Param() { id }: UUIDParamDto): Promise<void> {

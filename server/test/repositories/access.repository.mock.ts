@@ -21,6 +21,11 @@ export const newAccessRepositoryMock = (): IAccessRepositoryMock => {
       checkInviteAccess: vitest.fn().mockResolvedValue(new Set()),
     },
 
+    clusterGroupRequest: {
+      checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
+      checkGroupAccess: vitest.fn().mockResolvedValue(new Set()),
+    },
+
     asset: {
       checkOwnerAccess: vitest.fn().mockResolvedValue(new Set()),
       checkAlbumAccess: vitest.fn().mockResolvedValue(new Set()),

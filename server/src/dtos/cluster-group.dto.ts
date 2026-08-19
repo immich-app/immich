@@ -1,7 +1,7 @@
 import { Selectable } from 'kysely';
 import { createZodDto } from 'nestjs-zod';
 import { ClusterGroupRequestTable } from 'src/schema/tables/cluster-group-request.table';
-import { asDateTimeString } from 'src/utils/date';
+import { isoDatetimeToDate } from 'src/validation';
 import z from 'zod';
 
 const ClusterGroupRequestCreateSchema = z
@@ -15,7 +15,7 @@ const ClusterGroupRequestResponseSchema = z
     id: z.uuidv4().describe('Request ID'),
     clusterGroupId: z.uuidv4().describe('Cluster group the user is invited to join'),
     userId: z.uuidv4().describe('User the request was created for'),
-    createdAt: z.string().meta({ format: 'date-time' }).describe('Creation date'),
+    createdAt: isoDatetimeToDate.describe('Creation date'),
   })
   .meta({ id: 'ClusterGroupRequestResponseDto' });
 
@@ -27,6 +27,6 @@ export function mapClusterGroupRequest(request: Selectable<ClusterGroupRequestTa
     id: request.id,
     clusterGroupId: request.clusterGroupId,
     userId: request.userId,
-    createdAt: asDateTimeString(request.createdAt),
+    createdAt: request.createdAt,
   };
 }

@@ -98,7 +98,9 @@ describe(ClusterGroupService.name, () => {
       const auth = factory.auth({ user: owner });
       const clusterGroupId = await getClusterGroupId(ctx, owner.id);
 
-      await expect(sut.createRequest(auth, clusterGroupId, { userId: factory.uuid() })).rejects.toThrow('Invalid user');
+      await expect(sut.createRequest(auth, clusterGroupId, { userId: factory.uuid() })).rejects.toThrow(
+        'User not found',
+      );
     });
   });
 
@@ -132,7 +134,7 @@ describe(ClusterGroupService.name, () => {
 
       await expect(sut.getRequestsForGroup(auth, clusterGroupId)).resolves.toEqual([request]);
       await expect(sut.getRequestsForGroup(factory.auth({ user: other }), clusterGroupId)).rejects.toThrow(
-        'Not found or no clusterGroupRequest.read access',
+        'Not found or no clusterGroup.read access',
       );
     });
   });
@@ -204,7 +206,9 @@ describe(ClusterGroupService.name, () => {
         userId: invitee.id,
       });
 
-      await expect(sut.acceptRequest(factory.auth({ user: other }), request.id)).rejects.toThrow('Request not found');
+      await expect(sut.acceptRequest(factory.auth({ user: other }), request.id)).rejects.toThrow(
+        'Not found or no clusterGroupRequest.read access',
+      );
       await expect(getClusterGroupId(ctx, other.id)).resolves.toBe(otherClusterGroupId);
     });
   });
@@ -293,31 +297,6 @@ describe(ClusterGroupService.name, () => {
           .where('asset_face.id', '=', assetFace.id)
           .executeTakeFirstOrThrow(),
       ).resolves.toEqual({ personGroupId: person.personGroupId });
-      await expect(getClusterGroupId(ctx, user.id)).resolves.toBe(clusterGroupId);
-    });
-
-    it('should require the user to leave their current cluster group first', async () => {
-      const { sut, ctx } = setup(await getKyselyDB());
-      const { user: owner } = await ctx.newUser();
-      const { user } = await ctx.newUser();
-      const { user: third } = await ctx.newUser();
-      const clusterGroupId = await getClusterGroupId(ctx, owner.id);
-      const thirdClusterGroupId = await getClusterGroupId(ctx, third.id);
-
-      // the user joins the first group
-      const { value: first } = await sut.createRequest(factory.auth({ user: owner }), clusterGroupId, {
-        userId: user.id,
-      });
-      await sut.acceptRequest(factory.auth({ user }), first.id);
-
-      // and is then asked to join another one without leaving
-      const { value: second } = await sut.createRequest(factory.auth({ user: third }), thirdClusterGroupId, {
-        userId: user.id,
-      });
-
-      await expect(sut.acceptRequest(factory.auth({ user }), second.id)).rejects.toThrow(
-        'Leave the current cluster group before joining another one',
-      );
       await expect(getClusterGroupId(ctx, user.id)).resolves.toBe(clusterGroupId);
     });
   });

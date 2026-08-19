@@ -169,13 +169,7 @@ export class JobService extends BaseService {
           break;
         }
 
-        const owner = await this.assetRepository.getById(item.data.id);
-        if (!owner) {
-          this.logger.warn(`Could not find asset ${item.data.id} after generating thumbnails`);
-          break;
-        }
-
-        const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([item.data.id], owner.ownerId);
+        const [asset] = await this.assetRepository.getByIdsWithAllRelationsButStacks([item.data.id]);
         if (!asset) {
           this.logger.warn(`Could not find asset ${item.data.id} after generating thumbnails`);
           break;

@@ -1,10 +1,10 @@
 <script lang="ts">
   import SettingSwitch from '$lib/components/shared-components/settings/SettingSwitch.svelte';
   import UserAvatar from '$lib/components/shared-components/UserAvatar.svelte';
+  import { authManager } from '$lib/managers/auth-manager.svelte';
   import ClusterGroupUserSelectionModal from '$lib/modals/ClusterGroupUserSelectionModal.svelte';
   import ClusterGroupUsersModal from '$lib/modals/ClusterGroupUsersModal.svelte';
   import PartnerSelectionModal from '$lib/modals/PartnerSelectionModal.svelte';
-  import { authManager } from '$lib/managers/auth-manager.svelte';
   import { handleError } from '$lib/utils/handle-error';
   import {
     acceptClusterGroupRequest,
@@ -30,12 +30,12 @@
   import { onMount } from 'svelte';
   import { t } from 'svelte-i18n';
 
-  interface PartnerSharing {
+  type PartnerSharing = {
     user: UserResponseDto;
     sharedByMe: boolean;
     sharedWithMe: boolean;
     inTimeline: boolean;
-  }
+  };
 
   let clusterGroupId: string = $state('');
   let users: UserResponseDto[] = $state([]);
@@ -88,7 +88,7 @@
 
       await refresh();
     } catch (error) {
-      handleError(error, $t('errors.unable_to_create_cluster_group_request'));
+      handleError(error, $t('errors.something_went_wrong'));
     }
   };
 

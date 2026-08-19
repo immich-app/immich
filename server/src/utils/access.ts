@@ -306,14 +306,22 @@ const checkOtherAccess = async (access: AccessRepository, request: OtherAccessRe
     }
 
     case Permission.ClusterGroupLeave:
-    case Permission.ClusterGroupRequestCreate:
-    case Permission.ClusterGroupRequestDelete:
+    case Permission.ClusterGroupRequestCreate: {
+      return access.clusterGroup.checkOwnerAccess(auth.user.id, ids);
+    }
+
+    case Permission.ClusterGroupRequestDelete: {
+      const isOwner = await access.clusterGroupRequest.checkOwnerAccess(auth.user.id, ids);
+      const isGroupMember = await access.clusterGroupRequest.checkGroupAccess(auth.user.id, ids);
+      return setUnion(isOwner, isGroupMember);
+    }
+
     case Permission.ClusterGroupRequestRead: {
-      return await access.clusterGroup.checkOwnerAccess(auth.user.id, ids);
+      return access.clusterGroupRequest.checkOwnerAccess(auth.user.id, ids);
     }
 
     case Permission.PartnerUpdate: {
-      return await access.partner.checkUpdateAccess(auth.user.id, ids);
+      return access.partner.checkUpdateAccess(auth.user.id, ids);
     }
 
     case Permission.SessionRead:
