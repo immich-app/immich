@@ -37,7 +37,8 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
       leftOuterJoin(
         _db.remoteAssetEntity,
         _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
-            _db.remoteAssetEntity.deletedAt.isNull(),
+            _db.remoteAssetEntity.deletedAt.isNull() &
+            _db.remoteAssetEntity.visibility.isIn([AssetVisibility.archive.index, AssetVisibility.timeline.index]),
         useColumns: false,
       ),
       leftOuterJoin(
@@ -97,7 +98,11 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
             leftOuterJoin(
               _db.remoteAssetEntity,
               _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
-                  _db.remoteAssetEntity.deletedAt.isNull(),
+                  _db.remoteAssetEntity.deletedAt.isNull() &
+                  _db.remoteAssetEntity.visibility.isIn([
+                    AssetVisibility.archive.index,
+                    AssetVisibility.timeline.index,
+                  ]),
               useColumns: false,
             ),
             leftOuterJoin(
@@ -221,16 +226,22 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
   }
 
   Stream<(DateTime, DateTime)> watchDateRange(String albumId) {
+    final dateExp = coalesce([_db.remoteAssetEntity.localDateTime, _db.remoteAssetEntity.createdAt]);
     final query = _db.remoteAlbumAssetEntity.selectOnly()
       ..where(_db.remoteAlbumAssetEntity.albumId.equals(albumId))
-      ..addColumns([_db.remoteAssetEntity.createdAt.min(), _db.remoteAssetEntity.createdAt.max()])
+      ..addColumns([dateExp.min(), dateExp.max()])
       ..join([
-        innerJoin(_db.remoteAssetEntity, _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId)),
+        innerJoin(
+          _db.remoteAssetEntity,
+          _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
+              _db.remoteAssetEntity.deletedAt.isNull() &
+              _db.remoteAssetEntity.visibility.isIn([AssetVisibility.archive.index, AssetVisibility.timeline.index]),
+        ),
       ]);
 
     return query.map((row) {
-      final minDate = row.read(_db.remoteAssetEntity.createdAt.min());
-      final maxDate = row.read(_db.remoteAssetEntity.createdAt.max());
+      final minDate = row.read(dateExp.min());
+      final maxDate = row.read(dateExp.max());
       return (minDate ?? DateTime.now(), maxDate ?? DateTime.now());
     }).watchSingle();
   }
@@ -422,16 +433,22 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
           '''
           SELECT
             raae.album_id,
-            $sqlAgg(rae.local_date_time) AS asset_date
+            $sqlAgg(COALESCE(rae.local_date_time, rae.created_at)) AS asset_date
           FROM json_each(?) ids
           INNER JOIN remote_album_asset_entity raae
             ON raae.album_id = ids.value
           INNER JOIN remote_asset_entity rae
             ON rae.id = raae.asset_id
+          WHERE rae.deleted_at IS NULL
+            AND rae.visibility IN (?, ?)
           GROUP BY raae.album_id
           ORDER BY asset_date ASC
           ''',
-          variables: [Variable<String>(jsonIds)],
+          variables: [
+            Variable<String>(jsonIds),
+            Variable<int>(AssetVisibility.timeline.index),
+            Variable<int>(AssetVisibility.archive.index),
+          ],
           readsFrom: {_db.remoteAlbumAssetEntity, _db.remoteAssetEntity},
         )
         .get();
@@ -533,7 +550,11 @@ class RemoteAlbumRepository extends DatabaseAccessor<Drift> with $RemoteAlbumRep
             leftOuterJoin(
               _db.remoteAssetEntity,
               _db.remoteAssetEntity.id.equalsExp(_db.remoteAlbumAssetEntity.assetId) &
-                  _db.remoteAssetEntity.deletedAt.isNull(),
+                  _db.remoteAssetEntity.deletedAt.isNull() &
+                  _db.remoteAssetEntity.visibility.isIn([
+                    AssetVisibility.archive.index,
+                    AssetVisibility.timeline.index,
+                  ]),
               useColumns: false,
             ),
             leftOuterJoin(
