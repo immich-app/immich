@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import { defaults } from 'src/config';
 import { SystemConfigController } from 'src/controllers/system-config.controller';
+import { defaults } from 'src/dtos/config.dto';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { SystemConfigService } from 'src/services/system-config.service';
 import request from 'supertest';
