@@ -82,10 +82,7 @@ export class TagRepository {
   async update(id: string, dto: Updateable<TagTable>) {
     return this.db.transaction().execute(async (tx) => {
       // Get previous tag value for reference if the current update contains a new value
-      const previousTag =
-        dto.value === undefined
-          ? undefined
-          : await tx.selectFrom('tag').select('value').where('id', '=', id).executeTakeFirstOrThrow();
+      const previousTag = dto.value === undefined ? undefined : await this.get(id);
 
       // Perform main tag update
       const updated = await tx
@@ -138,7 +135,6 @@ export class TagRepository {
           .whereRef('tag.id', '=', 'descendants.id')
           .execute();
       }
-
       return updated;
     });
   }

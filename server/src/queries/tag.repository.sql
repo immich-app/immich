@@ -70,6 +70,17 @@ returning
 
 -- TagRepository.update
 begin
+select
+  "tag"."id",
+  "tag"."value",
+  "tag"."createdAt",
+  "tag"."updatedAt",
+  "tag"."color",
+  "tag"."parentId"
+from
+  "tag"
+where
+  "id" = $1
 update "tag"
 set
   "value" = $1,
