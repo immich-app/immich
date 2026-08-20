@@ -631,8 +631,18 @@ export type ApiKeyCreateDto = {
 };
 export type ApiKeyCreateResponseDto = {
     apiKey: ApiKeyResponseDto;
+    /** Creation date */
+    createdAt: string;
+    /** API key ID */
+    id: string;
+    /** API key name */
+    name: string;
+    /** List of permissions */
+    permissions: Permission[];
     /** API key secret (only shown once) */
     secret: string;
+    /** Last update date */
+    updatedAt: string;
 };
 export type ApiKeyUpdateDto = {
     /** API key name */
