@@ -1,5 +1,5 @@
 import { AUDIO_ENCODER, AV1_LEVELS, CodecLevel, H264_LEVELS, HEVC_LEVELS, SUPPORTED_HWA_CODECS } from 'src/constants';
-import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
+import { ConfigFFmpegDto } from 'src/dtos/config.dto';
 import {
   ColorMatrix,
   ColorPrimaries,
@@ -62,18 +62,18 @@ export const getCodecString = (codec: VideoCodec, width: number, height: number,
 export class BaseConfig implements VideoCodecSWConfig {
   readonly presets = ['veryslow', 'slower', 'slow', 'medium', 'fast', 'faster', 'veryfast', 'superfast', 'ultrafast'];
   protected constructor(
-    protected config: SystemConfigFFmpegDto,
+    protected config: ConfigFFmpegDto,
     protected tune: VideoTuning = { strictGop: false, lowLatency: false },
   ) {}
 
-  static create(config: SystemConfigFFmpegDto, interfaces: VideoInterfaces, tune?: VideoTuning) {
+  static create(config: ConfigFFmpegDto, interfaces: VideoInterfaces, tune?: VideoTuning) {
     if (config.accel === TranscodeHardwareAcceleration.Disabled) {
       return BaseConfig.getSWCodecConfig(config, tune);
     }
     return BaseConfig.getHWCodecConfig(config, interfaces, tune);
   }
 
-  private static getSWCodecConfig(config: SystemConfigFFmpegDto, tune?: VideoTuning): VideoCodecSWConfig {
+  private static getSWCodecConfig(config: ConfigFFmpegDto, tune?: VideoTuning): VideoCodecSWConfig {
     switch (config.targetVideoCodec) {
       case VideoCodec.H264: {
         return new H264Config(config, tune);
@@ -93,7 +93,7 @@ export class BaseConfig implements VideoCodecSWConfig {
     }
   }
 
-  private static getHWCodecConfig(config: SystemConfigFFmpegDto, interfaces: VideoInterfaces, tune?: VideoTuning) {
+  private static getHWCodecConfig(config: ConfigFFmpegDto, interfaces: VideoInterfaces, tune?: VideoTuning) {
     if (!SUPPORTED_HWA_CODECS[config.accel].includes(config.targetVideoCodec)) {
       throw new Error(
         `${config.accel.toUpperCase()} acceleration does not support codec '${config.targetVideoCodec.toUpperCase()}'. Supported codecs: ${SUPPORTED_HWA_CODECS[config.accel]}`,
@@ -424,7 +424,7 @@ export class BaseHWConfig extends BaseConfig {
   protected device: string;
 
   constructor(
-    protected config: SystemConfigFFmpegDto,
+    protected config: ConfigFFmpegDto,
     protected interfaces: VideoInterfaces,
     tune?: VideoTuning,
   ) {
@@ -471,7 +471,7 @@ export class BaseHWConfig extends BaseConfig {
 }
 
 export class ThumbnailConfig extends BaseConfig {
-  static create(config: SystemConfigFFmpegDto): VideoCodecSWConfig {
+  static create(config: ConfigFFmpegDto): VideoCodecSWConfig {
     return new ThumbnailConfig(config);
   }
 

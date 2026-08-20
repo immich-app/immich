@@ -1,8 +1,8 @@
 import { BadRequestException } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { PassThrough, Readable } from 'node:stream';
-import { defaults, SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
+import { defaults, SystemConfig } from 'src/dtos/config.dto';
 import { ImmichWorker, JobStatus, StorageFolder } from 'src/enum';
 import { MaintenanceHealthRepository } from 'src/maintenance/maintenance-health.repository';
 import { DatabaseBackupService } from 'src/services/database-backup.service';

@@ -1,9 +1,9 @@
 import { ShallowDehydrateObject } from 'kysely';
-import { SystemConfig } from 'src/config';
 import { VECTOR_EXTENSIONS } from 'src/constants';
 import { AssetFile } from 'src/database';
 import { UploadFieldName } from 'src/dtos/asset-media.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { AssetEditActionItem } from 'src/dtos/editing.dto';
 import { SetMaintenanceModeDto } from 'src/dtos/maintenance.dto';
 import {
@@ -34,10 +34,10 @@ import { Mocked } from 'vitest';
 
 export type DeepPartial<T> = T extends Date
   ? T
-  : T extends Record<string, unknown>
-    ? { [K in keyof T]?: DeepPartial<T[K]> }
-    : T extends Array<infer R>
-      ? DeepPartial<R>[]
+  : T extends Array<infer R>
+    ? DeepPartial<R>[]
+    : T extends object
+      ? { [K in keyof T]?: DeepPartial<T[K]> }
       : T;
 
 export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
