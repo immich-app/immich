@@ -9,84 +9,81 @@ import 'package:immich_mobile/utils/semver.dart';
 
 enum SettingsKey<T> {
   // Theme
-  themePrimaryColor<ImmichColorPreset>(codec: EnumCodec(ImmichColorPreset.values)),
-  themeMode<ThemeMode>(codec: EnumCodec(ThemeMode.values)),
-  themeDynamic<bool>(),
-  themeColorfulInterface<bool>(),
+  themePrimaryColor<ImmichColorPreset>(codec: EnumCodec(ImmichColorPreset.values), sensitive: false),
+  themeMode<ThemeMode>(codec: EnumCodec(ThemeMode.values), sensitive: false),
+  themeDynamic<bool>(sensitive: false),
+  themeColorfulInterface<bool>(sensitive: false),
 
   // Image
-  imagePreferRemote<bool>(),
-  imageLoadOriginal<bool>(),
+  imagePreferRemote<bool>(sensitive: false),
+  imageLoadOriginal<bool>(sensitive: false),
 
   // Viewer
-  viewerLoopVideo<bool>(),
-  viewerLoadOriginalVideo<bool>(),
-  viewerAutoPlayVideo<bool>(),
-  viewerTapToNavigate<bool>(),
+  viewerLoopVideo<bool>(sensitive: false),
+  viewerLoadOriginalVideo<bool>(sensitive: false),
+  viewerAutoPlayVideo<bool>(sensitive: false),
+  viewerTapToNavigate<bool>(sensitive: false),
 
   // Network
-  networkAutoEndpointSwitching<bool>(),
-  networkExternalEndpointList<List<String>>(codec: ListCodec(PrimitiveCodec.string), sensitive: true),
-  networkCustomHeaders<Map<String, String>>(
-    codec: MapCodec(PrimitiveCodec.string, PrimitiveCodec.string),
-    sensitive: true,
-  ),
-  networkPreferredWifiName<String?>(sensitive: true),
-  networkLocalEndpoint<String?>(sensitive: true),
+  networkAutoEndpointSwitching<bool>(sensitive: false),
+  networkExternalEndpointList<List<String>>(codec: ListCodec(PrimitiveCodec.string)),
+  networkCustomHeaders<Map<String, String>>(codec: MapCodec(PrimitiveCodec.string, PrimitiveCodec.string)),
+  networkPreferredWifiName<String?>(),
+  networkLocalEndpoint<String?>(),
 
   // Album
-  albumSortMode<AlbumSortMode>(codec: EnumCodec(AlbumSortMode.values)),
-  albumIsReverse<bool>(),
-  albumIsGrid<bool>(),
+  albumSortMode<AlbumSortMode>(codec: EnumCodec(AlbumSortMode.values), sensitive: false),
+  albumIsReverse<bool>(sensitive: false),
+  albumIsGrid<bool>(sensitive: false),
 
   // Backup
-  backupEnabled<bool>(),
-  backupUseCellularForVideos<bool>(),
-  backupUseCellularForPhotos<bool>(),
-  backupRequireCharging<bool>(),
-  backupTriggerDelay<int>(),
-  backupSyncAlbums<bool>(),
+  backupEnabled<bool>(sensitive: false),
+  backupUseCellularForVideos<bool>(sensitive: false),
+  backupUseCellularForPhotos<bool>(sensitive: false),
+  backupRequireCharging<bool>(sensitive: false),
+  backupTriggerDelay<int>(sensitive: false),
+  backupSyncAlbums<bool>(sensitive: false),
 
   // Timeline
-  timelineTilesPerRow<int>(),
-  timelineGroupAssetsBy<GroupAssetsBy>(codec: EnumCodec(GroupAssetsBy.values)),
-  timelineStorageIndicator<bool>(),
+  timelineTilesPerRow<int>(sensitive: false),
+  timelineGroupAssetsBy<GroupAssetsBy>(codec: EnumCodec(GroupAssetsBy.values), sensitive: false),
+  timelineStorageIndicator<bool>(sensitive: false),
 
   // Log
-  logLevel<LogLevel>(codec: EnumCodec(LogLevel.values)),
+  logLevel<LogLevel>(codec: EnumCodec(LogLevel.values), sensitive: false),
 
   // Map
-  mapShowFavoriteOnly<bool>(),
-  mapRelativeDate<int>(),
-  mapCustomFrom<DateTime?>(),
-  mapCustomTo<DateTime?>(),
-  mapIncludeArchived<bool>(),
-  mapThemeMode<ThemeMode>(codec: EnumCodec(ThemeMode.values)),
-  mapWithPartners<bool>(),
+  mapShowFavoriteOnly<bool>(sensitive: false),
+  mapRelativeDate<int>(sensitive: false),
+  mapCustomFrom<DateTime?>(sensitive: false),
+  mapCustomTo<DateTime?>(sensitive: false),
+  mapIncludeArchived<bool>(sensitive: false),
+  mapThemeMode<ThemeMode>(codec: EnumCodec(ThemeMode.values), sensitive: false),
+  mapWithPartners<bool>(sensitive: false),
 
   // Cleanup
-  cleanupKeepFavorites<bool>(),
-  cleanupKeepMediaType<AssetKeepType>(codec: EnumCodec(AssetKeepType.values)),
-  cleanupKeepAlbumIds<List<String>>(codec: ListCodec(PrimitiveCodec.string)),
-  cleanupCutoffDaysAgo<int>(),
-  cleanupDefaultsInitialized<bool>(),
+  cleanupKeepFavorites<bool>(sensitive: false),
+  cleanupKeepMediaType<AssetKeepType>(codec: EnumCodec(AssetKeepType.values), sensitive: false),
+  cleanupKeepAlbumIds<List<String>>(codec: ListCodec(PrimitiveCodec.string), sensitive: false),
+  cleanupCutoffDaysAgo<int>(sensitive: false),
+  cleanupDefaultsInitialized<bool>(sensitive: false),
 
   // Share
-  shareFileType<ShareAssetType>(codec: EnumCodec(ShareAssetType.values)),
+  shareFileType<ShareAssetType>(codec: EnumCodec(ShareAssetType.values), sensitive: false),
 
   // Slideshow
-  slideshowRepeat<bool>(),
-  slideshowDuration<int>(),
-  slideshowLook<SlideshowLook>(codec: EnumCodec(SlideshowLook.values)),
-  slideshowDirection<SlideshowDirection>(codec: EnumCodec(SlideshowDirection.values)),
+  slideshowRepeat<bool>(sensitive: false),
+  slideshowDuration<int>(sensitive: false),
+  slideshowLook<SlideshowLook>(codec: EnumCodec(SlideshowLook.values), sensitive: false),
+  slideshowDirection<SlideshowDirection>(codec: EnumCodec(SlideshowDirection.values), sensitive: false),
 
   // Feature message
-  featureMessageSeenRelease<SemVer>(codec: SemVerCodec());
+  featureMessageSeenRelease<SemVer>(codec: SemVerCodec(), sensitive: false);
 
   final ValueCodec<T>? _codecOverride;
   final bool sensitive;
 
-  const SettingsKey({ValueCodec<T>? codec, this.sensitive = false}) : _codecOverride = codec;
+  const SettingsKey({ValueCodec<T>? codec, this.sensitive = true}) : _codecOverride = codec;
 
   ValueCodec<T> get _codec => _codecOverride ?? ValueCodec.forType(T);
 
