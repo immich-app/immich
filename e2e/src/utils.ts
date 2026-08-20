@@ -675,9 +675,9 @@ export const utils = {
   },
 
   cliLogin: async (accessToken: string) => {
-    const key = await utils.createApiKey(accessToken, [Permission.All]);
-    await immichCli(['login', app, key.secret]);
-    return key.secret;
+    const { secret } = await utils.createApiKey(accessToken, [Permission.All]);
+    await immichCli(['login', app, secret]);
+    return secret;
   },
 
   scan: async (accessToken: string, id: string) => {
