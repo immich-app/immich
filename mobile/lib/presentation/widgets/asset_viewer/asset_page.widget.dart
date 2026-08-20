@@ -333,9 +333,15 @@ class _AssetPageState extends ConsumerState<AssetPage> {
     required bool isCurrent,
     required bool isPlayingMotionVideo,
     required String? localFilePath,
+    required Size? remoteThumbnailSize,
   }) {
     final size = context.sizeData;
-    final imageProvider = getFullImageProvider(asset, size: size, localFilePath: localFilePath);
+    final imageProvider = getFullImageProvider(
+      asset,
+      size: size,
+      localFilePath: localFilePath,
+      remoteThumbnailSize: remoteThumbnailSize,
+    );
 
     if (asset.isImage && !isPlayingMotionVideo) {
       return PhotoView(
@@ -357,7 +363,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
         onDragCancel: _onDragCancel,
         onTapUp: _onTapUp,
         onLongPressStart: asset.isMotionPhoto ? _onLongPress : null,
-        errorBuilder: (_, __, ___) => SizedBox(
+        errorBuilder: (_, _, _) => SizedBox(
           width: size.width,
           height: size.height,
           child: Thumbnail.fromAsset(asset: asset, fit: BoxFit.contain),
@@ -397,11 +403,13 @@ class _AssetPageState extends ConsumerState<AssetPage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentAsset = ref.watch(assetViewerProvider.select((s) => s.currentAsset));
+    final (currentAsset, thumbnailSize) = ref.watch(
+      assetViewerProvider.select((s) => (s.currentAsset, s.thumbnailSize)),
+    );
     _showingDetails = ref.watch(assetViewerProvider.select((s) => s.showingDetails));
     final stackIndex = ref.watch(assetViewerProvider.select((s) => s.stackIndex));
     final isPlayingMotionVideo = ref.watch(isPlayingMotionVideoProvider);
-    final timelineOrigin = ref.read(timelineServiceProvider).origin;
+    final timelineOrigin = ref.watch(timelineServiceProvider).origin;
     final showingOcr = ref.watch(assetViewerProvider.select((s) => s.showingOcr));
 
     final asset = _asset;
@@ -454,6 +462,7 @@ class _AssetPageState extends ConsumerState<AssetPage> {
                     isCurrent: isCurrent,
                     isPlayingMotionVideo: isPlayingMotionVideo,
                     localFilePath: viewIntentFilePath,
+                    remoteThumbnailSize: thumbnailSize,
                   ),
                 ),
                 if (showingOcr && displayAsset.width != null && displayAsset.height != null)

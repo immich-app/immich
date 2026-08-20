@@ -6,11 +6,11 @@ class LocalAssetFactory {
   const LocalAssetFactory();
 
   static LocalAsset create({String? id, String? name, String? remoteId}) {
-    id = TestUtils.uuid(id);
+    final assetId = TestUtils.uuid(id);
 
     return LocalAsset(
-      id: id,
-      name: name ?? 'local_$id.jpg',
+      id: assetId,
+      name: name ?? 'local_$assetId.jpg',
       remoteId: remoteId,
       type: AssetType.image,
       createdAt: TestUtils.yesterday(),

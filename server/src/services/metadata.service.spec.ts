@@ -2,7 +2,7 @@ import { BinaryField, ExifDateTime } from 'exiftool-vendored';
 import { DateTime } from 'luxon';
 import { randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
-import { defaults } from 'src/config';
+import { defaults } from 'src/dtos/config.dto';
 import {
   AssetFileType,
   AssetType,

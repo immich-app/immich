@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:background_downloader/background_downloader.dart';
 import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/constants/constants.dart';
 import 'package:immich_mobile/domain/models/asset/asset_metadata.model.dart';
@@ -15,7 +16,7 @@ import 'package:immich_mobile/infrastructure/repositories/backup.repository.dart
 import 'package:immich_mobile/infrastructure/repositories/local_asset.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/settings.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/storage.repository.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/storage.provider.dart';
 import 'package:immich_mobile/repositories/asset_media.repository.dart';
 import 'package:immich_mobile/repositories/upload.repository.dart';
@@ -25,12 +26,15 @@ import 'package:logging/logging.dart';
 import 'package:openapi/api.dart' as api;
 import 'package:path/path.dart' as p;
 
+part 'background_upload.service.freezed.dart';
+
 final backgroundUploadServiceProvider = Provider((ref) {
+  final db = ref.watch(driftProvider);
   final service = BackgroundUploadService(
     ref.watch(uploadRepositoryProvider),
     ref.watch(storageRepositoryProvider),
-    ref.watch(localAssetRepository),
-    ref.watch(backupRepositoryProvider),
+    db.localAssetRepository,
+    db.backupRepository,
     ref.watch(assetMediaRepositoryProvider),
   );
 
@@ -39,20 +43,15 @@ final backgroundUploadServiceProvider = Provider((ref) {
 });
 
 /// Metadata for upload tasks to track live photo handling
-class UploadTaskMetadata {
-  final String localAssetId;
-  final bool isLivePhotos;
-  final String livePhotoVideoId;
+@Freezed(fromJson: false, toJson: false)
+abstract class UploadTaskMetadata with _$UploadTaskMetadata {
+  const UploadTaskMetadata._();
 
-  const UploadTaskMetadata({required this.localAssetId, required this.isLivePhotos, required this.livePhotoVideoId});
-
-  UploadTaskMetadata copyWith({String? localAssetId, bool? isLivePhotos, String? livePhotoVideoId}) {
-    return UploadTaskMetadata(
-      localAssetId: localAssetId ?? this.localAssetId,
-      isLivePhotos: isLivePhotos ?? this.isLivePhotos,
-      livePhotoVideoId: livePhotoVideoId ?? this.livePhotoVideoId,
-    );
-  }
+  const factory UploadTaskMetadata({
+    required String localAssetId,
+    required bool isLivePhotos,
+    required String livePhotoVideoId,
+  }) = _UploadTaskMetadata;
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -70,28 +69,10 @@ class UploadTaskMetadata {
     );
   }
 
-  String toJson() => json.encode(toMap());
-
   factory UploadTaskMetadata.fromJson(String source) =>
       UploadTaskMetadata.fromMap(json.decode(source) as Map<String, dynamic>);
 
-  @override
-  String toString() =>
-      'UploadTaskMetadata(localAssetId: $localAssetId, isLivePhotos: $isLivePhotos, livePhotoVideoId: $livePhotoVideoId)';
-
-  @override
-  bool operator ==(covariant UploadTaskMetadata other) {
-    if (identical(this, other)) {
-      return true;
-    }
-
-    return other.localAssetId == localAssetId &&
-        other.isLivePhotos == isLivePhotos &&
-        other.livePhotoVideoId == livePhotoVideoId;
-  }
-
-  @override
-  int get hashCode => localAssetId.hashCode ^ isLivePhotos.hashCode ^ livePhotoVideoId.hashCode;
+  String toJson() => json.encode(toMap());
 }
 
 /// Service for handling background uploads using iOS URLSession (background_downloader)
@@ -112,8 +93,8 @@ class BackgroundUploadService {
 
   final UploadRepository _uploadRepository;
   final StorageRepository _storageRepository;
-  final DriftLocalAssetRepository _localAssetRepository;
-  final DriftBackupRepository _backupRepository;
+  final LocalAssetRepository _localAssetRepository;
+  final BackupRepository _backupRepository;
   final AssetMediaRepository _assetMediaRepository;
   final Logger _logger = Logger('BackgroundUploadService');
 
@@ -398,7 +379,7 @@ class BackgroundUploadService {
       'fileModifiedAt': modifiedAt.toUtc().toIso8601String(),
       'isFavorite': isFavorite?.toString() ?? 'false',
       'duration': '0',
-      if (fields != null) ...fields,
+      ...?fields,
       if (CurrentPlatform.isIOS && cloudId != null)
         'metadata': jsonEncode([
           RemoteAssetMetadataItem(

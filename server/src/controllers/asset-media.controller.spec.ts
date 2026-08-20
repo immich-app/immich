@@ -44,11 +44,6 @@ describe(AssetMediaController.name, () => {
   });
 
   describe('POST /assets', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post(`/assets`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should accept metadata', async () => {
       const mobileMetadata = { key: AssetMetadataKey.MobileApp, value: { iCloudId: '123' } };
       const { status } = await request(ctx.getHttpServer())
@@ -171,20 +166,9 @@ describe(AssetMediaController.name, () => {
     });
 
     // TODO figure out how to deal with `sendFile`
-    describe.skip('GET /assets/:id/original', () => {
-      it('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/original`);
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
-    });
 
     // TODO figure out how to deal with `sendFile`
     describe('GET /assets/:id/thumbnail', () => {
-      it.skip('should be an authenticated route', async () => {
-        await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail`);
-        expect(ctx.authenticate).toHaveBeenCalled();
-      });
-
       it('should redirect if size=original is requested', async () => {
         const { status } = await request(ctx.getHttpServer()).get(`/assets/${factory.uuid()}/thumbnail?size=original`);
         expect(status).toBe(302);

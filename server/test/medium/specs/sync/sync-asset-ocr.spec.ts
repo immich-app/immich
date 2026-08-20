@@ -3,6 +3,7 @@ import { SyncEntityType, SyncRequestType } from 'src/enum';
 import { OcrRepository } from 'src/repositories/ocr.repository';
 import { DB } from 'src/schema';
 import { SyncTestContext } from 'test/medium.factory';
+import { factory } from 'test/small.factory';
 import { getKyselyDB } from 'test/utils';
 
 let defaultDatabase: Kysely<DB>;
@@ -295,6 +296,61 @@ describe(SyncEntityType.AssetOcrV1, () => {
           text: 'Hello World',
           isVisible: false,
         },
+        type: 'AssetOcrV1',
+      },
+      expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),
+    ]);
+
+    await ctx.syncAckAll(auth, updatedResponse);
+    await ctx.assertSyncIsComplete(auth, [SyncRequestType.AssetOcrV1]);
+  });
+
+  it('should sync in-place OCR visibility toggles (e.g. after an asset edit)', async () => {
+    const { auth, user, ctx } = await setup();
+
+    const ocrRepo = ctx.get(OcrRepository);
+    const { asset } = await ctx.newAsset({ ownerId: user.id });
+    await ocrRepo.upsert(
+      asset.id,
+      [
+        {
+          assetId: asset.id,
+          x1: 0.1,
+          y1: 0.2,
+          x2: 0.9,
+          y2: 0.2,
+          x3: 0.9,
+          y3: 0.8,
+          x4: 0.1,
+          y4: 0.8,
+          boxScore: 0.95,
+          textScore: 0.92,
+          text: 'Hello World',
+          isVisible: true,
+        },
+      ],
+      'Hello World',
+    );
+
+    const response = await ctx.syncStream(auth, [SyncRequestType.AssetOcrV1]);
+    const ocrId = (response[0] as { data: { id: string } }).data.id;
+    await ctx.syncAckAll(auth, response);
+
+    await ocrRepo.updateOcrVisibilities(
+      asset.id,
+      [],
+      [factory.assetOcr({ id: ocrId, assetId: asset.id, text: 'Hello World' })],
+    );
+
+    const updatedResponse = await ctx.syncStream(auth, [SyncRequestType.AssetOcrV1]);
+    expect(updatedResponse).toEqual([
+      {
+        ack: expect.any(String),
+        data: expect.objectContaining({
+          id: ocrId,
+          assetId: asset.id,
+          isVisible: false,
+        }),
         type: 'AssetOcrV1',
       },
       expect.objectContaining({ type: SyncEntityType.SyncCompleteV1 }),

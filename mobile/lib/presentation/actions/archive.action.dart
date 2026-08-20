@@ -57,7 +57,8 @@ class ArchiveAction extends AssetActionBuilder {
 
     try {
       await assetService.update(assetIds, visibility: .some(shouldArchive ? .archive : .timeline));
-      toastService.success(message);
+      Future<void> undo() => assetService.update(assetIds, visibility: .some(shouldArchive ? .timeline : .archive));
+      toastService.success(message, toast: .new(onUndo: undo));
       clearSelection();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to update the archive status for assets");

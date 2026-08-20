@@ -15,9 +15,9 @@ const String _kHashCancelledCode = "HASH_CANCELLED";
 
 class HashService {
   final int _batchSize;
-  final DriftLocalAlbumRepository _localAlbumRepository;
-  final DriftLocalAssetRepository _localAssetRepository;
-  final DriftTrashedLocalAssetRepository _trashedLocalAssetRepository;
+  final LocalAlbumRepository _localAlbumRepository;
+  final LocalAssetRepository _localAssetRepository;
+  final TrashedLocalAssetRepository _trashedLocalAssetRepository;
   final NativeSyncApi _nativeSyncApi;
   final Completer<void>? _cancellation;
   final _log = Logger('HashService');
@@ -66,11 +66,12 @@ class HashService {
           await _hashAssets(pseudoAlbum, trashedToHash, isTrashed: true);
         }
       }
-    } on PlatformException catch (e) {
+    } on PlatformException catch (e, s) {
       if (e.code == _kHashCancelledCode) {
         _log.warning("Hashing cancelled by platform");
         return;
       }
+      _log.severe("Native hashing failed: ${e.code}", e, s);
     } catch (e, s) {
       _log.severe("Error during hashing", e, s);
     }

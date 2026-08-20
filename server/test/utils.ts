@@ -95,7 +95,9 @@ export type ControllerContext = {
   close: () => Promise<void>;
 };
 
-export const controllerSetup = async (controller: new (...args: any[]) => unknown, providers: Provider[]) => {
+type ControllerClass = new (...args: any[]) => unknown;
+
+export const controllerSetup = async (controller: ControllerClass | ControllerClass[], providers: Provider[]) => {
   const noopInterceptor = { intercept: (ctx: never, next: CallHandler<unknown>) => next.handle() };
   const upload = multer({ storage: multer.memoryStorage() });
   const memoryFileInterceptor = {
@@ -117,7 +119,7 @@ export const controllerSetup = async (controller: new (...args: any[]) => unknow
     },
   };
   const moduleRef = await Test.createTestingModule({
-    controllers: [controller],
+    controllers: Array.isArray(controller) ? controller : [controller],
     providers: [
       { provide: APP_FILTER, useClass: GlobalExceptionFilter },
       { provide: APP_PIPE, useClass: ZodValidationPipe },
@@ -541,10 +543,8 @@ export const mockDuplex =
       if (error) {
         duplex.destroy(error as Error);
       } else if (exitCode === 0) {
-        /* eslint-disable unicorn/prefer-single-call */
         duplex.push(stdout);
         duplex.push(null);
-        /* eslint-enable unicorn/prefer-single-call */
       } else {
         duplex.destroy(new Error(`${command} non-zero exit code (${exitCode})\n${stderr}`));
       }
@@ -552,43 +552,6 @@ export const mockDuplex =
 
     return duplex;
   };
-
-export const mockFork = vitest.fn((exitCode: number, stdout: string, stderr: string, error?: unknown) => {
-  const stdoutStream = new Readable({
-    read() {
-      this.push(stdout); // write mock data to stdout
-      this.push(null); // end stream
-    },
-  });
-
-  return {
-    stdout: stdoutStream,
-    stderr: new Readable({
-      read() {
-        this.push(stderr); // write mock data to stderr
-        this.push(null); // end stream
-      },
-    }),
-    stdin: new Writable({
-      write(chunk, encoding, callback) {
-        callback();
-      },
-    }),
-    exitCode,
-    on: vitest.fn((event, callback: any) => {
-      if (event === 'close') {
-        stdoutStream.once('end', () => callback(0));
-      }
-      if (event === 'error' && error) {
-        stdoutStream.once('end', () => callback(error));
-      }
-      if (event === 'exit') {
-        stdoutStream.once('end', () => callback(exitCode));
-      }
-    }),
-    kill: vitest.fn(),
-  } as unknown as ChildProcessWithoutNullStreams;
-});
 
 export async function* makeStream<T>(items: T[] = []): AsyncGenerator<T> {
   for (const item of items) {

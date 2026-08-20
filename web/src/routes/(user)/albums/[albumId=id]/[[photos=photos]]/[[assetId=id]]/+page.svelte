@@ -1,5 +1,6 @@
 <script lang="ts">
   import { goto, invalidate, onNavigate } from '$app/navigation';
+  import { navigating } from '$app/state';
   import { scrollMemoryClearer } from '$lib/actions/scroll-memory';
   import AlbumMap from '$lib/components/album-page/AlbumMap.svelte';
   import AlbumSummary from '$lib/components/album-page/AlbumSummary.svelte';
@@ -312,6 +313,9 @@
 
   const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
     album = newAlbum;
+
+    // invalidating during navigation causes an infinite page load
+    await navigating.complete;
 
     await invalidate('album:data');
   };

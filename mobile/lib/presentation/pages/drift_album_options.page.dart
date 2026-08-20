@@ -10,7 +10,7 @@ import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/pages/drift_user_selection.page.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/album.provider.dart';
@@ -32,12 +32,14 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
     final userId = ref.watch(authProvider).userId;
     final activityEnabled = useState(album.isActivityEnabled);
     final isOwner = album.ownerId == userId;
+    final owner = isOwner ? ref.watch(currentUserProvider) : null;
+    final allUsers = isOwner ? null : ref.watch(driftUsersProvider);
 
     void showErrorMessage() {
       ContextHelper(context).pop();
       ImmichToast.show(
         context: context,
-        msg: "shared_album_section_people_action_error".t(context: context),
+        msg: context.t.shared_album_section_people_action_error,
         toastType: ToastType.error,
         gravity: ToastGravity.BOTTOM,
       );
@@ -75,6 +77,10 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
       }
 
       try {
+        if (!context.mounted) {
+          return;
+        }
+
         await ref.read(remoteAlbumProvider.notifier).addUsers(album.id, newUsers);
         ref.invalidate(remoteAlbumSharedUsersProvider(album.id));
         if (!context.mounted) {
@@ -83,7 +89,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
 
         ImmichToast.show(
           context: context,
-          msg: "users_added_to_album_count".t(context: context, args: {'count': newUsers.length}),
+          msg: context.t.users_added_to_album_count(count: newUsers.length),
           toastType: ToastType.success,
         );
       } catch (e) {
@@ -102,7 +108,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
         actions = [
           ListTile(
             leading: const Icon(Icons.exit_to_app_rounded),
-            title: const Text("leave_album").t(context: context),
+            title: Text(context.t.leave_album),
             onTap: leaveAlbum,
           ),
         ];
@@ -112,7 +118,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
         actions = [
           ListTile(
             leading: const Icon(Icons.person_remove_rounded),
-            title: const Text("remove_user").t(context: context),
+            title: Text(context.t.remove_user),
             onTap: () => removeUserFromAlbum(user),
           ),
         ];
@@ -137,16 +143,18 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
 
     Widget buildOwnerInfo() {
       if (isOwner) {
-        final owner = ref.watch(currentUserProvider);
         return ListTile(
           leading: owner != null ? UserCircleAvatar(user: owner) : const SizedBox(),
           title: Text(album.ownerName, style: const TextStyle(fontWeight: FontWeight.w500)),
           subtitle: Text(owner?.email ?? "", style: TextStyle(color: context.colorScheme.onSurfaceSecondary)),
-          trailing: Text("owner", style: context.textTheme.labelLarge).t(context: context),
+          trailing: Text(context.t.owner, style: context.textTheme.labelLarge),
         );
       } else {
-        final usersProvider = ref.watch(driftUsersProvider);
-        return usersProvider.maybeWhen(
+        if (allUsers == null) {
+          return const SizedBox();
+        }
+
+        return allUsers.maybeWhen(
           data: (users) {
             final user = users.firstWhereOrNull((u) => u.id == album.ownerId);
 
@@ -158,7 +166,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
               leading: UserCircleAvatar(user: user),
               title: Text(user.name, style: const TextStyle(fontWeight: FontWeight.w500)),
               subtitle: Text(user.email, style: TextStyle(color: context.colorScheme.onSurfaceSecondary)),
-              trailing: Text("owner", style: context.textTheme.labelLarge).t(context: context),
+              trailing: Text(context.t.owner, style: context.textTheme.labelLarge),
             );
           },
           orElse: () => const SizedBox(),
@@ -203,7 +211,7 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
             onPressed: () => context.maybePop(null),
           ),
           centerTitle: true,
-          title: Text("options".t(context: context)),
+          title: Text(context.t.options),
         ),
         body: ListView(
           children: [
@@ -218,19 +226,19 @@ class DriftAlbumOptionsPage extends HookConsumerWidget {
                 activeThumbColor: activityEnabled.value ? context.primaryColor : context.themeData.disabledColor,
                 dense: true,
                 title: Text(
-                  "comments_and_likes",
+                  context.t.comments_and_likes,
                   style: context.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w500),
-                ).t(context: context),
+                ),
                 subtitle: Text(
-                  "let_others_respond",
+                  context.t.let_others_respond,
                   style: context.textTheme.labelLarge?.copyWith(color: context.colorScheme.onSurfaceSecondary),
-                ).t(context: context),
+                ),
               ),
-            buildSectionTitle("shared_album_section_people_title".t(context: context)),
+            buildSectionTitle(context.t.shared_album_section_people_title),
             if (isOwner) ...[
               ListTile(
                 leading: const Icon(Icons.person_add_rounded),
-                title: Text("invite_people".t(context: context)),
+                title: Text(context.t.invite_people),
                 onTap: () async => addUsers(),
               ),
               const Divider(indent: 16),

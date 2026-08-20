@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import sanitize from 'sanitize-filename';
-import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
@@ -117,7 +117,7 @@ export const BASE_SERVICE_DEPENDENCIES = [
   ViewRepository,
   WebsocketRepository,
   WorkflowRepository,
-];
+] as const;
 
 @Injectable()
 export class BaseService {
@@ -191,7 +191,7 @@ export class BaseService {
     );
   }
 
-  static create<T extends BaseService>(Service: ClassConstructor<T>, ctx: BaseService) {
+  static create<T extends ClassConstructor<typeof BaseService>>(Service: T, ctx: BaseService) {
     const service = new Service(
       LoggingRepository.create(),
       ctx.accessRepository,
@@ -242,6 +242,7 @@ export class BaseService {
       ctx.trashRepository,
       ctx.userRepository,
       ctx.versionRepository,
+      ctx.videoStreamRepository,
       ctx.viewRepository,
       ctx.websocketRepository,
       ctx.workflowRepository,
@@ -249,7 +250,7 @@ export class BaseService {
 
     service.logger.setContext(BaseService.name);
 
-    return service as T;
+    return service as InstanceType<T>;
   }
 
   get worker() {

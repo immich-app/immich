@@ -1,5 +1,5 @@
 import { Stats } from 'node:fs';
-import { defaults, SystemConfig } from 'src/config';
+import { defaults, SystemConfig } from 'src/dtos/config.dto';
 import { AssetPathType, AssetType, JobStatus } from 'src/enum';
 import { StorageTemplateService } from 'src/services/storage-template.service';
 import { AlbumFactory } from 'test/factories/album.factory';

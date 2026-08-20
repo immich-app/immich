@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/providers/auth.provider.dart';
 import 'package:immich_mobile/providers/websocket.provider.dart';
 import 'package:immich_mobile/widgets/common/immich_toast.dart';
@@ -29,13 +29,13 @@ class ChangePasswordForm extends HookConsumerWidget {
             alignment: WrapAlignment.start,
             children: [
               Text(
-                'change_password'.tr(),
+                context.t.change_password,
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: context.primaryColor),
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 24.0),
                 child: Text(
-                  'change_password_form_description'.tr(namedArgs: {'name': authState.name}),
+                  context.t.change_password_form_description(name: authState.name),
                   style: TextStyle(fontSize: 14, color: context.colorScheme.onSurface, fontWeight: FontWeight.w600),
                 ),
               ),
@@ -62,23 +62,27 @@ class ChangePasswordForm extends HookConsumerWidget {
                           if (!isSuccess && context.mounted) {
                             ImmichToast.show(
                               context: context,
-                              msg: "login_password_changed_error".tr(),
+                              msg: context.t.login_password_changed_error,
                               toastType: ToastType.error,
                               gravity: ToastGravity.TOP,
                             );
                             return;
                           }
 
-                          await ref.read(authProvider.notifier).logout();
-                          ref.read(websocketProvider.notifier).disconnect();
                           if (!context.mounted) {
                             return;
                           }
 
+                          await ref.read(authProvider.notifier).logout();
+                          if (!context.mounted) {
+                            return;
+                          }
+
+                          ref.read(websocketProvider.notifier).disconnect();
                           AutoRouter.of(context).back();
                           ImmichToast.show(
                             context: context,
-                            msg: "login_password_changed_success".tr(),
+                            msg: context.t.login_password_changed_success,
                             toastType: ToastType.success,
                             gravity: ToastGravity.TOP,
                           );
@@ -88,7 +92,7 @@ class ChangePasswordForm extends HookConsumerWidget {
                     TextButton.icon(
                       icon: const Icon(Icons.arrow_back),
                       onPressed: () => AutoRouter.of(context).back(),
-                      label: const Text('back').tr(),
+                      label: Text(context.t.back),
                     ),
                   ],
                 ),
@@ -112,9 +116,9 @@ class PasswordInput extends StatelessWidget {
       obscureText: true,
       controller: controller,
       decoration: InputDecoration(
-        labelText: 'change_password_form_new_password'.tr(),
+        labelText: context.t.change_password_form_new_password,
         border: const OutlineInputBorder(),
-        hintText: 'change_password_form_new_password'.tr(),
+        hintText: context.t.change_password_form_new_password,
       ),
     );
   }
@@ -128,7 +132,7 @@ class ConfirmPasswordInput extends StatelessWidget {
 
   String? _validateInput(String? email) {
     if (confirmController.value != originalController.value) {
-      return 'change_password_form_password_mismatch'.tr();
+      return StaticTranslations.instance.change_password_form_password_mismatch;
     }
     return null;
   }
@@ -139,8 +143,8 @@ class ConfirmPasswordInput extends StatelessWidget {
       obscureText: true,
       controller: confirmController,
       decoration: InputDecoration(
-        labelText: 'change_password_form_confirm_password'.tr(),
-        hintText: 'change_password_form_reenter_new_password'.tr(),
+        labelText: context.t.change_password_form_confirm_password,
+        hintText: context.t.change_password_form_reenter_new_password,
         border: const OutlineInputBorder(),
       ),
       validator: _validateInput,
@@ -149,20 +153,20 @@ class ConfirmPasswordInput extends StatelessWidget {
   }
 }
 
-class ChangePasswordButton extends ConsumerWidget {
+class ChangePasswordButton extends StatelessWidget {
   final TextEditingController passwordController;
   final VoidCallback onPressed;
   const ChangePasswordButton({super.key, required this.passwordController, required this.onPressed});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         visualDensity: VisualDensity.standard,
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 25),
       ),
       onPressed: onPressed,
-      child: Text('change_password'.tr(), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+      child: Text(context.t.change_password, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
     );
   }
 }

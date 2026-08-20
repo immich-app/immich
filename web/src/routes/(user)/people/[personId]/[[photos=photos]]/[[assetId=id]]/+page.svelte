@@ -98,7 +98,7 @@
     } else if ($page.params.assetId) {
       previousRoute = Route.viewPerson(data.person);
     }
-    if (action == 'merge') {
+    if (action === 'merge') {
       viewMode = PersonPageViewMode.MERGE_PEOPLE;
     }
 
@@ -180,7 +180,7 @@
 
     const [, personToBeMergedInto] = result;
 
-    if (personToBeMergedInto.name != personName && person.id === personToBeMergedInto.id) {
+    if (personToBeMergedInto.name !== personName && person.id === personToBeMergedInto.id) {
       await updateAssetCount();
       return { merged: true };
     }

@@ -333,6 +333,155 @@
         "x-immich-state": "Stable"
       }
     },
+    "/admin/config": {
+      "get": {
+        "description": "Retrieve admin configuration.",
+        "operationId": "getAdminConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminConfigDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get the admin configuration",
+        "tags": [
+          "Config (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.2.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "adminConfig.read",
+        "x-immich-state": "Alpha"
+      },
+      "put": {
+        "description": "Update the system configuration with a new system configuration.",
+        "operationId": "updateAdminConfig",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminConfigDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminConfigDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Update the system configuration",
+        "tags": [
+          "Config (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.2.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "adminConfig.update",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/admin/config/defaults": {
+      "get": {
+        "description": "Retrieve the default value of every system configuration property.",
+        "operationId": "getAdminConfigDefaults",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminConfigDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get the system configuration defaults",
+        "tags": [
+          "Config (admin)"
+        ],
+        "x-immich-admin-only": true,
+        "x-immich-history": [
+          {
+            "version": "v3.2.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "adminConfig.read",
+        "x-immich-state": "Alpha"
+      }
+    },
     "/admin/database-backups": {
       "delete": {
         "description": "Delete a backup by its filename",
@@ -1169,7 +1318,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SystemConfigSmtpDto"
+                "$ref": "#/components/schemas/AdminConfigSmtpDto"
               }
             }
           },
@@ -3262,6 +3411,58 @@
         ],
         "x-immich-permission": "apiKey.update",
         "x-immich-state": "Deprecated"
+      }
+    },
+    "/api-keys/{id}/rotate": {
+      "post": {
+        "description": "Generates a new secret for an API key, immediately invalidating the previous one. The current user must own this API key.",
+        "operationId": "rotateApiKey",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiKeyCreateResponseDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Rotate an API key",
+        "tags": [
+          "API keys"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "apiKey.rotate"
       }
     },
     "/assets": {
@@ -5658,6 +5859,98 @@
           }
         ],
         "x-immich-state": "Stable"
+      }
+    },
+    "/config": {
+      "get": {
+        "description": "Retrieve the system configuration properties that are visible to logged in users.",
+        "operationId": "getUserConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserConfigDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get the configuration with user visibility",
+        "tags": [
+          "Config (user)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.2.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "userConfig.read",
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/config/defaults": {
+      "get": {
+        "description": "Retrieve the default value of the configuration properties that are visible to logged in users.",
+        "operationId": "getUserConfigDefaults",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserConfigDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Get the default configuration with user visibility",
+        "tags": [
+          "Config (user)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.2.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-permission": "userConfig.read",
+        "x-immich-state": "Alpha"
       }
     },
     "/download/archive": {
@@ -9755,6 +10048,74 @@
         "x-immich-permission": "plugin.read"
       }
     },
+    "/public/config": {
+      "get": {
+        "description": "Retrieve the system configuration properties that are visible to everyone.",
+        "operationId": "getPublicConfig",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicConfigDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get the public configuration",
+        "tags": [
+          "Config (public)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.2.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
+    "/public/config/defaults": {
+      "get": {
+        "description": "Retrieve the default value of the configuration properties that are visible to everyone.",
+        "operationId": "getPublicConfigDefaults",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicConfigDto"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "Get the public configuration defaults",
+        "tags": [
+          "Config (public)"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.2.0",
+            "state": "Added"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Alpha"
+          }
+        ],
+        "x-immich-state": "Alpha"
+      }
+    },
     "/queues": {
       "get": {
         "description": "Retrieves a list of queues.",
@@ -11191,6 +11552,7 @@
     },
     "/server/config": {
       "get": {
+        "deprecated": true,
         "description": "Retrieve the current server configuration.",
         "operationId": "getServerConfig",
         "parameters": [],
@@ -11208,7 +11570,8 @@
         },
         "summary": "Get config",
         "tags": [
-          "Server"
+          "Server",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -11222,13 +11585,19 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Deprecated",
+            "replacementId": "getPublicConfig"
           }
         ],
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/server/features": {
       "get": {
+        "deprecated": true,
         "description": "Retrieve available features supported by this server.",
         "operationId": "getServerFeatures",
         "parameters": [],
@@ -11246,7 +11615,8 @@
         },
         "summary": "Get features",
         "tags": [
-          "Server"
+          "Server",
+          "Deprecated"
         ],
         "x-immich-history": [
           {
@@ -11260,9 +11630,14 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Deprecated",
+            "replacementId": "getPublicConfig"
           }
         ],
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/server/license": {
@@ -13305,6 +13680,7 @@
     },
     "/system-config": {
       "get": {
+        "deprecated": true,
         "description": "Retrieve the current system configuration.",
         "operationId": "getConfig",
         "parameters": [],
@@ -13313,7 +13689,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SystemConfigDto"
+                  "$ref": "#/components/schemas/AdminConfigDto"
                 }
               }
             },
@@ -13333,7 +13709,8 @@
         ],
         "summary": "Get system configuration",
         "tags": [
-          "System config"
+          "System config",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -13348,12 +13725,18 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Deprecated",
+            "replacementId": "getAdminConfig"
           }
         ],
         "x-immich-permission": "systemConfig.read",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       },
       "put": {
+        "deprecated": true,
         "description": "Update the system configuration with a new system configuration.",
         "operationId": "updateConfig",
         "parameters": [],
@@ -13361,7 +13744,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SystemConfigDto"
+                "$ref": "#/components/schemas/AdminConfigDto"
               }
             }
           },
@@ -13372,7 +13755,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SystemConfigDto"
+                  "$ref": "#/components/schemas/AdminConfigDto"
                 }
               }
             },
@@ -13392,7 +13775,8 @@
         ],
         "summary": "Update system configuration",
         "tags": [
-          "System config"
+          "System config",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -13407,14 +13791,20 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Deprecated",
+            "replacementId": "updateAdminConfig"
           }
         ],
         "x-immich-permission": "systemConfig.update",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/system-config/defaults": {
       "get": {
+        "deprecated": true,
         "description": "Retrieve the default values for the system configuration.",
         "operationId": "getConfigDefaults",
         "parameters": [],
@@ -13423,7 +13813,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SystemConfigDto"
+                  "$ref": "#/components/schemas/AdminConfigDto"
                 }
               }
             },
@@ -13443,7 +13833,8 @@
         ],
         "summary": "Get system configuration defaults",
         "tags": [
-          "System config"
+          "System config",
+          "Deprecated"
         ],
         "x-immich-admin-only": true,
         "x-immich-history": [
@@ -13458,10 +13849,15 @@
           {
             "version": "v2",
             "state": "Stable"
+          },
+          {
+            "version": "v3.2.0",
+            "state": "Deprecated",
+            "replacementId": "getAdminConfigDefaults"
           }
         ],
         "x-immich-permission": "systemConfig.read",
-        "x-immich-state": "Stable"
+        "x-immich-state": "Deprecated"
       }
     },
     "/system-config/storage-template-options": {
@@ -15874,6 +16270,15 @@
             }
           },
           {
+            "name": "logging",
+            "required": false,
+            "in": "query",
+            "description": "Workflow logs run results",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
             "name": "name",
             "required": false,
             "in": "query",
@@ -16186,6 +16591,95 @@
         "x-immich-state": "Deprecated"
       }
     },
+    "/workflows/{id}/logs": {
+      "get": {
+        "description": "Retrieve logs of a workflows runs by ID",
+        "operationId": "getWorkflowLogs",
+        "parameters": [
+          {
+            "name": "before",
+            "required": false,
+            "in": "query",
+            "description": "Filter by runs before a date/time",
+            "schema": {
+              "format": "date-time",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+              "example": "2024-01-01T00:00:00.000Z",
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Maximum number of logs",
+            "schema": {
+              "maximum": 9007199254740991,
+              "exclusiveMinimum": true,
+              "default": 50,
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "result",
+            "required": false,
+            "in": "query",
+            "description": "Filter by run result",
+            "schema": {
+              "$ref": "#/components/schemas/WorkflowResult"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/WorkflowLogEntryDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          },
+          {
+            "cookie": []
+          },
+          {
+            "api_key": []
+          }
+        ],
+        "summary": "Retrieve workflow logs",
+        "tags": [
+          "Workflows"
+        ],
+        "x-immich-history": [
+          {
+            "version": "v3.0.0",
+            "state": "Added"
+          }
+        ],
+        "x-immich-permission": "workflow.logs"
+      }
+    },
     "/workflows/{id}/share": {
       "get": {
         "description": "Retrieve a workflow details without ids, default values, etc.",
@@ -16269,6 +16763,18 @@
     {
       "name": "Authentication (admin)",
       "description": "Administrative endpoints related to authentication."
+    },
+    {
+      "name": "Config (user)",
+      "description": "The system configuration properties that are visible to logged in users."
+    },
+    {
+      "name": "Config (admin)",
+      "description": "Endpoints to view and modify the full system configuration."
+    },
+    {
+      "name": "Config (public)",
+      "description": "The system configuration properties that are visible to everyone."
     },
     {
       "name": "Database Backups (admin)",
@@ -16530,6 +17036,1211 @@
         },
         "required": [
           "albumUsers"
+        ],
+        "type": "object"
+      },
+      "AdminConfigBackupsDto": {
+        "properties": {
+          "database": {
+            "$ref": "#/components/schemas/AdminConfigDatabaseBackupDto"
+          }
+        },
+        "required": [
+          "database"
+        ],
+        "type": "object"
+      },
+      "AdminConfigClipDto": {
+        "properties": {
+          "enabled": {
+            "description": "Whether the task is enabled",
+            "type": "boolean"
+          },
+          "modelName": {
+            "description": "Name of the model to use",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "modelName"
+        ],
+        "type": "object"
+      },
+      "AdminConfigDatabaseBackupDto": {
+        "properties": {
+          "cronExpression": {
+            "description": "Cron expression",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "keepLastAmount": {
+            "description": "Keep last amount",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled",
+          "keepLastAmount"
+        ],
+        "type": "object"
+      },
+      "AdminConfigDto": {
+        "description": "Configuration properties that are visible to the admin",
+        "properties": {
+          "backup": {
+            "$ref": "#/components/schemas/AdminConfigBackupsDto"
+          },
+          "ffmpeg": {
+            "$ref": "#/components/schemas/AdminConfigFFmpegDto"
+          },
+          "image": {
+            "$ref": "#/components/schemas/AdminConfigImageDto"
+          },
+          "integrityChecks": {
+            "$ref": "#/components/schemas/AdminConfigIntegrityChecksDto"
+          },
+          "job": {
+            "$ref": "#/components/schemas/AdminConfigJobDto"
+          },
+          "library": {
+            "$ref": "#/components/schemas/AdminConfigLibraryDto"
+          },
+          "logging": {
+            "$ref": "#/components/schemas/AdminConfigLoggingDto"
+          },
+          "machineLearning": {
+            "$ref": "#/components/schemas/AdminConfigMachineLearningDto"
+          },
+          "map": {
+            "$ref": "#/components/schemas/AdminConfigMapDto"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/AdminConfigMetadataDto"
+          },
+          "newVersionCheck": {
+            "$ref": "#/components/schemas/AdminConfigNewVersionCheckDto"
+          },
+          "nightlyTasks": {
+            "$ref": "#/components/schemas/AdminConfigNightlyTasksDto"
+          },
+          "notifications": {
+            "$ref": "#/components/schemas/AdminConfigNotificationsDto"
+          },
+          "oauth": {
+            "$ref": "#/components/schemas/AdminConfigOAuthDto"
+          },
+          "passwordLogin": {
+            "$ref": "#/components/schemas/AdminConfigPasswordLoginDto"
+          },
+          "reverseGeocoding": {
+            "$ref": "#/components/schemas/AdminConfigReverseGeocodingDto"
+          },
+          "server": {
+            "$ref": "#/components/schemas/AdminConfigServerDto"
+          },
+          "storageTemplate": {
+            "$ref": "#/components/schemas/AdminConfigStorageTemplateDto"
+          },
+          "templates": {
+            "$ref": "#/components/schemas/AdminConfigTemplatesDto"
+          },
+          "theme": {
+            "$ref": "#/components/schemas/AdminConfigThemeDto"
+          },
+          "trash": {
+            "$ref": "#/components/schemas/AdminConfigTrashDto"
+          },
+          "user": {
+            "$ref": "#/components/schemas/AdminConfigUserDto"
+          }
+        },
+        "required": [
+          "backup",
+          "ffmpeg",
+          "image",
+          "integrityChecks",
+          "job",
+          "library",
+          "logging",
+          "machineLearning",
+          "map",
+          "metadata",
+          "newVersionCheck",
+          "nightlyTasks",
+          "notifications",
+          "oauth",
+          "passwordLogin",
+          "reverseGeocoding",
+          "server",
+          "storageTemplate",
+          "templates",
+          "theme",
+          "trash",
+          "user"
+        ],
+        "type": "object"
+      },
+      "AdminConfigDuplicateDetectionDto": {
+        "properties": {
+          "enabled": {
+            "description": "Whether the task is enabled",
+            "type": "boolean"
+          },
+          "maxDistance": {
+            "description": "Maximum distance threshold for duplicate detection",
+            "format": "double",
+            "maximum": 0.1,
+            "minimum": 0.001,
+            "type": "number"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxDistance"
+        ],
+        "type": "object"
+      },
+      "AdminConfigFFmpegDto": {
+        "properties": {
+          "accel": {
+            "$ref": "#/components/schemas/TranscodeHWAccel"
+          },
+          "accelDecode": {
+            "description": "Accelerated decode",
+            "type": "boolean"
+          },
+          "acceptedAudioCodecs": {
+            "description": "Accepted audio codecs",
+            "items": {
+              "$ref": "#/components/schemas/AudioCodec"
+            },
+            "type": "array"
+          },
+          "acceptedContainers": {
+            "description": "Accepted containers",
+            "items": {
+              "$ref": "#/components/schemas/VideoContainer"
+            },
+            "type": "array"
+          },
+          "acceptedVideoCodecs": {
+            "description": "Accepted video codecs",
+            "items": {
+              "$ref": "#/components/schemas/VideoCodec"
+            },
+            "type": "array"
+          },
+          "bframes": {
+            "description": "B-frames",
+            "maximum": 16,
+            "minimum": -1,
+            "type": "integer"
+          },
+          "cqMode": {
+            "$ref": "#/components/schemas/CQMode"
+          },
+          "crf": {
+            "description": "CRF",
+            "maximum": 51,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "gopSize": {
+            "description": "GOP size",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxBitrate": {
+            "description": "Max bitrate",
+            "type": "string"
+          },
+          "preferredHwDevice": {
+            "description": "Preferred hardware device",
+            "type": "string"
+          },
+          "preset": {
+            "description": "Preset",
+            "type": "string"
+          },
+          "realtime": {
+            "$ref": "#/components/schemas/AdminConfigFFmpegRealtimeDto"
+          },
+          "refs": {
+            "description": "References",
+            "maximum": 6,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "targetAudioCodec": {
+            "$ref": "#/components/schemas/AudioCodec"
+          },
+          "targetResolution": {
+            "description": "Target resolution",
+            "type": "string"
+          },
+          "targetVideoCodec": {
+            "$ref": "#/components/schemas/VideoCodec"
+          },
+          "temporalAQ": {
+            "description": "Temporal AQ",
+            "type": "boolean"
+          },
+          "threads": {
+            "description": "Threads",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "tonemap": {
+            "$ref": "#/components/schemas/ToneMapping"
+          },
+          "transcode": {
+            "$ref": "#/components/schemas/TranscodePolicy"
+          },
+          "twoPass": {
+            "description": "Two pass",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "accel",
+          "accelDecode",
+          "acceptedAudioCodecs",
+          "acceptedContainers",
+          "acceptedVideoCodecs",
+          "bframes",
+          "cqMode",
+          "crf",
+          "gopSize",
+          "maxBitrate",
+          "preferredHwDevice",
+          "preset",
+          "realtime",
+          "refs",
+          "targetAudioCodec",
+          "targetResolution",
+          "targetVideoCodec",
+          "temporalAQ",
+          "threads",
+          "tonemap",
+          "transcode",
+          "twoPass"
+        ],
+        "type": "object"
+      },
+      "AdminConfigFFmpegRealtimeDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enable real-time HLS transcoding (alpha)",
+            "type": "boolean"
+          },
+          "resolutions": {
+            "description": "Resolutions to use for real-time HLS transcoding",
+            "items": {
+              "$ref": "#/components/schemas/HlsVideoResolution"
+            },
+            "type": "array"
+          },
+          "videoCodecs": {
+            "description": "Video codecs to use for real-time HLS transcoding",
+            "items": {
+              "$ref": "#/components/schemas/VideoCodec"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "enabled",
+          "resolutions",
+          "videoCodecs"
+        ],
+        "type": "object"
+      },
+      "AdminConfigFacesDto": {
+        "properties": {
+          "import": {
+            "description": "Import",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "import"
+        ],
+        "type": "object"
+      },
+      "AdminConfigFacialRecognitionDto": {
+        "properties": {
+          "enabled": {
+            "description": "Whether the task is enabled",
+            "type": "boolean"
+          },
+          "maxDistance": {
+            "description": "Maximum distance threshold for face recognition",
+            "format": "double",
+            "maximum": 2,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "minFaces": {
+            "description": "Minimum number of faces required for recognition",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minScore": {
+            "description": "Minimum confidence score for face detection",
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "modelName": {
+            "description": "Name of the model to use",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxDistance",
+          "minFaces",
+          "minScore",
+          "modelName"
+        ],
+        "type": "object"
+      },
+      "AdminConfigGeneratedFullsizeImageDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "format": {
+            "$ref": "#/components/schemas/ImageFormat"
+          },
+          "progressive": {
+            "description": "Progressive",
+            "type": "boolean"
+          },
+          "quality": {
+            "description": "Quality",
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "format",
+          "quality"
+        ],
+        "type": "object"
+      },
+      "AdminConfigGeneratedImageDto": {
+        "properties": {
+          "format": {
+            "$ref": "#/components/schemas/ImageFormat"
+          },
+          "progressive": {
+            "description": "Progressive",
+            "type": "boolean"
+          },
+          "quality": {
+            "description": "Quality",
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "size": {
+            "description": "Size",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "format",
+          "quality",
+          "size"
+        ],
+        "type": "object"
+      },
+      "AdminConfigImageDto": {
+        "properties": {
+          "colorspace": {
+            "$ref": "#/components/schemas/Colorspace"
+          },
+          "extractEmbedded": {
+            "description": "Extract embedded",
+            "type": "boolean"
+          },
+          "fullsize": {
+            "$ref": "#/components/schemas/AdminConfigGeneratedFullsizeImageDto"
+          },
+          "preview": {
+            "$ref": "#/components/schemas/AdminConfigGeneratedImageDto"
+          },
+          "thumbnail": {
+            "$ref": "#/components/schemas/AdminConfigGeneratedImageDto"
+          }
+        },
+        "required": [
+          "colorspace",
+          "extractEmbedded",
+          "fullsize",
+          "preview",
+          "thumbnail"
+        ],
+        "type": "object"
+      },
+      "AdminConfigIntegrityChecksDto": {
+        "description": "Integrity checks config",
+        "properties": {
+          "checksumFiles": {
+            "$ref": "#/components/schemas/AdminConfigIntegrityChecksumJobDto"
+          },
+          "missingFiles": {
+            "$ref": "#/components/schemas/AdminConfigIntegrityJobDto"
+          },
+          "untrackedFiles": {
+            "$ref": "#/components/schemas/AdminConfigIntegrityJobDto"
+          }
+        },
+        "required": [
+          "checksumFiles",
+          "missingFiles",
+          "untrackedFiles"
+        ],
+        "type": "object"
+      },
+      "AdminConfigIntegrityChecksumJobDto": {
+        "description": "Integrity checksum job config",
+        "properties": {
+          "cronExpression": {
+            "description": "Cron expression for when the integrity check should run",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "percentageLimit": {
+            "description": "Percentage limit of the integrity checksum job",
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
+          "timeLimit": {
+            "description": "How long the integrity checksum job may run for",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled",
+          "percentageLimit",
+          "timeLimit"
+        ],
+        "type": "object"
+      },
+      "AdminConfigIntegrityJobDto": {
+        "description": "Integrity job config",
+        "properties": {
+          "cronExpression": {
+            "description": "Cron expression for when the integrity check should run",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "AdminConfigJobDto": {
+        "properties": {
+          "backgroundTask": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "editor": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "faceDetection": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "integrityCheck": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "library": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "metadataExtraction": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "migration": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "notifications": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "ocr": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "search": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "sidecar": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "smartSearch": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "thumbnailGeneration": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "videoConversion": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          },
+          "workflow": {
+            "$ref": "#/components/schemas/AdminConfigJobSettingsDto"
+          }
+        },
+        "required": [
+          "backgroundTask",
+          "editor",
+          "faceDetection",
+          "integrityCheck",
+          "library",
+          "metadataExtraction",
+          "migration",
+          "notifications",
+          "ocr",
+          "search",
+          "sidecar",
+          "smartSearch",
+          "thumbnailGeneration",
+          "videoConversion",
+          "workflow"
+        ],
+        "type": "object"
+      },
+      "AdminConfigJobSettingsDto": {
+        "properties": {
+          "concurrency": {
+            "description": "Concurrency",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "concurrency"
+        ],
+        "type": "object"
+      },
+      "AdminConfigLibraryDto": {
+        "properties": {
+          "scan": {
+            "$ref": "#/components/schemas/AdminConfigLibraryScanDto"
+          },
+          "watch": {
+            "$ref": "#/components/schemas/AdminConfigLibraryWatchDto"
+          }
+        },
+        "required": [
+          "scan",
+          "watch"
+        ],
+        "type": "object"
+      },
+      "AdminConfigLibraryScanDto": {
+        "properties": {
+          "cronExpression": {
+            "description": "Cron expression",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "cronExpression",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "AdminConfigLibraryWatchDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "AdminConfigLoggingDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "level": {
+            "$ref": "#/components/schemas/LogLevel"
+          }
+        },
+        "required": [
+          "enabled",
+          "level"
+        ],
+        "type": "object"
+      },
+      "AdminConfigMachineLearningAvailabilityChecksDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "interval": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "timeout": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "interval",
+          "timeout"
+        ],
+        "type": "object"
+      },
+      "AdminConfigMachineLearningDto": {
+        "properties": {
+          "availabilityChecks": {
+            "$ref": "#/components/schemas/AdminConfigMachineLearningAvailabilityChecksDto"
+          },
+          "clip": {
+            "$ref": "#/components/schemas/AdminConfigClipDto"
+          },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/AdminConfigDuplicateDetectionDto"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "facialRecognition": {
+            "$ref": "#/components/schemas/AdminConfigFacialRecognitionDto"
+          },
+          "ocr": {
+            "$ref": "#/components/schemas/AdminConfigOcrDto"
+          },
+          "urls": {
+            "description": "ML service URLs",
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "availabilityChecks",
+          "clip",
+          "duplicateDetection",
+          "enabled",
+          "facialRecognition",
+          "ocr",
+          "urls"
+        ],
+        "type": "object"
+      },
+      "AdminConfigMapDto": {
+        "properties": {
+          "darkStyle": {
+            "description": "Dark map style URL",
+            "format": "uri",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "lightStyle": {
+            "description": "Light map style URL",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "darkStyle",
+          "enabled",
+          "lightStyle"
+        ],
+        "type": "object"
+      },
+      "AdminConfigMetadataDto": {
+        "properties": {
+          "faces": {
+            "$ref": "#/components/schemas/AdminConfigFacesDto"
+          }
+        },
+        "required": [
+          "faces"
+        ],
+        "type": "object"
+      },
+      "AdminConfigNewVersionCheckDto": {
+        "properties": {
+          "channel": {
+            "$ref": "#/components/schemas/ReleaseChannel"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "channel",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "AdminConfigNightlyTasksDto": {
+        "properties": {
+          "clusterNewFaces": {
+            "description": "Cluster new faces",
+            "type": "boolean"
+          },
+          "databaseCleanup": {
+            "description": "Database cleanup",
+            "type": "boolean"
+          },
+          "generateMemories": {
+            "description": "Generate memories",
+            "type": "boolean"
+          },
+          "missingThumbnails": {
+            "description": "Missing thumbnails",
+            "type": "boolean"
+          },
+          "startTime": {
+            "description": "Start time (HH:MM)",
+            "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$",
+            "type": "string"
+          },
+          "syncQuotaUsage": {
+            "description": "Sync quota usage",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "clusterNewFaces",
+          "databaseCleanup",
+          "generateMemories",
+          "missingThumbnails",
+          "startTime",
+          "syncQuotaUsage"
+        ],
+        "type": "object"
+      },
+      "AdminConfigNotificationsDto": {
+        "properties": {
+          "smtp": {
+            "$ref": "#/components/schemas/AdminConfigSmtpDto"
+          }
+        },
+        "required": [
+          "smtp"
+        ],
+        "type": "object"
+      },
+      "AdminConfigOAuthDto": {
+        "properties": {
+          "allowInsecureRequests": {
+            "description": "Allow insecure requests",
+            "type": "boolean"
+          },
+          "autoLaunch": {
+            "description": "Auto launch",
+            "type": "boolean"
+          },
+          "autoRegister": {
+            "description": "Auto register",
+            "type": "boolean"
+          },
+          "buttonText": {
+            "description": "Button text",
+            "type": "string"
+          },
+          "clientId": {
+            "description": "Client ID",
+            "type": "string"
+          },
+          "clientSecret": {
+            "description": "Client secret",
+            "type": "string"
+          },
+          "defaultStorageQuota": {
+            "description": "Default storage quota",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "nullable": true,
+            "type": "integer"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "endSessionEndpoint": {
+            "description": "End session endpoint",
+            "type": "string"
+          },
+          "issuerUrl": {
+            "description": "Issuer URL",
+            "type": "string"
+          },
+          "mobileOverrideEnabled": {
+            "description": "Mobile override enabled",
+            "type": "boolean"
+          },
+          "mobileRedirectUri": {
+            "description": "Mobile redirect URI (set to empty string to disable)",
+            "type": "string"
+          },
+          "profileSigningAlgorithm": {
+            "description": "Profile signing algorithm",
+            "type": "string"
+          },
+          "prompt": {
+            "description": "OAuth prompt parameter (e.g. select_account, login, consent)",
+            "type": "string"
+          },
+          "roleClaim": {
+            "description": "Role claim",
+            "type": "string"
+          },
+          "scope": {
+            "description": "Scope",
+            "type": "string"
+          },
+          "signingAlgorithm": {
+            "description": "Signing algorithm",
+            "type": "string"
+          },
+          "storageLabelClaim": {
+            "description": "Storage label claim",
+            "type": "string"
+          },
+          "storageQuotaClaim": {
+            "description": "Storage quota claim",
+            "type": "string"
+          },
+          "timeout": {
+            "description": "Timeout",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "tokenEndpointAuthMethod": {
+            "$ref": "#/components/schemas/OAuthTokenEndpointAuthMethod"
+          }
+        },
+        "required": [
+          "allowInsecureRequests",
+          "autoLaunch",
+          "autoRegister",
+          "buttonText",
+          "clientId",
+          "clientSecret",
+          "defaultStorageQuota",
+          "enabled",
+          "endSessionEndpoint",
+          "issuerUrl",
+          "mobileOverrideEnabled",
+          "mobileRedirectUri",
+          "profileSigningAlgorithm",
+          "prompt",
+          "roleClaim",
+          "scope",
+          "signingAlgorithm",
+          "storageLabelClaim",
+          "storageQuotaClaim",
+          "timeout",
+          "tokenEndpointAuthMethod"
+        ],
+        "type": "object"
+      },
+      "AdminConfigOcrDto": {
+        "properties": {
+          "enabled": {
+            "description": "Whether the task is enabled",
+            "type": "boolean"
+          },
+          "maxResolution": {
+            "description": "Maximum resolution for OCR processing",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "minDetectionScore": {
+            "description": "Minimum confidence score for text detection",
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "minRecognitionScore": {
+            "description": "Minimum confidence score for text recognition",
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0.1,
+            "type": "number"
+          },
+          "modelName": {
+            "description": "Name of the model to use",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "maxResolution",
+          "minDetectionScore",
+          "minRecognitionScore",
+          "modelName"
+        ],
+        "type": "object"
+      },
+      "AdminConfigPasswordLoginDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "AdminConfigReverseGeocodingDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "AdminConfigServerDto": {
+        "properties": {
+          "externalDomain": {
+            "description": "External domain",
+            "type": "string"
+          },
+          "loginPageMessage": {
+            "description": "Login page message",
+            "type": "string"
+          },
+          "publicUsers": {
+            "description": "Public users",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "externalDomain",
+          "loginPageMessage",
+          "publicUsers"
+        ],
+        "type": "object"
+      },
+      "AdminConfigSmtpDto": {
+        "properties": {
+          "enabled": {
+            "description": "Whether SMTP email notifications are enabled",
+            "type": "boolean"
+          },
+          "from": {
+            "description": "Email address to send from",
+            "type": "string"
+          },
+          "replyTo": {
+            "description": "Email address for replies",
+            "type": "string"
+          },
+          "transport": {
+            "$ref": "#/components/schemas/AdminConfigSmtpTransportDto"
+          }
+        },
+        "required": [
+          "enabled",
+          "from",
+          "replyTo",
+          "transport"
+        ],
+        "type": "object"
+      },
+      "AdminConfigSmtpTransportDto": {
+        "properties": {
+          "host": {
+            "description": "SMTP server hostname",
+            "type": "string"
+          },
+          "ignoreCert": {
+            "description": "Whether to ignore SSL certificate errors",
+            "type": "boolean"
+          },
+          "password": {
+            "description": "SMTP password",
+            "type": "string"
+          },
+          "port": {
+            "description": "SMTP server port",
+            "maximum": 65535,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "secure": {
+            "description": "Whether to use secure connection (TLS/SSL)",
+            "type": "boolean"
+          },
+          "username": {
+            "description": "SMTP username",
+            "type": "string"
+          }
+        },
+        "required": [
+          "host",
+          "ignoreCert",
+          "password",
+          "port",
+          "secure",
+          "username"
+        ],
+        "type": "object"
+      },
+      "AdminConfigStorageTemplateDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "hashVerificationEnabled": {
+            "description": "Hash verification enabled",
+            "type": "boolean"
+          },
+          "template": {
+            "description": "Template",
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "hashVerificationEnabled",
+          "template"
+        ],
+        "type": "object"
+      },
+      "AdminConfigTemplateEmailsDto": {
+        "properties": {
+          "albumInviteTemplate": {
+            "description": "Album invite template",
+            "type": "string"
+          },
+          "albumUpdateTemplate": {
+            "description": "Album update template",
+            "type": "string"
+          },
+          "welcomeTemplate": {
+            "description": "Welcome template",
+            "type": "string"
+          }
+        },
+        "required": [
+          "albumInviteTemplate",
+          "albumUpdateTemplate",
+          "welcomeTemplate"
+        ],
+        "type": "object"
+      },
+      "AdminConfigTemplatesDto": {
+        "properties": {
+          "email": {
+            "$ref": "#/components/schemas/AdminConfigTemplateEmailsDto"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "AdminConfigThemeDto": {
+        "properties": {
+          "customCss": {
+            "description": "Custom CSS for theming",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customCss"
+        ],
+        "type": "object"
+      },
+      "AdminConfigTrashDto": {
+        "properties": {
+          "days": {
+            "description": "Days",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "days",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "AdminConfigUserDto": {
+        "properties": {
+          "deleteDelay": {
+            "description": "Delete delay",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "deleteDelay"
         ],
         "type": "object"
       },
@@ -16829,16 +18540,63 @@
       "ApiKeyCreateResponseDto": {
         "properties": {
           "apiKey": {
-            "$ref": "#/components/schemas/ApiKeyResponseDto"
+            "$ref": "#/components/schemas/ApiKeyResponseDto",
+            "x-immich-history": [
+              {
+                "version": "v1",
+                "state": "Added"
+              },
+              {
+                "version": "v3.2.0",
+                "state": "Deprecated"
+              }
+            ],
+            "x-immich-state": "Deprecated"
+          },
+          "createdAt": {
+            "description": "Creation date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "id": {
+            "description": "API key ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "name": {
+            "description": "API key name",
+            "type": "string"
+          },
+          "permissions": {
+            "description": "List of permissions",
+            "items": {
+              "$ref": "#/components/schemas/Permission"
+            },
+            "type": "array"
           },
           "secret": {
             "description": "API key secret (only shown once)",
+            "type": "string"
+          },
+          "updatedAt": {
+            "description": "Last update date",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
             "type": "string"
           }
         },
         "required": [
           "apiKey",
-          "secret"
+          "createdAt",
+          "id",
+          "name",
+          "permissions",
+          "secret",
+          "updatedAt"
         ],
         "type": "object"
       },
@@ -18271,23 +20029,6 @@
         ],
         "type": "object"
       },
-      "CLIPConfig": {
-        "properties": {
-          "enabled": {
-            "description": "Whether the task is enabled",
-            "type": "boolean"
-          },
-          "modelName": {
-            "description": "Name of the model to use",
-            "type": "string"
-          }
-        },
-        "required": [
-          "enabled",
-          "modelName"
-        ],
-        "type": "object"
-      },
       "CQMode": {
         "description": "CQ mode",
         "enum": [
@@ -18584,30 +20325,6 @@
         ],
         "type": "object"
       },
-      "DatabaseBackupConfig": {
-        "properties": {
-          "cronExpression": {
-            "description": "Cron expression",
-            "type": "string"
-          },
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          },
-          "keepLastAmount": {
-            "description": "Keep last amount",
-            "maximum": 9007199254740991,
-            "minimum": 1,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "cronExpression",
-          "enabled",
-          "keepLastAmount"
-        ],
-        "type": "object"
-      },
       "DatabaseBackupDeleteDto": {
         "properties": {
           "backups": {
@@ -18807,26 +20524,6 @@
             "type": "boolean"
           }
         },
-        "type": "object"
-      },
-      "DuplicateDetectionConfig": {
-        "properties": {
-          "enabled": {
-            "description": "Whether the task is enabled",
-            "type": "boolean"
-          },
-          "maxDistance": {
-            "description": "Maximum distance threshold for duplicate detection",
-            "format": "double",
-            "maximum": 0.1,
-            "minimum": 0.001,
-            "type": "number"
-          }
-        },
-        "required": [
-          "enabled",
-          "maxDistance"
-        ],
         "type": "object"
       },
       "DuplicateResolveDto": {
@@ -19113,46 +20810,6 @@
         ],
         "type": "object"
       },
-      "FacialRecognitionConfig": {
-        "properties": {
-          "enabled": {
-            "description": "Whether the task is enabled",
-            "type": "boolean"
-          },
-          "maxDistance": {
-            "description": "Maximum distance threshold for face recognition",
-            "format": "double",
-            "maximum": 2,
-            "minimum": 0.1,
-            "type": "number"
-          },
-          "minFaces": {
-            "description": "Minimum number of faces required for recognition",
-            "maximum": 9007199254740991,
-            "minimum": 1,
-            "type": "integer"
-          },
-          "minScore": {
-            "description": "Minimum confidence score for face detection",
-            "format": "double",
-            "maximum": 1,
-            "minimum": 0.1,
-            "type": "number"
-          },
-          "modelName": {
-            "description": "Name of the model to use",
-            "type": "string"
-          }
-        },
-        "required": [
-          "enabled",
-          "maxDistance",
-          "minFaces",
-          "minScore",
-          "modelName"
-        ],
-        "type": "object"
-      },
       "FoldersResponse": {
         "properties": {
           "enabled": {
@@ -19356,20 +21013,6 @@
         ],
         "type": "string"
       },
-      "JobSettingsDto": {
-        "properties": {
-          "concurrency": {
-            "description": "Concurrency",
-            "maximum": 9007199254740991,
-            "minimum": 1,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "concurrency"
-        ],
-        "type": "object"
-      },
       "LibraryResponseDto": {
         "properties": {
           "assetCount": {
@@ -19518,7 +21161,7 @@
             "description": "User email",
             "example": "testuser@email.com",
             "format": "email",
-            "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+            "pattern": "^[\\p{L}\\p{M}\\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?(?:\\.[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?)*$",
             "type": "string"
           },
           "password": {
@@ -19562,7 +21205,7 @@
           "userEmail": {
             "description": "User email",
             "format": "email",
-            "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+            "pattern": "^[\\p{L}\\p{M}\\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?(?:\\.[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?)*$",
             "type": "string"
           },
           "userId": {
@@ -19598,30 +21241,6 @@
         "required": [
           "redirectUri",
           "successful"
-        ],
-        "type": "object"
-      },
-      "MachineLearningAvailabilityChecksDto": {
-        "properties": {
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          },
-          "interval": {
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          },
-          "timeout": {
-            "maximum": 9007199254740991,
-            "minimum": -9007199254740991,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "enabled",
-          "interval",
-          "timeout"
         ],
         "type": "object"
       },
@@ -20606,46 +22225,6 @@
         ],
         "type": "string"
       },
-      "OcrConfig": {
-        "properties": {
-          "enabled": {
-            "description": "Whether the task is enabled",
-            "type": "boolean"
-          },
-          "maxResolution": {
-            "description": "Maximum resolution for OCR processing",
-            "maximum": 9007199254740991,
-            "minimum": 1,
-            "type": "integer"
-          },
-          "minDetectionScore": {
-            "description": "Minimum confidence score for text detection",
-            "format": "double",
-            "maximum": 1,
-            "minimum": 0.1,
-            "type": "number"
-          },
-          "minRecognitionScore": {
-            "description": "Minimum confidence score for text recognition",
-            "format": "double",
-            "maximum": 1,
-            "minimum": 0.1,
-            "type": "number"
-          },
-          "modelName": {
-            "description": "Name of the model to use",
-            "type": "string"
-          }
-        },
-        "required": [
-          "enabled",
-          "maxResolution",
-          "minDetectionScore",
-          "minRecognitionScore",
-          "modelName"
-        ],
-        "type": "object"
-      },
       "OnThisDayDto": {
         "properties": {
           "year": {
@@ -20715,7 +22294,7 @@
           "email": {
             "description": "User email",
             "format": "email",
-            "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+            "pattern": "^[\\p{L}\\p{M}\\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?(?:\\.[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?)*$",
             "type": "string"
           },
           "id": {
@@ -20922,6 +22501,7 @@
           "apiKey.read",
           "apiKey.update",
           "apiKey.delete",
+          "apiKey.rotate",
           "asset.read",
           "asset.update",
           "asset.delete",
@@ -20954,6 +22534,9 @@
           "backup.download",
           "backup.upload",
           "backup.delete",
+          "adminConfig.read",
+          "adminConfig.update",
+          "userConfig.read",
           "duplicate.read",
           "duplicate.delete",
           "face.create",
@@ -21061,6 +22644,7 @@
           "workflow.read",
           "workflow.update",
           "workflow.delete",
+          "workflow.logs",
           "adminUser.create",
           "adminUser.read",
           "adminUser.update",
@@ -21485,6 +23069,88 @@
         "required": [
           "config",
           "method"
+        ],
+        "type": "object"
+      },
+      "PublicConfigDto": {
+        "description": "Configuration properties that are visible to everyone",
+        "properties": {
+          "oauth": {
+            "$ref": "#/components/schemas/PublicConfigOAuthDto"
+          },
+          "passwordLogin": {
+            "$ref": "#/components/schemas/PublicConfigPasswordLoginDto"
+          },
+          "server": {
+            "$ref": "#/components/schemas/PublicConfigServerDto"
+          },
+          "theme": {
+            "$ref": "#/components/schemas/PublicConfigThemeDto"
+          }
+        },
+        "required": [
+          "oauth",
+          "passwordLogin",
+          "server",
+          "theme"
+        ],
+        "type": "object"
+      },
+      "PublicConfigOAuthDto": {
+        "properties": {
+          "autoLaunch": {
+            "description": "Auto launch",
+            "type": "boolean"
+          },
+          "buttonText": {
+            "description": "Button text",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "autoLaunch",
+          "buttonText",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "PublicConfigPasswordLoginDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "PublicConfigServerDto": {
+        "properties": {
+          "loginPageMessage": {
+            "description": "Login page message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loginPageMessage"
+        ],
+        "type": "object"
+      },
+      "PublicConfigThemeDto": {
+        "properties": {
+          "customCss": {
+            "description": "Custom CSS for theming",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customCss"
         ],
         "type": "object"
       },
@@ -23281,7 +24947,7 @@
             "description": "User email",
             "example": "testuser@email.com",
             "format": "email",
-            "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+            "pattern": "^[\\p{L}\\p{M}\\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?(?:\\.[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?)*$",
             "type": "string"
           },
           "name": {
@@ -25587,976 +27253,6 @@
         ],
         "type": "object"
       },
-      "SystemConfigBackupsDto": {
-        "properties": {
-          "database": {
-            "$ref": "#/components/schemas/DatabaseBackupConfig"
-          }
-        },
-        "required": [
-          "database"
-        ],
-        "type": "object"
-      },
-      "SystemConfigDto": {
-        "description": "System configuration",
-        "properties": {
-          "backup": {
-            "$ref": "#/components/schemas/SystemConfigBackupsDto"
-          },
-          "ffmpeg": {
-            "$ref": "#/components/schemas/SystemConfigFFmpegDto"
-          },
-          "image": {
-            "$ref": "#/components/schemas/SystemConfigImageDto"
-          },
-          "integrityChecks": {
-            "$ref": "#/components/schemas/SystemConfigIntegrityChecks"
-          },
-          "job": {
-            "$ref": "#/components/schemas/SystemConfigJobDto"
-          },
-          "library": {
-            "$ref": "#/components/schemas/SystemConfigLibraryDto"
-          },
-          "logging": {
-            "$ref": "#/components/schemas/SystemConfigLoggingDto"
-          },
-          "machineLearning": {
-            "$ref": "#/components/schemas/SystemConfigMachineLearningDto"
-          },
-          "map": {
-            "$ref": "#/components/schemas/SystemConfigMapDto"
-          },
-          "metadata": {
-            "$ref": "#/components/schemas/SystemConfigMetadataDto"
-          },
-          "newVersionCheck": {
-            "$ref": "#/components/schemas/SystemConfigNewVersionCheckDto"
-          },
-          "nightlyTasks": {
-            "$ref": "#/components/schemas/SystemConfigNightlyTasksDto"
-          },
-          "notifications": {
-            "$ref": "#/components/schemas/SystemConfigNotificationsDto"
-          },
-          "oauth": {
-            "$ref": "#/components/schemas/SystemConfigOAuthDto"
-          },
-          "passwordLogin": {
-            "$ref": "#/components/schemas/SystemConfigPasswordLoginDto"
-          },
-          "reverseGeocoding": {
-            "$ref": "#/components/schemas/SystemConfigReverseGeocodingDto"
-          },
-          "server": {
-            "$ref": "#/components/schemas/SystemConfigServerDto"
-          },
-          "storageTemplate": {
-            "$ref": "#/components/schemas/SystemConfigStorageTemplateDto"
-          },
-          "templates": {
-            "$ref": "#/components/schemas/SystemConfigTemplatesDto"
-          },
-          "theme": {
-            "$ref": "#/components/schemas/SystemConfigThemeDto"
-          },
-          "trash": {
-            "$ref": "#/components/schemas/SystemConfigTrashDto"
-          },
-          "user": {
-            "$ref": "#/components/schemas/SystemConfigUserDto"
-          }
-        },
-        "required": [
-          "backup",
-          "ffmpeg",
-          "image",
-          "integrityChecks",
-          "job",
-          "library",
-          "logging",
-          "machineLearning",
-          "map",
-          "metadata",
-          "newVersionCheck",
-          "nightlyTasks",
-          "notifications",
-          "oauth",
-          "passwordLogin",
-          "reverseGeocoding",
-          "server",
-          "storageTemplate",
-          "templates",
-          "theme",
-          "trash",
-          "user"
-        ],
-        "type": "object"
-      },
-      "SystemConfigFFmpegDto": {
-        "properties": {
-          "accel": {
-            "$ref": "#/components/schemas/TranscodeHWAccel"
-          },
-          "accelDecode": {
-            "description": "Accelerated decode",
-            "type": "boolean"
-          },
-          "acceptedAudioCodecs": {
-            "description": "Accepted audio codecs",
-            "items": {
-              "$ref": "#/components/schemas/AudioCodec"
-            },
-            "type": "array"
-          },
-          "acceptedContainers": {
-            "description": "Accepted containers",
-            "items": {
-              "$ref": "#/components/schemas/VideoContainer"
-            },
-            "type": "array"
-          },
-          "acceptedVideoCodecs": {
-            "description": "Accepted video codecs",
-            "items": {
-              "$ref": "#/components/schemas/VideoCodec"
-            },
-            "type": "array"
-          },
-          "bframes": {
-            "description": "B-frames",
-            "maximum": 16,
-            "minimum": -1,
-            "type": "integer"
-          },
-          "cqMode": {
-            "$ref": "#/components/schemas/CQMode"
-          },
-          "crf": {
-            "description": "CRF",
-            "maximum": 51,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "gopSize": {
-            "description": "GOP size",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "maxBitrate": {
-            "description": "Max bitrate",
-            "type": "string"
-          },
-          "preferredHwDevice": {
-            "description": "Preferred hardware device",
-            "type": "string"
-          },
-          "preset": {
-            "description": "Preset",
-            "type": "string"
-          },
-          "realtime": {
-            "$ref": "#/components/schemas/SystemConfigFFmpegRealtimeDto"
-          },
-          "refs": {
-            "description": "References",
-            "maximum": 6,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "targetAudioCodec": {
-            "$ref": "#/components/schemas/AudioCodec"
-          },
-          "targetResolution": {
-            "description": "Target resolution",
-            "type": "string"
-          },
-          "targetVideoCodec": {
-            "$ref": "#/components/schemas/VideoCodec"
-          },
-          "temporalAQ": {
-            "description": "Temporal AQ",
-            "type": "boolean"
-          },
-          "threads": {
-            "description": "Threads",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "tonemap": {
-            "$ref": "#/components/schemas/ToneMapping"
-          },
-          "transcode": {
-            "$ref": "#/components/schemas/TranscodePolicy"
-          },
-          "twoPass": {
-            "description": "Two pass",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "accel",
-          "accelDecode",
-          "acceptedAudioCodecs",
-          "acceptedContainers",
-          "acceptedVideoCodecs",
-          "bframes",
-          "cqMode",
-          "crf",
-          "gopSize",
-          "maxBitrate",
-          "preferredHwDevice",
-          "preset",
-          "realtime",
-          "refs",
-          "targetAudioCodec",
-          "targetResolution",
-          "targetVideoCodec",
-          "temporalAQ",
-          "threads",
-          "tonemap",
-          "transcode",
-          "twoPass"
-        ],
-        "type": "object"
-      },
-      "SystemConfigFFmpegRealtimeDto": {
-        "properties": {
-          "enabled": {
-            "description": "Enable real-time HLS transcoding (alpha)",
-            "type": "boolean"
-          },
-          "resolutions": {
-            "description": "Resolutions to use for real-time HLS transcoding",
-            "items": {
-              "$ref": "#/components/schemas/HlsVideoResolution"
-            },
-            "type": "array"
-          },
-          "videoCodecs": {
-            "description": "Video codecs to use for real-time HLS transcoding",
-            "items": {
-              "$ref": "#/components/schemas/VideoCodec"
-            },
-            "type": "array"
-          }
-        },
-        "required": [
-          "enabled",
-          "resolutions",
-          "videoCodecs"
-        ],
-        "type": "object"
-      },
-      "SystemConfigFacesDto": {
-        "properties": {
-          "import": {
-            "description": "Import",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "import"
-        ],
-        "type": "object"
-      },
-      "SystemConfigGeneratedFullsizeImageDto": {
-        "properties": {
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          },
-          "format": {
-            "$ref": "#/components/schemas/ImageFormat"
-          },
-          "progressive": {
-            "description": "Progressive",
-            "type": "boolean"
-          },
-          "quality": {
-            "description": "Quality",
-            "maximum": 100,
-            "minimum": 1,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "enabled",
-          "format",
-          "quality"
-        ],
-        "type": "object"
-      },
-      "SystemConfigGeneratedImageDto": {
-        "properties": {
-          "format": {
-            "$ref": "#/components/schemas/ImageFormat"
-          },
-          "progressive": {
-            "description": "Progressive",
-            "type": "boolean"
-          },
-          "quality": {
-            "description": "Quality",
-            "maximum": 100,
-            "minimum": 1,
-            "type": "integer"
-          },
-          "size": {
-            "description": "Size",
-            "maximum": 9007199254740991,
-            "minimum": 1,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "format",
-          "quality",
-          "size"
-        ],
-        "type": "object"
-      },
-      "SystemConfigImageDto": {
-        "properties": {
-          "colorspace": {
-            "$ref": "#/components/schemas/Colorspace"
-          },
-          "extractEmbedded": {
-            "description": "Extract embedded",
-            "type": "boolean"
-          },
-          "fullsize": {
-            "$ref": "#/components/schemas/SystemConfigGeneratedFullsizeImageDto"
-          },
-          "preview": {
-            "$ref": "#/components/schemas/SystemConfigGeneratedImageDto"
-          },
-          "thumbnail": {
-            "$ref": "#/components/schemas/SystemConfigGeneratedImageDto"
-          }
-        },
-        "required": [
-          "colorspace",
-          "extractEmbedded",
-          "fullsize",
-          "preview",
-          "thumbnail"
-        ],
-        "type": "object"
-      },
-      "SystemConfigIntegrityChecks": {
-        "description": "Integrity checks config",
-        "properties": {
-          "checksumFiles": {
-            "$ref": "#/components/schemas/SystemConfigIntegrityChecksumJob"
-          },
-          "missingFiles": {
-            "$ref": "#/components/schemas/SystemConfigIntegrityJob"
-          },
-          "untrackedFiles": {
-            "$ref": "#/components/schemas/SystemConfigIntegrityJob"
-          }
-        },
-        "required": [
-          "checksumFiles",
-          "missingFiles",
-          "untrackedFiles"
-        ],
-        "type": "object"
-      },
-      "SystemConfigIntegrityChecksumJob": {
-        "description": "Integrity checksum job config",
-        "properties": {
-          "cronExpression": {
-            "description": "Cron expression for when the integrity check should run",
-            "type": "string"
-          },
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          },
-          "percentageLimit": {
-            "description": "Percentage limit of the integrity checksum job",
-            "format": "double",
-            "maximum": 1,
-            "minimum": 0,
-            "type": "number"
-          },
-          "timeLimit": {
-            "description": "How long the integrity checksum job may run for",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "cronExpression",
-          "enabled",
-          "percentageLimit",
-          "timeLimit"
-        ],
-        "type": "object"
-      },
-      "SystemConfigIntegrityJob": {
-        "description": "Integrity job config",
-        "properties": {
-          "cronExpression": {
-            "description": "Cron expression for when the integrity check should run",
-            "type": "string"
-          },
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "cronExpression",
-          "enabled"
-        ],
-        "type": "object"
-      },
-      "SystemConfigJobDto": {
-        "properties": {
-          "backgroundTask": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "editor": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "faceDetection": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "integrityCheck": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "library": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "metadataExtraction": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "migration": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "notifications": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "ocr": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "search": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "sidecar": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "smartSearch": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "thumbnailGeneration": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "videoConversion": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          },
-          "workflow": {
-            "$ref": "#/components/schemas/JobSettingsDto"
-          }
-        },
-        "required": [
-          "backgroundTask",
-          "editor",
-          "faceDetection",
-          "integrityCheck",
-          "library",
-          "metadataExtraction",
-          "migration",
-          "notifications",
-          "ocr",
-          "search",
-          "sidecar",
-          "smartSearch",
-          "thumbnailGeneration",
-          "videoConversion",
-          "workflow"
-        ],
-        "type": "object"
-      },
-      "SystemConfigLibraryDto": {
-        "properties": {
-          "scan": {
-            "$ref": "#/components/schemas/SystemConfigLibraryScanDto"
-          },
-          "watch": {
-            "$ref": "#/components/schemas/SystemConfigLibraryWatchDto"
-          }
-        },
-        "required": [
-          "scan",
-          "watch"
-        ],
-        "type": "object"
-      },
-      "SystemConfigLibraryScanDto": {
-        "properties": {
-          "cronExpression": {
-            "description": "Cron expression",
-            "type": "string"
-          },
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "cronExpression",
-          "enabled"
-        ],
-        "type": "object"
-      },
-      "SystemConfigLibraryWatchDto": {
-        "properties": {
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
-        ],
-        "type": "object"
-      },
-      "SystemConfigLoggingDto": {
-        "properties": {
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          },
-          "level": {
-            "$ref": "#/components/schemas/LogLevel"
-          }
-        },
-        "required": [
-          "enabled",
-          "level"
-        ],
-        "type": "object"
-      },
-      "SystemConfigMachineLearningDto": {
-        "properties": {
-          "availabilityChecks": {
-            "$ref": "#/components/schemas/MachineLearningAvailabilityChecksDto"
-          },
-          "clip": {
-            "$ref": "#/components/schemas/CLIPConfig"
-          },
-          "duplicateDetection": {
-            "$ref": "#/components/schemas/DuplicateDetectionConfig"
-          },
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          },
-          "facialRecognition": {
-            "$ref": "#/components/schemas/FacialRecognitionConfig"
-          },
-          "ocr": {
-            "$ref": "#/components/schemas/OcrConfig"
-          },
-          "urls": {
-            "description": "ML service URLs",
-            "items": {
-              "type": "string"
-            },
-            "minItems": 1,
-            "type": "array"
-          }
-        },
-        "required": [
-          "availabilityChecks",
-          "clip",
-          "duplicateDetection",
-          "enabled",
-          "facialRecognition",
-          "ocr",
-          "urls"
-        ],
-        "type": "object"
-      },
-      "SystemConfigMapDto": {
-        "properties": {
-          "darkStyle": {
-            "description": "Dark map style URL",
-            "format": "uri",
-            "type": "string"
-          },
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          },
-          "lightStyle": {
-            "description": "Light map style URL",
-            "format": "uri",
-            "type": "string"
-          }
-        },
-        "required": [
-          "darkStyle",
-          "enabled",
-          "lightStyle"
-        ],
-        "type": "object"
-      },
-      "SystemConfigMetadataDto": {
-        "properties": {
-          "faces": {
-            "$ref": "#/components/schemas/SystemConfigFacesDto"
-          }
-        },
-        "required": [
-          "faces"
-        ],
-        "type": "object"
-      },
-      "SystemConfigNewVersionCheckDto": {
-        "properties": {
-          "channel": {
-            "$ref": "#/components/schemas/ReleaseChannel"
-          },
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "channel",
-          "enabled"
-        ],
-        "type": "object"
-      },
-      "SystemConfigNightlyTasksDto": {
-        "properties": {
-          "clusterNewFaces": {
-            "description": "Cluster new faces",
-            "type": "boolean"
-          },
-          "databaseCleanup": {
-            "description": "Database cleanup",
-            "type": "boolean"
-          },
-          "generateMemories": {
-            "description": "Generate memories",
-            "type": "boolean"
-          },
-          "missingThumbnails": {
-            "description": "Missing thumbnails",
-            "type": "boolean"
-          },
-          "startTime": {
-            "description": "Start time (HH:MM)",
-            "pattern": "^(?:[01]\\d|2[0-3]):[0-5]\\d$",
-            "type": "string"
-          },
-          "syncQuotaUsage": {
-            "description": "Sync quota usage",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "clusterNewFaces",
-          "databaseCleanup",
-          "generateMemories",
-          "missingThumbnails",
-          "startTime",
-          "syncQuotaUsage"
-        ],
-        "type": "object"
-      },
-      "SystemConfigNotificationsDto": {
-        "properties": {
-          "smtp": {
-            "$ref": "#/components/schemas/SystemConfigSmtpDto"
-          }
-        },
-        "required": [
-          "smtp"
-        ],
-        "type": "object"
-      },
-      "SystemConfigOAuthDto": {
-        "properties": {
-          "allowInsecureRequests": {
-            "description": "Allow insecure requests",
-            "type": "boolean"
-          },
-          "autoLaunch": {
-            "description": "Auto launch",
-            "type": "boolean"
-          },
-          "autoRegister": {
-            "description": "Auto register",
-            "type": "boolean"
-          },
-          "buttonText": {
-            "description": "Button text",
-            "type": "string"
-          },
-          "clientId": {
-            "description": "Client ID",
-            "type": "string"
-          },
-          "clientSecret": {
-            "description": "Client secret",
-            "type": "string"
-          },
-          "defaultStorageQuota": {
-            "description": "Default storage quota",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "nullable": true,
-            "type": "integer"
-          },
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          },
-          "endSessionEndpoint": {
-            "description": "End session endpoint",
-            "type": "string"
-          },
-          "issuerUrl": {
-            "description": "Issuer URL",
-            "type": "string"
-          },
-          "mobileOverrideEnabled": {
-            "description": "Mobile override enabled",
-            "type": "boolean"
-          },
-          "mobileRedirectUri": {
-            "description": "Mobile redirect URI (set to empty string to disable)",
-            "type": "string"
-          },
-          "profileSigningAlgorithm": {
-            "description": "Profile signing algorithm",
-            "type": "string"
-          },
-          "prompt": {
-            "description": "OAuth prompt parameter (e.g. select_account, login, consent)",
-            "type": "string"
-          },
-          "roleClaim": {
-            "description": "Role claim",
-            "type": "string"
-          },
-          "scope": {
-            "description": "Scope",
-            "type": "string"
-          },
-          "signingAlgorithm": {
-            "description": "Signing algorithm",
-            "type": "string"
-          },
-          "storageLabelClaim": {
-            "description": "Storage label claim",
-            "type": "string"
-          },
-          "storageQuotaClaim": {
-            "description": "Storage quota claim",
-            "type": "string"
-          },
-          "timeout": {
-            "description": "Timeout",
-            "maximum": 9007199254740991,
-            "minimum": 1,
-            "type": "integer"
-          },
-          "tokenEndpointAuthMethod": {
-            "$ref": "#/components/schemas/OAuthTokenEndpointAuthMethod"
-          }
-        },
-        "required": [
-          "allowInsecureRequests",
-          "autoLaunch",
-          "autoRegister",
-          "buttonText",
-          "clientId",
-          "clientSecret",
-          "defaultStorageQuota",
-          "enabled",
-          "endSessionEndpoint",
-          "issuerUrl",
-          "mobileOverrideEnabled",
-          "mobileRedirectUri",
-          "profileSigningAlgorithm",
-          "prompt",
-          "roleClaim",
-          "scope",
-          "signingAlgorithm",
-          "storageLabelClaim",
-          "storageQuotaClaim",
-          "timeout",
-          "tokenEndpointAuthMethod"
-        ],
-        "type": "object"
-      },
-      "SystemConfigPasswordLoginDto": {
-        "properties": {
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
-        ],
-        "type": "object"
-      },
-      "SystemConfigReverseGeocodingDto": {
-        "properties": {
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "enabled"
-        ],
-        "type": "object"
-      },
-      "SystemConfigServerDto": {
-        "properties": {
-          "externalDomain": {
-            "description": "External domain",
-            "type": "string"
-          },
-          "loginPageMessage": {
-            "description": "Login page message",
-            "type": "string"
-          },
-          "publicUsers": {
-            "description": "Public users",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "externalDomain",
-          "loginPageMessage",
-          "publicUsers"
-        ],
-        "type": "object"
-      },
-      "SystemConfigSmtpDto": {
-        "properties": {
-          "enabled": {
-            "description": "Whether SMTP email notifications are enabled",
-            "type": "boolean"
-          },
-          "from": {
-            "description": "Email address to send from",
-            "type": "string"
-          },
-          "replyTo": {
-            "description": "Email address for replies",
-            "type": "string"
-          },
-          "transport": {
-            "$ref": "#/components/schemas/SystemConfigSmtpTransportDto"
-          }
-        },
-        "required": [
-          "enabled",
-          "from",
-          "replyTo",
-          "transport"
-        ],
-        "type": "object"
-      },
-      "SystemConfigSmtpTransportDto": {
-        "properties": {
-          "host": {
-            "description": "SMTP server hostname",
-            "type": "string"
-          },
-          "ignoreCert": {
-            "description": "Whether to ignore SSL certificate errors",
-            "type": "boolean"
-          },
-          "password": {
-            "description": "SMTP password",
-            "type": "string"
-          },
-          "port": {
-            "description": "SMTP server port",
-            "maximum": 65535,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "secure": {
-            "description": "Whether to use secure connection (TLS/SSL)",
-            "type": "boolean"
-          },
-          "username": {
-            "description": "SMTP username",
-            "type": "string"
-          }
-        },
-        "required": [
-          "host",
-          "ignoreCert",
-          "password",
-          "port",
-          "secure",
-          "username"
-        ],
-        "type": "object"
-      },
-      "SystemConfigStorageTemplateDto": {
-        "properties": {
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          },
-          "hashVerificationEnabled": {
-            "description": "Hash verification enabled",
-            "type": "boolean"
-          },
-          "template": {
-            "description": "Template",
-            "type": "string"
-          }
-        },
-        "required": [
-          "enabled",
-          "hashVerificationEnabled",
-          "template"
-        ],
-        "type": "object"
-      },
-      "SystemConfigTemplateEmailsDto": {
-        "properties": {
-          "albumInviteTemplate": {
-            "description": "Album invite template",
-            "type": "string"
-          },
-          "albumUpdateTemplate": {
-            "description": "Album update template",
-            "type": "string"
-          },
-          "welcomeTemplate": {
-            "description": "Welcome template",
-            "type": "string"
-          }
-        },
-        "required": [
-          "albumInviteTemplate",
-          "albumUpdateTemplate",
-          "welcomeTemplate"
-        ],
-        "type": "object"
-      },
       "SystemConfigTemplateStorageOptionDto": {
         "properties": {
           "dayOptions": {
@@ -26625,62 +27321,6 @@
           "secondOptions",
           "weekOptions",
           "yearOptions"
-        ],
-        "type": "object"
-      },
-      "SystemConfigTemplatesDto": {
-        "properties": {
-          "email": {
-            "$ref": "#/components/schemas/SystemConfigTemplateEmailsDto"
-          }
-        },
-        "required": [
-          "email"
-        ],
-        "type": "object"
-      },
-      "SystemConfigThemeDto": {
-        "properties": {
-          "customCss": {
-            "description": "Custom CSS for theming",
-            "type": "string"
-          }
-        },
-        "required": [
-          "customCss"
-        ],
-        "type": "object"
-      },
-      "SystemConfigTrashDto": {
-        "properties": {
-          "days": {
-            "description": "Days",
-            "maximum": 9007199254740991,
-            "minimum": 0,
-            "type": "integer"
-          },
-          "enabled": {
-            "description": "Enabled",
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "days",
-          "enabled"
-        ],
-        "type": "object"
-      },
-      "SystemConfigUserDto": {
-        "properties": {
-          "deleteDelay": {
-            "description": "Delete delay",
-            "maximum": 9007199254740991,
-            "minimum": 1,
-            "type": "integer"
-          }
-        },
-        "required": [
-          "deleteDelay"
         ],
         "type": "object"
       },
@@ -27340,7 +27980,7 @@
           "email": {
             "description": "User email",
             "format": "email",
-            "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+            "pattern": "^[\\p{L}\\p{M}\\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?(?:\\.[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?)*$",
             "type": "string"
           },
           "isAdmin": {
@@ -27422,7 +28062,7 @@
           "email": {
             "description": "User email",
             "format": "email",
-            "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+            "pattern": "^[\\p{L}\\p{M}\\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?(?:\\.[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?)*$",
             "type": "string"
           },
           "id": {
@@ -27528,7 +28168,7 @@
           "email": {
             "description": "User email",
             "format": "email",
-            "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+            "pattern": "^[\\p{L}\\p{M}\\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?(?:\\.[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?)*$",
             "type": "string"
           },
           "isAdmin": {
@@ -27584,6 +28224,362 @@
           "amber"
         ],
         "type": "string"
+      },
+      "UserConfigClipDto": {
+        "properties": {
+          "enabled": {
+            "description": "Whether the task is enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "UserConfigDto": {
+        "description": "Configuration properties that are visible to a logged user",
+        "properties": {
+          "ffmpeg": {
+            "$ref": "#/components/schemas/UserConfigFFmpegDto"
+          },
+          "image": {
+            "$ref": "#/components/schemas/UserConfigImageDto"
+          },
+          "machineLearning": {
+            "$ref": "#/components/schemas/UserConfigMachineLearningDto"
+          },
+          "map": {
+            "$ref": "#/components/schemas/UserConfigMapDto"
+          },
+          "oauth": {
+            "$ref": "#/components/schemas/UserConfigOAuthDto"
+          },
+          "passwordLogin": {
+            "$ref": "#/components/schemas/UserConfigPasswordLoginDto"
+          },
+          "reverseGeocoding": {
+            "$ref": "#/components/schemas/UserConfigReverseGeocodingDto"
+          },
+          "server": {
+            "$ref": "#/components/schemas/UserConfigServerDto"
+          },
+          "theme": {
+            "$ref": "#/components/schemas/UserConfigThemeDto"
+          },
+          "trash": {
+            "$ref": "#/components/schemas/UserConfigTrashDto"
+          },
+          "user": {
+            "$ref": "#/components/schemas/UserConfigUserDto"
+          }
+        },
+        "required": [
+          "ffmpeg",
+          "image",
+          "machineLearning",
+          "map",
+          "oauth",
+          "passwordLogin",
+          "reverseGeocoding",
+          "server",
+          "theme",
+          "trash",
+          "user"
+        ],
+        "type": "object"
+      },
+      "UserConfigDuplicateDetectionDto": {
+        "properties": {
+          "enabled": {
+            "description": "Whether the task is enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "UserConfigFFmpegDto": {
+        "properties": {
+          "realtime": {
+            "$ref": "#/components/schemas/UserConfigFFmpegRealtimeDto"
+          }
+        },
+        "required": [
+          "realtime"
+        ],
+        "type": "object"
+      },
+      "UserConfigFFmpegRealtimeDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enable real-time HLS transcoding (alpha)",
+            "type": "boolean"
+          },
+          "resolutions": {
+            "description": "Resolutions to use for real-time HLS transcoding",
+            "items": {
+              "$ref": "#/components/schemas/HlsVideoResolution"
+            },
+            "type": "array"
+          },
+          "videoCodecs": {
+            "description": "Video codecs to use for real-time HLS transcoding",
+            "items": {
+              "$ref": "#/components/schemas/VideoCodec"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "enabled",
+          "resolutions",
+          "videoCodecs"
+        ],
+        "type": "object"
+      },
+      "UserConfigFacialRecognitionDto": {
+        "properties": {
+          "enabled": {
+            "description": "Whether the task is enabled",
+            "type": "boolean"
+          },
+          "minFaces": {
+            "description": "Minimum number of faces required for recognition",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "enabled",
+          "minFaces"
+        ],
+        "type": "object"
+      },
+      "UserConfigGeneratedFullsizeImageDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "UserConfigGeneratedImageDto": {
+        "properties": {
+          "size": {
+            "description": "Size",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "size"
+        ],
+        "type": "object"
+      },
+      "UserConfigImageDto": {
+        "properties": {
+          "fullsize": {
+            "$ref": "#/components/schemas/UserConfigGeneratedFullsizeImageDto"
+          },
+          "preview": {
+            "$ref": "#/components/schemas/UserConfigGeneratedImageDto"
+          },
+          "thumbnail": {
+            "$ref": "#/components/schemas/UserConfigGeneratedImageDto"
+          }
+        },
+        "required": [
+          "fullsize",
+          "preview",
+          "thumbnail"
+        ],
+        "type": "object"
+      },
+      "UserConfigMachineLearningDto": {
+        "properties": {
+          "clip": {
+            "$ref": "#/components/schemas/UserConfigClipDto"
+          },
+          "duplicateDetection": {
+            "$ref": "#/components/schemas/UserConfigDuplicateDetectionDto"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "facialRecognition": {
+            "$ref": "#/components/schemas/UserConfigFacialRecognitionDto"
+          },
+          "ocr": {
+            "$ref": "#/components/schemas/UserConfigOcrDto"
+          }
+        },
+        "required": [
+          "clip",
+          "duplicateDetection",
+          "enabled",
+          "facialRecognition",
+          "ocr"
+        ],
+        "type": "object"
+      },
+      "UserConfigMapDto": {
+        "properties": {
+          "darkStyle": {
+            "description": "Dark map style URL",
+            "format": "uri",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          },
+          "lightStyle": {
+            "description": "Light map style URL",
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "required": [
+          "darkStyle",
+          "enabled",
+          "lightStyle"
+        ],
+        "type": "object"
+      },
+      "UserConfigOAuthDto": {
+        "properties": {
+          "autoLaunch": {
+            "description": "Auto launch",
+            "type": "boolean"
+          },
+          "buttonText": {
+            "description": "Button text",
+            "type": "string"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "autoLaunch",
+          "buttonText",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "UserConfigOcrDto": {
+        "properties": {
+          "enabled": {
+            "description": "Whether the task is enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "UserConfigPasswordLoginDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "UserConfigReverseGeocodingDto": {
+        "properties": {
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "UserConfigServerDto": {
+        "properties": {
+          "externalDomain": {
+            "description": "External domain",
+            "type": "string"
+          },
+          "loginPageMessage": {
+            "description": "Login page message",
+            "type": "string"
+          },
+          "publicUsers": {
+            "description": "Public users",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "externalDomain",
+          "loginPageMessage",
+          "publicUsers"
+        ],
+        "type": "object"
+      },
+      "UserConfigThemeDto": {
+        "properties": {
+          "customCss": {
+            "description": "Custom CSS for theming",
+            "type": "string"
+          }
+        },
+        "required": [
+          "customCss"
+        ],
+        "type": "object"
+      },
+      "UserConfigTrashDto": {
+        "properties": {
+          "days": {
+            "description": "Days",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "enabled": {
+            "description": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "days",
+          "enabled"
+        ],
+        "type": "object"
+      },
+      "UserConfigUserDto": {
+        "properties": {
+          "deleteDelay": {
+            "description": "Delete delay",
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "deleteDelay"
+        ],
+        "type": "object"
       },
       "UserLicense": {
         "properties": {
@@ -27727,7 +28723,7 @@
           "email": {
             "description": "User email",
             "format": "email",
-            "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+            "pattern": "^[\\p{L}\\p{M}\\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?(?:\\.[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?)*$",
             "type": "string"
           },
           "id": {
@@ -27782,7 +28778,7 @@
           "email": {
             "description": "User email",
             "format": "email",
-            "pattern": "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$",
+            "pattern": "^[\\p{L}\\p{M}\\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?(?:\\.[\\p{L}\\p{N}](?:[\\p{L}\\p{M}\\p{N}-]{0,61}[\\p{L}\\p{M}\\p{N}])?)*$",
             "type": "string"
           },
           "name": {
@@ -27913,6 +28909,10 @@
             "description": "Workflow enabled",
             "type": "boolean"
           },
+          "logging": {
+            "description": "Workflow logs run results",
+            "type": "boolean"
+          },
           "name": {
             "description": "Workflow name",
             "nullable": true,
@@ -27931,6 +28931,59 @@
         },
         "required": [
           "trigger"
+        ],
+        "type": "object"
+      },
+      "WorkflowLogEntryDto": {
+        "properties": {
+          "at": {
+            "description": "Workflow run date/time",
+            "example": "2024-01-01T00:00:00.000Z",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$",
+            "type": "string"
+          },
+          "id": {
+            "description": "Workflow log entry ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
+            "type": "string"
+          },
+          "lastStep": {
+            "description": "Last step ran, if the workflow ended early",
+            "properties": {
+              "index": {
+                "description": "Index of the step in the workflow",
+                "exclusiveMinimum": true,
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "method": {
+                "description": "Method of the step",
+                "type": "string"
+              }
+            },
+            "required": [
+              "method",
+              "index"
+            ],
+            "type": "object"
+          },
+          "result": {
+            "$ref": "#/components/schemas/WorkflowResult"
+          },
+          "triggerDataId": {
+            "description": "Workflow trigger data ID",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "at",
+          "id",
+          "result"
         ],
         "type": "object"
       },
@@ -27954,6 +29007,10 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$",
             "type": "string"
+          },
+          "logging": {
+            "description": "Workflow logs run results",
+            "type": "boolean"
           },
           "name": {
             "description": "Workflow name",
@@ -27981,12 +29038,22 @@
           "description",
           "enabled",
           "id",
+          "logging",
           "name",
           "steps",
           "trigger",
           "updatedAt"
         ],
         "type": "object"
+      },
+      "WorkflowResult": {
+        "description": "Workflow run result",
+        "enum": [
+          "completed",
+          "halted",
+          "error"
+        ],
+        "type": "string"
       },
       "WorkflowShareResponseDto": {
         "properties": {
@@ -28070,7 +29137,8 @@
         "description": "Plugin trigger type",
         "enum": [
           "AssetCreate",
-          "AssetMetadataExtraction"
+          "AssetMetadataExtraction",
+          "AssetTagged"
         ],
         "type": "string"
       },
@@ -28110,6 +29178,10 @@
           },
           "enabled": {
             "description": "Workflow enabled",
+            "type": "boolean"
+          },
+          "logging": {
+            "description": "Workflow logs run results",
             "type": "boolean"
           },
           "name": {

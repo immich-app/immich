@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
@@ -7,7 +6,7 @@ import 'package:immich_mobile/domain/models/events.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
+import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/pages/common/large_leading_tile.dart';
 import 'package:immich_mobile/presentation/widgets/images/thumbnail.widget.dart';
 import 'package:immich_mobile/providers/backup/drift_backup.provider.dart';
@@ -22,7 +21,7 @@ class DriftBackupAssetDetailPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<List<LocalAsset>> result = ref.watch(driftBackupCandidateProvider);
     return Scaffold(
-      appBar: AppBar(title: Text('backup_controller_page_remainder'.t(context: context))),
+      appBar: AppBar(title: Text(context.t.backup_controller_page_remainder)),
       body: result.when(
         data: (List<LocalAsset> candidates) {
           return ListView.separated(
@@ -66,7 +65,7 @@ class DriftBackupAssetDetailPage extends ConsumerWidget {
                             );
                           },
                           error: (error, stackTrace) => Text(
-                            'error_saving_image'.tr(args: [error.toString()]),
+                            context.t.error_saving_image(error: error.toString()),
                             style: TextStyle(color: context.colorScheme.error),
                           ),
                           loading: () =>
@@ -102,7 +101,7 @@ class DriftBackupAssetDetailPage extends ConsumerWidget {
           );
         },
         error: (Object error, StackTrace stackTrace) {
-          return Center(child: Text('error_saving_image'.tr(args: [error.toString()])));
+          return Center(child: Text(context.t.error_saving_image(error: error.toString())));
         },
         loading: () {
           return const SizedBox(height: 48, width: 48, child: Center(child: CircularProgressIndicator.adaptive()));

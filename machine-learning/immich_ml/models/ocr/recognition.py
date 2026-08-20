@@ -69,7 +69,8 @@ class TextRecognizer(InferenceModel):
         )
         return session
 
-    def _predict(self, img: Image.Image, texts: TextDetectionOutput) -> TextRecognitionOutput:
+    # TODO: take the options as parameters instead of applying them through `configure`
+    def _predict(self, img: Image.Image, texts: TextDetectionOutput, **kwargs: Any) -> TextRecognitionOutput:
         boxes, box_scores = texts["boxes"], texts["scores"]
         if boxes.shape[0] == 0:
             return self._empty
