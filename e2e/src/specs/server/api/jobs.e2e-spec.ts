@@ -45,7 +45,7 @@ describe('/jobs', () => {
       config.machineLearning.enabled = false;
       config.metadata.faces.import = false;
       config.machineLearning.clip.enabled = false;
-      await updateConfig({ systemConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
+      await updateConfig({ adminConfigDto: config }, { headers: asBearerAuth(admin.accessToken) });
     });
 
     it('should queue metadata extraction for missing assets', async () => {

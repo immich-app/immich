@@ -13,38 +13,58 @@ WORKDIR /usr/src/app
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .pnpmfile.cjs ./
 
-FROM builder AS server
+FROM builder AS sdk
+
+COPY ./packages/sdk/package.json ./packages/sdk/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/sdk install --frozen-lockfile
+
+COPY ./packages/sdk ./packages/sdk/
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/sdk build
+
+FROM sdk AS plugin-sdk
+
+COPY ./packages/plugin-sdk/package.json ./packages/plugin-sdk/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/plugin-sdk install --frozen-lockfile
+
+COPY ./packages/plugin-sdk ./packages/plugin-sdk/
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/plugin-sdk build
+
+FROM plugin-sdk AS server
+
+COPY ./server/package.json ./server/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich install --frozen-lockfile
 
 COPY ./server ./server/
-COPY ./packages/sdk ./packages/sdk/
-COPY ./packages/plugin-sdk ./packages/plugin-sdk/
-RUN --mount=type=cache,id=pnpm-server,target=/buildcache/pnpm-store \
-  pnpm --filter @immich/sdk --filter @immich/plugin-sdk --filter immich build && \
-  pnpm --filter immich --prod --no-optional deploy /output/server-pruned && \
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
+  pnpm --filter immich build && \
+  pnpm --filter immich --prod --no-optional deploy /output/server-pruned
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --dir /output/server-pruned/node_modules/sharp exec npm run build
 
-FROM builder AS web
+FROM sdk AS web
+
+COPY ./web/package.json ./web/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich-web install --frozen-lockfile
+
+COPY ./i18n ./i18n/
+COPY ./web ./web/
 
 ARG BUILD_ID
 ENV IMMICH_BUILD=${BUILD_ID}
 
-COPY ./web ./web/
-COPY ./i18n ./i18n/
-COPY ./packages/sdk ./packages/sdk/
-RUN --mount=type=cache,id=pnpm-web,target=/buildcache/pnpm-store \
-  pnpm --filter @immich/sdk --filter immich-web install --frozen-lockfile && \
-  pnpm --filter @immich/sdk --filter immich-web build
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter immich-web build
 
-FROM builder AS cli
+FROM sdk AS cli
 
-COPY ./packages/sdk ./packages/sdk/
+COPY ./packages/cli/package.json ./packages/cli/package.json
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store pnpm --filter @immich/cli install --frozen-lockfile
+
 COPY ./packages/cli ./packages/cli/
-RUN --mount=type=cache,id=pnpm-cli,target=/buildcache/pnpm-store \
-  pnpm --filter @immich/sdk --filter @immich/cli install --frozen-lockfile && \
-  pnpm --filter @immich/sdk --filter @immich/cli build && \
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
+  pnpm --filter @immich/cli build && \
   pnpm --filter @immich/cli --prod --no-optional deploy /output/cli-pruned
 
-FROM builder AS plugins
+FROM plugin-sdk AS plugins
 
 ARG TARGETPLATFORM
 
@@ -59,12 +79,10 @@ ENV MISE_DISABLE_TOOLS=flutter
 RUN --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   mise install --locked
 
-COPY ./packages/sdk ./packages/sdk/
 COPY ./packages/plugin-core ./packages/plugin-core/
-COPY ./packages/plugin-sdk ./packages/plugin-sdk/
 
 # Build plugins
-RUN --mount=type=cache,id=pnpm-packages,target=/buildcache/pnpm-store \
+RUN --mount=type=cache,id=pnpm,target=/buildcache/pnpm-store \
   --mount=type=cache,id=mise-tools-${TARGETPLATFORM},target=/buildcache/mise \
   mise //:plugins
 
