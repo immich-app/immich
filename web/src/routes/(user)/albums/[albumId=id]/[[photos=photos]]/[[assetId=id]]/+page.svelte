@@ -42,6 +42,7 @@
     getAlbumAssetsActions,
     handleDeleteAlbum,
     handleDownloadAlbum,
+    handleToggleAlbumPin,
   } from '$lib/services/album.service';
   import { getGlobalActions } from '$lib/services/app.service';
   import { getAssetBulkActions } from '$lib/services/asset.service';
@@ -70,6 +71,8 @@
     mdiImageOutline,
     mdiImagePlusOutline,
     mdiLink,
+    mdiPin,
+    mdiPinOutline,
     mdiPlus,
     mdiPresentationPlay,
   } from '@mdi/js';
@@ -314,10 +317,17 @@
   const onAlbumUpdate = async (newAlbum: AlbumResponseDto) => {
     album = newAlbum;
 
-    // invalidating during navigation causes an infinite page load
+    // invalidating during `navigation` causes an infinite page load
     await navigating.complete;
 
     await invalidate('album:data');
+  };
+
+  const togglePinned = async () => {
+    const updated = await handleToggleAlbumPin(album);
+    if (updated) {
+      album = updated;
+    }
   };
 
   const { Cast } = $derived(getGlobalActions($t));
@@ -583,6 +593,11 @@
                 {/if}
 
                 {#if isOwned}
+                  <MenuOption
+                    icon={album.isPinned ? mdiPin : mdiPinOutline}
+                    text={album.isPinned ? $t('unpin_album') : $t('pin_album')}
+                    onClick={togglePinned}
+                  />
                   <MenuOption
                     icon={mdiDeleteOutline}
                     text={$t('delete_album')}

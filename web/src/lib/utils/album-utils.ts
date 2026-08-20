@@ -261,5 +261,12 @@ export const sortAlbums = (albums: AlbumResponseDto[], { sortBy, orderBy }: { so
   const sort = sortOptions[sortBy] ?? sortOptions[AlbumSortBy.DateModified];
   const order = stringToSortOrder(orderBy);
 
-  return sort(order, albums);
+  const sorted = sort(order, albums);
+
+  // Pinned albums always float to the top, keeping their relative order
+  // (which already follows the active sort mode) among themselves.
+  const pinned = sorted.filter((album) => album.isPinned);
+  const rest = sorted.filter((album) => !album.isPinned);
+
+  return [...pinned, ...rest];
 };

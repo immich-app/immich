@@ -13,7 +13,9 @@ class DriftRemoteAlbumOption extends StatelessWidget {
     this.onCreateSharedLink,
     this.onToggleAlbumOrder,
     this.onEditAlbum,
+    this.onTogglePinned,
     this.onShowOptions,
+    this.isPinned = false,
     this.iconColor,
     this.iconShadows,
   });
@@ -25,7 +27,9 @@ class DriftRemoteAlbumOption extends StatelessWidget {
   final VoidCallback? onCreateSharedLink;
   final VoidCallback? onToggleAlbumOrder;
   final VoidCallback? onEditAlbum;
+  final VoidCallback? onTogglePinned;
   final VoidCallback? onShowOptions;
+  final bool isPinned;
   final Color? iconColor;
   final List<Shadow>? iconShadows;
 
@@ -90,6 +94,17 @@ class DriftRemoteAlbumOption extends StatelessWidget {
           label: context.t.create_shared_link,
           iconData: Icons.link,
           onPressed: onCreateSharedLink,
+          menuItem: true,
+        ),
+      );
+    }
+
+    if (onTogglePinned != null) {
+      menuChildren.add(
+        BaseActionButton(
+          label: isPinned ? context.t.unpin_album : context.t.pin_album,
+          iconData: isPinned ? Icons.push_pin : Icons.push_pin_outlined,
+          onPressed: onTogglePinned,
           menuItem: true,
         ),
       );

@@ -70,6 +70,7 @@ RemoteAlbum createRemoteAlbum({
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
     isActivityEnabled: isActivityEnabled,
+    isPinned: false,
     isShared: isShared,
     order: AlbumAssetOrder.asc,
     assetCount: 0,
