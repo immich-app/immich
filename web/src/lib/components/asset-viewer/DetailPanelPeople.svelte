@@ -21,6 +21,7 @@
   const { asset, isOwner, previousRoute }: Props = $props();
 
   const people = $derived(Array.from(faceManager.people));
+  const unassignedFaces = $derived(faceManager.data.filter((f) => !f.person));
   const visiblePeople = $derived(
     people
       .filter((p) => assetViewerManager.isShowingHiddenPeople || !p.isHidden)
@@ -91,6 +92,7 @@
             shape="round"
             color="secondary"
             variant="ghost"
+            indicator={unassignedFaces.length > 0 ? 'info' : undefined}
             onclick={() => assetViewerManager.openEditFacesPanel()}
           />
         {/if}
