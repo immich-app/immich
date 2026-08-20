@@ -4,20 +4,6 @@ import { createSHA1 } from 'hash-wasm';
 
 const HASH_CHUNK_SIZE = 5 * 1024 * 1024;
 
-function isWebAssemblySupported(): boolean {
-  try {
-    if (typeof WebAssembly === 'object' && typeof WebAssembly.instantiate === 'function') {
-      const module = new WebAssembly.Module(Uint8Array.of(0x00, 0x61, 0x73, 0x6D, 0x01, 0x00, 0x00, 0x00));
-      if (module instanceof WebAssembly.Module) {
-        return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
-      }
-    }
-  } catch {
-    // ignore, fall through to unsupported
-  }
-  return false;
-}
-
 export const hashFileWasm = async (file: File): Promise<string> => {
   const sha1Factory = await createSHA1();
   const hasher = sha1Factory.init();
@@ -51,14 +37,12 @@ export async function hashFileJs(file: File): Promise<string> {
 }
 
 export async function hashFile(file: File): Promise<string> {
-  if (isWebAssemblySupported()) {
-    try {
-      return await hashFileWasm(file);
-    } catch {
-      // fall through to the pure-JS implementation below
-    }
+  try {
+    return await hashFileWasm(file);
+  } catch {
+    // fall through to the pure-JS implementation below
+    return hashFileJs(file);
   }
-  return hashFileJs(file);
 }
 
 // eslint-disable-next-line unicorn/no-top-level-side-effects
