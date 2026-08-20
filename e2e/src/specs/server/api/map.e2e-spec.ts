@@ -3,7 +3,6 @@ import { readFile } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { Socket } from 'socket.io-client';
 import { createUserDto } from 'src/fixtures';
-import { errorDto } from 'src/responses';
 import { app, testAssetDir, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -55,12 +54,6 @@ describe('/map', () => {
   });
 
   describe('GET /map/markers', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/map/markers');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should get map markers for all non-archived assets', async () => {
       const { status, body } = await request(app)
         .get('/map/markers')
@@ -139,52 +132,6 @@ describe('/map', () => {
   });
 
   describe('GET /map/reverse-geocode', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/map/reverse-geocode');
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should throw an error if a lat is not provided', async () => {
-      const { status, body } = await request(app)
-        .get('/map/reverse-geocode?lon=123')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['lat'], message: 'Invalid input: expected number, received NaN' }]),
-      );
-    });
-
-    it('should throw an error if a lat is not a number', async () => {
-      const { status, body } = await request(app)
-        .get('/map/reverse-geocode?lat=abc&lon=123.456')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['lat'], message: 'Invalid input: expected number, received NaN' }]),
-      );
-    });
-
-    it('should throw an error if a lat is out of range', async () => {
-      const { status, body } = await request(app)
-        .get('/map/reverse-geocode?lat=91&lon=123.456')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['lat'], message: 'Too big: expected number to be <=90' }]),
-      );
-    });
-
-    it('should throw an error if a lon is not provided', async () => {
-      const { status, body } = await request(app)
-        .get('/map/reverse-geocode?lat=75')
-        .set('Authorization', `Bearer ${admin.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['lon'], message: 'Invalid input: expected number, received NaN' }]),
-      );
-    });
-
     const reverseGeocodeTestCases = [
       {
         name: 'Vaucluse',

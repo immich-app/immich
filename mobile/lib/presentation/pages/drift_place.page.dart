@@ -94,7 +94,7 @@ class _Map extends StatelessWidget {
                 height: 200,
                 width: context.width,
                 child: MapThumbnail(
-                  onTap: (_, __) => context.pushRoute(DriftMapRoute(initialLocation: currentLocation)),
+                  onTap: (_, _) => context.pushRoute(DriftMapRoute(initialLocation: currentLocation)),
                   zoom: 8,
                   centre: currentLocation ?? const LatLng(21.44950, -157.91959),
                   showAttribution: false,
@@ -134,16 +134,19 @@ class _PlaceList extends ConsumerWidget {
         ),
       ),
       data: (places) {
+        final List<(String, String)> filtered;
         if (search.value != null) {
-          places = places.where((place) {
+          filtered = places.where((place) {
             return place.$1.toLowerCase().contains(search.value!.toLowerCase());
           }).toList();
+        } else {
+          filtered = places;
         }
 
         return SliverList.builder(
-          itemCount: places.length,
+          itemCount: filtered.length,
           itemBuilder: (context, index) {
-            final place = places[index];
+            final place = filtered[index];
             return _PlaceTile(place: place);
           },
         );

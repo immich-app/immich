@@ -172,7 +172,7 @@ Future<void> _populateCloudIds(Drift drift) async {
       );
     }
   }
-  await DriftLocalAlbumRepository(drift).updateCloudMapping(cloudMapping);
+  await LocalAlbumRepository(drift).updateCloudMapping(cloudMapping);
 }
 
 typedef _CloudIdMapping = ({String remoteAssetId, LocalAsset localAsset});

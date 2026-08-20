@@ -5,6 +5,7 @@ import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/presentation/actions/action.dart';
 import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/toast.provider.dart';
+import 'package:immich_mobile/services/toast.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 
 typedef _State = ({bool shouldLock, List<String> assetIds, List<String> localIds});
@@ -62,7 +63,11 @@ class LockAction extends AssetActionBuilder {
         // A locked asset still sits in the device gallery, so offer to remove the local copy.
         await assetService.deleteLocal(localIds);
       }
-      toastService.success(message);
+      // Unlocking is a sensitive action and requires an elevated session
+      final toast = shouldLock
+          ? null
+          : ToastOption(onUndo: () => assetService.update(assetIds, visibility: const .some(.locked)));
+      toastService.success(message, toast: toast);
       clearSelection();
     } catch (error, stack) {
       handleError(error, stack: stack, description: "Failed to update the locked folder for assets");

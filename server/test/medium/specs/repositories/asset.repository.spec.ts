@@ -223,6 +223,13 @@ describe(AssetRepository.name, () => {
     });
   });
 
+  describe('createAll', () => {
+    it('should return an empty array when given an empty input', async () => {
+      const { sut } = setup();
+      await expect(sut.createAll([])).resolves.toStrictEqual([]);
+    });
+  });
+
   describe('birthday assets', () => {
     const birthDate = { year: 1990, month: 6, day: 13 };
     const until = { year: 2025, month: 6, day: 13 };

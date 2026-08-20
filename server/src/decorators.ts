@@ -141,7 +141,7 @@ export const GenerateSql = (...options: GenerateSqlQueries[]) => SetMetadata(GEN
 
 export type EventConfig = {
   name: EmitEvent;
-  /** handle socket.io server events as well  */
+  /** handle socket.io server events as well */
   server?: boolean;
   /** lower value has higher priority, defaults to 0 */
   priority?: number;

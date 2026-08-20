@@ -25,7 +25,7 @@ class AlbumAssetCandidates {
 class RemoteAlbumService {
   static final _logger = Logger('RemoteAlbumService');
 
-  final DriftRemoteAlbumRepository _repository;
+  final RemoteAlbumRepository _repository;
   final DriftAlbumApiRepository _albumApiRepository;
   final ForegroundUploadService _uploadService;
 
@@ -152,7 +152,7 @@ class RemoteAlbumService {
     );
 
     // Update the local database
-    await _repository.update(updatedAlbum);
+    await _repository.updateAlbum(updatedAlbum);
 
     return updatedAlbum;
   }
