@@ -39,4 +39,26 @@ describe('AlbumCover component', () => {
     expect(img.className).toBe('size-full rounded-xl object-cover aspect-square asdf');
     expect(img.getAttribute('src')).toStrictEqual(expect.any(String));
   });
+
+  it('shows a pin icon when the album is pinned', () => {
+    const component = render(AlbumCover, {
+      album: albumFactory.build({
+        albumName: 'Pinned',
+        albumThumbnailAssetId: null,
+        isPinned: true,
+      }),
+    });
+    expect(component.getByTitle('Pinned album')).toBeInTheDocument();
+  });
+
+  it('does not show a pin icon when the album is not pinned', () => {
+    const component = render(AlbumCover, {
+      album: albumFactory.build({
+        albumName: 'Not Pinned',
+        albumThumbnailAssetId: null,
+        isPinned: false,
+      }),
+    });
+    expect(component.queryByTitle('Pinned album')).not.toBeInTheDocument();
+  });
 });

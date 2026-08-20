@@ -33,34 +33,55 @@ class AlbumTile extends ConsumerWidget {
       ),
       onTap: () => onAlbumSelected?.call(album),
       leadingPadding: const EdgeInsets.only(right: 16),
-      leading: FutureBuilder(
-        future: albumThumbnailAsset,
-        builder: (context, snapshot) {
-          return snapshot.hasData && snapshot.data != null
-              ? ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(15)),
-                  child: SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: Thumbnail.remote(
-                      remoteId: album.thumbnailAssetId!,
-                      thumbhash: snapshot.data!.thumbHash ?? "",
-                    ),
-                  ),
-                )
-              : SizedBox(
-                  width: 80,
-                  height: 80,
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: context.colorScheme.surfaceContainer,
-                      borderRadius: const BorderRadius.all(Radius.circular(16)),
-                      border: Border.all(color: context.colorScheme.outline.withAlpha(50), width: 1),
-                    ),
-                    child: const Icon(Icons.photo_album_rounded, size: 24, color: Colors.grey),
-                  ),
-                );
-        },
+      leading: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          FutureBuilder(
+            future: albumThumbnailAsset,
+            builder: (context, snapshot) {
+              return snapshot.hasData && snapshot.data != null
+                  ? ClipRRect(
+                      borderRadius: const BorderRadius.all(Radius.circular(15)),
+                      child: SizedBox(
+                        width: 80,
+                        height: 80,
+                        child: Thumbnail.remote(
+                          remoteId: album.thumbnailAssetId!,
+                          thumbhash: snapshot.data!.thumbHash ?? "",
+                        ),
+                      ),
+                    )
+                  : SizedBox(
+                      width: 80,
+                      height: 80,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.surfaceContainer,
+                          borderRadius: const BorderRadius.all(Radius.circular(16)),
+                          border: Border.all(color: context.colorScheme.outline.withAlpha(50), width: 1),
+                        ),
+                        child: const Icon(Icons.photo_album_rounded, size: 24, color: Colors.grey),
+                      ),
+                    );
+            },
+          ),
+          if (album.isPinned)
+            Positioned(
+              top: -4,
+              right: -4,
+              child: Container(
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: context.colorScheme.surface,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 4, offset: const Offset(0, 1)),
+                  ],
+                ),
+                child: Icon(Icons.push_pin, size: 14, color: context.primaryColor),
+              ),
+            ),
+        ],
       ),
     );
   }

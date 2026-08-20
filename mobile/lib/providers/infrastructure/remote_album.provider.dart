@@ -145,6 +145,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     String? description,
     String? thumbnailAssetId,
     bool? isActivityEnabled,
+    bool? isPinned,
     AlbumAssetOrder? order,
   }) async {
     try {
@@ -154,6 +155,7 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
         description: description,
         thumbnailAssetId: thumbnailAssetId,
         isActivityEnabled: isActivityEnabled,
+        isPinned: isPinned,
         order: order,
       );
 
@@ -176,6 +178,12 @@ class RemoteAlbumNotifier extends Notifier<RemoteAlbumState> {
     final newOrder = currentAlbum.order == AlbumAssetOrder.asc ? AlbumAssetOrder.desc : AlbumAssetOrder.asc;
 
     return updateAlbum(albumId, order: newOrder);
+  }
+
+  Future<RemoteAlbum?> togglePinned(String albumId) async {
+    final currentAlbum = state.albums.firstWhere((album) => album.id == albumId);
+
+    return updateAlbum(albumId, isPinned: !currentAlbum.isPinned);
   }
 
   Future<void> deleteAlbum(String albumId) async {
