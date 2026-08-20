@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/events.model.dart';
+import 'package:immich_mobile/domain/models/map.model.dart';
 import 'package:immich_mobile/domain/models/time_range.model.dart';
 import 'package:immich_mobile/domain/utils/event_stream.dart';
-import 'package:immich_mobile/infrastructure/repositories/timeline.repository.dart';
 import 'package:immich_mobile/providers/infrastructure/map.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/settings.provider.dart';
 import 'package:immich_mobile/providers/map/map_state.provider.dart';
@@ -72,17 +72,11 @@ class MapState {
 class MapStateNotifier extends Notifier<MapState> {
   MapStateNotifier();
 
-  final StreamController<TimelineMapOptions> _optionsController = StreamController.broadcast();
-
-  // ignore: avoid-public-notifier-properties
-  Stream<TimelineMapOptions> get optionsStream => _optionsController.stream;
-
   bool setBounds(LatLngBounds bounds) {
     if (state.bounds == bounds) {
       return false;
     }
     state = state.copyWith(bounds: bounds);
-    _optionsController.add(state.toOptions());
     return true;
   }
 
@@ -97,14 +91,12 @@ class MapStateNotifier extends Notifier<MapState> {
   void switchFavoriteOnly(bool isFavoriteOnly) {
     unawaited(ref.read(settingsProvider).write(.mapShowFavoriteOnly, isFavoriteOnly));
     state = state.copyWith(onlyFavorites: isFavoriteOnly);
-    _optionsController.add(state.toOptions());
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
   void switchIncludeArchived(bool isIncludeArchived) {
     unawaited(ref.read(settingsProvider).write(.mapIncludeArchived, isIncludeArchived));
     state = state.copyWith(includeArchived: isIncludeArchived);
-    _optionsController.add(state.toOptions());
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
@@ -117,7 +109,6 @@ class MapStateNotifier extends Notifier<MapState> {
   void setRelativeTime(int relativeDays) {
     unawaited(ref.read(settingsProvider).write(.mapRelativeDate, relativeDays));
     state = state.copyWith(relativeDays: relativeDays);
-    _optionsController.add(state.toOptions());
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
@@ -125,7 +116,6 @@ class MapStateNotifier extends Notifier<MapState> {
     unawaited(ref.read(settingsProvider).write(.mapCustomFrom, range.from));
     unawaited(ref.read(settingsProvider).write(.mapCustomTo, range.to));
     state = state.copyWith(timeRange: range);
-    _optionsController.add(state.toOptions());
     EventStream.shared.emit(const MapMarkerReloadEvent());
   }
 
@@ -142,7 +132,6 @@ class MapStateNotifier extends Notifier<MapState> {
 
   @override
   MapState build() {
-    ref.onDispose(_optionsController.close);
     final mapConfig = ref.read(appConfigProvider.select((config) => config.map));
     return MapState(
       themeMode: mapConfig.themeMode,

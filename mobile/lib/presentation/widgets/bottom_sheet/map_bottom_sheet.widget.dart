@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:immich_mobile/domain/models/map.model.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/base_bottom_sheet.widget.dart';
 import 'package:immich_mobile/presentation/widgets/bottom_sheet/general_bottom_sheet.widget.dart';
@@ -46,14 +49,21 @@ class _ScopedMapTimeline extends StatelessWidget {
           final withPartners = ref.watch(mapStateProvider.select((s) => s.withPartners));
           final users = withPartners ? ref.watch(timelineUsersProvider).valueOrNull ?? [user.id] : [user.id];
 
+          final optionsController = StreamController<TimelineMapOptions>.broadcast();
+          ref.onDispose(optionsController.close);
+
+          var currentOptions = ref.read(mapStateProvider).toOptions();
+
+          ref.listen(mapStateProvider.select((state) => state.toOptions()), (_, newOptions) {
+            currentOptions = newOptions;
+            optionsController.add(newOptions);
+          });
+
           final timelineService = ref
               .watch(timelineFactoryProvider)
-              .geographicMap(
-                users,
-                () => ref.read(mapStateProvider).toOptions(),
-                ref.read(mapStateProvider.notifier).optionsStream,
-              );
+              .geographicMap(users, () => currentOptions, optionsController.stream);
           ref.onDispose(timelineService.dispose);
+
           return timelineService;
         }),
       ],

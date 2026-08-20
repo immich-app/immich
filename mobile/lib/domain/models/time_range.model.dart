@@ -1,10 +1,14 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:immich_mobile/utils/option.dart';
 
-class TimeRange {
-  final DateTime? from;
-  final DateTime? to;
+part 'time_range.model.freezed.dart';
 
-  const TimeRange({this.from, this.to});
+// copyWith is hand-written so that fields can be cleared via optionals
+@Freezed(copyWith: false, fromJson: false, toJson: false)
+abstract class TimeRange with _$TimeRange {
+  const TimeRange._();
+
+  const factory TimeRange({DateTime? from, DateTime? to}) = _TimeRange;
 
   TimeRange copyWith({Option<DateTime>? from, Option<DateTime>? to}) {
     return TimeRange(from: from.patch(this.from), to: to.patch(this.to));
