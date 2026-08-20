@@ -134,7 +134,7 @@ export class TagService extends BaseService {
       await this.updateTags(assetId);
       // AssetTag and AssetUntag events perform the same function, and we only want one event to be emitted for each asset
       // to avoid sidecar file clashes, so we can emit AssetTag for all changes.
-      await this.eventRepository.emit('AssetTag', { assetId });
+      await this.eventRepository.emit('AssetTag', { assetId, userId: auth.user.id });
     }
 
     return { addedCount: addResults.length, removedCount: removeResults.length };
