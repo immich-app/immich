@@ -12,6 +12,7 @@ export class PersonFactory {
 
   static from(dto: PersonLike = {}) {
     return new PersonFactory({
+      assetCount: 0,
       birthDate: null,
       color: null,
       createdAt: newDate(),
