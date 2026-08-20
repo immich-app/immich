@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Selectable, sql, Updateable } from 'kysely';
+import { Insertable, Kysely, sql, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
@@ -80,70 +80,67 @@ export class TagRepository {
 
   @GenerateSql({ params: [DummyValue.UUID, { value: DummyValue.STRING, color: DummyValue.STRING }] })
   async update(id: string, dto: Updateable<TagTable>) {
-    let updated: Selectable<TagTable>;
-    await this.db.transaction().execute(async (tx) => {
-      updated = await tx.updateTable('tag').set(dto).where('id', '=', id).returningAll().executeTakeFirstOrThrow();
+    return this.db.transaction().execute(async (tx) => {
+      // Get previous tag value for reference if the current update contains a new value
+      const previousTag =
+        dto.value === undefined
+          ? undefined
+          : await tx.selectFrom('tag').select('value').where('id', '=', id).executeTakeFirstOrThrow();
 
-      if (dto.value) {
-        // propagate value update downstream
-        const tagClosures = await this.db
-          .selectFrom('tag_closure')
-          .select('id_descendant')
-          .where('id_ancestor', '=', id)
+      // Perform main tag update
+      const updated = await tx
+        .updateTable('tag')
+        .set(dto)
+        .where('id', '=', id)
+        .returningAll()
+        .executeTakeFirstOrThrow();
+
+      // Check if value has changed, trigger value updates on all children if so
+      if (previousTag && dto.value !== previousTag.value) {
+        await tx
+          // Use a recursive cte to get all levels of nested child tags that need to be updated
+          .withRecursive('descendants(id, value)', (qb) => {
+            const directChildren = qb
+              .selectFrom('tag as child')
+              .select((eb) => [
+                'child.id as id',
+                eb
+                  .fn<string>('concat', [
+                    eb.cast<string>(eb.val(updated.value), 'text'),
+                    eb.cast<string>(eb.val('/'), 'text'),
+                    eb.fn<string>('regexp_replace', ['child.value', eb.val('^.*/'), eb.val('')]),
+                  ])
+                  .as('value'),
+              ])
+              .where('child.parentId', '=', id);
+
+            const nestedChildren = qb
+              .selectFrom('tag as child')
+              .innerJoin('descendants as parent', 'parent.id', 'child.parentId')
+              .select((eb) => [
+                'child.id as id',
+                eb
+                  .fn<string>('concat', [
+                    'parent.value',
+                    eb.cast<string>(eb.val('/'), 'text'),
+                    eb.fn<string>('regexp_replace', ['child.value', eb.val('^.*/'), eb.val('')]),
+                  ])
+                  .as('value'),
+              ]);
+
+            return directChildren.unionAll(nestedChildren);
+          })
+          .updateTable('tag')
+          .from('descendants')
+          .set((eb) => ({
+            value: eb.ref('descendants.value'),
+          }))
+          .whereRef('tag.id', '=', 'descendants.id')
           .execute();
-        const descendantIds = tagClosures.map((r) => r.id_descendant);
-        if (descendantIds.length > 1) {
-          const descendants = await this.db
-            .selectFrom('tag')
-            .select(columns.tag)
-            .where(
-              'id',
-              'in',
-              descendantIds.filter((_id: string) => _id !== id),
-            )
-            .execute();
-          const childrenByParentId = new Map<string, { id: string; value: string }[]>();
-          for (const descendant of descendants) {
-            const parentId = descendant.parentId;
-            if (parentId) {
-              if (!childrenByParentId.has(parentId)) {
-                childrenByParentId.set(parentId, []);
-              }
-              childrenByParentId.get(parentId)!.push(descendant);
-            }
-          }
-
-          const queue: { id: string; value: string }[] = [{ id, value: updated.value }];
-          for (let i = 0; i < queue.length; i++) {
-            const { id, value } = queue[i];
-            const children = childrenByParentId.get(id) ?? [];
-            for (const child of children) {
-              const name = child.value.split('/').at(-1)!;
-              const item = { id: child.id, value: `${value}/${name}` };
-              queue.push(item);
-            }
-          }
-
-          const toUpdate = queue.slice(1);
-          if (toUpdate.length > 0) {
-            await sql`
-              UPDATE tag
-              SET value = updates.value
-              FROM (
-                VALUES
-                  ${sql.join(
-                    toUpdate.map((u) => sql`(${sql`${u.id}::uuid`}, ${u.value})`),
-                    sql`, `,
-                  )}
-              ) AS updates(id, value)
-              WHERE tag.id = updates.id
-            `.execute(tx);
-          }
-        }
       }
-    });
 
-    return updated!;
+      return updated;
+    });
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
