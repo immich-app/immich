@@ -306,10 +306,7 @@ export const downloadUrlPost = (url: string, assetIds: string[], archiveName: st
     form.append(input);
   }
 
-  for (const assetId of assetIds) {
-    mkInput('assetIds', assetId);
-  }
-
+  mkInput('assetIds', assetIds.join(','));
   mkInput('archiveName', archiveName);
   mkInput('edited', 'true');
 
