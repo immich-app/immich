@@ -48,7 +48,7 @@ class LoginPage extends HookWidget {
                 const Text(' '),
                 GestureDetector(
                   child: Text(
-                    'Logs',
+                    'Troubleshoot',
                     style: TextStyle(
                       color: context.primaryColor,
                       fontWeight: FontWeight.bold,

@@ -9,7 +9,7 @@ import 'package:immich_mobile/extensions/build_context_extensions.dart';
 import 'package:immich_mobile/extensions/theme_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/routing/router.dart';
-import 'package:immich_mobile/services/immich_logger.service.dart';
+import 'package:immich_mobile/widgets/common/troubleshoot_share_dialog.dart';
 import 'package:intl/intl.dart';
 
 @RoutePage()
@@ -51,7 +51,7 @@ class AppLogPage extends HookWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.t.logs, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0)),
+        title: Text(context.t.troubleshoot, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0)),
         scrolledUnderElevation: 1,
         elevation: 2,
         actions: [
@@ -67,14 +67,10 @@ class AppLogPage extends HookWidget {
               shouldReload.value = !shouldReload.value;
             },
           ),
-          Builder(
-            builder: (BuildContext iconContext) {
-              return IconButton(
-                icon: Icon(Icons.share_rounded, color: context.primaryColor, semanticLabel: "Share logs", size: 20.0),
-                onPressed: () {
-                  unawaited(ImmichLogger.shareLogs(iconContext));
-                },
-              );
+          IconButton(
+            icon: Icon(Icons.share_rounded, color: context.primaryColor, semanticLabel: "Share", size: 20.0),
+            onPressed: () {
+              unawaited(showDialog(context: context, builder: (_) => const TroubleshootShareDialog()));
             },
           ),
         ],

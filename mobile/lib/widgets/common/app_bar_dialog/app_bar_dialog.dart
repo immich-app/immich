@@ -103,7 +103,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
     ListTile buildAppLogButton() {
       return buildActionButton(
         Icons.assignment_outlined,
-        context.t.profile_drawer_app_logs,
+        context.t.troubleshoot,
         () => context.pushRoute(const AppLogRoute()),
       );
     }
