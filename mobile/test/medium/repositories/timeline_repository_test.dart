@@ -150,14 +150,6 @@ void main() {
     });
   });
 
-  group('place assets', () {
-    test('rejects ungrouped asset query', () {
-      final query = sut.place('city', .none);
-
-      expect(() => query.assetSource(0, 10), throwsArgumentError);
-    });
-  });
-
   group('live photos', () {
     test('remote-only live photo contains livePhotoVideoId and is marked as a motion photo', () async {
       final user = await ctx.newUser();

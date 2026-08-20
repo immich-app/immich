@@ -444,7 +444,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
                 _db.remoteAssetEntity.visibility.equalsValue(AssetVisibility.timeline) &
                 _db.remoteExifEntity.city.equals(place),
           )
-          ..orderBy(_assetDateOrder(groupBy, supportsNone: false).map((order) => order(_db.remoteAssetEntity)).toList())
+          ..orderBy(_assetDateOrder(groupBy).map((order) => order(_db.remoteAssetEntity)).toList())
           ..limit(count, offset: offset);
     return query.map((row) => row.readTable(_db.remoteAssetEntity).toDto()).get();
   }
@@ -731,11 +731,10 @@ List<Bucket> _generateBuckets(int count) => count == 0 ? const [] : [Bucket(asse
 List<OrderingTerm Function($RemoteAssetEntityTable)> _assetDateOrder(
   GroupAssetsBy groupBy, {
   bool ascending = false,
-  bool supportsNone = true,
 }) {
   OrderingTerm order(Expression<Object> exp) => ascending ? OrderingTerm.asc(exp) : OrderingTerm.desc(exp);
   return [
-    if (!supportsNone || groupBy != GroupAssetsBy.none) (row) => order(row.effectiveCreatedAt(groupBy)),
+    if (groupBy != GroupAssetsBy.none) (row) => order(row.effectiveCreatedAt(groupBy)),
     (row) => order(row.createdAt),
   ];
 }
