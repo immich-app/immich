@@ -60,11 +60,7 @@ export class TagService extends BaseService {
     await this.requireAccess({ auth, permission: Permission.TagUpdate, ids: [id] });
 
     const { name, color } = dto;
-
-    const existing = await this.tagRepository.get(id);
-    if (!existing) {
-      throw new BadRequestException(`Tag not found with id: ${id}`);
-    }
+    const existing = await this.findOrFail(id);
 
     let value;
     if (name) {
