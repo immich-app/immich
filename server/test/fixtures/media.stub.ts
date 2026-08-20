@@ -380,6 +380,24 @@ export const videoInfoStub = {
     ...probeStubDefault,
     videoStreams: [{ ...probeStubDefaultVideoStream[0], codecName: 'h264' }],
   }),
+  fragmentedMp4: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [{ ...probeStubDefaultVideoStream[0], codecName: 'h264' }],
+    format: {
+      ...probeStubDefaultFormat,
+      formatName: 'mov,mp4,m4a,3gp,3g2,mj2',
+      tags: { major_brand: 'iso6', compatible_brands: 'isomiso6dashmp41' },
+    },
+  }),
+  fragmentedMp4CompatibleBrands: Object.freeze<VideoInfo>({
+    ...probeStubDefault,
+    videoStreams: [{ ...probeStubDefaultVideoStream[0], codecName: 'h264' }],
+    format: {
+      ...probeStubDefaultFormat,
+      formatName: 'mov,mp4,m4a,3gp,3g2,mj2',
+      tags: { major_brand: 'isom', compatible_brands: 'isomiso6dashmp41' },
+    },
+  }),
   videoStreamAvi: Object.freeze<VideoInfo>({
     ...probeStubDefault,
     videoStreams: [{ ...probeStubDefaultVideoStream[0], codecName: 'h264' }],
