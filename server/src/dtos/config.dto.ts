@@ -291,6 +291,10 @@ const AdminConfigSchemaWithVisibility = z
         defaultStorageQuota: z.int().min(0).nullable().describe('Default storage quota'),
         enabled: configBool.describe('Enabled').meta({ visibility: Public }),
         issuerUrl: emptyOrUrl('Issuer URL must be an empty string or a valid URL').describe('Issuer URL'),
+        accountManagementUrl: emptyOrUrl('Account management URL must be an empty string or a valid URL')
+          .describe('Account management URL')
+          .optional()
+          .default(''),
         scope: z.string().describe('Scope'),
         prompt: z.string().describe('OAuth prompt parameter (e.g. select_account, login, consent)'),
         endSessionEndpoint: emptyOrUrl('endSessionEndpoint must be an empty string or a valid URL').describe(
@@ -668,6 +672,7 @@ export const defaults = Object.freeze<SystemConfig>({
     defaultStorageQuota: null,
     enabled: false,
     issuerUrl: '',
+    accountManagementUrl: '',
     endSessionEndpoint: '',
     mobileOverrideEnabled: false,
     mobileRedirectUri: '',

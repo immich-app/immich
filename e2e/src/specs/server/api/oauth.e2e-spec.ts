@@ -77,6 +77,7 @@ const setupOAuth = async (token: string, dto: Partial<AdminConfigOAuthDto>) => {
     ...defaults.oauth,
     buttonText: 'Login with Immich',
     issuerUrl: `${authServer.internal}/.well-known/openid-configuration`,
+    accountManagementUrl: authServer.internal,
     allowInsecureRequests: true,
     ...dto,
   };

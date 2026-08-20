@@ -313,6 +313,8 @@ export type AdminConfigNotificationsDto = {
     smtp: AdminConfigSmtpDto;
 };
 export type AdminConfigOAuthDto = {
+    /** Account management URL */
+    accountManagementUrl?: string;
     /** Allow insecure requests */
     allowInsecureRequests: boolean;
     /** Auto launch */
@@ -2521,6 +2523,8 @@ export type ServerConfigDto = {
     mapLightStyleUrl: string;
     /** People min faces server default */
     minFaces: number;
+    /** OAuth account management URL */
+    oauthAccountManagementUrl?: string;
     /** OAuth button text */
     oauthButtonText: string;
     /** Whether public user registration is enabled */
