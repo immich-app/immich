@@ -728,10 +728,7 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
 
 List<Bucket> _generateBuckets(int count) => count == 0 ? const [] : [Bucket(assetCount: count)];
 
-List<OrderingTerm Function($RemoteAssetEntityTable)> _assetDateOrder(
-  GroupAssetsBy groupBy, {
-  bool ascending = false,
-}) {
+List<OrderingTerm Function($RemoteAssetEntityTable)> _assetDateOrder(GroupAssetsBy groupBy, {bool ascending = false}) {
   OrderingTerm order(Expression<Object> exp) => ascending ? OrderingTerm.asc(exp) : OrderingTerm.desc(exp);
   return [
     if (groupBy != GroupAssetsBy.none) (row) => order(row.effectiveCreatedAt(groupBy)),
