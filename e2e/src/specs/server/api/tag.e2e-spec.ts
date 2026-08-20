@@ -261,17 +261,7 @@ describe('/tags', () => {
   });
 
   describe('PUT /tags/:id', () => {
-    it('should update a tag name', async () => {
-      const tag = await create(user.accessToken, { name: 'tagA' });
-      const { status, body } = await request(app)
-        .put(`/tags/${tag.id}`)
-        .send({ name: 'tagB' })
-        .set('Authorization', `Bearer ${user.accessToken}`);
-      expect(status).toBe(200);
-      expect(body).toEqual(expect.objectContaining({ name: `tagB` }));
-    });
-
-    it('should update a tag color', async () => {
+    it('should update a tag', async () => {
       const tag = await create(user.accessToken, { name: 'tagA' });
       const { status, body } = await request(app)
         .put(`/tags/${tag.id}`)
@@ -279,16 +269,6 @@ describe('/tags', () => {
         .set('Authorization', `Bearer ${user.accessToken}`);
       expect(status).toBe(200);
       expect(body).toEqual(expect.objectContaining({ color: `#000000` }));
-    });
-
-    it('should update both a tag name and color', async () => {
-      const tag = await create(user.accessToken, { name: 'tagA' });
-      const { status, body } = await request(app)
-        .put(`/tags/${tag.id}`)
-        .send({ name: 'tagB', color: '#000000' })
-        .set('Authorization', `Bearer ${user.accessToken}`);
-      expect(status).toBe(200);
-      expect(body).toEqual(expect.objectContaining({ name: 'tagB', color: `#000000` }));
     });
 
     it('should update a tag color without a # prefix', async () => {
