@@ -12,7 +12,6 @@ import 'package:immich_mobile/domain/models/tag.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
-import 'package:immich_mobile/extensions/translate_extensions.dart';
 import 'package:immich_mobile/generated/translations.g.dart';
 import 'package:immich_mobile/models/search/search_filter.model.dart';
 import 'package:immich_mobile/presentation/pages/search/paginated_search.provider.dart';
@@ -48,9 +47,7 @@ class DriftSearchPage extends HookConsumerWidget {
       serverFeatures.smartSearch ? TextSearchType.context : TextSearchType.filename,
     );
     final searchHintText = useState<String>(
-      serverFeatures.smartSearch
-          ? 'sunrise_on_the_beach'.t(context: context)
-          : 'file_name_or_extension'.t(context: context),
+      serverFeatures.smartSearch ? context.t.sunrise_on_the_beach : context.t.file_name_or_extension,
     );
     final textSearchController = useTextEditingController();
     final filter = useState<SearchFilter>(
@@ -59,7 +56,7 @@ class DriftSearchPage extends HookConsumerWidget {
         location: SearchLocationFilter(),
         camera: SearchCameraFilter(),
         date: SearchDateFilter(),
-        display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+        display: const SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
         rating: SearchRatingFilter(),
         mediaType: AssetType.other,
         language: "${context.locale.languageCode}-${context.locale.countryCode}",
@@ -80,7 +77,7 @@ class DriftSearchPage extends HookConsumerWidget {
 
     final userPreferences = ref.watch(userMetadataPreferencesProvider);
 
-    search(SearchFilter f) {
+    void search(SearchFilter f) {
       if (f == filter.value) {
         return;
       }
@@ -94,7 +91,7 @@ class DriftSearchPage extends HookConsumerWidget {
       }
     }
 
-    loadMoreSearchResults() {
+    void loadMoreSearchResults() {
       unawaited(ref.read(paginatedSearchProvider.notifier).search(filter.value));
     }
 
@@ -105,106 +102,116 @@ class DriftSearchPage extends HookConsumerWidget {
         return null;
       }
 
-      Future.microtask(() {
-        textSearchController.clear();
-        peopleCurrentFilterWidget.value = null;
-        dateRangeCurrentFilterWidget.value = null;
-        cameraCurrentFilterWidget.value = null;
-        tagCurrentFilterWidget.value = null;
-        mediaTypeCurrentFilterWidget.value = null;
-        ratingCurrentFilterWidget.value = null;
-        displayOptionCurrentFilterWidget.value = null;
-        locationCurrentFilterWidget.value = preFilter.location.city != null
-            ? Text(preFilter.location.city!, style: context.textTheme.labelLarge)
-            : null;
-        search(preFilter);
-      });
+      unawaited(
+        Future.microtask(() {
+          if (!context.mounted) {
+            return;
+          }
+
+          textSearchController.clear();
+          peopleCurrentFilterWidget.value = null;
+          dateRangeCurrentFilterWidget.value = null;
+          cameraCurrentFilterWidget.value = null;
+          tagCurrentFilterWidget.value = null;
+          mediaTypeCurrentFilterWidget.value = null;
+          ratingCurrentFilterWidget.value = null;
+          displayOptionCurrentFilterWidget.value = null;
+          locationCurrentFilterWidget.value = preFilter.location.city != null
+              ? Text(preFilter.location.city!, style: context.textTheme.labelLarge)
+              : null;
+          search(preFilter);
+        }),
+      );
 
       return null;
     }, [preFilter]);
 
-    showPeoplePicker() {
+    void showPeoplePicker() {
       var people = filter.value.people;
 
-      handleOnSelect(Set<PersonDto> value) {
+      void handleOnSelect(Set<Person> value) {
         people = value;
       }
 
-      handleClear() {
+      void handleClear() {
         peopleCurrentFilterWidget.value = null;
         search(filter.value.copyWith(people: {}));
       }
 
-      handleApply() {
-        final label = people.map((e) => e.name != '' ? e.name : 'no_name'.t(context: context)).join(', ');
+      void handleApply() {
+        final label = people.map((e) => e.name != '' ? e.name : context.t.no_name).join(', ');
         peopleCurrentFilterWidget.value = label.isNotEmpty ? Text(label, style: context.textTheme.labelLarge) : null;
         search(filter.value.copyWith(people: people));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        child: FractionallySizedBox(
-          heightFactor: 0.8,
-          child: FilterBottomSheetScaffold(
-            title: 'search_filter_people_title'.t(context: context),
-            expanded: true,
-            onSearch: handleApply,
-            onClear: handleClear,
-            child: PeoplePicker(onSelect: handleOnSelect, filter: filter.value.people),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          child: FractionallySizedBox(
+            heightFactor: 0.8,
+            child: FilterBottomSheetScaffold(
+              title: context.t.search_filter_people_title,
+              expanded: true,
+              onSearch: handleApply,
+              onClear: handleClear,
+              child: PeoplePicker(onSelect: handleOnSelect, filter: filter.value.people),
+            ),
           ),
         ),
       );
     }
 
-    showTagPicker() {
+    void showTagPicker() {
       var tagIds = filter.value.tagIds ?? [];
       String tagLabel = '';
 
-      handleOnSelect(Iterable<Tag> tags) {
+      void handleOnSelect(Iterable<Tag> tags) {
         tagIds = tags.map((t) => t.id).toList();
         tagLabel = tags.map((t) => t.value).join(', ');
       }
 
-      handleClear() {
+      void handleClear() {
         tagCurrentFilterWidget.value = null;
         search(filter.value.copyWith(tagIds: []));
       }
 
-      handleApply() {
+      void handleApply() {
         tagCurrentFilterWidget.value = tagLabel.isNotEmpty ? Text(tagLabel, style: context.textTheme.labelLarge) : null;
         search(filter.value.copyWith(tagIds: tagIds));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        child: FractionallySizedBox(
-          heightFactor: 0.8,
-          child: FilterBottomSheetScaffold(
-            title: 'search_filter_tags_title'.t(context: context),
-            expanded: true,
-            onSearch: handleApply,
-            onClear: handleClear,
-            child: TagPicker(onSelectExistingTag: handleOnSelect, filter: (filter.value.tagIds ?? []).toSet()),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          child: FractionallySizedBox(
+            heightFactor: 0.8,
+            child: FilterBottomSheetScaffold(
+              title: context.t.search_filter_tags_title,
+              expanded: true,
+              onSearch: handleApply,
+              onClear: handleClear,
+              child: TagPicker(onSelectExistingTag: handleOnSelect, filter: (filter.value.tagIds ?? []).toSet()),
+            ),
           ),
         ),
       );
     }
 
-    showLocationPicker() {
+    void showLocationPicker() {
       var location = filter.value.location;
 
-      handleOnSelect(Map<String, String?> value) {
+      void handleOnSelect(Map<String, String?> value) {
         location = SearchLocationFilter(country: value['country'], city: value['city'], state: value['state']);
       }
 
-      handleClear() {
+      void handleClear() {
         locationCurrentFilterWidget.value = null;
         search(filter.value.copyWith(location: SearchLocationFilter()));
       }
 
-      handleApply() {
+      void handleApply() {
         final locationText = [
           if (location.country != null) location.country!,
           if (location.state != null) location.state!,
@@ -216,21 +223,23 @@ class DriftSearchPage extends HookConsumerWidget {
         search(filter.value.copyWith(location: location));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        isDismissible: true,
-        child: FilterBottomSheetScaffold(
-          title: 'search_filter_location_title'.t(context: context),
-          onSearch: handleApply,
-          onClear: handleClear,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16.0),
-            child: Container(
-              padding: EdgeInsets.only(bottom: context.viewInsets.bottom),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: LocationPicker(onSelected: handleOnSelect, filter: filter.value.location),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          isDismissible: true,
+          child: FilterBottomSheetScaffold(
+            title: context.t.search_filter_location_title,
+            onSearch: handleApply,
+            onClear: handleClear,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16.0),
+              child: Container(
+                padding: EdgeInsets.only(bottom: context.viewInsets.bottom),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: LocationPicker(onSelected: handleOnSelect, filter: filter.value.location),
+                ),
               ),
             ),
           ),
@@ -238,19 +247,19 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    showCameraPicker() {
+    void showCameraPicker() {
       var camera = filter.value.camera;
 
-      handleOnSelect(Map<String, String?> value) {
+      void handleOnSelect(Map<String, String?> value) {
         camera = SearchCameraFilter(make: value['make'], model: value['model']);
       }
 
-      handleClear() {
+      void handleClear() {
         cameraCurrentFilterWidget.value = null;
         search(filter.value.copyWith(camera: SearchCameraFilter()));
       }
 
-      handleApply() {
+      void handleApply() {
         final make = camera.make ?? '';
         final model = camera.model ?? '';
         cameraCurrentFilterWidget.value = (make.isNotEmpty || model.isNotEmpty)
@@ -259,23 +268,25 @@ class DriftSearchPage extends HookConsumerWidget {
         search(filter.value.copyWith(camera: camera));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        isDismissible: true,
-        child: FilterBottomSheetScaffold(
-          title: 'search_filter_camera_title'.t(context: context),
-          onSearch: handleApply,
-          onClear: handleClear,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: CameraPicker(onSelect: handleOnSelect, filter: filter.value.camera),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          isDismissible: true,
+          child: FilterBottomSheetScaffold(
+            title: context.t.search_filter_camera_title,
+            onSearch: handleApply,
+            onClear: handleClear,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: CameraPicker(onSelect: handleOnSelect, filter: filter.value.camera),
+            ),
           ),
         ),
       );
     }
 
-    datePicked(DateFilterInputModel? selectedDate) {
+    void datePicked(DateFilterInputModel? selectedDate) {
       dateInputFilter.value = selectedDate;
       if (selectedDate == null) {
         dateRangeCurrentFilterWidget.value = null;
@@ -298,7 +309,7 @@ class DriftSearchPage extends HookConsumerWidget {
       );
     }
 
-    showDatePicker() async {
+    Future<void> showDatePicker() async {
       final firstDate = DateTime(1900);
       final lastDate = DateTime.now();
 
@@ -319,14 +330,14 @@ class DriftSearchPage extends HookConsumerWidget {
         lastDate: lastDate,
         currentDate: DateTime.now(),
         initialDateRange: dateRange,
-        helpText: 'search_filter_date_title'.t(context: context),
-        cancelText: 'cancel'.t(context: context),
-        confirmText: 'select'.t(context: context),
-        saveText: 'save'.t(context: context),
-        errorFormatText: 'invalid_date_format'.t(context: context),
-        errorInvalidText: 'invalid_date'.t(context: context),
-        fieldStartHintText: 'start_date'.t(context: context),
-        fieldEndHintText: 'end_date'.t(context: context),
+        helpText: context.t.search_filter_date_title,
+        cancelText: context.t.cancel,
+        confirmText: context.t.select,
+        saveText: context.t.save,
+        errorFormatText: context.t.invalid_date_format,
+        errorInvalidText: context.t.invalid_date,
+        fieldStartHintText: context.t.start_date,
+        fieldEndHintText: context.t.end_date,
         initialEntryMode: DatePickerEntryMode.calendar,
         keyboardType: TextInputType.text,
       );
@@ -338,123 +349,126 @@ class DriftSearchPage extends HookConsumerWidget {
       }
     }
 
-    showQuickDatePicker() {
-      showFilterBottomSheet(
-        context: context,
-        child: FilterBottomSheetScaffold(
-          title: "pick_date_range".tr(),
-          expanded: true,
-          onClear: () => datePicked(null),
-          child: QuickDatePicker(
-            currentInput: dateInputFilter.value,
-            onRequestPicker: () {
-              ContextHelper(context).pop();
-              showDatePicker();
-            },
-            onSelect: (date) {
-              ContextHelper(context).pop();
-              datePicked(date);
-            },
+    void showQuickDatePicker() {
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          child: FilterBottomSheetScaffold(
+            title: context.t.pick_date_range,
+            expanded: true,
+            onClear: () => datePicked(null),
+            child: QuickDatePicker(
+              currentInput: dateInputFilter.value,
+              onRequestPicker: () {
+                ContextHelper(context).pop();
+                unawaited(showDatePicker());
+              },
+              onSelect: (date) {
+                ContextHelper(context).pop();
+                datePicked(date);
+              },
+            ),
           ),
         ),
       );
     }
 
     // MEDIA PICKER
-    showMediaTypePicker() {
+    void showMediaTypePicker() {
       var mediaType = filter.value.mediaType;
 
-      handleOnSelected(AssetType assetType) {
+      void handleOnSelected(AssetType assetType) {
         mediaType = assetType;
       }
 
-      handleClear() {
+      void handleClear() {
         mediaTypeCurrentFilterWidget.value = null;
         search(filter.value.copyWith(mediaType: AssetType.other));
       }
 
-      handleApply() {
+      void handleApply() {
         mediaTypeCurrentFilterWidget.value = mediaType != AssetType.other
             ? Text(
-                mediaType == AssetType.image ? 'image'.t(context: context) : 'video'.t(context: context),
+                mediaType == AssetType.image ? context.t.image : context.t.video,
                 style: context.textTheme.labelLarge,
               )
             : null;
         search(filter.value.copyWith(mediaType: mediaType));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        child: FilterBottomSheetScaffold(
-          title: 'search_filter_media_type_title'.t(context: context),
-          onSearch: handleApply,
-          onClear: handleClear,
-          child: MediaTypePicker(onSelect: handleOnSelected, filter: filter.value.mediaType),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          child: FilterBottomSheetScaffold(
+            title: context.t.search_filter_media_type_title,
+            onSearch: handleApply,
+            onClear: handleClear,
+            child: MediaTypePicker(onSelect: handleOnSelected, filter: filter.value.mediaType),
+          ),
         ),
       );
     }
 
     // STAR RATING PICKER
-    showStarRatingPicker() {
+    void showStarRatingPicker() {
       var rating = filter.value.rating;
 
-      handleOnSelected(SearchRatingFilter value) {
+      void handleOnSelected(SearchRatingFilter value) {
         rating = value;
       }
 
-      handleClear() {
+      void handleClear() {
         ratingCurrentFilterWidget.value = null;
         search(filter.value.copyWith(rating: SearchRatingFilter()));
       }
 
-      handleApply() {
+      void handleApply() {
         ratingCurrentFilterWidget.value = rating.rating.isSome
-            ? Text(
-                'rating_count'.t(args: {'count': rating.rating.unwrapOrNull ?? 0}),
-                style: context.textTheme.labelLarge,
-              )
+            ? Text(context.t.rating_count(count: rating.rating.unwrapOrNull ?? 0), style: context.textTheme.labelLarge)
             : null;
         search(filter.value.copyWith(rating: rating));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        child: FilterBottomSheetScaffold(
-          title: 'rating'.t(context: context),
-          onSearch: handleApply,
-          onClear: handleClear,
-          child: StarRatingPicker(onSelect: handleOnSelected, filter: filter.value.rating),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          child: FilterBottomSheetScaffold(
+            title: context.t.rating,
+            onSearch: handleApply,
+            onClear: handleClear,
+            child: StarRatingPicker(onSelect: handleOnSelected, filter: filter.value.rating),
+          ),
         ),
       );
     }
 
     // DISPLAY OPTION
-    showDisplayOptionPicker() {
+    void showDisplayOptionPicker() {
       var display = filter.value.display;
 
-      handleOnSelect(Map<DisplayOption, bool> value) {
+      void handleOnSelect(Map<DisplayOption, bool> value) {
         display = display.copyWith(
-          isNotInAlbum: value[DisplayOption.notInAlbum],
-          isArchive: value[DisplayOption.archive],
-          isFavorite: value[DisplayOption.favorite],
+          isNotInAlbum: value[DisplayOption.notInAlbum] ?? display.isNotInAlbum,
+          isArchive: value[DisplayOption.archive] ?? display.isArchive,
+          isFavorite: value[DisplayOption.favorite] ?? display.isFavorite,
         );
       }
 
-      handleClear() {
+      void handleClear() {
         displayOptionCurrentFilterWidget.value = null;
         search(
           filter.value.copyWith(
-            display: SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
+            display: const SearchDisplayFilters(isNotInAlbum: false, isArchive: false, isFavorite: false),
           ),
         );
       }
 
-      handleApply() {
+      void handleApply() {
         final filterText = [
-          if (display.isNotInAlbum) 'search_filter_display_option_not_in_album'.t(context: context),
-          if (display.isArchive) 'archive'.t(context: context),
-          if (display.isFavorite) 'favorite'.t(context: context),
+          if (display.isNotInAlbum) context.t.search_filter_display_option_not_in_album,
+          if (display.isArchive) context.t.archive,
+          if (display.isFavorite) context.t.favorite,
         ];
         displayOptionCurrentFilterWidget.value = filterText.isNotEmpty
             ? Text(filterText.join(', '), style: context.textTheme.labelLarge)
@@ -462,18 +476,20 @@ class DriftSearchPage extends HookConsumerWidget {
         search(filter.value.copyWith(display: display));
       }
 
-      showFilterBottomSheet(
-        context: context,
-        child: FilterBottomSheetScaffold(
-          title: 'display_options'.t(context: context),
-          onSearch: handleApply,
-          onClear: handleClear,
-          child: DisplayOptionPicker(onSelect: handleOnSelect, filter: filter.value.display),
+      unawaited(
+        showFilterBottomSheet(
+          context: context,
+          child: FilterBottomSheetScaffold(
+            title: context.t.display_options,
+            onSearch: handleApply,
+            onClear: handleClear,
+            child: DisplayOptionPicker(onSelect: handleOnSelect, filter: filter.value.display),
+          ),
         ),
       );
     }
 
-    handleTextSubmitted(String value) => search(switch (textSearchType.value) {
+    void handleTextSubmitted(String value) => search(switch (textSearchType.value) {
       TextSearchType.context => filter.value.copyWith(filename: '', context: value, description: '', ocr: ''),
       TextSearchType.filename => filter.value.copyWith(filename: value, context: '', description: '', ocr: ''),
       TextSearchType.description => filter.value.copyWith(filename: '', context: '', description: value, ocr: ''),
@@ -512,7 +528,7 @@ class DriftSearchPage extends HookConsumerWidget {
                     }
                   },
                   icon: const Icon(Icons.more_vert_rounded),
-                  tooltip: 'show_text_search_menu'.tr(),
+                  tooltip: context.t.show_text_search_menu,
                 );
               },
               menuChildren: [
@@ -522,7 +538,7 @@ class DriftSearchPage extends HookConsumerWidget {
                     child: ListTile(
                       leading: const Icon(Icons.image_search_rounded),
                       title: Text(
-                        'search_by_context'.t(context: context),
+                        context.t.search_by_context,
                         style: context.textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w500,
                           color: textSearchType.value == TextSearchType.context ? context.colorScheme.primary : null,
@@ -533,7 +549,7 @@ class DriftSearchPage extends HookConsumerWidget {
                     ),
                     onPressed: () {
                       textSearchType.value = TextSearchType.context;
-                      searchHintText.value = 'sunrise_on_the_beach'.t(context: context);
+                      searchHintText.value = context.t.sunrise_on_the_beach;
                     },
                   ),
                 ),
@@ -541,7 +557,7 @@ class DriftSearchPage extends HookConsumerWidget {
                   child: ListTile(
                     leading: const Icon(Icons.abc_rounded),
                     title: Text(
-                      'search_filter_filename'.t(context: context),
+                      context.t.search_filter_filename,
                       style: context.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: textSearchType.value == TextSearchType.filename ? context.colorScheme.primary : null,
@@ -552,14 +568,14 @@ class DriftSearchPage extends HookConsumerWidget {
                   ),
                   onPressed: () {
                     textSearchType.value = TextSearchType.filename;
-                    searchHintText.value = 'file_name_or_extension'.t(context: context);
+                    searchHintText.value = context.t.file_name_or_extension;
                   },
                 ),
                 MenuItemButton(
                   child: ListTile(
                     leading: const Icon(Icons.text_snippet_outlined),
                     title: Text(
-                      'search_by_description'.t(context: context),
+                      context.t.search_by_description,
                       style: context.textTheme.bodyLarge?.copyWith(
                         fontWeight: FontWeight.w500,
                         color: textSearchType.value == TextSearchType.description ? context.colorScheme.primary : null,
@@ -570,7 +586,7 @@ class DriftSearchPage extends HookConsumerWidget {
                   ),
                   onPressed: () {
                     textSearchType.value = TextSearchType.description;
-                    searchHintText.value = 'search_by_description_example'.t(context: context);
+                    searchHintText.value = context.t.search_by_description_example;
                   },
                 ),
                 FeatureCheck(
@@ -579,7 +595,7 @@ class DriftSearchPage extends HookConsumerWidget {
                     child: ListTile(
                       leading: const Icon(Icons.document_scanner_outlined),
                       title: Text(
-                        'search_by_ocr'.t(context: context),
+                        context.t.search_by_ocr,
                         style: context.textTheme.bodyLarge?.copyWith(
                           fontWeight: FontWeight.w500,
                           color: textSearchType.value == TextSearchType.ocr ? context.colorScheme.primary : null,
@@ -590,7 +606,7 @@ class DriftSearchPage extends HookConsumerWidget {
                     ),
                     onPressed: () {
                       textSearchType.value = TextSearchType.ocr;
-                      searchHintText.value = 'search_by_ocr_example'.t(context: context);
+                      searchHintText.value = context.t.search_by_ocr_example;
                     },
                   ),
                 ),
@@ -598,7 +614,7 @@ class DriftSearchPage extends HookConsumerWidget {
             ),
           ),
         ],
-        title: Container(
+        title: DecoratedBox(
           decoration: BoxDecoration(
             border: Border.all(color: context.colorScheme.onSurface.withAlpha(0), width: 0),
             borderRadius: const BorderRadius.all(Radius.circular(24)),
@@ -641,52 +657,52 @@ class DriftSearchPage extends HookConsumerWidget {
                     SearchFilterChip(
                       icon: Icons.people_alt_outlined,
                       onTap: showPeoplePicker,
-                      label: 'people'.t(context: context),
+                      label: context.t.people,
                       currentFilter: peopleCurrentFilterWidget.value,
                     ),
                     SearchFilterChip(
                       icon: Icons.location_on_outlined,
                       onTap: showLocationPicker,
-                      label: 'search_filter_location'.t(context: context),
+                      label: context.t.search_filter_location,
                       currentFilter: locationCurrentFilterWidget.value,
                     ),
                     if (userPreferences.valueOrNull?.tagsEnabled ?? false)
                       SearchFilterChip(
                         icon: Icons.sell_outlined,
                         onTap: showTagPicker,
-                        label: 'tags'.t(context: context),
+                        label: context.t.tags,
                         currentFilter: tagCurrentFilterWidget.value,
                       ),
                     SearchFilterChip(
                       icon: Icons.camera_alt_outlined,
                       onTap: showCameraPicker,
-                      label: 'camera'.t(context: context),
+                      label: context.t.camera,
                       currentFilter: cameraCurrentFilterWidget.value,
                     ),
                     SearchFilterChip(
                       icon: Icons.date_range_outlined,
                       onTap: showQuickDatePicker,
-                      label: 'search_filter_date'.t(context: context),
+                      label: context.t.search_filter_date,
                       currentFilter: dateRangeCurrentFilterWidget.value,
                     ),
                     SearchFilterChip(
                       key: const Key('media_type_chip'),
                       icon: Icons.video_collection_outlined,
                       onTap: showMediaTypePicker,
-                      label: 'search_filter_media_type'.t(context: context),
+                      label: context.t.search_filter_media_type,
                       currentFilter: mediaTypeCurrentFilterWidget.value,
                     ),
                     if (userPreferences.valueOrNull?.ratingsEnabled ?? false)
                       SearchFilterChip(
                         icon: Icons.star_outline_rounded,
                         onTap: showStarRatingPicker,
-                        label: 'search_filter_star_rating'.t(context: context),
+                        label: context.t.search_filter_star_rating,
                         currentFilter: ratingCurrentFilterWidget.value,
                       ),
                     SearchFilterChip(
                       icon: Icons.display_settings_outlined,
                       onTap: showDisplayOptionPicker,
-                      label: 'search_filter_display_options'.t(context: context),
+                      label: context.t.search_filter_display_options,
                       currentFilter: displayOptionCurrentFilterWidget.value,
                     ),
                   ],
@@ -697,7 +713,7 @@ class DriftSearchPage extends HookConsumerWidget {
           if (filter.value.isEmpty)
             const _SearchSuggestions()
           else
-            _SearchResultGrid(onScrollEnd: loadMoreSearchResults),
+            _SearchResultGrid(onScrollEnd: () => loadMoreSearchResults()),
         ],
       ),
     );
@@ -726,9 +742,7 @@ class _SearchResultGrid extends ConsumerWidget {
     return false;
   }
 
-  Widget? _bottomWidget(BuildContext context, WidgetRef ref) {
-    final isLoading = ref.watch(paginatedSearchProvider.select((s) => s.isLoading));
-
+  Widget? _bottomWidget(BuildContext context, {required bool isLoading, required bool hasMore}) {
     if (isLoading) {
       return const SliverFillRemaining(
         hasScrollBody: false,
@@ -739,8 +753,6 @@ class _SearchResultGrid extends ConsumerWidget {
       );
     }
 
-    final hasMore = ref.watch(paginatedSearchProvider.select((s) => s.nextPage != null));
-
     if (hasMore) {
       return null;
     }
@@ -750,7 +762,7 @@ class _SearchResultGrid extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 32),
         child: Center(
           child: Text(
-            'search_no_more_result'.t(context: context),
+            context.t.search_no_more_result,
             style: context.textTheme.bodyMedium?.copyWith(color: context.colorScheme.onSurfaceVariant),
           ),
         ),
@@ -762,6 +774,7 @@ class _SearchResultGrid extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final hasAssets = ref.watch(paginatedSearchProvider.select((s) => s.assets.isNotEmpty));
     final isLoading = ref.watch(paginatedSearchProvider.select((s) => s.isLoading));
+    final hasMore = ref.watch(paginatedSearchProvider.select((s) => s.nextPage != null));
 
     if (!hasAssets && !isLoading) {
       return const _SearchNoResults();
@@ -791,7 +804,7 @@ class _SearchResultGrid extends ConsumerWidget {
             bottomSheet: const GeneralBottomSheet(minChildSize: 0.20),
             snapToMonth: false,
             loadingWidget: const SizedBox.shrink(),
-            bottomSliverWidget: _bottomWidget(context, ref),
+            bottomSliverWidget: _bottomWidget(context, isLoading: isLoading, hasMore: hasMore),
           ),
         ),
       ),
@@ -815,7 +828,7 @@ class _SearchNoResults extends StatelessWidget {
             Icon(Icons.search_off_rounded, size: 72, color: context.colorScheme.onSurfaceVariant),
             const SizedBox(height: 24),
             Text(
-              'search_no_result'.t(context: context),
+              context.t.search_no_result,
               textAlign: TextAlign.center,
               style: context.textTheme.bodyLarge?.copyWith(color: context.colorScheme.onSurfaceVariant),
             ),
@@ -843,9 +856,7 @@ class _SearchSuggestions extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          Center(
-            child: Text('search_page_search_photos_videos'.t(context: context), style: context.textTheme.labelLarge),
-          ),
+          Center(child: Text(context.t.search_page_search_photos_videos, style: context.textTheme.labelLarge)),
           const SizedBox(height: 32),
           const Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: _QuickLinkList()),
         ],
@@ -859,7 +870,7 @@ class _QuickLinkList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DecoratedBox(
       decoration: BoxDecoration(
         borderRadius: const BorderRadius.all(Radius.circular(20)),
         border: Border.all(color: context.colorScheme.outline.withAlpha(10), width: 1),
@@ -878,7 +889,7 @@ class _QuickLinkList extends StatelessWidget {
         physics: const NeverScrollableScrollPhysics(),
         children: [
           _QuickLink(
-            title: 'recently_taken'.t(context: context),
+            title: context.t.recently_taken,
             icon: Icons.schedule_outlined,
             isTop: true,
             onTap: () => context.pushRoute(const DriftRecentlyTakenRoute()),
@@ -889,12 +900,12 @@ class _QuickLinkList extends StatelessWidget {
             onTap: () => context.pushRoute(const DriftRecentlyAddedRoute()),
           ),
           _QuickLink(
-            title: 'videos'.t(context: context),
+            title: context.t.videos,
             icon: Icons.play_circle_outline_rounded,
             onTap: () => context.pushRoute(const DriftVideoRoute()),
           ),
           _QuickLink(
-            title: 'favorites'.t(context: context),
+            title: context.t.favorites,
             icon: Icons.favorite_border_rounded,
             isBottom: true,
             onTap: () => context.pushRoute(const DriftFavoriteRoute()),

@@ -111,11 +111,6 @@ class AssetApiRepository extends ApiRepository {
     );
   }
 
-  // TODO(shenlong): remove after action migration
-  Future<void> updateFavorite(List<String> ids, bool isFavorite) async {
-    return _api.updateAssets(AssetBulkUpdateDto(ids: ids, isFavorite: Optional.present(isFavorite)));
-  }
-
   Future<void> updateLocation(List<String> ids, LatLng location) async {
     return _api.updateAssets(
       AssetBulkUpdateDto(

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_slow_async_io
+
 import 'dart:async';
 import 'dart:io';
 
@@ -20,6 +22,7 @@ class DownloadService {
   final Logger _log = Logger("DownloadService");
   void Function(TaskStatusUpdate)? onImageDownloadStatus;
   void Function(TaskStatusUpdate)? onVideoDownloadStatus;
+  void Function(TaskStatusUpdate)? onLivePhotoDownloadStatus;
   void Function(TaskProgressUpdate)? onTaskProgress;
 
   /// Active Live Photo IDs undergoing saving
@@ -28,6 +31,7 @@ class DownloadService {
   DownloadService(this._fileMediaRepository, this._downloadRepository) {
     _downloadRepository.onImageDownloadStatus = _onImageDownloadCallback;
     _downloadRepository.onVideoDownloadStatus = _onVideoDownloadCallback;
+    _downloadRepository.onLivePhotoDownloadStatus = _onLivePhotoDownloadCallback;
     _downloadRepository.onTaskProgress = _onTaskProgressCallback;
     _downloadRepository.onLivePhotoRecordComplete = _onLivePhotoRecordComplete;
 
@@ -63,7 +67,11 @@ class DownloadService {
     onVideoDownloadStatus?.call(update);
   }
 
-  void _onLivePhotoRecordComplete(TaskRecord record) async {
+  void _onLivePhotoDownloadCallback(TaskStatusUpdate update) {
+    onLivePhotoDownloadStatus?.call(update);
+  }
+
+  Future<void> _onLivePhotoRecordComplete(TaskRecord record) async {
     final livePhotosId = LivePhotosMetadata.fromJson(record.task.metaData).id;
     await _saveLivePhotos(livePhotosId);
   }

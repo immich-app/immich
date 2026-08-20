@@ -36,7 +36,7 @@ void main() {
   setUpAll(() async {
     WidgetsFlutterBinding.ensureInitialized();
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
-    await StoreService.init(storeRepository: DriftStoreRepository(db));
+    await StoreService.init(storeRepository: StoreRepository(db));
   });
 
   tearDownAll(() async {
@@ -103,7 +103,7 @@ void main() {
     });
 
     test('Should return null if auto endpoint switching is disabled', () async {
-      when(() => authRepository.getEndpointSwitchingFeature()).thenReturn((false));
+      when(() => authRepository.getEndpointSwitchingFeature()).thenReturn(false);
 
       final result = await sut.setOpenApiServiceEndpoint();
 

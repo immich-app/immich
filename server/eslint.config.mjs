@@ -2,12 +2,7 @@ import js from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import eslintPluginUnicorn from 'eslint-plugin-unicorn';
 import globals from 'globals';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import typescriptEslint from 'typescript-eslint';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 export default typescriptEslint.config([
   eslintPluginUnicorn.configs.recommended,
@@ -29,7 +24,7 @@ export default typescriptEslint.config([
 
       parserOptions: {
         project: 'tsconfig.json',
-        tsconfigRootDir: __dirname,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
 
@@ -56,6 +51,7 @@ export default typescriptEslint.config([
       'unicorn/max-nested-calls': 'off',
       'unicorn/no-declarations-before-early-exit': 'off',
       'unicorn/no-unreadable-object-destructuring': 'off',
+      'unicorn/single-line-block-comment-style': ['error', 'single-line'],
       // maybe we do want to enable this later. TBD
       'unicorn/prefer-await': 'off',
       'unicorn/consistent-class-member-order': 'off',
@@ -76,6 +72,7 @@ export default typescriptEslint.config([
       curly: 2,
       'prettier/prettier': 0,
       'object-shorthand': ['error', 'always'],
+      eqeqeq: 'error',
 
       'no-restricted-imports': [
         'error',

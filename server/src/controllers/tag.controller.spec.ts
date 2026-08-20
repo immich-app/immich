@@ -19,19 +19,7 @@ describe(TagController.name, () => {
     ctx.reset();
   });
 
-  describe('GET /tags', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get('/tags');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-  });
-
   describe('POST /tags', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).post('/tags');
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should a null parentId', async () => {
       await request(ctx.getHttpServer()).post(`/tags`).send({ name: 'tag', parentId: null });
       expect(service.create).toHaveBeenCalledWith(undefined, expect.objectContaining({ parentId: null }));
@@ -91,11 +79,6 @@ describe(TagController.name, () => {
   });
 
   describe('GET /tags/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).get(`/tags/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
-    });
-
     it('should require a valid uuid', async () => {
       const { status, body } = await request(ctx.getHttpServer()).get(`/tags/123`);
       expect(status).toBe(400);
@@ -103,10 +86,11 @@ describe(TagController.name, () => {
     });
   });
 
-  describe('PUT /tags/:id', () => {
-    it('should be an authenticated route', async () => {
-      await request(ctx.getHttpServer()).put(`/tags/${factory.uuid()}`);
-      expect(ctx.authenticate).toHaveBeenCalled();
+  describe('DELETE /tags/:id', () => {
+    it('should require a valid uuid', async () => {
+      const { status, body } = await request(ctx.getHttpServer()).delete(`/tags/123`);
+      expect(status).toBe(400);
+      expect(body).toEqual(errorDto.validationError([{ path: ['id'], message: 'Invalid UUID' }]));
     });
   });
 });

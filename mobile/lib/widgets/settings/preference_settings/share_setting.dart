@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -19,7 +21,7 @@ class ShareSetting extends HookConsumerWidget {
     void onChanged(ShareAssetType? value) {
       if (value != null) {
         fileType.value = value;
-        ref.read(settingsProvider).write(SettingsKey.shareFileType, value);
+        unawaited(ref.read(settingsProvider).write(SettingsKey.shareFileType, value));
       }
     }
 

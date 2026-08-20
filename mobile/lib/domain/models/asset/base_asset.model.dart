@@ -53,7 +53,7 @@ sealed class BaseAsset {
     if (durationMs != null) {
       return Duration(milliseconds: durationMs);
     }
-    return const Duration();
+    return Duration.zero;
   }
 
   bool get hasRemote => storage == AssetState.remote || storage == AssetState.merged;
@@ -77,6 +77,7 @@ sealed class BaseAsset {
 
   // Overridden in subclasses
   AssetState get storage;
+  String get id;
   String? get localId;
   String? get remoteId;
   String get heroTag;

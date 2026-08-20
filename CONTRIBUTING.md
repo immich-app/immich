@@ -23,6 +23,8 @@ We ask you not to open PRs generated with an LLM. We find that code generated li
 
 If you use an LLM to translate a PR description or title, that is fine. Please make sure however that you stick to the PR template and that the text is written concisely.
 
+LLMs must not be used to fix GitHub issues labelled good first issue. These issues are generally not urgent, and are intended to be learning opportunities for new contributors to get familiar with the codebase. Whether you are a newcomer or not, fully automating the process of fixing this issue squanders the learning opportunity and doesn’t add much value to the project. Using LLMs to fix issues labelled as “good first issue” is forbidden, and those PRs will be closed automatically.
+
 Misrepresenting LLM use, contribution farming (automated low-effort PRs), or repeatedly hitting auto-close rules may be grounds for a block at maintainer discretion.
 
 ## Feature freezes

@@ -31,8 +31,8 @@ class MediumFactory {
 
   T getRepository<T>() {
     switch (T) {
-      case const (DriftLocalAlbumRepository):
-        return DriftLocalAlbumRepository(_db) as T;
+      case const (LocalAlbumRepository):
+        return LocalAlbumRepository(_db) as T;
       default:
         throw Exception('Unknown repository: $T');
     }

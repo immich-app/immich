@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -11,8 +13,8 @@ class DriftMapPage extends StatelessWidget {
 
   const DriftMapPage({super.key, this.initialLocation});
 
-  void onSettingsPressed(BuildContext context) {
-    showModalBottomSheet(
+  Future<void> onSettingsPressed(BuildContext context) {
+    return showModalBottomSheet(
       elevation: 0.0,
       showDragHandle: true,
       isScrollControlled: true,

@@ -6,6 +6,7 @@ import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/domain/models/memory.model.dart';
 import 'package:immich_mobile/domain/models/user.model.dart';
 import 'package:immich_mobile/infrastructure/entities/asset_face.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/auth_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_album_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.drift.dart';
@@ -18,6 +19,8 @@ import 'package:immich_mobile/infrastructure/entities/remote_album_asset.entity.
 import 'package:immich_mobile/infrastructure/entities/remote_album_user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/remote_asset_cloud_id.entity.drift.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.dart';
+import 'package:immich_mobile/infrastructure/entities/trashed_local_asset.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/entities/user.entity.drift.dart';
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/utils/option.dart';
@@ -72,6 +75,22 @@ class MediumRepositoryContext {
         );
   }
 
+  /// Seeds a user into `authUserEntity` as the currently authenticated user
+  Future<AuthUserEntityData> newAuthUser({String? id, String? email, bool? isAdmin, AvatarColor? avatarColor}) async {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.authUserEntity)
+        .insertReturning(
+          AuthUserEntityCompanion(
+            id: .new(id),
+            email: .new(email ?? '$id@test.com'),
+            name: .new('user_$id'),
+            isAdmin: .new(isAdmin ?? false),
+            avatarColor: .new(avatarColor ?? TestUtils.randElement(AvatarColor.values)),
+          ),
+        );
+  }
+
   Future<void> newPartner({required String sharedById, required String sharedWithId, bool? inTimeline}) {
     return db
         .into(db.partnerEntity)
@@ -102,6 +121,7 @@ class MediumRepositoryContext {
     String? stackId,
     String? thumbHash,
     String? libraryId,
+    DateTime? localDateTime,
   }) async {
     id ??= TestUtils.uuid();
     createdAt ??= TestUtils.date();
@@ -125,7 +145,7 @@ class MediumRepositoryContext {
             isEdited: .new(isEdited ?? false),
             livePhotoVideoId: .new(livePhotoVideoId),
             stackId: .new(stackId),
-            localDateTime: .new(createdAt.toLocal()),
+            localDateTime: .new(localDateTime ?? createdAt.toLocal()),
             thumbHash: .new(TestUtils.uuid(thumbHash)),
             libraryId: .new(TestUtils.uuid(libraryId)),
           ),
@@ -282,6 +302,33 @@ class MediumRepositoryContext {
             adjustmentTime: _resolveUndefined(adjustmentTime, adjustmentTimeOption, DateTime.now()),
             latitude: .new(latitude ?? TestUtils.randDouble(-90, 90)),
             longitude: .new(longitude ?? TestUtils.randDouble(-180, 180)),
+          ),
+        );
+  }
+
+  /// Seeds a trashed local asset into `trashedLocalAssetEntity`
+  Future<TrashedLocalAssetEntityData> newTrashedLocalAsset({
+    String? id,
+    required String albumId,
+    String? checksum,
+    TrashOrigin? source,
+    AssetType? type,
+    DateTime? createdAt,
+    bool? isFavorite,
+  }) async {
+    id ??= TestUtils.uuid();
+    return db
+        .into(db.trashedLocalAssetEntity)
+        .insertReturning(
+          TrashedLocalAssetEntityCompanion(
+            id: .new(id),
+            albumId: .new(albumId),
+            name: .new('trashed_$id.jpg'),
+            type: .new(type ?? .image),
+            checksum: .new(checksum),
+            source: .new(source ?? TrashOrigin.remoteSync),
+            isFavorite: .new(isFavorite ?? false),
+            createdAt: .new(TestUtils.date(createdAt)),
           ),
         );
   }

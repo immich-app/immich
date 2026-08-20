@@ -82,7 +82,7 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
   }
 
   void _detachController() {
-    _controllerSub?.cancel();
+    unawaited(_controllerSub?.cancel());
     _controllerSub = null;
   }
 
@@ -110,7 +110,7 @@ class _OcrOverlayState extends ConsumerState<OcrOverlay> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
     );
   }
 }

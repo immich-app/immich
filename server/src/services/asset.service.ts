@@ -1,7 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import _ from 'lodash';
 import { DateTime, Duration } from 'luxon';
-import { JOBS_ASSET_PAGINATION_SIZE } from 'src/constants';
 import { AssetFile } from 'src/database';
 import { OnJob } from 'src/decorators';
 import { AssetResponseDto, SanitizedAssetResponseDto, mapAsset } from 'src/dtos/asset-response.dto';
@@ -46,6 +45,7 @@ import {
 } from 'src/utils/asset.util';
 import { updateLockedColumns } from 'src/utils/database';
 import { extractTimeZone } from 'src/utils/date';
+import { batched, findOrFail } from 'src/utils/misc';
 import { transformOcrBoundingBox } from 'src/utils/transform';
 
 @Injectable()
@@ -65,7 +65,7 @@ export class AssetService extends BaseService {
     const asset = await this.assetRepository.getById(id, {
       exifInfo: true,
       owner: true,
-      faces: { person: true },
+      faces: { person: true, viewingUserId: auth.user.id },
       stack: { assets: true },
       edits: true,
       tags: true,
@@ -85,7 +85,7 @@ export class AssetService extends BaseService {
       delete data.owner;
     }
 
-    if (data.ownerId !== auth.user.id || auth.sharedLink) {
+    if (auth.sharedLink) {
       data.people = [];
     }
 
@@ -124,7 +124,7 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Asset not found');
     }
 
-    return mapAsset(asset, { auth });
+    return this.get(auth, id) as Promise<AssetResponseDto>;
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {
@@ -278,30 +278,11 @@ export class AssetService extends BaseService {
       .minus(Duration.fromObject({ days: trashedDays }))
       .toJSDate();
 
-    let chunk: Array<{ id: string; isOffline: boolean }> = [];
-    const queueChunk = async () => {
-      if (chunk.length === 0) {
-        return;
-      }
-
+    for await (const assets of batched(this.assetJobRepository.streamForDeletedJob(trashedBefore))) {
       await this.jobRepository.queueAll(
-        chunk.map(({ id, isOffline }) => ({
-          name: JobName.AssetDelete,
-          data: { id, deleteOnDisk: !isOffline },
-        })),
+        assets.map(({ id, isOffline }) => ({ name: JobName.AssetDelete, data: { id, deleteOnDisk: !isOffline } })),
       );
-      chunk = [];
-    };
-
-    const assets = this.assetJobRepository.streamForDeletedJob(trashedBefore);
-    for await (const asset of assets) {
-      chunk.push(asset);
-      if (chunk.length >= JOBS_ASSET_PAGINATION_SIZE) {
-        await queueChunk();
-      }
     }
-
-    await queueChunk();
 
     return JobStatus.Success;
   }
@@ -496,12 +477,8 @@ export class AssetService extends BaseService {
     await this.jobRepository.queueAll(jobs);
   }
 
-  private async findOrFail(id: string) {
-    const asset = await this.assetRepository.getById(id);
-    if (!asset) {
-      throw new BadRequestException('Asset not found');
-    }
-    return asset;
+  private findOrFail(id: string) {
+    return findOrFail(() => this.assetRepository.getById(id), 'Asset');
   }
 
   private async updateExif(dto: {

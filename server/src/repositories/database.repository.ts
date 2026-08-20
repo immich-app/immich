@@ -9,6 +9,7 @@ import semver from 'semver';
 import {
   EXTENSION_NAMES,
   POSTGRES_VERSION_RANGE,
+  serverVersion,
   VECTOR_EXTENSIONS,
   VECTOR_INDEX_TABLES,
   VECTOR_VERSION_RANGE,
@@ -382,6 +383,17 @@ export class DatabaseRepository {
 
     if (error) {
       this.logger.error(`Migrations failed: ${error}`);
+
+      const missing =
+        error instanceof Error ? error.message.match(/previously executed migration (.+) is missing/u) : null;
+      if (missing) {
+        throw new Error(
+          `Migration "${missing[1]}" was already applied to this database but is not in this version of Immich (${serverVersion}). ` +
+            `This usually means the database was migrated by a newer version. Downgrades are not supported.`,
+          { cause: error },
+        );
+      }
+
       throw error;
     }
 
@@ -469,35 +481,6 @@ export class DatabaseRepository {
 
   private async releaseLock(lock: DatabaseLock, connection: Kysely<DB>): Promise<void> {
     await sql`SELECT pg_advisory_unlock(${lock})`.execute(connection);
-  }
-
-  async revertLastMigration(): Promise<string | undefined> {
-    this.logger.debug('Reverting last migration');
-
-    const migrator = this.createMigrator();
-    const { error, results } = await migrator.migrateDown();
-
-    for (const result of results ?? []) {
-      if (result.status === 'Success') {
-        this.logger.log(`Reverted migration "${result.migrationName}"`);
-      } else if (result.status === 'Error') {
-        this.logger.warn(`Failed to revert migration "${result.migrationName}"`);
-      }
-    }
-
-    if (error) {
-      this.logger.error(`Failed to revert migrations: ${error}`);
-      throw error;
-    }
-
-    const reverted = results?.find((result) => result.direction === 'Down' && result.status === 'Success');
-    if (!reverted) {
-      this.logger.debug('No migrations to revert');
-      return undefined;
-    }
-
-    this.logger.debug('Finished reverting migration');
-    return reverted.migrationName;
   }
 
   private createMigrator(): Migrator {

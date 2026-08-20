@@ -5,7 +5,7 @@ import { HLS_SEGMENT_DURATION, HLS_SEGMENT_FILENAME_REGEX, HLS_VARIANTS, HLS_VER
 import { StorageCore } from 'src/cores/storage.core';
 import { OnEvent } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
-import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
+import { ConfigFFmpegDto } from 'src/dtos/config.dto';
 import { CacheControl, ImmichWorker, Permission } from 'src/enum';
 import { ArgOf } from 'src/repositories/event.repository';
 import { BaseService } from 'src/services/base.service';
@@ -124,7 +124,7 @@ export class HlsService extends BaseService {
     this.websocketRepository.serverSend('HlsSessionEnd', { sessionId });
   }
 
-  private generateMainPlaylist(sessionId: string, ffmpeg: SystemConfigFFmpegDto, asset: AssetWithStreamInfo) {
+  private generateMainPlaylist(sessionId: string, ffmpeg: ConfigFFmpegDto, asset: AssetWithStreamInfo) {
     const fps = (asset.packets.packetCount * asset.videoStream.timeBase) / asset.packets.totalDuration;
     const roundedFps = fps.toFixed(3);
     const sourceResolution = Math.min(asset.videoStream.height, asset.videoStream.width);

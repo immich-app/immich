@@ -35,12 +35,13 @@ final Map<String, Map<String, Object?>> openApiPatches = {
   },
   'UserResponseDto': {'profileChangedAt': _now},
   'AssetResponseDto': {'visibility': 'timeline', 'createdAt': _now, 'isEdited': false},
-  'UserAdminResponseDto': {'profileChangedAt': _now},
+  'UserAdminResponseDto': {'profileChangedAt': _now, 'clusterGroupId': ''},
   'LoginResponseDto': {'isOnboarded': false},
   'SyncUserV1': {'profileChangedAt': _now, 'hasProfileImage': false},
   'SyncAssetV1': {'isEdited': false},
   'ServerFeaturesDto': {'ocr': false, 'realtimeTranscoding': false},
   'MemoriesResponse': {'duration': 5},
+  'WorkflowResponseDto': {'logging': false},
 };
 
 void upgradeDto(dynamic value, String targetType) {
@@ -56,9 +57,9 @@ void upgradeDto(dynamic value, String targetType) {
   });
 }
 
-addDefault(dynamic value, String keys, dynamic defaultValue) {
+void addDefault(dynamic value, String keys, dynamic defaultValue) {
   // Loop through the keys and assign the default value if the key is not present
-  List<String> keyList = keys.split('.');
+  final List<String> keyList = keys.split('.');
   dynamic current = value;
 
   for (int i = 0; i < keyList.length - 1; i++) {
