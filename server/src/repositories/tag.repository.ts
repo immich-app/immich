@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Insertable, Kysely, Selectable, sql, Transaction, Updateable } from 'kysely';
+import { Insertable, InsertQueryBuilder, Kysely, QueryCreator, Selectable, Updateable } from 'kysely';
 import { InjectKysely } from 'nestjs-kysely';
 import { columns } from 'src/database';
 import { Chunked, ChunkedSet, DummyValue, GenerateSql } from 'src/decorators';
@@ -7,7 +7,6 @@ import { LoggingRepository } from 'src/repositories/logging.repository';
 import { DB } from 'src/schema';
 import { TagAssetTable } from 'src/schema/tables/tag-asset.table';
 import { TagTable } from 'src/schema/tables/tag.table';
-
 @Injectable()
 export class TagRepository {
   constructor(
@@ -35,18 +34,13 @@ export class TagRepository {
   @GenerateSql({ params: [{ userId: DummyValue.UUID, value: DummyValue.STRING, parentId: DummyValue.UUID }] })
   async upsertValue({ userId, value, parentId: _parentId }: { userId: string; value: string; parentId?: string }) {
     const parentId = _parentId ?? null;
-    return this.db.transaction().execute(async (tx) => {
-      const tag = await this.db
+    return this.insertTagWithClosures((db) =>
+      db
         .insertInto('tag')
         .values({ userId, value, parentId })
         .onConflict((oc) => oc.columns(['userId', 'value']).doUpdateSet({ parentId }))
-        .returning(columns.tag)
-        .executeTakeFirstOrThrow();
-
-      await this.updateTagClosures(tag, tx);
-
-      return tag;
-    });
+        .returningAll(),
+    );
   }
 
   @GenerateSql({ params: [DummyValue.UUID] })
@@ -55,13 +49,8 @@ export class TagRepository {
   }
 
   @GenerateSql({ params: [{ userId: DummyValue.UUID, color: DummyValue.STRING, value: DummyValue.STRING }] })
-  async create(tag: Insertable<TagTable>) {
-    let createdTag: Selectable<TagTable>;
-    await this.db.transaction().execute(async (tx) => {
-      createdTag = await tx.insertInto('tag').values(tag).returningAll().executeTakeFirstOrThrow();
-      await this.updateTagClosures(createdTag, tx);
-    });
-    return createdTag!;
+  create(tag: Insertable<TagTable>) {
+    return this.insertTagWithClosures((db) => db.insertInto('tag').values(tag).returningAll());
   }
 
   @GenerateSql({ params: [DummyValue.UUID, { color: DummyValue.STRING }] })
@@ -168,25 +157,28 @@ export class TagRepository {
     }
   }
 
-  async updateTagClosures(tag: { id: string; parentId?: string | null }, tx: Transaction<DB>) {
-    await tx
-      .insertInto('tag_closure')
-      .values({ id_ancestor: tag.id, id_descendant: tag.id })
-      .onConflict((oc) => oc.doNothing())
-      .execute();
-
-    if (tag.parentId) {
-      await tx
-        .insertInto('tag_closure')
-        .columns(['id_ancestor', 'id_descendant'])
-        .expression(
-          this.db
-            .selectFrom('tag_closure')
-            .select(['id_ancestor', sql.raw<string>(`'${tag.id}'`).as('id_descendant')])
-            .where('id_descendant', '=', tag.parentId),
-        )
-        .onConflict((oc) => oc.doNothing())
-        .execute();
-    }
+  insertTagWithClosures(insertTag: (db: QueryCreator<DB>) => InsertQueryBuilder<DB, 'tag', Selectable<TagTable>>) {
+    return this.db
+      .with('created_tag', insertTag)
+      .with('created_tag_closures', (db) =>
+        db
+          .insertInto('tag_closure')
+          .columns(['id_ancestor', 'id_descendant'])
+          .expression((eb) =>
+            eb
+              .selectFrom('created_tag')
+              .select(['created_tag.id as id_ancestor', 'created_tag.id as id_descendant'])
+              .unionAll(
+                eb
+                  .selectFrom('created_tag')
+                  .innerJoin('tag_closure', 'tag_closure.id_descendant', 'created_tag.parentId')
+                  .select(['tag_closure.id_ancestor', 'created_tag.id as id_descendant']),
+              ),
+          )
+          .onConflict((oc) => oc.doNothing()),
+      )
+      .selectFrom('created_tag')
+      .selectAll()
+      .executeTakeFirstOrThrow();
   }
 }
