@@ -1,6 +1,6 @@
 import { join } from 'node:path';
-import { SystemConfig } from 'src/config';
 import { StorageCore } from 'src/cores/storage.core';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { StorageFolder } from 'src/enum';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
 import { MediaRepository } from 'src/repositories/media.repository';

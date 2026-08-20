@@ -121,6 +121,7 @@ class MediumRepositoryContext {
     String? stackId,
     String? thumbHash,
     String? libraryId,
+    DateTime? localDateTime,
   }) async {
     id ??= TestUtils.uuid();
     createdAt ??= TestUtils.date();
@@ -144,7 +145,7 @@ class MediumRepositoryContext {
             isEdited: .new(isEdited ?? false),
             livePhotoVideoId: .new(livePhotoVideoId),
             stackId: .new(stackId),
-            localDateTime: .new(createdAt.toLocal()),
+            localDateTime: .new(localDateTime ?? createdAt.toLocal()),
             thumbHash: .new(TestUtils.uuid(thumbHash)),
             libraryId: .new(TestUtils.uuid(libraryId)),
           ),

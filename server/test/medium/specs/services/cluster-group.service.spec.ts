@@ -54,7 +54,7 @@ describe(ClusterGroupService.name, () => {
       const { value: request } = await sut.createRequest(auth, clusterGroupId, { userId: invitee.id });
 
       expect(request).toEqual(
-        expect.objectContaining({ clusterGroupId, userId: invitee.id, createdAt: expect.any(String) }),
+        expect.objectContaining({ clusterGroupId, userId: invitee.id, createdAt: expect.any(Date) }),
       );
       expect(ctx.getMock(EventRepository).emit).toHaveBeenCalledWith('ClusterGroupRequest', {
         clusterGroupId,

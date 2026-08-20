@@ -3,6 +3,7 @@ import { OnEvent, OnJob } from 'src/decorators';
 import { MapAlbumDto } from 'src/dtos/album.dto';
 import { mapAsset } from 'src/dtos/asset-response.dto';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SystemConfigSmtpDto } from 'src/dtos/config.dto';
 import {
   mapNotification,
   NotificationDeleteAllDto,
@@ -11,7 +12,6 @@ import {
   NotificationUpdateAllDto,
   NotificationUpdateDto,
 } from 'src/dtos/notification.dto';
-import { SystemConfigSmtpDto } from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
   JobName,

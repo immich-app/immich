@@ -167,6 +167,11 @@ export enum Permission {
   ClusterGroupRequestRead = 'clusterGroupRequest.read',
   ClusterGroupRequestDelete = 'clusterGroupRequest.delete',
 
+  AdminConfigRead = 'adminConfig.read',
+  AdminConfigUpdate = 'adminConfig.update',
+
+  UserConfigRead = 'userConfig.read',
+
   DuplicateRead = 'duplicate.read',
   DuplicateDelete = 'duplicate.delete',
 
@@ -1172,10 +1177,23 @@ export const AssetVisibilitySchema = z
   .describe('Asset visibility')
   .meta({ id: 'AssetVisibility' });
 
+export enum ReleaseChannel {
+  Stable = 'stable',
+  ReleaseCandidate = 'releaseCandidate',
+}
+
+export const ReleaseChannelSchema = z.enum(ReleaseChannel).describe('Release channel').meta({ id: 'ReleaseChannel' });
+
 export enum CronJob {
   LibraryScan = 'LibraryScan',
   NightlyJobs = 'NightlyJobs',
   VersionCheck = 'VersionCheck',
+}
+
+export enum ConfigVisibility {
+  Public = 'Public',
+  User = 'User',
+  Admin = 'Admin',
 }
 
 export enum ApiTag {
@@ -1185,6 +1203,9 @@ export enum ApiTag {
   Authentication = 'Authentication',
   AuthenticationAdmin = 'Authentication (admin)',
   Assets = 'Assets',
+  ConfigUser = 'Config (user)',
+  ConfigAdmin = 'Config (admin)',
+  ConfigPublic = 'Config (public)',
   DatabaseBackups = 'Database Backups (admin)',
   Deprecated = 'Deprecated',
   Download = 'Download',

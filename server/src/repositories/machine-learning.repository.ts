@@ -1,8 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Duration } from 'luxon';
 import { readFile } from 'node:fs/promises';
-import { MachineLearningConfig } from 'src/config';
-import { CLIPConfig } from 'src/dtos/model-config.dto';
+import { MachineLearningConfig } from 'src/dtos/config.dto';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 
 export interface BoundingBox {
@@ -205,7 +204,7 @@ export class MachineLearningRepository {
     };
   }
 
-  async encodeImage(imagePath: string, { modelName }: CLIPConfig) {
+  async encodeImage(imagePath: string, { modelName }: MachineLearningConfig['clip']) {
     const request = { [ModelTask.SEARCH]: { [ModelType.VISUAL]: { modelName } } };
     const response = await this.predict<ClipVisualResponse>({ imagePath }, request);
     return response[ModelTask.SEARCH];

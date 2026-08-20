@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { SystemConfig } from 'src/config';
 import { OnEvent } from 'src/decorators';
 import { AuthDto } from 'src/dtos/auth.dto';
+import { SystemConfig } from 'src/dtos/config.dto';
 import {
   mapQueueLegacy,
   mapQueuesLegacy,

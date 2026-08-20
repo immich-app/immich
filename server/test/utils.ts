@@ -97,7 +97,9 @@ export type ControllerContext = {
   close: () => Promise<void>;
 };
 
-export const controllerSetup = async (controller: new (...args: any[]) => unknown, providers: Provider[]) => {
+type ControllerClass = new (...args: any[]) => unknown;
+
+export const controllerSetup = async (controller: ControllerClass | ControllerClass[], providers: Provider[]) => {
   const noopInterceptor = { intercept: (ctx: never, next: CallHandler<unknown>) => next.handle() };
   const upload = multer({ storage: multer.memoryStorage() });
   const memoryFileInterceptor = {
@@ -119,7 +121,7 @@ export const controllerSetup = async (controller: new (...args: any[]) => unknow
     },
   };
   const moduleRef = await Test.createTestingModule({
-    controllers: [controller],
+    controllers: Array.isArray(controller) ? controller : [controller],
     providers: [
       { provide: APP_FILTER, useClass: GlobalExceptionFilter },
       { provide: APP_PIPE, useClass: ZodValidationPipe },

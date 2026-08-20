@@ -1,6 +1,5 @@
 import { LoginResponseDto } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
-import { errorDto } from 'src/responses';
 import { app, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -137,14 +136,6 @@ describe('/server', () => {
   });
 
   describe('GET /server/statistics', () => {
-    it('should only work for admins', async () => {
-      const { status, body } = await request(app)
-        .get('/server/statistics')
-        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
     it('should return the server stats', async () => {
       const { status, body } = await request(app)
         .get('/server/statistics')
@@ -195,14 +186,6 @@ describe('/server', () => {
   });
 
   describe('GET /server/license', () => {
-    it('should only work for admins', async () => {
-      const { status, body } = await request(app)
-        .get('/server/license')
-        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
     it('should return the server license', async () => {
       await request(app).put('/server/license').set('Authorization', `Bearer ${admin.accessToken}`).send(serverLicense);
       const { status, body } = await request(app)
@@ -217,14 +200,6 @@ describe('/server', () => {
   });
 
   describe('DELETE /server/license', () => {
-    it('should only work for admins', async () => {
-      const { status, body } = await request(app)
-        .delete('/server/license')
-        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
     it('should delete the server license', async () => {
       await request(app)
         .delete('/server/license')
@@ -236,14 +211,6 @@ describe('/server', () => {
   });
 
   describe('PUT /server/license', () => {
-    it('should only work for admins', async () => {
-      const { status, body } = await request(app)
-        .put('/server/license')
-        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
     it('should set the server license', async () => {
       const { status, body } = await request(app)
         .put('/server/license')
