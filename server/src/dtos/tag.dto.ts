@@ -18,7 +18,7 @@ export const TagUpdateSchema = z
     name: z
       .string()
       .regex(/^[^/]*$/, `Tag name cannot contain slash characters ("/")`)
-      .nonempty()
+      .optional()
       .describe('Tag name'),
     color: hexColor.nullable().optional().describe('Tag color (hex)'),
   })

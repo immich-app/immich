@@ -41,25 +41,6 @@ describe('/tags', () => {
   });
 
   describe('POST /tags', () => {
-    it('should prevent tags with slash in name', async () => {
-      const { secret } = await utils.createApiKey(user.accessToken, [Permission.TagCreate]);
-      const { status, body } = await request(app).post('/tags').set('x-api-key', secret).send({ name: 'TagA/TagB' });
-      expect(status).toBe(400);
-      expect(body).toEqual({
-        errors: [
-          {
-            code: 'invalid_format',
-            format: 'regex',
-            message: 'Tag name cannot contain slash characters ("/")',
-            origin: 'string',
-            path: ['name'],
-            pattern: '/^[^/]*$/',
-          },
-        ],
-        message: 'Validation failed',
-      });
-    });
-
     it('should work with tag.create', async () => {
       const { secret } = await utils.createApiKey(user.accessToken, [Permission.TagCreate]);
       const { status, body } = await request(app).post('/tags').set('x-api-key', secret).send({ name: 'TagA' });

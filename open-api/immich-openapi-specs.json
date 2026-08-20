@@ -26952,14 +26952,10 @@
           },
           "name": {
             "description": "Tag name",
-            "minLength": 1,
             "pattern": "^[^/]*$",
             "type": "string"
           }
         },
-        "required": [
-          "name"
-        ],
         "type": "object"
       },
       "TagUpsertDto": {
