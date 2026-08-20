@@ -218,15 +218,6 @@ export class TagRepository {
     });
   }
 
-  async getDescendantIds(ancestorId: string) {
-    const results = await this.db
-      .selectFrom('tag_closure')
-      .select('id_descendant')
-      .where('id_ancestor', '=', ancestorId)
-      .execute();
-    return results.map((r) => r.id_descendant);
-  }
-
   async deleteEmptyTags() {
     const result = await this.db
       .deleteFrom('tag')
