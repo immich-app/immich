@@ -26,6 +26,7 @@ import { AppRepository } from 'src/repositories/app.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
+import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository';
 import { ConfigRepository } from 'src/repositories/config.repository';
 import { CronRepository } from 'src/repositories/cron.repository';
 import { CryptoRepository } from 'src/repositories/crypto.repository';
@@ -75,6 +76,7 @@ import { AuthService } from 'src/services/auth.service';
 import { BaseService } from 'src/services/base.service';
 import { RepositoryInterface } from 'src/types';
 import { getKyselyConfig } from 'src/utils/database';
+import { ClusterGroupFactory } from 'test/factories/cluster-group.factory';
 import { IAccessRepositoryMock, newAccessRepositoryMock } from 'test/repositories/access.repository.mock';
 import { newAssetRepositoryMock } from 'test/repositories/asset.repository.mock';
 import { newConfigRepositoryMock } from 'test/repositories/config.repository.mock';
@@ -238,6 +240,7 @@ export type ServiceOverrides = {
   asset: AssetRepository;
   assetEdit: AssetEditRepository;
   assetJob: AssetJobRepository;
+  clusterGroup: ClusterGroupRepository;
   config: ConfigRepository;
   cron: CronRepository;
   crypto: CryptoRepository;
@@ -321,6 +324,7 @@ export const getMocks = () => {
     asset: newAssetRepositoryMock(),
     assetEdit: automock(AssetEditRepository),
     assetJob: automock(AssetJobRepository),
+    clusterGroup: automock(ClusterGroupRepository),
     app: automock(AppRepository, { strict: false }),
     config: newConfigRepositoryMock(),
     database: databaseMock,
@@ -371,6 +375,9 @@ export const getMocks = () => {
     workflow: automock(WorkflowRepository, { strict: true }),
   };
 
+  // every new user gets a cluster group, which is incidental to most tests
+  mocks.clusterGroup.create.mockResolvedValue(ClusterGroupFactory.create());
+
   return mocks;
 };
 
@@ -391,6 +398,7 @@ export const newTestService = <T extends BaseService>(
     overrides.asset || (mocks.asset as As<AssetRepository>),
     overrides.assetEdit || (mocks.assetEdit as As<AssetEditRepository>),
     overrides.assetJob || (mocks.assetJob as As<AssetJobRepository>),
+    overrides.clusterGroup || (mocks.clusterGroup as As<ClusterGroupRepository>),
     overrides.config || (mocks.config as As<ConfigRepository> as ConfigRepository),
     overrides.cron || (mocks.cron as As<CronRepository>),
     overrides.crypto || (mocks.crypto as As<CryptoRepository>),

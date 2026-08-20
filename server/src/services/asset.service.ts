@@ -65,7 +65,7 @@ export class AssetService extends BaseService {
     const asset = await this.assetRepository.getById(id, {
       exifInfo: true,
       owner: true,
-      faces: { person: true },
+      faces: { person: true, viewingUserId: auth.user.id },
       stack: { assets: true },
       edits: true,
       tags: true,
@@ -85,7 +85,7 @@ export class AssetService extends BaseService {
       delete data.owner;
     }
 
-    if (data.ownerId !== auth.user.id || auth.sharedLink) {
+    if (auth.sharedLink) {
       data.people = [];
     }
 
@@ -124,7 +124,7 @@ export class AssetService extends BaseService {
       throw new BadRequestException('Asset not found');
     }
 
-    return mapAsset(asset, { auth });
+    return this.get(auth, id) as Promise<AssetResponseDto>;
   }
 
   async updateAll(auth: AuthDto, dto: AssetBulkUpdateDto): Promise<void> {

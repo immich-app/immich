@@ -192,7 +192,8 @@ select
             from
               "person"
             where
-              "asset_face"."personId" = "person"."id"
+              "person"."personGroupId" = "asset_face"."personGroupId"
+              and "person"."ownerId" = "asset"."ownerId"
           ) as "person" on true
         where
           "asset_face"."assetId" = "asset"."id"
