@@ -30,6 +30,7 @@ import {
   VideoContainer,
   VideoContainerSchema,
 } from 'src/enum';
+import { DeepPartial } from 'src/types';
 import z from 'zod';
 
 const { Admin, User, Public } = ConfigVisibility;
@@ -415,10 +416,6 @@ const AdminConfigSchemaWithVisibility = z
 export type SystemConfig = z.infer<typeof AdminConfigSchemaWithVisibility>;
 export type MachineLearningConfig = SystemConfig['machineLearning'];
 
-type VisibleSystemConfig = {
-  [K in keyof SystemConfig]?: { [P in keyof SystemConfig[K]]?: SystemConfig[K][P] };
-};
-
 const visibilities = [Public, User, Admin];
 
 const isVisible = (property: ConfigVisibility, visibility: ConfigVisibility) =>
@@ -503,8 +500,8 @@ const stripVisibilityMetadata = <T extends z.ZodType>(schema: T): T => {
 };
 
 const AdminConfigSchema = applyVisibility(Admin)! as z.ZodType<SystemConfig>;
-const UserConfigSchema = applyVisibility(User)! as z.ZodType<VisibleSystemConfig>;
-const PublicConfigSchema = applyVisibility(Public)! as z.ZodType<VisibleSystemConfig>;
+const UserConfigSchema = applyVisibility(User)! as z.ZodType<DeepPartial<SystemConfig>>;
+const PublicConfigSchema = applyVisibility(Public)! as z.ZodType<DeepPartial<SystemConfig>>;
 
 // prevent visibility metadata from leaking to openapi spec
 // eslint-disable-next-line unicorn/no-top-level-side-effects
