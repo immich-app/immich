@@ -5,27 +5,37 @@ import android.content.Context
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
+import app.alextran.immich.core.ImmichPlugin
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import java.io.File
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
-class MediaSavePlugin : FlutterPlugin, MediaSaveApi {
+class MediaSavePlugin : ImmichPlugin(), MediaSaveApi {
+  private val lock = Any()
   private var context: Context? = null
-  private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+  private lateinit var ioScope: CoroutineScope
 
   override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    context = binding.applicationContext
-    MediaSaveApi.setUp(binding.binaryMessenger, this)
+    synchronized(lock) {
+      super.onAttachedToEngine(binding)
+      ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+      context = binding.applicationContext
+      MediaSaveApi.setUp(binding.binaryMessenger, this)
+    }
   }
 
   override fun onDetachedFromEngine(binding: FlutterPlugin.FlutterPluginBinding) {
-    MediaSaveApi.setUp(binding.binaryMessenger, null)
-    ioScope.cancel()
-    context = null
+    synchronized(lock) {
+      super.onDetachedFromEngine(binding)
+      MediaSaveApi.setUp(binding.binaryMessenger, null)
+      context = null
+      ioScope.cancel()
+    }
   }
 
   override fun saveToDownloads(
@@ -34,16 +44,24 @@ class MediaSavePlugin : FlutterPlugin, MediaSaveApi {
     relativePath: String?,
     callback: (Result<String?>) -> Unit,
   ) {
-    val context = context ?: run {
-      callback(Result.success(null))
-      return
+    val (context, scope) = synchronized(lock) {
+      val context = context ?: run {
+        completeWhenActive(callback, Result.success(null))
+        return
+      }
+      context to ioScope
     }
 
-    ioScope.launch {
-      try {
-        callback(Result.success(insertIntoFiles(context, filePath, title, relativePath)))
+    scope.launch {
+      val result = try {
+        Result.success(insertIntoFiles(context, filePath, title, relativePath))
       } catch (e: Exception) {
-        callback(Result.failure(e))
+        Result.failure(e)
+      }
+      synchronized(lock) {
+        if (scope === ioScope && isActive) {
+          completeWhenActive(callback, result)
+        }
       }
     }
   }

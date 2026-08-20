@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
 import 'package:immich_mobile/extensions/platform_extensions.dart';
 import 'package:immich_mobile/platform/media_save_api.g.dart';
-import 'package:immich_mobile/utils/mime.utils.dart';
 import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart' hide AssetType;
 
@@ -30,19 +29,20 @@ class FileMediaRepository {
     );
   }
 
-  Future<AssetEntity?> saveImageWithFile(String filePath, {String? title, String? relativePath}) async {
+  Future<bool> saveImageWithFile(String filePath, {String? title, String? relativePath}) async {
     try {
-      return await PhotoManager.editor.saveImageWithPath(filePath, title: title, relativePath: relativePath);
+      await PhotoManager.editor.saveImageWithPath(filePath, title: title, relativePath: relativePath);
+      return true;
     } on PlatformException catch (e) {
-      // Some formats (e.g. raw like CR3) have no MIME the platform recognises, so
-      // photo_manager falls back to `image/*` and MediaStore rejects the save.
-      // Save those to Downloads ourselves, where the Files collection takes any
-      // type. Anything else isn't ours to handle.
-      if (!CurrentPlatform.isAndroid || !isUnsupportedMimeError(e)) {
+      final details = e.details;
+      if (!CurrentPlatform.isAndroid ||
+          details is! String ||
+          !details.toLowerCase().contains('unsupported mime type')) {
         rethrow;
       }
+      // TODO: fold the photo_manager and native save paths into one implementation
       final id = await _mediaSaveApi.saveToDownloads(filePath, title ?? p.basename(filePath), 'Download/Immich');
-      return id == null ? null : AssetEntity(id: id, typeInt: 1, width: 0, height: 0);
+      return id != null;
     }
   }
 
