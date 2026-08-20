@@ -36,7 +36,6 @@ class MemoryLane extends ConsumerWidget {
         itemExtent: _kCardExtent,
         shrinkExtent: _kCardExtent,
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
-        itemSnapping: false,
         elevation: 0,
         backgroundColor: context.colorScheme.surfaceContainerHigh,
         shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20.0))),
@@ -74,32 +73,47 @@ class MemoryCard extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         Thumbnail.remote(remoteId: memory.assets[0].id, thumbhash: memory.assets[0].thumbHash ?? "", fit: BoxFit.cover),
+
         const DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Colors.transparent, Colors.black54],
-              stops: [0.4, 1.0],
+              colors: [Colors.transparent, Colors.black87],
+              stops: [0.55, 1.0],
             ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(14, 14, 14, 16),
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
           child: Align(
-            alignment: AlignmentDirectional.bottomStart,
-            child: Text(
-              title,
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-                fontSize: 17,
-                height: 1.15,
-                letterSpacing: -0.2,
-                shadows: [Shadow(color: Colors.black38, blurRadius: 8, offset: Offset(0, 1))],
-              ),
+            alignment: Alignment.bottomCenter,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                    fontSize: 16,
+                    height: 1.2,
+                    shadows: [Shadow(color: Colors.black45, blurRadius: 8, offset: Offset(0, 1))],
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${memory.data.year}',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    shadows: [Shadow(color: Colors.black45, blurRadius: 8, offset: Offset(0, 1))],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
