@@ -22,6 +22,8 @@ import 'package:path/path.dart' as p;
 import 'package:photo_manager/photo_manager.dart';
 import 'package:share_plus/share_plus.dart';
 
+/// A file staged for the share sheet. [tempEntity] is the temp file or
+/// directory to delete afterwards, null when [file] is a gallery original.
 typedef _ShareFile = ({File file, FileSystemEntity? tempEntity, String displayName});
 
 final assetMediaRepositoryProvider = Provider(
@@ -287,6 +289,10 @@ class AssetMediaRepository {
     return null;
   }
 
+  /// Renames downloaded files to their display name before sharing, since
+  /// receiving apps only see the on-disk filename. Runs once over the whole
+  /// batch: gallery originals cannot be renamed, so when names collide the
+  /// downloads give way and get an ` (n)` suffix instead.
   Future<void> _resolveShareFiles(List<_ShareFile> files) async {
     final usedNames = {
       for (final shareFile in files)
