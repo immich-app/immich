@@ -4,9 +4,9 @@ import { createHash, randomBytes } from 'node:crypto';
 import { Stats } from 'node:fs';
 import { resolve } from 'node:path';
 import { Writable } from 'node:stream';
-import { SystemConfig } from 'src/config';
 import { AssetFace } from 'src/database';
 import { AuthDto, LoginResponseDto } from 'src/dtos/auth.dto';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { AssetEditActionItem, AssetEditsCreateDto } from 'src/dtos/editing.dto';
 import {
   AlbumUserRole,

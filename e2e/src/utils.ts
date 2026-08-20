@@ -647,7 +647,7 @@ export const utils = {
 
   resetAdminConfig: async (accessToken: string) => {
     const defaultConfig = await getConfigDefaults({ headers: asBearerAuth(accessToken) });
-    await updateConfig({ systemConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
+    await updateConfig({ adminConfigDto: defaultConfig }, { headers: asBearerAuth(accessToken) });
   },
 
   isQueueEmpty: async (accessToken: string, queue: keyof QueuesResponseLegacyDto) => {
@@ -675,9 +675,9 @@ export const utils = {
   },
 
   cliLogin: async (accessToken: string) => {
-    const key = await utils.createApiKey(accessToken, [Permission.All]);
-    await immichCli(['login', app, key.secret]);
-    return key.secret;
+    const { secret } = await utils.createApiKey(accessToken, [Permission.All]);
+    await immichCli(['login', app, secret]);
+    return secret;
   },
 
   scan: async (accessToken: string, id: string) => {

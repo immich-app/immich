@@ -1,11 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { SystemConfig } from 'src/config';
 import { FACE_THUMBNAIL_SIZE } from 'src/constants';
 import { ImagePathOptions, StorageCore, ThumbnailPathEntity } from 'src/cores/storage.core';
 import { AssetFile } from 'src/database';
 import { OnEvent, OnJob } from 'src/decorators';
+import { ConfigFFmpegDto, SystemConfig } from 'src/dtos/config.dto';
 import { AssetEditAction, CropParameters } from 'src/dtos/editing.dto';
-import { SystemConfigFFmpegDto } from 'src/dtos/system-config.dto';
 import {
   AssetFileType,
   AssetType,
@@ -626,7 +625,7 @@ export class MediaService extends BaseService {
   }
 
   private getTranscodeTarget(
-    config: SystemConfigFFmpegDto,
+    config: ConfigFFmpegDto,
     videoStream: VideoStreamInfo,
     audioStream?: AudioStreamInfo,
   ): TranscodeTarget {
@@ -648,7 +647,7 @@ export class MediaService extends BaseService {
     return TranscodeTarget.None;
   }
 
-  private isAudioTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream?: AudioStreamInfo): boolean {
+  private isAudioTranscodeRequired(ffmpegConfig: ConfigFFmpegDto, stream?: AudioStreamInfo): boolean {
     if (!stream) {
       return false;
     }
@@ -671,7 +670,7 @@ export class MediaService extends BaseService {
     }
   }
 
-  private isVideoTranscodeRequired(ffmpegConfig: SystemConfigFFmpegDto, stream: VideoStreamInfo): boolean {
+  private isVideoTranscodeRequired(ffmpegConfig: ConfigFFmpegDto, stream: VideoStreamInfo): boolean {
     const isScalingEnabled = ffmpegConfig.targetResolution !== 'original';
     const targetRes = Number.parseInt(ffmpegConfig.targetResolution);
     const isLargerThanTargetRes = isScalingEnabled && Math.min(stream.height, stream.width) > targetRes;
@@ -703,7 +702,7 @@ export class MediaService extends BaseService {
     }
   }
 
-  private isRemuxRequired(ffmpegConfig: SystemConfigFFmpegDto, { formatName, formatLongName }: VideoFormat): boolean {
+  private isRemuxRequired(ffmpegConfig: ConfigFFmpegDto, { formatName, formatLongName }: VideoFormat): boolean {
     if (ffmpegConfig.transcode === TranscodePolicy.Disabled) {
       return false;
     }

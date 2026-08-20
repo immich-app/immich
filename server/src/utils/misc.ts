@@ -13,9 +13,9 @@ import { writeFileSync } from 'node:fs';
 import path from 'node:path';
 import picomatch from 'picomatch';
 import parse from 'picomatch/lib/parse';
-import { SystemConfig } from 'src/config';
 import { CLIP_MODEL_INFO, JOBS_ASSET_PAGINATION_SIZE, endpointTags, serverVersion } from 'src/constants';
 import { extraModels } from 'src/decorators';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { ApiCustomExtension, ImmichCookie, ImmichHeader, MetadataKey } from 'src/enum';
 import { LoggingRepository } from 'src/repositories/logging.repository';
 

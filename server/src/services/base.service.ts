@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Insertable } from 'kysely';
 import sanitize from 'sanitize-filename';
-import { SystemConfig } from 'src/config';
 import { SALT_ROUNDS } from 'src/constants';
 import { StorageCore } from 'src/cores/storage.core';
 import { UserAdmin } from 'src/database';
+import { SystemConfig } from 'src/dtos/config.dto';
 import { AccessRepository } from 'src/repositories/access.repository';
 import { ActivityRepository } from 'src/repositories/activity.repository';
 import { AlbumUserRepository } from 'src/repositories/album-user.repository';
