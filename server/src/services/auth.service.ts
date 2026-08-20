@@ -549,7 +549,7 @@ export class AuthService extends BaseService {
       const now = DateTime.now();
       const updatedAt = DateTime.fromJSDate(session.updatedAt);
       const diff = now.diff(updatedAt, ['hours']);
-      if (diff.hours > 1 || appVersion != session.appVersion) {
+      if (diff.hours > 1 || appVersion !== session.appVersion) {
         await this.sessionRepository.update(session.id, {
           id: session.id,
           updatedAt: new Date(),

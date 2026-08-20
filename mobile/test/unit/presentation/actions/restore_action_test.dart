@@ -84,6 +84,17 @@ void main() {
       expect(find.byType(ImmichIconButton), findsNothing, reason: 'an empty selection hides the action');
     });
 
+    testWidgets('offers an undo that puts the assets back in the trash', (tester) async {
+      final asset = owned();
+
+      await pumpRestore(tester, {asset});
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Undo'));
+      await tester.pump();
+
+      verify(() => assetService.trash([asset.id])).called(1);
+    });
+
     testWidgets('clears timeline selection before the post-restore transition completes', (tester) async {
       final asset = owned();
       final coordinator = _MockViewIntentAssetActionCoordinator();

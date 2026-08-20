@@ -74,7 +74,7 @@
       <SettingsLanguageSelector showSettingDescription />
 
       <Field label={$t('use_browser_locale')} description={$t('use_browser_locale_description')}>
-        <Switch checked={$locale == 'default'} onCheckedChange={handleToggleLocaleBrowser} />
+        <Switch checked={$locale === 'default'} onCheckedChange={handleToggleLocaleBrowser} />
         <Text size="small" class="mt-2 font-mono text-sm">{selectedDate}</Text>
       </Field>
 

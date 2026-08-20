@@ -74,9 +74,9 @@ void main() {
       await sut.update(ids, dateTime: const .some(picked));
 
       verify(() => apiRepository.update(ids, dateTimeOriginal: const .some(picked))).called(1);
-      verify(() => remoteRepository.update(ids, createdAt: .some(DateTime.parse(picked)))).called(1);
+      verify(() => remoteRepository.updateAssets(ids, createdAt: .some(DateTime.parse(picked)))).called(1);
       verify(
-        () => exifRepository.update(
+        () => exifRepository.updateExif(
           ids,
           dateTimeOriginal: .some(DateTime.parse(picked)),
           timeZone: const .some('UTC+06:00'),
@@ -88,9 +88,9 @@ void main() {
       const picked = '2026-01-05T08:00:00.000-05:30';
       await sut.update(ids, dateTime: const .some(picked));
 
-      verify(() => remoteRepository.update(ids, createdAt: .some(DateTime.parse(picked)))).called(1);
+      verify(() => remoteRepository.updateAssets(ids, createdAt: .some(DateTime.parse(picked)))).called(1);
       verify(
-        () => exifRepository.update(
+        () => exifRepository.updateExif(
           ids,
           dateTimeOriginal: .some(DateTime.parse(picked)),
           timeZone: const .some('UTC-05:30'),
@@ -102,9 +102,9 @@ void main() {
       const picked = '2026-06-10T13:15:00.000Z';
       await sut.update(ids, dateTime: const .some(picked));
 
-      verify(() => remoteRepository.update(ids, createdAt: .some(DateTime.parse(picked)))).called(1);
+      verify(() => remoteRepository.updateAssets(ids, createdAt: .some(DateTime.parse(picked)))).called(1);
       verify(
-        () => exifRepository.update(ids, dateTimeOriginal: .some(DateTime.parse(picked)), timeZone: const .none()),
+        () => exifRepository.updateExif(ids, dateTimeOriginal: .some(DateTime.parse(picked)), timeZone: const .none()),
       ).called(1);
     });
 

@@ -40,7 +40,7 @@ class RestoreAction extends AssetActionBuilder {
 
     try {
       await assetService.restoreTrash(assetIds);
-      toastService.success(message);
+      toastService.success(message, toast: .new(onUndo: () => assetService.trash(assetIds)));
       clearSelection();
       await viewIntentCoordinator.afterRestore(source: source, remoteAssetIds: assetIds);
     } catch (error, stack) {

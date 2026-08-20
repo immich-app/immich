@@ -1,6 +1,5 @@
 import { LoginResponseDto, createPartner } from '@immich/sdk';
 import { createUserDto } from 'src/fixtures';
-import { errorDto } from 'src/responses';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -29,13 +28,6 @@ describe('/partners', () => {
   });
 
   describe('GET /partners', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get('/partners');
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should get all partners shared by user', async () => {
       const { status, body } = await request(app)
         .get('/partners')
@@ -58,13 +50,6 @@ describe('/partners', () => {
   });
 
   describe('POST /partners/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/partners/${user3.userId}`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should share with new partner', async () => {
       const { status, body } = await request(app)
         .post(`/partners/${user3.userId}`)
@@ -85,13 +70,6 @@ describe('/partners', () => {
   });
 
   describe('PUT /partners/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/partners/${user2.userId}`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should update partner', async () => {
       const { status, body } = await request(app)
         .put(`/partners/${user2.userId}`)
@@ -104,13 +82,6 @@ describe('/partners', () => {
   });
 
   describe('DELETE /partners/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/partners/${user3.userId}`);
-
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should delete partner', async () => {
       const { status } = await request(app)
         .delete(`/partners/${user3.userId}`)

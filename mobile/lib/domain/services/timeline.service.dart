@@ -50,7 +50,7 @@ extension BaseAssetTimelineX on BaseAsset? {
 }
 
 class TimelineFactory {
-  final DriftTimelineRepository _timelineRepository;
+  final TimelineRepository _timelineRepository;
   final SettingsRepository _settingsRepository;
 
   const TimelineFactory({required this._timelineRepository, required this._settingsRepository});

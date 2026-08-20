@@ -8,7 +8,7 @@ import 'package:immich_mobile/domain/services/asset.service.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:immich_mobile/services/view_intent_asset_resolver.service.dart';
@@ -23,7 +23,7 @@ class MockAssetService extends Mock implements AssetService {}
 class MockNativeSyncApi extends Mock implements NativeSyncApi {}
 
 void main() {
-  late MockDriftLocalAssetRepository mockLocalAssetRepository;
+  late MockLocalAssetRepository mockLocalAssetRepository;
   late MockAssetService assetService;
   late MockNativeSyncApi nativeSyncApi;
   late MockTimelineFactory timelineFactory;
@@ -36,7 +36,7 @@ void main() {
   });
 
   setUp(() {
-    mockLocalAssetRepository = MockDriftLocalAssetRepository();
+    mockLocalAssetRepository = MockLocalAssetRepository();
     assetService = MockAssetService();
     nativeSyncApi = MockNativeSyncApi();
     timelineFactory = MockTimelineFactory();
@@ -50,9 +50,12 @@ void main() {
 
     _mockTimelineFactoryOrigin(timelineFactory, createdTimelineServices, TimelineOrigin.deepLink);
 
+    final drift = MockDrift();
+    when(() => drift.localAssetRepository).thenReturn(mockLocalAssetRepository);
+
     container = ProviderContainer(
       overrides: [
-        localAssetRepository.overrideWith((ref) => mockLocalAssetRepository),
+        driftProvider.overrideWithValue(drift),
         assetServiceProvider.overrideWithValue(assetService),
         nativeSyncApiProvider.overrideWithValue(nativeSyncApi),
         timelineFactoryProvider.overrideWith((ref) => timelineFactory),

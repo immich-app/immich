@@ -204,4 +204,11 @@ describe(AssetRepository.name, () => {
       ).resolves.toEqual({ lockedProperties: null });
     });
   });
+
+  describe('createAll', () => {
+    it('should return an empty array when given an empty input', async () => {
+      const { sut } = setup();
+      await expect(sut.createAll([])).resolves.toStrictEqual([]);
+    });
+  });
 });

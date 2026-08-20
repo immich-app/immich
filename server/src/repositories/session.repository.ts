@@ -9,8 +9,6 @@ import { DB } from 'src/schema';
 import { SessionTable } from 'src/schema/tables/session.table';
 import { asUuid } from 'src/utils/database';
 
-export type SessionSearchOptions = { updatedBefore: Date };
-
 @Injectable()
 export class SessionRepository {
   constructor(@InjectKysely() private db: Kysely<DB>) {}

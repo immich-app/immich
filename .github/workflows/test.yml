@@ -25,7 +25,7 @@ jobs:
 
       - name: Check what should run
         id: check
-        uses: immich-app/devtools/actions/pre-job@91f342bb4477c4bc10c576ae739da875d85aa164 # pre-job-action-v2.0.4
+        uses: immich-app/devtools/actions/pre-job@03514eceb4a27cd714976a866b350df5ce175720 # pre-job-action-v2.1.0
         with:
           github-token: ${{ steps.token.outputs.token }}
           filters: |
@@ -397,6 +397,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read
+      packages: write
     defaults:
       run:
         working-directory: ./e2e
@@ -419,7 +420,7 @@ jobs:
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -440,8 +441,33 @@ jobs:
         run: pnpm install --frozen-lockfile
         if: ${{ !cancelled() }}
 
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        if: ${{ github.event_name == 'push' && !github.event.pull_request.head.repo.fork }}
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve build cache
+        id: cache
+        run: |
+          ref=ghcr.io/immich-app/immich-server-build-cache:e2e-main-${{ runner.arch }}
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          if docker buildx imagetools inspect "$ref" > /dev/null 2>&1; then
+            echo "from=type=registry,ref=$ref" >> "$GITHUB_OUTPUT"
+          else
+            echo "from=" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Start Docker Compose
         id: docker
+        env:
+          E2E_CACHE_FROM: ${{ steps.cache.outputs.from }}
+          E2E_CACHE_TO: ${{ github.event_name == 'push' && !github.event.pull_request.head.repo.fork && format('type=registry,ref={0},mode=max', steps.cache.outputs.ref) || '' }}
         run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
 
@@ -498,7 +524,7 @@ jobs:
           token: ${{ steps.token.outputs.token }}
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
@@ -519,8 +545,24 @@ jobs:
         run: pnpm exec playwright install chromium --only-shell
         if: ${{ !cancelled() }}
 
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
+
+      - name: Resolve build cache
+        id: cache
+        run: |
+          ref=ghcr.io/immich-app/immich-server-build-cache:e2e-main-${{ runner.arch }}
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          if docker buildx imagetools inspect "$ref" > /dev/null 2>&1; then
+            echo "from=type=registry,ref=$ref" >> "$GITHUB_OUTPUT"
+          else
+            echo "from=" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Docker build
         id: docker
+        env:
+          E2E_CACHE_FROM: ${{ steps.cache.outputs.from }}
         run: docker compose up -d --build --renew-anon-volumes --force-recreate --remove-orphans --wait --wait-timeout 300
         if: ${{ !cancelled() }}
 
@@ -734,7 +776,7 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
 
       - name: Install server dependencies
-        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm --filter immich install --frozen-lockfile
+        run: pnpm --filter immich install --frozen-lockfile
       - name: Run API generation
         run: mise //:open-api
         working-directory: open-api
@@ -792,7 +834,7 @@ jobs:
           github_token: ${{ steps.token.outputs.token }}
 
       - name: Install server dependencies
-        run: SHARP_IGNORE_GLOBAL_LIBVIPS=true pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Build plugins
         run: mise //:plugins

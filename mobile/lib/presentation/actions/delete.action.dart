@@ -12,6 +12,7 @@ import 'package:immich_mobile/providers/server_info.provider.dart';
 import 'package:immich_mobile/providers/user.provider.dart';
 import 'package:immich_mobile/providers/view_intent/view_intent_asset_action_coordinator.provider.dart';
 import 'package:immich_mobile/services/cleanup.service.dart';
+import 'package:immich_mobile/services/toast.service.dart';
 import 'package:immich_mobile/utils/error_handler.dart';
 import 'package:immich_mobile/widgets/common/confirm_dialog.dart';
 
@@ -38,7 +39,8 @@ final _stateProvider = Provider.family.autoDispose<_State?, ActionSource>((ref, 
 
   final trashEnabled = ref.watch(serverInfoProvider.select((state) => state.serverFeatures.trash));
   // Assets already in the trash or in the locked folder are deleted outright, irrespective of the server setting.
-  final trash = trashEnabled && !ownedRemote.every((asset) => asset.isTrashed || asset.isLocked);
+  final trash =
+      ownedRemote.isEmpty || (trashEnabled && !ownedRemote.every((asset) => asset.isTrashed || asset.isLocked));
 
   return (localIds: localIds, remoteIds: ownedRemote.map((asset) => asset.id).toList(growable: false), trash: trash);
 }, dependencies: [assetsActionProvider]);
@@ -72,16 +74,20 @@ class DeleteAction extends AssetActionBuilder {
     }
 
     final (:localIds, :remoteIds, :trash) = state;
+    final assetService = ref.read(assetServiceProvider);
     final toastService = ref.read(toastServiceProvider);
     final clearSelection = ref.read(clearSelectionProvider(source));
     final viewIntentCoordinator = ref.read(viewIntentAssetActionCoordinatorProvider);
 
     try {
       final String? message;
+      // Only trashing is reversible; a permanent delete and a device cleanup are not.
+      ToastOption? undo;
       if (remoteIds.isEmpty) {
         message = await _removeLocalAssets(context, ref, localIds);
       } else if (trash) {
         message = await _moveToTrash(context, ref, remoteIds, localIds);
+        undo = .new(onUndo: () => assetService.restoreTrash(remoteIds));
       } else {
         message = await _deletePermanently(context, ref, remoteIds, localIds);
       }
@@ -90,7 +96,7 @@ class DeleteAction extends AssetActionBuilder {
         return;
       }
 
-      toastService.success(message);
+      toastService.success(message, toast: undo);
       clearSelection();
       await viewIntentCoordinator.afterDelete(source: source, remoteAssetIds: remoteIds, movedToTrash: trash);
     } catch (error, stack) {
@@ -132,8 +138,11 @@ class DeleteAction extends AssetActionBuilder {
     final assetService = ref.read(assetServiceProvider);
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (_) =>
-          const ConfirmDialog(title: 'delete_dialog_title', content: 'delete_dialog_alert', ok: 'delete_permanently'),
+      builder: (_) => ConfirmDialog(
+        title: context.t.delete_dialog_title,
+        content: context.t.delete_dialog_alert,
+        ok: context.t.delete_permanently,
+      ),
     );
     if (confirmed != true || !context.mounted) {
       return null;

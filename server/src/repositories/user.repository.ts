@@ -321,7 +321,7 @@ export class UserRepository {
         updatedAt: new Date(),
       })
       .where('user.deletedAt', 'is', null)
-      .$if(id != undefined, (eb) => eb.where('user.id', '=', asUuid(id!)));
+      .$if(id !== undefined, (eb) => eb.where('user.id', '=', asUuid(id!)));
 
     await query.execute();
   }

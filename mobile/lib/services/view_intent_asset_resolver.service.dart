@@ -6,7 +6,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_asset.repository
 import 'package:immich_mobile/models/view_intent/view_intent_payload.extension.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
-import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
+import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
 import 'package:logging/logging.dart';
@@ -28,7 +28,7 @@ class ViewIntentResolution {
 
 final viewIntentAssetResolverProvider = Provider<ViewIntentAssetResolver>(
   (ref) => ViewIntentAssetResolver(
-    localAssetRepository: ref.read(localAssetRepository),
+    localAssetRepository: ref.read(driftProvider).localAssetRepository,
     assetService: ref.read(assetServiceProvider),
     nativeSyncApi: ref.read(nativeSyncApiProvider),
     timelineFactory: ref.read(timelineFactoryProvider),
@@ -36,7 +36,7 @@ final viewIntentAssetResolverProvider = Provider<ViewIntentAssetResolver>(
 );
 
 class ViewIntentAssetResolver {
-  final DriftLocalAssetRepository _localAssetRepository;
+  final LocalAssetRepository _localAssetRepository;
   final AssetService _assetService;
   final NativeSyncApi _nativeSyncApi;
   final TimelineFactory _timelineFactory;

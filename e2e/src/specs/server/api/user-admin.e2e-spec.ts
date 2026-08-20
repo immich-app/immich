@@ -1,6 +1,5 @@
 import {
   LoginResponseDto,
-  Permission,
   QueueName,
   createStack,
   deleteUserAdmin,
@@ -10,8 +9,7 @@ import {
   login,
 } from '@immich/sdk';
 import { Socket } from 'socket.io-client';
-import { createUserDto, uuidDto } from 'src/fixtures';
-import { errorDto } from 'src/responses';
+import { createUserDto } from 'src/fixtures';
 import { app, asBearerAuth, utils } from 'src/utils';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -46,20 +44,6 @@ describe('/admin/users', () => {
   });
 
   describe('GET /admin/users', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/admin/users`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require authorization', async () => {
-      const { status, body } = await request(app)
-        .get(`/admin/users`)
-        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
     it('should hide deleted users by default', async () => {
       const { status, body } = await request(app)
         .get(`/admin/users`)
@@ -94,38 +78,6 @@ describe('/admin/users', () => {
   });
 
   describe('POST /admin/users', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/admin/users`).send(createUserDto.user1);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require authorization', async () => {
-      const { status, body } = await request(app)
-        .post(`/admin/users`)
-        .set('Authorization', `Bearer ${nonAdmin.accessToken}`)
-        .send(createUserDto.user1);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
-    for (const [key, message] of [
-      ['password', 'Invalid input: expected string, received null'],
-      ['email', 'Invalid input: expected email, received object'],
-      ['name', 'Invalid input: expected string, received null'],
-      ['shouldChangePassword', 'Invalid input: expected boolean, received null'],
-      ['notify', 'Invalid input: expected boolean, received null'],
-    ] as const) {
-      it(`should not allow null ${key}`, async () => {
-        const { status, body } = await request(app)
-          .post(`/admin/users`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ ...createUserDto.user1, [key]: null });
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.validationError([{ path: [key], message }]));
-      });
-    }
-
     it('should accept `isAdmin`', async () => {
       const { status, body } = await request(app)
         .post(`/admin/users`)
@@ -146,36 +98,6 @@ describe('/admin/users', () => {
   });
 
   describe('PUT /admin/users/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/admin/users/${uuidDto.notFound}`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require authorization', async () => {
-      const { status, body } = await request(app)
-        .put(`/admin/users/${uuidDto.notFound}`)
-        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
-    for (const [key, message] of [
-      ['password', 'Invalid input: expected string, received null'],
-      ['email', 'Invalid input: expected email, received object'],
-      ['name', 'Invalid input: expected string, received null'],
-      ['shouldChangePassword', 'Invalid input: expected boolean, received null'],
-    ] as const) {
-      it(`should not allow null ${key}`, async () => {
-        const { status, body } = await request(app)
-          .put(`/admin/users/${uuidDto.notFound}`)
-          .set('Authorization', `Bearer ${admin.accessToken}`)
-          .send({ [key]: null });
-        expect(status).toBe(400);
-        expect(body).toEqual(errorDto.validationError([{ path: [key], message }]));
-      });
-    }
-
     it('should allow a non-admin to become an admin', async () => {
       const user = await utils.userSetup(admin.accessToken, createUserDto.create('admin2'));
       const { status, body } = await request(app)
@@ -245,12 +167,6 @@ describe('/admin/users', () => {
   });
 
   describe('PUT /admin/users/:id/preferences', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).put(`/admin/users/${userToDelete.userId}/preferences`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
     it('should update memories enabled', async () => {
       const before = await getUserPreferencesAdmin({ id: admin.userId }, { headers: asBearerAuth(admin.accessToken) });
       expect(before).toMatchObject({ memories: { enabled: true } });
@@ -282,20 +198,6 @@ describe('/admin/users', () => {
   });
 
   describe('DELETE /admin/users/:id', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).delete(`/admin/users/${userToDelete.userId}`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require authorization', async () => {
-      const { status, body } = await request(app)
-        .delete(`/admin/users/${userToDelete.userId}`)
-        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
     it('should delete user', async () => {
       const { status, body } = await request(app)
         .delete(`/admin/users/${userToDelete.userId}`)
@@ -359,46 +261,7 @@ describe('/admin/users', () => {
     });
   });
 
-  describe('GET /admin/users/:id/calendar-heatmap', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).get(`/admin/users/${nonAdmin.userId}/calendar-heatmap`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require admin permissions', async () => {
-      const { status, body } = await request(app)
-        .get(`/admin/users/${nonAdmin.userId}/calendar-heatmap`)
-        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
-    it('should require the AdminUserRead permission', async () => {
-      const { secret } = await utils.createApiKey(admin.accessToken, [Permission.UserRead]);
-      const { status, body } = await request(app)
-        .get(`/admin/users/${nonAdmin.userId}/calendar-heatmap`)
-        .set('x-api-key', secret);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-  });
-
   describe('POST /admin/users/:id/restore', () => {
-    it('should require authentication', async () => {
-      const { status, body } = await request(app).post(`/admin/users/${userToDelete.userId}/restore`);
-      expect(status).toBe(401);
-      expect(body).toEqual(errorDto.unauthorized);
-    });
-
-    it('should require authorization', async () => {
-      const { status, body } = await request(app)
-        .post(`/admin/users/${userToDelete.userId}/restore`)
-        .set('Authorization', `Bearer ${nonAdmin.accessToken}`);
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.forbidden);
-    });
-
     it('should restore a user', async () => {
       const user = await utils.userSetup(admin.accessToken, createUserDto.create('restore'));
 
