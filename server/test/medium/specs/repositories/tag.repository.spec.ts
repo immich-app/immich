@@ -50,7 +50,7 @@ describe(TagRepository.name, () => {
           .executeTakeFirstOrThrow(),
       ).resolves.toEqual({ userId: user.id, value: 'updatedTagA', color: '#000000', parentId: null });
     });
-
+    /* This should be included after PR #30877 is merged in
     it('should update children tag values when parent tag value changes', async () => {
       const { ctx, sut } = setup();
       const { user } = await ctx.newUser();
@@ -86,5 +86,6 @@ describe(TagRepository.name, () => {
           .executeTakeFirstOrThrow(),
       ).resolves.toEqual({ userId: user.id, value: 'updatedTagA/tagB', color: '#00FF00', parentId: parentTag.id });
     });
+    */
   });
 });

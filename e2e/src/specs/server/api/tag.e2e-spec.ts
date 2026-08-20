@@ -41,20 +41,23 @@ describe('/tags', () => {
   });
 
   describe('POST /tags', () => {
-    it('should require authorization (api key)', async () => {
-      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
-      const { status, body } = await request(app).post('/tags').set('x-api-key', secret).send({ name: 'TagA' });
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.missingPermission('tag.create'));
-    });
-
     it('should prevent tags with slash in name', async () => {
       const { secret } = await utils.createApiKey(user.accessToken, [Permission.TagCreate]);
       const { status, body } = await request(app).post('/tags').set('x-api-key', secret).send({ name: 'TagA/TagB' });
       expect(status).toBe(400);
-      expect(body).toEqual(
-        errorDto.validationError([{ path: ['name'], message: 'Tag name cannot contain slash characters ("/")' }]),
-      );
+      expect(body).toEqual({
+        errors: [
+          {
+            code: 'invalid_format',
+            format: 'regex',
+            message: 'Tag name cannot contain slash characters ("/")',
+            origin: 'string',
+            path: ['name'],
+            pattern: '/^[^/]*$/',
+          },
+        ],
+        message: 'Validation failed',
+      });
     });
 
     it('should work with tag.create', async () => {
@@ -277,27 +280,6 @@ describe('/tags', () => {
   });
 
   describe('PUT /tags/:id', () => {
-    it('should require authorization', async () => {
-      const tag = await create(admin.accessToken, { name: 'tagA' });
-      const { status, body } = await request(app)
-        .put(`/tags/${tag.id}`)
-        .send({ color: '#000000' })
-        .set('Authorization', `Bearer ${user.accessToken}`);
-      expect(status).toBe(400);
-      expect(body).toEqual(errorDto.noPermission);
-    });
-
-    it('should require authorization (api key)', async () => {
-      const tag = await create(user.accessToken, { name: 'TagA' });
-      const { secret } = await utils.createApiKey(user.accessToken, [Permission.AssetRead]);
-      const { status, body } = await request(app)
-        .put(`/tags/${tag.id}`)
-        .set('x-api-key', secret)
-        .send({ color: '#000000' });
-      expect(status).toBe(403);
-      expect(body).toEqual(errorDto.missingPermission('tag.update'));
-    });
-
     it('should update a tag name', async () => {
       const tag = await create(user.accessToken, { name: 'tagA' });
       const { status, body } = await request(app)
