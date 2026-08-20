@@ -215,6 +215,53 @@ describe(DuplicateService.name, () => {
     });
   });
 
+  describe('resolveAll (via resolve)', () => {
+    it('should keep the suggested asset and trash the rest of each group', async () => {
+      const smallAsset = AssetFactory.from().exif({ fileSizeInByte: 1000 }).build();
+      const largeAsset = AssetFactory.from().exif({ fileSizeInByte: 5000 }).build();
+      const group = {
+        duplicateId: 'group-1',
+        assets: [getForDuplicate(smallAsset), getForDuplicate(largeAsset)],
+      };
+      mocks.duplicateRepository.cleanupSingletonGroups.mockResolvedValue();
+      mocks.duplicateRepository.getAll.mockResolvedValue([group]);
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1']));
+      mocks.duplicateRepository.get.mockResolvedValue(group);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set([smallAsset.id]));
+      mocks.album.getByAssetIds.mockResolvedValue(new Map());
+      mocks.systemMetadata.get.mockResolvedValue({});
+
+      await expect(sut.resolveAll(authStub.admin)).resolves.toEqual([{ id: 'group-1', success: true }]);
+    });
+
+    it('should resolve multiple duplicate groups', async () => {
+      const group1Small = AssetFactory.from().exif({ fileSizeInByte: 1000 }).build();
+      const group1Large = AssetFactory.from().exif({ fileSizeInByte: 5000 }).build();
+      const group2Small = AssetFactory.from().exif({ fileSizeInByte: 500 }).build();
+      const group2Large = AssetFactory.from().exif({ fileSizeInByte: 2000 }).build();
+      const group1 = {
+        duplicateId: 'group-1',
+        assets: [getForDuplicate(group1Small), getForDuplicate(group1Large)],
+      };
+      const group2 = {
+        duplicateId: 'group-2',
+        assets: [getForDuplicate(group2Small), getForDuplicate(group2Large)],
+      };
+      mocks.duplicateRepository.cleanupSingletonGroups.mockResolvedValue();
+      mocks.duplicateRepository.getAll.mockResolvedValue([group1, group2]);
+      mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['group-1', 'group-2']));
+      mocks.duplicateRepository.get.mockResolvedValueOnce(group1).mockResolvedValueOnce(group2);
+      mocks.access.asset.checkOwnerAccess.mockResolvedValue(new Set(['trashed-asset']));
+      mocks.album.getByAssetIds.mockResolvedValue(new Map());
+      mocks.systemMetadata.get.mockResolvedValue({});
+
+      await expect(sut.resolveAll(authStub.admin)).resolves.toEqual([
+        { id: 'group-1', success: true },
+        { id: 'group-2', success: true },
+      ]);
+    });
+  });
+
   describe('resolveGroup (via resolve)', () => {
     it('should fail if duplicate group not found', async () => {
       mocks.access.duplicate.checkOwnerAccess.mockResolvedValue(new Set(['missing-id']));

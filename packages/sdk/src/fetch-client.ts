@@ -4764,6 +4764,18 @@ export function resolveDuplicates({ duplicateResolveDto }: {
     })));
 }
 /**
+ * Resolve all duplicate groups
+ */
+export function resolveAllDuplicates(opts?: Oazapfts.RequestOpts) {
+    return oazapfts.ok(oazapfts.fetchJson<{
+        status: 200;
+        data: BulkIdResponseDto[];
+    }>("/duplicates/resolve-all", {
+        ...opts,
+        method: "POST"
+    }));
+}
+/**
  * Dismiss a duplicate group
  */
 export function deleteDuplicate({ id }: {
