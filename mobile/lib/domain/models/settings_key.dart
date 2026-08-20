@@ -26,10 +26,13 @@ enum SettingsKey<T> {
 
   // Network
   networkAutoEndpointSwitching<bool>(),
-  networkExternalEndpointList<List<String>>(codec: ListCodec(PrimitiveCodec.string)),
-  networkCustomHeaders<Map<String, String>>(codec: MapCodec(PrimitiveCodec.string, PrimitiveCodec.string)),
-  networkPreferredWifiName<String?>(),
-  networkLocalEndpoint<String?>(),
+  networkExternalEndpointList<List<String>>(codec: ListCodec(PrimitiveCodec.string), sensitive: true),
+  networkCustomHeaders<Map<String, String>>(
+    codec: MapCodec(PrimitiveCodec.string, PrimitiveCodec.string),
+    sensitive: true,
+  ),
+  networkPreferredWifiName<String?>(sensitive: true),
+  networkLocalEndpoint<String?>(sensitive: true),
 
   // Album
   albumSortMode<AlbumSortMode>(codec: EnumCodec(AlbumSortMode.values)),
@@ -81,8 +84,9 @@ enum SettingsKey<T> {
   featureMessageSeenRelease<SemVer>(codec: SemVerCodec());
 
   final ValueCodec<T>? _codecOverride;
+  final bool sensitive;
 
-  const SettingsKey({ValueCodec<T>? codec}) : _codecOverride = codec;
+  const SettingsKey({ValueCodec<T>? codec, this.sensitive = false}) : _codecOverride = codec;
 
   ValueCodec<T> get _codec => _codecOverride ?? ValueCodec.forType(T);
 

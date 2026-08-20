@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:immich_mobile/domain/models/log.model.dart';
 import 'package:immich_mobile/domain/services/log.service.dart';
 import 'package:immich_mobile/extensions/build_context_extensions.dart';
@@ -13,15 +12,18 @@ import 'package:immich_mobile/widgets/common/troubleshoot_share_dialog.dart';
 import 'package:intl/intl.dart';
 
 @RoutePage()
-class AppLogPage extends HookWidget {
-  const AppLogPage({super.key});
+class TroubleshootPage extends StatefulWidget {
+  const TroubleshootPage({super.key});
+
+  @override
+  State<TroubleshootPage> createState() => _TroubleshootPageState();
+}
+
+class _TroubleshootPageState extends State<TroubleshootPage> {
+  Future<List<LogMessage>> _logMessages = LogService.I.getMessages();
 
   @override
   Widget build(BuildContext context) {
-    final immichLogger = LogService.I;
-    final shouldReload = useState(false);
-    final logMessages = useFuture(useMemoized(() => immichLogger.getMessages(), [shouldReload.value]));
-
     Widget colorStatusIndicator(Color color) {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -59,16 +61,18 @@ class AppLogPage extends HookWidget {
             icon: Icon(
               Icons.delete_outline_rounded,
               color: context.primaryColor,
-              semanticLabel: "Clear logs",
+              semanticLabel: context.t.clear_logs,
               size: 20.0,
             ),
             onPressed: () {
-              unawaited(immichLogger.clearLogs());
-              shouldReload.value = !shouldReload.value;
+              unawaited(LogService.I.clearLogs());
+              setState(() {
+                _logMessages = LogService.I.getMessages();
+              });
             },
           ),
           IconButton(
-            icon: Icon(Icons.share_rounded, color: context.primaryColor, semanticLabel: "Share", size: 20.0),
+            icon: Icon(Icons.share_rounded, color: context.primaryColor, semanticLabel: context.t.share, size: 20.0),
             onPressed: () {
               unawaited(showDialog(context: context, builder: (_) => const TroubleshootShareDialog()));
             },
@@ -82,31 +86,34 @@ class AppLogPage extends HookWidget {
         ),
         centerTitle: true,
       ),
-      body: ListView.separated(
-        separatorBuilder: (context, index) {
-          return const Divider(height: 0);
-        },
-        itemCount: logMessages.data?.length ?? 0,
-        itemBuilder: (context, index) {
-          final logMessage = logMessages.data![index];
-          return ListTile(
-            onTap: () => context.pushRoute(AppLogDetailRoute(logMessage: logMessage)),
-            trailing: const Icon(Icons.arrow_forward_ios_rounded),
-            visualDensity: VisualDensity.compact,
-            dense: true,
-            tileColor: getTileColor(logMessage.level),
-            minLeadingWidth: 10,
-            title: Text(
-              truncateLogMessage(logMessage.message, 4),
-              style: TextStyle(fontSize: 14.0, color: context.colorScheme.onSurface, fontFamily: "GoogleSansCode"),
-            ),
-            subtitle: Text(
-              "at ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)} in ${logMessage.logger}",
-              style: TextStyle(fontSize: 12.0, color: context.colorScheme.onSurfaceSecondary),
-            ),
-            leading: buildLeadingIcon(logMessage.level),
-          );
-        },
+      body: FutureBuilder(
+        future: _logMessages,
+        builder: (context, snapshot) => ListView.separated(
+          separatorBuilder: (context, index) {
+            return const Divider(height: 0);
+          },
+          itemCount: snapshot.data?.length ?? 0,
+          itemBuilder: (context, index) {
+            final logMessage = snapshot.data![index];
+            return ListTile(
+              onTap: () => context.pushRoute(AppLogDetailRoute(logMessage: logMessage)),
+              trailing: const Icon(Icons.arrow_forward_ios_rounded),
+              visualDensity: VisualDensity.compact,
+              dense: true,
+              tileColor: getTileColor(logMessage.level),
+              minLeadingWidth: 10,
+              title: Text(
+                truncateLogMessage(logMessage.message, 4),
+                style: TextStyle(fontSize: 14.0, color: context.colorScheme.onSurface, fontFamily: "GoogleSansCode"),
+              ),
+              subtitle: Text(
+                "at ${DateFormat("HH:mm:ss.SSS").format(logMessage.createdAt)} in ${logMessage.logger}",
+                style: TextStyle(fontSize: 12.0, color: context.colorScheme.onSurfaceSecondary),
+              ),
+              leading: buildLeadingIcon(logMessage.level),
+            );
+          },
+        ),
       ),
     );
   }

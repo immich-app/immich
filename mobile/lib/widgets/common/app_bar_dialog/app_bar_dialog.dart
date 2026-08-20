@@ -104,7 +104,7 @@ class ImmichAppBarDialog extends HookConsumerWidget {
       return buildActionButton(
         Icons.assignment_outlined,
         context.t.troubleshoot,
-        () => context.pushRoute(const AppLogRoute()),
+        () => context.pushRoute(const TroubleshootRoute()),
       );
     }
 

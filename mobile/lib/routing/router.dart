@@ -19,12 +19,12 @@ import 'package:immich_mobile/pages/backup/drift_backup_album_selection.page.dar
 import 'package:immich_mobile/pages/backup/drift_backup_asset_detail.page.dart';
 import 'package:immich_mobile/pages/backup/drift_backup_options.page.dart';
 import 'package:immich_mobile/pages/backup/drift_upload_detail.page.dart';
-import 'package:immich_mobile/pages/common/app_log.page.dart';
 import 'package:immich_mobile/pages/common/app_log_detail.page.dart';
 import 'package:immich_mobile/pages/common/headers_settings.page.dart';
 import 'package:immich_mobile/pages/common/settings.page.dart';
 import 'package:immich_mobile/pages/common/splash_screen.page.dart';
 import 'package:immich_mobile/pages/common/tab_shell.page.dart';
+import 'package:immich_mobile/pages/common/troubleshoot.page.dart';
 import 'package:immich_mobile/pages/library/folder/folder.page.dart';
 import 'package:immich_mobile/pages/library/locked/pin_auth.page.dart';
 import 'package:immich_mobile/pages/library/partner/partner.page.dart';
@@ -131,7 +131,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: SettingsRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: SettingsSubRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: WhatsNewRoute.page, guards: [_duplicateGuard]),
-    AutoRoute(page: AppLogRoute.page, guards: [_duplicateGuard]),
+    AutoRoute(page: TroubleshootRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: AppLogDetailRoute.page, guards: [_duplicateGuard]),
     AutoRoute(page: FolderRoute.page, guards: [_authGuard]),
     AutoRoute(page: SharedLinkRoute.page, guards: [_authGuard, _duplicateGuard]),

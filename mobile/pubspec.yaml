@@ -9,7 +9,6 @@ environment:
   flutter: 3.44.9
 
 dependencies:
-  archive: ^4.0.9
   async: ^2.13.1
   auto_route: ^11.1.0
   background_downloader: ^9.5.6
