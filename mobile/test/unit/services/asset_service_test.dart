@@ -17,14 +17,14 @@ void main() {
   late MockAssetApiRepository apiRepository;
   late MockRemoteAssetRepository remoteRepository;
   late MockRemoteExifRepository exifRepository;
-  late MockDriftLocalAssetRepository localRepository;
+  late MockLocalAssetRepository localRepository;
 
   setUp(() {
     mocks = RepositoryMocks();
     apiRepository = mocks.assetApi.api;
     remoteRepository = mocks.remoteAsset.repo;
     exifRepository = mocks.remoteExif.repo;
-    localRepository = MockDriftLocalAssetRepository();
+    localRepository = MockLocalAssetRepository();
 
     sut = AssetService(
       remoteRepository: remoteRepository,

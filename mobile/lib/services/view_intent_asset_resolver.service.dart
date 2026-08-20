@@ -6,6 +6,7 @@ import 'package:immich_mobile/infrastructure/repositories/local_asset.repository
 import 'package:immich_mobile/models/view_intent/view_intent_payload.extension.dart';
 import 'package:immich_mobile/platform/native_sync_api.g.dart';
 import 'package:immich_mobile/platform/view_intent_api.g.dart';
+import 'package:immich_mobile/providers/infrastructure/asset.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/db.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/platform.provider.dart';
 import 'package:immich_mobile/providers/infrastructure/timeline.provider.dart';
