@@ -55,8 +55,8 @@ void main() {
 
         final sorted = await sut.sortAlbums([regular, pinnedOld, pinnedNew], AlbumSortMode.created);
 
-        // Pinned albums come first, sorted among themselves by the active sort mode
-        expect(sorted.take(2).map((a) => a.name), ['Pinned Old', 'Pinned New']);
+        // created sorts newest-first, so pinned albums come first in that order
+        expect(sorted.take(2).map((a) => a.name), ['Pinned New', 'Pinned Old']);
         expect(sorted.last.name, 'Regular');
       });
 
@@ -68,7 +68,7 @@ void main() {
         final sorted = await sut.sortAlbums([older, pinned, newer], AlbumSortMode.created);
 
         expect(sorted.first.name, 'Pinned');
-        expect(sorted.skip(1).map((a) => a.name), ['Older', 'Newer']);
+        expect(sorted.skip(1).map((a) => a.name), ['Newer', 'Older']);
       });
     });
   });
