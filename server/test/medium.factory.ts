@@ -24,6 +24,7 @@ import { AlbumUserRepository } from 'src/repositories/album-user.repository';
 import { AlbumRepository } from 'src/repositories/album.repository';
 import { ApiKeyRepository } from 'src/repositories/api-key.repository';
 import { AssetEditRepository } from 'src/repositories/asset-edit.repository';
+import { AssetFileRepository } from 'src/repositories/asset-file.repository';
 import { AssetJobRepository } from 'src/repositories/asset-job.repository';
 import { AssetRepository } from 'src/repositories/asset.repository';
 import { ClusterGroupRepository } from 'src/repositories/cluster-group.repository';
@@ -456,6 +457,7 @@ const newRealRepository = <T extends BaseServiceDeps[number]>(key: T, db: Kysely
     case ApiKeyRepository:
     case AssetRepository:
     case AssetEditRepository:
+    case AssetFileRepository:
     case AssetJobRepository:
     case ClusterGroupRepository:
     case DuplicateRepository:
