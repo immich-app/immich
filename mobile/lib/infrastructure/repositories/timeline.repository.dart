@@ -4,7 +4,7 @@ import 'package:drift/drift.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:immich_mobile/domain/models/album/album.model.dart';
 import 'package:immich_mobile/domain/models/asset/base_asset.model.dart';
-import 'package:immich_mobile/domain/models/time_range.model.dart';
+import 'package:immich_mobile/domain/models/map.model.dart';
 import 'package:immich_mobile/domain/models/timeline.model.dart';
 import 'package:immich_mobile/domain/services/timeline.service.dart';
 import 'package:immich_mobile/infrastructure/entities/local_asset.entity.dart';
@@ -13,26 +13,7 @@ import 'package:immich_mobile/infrastructure/entities/remote_asset.entity.drift.
 import 'package:immich_mobile/infrastructure/repositories/db.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/map.repository.dart';
 import 'package:immich_mobile/infrastructure/repositories/timeline.repository.drift.dart';
-import 'package:maplibre_gl/maplibre_gl.dart';
 import 'package:stream_transform/stream_transform.dart';
-
-class TimelineMapOptions {
-  final LatLngBounds bounds;
-  final bool onlyFavorites;
-  final bool includeArchived;
-  final bool withPartners;
-  final int relativeDays;
-  final TimeRange timeRange;
-
-  const TimelineMapOptions({
-    required this.bounds,
-    this.onlyFavorites = false,
-    this.includeArchived = false,
-    this.withPartners = false,
-    this.relativeDays = 0,
-    this.timeRange = const TimeRange(),
-  });
-}
 
 @DriftAccessor()
 class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositoryMixin {
@@ -524,9 +505,21 @@ class TimelineRepository extends DatabaseAccessor<Drift> with $TimelineRepositor
     return query.map((row) => row.toDto()).get();
   }
 
-  TimelineQuery map(List<String> userIds, TimelineMapOptions options, GroupAssetsBy groupBy) => (
-    bucketSource: () => _watchMapBucket(userIds, options, groupBy: groupBy),
-    assetSource: (offset, count) => _getMapBucketAssets(userIds, options, offset: offset, count: count),
+  /// Creates a geographic map query that can dynamically filter on changing [TimelineMapOptions]
+  /// (most notably the active map bounds)
+  TimelineQuery geographicMap(
+    List<String> userIds,
+    TimelineMapOptions Function() currentOptions,
+    Stream<TimelineMapOptions> optionsStream,
+    GroupAssetsBy groupBy,
+  ) => (
+    bucketSource: () => Stream.value(currentOptions())
+        .followedBy(optionsStream)
+        .switchMap(
+          // Any error would kill the stream for all options; make sure the stream stays alive
+          (options) => _watchMapBucket(userIds, options, groupBy: groupBy).handleError((_) {}),
+        ),
+    assetSource: (offset, count) => _getMapBucketAssets(userIds, currentOptions(), offset: offset, count: count),
     origin: TimelineOrigin.map,
   );
 
