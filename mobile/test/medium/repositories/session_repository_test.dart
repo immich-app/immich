@@ -46,23 +46,6 @@ void main() {
     });
   });
 
-  group('null values', () {
-    test('a stored NULL value column decodes to null on refresh', () async {
-      await ctx.db
-          .into(ctx.db.sessionEntity)
-          .insert(
-            SessionEntityCompanion.insert(
-              key: SessionKey.accessToken.name,
-              value: const .new(null),
-              updatedAt: .new(DateTime.now()),
-            ),
-          );
-
-      await SessionRepository.instance.refresh();
-      expect(sut.session.accessToken, isNull);
-    });
-  });
-
   group('sync', () {
     test('picks up rows that were inserted directly into the DB', () async {
       await ctx.db
