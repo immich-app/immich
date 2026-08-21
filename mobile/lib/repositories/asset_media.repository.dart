@@ -289,9 +289,12 @@ class AssetMediaRepository {
     return null;
   }
 
-  /// Renames downloaded files to their display name before sharing, since receivers
-  /// only see the on-disk filename. Gallery originals cannot be renamed, so a
-  /// colliding download takes the first free ` (n)` suffix instead.
+  /// As of share_plus 10.1.4, sharing copies every file into a single cache
+  /// folder regardless of where it came from, and equal names overwrite each
+  /// other there. Downloads are renamed to their display name first since
+  /// receivers only see the on-disk filename, and a name already taken in the
+  /// batch gets the first free ` (n)` suffix because gallery originals cannot
+  /// be renamed.
   Future<void> _resolveShareFiles(List<_ShareFile> files) async {
     final usedNames = {
       for (final shareFile in files)
