@@ -43,10 +43,13 @@ void main() {
   late Completer<List<String>> shareCall;
 
   setUpAll(() async {
+    // an in memory store, the share flow reads the server endpoint from it
     db = Drift(DatabaseConnection(NativeDatabase.memory(), closeStreamsSynchronously: true));
     store = await StoreService.init(storeRepository: StoreRepository(db), listenUpdates: false);
     await SettingsRepository.ensureInitialized(db);
     await Store.put(StoreKey.serverEndpoint, 'https://example.com/api');
+    // downloader init reads the persistent storage, and picks its implementation
+    // from defaultTargetPlatform, the desktop one would bypass the mocked channel
     final persistentStorage = _MockPersistentStorage();
     when(persistentStorage.initialize).thenAnswer((_) async {});
     when(() => persistentStorage.removeResumeData(any())).thenAnswer((_) async {});
@@ -73,10 +76,12 @@ void main() {
     failedRemoteIds = {};
     shareCall = Completer<List<String>>();
 
+    // keeps every temp path the code asks for inside this test's own folder
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       const MethodChannel('plugins.flutter.io/path_provider'),
       (_) async => tempRoot.path,
     );
+    // captures the file paths the share sheet would receive
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       const MethodChannel('dev.fluttercommunity.plus/share'),
       (call) async {
@@ -85,6 +90,7 @@ void main() {
         return 'success';
       },
     );
+    // stands in for a real download, writes the file and reports the task status
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
       const MethodChannel('com.bbflight.background_downloader'),
       (call) async {
@@ -107,18 +113,6 @@ void main() {
   });
 
   tearDown(() async {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-      const MethodChannel('plugins.flutter.io/path_provider'),
-      null,
-    );
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-      const MethodChannel('dev.fluttercommunity.plus/share'),
-      null,
-    );
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
-      const MethodChannel('com.bbflight.background_downloader'),
-      null,
-    );
     if (tempRoot.existsSync()) {
       await tempRoot.delete(recursive: true);
     }
@@ -158,6 +152,14 @@ void main() {
         final paths = await shareCall.future.timeout(const Duration(seconds: 5));
         return (count: count, names: paths.map(p.basename).toList());
       });
+      // cleanup after a share is fire and forget disk IO, wait briefly for it
+      // to land so the tests can assert the end state
+      await tester.runAsync(
+        () => Future.doWhile(() async {
+          await Future<void>.delayed(const Duration(milliseconds: 1));
+          return taskDirs.any((directory) => directory.existsSync());
+        }).timeout(const Duration(seconds: 1), onTimeout: () {}),
+      );
       await tester.pump();
 
       return result!;
@@ -165,11 +167,6 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     }
   }
-
-  Future<void> waitForCleanup() => Future.doWhile(() async {
-    await Future<void>.delayed(const Duration(milliseconds: 1));
-    return taskDirs.any((directory) => directory.existsSync());
-  }).timeout(const Duration(seconds: 1));
 
   testWidgets('shares sanitized and fallback names then removes task directories', (tester) async {
     final assets = [
@@ -182,7 +179,6 @@ void main() {
 
     expect(result.count, 3);
     expect(result.names, ['holiday_Photo 1 名字.jpg', 'remote-2', 'remote-3']);
-    await tester.runAsync(waitForCleanup);
     expect(taskDirs.every((directory) => !directory.existsSync()), isTrue);
   });
 
@@ -197,7 +193,6 @@ void main() {
 
     expect(result.count, 3);
     expect(result.names, ['IMG.jpg', 'IMG (1).jpg', 'IMG (2).jpg']);
-    await tester.runAsync(waitForCleanup);
   });
 
   testWidgets('keeps mixed local and remote paths distinct', (tester) async {
@@ -214,7 +209,6 @@ void main() {
 
     expect(result.count, 2);
     expect(result.names, ['IMG (1).jpg', 'IMG.jpg']);
-    await tester.runAsync(waitForCleanup);
     expect(localFile.existsSync(), isTrue);
   });
 
@@ -233,7 +227,6 @@ void main() {
       tempRoot.listSync().whereType<Directory>().where((directory) => p.basename(directory.path).contains('remote-1')),
       isEmpty,
     );
-    await tester.runAsync(waitForCleanup);
     expect(taskDirs.every((directory) => !directory.existsSync()), isTrue);
   });
 
@@ -266,6 +259,5 @@ void main() {
 
     expect(result.count, 2);
     expect(result.names, ['IMG-preview.jpg', 'IMG-preview (1).jpg']);
-    await tester.runAsync(waitForCleanup);
   });
 }
